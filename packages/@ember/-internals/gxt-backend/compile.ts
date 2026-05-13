@@ -1719,17 +1719,17 @@ if (false as boolean) {
 // `compilePipeline.isRendering()` (see `installCompilePipelinePart` at the
 // bottom of this file). The globalThis writers (`__gxtIsRendering` /
 // `__gxtSetIsRendering`) are RETAINED:
-//   - `__gxtIsRendering` is retained because the unmigrated reader at
-//     `@ember/object/core.ts:321` (DEBUG proxy trap) reads three flags
-//     together (`__gxtIsRendering`, `__gxtSyncing`, `__gxtInTriggerReRender`);
-//     migrating one flag while leaving the other two raw would not improve
-//     the edge count net. Slice 18 already deferred the same trap for its
-//     own `__gxtInTriggerReRender` reader. A future slice (suggested slice
-//     20) can migrate the whole 3-flag predicate at once.
+//   - `__gxtIsRendering` is retained as a fallback for bridge-route readers
+//     in `@ember/object/core.ts:320-326` (slice 20 — DEBUG proxy trap),
+//     `glimmer/lib/renderer.ts:2247` (slice 19 — renderComponent wraps), and
+//     for the rare bridge-not-yet-installed edge. Slice 20 closed slice 18/19's
+//     deferral by migrating the trap to call `isRendering()` / `isSyncing()` /
+//     `isInTriggerReRender()` together; all three migrated readers retain a
+//     globalThis fallback so the writer drop is still future work.
 //   - `__gxtSetIsRendering` is retained because the cross-package writer at
 //     `glimmer/lib/renderer.ts:2232/2272/2282` toggles it via globalThis and
 //     a future slice should migrate it as a paired `beginRendering()` /
-//     `endRendering()` helper (see suggested slice 20 in the memory notes).
+//     `endRendering()` helper (see suggested slice 21 in the memory notes).
 let _renderPassDepth = 0;
 function _gxtIsRendering(): boolean {
   return _renderPassDepth > 0;
@@ -3161,6 +3161,31 @@ function _gxtWithInTriggerReRender<T>(fn: () => T): T {
 // CP.get re-entrance guard. Hot path: one boolean compare, zero allocations.
 function _gxtIsInTriggerReRender(): boolean {
   return (globalThis as any).__gxtInTriggerReRender === true;
+}
+
+// Slice-20 (Cluster B): read-side predicate for the `__gxtSyncing` boolean
+// flag toggled by `__gxtSyncDomNow` (this file, body at L5270/5717) and the
+// post-render-hook re-entry save-restore in `manager.ts:4202-4215`. Returns
+// `true` iff the current synchronous stack is nested inside the GXT post-
+// `runTask` DOM sync flush.
+//
+// Reader migration target: the `@ember/object/core.ts:320-326` DEBUG proxy
+// trap's `_isInternalPath` predicate (which also reads `__gxtIsRendering`
+// via slice-19's `isRendering()` and `__gxtInTriggerReRender` via slice-18's
+// `isInTriggerReRender()`). Slice 20 routes ALL THREE flags of the proxy
+// trap through the bridge as a unit, closing the deferrals from slices 18
+// and 19.
+//
+// All six writers of `__gxtSyncing` remain on globalThis (4 in this file:
+// 5270/5717/5871 + the re-entrancy-guard read pair at 5253/5759 that
+// short-circuits when the flag is true; 2 in manager.ts:4202-4215 save-
+// restore). The other 5 readers (compile.ts:5253/5759/4826, manager.ts:
+// 1356/4826, destroyable.ts:319) remain on globalThis — they are intra-
+// file or intra-manager and not in the proxy-trap 3-flag group. See
+// `isSyncing` doc in gxt-bridge.ts. Hot path: one boolean compare, zero
+// allocations.
+function _gxtIsSyncing(): boolean {
+  return (globalThis as any).__gxtSyncing === true;
 }
 
 const _gxtTriggerReRender = function (obj: object, keyName: string) {
@@ -14406,10 +14431,23 @@ installCompilePipelinePart({
   // the cross-package globalThis lookup at `glimmer/lib/renderer.ts:2233`
   // (used to decide whether to suppress text-effect creation during nested
   // renderComponent calls). The globalThis writer `__gxtIsRendering` is
-  // RETAINED post-slice-19 because of the unmigrated
-  // `@ember/object/core.ts:321` DEBUG proxy-trap reader (same trap that
-  // slice 18 deferred). See `isRendering` doc in gxt-bridge.ts.
+  // RETAINED post-slice-19 because the slice-19 deferred the
+  // `@ember/object/core.ts:321` proxy-trap reader; slice 20 migrates that
+  // reader to use this bridge predicate alongside `isInTriggerReRender()`
+  // and `isSyncing()` (the writer remains on globalThis post-slice-20 —
+  // see suggested slice 21 in memory notes for the writer migration).
+  // See `isRendering` doc in gxt-bridge.ts.
   isRendering: _gxtIsRendering,
+  // Slice-20 (Cluster B): read-only predicate for the `__gxtSyncing` flag
+  // toggled by `__gxtSyncDomNow` body (L5270/5717/5871) and manager.ts's
+  // post-render-hook re-entry save-restore (L4202-4215). Lets the
+  // `@ember/object/core.ts:324` DEBUG proxy-trap reader route through the
+  // bridge alongside `isRendering()` (slice 19) and `isInTriggerReRender()`
+  // (slice 18) — closing slice 18's and slice 19's deferrals as a unit.
+  // The globalThis writer is RETAINED post-slice-20 (the five non-proxy-
+  // trap readers continue to read raw globalThis; the writers all remain
+  // intra-file/intra-manager). See `isSyncing` doc in gxt-bridge.ts.
+  isSyncing: _gxtIsSyncing,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

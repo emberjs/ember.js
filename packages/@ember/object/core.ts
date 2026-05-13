@@ -24,6 +24,21 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
+// Slice-20 (Cluster B): DEBUG proxy trap's `_isInternalPath` predicate at
+// L320-326 below reads three GXT state flags (`__gxtIsRendering`,
+// `__gxtSyncing`, `__gxtInTriggerReRender`) to decide whether to bypass the
+// "lookup against ObjectProxy without setUnknownProperty" assertion when
+// templates / internal plumbing access proxy properties. Slices 18 and 19
+// added `isInTriggerReRender()` and `isRendering()` bridge predicates but
+// deferred this trap because migrating one flag while leaving the others
+// raw didn't improve the import-edge count net. Slice 20 adds the missing
+// `isSyncing()` predicate (slice-19 counterpart) and migrates the entire
+// 3-flag predicate to bridge-routed calls as a unit. Falls back to raw
+// globalThis reads for the case where the bridge hasn't been populated yet
+// (the bridge predicates mirror the same globalThis slots, so the two are
+// equivalent post-install). See `isSyncing` / `isRendering` /
+// `isInTriggerReRender` docs in gxt-bridge.ts.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 type EmberClassConstructor<T> = new (owner?: Owner) => T;
 
@@ -310,19 +325,43 @@ class CoreObject {
           // In GXT mode, templates and internal plumbing (notifyPropertyChange →
           // __gxtTriggerReRender, dotted-path notifications, sync passes) access
           // proxy properties directly. Bypass the assertion when:
-          //   - we're inside a template render pass (`__gxtIsRendering()`),
-          //   - we're inside the GXT sync flush (`__gxtSyncing`),
-          //   - we're inside `__gxtTriggerReRender` itself (per-call flag), or
+          //   - we're inside a template render pass (`isRendering()`),
+          //   - we're inside the GXT sync flush (`isSyncing()`),
+          //   - we're inside `triggerReRender` itself (`isInTriggerReRender()`), or
           //   - the property name is a dotted path (only Ember plumbing emits
           //     these via `notifyPropertyChange(obj, 'foo.bar')`).
           // User code (`proxy.foo`) hits none of these, so the assertion still
           // fires for the original use case.
+          //
+          // Slice-20 (Cluster B): route all three GXT state-flag reads through
+          // the typed `compilePipeline` bridge predicates introduced in slices
+          // 18/19/20. Falls back to raw globalThis reads when the bridge has
+          // not been populated yet (the bridge install runs once compile.ts
+          // has loaded; before then this trap is unreachable since it only
+          // fires under DEBUG ObjectProxy access, and proxy creation also
+          // requires the GXT pipeline to be loaded). See `isSyncing` /
+          // `isRendering` / `isInTriggerReRender` docs in gxt-bridge.ts.
           const _g = globalThis as any;
-          const _gxtIsRendering = _g.__gxtIsRendering;
+          const _pipeline = getGxtRenderer()?.compilePipeline;
+          const _isRen = _pipeline?.isRendering;
+          const _isSyn = _pipeline?.isSyncing;
+          const _isInTrig = _pipeline?.isInTriggerReRender;
+          const _renderingNow =
+            typeof _isRen === 'function'
+              ? _isRen()
+              : typeof _g.__gxtIsRendering === 'function'
+                ? _g.__gxtIsRendering()
+                : false;
+          const _syncingNow =
+            typeof _isSyn === 'function' ? _isSyn() : _g.__gxtSyncing === true;
+          const _inTriggerNow =
+            typeof _isInTrig === 'function'
+              ? _isInTrig()
+              : _g.__gxtInTriggerReRender === true;
           const _isInternalPath =
-            (typeof _gxtIsRendering === 'function' && _gxtIsRendering()) ||
-            _g.__gxtSyncing === true ||
-            _g.__gxtInTriggerReRender === true ||
+            _renderingNow ||
+            _syncingNow ||
+            _inTriggerNow ||
             (typeof property === 'string' && property.indexOf('.') !== -1);
           if (_isInternalPath) {
             return value;

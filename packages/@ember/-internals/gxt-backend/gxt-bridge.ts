@@ -920,6 +920,97 @@ export interface GxtCompilePipelineCapabilities {
    * the `$_inElement` rendering helpers.
    */
   isRendering?(): boolean;
+
+  /**
+   * Read-only predicate for the `__gxtSyncing` boolean flag toggled by
+   * `compile.ts`'s `__gxtSyncDomNow` body (and the manager.ts post-render
+   * hook re-entry guard at `manager.ts:4202-4215`). Returns `true` iff the
+   * current synchronous stack is nested inside the GXT post-`runTask` DOM
+   * sync flush (Phase 0 through Phase 5 in `__gxtSyncDomNow`).
+   *
+   * Slice-20 (Cluster B): graduates the read side of the `__gxtSyncing`
+   * flag to a typed bridge predicate so the `@ember/object/core.ts:320-326`
+   * DEBUG proxy trap can read it through the bridge alongside the slice-18
+   * `isInTriggerReRender()` and slice-19 `isRendering()` predicates. With
+   * this addition, all three flags consumed by the proxy trap's
+   * `_isInternalPath` predicate are bridge-routed — closing the deferrals
+   * documented in slices 18 and 19.
+   *
+   * Writer + reader audit (pre-slice-20):
+   *   Writers (6 sites — 4 in compile.ts, 2 in manager.ts):
+   *     - `compile.ts:5270` — set to `true` at start of `__gxtSyncDomNow`
+   *       body (after `__gxtPendingSync` check passes).
+   *     - `compile.ts:5717` — set to `false` in the body's `finally`
+   *       (mirrors the `try` at 5278).
+   *     - `compile.ts:5871` — reset to `false` in `__gxtCleanupActiveComponents`
+   *       (test-between-test cleanup).
+   *     - `compile.ts:5253/5759` — read-only check (early return) in
+   *       `__gxtSyncDomNow` and the 16ms interval-driven flush. Treated as
+   *       a read for migration purposes (already routed via globalThis on
+   *       the read side; the writer-vs-reader split here is the body's
+   *       set/reset vs. the re-entrancy guards).
+   *     - `manager.ts:4202-4215` — `_dispatchPostRenderHook` save-restore
+   *       wraps the post-render hook re-entry (`wasSyncing = g.__gxtSyncing;
+   *       g.__gxtSyncing = false; try {...} finally { g.__gxtSyncing =
+   *       wasSyncing; }`) so a nested `__gxtSyncDomNow` invocation from the
+   *       post-render hook is not short-circuited by the re-entrancy guard.
+   *   Readers (5 cross-module sites):
+   *     - `compile.ts:5253` (__gxtSyncDomNow re-entrancy guard — early
+   *       return). RETAINED on globalThis; intra-file write/read pair.
+   *     - `compile.ts:5759` (interval-driven flush re-entrancy guard).
+   *       RETAINED on globalThis; intra-file write/read pair.
+   *     - `compile.ts:4826` (`isSyncing` flag computed inside the wrapped
+   *       inverseFn of `$_each` for inverse-branch destroy lifecycle).
+   *       RETAINED on globalThis; intra-file reader, not in the proxy-trap
+   *       3-flag group.
+   *     - `manager.ts:1356` (component-instance creation marks instances
+   *       created during the sync cycle for Phase 3 destroy ordering).
+   *       RETAINED on globalThis; intra-file reader, not in the proxy-trap
+   *       3-flag group.
+   *     - `manager.ts:4826` (TRACE_DESTROY debug log). RETAINED on
+   *       globalThis; intra-file reader, not in the proxy-trap 3-flag
+   *       group.
+   *     - `destroyable.ts:319` (chooses join-flush vs sync destroy based
+   *       on whether GXT post-runTask sync is in progress). RETAINED on
+   *       globalThis; intra-file reader (already typed as
+   *       `g.__gxtSyncing?: boolean` — independent of the proxy-trap 3-flag
+   *       group; no bridge-routing required for slice 20's primary goal).
+   *     - `@ember/object/core.ts:324` (DEBUG proxy trap `_isInternalPath`
+   *       predicate). MIGRATED in slice 20 to `compilePipeline.isSyncing()`
+   *       bridge call with globalThis fallback — alongside the slice-18
+   *       `isInTriggerReRender()` and slice-19 `isRendering()` predicates,
+   *       so the entire 3-flag predicate routes through the bridge as a
+   *       unit.
+   *
+   * Bridge shape decision: read-only predicate (mirroring slice-18's
+   * `isInTriggerReRender()` and slice-19's `isRendering()`). The six writers
+   * remain on globalThis in slice 20 — they are intra-file (compile.ts
+   * writes its own sync body) or intra-manager (manager.ts wraps the
+   * post-render hook re-entry). A future slice can promote the manager.ts
+   * save-restore pair to a `withoutSyncing(fn): T` helper paralleling
+   * slice-17's `withTriggerSuppressed`, and the compile.ts body writers to
+   * a `withSyncing(fn): T` helper paralleling slice-18's
+   * `withInTriggerReRender`. But neither writer migration is required for
+   * the proxy-trap-as-unit goal of slice 20.
+   *
+   * Namespace decision: `compilePipeline`. The flag is semantically a
+   * scope-modifier on the GXT post-runTask DOM sync pipeline — the writer
+   * + body live in `compile.ts` (the pipeline's home file), the readers
+   * gate behavior on whether the sync flush is the current frame. Same
+   * namespace as slices 15/17/18/19.
+   *
+   * The globalThis writer for `__gxtSyncing` is RETAINED post-slice-20
+   * because all six writers remain on globalThis and the five non-proxy-
+   * trap readers (compile.ts:5253/5759/4826, manager.ts:1356/4826,
+   * destroyable.ts:319) continue to read raw globalThis. The bridge
+   * predicate reads the same globalThis slot that the writers write — they
+   * are equivalent post-install.
+   *
+   * Fast-check: the implementation is `return (globalThis as any)
+   * .__gxtSyncing === true` — one boolean compare; zero allocations.
+   * Matches slice-18's `isInTriggerReRender()` body shape.
+   */
+  isSyncing?(): boolean;
 }
 
 /**
