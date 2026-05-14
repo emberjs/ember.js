@@ -1730,6 +1730,80 @@ export interface GxtFormatCapabilities {
  *
  *    Count delta (slice 49): -1 globalThis slot retired, -2 LOC
  *    source, 0 new bridge methods, 0 new import edges.
+ *
+ *  - `__gxtMorphChildren` — RETIRED IN SLICE 50 (orphan write-only
+ *    deletion). Pre-slice-50 audit confirmed exactly 1 active site in
+ *    `packages/@ember/-internals/glimmer/lib/renderer.ts`, A WRITER,
+ *    ZERO readers anywhere in `packages/`. The pre-slice-50 comment
+ *    immediately above the writer claimed "used by root.ts" but an
+ *    exhaustive grep of `packages/@ember/-internals/glimmer/lib/root.ts`
+ *    at slice-50 time returned zero matches for both `__gxtMorphChildren`
+ *    and the underlying `morphChildren` identifier — that comment was
+ *    STALE. The globalThis slot was a write-only orphan whose intended
+ *    cross-file consumer either migrated away or never landed in the
+ *    active codebase.
+ *
+ *    Pre-slice-50 topology (confirmed audit — exactly 1 site, in
+ *    `renderer.ts`, a writer):
+ *
+ *      Canonical state (already module-local pre-slice-50):
+ *        - `renderer.ts:202` —
+ *          `function morphChildren(target: Element | SimpleElement, source: DocumentFragment): void { ... }`
+ *          (pre-existing module-local function — already the source of
+ *          truth; the in-file callers at `renderer.ts:245` and
+ *          `renderer.ts:981` invoke `morphChildren` directly, never
+ *          through the globalThis projection).
+ *
+ *      Writer #1 (module-init expose):
+ *        - `renderer.ts:289` —
+ *          `(globalThis as any).__gxtMorphChildren = morphChildren;`
+ *          (top-level module-init assignment, executed once at module
+ *          load. The adjacent comment "used by root.ts" was stale).
+ *
+ *      Readers (0 sites):
+ *        - Zero in `packages/`. The slice-49 memory note pre-flagged
+ *          this orphan; slice-50 pre-flight grep reconfirmed.
+ *
+ *    Sites moved (slice 50):
+ *      - packages/@ember/-internals/glimmer/lib/renderer.ts: delete the
+ *        sole writer at L289 along with its stale "used by root.ts"
+ *        comment at L288. The module-local `morphChildren` function
+ *        (L202) and its in-file callers (L245, L981) are unchanged —
+ *        behavior is identical post-slice because the only consumers
+ *        always called the local function, never the globalThis slot.
+ *      - packages/@ember/-internals/gxt-backend/gxt-bridge.ts: append
+ *        this slice-50 entry. NO new bridge methods (zero-bridge, pure
+ *        deletion). No stale-note rewrite is needed because no prior
+ *        slice referenced `__gxtMorphChildren` in this file.
+ *
+ *    State-home decision: N/A — pure orphan retirement. No state-home
+ *    move is required because the canonical module-local function
+ *    `morphChildren` already exists in `renderer.ts` and is unchanged.
+ *
+ *    Bridge shape decision: ZERO-bridge orphan deletion. No
+ *    cross-file/cross-package consumers ever existed in the active
+ *    tree; the leanest possible shape is direct deletion of the orphan
+ *    writer.
+ *
+ *    ZERO new import edges in slice 50: only the writer was deleted; no
+ *    new declarations introduced. Slice 50 matches slice 49 as the
+ *    LEANEST possible Cluster B shape — pure deletion of a single
+ *    module-init writer, no redirect required.
+ *
+ *    Bridge interface evolution (slice 50 — no API change): no bridge
+ *    interface is extended; the migration-history docblock IS extended
+ *    with this slice-50 entry. Eighth consecutive Cluster B slice (after
+ *    slice 43, 44, 45, 46, 47, 48, 49) to ship without a new bridge
+ *    method.
+ *
+ *    Hot-path concern: the deleted write executed once at module-load
+ *    time. No per-render-pass cost is eliminated, but one cold-start
+ *    globalThis property assignment is removed. Negligible impact;
+ *    correctness/cleanup motivated.
+ *
+ *    Count delta (slice 50): -1 globalThis slot retired, -2 LOC source
+ *    (writer line + stale comment), 0 new bridge methods, 0 new import
+ *    edges.
  */
 export interface GxtCompilePipelineCapabilities {
   /**

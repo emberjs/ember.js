@@ -285,9 +285,6 @@ function morphChildren(target: Element | SimpleElement, source: DocumentFragment
   }
 }
 
-// Expose morphChildren for outlet re-render morphing (used by root.ts)
-(globalThis as any).__gxtMorphChildren = morphChildren;
-
 function morphAttributes(oldEl: Element, newEl: Element): void {
   // Remove attributes not in new
   const oldAttrs = oldEl.attributes;
