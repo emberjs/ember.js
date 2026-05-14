@@ -1804,6 +1804,93 @@ export interface GxtFormatCapabilities {
  *    Count delta (slice 50): -1 globalThis slot retired, -2 LOC source
  *    (writer line + stale comment), 0 new bridge methods, 0 new import
  *    edges.
+ *
+ *  - `__gxtRerenderedRoots` — RETIRED IN SLICE 51 (orphan write-only
+ *    deletion). Pre-slice-51 audit confirmed exactly 1 active site in
+ *    `packages/@ember/-internals/glimmer/lib/renderer.ts:1438-1440`,
+ *    a lazy-init writer + dead push, ZERO readers anywhere in
+ *    `packages/`. The pre-slice-51 comment immediately above the writer
+ *    claimed `__gxtDestroyUnclaimedPoolEntries can find their children`
+ *    via the slot — but exhaustive grep of `RerenderedRoots` and
+ *    `rerenderedRoots` across all of `packages/` returned ONLY the
+ *    three writer lines in `renderer.ts`. The
+ *    `_gxtDestroyUnclaimedPoolEntries` function body in
+ *    `manager.ts:4623` (already module-local from a prior slice) does
+ *    NOT read the slot under any aliased name. The comment was STALE —
+ *    the intended cross-file consumer either migrated away or never
+ *    landed in the active codebase. The slice-50 memory note pre-flagged
+ *    this orphan; slice-51 pre-flight grep reconfirmed.
+ *
+ *    Pre-slice-51 topology (confirmed audit — exactly 3 lines in
+ *    `renderer.ts`, all writer-side / dead push):
+ *
+ *      Canonical state: N/A — the array's contents are never consumed
+ *        anywhere in `packages/`. There is no state to preserve.
+ *
+ *      Writer + dead push (sole site):
+ *        - `renderer.ts:1436-1437` — stale comment claiming
+ *          `__gxtDestroyUnclaimedPoolEntries can find their children`
+ *          via the slot.
+ *        - `renderer.ts:1438-1439` — lazy-init binding:
+ *          `const rerenderedRoots = (globalThis as any).__gxtRerenderedRoots
+ *           || ((globalThis as any).__gxtRerenderedRoots = []);`
+ *          (creates the array on first use within the for-of loop in
+ *          `__gxtForceEmberRerender`; on subsequent rerender entries,
+ *          reads the same already-allocated array).
+ *        - `renderer.ts:1440` — `if (classicRoot.root)
+ *          rerenderedRoots.push(classicRoot.root);` (push only — the
+ *          array is never read, iterated, or cleared anywhere in
+ *          `packages/`).
+ *
+ *      Readers (0 sites):
+ *        - Zero in `packages/`. Exhaustive grep across `RerenderedRoots`
+ *          (capitalized) and `rerenderedRoots` (camelCase) confirms only
+ *          the three writer lines exist. No alias reader, no consumer of
+ *          the array contents.
+ *
+ *    Sites moved (slice 51):
+ *      - packages/@ember/-internals/glimmer/lib/renderer.ts: delete the
+ *        sole writer block — the 2-line stale comment + 2-line lazy-init
+ *        const binding + 1-line push (5 source lines total). NO
+ *        replacement, NO redirect. Pure deletion. The surrounding
+ *        `__gxtForceEmberRerender` for-of loop is otherwise unchanged.
+ *      - packages/@ember/-internals/gxt-backend/gxt-bridge.ts: append
+ *        this slice-51 entry. NO new bridge methods (zero-bridge, pure
+ *        deletion). No stale-note rewrite is needed because no prior
+ *        slice referenced `__gxtRerenderedRoots` in this file.
+ *
+ *    State-home decision: N/A — pure orphan retirement. There is no
+ *    canonical state to preserve because the slot's contents (an array
+ *    of re-rendered root component instances) are never consumed by any
+ *    reader.
+ *
+ *    Bridge shape decision: ZERO-bridge orphan deletion. No
+ *    cross-file/cross-package consumers ever existed in the active
+ *    tree; the leanest possible shape is direct deletion of the orphan
+ *    writer block.
+ *
+ *    ZERO new import edges in slice 51: only the writer was deleted; no
+ *    new declarations introduced. Slice 51 matches slices 49 and 50 as
+ *    a pure-deletion orphan retirement — the THIRD consecutive
+ *    pure-orphan-retirement Cluster B slice.
+ *
+ *    Bridge interface evolution (slice 51 — no API change): no bridge
+ *    interface is extended; the migration-history docblock IS extended
+ *    with this slice-51 entry. NINTH consecutive Cluster B slice (after
+ *    slice 43, 44, 45, 46, 47, 48, 49, 50) to ship without a new bridge
+ *    method.
+ *
+ *    Hot-path concern: the deleted writer executed once per re-rendered
+ *    root per `__gxtForceEmberRerender` invocation. The slot's array
+ *    grew monotonically across render passes (never cleared by any
+ *    consumer — confirming dead-code accumulation). Removing it
+ *    eliminates a small per-pass allocation/push and prevents a slow
+ *    memory growth pattern on long-running pages. Negligible per-pass
+ *    impact; correctness/cleanup motivated.
+ *
+ *    Count delta (slice 51): -1 globalThis slot retired, -5 LOC source
+ *    (stale comment + lazy-init binding + dead push), 0 new bridge
+ *    methods, 0 new import edges.
  */
 export interface GxtCompilePipelineCapabilities {
   /**

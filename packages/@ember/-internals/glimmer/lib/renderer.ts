@@ -1433,11 +1433,6 @@ if (!__GXT_MODE__) {
       // spurious init/render lifecycle hooks).
       (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
       (globalThis as any).__gxtIsForceRerender = true;
-      // Track which root components were re-rendered so
-      // __gxtDestroyUnclaimedPoolEntries can find their children.
-      const rerenderedRoots =
-        (globalThis as any).__gxtRerenderedRoots || ((globalThis as any).__gxtRerenderedRoots = []);
-      if (classicRoot.root) rerenderedRoots.push(classicRoot.root);
       try {
         classicRoot.render();
       } catch (renderErr) {
