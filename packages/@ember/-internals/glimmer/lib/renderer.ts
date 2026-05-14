@@ -1195,6 +1195,23 @@ const renderers: BaseRenderer[] = [];
 // which now write to an unused slot — no consumer reads it).
 let _gxtForceRerenderInProgress = false;
 
+// Slice 46 (Cluster B): module-local stash for the dirty-roots list
+// recorded by `_gxtUpdateRootTagValues` (Phase 1b of `__gxtSyncDomNow`)
+// for consumption by `__gxtForceEmberRerender` (Phase 1c). Graduates the
+// pre-slice-46 `globalThis.__gxtDirtyRootsAtSync` slot to a module-local
+// `any[] | undefined` (slice-31/43/44/45 zero-bridge intra-file precedent).
+// Lifetime spans one `__gxtSyncDomNow` cycle: written by
+// `_gxtUpdateRootTagValues` (populate), read by `__gxtForceEmberRerender`
+// (consume), cleared to `undefined` in `__gxtForceEmberRerender`'s
+// `finally` block. All 3 sites (1 reader in `__gxtForceEmberRerender`,
+// 1 writer-undefined in the same function's `finally`, 1 writer-populate
+// in `_gxtUpdateRootTagValues`) live in this file — confirmed by
+// exhaustive grep across `packages/`. Paired with slice-45's
+// `_gxtForceRerenderInProgress` (both are part of the
+// `__gxtForceEmberRerender` cycle state). The pre-slice-46 globalThis
+// slot is dropped.
+let _gxtDirtyRootsAtSync: any[] | undefined;
+
 export function _resetRenderers() {
   renderers.length = 0;
 }
@@ -1340,8 +1357,9 @@ if (!__GXT_MODE__) {
     // Collect roots whose own tag moved RIGHT NOW (after Phase 1a of
     // __gxtSyncDomNow, before Phase 1b updateRootTagValues was called).
     // If __gxtUpdateRootTagValues was already called earlier in this sync,
-    // it stashed the dirty list on globalThis.__gxtDirtyRootsAtSync — use that.
-    const dirtyRootsFromSync = (globalThis as any).__gxtDirtyRootsAtSync as any[] | undefined;
+    // it stashed the dirty list on module-local `_gxtDirtyRootsAtSync` — use that.
+    // (Slice 46 — graduated from `globalThis.__gxtDirtyRootsAtSync`.)
+    const dirtyRootsFromSync = _gxtDirtyRootsAtSync;
     const dirtyRoots: any[] = [];
     const allGxtRoots: any[] = [];
     for (const renderer of renderers) {
@@ -1427,7 +1445,9 @@ if (!__GXT_MODE__) {
     // gxt-bridge.ts.
     getGxtRenderer()?.compilePipeline.setHadPendingSync?.(false);
     (globalThis as any).__gxtHadNestedObjectChange = false;
-    (globalThis as any).__gxtDirtyRootsAtSync = undefined;
+    // Slice 46 (Cluster B): module-local dirty-roots stash. See declaration
+    // near `renderers`.
+    _gxtDirtyRootsAtSync = undefined;
   }
 };
 
@@ -1458,9 +1478,10 @@ function _gxtIsRootComponent(obj: unknown): boolean {
 // Called from __gxtTriggerReRender after cell-based sync succeeds,
 // so __gxtForceEmberRerender sees them as up-to-date and skips
 // the destructive innerHTML='' + full rebuild.
-// ALSO records which roots WERE dirty (on globalThis.__gxtDirtyRootsAtSync)
+// ALSO records which roots WERE dirty (on module-local `_gxtDirtyRootsAtSync`)
 // so __gxtForceEmberRerender can scope its rerender to just those roots,
 // avoiding a full-tree force-render when only some components mutated.
+// (Slice 46 — graduated from `globalThis.__gxtDirtyRootsAtSync`.)
 //
 // (Cluster B slice 9) Was `(globalThis as any).__gxtUpdateRootTagValues`. Now
 // installed on the gxt-bridge `rootComponent` namespace via
@@ -1483,7 +1504,7 @@ function _gxtUpdateRootTagValues(): void {
       }
     }
   }
-  (globalThis as any).__gxtDirtyRootsAtSync = dirtyRoots;
+  _gxtDirtyRootsAtSync = dirtyRoots;
 }
 
 // Slice-9 (Cluster B): publish the renderer-owned root-component hooks to the

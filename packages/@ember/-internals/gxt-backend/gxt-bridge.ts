@@ -1384,6 +1384,95 @@ export interface GxtFormatCapabilities {
  *    (re-entrant nested call) are non-negligible because the early-
  *    return is hit on every nested call from morph-triggered cell
  *    updates.
+ *  - `__gxtDirtyRootsAtSync` — MIGRATED IN SLICE 46 to module-local
+ *    `_gxtDirtyRootsAtSync: any[] | undefined` in
+ *    `packages/@ember/-internals/glimmer/lib/renderer.ts` (slice-31/43/44/45
+ *    zero-bridge intra-file precedent). This is the SECOND Cluster B
+ *    slice (after slice 45) with the state-home in `renderer.ts`, and
+ *    is paired state with slice-45's `_gxtForceRerenderInProgress`
+ *    (both are part of the `__gxtForceEmberRerender` cycle state). The
+ *    slot's purpose: `_gxtUpdateRootTagValues` (Phase 1b of
+ *    `__gxtSyncDomNow`, post-slice-9 `installRootComponentPart.updateRootTagValues`)
+ *    records which roots WERE dirty (their `gxtLastTagValue` differs
+ *    from the current tag value) into the slot, so
+ *    `__gxtForceEmberRerender` (Phase 1c) can scope its rerender to
+ *    just those roots — avoiding a full-tree force-render when only
+ *    some components mutated. The slot's lifetime spans one
+ *    `__gxtSyncDomNow` cycle: written by Phase 1b
+ *    (`_gxtUpdateRootTagValues` populates with the dirtyRoots array),
+ *    read by Phase 1c (`__gxtForceEmberRerender`'s `dirtyRootsFromSync`
+ *    read at the top of the function body), cleared to `undefined` in
+ *    Phase 1c's `finally` block.
+ *
+ *    Pre-slice-46 topology was 3 active sites all intra-
+ *    `renderer.ts`:
+ *      Readers (1 site):
+ *        - `renderer.ts:1344` —
+ *          `const dirtyRootsFromSync = (globalThis as any).__gxtDirtyRootsAtSync as any[] | undefined;`
+ *          (Phase 1c consume; assigns to a local for scoped-rerender
+ *          iteration further down in `__gxtForceEmberRerender`)
+ *      Writers (2 sites, paired populate/clear):
+ *        - `renderer.ts:1486` —
+ *          `(globalThis as any).__gxtDirtyRootsAtSync = dirtyRoots;`
+ *          (Phase 1b populate, end of `_gxtUpdateRootTagValues` body;
+ *          stashes the per-cycle dirty-roots list)
+ *        - `renderer.ts:1430` —
+ *          `(globalThis as any).__gxtDirtyRootsAtSync = undefined;`
+ *          (Phase 1c clear, inside `__gxtForceEmberRerender`'s
+ *          `finally`; resets the slot whether the render loop completes
+ *          normally or throws)
+ *
+ *    Slice 46 graduates the canonical state to module-local
+ *    `_gxtDirtyRootsAtSync: any[] | undefined` in `renderer.ts`
+ *    (initialized to `undefined` implicitly). All 3 active sites
+ *    migrate to direct module-local accesses; no bridge surface is
+ *    added (zero cross-file consumers — confirmed by exhaustive grep
+ *    across `packages/`). Net globalThis surface delta: -1 slot. The
+ *    `__gxtDirtyRootsAtSync` globalThis slot is DROPPED in this slice
+ *    from the source code.
+ *
+ *    State-home decision: `renderer.ts` (canonical-home rule — all
+ *    writers and the sole reader live in `renderer.ts`, no cross-file
+ *    consumers). The module-local `let` is placed adjacent to
+ *    slice-45's `_gxtForceRerenderInProgress` because the two slots
+ *    form paired cycle state for the `__gxtForceEmberRerender` sync
+ *    cycle: the re-entrancy guard (slice 45) and the scoped-rerender
+ *    targets list (slice 46) together encapsulate the per-cycle
+ *    `__gxtForceEmberRerender` ephemeral state.
+ *
+ *    Bridge shape decision: ZERO-bridge intra-file (slice-31/43/44/45
+ *    precedent — pure intra-file reader+writer cluster). Slice 46
+ *    cannot benefit from any bridge shape because there are zero
+ *    cross-file consumers. The leanest possible shape: module-local
+ *    `let any[] | undefined` with `undefined`-initial / populated in
+ *    Phase 1b / cleared back to `undefined` in Phase 1c `finally`.
+ *    The scoped-rerender semantics are unchanged.
+ *
+ *    ZERO new import edges in slice 46: the three consumers are
+ *    already in `renderer.ts`; no `getGxtRenderer` calls, no
+ *    `installCompilePipelinePart` calls, no new bridge-import
+ *    statements added. Slice 46 — like slice 43, 44, and 45 — is a
+ *    pure zero-bridge intra-file migration: only a module-local `let`
+ *    declaration and 3 inline accessor migrations.
+ *
+ *    Bridge interface evolution (slice 46 — no API change): the
+ *    bridge interface `GxtCompilePipelineCapabilities` is NOT extended
+ *    in this slice (zero-bridge intra-file). The `updateRootTagValues`
+ *    docblock IS updated to point at the new module-local stash
+ *    instead of the pre-slice-46 globalThis slot. The migration-
+ *    history docblock IS extended with the full slice-46 entry for
+ *    documentation. This is the fourth consecutive Cluster B slice
+ *    (after slice 43, 44, 45) to ship without a new bridge method,
+ *    and the second consecutive (after slice 45) to home state in
+ *    `renderer.ts`.
+ *
+ *    Hot-path concern: `_gxtUpdateRootTagValues` and
+ *    `__gxtForceEmberRerender` are both invoked by `__gxtSyncDomNow`
+ *    on the warm interactive-update path. Pre-slice-46 cost per
+ *    cycle was 3 globalThis property accesses (1 read + 2 writes).
+ *    Post-slice-46 it's 3 module-local accesses — all directly
+ *    inlineable by V8. The dirty-roots-array allocation is
+ *    unchanged.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -3690,11 +3779,12 @@ export interface GxtRootComponentCapabilities {
   /**
    * Walk every registered renderer's GXT roots, recording which were dirty
    * (their `gxtLastTagValue` differs from the current tag value) on
-   * `(globalThis as any).__gxtDirtyRootsAtSync`, then update each root's
-   * `gxtLastTagValue` to match the current value. Used by
-   * `__gxtSyncDomNow`'s Phase 1b — after cell-based updates have applied,
-   * roots are marked clean so the Phase 2b force-rerender doesn't re-fire on
-   * already-applied changes.
+   * module-local `_gxtDirtyRootsAtSync` in `renderer.ts` (slice 46 —
+   * graduated from `(globalThis as any).__gxtDirtyRootsAtSync`), then
+   * update each root's `gxtLastTagValue` to match the current value. Used
+   * by `__gxtSyncDomNow`'s Phase 1b — after cell-based updates have
+   * applied, roots are marked clean so the Phase 2b force-rerender doesn't
+   * re-fire on already-applied changes.
    *
    * Previously: `(globalThis as any).__gxtUpdateRootTagValues`.
    */
