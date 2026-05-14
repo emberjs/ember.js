@@ -3639,11 +3639,15 @@ function _gxtRecordDirtiedNestedObject(obj: object, _keyName: string): void {
 // reassignment + defineProperty trap (compile.ts:5068-5206
 // `_installSyncAllFiredMarker` + setter trap) AND the three ember-gxt-wrappers.ts
 // wrap-by-reassignment sites (L1872, L2043, L2321 — DC change listener
-// dispatch) into the canonical body below. All state crossed via globalThis
-// (`__gxtAllPoolArrays`, `__gxtSyncAllInFlightCycle`, `__dcChangeListeners`;
-// the pre-slice-30 entry `__gxtSyncCycleId` was graduated to a module-local
-// in slice 30 and is now read via `compilePipeline.getSyncCycleId`) so no
-// closures needed to be moved.
+// dispatch) into the canonical body below. State crossed via globalThis
+// (`__gxtAllPoolArrays`; the pre-slice-14 entry `__dcChangeListeners` is
+// now module-local; the pre-slice-30 entry `__gxtSyncCycleId` was
+// graduated to a module-local in slice 30 and is now read via
+// `compilePipeline.getSyncCycleId`; the pre-slice-31 entries
+// `__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle` were
+// graduated to module-local `_gxtSyncAllInFlightPass` /
+// `_gxtSyncAllInFlightCycle` in slice 31) so no closures needed to be
+// moved.
 
 // Slice-14 (Cluster B): the `__dcChangeListeners` Set and
 // `__dcStringListenerCount` counter that were left as globalThis-shared
@@ -3712,27 +3716,80 @@ const _UPDATE_HOOKS_FOR_MARK = new Set([
   'willRender',
 ]);
 
+// Slice-31 (Cluster B): module-local in-flight pass-id / cycle-id counters
+// for the `_gxtSyncAllWrappers` wrap. Pre-slice-31 these were
+// `globalThis.__gxtSyncAllInFlightPass` and
+// `globalThis.__gxtSyncAllInFlightCycle` — both set in the wrap's BEFORE-body
+// (after `_gxtSyncAllWrappers` reads the renderer's current pass-id +
+// sync-cycle-id) and cleared to `0` in the wrap's AFTER-body's `finally`.
+// All 4 writers and 5 readers were intra-file in this module (no cross-
+// file consumers — confirmed by exhaustive grep across `packages/`, the
+// only references outside `manager.ts` are stale comments in
+// `compile.ts:5547-5558` and `gxt-bridge.ts:526`). Pre-slice-31 the read
+// pattern was uniform: truthy-check `if (g.x) { ... }` — `0` (post-clear)
+// and `undefined` (pre-first-flush / bridge-not-yet-installed) both fell
+// through. Slice 31 graduates both to module-local integers with the
+// same truthy semantics preserved by initializing to `0`.
+//
+// No bridge surface is exposed because the entire reader+writer cluster
+// is intra-file (slice-22/24/27 precedent for intra-file readers — no
+// bridge needed). This is a leaner shape than slice 30's `getSyncCycleId`
+// bridge (slice 30 had 9 cross-file readers and exposed a read-only
+// integer getter). For slice 31 the corresponding "cross-file readers"
+// count is zero, so the bridge-shape choice that mattered for slice 30
+// (read-only integer getter) does not apply here. Net globalThis surface
+// delta: -2 slots.
+//
+// Topology:
+//   Writers (4 sites, all in `_gxtSyncAllWrappers` body):
+//     - BEFORE-body: `_gxtSyncAllInFlightPass = __curPass`
+//     - BEFORE-body: `_gxtSyncAllInFlightCycle = __curCycle`
+//     - AFTER-body finally: `_gxtSyncAllInFlightPass = 0`
+//     - AFTER-body finally: `_gxtSyncAllInFlightCycle = 0`
+//   Readers (5 sites, all intra-file):
+//     - 2 in `_wrapInstanceTriggerForSyncAllMark` (pass-id reader + use as
+//       value for the `__gxtSyncAllFiredPassId` stamp).
+//     - 3 in `_wrapInstanceTriggerForSyncAllMark` (cycle-id reader + use
+//       as value for the `__gxtSyncAllFiredCycleId` + `__gxtHooksFiredCycleId`
+//       stamps — the truthy-check + value-use are factored to a single
+//       local in this slice for one less property read per call).
+//     - 1 in `_gxtSyncAllWrappersBody` (cycle-id reader inside the
+//       "stamp the instance as syncAll-reviewed this cycle" block at the
+//       trackedArgCells-loop tail).
+//
+// Pre-slice-31 cost per read was 1 globalThis property access + truthy-
+// coerce. Post-slice-31 cost is 1 module-local read — strictly cheaper.
+// Writer cost: identical (single variable write either way).
+let _gxtSyncAllInFlightPass = 0;
+let _gxtSyncAllInFlightCycle = 0;
+
 function _wrapInstanceTriggerForSyncAllMark(inst: any): void {
   if (!inst || typeof inst.trigger !== 'function' || inst.__gxtTriggerWrapped) return;
   const origTrigger = inst.trigger;
   const wrapped = function (this: any, name: string, ...args: any[]) {
-    const g = globalThis as any;
+    // Slice-31 (Cluster B): module-local readers replace the pre-slice-31
+    // `globalThis.__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle`
+    // reads. Same truthy semantics: `0` (post-clear, pre-flush) and
+    // `undefined` (impossible post-slice-31 — module-local is `0`-initialized)
+    // both fall through.
+    const __pass = _gxtSyncAllInFlightPass;
     // Pass-id marker (pre-slice-12 marker install used this).
-    if (_UPDATE_HOOKS_FOR_MARK.has(name) && g.__gxtSyncAllInFlightPass) {
-      this.__gxtSyncAllFiredPassId = g.__gxtSyncAllInFlightPass;
+    if (__pass && _UPDATE_HOOKS_FOR_MARK.has(name)) {
+      this.__gxtSyncAllFiredPassId = __pass;
     }
     // Cycle-id marker (pre-slice-12 setter-trap install used this — the
     // brand was applied on REASSIGNMENT of `__gxtSyncAllWrappers`, so the
     // observable difference between the two wraps in pre-slice-12 was the
     // `__gxtHooksFiredCycleId` stamp on the cycle path).
-    if (_UPDATE_HOOKS_FOR_MARK.has(name) && g.__gxtSyncAllInFlightCycle) {
-      this.__gxtSyncAllFiredCycleId = g.__gxtSyncAllInFlightCycle;
+    const __cycle = _gxtSyncAllInFlightCycle;
+    if (__cycle && _UPDATE_HOOKS_FOR_MARK.has(name)) {
+      this.__gxtSyncAllFiredCycleId = __cycle;
       // "Hooks actually fired" marker — distinguishes "syncAll visited but
       // found no changes" (unconditional stamp from manager.ts trackedArgCells
       // loop) from "syncAll actually fired update hooks". compile.ts's
       // pool-reuse fallback uses this to decide whether to fire willRender
       // for test #11044.
-      this.__gxtHooksFiredCycleId = g.__gxtSyncAllInFlightCycle;
+      this.__gxtHooksFiredCycleId = __cycle;
     }
     return origTrigger.call(this, name, ...args);
   };
@@ -3750,13 +3807,18 @@ function _gxtSyncAllWrappers(): void {
 
   // === BEFORE: pre-slice-12 wrap setup (relocated from compile.ts:5078-5128
   // + compile.ts:5129-5206 setter trap) ===
+  // Slice-31 (Cluster B): writers graduated from
+  // `globalThis.__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle` to
+  // module-local `_gxtSyncAllInFlightPass` / `_gxtSyncAllInFlightCycle`.
+  // All readers are intra-file (5 sites in this module) so no bridge
+  // method is exposed — leaner than slice 30's cross-file-reader topology.
   const __curPass = g.__emberRenderPassId || 0;
-  g.__gxtSyncAllInFlightPass = __curPass;
+  _gxtSyncAllInFlightPass = __curPass;
   // Slice-30 (Cluster B): read the sync-cycle counter via the bridge
   // (canonical state graduated from `globalThis.__gxtSyncCycleId` to the
   // module-local `_gxtSyncCycleId` in `compile.ts`).
   const __curCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
-  g.__gxtSyncAllInFlightCycle = __curCycle;
+  _gxtSyncAllInFlightCycle = __curCycle;
   // Proactively wrap `trigger` on all known-alive instances in all pool
   // arrays so update-hook triggers fired during the body are recorded.
   try {
@@ -3780,8 +3842,9 @@ function _gxtSyncAllWrappers(): void {
     // (relocated from compile.ts wrap finally + ember-gxt-wrappers.ts
     // L1872 / L2043 / L2321 wrap bodies; slice-14 moves the Set from
     // globalThis to manager.ts module-local `_dcChangeListeners`) ===
-    g.__gxtSyncAllInFlightPass = 0;
-    g.__gxtSyncAllInFlightCycle = 0;
+    // Slice-31 (Cluster B): clear writers also graduated to module-local.
+    _gxtSyncAllInFlightPass = 0;
+    _gxtSyncAllInFlightCycle = 0;
     for (const listener of _dcChangeListeners) {
       try {
         listener();
@@ -3986,7 +4049,10 @@ function _gxtSyncAllWrappersBody(): void {
     // from compile.ts:7003 during the force-rerender cascade.
     if (entry.instance && typeof entry.instance === 'object') {
       try {
-        const cycle = (globalThis as any).__gxtSyncAllInFlightCycle;
+        // Slice-31 (Cluster B): module-local read replaces the pre-slice-31
+        // `(globalThis as any).__gxtSyncAllInFlightCycle` read. Same truthy
+        // semantics (`0` post-clear / pre-flush falls through).
+        const cycle = _gxtSyncAllInFlightCycle;
         if (cycle) {
           // Define non-enumerable so user code doing JSON.stringify(component)
           // or deep-equality against a plain literal does not see this

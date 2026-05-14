@@ -479,6 +479,25 @@ export interface GxtFormatCapabilities {
  *    globalThis slot is DROPPED in this slice — net -1 globalThis surface.
  *    First slice to expose a read-only INTEGER bridge method (slices 19/20/
  *    22 are read-only booleans; slice 30 is the integer-getter analogue).
+ *  - `__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle` — MIGRATED
+ *    IN SLICE 31 to module-local `_gxtSyncAllInFlightPass` /
+ *    `_gxtSyncAllInFlightCycle` in `gxt-backend/manager.ts`. The pre-slice-31
+ *    topology was 4 writers (BEFORE-body set + AFTER-body finally clear,
+ *    both in `_gxtSyncAllWrappers`) and 5 readers (3 in
+ *    `_wrapInstanceTriggerForSyncAllMark`, 1 in `_gxtSyncAllWrappersBody`,
+ *    plus 1 reuse via the same trigger-wrap closure) — ALL 9 sites are
+ *    intra-file in `manager.ts`. NO bridge methods exposed: cross-file /
+ *    cross-package consumers do not exist (confirmed by exhaustive grep
+ *    across `packages/`, the only references outside `manager.ts` are
+ *    stale comments in `compile.ts:5547-5558` and `gxt-bridge.ts:526`).
+ *    Slice 31 is the FIRST paired migration in Cluster B (two related
+ *    integer-counters retired together via the SAME mechanism). It is also
+ *    the SECOND zero-bridge-surface migration (slice-14's `__dcChangeListeners`
+ *    Set+counter did expose bridge methods because compile.ts read them via
+ *    `hasStringDynamicComponentListeners`; slice 31 has true zero external
+ *    readers, so no bridge surface is needed at all). Net globalThis
+ *    surface delta: -2 slots in a single slice (the largest single-slice
+ *    surface reduction in Cluster B so far).
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -523,15 +542,20 @@ export interface GxtCompilePipelineCapabilities {
    * The wrap-by-reassignment installer dance (compile.ts:5068-5206
    * `_installSyncAllFiredMarker` + `defineProperty` trap with retry on every
    * reassignment) is replaced in slice 12 by direct fold of the wrap's
-   * before-body (set `__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle`,
-   * pre-wrap pool-instance `trigger`s for fire-tracking) and after-body
-   * (clear in-flight state, dispatch DC change listeners) into the canonical
-   * function body. State referenced by both halves of the wrap is shared via
-   * globalThis (`__gxtAllPoolArrays`, `__dcChangeListeners`; the pre-slice-30
-   * entry `__gxtSyncCycleId` was graduated to a module-local in slice 30)
-   * — no closures had to move, so the slice-3 relocation pattern applied
-   * directly (first wrap-by-reassignment to use it; slices 8/10/11 used the
-   * host-hook pattern instead because their wrap bodies closed over compile.ts
+   * before-body (set the in-flight pass-id / cycle-id state — module-local
+   * `_gxtSyncAllInFlightPass` / `_gxtSyncAllInFlightCycle` post-slice-31,
+   * pre-slice-31 these were globalThis slots; pre-wrap pool-instance
+   * `trigger`s for fire-tracking) and after-body (clear in-flight state,
+   * dispatch DC change listeners) into the canonical function body. State
+   * referenced by both halves of the wrap is intra-package
+   * (`__gxtAllPoolArrays`; the pre-slice-14 entry `__dcChangeListeners` is
+   * now module-local; the pre-slice-30 entry `__gxtSyncCycleId` was
+   * graduated to a module-local in slice 30; the pre-slice-31 entries
+   * `__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle` were
+   * graduated to module-local state in slice 31) — no closures had to
+   * move, so the slice-3 relocation pattern applied directly (first
+   * wrap-by-reassignment to use it; slices 8/10/11 used the host-hook
+   * pattern instead because their wrap bodies closed over compile.ts
    * module-local state).
    *
    * Previously: `(globalThis as any).__gxtSyncAllWrappers`.

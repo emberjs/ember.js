@@ -5544,9 +5544,11 @@ function _resetTemplateOnlyState() {
 
 // Slice-12 (Cluster B): the pre-slice-12 `_installSyncAllFiredMarker` +
 // defineProperty trap that wrapped `__gxtSyncAllWrappers` on every reassignment
-// has been REPLACED. The wrap's before-body (set `__gxtSyncAllInFlightPass` /
-// `__gxtSyncAllInFlightCycle`, pre-wrap pool-instance `trigger`s for fire-
-// tracking) and after-body (clear in-flight state, dispatch DC change
+// has been REPLACED. The wrap's before-body (set the in-flight pass-id /
+// cycle-id state — module-local `_gxtSyncAllInFlightPass` /
+// `_gxtSyncAllInFlightCycle` in `manager.ts` post-slice-31, pre-slice-31
+// these were globalThis slots; pre-wrap pool-instance `trigger`s for
+// fire-tracking) and after-body (clear in-flight state, dispatch DC change
 // listeners) are now folded directly into the canonical
 // `__gxtSyncAllWrappers` body in manager.ts (see `_gxtSyncAllWrappers` there
 // and the slice-12 block in this file's wired-up compile-pipeline part — the
@@ -5555,10 +5557,13 @@ function _resetTemplateOnlyState() {
 //
 // First wrap-by-reassignment migrated via the slice-3 relocation pattern
 // instead of the slice-8/10/11 host-hook pattern. The state crossed via
-// globalThis (`__gxtAllPoolArrays`, `__gxtSyncAllInFlightCycle`,
-// `__dcChangeListeners`; the pre-slice-30 entry `__gxtSyncCycleId` was
-// graduated to a module-local in slice 30) so no closures had to
-// move; the wrap bodies referenced ONLY shared globals.
+// globalThis was intra-package (`__gxtAllPoolArrays`; the pre-slice-14
+// entry `__dcChangeListeners` is now module-local; the pre-slice-30 entry
+// `__gxtSyncCycleId` was graduated to a module-local in slice 30; the
+// pre-slice-31 entries `__gxtSyncAllInFlightPass` /
+// `__gxtSyncAllInFlightCycle` were graduated to module-locals in slice 31)
+// so no closures had to move; the wrap bodies referenced ONLY shared
+// globals.
 
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
