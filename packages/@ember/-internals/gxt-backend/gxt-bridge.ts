@@ -362,6 +362,25 @@ export interface GxtViewUtilsCapabilities {
  *    runs. Gated on `hasQuotedAttr` so templates without quoted-attribute
  *    interpolation pay zero overhead.
  *
+ *    (Slice 76 update: `__gxtInElementInsertBeforeValue` + `__gxtInElementAppendMode`
+ *    were a paired EMITTED-CODE STATE-WRITE channel for the
+ *    `{{#in-element ... insertBefore=...}}` mode signalling between the
+ *    `templateFnCode` inner function body (writer) and the `$_inElement`
+ *    runtime shim (reader+consumer, both intra-`compile.ts`). Slice 76
+ *    graduates the pair to module-local state in `compile.ts`
+ *    (`_gxtIeInsertBeforeValue` / `_gxtIeAppendMode`) with a setter
+ *    `_gxtIeSet(insertBefore, append)` passed into the per-template
+ *    Function() as the `__ieSet` parameter alongside slice-73's
+ *    `__ubGT` / `__ubST` (Function()-param-binding pattern extended to
+ *    three params: tracker getter/setter + ie setter). The emitted
+ *    write-sites at the inner function body become `__ieSet(undefined,
+ *    true)` for append-mode and `__ieSet(<json>, false)` for the
+ *    asserting non-null path. The two read+consume sites in the
+ *    `$_inElement` shim become direct module-local accesses with
+ *    identical read-then-clear consume semantics. Caller-order audit
+ *    confirmed single-threaded synchronous render: setter (template-fn
+ *    invoke) → reader+clear (shim invoke). Net -2 globalThis slots.)
+ *
  *    (Slice 73 update: `__gxtUnboundEval` + `__gxtUnboundResetSlots` were
  *    formerly in this exclusion bucket — both EMITTED-CODE consumers with
  *    no module-local reach. Slice 73 retired BOTH via paired inline-

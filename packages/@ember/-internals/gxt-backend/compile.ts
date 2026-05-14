@@ -89,6 +89,60 @@ function _normalizeStringValue(value: unknown): string {
 //     `__gxtQuotedAttr(` reference at the templateFnCode builder. See
 //     `templateFnCode` builder for the inlined definition.
 
+// Cluster B slice 76 (paired STATE-WRITE migration, -2 net):
+//
+//   `__gxtInElementInsertBeforeValue` + `__gxtInElementAppendMode`
+//   (paired intra-file state-flag retirement):
+//     Previously two globalThis flags written from emitted template code at
+//     the `templateFnCode` inner function body (template-render time, right
+//     before the `return ${modifiedCode}` evaluation) and read+consumed by
+//     the `$_inElement` shim defined later in this same file. The flags
+//     communicate `{{#in-element ... insertBefore=null}}` (append mode) and
+//     the asserting form `insertBefore=<non-null>` from compile-time
+//     parsing (via `parseInElementInsertBefore`) to the runtime shim.
+//
+//     Slice 76 graduates the pair to module-local state in `compile.ts`:
+//       - `let _gxtIeInsertBeforeValue: unknown = undefined;`
+//       - `let _gxtIeAppendMode = false;`
+//     The two writers in emitted template code are replaced with calls to
+//     a module-local setter `__gxtIeSet(insertBefore: unknown, append:
+//     boolean): void` passed into the per-template Function() as the third
+//     parameter `__ieSet` (slice-73 Function()-param-binding pattern).
+//     The two read+consume sites in `$_inElement` (compile.ts:1920-1928)
+//     swap globalThis reads/deletes for direct module-local accesses with
+//     identical consume semantics (read-then-clear).
+//
+//     Caller-order audit (pre-flight): the emitted setter is invoked
+//     inside the per-template `return function() { ...; __ieSet(...);
+//     return ${modifiedCode}; }` body. GXT evaluates `modifiedCode` to
+//     produce the DOM tree (synchronous). The `$_inElement` shim is
+//     called by that DOM tree's `{{#in-element ...}}` site during the
+//     same synchronous render. Net order: setter (template-fn invoke) →
+//     reader (shim invoke) → clear (shim invoke, same call). No
+//     re-entrancy possible: a single template-fn invocation produces a
+//     single `$_inElement` call for each `{{#in-element}}`, the shim
+//     reads-and-clears before re-entry into another template-fn for the
+//     block body. Identical timing to the pre-slice-76 globalThis path.
+//
+//     Both flags are global per the template's `parseInElementInsertBefore`
+//     result — there's exactly one `_inElementInsertBefore` value per
+//     compiled template, so the paired write/consume cycle is per-render.
+//     Module-local module-singletons match the pre-slice-76 globalThis
+//     singletons bit-for-bit semantically.
+
+// Cluster B slice 76: paired module-local state for the `{{#in-element}}`
+// insertBefore/appendMode signalling channel. Written by the emitted
+// template-fn via the `__ieSet` Function() parameter binding (declared
+// alongside slice-73's `__ubGT` / `__ubST`); read+consumed by the
+// `$_inElement` shim defined further down in this module. See slice-76
+// docblock above for caller-order audit and write/consume semantics.
+let _gxtIeInsertBeforeValue: unknown = undefined;
+let _gxtIeAppendMode = false;
+function _gxtIeSet(insertBefore: unknown, append: boolean): void {
+  _gxtIeInsertBeforeValue = insertBefore;
+  _gxtIeAppendMode = append;
+}
+
 /** Replace all hyphens with underscores without regex */
 function hyphenToUnderscore(str: string): string {
   return str.split('-').join('_');
@@ -1913,19 +1967,22 @@ const _inElementDeferQueue: Array<() => void> = [];
     // insertBefore=undefined means "replace" (clear existing content first)
     //
     // GXT's $_inElement doesn't support insertBefore natively, so we read
-    // the flag from globalThis that was set by the template injection.
+    // the flag set by the template injection. Pre-slice-76 this was a
+    // globalThis pair; slice 76 graduated it to module-local
+    // `_gxtIeInsertBeforeValue` / `_gxtIeAppendMode` (see slice 76
+    // docblock at module top).
     let insertBefore: any = undefined; // undefined = replace (default)
 
     // Check for non-null insertBefore value (Ember only allows null)
-    if ((globalThis as any).__gxtInElementInsertBeforeValue !== undefined) {
-      const ibv = (globalThis as any).__gxtInElementInsertBeforeValue;
-      delete (globalThis as any).__gxtInElementInsertBeforeValue;
+    if (_gxtIeInsertBeforeValue !== undefined) {
+      const ibv = _gxtIeInsertBeforeValue;
+      _gxtIeInsertBeforeValue = undefined;
       emberAssert(`Can only pass null to insertBefore in in-element, received: ${ibv}`, false);
     }
 
-    if ((globalThis as any).__gxtInElementAppendMode) {
+    if (_gxtIeAppendMode) {
       insertBefore = null;
-      (globalThis as any).__gxtInElementAppendMode = false; // consume the flag
+      _gxtIeAppendMode = false; // consume the flag
     }
 
     // Also check if this element was previously used in append mode
@@ -13994,7 +14051,7 @@ export function precompileTemplate(
           ${scopeInjections.join('\n          ')}
           ${helperInjections.join('\n          ')}
           ${eachInInjections.join('\n          ')}
-          ${_inElementInsertBefore === 'null' ? 'globalThis.__gxtInElementAppendMode = true;' : _inElementInsertBefore !== null && _inElementInsertBefore !== 'undefined' ? `globalThis.__gxtInElementInsertBeforeValue = ${JSON.stringify(_inElementInsertBefore)};` : ''}
+          ${_inElementInsertBefore === 'null' ? '__ieSet(undefined, true);' : _inElementInsertBefore !== null && _inElementInsertBefore !== 'undefined' ? `__ieSet(${JSON.stringify(_inElementInsertBefore)}, false);` : ''}
           return ${modifiedCode};
         };
       `;
@@ -14007,7 +14064,20 @@ export function precompileTemplate(
         // reactive tracker during `valueFn()` evaluation. Bound to the
         // stable module-local `_gxtGetTracker` / `_gxtSetTracker` imports.
         // No-op when `hasUnbound` is false (the params are simply unused).
-        cachedFn = Function('__ubGT', '__ubST', templateFnCode)(_gxtGetTracker, _gxtSetTracker);
+        //
+        // Cluster B slice 76: extend the Function() parameter binding with
+        // `__ieSet` bound to the module-local `_gxtIeSet` setter so the
+        // emitted template-fn can signal `{{#in-element insertBefore=...}}`
+        // mode to the `$_inElement` shim without globalThis. No-op when
+        // `_inElementInsertBefore` resolves to the default (no in-element
+        // with non-default insertBefore in this template) — the param is
+        // simply unused. Argument order mirrors the order of Function()
+        // params: slice-73 tracker pair first, slice-76 setter third.
+        cachedFn = Function('__ubGT', '__ubST', '__ieSet', templateFnCode)(
+          _gxtGetTracker,
+          _gxtSetTracker,
+          _gxtIeSet
+        );
         _functionCodeCache.set(templateFnCode, cachedFn);
       }
       compilationResult.templateFn = cachedFn;
