@@ -574,6 +574,34 @@ export interface GxtFormatCapabilities {
  *    `glimmer/lib/templates/root.ts` is now the fourth host module for
  *    module-local state. See slices 43-48, 56-64 for analogous
  *    zero-bridge precedents.
+ *  - `__gxtCurrentParentIfRef` — intra-compile.ts parent-If stack flag used by
+ *    the $_if `wrapBranch` save/restore pattern so nested $_if invocations
+ *    during a parent branch evaluation can record themselves as children of
+ *    the enclosing IfCondition (via its stable ref holder, since origIf may
+ *    invoke wrapBranch SYNCHRONOUSLY from its constructor before the outer
+ *    `const ifCondition` is assigned). MIGRATED IN SLICE 66 (Cluster B) by
+ *    graduating the `(globalThis as any).__gxtCurrentParentIfRef` slot to a
+ *    module-local `let _gxtCurrentParentIfRef: any = undefined;` declared
+ *    next to the existing slice-59 `_gxtPreFlushFiredFalse` flag in
+ *    `compile.ts`. Audit confirmed exactly 5 functional sites — all
+ *    intra-`gxt-backend/compile.ts`: the outer wrapBranch save+set (former
+ *    L4577-4578), the inner wrappedInnerBranch save+set (former L4676-4677),
+ *    the inner restore in the inner finally (former L4699), the outer
+ *    restore in the outer finally (former L4707), and the post-origIf
+ *    reader (former L4738) that wires the parent→child relationship
+ *    `parentIfRef.childIfConditions.add(ifCondition)`. Zero cross-file
+ *    consumers; the bundled @lifeart/gxt runtime has zero references
+ *    (verified by grep of `node_modules/.pnpm/@lifeart+gxt@0.0.61/`,
+ *    per slice-55's lesson from slice-54's revert). Lazy-init was NOT
+ *    required — the slot was already a bare globalThis property
+ *    written/read via plain `g2.__gxtCurrentParentIfRef = ...` and the
+ *    save/restore semantics are tolerant of `undefined` (the outer-most
+ *    wrapBranch invocation reads `undefined` as `prev`, sets the slot, and
+ *    restores `undefined` in its finally). The post-origIf reader's
+ *    `_gp = globalThis as any` alias is dropped (was only used for this
+ *    one read). Same intra-file pattern as slices 43-48, 56-65. 21st
+ *    consecutive Cluster B zero-bridge slice (after 43-53, 56-65).
+ *    Zero-bridge intra-file refactor; drops 1 globalThis slot.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's

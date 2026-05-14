@@ -4337,6 +4337,19 @@ let ifWatchers = new WeakMap<object, Map<string, Set<IfWatcherCb>>>();
 // so a module-local binding is sufficient — no cross-file consumers. Zero-bridge.
 let _gxtPreFlushFiredFalse: Set<IfWatcherCb> | undefined;
 
+// Cluster B slice 66: graduated from `(globalThis as any).__gxtCurrentParentIfRef`
+// to a module-local binding. Implements the parent-If stack used by the $_if
+// wrapBranch save/restore pattern so nested $_if invocations during a parent
+// branch evaluation can record themselves as children of the enclosing
+// IfCondition (via its stable ref holder). All 5 functional sites — outer
+// wrapBranch save+set, inner wrappedInnerBranch save+set, both restores in
+// finally blocks, and the post-origIf reader that wires the parent→child
+// relationship — live inside this same compile.ts file. Zero cross-file
+// consumers; the bundled @lifeart/gxt runtime does not own this slot
+// (slice-55's lesson applied). Lazy-init NOT required — save/restore
+// semantics are tolerant of `undefined`. Zero-bridge.
+let _gxtCurrentParentIfRef: any = undefined;
+
 // Persistent set of classic-component wrapper DOM ids that the user has
 // directly toggled to `false` via a click handler calling set()/toggleProperty.
 // Used by the __gxtRebuildViewTreeFromDom wrap below to reset the view-
@@ -4574,8 +4587,8 @@ function patchGlobalIf() {
         // parent. Using a ref holder is required because origIf may invoke
         // wrapBranch SYNCHRONOUSLY from its constructor (before the outer
         // `const ifCondition` is assigned).
-        const prevParentIf = g2.__gxtCurrentParentIfRef;
-        g2.__gxtCurrentParentIfRef = ifConditionRef;
+        const prevParentIf = _gxtCurrentParentIfRef;
+        _gxtCurrentParentIfRef = ifConditionRef;
         // CRITICAL: On a true→false branch toggle, GXT's internal `TREE` map may
         // have lost the IfCondition's entry (cleared by a destroy-cascade
         // destructor from the previous branch's teardown). Without
@@ -4673,8 +4686,8 @@ function patchGlobalIf() {
               const g3 = globalThis as any;
               const prev2 = g3.__gxtCurrentHelperScope;
               g3.__gxtCurrentHelperScope = scope;
-              const prev3 = g3.__gxtCurrentParentIfRef;
-              g3.__gxtCurrentParentIfRef = ifConditionRef;
+              const prev3 = _gxtCurrentParentIfRef;
+              _gxtCurrentParentIfRef = ifConditionRef;
               const ifcRef2 = ifConditionRef.ifCondition;
               let pushedPc2 = false;
               if (ifcRef2) {
@@ -4696,7 +4709,7 @@ function patchGlobalIf() {
                   }
                 }
                 g3.__gxtCurrentHelperScope = prev2;
-                g3.__gxtCurrentParentIfRef = prev3;
+                _gxtCurrentParentIfRef = prev3;
               }
             };
             return wrappedInner;
@@ -4704,7 +4717,7 @@ function patchGlobalIf() {
           return result;
         } finally {
           g2.__gxtCurrentHelperScope = prev;
-          g2.__gxtCurrentParentIfRef = prevParentIf;
+          _gxtCurrentParentIfRef = prevParentIf;
         }
       };
     };
@@ -4734,8 +4747,7 @@ function patchGlobalIf() {
       // If this $_if invocation happened inside a parent {{#if}}'s true branch
       // evaluation, register us as a child of that parent so the parent can
       // suppress us when it collapses in the same sync cycle.
-      const _gp = globalThis as any;
-      const parentIfRef = _gp.__gxtCurrentParentIfRef;
+      const parentIfRef = _gxtCurrentParentIfRef;
       if (parentIfRef && parentIfRef !== ifConditionRef) {
         const parentChildren = parentIfRef.childIfConditions;
         if (parentChildren && typeof parentChildren.add === 'function') {
