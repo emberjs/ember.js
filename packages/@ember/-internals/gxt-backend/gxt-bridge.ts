@@ -451,6 +451,46 @@ export interface GxtFormatCapabilities {
  *    (`__gxtTrackArgSource` triad). Zero-bridge intra-file refactor; drops
  *    1 globalThis slot. See slices 43-48, 56-60 for analogous zero-bridge
  *    precedents.
+ *  - `__gxtTemplateOnlyRenderedSet` + `__gxtTemplateOnlyStack` — paired
+ *    intra-compile.ts template-only render lifecycle state. MIGRATED IN
+ *    SLICE 62 (Cluster B) to module-local `const _gxtTemplateOnlyRenderedSet
+ *    = new Set<string>()` + `const _gxtTemplateOnlyStack: string[] = []`
+ *    in `compile.ts`. The Set tracks template-only component kebab-names
+ *    rendered during the current render pass (consumed by the slice-10
+ *    `transformBacktrackingMessage` host hook contributor
+ *    `_rebuildBacktrackingMsgWithTemplateOnly` to inject template-only
+ *    names into the `- While rendering:` backtracking-assertion tree).
+ *    The stack pushes the kebab-name at render entry (inside the $_tag
+ *    thunk's template-only branch) and pops in the matching `finally`.
+ *    Both bindings are eagerly initialized at module-load, collapsing the
+ *    pre-slice-62 lazy-init `||`-fallback writers (Set-add path at the
+ *    finally-block when `__gxtLastCreatedEmberInstance === null`; stack
+ *    push path at thunk entry) that pre-slice-62 created the Set/array
+ *    on first use. All 5 Set sites (lazy-init reader inside
+ *    `_rebuildBacktrackingMsgWithTemplateOnly`, second reader inside
+ *    `_resetTemplateOnlyState`, clear-block inside the pass-id-changed
+ *    branch of the $_tag thunk, finally-block assign-or-lazy-init writer,
+ *    and the `for (const n of ...)` iteration inside the rebuild) and
+ *    all 3 Stack sites (doc comment above
+ *    `_rebuildBacktrackingMsgWithTemplateOnly`, reader inside
+ *    `_resetTemplateOnlyState`, push site inside the $_tag thunk +
+ *    paired pop in the matching `finally`) live entirely
+ *    intra-`compile.ts`; the bundled @lifeart/gxt runtime has zero
+ *    references (verified by grep of
+ *    `node_modules/.pnpm/@lifeart+gxt@0.0.61/`). The pre-slice-8 doc
+ *    references inside `manager.ts`'s `beginRenderPass` body and
+ *    `gxt-bridge.ts`'s `GxtRenderPassCapabilities` docblock survive as
+ *    historical notes — they describe the slot names that the slice-8
+ *    `beforeBeginRenderPass` host hook reset; the host hook itself
+ *    (`_resetTemplateOnlyState`) is unchanged, only its body is updated
+ *    to access the module-local bindings. Hybrid of slice-58
+ *    (lazy-init collapse) and slices 56-60 (intra-file graduation).
+ *    Same template-only render lifecycle as the slice-10
+ *    `transformBacktrackingMessage` host hook's input. Zero-bridge
+ *    intra-file refactor; drops 2 globalThis slots in one slice
+ *    (net -2 — first paired-slot slice since the slice-43-44
+ *    `__gxtTrackArgSource` triad). See slices 43-48, 56-61 for
+ *    analogous zero-bridge precedents.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
@@ -4496,7 +4536,10 @@ export interface GxtCompilePipelineCapabilities {
  * `globalThis.__gxtBeginRenderPass = wrapped(...)` to clear compile.ts-local
  * template-only render state (`__gxtTemplateOnlyRenderedSet`,
  * `__gxtTemplateOnlyStack`) at the start of each pass. The host-hook pattern
- * avoids runtime mutation entirely.
+ * avoids runtime mutation entirely. (Slice 62 update: those two globalThis
+ * slots are now module-local `const _gxtTemplateOnlyRenderedSet` /
+ * `const _gxtTemplateOnlyStack` in `compile.ts` — see the slice 62 entry
+ * further down for the full topology.)
  *
  * Slice 49 update (orphan retirement):
  *  - `__gxtIsInRenderPass` — RETIRED in slice 49. The pre-slice-49 note
@@ -4552,6 +4595,10 @@ export interface GxtRenderPassCapabilities {
    * (`__gxtTemplateOnlyRenderedSet`, `__gxtTemplateOnlyStack`) at the start
    * of each render pass. Pre-slice-8 this logic lived in a wrap-by-reassignment
    * installer at compile.ts:5106; this slice promotes it to a typed host hook.
+   * (Slice 62 update: those two globalThis slots are now module-local
+   * `const _gxtTemplateOnlyRenderedSet` / `const _gxtTemplateOnlyStack` in
+   * `compile.ts`; the host hook body `_resetTemplateOnlyState` is unchanged
+   * in shape — only its internals access the module-local bindings.)
    *
    * Best-effort: errors thrown from the hook are caught and ignored, matching
    * the pre-slice-8 wrap's try/catch behavior. Only one contributor at a time

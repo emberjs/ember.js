@@ -5849,7 +5849,7 @@ queueMicrotask(patchGlobalEachSync);
 // without this augmentation, the render-tree message is missing entries like
 // `x-inner-template-only` that Glimmer VM would include.
 //
-// We track active template-only renders via `__gxtTemplateOnlyStack` (pushed
+// We track active template-only renders via `_gxtTemplateOnlyStack` (pushed
 // in the $_tag thunk below) and rewrite the backtracking assertion message
 // at report time.
 //
@@ -5861,10 +5861,20 @@ queueMicrotask(patchGlobalEachSync);
 // (`_installTemplateOnlyRenderTreeInjection`) that installed a per-call
 // override on `__emberAssertFn`; the host-hook pattern (introduced in slice 8)
 // replaces the runtime mutation with a typed dispatched call.
+//
+// Slice-62 (Cluster B): the pre-slice-62 `globalThis.__gxtTemplateOnlyRenderedSet`
+// and `globalThis.__gxtTemplateOnlyStack` slots are graduated to module-local
+// `const _gxtTemplateOnlyRenderedSet` / `const _gxtTemplateOnlyStack` here.
+// Both bindings are eagerly initialized at module-load, collapsing the
+// lazy-init `||`-fallback writers that pre-slice-62 created the Set/array on
+// first use. All sites (5 reader/writer sites for the Set, 3 for the stack)
+// live entirely intra-`compile.ts`; the bundled @lifeart/gxt runtime has zero
+// references. Same hybrid pattern as slice 58 (lazy-init collapse) +
+// slices 56-60 (intra-file graduation).
+const _gxtTemplateOnlyRenderedSet = new Set<string>();
+const _gxtTemplateOnlyStack: string[] = [];
 function _rebuildBacktrackingMsgWithTemplateOnly(msg: string): string {
-  const _g = globalThis as any;
-  const renderedSet = (_g.__gxtTemplateOnlyRenderedSet as Set<string>) || new Set();
-  if (renderedSet.size === 0) return msg;
+  if (_gxtTemplateOnlyRenderedSet.size === 0) return msg;
   const lines = msg.split('\n');
   let propPathIdx = -1;
   for (let i = lines.length - 1; i >= 0; i--) {
@@ -5891,7 +5901,7 @@ function _rebuildBacktrackingMsgWithTemplateOnly(msg: string): string {
     }
   }
   const missingNames: string[] = [];
-  for (const n of renderedSet) {
+  for (const n of _gxtTemplateOnlyRenderedSet) {
     if (!existingInTree.has(n)) missingNames.push(n);
   }
   if (missingNames.length === 0) return msg;
@@ -5935,12 +5945,9 @@ function _rebuildBacktrackingMsgWithTemplateOnly(msg: string): string {
 // No runtime mutation, no retry loop — the slice 6/7 install-API pattern
 // handles load-order independence via the deferred-install queue.
 function _resetTemplateOnlyState() {
-  const _g = globalThis as any;
   try {
-    const set = _g.__gxtTemplateOnlyRenderedSet;
-    if (set && typeof set.clear === 'function') set.clear();
-    const stack = _g.__gxtTemplateOnlyStack;
-    if (stack && typeof stack.length === 'number') stack.length = 0;
+    _gxtTemplateOnlyRenderedSet.clear();
+    _gxtTemplateOnlyStack.length = 0;
   } catch {
     /* ignore */
   }
@@ -9885,19 +9892,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               const _curPass = _g.__emberRenderPassId || 0;
               if (_g.__gxtTemplateOnlyRenderedSetPassId !== _curPass) {
                 _g.__gxtTemplateOnlyRenderedSetPassId = _curPass;
-                if (
-                  _g.__gxtTemplateOnlyRenderedSet &&
-                  typeof _g.__gxtTemplateOnlyRenderedSet.clear === 'function'
-                ) {
-                  _g.__gxtTemplateOnlyRenderedSet.clear();
-                }
+                _gxtTemplateOnlyRenderedSet.clear();
               }
             }
             const _lastCreatedBefore = (globalThis as any).__gxtLastCreatedEmberInstance;
-            const _stackTO: string[] =
-              (globalThis as any).__gxtTemplateOnlyStack ||
-              ((globalThis as any).__gxtTemplateOnlyStack = []);
-            _stackTO.push(kebabName);
+            _gxtTemplateOnlyStack.push(kebabName);
             // During a force-rerender (e.g., runTask(() => set(items, ...))),
             // manager.ts's renderClassicComponent skips willRender/willUpdate
             // for reused pooled instances (skipInitHooks = isReused && isForceRerender)
@@ -9921,8 +9920,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               }
             } finally {
               // Pop the template-only tracking stack after render (even on error).
-              if (_stackTO.length > 0 && _stackTO[_stackTO.length - 1] === kebabName) {
-                _stackTO.pop();
+              if (
+                _gxtTemplateOnlyStack.length > 0 &&
+                _gxtTemplateOnlyStack[_gxtTemplateOnlyStack.length - 1] === kebabName
+              ) {
+                _gxtTemplateOnlyStack.pop();
               }
               // Template-only components are identified by the fact that
               // renderGlimmerComponent calls setInstanceCapture(null) — so
@@ -9930,10 +9932,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               // Classic components are still captured as their instance.
               const _lastCreatedAfter = (globalThis as any).__gxtLastCreatedEmberInstance;
               if (_lastCreatedAfter === null) {
-                const _renderedSetTO: Set<string> =
-                  (globalThis as any).__gxtTemplateOnlyRenderedSet ||
-                  ((globalThis as any).__gxtTemplateOnlyRenderedSet = new Set());
-                _renderedSetTO.add(kebabName);
+                _gxtTemplateOnlyRenderedSet.add(kebabName);
               }
             }
             if (__forceRerenderSnapshot) {

@@ -3075,6 +3075,10 @@ export function beginRenderPass(): void {
   // typed `beforeBeginRenderPass` method on `renderPass`, contributed by
   // compile.ts via `installRenderPassPart`. Best-effort: errors from the hook
   // are swallowed to match the pre-slice-8 wrap's try/catch behavior.
+  // (Slice 62 update: those two globalThis slot names refer to the historical
+  // pre-slice-62 keys; today the host hook clears module-local
+  // `const _gxtTemplateOnlyRenderedSet` / `const _gxtTemplateOnlyStack`
+  // bindings in compile.ts — see slice 62 entry in `gxt-bridge.ts`.)
   //
   // `getGxtRenderer` is imported at file bottom (ES module imports hoist, so
   // the binding is available here; same pattern used at lines ~5722, ~5957,
