@@ -536,6 +536,44 @@ export interface GxtFormatCapabilities {
  *    block — out of scope for slice 64. Zero-bridge intra-file refactor;
  *    drops 1 globalThis slot. See slices 43-48, 56-63 for analogous
  *    zero-bridge precedents.
+ *  - `__gxtRootOutletRerenderMap` — intra-`glimmer/lib/templates/root.ts`
+ *    per-outlet rerender registry: a `Map<any, (ref: any) => void>` keyed
+ *    by `instance.outletRef` (each `visit()` creates a fresh ref) that
+ *    holds the rerender closure for each concurrent ApplicationInstance
+ *    (Ember Islands-style setup). The dispatch shim installed as
+ *    `__gxtRootOutletRerender` looks up the closure for the incoming
+ *    outletRef so that `setOutletState` on either root re-renders into
+ *    the correct DOM target (without the map, a single global rerender
+ *    function would let the second visit overwrite the first). MIGRATED
+ *    IN SLICE 65 (Cluster B) by graduating the lazy-init
+ *    `(globalThis as any).__gxtRootOutletRerenderMap ||
+ *    ((globalThis as any).__gxtRootOutletRerenderMap = new Map())` at the
+ *    former `root.ts:589-591` to a module-local `const
+ *    _gxtRootOutletRerenderMap = new Map<any, (ref: any) => void>();`
+ *    declared at the top of `root.ts` (next to the existing `gxtDomApi`
+ *    module-local). The reader inside the `__gxtRootOutletRerender`
+ *    setter at the former `root.ts:1212` was simplified from
+ *    `const map = (globalThis as any).__gxtRootOutletRerenderMap; if (map
+ *    && outletRef && map.has(...))` to a direct
+ *    `_gxtRootOutletRerenderMap.has(outletRef)` check — the lazy-init
+ *    guarded `map &&` is now structurally redundant since the const is
+ *    initialized at module load. Audit confirmed exactly 3 functional
+ *    sites (writer+reader pair at the lazy-init L589-591, reader inside
+ *    the dispatch shim at L1212, and the `Map.set` at L1201 binding the
+ *    new closure), all intra-`glimmer/lib/templates/root.ts`; the
+ *    bundled @lifeart/gxt runtime has zero references (verified by grep
+ *    of `node_modules/.pnpm/@lifeart+gxt@0.0.61/`). The dispatch shim
+ *    `__gxtRootOutletRerender` REMAINS a globalThis slot because it is
+ *    consumed by cross-file callers in `outlet.ts` / `renderer.ts` —
+ *    that's the cross-package bridge target for a future slice (typed
+ *    `rerenderOutlet(outletRef: any): void` on this namespace). Same
+ *    lazy-init-collapse shape as slice 58 (`__curriedRenderInfos`); same
+ *    intra-file pattern as slices 43-48, 56-64. Zero-bridge intra-file
+ *    refactor; drops 1 globalThis slot. First non-{compile,manager,renderer}
+ *    file to participate in a Cluster B zero-bridge graduation —
+ *    `glimmer/lib/templates/root.ts` is now the fourth host module for
+ *    module-local state. See slices 43-48, 56-64 for analogous
+ *    zero-bridge precedents.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
