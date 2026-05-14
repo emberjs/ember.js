@@ -888,6 +888,71 @@ export interface GxtFormatCapabilities {
  *    `glimmer/lib/renderer.ts` (slice 6), and `runloop/index.ts` (slice
  *    37) all already import `getGxtRenderer`. The test-helper writer-
  *    contract reuses the slice-36/37 bridge-writer pattern verbatim.
+ *  - `__gxtPendingModifierDestroys` — MIGRATED IN SLICE 39 to
+ *    `getPendingModifierDestroys()` on this namespace. The pre-slice-39
+ *    topology was 5 writers (all intra-`gxt-backend/manager.ts` modifier-
+ *    install destructor closures — 4 in the cached-hit / first-install /
+ *    internal-manager paths and 1 in the custom-modifier-manager destructor
+ *    closure, each running the same lazy-init dance `let pd =
+ *    g.__gxtPendingModifierDestroys; if (!pd) { pd = []; g.__gxtPendingModifierDestroys
+ *    = pd; } pd.push(entry)`) and 4 readers spanning 3 files / 2 packages:
+ *     Intra-file reader (1 site):
+ *       - `manager.ts:9170` — phantom-element migration path in the custom-
+ *         modifier-manager install step inspects the pending-destroys array
+ *         to find a same-cycle install+destructor pair and reuses the prior
+ *         instance, splicing the matched entry out via `.splice(i, 1)` so
+ *         the post-cycle drain doesn't double-destroy. Routes direct
+ *         against the module-local `_pendingModifierDestroys` Array
+ *         (slice-22/24/27/30/31/32/33 intra-file-reader precedent).
+ *     Cross-file reader (1 site):
+ *       - `compile.ts:6204` — `__gxtSyncDomNow` Phase-2d drain splices the
+ *         whole array (`splice(0)`) and per-entry calls `destroyModifier`
+ *         + `destroyDestroyable` for entries whose element has actually
+ *         been removed from the DOM. Routes through
+ *         `compilePipeline.getPendingModifierDestroys?.()` and mutates the
+ *         returned array reference.
+ *     Cross-package readers (2 sites, both `internal-test-helpers`):
+ *       - `test-cases/abstract.ts:87` — test-teardown drain splices the
+ *         whole array (`splice(0)`) and drains for the destroying view.
+ *         Routes through `compilePipeline.getPendingModifierDestroys?.()`.
+ *       - `test-cases/rendering.ts:136` — QUnit between-test reset clears
+ *         the array without draining (`.length = 0`) because the per-
+ *         element teardown above already fired. Routes through
+ *         `compilePipeline.getPendingModifierDestroys?.()`.
+ *    Slice 39 graduates the canonical state to the module-local
+ *    `_pendingModifierDestroys` Array in `gxt-backend/manager.ts` (always-
+ *    defined at module init). The lazy-init dance at all 5 writer sites is
+ *    DROPPED: post-slice-39 writers are direct `_pendingModifierDestroys.push(entry)`
+ *    calls. Consumers (drain, migrate, clear) mutate the returned array
+ *    reference (`splice(0)`, `splice(i, 1)`, `length = 0`) — same
+ *    mutate-by-reference contract as slice-32's `_allPoolArrays` Set
+ *    (`add`/`delete`/`clear` on the returned reference) and slice-33's
+ *    `_modifierInstallWatchers` Map. Read-only — no writer surface is
+ *    exposed; the 5 writers are intra-`manager.ts` only and route direct.
+ *
+ *    Bridge shape decision: single-method read (`getPendingModifierDestroys?():
+ *    unknown[] | undefined`). Matches the slice-32 read-only `Set`-getter
+ *    / slice-33 read-only `Map`-getter pattern applied to an `Array`-valued
+ *    canonical state — same minimal-method shape used for any opaque-
+ *    reference state with N internal writers + M external readers where
+ *    the writer's mutation operations don't need to be exposed. The
+ *    consumer-side mutation surface (`splice` / `push` / `length=0`) is
+ *    a property of the returned array reference, not a bridge contract.
+ *    No save-restore variant is exposed (no caller needs to temporarily
+ *    swap the queue; the queue is per-process and accumulates across
+ *    install/destroy frames until drained at end-of-cycle or teardown).
+ *
+ *    ZERO new import edges in slice 39: `manager.ts` already exposes the
+ *    array directly (intra-file reader is direct); `compile.ts` already
+ *    imports `getGxtRenderer` (since slice 6); both test-helper files
+ *    (`abstract.ts` slice 36 / `rendering.ts` slice 36) already import
+ *    `getGxtRenderer`. The `__gxtPendingModifierDestroys` globalThis slot
+ *    is DROPPED in this slice — net -1 globalThis surface. First slice in
+ *    Cluster B to expose a read-only `Array`-getter bridge method (slices
+ *    19/20/22 are read-only booleans, slice 30 is a read-only integer-
+ *    getter, slice 32 is a read-only `Set`-getter, slice 33 is a read-only
+ *    `Map`-getter; slice 39 is the `Array`-getter analogue — completes the
+ *    read-only-reference-getter family across `Set` / `Map` / `Array`).
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -2087,6 +2152,113 @@ export interface GxtCompilePipelineCapabilities {
    * slice — net -1 globalThis surface.
    */
   getModifierInstallWatchers?(): Map<object, () => void> | undefined;
+
+  /**
+   * Read-only Array-getter exposing the canonical pending-modifier-destroys
+   * queue. Returns the live module-local `_pendingModifierDestroys` Array
+   * (always-defined post-slice-39 at module init), `undefined` only when
+   * the bridge implementation is not yet installed (defensive optional
+   * chain on the method itself). The queue holds entries (heterogeneous —
+   * duck-typed by the consumers) of the shape `{ cached: any; destroyable:
+   * any; element: HTMLElement; modKey: string; cache: Map<...> | undefined;
+   * isCustom?: boolean }` — each entry registered by a modifier
+   * destructor closure in `manager.ts` to be drained at end-of-sync-cycle
+   * by `compile.ts`'s `__gxtSyncDomNow` Phase-2d drain (firing
+   * `destroyModifier` + `destroyDestroyable` for entries whose element has
+   * actually been removed from the DOM) or at test-teardown by
+   * `internal-test-helpers` (drain in `abstract.ts`, clear in
+   * `rendering.ts`).
+   *
+   * The pending-destroys queue is the back-half of the deferred-destroy
+   * protocol that distinguishes a GXT formula re-evaluation (destructor
+   * fires, but the SAME modifier formula re-evaluates synchronously and
+   * the cached-hit path resets `pendingDestroy = false` without actually
+   * destroying) from real element removal (destructor fires, no
+   * subsequent re-evaluation, the entry remains in the queue and gets
+   * destroyed at end-of-cycle). Because test assertions can run before
+   * microtasks, the protocol detects element removal SYNCHRONOUSLY by
+   * checking `element.isConnected` at drain time — entries whose element
+   * is still attached are skipped (they survived the re-evaluation and
+   * the cached-hit path will refresh them on the next install).
+   *
+   * Slice-39 (Cluster B): graduates the canonical state from the pre-slice-39
+   * `globalThis.__gxtPendingModifierDestroys` slot (lazy-initialized by 5
+   * writer sites in `manager.ts` — the modifier-install destructor
+   * closures at L8682/L8875/L9039/L9311 plus the custom-modifier-manager
+   * destructor closure, each running the same lazy-init dance) to the
+   * module-local `_pendingModifierDestroys` Array in
+   * `gxt-backend/manager.ts` (always-defined at module init). The lazy-
+   * init dance at all 5 writer sites is DROPPED: post-slice-39 writers
+   * are direct `_pendingModifierDestroys.push(entry)` calls.
+   *
+   * Reader topology after slice 39:
+   *  - intra-file `manager.ts` (1 site — phantom-element migration path
+   *    at the custom-modifier-manager install step, L9170 — inspects the
+   *    queue for a same-cycle install+destructor pair and reuses the
+   *    prior instance, splicing the matched entry out via
+   *    `.splice(i, 1)`): routes direct against `_pendingModifierDestroys`
+   *    (slice-22/24/27/30/31/32/33 intra-file-reader precedent).
+   *  - cross-file `compile.ts` (1 site — `__gxtSyncDomNow` Phase-2d drain
+   *    at L6204): routes through `compilePipeline.getPendingModifierDestroys?.()`
+   *    and `.splice(0)`s the entire array, per-entry running
+   *    `destroyModifier` + `destroyDestroyable` for entries whose element
+   *    has actually been removed from the DOM.
+   *  - cross-package `internal-test-helpers` (2 sites):
+   *      - `test-cases/abstract.ts:87` — test-teardown drain `.splice(0)`s
+   *        the array and drains for the destroying view.
+   *      - `test-cases/rendering.ts:136` — QUnit between-test reset clears
+   *        the array without draining (`.length = 0`).
+   *    Both route through `compilePipeline.getPendingModifierDestroys?.()`.
+   *
+   * Bridge shape decision: single-method read (`getPendingModifierDestroys?():
+   * unknown[] | undefined`). Matches the slice-32 read-only `Set`-getter /
+   * slice-33 read-only `Map`-getter pattern applied to an `Array`-valued
+   * canonical state — same minimal-method shape used for any opaque-
+   * reference state with N internal writers + M external readers where
+   * the writer's mutation operations don't need to be exposed. The
+   * consumer-side mutation surface (`splice` / `length=0`) is a property
+   * of the returned array reference, not a bridge contract. No save-
+   * restore variant is exposed (no caller needs to temporarily swap the
+   * queue).
+   *
+   * Namespace decision: `compilePipeline`. The canonical state lives in
+   * `manager.ts` but the bridge namespace is contributed via the direct
+   * `setGxtRenderer` seeding (alongside `syncAllWrappers`,
+   * `clearInstancePools`, `snapshotLiveInstances`, the slice-14
+   * dynamic-component listener triad, the slice-32 `getAllPoolArrays`
+   * getter, and the slice-33 `getModifierInstallWatchers` getter — all
+   * manager.ts-canonical compilePipeline methods). Same namespace pattern
+   * as slices 13/14/32/33.
+   *
+   * Bridge interface evolution (slice 39 — thirty-second API change):
+   * `GxtCompilePipelineCapabilities` extended with ONE new optional method
+   * (`getPendingModifierDestroys?(): unknown[] | undefined`) — read-only
+   * `Array` access. First slice in Cluster B to expose a read-only
+   * `Array`-getter bridge method (slices 19/20/22 are read-only booleans,
+   * slice 30 is a read-only integer-getter, slice 32 is a read-only
+   * `Set`-getter, slice 33 is a read-only `Map`-getter; slice 39 is the
+   * `Array`-getter analogue — completes the read-only-reference-getter
+   * family across `Set` / `Map` / `Array`).
+   *
+   * Bridge-not-yet-installed edge: cross-file reader uses the pre-
+   * existing `if (pd && pd.length > 0)` guard on the return value. The
+   * truthy half handles the `undefined` return when the bridge is not
+   * yet installed (matching pre-slice-39 `if (pendingDestroys && ...)`
+   * where the slot was also potentially `undefined`); the `.length > 0`
+   * half short-circuits the empty-Array common case. The `manager.ts`
+   * writer (`_pendingModifierDestroys = []` at module-init) runs before
+   * any `setGxtRenderer` is observable by a reader, so the canonical
+   * Array is always populated (though typically empty between sync
+   * cycles) when the `getPendingModifierDestroys` getter is callable.
+   *
+   * Fast-check: implementation is `return _pendingModifierDestroys;` —
+   * one variable read; zero allocations. Identical hot-path cost to the
+   * pre-slice-39 globalThis read. The reader's `length > 0` gate
+   * continues to dominate the post-slice-39 cost: the empty-Array
+   * common-case path takes one length check and falls through; the rare
+   * non-empty path takes one `splice(0)` to drain and iterates.
+   */
+  getPendingModifierDestroys?(): unknown[] | undefined;
 
   /**
    * Predicate exposing the `__gxtSyncIsPropertyDriven` boolean flag set

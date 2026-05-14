@@ -1096,6 +1096,62 @@ function _gxtGetModifierInstallWatchers(): Map<object, () => void> {
   return _modifierInstallWatchers;
 }
 
+// Slice-39 (Cluster B): canonical state for the pending-modifier-destroys
+// queue. Pre-slice-39 this Array lived on `globalThis.__gxtPendingModifierDestroys`
+// and was lazy-initialized by each of 5 writer sites (the 4 modifier-install
+// destructor closures + the custom-modifier-manager destructor closure in this
+// file) — each writer ran the same `let pd = g.__gxtPendingModifierDestroys;
+// if (!pd) { pd = []; g.__gxtPendingModifierDestroys = pd; } pd.push(entry)`
+// dance. Each pushed entry holds a reference to the still-pending modifier
+// cache record, its element, the modifier-cache map, the modKey, an
+// `isCustom` discriminator, and (for managers exposing `getDestroyable`) the
+// destroyable to drain after `destroyModifier`. The queue is drained
+// synchronously at end-of-sync-cycle (compile.ts's PHASE 2d
+// `__gxtSyncDomNow` drain at compile.ts:6204 — splices the whole array
+// and per-entry calls `destroyModifier` + `destroyDestroyable` for entries
+// whose element has actually been removed from the DOM), at test-teardown
+// (`internal-test-helpers/lib/test-cases/abstract.ts:87` — splices the whole
+// array and drains for the destroying view), and at QUnit between-test reset
+// (`internal-test-helpers/lib/test-cases/rendering.ts:136` — `.length = 0`
+// clears without draining because the per-element teardown above already
+// fired). Slice-39 also has an intra-file consumer in manager.ts:9120 — the
+// "phantom-element migration" path in the custom-modifier-manager install
+// step inspects the pending-destroys array to find a same-cycle install +
+// destructor pair and reuses the prior instance, splicing the entry out so
+// the post-cycle drain doesn't double-destroy. Pre-slice-39 this read was
+// also `(globalThis as any).__gxtPendingModifierDestroys`. Slice 39
+// graduates the canonical state to this module-local `_pendingModifierDestroys`
+// Array (always-defined at module init), paired with a single read-only
+// bridge getter `compilePipeline.getPendingModifierDestroys?(): unknown[] |
+// undefined` (slice-32 `Set`-getter / slice-33 `Map`-getter precedent
+// applied to an `Array`-valued canonical state). The lazy-init dance is
+// DROPPED: post-slice-39 writers are direct `_pendingModifierDestroys.push(entry)`
+// calls. Consumers (drain, migrate, clear) mutate the returned array
+// reference (`splice(0)`, `splice(i, 1)`, `length = 0`) — same
+// mutate-by-reference contract as slice-32's `_allPoolArrays` Set
+// (`add`/`delete`/`clear` on the returned reference). Net globalThis surface
+// delta: -1 slot.
+//
+// Entry shape (heterogeneous — same as pre-slice-39 — duck-typed by the
+// consumers): `{ cached: any; destroyable: any; element: HTMLElement;
+// modKey: string; cache: Map<...> | undefined; isCustom?: boolean }`. The
+// `isCustom` discriminator is set TRUE by the 9 custom-modifier-manager
+// writers (8682, 8875, 9311) and absent/undefined for the 4 internal
+// modifier-manager writers (9039 path); consumers use it to decide whether
+// to call `destroyModifier` on the cached manager.
+interface PendingModifierDestroyEntry {
+  cached: any;
+  destroyable: any;
+  element: HTMLElement;
+  modKey: string;
+  cache: Map<any, any> | undefined;
+  isCustom?: boolean;
+}
+const _pendingModifierDestroys: PendingModifierDestroyEntry[] = [];
+function _gxtGetPendingModifierDestroys(): PendingModifierDestroyEntry[] {
+  return _pendingModifierDestroys;
+}
+
 // Sentinel object for root-level components (no parent view)
 const ROOT_PARENT_SENTINEL = {};
 
@@ -8678,16 +8734,14 @@ const $_MANAGERS = {
         if (cached && !cached.pendingDestroy) {
           return () => {
             cached.pendingDestroy = true;
-            // Register for synchronous flush at end of sync cycle
-            let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
-            if (!pendingDestroys) {
-              pendingDestroys = [];
-              (globalThis as any).__gxtPendingModifierDestroys = pendingDestroys;
-            }
+            // Slice-39 (Cluster B): direct push to the module-local
+            // `_pendingModifierDestroys` Array (canonical state graduated
+            // from `globalThis.__gxtPendingModifierDestroys`). Drops the
+            // pre-slice-39 lazy-init dance.
             const destroyable = cached.isInternal
               ? cached.manager.getDestroyable?.(cached.instance)
               : null;
-            pendingDestroys.push({
+            _pendingModifierDestroys.push({
               cached,
               destroyable,
               element,
@@ -8871,16 +8925,14 @@ const $_MANAGERS = {
           // Return a destructor that marks pending destroy
           return () => {
             cached.pendingDestroy = true;
-            // Register for synchronous flush at end of sync cycle
-            let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
-            if (!pendingDestroys) {
-              pendingDestroys = [];
-              (globalThis as any).__gxtPendingModifierDestroys = pendingDestroys;
-            }
+            // Slice-39 (Cluster B): direct push to the module-local
+            // `_pendingModifierDestroys` Array (canonical state graduated
+            // from `globalThis.__gxtPendingModifierDestroys`). Drops the
+            // pre-slice-39 lazy-init dance.
             const destroyable = cached.isInternal
               ? cached.manager.getDestroyable?.(cached.instance)
               : null;
-            pendingDestroys.push({
+            _pendingModifierDestroys.push({
               cached,
               destroyable,
               element,
@@ -9035,13 +9087,11 @@ const $_MANAGERS = {
         // cycle, flush any still-pending destroys synchronously.
         return () => {
           cached.pendingDestroy = true;
-          // Register for synchronous flush at end of sync cycle
-          let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
-          if (!pendingDestroys) {
-            pendingDestroys = [];
-            (globalThis as any).__gxtPendingModifierDestroys = pendingDestroys;
-          }
-          pendingDestroys.push({
+          // Slice-39 (Cluster B): direct push to the module-local
+          // `_pendingModifierDestroys` Array (canonical state graduated
+          // from `globalThis.__gxtPendingModifierDestroys`). Drops the
+          // pre-slice-39 lazy-init dance.
+          _pendingModifierDestroys.push({
             cached,
             destroyable,
             element,
@@ -9117,12 +9167,17 @@ const $_MANAGERS = {
       // (canonical state graduated from `globalThis.__gxtSyncCycleId` to
       // module-local `_gxtSyncCycleId` in `compile.ts`).
       const currentCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
-      const pendingDestroysForMigrate = (globalThis as any).__gxtPendingModifierDestroys as
-        | Array<{ cached: any; element: HTMLElement; modKey: string; isCustom?: boolean }>
-        | undefined;
+      // Slice-39 (Cluster B): intra-file read of the module-local
+      // `_pendingModifierDestroys` Array (canonical state graduated from
+      // `globalThis.__gxtPendingModifierDestroys`). Direct read — same intra-
+      // file precedent as slice-22/24/27/30/31/32/33's intra-file readers.
+      // Mutation by reference (`.splice(i, 1)` below) on the returned array
+      // is the same contract as slice-32's `_allPoolArrays` Set
+      // (`.add`/`.delete`/`.clear` on the returned reference).
+      const pendingDestroysForMigrate = _pendingModifierDestroys;
       let migratedCached: any = null;
       let migratedFromIndex = -1;
-      if (currentCycle > 0 && pendingDestroysForMigrate && pendingDestroysForMigrate.length > 0) {
+      if (currentCycle > 0 && pendingDestroysForMigrate.length > 0) {
         for (let i = 0; i < pendingDestroysForMigrate.length; i++) {
           const entry = pendingDestroysForMigrate[i]!;
           if (!entry.isCustom) continue;
@@ -9155,7 +9210,7 @@ const $_MANAGERS = {
           // fire in a single sync cycle when GXT internally reconciles DOM.
           instance = migratedCached.instance;
           migratedCached.pendingDestroy = false;
-          if (pendingDestroysForMigrate && migratedFromIndex >= 0) {
+          if (migratedFromIndex >= 0) {
             pendingDestroysForMigrate.splice(migratedFromIndex, 1);
           }
           // Remove from old element's cache entry.
@@ -9307,13 +9362,11 @@ const $_MANAGERS = {
         // module-local `_gxtSyncCycleId` in `compile.ts`).
         cached.__gxtDestructorCycle =
           getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
-        // Register for synchronous flush at end of sync cycle
-        let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
-        if (!pendingDestroys) {
-          pendingDestroys = [];
-          (globalThis as any).__gxtPendingModifierDestroys = pendingDestroys;
-        }
-        pendingDestroys.push({
+        // Slice-39 (Cluster B): direct push to the module-local
+        // `_pendingModifierDestroys` Array (canonical state graduated
+        // from `globalThis.__gxtPendingModifierDestroys`). Drops the
+        // pre-slice-39 lazy-init dance.
+        _pendingModifierDestroys.push({
           cached,
           destroyable: null,
           element,
@@ -13087,6 +13140,28 @@ setGxtRenderer({
     // `finally`). See `getModifierInstallWatchers` doc in gxt-bridge.ts.
     // Net -1 globalThis slot.
     getModifierInstallWatchers: _gxtGetModifierInstallWatchers,
+    // Slice-39 (Cluster B): seeded here with the canonical
+    // `_gxtGetPendingModifierDestroys` getter exposing the manager.ts-local
+    // `_pendingModifierDestroys` Array. Replaces the pre-slice-39
+    // `globalThis.__gxtPendingModifierDestroys` slot (5 lazy-init writers
+    // at manager.ts:8682/8875/9039/9311 above — the `if (!pd) { pd = [];
+    // g.__gxtPendingModifierDestroys = pd; } pd.push(entry)` dance,
+    // collapsed to a direct `_pendingModifierDestroys.push(entry)` on the
+    // module-local Array; 1 intra-file reader at the phantom-element
+    // migration path consults the array and `splice(i, 1)`s the migrated
+    // entry out; 1 cross-file reader in `compile.ts`'s `__gxtSyncDomNow`
+    // Phase-2d drain `splice(0)`s the entire array and per-entry runs
+    // `destroyModifier` + `destroyDestroyable`; 2 cross-package readers in
+    // `internal-test-helpers` — `test-cases/abstract.ts:87` drain at
+    // test-teardown and `test-cases/rendering.ts:136` clear at QUnit
+    // between-test reset). All cross-file readers route through this
+    // bridge getter. Consumers mutate by reference (`splice(0)`,
+    // `splice(i, 1)`, `length = 0`, `push`) on the returned Array — same
+    // mutate-by-reference contract as slice-32's `_allPoolArrays` Set
+    // (`add`/`delete`/`clear` on the returned reference). See
+    // `getPendingModifierDestroys` doc in gxt-bridge.ts. Net -1 globalThis
+    // slot.
+    getPendingModifierDestroys: _gxtGetPendingModifierDestroys,
   },
   renderPass: {
     // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is

@@ -6200,10 +6200,18 @@ function _resetTemplateOnlyState() {
       // custom modifier managers whose elements were removed (e.g., by #if toggle).
       // This must happen BEFORE post-render hooks so willDestroyElement fires
       // before didInsertElement of the replacement element.
+      // Slice-39 (Cluster B): canonical state for the pending-modifier-destroys
+      // queue graduated from `globalThis.__gxtPendingModifierDestroys` to the
+      // module-local `_pendingModifierDestroys` Array in `gxt-backend/manager.ts`.
+      // The cross-file reader here routes through the new read-only Array-getter
+      // `compilePipeline.getPendingModifierDestroys?.()`. Consumers mutate the
+      // returned array reference (`splice(0)` drains here) — same
+      // mutate-by-reference contract as slice-32's `_allPoolArrays` Set
+      // (`.add`/`.delete`/`.clear` on the returned reference).
       try {
-        const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+        const pendingDestroys = getGxtRenderer()?.compilePipeline.getPendingModifierDestroys?.();
         if (pendingDestroys && pendingDestroys.length > 0) {
-          const toFlush = pendingDestroys.splice(0);
+          const toFlush = pendingDestroys.splice(0) as any[];
           for (const entry of toFlush) {
             if (!entry.cached.pendingDestroy) continue; // Already reclaimed by update path
             // Only destroy if the element is actually disconnected from the DOM.

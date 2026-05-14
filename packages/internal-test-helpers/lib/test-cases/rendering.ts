@@ -133,7 +133,14 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
           modMgr._updatedInstances.clear();
         }
         // Clear pending destroys without processing (already handled above)
-        const pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
+        // Slice-39 (Cluster B): canonical state graduated from
+        // `globalThis.__gxtPendingModifierDestroys` to the module-local
+        // `_pendingModifierDestroys` Array in `gxt-backend/manager.ts`.
+        // The cross-package clearer here routes through the new read-only
+        // Array-getter `compilePipeline.getPendingModifierDestroys?.()`
+        // and mutates the returned array reference (`length = 0`) — same
+        // mutate-by-reference contract as slice-32's `_allPoolArrays` Set.
+        const pendingDestroys = getGxtRenderer()?.compilePipeline.getPendingModifierDestroys?.();
         if (pendingDestroys) pendingDestroys.length = 0;
       } catch {
         /* ignore */
