@@ -346,13 +346,29 @@ export interface GxtViewUtilsCapabilities {
  *
  * NOT included in this slice (intentionally deferred — different bridge shape
  * or non-bridge cleanup required):
- *  - `__gxtNormAttr` / `__gxtQuotedAttr` / `__gxtUnboundEval` /
- *    `__gxtUnboundResetSlots` — referenced by EMITTED CODE strings in
- *    compile.ts (the compile post-processor writes literal
- *    `globalThis.__gxtNormAttr` / `globalThis.__gxtQuotedAttr(...)` /
- *    `globalThis.__gxtUnboundEval(...)` into generated template output).
- *    Migrating any of these requires updating the code generator to emit
- *    bridge-aware calls — out of scope for the runtime-only bridge migration.
+ *  - `__gxtNormAttr` / `__gxtQuotedAttr` — referenced by EMITTED CODE strings
+ *    in compile.ts (the compile post-processor writes literal
+ *    `globalThis.__gxtNormAttr` / `globalThis.__gxtQuotedAttr(...)` into
+ *    generated template output). Migrating either of these requires
+ *    updating the code generator to emit bridge-aware calls — out of scope
+ *    for the runtime-only bridge migration.
+ *
+ *    (Slice 73 update: `__gxtUnboundEval` + `__gxtUnboundResetSlots` were
+ *    formerly in this exclusion bucket — both EMITTED-CODE consumers with
+ *    no module-local reach. Slice 73 retired BOTH via paired inline-
+ *    emission: the eval body is inlined into the `templateFnCode`
+ *    Function() outer scope alongside `__ubCache`, a per-Function-body
+ *    `__ubSlots` map replaces the pre-slice-73 shared module-level Map,
+ *    and tracker access is passed via Function() constructor parameters
+ *    (`Function('__ubGT', '__ubST', body)(_gxtGetTracker, _gxtSetTracker)`).
+ *    The emitted `globalThis.__gxtUnboundEval(__ubCache,` shape is
+ *    rewritten to a local `__gxtUnboundEval(__ubCache,` reference after
+ *    `_rewriteInlineUnbound` runs. Both globalThis slots dropped — net -2.
+ *    The Function() params pattern is novel for slice-72-style inline-
+ *    emission: slice 72 had `globalThis.$_maybeHelper` as a stable existing
+ *    surface to close over, but no comparable globalThis tracker surface
+ *    exists, so Function() params provide module-bound delegate refs
+ *    without introducing a new globalThis slot.)
  *  - `__gxtLastSafeStringResult` — read+written entirely intra-`compile.ts`
  *    (writer at SafeString toString hook, reader at attribute interpolation
  *    site). Cleaner cleanup is to convert to a module-local `let` in an

@@ -7774,47 +7774,43 @@ function transformOnModifierHashArgs(template: string): string {
 // IMPORTANT: Takes a lazy thunk `() => value` to avoid eagerly evaluating
 // the expression (which would track GXT cell dependencies).
 // Caching wrapper for {{unbound}} helper.
-// Uses a WeakMap keyed by context object. Each context gets its own cache
-// (a plain object keyed by call-site ID). This handles both:
+// Each context gets its own cache (a plain object keyed by call-site ID).
+// This handles both:
 // - Single component renders (same ctx across re-evaluations)
 // - #each iterations (each iteration has its own ctx)
-{
-  // __gxtUnboundEval evaluates the unbound expression with GXT cell tracking
-  // suppressed (setTracker(null)). This prevents the formula from tracking
-  // the unbound expression's cells. Combined with caching via __ubCache,
-  // re-evaluations return the original cached value.
-  //
-  // The cache uses a global sequence number as part of the key to distinguish
-  // #each iterations (each has its own call with the same template-level id).
-  // A per-id counter tracks which "slot" the current call should use.
-  const _ubSlots = new Map<string, number>(); // id → next slot index
-  const _ubSlotMax = new Map<string, number>(); // id → max slots (set after first full pass)
-  (globalThis as any).__gxtUnboundEval = function (cacheObj: any, id: string, valueFn: any) {
-    // Determine slot for this call (handles #each where same id is called N times)
-    let slot = _ubSlots.get(id) || 0;
-    const key = `${id}:${slot}`;
-    _ubSlots.set(id, slot + 1);
-
-    if (key in cacheObj) return cacheObj[key];
-
-    // First evaluation: suppress GXT cell tracking
-    let result;
-    const savedTracker = _gxtGetTracker();
-    _gxtSetTracker(null);
-    try {
-      result = valueFn();
-    } finally {
-      _gxtSetTracker(savedTracker);
-    }
-    cacheObj[key] = result;
-    return result;
-  };
-  // Reset slot counters at the start of each render cycle
-  // Called from the template function before returning the template body.
-  (globalThis as any).__gxtUnboundResetSlots = function () {
-    _ubSlots.clear();
-  };
-}
+//
+// Cluster B slice 73 (paired -2 inline-emission):
+//   The pre-slice-73 implementation published two globalThis slots from this
+//   site — `__gxtUnboundEval` (the eval+cache function) and
+//   `__gxtUnboundResetSlots` (the slot-counter reset called at the start of
+//   each render body). Both were consumed by EMITTED template code: the GXT
+//   bundled serializer emits `globalThis.__gxtUnboundEval(__ubCache, "__ubN",
+//   () => unbound(...))` for the `{{unbound X}}` top-level form, the
+//   compile-side `_rewriteInlineUnbound` post-processor emits the same shape
+//   for inline `unbound(...)` sub-expression calls, and the render-body
+//   prelude at the `templateFnCode` builder emits the reset call.
+//
+//   Slice 73 inlines BOTH function bodies directly into the emitted
+//   `templateFnCode` Function() body string and rewrites the emitted
+//   `globalThis.__gxtUnboundEval(__ubCache,` shape to a local
+//   `__gxtUnboundEval(__ubCache,` reference. The reset is emitted as a direct
+//   local call. The previously module-local `_ubSlots` Map state lifts to a
+//   per-Function-body local — an *improvement* over the pre-slice-73 shared
+//   global Map (which was fragile across concurrent renders of different
+//   templates). Access to the GXT reactive tracker getter/setter is given to
+//   the Function() body by passing them as Function() constructor parameters
+//   (`Function('__ubGT', '__ubST', templateFnCode)(_gxtGetTracker,
+//   _gxtSetTracker)`), so the inlined eval body closes over stable module-
+//   bound references without needing a globalThis surface.
+//
+//   The strict-mode shadow at slice 72 followed the same inline-emission
+//   pattern via `globalThis.$_maybeHelper` (an existing globalThis surface
+//   from `installEmberWrappers()`); slice 73 chooses Function() params
+//   because no existing globalThis tracker surface exists.
+//
+//   No globalThis writers remain at this module-init site after slice 73 —
+//   the IIFE was retired entirely. See `templateFnCode` builder (search for
+//   `__ubCache`) for the inlined definitions.
 
 // Runtime guard for the "resolved helper passed as a named argument" form.
 // When a template contains `<Component @name={{helperIdent}} />` (no parens),
@@ -13854,15 +13850,57 @@ export function precompileTemplate(
           `return $_maybeHelper_orig(n, a, h, c);` +
           `};`
         : '';
+      // Cluster B slice 73 (paired -2 inline-emission):
+      //   Rewrite emitted `globalThis.__gxtUnboundEval(__ubCache,` → local
+      //   `__gxtUnboundEval(__ubCache,` so the inline-emitted eval function
+      //   (declared at the outer Function() scope below) is used directly,
+      //   without a globalThis indirection. Matches both the GXT-bundled
+      //   serializer's wrapper shape and the compile-side
+      //   `_rewriteInlineUnbound` emitter shape. The `__ubCache` suffix in the
+      //   pattern is a safety anchor: emitted code only references
+      //   `__gxtUnboundEval(__ubCache, ...)` (the cache var lives in the same
+      //   outer Function() scope as the inlined eval), so the rewrite is
+      //   precise and never matches a foreign `__gxtUnboundEval(` reference.
+      if (hasUnbound) {
+        modifiedCode = modifiedCode.split('globalThis.__gxtUnboundEval(__ubCache').join('__gxtUnboundEval(__ubCache');
+      }
+
+      // Cluster B slice 73: inlined `__gxtUnboundEval` definition + per-
+      // Function-body `__ubSlots` map declared at the OUTER Function() scope
+      // alongside `__ubCache`. Closes over `__ubGT` / `__ubST` Function()
+      // params (bound below to the module-local `_gxtGetTracker` /
+      // `_gxtSetTracker`) so tracker suppression works without a globalThis
+      // tracker surface. Per-Function-body `__ubSlots` is an improvement
+      // over the pre-slice-73 shared module-level Map (which was fragile
+      // across concurrent renders of different templates).
+      const unboundEvalInjection = hasUnbound
+        ? `var __ubSlots = Object.create(null);` +
+          `function __gxtUnboundEval(cacheObj, id, valueFn) {` +
+          `var slot = __ubSlots[id] || 0;` +
+          `var key = id + ':' + slot;` +
+          `__ubSlots[id] = slot + 1;` +
+          `if (key in cacheObj) return cacheObj[key];` +
+          `var result;` +
+          `var savedTracker = __ubGT();` +
+          `__ubST(null);` +
+          `try { result = valueFn(); } finally { __ubST(savedTracker); }` +
+          `cacheObj[key] = result;` +
+          `return result;` +
+          `}` +
+          `function __gxtUnboundResetSlots() {` +
+          `for (var k in __ubSlots) { delete __ubSlots[k]; }` +
+          `}`
+        : '';
       const templateFnCode = `
         "use strict";
         ${hasUnbound ? 'var __ubCache = Object.create(null);' : ''}
+        ${unboundEvalInjection}
         ${uidOuterScope}
         ${strictMaybeHelperInjection}
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
           ${needsSlots ? 'const $slots = globalThis.$slots || {};' : ''}
-          ${hasUnbound ? 'if (globalThis.__gxtUnboundResetSlots) globalThis.__gxtUnboundResetSlots();' : ''}
+          ${hasUnbound ? '__gxtUnboundResetSlots();' : ''}
 
           ${scopeInjections.join('\n          ')}
           ${helperInjections.join('\n          ')}
@@ -13875,7 +13913,12 @@ export function precompileTemplate(
       if (!_functionCodeCache) _functionCodeCache = new Map();
       let cachedFn = _functionCodeCache.get(templateFnCode);
       if (!cachedFn) {
-        cachedFn = Function(templateFnCode)();
+        // Cluster B slice 73: pass tracker accessors as Function() parameters
+        // so the inlined `__gxtUnboundEval` body (above) can suppress the GXT
+        // reactive tracker during `valueFn()` evaluation. Bound to the
+        // stable module-local `_gxtGetTracker` / `_gxtSetTracker` imports.
+        // No-op when `hasUnbound` is false (the params are simply unused).
+        cachedFn = Function('__ubGT', '__ubST', templateFnCode)(_gxtGetTracker, _gxtSetTracker);
         _functionCodeCache.set(templateFnCode, cachedFn);
       }
       compilationResult.templateFn = cachedFn;
