@@ -540,6 +540,33 @@ export interface GxtFormatCapabilities {
  *    to expose a read-only `Map`-getter bridge method (slices 19/20/22 are
  *    read-only booleans, slice 30 is a read-only integer-getter, slice 32
  *    is a read-only `Set`-getter; slice 33 is the `Map`-getter analogue).
+ *  - `__gxtSyncIsPropertyDriven` — MIGRATED IN SLICE 34 to
+ *    `isSyncIsPropertyDriven()` on this namespace. The pre-slice-34 topology
+ *    was 2 intra-file writers in `compile.ts` (`__gxtSyncDomNow` body
+ *    L5618 set-from-`__gxtPendingSyncFromPropertyChange`, L6085 reset-in-
+ *    outer-`finally`) and 1 cross-file reader in `manager.ts:4547`
+ *    (`__gxtDestroyUnclaimedPoolEntries` destroy-error-capture gate —
+ *    `_outerSuppressCapture = !__gxtSyncIsPropertyDriven`). The flag
+ *    mirrors `__gxtHadPendingSync` into a slot that SURVIVES
+ *    `__gxtForceEmberRerender`'s finally-block clear, so downstream phases
+ *    can still tell whether the sync was property-driven after the
+ *    force-rerender pass. Slice 34 matches the slice-20/22/23/24
+ *    read-only-boolean-predicate pattern: 2 intra-file writers route
+ *    through the module-local `_gxtSetSyncIsPropertyDriven(value)` setter
+ *    (directly, no bridge indirection); 1 cross-file reader routes through
+ *    `compilePipeline.isSyncIsPropertyDriven?.()`. Canonical state moves
+ *    to module-local `_gxtSyncIsPropertyDrivenFlag` in `compile.ts`. The
+ *    `__gxtSyncIsPropertyDriven` globalThis slot is DROPPED in this slice
+ *    — net -1 globalThis surface. Slice 34 is part of the audit-first
+ *    investigation of the 4-flag pending-sync cluster (`__gxtPendingSync`
+ *    / `__gxtHadPendingSync` / `__gxtPendingSyncFromPropertyChange` /
+ *    `__gxtSyncIsPropertyDriven`); the audit revealed flags 1-3 have
+ *    cross-package writers (test-helpers, glimmer, runloop, routing) and
+ *    require larger bridge surfaces, while flag 4 has a clean 2-writer-
+ *    intra-file + 1-reader-cross-file topology that closes in a single
+ *    slice via the slice-20 predicate pattern. Flags 1-3 remain on
+ *    globalThis pending future slices that address each writer-set
+ *    separately.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -1739,6 +1766,101 @@ export interface GxtCompilePipelineCapabilities {
    * slice — net -1 globalThis surface.
    */
   getModifierInstallWatchers?(): Map<object, () => void> | undefined;
+
+  /**
+   * Predicate exposing the `__gxtSyncIsPropertyDriven` boolean flag set
+   * at the start of `compile.ts`'s `__gxtSyncDomNow` body. The flag
+   * mirrors `__gxtHadPendingSync` into a slot that SURVIVES
+   * `__gxtForceEmberRerender`'s finally-block clear, so downstream phases
+   * (specifically `manager.ts:__gxtDestroyUnclaimedPoolEntries`) can still
+   * tell whether the sync was driven by a real property change after the
+   * force-rerender pass has cleared `__gxtHadPendingSync`. Without this
+   * survivor flag, the destroy-error capture path cannot distinguish a
+   * spurious unclaimed sweep (where no user property change drove the
+   * sync — e.g. an initial-render sync that ran
+   * `__gxtSnapshotLiveInstances` and now sees a newborn instance whose
+   * element is disconnected because the morph allocated a fresh wrapper)
+   * from a real user-driven sync (where destroy/lifecycle throws ARE
+   * captured into `_renderErrors`). Spurious-sweep destroy errors must
+   * NOT be captured, or they re-throw out of the next
+   * `runAppend`/`runTask` `flushRenderErrors` call.
+   *
+   * Pre-slice-34 topology:
+   *  - Writers (2 sites, intra-file in `compile.ts`):
+   *    - `compile.ts:5618` (`__gxtSyncDomNow` body — set to
+   *      `!!__gxtPendingSyncFromPropertyChange` at the start of the flush,
+   *      mirroring `__gxtHadPendingSync` into the survivor slot).
+   *    - `compile.ts:6085` (`__gxtSyncDomNow` body — reset to `false` in
+   *      the outer `finally` so a subsequent initial-render sync starts in
+   *      a clean state).
+   *  - Readers (1 cross-file site):
+   *    - `manager.ts:4547` (`__gxtDestroyUnclaimedPoolEntries` — gate
+   *      `_outerSuppressCapture = !__gxtSyncIsPropertyDriven`. When
+   *      truthy, suppresses the destroy-error capture path in renderer.ts's
+   *      `wrappedDestroy`/`wrappedTrigger` for the duration of this
+   *      unclaimed-sweep frame, so user-thrown lifecycle errors are NOT
+   *      routed into `_renderErrors`).
+   *
+   * Slice-34 (Cluster B): graduates the canonical state from the pre-
+   * slice-34 `globalThis.__gxtSyncIsPropertyDriven` slot to the module-
+   * local boolean `_gxtSyncIsPropertyDrivenFlag` in `compile.ts`. The 2
+   * intra-file writers route through the module-local
+   * `_gxtSetSyncIsPropertyDriven(value)` setter (directly, no bridge
+   * indirection — slice-22/24/27/30 intra-file-writer precedent). The 1
+   * cross-file reader routes through this bridge predicate
+   * `compilePipeline.isSyncIsPropertyDriven?.()` (load-order-safe
+   * optional chain — defaults to `undefined`/falsy when the bridge is
+   * not yet installed, which means `_outerSuppressCapture` defaults to
+   * `true` in that edge — matches pre-slice-34 semantics where the slot
+   * would be `undefined`/falsy before the first `__gxtSyncDomNow` call).
+   * Net globalThis surface delta: -1 slot (`__gxtSyncIsPropertyDriven`).
+   *
+   * Bridge shape decision: read-only predicate (single-method
+   * `isSyncIsPropertyDriven?(): boolean`). Mirrors slice-20's `isSyncing`,
+   * slice-22's `isCurrentlyRendering`, and slice-23's `isInTriggerReRender`
+   * — same minimal boolean-getter shape. No setter is exposed: both
+   * writers are intra-file in `compile.ts` and use the module-local
+   * setter directly. No `with*` save-restore variant is exposed: the
+   * writers are straight-line set-true (body start) / set-false (outer
+   * `finally`) within a single try/finally pair, mirroring the
+   * `_gxtSetSyncing(true)` / `_gxtSetSyncing(false)` pattern in the same
+   * `__gxtSyncDomNow` body.
+   *
+   * Namespace decision: `compilePipeline`. The flag is semantically a
+   * scope-modifier on the GXT post-runTask DOM sync pipeline — the
+   * writers + body live in `compile.ts` (the pipeline's home file), the
+   * reader gates manager.ts's destroy-error capture path on whether the
+   * sync flush was property-driven. Same namespace pattern as slices
+   * 15/17/18/19/20/22/23/24/29/30.
+   *
+   * Bridge interface evolution (slice 34 — twenty-seventh API change):
+   * `GxtCompilePipelineCapabilities` extended with ONE new optional
+   * method (`isSyncIsPropertyDriven?(): boolean`) — read-only predicate
+   * access. Mirrors slices 19/20/22 (read-only booleans), 23
+   * (`isInTriggerReRender`), and 29's mark+consume pair (without the
+   * consume side, since the flag SURVIVES across the
+   * `__gxtForceEmberRerender` invocation — its clear is performed by
+   * the same `__gxtSyncDomNow` body that set it, NOT by the reader).
+   *
+   * Bridge-not-yet-installed edge: cross-file reader uses
+   * `getGxtRenderer()?.compilePipeline.isSyncIsPropertyDriven?.()` — both
+   * optional chains return `undefined` when either the renderer or the
+   * method is not yet installed. `_outerSuppressCapture =
+   * !undefined === true` (suppression ON), which mirrors pre-slice-34
+   * semantics where `globalThis.__gxtSyncIsPropertyDriven === undefined`
+   * before the first `__gxtSyncDomNow` call also yielded
+   * `_outerSuppressCapture === true`. The reader runs only inside
+   * `__gxtDestroyUnclaimedPoolEntries` which is itself reached via
+   * Phase 3 of `__gxtSyncDomNow` — and by that point compile.ts's
+   * module init (which seeds the bridge via `installCompilePipelinePart`
+   * at file EOF) has completed, so the bridge IS installed in
+   * practice and the predicate returns the real boolean value.
+   *
+   * Fast-check: the implementation reads the module-local
+   * `_gxtSyncIsPropertyDrivenFlag` boolean — one boolean read; zero
+   * allocations. Matches slice-20's `isSyncing()` body shape.
+   */
+  isSyncIsPropertyDriven?(): boolean;
 }
 
 /**

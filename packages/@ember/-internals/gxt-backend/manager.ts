@@ -4544,7 +4544,17 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   // __gxtSyncDomNow) instead of __gxtHadPendingSync because the latter is
   // cleared by __gxtForceEmberRerender's finally block before this Phase
   // runs.
-  const _outerSuppressCapture = !(globalThis as any).__gxtSyncIsPropertyDriven;
+  // Slice-34 (Cluster B): canonical state migrated from
+  // `globalThis.__gxtSyncIsPropertyDriven` to module-local
+  // `_gxtSyncIsPropertyDrivenFlag` in `compile.ts`. Reader routes through
+  // the new `compilePipeline.isSyncIsPropertyDriven?.()` bridge predicate
+  // (load-order-safe optional chain — defaults to `undefined`/falsy when
+  // the bridge is not yet installed, which means `_outerSuppressCapture`
+  // defaults to `true` in that edge — matches pre-slice-34 semantics
+  // where the slot would be `undefined`/falsy before the first
+  // `__gxtSyncDomNow` call).
+  const _outerSuppressCapture =
+    !getGxtRenderer()?.compilePipeline.isSyncIsPropertyDriven?.();
   const _hadPriorSuppress = !!(globalThis as any).__gxtSuppressDestroyCapture;
   if (_outerSuppressCapture && !_hadPriorSuppress) {
     (globalThis as any).__gxtSuppressDestroyCapture = true;

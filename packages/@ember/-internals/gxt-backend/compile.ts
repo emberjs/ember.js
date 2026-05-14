@@ -3416,6 +3416,32 @@ function _gxtWithSyncing<T>(value: boolean, fn: () => T): T {
   }
 }
 
+// Slice-34 (Cluster B): graduates the `__gxtSyncIsPropertyDriven` boolean
+// flag to a module-local boolean (`_gxtSyncIsPropertyDrivenFlag`) and DROPS
+// the `globalThis.__gxtSyncIsPropertyDriven` slot entirely. The flag is set
+// at the start of `__gxtSyncDomNow` (mirroring `__gxtHadPendingSync` but
+// surviving `__gxtForceEmberRerender`'s finally-block clear) so downstream
+// phases (specifically `__gxtDestroyUnclaimedPoolEntries` in manager.ts)
+// can still tell whether the sync was driven by a real property change.
+// The pre-slice-34 topology was 2 intra-file writers in `compile.ts`
+// (`__gxtSyncDomNow` body L5618 set, L6085 reset-in-finally) and 1 cross-
+// file reader in `manager.ts:4547` (`__gxtDestroyUnclaimedPoolEntries`
+// — gates destroy-error capture: spurious unclaimed sweeps from initial-
+// render syncs, where no property change drove the sync, must NOT route
+// user-thrown destroy/lifecycle errors into `_renderErrors`). The 2
+// intra-file writers now call `_gxtSetSyncIsPropertyDriven(value)`
+// directly; the cross-file reader routes through the new bridge predicate
+// `compilePipeline.isSyncIsPropertyDriven?.()`. Net globalThis surface
+// delta: -1 slot. Mirrors slice-20/22/23/24's read-only-boolean predicate
+// pattern.
+let _gxtSyncIsPropertyDrivenFlag = false;
+function _gxtIsSyncIsPropertyDriven(): boolean {
+  return _gxtSyncIsPropertyDrivenFlag;
+}
+function _gxtSetSyncIsPropertyDriven(on: boolean): void {
+  _gxtSyncIsPropertyDrivenFlag = on;
+}
+
 // Slice-25 (Cluster B): module-local suppression flag for the canonical
 // `_gxtTriggerReRender` function. Pre-slice-25 the suppression mechanism
 // (`_gxtWithTriggerSuppressed`) ONLY cleared the `globalThis.__gxtTriggerReRender`
@@ -5615,8 +5641,12 @@ function _resetTemplateOnlyState() {
     // change. Used to gate destroy-error capture: spurious unclaimed sweeps from
     // initial-render syncs (where no property change drove the sync) should NOT
     // route user-thrown destroy/lifecycle errors into _renderErrors.
-    (globalThis as any).__gxtSyncIsPropertyDriven = !!(globalThis as any)
-      .__gxtPendingSyncFromPropertyChange;
+    // Slice-34 (Cluster B): write to module-local `_gxtSyncIsPropertyDrivenFlag`
+    // (graduated from `globalThis.__gxtSyncIsPropertyDriven`). See module-local
+    // definition above for the migration narrative.
+    _gxtSetSyncIsPropertyDriven(
+      !!(globalThis as any).__gxtPendingSyncFromPropertyChange
+    );
     (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
     // Slice-24 (Cluster B): set module-local `_gxtSyncingFlag` (graduated
     // from `globalThis.__gxtSyncing`). The matching `false` reset lives in
@@ -6082,7 +6112,10 @@ function _resetTemplateOnlyState() {
       _gxtSetSyncing(false);
       // Also reset the property-driven mirror flag so a subsequent
       // initial-render sync starts in a clean state.
-      (globalThis as any).__gxtSyncIsPropertyDriven = false;
+      // Slice-34 (Cluster B): write to module-local
+      // `_gxtSyncIsPropertyDrivenFlag` (graduated from
+      // `globalThis.__gxtSyncIsPropertyDriven`).
+      _gxtSetSyncIsPropertyDriven(false);
     }
     // Re-throw any deferred errors from the force-rerender or lifecycle phases
     // so they propagate to assert.throws() in tests
@@ -14895,6 +14928,16 @@ installCompilePipelinePart({
   // `getSyncCycleId()`. Net -1 globalThis slot. See `getSyncCycleId` doc in
   // gxt-bridge.ts and module-local definition above (`_gxtSyncCycleId`).
   getSyncCycleId: _gxtGetSyncCycleId,
+  // Slice-34 (Cluster B): graduates `__gxtSyncIsPropertyDriven` from the
+  // globalThis slot to a 1-method read-only predicate bridge surface. The
+  // flag is set at the start of `__gxtSyncDomNow` (L5618) and reset in the
+  // sync body's outer `finally` (L6085); both writers route through the
+  // module-local `_gxtSetSyncIsPropertyDriven`. The sole cross-file reader
+  // at `manager.ts:4547` (`__gxtDestroyUnclaimedPoolEntries` destroy-error
+  // capture gate) routes through this bridge predicate. Net -1 globalThis
+  // slot. See `isSyncIsPropertyDriven` doc in gxt-bridge.ts and module-local
+  // definition above (`_gxtSyncIsPropertyDrivenFlag`).
+  isSyncIsPropertyDriven: _gxtIsSyncIsPropertyDriven,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
