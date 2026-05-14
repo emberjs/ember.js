@@ -1829,9 +1829,13 @@ const _inElementDeferQueue: Array<() => void> = [];
       try {
         cb();
       } catch (e) {
-        const capture = (globalThis as any).__gxtCaptureRenderError;
-        if (typeof capture === 'function') capture(e);
-        else throw e;
+        // Slice-70 (Cluster B): retired the `__gxtCaptureRenderError`
+        // globalThis hook — orphan dead-code (zero writers in repo or in
+        // the bundled @lifeart/gxt runtime since the slot was introduced
+        // in 047310f7f3). The original defensive guard
+        // (`if (typeof capture === 'function') capture(e); else throw e;`)
+        // always took the `else` branch in practice.
+        throw e;
       }
     }
   };
@@ -2017,13 +2021,14 @@ const _inElementDeferQueue: Array<() => void> = [];
         if (retryRef === null || retryRef === undefined || !(retryRef instanceof Element)) {
           // Genuinely unresolvable — surface the same assertion the
           // synchronous path would have thrown.
-          const err = new Error(
+          //
+          // Slice-70 (Cluster B): retired the `__gxtCaptureRenderError`
+          // globalThis hook here — orphan dead-code (zero writers anywhere
+          // in the repo or the bundled @lifeart/gxt runtime). The original
+          // defensive guard always took the `throw` branch in practice.
+          throw new Error(
             'Assertion Failed: You cannot pass a null or undefined destination element to in-element'
           );
-          const capture = (globalThis as any).__gxtCaptureRenderError;
-          if (typeof capture === 'function') capture(err);
-          else throw err;
-          return;
         }
 
         // Remove previously rendered in-element nodes for this target.
