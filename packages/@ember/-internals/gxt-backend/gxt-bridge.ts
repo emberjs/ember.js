@@ -125,10 +125,11 @@ export interface GxtDestructionCapabilities {
  * dispatching to `_assertFn`. Mirrors the slice-8 host-hook pattern.
  *
  * NOT included in this slice (intentionally deferred):
- *  - `__gxtAssertNotResolvedHelperAsNamedArg` (compile.ts) — referenced by
- *    EMITTED CODE strings (`globalThis.__gxtAssertNotResolvedHelperAsNamedArg(...)`
- *    appears in compiled template output). It's a code-generation hook, not
- *    a runtime bridge target.
+ *  - `__gxtAssertNotResolvedHelperAsNamedArg` (compile.ts) — retired in
+ *    Cluster B slice 74 via inline-emission (slice-72-style). The guard body
+ *    is now declared at the outer Function() scope of the emitted
+ *    `templateFnCode`, gated on detection of the rewritten named-arg helper
+ *    pattern. No runtime bridge target needed.
  *  - `__gxtDebugCompile` (compile.ts reader-only) — read-only debug toggle
  *    a developer flips manually in the browser console; no source writer.
  */

@@ -7819,29 +7819,32 @@ function transformOnModifierHashArgs(template: string): string {
 // render time: if `name` resolves to a registered helper via owner lookup,
 // throw the same error. Otherwise this returns undefined (letting the
 // surrounding expression fall through to its original $_maybeHelper path).
-(globalThis as any).__gxtAssertNotResolvedHelperAsNamedArg = function (
-  name: string,
-  ctx: any
-): void {
-  const g = globalThis as any;
-  // Built-in keyword helpers are handled before owner lookup; they are not
-  // registered helpers, so bail out without checking.
-  const BUILTIN = g.__EMBER_BUILTIN_HELPERS__;
-  if (BUILTIN && BUILTIN[name]) return;
-  // Prefer the owner attached to the current render context; fall back to
-  // the global owner captured by the runtime.
-  const owner = (ctx && (ctx.owner || (ctx[Symbol.for('OWNER')] ?? null))) || g.owner;
-  if (!owner || typeof owner.factoryFor !== 'function') return;
-  const factory = owner.factoryFor(`helper:${name}`);
-  if (!factory) return;
-  const message =
-    `A resolved helper cannot be passed as a named argument as the syntax is ` +
-    `ambiguously a pass-by-reference or invocation. Use the ` +
-    `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
-    `invoke the helper with parens: \`{{(fooHelper)}}\`.`;
-  const err = new Error(message);
-  throw err;
-};
+//
+// Cluster B slice 74 (inline-emission, -1 net):
+//   The pre-slice-74 implementation published `__gxtAssertNotResolvedHelperAsNamedArg`
+//   as a globalThis slot from this module-init site. It was consumed only by
+//   EMITTED template code (the post-processor near the `__gxtAssertNotResolvedHelperAsNamedArg`
+//   reader below — search for the literal — rewrites the bare named-arg
+//   helper pattern `["@name", $_maybeHelper("ident", [], this)]` into
+//   `["@name", (globalThis.__gxtAssertNotResolvedHelperAsNamedArg("ident", this),
+//   $_maybeHelper("ident", [], this))]`).
+//
+//   Slice 74 inlines the guard body directly into the emitted `templateFnCode`
+//   Function() body string (slice-72-style inline-emission) and rewrites the
+//   emitted `globalThis.__gxtAssertNotResolvedHelperAsNamedArg(` shape to a
+//   local `__gxtAssertNotResolvedHelperAsNamedArg(` reference. No Function()
+//   params needed: the guard body closes only over `globalThis.__EMBER_BUILTIN_HELPERS__`
+//   (a stable existing globalThis surface), `Symbol.for('OWNER')` (a JS
+//   builtin), and `globalThis.owner` (existing globalThis surface) — all
+//   reachable from inside the Function() body without a new bridge.
+//
+//   Pre-flight grep confirmed exactly 2 functional sites — writer here +
+//   reader inside the post-processor at the named-arg-helper rewrite below
+//   — with no consumers in `packages/`, `scripts/`, `tests/`, or the bundled
+//   `@lifeart/gxt@0.0.61` runtime. The inline injection is gated on
+//   `hasNamedArgHelperGuard` so templates without the guard pattern pay
+//   zero overhead. See `templateFnCode` builder (search for
+//   `__gxtAssertNotResolvedHelperAsNamedArg`) for the inlined definition.
 
 // Global block params stack for yielded values
 // When a slot is rendered with block params, they're pushed here
@@ -13865,6 +13868,23 @@ export function precompileTemplate(
         modifiedCode = modifiedCode.split('globalThis.__gxtUnboundEval(__ubCache').join('__gxtUnboundEval(__ubCache');
       }
 
+      // Cluster B slice 74 (inline-emission, -1 net):
+      //   Rewrite emitted `globalThis.__gxtAssertNotResolvedHelperAsNamedArg(` →
+      //   local `__gxtAssertNotResolvedHelperAsNamedArg(` so the inline-emitted
+      //   guard function (declared at the outer Function() scope below) is used
+      //   directly. The reader is the post-processor above at the named-arg
+      //   helper rewrite — emits the bare globalThis call shape into
+      //   `modifiedCode`. Gate the injection on detection of the rewritten
+      //   form so templates without the guard pattern pay zero overhead.
+      const hasNamedArgHelperGuard = modifiedCode.includes(
+        'globalThis.__gxtAssertNotResolvedHelperAsNamedArg('
+      );
+      if (hasNamedArgHelperGuard) {
+        modifiedCode = modifiedCode
+          .split('globalThis.__gxtAssertNotResolvedHelperAsNamedArg(')
+          .join('__gxtAssertNotResolvedHelperAsNamedArg(');
+      }
+
       // Cluster B slice 73: inlined `__gxtUnboundEval` definition + per-
       // Function-body `__ubSlots` map declared at the OUTER Function() scope
       // alongside `__ubCache`. Closes over `__ubGT` / `__ubST` Function()
@@ -13891,10 +13911,30 @@ export function precompileTemplate(
           `for (var k in __ubSlots) { delete __ubSlots[k]; }` +
           `}`
         : '';
+
+      // Cluster B slice 74: inlined `__gxtAssertNotResolvedHelperAsNamedArg`
+      // definition declared at the OUTER Function() scope. Closes over
+      // `globalThis.__EMBER_BUILTIN_HELPERS__`, `Symbol.for('OWNER')`, and
+      // `globalThis.owner` — all existing globalThis surfaces, no new bridge
+      // surface introduced. Gated on `hasNamedArgHelperGuard` so templates
+      // without the bare-named-arg-helper pattern pay zero overhead.
+      const namedArgHelperGuardInjection = hasNamedArgHelperGuard
+        ? `function __gxtAssertNotResolvedHelperAsNamedArg(name, ctx) {` +
+          `var g = globalThis;` +
+          `var BUILTIN = g.__EMBER_BUILTIN_HELPERS__;` +
+          `if (BUILTIN && BUILTIN[name]) return;` +
+          `var owner = (ctx && (ctx.owner || (ctx[Symbol.for('OWNER')] || null))) || g.owner;` +
+          `if (!owner || typeof owner.factoryFor !== 'function') return;` +
+          `var factory = owner.factoryFor('helper:' + name);` +
+          `if (!factory) return;` +
+          `throw new Error('A resolved helper cannot be passed as a named argument as the syntax is ambiguously a pass-by-reference or invocation. Use the \`{{helper \\'foo-helper}}\` helper to pass by reference or explicitly invoke the helper with parens: \`{{(fooHelper)}}\`.');` +
+          `}`
+        : '';
       const templateFnCode = `
         "use strict";
         ${hasUnbound ? 'var __ubCache = Object.create(null);' : ''}
         ${unboundEvalInjection}
+        ${namedArgHelperGuardInjection}
         ${uidOuterScope}
         ${strictMaybeHelperInjection}
         return function() {
