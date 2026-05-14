@@ -388,8 +388,11 @@ export interface GxtFormatCapabilities {
  *    `__gxtLastArgSourceCtx` pair WAS LATER MIGRATED IN SLICE 43 to
  *    module-local `_lastArgSourceKey` / `_lastArgSourceCtx` in
  *    `manager.ts` (zero-bridge intra-file precedent — see the slice 43
- *    entry below for the full topology). `__gxtTrackArgSource` is
- *    still pending and a candidate for a follow-up zero-bridge slice.
+ *    entry below for the full topology). `__gxtTrackArgSource` WAS
+ *    LATER MIGRATED IN SLICE 44 to module-local `_gxtTrackArgSource`
+ *    in `manager.ts`, closing the arg-source-detection triad — see
+ *    the slice 44 entry below for the full topology. All three slots
+ *    are now module-local; the triad is fully retired from globalThis.
  *  - `__gxtSyncAllWrappers` — MIGRATED IN SLICE 12 to `syncAllWrappers` on this
  *    namespace. First wrap-by-reassignment to use the slice-3 relocation
  *    pattern instead of the slice-8/10/11 host-hook pattern: the wrap bodies
@@ -1216,13 +1219,77 @@ export interface GxtFormatCapabilities {
  *    statements added.
  *
  *    The companion `__gxtTrackArgSource` flag (the boolean gate that
- *    arms the proxy trap before the probe getter call) remains on
- *    `globalThis` post-slice-43 — it is a candidate for a subsequent
- *    zero-bridge intra-file slice (also intra-`manager.ts`, 5 sites:
- *    2 writers + 1 trap-read in `manager.ts:2019/2025/2030/6777` and
- *    the proxy `get` trap reader at `manager.ts:6777`). Slice 43 limits
- *    scope to the paired writeback channel to preserve the per-slice
- *    "one logical unit" rule.
+ *    arms the proxy trap before the probe getter call) remained on
+ *    `globalThis` post-slice-43 and WAS LATER MIGRATED IN SLICE 44 —
+ *    see the slice 44 entry below. Slice 43 limited scope to the
+ *    paired writeback channel to preserve the per-slice "one logical
+ *    unit" rule; slice 44 completed the triad as a follow-up zero-
+ *    bridge intra-file slice.
+ *  - `__gxtTrackArgSource` — MIGRATED IN SLICE 44 to module-local
+ *    `_gxtTrackArgSource: boolean` in `manager.ts` (slice-31/43 zero-
+ *    bridge intra-file precedent). Closes the arg-source-detection
+ *    triad started by slice 43: pre-slice-44 the triad was 1
+ *    globalThis slot (`__gxtTrackArgSource`) + 2 module-locals
+ *    (`_lastArgSourceKey` / `_lastArgSourceCtx`); post-slice-44 all
+ *    three slots are module-local. The flag is a transient boolean
+ *    gate armed by the probe in `_installPropertyDidChangeOverride`
+ *    (manager.ts L2018+) before invoking each component arg getter,
+ *    and read by the renderContext proxy `get` trap (manager.ts
+ *    L6826+) to decide whether to record the (prop, target) pair
+ *    into the slice-43 `_lastArgSourceKey` / `_lastArgSourceCtx`
+ *    slots. The pre-slice-44 topology was 4 active sites all
+ *    intra-`manager.ts`:
+ *      Writers (3 sites, in the probe block):
+ *        - `manager.ts:2019` — `g.__gxtTrackArgSource = true` (probe-
+ *          arm, immediately before clearing the slice-43 slots and
+ *          invoking the arg getter)
+ *        - `manager.ts:2032` — `g.__gxtTrackArgSource = false`
+ *          (success-path probe-disarm, after reading back the slice-43
+ *          slots)
+ *        - `manager.ts:2037` — `g.__gxtTrackArgSource = false`
+ *          (catch-path probe-disarm, defensive cleanup if the getter
+ *          throws)
+ *      Readers (1 site, in the proxy `get` trap):
+ *        - `manager.ts:6833` — `if (typeof prop === 'string' &&
+ *          g.__gxtTrackArgSource) { ... }` (gate-read; fires on every
+ *          proxy property read but the gate is only truthy during the
+ *          probe)
+ *    Slice 44 graduates the canonical state to module-local
+ *    `_gxtTrackArgSource: boolean` in `manager.ts` (initialized to
+ *    `false`). All 4 active sites migrate to direct module-local
+ *    accesses; no bridge surface is added (zero cross-file consumers
+ *    — confirmed by exhaustive grep across `packages/`). Net
+ *    globalThis surface delta: -1 slot. The `__gxtTrackArgSource`
+ *    globalThis slot is DROPPED in this slice.
+ *
+ *    State-home decision: `manager.ts` (canonical-home rule — all
+ *    writers and the sole reader live in `manager.ts`, no cross-file
+ *    consumers, proxy `get` trap is hot so intra-file direct-variable
+ *    access is preferred for perf).
+ *
+ *    Bridge shape decision: ZERO-bridge intra-file (slice-31/43
+ *    precedent — pure intra-file reader+writer cluster). Slice 44
+ *    cannot benefit from any bridge shape (predicate, get-only,
+ *    paired get/set, paired methods) because there are zero cross-
+ *    file consumers. This is the leanest possible shape: module-
+ *    local `let` boolean with `false`-initial / armed `true` /
+ *    disarmed `false` lifecycle.
+ *
+ *    ZERO new import edges in slice 44: the four consumers are
+ *    already in `manager.ts`; no `getGxtRenderer` calls, no
+ *    `installCompilePipelinePart` calls, no `from './gxt-bridge'`
+ *    statements added. Slice 44 — like slice 43 — is a pure zero-
+ *    bridge intra-file migration; only a module-local `let`
+ *    declaration and 4 inline accessor migrations.
+ *
+ *    Bridge interface evolution (slice 44 — no API change): the
+ *    bridge interface `GxtCompilePipelineCapabilities` is NOT extended
+ *    in this slice (zero-bridge intra-file). The migration-history
+ *    docblock IS extended with the full slice-44 entry for
+ *    documentation. This is the second consecutive Cluster B slice
+ *    (after slice 43) to ship without a new bridge method, completing
+ *    the arg-source-detection triad fully under the canonical-home
+ *    rule.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
