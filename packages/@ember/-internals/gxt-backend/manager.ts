@@ -1045,9 +1045,26 @@ function addChildView(parent: any, child: any): void {
 const instancePools = new WeakMap<any, Map<any, PoolEntry[]>>();
 const parentRenderFrames = new WeakMap<any, Symbol>();
 
-// Track all pool arrays for iteration in __gxtDestroyUnclaimedPoolEntries
+// Track all pool arrays for iteration in __gxtDestroyUnclaimedPoolEntries.
+//
+// Slice-32 (Cluster B): the pre-slice-32 `globalThis.__gxtAllPoolArrays`
+// writer at this site is DROPPED. The canonical state is the module-local
+// `_allPoolArrays` Set defined below; the cross-file reader in compile.ts
+// routes through the new `compilePipeline.getAllPoolArrays?.()` bridge
+// getter wired up by `setGxtRenderer` at the bottom of this file. Reader
+// topology:
+//   - intra-file (manager.ts `_gxtSyncAllWrappers` pre-body proactive wrap
+//     of pool-instance `trigger`s for fire-tracking): direct read of
+//     `_allPoolArrays` (slice-22/24/27/31 precedent for intra-file readers).
+//   - cross-file (compile.ts `wrappedInverseFn` inverse-branch teardown
+//     of pool instances under captured parent view): routes through the
+//     bridge getter `compilePipeline.getAllPoolArrays?.() ?? undefined`.
+// See `getAllPoolArrays` doc in `gxt-bridge.ts` for the full migration
+// topology. Net globalThis surface delta: -1 slot.
 const _allPoolArrays = new Set<PoolEntry[]>();
-(globalThis as any).__gxtAllPoolArrays = _allPoolArrays;
+function _gxtGetAllPoolArrays(): Set<PoolEntry[]> {
+  return _allPoolArrays;
+}
 
 // Sentinel object for root-level components (no parent view)
 const ROOT_PARENT_SENTINEL = {};
@@ -3639,15 +3656,19 @@ function _gxtRecordDirtiedNestedObject(obj: object, _keyName: string): void {
 // reassignment + defineProperty trap (compile.ts:5068-5206
 // `_installSyncAllFiredMarker` + setter trap) AND the three ember-gxt-wrappers.ts
 // wrap-by-reassignment sites (L1872, L2043, L2321 — DC change listener
-// dispatch) into the canonical body below. State crossed via globalThis
-// (`__gxtAllPoolArrays`; the pre-slice-14 entry `__dcChangeListeners` is
-// now module-local; the pre-slice-30 entry `__gxtSyncCycleId` was
-// graduated to a module-local in slice 30 and is now read via
+// dispatch) into the canonical body below. State previously crossed via
+// globalThis is now all module-local (the pre-slice-14 entry
+// `__dcChangeListeners` was graduated to a module-local `_dcChangeListeners`
+// Set in slice 14; the pre-slice-30 entry `__gxtSyncCycleId` was graduated
+// to a module-local in slice 30 and is now read via
 // `compilePipeline.getSyncCycleId`; the pre-slice-31 entries
-// `__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle` were
-// graduated to module-local `_gxtSyncAllInFlightPass` /
-// `_gxtSyncAllInFlightCycle` in slice 31) so no closures needed to be
-// moved.
+// `__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle` were graduated
+// to module-local `_gxtSyncAllInFlightPass` / `_gxtSyncAllInFlightCycle`
+// in slice 31; the pre-slice-32 entry `__gxtAllPoolArrays` was graduated
+// to the module-local `_allPoolArrays` Set defined earlier in this file
+// in slice 32 — the intra-file reader below goes direct, the cross-file
+// reader in `compile.ts`'s `wrappedInverseFn` routes through
+// `compilePipeline.getAllPoolArrays`) so no closures needed to be moved.
 
 // Slice-14 (Cluster B): the `__dcChangeListeners` Set and
 // `__dcStringListenerCount` counter that were left as globalThis-shared
@@ -3821,13 +3842,16 @@ function _gxtSyncAllWrappers(): void {
   _gxtSyncAllInFlightCycle = __curCycle;
   // Proactively wrap `trigger` on all known-alive instances in all pool
   // arrays so update-hook triggers fired during the body are recorded.
+  //
+  // Slice-32 (Cluster B): intra-file direct read of the module-local
+  // `_allPoolArrays` Set (graduated from `globalThis.__gxtAllPoolArrays`).
+  // No bridge round-trip — same slice-22/24/27/31 intra-file-reader
+  // precedent (cross-file readers use the bridge getter; intra-file
+  // readers go direct).
   try {
-    const pools = g.__gxtAllPoolArrays;
-    if (pools) {
-      for (const poolArr of pools) {
-        for (const entry of poolArr) {
-          _wrapInstanceTriggerForSyncAllMark(entry && entry.instance);
-        }
+    for (const poolArr of _allPoolArrays) {
+      for (const entry of poolArr) {
+        _wrapInstanceTriggerForSyncAllMark(entry && entry.instance);
       }
     }
   } catch {
@@ -12951,6 +12975,17 @@ setGxtRenderer({
     addDynamicComponentListener: _gxtAddDynamicComponentListener,
     clearDynamicComponentListeners: _gxtClearDynamicComponentListeners,
     hasStringDynamicComponentListeners: _gxtHasStringDynamicComponentListeners,
+    // Slice-32 (Cluster B): seeded here with the canonical `_gxtGetAllPoolArrays`
+    // getter exposing the manager.ts-local `_allPoolArrays` Set. Replaces the
+    // pre-slice-32 `globalThis.__gxtAllPoolArrays` slot (writer at
+    // manager.ts:1050 above, intra-file reader at `_gxtSyncAllWrappers`
+    // pre-body proactive-wrap loop, cross-file reader at compile.ts's
+    // `wrappedInverseFn` inverse-branch teardown). The intra-file reader
+    // goes direct (slice-22/24/27/31 precedent); the cross-file reader
+    // routes through this bridge getter. Read-only — the Set is mutated
+    // intra-file by `getCachedOrCreateInstance` / `_gxtClearInstancePools`.
+    // See `getAllPoolArrays` doc in gxt-bridge.ts. Net -1 globalThis slot.
+    getAllPoolArrays: _gxtGetAllPoolArrays,
   },
   renderPass: {
     // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is

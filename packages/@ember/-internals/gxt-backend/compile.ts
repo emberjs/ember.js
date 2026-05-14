@@ -5140,7 +5140,16 @@ function patchGlobalEachSync() {
             (capturedParent as any).__gxtInverseDestroyFiredCycle === currentCycle;
           if (isSyncing && !alreadyFired && capturedParent) {
             (capturedParent as any).__gxtInverseDestroyFiredCycle = currentCycle;
-            const allPools = g.__gxtAllPoolArrays;
+            // Slice-32 (Cluster B): cross-file read of the manager.ts-local
+            // `_allPoolArrays` Set via the bridge getter (graduated from
+            // `globalThis.__gxtAllPoolArrays` in slice 32). The intra-file
+            // reader in manager.ts goes direct; this cross-file reader
+            // routes through the bridge. `?.() ?? undefined` preserves the
+            // pre-slice-32 truthy-coerce semantics (`undefined` when the
+            // bridge is not yet installed falls through the `if (allPools)`
+            // gate, same as pre-slice-32 `undefined` from the globalThis
+            // slot before manager.ts's module init runs).
+            const allPools = getGxtRenderer()?.compilePipeline.getAllPoolArrays?.();
             if (allPools) {
               // Collect live instances whose parentView chain includes
               // capturedParent — these are the children torn down by the
@@ -5556,14 +5565,19 @@ function _resetTemplateOnlyState() {
 // `getGxtRenderer()?.compilePipeline.syncAllWrappers?.()`).
 //
 // First wrap-by-reassignment migrated via the slice-3 relocation pattern
-// instead of the slice-8/10/11 host-hook pattern. The state crossed via
-// globalThis was intra-package (`__gxtAllPoolArrays`; the pre-slice-14
-// entry `__dcChangeListeners` is now module-local; the pre-slice-30 entry
-// `__gxtSyncCycleId` was graduated to a module-local in slice 30; the
-// pre-slice-31 entries `__gxtSyncAllInFlightPass` /
-// `__gxtSyncAllInFlightCycle` were graduated to module-locals in slice 31)
-// so no closures had to move; the wrap bodies referenced ONLY shared
-// globals.
+// instead of the slice-8/10/11 host-hook pattern. The state previously
+// crossed via globalThis is now all module-local (the pre-slice-14 entry
+// `__dcChangeListeners` was graduated to a module-local `_dcChangeListeners`
+// Set in slice 14; the pre-slice-30 entry `__gxtSyncCycleId` was graduated
+// to a module-local in slice 30; the pre-slice-31 entries
+// `__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle` were graduated
+// to module-locals in slice 31; the pre-slice-32 entry `__gxtAllPoolArrays`
+// was graduated to the module-local `_allPoolArrays` Set in
+// `gxt-backend/manager.ts` in slice 32, with intra-file readers reading
+// the Set directly and cross-file readers routing through
+// `compilePipeline.getAllPoolArrays`) so no closures had to move; the wrap
+// bodies referenced ONLY shared state now reachable via the bridge or
+// module-local references.
 
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.

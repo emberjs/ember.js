@@ -498,6 +498,24 @@ export interface GxtFormatCapabilities {
  *    readers, so no bridge surface is needed at all). Net globalThis
  *    surface delta: -2 slots in a single slice (the largest single-slice
  *    surface reduction in Cluster B so far).
+ *  - `__gxtAllPoolArrays` — MIGRATED IN SLICE 32 to `getAllPoolArrays()` on
+ *    this namespace. The pre-slice-32 topology was 1 writer (manager.ts:1050
+ *    one-time `(globalThis as any).__gxtAllPoolArrays = _allPoolArrays`
+ *    publish of the manager.ts-local Set) and 2 readers (1 intra-file in
+ *    `manager.ts`'s `_gxtSyncAllWrappers` pre-body proactive-wrap loop,
+ *    1 cross-file in `compile.ts`'s `wrappedInverseFn` inverse-branch
+ *    teardown of pool instances under the captured parent view). Slice 32
+ *    matches the slice-30 read-only-bridge-getter shape applied to a
+ *    `Set`-valued canonical state instead of an integer counter — the
+ *    cross-file reader was the only consumer needing a bridge surface, and
+ *    the read-only contract reflects that the Set is mutated intra-file by
+ *    `getCachedOrCreateInstance` / `_gxtClearInstancePools`. The intra-file
+ *    reader goes direct against `_allPoolArrays` (slice-22/24/27/30/31
+ *    intra-file-reader precedent). The `__gxtAllPoolArrays` globalThis slot
+ *    is DROPPED in this slice — net -1 globalThis surface. First slice to
+ *    expose a read-only `Set`-getter bridge method (slices 19/20/22 are
+ *    read-only booleans, slice 30 is a read-only integer-getter; slice 32
+ *    is the `Set`-getter analogue).
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -548,15 +566,18 @@ export interface GxtCompilePipelineCapabilities {
    * `trigger`s for fire-tracking) and after-body (clear in-flight state,
    * dispatch DC change listeners) into the canonical function body. State
    * referenced by both halves of the wrap is intra-package
-   * (`__gxtAllPoolArrays`; the pre-slice-14 entry `__dcChangeListeners` is
-   * now module-local; the pre-slice-30 entry `__gxtSyncCycleId` was
-   * graduated to a module-local in slice 30; the pre-slice-31 entries
-   * `__gxtSyncAllInFlightPass` / `__gxtSyncAllInFlightCycle` were
-   * graduated to module-local state in slice 31) — no closures had to
-   * move, so the slice-3 relocation pattern applied directly (first
-   * wrap-by-reassignment to use it; slices 8/10/11 used the host-hook
-   * pattern instead because their wrap bodies closed over compile.ts
-   * module-local state).
+   * (the pre-slice-14 entry `__dcChangeListeners` is now module-local; the
+   * pre-slice-30 entry `__gxtSyncCycleId` was graduated to a module-local
+   * in slice 30; the pre-slice-31 entries `__gxtSyncAllInFlightPass` /
+   * `__gxtSyncAllInFlightCycle` were graduated to module-local state in
+   * slice 31; the pre-slice-32 entry `__gxtAllPoolArrays` was graduated
+   * to the module-local `_allPoolArrays` in `manager.ts` in slice 32 and
+   * is now read via `compilePipeline.getAllPoolArrays` cross-file or
+   * `_allPoolArrays` direct intra-file) — no closures had to move, so
+   * the slice-3 relocation pattern applied directly (first wrap-by-
+   * reassignment to use it; slices 8/10/11 used the host-hook pattern
+   * instead because their wrap bodies closed over compile.ts module-local
+   * state).
    *
    * Previously: `(globalThis as any).__gxtSyncAllWrappers`.
    *
@@ -1524,6 +1545,82 @@ export interface GxtCompilePipelineCapabilities {
    * Net globalThis surface delta: -1 slot.
    */
   getSyncCycleId?(): number;
+
+  /**
+   * Read-only access to the Set of pool arrays tracked by manager.ts's
+   * component-instance pool. Each pool array is a list of `PoolEntry`
+   * records (`{ instance, claimed, updatedThisPass, eachRowKey? }`); the
+   * Set itself is the master registry of every pool array ever created by
+   * `getCachedOrCreateInstance`. Mutations (additions on new pool creation,
+   * `clear()` on `_gxtClearInstancePools` per-test teardown) happen
+   * intra-file in `manager.ts`; the bridge surface is read-only.
+   *
+   * Slice-32 (Cluster B): graduates the canonical state from the pre-slice-32
+   * `globalThis.__gxtAllPoolArrays` slot (one-time publish at
+   * `manager.ts:1050`) to the module-local `_allPoolArrays` Set in
+   * `gxt-backend/manager.ts`. The pre-slice-32 read pattern was uniform:
+   * `const pools = g.__gxtAllPoolArrays; if (pools) { ... }` — the only
+   * intentional value of the truthy guard is the bridge-not-yet-installed
+   * edge (pre-publish `g.__gxtAllPoolArrays` was `undefined`, so all
+   * readers saw fall-through). The bridge contract preserves this:
+   * `getAllPoolArrays?.()` returns `undefined` when the bridge is not
+   * installed (defensive optional chain on the install method itself),
+   * and the canonical implementation returns the live Set otherwise.
+   *
+   * Reader topology after slice 32:
+   *  - intra-file `manager.ts` (1 site — `_gxtSyncAllWrappers` pre-body
+   *    proactive wrap of pool-instance `trigger`s for fire-tracking):
+   *    direct iteration over the module-local `_allPoolArrays` Set
+   *    (slice-22/24/27/30/31 intra-file-reader precedent).
+   *  - cross-file `compile.ts` (1 site — `wrappedInverseFn` inverse-branch
+   *    teardown of pool instances under the captured parent view during
+   *    `{{#each ... else}}` transitions to the empty-list branch):
+   *    routes through `compilePipeline.getAllPoolArrays?.()` and gates
+   *    the iteration on the truthy return.
+   *
+   * Bridge shape decision: single-method read (`getAllPoolArrays?(): Set<unknown[]> | undefined`).
+   * Matches the slice-30 read-only-getter pattern (slice 30 exposes a
+   * `number` getter; slice 32 is the `Set`-getter analogue). No writer
+   * is exposed — the Set is mutated by `getCachedOrCreateInstance` (adds
+   * new pool arrays on first instance creation in a cache-key slot) and
+   * `_gxtClearInstancePools` (clears between tests), both intra-file in
+   * `manager.ts`. No save-restore variant is exposed (no caller needs to
+   * temporarily swap the master pool registry).
+   *
+   * Namespace decision: `compilePipeline`. The canonical state lives in
+   * `manager.ts` but the bridge namespace is contributed via the direct
+   * `setGxtRenderer` seeding (alongside `syncAllWrappers`,
+   * `clearInstancePools`, `snapshotLiveInstances`, and the slice-14
+   * dynamic-component listener triad — all manager.ts-canonical
+   * compilePipeline methods). Same namespace pattern as slices 13/14.
+   *
+   * Bridge interface evolution (slice 32 — twenty-fifth API change):
+   * `GxtCompilePipelineCapabilities` extended with ONE new optional method
+   * (`getAllPoolArrays?(): Set<unknown[]> | undefined`) — read-only Set
+   * access. First slice to expose a read-only `Set`-getter bridge method
+   * (slice 19/20/22 are read-only booleans, slice 30 is a read-only
+   * integer-getter; slice 32 is the `Set`-getter analogue).
+   *
+   * Bridge-not-yet-installed edge: cross-file reader uses
+   * `?.() ?? undefined` (the trailing `?? undefined` is structurally a
+   * no-op for the cross-file reader's `if (allPools)` gate, but is
+   * preserved in commentary as the explicit truthy-coerce parallel to
+   * slice-30's `?? 0`). The manager.ts writer (`_allPoolArrays = new
+   * Set()` at module-init) runs before any `setGxtRenderer` is observable
+   * by a reader, so the canonical Set is always populated when the
+   * `getAllPoolArrays` getter is callable.
+   *
+   * Fast-check: implementation is `return _allPoolArrays;` — one variable
+   * read; zero allocations. Identical hot-path cost to the pre-slice-32
+   * globalThis read. The reader's `if (allPools)` gate continues to
+   * dominate the post-slice-32 cost too (the slice-32 implementation
+   * always returns a non-`undefined` Set when the bridge is installed, so
+   * the gate becomes a `Set.size > 0` check in practice — pre-slice-32
+   * the same gate handled both the `undefined` and empty-Set cases). The
+   * `__gxtAllPoolArrays` globalThis slot is DROPPED in this slice — net
+   * -1 globalThis surface.
+   */
+  getAllPoolArrays?(): Set<unknown[]> | undefined;
 }
 
 /**
