@@ -145,12 +145,17 @@ export abstract class AbstractStrictTestCase {
       }
     } finally {
       _resetRenderers();
-      (globalThis as any).__gxtPendingSync = false;
+      // Slice-37 (Cluster B): `__gxtPendingSync` canonical state migrated
+      // to module-local `_gxtPendingSyncFlag` in `compile.ts`. Test-
+      // helper writer-contract — routes through the bridge setter
+      // (reuses slice-36 test-helper-bridge-writer pattern).
+      const _cpAT = getGxtRenderer()?.compilePipeline;
+      _cpAT?.setPendingSync?.(false);
       // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
       // canonical state migrated to module-local
       // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`.
       // Test-helper writer-contract — routes through the bridge setter.
-      getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
+      _cpAT?.setPendingSyncFromPropertyChange?.(false);
       // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed.
       // Clear stale render errors so they don't leak into the next test's
       // beforeEach. Errors like backtracking assertions are caught by

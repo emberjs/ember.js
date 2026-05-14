@@ -67,14 +67,20 @@ export function runAppend(view: any): void {
   // itself (e.g., from syncAll triggering property changes). This prevents
   // the setInterval(16ms) fallback from firing another sync that would
   // re-evaluate each-formulas with stale values.
-  (globalThis as any).__gxtPendingSync = false;
+  // Slice-37 (Cluster B): `__gxtPendingSync` canonical state migrated to
+  // module-local `_gxtPendingSyncFlag` in `compile.ts`. Test-helper
+  // writer-contract — routes through the bridge setter (reuses slice-36
+  // test-helper-bridge-writer pattern). See `setPendingSync` doc in
+  // gxt-bridge.ts.
+  const _cpRA = getGxtRenderer()?.compilePipeline;
+  _cpRA?.setPendingSync?.(false);
   // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange` canonical
   // state migrated to module-local `_gxtPendingSyncFromPropertyChangeFlag`
   // in `compile.ts`. Test-helper writer-contract — routes through the
   // bridge setter.
-  getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
+  _cpRA?.setPendingSyncFromPropertyChange?.(false);
   // Reset interval sync budget after an explicit sync
-  getGxtRenderer()?.compilePipeline.resetIntervalBudget?.();
+  _cpRA?.resetIntervalBudget?.();
   // Phase 3 step 7: the post-render flushRenderErrors() call was deleted.
   // Init-phase render errors now propagate synchronously through renderer.ts's
   // template.render() try/catch (Option C2, Phase 3 step 5). Lifecycle errors
@@ -148,17 +154,21 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   // After the sync, clear any pending flags to prevent the setInterval(16ms)
   // fallback from firing another sync that could produce incorrect DOM.
   // The explicit sync above already handled all pending updates.
-  (globalThis as any).__gxtPendingSync = false;
+  // Slice-37 (Cluster B): `__gxtPendingSync` canonical state migrated to
+  // module-local `_gxtPendingSyncFlag` in `compile.ts`. Test-helper
+  // writer-contract — routes through the bridge setter.
+  const _cpRT = getGxtRenderer()?.compilePipeline;
+  _cpRT?.setPendingSync?.(false);
   // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange` canonical
   // state migrated to module-local `_gxtPendingSyncFromPropertyChangeFlag`
   // in `compile.ts`. Test-helper writer-contract — routes through the
   // bridge setter.
-  getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
+  _cpRT?.setPendingSyncFromPropertyChange?.(false);
   // Also clear tagsToRevalidate to prevent stale cells from re-evaluating
   const clearTags = (globalThis as any).__gxtClearTagsToRevalidate;
   if (typeof clearTags === 'function') clearTags();
   // Reset interval sync budget after an explicit runTask sync
-  getGxtRenderer()?.compilePipeline.resetIntervalBudget?.();
+  _cpRT?.resetIntervalBudget?.();
   // Phase 3 step 8: the runTask post-task flushRenderErrors() call was
   // deleted. Destroy-during-runTask errors used to require this drain
   // because __gxtDestroyUnclaimedPoolEntries Phase 3 captured throws into

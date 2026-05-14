@@ -1270,9 +1270,15 @@ if (!__GXT_MODE__) {
   // not inside runTask (which performs its own explicit sync).
   _backburner.on('end', (_curr: unknown, nextInstance: unknown) => {
     loops = 0;
+    // Slice-37 (Cluster B): `__gxtPendingSync` canonical state migrated to
+    // module-local `_gxtPendingSyncFlag` in `compile.ts`. Cross-package
+    // reader routes through the bridge getter (load-order-safe optional
+    // chain — by the time this `_backburner.on('end', ...)` listener
+    // fires, compile.ts's `installCompilePipelinePart` has run and the
+    // getter is installed). See `getPendingSync` doc in gxt-bridge.ts.
     if (
       nextInstance == null &&
-      (globalThis as any).__gxtPendingSync &&
+      getGxtRenderer()?.compilePipeline.getPendingSync?.() &&
       !(globalThis as any).__gxtRunTaskActive
     ) {
       const syncNow = (globalThis as any).__gxtSyncDomNow;
@@ -1676,7 +1682,13 @@ class RendererState {
     // But explicit .rerender() calls set __gxtForceRerender on the component
     // and need a sync pass to flush the hooks.
     if (__GXT_MODE__) {
-      (globalThis as any).__gxtPendingSync = true;
+      // Slice-37 (Cluster B): `__gxtPendingSync` canonical state migrated
+      // to module-local `_gxtPendingSyncFlag` in `compile.ts`. Cross-
+      // package writer routes through the bridge setter (load-order-safe
+      // optional chain — by the time `revalidate` fires, compile.ts's
+      // `installCompilePipelinePart` has run and the setter is
+      // installed). See `setPendingSync` doc in gxt-bridge.ts.
+      getGxtRenderer()?.compilePipeline.setPendingSync?.(true);
       return;
     }
     if (this.isValid()) {

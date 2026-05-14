@@ -108,12 +108,20 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
           // next assertion runs.
           const syncDomNow = (globalThis as any).__gxtSyncDomNow;
           if (typeof syncDomNow === 'function') {
-            (globalThis as any).__gxtPendingSync = true;
+            // Slice-37 (Cluster B): `__gxtPendingSync` canonical state
+            // migrated to module-local `_gxtPendingSyncFlag` in
+            // `compile.ts`. Cross-package writer routes through the
+            // bridge setter (load-order-safe optional chain — by the time
+            // this transition LinkTo path fires, compile.ts's
+            // `installCompilePipelinePart` has run and the setter is
+            // installed). See `setPendingSync` doc in gxt-bridge.ts.
+            const _cpRouter = getGxtRenderer()?.compilePipeline;
+            _cpRouter?.setPendingSync?.(true);
             // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
             // canonical state migrated to module-local
             // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`.
             // Cross-package writer routes through the bridge setter.
-            getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(true);
+            _cpRouter?.setPendingSyncFromPropertyChange?.(true);
             syncDomNow();
           }
         }

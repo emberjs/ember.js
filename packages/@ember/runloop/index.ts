@@ -3,6 +3,13 @@ import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
 import Backburner, { type Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
+// Slice-37 (Cluster B) cross-package reader for `__gxtPendingSync` — the
+// canonical state has migrated to module-local `_gxtPendingSyncFlag` in
+// `@ember/-internals/gxt-backend/compile.ts`. The runloop's `onEnd` hook
+// reads the flag via the bridge getter. `gxt-bridge` is a LEAF module (no
+// internal gxt-backend deps) so this import does not introduce a cycle
+// with `gxt-backend/destroyable.ts:26`'s import of `@ember/runloop`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 export type { Timer };
 
@@ -65,7 +72,17 @@ function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
       // This ensures tracked property changes from bare run() calls (e.g.,
       // renderComponent tests) are reflected in the DOM before assertions run,
       // without double-syncing during runTask calls.
-      if ((globalThis as any).__gxtPendingSync && !(globalThis as any).__gxtRunTaskActive) {
+      // Slice-37 (Cluster B): `__gxtPendingSync` canonical state migrated
+      // to module-local `_gxtPendingSyncFlag` in `compile.ts`. Cross-
+      // package reader routes through the bridge getter (load-order-safe
+      // optional chain — by the time the onEnd hook fires for a non-
+      // terminal runloop, compile.ts's `installCompilePipelinePart` has
+      // run and the getter is installed). See `getPendingSync` doc in
+      // gxt-bridge.ts.
+      if (
+        getGxtRenderer()?.compilePipeline.getPendingSync?.() &&
+        !(globalThis as any).__gxtRunTaskActive
+      ) {
         const syncNow = (globalThis as any).__gxtSyncDomNow;
         if (typeof syncNow === 'function') {
           try {

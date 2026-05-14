@@ -146,12 +146,17 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     } finally {
       _resetRenderers();
       // Reset pending sync AFTER destroy
-      (globalThis as any).__gxtPendingSync = false;
+      // Slice-37 (Cluster B): `__gxtPendingSync` canonical state migrated
+      // to module-local `_gxtPendingSyncFlag` in `compile.ts`. Test-
+      // helper writer-contract — routes through the bridge setter
+      // (reuses slice-36 test-helper-bridge-writer pattern).
+      const _cpRC = getGxtRenderer()?.compilePipeline;
+      _cpRC?.setPendingSync?.(false);
       // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
       // canonical state migrated to module-local
       // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`.
       // Test-helper writer-contract — routes through the bridge setter.
-      getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
+      _cpRC?.setPendingSyncFromPropertyChange?.(false);
       // Replace #qunit-fixture element to drop accumulated event listeners
       // (EventDispatcher.setup adds listeners that aren't always cleaned up)
       const fixture = document.getElementById('qunit-fixture');
