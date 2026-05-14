@@ -37,12 +37,16 @@ function strictResolver(project: Project) {
 
         /**
          * See: https://github.com/embroider-build/embroider/issues/2708
+         *
+         * @embroider/virtual/compat-modules emits keys like
+         * \`<modulePrefix>/<rest>\`. The strict resolver expects \`./<rest>\`.
          */
         function fixModulePrefix(modules) {
           let fixed = {};
+          let prefix = config.modulePrefix + '/';
 
           for (let [key, module] of Object.entries(modules)) {
-            let newName = key.replace(new RegExp(\`/\${config.modulePrefix}\//\`), './');
+            let newName = key.startsWith(prefix) ? './' + key.slice(prefix.length) : key;
             fixed[newName] = module;
           }
 
