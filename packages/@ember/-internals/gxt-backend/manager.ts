@@ -3101,8 +3101,7 @@ export function checkBacktracking(targetObj: any, key: string): void {
       // Found via raw→proxy lookup
     } else {
       // The target might be the raw object while the set has the proxy.
-      const proxyMap = (globalThis as any).__gxtNestedTrackingProxies;
-      const proxyOfTarget = proxyMap?.get?.(targetObj);
+      const proxyOfTarget = _nestedTrackingProxies.get(targetObj);
       if (!proxyOfTarget || !_templateRenderedInstances.has(proxyOfTarget)) {
         return;
       }
@@ -5630,7 +5629,6 @@ function buildWrapperElement(instance: any, args: any, componentDef: any): HTMLE
  * identity comparisons stay stable.
  */
 const _nestedTrackingProxies = new WeakMap<object, any>();
-(globalThis as any).__gxtNestedTrackingProxies = _nestedTrackingProxies;
 const _proxyToRaw = new WeakMap<object, any>();
 
 function wrapNestedObjectForTracking(obj: any): any {

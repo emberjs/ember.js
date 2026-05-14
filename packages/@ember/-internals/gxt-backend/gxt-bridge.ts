@@ -1556,6 +1556,98 @@ export interface GxtFormatCapabilities {
  *    read + 2 writes). Post-slice-47 it's 3 module-local accesses —
  *    all directly inlineable by V8. The L511 max-depth check (`depth
  *    > 20`) is unchanged.
+ *
+ *  - `__gxtNestedTrackingProxies` — MIGRATED IN SLICE 48 to direct
+ *    access of the pre-existing module-local const in
+ *    `packages/@ember/-internals/gxt-backend/manager.ts`. This is the
+ *    simplest possible Cluster B slice — the canonical state already
+ *    existed as a module-local const since the original
+ *    `wrapNestedObjectForTracking` implementation; slice 48 just
+ *    retires the globalThis projection and redirects the one reader
+ *    to direct const access.
+ *
+ *    Pre-slice-48 topology (confirmed audit — exactly 2 sites,
+ *    BOTH in `manager.ts`):
+ *
+ *      Canonical state (already module-local pre-slice-48):
+ *        - `manager.ts:5632` —
+ *          `const _nestedTrackingProxies = new WeakMap<object, any>();`
+ *          (pre-existing — added with the original
+ *          `wrapNestedObjectForTracking` impl)
+ *
+ *      Writer (1 site — the ONLY writer was the globalThis projection):
+ *        - `manager.ts:5633` —
+ *          `(globalThis as any).__gxtNestedTrackingProxies = _nestedTrackingProxies;`
+ *          (module-init projection right after the const — purely a
+ *          globalThis-side mirror so the cross-context reader could
+ *          see the same WeakMap)
+ *
+ *      Reader (1 site):
+ *        - `manager.ts:3104` —
+ *          `const proxyMap = (globalThis as any).__gxtNestedTrackingProxies;`
+ *          (raw→proxy lookup fallback in the template-rendered
+ *          backtracking check; reads the WeakMap to discover whether
+ *          a raw target object has a registered tracking proxy)
+ *
+ *    The mechanism's semantics: WeakMap cache of raw-object →
+ *    tracking-proxy wrapper used by `wrapNestedObjectForTracking`. The
+ *    L3104 reader path looks up whether a raw target object has a
+ *    registered proxy in the cache; used during the backtracking guard
+ *    ("instance's template already rendered this pass"). After
+ *    slice 48, the reader uses the const directly; behavior unchanged.
+ *
+ *    All 2 active sites are intra-`manager.ts` (confirmed by
+ *    exhaustive grep across `packages/`). Zero cross-file consumers.
+ *    Zero cross-package consumers. The pre-existing const declaration
+ *    means no NEW declaration is needed in slice 48 — the leanest
+ *    possible Cluster B slice (-1 LOC net source delta, no new
+ *    `let`/`const` introduced).
+ *
+ *    Sites moved (slice 48):
+ *      - packages/@ember/-internals/gxt-backend/manager.ts: drop the
+ *        L5633 globalThis projection write; redirect the L3104 reader
+ *        from `(globalThis as any).__gxtNestedTrackingProxies` to
+ *        direct `_nestedTrackingProxies` const access (the L3105
+ *        `proxyMap?.get?.(targetObj)` is folded into the single
+ *        expression `_nestedTrackingProxies.get(targetObj)` since the
+ *        const is guaranteed initialized at first read).
+ *      - packages/@ember/-internals/gxt-backend/gxt-bridge.ts: append
+ *        this slice-48 entry. NO new bridge methods (zero-bridge).
+ *
+ *    State-home decision: `manager.ts` (canonical-home rule — both
+ *    sites intra-file; canonical const already existed in
+ *    `manager.ts`). Breaks the renderer.ts streak (slice 45/46/47) and
+ *    resumes the manager.ts state-home pattern (slice 31/43/44).
+ *
+ *    Bridge shape decision: ZERO-bridge intra-file (slice-31/43/44/
+ *    45/46/47 precedent — pure intra-file reader+writer cluster).
+ *    Slice 48 cannot benefit from any bridge shape because there are
+ *    zero cross-file consumers. The leanest possible shape: direct
+ *    access to the pre-existing module-local const. WeakMap-cache
+ *    semantics unchanged.
+ *
+ *    ZERO new import edges in slice 48: both consumers are already in
+ *    `manager.ts`; no `getGxtRenderer` calls, no
+ *    `installCompilePipelinePart` calls, no new bridge-import
+ *    statements added. Slice 48 — like slice 43, 44, 45, 46, and 47 —
+ *    is a pure zero-bridge intra-file migration: only one source line
+ *    deletion (L5633 projection) plus a one-line reader-redirect.
+ *
+ *    Bridge interface evolution (slice 48 — no API change): the
+ *    bridge interface `GxtCompilePipelineCapabilities` is NOT extended
+ *    in this slice (zero-bridge intra-file). The migration-history
+ *    docblock IS extended with the full slice-48 entry. This is the
+ *    sixth consecutive Cluster B slice (after slice 43, 44, 45, 46,
+ *    47) to ship without a new bridge method.
+ *
+ *    Hot-path concern: the L3104 reader runs inside the template-
+ *    rendered backtracking check (only when a tracked-property write
+ *    occurs during a render pass — already a cold/diagnostic path).
+ *    Pre-slice-48 cost was 1 globalThis property access + 1 optional-
+ *    chain `?.get?.()` invocation. Post-slice-48 it's 1 direct const
+ *    `.get()` call — the optional-chain guards are no longer needed
+ *    because the const is guaranteed initialized at module-load time.
+ *    Marginally faster on the cold path.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
