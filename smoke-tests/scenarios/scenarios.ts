@@ -41,7 +41,7 @@ function strictResolver(project: Project) {
         function fixModulePrefix(modules) {
           let fixed = {};
 
-          for (let [key, module] of Object.entries(project)) {
+          for (let [key, module] of Object.entries(modules)) {
             let newName = key.replace(new RegExp(\`/\${config.modulePrefix}\//\`), './');
             fixed[newName] = module;
           }
