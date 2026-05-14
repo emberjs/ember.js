@@ -4421,8 +4421,17 @@ const _inElementFallbackIds: string[] = [];
 // registry's CHILD_VIEW_IDS for those wrappers so getChildViews returns
 // empty (matching the collapsed {{#if}} branch) even if GXT's own
 // destroyBranchSync was a no-op for the yield-only true branch.
+//
+// Slice-69 (Cluster B): the pre-slice-69 globalThis publish
+// `(globalThis as any).__gxtWrapperIfUserFalse = _wrapperIfUserFalse;` is
+// RETIRED in favor of the typed bridge `viewUtils.getWrapperUserFalseSet()`
+// method contributed below via `installViewUtilsPart`. The sole cross-file
+// reader at manager.ts L1807 (GXT compat: restore `isExpanded = false` on
+// freshly-constructed component instances whose wrapper id was user-toggled
+// false — load-bearing for the "View tree tests" smoke module's
+// x-toggle/visit() cycle assertions) now routes through the bridge.
+// See `getWrapperUserFalseSet` doc in gxt-bridge.ts.
 const _wrapperIfUserFalse = new Set<string>();
-(globalThis as any).__gxtWrapperIfUserFalse = _wrapperIfUserFalse;
 // Map of wrapperId -> Set of {condFn, placeholder} entries. Populated by the
 // ifWatcher when the user toggles to false. Used by _wrapGxtRebuildViewTree
 // to verify at read time that a LIVE-DOM-connected IfCondition for this
@@ -15591,4 +15600,11 @@ installBacktrackingPart({
 // slice 10's transformer-hook).
 installViewUtilsPart({
   afterRebuildViewTreeFromDom: _afterRebuildViewTreeFromDom,
+  // Slice-69 (Cluster B): replaces the pre-slice-69 globalThis publish
+  // `(globalThis as any).__gxtWrapperIfUserFalse = _wrapperIfUserFalse;` at
+  // the `_wrapperIfUserFalse` declaration site above. The sole cross-file
+  // reader at manager.ts L1807 (GXT compat: restore `isExpanded = false` on
+  // freshly-constructed component instances whose wrapper id was user-
+  // toggled false) now routes through this bridge method.
+  getWrapperUserFalseSet: () => _wrapperIfUserFalse,
 });

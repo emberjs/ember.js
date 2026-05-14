@@ -1794,17 +1794,18 @@ function createComponentInstance(
   }
 
   // GXT compat: restore user-toggled-false state for components whose
-  // wrapper id is tracked in __gxtWrapperIfUserFalse. Ember's View tree
-  // tests rely on x-toggle instances rendered in the persistent application
-  // template to survive visit() cycles with their isExpanded state intact.
-  // GXT recreates these instances on every force-rerender, resetting
-  // isExpanded back to its class-field default (true), which breaks the
-  // test's assumption that click-to-collapse persists across navigation.
-  // If this component's elementId was marked user-false and it has an
-  // isExpanded property, set it to false so subsequent clicks toggle from
-  // the user's last known state rather than the class default.
+  // wrapper id is tracked in the `viewUtils.getWrapperUserFalseSet()` bridge
+  // method (slice-69 migration; previously `__gxtWrapperIfUserFalse`).
+  // Ember's View tree tests rely on x-toggle instances rendered in the
+  // persistent application template to survive visit() cycles with their
+  // isExpanded state intact. GXT recreates these instances on every force-
+  // rerender, resetting isExpanded back to its class-field default (true),
+  // which breaks the test's assumption that click-to-collapse persists across
+  // navigation. If this component's elementId was marked user-false and it
+  // has an isExpanded property, set it to false so subsequent clicks toggle
+  // from the user's last known state rather than the class default.
   try {
-    const userFalseSet: Set<string> = (globalThis as any).__gxtWrapperIfUserFalse;
+    const userFalseSet = getGxtRenderer()?.viewUtils.getWrapperUserFalseSet?.();
     const elId = props.elementId;
     if (userFalseSet && elId && userFalseSet.has(elId) && instance && 'isExpanded' in instance) {
       instance.isExpanded = false;

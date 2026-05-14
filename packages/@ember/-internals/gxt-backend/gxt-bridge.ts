@@ -215,6 +215,24 @@ export interface GxtBacktrackingCapabilities {
  * is after-hook. This is the THIRD distinct host-hook shape supported by the
  * install-API pattern.
  *
+ * Slice-69 (Cluster B): extends the `viewUtils` namespace with the
+ * `getWrapperUserFalseSet(): Set<string> | undefined` accessor. The Set is
+ * owned by compile.ts as the module-local `_wrapperIfUserFalse` (the
+ * canonical source of truth, populated by the ifWatcher when the user
+ * toggles an `{{#if}}` branch to false) and contributed to the bridge by
+ * compile.ts via `installViewUtilsPart`. The sole cross-file reader at
+ * `manager.ts:1807` (GXT compat: restore `isExpanded = false` on freshly-
+ * constructed component instances whose wrapper id was user-toggled false —
+ * load-bearing for the "View tree tests" smoke module's x-toggle/visit()
+ * cycle assertions) now routes through `getGxtRenderer()?.viewUtils
+ * .getWrapperUserFalseSet?.()`. Replaces the pre-slice-69 globalThis publish
+ * `(globalThis as any).__gxtWrapperIfUserFalse = _wrapperIfUserFalse;` at
+ * compile.ts L4425. Same typed-bridge cross-file shape as slice 55 (which
+ * routed `__gxtClearRenderErrors` through `compilePipeline.clearRenderErrors`);
+ * here the data structure is a Set rather than a function, so the bridge
+ * exposes a getter that returns the live Set reference. Callers must NOT
+ * mutate the returned set — read-only contract.
+ *
  * NOT included in this slice (intentionally deferred):
  *  - `__gxtSuppressDirtyTagForDuringRebuild` (manager.ts) — a boolean state
  *    flag whose reads/writes are entirely intra-file (manager.ts). The
@@ -293,6 +311,31 @@ export interface GxtViewUtilsCapabilities {
    * is supported (compile.ts).
    */
   afterRebuildViewTreeFromDom?(explicitRegistry?: unknown): void;
+
+  /**
+   * Read the set of classic-component wrapper DOM ids that the user has
+   * directly toggled to `false` via a click handler calling
+   * `set()`/`toggleProperty`. The set is owned by compile.ts as the module-
+   * local `_wrapperIfUserFalse` (the canonical source of truth) and
+   * contributed to the bridge by compile.ts via `installViewUtilsPart`.
+   *
+   * Consumed cross-file by manager.ts's `_buildComponent` to restore
+   * `isExpanded = false` on freshly-constructed component instances whose
+   * wrapper id appears in the set — the GXT compat restoration that keeps
+   * x-toggle's `isExpanded` user-collapsed state intact across visit() cycles
+   * in the "View tree tests" smoke module (see compile.ts L5363 + manager.ts
+   * L1796 docblocks).
+   *
+   * Returns `undefined` if the host hook has not been installed (compile.ts
+   * never loaded — classic-Ember build, in which case manager.ts also wasn't
+   * loaded so this method is unreachable; defensive `?.` chaining keeps the
+   * call site safe). When installed, always returns the same Set reference;
+   * callers should NOT mutate it (read-only contract).
+   *
+   * Previously: `(globalThis as any).__gxtWrapperIfUserFalse` (writer at
+   * compile.ts L4425, reader at manager.ts L1807).
+   */
+  getWrapperUserFalseSet?(): Set<string> | undefined;
 }
 
 /**
