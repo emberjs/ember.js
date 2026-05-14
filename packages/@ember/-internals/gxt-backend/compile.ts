@@ -59,36 +59,35 @@ function _normalizeStringValue(value: unknown): string {
   }
 }
 
-// Expose on globalThis for use inside GXT-compiled template code.
-// The compile.ts post-processor rewrites `].join("")` to
-// `].map(globalThis.__gxtNormAttr).join("")` for quoted attribute values so
-// that Symbol and null-prototype object values don't throw on stringification.
-(globalThis as any).__gxtNormAttr = _normalizeStringValue;
-
-// __gxtQuotedAttr: used by the compile post-processor to render quoted
-// attribute values that contain a single interpolation (e.g.
-// `src='{{this.src}}'`). When the single input is null/undefined, Ember's
-// semantics treat the attribute as absent — we signal this by returning
-// `null` so the $_tag wrapper's "remove attribute" branch activates. For
-// any other shape (multi-segment concat, non-null values), fall back to
-// the normalize+join behavior.
-(globalThis as any).__gxtQuotedAttr = function __gxtQuotedAttr(parts: unknown[]): string | null {
-  if (!Array.isArray(parts)) return _normalizeStringValue(parts);
-  if (parts.length === 1) {
-    const v = parts[0];
-    if (v === null || v === undefined) return null;
-  }
-  // All-nullish multi-part case: treat as null too. Otherwise concat normally.
-  let allNullish = true;
-  let out = '';
-  for (const p of parts) {
-    if (p !== null && p !== undefined) {
-      allNullish = false;
-    }
-    out += _normalizeStringValue(p);
-  }
-  return allNullish ? null : out;
-};
+// Cluster B slice 75 (paired inline-emission, -2 net):
+//
+//   `__gxtNormAttr` (dead-slot retirement):
+//     Previously published `(globalThis as any).__gxtNormAttr = _normalizeStringValue;`
+//     for use inside emitted template code. Repo-wide grep confirms no
+//     consumer ever emits or references the `globalThis.__gxtNormAttr`
+//     literal (the stale doc comment claimed a `.map(globalThis.__gxtNormAttr)
+//     .join("")` rewriter, but the actual post-processor at the
+//     `].join("")` site rewrites directly to `globalThis.__gxtQuotedAttr([...])`
+//     and the in-module function reference `_normalizeStringValue` is used
+//     internally — never the global slot). Pure dead-slot retirement, no
+//     inline-emission needed.
+//
+//   `__gxtQuotedAttr` (inline-emission, slice-72 pattern):
+//     Used by the compile post-processor to render quoted attribute values
+//     that contain a single interpolation (e.g. `src='{{this.src}}'`). When
+//     every input is null/undefined, Ember's semantics treat the attribute
+//     as absent — the helper returns `null` so the `$_tag` wrapper's
+//     "remove attribute" branch activates. For any other shape (multi-
+//     segment concat, non-null values), normalize each part with
+//     `_normalizeStringValue` semantics and concatenate. The body and the
+//     `_normalizeStringValue` semantics are inlined directly into the
+//     emitted `templateFnCode` Function() outer-factory scope as a local
+//     `__gxtQuotedAttr` function — no closure surface needed (every
+//     reference is intrinsic JS: `Array.isArray`, `String(...)`, null/
+//     undefined checks). The emitted `globalThis.__gxtQuotedAttr(` shape
+//     produced by the post-processor below is rewritten to the local
+//     `__gxtQuotedAttr(` reference at the templateFnCode builder. See
+//     `templateFnCode` builder for the inlined definition.
 
 /** Replace all hyphens with underscores without regex */
 function hyphenToUnderscore(str: string): string {
@@ -13885,6 +13884,24 @@ export function precompileTemplate(
           .join('__gxtAssertNotResolvedHelperAsNamedArg(');
       }
 
+      // Cluster B slice 75 (paired inline-emission, -2 net):
+      //   Rewrite emitted `globalThis.__gxtQuotedAttr(` → local
+      //   `__gxtQuotedAttr(` so the inline-emitted helper (declared at the
+      //   outer Function() scope below) is used directly. The reader is the
+      //   `].join("")` post-processor above that emits the literal
+      //   `globalThis.__gxtQuotedAttr([...])` shape into `modifiedCode`.
+      //   Gate the injection on detection of the rewritten form so templates
+      //   without quoted attribute interpolation pay zero overhead. Paired
+      //   with retirement of `__gxtNormAttr` (a dead globalThis slot — no
+      //   emitter ever produced `globalThis.__gxtNormAttr` literals, see
+      //   docblock at the top of this file).
+      const hasQuotedAttr = modifiedCode.includes('globalThis.__gxtQuotedAttr(');
+      if (hasQuotedAttr) {
+        modifiedCode = modifiedCode
+          .split('globalThis.__gxtQuotedAttr(')
+          .join('__gxtQuotedAttr(');
+      }
+
       // Cluster B slice 73: inlined `__gxtUnboundEval` definition + per-
       // Function-body `__ubSlots` map declared at the OUTER Function() scope
       // alongside `__ubCache`. Closes over `__ubGT` / `__ubST` Function()
@@ -13930,11 +13947,43 @@ export function precompileTemplate(
           `throw new Error('A resolved helper cannot be passed as a named argument as the syntax is ambiguously a pass-by-reference or invocation. Use the \`{{helper \\'foo-helper}}\` helper to pass by reference or explicitly invoke the helper with parens: \`{{(fooHelper)}}\`.');` +
           `}`
         : '';
+
+      // Cluster B slice 75: inlined `__gxtQuotedAttr` definition declared at
+      // the OUTER Function() scope. The inlined body re-implements
+      // `_normalizeStringValue` semantics inline as `__qaNorm` (Glimmer's
+      // normalizeStringValue: null/undefined → '', objects without toString
+      // → '', String(value) with a defensive try/catch for throwing
+      // toStrings) — no closure surface needed beyond intrinsic JS. Gated
+      // on `hasQuotedAttr` so templates without quoted-attribute
+      // interpolation pay zero overhead.
+      const quotedAttrInjection = hasQuotedAttr
+        ? `function __qaNorm(v) {` +
+          `if (v === null || v === undefined) return '';` +
+          `if (typeof v.toString !== 'function') return '';` +
+          `try { return String(v); } catch (e) { return ''; }` +
+          `}` +
+          `function __gxtQuotedAttr(parts) {` +
+          `if (!Array.isArray(parts)) return __qaNorm(parts);` +
+          `if (parts.length === 1) {` +
+          `var v0 = parts[0];` +
+          `if (v0 === null || v0 === undefined) return null;` +
+          `}` +
+          `var allNullish = true;` +
+          `var out = '';` +
+          `for (var i = 0; i < parts.length; i++) {` +
+          `var p = parts[i];` +
+          `if (p !== null && p !== undefined) { allNullish = false; }` +
+          `out += __qaNorm(p);` +
+          `}` +
+          `return allNullish ? null : out;` +
+          `}`
+        : '';
       const templateFnCode = `
         "use strict";
         ${hasUnbound ? 'var __ubCache = Object.create(null);' : ''}
         ${unboundEvalInjection}
         ${namedArgHelperGuardInjection}
+        ${quotedAttrInjection}
         ${uidOuterScope}
         ${strictMaybeHelperInjection}
         return function() {

@@ -347,12 +347,20 @@ export interface GxtViewUtilsCapabilities {
  *
  * NOT included in this slice (intentionally deferred — different bridge shape
  * or non-bridge cleanup required):
- *  - `__gxtNormAttr` / `__gxtQuotedAttr` — referenced by EMITTED CODE strings
- *    in compile.ts (the compile post-processor writes literal
- *    `globalThis.__gxtNormAttr` / `globalThis.__gxtQuotedAttr(...)` into
- *    generated template output). Migrating either of these requires
- *    updating the code generator to emit bridge-aware calls — out of scope
- *    for the runtime-only bridge migration.
+ *  - `__gxtNormAttr` / `__gxtQuotedAttr` — formerly EMITTED-CODE consumers
+ *    referenced by literal `globalThis.__gxtNormAttr` / `globalThis.__gxtQuotedAttr(...)`
+ *    output strings from the compile post-processor. RETIRED IN SLICE 75
+ *    (paired -2 net): `__gxtNormAttr` was a dead slot (no emitter ever
+ *    produced its globalThis-literal; the in-module `_normalizeStringValue`
+ *    reference was used everywhere) — removed directly. `__gxtQuotedAttr`
+ *    body was inlined into the emitted `templateFnCode` Function() outer
+ *    scope (slice-72/74 pattern; the body re-implements
+ *    `_normalizeStringValue` inline as `__qaNorm`, so no closure surface
+ *    is needed beyond intrinsic JS). The emitted
+ *    `globalThis.__gxtQuotedAttr(` shape is rewritten to a local
+ *    `__gxtQuotedAttr(` reference after the `].join("")` post-processor
+ *    runs. Gated on `hasQuotedAttr` so templates without quoted-attribute
+ *    interpolation pay zero overhead.
  *
  *    (Slice 73 update: `__gxtUnboundEval` + `__gxtUnboundResetSlots` were
  *    formerly in this exclusion bucket — both EMITTED-CODE consumers with
