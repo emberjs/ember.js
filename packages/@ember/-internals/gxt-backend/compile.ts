@@ -3594,6 +3594,49 @@ function _gxtSetRunTaskActive(on: boolean): void {
   _gxtRunTaskActiveFlag = on;
 }
 
+// Slice-40 (Cluster B): graduates the `__gxtAfterRenderPropertyChange` boolean
+// flag from the pre-slice-40 `globalThis.__gxtAfterRenderPropertyChange` slot
+// to the module-local boolean `_gxtAfterRenderPropertyChangeFlag` in
+// `compile.ts`, paired with a 2-method get/set bridge surface
+// (`getAfterRenderPropertyChange` + `setAfterRenderPropertyChange`) on the
+// `compilePipeline` namespace. The flag is set TRUE by
+// `_gxtTriggerReRender` (in `compile.ts:4082`, INSIDE a
+// `schedule('afterRender', cb)` callback as detected by the still-globalThis
+// `__gxtInAfterRender` flag) to record that a property change originated
+// from an `afterRender` callback (the classic `afterRender set` pattern
+// where `didInsertElement` queues a set that must re-render the DOM before
+// the test assertion). The flag is consumed in `runAppend`
+// (`internal-test-helpers/lib/run.ts:49-50`) which reads-and-clears it in a
+// single get-then-set pair: the read decides whether to preserve
+// `__gxtPendingSyncFromPropertyChange` for the subsequent `syncNow()` call
+// (TRUE = `afterRender set` is legitimate user state; FALSE = the change
+// was init artifact noise that should not trigger a post-runAppend full
+// sync). The pre-slice-40 topology was 1 writer (intra-`compile.ts`) and
+// 1 reader+clearer (cross-package in `internal-test-helpers/lib/run.ts`).
+// Slice 40 routes the 1 intra-`compile.ts` writer through the module-local
+// `_gxtSetAfterRenderPropertyChange` helper directly (slice-22/24/27/30/31/
+// 32/33/34/35/36/37/38 intra-file precedent); the 1 cross-package reader+
+// clearer routes through the new paired bridge methods. Net globalThis
+// surface delta: -1 slot. Bridge shape decision: paired get/set (slice-14/
+// 35/36/37/38 paired-methods pattern, same as slice 38) because slice 40
+// has a cross-package READER+CLEARER — both `getAfterRenderPropertyChange`
+// and `setAfterRenderPropertyChange(false)` surfaces must be reachable
+// from `run.ts`. The flag also has an intra-file WRITER (compile.ts:4082
+// SET TRUE) that routes via the intra-file helper directly. Slice 40
+// cannot use slice-20/22/23/24's read-only predicate because of the
+// cross-package clearer, and cannot use slice-29's mark+consume because
+// of the asymmetric reader (read decides flow) + separate clearer pattern
+// — the clear is unconditional after the read, but conceptually distinct
+// (a future caller could skip the clear without breaking the read). ZERO
+// new import edges: `run.ts` already imports `getGxtRenderer` (slice 36).
+let _gxtAfterRenderPropertyChangeFlag = false;
+function _gxtGetAfterRenderPropertyChange(): boolean {
+  return _gxtAfterRenderPropertyChangeFlag;
+}
+function _gxtSetAfterRenderPropertyChange(on: boolean): void {
+  _gxtAfterRenderPropertyChangeFlag = on;
+}
+
 // Slice-36 (Cluster B): graduates the `__gxtPendingSyncFromPropertyChange`
 // boolean flag from the pre-slice-36 `globalThis.__gxtPendingSyncFromPropertyChange`
 // slot to the module-local boolean `_gxtPendingSyncFromPropertyChangeFlag` in
@@ -4078,8 +4121,13 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
   // pattern) and must trigger gxtSyncDom, while property changes from
   // component init (e.g. Textarea's internal bindings) are init artifacts
   // that should not cause a post-runAppend full sync.
+  // Slice-40 (Cluster B): write to module-local
+  // `_gxtAfterRenderPropertyChangeFlag` (graduated from
+  // `globalThis.__gxtAfterRenderPropertyChange`). See module-local
+  // definition above for the migration narrative. Intra-file writer
+  // routes through the helper directly (no bridge indirection).
   if ((globalThis as any).__gxtInAfterRender) {
-    (globalThis as any).__gxtAfterRenderPropertyChange = true;
+    _gxtSetAfterRenderPropertyChange(true);
   }
   // (Cluster B slice 5 orphan cleanup) The `__gxtHadNestedPropertyChange`
   // flag previously set here had no readers anywhere in the source tree.
@@ -15270,6 +15318,24 @@ installCompilePipelinePart({
   // and module-local definition above (`_gxtRunTaskActiveFlag`).
   getRunTaskActive: _gxtGetRunTaskActive,
   setRunTaskActive: _gxtSetRunTaskActive,
+  // Slice-40 (Cluster B): graduates `__gxtAfterRenderPropertyChange` from the
+  // globalThis slot to a 2-method paired get/set bridge surface (slice-14/35/
+  // 36/37/38 paired-methods pattern). The flag is written by 1 intra-`compile.ts`
+  // site pre-slice-40 (the `_gxtTriggerReRender` body at compile.ts:4082,
+  // INSIDE the `if ((globalThis as any).__gxtInAfterRender)` gate) and read+
+  // cleared by 1 cross-package site pre-slice-40 (`internal-test-helpers/lib/
+  // run.ts:49-50` `runAppend` post-`appendTo` block — read decides whether
+  // to preserve `__gxtPendingSyncFromPropertyChange` for the subsequent
+  // `syncNow()` call; clear unconditionally after the read). Intra-file
+  // writer routes through the module-local `_gxtSetAfterRenderPropertyChange`
+  // helper directly; cross-package reader+clearer routes through
+  // `compilePipeline.getAfterRenderPropertyChange?.() ?? false` and
+  // `compilePipeline.setAfterRenderPropertyChange?.(false)`. Net -1
+  // globalThis slot. See `getAfterRenderPropertyChange` /
+  // `setAfterRenderPropertyChange` doc in gxt-bridge.ts and module-local
+  // definition above (`_gxtAfterRenderPropertyChangeFlag`).
+  getAfterRenderPropertyChange: _gxtGetAfterRenderPropertyChange,
+  setAfterRenderPropertyChange: _gxtSetAfterRenderPropertyChange,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

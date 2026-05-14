@@ -46,8 +46,16 @@ export function runAppend(view: any): void {
   // flag to its previous "init artifacts don't trigger a full sync" behavior
   // so tests like Textarea (which set internal bindings during init) don't
   // regress.
-  const afterRenderChanged = Boolean((globalThis as any).__gxtAfterRenderPropertyChange);
-  (globalThis as any).__gxtAfterRenderPropertyChange = false;
+  // Slice-40 (Cluster B): `__gxtAfterRenderPropertyChange` canonical state
+  // migrated to module-local `_gxtAfterRenderPropertyChangeFlag` in
+  // `compile.ts`. Test-helper reader+clearer-contract — routes through the
+  // bridge getter+setter (load-order-safe optional chain — by the time
+  // `runAppend` fires, compile.ts's `installCompilePipelinePart` has run
+  // and both methods are installed). See `getAfterRenderPropertyChange` /
+  // `setAfterRenderPropertyChange` doc in gxt-bridge.ts.
+  const _cpAR = getGxtRenderer()?.compilePipeline;
+  const afterRenderChanged = Boolean(_cpAR?.getAfterRenderPropertyChange?.());
+  _cpAR?.setAfterRenderPropertyChange?.(false);
   if (!afterRenderChanged) {
     // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange` canonical
     // state migrated to module-local `_gxtPendingSyncFromPropertyChangeFlag`
