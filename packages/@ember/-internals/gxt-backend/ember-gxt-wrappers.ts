@@ -15,9 +15,88 @@ import * as gxtModule from '@lifeart/gxt';
 // Cluster B pilot — typed bridge for destruction hooks. Populated by manager.ts
 // at its module init. Allows the $_dc_ember wrapper to destroy a component
 // instance without going through `(globalThis as any).__gxtDestroyEmberComponentInstance`.
-import { getGxtRenderer } from './gxt-bridge';
+import { getGxtRenderer, installCompilePipelinePart } from './gxt-bridge';
 
 const g = globalThis as any;
+
+// Slice-42 (Cluster B): graduates the `__gxtMutContext` runtime context value
+// from the pre-slice-42 `globalThis.__gxtMutContext` slot to the module-local
+// `_gxtMutContext` here in `ember-gxt-wrappers.ts`, paired with a 2-method
+// get/set bridge surface (`getMutContext` + `setMutContext`) on the
+// `compilePipeline` namespace. The value is the component render context (the
+// `this` value of the template that invoked `(mut ...)` or `(__mutGet ...)`)
+// at the moment the `$_maybeHelper` wrapper dispatches to the corresponding
+// `__EMBER_BUILTIN_HELPERS__` entry. It is captured at helper-creation time
+// inside the helpers' arrow-function bodies (in `compile.ts`'s
+// `__EMBER_BUILTIN_HELPERS__.mut` / `__mutGet`) so the closure produced by
+// those helpers can later resolve the source getter for two-way binding
+// without re-threading the context through every `mut` argument.
+//
+// Pre-slice-42 topology — 6 writers and 2 readers spanning 2 files / 1 package:
+//   Writers (6 sites, all intra-`ember-gxt-wrappers.ts`, two save/set/finally-
+//   restore triplets around `helper(...)` invocations for the `mut` and
+//   `__mutGet` keyword helpers):
+//     - `ember-gxt-wrappers.ts:530` — `__mutGet` branch save: read previous
+//       value into a local for the finally restore.
+//     - `ember-gxt-wrappers.ts:531` — `__mutGet` branch set: write the new
+//       context before calling `helper(args[0], args[1])`.
+//     - `ember-gxt-wrappers.ts:536` — `__mutGet` branch finally-restore:
+//       write the previous value back after the helper returns or throws.
+//     - `ember-gxt-wrappers.ts:592` — `mut` branch save (mirror of above).
+//     - `ember-gxt-wrappers.ts:593` — `mut` branch set (mirror of above).
+//     - `ember-gxt-wrappers.ts:599` — `mut` branch finally-restore (mirror
+//       of above).
+//   Readers (2 sites, both intra-`compile.ts` `__EMBER_BUILTIN_HELPERS__`
+//   helper bodies, called from inside the wrapper triplets above):
+//     - `compile.ts:6906` — `mut` helper body — captures `capturedCtx` for
+//       the returned `mutCell` closure's two-way-binding lookup.
+//     - `compile.ts:7209` — `__mutGet` helper body — same capture-at-helper-
+//       creation usage for the `(mut (get obj key))` two-way binding.
+//
+// State-home decision: `ember-gxt-wrappers.ts` (writer-home rule — 6 writers
+// vs 2 readers, all 6 writers intra-file, the writers run in the helper-
+// invocation hot path so intra-file direct-helper access is preferred for
+// perf). Distinct from slice 41 (which placed state in `compile.ts` despite
+// having cross-package writers because of the slice 40 Finding #4 family
+// rule binding the 2-flag afterRender-detection cluster) — slice 42's
+// `__gxtMutContext` is an `unknown`-typed context value, not a boolean flag,
+// and is NOT part of any cluster.
+//
+// Bridge shape decision: paired get/set (slice-14/35/36/37/38/40/41 paired-
+// methods pattern) because slice 42 has cross-package READERS (compile.ts)
+// that need `getMutContext()` reachable from compile.ts. The 6 intra-file
+// writers route via the module-local helpers directly. Slice 42 cannot use
+// slice-20/22/23/24's read-only predicate because of the cross-package
+// reader-from-non-state-home (the readers DO need to read the writer's
+// value mid-frame), and cannot use slice-29's mark+consume because the
+// save/set/finally-restore pattern needs the previous value preserved
+// across the restore step (save = read previous, set = write new, restore
+// = write previous).
+//
+// ZERO new import edges in slice 42: `ember-gxt-wrappers.ts` already
+// imports `getGxtRenderer` (the existing import edge is extended with
+// `installCompilePipelinePart` from the same module). `compile.ts` already
+// imports `getGxtRenderer` (slice 25+ precedent).
+let _gxtMutContext: unknown = undefined;
+function _gxtGetMutContext(): unknown {
+  return _gxtMutContext;
+}
+function _gxtSetMutContext(value: unknown): void {
+  _gxtMutContext = value;
+}
+
+// Register the paired get/set bridge methods on the `compilePipeline` namespace
+// so that `compile.ts` (cross-package reader) can route through the bridge to
+// read the writer-side state. Pattern mirrors `ember-template-compiler.ts:413`
+// (the slice-6 `instrumentFactory` install block). Runs at module-init time;
+// by the time the `$_maybeHelper` wrapper dispatches a `mut` / `__mutGet`
+// helper invocation (well past module init), both the wrapper-side writer
+// helpers and the cross-package bridge readers are wired and the bridge slot
+// is installed.
+installCompilePipelinePart({
+  getMutContext: _gxtGetMutContext,
+  setMutContext: _gxtSetMutContext,
+});
 
 // =============================================================================
 // $_maybeHelper wrapper
@@ -527,13 +606,18 @@ function createEmberMaybeHelper(original: Function) {
       // For '__mutGet' helper, pass obj and key with context set
       if (name === '__mutGet' && Array.isArray(args) && args.length > 0) {
         const ctx = maybeCtx || hashOrCtx;
-        const prevCtx = g.__gxtMutContext;
-        g.__gxtMutContext = ctx;
+        // Slice-42 (Cluster B): writer-side save/set/finally-restore triplet
+        // around the `helper(...)` invocation. Direct module-local helper
+        // access (intra-file writer-home pattern) — see `_gxtGetMutContext` /
+        // `_gxtSetMutContext` near the top of this file. Replaces the pre-
+        // slice-42 `g.__gxtMutContext` globalThis triplet.
+        const prevCtx = _gxtGetMutContext();
+        _gxtSetMutContext(ctx);
         try {
           // Pass raw getters so __mutGet can re-evaluate them reactively
           return helper(args[0], args[1]);
         } finally {
-          g.__gxtMutContext = prevCtx;
+          _gxtSetMutContext(prevCtx);
         }
       }
       // For 'mut' helper, pass the raw getter + path, and set context
@@ -589,14 +673,19 @@ function createEmberMaybeHelper(original: Function) {
         // For mut, the 3rd arg is always the component's render context (this)
         // since GXT compiles (mut this.val) as $_maybeHelper("mut", [...], this).
         const ctx = maybeCtx || hashOrCtx;
-        const prevCtx = g.__gxtMutContext;
-        g.__gxtMutContext = ctx;
+        // Slice-42 (Cluster B): writer-side save/set/finally-restore triplet
+        // around the `helper(...)` invocation. Direct module-local helper
+        // access (intra-file writer-home pattern) — see `_gxtGetMutContext` /
+        // `_gxtSetMutContext` near the top of this file. Replaces the pre-
+        // slice-42 `g.__gxtMutContext` globalThis triplet.
+        const prevCtx = _gxtGetMutContext();
+        _gxtSetMutContext(ctx);
         try {
           // Pass the unwrapped value + path to the mut helper
           const unwrappedValue = isGxtGetter(rawGetter) ? rawGetter() : rawGetter;
           return helper(unwrappedValue, pathArg);
         } finally {
-          g.__gxtMutContext = prevCtx;
+          _gxtSetMutContext(prevCtx);
         }
       }
       if (Array.isArray(args) && args.length > 0) {

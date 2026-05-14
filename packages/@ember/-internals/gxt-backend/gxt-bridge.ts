@@ -1083,6 +1083,84 @@ export interface GxtFormatCapabilities {
  *    caches the pipeline once for the three calls (save read + set TRUE
  *    + finally restore) on the same logical afterRender wrapper
  *    invocation.
+ *  - `__gxtMutContext` — MIGRATED IN SLICE 42 to `getMutContext()` +
+ *    `setMutContext(value)` on this namespace (paired get/set bridge
+ *    surface — slice-14/35/36/37/38/40/41 paired-methods pattern). The
+ *    value is the component render context (the `this` value of the
+ *    template that invoked `(mut ...)` or `(__mutGet ...)`) at the
+ *    moment the `$_maybeHelper` wrapper dispatches to the corresponding
+ *    `__EMBER_BUILTIN_HELPERS__` entry. It is captured at helper-creation
+ *    time inside the helpers' arrow-function bodies (in `compile.ts`'s
+ *    `__EMBER_BUILTIN_HELPERS__.mut` / `__mutGet`) so the closure
+ *    produced by those helpers can later resolve the source getter for
+ *    two-way binding without re-threading the context through every
+ *    `mut` argument. The pre-slice-42 topology was 6 writers and 2
+ *    readers spanning 2 files / 1 package:
+ *     Writers (6 sites, all intra-`ember-gxt-wrappers.ts`, two save/
+ *     set/finally-restore triplets around `helper(...)` invocations
+ *     for the `mut` and `__mutGet` keyword helpers):
+ *       - `ember-gxt-wrappers.ts:530-536` — `__mutGet` branch
+ *         save/set/finally-restore triplet around `helper(args[0],
+ *         args[1])`.
+ *       - `ember-gxt-wrappers.ts:592-599` — `mut` branch save/set/
+ *         finally-restore triplet around `helper(unwrappedValue,
+ *         pathArg)`.
+ *     Readers (2 sites, both intra-`compile.ts`):
+ *       - `compile.ts:6906` — `__EMBER_BUILTIN_HELPERS__.mut` helper
+ *         body — captures `capturedCtx` for the returned `mutCell`
+ *         closure's two-way-binding lookup.
+ *       - `compile.ts:7209` — `__EMBER_BUILTIN_HELPERS__.__mutGet`
+ *         helper body — same capture-at-helper-creation usage for the
+ *         `(mut (get obj key))` two-way binding.
+ *    Slice 42 routes the 6 intra-`ember-gxt-wrappers.ts` writers
+ *    through the module-local `_gxtGetMutContext` / `_gxtSetMutContext`
+ *    helpers directly (slice-22/24/27/30/31/32/33/34/35/36/37/38/40/41
+ *    intra-file precedent); the 2 cross-package readers in compile.ts
+ *    route through `compilePipeline.getMutContext?.()`. Canonical state
+ *    moves to module-local `_gxtMutContext` in `ember-gxt-wrappers.ts`.
+ *    The `__gxtMutContext` globalThis slot is DROPPED in this slice —
+ *    net -1 globalThis surface.
+ *
+ *    State-home decision: `ember-gxt-wrappers.ts` (writer-home rule —
+ *    6 writers vs 2 readers, all 6 writers intra-file, the writers run
+ *    in the helper-invocation hot path). Distinct from slice 41 (which
+ *    placed state in `compile.ts` despite having cross-package writers
+ *    because of the slice 40 Finding #4 family rule binding the 2-flag
+ *    afterRender-detection cluster) — slice 42's `__gxtMutContext` is
+ *    an `unknown`-typed context value, not a boolean flag, and is NOT
+ *    part of any cluster. First Cluster B slice with state home in
+ *    `ember-gxt-wrappers.ts` (prior slices have placed state in
+ *    `compile.ts`, `manager.ts`, `ember-template-compiler.ts`, and
+ *    other in-package files; never previously in ember-gxt-wrappers).
+ *
+ *    Bridge shape decision: paired get/set (slice-14/35/36/37/38/40/41
+ *    paired-methods pattern, same as slice 41) because slice 42 has
+ *    cross-package READERS (`compile.ts`) that need `getMutContext()`
+ *    reachable from compile.ts; `setMutContext()` is exposed for
+ *    symmetry/future cross-package writers (none exist today, but the
+ *    symmetric API is preserved for the paired-methods consistency).
+ *    The 6 intra-file writers route via the module-local helpers
+ *    directly. Slice 42 cannot use slice-20/22/23/24's read-only
+ *    predicate because of the cross-package reader-from-non-state-home
+ *    (the readers DO need to read the writer's value mid-frame, but
+ *    the get-only shape is acceptable on the reader side — the setter
+ *    is exposed for future symmetry only). Slice 42 cannot use
+ *    slice-29's mark+consume because the save/set/finally-restore
+ *    pattern needs the previous value preserved across the restore
+ *    step (save = read previous, set = write new, restore = write
+ *    previous) — three distinct sites with three distinct context
+ *    values per logical helper invocation.
+ *
+ *    ZERO new import edges in slice 42: `ember-gxt-wrappers.ts`
+ *    already imports `getGxtRenderer` (slice-pilot); the existing
+ *    import edge is EXTENDED with `installCompilePipelinePart` from
+ *    the same module (no new `from './gxt-bridge'` statement, just
+ *    an additional named binding on the existing import). `compile.ts`
+ *    already imports `getGxtRenderer` (slice 25+). The 2 intra-
+ *    compile.ts readers re-use `getGxtRenderer()` directly without a
+ *    pipeline-cache local — each helper body runs once per template
+ *    render and only has a single bridge call, so the
+ *    slice-37/38/40/41 `_cp*` pipeline-cache pattern is not needed.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -3087,6 +3165,108 @@ export interface GxtCompilePipelineCapabilities {
    * allocations.
    */
   setInAfterRender?(value: boolean): void;
+
+  /**
+   * Read the `__gxtMutContext` runtime context value. Returns the component
+   * render context (`unknown` because callers in compile.ts handle it as
+   * an opaque component instance — the same `this` value of the template
+   * that invoked `(mut ...)` or `(__mutGet ...)`) captured by the most
+   * recent active save/set frame, or `undefined` when no `mut` / `__mutGet`
+   * dispatch is currently in flight (module-init default; pre-slice-42
+   * the corresponding state was `globalThis.__gxtMutContext === undefined`).
+   *
+   * Used by `compile.ts`'s `__EMBER_BUILTIN_HELPERS__.mut` and
+   * `__EMBER_BUILTIN_HELPERS__.__mutGet` helper bodies to capture the
+   * dispatching component's `this` for the returned `mutCell` closure's
+   * two-way-binding source-getter lookup. The capture must happen at
+   * helper-creation time (inside the helper body, NOT inside the inner
+   * `mutCell` closure) because the helper body runs while the
+   * `ember-gxt-wrappers.ts` save/set/finally-restore triplet is open
+   * (i.e., between `setMutContext(ctx)` and `setMutContext(prevCtx)`);
+   * the inner `mutCell` closure runs LATER (e.g., when the user clicks
+   * an `<input>` and a `set(...)` is dispatched), well after the writer
+   * frame has unwound and the global slot has been restored to its
+   * previous value.
+   *
+   * Pre-slice-42 readers (2 sites, both intra-`compile.ts`):
+   *  - `compile.ts:6906` — `__EMBER_BUILTIN_HELPERS__.mut` body.
+   *  - `compile.ts:7209` — `__EMBER_BUILTIN_HELPERS__.__mutGet` body.
+   *
+   * Slice-42 (Cluster B): graduates the canonical state from the pre-
+   * slice-42 `globalThis.__gxtMutContext` slot to the module-local
+   * `_gxtMutContext` in `ember-gxt-wrappers.ts`. The cross-package
+   * readers (compile.ts) route through this bridge getter. Net
+   * globalThis surface delta: -1 slot (paired with `setMutContext`).
+   *
+   * Bridge-not-yet-installed edge: callers that route through this
+   * bridge getter use
+   * `getGxtRenderer()?.compilePipeline.getMutContext?.()`. Both optional
+   * chains return `undefined` when either the renderer or the method is
+   * not yet installed, which mirrors pre-slice-42 semantics where
+   * `globalThis.__gxtMutContext === undefined` (pre-first-`(mut ...)`
+   * dispatch edge). The bridge slot is installed by
+   * `ember-gxt-wrappers.ts` at its module-init time (via the
+   * `installCompilePipelinePart({ getMutContext, setMutContext })`
+   * block) — that runs before compile.ts's
+   * `(globalThis as any).__EMBER_BUILTIN_HELPERS__ = { ... mut,
+   * __mutGet ... }` assignment finishes module-init, so by the time
+   * the helper bodies actually fire at template-render time the bridge
+   * slot is guaranteed to be populated.
+   *
+   * Fast-check: the implementation reads the module-local
+   * `_gxtMutContext` value — one property read; zero allocations.
+   * Matches slice-35/36/37/38/40/41's `get*` body shape (modulo the
+   * `unknown` return type, which carries no runtime cost).
+   */
+  getMutContext?(): unknown;
+
+  /**
+   * Write the `__gxtMutContext` runtime context value. The value's
+   * lifetime and semantics are described in the `getMutContext` doc
+   * above.
+   *
+   * Pre-slice-42 writers (6 sites, all intra-`ember-gxt-wrappers.ts`,
+   * two save/set/finally-restore triplets around `helper(...)`
+   * invocations):
+   *  - `ember-gxt-wrappers.ts:530-536` — `__mutGet` branch
+   *    save/set/finally-restore triplet.
+   *  - `ember-gxt-wrappers.ts:592-599` — `mut` branch save/set/
+   *    finally-restore triplet.
+   *
+   * Slice 42 routes the 6 intra-file writers through the module-local
+   * `_gxtSetMutContext` helper directly (slice-22/24/27/30/31/32/33/
+   * 34/35/36/37/38/40/41 intra-file-writer precedent); this bridge
+   * setter is exposed for symmetry/future cross-package writers (none
+   * exist today, but the symmetric API is preserved for the
+   * paired-methods consistency).
+   *
+   * Slice-42 (Cluster B): graduates the canonical state from the pre-
+   * slice-42 `globalThis.__gxtMutContext` slot to the module-local
+   * `_gxtMutContext` in `ember-gxt-wrappers.ts`. Net globalThis
+   * surface delta: -1 slot (paired with `getMutContext`).
+   *
+   * Bridge-not-yet-installed edge: no cross-package writers today, so
+   * this edge is theoretical. If a future cross-package writer were
+   * added, it would use
+   * `getGxtRenderer()?.compilePipeline.setMutContext?.(value)`; both
+   * optional chains short-circuit to `undefined` (no-op) when the
+   * renderer or the method is not yet installed. Load-order-safe in
+   * the same way as `getMutContext` (the bridge slot is populated at
+   * ember-gxt-wrappers.ts module-init time, well before any template
+   * render fires).
+   *
+   * Bridge shape decision: paired get/set (slice-14/35/36/37/38/40/41
+   * paired-methods pattern, same as slice 41) — even though slice 42
+   * has no cross-package writers today, the symmetric API is preserved
+   * to match the paired-methods cluster (the unused setter has the
+   * same cost as a no-op interface declaration — zero runtime impact,
+   * minor TS-only signature footprint).
+   *
+   * Fast-check: the implementation writes the module-local
+   * `_gxtMutContext` value — one property assignment; zero
+   * allocations.
+   */
+  setMutContext?(value: unknown): void;
 }
 
 /**

@@ -6900,10 +6900,16 @@ installRuntimePart({
   // When used with (fn (mut this.val) newValue), the returned function
   // updates the property on the component via Ember.set().
   // The template transform adds a path string as the second arg.
-  // The context is captured at creation time via __gxtMutContext.
+  // The context is captured at creation time via the slice-42 bridge
+  // `compilePipeline.getMutContext?.()` (was the pre-slice-42 globalThis
+  // slot `__gxtMutContext`). State home: `ember-gxt-wrappers.ts` (writer-
+  // home rule — see slice-42 docblock there). The bridge is installed by
+  // ember-gxt-wrappers.ts at its module-init time; by the time this helper
+  // body actually runs (template render time, well past compile.ts module
+  // init), the bridge slot is populated and the optional chain resolves.
   mut: (value: any, path?: string) => {
     // Capture context at creation time (set by $_maybeHelper wrapper)
-    const capturedCtx = (globalThis as any).__gxtMutContext;
+    const capturedCtx = getGxtRenderer()?.compilePipeline.getMutContext?.() as any;
     // Assert that mut only receives a path, not a literal or helper result.
     // Use getDebugFunction('assert') to ensure we call the currently-registered
     // assert (which may be stubbed by expectAssertion in tests).
@@ -7206,7 +7212,10 @@ installRuntimePart({
   // This is used when the template transform converts (mut (get obj key))
   // into (__mutGet obj key).
   __mutGet: (obj: any, key: any) => {
-    const capturedCtx = (globalThis as any).__gxtMutContext;
+    // Slice-42 (Cluster B): bridge-routed reader (was the pre-slice-42
+    // globalThis slot `__gxtMutContext`). See sibling `mut` helper above
+    // for the full migration narrative.
+    const capturedCtx = getGxtRenderer()?.compilePipeline.getMutContext?.() as any;
     const resolveObj = () => (typeof obj === 'function' ? obj() : obj);
     const resolveKey = () => (typeof key === 'function' ? key() : key);
     const getValue = () => {
