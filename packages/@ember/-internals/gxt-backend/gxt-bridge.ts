@@ -1648,6 +1648,88 @@ export interface GxtFormatCapabilities {
  *    `.get()` call — the optional-chain guards are no longer needed
  *    because the const is guaranteed initialized at module-load time.
  *    Marginally faster on the cold path.
+ *
+ *  - `__gxtIsInRenderPass` — RETIRED IN SLICE 49 (orphan write-only
+ *    deletion). Pre-slice-49 audit confirmed exactly 2 active sites in
+ *    `packages/@ember/-internals/gxt-backend/manager.ts`, BOTH writers,
+ *    ZERO readers anywhere in `packages/`. The earlier slice-8 docblock
+ *    note (immediately before `GxtRenderPassCapabilities`) describing
+ *    `metal/tracked.ts` as a cross-package reader was STALE — exhaustive
+ *    grep across `packages/@ember/-internals/metal/` returned zero
+ *    hits at slice-49 time. The globalThis slot was a write-only orphan
+ *    whose intended cross-package reader had already migrated away (or
+ *    never existed in the active codebase) by the time slice 49 ran.
+ *
+ *    Pre-slice-49 topology (confirmed audit — exactly 2 sites, BOTH in
+ *    `manager.ts`, BOTH writers):
+ *
+ *      Canonical state (already module-local pre-slice-49):
+ *        - `manager.ts:2997` —
+ *          `let _isInRenderPass = false;`
+ *          (pre-existing module-local — already the source of truth;
+ *          read at `manager.ts:3095` inside `markTemplateRendered`).
+ *
+ *      Writer #1 (entry-arm):
+ *        - `manager.ts:3067` —
+ *          `(globalThis as any).__gxtIsInRenderPass = true;`
+ *          (co-write inside `beginRenderPass`, immediately after
+ *          `_isInRenderPass = true`).
+ *
+ *      Writer #2 (exit-disarm):
+ *        - `manager.ts:3073` —
+ *          `(globalThis as any).__gxtIsInRenderPass = false;`
+ *          (co-write inside `endRenderPass`, immediately after
+ *          `_isInRenderPass = false`).
+ *
+ *      Readers (0 sites):
+ *        - Zero in `packages/`. The slice-48 memory note explicitly
+ *          confirmed orphan status; this slice's pre-flight grep
+ *          reconfirmed.
+ *
+ *    Sites moved (slice 49):
+ *      - packages/@ember/-internals/gxt-backend/manager.ts: delete
+ *        both writers (L3067 entry-arm + L3073 exit-disarm). The
+ *        module-local `_isInRenderPass` `let` (L2997) and its lone
+ *        reader (L3095) are unchanged — behavior is identical post-
+ *        slice because the only consumer always used the const, never
+ *        the globalThis slot.
+ *      - packages/@ember/-internals/gxt-backend/gxt-bridge.ts: append
+ *        this slice-49 entry; also update the stale slice-8 "deferred"
+ *        note above `GxtRenderPassCapabilities` to reflect that the
+ *        flag is now retired rather than deferred. NO new bridge
+ *        methods (zero-bridge, pure deletion).
+ *
+ *    State-home decision: N/A — pure orphan retirement. No state-home
+ *    move is required because the canonical module-local const
+ *    `_isInRenderPass` already exists in `manager.ts` and is unchanged.
+ *
+ *    Bridge shape decision: ZERO-bridge orphan deletion (no
+ *    cross-file/cross-package consumers ever existed in the active
+ *    tree; the only "users" are ad-hoc, untracked debug scripts under
+ *    `scripts/debug-artifacts/` which observe `globalThis` for
+ *    diagnostic console traces — those will silently read `undefined`
+ *    post-slice-49, same as before any pass starts).
+ *
+ *    ZERO new import edges in slice 49: only writers were deleted; no
+ *    new declarations introduced. Slice 49 is the LEANEST possible
+ *    Cluster B slice — pure deletion, no redirect required.
+ *
+ *    Bridge interface evolution (slice 49 — no API change): the
+ *    bridge interface `GxtRenderPassCapabilities` is NOT extended; the
+ *    migration-history docblock IS extended with this slice-49 entry,
+ *    AND the stale "deferred" bullet above `GxtRenderPassCapabilities`
+ *    is rewritten to point to this entry. Seventh consecutive Cluster
+ *    B slice (after slice 43, 44, 45, 46, 47, 48) to ship without a
+ *    new bridge method.
+ *
+ *    Hot-path concern: the deleted writes ran inside
+ *    `beginRenderPass`/`endRenderPass` — once per render pass. Two
+ *    globalThis property assignments per pass are eliminated. The
+ *    surviving `_isInRenderPass = true/false` const assignment is
+ *    inlineable by V8. Marginally faster on the per-pass entry/exit.
+ *
+ *    Count delta (slice 49): -1 globalThis slot retired, -2 LOC
+ *    source, 0 new bridge methods, 0 new import edges.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -3779,14 +3861,20 @@ export interface GxtCompilePipelineCapabilities {
  * `__gxtTemplateOnlyStack`) at the start of each pass. The host-hook pattern
  * avoids runtime mutation entirely.
  *
- * NOT included in this slice (intentionally deferred):
- *  - `__gxtIsInRenderPass` — boolean state flag co-written with
- *    `_isInRenderPass` inside `beginRenderPass`/`endRenderPass`. Cross-package
- *    readers in metal/tracked.ts treat it as a fast-check predicate. Migrating
- *    to a method (`isInRenderPass()`) would require updating many tracked-read
- *    hot-path call sites; the state-flag pattern is fundamentally different
- *    from the bridge's method-call shape. Same exclusion class as the deferred
- *    state-flag inventory (e.g. `__gxtRenderDepth`, `__gxtIsRendering`).
+ * Slice 49 update (orphan retirement):
+ *  - `__gxtIsInRenderPass` — RETIRED in slice 49. The pre-slice-49 note
+ *    here described a deferred migration to a typed `isInRenderPass()`
+ *    method on the bridge, justified by alleged cross-package readers
+ *    in `metal/tracked.ts`. That note was STALE: a pre-flight grep
+ *    across `packages/@ember/-internals/metal/` at slice-49 time
+ *    returned zero hits. The globalThis slot had no active readers
+ *    anywhere in `packages/` — it was a write-only orphan. Slice 49
+ *    deletes both writers in `manager.ts` (entry-arm + exit-disarm)
+ *    with no replacement; the module-local `_isInRenderPass` const
+ *    (already the source of truth for the lone in-file reader at
+ *    `markTemplateRendered`) is unchanged. See the slice-49 entry in
+ *    the migration-history docblock above `GxtCompilePipelineCapabilities`
+ *    for the full topology.
  */
 export interface GxtRenderPassCapabilities {
   /**

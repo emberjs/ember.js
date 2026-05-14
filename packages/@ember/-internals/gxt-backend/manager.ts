@@ -3064,13 +3064,11 @@ export function beginRenderPass(): void {
     }
   }
   _isInRenderPass = true;
-  (globalThis as any).__gxtIsInRenderPass = true;
   _templateRenderedInstances.clear();
 }
 
 export function endRenderPass(): void {
   _isInRenderPass = false;
-  (globalThis as any).__gxtIsInRenderPass = false;
   _templateRenderedInstances.clear();
 }
 
