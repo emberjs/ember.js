@@ -3305,6 +3305,58 @@ function _gxtConsumeTrackedSetSinceRerender(): boolean {
   return prev;
 }
 
+// Slice-30 (Cluster B): module-local sync-cycle counter. Replaces the
+// pre-slice-30 `globalThis.__gxtSyncCycleId` integer slot with a single
+// canonical module-local integer plus two helpers:
+//
+//   Writer (1 site, intra-file): `__gxtSyncDomNow` body at L~5531 — bumps
+//   the cycle ID once per sync flush via `_gxtIncrementSyncCycleId()`.
+//   This is the ONLY canonical writer; the counter is monotonically
+//   increasing across the renderer's lifetime.
+//
+//   Readers (14 sites total):
+//     - intra-file compile.ts (5 sites: L4100, L4616, L5076, L5185, L9411)
+//       — call the module-local `_gxtGetSyncCycleId()` directly (intra-
+//       file cheapness, mirrors slice-22/24/27 precedent for in-file
+//       readers).
+//     - cross-file gxt-backend/manager.ts (8 sites: L1373, L3751, L4545,
+//       L8543, L8671, L8944, L9123, L11268) — route through the bridge
+//       `compilePipeline.getSyncCycleId?.() ?? 0`.
+//     - cross-package glimmer/lib/renderer.ts (1 site: L1040) — routes
+//       through the bridge (same shape as the manager.ts call sites).
+//
+// Pre-slice-30 the counter lived on `globalThis.__gxtSyncCycleId` with the
+// universal read pattern `(g.__gxtSyncCycleId || 0)` (truthy-coerce
+// `undefined` to `0`). Slice 30 promotes it to canonical module-local state
+// in compile.ts (where the rest of the compilePipeline state lives) and
+// DROPS the globalThis slot.
+//
+// Bridge shape decision: single-method read (`getSyncCycleId?(): number`).
+// No bridge-side increment helper is exposed — the writer is intra-file
+// only and uses `_gxtIncrementSyncCycleId()` directly. This keeps the
+// bridge surface minimal (a read-only counter, much like a sequence-
+// number accessor).
+//
+// Bridge-not-yet-installed edge: the readers run on every sync flush
+// (manager.ts hot paths) and during initial render (some intra-file). All
+// readers default to `0` if the bridge is not yet installed, preserving
+// the pre-slice-30 `(g.__gxtSyncCycleId || 0)` truthy-coerce semantics
+// exactly. The writer is intra-file only, so it always sees the canonical
+// counter regardless of bridge install state.
+//
+// Fast-check: both helpers are single variable read/write — zero
+// allocations. Reader hot-path cost is unchanged (one variable read);
+// writer hot-path cost decreases (single increment vs. truthy-coerce +
+// add + write).
+let _gxtSyncCycleId = 0;
+function _gxtIncrementSyncCycleId(): number {
+  _gxtSyncCycleId = _gxtSyncCycleId + 1;
+  return _gxtSyncCycleId;
+}
+function _gxtGetSyncCycleId(): number {
+  return _gxtSyncCycleId;
+}
+
 // Slice-20 (Cluster B): read-side predicate for the `__gxtSyncing` boolean
 // flag toggled by `__gxtSyncDomNow` (this file, body at L5270/5717) and the
 // post-render-hook re-entry save-restore in `manager.ts:4202-4215`. Returns
@@ -4097,7 +4149,9 @@ function patchGlobalIf() {
         try {
           const ifc = ifConditionRef.ifCondition;
           const myDeadCycle = ifc && (ifc as any).__gxtParentDeadCycle;
-          const cycleId = g2.__gxtSyncCycleId || 0;
+          // Slice-30 (Cluster B): direct intra-file read of the module-local
+          // sync-cycle counter (graduated from `globalThis.__gxtSyncCycleId`).
+          const cycleId = _gxtGetSyncCycleId();
           // Suppress only the TRUE branch (the only one that can instantiate
           // child components in the regression scenario). The FALSE branch is
           // typically empty content; suppressing it could leave stale DOM.
@@ -4612,8 +4666,9 @@ function patchGlobalIf() {
           // conditional should not render children if parent conditional
           // becomes false").
           try {
-            const _g = globalThis as any;
-            const cycleId = _g.__gxtSyncCycleId || 0;
+            // Slice-30 (Cluster B): direct intra-file read of module-local
+            // sync-cycle counter (graduated from `globalThis.__gxtSyncCycleId`).
+            const cycleId = _gxtGetSyncCycleId();
             const nextBoolEarly = emberToBool(v);
             const myDeadCycle = (ifCondition as any).__gxtParentDeadCycle;
             // Hard suppression: parent {{#if}} already collapsed this branch
@@ -5073,7 +5128,9 @@ function patchGlobalEachSync() {
       const origInverseFn = inverseFn;
       inverseFn = function wrappedInverseFn(ctx0: any) {
         try {
-          const currentCycle = g.__gxtSyncCycleId || 0;
+          // Slice-30 (Cluster B): direct intra-file read of module-local
+          // sync-cycle counter (graduated from `globalThis.__gxtSyncCycleId`).
+          const currentCycle = _gxtGetSyncCycleId();
           // Slice-24 (Cluster B): read the module-local `_gxtSyncingFlag` via
           // the module-private accessor (canonical state graduated from
           // `globalThis.__gxtSyncing` in slice 24).
@@ -5181,8 +5238,11 @@ function patchGlobalEachSync() {
                       Object.defineProperty(inst, 'trigger', {
                         value: function (this: any, name: string, ...rest: any[]) {
                           if (
+                            // Slice-30 (Cluster B): direct intra-file read of
+                            // module-local sync-cycle counter (graduated from
+                            // `globalThis.__gxtSyncCycleId`).
                             (name === 'willDestroyElement' || name === 'willClearRender') &&
-                            this.__gxtWDEFiredCycle === (g.__gxtSyncCycleId || 0)
+                            this.__gxtWDEFiredCycle === _gxtGetSyncCycleId()
                           ) {
                             return undefined;
                           }
@@ -5495,8 +5555,9 @@ function _resetTemplateOnlyState() {
 //
 // First wrap-by-reassignment migrated via the slice-3 relocation pattern
 // instead of the slice-8/10/11 host-hook pattern. The state crossed via
-// globalThis (`__gxtAllPoolArrays`, `__gxtSyncCycleId`,
-// `__gxtSyncAllInFlightCycle`, `__dcChangeListeners`) so no closures had to
+// globalThis (`__gxtAllPoolArrays`, `__gxtSyncAllInFlightCycle`,
+// `__dcChangeListeners`; the pre-slice-30 entry `__gxtSyncCycleId` was
+// graduated to a module-local in slice 30) so no closures had to
 // move; the wrap bodies referenced ONLY shared globals.
 
 // Flush pending GXT DOM updates synchronously.
@@ -5528,7 +5589,16 @@ function _resetTemplateOnlyState() {
     // the `finally` below, mirroring the pre-slice-24 globalThis pair.
     _gxtSetSyncing(true);
     // Increment sync cycle ID so modifier update dedup works correctly.
-    (globalThis as any).__gxtSyncCycleId = ((globalThis as any).__gxtSyncCycleId || 0) + 1;
+    // Slice-30 (Cluster B): graduates the canonical state from
+    // `globalThis.__gxtSyncCycleId` to the module-local counter
+    // `_gxtSyncCycleId`. Intra-file writer routes directly through
+    // `_gxtIncrementSyncCycleId()` (no bridge indirection — the function is
+    // in scope here). Readers (5 intra-file, 8 in manager.ts, 1 in
+    // glimmer/lib/renderer.ts) route through `_gxtGetSyncCycleId()` directly
+    // (intra-file) or `compilePipeline.getSyncCycleId?.() ?? 0` (cross-
+    // file/cross-package). See module-local definition above for the full
+    // migration narrative.
+    _gxtIncrementSyncCycleId();
     // Clear modifier update tracking for this new sync cycle
     const modMgr = (globalThis as any).$_MANAGERS?.modifier;
     if (modMgr?._updatedInstances) modMgr._updatedInstances.clear();
@@ -9408,7 +9478,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               // each-iteration re-renders whose parent-getter captures an
               // old block param and is missed by syncAll.
               if (_inst && _inst.__gxtEverInserted && typeof _inst.trigger === 'function') {
-                const __gCycle = (globalThis as any).__gxtSyncCycleId || 0;
+                // Slice-30 (Cluster B): direct intra-file read of module-local
+                // sync-cycle counter (graduated from `globalThis.__gxtSyncCycleId`).
+                const __gCycle = _gxtGetSyncCycleId();
                 // Pool-reuse-with-changes escape hatch: when Phase-1 syncAll
                 // visited this instance (stamping __gxtSyncAllFiredCycleId) but
                 // did NOT actually fire hooks (block-param closure held stale
@@ -14781,6 +14853,14 @@ installCompilePipelinePart({
   // gxt-bridge.ts.
   markTrackedSetSinceRerender: _gxtMarkTrackedSetSinceRerender,
   consumeTrackedSetSinceRerender: _gxtConsumeTrackedSetSinceRerender,
+  // Slice-30 (Cluster B): graduates `__gxtSyncCycleId` from the globalThis
+  // slot to a 1-method read-only bridge surface plus an intra-file
+  // `_gxtIncrementSyncCycleId` writer. The counter is incremented once per
+  // `__gxtSyncDomNow` flush; readers across compile.ts (direct), manager.ts
+  // (bridge), and glimmer/lib/renderer.ts (bridge) consume the value via
+  // `getSyncCycleId()`. Net -1 globalThis slot. See `getSyncCycleId` doc in
+  // gxt-bridge.ts and module-local definition above (`_gxtSyncCycleId`).
+  getSyncCycleId: _gxtGetSyncCycleId,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

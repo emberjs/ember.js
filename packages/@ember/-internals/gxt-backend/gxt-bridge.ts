@@ -464,6 +464,21 @@ export interface GxtFormatCapabilities {
  *    module-local `_gxtTrackedSetSinceRerenderFlag` in `compile.ts`. The
  *    `__gxtTrackedSetSinceRerender` globalThis slot is DROPPED in this
  *    slice — net -1 globalThis surface.
+ *  - `__gxtSyncCycleId` — MIGRATED IN SLICE 30 to `getSyncCycleId()` on this
+ *    namespace. The pre-slice-30 topology was 1 intra-file writer in
+ *    `compile.ts` `__gxtSyncDomNow` (`(g.x = (g.x || 0) + 1)`) and 14
+ *    readers (5 intra-file in `compile.ts`, 8 in `gxt-backend/manager.ts`,
+ *    1 cross-package in `glimmer/lib/renderer.ts:1040`) — all 14 used the
+ *    uniform `(g.__gxtSyncCycleId || 0)` truthy-coerce-undefined-to-0
+ *    pattern. The bridge surface is read-only (no setter / no increment
+ *    helper exposed): the canonical writer is intra-file and uses the
+ *    module-local `_gxtIncrementSyncCycleId()` directly. Intra-file
+ *    readers call `_gxtGetSyncCycleId()` directly (slice-27 precedent);
+ *    cross-file readers (manager.ts + renderer.ts) call
+ *    `compilePipeline.getSyncCycleId?.() ?? 0`. The `__gxtSyncCycleId`
+ *    globalThis slot is DROPPED in this slice — net -1 globalThis surface.
+ *    First slice to expose a read-only INTEGER bridge method (slices 19/20/
+ *    22 are read-only booleans; slice 30 is the integer-getter analogue).
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -512,7 +527,8 @@ export interface GxtCompilePipelineCapabilities {
    * pre-wrap pool-instance `trigger`s for fire-tracking) and after-body
    * (clear in-flight state, dispatch DC change listeners) into the canonical
    * function body. State referenced by both halves of the wrap is shared via
-   * globalThis (`__gxtAllPoolArrays`, `__gxtSyncCycleId`, `__dcChangeListeners`)
+   * globalThis (`__gxtAllPoolArrays`, `__dcChangeListeners`; the pre-slice-30
+   * entry `__gxtSyncCycleId` was graduated to a module-local in slice 30)
    * — no closures had to move, so the slice-3 relocation pattern applied
    * directly (first wrap-by-reassignment to use it; slices 8/10/11 used the
    * host-hook pattern instead because their wrap bodies closed over compile.ts
@@ -1400,6 +1416,90 @@ export interface GxtCompilePipelineCapabilities {
    * hot path (called once on every UpdatingVM.execute).
    */
   consumeTrackedSetSinceRerender?(): boolean;
+
+  /**
+   * Read the current sync-cycle counter. The counter is a monotonically
+   * increasing integer, bumped once per `__gxtSyncDomNow` flush (the GXT
+   * post-`runTask` DOM sync entry point in `compile.ts`). It is used as a
+   * stamp for per-cycle dedup across the renderer:
+   *  - modifier update tracking (manager.ts `$_MANAGERS.modifier._updatedInstances`
+   *    is cleared on every bump; renderer.ts:1040 skips replay of modifiers
+   *    already updated in the current cycle);
+   *  - lifecycle hook gating (compile.ts:5185's `__gxtWDEFiredCycle` and
+   *    manager.ts's `__gxtCreatedInSyncCycle` / `__gxtDestructorCycle` stamps
+   *    suppress double-firing of pre-destroy and didReceiveAttrs across the
+   *    same cycle);
+   *  - mid-sync if-condition collapse propagation (compile.ts:4100/4616 use
+   *    the cycle as a "dead-this-cycle" key on `__gxtParentDeadCycle`,
+   *    suppressing TRUE-branch renders for children whose parent collapsed
+   *    earlier in the same flush).
+   *
+   * Slice-30 (Cluster B): graduates the canonical state from the pre-slice-30
+   * `globalThis.__gxtSyncCycleId` integer slot to a module-local
+   * `_gxtSyncCycleId` in `compile.ts`. Pre-slice-30 the read pattern was
+   * universal: `const c = (g.__gxtSyncCycleId || 0)`. All 14 readers used
+   * this exact shape — the only intentional value is the truthy-coerce of
+   * `undefined` to `0` (covers the bridge-not-yet-installed edge: pre-install
+   * `g.__gxtSyncCycleId` was `undefined`, so all readers saw `0`). The
+   * bridge contract preserves this: `getSyncCycleId?.() ?? 0` defaults to
+   * `0` when the bridge is not yet installed.
+   *
+   * The single canonical writer at `compile.ts:__gxtSyncDomNow` body
+   * (pre-slice-30 `(g.__gxtSyncCycleId = (g.__gxtSyncCycleId || 0) + 1)`)
+   * is intra-file and uses the module-local `_gxtIncrementSyncCycleId()`
+   * directly — NOT exposed via the bridge surface, because the writer is
+   * always intra-file (no external caller is expected to bump the counter).
+   * This is a deliberate read-only-bridge shape: external consumers can
+   * observe the counter but not advance it.
+   *
+   * Reader topology after slice 30:
+   *  - intra-file compile.ts (5 sites): call `_gxtGetSyncCycleId()`
+   *    directly (intra-file cheapness, mirrors slice-22/24/27 precedent).
+   *  - intra-package gxt-backend/manager.ts (8 sites): route through
+   *    `getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0`.
+   *  - cross-package glimmer/lib/renderer.ts (1 site): route through the
+   *    bridge (same shape as manager.ts).
+   *
+   * Bridge shape decision: single-method read (`getSyncCycleId?(): number`).
+   * Matches the existing slice-22/19/20 "predicate" pattern but for an
+   * integer counter rather than a boolean. The reader-only nature of the
+   * bridge (no setter / no increment helper exposed) reflects that the
+   * counter has exactly one canonical writer in `compile.ts` and many
+   * read-only observers. No save-restore variant is exposed (no caller
+   * needs to temporarily rewind the counter).
+   *
+   * Namespace decision: `compilePipeline`. The counter's canonical state
+   * lives in `compile.ts` alongside the other compilePipeline state from
+   * slices 17-29 (the slice-29 `_gxtTrackedSetSinceRerenderFlag`, the
+   * slice-24 `_gxtSyncingFlag`, the slice-22 `_gxtCurrentlyRenderingFlag`,
+   * the slice-25 `_gxtTriggerSuppressedFlag`). Same namespace pattern.
+   *
+   * Bridge interface evolution (slice 30 — twenty-fourth API change):
+   * `GxtCompilePipelineCapabilities` extended with ONE new optional method
+   * (`getSyncCycleId?(): number`) — read-only counter access. Slice 30 is
+   * the FIRST slice to expose only a getter (slice 19/20/22 also exposed
+   * read-only predicates, but those were booleans; slice 30 is the first
+   * integer-getter bridge method).
+   *
+   * Bridge-not-yet-installed edge: all readers use `?.() ?? 0` to preserve
+   * the pre-slice-30 truthy-coerce-undefined-to-0 semantics. The single
+   * intra-file writer in `__gxtSyncDomNow` body runs only after the bridge
+   * install (`installCompilePipelinePart` runs at module-init time, before
+   * any `runTask` flush can fire), so the writer always sees the canonical
+   * counter.
+   *
+   * Fast-check: implementation is `return _gxtSyncCycleId;` — one variable
+   * read; zero allocations. Identical hot-path cost to the pre-slice-30
+   * globalThis read (the truthy-coerce `|| 0` is moved out of the reader
+   * and into the bridge contract's `?? 0` fallback, which only fires when
+   * the bridge is not installed). After slice 30 the
+   * `__gxtSyncCycleId` globalThis slot is DROPPED: the canonical state is
+   * the module-local `_gxtSyncCycleId` in `compile.ts`; the writer is
+   * intra-file and the readers route through this getter (cross-file/
+   * cross-package) or directly through `_gxtGetSyncCycleId()` (intra-file).
+   * Net globalThis surface delta: -1 slot.
+   */
+  getSyncCycleId?(): number;
 }
 
 /**

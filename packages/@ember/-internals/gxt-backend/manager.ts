@@ -1367,10 +1367,12 @@ function getCachedOrCreateInstance(
   // actual each-row rows being torn down).
   // Slice-24 (Cluster B): route the `__gxtSyncing` read through the bridge
   // predicate (canonical state graduated to module-local `_gxtSyncingFlag`
-  // in `compile.ts`). The `__gxtSyncCycleId` reader is unchanged (separate
-  // flag — slice 24 only graduates `__gxtSyncing`).
-  if (getGxtRenderer()?.compilePipeline.isSyncing?.()) {
-    instance.__gxtCreatedInSyncCycle = (globalThis as any).__gxtSyncCycleId || 0;
+  // in `compile.ts`). Slice-30 (Cluster B): also route the
+  // `__gxtSyncCycleId` reader through the bridge (canonical state graduated
+  // to module-local `_gxtSyncCycleId` in `compile.ts`).
+  const _cp1373 = getGxtRenderer()?.compilePipeline;
+  if (_cp1373?.isSyncing?.()) {
+    instance.__gxtCreatedInSyncCycle = _cp1373.getSyncCycleId?.() ?? 0;
   }
 
   // Store thunkId on instance for dedup during re-evaluations
@@ -3638,8 +3640,10 @@ function _gxtRecordDirtiedNestedObject(obj: object, _keyName: string): void {
 // `_installSyncAllFiredMarker` + setter trap) AND the three ember-gxt-wrappers.ts
 // wrap-by-reassignment sites (L1872, L2043, L2321 — DC change listener
 // dispatch) into the canonical body below. All state crossed via globalThis
-// (`__gxtAllPoolArrays`, `__gxtSyncCycleId`, `__gxtSyncAllInFlightCycle`,
-// `__dcChangeListeners`) so no closures needed to be moved.
+// (`__gxtAllPoolArrays`, `__gxtSyncAllInFlightCycle`, `__dcChangeListeners`;
+// the pre-slice-30 entry `__gxtSyncCycleId` was graduated to a module-local
+// in slice 30 and is now read via `compilePipeline.getSyncCycleId`) so no
+// closures needed to be moved.
 
 // Slice-14 (Cluster B): the `__dcChangeListeners` Set and
 // `__dcStringListenerCount` counter that were left as globalThis-shared
@@ -3748,7 +3752,10 @@ function _gxtSyncAllWrappers(): void {
   // + compile.ts:5129-5206 setter trap) ===
   const __curPass = g.__emberRenderPassId || 0;
   g.__gxtSyncAllInFlightPass = __curPass;
-  const __curCycle = g.__gxtSyncCycleId || 0;
+  // Slice-30 (Cluster B): read the sync-cycle counter via the bridge
+  // (canonical state graduated from `globalThis.__gxtSyncCycleId` to the
+  // module-local `_gxtSyncCycleId` in `compile.ts`).
+  const __curCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
   g.__gxtSyncAllInFlightCycle = __curCycle;
   // Proactively wrap `trigger` on all known-alive instances in all pool
   // arrays so update-hook triggers fired during the body are recorded.
@@ -4542,7 +4549,10 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   // the current assertion (phantoms are filtered by the everInserted gate
   // in the wrapper) or (b) expects them to survive to the afterEach
   // teardown where the deferred destructor fires normally.
-  const currentCycle = (globalThis as any).__gxtSyncCycleId || 0;
+  // Slice-30 (Cluster B): bridge read of the sync-cycle counter (canonical
+  // state graduated from `globalThis.__gxtSyncCycleId` to module-local
+  // `_gxtSyncCycleId` in `compile.ts`).
+  const currentCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
   // First-error-wins for Phase 3 destroy/willDestroy throws. Loop iterates to
   // completion so every unclaimed instance gets a destroy attempt, then we
   // re-throw the first error at the end. The throw escapes __gxtSyncDomNow
@@ -8540,7 +8550,11 @@ const $_MANAGERS = {
           // Check if this modifier was already updated in the current sync cycle.
           // GXT formulas can fire multiple times per sync (e.g., when tracked cells
           // are re-bound during the first evaluation). Skip duplicate updates.
-          const currentSyncCycle = (globalThis as any).__gxtSyncCycleId || 0;
+          // Slice-30 (Cluster B): bridge read of the sync-cycle counter
+          // (canonical state graduated from `globalThis.__gxtSyncCycleId` to
+          // module-local `_gxtSyncCycleId` in `compile.ts`).
+          const currentSyncCycle =
+            getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
           if (cached.__gxtUpdatedInSyncCycle === currentSyncCycle && currentSyncCycle > 0) {
             // Already updated — return a lightweight destructor that only marks
             // pendingDestroy for the next handle() call. Do NOT push to the
@@ -8668,7 +8682,11 @@ const $_MANAGERS = {
                 // change (e.g., a @tracked value read in didInsertElement changed).
                 // Skip if this is the sync cycle immediately after install —
                 // that is just GXT's run-loop settling, not a real change.
-                const syncCycleNow = (globalThis as any).__gxtSyncCycleId || 0;
+                // Slice-30 (Cluster B): bridge read of the sync-cycle counter
+                // (canonical state graduated from `globalThis.__gxtSyncCycleId`
+                // to module-local `_gxtSyncCycleId` in `compile.ts`).
+                const syncCycleNow =
+                  getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
                 if (!anyArgChanged && syncCycleNow - (cached.__gxtInstallCycle || 0) > 1) {
                   shouldUpdate = true;
                 }
@@ -8941,7 +8959,10 @@ const $_MANAGERS = {
       // during an `{{#if}}` toggle that triggers intermediate DOM renders),
       // creating then abandoning phantom elements. Without migration each
       // phantom fires spurious didInsertElement/willDestroyElement.
-      const currentCycle = (globalThis as any).__gxtSyncCycleId || 0;
+      // Slice-30 (Cluster B): bridge read of the sync-cycle counter
+      // (canonical state graduated from `globalThis.__gxtSyncCycleId` to
+      // module-local `_gxtSyncCycleId` in `compile.ts`).
+      const currentCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
       const pendingDestroysForMigrate = (globalThis as any).__gxtPendingModifierDestroys as
         | Array<{ cached: any; element: HTMLElement; modKey: string; isCustom?: boolean }>
         | undefined;
@@ -9120,7 +9141,11 @@ const $_MANAGERS = {
       // (for updates) and also during final teardown.
       return () => {
         cached.pendingDestroy = true;
-        cached.__gxtDestructorCycle = (globalThis as any).__gxtSyncCycleId || 0;
+        // Slice-30 (Cluster B): bridge read of the sync-cycle counter
+        // (canonical state graduated from `globalThis.__gxtSyncCycleId` to
+        // module-local `_gxtSyncCycleId` in `compile.ts`).
+        cached.__gxtDestructorCycle =
+          getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
         // Register for synchronous flush at end of sync cycle
         let pendingDestroys = (globalThis as any).__gxtPendingModifierDestroys;
         if (!pendingDestroys) {
@@ -11265,7 +11290,10 @@ function renderClassicComponent(
   // also checks this flag to decide whether to fire willRender.
   if (reusedWithChanges && isForceRerender && instance) {
     try {
-      const __gCycle = (globalThis as any).__gxtSyncCycleId || 0;
+      // Slice-30 (Cluster B): bridge read of the sync-cycle counter
+      // (canonical state graduated from `globalThis.__gxtSyncCycleId` to
+      // module-local `_gxtSyncCycleId` in `compile.ts`).
+      const __gCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
       (instance as any).__gxtPoolReuseWithChangesCycleId = __gCycle;
     } catch {
       /* ignore */

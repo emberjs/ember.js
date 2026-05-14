@@ -1036,8 +1036,17 @@ class ClassicRootState {
                         const modKey = firstArg ? `${baseName}:${firstArg}` : baseName;
                         const cached = cache.get(modKey);
                         if (cached && !cached.pendingDestroy) {
-                          // Check if already updated by Phase 1 (gxtSyncDom)
-                          const syncCycle = (globalThis as any).__gxtSyncCycleId || 0;
+                          // Check if already updated by Phase 1 (gxtSyncDom).
+                          // Slice-30 (Cluster B): cross-package read of the
+                          // sync-cycle counter migrated from the pre-slice-30
+                          // `globalThis.__gxtSyncCycleId` slot to the
+                          // `compilePipeline.getSyncCycleId()` bridge. Bridge-
+                          // not-yet-installed edge defaults to `0` (`?? 0`),
+                          // preserving the pre-slice-30
+                          // `(g.__gxtSyncCycleId || 0)` truthy-coerce
+                          // semantics exactly.
+                          const syncCycle =
+                            getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
                           if (cached.__gxtUpdatedInSyncCycle === syncCycle) {
                             continue; // Phase 1 already handled this
                           }
