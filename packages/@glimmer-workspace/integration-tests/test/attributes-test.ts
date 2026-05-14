@@ -719,3 +719,56 @@ jitSuite(
     protected isSelfClosing = false;
   }
 );
+
+class SvgXlinkHrefSanitizationTests extends RenderTest {
+  static suiteName = 'svg xlink:href sanitization';
+
+  @test
+  'marks javascript: protocol as unsafe on xlink:href'() {
+    this.render(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href={{this.foo}}></use></svg>`,
+      { foo: 'javascript:foo()' }
+    );
+
+    this.assertHTML(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="unsafe:javascript:foo()"></use></svg>`
+    );
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'http://example.com' });
+    this.assertHTML(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="http://example.com"></use></svg>`
+    );
+    this.assertStableNodes();
+  }
+}
+
+jitSuite(SvgXlinkHrefSanitizationTests);
+
+class CaseInsensitiveSanitizationTests extends RenderTest {
+  static suiteName = 'attribute-name case-insensitive sanitization';
+
+  @test
+  'marks javascript: protocol as unsafe on uppercase HREF'() {
+    this.render(`<a HREF={{this.foo}}></a>`, { foo: 'javascript:foo()' });
+    this.assertHTML(`<a HREF="unsafe:javascript:foo()"></a>`);
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'http://example.com' });
+    this.assertHTML(`<a HREF="http://example.com"></a>`);
+    this.assertStableNodes();
+  }
+
+  @test
+  'marks javascript: protocol as unsafe on mixed-case Src'() {
+    this.render(`<img Src={{this.foo}} />`, { foo: 'javascript:foo()' });
+    this.assertHTML(`<img Src="unsafe:javascript:foo()" />`);
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'http://example.com/x.png' });
+    this.assertHTML(`<img Src="http://example.com/x.png" />`);
+    this.assertStableNodes();
+  }
+}
+
+jitSuite(CaseInsensitiveSanitizationTests);

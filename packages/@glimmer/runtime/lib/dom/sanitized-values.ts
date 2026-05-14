@@ -16,13 +16,25 @@ function has(array: Array<string>, item: string): boolean {
   return array.indexOf(item) !== -1;
 }
 
+function normalizeAttributeName(attribute: string): string {
+  return attribute.toLowerCase();
+}
+
+function isNamespacedHref(attribute: string): boolean {
+  return normalizeAttributeName(attribute).endsWith(':href');
+}
+
 function checkURI(tagName: Nullable<string>, attribute: string): boolean {
-  return (tagName === null || has(badTags, tagName)) && has(badAttributes, attribute);
+  if (isNamespacedHref(attribute)) {
+    return true;
+  }
+
+  return (tagName === null || has(badTags, tagName)) && has(badAttributes, normalizeAttributeName(attribute));
 }
 
 function checkDataURI(tagName: Nullable<string>, attribute: string): boolean {
   if (tagName === null) return false;
-  return has(badTagsForDataURI, tagName) && has(badAttributesForDataURI, attribute);
+  return has(badTagsForDataURI, tagName) && has(badAttributesForDataURI, normalizeAttributeName(attribute));
 }
 
 export function requiresSanitization(tagName: string, attribute: string): boolean {
