@@ -1812,8 +1812,17 @@ function _gxtWithRendering<T>(fn: () => T): T {
 // gxt-backend/manager.ts's flushAfterInsertQueue) to drain the queue,
 // since that is the earliest synchronous point at which the parent's
 // DOM is guaranteed to be in the live document.
+//
+// Slice 64: the enqueue side (`__gxtInElementDeferredRender`) used to be
+// a globalThis slot installed at module load and consumed intra-file by
+// the $_inElement override below. Since both sites live in this file
+// and the bundled @lifeart/gxt runtime does not reference it, the queue
+// itself is now a module-local binding and the consumer push()es into it
+// directly. The drain side (`__gxtInElementDrainDeferred`) remains a
+// globalThis slot because manager.ts and the renderPass-depth gate above
+// at L1746 consume it from outside this block.
+const _inElementDeferQueue: Array<() => void> = [];
 {
-  const _inElementDeferQueue: Array<() => void> = [];
   const _drainInElementDeferQueue = () => {
     while (_inElementDeferQueue.length > 0) {
       const cb = _inElementDeferQueue.shift()!;
@@ -1825,9 +1834,6 @@ function _gxtWithRendering<T>(fn: () => T): T {
         else throw e;
       }
     }
-  };
-  (globalThis as any).__gxtInElementDeferredRender = function (cb: () => void) {
-    _inElementDeferQueue.push(cb);
   };
   (globalThis as any).__gxtInElementDrainDeferred = _drainInElementDeferQueue;
 
@@ -2089,9 +2095,11 @@ function _gxtWithRendering<T>(fn: () => T): T {
         (placeholder as any).__gxtInElementTarget = retryRef;
       };
 
-      const enq = (globalThis as any).__gxtInElementDeferredRender;
-      if (typeof enq === 'function') enq(_deferredRender);
-      else queueMicrotask(_deferredRender);
+      // Slice 64: enqueue directly into the module-local queue declared
+      // adjacent to the drain helper above. Previously this went through
+      // a globalThis.__gxtInElementDeferredRender slot, but since both
+      // sites are intra-file the indirection is unnecessary.
+      _inElementDeferQueue.push(_deferredRender);
 
       // Return the placeholder synchronously.
       return placeholder;

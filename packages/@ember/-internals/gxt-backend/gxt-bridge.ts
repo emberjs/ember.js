@@ -507,6 +507,35 @@ export interface GxtFormatCapabilities {
  *    intra-file pattern as slice 62 (its direct sibling). Zero-bridge
  *    intra-file refactor; drops 1 globalThis slot. See slices 43-48,
  *    56-62 for analogous zero-bridge precedents.
+ *  - `__gxtInElementDeferredRender` — intra-compile.ts enqueue function
+ *    for the in-element deferred-render queue. The queue itself is the
+ *    `Array<() => void>` declared at the top of the in-element bare block
+ *    in `compile.ts`; it collects $_inElement block bodies whose
+ *    compile-time literal id targets resolve to null during an active
+ *    render pass (nested component templates evaluating
+ *    `{{#in-element (getElement "id")}}` before the outer parent's
+ *    DocumentFragment has been committed to the live document) and is
+ *    drained either by the slice-1 manager.ts `flushAfterInsertQueue`
+ *    tail (via the `__gxtFlushAfterInsertQueue` wrap installed below the
+ *    enqueue declaration) or by the renderComponent strict-mode path
+ *    (via the renderPass-depth-0 gate at `compile.ts:1746` calling the
+ *    drain through `__gxtInElementDrainDeferred`). MIGRATED IN SLICE 64
+ *    (Cluster B) by hoisting `_inElementDeferQueue` to a module-local
+ *    `const` just above the bare block and replacing the consumer's
+ *    `enq = (globalThis as any).__gxtInElementDeferredRender; enq(cb)`
+ *    indirection with a direct `_inElementDeferQueue.push(cb)`. Audit
+ *    confirmed exactly 2 functional sites (writer at the former
+ *    L1829 enqueue declaration; consumer at the former L2092 inside the
+ *    $_inElement null-target render-pass-detect branch), entirely
+ *    intra-`compile.ts`; the bundled @lifeart/gxt runtime has zero
+ *    references (verified by grep of
+ *    `node_modules/.pnpm/@lifeart+gxt@0.0.61/`). The drain side
+ *    (`__gxtInElementDrainDeferred`) REMAINS a globalThis slot because
+ *    manager.ts (slice-1 install gate) and the renderPass-depth-0 gate
+ *    at `compile.ts:1746` consume it from outside the in-element bare
+ *    block — out of scope for slice 64. Zero-bridge intra-file refactor;
+ *    drops 1 globalThis slot. See slices 43-48, 56-63 for analogous
+ *    zero-bridge precedents.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
