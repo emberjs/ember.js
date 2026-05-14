@@ -1370,23 +1370,39 @@ if (!isGlobalScopeReady()) {
 // Install Ember-aware wrappers for $_maybeHelper on globalThis
 installEmberWrappers();
 
-// Expose a strict-mode resolver as a global so that templates compiled with
-// `strictMode: true` can inject it as a local `$_maybeHelper` override. The
-// resolver closure captures the strict flag at template-compilation time,
-// which means any compiled getter closure that references the local
-// `$_maybeHelper` resolves against the strict-mode behavior even when the
-// getter runs asynchronously (after the outer `template.render()` call
-// returns). A plain global flag would race here: reactive getters produced
-// by a strict template are typically invoked inside a loose parent's
-// rendering context, where a global flag would have already been reset.
+// Strict-mode resolver injection. Templates compiled with `strictMode: true`
+// shadow the global `$_maybeHelper` with a wrapper that throws "not in
+// scope" for free identifiers instead of falling back to owner.lookup. The
+// shadow is installed at the OUTER (factory) scope of the emitted template
+// Function() so it survives across all reactive getter closures produced by
+// the compiled template — including closures invoked long after the
+// enclosing `template.render()` call returns. A plain global flag would
+// race here: reactive getters produced by a strict template are typically
+// invoked inside a loose parent's rendering context, where a global flag
+// would have already been reset.
 //
 // Scope-bound helpers compile to a variable reference (e.g.
 // `$_maybeHelper(a_helper, ...)`) — NOT a string — so this guard only fires
 // for names that were NOT resolved at compile time, i.e. genuine strict-mode
 // free references. Built-in keyword helpers (fn, hash, array, get, concat,
 // mut, readonly, unbound, unique-id, helper, modifier, on, __mutGet) are
-// still allowed because $_maybeHelper_ember's BUILTIN_HELPERS check runs
+// still allowed because `$_maybeHelper_ember`'s BUILTIN_HELPERS check runs
 // inside the original delegate.
+//
+// Cluster B slice 72 retired the prior `globalThis.__gxtMakeStrictMaybeHelper`
+// factory (writer here, reader inside the emitted Function() body) by
+// INLINING the strict shadow into the Function() body itself. The emitted
+// code now closes over `globalThis.$_maybeHelper` (the ember-wrapped delegate
+// published by `installEmberWrappers()` at module-init) as the delegate, an
+// inline object-literal allow-list as the allowed-names set, and
+// `globalThis.__EMBER_BUILTIN_HELPERS__` for the built-in-keyword bypass.
+// The Function() body is cached (see `_functionCodeCache` near L13862), so
+// per-template overhead is paid once. Slice 72 also dropped the slice-71
+// `_gxtOrigMaybeHelper` capture (now orphaned).
+//
+// The names list is kept as a module-local Set so the JSON-stringified
+// allow-list payload below is generated once. The list is also referenced
+// by the slice-72 doc above as the canonical source of truth.
 const _GXT_STRICT_ALLOWED_NAMES = new Set<string>([
   'array',
   'hash',
@@ -1407,39 +1423,15 @@ const _GXT_STRICT_ALLOWED_NAMES = new Set<string>([
   // gxtGetOutletState is injected by our -get-dynamic-var transform; safe in any mode.
   'gxtGetOutletState',
 ]);
-// Capture the underlying (ember-wrapped) $_maybeHelper exactly once, in a
-// module-local closure binding. Cluster B slice 71 graduated this from
-// `globalThis.__gxt_origMaybeHelper` (a 1-writer / 1-reader globalThis slot
-// whose only reader was the strict helper closure produced below — both
-// sites intra-`compile.ts`). The capture happens at module-init time, after
-// `installEmberWrappers()` above has mutated `globalThis.$_maybeHelper` to
-// install the ember-aware wrapper, so `_gxtOrigMaybeHelper` holds the
-// ember-wrapped delegate.
-let _gxtOrigMaybeHelper: any = (globalThis as any).$_maybeHelper;
-(globalThis as any).__gxtMakeStrictMaybeHelper = function (): any {
-  const g = globalThis as any;
-  return function $_maybeHelper_strict(
-    nameOrFn: any,
-    args: any[],
-    hashOrCtx?: any,
-    maybeCtx?: any
-  ): any {
-    if (typeof nameOrFn === 'string') {
-      if (!_GXT_STRICT_ALLOWED_NAMES.has(nameOrFn)) {
-        const BUILTIN_HELPERS = g.__EMBER_BUILTIN_HELPERS__;
-        const isBuiltin = !!(BUILTIN_HELPERS && BUILTIN_HELPERS[nameOrFn]);
-        if (!isBuiltin) {
-          throw new Error(
-            `Attempted to resolve \`${nameOrFn}\`, ` +
-              `which was expected to be a component or helper, ` +
-              `but that value was not in scope: ${nameOrFn}`
-          );
-        }
-      }
-    }
-    return _gxtOrigMaybeHelper(nameOrFn, args, hashOrCtx, maybeCtx);
-  };
-};
+// Precomputed JS object literal of the allowed-names set, suitable for
+// direct splicing into the emitted strict-shadow Function() body. Built
+// once at module load.
+const _GXT_STRICT_ALLOWED_NAMES_JS_LITERAL: string =
+  '{' +
+  Array.from(_GXT_STRICT_ALLOWED_NAMES)
+    .map((n) => `${JSON.stringify(n)}:1`)
+    .join(',') +
+  '}';
 
 // NOTE: Curried component reactive rendering is handled by itemToNode's
 // __isCurriedComponent check (see below in the compile function), not by $_TO_VALUE.
@@ -13838,8 +13830,29 @@ export function precompileTemplate(
       // so that the shadow survives across all reactive getter closures
       // produced by the compiled template — including closures invoked long
       // after the enclosing template.render() call returns.
+      //
+      // Cluster B slice 72: this injection was previously
+      // `var $_maybeHelper = globalThis.__gxtMakeStrictMaybeHelper();` —
+      // dispatching to a factory published on globalThis from compile.ts's
+      // module body. Slice 72 inlined the factory body so the emitted
+      // Function() closes over `globalThis.$_maybeHelper` (the
+      // ember-wrapped delegate, stable after `installEmberWrappers()`),
+      // an inline allow-list object literal, and
+      // `globalThis.__EMBER_BUILTIN_HELPERS__` for the built-in bypass.
+      // Function() body is cached, so the inlined block costs one
+      // compilation per unique template body.
       const strictMaybeHelperInjection = __strictModeFlag
-        ? `var $_maybeHelper = globalThis.__gxtMakeStrictMaybeHelper();`
+        ? `var $_maybeHelper_orig = globalThis.$_maybeHelper;` +
+          `var $_maybeHelper_allowed = ${_GXT_STRICT_ALLOWED_NAMES_JS_LITERAL};` +
+          `var $_maybeHelper = function (n, a, h, c) {` +
+          `if (typeof n === 'string' && !$_maybeHelper_allowed[n]) {` +
+          `var bh = globalThis.__EMBER_BUILTIN_HELPERS__;` +
+          `if (!(bh && bh[n])) {` +
+          `throw new Error('Attempted to resolve \`' + n + '\`, which was expected to be a component or helper, but that value was not in scope: ' + n);` +
+          `}` +
+          `}` +
+          `return $_maybeHelper_orig(n, a, h, c);` +
+          `};`
         : '';
       const templateFnCode = `
         "use strict";
