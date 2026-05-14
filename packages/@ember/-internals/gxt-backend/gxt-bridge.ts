@@ -313,7 +313,8 @@ export interface GxtViewUtilsCapabilities {
  *    (writer at SafeString toString hook, reader at attribute interpolation
  *    site). Cleaner cleanup is to convert to a module-local `let` in an
  *    intra-file refactor (same pattern as slice 3's exclusion of
- *    `__gxtSuppressDirtyTagForDuringRebuild`).
+ *    `__gxtSuppressDirtyTagForDuringRebuild`). LATER MIGRATED IN SLICE 60
+ *    (Cluster B) — see the slice 60 entry further down for the full topology.
  *  - `__gxtSymbols` (compile.ts) — orphan writer; the comment in compile.ts
  *    claims renderer.ts/root.ts consume it, but those modules actually read
  *    `globalThis.__lifeartGxt` (a different key). Confirmed by exhaustive
@@ -409,6 +410,24 @@ export interface GxtFormatCapabilities {
  *    tick — no cross-file consumer, no save/restore wrappers — so a
  *    module-local binding is sufficient. Zero-bridge intra-file refactor;
  *    drops 1 globalThis slot. See slices 43-48, 56-58 for analogous
+ *    zero-bridge precedents.
+ *  - `__gxtLastSafeStringResult` — intra-compile.ts SafeString-derived-string
+ *    tracker. MIGRATED IN SLICE 60 (Cluster B) to module-local `let
+ *    _gxtLastSafeStringResult: string | undefined` in `compile.ts`. Writer
+ *    sits inside the deferred SafeString.prototype.toString patch installed
+ *    by the top-level `setTimeout(..., 0)` block: every time GXT's quoted
+ *    attribute path stringifies a SafeString, the resulting raw HTML string
+ *    is stashed. Reader + clearer live in the `__gxtAttrInterpolate` style-
+ *    binding warn site inside `_styleEmptyGuard` — the warn path compares
+ *    the concatenated attr value against the last stashed SafeString result
+ *    to decide whether the attr came entirely from a single SafeString (no
+ *    warn) or whether static text was mixed in (warn). Both the writer and
+ *    the reader/clearer live intra-`compile.ts`; the bundled @lifeart/gxt
+ *    runtime has zero references (verified by grep of
+ *    `node_modules/.pnpm/@lifeart+gxt@0.0.61/`). No save/restore wrappers,
+ *    no host hook chains. Structural twin of slice 59 — same single-file
+ *    writer/reader/clearer topology. Zero-bridge intra-file refactor;
+ *    drops 1 globalThis slot. See slices 43-48, 56-59 for analogous
  *    zero-bridge precedents.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's

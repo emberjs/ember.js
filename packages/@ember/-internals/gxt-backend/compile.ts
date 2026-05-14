@@ -2263,6 +2263,14 @@ function _gxtWithRendering<T>(fn: () => T): T {
   });
 }
 
+// Cluster B slice 60: graduated from `(globalThis as any).__gxtLastSafeStringResult`
+// to a module-local binding. The SafeString.toString() patch below writes the last
+// converted SafeString result; the style-binding warn site in __gxtAttrInterpolate
+// reads + clears it to distinguish SafeString-derived strings from plain strings.
+// Writer and reader both live intra-`compile.ts`; no cross-file consumer and zero
+// ownership by the bundled @lifeart/gxt runtime. Zero-bridge intra-file refactor.
+let _gxtLastSafeStringResult: string | undefined;
+
 // Patch SafeString.toString() to track when a SafeString is being converted to
 // a string during GXT's quoted attribute concatenation. This lets the style prop
 // patch distinguish between a plain string (warn) and a SafeString-derived string
@@ -2278,7 +2286,8 @@ setTimeout(() => {
           const origToString = SafeString.prototype.toString;
           SafeString.prototype.toString = function () {
             const result = origToString.call(this);
-            (globalThis as any).__gxtLastSafeStringResult = result;
+            // Graduated from globalThis slot in Cluster B slice 60.
+            _gxtLastSafeStringResult = result;
             return result;
           };
         }
@@ -10495,19 +10504,20 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           if (_styleWarnedPassId !== currentPassId) {
             // Check if the string value came from a SafeString.toString() conversion.
             // For quoted attrs like style="{{safeExpr}}", __gxtNormAttr calls
-            // String(safeString) → toString() → sets __gxtLastSafeStringResult.
+            // String(safeString) → toString() → sets _gxtLastSafeStringResult.
             // If the final concatenated value matches the last SafeString result exactly,
             // the entire value came from a single SafeString — no warning needed.
             // If the value differs (e.g., static text was mixed in), warn.
+            // `_gxtLastSafeStringResult` graduated from globalThis slot in Cluster B slice 60.
             let isSafeFromConcat = false;
             if (typeof val === 'string') {
-              const lastSafe = (globalThis as any).__gxtLastSafeStringResult;
+              const lastSafe = _gxtLastSafeStringResult;
               if (lastSafe !== undefined && val === lastSafe) {
                 isSafeFromConcat = true;
               }
             }
             // Clear the last-safe-string tracker regardless
-            (globalThis as any).__gxtLastSafeStringResult = undefined;
+            _gxtLastSafeStringResult = undefined;
             if (!isSafeFromConcat) {
               _styleWarnedPassId = currentPassId;
               const warnFn = getDebugFunction('warn');
