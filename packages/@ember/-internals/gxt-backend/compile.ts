@@ -4313,6 +4313,13 @@ type IfWatcherCb = ((notifiedTarget: object) => void) & {
 };
 let ifWatchers = new WeakMap<object, Map<string, Set<IfWatcherCb>>>();
 
+// Cluster B slice 59: graduated from `(globalThis as any).__gxtPreFlushFiredFalse`
+// to a module-local binding. Writer in the Phase 0 (pre-flush FALSE-flip) block
+// stashes the set of cbs already fired so the Phase 1a flush below can skip them.
+// Both writer and reader live in the same scheduler tick inside __gxtSyncDomNow,
+// so a module-local binding is sufficient — no cross-file consumers. Zero-bridge.
+let _gxtPreFlushFiredFalse: Set<IfWatcherCb> | undefined;
+
 // Persistent set of classic-component wrapper DOM ids that the user has
 // directly toggled to `false` via a click handler calling set()/toggleProperty.
 // Used by the __gxtRebuildViewTreeFromDom wrap below to reset the view-
@@ -6053,9 +6060,9 @@ function _resetTemplateOnlyState() {
             }
           }
           // Mark fired cbs so the regular Phase 1a flush below doesn't re-fire them.
-          ((cb_set) => {
-            (globalThis as any).__gxtPreFlushFiredFalse = cb_set;
-          })(fired0);
+          // Cluster B slice 59: intra-file direct write to module-local
+          // `_gxtPreFlushFiredFalse` (graduated from globalThis slot).
+          _gxtPreFlushFiredFalse = fired0;
         } catch {
           /* ignore */
         }
@@ -6144,12 +6151,12 @@ function _resetTemplateOnlyState() {
         const directlyFiredCbs = new Set<IfWatcherCb>();
         // Pull in cbs already fired in PHASE 0 (pre-flush FALSE-flip) so we don't
         // re-invoke them here. Falls through cleanly when there were none.
-        const preFired = (globalThis as any).__gxtPreFlushFiredFalse as
-          | Set<IfWatcherCb>
-          | undefined;
+        // Cluster B slice 59: intra-file direct read of module-local
+        // `_gxtPreFlushFiredFalse` (graduated from globalThis slot).
+        const preFired = _gxtPreFlushFiredFalse;
         if (preFired && preFired.size > 0) {
           for (const cb of preFired) directlyFiredCbs.add(cb);
-          (globalThis as any).__gxtPreFlushFiredFalse = undefined;
+          _gxtPreFlushFiredFalse = undefined;
         }
         // Phase A: fire all FALSE-flips (outer parents collapse first).
         for (const { cb, obj } of ordered) {

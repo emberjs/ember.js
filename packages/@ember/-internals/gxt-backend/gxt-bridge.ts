@@ -400,6 +400,16 @@ export interface GxtFormatCapabilities {
  *    initialized at module-load. Zero-bridge intra-file refactor; drops 1
  *    globalThis slot. See slices 43-48, 56, 57 for analogous zero-bridge
  *    precedents and slice 48 in particular for the lazy-init-collapse pattern.
+ *  - `__gxtPreFlushFiredFalse` — intra-compile.ts pre-flush stash. MIGRATED IN
+ *    SLICE 59 (Cluster B) to module-local `let _gxtPreFlushFiredFalse:
+ *    Set<IfWatcherCb> | undefined` in `compile.ts`. Writer in the Phase 0
+ *    (pre-flush FALSE-flip) block of `__gxtSyncDomNow` stashes the set of
+ *    already-fired cbs; reader in the Phase 1a flush block of the same
+ *    function consumes and clears it. Both sites live in the same scheduler
+ *    tick — no cross-file consumer, no save/restore wrappers — so a
+ *    module-local binding is sufficient. Zero-bridge intra-file refactor;
+ *    drops 1 globalThis slot. See slices 43-48, 56-58 for analogous
+ *    zero-bridge precedents.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
