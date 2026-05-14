@@ -11,8 +11,12 @@ export function runAppend(view: any): void {
   // render, property change notifications from component init set
   // __gxtPendingSync=true, causing gxtSyncDom to re-evaluate each-formulas
   // with stale values (e.g., returning [] instead of the actual collection).
-  // Using __gxtRunTaskActive tells onEnd to skip the sync.
-  (globalThis as any).__gxtRunTaskActive = true;
+  // Slice-38 (Cluster B): `__gxtRunTaskActive` canonical state migrated to
+  // module-local `_gxtRunTaskActiveFlag` in `compile.ts`. Test-helper
+  // writer-contract — routes through the bridge setter (reuses slice-36/37
+  // test-helper-bridge-writer pattern). See `setRunTaskActive` doc in
+  // gxt-bridge.ts.
+  getGxtRenderer()?.compilePipeline.setRunTaskActive?.(true);
   try {
     run(view, 'appendTo', document.getElementById('qunit-fixture'));
   } catch (e) {
@@ -32,7 +36,8 @@ export function runAppend(view: any): void {
     if (typeof clearErrors === 'function') clearErrors();
     throw e;
   } finally {
-    (globalThis as any).__gxtRunTaskActive = false;
+    // Slice-38 (Cluster B): see comment above; routes through bridge setter.
+    getGxtRenderer()?.compilePipeline.setRunTaskActive?.(false);
   }
   // Preserve __gxtPendingSyncFromPropertyChange ONLY if a property change
   // originated from a `schedule('afterRender', cb)` callback (the classic
@@ -127,7 +132,12 @@ export function runDestroy(toDestroy: any): void {
 export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   // Mark that we're inside runTask so the runloop's onEnd hook doesn't
   // double-sync GXT DOM (runTask has its own explicit sync below).
-  (globalThis as any).__gxtRunTaskActive = true;
+  // Slice-38 (Cluster B): `__gxtRunTaskActive` canonical state migrated to
+  // module-local `_gxtRunTaskActiveFlag` in `compile.ts`. Test-helper
+  // writer-contract — routes through the bridge setter (reuses slice-36/37
+  // test-helper-bridge-writer pattern). See `setRunTaskActive` doc in
+  // gxt-bridge.ts.
+  getGxtRenderer()?.compilePipeline.setRunTaskActive?.(true);
   let result: ReturnType<F>;
   try {
     result = run(callback);
@@ -140,7 +150,8 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
     if (typeof clearErrors === 'function') clearErrors();
     throw e;
   } finally {
-    (globalThis as any).__gxtRunTaskActive = false;
+    // Slice-38 (Cluster B): see comment above; routes through bridge setter.
+    getGxtRenderer()?.compilePipeline.setRunTaskActive?.(false);
   }
   // In GXT mode, flush pending DOM updates synchronously after the task
   // so test assertions see the updated DOM immediately

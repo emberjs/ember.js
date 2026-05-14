@@ -79,10 +79,14 @@ function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
       // terminal runloop, compile.ts's `installCompilePipelinePart` has
       // run and the getter is installed). See `getPendingSync` doc in
       // gxt-bridge.ts.
-      if (
-        getGxtRenderer()?.compilePipeline.getPendingSync?.() &&
-        !(globalThis as any).__gxtRunTaskActive
-      ) {
+      // Slice-38 (Cluster B): `__gxtRunTaskActive` canonical state migrated
+      // to module-local `_gxtRunTaskActiveFlag` in `compile.ts`. Cross-
+      // package reader routes through the bridge getter (paired
+      // topologically with the slice-37 `getPendingSync` reader above —
+      // both flags read together in this `pending && !runTaskActive`
+      // gate). See `getRunTaskActive` doc in gxt-bridge.ts.
+      const _cpRL = getGxtRenderer()?.compilePipeline;
+      if (_cpRL?.getPendingSync?.() && !_cpRL?.getRunTaskActive?.()) {
         const syncNow = (globalThis as any).__gxtSyncDomNow;
         if (typeof syncNow === 'function') {
           try {

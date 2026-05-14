@@ -835,6 +835,59 @@ export interface GxtFormatCapabilities {
  *    restore-on-two-flags note above). Closes the 4-flag pending-sync
  *    cluster — net cumulative -4 globalThis slots across slices 34/35/
  *    36/37.
+ *  - `__gxtRunTaskActive` — MIGRATED IN SLICE 38 to `getRunTaskActive()` +
+ *    `setRunTaskActive(value)` on this namespace (paired get/set bridge
+ *    surface — slice-14/35/36/37 paired-methods pattern). Pairs
+ *    topologically with slice 37's `__gxtPendingSync`: both flags are read
+ *    together in the `getPendingSync?.() && !runTaskActive` gate in
+ *    `glimmer/lib/renderer.ts` (`_backburner` end listener) and
+ *    `runloop/index.ts` (runloop `onEnd` hook). Slice 38 closes the
+ *    "pending-sync gate cluster" alongside slice 37. The flag is set TRUE
+ *    during the body of `runTask` / `runAppend` (test-helper writers) to
+ *    inform the runloop's `onEnd` and `_backburner`'s end listener that
+ *    they should SKIP the post-end `__gxtSyncDomNow` flush — because
+ *    `runTask` / `runAppend` perform their own explicit sync after the
+ *    user's task completes. Cleared in the `finally` block at the end of
+ *    each helper. The pre-slice-38 topology was 4 writers and 2 readers
+ *    spanning 3 files / 3 packages:
+ *     Writers (4 sites, all test-helper):
+ *       - `internal-test-helpers/lib/run.ts:15` (test-helper —
+ *         `runAppend` body open — set TRUE before `run(view, 'appendTo')`).
+ *       - `internal-test-helpers/lib/run.ts:35` (test-helper —
+ *         `runAppend` finally — clear after `appendTo` body completes).
+ *       - `internal-test-helpers/lib/run.ts:130` (test-helper —
+ *         `runTask` body open — set TRUE before `run(callback)`).
+ *       - `internal-test-helpers/lib/run.ts:143` (test-helper —
+ *         `runTask` finally — clear after `run(callback)` body completes).
+ *     Readers (2 sites, both cross-package — SAME 2 sites as slice 37's
+ *     cross-package readers):
+ *       - `glimmer/lib/renderer.ts:1282` — `_backburner.on('end', ...)`
+ *         listener — paired with the slice-37 `getPendingSync?.()` read
+ *         to gate the post-end `__gxtSyncDomNow` flush.
+ *       - `runloop/index.ts:84` — runloop `onEnd` hook — paired with the
+ *         slice-37 `getPendingSync?.()` read to gate the GXT DOM-sync
+ *         flush at the end of the outermost runloop.
+ *    Slice 38 routes the 4 test-helper writers through
+ *    `compilePipeline.setRunTaskActive(value)` and the 2 cross-package
+ *    readers through `compilePipeline.getRunTaskActive?.() ?? false`.
+ *    Canonical state moves to module-local `_gxtRunTaskActiveFlag` in
+ *    `compile.ts` (alongside the slice-37 `_gxtPendingSyncFlag` and other
+ *    pending-sync-cluster flags). The `__gxtRunTaskActive` globalThis
+ *    slot is DROPPED in this slice — net -1 globalThis surface.
+ *
+ *    Bridge shape decision: paired get/set (slice-14/35/36/37 paired-
+ *    methods pattern, same as slice 37) because slice 38 has cross-
+ *    package WRITERS (test-helper `run.ts`) and cross-package READERS
+ *    (`renderer.ts` + `runloop/index.ts`) — both surfaces must be
+ *    reachable via the bridge. Slice 38 cannot use slice-20/22/23/24's
+ *    read-only predicate because of the cross-package writers, and
+ *    cannot use slice-29's mark+consume because the flag is gated by a
+ *    try/finally open/close shape (not a one-shot consumer boundary).
+ *
+ *    ZERO new import edges in slice 38: `run.ts` (slice 36),
+ *    `glimmer/lib/renderer.ts` (slice 6), and `runloop/index.ts` (slice
+ *    37) all already import `getGxtRenderer`. The test-helper writer-
+ *    contract reuses the slice-36/37 bridge-writer pattern verbatim.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -2437,6 +2490,97 @@ export interface GxtCompilePipelineCapabilities {
    * allocations.
    */
   setPendingSync?(value: boolean): void;
+
+  /**
+   * Read the `__gxtRunTaskActive` boolean flag. Returns `true` if a
+   * `runTask` or `runAppend` body is currently executing — i.e., the
+   * test helper has opened its body via `setRunTaskActive(true)` and has
+   * not yet entered its `finally` block to clear the flag. The flag's
+   * sole consumer purpose is to gate cross-package post-end DOM-sync
+   * flushes: when `runTask` / `runAppend` is active, the runloop's
+   * `onEnd` hook (`runloop/index.ts:84`) and the `_backburner.on('end')`
+   * listener (`glimmer/lib/renderer.ts:1282`) MUST skip their post-end
+   * `__gxtSyncDomNow()` flush, because the test helper will perform its
+   * own explicit sync after the user's body completes. Without this
+   * gate, both sites would double-sync during `runTask` and re-evaluate
+   * each-formulas with stale values.
+   *
+   * Pre-slice-38 readers (2 sites, both cross-package — paired
+   * topologically with slice 37's `getPendingSync` readers at the SAME
+   * sites):
+   *  - `glimmer/lib/renderer.ts:1282` — `_backburner.on('end', ...)`
+   *    listener — gate the post-end syncDomNow flush.
+   *  - `runloop/index.ts:84` — runloop `onEnd` hook — gate the GXT
+   *    DOM-sync flush at the end of the outermost runloop.
+   *
+   * Slice-38 (Cluster B): graduates the canonical state from the pre-
+   * slice-38 `globalThis.__gxtRunTaskActive` slot to the module-local
+   * boolean `_gxtRunTaskActiveFlag` in `compile.ts`. The 2 cross-package
+   * readers route through this bridge getter. Net globalThis surface
+   * delta: -1 slot (paired with `setRunTaskActive`). Closes the
+   * "pending-sync gate cluster" alongside slice 37.
+   *
+   * Bridge-not-yet-installed edge: callers that route through this
+   * bridge getter use `getGxtRenderer()?.compilePipeline.getRunTaskActive?.() ?? false`.
+   * Both optional chains return `undefined` when either the renderer or
+   * the method is not yet installed; the `?? false` coerces to FALSE,
+   * which mirrors pre-slice-38 semantics where
+   * `globalThis.__gxtRunTaskActive === undefined` (pre-first-runTask
+   * edge) coerced via `!!` to FALSE.
+   *
+   * Fast-check: the implementation reads the module-local
+   * `_gxtRunTaskActiveFlag` boolean — one boolean read; zero
+   * allocations. Matches slice-35/36/37's `get*` body shape.
+   */
+  getRunTaskActive?(): boolean;
+
+  /**
+   * Write the `__gxtRunTaskActive` boolean flag. The flag's lifetime
+   * and semantics are described in the `getRunTaskActive` doc above.
+   *
+   * Pre-slice-38 writers (4 sites, all test-helper):
+   *  - `internal-test-helpers/lib/run.ts:15` — `runAppend` body open —
+   *    set TRUE before `run(view, 'appendTo')`.
+   *  - `internal-test-helpers/lib/run.ts:35` — `runAppend` finally —
+   *    clear after `appendTo` body completes.
+   *  - `internal-test-helpers/lib/run.ts:130` — `runTask` body open —
+   *    set TRUE before `run(callback)`.
+   *  - `internal-test-helpers/lib/run.ts:143` — `runTask` finally —
+   *    clear after `run(callback)` body completes.
+   *
+   * Slice 38 routes all 4 test-helper writers through this bridge
+   * setter (`compilePipeline.setRunTaskActive(value)`). Slice 38 has no
+   * intra-`compile.ts` writers (the flag has no intra-file references).
+   *
+   * Slice-38 (Cluster B): graduates the canonical state from the pre-
+   * slice-38 `globalThis.__gxtRunTaskActive` slot to the module-local
+   * boolean `_gxtRunTaskActiveFlag` in `compile.ts`. Net globalThis
+   * surface delta: -1 slot (paired with `getRunTaskActive`).
+   *
+   * Bridge-not-yet-installed edge: the 4 test-helper writers use
+   * `getGxtRenderer()?.compilePipeline.setRunTaskActive?.(value)`. Both
+   * optional chains short-circuit to `undefined` (no-op) when the
+   * renderer or the method is not yet installed. This is load-order-
+   * safe because the writers fire AFTER module init in practice
+   * (`runTask` / `runAppend` are test-driven and run after compile.ts's
+   * `installCompilePipelinePart` at file EOF has executed). If the
+   * write is dropped pre-install, the flag stays FALSE and the
+   * cross-package readers correctly read FALSE — matching pre-slice-38
+   * semantics where `globalThis.__gxtRunTaskActive === undefined`
+   * coerced to FALSE.
+   *
+   * Bridge shape decision: paired get/set (slice-14/35/36/37 paired-
+   * methods pattern, same as slice 37) because slice 38 has cross-
+   * package WRITERS (test-helper `run.ts`) and cross-package READERS
+   * (`renderer.ts` + `runloop/index.ts`) — both surfaces must be
+   * reachable. Closes the "pending-sync gate cluster" alongside slice
+   * 37.
+   *
+   * Fast-check: the implementation writes the module-local
+   * `_gxtRunTaskActiveFlag` boolean — one boolean assignment; zero
+   * allocations.
+   */
+  setRunTaskActive?(value: boolean): void;
 }
 
 /**

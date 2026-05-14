@@ -3552,6 +3552,48 @@ function _gxtSetPendingSync(on: boolean): void {
   _gxtPendingSyncFlag = on;
 }
 
+// Slice-38 (Cluster B): graduates the `__gxtRunTaskActive` boolean flag from
+// the pre-slice-38 `globalThis.__gxtRunTaskActive` slot to the module-local
+// boolean `_gxtRunTaskActiveFlag` in `compile.ts`, paired with a 2-method
+// get/set bridge surface (`getRunTaskActive` + `setRunTaskActive`) on the
+// `compilePipeline` namespace. Pairs topologically with slice 37's
+// `__gxtPendingSync` — both flags are read together in the same
+// `getPendingSync?.() && !__gxtRunTaskActive` gate in
+// `glimmer/lib/renderer.ts:1281` (`_backburner` end listener) and
+// `runloop/index.ts:84` (runloop `onEnd` hook). Slice 38 closes the "pending-
+// sync gate cluster" alongside slice 37. The flag is set TRUE during the body
+// of `runTask` / `runAppend` (test-helper writers) to inform the runloop's
+// `onEnd` and `_backburner`'s end listener that they should SKIP the post-end
+// `__gxtSyncDomNow` flush — because `runTask` / `runAppend` perform their own
+// explicit sync after the user's task completes. Cleared in the `finally`
+// block at the end of each helper. The pre-slice-38 topology was 4 writers
+// (all test-helper in `internal-test-helpers/lib/run.ts`: 2 in `runAppend`
+// open/finally pair + 2 in `runTask` open/finally pair) and 2 readers (both
+// cross-package: `glimmer/lib/renderer.ts:1282` _backburner end gate +
+// `runloop/index.ts:84` onEnd hook gate — the SAME 2 cross-package reader
+// sites as slice 37). Slice 38 routes intra-`compile.ts` accesses (none —
+// the flag has no intra-file references) through the module-local helpers
+// directly (slice-22/24/27/30/31/32/33/34/35/36/37 intra-file precedent);
+// the 4 test-helper writers and the 2 cross-package readers route through
+// the new bridge methods. Net globalThis surface delta: -1 slot. Bridge
+// shape decision: paired get/set (slice-14/35/36/37 paired-methods pattern,
+// same as slice 37) because slice 38 has cross-package WRITERS (test-helper
+// `run.ts`) and cross-package READERS (`renderer.ts` + `runloop/index.ts`) —
+// both surfaces must be reachable via the bridge. Slice 38 cannot use slice-
+// 20/22/23/24's read-only predicate because of the writers, and cannot use
+// slice-29's mark+consume because the flag is gated by a try/finally
+// open/close shape (not a one-shot consumer boundary). ZERO new import edges:
+// `run.ts` (slice 36), `renderer.ts` (slice 6), and `runloop/index.ts` (slice
+// 37) all already import `getGxtRenderer`. Test-helper writer-contract:
+// reuses the slice-36/37 bridge-writer pattern verbatim.
+let _gxtRunTaskActiveFlag = false;
+function _gxtGetRunTaskActive(): boolean {
+  return _gxtRunTaskActiveFlag;
+}
+function _gxtSetRunTaskActive(on: boolean): void {
+  _gxtRunTaskActiveFlag = on;
+}
+
 // Slice-36 (Cluster B): graduates the `__gxtPendingSyncFromPropertyChange`
 // boolean flag from the pre-slice-36 `globalThis.__gxtPendingSyncFromPropertyChange`
 // slot to the module-local boolean `_gxtPendingSyncFromPropertyChangeFlag` in
@@ -15204,6 +15246,22 @@ installCompilePipelinePart({
   // local definition above (`_gxtPendingSyncFlag`).
   getPendingSync: _gxtGetPendingSync,
   setPendingSync: _gxtSetPendingSync,
+  // Slice-38 (Cluster B): graduates `__gxtRunTaskActive` from the globalThis
+  // slot to a 2-method paired get/set bridge surface (slice-14/35/36/37
+  // paired-methods pattern). The flag is written by 4 test-helper sites
+  // pre-slice-38 (2 in `internal-test-helpers/lib/run.ts:15/35` runAppend
+  // open/finally pair + 2 in `run.ts:130/143` runTask open/finally pair)
+  // and read by 2 cross-package sites pre-slice-38 (`glimmer/lib/renderer.ts:1282`
+  // `_backburner` end gate + `runloop/index.ts:84` onEnd hook gate — the
+  // same 2 cross-package reader sites as slice 37, paired topologically
+  // with `__gxtPendingSync` in the `getPendingSync?.() && !runTaskActive`
+  // gate). Test-helper writers route through `compilePipeline.setRunTaskActive(value)`;
+  // cross-package readers route through `compilePipeline.getRunTaskActive?.() ?? false`.
+  // Net -1 globalThis slot — closes the "pending-sync gate cluster" alongside
+  // slice 37. See `getRunTaskActive` / `setRunTaskActive` doc in gxt-bridge.ts
+  // and module-local definition above (`_gxtRunTaskActiveFlag`).
+  getRunTaskActive: _gxtGetRunTaskActive,
+  setRunTaskActive: _gxtSetRunTaskActive,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
