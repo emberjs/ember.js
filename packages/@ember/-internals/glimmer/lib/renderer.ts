@@ -314,7 +314,9 @@ function morphAttributes(oldEl: Element, newEl: Element): void {
 //     Error instances (was: only allowlisted "Assertion Failed" / "Error in")
 //   - __gxtDestroyUnclaimedPoolEntries Phase 3 captures destroy/willDestroy
 //     throws (was: silent /* ignore */ catch)
-// Both honor the __gxtSuppressDestroyCapture flag for spurious-sweep gating.
+// Both honor the `_suppressDestroyCapture` flag in `manager.ts` (slice-52,
+// previously `globalThis.__gxtSuppressDestroyCapture`) for spurious-sweep
+// gating.
 // The renderer-side prototype patch is therefore no longer needed.
 
 // This wrapper logic prevents us from rerendering in case of a hard failure

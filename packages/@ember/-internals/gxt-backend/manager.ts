@@ -2996,6 +2996,23 @@ const _renderErrors: Error[] = [];
 const _templateRenderedInstances = new Set<any>();
 let _isInRenderPass = false;
 
+/**
+ * Slice-52 (Cluster B): suppress-destroy-capture flag.
+ *
+ * Set to `true` during spurious unclaimed-pool sweeps (initial-render syncs
+ * not driven by a real property change) so that user-thrown errors from
+ * destroy/willDestroy/lifecycle hooks are NOT captured into the render-error
+ * queue and surfaced to assert.throws.
+ *
+ * Pre-slice-52 home: `globalThis.__gxtSuppressDestroyCapture`. Migrated to
+ * module-local in slice 52 because all functional accessors are intra-
+ * `manager.ts` (paired entry-arm / `finally`-disarm in
+ * `__gxtDestroyUnclaimedPoolEntries` + 3 reader-gates in lifecycle/destroy
+ * capture branches). The cross-file `renderer.ts` reference is comment-
+ * only documentation.
+ */
+let _suppressDestroyCapture = false;
+
 export function markTemplateRendered(instance: any): void {
   if (instance) {
     _templateRenderedInstances.add(instance);
@@ -3391,10 +3408,13 @@ function triggerLifecycleHook(instance: any, hookName: string): void {
     // Capture lifecycle-hook errors (didInsertElement, willDestroyElement,
     // didReceiveAttrs, etc.) into the render-error queue so they surface
     // through flushRenderErrors() in the renderer. Honor
-    // __gxtSuppressDestroyCapture, which is set during spurious unclaimed-
+    // _suppressDestroyCapture, which is set during spurious unclaimed-
     // pool sweeps where a user destroy/lifecycle throw should NOT propagate
     // to assert.throws (see __gxtDestroyUnclaimedPoolEntries Phase 1).
-    if (!(globalThis as any).__gxtSuppressDestroyCapture) {
+    // Slice-52 (Cluster B): canonical state graduated from
+    // `globalThis.__gxtSuppressDestroyCapture` to module-local
+    // `_suppressDestroyCapture`.
+    if (!_suppressDestroyCapture) {
       captureRenderError(e);
     }
   }
@@ -4755,9 +4775,14 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   // `__gxtSyncDomNow` call).
   const _outerSuppressCapture =
     !getGxtRenderer()?.compilePipeline.isSyncIsPropertyDriven?.();
-  const _hadPriorSuppress = !!(globalThis as any).__gxtSuppressDestroyCapture;
+  // Slice-52 (Cluster B): canonical state graduated from
+  // `globalThis.__gxtSuppressDestroyCapture` to module-local
+  // `_suppressDestroyCapture`. Snapshot the prior value so the
+  // matching `finally`-disarm only restores it if WE set it (preserves
+  // outer re-entrant arms).
+  const _hadPriorSuppress = _suppressDestroyCapture;
   if (_outerSuppressCapture && !_hadPriorSuppress) {
-    (globalThis as any).__gxtSuppressDestroyCapture = true;
+    _suppressDestroyCapture = true;
   }
 
   // Phase 1: willDestroyElement + willClearRender.
@@ -4893,10 +4918,13 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
         try {
           instance.destroy();
         } catch (e) {
-          // Honor __gxtSuppressDestroyCapture, which is set during spurious
+          // Honor _suppressDestroyCapture, which is set during spurious
           // unclaimed-pool sweeps (initial-render syncs not driven by a
           // real property change).
-          if (e instanceof Error && !(globalThis as any).__gxtSuppressDestroyCapture) {
+          // Slice-52 (Cluster B): reader migrated from
+          // `globalThis.__gxtSuppressDestroyCapture` to module-local
+          // `_suppressDestroyCapture`.
+          if (e instanceof Error && !_suppressDestroyCapture) {
             if (!firstPhase3Error) firstPhase3Error = e;
           }
         }
@@ -4913,7 +4941,9 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
           // claimed willDestroy errors were "captured elsewhere" — that
           // elsewhere was renderer.ts's ensureLifecycleErrorCapture wrapper,
           // which has been removed. Capture them here instead.
-          if (e instanceof Error && !(globalThis as any).__gxtSuppressDestroyCapture) {
+          // Slice-52 (Cluster B): reader migrated to module-local
+          // `_suppressDestroyCapture`.
+          if (e instanceof Error && !_suppressDestroyCapture) {
             if (!firstPhase3Error) firstPhase3Error = e;
           }
         }
@@ -4939,8 +4969,13 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   }
 
   // Restore the prior suppress-capture flag (only if we set it ourselves).
+  // Slice-52 (Cluster B): writer migrated from
+  // `globalThis.__gxtSuppressDestroyCapture` to module-local
+  // `_suppressDestroyCapture`. When `_hadPriorSuppress` is false (the
+  // entry-arm condition), the flag was `false` before we set it to
+  // `true` — restoring to `false` is equivalent to snapshot-restore.
   if (_outerSuppressCapture && !_hadPriorSuppress) {
-    (globalThis as any).__gxtSuppressDestroyCapture = false;
+    _suppressDestroyCapture = false;
   }
 
   // Surface the first Phase 3 destroy/willDestroy error AFTER all cleanup so

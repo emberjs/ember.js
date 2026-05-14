@@ -1891,6 +1891,142 @@ export interface GxtFormatCapabilities {
  *    Count delta (slice 51): -1 globalThis slot retired, -5 LOC source
  *    (stale comment + lazy-init binding + dead push), 0 new bridge
  *    methods, 0 new import edges.
+ *
+ *  - `__gxtSuppressDestroyCapture` — MIGRATED TO MODULE-LOCAL IN SLICE 52
+ *    (zero-bridge intra-`manager.ts`). Pre-slice-52 audit confirmed 7
+ *    functional sites all in
+ *    `packages/@ember/-internals/gxt-backend/manager.ts`, plus 1
+ *    comment-only cross-file reference at
+ *    `packages/@ember/-internals/glimmer/lib/renderer.ts:317`. Classic
+ *    boolean state-flag pattern with paired entry-arm /
+ *    `finally`-disarm + snapshot read for re-entrancy preservation.
+ *
+ *    Pre-slice-52 topology (confirmed audit — exactly 7 functional
+ *    sites, all in `manager.ts`, plus 2 comment lines and 1
+ *    comment-only cross-file reference):
+ *
+ *      Canonical state: `globalThis.__gxtSuppressDestroyCapture`
+ *        (boolean, `undefined` by default until first write — treated
+ *        as falsy by all readers).
+ *
+ *      Functional sites in `manager.ts`:
+ *        - L3397 — reader-gate in `triggerLifecycleHook` catch block.
+ *          When set, suppresses capture of user-thrown lifecycle
+ *          errors into the render-error queue. Set during spurious
+ *          unclaimed-pool sweeps where a destroy/lifecycle throw
+ *          should NOT propagate to assert.throws.
+ *        - L4758 — snapshot read into `_hadPriorSuppress` local at
+ *          the start of `__gxtDestroyUnclaimedPoolEntries`. Preserves
+ *          outer re-entrant arms so a nested sweep doesn't clobber
+ *          an enclosing arm's lifetime.
+ *        - L4760 — entry-arm writer (set to `true` if
+ *          `_outerSuppressCapture && !_hadPriorSuppress`).
+ *        - L4899 — reader-gate in Phase 3 `instance.destroy()` catch.
+ *          Same first-error-wins capture policy as L3397.
+ *        - L4916 — reader-gate in Phase 3 `instance.willDestroy()`
+ *          catch (mirror of L4899 for the legacy hook).
+ *        - L4943 — `finally`-disarm writer (set to `false` if
+ *          `_outerSuppressCapture && !_hadPriorSuppress` — equivalent
+ *          to snapshot-restore because the snapshot was always
+ *          `false` when the entry-arm condition fired).
+ *
+ *      Comment-only sites:
+ *        - `manager.ts:3394` + `manager.ts:4896` — 2 comment lines
+ *          explaining the flag's semantics, lightly edited in slice
+ *          52 to reflect the new module-local name.
+ *        - `renderer.ts:317` — 1 cross-file comment-only doc
+ *          reference. Lightly edited in slice 52 to point at the new
+ *          module-local `_suppressDestroyCapture` and note the
+ *          slice-52 migration. NO functional cross-file consumer
+ *          existed.
+ *
+ *    Sites moved (slice 52):
+ *      - packages/@ember/-internals/gxt-backend/manager.ts:
+ *        introduced new module-local `let _suppressDestroyCapture =
+ *        false;` adjacent to the existing `_isInRenderPass` cluster
+ *        (around L2998-3018) with a docblock explaining its
+ *        semantics. Redirected all 7 functional sites to access the
+ *        const directly:
+ *          * L3397 reader: `(globalThis as any)
+ *            .__gxtSuppressDestroyCapture` → `_suppressDestroyCapture`.
+ *          * L4758 snapshot read:
+ *            `!!(globalThis as any).__gxtSuppressDestroyCapture`
+ *            → `_suppressDestroyCapture` (the canonical is already
+ *            boolean-typed; the `!!` coercion was a load-order safety
+ *            measure that the typed const obviates).
+ *          * L4760 entry-arm writer:
+ *            `(globalThis as any).__gxtSuppressDestroyCapture = true;`
+ *            → `_suppressDestroyCapture = true;`
+ *          * L4899 + L4916 reader-gates: same shape as L3397.
+ *          * L4943 `finally`-disarm writer:
+ *            `(globalThis as any).__gxtSuppressDestroyCapture = false;`
+ *            → `_suppressDestroyCapture = false;`
+ *        Light comment edits at L3394 + L4896 to reflect the new
+ *        module-local name.
+ *      - packages/@ember/-internals/glimmer/lib/renderer.ts:317:
+ *        light comment edit to point at the new module-local
+ *        `_suppressDestroyCapture` in `manager.ts` (slice-52) and
+ *        note the migration history.
+ *      - packages/@ember/-internals/gxt-backend/gxt-bridge.ts: append
+ *        this slice-52 entry to the migration-history docblock above
+ *        `GxtCompilePipelineCapabilities` (slice-49/50/51-precedent
+ *        location). NO new bridge methods (zero-bridge intra-file).
+ *        No stale-note rewrite is needed because no prior slice
+ *        referenced `__gxtSuppressDestroyCapture` in this file.
+ *
+ *    State-home decision: `manager.ts` — the slot's sole functional
+ *    accessors all live in `manager.ts`'s
+ *    `__gxtDestroyUnclaimedPoolEntries` and `triggerLifecycleHook`
+ *    functions; the slot's lifecycle is tightly coupled to the
+ *    unclaimed-pool sweep code path. Matches slice-31/43/44/48/49
+ *    precedent (intra-`manager.ts` zero-bridge).
+ *
+ *    Bridge shape decision: ZERO-bridge intra-file. All functional
+ *    sites are inside `manager.ts`. The cross-file `renderer.ts:317`
+ *    reference is comment-only (no functional access). No bridge
+ *    method needed; module-local `let` is sufficient.
+ *
+ *    Re-entrancy semantics preserved exactly: the snapshot read at
+ *    L4758 captures the prior `_suppressDestroyCapture` value into
+ *    `_hadPriorSuppress`. The matching `finally`-disarm at L4943
+ *    only writes `false` if the entry-arm condition
+ *    (`_outerSuppressCapture && !_hadPriorSuppress`) was true — i.e.,
+ *    only if WE actually set it to true ourselves. If an outer
+ *    re-entrant invocation already armed it, our matching no-op
+ *    leaves the outer arm's lifetime intact. The original
+ *    `globalThis` form had identical semantics. Functional
+ *    equivalence verified by re-reading both branches before and
+ *    after migration.
+ *
+ *    ZERO new import edges in slice 52: only inline accessor edits
+ *    + one new `let` declaration adjacent to existing module-local
+ *    state. No `getGxtRenderer` calls, no `installCompilePipelinePart`
+ *    calls, no new bridge-import statements added. Slice 52 matches
+ *    slices 43, 44, 45, 46, 47, 48, 49, 50, 51 as a zero-bridge
+ *    Cluster B slice — the TENTH consecutive.
+ *
+ *    Bridge interface evolution (slice 52 — no API change): no
+ *    bridge interface is extended in this slice (zero-bridge
+ *    intra-file). The migration-history docblock IS extended with
+ *    this slice-52 entry. TENTH consecutive Cluster B slice (after
+ *    43, 44, 45, 46, 47, 48, 49, 50, 51) to ship without a new
+ *    bridge method.
+ *
+ *    Hot-path concern: the migrated accessors execute on every
+ *    `__gxtDestroyUnclaimedPoolEntries` invocation (~once per
+ *    spurious-sweep render-pass tick) and once per
+ *    `triggerLifecycleHook` catch (a rarer path triggered only on
+ *    user-thrown lifecycle errors). Direct module-local boolean
+ *    reads/writes are strictly faster than `(globalThis as any).foo`
+ *    property access — the engine can constant-fold the
+ *    closure-local read whereas the globalThis access requires a
+ *    full property-lookup walk every time. Small but real
+ *    improvement on the unclaimed-sweep hot path.
+ *
+ *    Count delta (slice 52): -1 globalThis slot retired, +1 new
+ *    module-local `let`, ~7 inline accessor migrations, +18 LOC
+ *    docblock for the new module-local + +3 LOC light comment edits.
+ *    0 new bridge methods, 0 new import edges.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
