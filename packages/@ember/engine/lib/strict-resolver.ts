@@ -4,10 +4,12 @@ const KNOWN_EASY_PLURALS = new Set([
   'adapter',
   'component',
   'controller',
+  'helper',
   'model',
   'modifier',
   'route',
   'serializer',
+  'service',
   'template',
 ]);
 
