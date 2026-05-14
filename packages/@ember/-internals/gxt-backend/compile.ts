@@ -1407,6 +1407,15 @@ const _GXT_STRICT_ALLOWED_NAMES = new Set<string>([
   // gxtGetOutletState is injected by our -get-dynamic-var transform; safe in any mode.
   'gxtGetOutletState',
 ]);
+// Capture the underlying (ember-wrapped) $_maybeHelper exactly once, in a
+// module-local closure binding. Cluster B slice 71 graduated this from
+// `globalThis.__gxt_origMaybeHelper` (a 1-writer / 1-reader globalThis slot
+// whose only reader was the strict helper closure produced below — both
+// sites intra-`compile.ts`). The capture happens at module-init time, after
+// `installEmberWrappers()` above has mutated `globalThis.$_maybeHelper` to
+// install the ember-aware wrapper, so `_gxtOrigMaybeHelper` holds the
+// ember-wrapped delegate.
+let _gxtOrigMaybeHelper: any = (globalThis as any).$_maybeHelper;
 (globalThis as any).__gxtMakeStrictMaybeHelper = function (): any {
   const g = globalThis as any;
   return function $_maybeHelper_strict(
@@ -1428,13 +1437,9 @@ const _GXT_STRICT_ALLOWED_NAMES = new Set<string>([
         }
       }
     }
-    return g.__gxt_origMaybeHelper(nameOrFn, args, hashOrCtx, maybeCtx);
+    return _gxtOrigMaybeHelper(nameOrFn, args, hashOrCtx, maybeCtx);
   };
 };
-// Capture the underlying (ember-wrapped) $_maybeHelper exactly once.
-if (!(globalThis as any).__gxt_origMaybeHelper) {
-  (globalThis as any).__gxt_origMaybeHelper = (globalThis as any).$_maybeHelper;
-}
 
 // NOTE: Curried component reactive rendering is handled by itemToNode's
 // __isCurriedComponent check (see below in the compile function), not by $_TO_VALUE.
