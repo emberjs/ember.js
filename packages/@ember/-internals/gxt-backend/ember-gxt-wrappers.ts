@@ -2795,12 +2795,16 @@ export { _wrappedMH as $_maybeHelper, _wrappedTag as $_tag, _wrappedDc as $_dc }
 //
 // Narrow fix: we only flip `alwaysRevalidate` ONCE per VM.execute call, when
 // a tracked setter has fired since the last execute. A module-scoped flag
-// (`__gxtTrackedSetSinceRerender`) is set by hooking `__gxtTriggerReRender`
-// (which is called by the tracked setter path in glimmer-tracking.ts), and is
-// consumed (cleared) on the next `UpdatingVM.execute`. The `{{#each}}` list
-// iterator and other stable-rerender paths are unaffected on rerenders where
-// no tracked set occurred, preserving DOM node identity for tests like
-// "trackedMap() (rendering) :: each: set".
+// (slice 29: `compile.ts`'s `_gxtTrackedSetSinceRerenderFlag`, exposed via
+// the `compilePipeline.markTrackedSetSinceRerender()` /
+// `consumeTrackedSetSinceRerender()` bridge pair — pre-slice-29 the flag
+// lived at `globalThis.__gxtTrackedSetSinceRerender`) is set by hooking
+// `__gxtTriggerReRender` (which is called by the tracked setter path in
+// glimmer-tracking.ts), and is consumed (cleared) on the next
+// `UpdatingVM.execute`. The `{{#each}}` list iterator and other stable-
+// rerender paths are unaffected on rerenders where no tracked set occurred,
+// preserving DOM node identity for tests like "trackedMap() (rendering) ::
+// each: set".
 Promise.resolve().then(async () => {
   try {
     const rt: any = await import('@glimmer/runtime');
@@ -2811,8 +2815,17 @@ Promise.resolve().then(async () => {
         // Only force revalidate if a tracked setter has fired since the last
         // execute. This limits the perf cost and preserves DOM node identity
         // for untouched subtrees.
-        if ((g as any).__gxtTrackedSetSinceRerender) {
-          (g as any).__gxtTrackedSetSinceRerender = false;
+        //
+        // Slice-29 (Cluster B): route the check+clear through the bridge's
+        // atomic `consumeTrackedSetSinceRerender()` method. Pre-slice-29 this
+        // was an inline `if (g.__gxtTrackedSetSinceRerender) {
+        // g.__gxtTrackedSetSinceRerender = false; ... }` against the dropped
+        // globalThis slot. Bridge-not-yet-installed edge: `?? false` preserves
+        // the pre-slice-29 "no flag set ⇒ never force revalidate" behavior
+        // for executes that race ahead of the deferred-Promise install.
+        const sawTrackedSet =
+          getGxtRenderer()?.compilePipeline.consumeTrackedSetSinceRerender?.() ?? false;
+        if (sawTrackedSet) {
           const prevRevalidate = this.alwaysRevalidate;
           this.alwaysRevalidate = true;
           try {
@@ -2833,12 +2846,24 @@ Promise.resolve().then(async () => {
 // Slice-15 (Cluster B): the pre-slice-15 `installTrackedSetDetector`
 // wrap-by-reassignment is replaced by a registered BEFORE-chain host hook on
 // `compilePipeline.addBeforeTriggerReRender` (see slice-15 doc in
-// `gxt-bridge.ts`). The hook's only effect is setting
-// `globalThis.__gxtTrackedSetSinceRerender = true` — consumed by the
-// UpdatingVM `alwaysRevalidate` flip above. No module-local closure is
-// needed, but registering through the bridge keeps the chain ordering
-// observable and makes the wrap-elimination uniform across all four
-// pre-slice-15 wrap sites (manager.ts, renderer.ts, core.ts, this file).
+// `gxt-bridge.ts`). The hook's only effect is marking the tracked-set
+// detector flag — consumed by the UpdatingVM `alwaysRevalidate` flip above.
+// No module-local closure is needed, but registering through the bridge
+// keeps the chain ordering observable and makes the wrap-elimination
+// uniform across all four pre-slice-15 wrap sites (manager.ts, renderer.ts,
+// core.ts, this file).
+//
+// Slice-29 (Cluster B): the writer routes through
+// `compilePipeline.markTrackedSetSinceRerender()` (mark+consume bridge pair
+// — paired with `consumeTrackedSetSinceRerender()` in the UpdatingVM patch
+// above). Pre-slice-29 the writer wrote
+// `globalThis.__gxtTrackedSetSinceRerender = true` directly; that slot is
+// DROPPED in slice 29 — the canonical state is now the module-local
+// `_gxtTrackedSetSinceRerenderFlag` in `compile.ts`. The writer is reachable
+// only after the bridge install completes (this installer runs through the
+// `compilePipeline.addBeforeTriggerReRender` API, which already requires
+// the bridge), so the bridge call is guaranteed defined when the hook
+// fires. Defensive `?.` access matches the optional-method protocol typing.
 //
 // Load-order: same deferred-retry pattern as manager.ts's slice-15
 // registration. If `compilePipeline.addBeforeTriggerReRender` is not yet on
@@ -2850,7 +2875,7 @@ Promise.resolve().then(async () => {
     cp.addBeforeTriggerReRender(function (_obj: object, _keyName: string) {
       // Mark that a tracked set (or equivalent notify) has occurred since the
       // last VM.execute. The flag is consumed in UpdatingVM.execute above.
-      (globalThis as any).__gxtTrackedSetSinceRerender = true;
+      cp.markTrackedSetSinceRerender?.();
     });
     return;
   }

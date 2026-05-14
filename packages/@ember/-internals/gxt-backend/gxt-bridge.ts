@@ -449,6 +449,21 @@ export interface GxtFormatCapabilities {
  *    is a `length > 0` test (zero per-call overhead when no contributor
  *    registered). Each registration returns an off-fn for symmetric cleanup,
  *    matching slice 14's `addDynamicComponentListener` ergonomics.
+ *  - `__gxtTrackedSetSinceRerender` — MIGRATED IN SLICE 29 to
+ *    `markTrackedSetSinceRerender()` + `consumeTrackedSetSinceRerender()`
+ *    on this namespace. Lean 1-writer/1-reader topology — both sites are
+ *    intra-file in `ember-gxt-wrappers.ts` (writer at L2853 inside the
+ *    slice-15 BEFORE-trigger-rerender hook; reader at L2814-2815 inside
+ *    the `UpdatingVM.prototype.execute` patch that flips `alwaysRevalidate`
+ *    for one execute when a tracked write occurred since the last
+ *    execute). The bridge surface is a MARK+CONSUME pair (atomic
+ *    check+clear on the reader side) rather than the get/set/with triple
+ *    used by slices 17/18/20/22/23/24 — folds the pre-slice-29 inline
+ *    `if (g.x) { g.x = false; ... }` into a single bridge call that
+ *    expresses the atomic semantics. Canonical state moves to the
+ *    module-local `_gxtTrackedSetSinceRerenderFlag` in `compile.ts`. The
+ *    `__gxtTrackedSetSinceRerender` globalThis slot is DROPPED in this
+ *    slice — net -1 globalThis surface.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -792,9 +807,10 @@ export interface GxtCompilePipelineCapabilities {
    * installer):
    *  - `manager.ts` (was `_installTriggerReRenderWrapper`): adds the mutated
    *    `obj` to manager.ts's module-local `_dirtiedNestedObjectsForHooks` Set.
-   *  - `ember-gxt-wrappers.ts` (was `installTrackedSetDetector`): sets
-   *    `globalThis.__gxtTrackedSetSinceRerender = true` so the UpdatingVM's
-   *    `alwaysRevalidate` flip fires on the next `execute`.
+   *  - `ember-gxt-wrappers.ts` (was `installTrackedSetDetector`): calls
+   *    `markTrackedSetSinceRerender()` (slice 29 — replaced the pre-slice-29
+   *    `globalThis.__gxtTrackedSetSinceRerender = true` writer) so the
+   *    UpdatingVM's `alwaysRevalidate` flip fires on the next `execute`.
    *
    * Hook errors are caught and ignored (matching the pre-slice-15 wraps'
    * try/catch behavior).
@@ -1304,6 +1320,86 @@ export interface GxtCompilePipelineCapabilities {
    * hot path (every @tracked write outside a render pass goes through it).
    */
   isCurrentlyRendering?(): boolean;
+
+  /**
+   * Mark that a tracked write occurred since the last `UpdatingVM.execute`
+   * call. Called from the `addBeforeTriggerReRender` host hook registered
+   * by `ember-gxt-wrappers.ts` (the slice-15 contributor that replaced the
+   * pre-slice-15 `installTrackedSetDetector` wrap-by-reassignment). The
+   * flag is consumed (and cleared) on the next `UpdatingVM.execute` call
+   * by `consumeTrackedSetSinceRerender()` below.
+   *
+   * Slice-29 (Cluster B): graduates the cross-file flag from
+   * `globalThis.__gxtTrackedSetSinceRerender` to a typed mark+consume
+   * bridge surface. The pre-slice-29 topology was:
+   *  - Writer (1 site): `ember-gxt-wrappers.ts:2853` — set to `true`
+   *    inside the BEFORE-trigger-rerender hook body.
+   *  - Reader (1 site): `ember-gxt-wrappers.ts:2814-2815` — inside the
+   *    `UpdatingVM.prototype.execute` patch, read + clear on entry to
+   *    decide whether to force `alwaysRevalidate=true` for the one call
+   *    (which causes `valueForRef` to recompute every childRef, flushing
+   *    stale cached values from tracked writes that fired outside the
+   *    normal VM update cycle — see the patch narrative at L2780-L2803).
+   *
+   * Bridge shape decision: mark+consume (2 methods) rather than the
+   * get/set/with triple used by slices 17/18/20/22/23/24. Reason: the
+   * reader's usage is exactly "check, clear, branch" — never a read
+   * without clearing, and never a paired save-restore (the flag has a
+   * single semantic owner: the consume-side resets it after observing).
+   * Folding "check + clear" into a single `consume` call eliminates the
+   * two-step `if (g.x) { g.x = false; ... }` race at the reader (not a
+   * concurrency hazard in JS, but a documentation hazard — the bridge
+   * surface now expresses the atomic semantics that pre-slice-29 the
+   * reader open-coded).
+   *
+   * Namespace decision: `compilePipeline`. The flag's canonical state
+   * lives in `compile.ts` alongside the other compilePipeline state
+   * flags introduced in slices 17-24. Same namespace pattern.
+   *
+   * Bridge-not-yet-installed edge: the writer hook only registers AFTER
+   * the bridge install (registration goes through
+   * `addBeforeTriggerReRender`, which itself requires the bridge), so
+   * the writer can assume the bridge is present. Callers still gate
+   * with `?.` for the optional-method protocol typing.
+   *
+   * Bridge interface evolution: slice 29 — twenty-third API change.
+   * `GxtCompilePipelineCapabilities` extended with TWO new optional
+   * methods (`markTrackedSetSinceRerender` + `consumeTrackedSetSinceRerender`)
+   * — paired mark+consume shape, distinct from the slice-22-style
+   * `with/is` paired shape.
+   *
+   * After slice 29 the `__gxtTrackedSetSinceRerender` globalThis slot is
+   * DROPPED: the canonical state is the module-local
+   * `_gxtTrackedSetSinceRerenderFlag` in `compile.ts`; the writer hook
+   * and the UpdatingVM.execute patch route exclusively through the
+   * bridge methods. Net globalThis surface delta: -1 slot.
+   */
+  markTrackedSetSinceRerender?(): void;
+
+  /**
+   * Atomically check + clear the "tracked set since last rerender" flag.
+   * Returns the prior value of the flag and resets the canonical
+   * module-local `_gxtTrackedSetSinceRerenderFlag` (compile.ts) to
+   * `false`.
+   *
+   * Slice-29 (Cluster B): paired reader for `markTrackedSetSinceRerender`
+   * above. Called from `ember-gxt-wrappers.ts`'s `UpdatingVM.prototype.execute`
+   * patch (the `__gxtEmberPatchedAlwaysRevalidate` install). The patch's
+   * branch is `if (consumeTrackedSetSinceRerender()) { force-revalidate
+   * this one call; }` — exactly the pre-slice-29 inline `if (g.x) { g.x
+   * = false; ... }` check + clear, folded into one atomic bridge call.
+   *
+   * Bridge-not-yet-installed edge: the UpdatingVM patch runs on every
+   * Glimmer execute, including invocations that may predate the bridge
+   * install (deferred Promise.resolve().then in ember-gxt-wrappers.ts).
+   * Callers use `?? false` to preserve the pre-slice-29 "no detection
+   * ⇒ never force revalidate" behavior.
+   *
+   * Fast-check: implementation is `prev = flag; flag = false; return prev;`
+   * — two variable accesses, zero allocations. Suitable for the per-execute
+   * hot path (called once on every UpdatingVM.execute).
+   */
+  consumeTrackedSetSinceRerender?(): boolean;
 }
 
 /**

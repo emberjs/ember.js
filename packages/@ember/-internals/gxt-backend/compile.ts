@@ -3259,6 +3259,52 @@ function _gxtWithCurrentlyRendering<T>(fn: () => T): T {
   }
 }
 
+// Slice-29 (Cluster B): module-local "tracked set since last rerender"
+// detector flag. Replaces the pre-slice-29 globalThis slot
+// `__gxtTrackedSetSinceRerender` with a 2-method bridge (`mark` + `consume`):
+//
+//   Writer: `ember-gxt-wrappers.ts` BEFORE-trigger-rerender hook (registered
+//   via slice-15's `addBeforeTriggerReRender`). On every `triggerReRender`
+//   the hook calls `markTrackedSetSinceRerender()` which flips this flag to
+//   `true` — signalling that a tracked write occurred since the last VM
+//   execute completed.
+//
+//   Reader: `ember-gxt-wrappers.ts` `UpdatingVM.prototype.execute` patch.
+//   On entry the patched method calls `consumeTrackedSetSinceRerender()`,
+//   which atomically returns the prior value AND clears the flag. When the
+//   prior value was `true`, the patched method forces `alwaysRevalidate=true`
+//   for that one execute call (recompute every childRef) to flush stale
+//   cached values from tracked writes that fired outside the normal VM
+//   update cycle. See the patch's narrative at `ember-gxt-wrappers.ts:2780`.
+//
+// Pre-slice-29 the flag lived on `globalThis.__gxtTrackedSetSinceRerender`
+// with the same 1-writer / 1-reader topology entirely intra-file in
+// `ember-gxt-wrappers.ts`. Slice 29 promotes it to canonical module-local
+// state in compile.ts (where the rest of the compilePipeline state lives)
+// and DROPS the globalThis slot. Mark+consume is a coarser surface than the
+// pure `get/set/with` triple from slices 17-24 — it folds the "check, clear,
+// branch" pattern into a single bridge call, which matches the reader's
+// usage exactly (the reader never reads without also clearing). Same
+// efficiency as the pre-slice-29 inline pattern (one variable read + one
+// write per reader call), zero allocations.
+//
+// Bridge-not-yet-installed edge: both methods are optional on the bridge
+// interface; the writer hook only registers AFTER the bridge install
+// (registration is itself bridge-mediated via `addBeforeTriggerReRender`),
+// so the writer can assume the bridge is installed. The reader (UVM execute
+// patch) runs on every Glimmer execute, including before the bridge install
+// — defensive `?.` access plus `?? false` default preserves the pre-slice-29
+// "no detection ⇒ never force revalidate" behavior.
+let _gxtTrackedSetSinceRerenderFlag = false;
+function _gxtMarkTrackedSetSinceRerender(): void {
+  _gxtTrackedSetSinceRerenderFlag = true;
+}
+function _gxtConsumeTrackedSetSinceRerender(): boolean {
+  const prev = _gxtTrackedSetSinceRerenderFlag;
+  _gxtTrackedSetSinceRerenderFlag = false;
+  return prev;
+}
+
 // Slice-20 (Cluster B): read-side predicate for the `__gxtSyncing` boolean
 // flag toggled by `__gxtSyncDomNow` (this file, body at L5270/5717) and the
 // post-render-hook re-entry save-restore in `manager.ts:4202-4215`. Returns
@@ -14724,6 +14770,17 @@ installCompilePipelinePart({
   // / `isCurrentlyRendering` doc in gxt-bridge.ts.
   withCurrentlyRendering: _gxtWithCurrentlyRendering,
   isCurrentlyRendering: _gxtIsCurrentlyRendering,
+  // Slice-29 (Cluster B): graduates `__gxtTrackedSetSinceRerender` from the
+  // globalThis slot to a 2-method mark+consume bridge surface. The flag is
+  // written by `ember-gxt-wrappers.ts`'s BEFORE-trigger-rerender hook (set
+  // to `true` on every notifyPropertyChange) and read+cleared atomically by
+  // its UpdatingVM.execute patch (which forces `alwaysRevalidate=true` for
+  // one execute when the flag is set). Pure intra-file 1-writer/1-reader
+  // topology — leanest slice since slice 21. Net -1 globalThis slot. See
+  // `markTrackedSetSinceRerender` / `consumeTrackedSetSinceRerender` doc in
+  // gxt-bridge.ts.
+  markTrackedSetSinceRerender: _gxtMarkTrackedSetSinceRerender,
+  consumeTrackedSetSinceRerender: _gxtConsumeTrackedSetSinceRerender,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
