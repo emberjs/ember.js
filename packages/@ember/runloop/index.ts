@@ -511,12 +511,29 @@ export function schedule(...args: any[]): Timer {
     const origFn = args[idx];
     if (typeof origFn === 'function') {
       args[idx] = function gxtAfterRenderWrapper(this: any, ...a: any[]) {
-        const prev = (globalThis as any).__gxtInAfterRender;
-        (globalThis as any).__gxtInAfterRender = true;
+        // Slice-41 (Cluster B): `__gxtInAfterRender` canonical state migrated
+        // to module-local `_gxtInAfterRenderFlag` in `compile.ts`. The
+        // save/set/finally-restore triplet around the user callback routes
+        // through the paired bridge getter+setter (load-order-safe optional
+        // chain — by the time a `schedule('afterRender', cb)` callback
+        // actually fires, compile.ts's `installCompilePipelinePart` at
+        // file EOF has run and both methods are installed; the wrapper
+        // closure is built lazily inside `schedule(...)` and the wrapped
+        // body runs inside backburner's afterRender queue, which is well
+        // past gxt-backend module init). See `getInAfterRender` /
+        // `setInAfterRender` doc in gxt-bridge.ts. The `_cpIAR` pipeline-
+        // cache local (slice-37's `_cpRA` pattern + slice-38's `_cpRL` /
+        // `_cpBB` two-flag pattern + slice-40's `_cpAR` single-flag get-
+        // then-set pattern) caches the pipeline once for the three calls
+        // (save read + set TRUE + finally restore) on the same logical
+        // afterRender wrapper invocation.
+        const _cpIAR = getGxtRenderer()?.compilePipeline;
+        const prev = _cpIAR?.getInAfterRender?.() ?? false;
+        _cpIAR?.setInAfterRender?.(true);
         try {
           return origFn.apply(this, a);
         } finally {
-          (globalThis as any).__gxtInAfterRender = prev;
+          _cpIAR?.setInAfterRender?.(prev);
         }
       };
     }

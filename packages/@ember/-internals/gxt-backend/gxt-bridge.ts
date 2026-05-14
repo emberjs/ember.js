@@ -1013,6 +1013,76 @@ export interface GxtFormatCapabilities {
  *    37 in the same `runAppend` body) with a fresh `_cpAR` cache local for
  *    the get-then-set pair on this flag (pattern reuse from slice 38's
  *    `_cpRL` / `_cpBB` two-flag read-pair caches).
+ *  - `__gxtInAfterRender` — MIGRATED IN SLICE 41 to `getInAfterRender()` +
+ *    `setInAfterRender(value)` on this namespace (paired get/set bridge
+ *    surface — slice-14/35/36/37/38/40 paired-methods pattern). Closes the
+ *    2-flag afterRender-detection cluster alongside slice 40 (this slice
+ *    is the `open/close` gate around `schedule('afterRender', cb)` user
+ *    callbacks; slice 40 is the `property-change-observed-while-open`
+ *    detector). The flag is set TRUE for the duration of a
+ *    `schedule('afterRender', cb)` wrapped callback body (the
+ *    `gxtAfterRenderWrapper` in `@ember/runloop/index.ts:509-525` saves
+ *    the previous value, sets the flag TRUE, runs the user callback,
+ *    then restores the previous value in a `finally` — the classic
+ *    save/set/finally-restore pattern around a nested call). The flag is
+ *    read by `_gxtTriggerReRender` (in `compile.ts:4129`) to gate slice
+ *    40's `_gxtSetAfterRenderPropertyChange(true)` setter — i.e., to
+ *    decide whether a property change originated from inside an
+ *    `afterRender` callback (and therefore must be marked as a legitimate
+ *    `afterRender set` pattern that must trigger gxtSyncDom). The pre-
+ *    slice-41 topology was 3 writers and 1 reader spanning 2 files /
+ *    2 packages:
+ *     Writers (3 sites, all intra-`@ember/runloop/index.ts`):
+ *       - `runloop/index.ts:514` — `gxtAfterRenderWrapper` body —
+ *         `const prev = (globalThis as any).__gxtInAfterRender;`
+ *         (save the previous value into a local for the finally
+ *         restore).
+ *       - `runloop/index.ts:515` — `gxtAfterRenderWrapper` body —
+ *         `(globalThis as any).__gxtInAfterRender = true;` (open the
+ *         gate around the `origFn.apply(this, a)` user callback).
+ *       - `runloop/index.ts:519` — `gxtAfterRenderWrapper` finally —
+ *         `(globalThis as any).__gxtInAfterRender = prev;` (restore the
+ *         previous value, supporting nested `schedule('afterRender', ...)`
+ *         frames if any — though no test exercises a nested pattern).
+ *     Readers (1 site, intra-`compile.ts`):
+ *       - `compile.ts:4129` — `_gxtTriggerReRender` body — gates slice
+ *         40's `_gxtSetAfterRenderPropertyChange(true)` setter.
+ *    Slice 41 routes the 3 intra-`runloop/index.ts` writers through
+ *    `compilePipeline.getInAfterRender?.() ?? false` (save) and
+ *    `compilePipeline.setInAfterRender?.(value)` (set + restore); the
+ *    1 intra-`compile.ts` reader routes through the module-local
+ *    `_gxtGetInAfterRender` helper directly (slice-22/24/27/30/31/32/33/
+ *    34/35/36/37/38/40 intra-file precedent). Canonical state moves to
+ *    module-local `_gxtInAfterRenderFlag` in `compile.ts` (alongside
+ *    slice 40's `_gxtAfterRenderPropertyChangeFlag`, co-locating the
+ *    2-flag afterRender-detection cluster per the slice 40 Finding #4
+ *    family rule). The `__gxtInAfterRender` globalThis slot is DROPPED
+ *    in this slice — net -1 globalThis surface.
+ *
+ *    Bridge shape decision: paired get/set (slice-14/35/36/37/38/40 paired-
+ *    methods pattern, same as slice 40) because slice 41 has a cross-
+ *    package WRITER triplet (`runloop/index.ts` save/set/restore) that
+ *    needs both `getInAfterRender()` (for the save read) and
+ *    `setInAfterRender()` (for the set TRUE and the finally restore)
+ *    surfaces reachable from `runloop/index.ts`. The intra-file reader
+ *    (compile.ts:4129) routes via the intra-file helper directly. Slice
+ *    41 cannot use slice-20/22/23/24's read-only predicate because of
+ *    the cross-package writer triplet, and cannot use slice-29's mark+
+ *    consume because the save/set/restore pattern needs to read the
+ *    previous value (save = read, set = write TRUE, restore = write
+ *    previous) — three distinct sites with three distinct boolean
+ *    values (the saved `prev` may be TRUE if a nested
+ *    `schedule('afterRender', ...)` frame is in flight, FALSE
+ *    otherwise).
+ *
+ *    ZERO new import edges in slice 41: `runloop/index.ts` (slice 37)
+ *    already imports `getGxtRenderer`. The pre-existing import edge is
+ *    reused — slice 41 introduces a fresh `_cpIAR` pipeline-cache local
+ *    (slice-37's `_cpRA` pattern + slice-38's `_cpRL` / `_cpBB` two-flag
+ *    pattern + slice-40's `_cpAR` single-flag get-then-set pattern) that
+ *    caches the pipeline once for the three calls (save read + set TRUE
+ *    + finally restore) on the same logical afterRender wrapper
+ *    invocation.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -2907,6 +2977,116 @@ export interface GxtCompilePipelineCapabilities {
    * zero allocations.
    */
   setAfterRenderPropertyChange?(value: boolean): void;
+
+  /**
+   * Read the `__gxtInAfterRender` boolean flag. Returns `true` if a
+   * `schedule('afterRender', cb)` wrapped callback body is currently
+   * executing — i.e., we are nested inside `gxtAfterRenderWrapper` at
+   * `@ember/runloop/index.ts:512-521`. Used by `_gxtTriggerReRender`
+   * in `compile.ts:4129` to gate slice 40's
+   * `_gxtSetAfterRenderPropertyChange(true)` setter — i.e., to decide
+   * whether a property change observed during a re-render trigger
+   * originated from inside an `afterRender` callback (the classic
+   * `afterRender set` pattern where `didInsertElement` queues a
+   * `set(...)` that must re-render the DOM before the test assertion).
+   *
+   * Also used by the `gxtAfterRenderWrapper` itself (cross-package
+   * `runloop/index.ts:514`) to capture the previous value before
+   * opening the gate (`(prev = read(); setInAfterRender(true); try { ...
+   * } finally { setInAfterRender(prev); }`) — the save half of the
+   * save/set/finally-restore triplet.
+   *
+   * Pre-slice-41 readers (1 site, intra-`compile.ts`; the cross-package
+   * `runloop/index.ts:514` save-step read also routes through this
+   * getter post-slice-41 — but pre-slice-41 the save read was a direct
+   * `(globalThis as any).__gxtInAfterRender` read):
+   *  - `compile.ts:4129` — `_gxtTriggerReRender` body — gates slice
+   *    40's `_gxtSetAfterRenderPropertyChange(true)` setter.
+   *
+   * Slice-41 (Cluster B): graduates the canonical state from the pre-
+   * slice-41 `globalThis.__gxtInAfterRender` slot to the module-local
+   * boolean `_gxtInAfterRenderFlag` in `compile.ts`. The intra-file
+   * reader (compile.ts:4129) routes through the module-local helper
+   * directly. The cross-package save-step read (runloop/index.ts:514)
+   * routes through this bridge getter. Net globalThis surface delta:
+   * -1 slot (paired with `setInAfterRender`).
+   *
+   * Bridge-not-yet-installed edge: callers that route through this
+   * bridge getter use
+   * `getGxtRenderer()?.compilePipeline.getInAfterRender?.() ?? false`.
+   * Both optional chains return `undefined` when either the renderer
+   * or the method is not yet installed; the `?? false` coerces to
+   * FALSE, which mirrors pre-slice-41 semantics where
+   * `globalThis.__gxtInAfterRender === undefined` (pre-first-
+   * `schedule('afterRender', cb)` edge) coerced via truthiness to
+   * FALSE.
+   *
+   * Fast-check: the implementation reads the module-local
+   * `_gxtInAfterRenderFlag` boolean — one boolean read; zero
+   * allocations. Matches slice-35/36/37/38/40's `get*` body shape.
+   */
+  getInAfterRender?(): boolean;
+
+  /**
+   * Write the `__gxtInAfterRender` boolean flag. The flag's lifetime
+   * and semantics are described in the `getInAfterRender` doc above.
+   *
+   * Pre-slice-41 writers (3 sites, all intra-`@ember/runloop/index.ts`
+   * `gxtAfterRenderWrapper` body — the save/set/finally-restore
+   * triplet around a wrapped `schedule('afterRender', cb)` user
+   * callback). The save step uses `getInAfterRender` (above), the
+   * set TRUE and finally-restore steps both use this setter:
+   *  - `runloop/index.ts:515` — `gxtAfterRenderWrapper` body —
+   *    open the gate (`setInAfterRender(true)`) before
+   *    `origFn.apply(this, a)`.
+   *  - `runloop/index.ts:519` — `gxtAfterRenderWrapper` finally —
+   *    restore the previous value (`setInAfterRender(prev)`) after
+   *    the user callback returns or throws. Supports nested
+   *    `schedule('afterRender', ...)` frames if any (though no test
+   *    exercises a nested pattern; the saved `prev` may be TRUE in
+   *    nested flow, FALSE otherwise — the restore is correct in
+   *    both cases).
+   *
+   * Slice 41 routes both cross-package writers (set TRUE + finally
+   * restore) through this bridge setter
+   * (`compilePipeline.setInAfterRender(value)`). The intra-`compile.ts`
+   * reader (compile.ts:4129) routes via the intra-file helper directly
+   * — slice-22/24/27/30/31/32/33/34/35/36/37/38/40 intra-file-reader
+   * precedent.
+   *
+   * Slice-41 (Cluster B): graduates the canonical state from the pre-
+   * slice-41 `globalThis.__gxtInAfterRender` slot to the module-local
+   * boolean `_gxtInAfterRenderFlag` in `compile.ts`. Net globalThis
+   * surface delta: -1 slot (paired with `getInAfterRender`).
+   *
+   * Bridge-not-yet-installed edge: the cross-package writers use
+   * `getGxtRenderer()?.compilePipeline.setInAfterRender?.(value)`.
+   * Both optional chains short-circuit to `undefined` (no-op) when
+   * the renderer or the method is not yet installed. This is load-
+   * order-safe because the wrapper-body writes fire only AFTER
+   * module init in practice (the wrapper closure is built lazily
+   * inside `schedule(...)` and the wrapped body runs inside
+   * backburner's afterRender queue, which is well past gxt-backend
+   * module init — by the time a `schedule('afterRender', cb)`
+   * callback actually fires, compile.ts's `installCompilePipelinePart`
+   * at file EOF has run and the setter is installed). If the writes
+   * are dropped pre-install (impossible in practice), the flag stays
+   * FALSE (module-init value) and the reader correctly reads FALSE
+   * — matching pre-slice-41 semantics where
+   * `globalThis.__gxtInAfterRender === undefined` coerced to FALSE.
+   *
+   * Bridge shape decision: paired get/set (slice-14/35/36/37/38/40
+   * paired-methods pattern, same as slice 40) because slice 41 has a
+   * cross-package WRITER triplet (`runloop/index.ts` save/set/restore)
+   * that needs both `getInAfterRender()` (for the save read) and
+   * `setInAfterRender()` (for the set TRUE and the finally restore)
+   * surfaces reachable from `runloop/index.ts`.
+   *
+   * Fast-check: the implementation writes the module-local
+   * `_gxtInAfterRenderFlag` boolean — one boolean assignment; zero
+   * allocations.
+   */
+  setInAfterRender?(value: boolean): void;
 }
 
 /**

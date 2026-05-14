@@ -3637,6 +3637,65 @@ function _gxtSetAfterRenderPropertyChange(on: boolean): void {
   _gxtAfterRenderPropertyChangeFlag = on;
 }
 
+// Slice-41 (Cluster B): graduates the `__gxtInAfterRender` boolean flag from
+// the pre-slice-41 `globalThis.__gxtInAfterRender` slot to the module-local
+// boolean `_gxtInAfterRenderFlag` in `compile.ts`, paired with a 2-method
+// get/set bridge surface (`getInAfterRender` + `setInAfterRender`) on the
+// `compilePipeline` namespace. The flag is set TRUE for the duration of a
+// `schedule('afterRender', cb)` wrapped callback body (the
+// `gxtAfterRenderWrapper` in `@ember/runloop/index.ts:509-525` saves the
+// previous value, sets the flag TRUE, runs the user callback, then restores
+// the previous value in a `finally` — the classic save/set/finally-restore
+// pattern around a nested call). The flag is read by `_gxtTriggerReRender`
+// (in `compile.ts:4129`) to gate slice 40's
+// `_gxtSetAfterRenderPropertyChange(true)` setter — i.e., to decide whether
+// a property change originated from inside an `afterRender` callback (and
+// therefore must be marked as a legitimate `afterRender set` pattern that
+// must trigger gxtSyncDom). Together with slice 40's
+// `__gxtAfterRenderPropertyChange` detector flag, slice 41 closes the
+// 2-flag "afterRender-detection cluster": the `__gxtInAfterRender` open/
+// close gate (this slice) marks when the wrapper body is executing, and
+// the `__gxtAfterRenderPropertyChange` detector (slice 40) records whether
+// any property change was observed while the gate was open.
+//
+// The pre-slice-41 topology was 3 writers (intra-`runloop/index.ts`
+// save/set/finally-restore around the wrapper body) and 1 reader (intra-
+// `compile.ts:4129`). Slice 41 routes the 1 intra-`compile.ts` reader
+// through the module-local `_gxtGetInAfterRender` helper directly (slice-
+// 22/24/27/30/31/32/33/34/35/36/37/38/40 intra-file precedent); the 3
+// cross-package writers route through the new paired bridge methods.
+// Net globalThis surface delta: -1 slot. Bridge shape decision: paired
+// get/set (slice-14/35/36/37/38/40 paired-methods pattern, same as slice
+// 40) because slice 41 has a cross-package WRITER (`runloop/index.ts`
+// save/set/restore triplet) and an intra-file READER — the writer side
+// must be reachable via the bridge setter, and the bridge getter is
+// exposed for symmetry/future cross-package readers (none exist today,
+// but the symmetric API is preserved for the slice-14/35/36/37/38/40
+// paired-methods consistency). The intra-file reader (compile.ts:4129)
+// routes via the intra-file helper directly. Slice 41 cannot use slice-
+// 20/22/23/24's read-only predicate because of the cross-package writer
+// triplet, and cannot use slice-29's mark+consume because the save/
+// set/restore pattern needs to read the previous value (save = read,
+// set = write TRUE, restore = write previous) — three distinct sites
+// with three distinct boolean values. ZERO new import edges:
+// `runloop/index.ts` already imports `getGxtRenderer` (slice 37).
+//
+// State home: `compile.ts` (alongside slice 40's `_gxtAfterRenderProperty-
+// ChangeFlag`) — co-locates the 2-flag afterRender-detection cluster
+// per the slice 40 Finding #4 family rule. The intra-`runloop/index.ts`
+// writers' file is the alternative state home per the "canonical state
+// lives where it's primarily mutated" rule, but the slice 40 family rule
+// takes precedence here because the slice 40 + slice 41 flags are
+// semantically coupled (one detects, the other gates) and benefit from
+// state-home co-location.
+let _gxtInAfterRenderFlag = false;
+function _gxtGetInAfterRender(): boolean {
+  return _gxtInAfterRenderFlag;
+}
+function _gxtSetInAfterRender(on: boolean): void {
+  _gxtInAfterRenderFlag = on;
+}
+
 // Slice-36 (Cluster B): graduates the `__gxtPendingSyncFromPropertyChange`
 // boolean flag from the pre-slice-36 `globalThis.__gxtPendingSyncFromPropertyChange`
 // slot to the module-local boolean `_gxtPendingSyncFromPropertyChangeFlag` in
@@ -4126,7 +4185,11 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
   // `globalThis.__gxtAfterRenderPropertyChange`). See module-local
   // definition above for the migration narrative. Intra-file writer
   // routes through the helper directly (no bridge indirection).
-  if ((globalThis as any).__gxtInAfterRender) {
+  // Slice-41 (Cluster B): read from module-local `_gxtInAfterRenderFlag`
+  // (graduated from `globalThis.__gxtInAfterRender`). See module-local
+  // definition above for the migration narrative. Intra-file reader
+  // routes through the helper directly (no bridge indirection).
+  if (_gxtGetInAfterRender()) {
     _gxtSetAfterRenderPropertyChange(true);
   }
   // (Cluster B slice 5 orphan cleanup) The `__gxtHadNestedPropertyChange`
@@ -15336,6 +15399,23 @@ installCompilePipelinePart({
   // definition above (`_gxtAfterRenderPropertyChangeFlag`).
   getAfterRenderPropertyChange: _gxtGetAfterRenderPropertyChange,
   setAfterRenderPropertyChange: _gxtSetAfterRenderPropertyChange,
+  // Slice-41 (Cluster B): graduates `__gxtInAfterRender` from the globalThis
+  // slot to a 2-method paired get/set bridge surface (slice-14/35/36/37/38/40
+  // paired-methods pattern). The flag is written by 3 intra-`runloop/index.ts`
+  // sites pre-slice-41 (the `gxtAfterRenderWrapper` save/set/finally-restore
+  // triplet at runloop/index.ts:514-519, wrapping `schedule('afterRender', cb)`
+  // user callbacks) and read by 1 intra-`compile.ts` site pre-slice-41
+  // (`_gxtTriggerReRender` body at compile.ts:4129 — the gate that drives
+  // slice 40's `setAfterRenderPropertyChange(true)` setter). Cross-package
+  // writers (runloop/index.ts) route through `compilePipeline.setInAfterRender(value)`
+  // and `compilePipeline.getInAfterRender?.() ?? false` (for the save-step
+  // read); intra-file reader (compile.ts:4129) routes through the module-
+  // local `_gxtGetInAfterRender` helper directly. Net -1 globalThis slot —
+  // closes the 2-flag afterRender-detection cluster alongside slice 40. See
+  // `getInAfterRender` / `setInAfterRender` doc in gxt-bridge.ts and module-
+  // local definition above (`_gxtInAfterRenderFlag`).
+  getInAfterRender: _gxtGetInAfterRender,
+  setInAfterRender: _gxtSetInAfterRender,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
