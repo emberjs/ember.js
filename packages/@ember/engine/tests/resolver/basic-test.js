@@ -1,9 +1,8 @@
 import { StrictResolver } from '@ember/engine/lib/strict-resolver';
 
-import * as QUnit from 'qunit';
-const { test } = QUnit;
+const { module, test } = QUnit;
 
-QUnit.module('StrictResolver', function (hooks) {
+module('StrictResolver', function (hooks) {
   let resolver;
   let modules;
 
@@ -12,7 +11,7 @@ QUnit.module('StrictResolver', function (hooks) {
     resolver = new StrictResolver(modules);
   });
 
-  QUnit.module('#resolve + #addModules', function () {
+  module('#resolve + #addModules', function () {
     test('resolves the standard ember types via default pluralization', function (assert) {
       // All of these go through the same `type + 's' -> dir` path. One table-
       // driven test keeps the coverage without nine copies of the same setup.
@@ -63,7 +62,7 @@ QUnit.module('StrictResolver', function (hooks) {
     });
   });
 
-  QUnit.module('#addModules + normalization', function () {
+  module('#addModules + normalization', function () {
     test('normalization', function (assert) {
       assert.strictEqual(resolver.normalize('controller:posts'), 'controller:posts');
       assert.strictEqual(resolver.normalize('controller:postsIndex'), 'controller:posts-index');
