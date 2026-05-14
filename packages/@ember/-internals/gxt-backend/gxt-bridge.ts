@@ -1290,6 +1290,100 @@ export interface GxtFormatCapabilities {
  *    (after slice 43) to ship without a new bridge method, completing
  *    the arg-source-detection triad fully under the canonical-home
  *    rule.
+ *  - `__gxtForceRerenderInProgress` — MIGRATED IN SLICE 45 to
+ *    module-local `_gxtForceRerenderInProgress: boolean` in
+ *    `packages/@ember/-internals/glimmer/lib/renderer.ts` (slice-31/43/44
+ *    zero-bridge intra-file precedent). This is the FIRST Cluster B
+ *    slice with the state-home in `renderer.ts` (prior Cluster B
+ *    zero-bridge slices home-d state in `manager.ts` (slice 31, 43,
+ *    44) or `compile.ts` (slice 35, 40)). The flag is a classic
+ *    re-entrancy guard for `__gxtForceEmberRerender` (the function
+ *    `__gxtSyncDomNow` invokes to force-rerender GXT roots when
+ *    Ember's `set()` / `notifyPropertyChange` misses cell tracking).
+ *    The mechanism: set to `true` on entry, checked on every entry,
+ *    early-return-if-already-true, reset to `false` in the `finally`
+ *    block — prevents infinite loops when morphing triggers cell
+ *    updates that schedule additional force-rerenders.
+ *
+ *    Pre-slice-45 topology was 3 active sites all intra-
+ *    `renderer.ts`, all inside the `__gxtForceEmberRerender`
+ *    function body:
+ *      Readers (1 site, with early-return on truthy):
+ *        - `renderer.ts:1310` —
+ *          `if ((globalThis as any).__gxtForceRerenderInProgress) return;`
+ *          (entry-guard; the re-entrancy check that aborts a nested
+ *          call while the outer call is mid-flight)
+ *      Writers (2 sites, paired arm/disarm around the render loop):
+ *        - `renderer.ts:1311` —
+ *          `(globalThis as any).__gxtForceRerenderInProgress = true;`
+ *          (entry-arm, immediately after the entry-guard passes;
+ *          arms the flag for the duration of the render loop)
+ *        - `renderer.ts:1400` —
+ *          `(globalThis as any).__gxtForceRerenderInProgress = false;`
+ *          (finally-disarm; resets the flag whether the render loop
+ *          completes normally or throws — guaranteeing the guard is
+ *          released even on exception)
+ *
+ *    Slice 45 graduates the canonical state to module-local
+ *    `_gxtForceRerenderInProgress: boolean` in `renderer.ts`
+ *    (initialized to `false`). All 3 active sites migrate to direct
+ *    module-local accesses; no bridge surface is added (zero cross-
+ *    file consumers — confirmed by exhaustive grep across `packages/`).
+ *    Net globalThis surface delta: -1 slot. The
+ *    `__gxtForceRerenderInProgress` globalThis slot is DROPPED in this
+ *    slice from the source code (the only remaining references are
+ *    defensive resets in `packages/demo/tests.html` testStart /
+ *    testDone hooks, which now write to an orphaned globalThis
+ *    property no source consumer reads — harmless no-ops, preserved
+ *    for HTML-fixture stability).
+ *
+ *    State-home decision: `renderer.ts` (canonical-home rule — all
+ *    writers and the sole reader live in `renderer.ts`, no cross-file
+ *    consumers; the function `__gxtForceEmberRerender` itself is
+ *    defined in this file as a globalThis assignment at L1307+ and
+ *    has no callers in source — it's invoked from globalThis by
+ *    `__gxtSyncDomNow`). This is the first Cluster B zero-bridge slice
+ *    with state homed in `renderer.ts` (the canonical home for
+ *    re-entrancy guards inside `__gxtForceEmberRerender` and similar
+ *    classic-renderer hot paths).
+ *
+ *    Bridge shape decision: ZERO-bridge intra-file (slice-31/43/44
+ *    precedent — pure intra-file reader+writer cluster). Slice 45
+ *    cannot benefit from any bridge shape (predicate, get-only,
+ *    paired get/set, paired methods) because there are zero cross-
+ *    file consumers. This is the leanest possible shape: module-
+ *    local `let` boolean with `false`-initial / armed `true` on
+ *    entry / disarmed `false` in `finally` lifecycle. The
+ *    re-entrancy semantics are unchanged.
+ *
+ *    ZERO new import edges in slice 45: the three consumers are
+ *    already in `renderer.ts`; no `getGxtRenderer` calls (renderer.ts
+ *    already imports `getGxtRenderer` for the slice-35 hadPendingSync
+ *    bridge use at L1320 / L1406), no `installCompilePipelinePart`
+ *    calls, no new bridge-import statements added. Slice 45 — like
+ *    slice 43 and 44 — is a pure zero-bridge intra-file migration:
+ *    only a module-local `let` declaration and 3 inline accessor
+ *    migrations.
+ *
+ *    Bridge interface evolution (slice 45 — no API change): the
+ *    bridge interface `GxtCompilePipelineCapabilities` is NOT extended
+ *    in this slice (zero-bridge intra-file). The migration-history
+ *    docblock IS extended with the full slice-45 entry for
+ *    documentation. This is the third consecutive Cluster B slice
+ *    (after slice 43, 44) to ship without a new bridge method, and
+ *    the first to home state in `renderer.ts`.
+ *
+ *    Hot-path concern: `__gxtForceEmberRerender` is invoked by
+ *    `__gxtSyncDomNow` after every cell-tracking-miss force-rerender
+ *    cycle (warm path during interactive updates). Pre-slice-45 cost
+ *    per entry was 2 globalThis property accesses (1 read on the
+ *    early-return guard, 1 write on the entry-arm) + 1 globalThis
+ *    write in `finally`. Post-slice-45 it's 1 module-local read +
+ *    1 module-local write + 1 module-local write — all directly
+ *    inlineable by V8. The savings on entry-guard fast-path
+ *    (re-entrant nested call) are non-negligible because the early-
+ *    return is hit on every nested call from morph-triggered cell
+ *    updates.
  */
 export interface GxtCompilePipelineCapabilities {
   /**

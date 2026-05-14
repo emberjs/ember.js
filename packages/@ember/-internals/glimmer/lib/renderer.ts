@@ -1181,6 +1181,20 @@ class ClassicRootState {
 
 const renderers: BaseRenderer[] = [];
 
+// Slice 45 (Cluster B): module-local re-entrancy guard for
+// `__gxtForceEmberRerender`. Graduates the pre-slice-45
+// `globalThis.__gxtForceRerenderInProgress` slot to a module-local
+// boolean (slice-31/43/44 zero-bridge intra-file precedent). The flag is
+// set to `true` on entry to `__gxtForceEmberRerender` and reset to
+// `false` in the `finally` block; any re-entrant call returns early
+// while the outer call is in-flight. All 3 sites (1 reader-with-early-
+// return, 1 writer-true on entry, 1 writer-false in the finally block)
+// live in this file — confirmed by exhaustive grep across `packages/`.
+// The pre-slice-45 globalThis slot is dropped (the only remaining
+// non-source references are defensive resets in packages/demo/tests.html,
+// which now write to an unused slot — no consumer reads it).
+let _gxtForceRerenderInProgress = false;
+
 export function _resetRenderers() {
   renderers.length = 0;
 }
@@ -1306,9 +1320,13 @@ if (!__GXT_MODE__) {
 // made through Ember's set() / notifyPropertyChange.
 (globalThis as any).__gxtForceEmberRerender = function () {
   // Re-entrancy guard: prevent infinite loops when morphing triggers
-  // cell updates that schedule additional force-rerenders
-  if ((globalThis as any).__gxtForceRerenderInProgress) return;
-  (globalThis as any).__gxtForceRerenderInProgress = true;
+  // cell updates that schedule additional force-rerenders.
+  // Slice 45 (Cluster B): canonical state migrated from
+  // `globalThis.__gxtForceRerenderInProgress` to module-local
+  // `_gxtForceRerenderInProgress` (zero-bridge intra-file — all 3 sites
+  // live in this file). See module-local declaration near `renderers`.
+  if (_gxtForceRerenderInProgress) return;
+  _gxtForceRerenderInProgress = true;
   try {
     // Slice-35 (Cluster B): canonical state migrated from
     // `globalThis.__gxtHadPendingSync` to module-local
@@ -1397,7 +1415,11 @@ if (!__GXT_MODE__) {
       }
     }
   } finally {
-    (globalThis as any).__gxtForceRerenderInProgress = false;
+    // Slice 45 (Cluster B): canonical state migrated from
+    // `globalThis.__gxtForceRerenderInProgress` to module-local
+    // `_gxtForceRerenderInProgress`. See module-local declaration near
+    // `renderers`.
+    _gxtForceRerenderInProgress = false;
     // Slice-35 (Cluster B): canonical state migrated from
     // `globalThis.__gxtHadPendingSync` to module-local
     // `_gxtHadPendingSyncFlag` in `compile.ts`. Cross-package writer
