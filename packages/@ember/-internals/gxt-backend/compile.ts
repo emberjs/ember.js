@@ -1979,16 +1979,18 @@ const _inElementDeferQueue: Array<() => void> = [];
     // destination via `{{#in-element this.someElement}}`.
     let _fallbackId = '';
     {
-      const fbStack: string[] | undefined = (globalThis as any).__gxtInElementFallbackIds;
-      if (Array.isArray(fbStack) && fbStack.length > 0) {
+      // Slice-68 (Cluster B): read directly from module-local
+      // `_inElementFallbackIds` const. The eager `[]` initialization at
+      // module load drops the prior `Array.isArray(...) &&` guard — only
+      // the `length > 0` check remains.
+      if (_inElementFallbackIds.length > 0) {
         // Peek — only consume if we actually take the defer path.
-        _fallbackId = fbStack[0] || '';
+        _fallbackId = _inElementFallbackIds[0] || '';
       }
     }
     if ((appendRef === null || appendRef === undefined) && _insideRenderPass && _fallbackId) {
-      // Consume the peeked id.
-      const fbStack2: string[] = (globalThis as any).__gxtInElementFallbackIds;
-      fbStack2.shift();
+      // Consume the peeked id. Slice-68: shift the module-local stack.
+      _inElementFallbackIds.shift();
       // Snapshot the block-body closure state so the deferred callback
       // can execute the render after the parent fragment commits.
       const _deferredInsertBefore = insertBefore;
@@ -4379,6 +4381,39 @@ let _gxtCurrentParentIfRef: any = undefined;
 // slots in one slice (net -2).
 const _gxtCommentRegistry: Record<string, string> = Object.create(null);
 let _gxtCommentCounter = 0;
+
+// Cluster B slice 68: graduated from `(globalThis as any).__gxtInElementFallbackIds`
+// to a module-local binding. Implements the in-element literal-id fallback STACK
+// pushed by the GXT render-template wrapper before invoking the template body
+// and consumed by the `$_inElement` runtime when the destination ref resolves
+// to null/undefined during a render pass — `_inElementFallbackIds` then peeks
+// the top id (a compile-time literal element id captured from the `#in-element`
+// destination expression) and shifts it off, allowing the renderer to defer the
+// body insertion and re-resolve against the now-attached parent fragment in a
+// microtask. Audit confirmed exactly 4 functional sites — all intra-
+// `gxt-backend/compile.ts`:
+//   - Peek reader at the former L1982 (`$_inElement` defer-detection branch).
+//   - Shift reader at the former L1990 (consuming the peeked id when actually
+//     taking the defer path).
+//   - Push-side lazy-init reader-writer pair at the former L14687-L14688 inside
+//     the render-template wrapper, where the stack is created (if missing) and
+//     each `_inElementLiteralIds[i]` is pushed before invoking the template
+//     body.
+// Zero cross-file consumers; the bundled @lifeart/gxt runtime has zero
+// references to `__gxtInElementFallbackIds` (verified by grep of
+// `node_modules/.pnpm/@lifeart+gxt@0.0.61/`, per slice-55's lesson from
+// slice-54's revert). Lazy-init COLLAPSED — the pre-slice-68 runtime
+// `g.__gxtInElementFallbackIds = g.__gxtInElementFallbackIds || []` fallback
+// inside the render-template wrapper is dropped because the const is eagerly
+// initialized at module load to `[]` (an empty array — same shape as the
+// pre-slice-68 lazy-init initialization). The stack is preserved across
+// nested render passes via the `_inElemStackStart` index snapshot pattern
+// already in place at the push site (NOT via array replacement), so the
+// shared module-local array is safe under reentrancy. Same lazy-init-collapse
+// + intra-file graduation shape as slices 58 / 62 / 65 / 67. 23rd consecutive
+// Cluster B zero-bridge slice (after 43-53, 56-67). Zero-bridge intra-file
+// refactor; drops 1 globalThis slot.
+const _inElementFallbackIds: string[] = [];
 
 // Persistent set of classic-component wrapper DOM ids that the user has
 // directly toggled to `false` via a click handler calling set()/toggleProperty.
@@ -14684,8 +14719,16 @@ export function precompileTemplate(
         // migrated to the bridge `withRendering(fn)` helper in the same
         // slice; this site, being intra-file, just invokes the module-
         // local writer directly. Same counter, same drain semantics.
-        const _inElemStack: string[] = (g.__gxtInElementFallbackIds =
-          g.__gxtInElementFallbackIds || []);
+        // Slice-68 (Cluster B): graduated from `g.__gxtInElementFallbackIds`
+        // to the module-local `_inElementFallbackIds` const declared near
+        // the top of this file. The pre-slice-68 lazy-init
+        // `g.__gxtInElementFallbackIds = g.__gxtInElementFallbackIds || []`
+        // is dropped because the const is eagerly initialized to `[]` at
+        // module load. The `_inElemStackStart` snapshot/length-restore
+        // pattern in the finally block is preserved as-is — it scopes
+        // pushes to this template invocation under reentrancy without
+        // replacing the shared module-local array.
+        const _inElemStack: string[] = _inElementFallbackIds;
         const _inElemStackStart = _inElemStack.length;
         for (const id of _inElementLiteralIds) _inElemStack.push(id);
         _gxtSetIsRendering(true);

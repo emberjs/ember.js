@@ -649,6 +649,42 @@ export interface GxtFormatCapabilities {
  *    slice (after 43-53, 56-66). Zero-bridge intra-file refactor; drops
  *    2 globalThis slots in one slice (net -2 — second paired-slot
  *    Cluster B slice after slice 62).
+ *  - `__gxtInElementFallbackIds` — intra-compile.ts in-element literal-id
+ *    fallback STACK pushed by the GXT render-template wrapper before
+ *    invoking the template body and consumed by the `$_inElement` runtime
+ *    when the destination ref resolves to `null`/`undefined` during a
+ *    render pass. `$_inElement` peeks the top id (a compile-time literal
+ *    element id captured from the `#in-element` destination expression)
+ *    and shifts it off when actually taking the defer path, allowing the
+ *    renderer to defer the body insertion and re-resolve against the now-
+ *    attached parent fragment in a microtask. MIGRATED IN SLICE 68
+ *    (Cluster B) by graduating the `(globalThis as any).__gxtInElementFallbackIds`
+ *    slot to a module-local `const _inElementFallbackIds: string[] = []`
+ *    declared next to the slice-67 `_gxtCommentRegistry` / `_gxtCommentCounter`
+ *    bindings near the top of `compile.ts`. Audit confirmed exactly 4
+ *    functional sites — all intra-`gxt-backend/compile.ts`: the peek
+ *    reader inside `$_inElement` defer-detection (former L1982), the
+ *    shift reader inside the defer-take branch (former L1990), and the
+ *    push-side lazy-init reader-writer pair inside the render-template
+ *    wrapper (former L14687-L14688) where the stack is initialized and
+ *    each `_inElementLiteralIds[i]` is pushed before invoking the
+ *    template body. Zero cross-file consumers; the bundled @lifeart/gxt
+ *    runtime has zero references to `__gxtInElementFallbackIds` (verified
+ *    by grep of `node_modules/.pnpm/@lifeart+gxt@0.0.61/`, per slice-55's
+ *    lesson from slice-54's revert). Lazy-init COLLAPSED — the pre-slice-68
+ *    `g.__gxtInElementFallbackIds = g.__gxtInElementFallbackIds || []`
+ *    fallback inside the render-template wrapper is dropped because the
+ *    const is eagerly initialized to `[]` at module load (same shape as
+ *    the pre-slice-68 lazy-init initialization). The peek-reader's
+ *    `Array.isArray(...) &&` guard is also dropped since the const is
+ *    guaranteed to be an array. The stack is preserved across nested
+ *    render passes via the `_inElemStackStart` index snapshot/length-
+ *    restore pattern already in place at the push site (NOT via array
+ *    replacement), so the shared module-local array remains safe under
+ *    reentrancy. Same lazy-init-collapse + intra-file graduation shape
+ *    as slices 58 / 62 / 65 / 67. 23rd consecutive Cluster B zero-bridge
+ *    slice (after 43-53, 56-67). Zero-bridge intra-file refactor; drops
+ *    1 globalThis slot.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
