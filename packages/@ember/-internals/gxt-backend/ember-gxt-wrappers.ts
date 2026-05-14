@@ -282,13 +282,18 @@ const _resolverCacheCounters: {
 installCompilePipelinePart({
   getResolverCacheCounters: () => _resolverCacheCounters,
 });
-const _seenHelperDefinitions = (g.__gxtSeenHelperDefinitions =
-  g.__gxtSeenHelperDefinitions || new WeakSet<object>());
-const _seenHelperNames = (g.__gxtSeenHelperNames = g.__gxtSeenHelperNames || new Set<string>());
-const _seenComponentDefinitions = (g.__gxtSeenComponentDefinitions =
-  g.__gxtSeenComponentDefinitions || new WeakSet<object>());
-const _seenComponentNames = (g.__gxtSeenComponentNames =
-  g.__gxtSeenComponentNames || new Set<string>());
+// Slice 79 (Cluster B paired quad): graduate the four resolver-cache-tracking
+// dedupe sets to plain module-local declarations. All four were previously
+// lazy-init self-assigns (`const _seen* = (g.__gxtSeen* = g.__gxtSeen* || ...)`)
+// that wrote to globalThis purely as a side effect; the 8 intra-file readers
+// at L295/296/299/300/307/308/311/312 (now below) already consumed the
+// module-local `_seen*` aliases — never the globalThis slots. Repo-wide grep
+// confirmed zero cross-file consumers and clean `node_modules/@lifeart/gxt`
+// scope. Pattern mirrors slice-67's paired lazy-init collapse to plain `const`.
+const _seenHelperDefinitions = new WeakSet<object>();
+const _seenHelperNames = new Set<string>();
+const _seenComponentDefinitions = new WeakSet<object>();
+const _seenComponentNames = new Set<string>();
 function _trackHelperDefinition(nameOrFactory: string | object | null | undefined) {
   if (!nameOrFactory) return;
   if (typeof nameOrFactory === 'string') {
