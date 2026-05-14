@@ -506,13 +506,15 @@ class ClassicRootState {
     this.env = context.env;
 
     this.render = errorLoopTransaction(() => {
-      // Guard against infinite render depth (e.g., engine mounting loops)
-      const depth = (globalThis as any).__gxtRenderDepth || 0;
+      // Guard against infinite render depth (e.g., engine mounting loops).
+      // Slice 47 (Cluster B): reads/writes the module-local
+      // `_gxtRenderDepth` (graduated from `globalThis.__gxtRenderDepth`).
+      const depth = _gxtRenderDepth || 0;
       if (depth > 20) {
         console.warn('[gxt] Max render depth exceeded, skipping render');
         return;
       }
-      (globalThis as any).__gxtRenderDepth = depth + 1;
+      _gxtRenderDepth = depth + 1;
       try {
         // Set globalThis.owner for GXT manager system to access
         (globalThis as any).owner = owner;
@@ -1134,7 +1136,12 @@ class ClassicRootState {
           });
         }
       } finally {
-        (globalThis as any).__gxtRenderDepth = depth;
+        // Slice 47 (Cluster B): restore the captured pre-entry depth so
+        // the counter unwinds cleanly across nested renders. NOT a
+        // reset-to-0 — writes back the local `depth` snapshot taken at
+        // the top of the render body, so the depth tracks each nested
+        // render-entry/exit independently.
+        _gxtRenderDepth = depth;
       }
     });
   }
@@ -1211,6 +1218,25 @@ let _gxtForceRerenderInProgress = false;
 // `__gxtForceEmberRerender` cycle state). The pre-slice-46 globalThis
 // slot is dropped.
 let _gxtDirtyRootsAtSync: any[] | undefined;
+
+// Slice 47 (Cluster B): module-local render-depth re-entrancy counter
+// for `ClassicRootState.render` (the `errorLoopTransaction`-wrapped
+// initial render in this file). Graduates the pre-slice-47
+// `globalThis.__gxtRenderDepth` slot to a module-local `number`
+// (slice-31/43/44/45/46 zero-bridge intra-file precedent). All 3 sites
+// (1 reader-init capturing the pre-entry depth, 1 writer-increment on
+// entry-arm, 1 writer-restore in the `finally` block restoring the
+// pre-entry value) live in this file in the `ClassicRootState`
+// constructor's render body — confirmed by exhaustive grep across
+// `packages/`. The L1137 writer-restore is NOT a reset-to-0; it
+// restores the captured pre-entry depth so the counter unwinds cleanly
+// across nested renders (e.g., engine-mounting chains). If the depth
+// exceeds 20 on entry, the render is skipped with a `console.warn`.
+// Third consecutive Cluster B slice with state-home in `renderer.ts`
+// (after slice 45's `_gxtForceRerenderInProgress` and slice 46's
+// `_gxtDirtyRootsAtSync`), forming a 3-slot module-local cluster of
+// renderer-cycle state. The pre-slice-47 globalThis slot is dropped.
+let _gxtRenderDepth = 0;
 
 export function _resetRenderers() {
   renderers.length = 0;

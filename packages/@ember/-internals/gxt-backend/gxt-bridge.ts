@@ -1473,6 +1473,89 @@ export interface GxtFormatCapabilities {
  *    Post-slice-46 it's 3 module-local accesses — all directly
  *    inlineable by V8. The dirty-roots-array allocation is
  *    unchanged.
+ *  - `__gxtRenderDepth` — MIGRATED IN SLICE 47 to module-local
+ *    `_gxtRenderDepth: number` in
+ *    `packages/@ember/-internals/glimmer/lib/renderer.ts` (slice-31/43/44/45/46
+ *    zero-bridge intra-file precedent). This is the THIRD consecutive
+ *    Cluster B slice (after slice 45 and slice 46) with the state-home
+ *    in `renderer.ts`, forming a 3-slot module-local cluster of
+ *    renderer-cycle state (`_gxtForceRerenderInProgress`,
+ *    `_gxtDirtyRootsAtSync`, `_gxtRenderDepth`). The slot's purpose:
+ *    classic render-depth re-entrancy counter for
+ *    `ClassicRootState.render` (the `errorLoopTransaction`-wrapped
+ *    initial render body). Guards against infinite render-depth loops
+ *    (e.g., engine-mounting loops, runaway re-renders). If depth >
+ *    20, the render is skipped with `console.warn`. Incremented on
+ *    every render-entry; the `finally` writer restores the captured
+ *    pre-entry depth (NOT a reset-to-0) so the counter unwinds cleanly
+ *    across nested renders.
+ *
+ *    Pre-slice-47 topology was 3 active sites all intra-`renderer.ts`,
+ *    all inside the single `ClassicRootState` constructor's render
+ *    body wrapped by `errorLoopTransaction`:
+ *      Readers (1 site):
+ *        - `renderer.ts:510` —
+ *          `const depth = (globalThis as any).__gxtRenderDepth || 0;`
+ *          (top of render body; captures the pre-entry depth into a
+ *          local for the `finally` to restore)
+ *      Writers (2 sites, paired increment/restore around the cycle):
+ *        - `renderer.ts:515` —
+ *          `(globalThis as any).__gxtRenderDepth = depth + 1;`
+ *          (entry-arm; bumps the counter past the L511 max-depth
+ *          check, before the render body runs)
+ *        - `renderer.ts:1137` —
+ *          `(globalThis as any).__gxtRenderDepth = depth;`
+ *          (`finally` block of the same render body; restores the
+ *          captured pre-entry depth — NOT a reset-to-0)
+ *
+ *    Slice 47 graduates the canonical state to module-local
+ *    `_gxtRenderDepth = 0` in `renderer.ts` (initialized to `0`). All
+ *    3 active sites migrate to direct module-local accesses; no
+ *    bridge surface is added (zero cross-file consumers — confirmed
+ *    by exhaustive grep across `packages/`). The only non-source
+ *    reference remaining is the comment-only mention at L3614 of this
+ *    file ("state-flag inventory" docblock example). Net globalThis
+ *    surface delta: -1 slot. The `__gxtRenderDepth` globalThis slot
+ *    is DROPPED in this slice from the source code.
+ *
+ *    State-home decision: `renderer.ts` (canonical-home rule — all
+ *    writers and the sole reader live in `renderer.ts`, no cross-
+ *    file consumers). The module-local `let` is placed adjacent to
+ *    slice-45's `_gxtForceRerenderInProgress` and slice-46's
+ *    `_gxtDirtyRootsAtSync`, forming a 3-slot module-local cluster
+ *    of renderer-cycle state. Third consecutive Cluster B slice with
+ *    the state-home in `renderer.ts`.
+ *
+ *    Bridge shape decision: ZERO-bridge intra-file (slice-31/43/44/45/46
+ *    precedent — pure intra-file reader+writer cluster). Slice 47
+ *    cannot benefit from any bridge shape because there are zero
+ *    cross-file consumers. The leanest possible shape: module-local
+ *    `let number` with `0`-initial / incremented on entry-arm /
+ *    restored to captured pre-entry depth in the `finally`. The
+ *    re-entrancy-guard and nested-render semantics are unchanged.
+ *
+ *    ZERO new import edges in slice 47: the three consumers are
+ *    already in `renderer.ts`; no `getGxtRenderer` calls, no
+ *    `installCompilePipelinePart` calls, no new bridge-import
+ *    statements added. Slice 47 — like slice 43, 44, 45, and 46 — is
+ *    a pure zero-bridge intra-file migration: only a module-local
+ *    `let` declaration and 3 inline accessor migrations.
+ *
+ *    Bridge interface evolution (slice 47 — no API change): the
+ *    bridge interface `GxtCompilePipelineCapabilities` is NOT extended
+ *    in this slice (zero-bridge intra-file). The migration-history
+ *    docblock IS extended with the full slice-47 entry for
+ *    documentation. This is the fifth consecutive Cluster B slice
+ *    (after slice 43, 44, 45, 46) to ship without a new bridge method,
+ *    and the third consecutive (after slice 45, 46) to home state in
+ *    `renderer.ts`.
+ *
+ *    Hot-path concern: `ClassicRootState.render` is the per-root
+ *    render entry point invoked on every renderRoots cycle. Pre-
+ *    slice-47 cost per render was 3 globalThis property accesses (1
+ *    read + 2 writes). Post-slice-47 it's 3 module-local accesses —
+ *    all directly inlineable by V8. The L511 max-depth check (`depth
+ *    > 20`) is unchanged.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
