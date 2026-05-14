@@ -378,9 +378,11 @@ export interface GxtFormatCapabilities {
  *    via the new `installRenderPassPart` API. The pre-slice-8 wrap-by-reassignment
  *    at compile.ts:5106 was promoted to a typed `beforeBeginRenderPass`
  *    host hook contributed by compile.ts.
- *  - `__gxtClearIfWatchers` — intra-compile.ts read+write (writer at L3487,
- *    reader at L5798). State-flag pattern in a single file; cleaner cleanup
- *    is a module-local `const` in an intra-file refactor.
+ *  - `__gxtClearIfWatchers` — intra-compile.ts read+write. MIGRATED IN
+ *    SLICE 56 (Cluster B) to module-local function `_gxtClearIfWatchers`
+ *    in `compile.ts`. Zero-bridge intra-file refactor; the reader at the
+ *    test-cleanup region now calls the function directly. Drops 1
+ *    globalThis slot. See slices 43-48 for analogous zero-bridge precedents.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's

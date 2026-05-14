@@ -4321,12 +4321,14 @@ const _wrapperIfUserFalse = new Set<string>();
 type _IfCondEntry = { condFn: () => any; placeholder: any; ifCondition: any };
 const _wrapperIfCondLookup = new Map<string, Set<_IfCondEntry>>();
 
-// Allow clearing ifWatchers between tests to prevent stale callbacks
-(globalThis as any).__gxtClearIfWatchers = function () {
+// Allow clearing ifWatchers between tests to prevent stale callbacks.
+// Cluster B slice 56: graduated to module-local function (intra-file
+// reader at L6571 region calls directly). Drops 1 globalThis slot.
+function _gxtClearIfWatchers(): void {
   ifWatchers = new WeakMap();
   _wrapperIfUserFalse.clear();
   _wrapperIfCondLookup.clear();
-};
+}
 
 // Module-scope helper: is `par` a classic-component wrapper element
 // (an element with class="ember-view")?
@@ -6567,10 +6569,9 @@ setInterval(() => {
   // Clear component instance pools to prevent stale reuse across tests
   // Slice-13 (Cluster B): migrated to `compilePipeline.clearInstancePools`.
   getGxtRenderer()?.compilePipeline.clearInstancePools?.();
-  // Clear stale ifWatchers to prevent callbacks from previous tests firing on detached DOM
-  if (typeof (globalThis as any).__gxtClearIfWatchers === 'function') {
-    (globalThis as any).__gxtClearIfWatchers();
-  }
+  // Clear stale ifWatchers to prevent callbacks from previous tests firing on detached DOM.
+  // Cluster B slice 56: intra-file direct call to module-local `_gxtClearIfWatchers`.
+  _gxtClearIfWatchers();
   // Destroy cached engine instances from {{mount}} so Namespace.destroy()
   // removes them from NAMESPACES (prevents "Should not have any NAMESPACES" failures).
   if ((globalThis as any).__gxtEngineInstances) {
