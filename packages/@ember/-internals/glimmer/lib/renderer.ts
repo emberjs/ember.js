@@ -986,7 +986,15 @@ class ClassicRootState {
                 // elements ONLY if an actual property change triggered this sync.
                 // Stable rerenders (rerender() without set()) should not trigger
                 // modifier updates.
-                const hadPropertyChange = !!(globalThis as any).__gxtHadPendingSync;
+                // Slice-35 (Cluster B): canonical state migrated from
+                // `globalThis.__gxtHadPendingSync` to module-local
+                // `_gxtHadPendingSyncFlag` in `compile.ts`. Cross-package
+                // reader routes through the bridge getter (load-order-safe
+                // optional chain — by the time this morph callback fires,
+                // compile.ts's `installCompilePipelinePart` has run and the
+                // getter is installed). See `getHadPendingSync` doc in
+                // gxt-bridge.ts.
+                const hadPropertyChange = !!getGxtRenderer()?.compilePipeline.getHadPendingSync?.();
                 if (hadPropertyChange && morphModInvocations.length > 0) {
                   const realEls: Element[] = [];
                   const walk = (n: Node) => {
@@ -1289,7 +1297,14 @@ if (!__GXT_MODE__) {
   if ((globalThis as any).__gxtForceRerenderInProgress) return;
   (globalThis as any).__gxtForceRerenderInProgress = true;
   try {
-    const hadPendingSync = !!(globalThis as any).__gxtHadPendingSync;
+    // Slice-35 (Cluster B): canonical state migrated from
+    // `globalThis.__gxtHadPendingSync` to module-local
+    // `_gxtHadPendingSyncFlag` in `compile.ts`. Cross-package reader
+    // routes through the bridge getter (load-order-safe optional chain
+    // — by the time `__gxtForceEmberRerender` fires, compile.ts's
+    // `installCompilePipelinePart` has run and the getter is installed).
+    // See `getHadPendingSync` doc in gxt-bridge.ts.
+    const hadPendingSync = !!getGxtRenderer()?.compilePipeline.getHadPendingSync?.();
     const hadNestedObjectChange = !!(globalThis as any).__gxtHadNestedObjectChange;
     // Collect roots whose own tag moved RIGHT NOW (after Phase 1a of
     // __gxtSyncDomNow, before Phase 1b updateRootTagValues was called).
@@ -1370,7 +1385,12 @@ if (!__GXT_MODE__) {
     }
   } finally {
     (globalThis as any).__gxtForceRerenderInProgress = false;
-    (globalThis as any).__gxtHadPendingSync = false;
+    // Slice-35 (Cluster B): canonical state migrated from
+    // `globalThis.__gxtHadPendingSync` to module-local
+    // `_gxtHadPendingSyncFlag` in `compile.ts`. Cross-package writer
+    // routes through the bridge setter. See `setHadPendingSync` doc in
+    // gxt-bridge.ts.
+    getGxtRenderer()?.compilePipeline.setHadPendingSync?.(false);
     (globalThis as any).__gxtHadNestedObjectChange = false;
     (globalThis as any).__gxtDirtyRootsAtSync = undefined;
   }

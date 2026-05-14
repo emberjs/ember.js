@@ -3442,6 +3442,37 @@ function _gxtSetSyncIsPropertyDriven(on: boolean): void {
   _gxtSyncIsPropertyDrivenFlag = on;
 }
 
+// Slice-35 (Cluster B): graduates the `__gxtHadPendingSync` boolean flag from
+// the pre-slice-35 `globalThis.__gxtHadPendingSync` slot to the module-local
+// boolean `_gxtHadPendingSyncFlag` in `compile.ts`, paired with a 2-method
+// get/set bridge surface (`getHadPendingSync` + `setHadPendingSync`) on the
+// `compilePipeline` namespace. The flag survives `__gxtSyncDomNow`'s Phase-1
+// gxtSyncDom call but is cleared by `__gxtForceEmberRerender`'s finally-block
+// (its companion slot `__gxtSyncIsPropertyDriven`, graduated in slice 34, was
+// introduced precisely because this flag is cleared mid-flush). The pre-slice-
+// 35 topology was 5 writers (4 intra-gxt-backend + 1 cross-package in
+// `glimmer/lib/renderer.ts:1373`) and 4 readers (2 intra-gxt-backend +
+// 2 in `glimmer/lib/renderer.ts:989` and `:1292`). Slice 35 routes intra-
+// `compile.ts` writers/readers through `_gxtSetHadPendingSync` /
+// `_gxtGetHadPendingSync` directly (slice-22/24/27/30/31/32/33/34 intra-file-
+// writer precedent); the cross-file writer at `manager.ts:579` (helper
+// recompute) routes through `compilePipeline.setHadPendingSync(true)`; the
+// cross-package writer at `glimmer/lib/renderer.ts:1373` (force-rerender
+// finally) routes through `compilePipeline.setHadPendingSync(false)`; the
+// cross-package readers at `glimmer/lib/renderer.ts:989/1292` route through
+// `compilePipeline.getHadPendingSync?.() ?? false`. Net globalThis surface
+// delta: -1 slot. Bridge shape decision: paired get/set (slice-14 paired-
+// methods pattern) instead of slice-20/22/23/24's read-only predicate
+// because slice 35 has cross-file/cross-package WRITERS in addition to
+// readers — both surfaces must be reachable.
+let _gxtHadPendingSyncFlag = false;
+function _gxtGetHadPendingSync(): boolean {
+  return _gxtHadPendingSyncFlag;
+}
+function _gxtSetHadPendingSync(on: boolean): void {
+  _gxtHadPendingSyncFlag = on;
+}
+
 // Slice-25 (Cluster B): module-local suppression flag for the canonical
 // `_gxtTriggerReRender` function. Pre-slice-25 the suppression mechanism
 // (`_gxtWithTriggerSuppressed`) ONLY cleared the `globalThis.__gxtTriggerReRender`
@@ -5633,8 +5664,12 @@ function _resetTemplateOnlyState() {
     // Only signal "had pending sync" to the force-rerender if an actual property
     // change triggered the sync. Cell creation during initial render also sets
     // __gxtPendingSync, but that should NOT force a full re-render.
-    (globalThis as any).__gxtHadPendingSync = !!(globalThis as any)
-      .__gxtPendingSyncFromPropertyChange;
+    // Slice-35 (Cluster B): write to module-local `_gxtHadPendingSyncFlag`
+    // (graduated from `globalThis.__gxtHadPendingSync`). See module-local
+    // definition above for the migration narrative.
+    _gxtSetHadPendingSync(
+      !!(globalThis as any).__gxtPendingSyncFromPropertyChange
+    );
     // Mirror __gxtHadPendingSync into a flag that survives __gxtForceEmberRerender's
     // finally-block clear, so downstream phases (e.g., __gxtDestroyUnclaimedPoolEntries
     // in manager.ts) can still tell whether this sync was driven by a real property
@@ -5714,7 +5749,9 @@ function _resetTemplateOnlyState() {
       // cells may have stale values (e.g., each-formula re-evaluates with [] before
       // the correct value propagates). Skipping gxtSyncDom for non-property-change
       // syncs prevents spurious #each inverse rendering on first render.
-      if ((globalThis as any).__gxtHadPendingSync) {
+      // Slice-35 (Cluster B): read module-local `_gxtHadPendingSyncFlag`
+      // (graduated from `globalThis.__gxtHadPendingSync`).
+      if (_gxtGetHadPendingSync()) {
         try {
           gxtSyncDom();
         } catch {
@@ -5742,7 +5779,9 @@ function _resetTemplateOnlyState() {
         const syncAll = getGxtRenderer()?.compilePipeline.syncAllWrappers;
         if (typeof syncAll === 'function') {
           syncAll(); // Pre-render hooks + arg cell updates
-          if ((globalThis as any).__gxtHadPendingSync) {
+          // Slice-35 (Cluster B): read module-local `_gxtHadPendingSyncFlag`
+          // (graduated from `globalThis.__gxtHadPendingSync`).
+          if (_gxtGetHadPendingSync()) {
             try {
               gxtSyncDom();
             } catch {
@@ -5760,7 +5799,10 @@ function _resetTemplateOnlyState() {
           if (
             getGxtRenderer()?.compilePipeline.hasStringDynamicComponentListeners?.()
           ) {
-            (globalThis as any).__gxtHadPendingSync = false;
+            // Slice-35 (Cluster B): write to module-local
+            // `_gxtHadPendingSyncFlag` (graduated from
+            // `globalThis.__gxtHadPendingSync`).
+            _gxtSetHadPendingSync(false);
           }
         }
       } catch {
@@ -6265,7 +6307,9 @@ setInterval(() => {
   // trigger __gxtForceEmberRerender (innerHTML='' + rebuild) on the next test's DOM.
   (globalThis as any).__gxtPendingSync = false;
   (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
-  (globalThis as any).__gxtHadPendingSync = false;
+  // Slice-35 (Cluster B): write to module-local `_gxtHadPendingSyncFlag`
+  // (graduated from `globalThis.__gxtHadPendingSync`).
+  _gxtSetHadPendingSync(false);
   (globalThis as any).__gxtHadNestedObjectChange = false;
   // Slice-24 (Cluster B): reset module-local `_gxtSyncingFlag` (graduated
   // from `globalThis.__gxtSyncing`). Mirrors slice-22's
@@ -14938,6 +14982,22 @@ installCompilePipelinePart({
   // slot. See `isSyncIsPropertyDriven` doc in gxt-bridge.ts and module-local
   // definition above (`_gxtSyncIsPropertyDrivenFlag`).
   isSyncIsPropertyDriven: _gxtIsSyncIsPropertyDriven,
+  // Slice-35 (Cluster B): graduates `__gxtHadPendingSync` from the globalThis
+  // slot to a 2-method paired get/set bridge surface (slice-14 paired-methods
+  // pattern). The flag is written by 5 sites pre-slice-35 (3 intra-`compile.ts`
+  // + 1 in `gxt-backend/manager.ts:579` helper recompute + 1 cross-package
+  // in `glimmer/lib/renderer.ts:1373` force-rerender finally) and read by 4
+  // sites (2 intra-`compile.ts` + 2 cross-package in `glimmer/lib/renderer.ts`
+  // L989 modifier-replay gate + L1292 force-rerender start capture). Intra-
+  // file writers/readers route through the module-local `_gxtSetHadPendingSync`
+  // / `_gxtGetHadPendingSync` helpers directly; cross-file/cross-package
+  // writers route through `compilePipeline.setHadPendingSync(value)`;
+  // cross-package readers route through `compilePipeline.getHadPendingSync?.()
+  // ?? false`. Net -1 globalThis slot. See `getHadPendingSync` /
+  // `setHadPendingSync` doc in gxt-bridge.ts and module-local definition
+  // above (`_gxtHadPendingSyncFlag`).
+  getHadPendingSync: _gxtGetHadPendingSync,
+  setHadPendingSync: _gxtSetHadPendingSync,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

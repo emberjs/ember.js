@@ -576,7 +576,15 @@ if (typeof _gxtSetComponentRenderErrorReporter === 'function') {
           // always needs to traverse the full tree to let the formula
           // reading the helper cell re-evaluate).
           try {
-            (globalThis as any).__gxtHadPendingSync = true;
+            // Slice-35 (Cluster B): canonical state migrated from
+            // `globalThis.__gxtHadPendingSync` to module-local
+            // `_gxtHadPendingSyncFlag` in `compile.ts`. Cross-file writer
+            // routes through the bridge setter (load-order-safe optional
+            // chain — by the time this helper-recompute path fires,
+            // compile.ts's `installCompilePipelinePart` has run and the
+            // setter is installed). See `setHadPendingSync` doc in
+            // gxt-bridge.ts for the full migration narrative.
+            getGxtRenderer()?.compilePipeline.setHadPendingSync?.(true);
             (globalThis as any).__gxtHadNestedObjectChange = true;
             const force = (globalThis as any).__gxtForceEmberRerender;
             if (typeof force === 'function') force();
