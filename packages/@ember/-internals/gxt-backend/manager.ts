@@ -3283,7 +3283,15 @@ export function flushRenderErrors(): void {
 export function clearRenderErrors(): void {
   _renderErrors.length = 0;
 }
-(globalThis as any).__gxtClearRenderErrors = clearRenderErrors;
+// Slice-55 (Cluster B): the pre-slice-55 globalThis writer
+// `(globalThis as any).__gxtClearRenderErrors = clearRenderErrors;` is RETIRED
+// in favor of registration via the `compilePipeline.clearRenderErrors` bridge
+// method (seeded in the `setGxtRenderer` call below). All 4 cross-package
+// readers in `internal-test-helpers/` route through the bridge; the
+// repository-root `index.html:102` harness reader continues to use the
+// globalThis slot via its existing `typeof === 'function'` guard, which now
+// no-ops (harmless — the harness's defensive cleanup is dev-only).
+// See `clearRenderErrors` doc in gxt-bridge.ts.
 
 /**
  * Flush all queued didInsertElement / didRender callbacks.
@@ -13266,6 +13274,14 @@ setGxtRenderer({
     // state only, so the slice-3 relocation pattern applies — second
     // wrap-by-reassignment slice to use relocation after slice 12.
     clearInstancePools: _gxtClearInstancePools,
+    // Slice-55 (Cluster B): seeded here with the canonical `clearRenderErrors`
+    // function (defined above at this file's top-level export). Replaces the
+    // pre-slice-55 globalThis writer at L3286 (now retired). All 4
+    // cross-package readers in `internal-test-helpers/` (run.ts:35 / :157,
+    // test-cases/abstract-application.ts:94, test-cases/abstract.ts:174) route
+    // through `getGxtRenderer()?.compilePipeline.clearRenderErrors?.()`.
+    // See `clearRenderErrors` doc in gxt-bridge.ts.
+    clearRenderErrors,
     // Slice-14 (Cluster B): seeded here with the dynamic-component listener
     // bridge methods. The Set (`_dcChangeListeners`) and counter
     // (`_dcStringListenerCount`) live as manager.ts module-local state; the

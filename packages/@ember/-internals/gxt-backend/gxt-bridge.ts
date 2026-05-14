@@ -2132,6 +2132,127 @@ export interface GxtFormatCapabilities {
  *    lazy-init collapse + 2 consumer reads + 1 consumer guard collapse),
  *    +14 LOC docblock for the new module-local + ~4 LOC light comment
  *    edits. 0 new bridge methods, 0 new import edges.
+ *
+ * 55. (Cluster B slice 55) Migrated `__gxtClearRenderErrors` globalThis
+ *    slot to the typed-bridge `compilePipeline.clearRenderErrors()` method.
+ *    The slot held a `() => void` function that drains the manager.ts-local
+ *    `_renderErrors` queue without throwing — the no-throw counterpart to
+ *    `flushRenderErrors()` (which drains-and-throws). Producer: a single
+ *    top-level globalThis write at `manager.ts:3286` immediately after the
+ *    `export function clearRenderErrors()` definition at `manager.ts:3283`.
+ *    Consumers: four cross-package readers in `packages/internal-test-helpers/`
+ *    (run.ts:35 in `runAppend` catch, run.ts:157 in `runTask` catch,
+ *    test-cases/abstract-application.ts:94 in `teardown` reset,
+ *    test-cases/abstract.ts:174 in `teardown` reset) plus one comment-only
+ *    reference at `internal-test-helpers/lib/ember-dev/setup-qunit.ts:106`
+ *    documenting why the prior `__gxtClearRenderErrors()` call there is
+ *    retired dead code.
+ *
+ *    Slice-54 attempted to retire `__gxtClearTagsToRevalidate` as an
+ *    orphan but reverted after discovering the producer lives in the
+ *    bundled `@lifeart/gxt` runtime (`node_modules/@lifeart/gxt/dist/
+ *    gxt.runtime-compiler.es.js`'s `setupGlobalScope`), NOT in `packages/`.
+ *    Pre-flight for slice 55 extended grep coverage to the bundled GXT
+ *    runtime as well — `__gxtClearRenderErrors` is confirmed NOT
+ *    runtime-owned (clean grep of `node_modules/@lifeart/gxt/dist/`).
+ *    Producer is Ember-side only.
+ *
+ *    Pre-slice-55 topology (audit confirmed — exactly 1 producer + 4
+ *    cross-package readers + 1 comment-only retirement note):
+ *      - manager.ts:3286 — producer write:
+ *        `(globalThis as any).__gxtClearRenderErrors = clearRenderErrors;`
+ *      - internal-test-helpers/lib/run.ts:35 — reader in `runAppend` catch:
+ *        `const clearErrors = (globalThis as any).__gxtClearRenderErrors;`
+ *      - internal-test-helpers/lib/run.ts:157 — reader in `runTask` catch:
+ *        `const clearErrors = (globalThis as any).__gxtClearRenderErrors;`
+ *      - internal-test-helpers/lib/test-cases/abstract-application.ts:94 —
+ *        reader in `teardown` reset:
+ *        `const clearErrors = (globalThis as any).__gxtClearRenderErrors;`
+ *      - internal-test-helpers/lib/test-cases/abstract.ts:174 — reader in
+ *        `teardown` reset:
+ *        `const clearErrors = (globalThis as any).__gxtClearRenderErrors;`
+ *      - internal-test-helpers/lib/ember-dev/setup-qunit.ts:106 — comment
+ *        line documenting why an earlier defensive `__gxtClearRenderErrors()`
+ *        call was retired (light edit only — points at the new bridge).
+ *      - Repository-root harness reader at `index.html:102` is OUTSIDE
+ *        `packages/` and remains a globalThis reader (cannot import from
+ *        `gxt-bridge`). The slice-55 implementation retires the globalThis
+ *        WRITER, so the harness reader's `typeof === 'function'` guard
+ *        no-ops cleanly — same shape as any other harness that loads
+ *        post-slice-55. The harness reader is intentionally NOT migrated.
+ *
+ *    Sites moved (slice 55):
+ *      - packages/@ember/-internals/gxt-backend/manager.ts: retired the
+ *        globalThis writer at L3286. Updated the `compilePipeline` object
+ *        literal at L13249 to register `clearRenderErrors` as a bridge
+ *        method seeded at module-init. The `export function
+ *        clearRenderErrors(): void` definition at L3283-L3285 is preserved
+ *        as-is (the function itself doesn't change — only the publication
+ *        mechanism). Slice-55 marker comment added at the registration
+ *        site.
+ *      - packages/internal-test-helpers/lib/run.ts: replaced the two
+ *        reader sites (L35-L36, L157-L158) with
+ *        `getGxtRenderer()?.compilePipeline.clearRenderErrors?.();`.
+ *        Existing `getGxtRenderer` import is reused (already present from
+ *        prior slices 36/38/40). The pre-slice-55 typeof-function-guarded
+ *        pattern is replaced with the equivalent optional-chain guard
+ *        (returns same null-safe semantics when classic-Ember loads).
+ *      - packages/internal-test-helpers/lib/test-cases/abstract-application.ts:
+ *        replaced the reader at L94-L95 with the bridge call; reused
+ *        existing `getGxtRenderer` import and the local `_cpAA` capture
+ *        already defined at L85 — the bridge call is appended after
+ *        `_cpAA?.setPendingSyncFromPropertyChange?.(false)`.
+ *      - packages/internal-test-helpers/lib/test-cases/abstract.ts:
+ *        replaced the reader at L174-L175 with the bridge call; reused
+ *        existing `getGxtRenderer` import and the local `_cpAT` capture
+ *        already defined at L161 — the bridge call is appended after
+ *        `_cpAT?.setPendingSyncFromPropertyChange?.(false)`.
+ *      - packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts:106 —
+ *        lightly edited to point at the new bridge call surface
+ *        (`compilePipeline.clearRenderErrors`) instead of the retired
+ *        globalThis slot name.
+ *      - packages/@ember/-internals/gxt-backend/gxt-bridge.ts: appended
+ *        `clearRenderErrors(): void` to `GxtCompilePipelineCapabilities`
+ *        immediately after `clearInstancePools(): void` (sibling void/
+ *        clear-pattern). Added the full slice-55 entry to this
+ *        migration-history docblock. NO stale-note rewrite needed (no
+ *        prior slice referenced `__gxtClearRenderErrors`).
+ *
+ *    State-home decision: `manager.ts` — the function body itself
+ *    (`clearRenderErrors`) was already exported from `manager.ts` at
+ *    L3283. Only the publication mechanism changes (globalThis writer →
+ *    bridge registration). Matches the slice-12 / slice-13 / slice-14
+ *    bridge-registration precedent (function home unchanged; only the
+ *    cross-file invocation surface migrates from globalThis to typed
+ *    bridge).
+ *
+ *    Bridge shape decision: typed-bridge `clearRenderErrors(): void`
+ *    method on `GxtCompilePipelineCapabilities`. Cross-file pattern (4
+ *    readers across 3 files in `internal-test-helpers/`) precludes
+ *    zero-bridge; the slot is structurally an exported test-helper hook.
+ *    Matches slice-12 / slice-37 / slice-38 / slice-39 / slice-42
+ *    typed-bridge precedent. Breaks the 11-consecutive zero-bridge streak
+ *    (slices 43-53). One new bridge method, no new install-API namespace
+ *    (the method is seeded directly in `manager.ts`'s `setGxtRenderer`
+ *    call, NOT via `installCompilePipelinePart` — `manager.ts` is the
+ *    function-home file).
+ *
+ *    Bridge interface evolution (slice 55 — 36th API change): adds
+ *    `clearRenderErrors(): void` method to
+ *    `GxtCompilePipelineCapabilities`. Net +1 bridge method, -1
+ *    globalThis slot.
+ *
+ *    Hot-path concern: NONE. All 4 readers are in test-helper code paths
+ *    (catch blocks and teardown methods). The bridge-call overhead vs.
+ *    globalThis-typeof-guard is negligible at the call frequency (at
+ *    most a few times per test).
+ *
+ *    Count delta (slice 55): -1 globalThis slot retired, +1 new bridge
+ *    method on `compilePipeline`, +1 bridge registration in the
+ *    `setGxtRenderer` call, 4 inline accessor migrations (4 cross-package
+ *    readers in `internal-test-helpers/`), +1 comment edit at
+ *    `setup-qunit.ts:106`. Reuses existing `getGxtRenderer` imports in
+ *    all 3 reader files (no new import edges).
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -2238,6 +2359,50 @@ export interface GxtCompilePipelineCapabilities {
    * All callers route through `compilePipeline.clearInstancePools`.
    */
   clearInstancePools(): void;
+
+  /**
+   * Drain the manager.ts-local render-error queue (`_renderErrors`) without
+   * throwing. Counterpart to `flushRenderErrors()` (which drains-and-throws)
+   * — `clearRenderErrors()` only clears.
+   *
+   * Called from internal-test-helpers' `runAppend` / `runTask` catch blocks
+   * (race-cleanup: when the caller observes a thrown render error, the same
+   * error has been duplicated into `_renderErrors` by the gxt-backend catch
+   * path at manager.ts's `captureRenderError`; the stale copy would re-throw
+   * during the NEXT runTask/runAppend's `flushRenderErrors` call, breaking
+   * error-recovery tests) and from `AbstractApplicationTestCase.teardown` /
+   * `AbstractTestCase.teardown` (between-test reset: errors caught by
+   * `assert.rejectsAssertion` are also captured into `_renderErrors` via
+   * `captureRenderError`, leaving a stale copy that would re-throw on the
+   * next test's first `flushRenderErrors` call).
+   *
+   * Slice-55 (Cluster B): replaces the pre-slice-55 globalThis writer
+   * `(globalThis as any).__gxtClearRenderErrors = clearRenderErrors;` at
+   * `manager.ts:3286` and the four cross-package reader sites in
+   * `internal-test-helpers/lib/run.ts:35` / `:157` and
+   * `internal-test-helpers/lib/test-cases/abstract-application.ts:94` /
+   * `internal-test-helpers/lib/test-cases/abstract.ts:174` — all of which
+   * used a `const fn = (globalThis as any).__gxtClearRenderErrors; if
+   * (typeof fn === 'function') fn();` typeof-guarded call pattern. Readers
+   * now route through `getGxtRenderer()?.compilePipeline.clearRenderErrors?.()`,
+   * the optional-chain providing the same null-tolerant guard for
+   * classic-Ember builds (where gxt-backend was never loaded).
+   *
+   * Note: the harness reader at the repository-root `index.html:102` is
+   * outside `packages/` and continues to use the `globalThis` accessor
+   * intentionally (it cannot import from `gxt-bridge`). The slice-55
+   * migration intentionally leaves the harness reader as-is; the
+   * `manager.ts:3286` globalThis writer remains in source ONLY if the
+   * harness reader is preserved — otherwise the writer is retired and the
+   * harness reader silently no-ops (existing `typeof === 'function'` guard
+   * handles the missing-slot case). The slice-55 implementation RETIRES
+   * the writer outright since `index.html` is a development/diagnostic
+   * harness only — production builds neither load it nor execute the
+   * defensive cleanup it performs.
+   *
+   * Previously: `(globalThis as any).__gxtClearRenderErrors`.
+   */
+  clearRenderErrors(): void;
 
   /**
    * Register a dynamic-component change listener that fires AFTER every

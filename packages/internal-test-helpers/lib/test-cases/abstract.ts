@@ -171,8 +171,9 @@ export abstract class AbstractStrictTestCase {
       // assert.rejectsAssertion but also captured in _renderErrors via
       // captureRenderError, leaving a stale copy that would re-throw on
       // the next flushRenderErrors() call.
-      const clearErrors = (globalThis as any).__gxtClearRenderErrors;
-      if (typeof clearErrors === 'function') clearErrors();
+      // Slice-55 (Cluster B): routes through bridge — see clearRenderErrors
+      // doc in gxt-bridge.ts.
+      _cpAT?.clearRenderErrors?.();
     }
   }
 

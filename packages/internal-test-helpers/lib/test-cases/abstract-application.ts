@@ -91,8 +91,9 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
       _cpAA?.setPendingSyncFromPropertyChange?.(false);
       // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed.
       // Clear stale render errors so they don't leak into the next test.
-      const clearErrors = (globalThis as any).__gxtClearRenderErrors;
-      if (typeof clearErrors === 'function') clearErrors();
+      // Slice-55 (Cluster B): routes through bridge — see clearRenderErrors
+      // doc in gxt-bridge.ts.
+      _cpAA?.clearRenderErrors?.();
     }
   }
 

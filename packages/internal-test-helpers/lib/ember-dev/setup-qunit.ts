@@ -103,7 +103,9 @@ QUnit.testStart(() => {
   // An empirical probe across all 6 baseline gates (smoke 333, Errors 4,
   // Tracked 36, computed 148, Lifecycle 42, render 981 — ~1544 tests total)
   // recorded ZERO stale-queue events at testStart. The previous defensive
-  // `__gxtClearRenderErrors()` call is therefore dead code and deleted.
+  // `compilePipeline.clearRenderErrors()` call (slice-55 typed bridge;
+  // pre-slice-55 was `__gxtClearRenderErrors()` globalThis) is therefore
+  // dead code and deleted.
   // If a future change reintroduces cross-test queue pollution, the next
   // test's first runTask/flushRenderErrors will re-throw the stale error
   // with the wrong test attribution ("Died on test #N") — diagnose, then

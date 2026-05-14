@@ -32,8 +32,9 @@ export function runAppend(view: any): void {
     //   1. assert.throws(() => render(...))   // user observes the throw
     //   2. runTask(() => set(switch, false))  // BUG: re-throws stale copy
     // Clear the queue so the user-observed error is the only one surfaced.
-    const clearErrors = (globalThis as any).__gxtClearRenderErrors;
-    if (typeof clearErrors === 'function') clearErrors();
+    // Slice-55 (Cluster B): routes through bridge — see clearRenderErrors
+    // doc in gxt-bridge.ts.
+    getGxtRenderer()?.compilePipeline.clearRenderErrors?.();
     throw e;
   } finally {
     // Slice-38 (Cluster B): see comment above; routes through bridge setter.
@@ -154,8 +155,9 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
     // captured duplicate in _renderErrors would re-throw on the next
     // runTask() call. The user-visible throw is already escaping; clear
     // the duplicate so error-recovery tests can proceed cleanly.
-    const clearErrors = (globalThis as any).__gxtClearRenderErrors;
-    if (typeof clearErrors === 'function') clearErrors();
+    // Slice-55 (Cluster B): routes through bridge — see clearRenderErrors
+    // doc in gxt-bridge.ts.
+    getGxtRenderer()?.compilePipeline.clearRenderErrors?.();
     throw e;
   } finally {
     // Slice-38 (Cluster B): see comment above; routes through bridge setter.
