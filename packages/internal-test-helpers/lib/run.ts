@@ -44,7 +44,16 @@ export function runAppend(view: any): void {
   const afterRenderChanged = Boolean((globalThis as any).__gxtAfterRenderPropertyChange);
   (globalThis as any).__gxtAfterRenderPropertyChange = false;
   if (!afterRenderChanged) {
-    (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+    // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange` canonical
+    // state migrated to module-local `_gxtPendingSyncFromPropertyChangeFlag`
+    // in `compile.ts`. Test-helper writer-contract — routes through the
+    // bridge setter (load-order-safe optional chain — by the time
+    // `runAppend` fires, compile.ts's `installCompilePipelinePart` has
+    // run and the setter is installed). See `setPendingSyncFromPropertyChange`
+    // doc in gxt-bridge.ts. This is the first slice to route test-helper
+    // writers through the bridge — establishes the pattern that flag 1
+    // (`__gxtPendingSync`) will reuse in slice 37.
+    getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
   }
   // In GXT mode, flush pending DOM updates synchronously after append
   // so test assertions see the rendered DOM immediately
@@ -59,7 +68,11 @@ export function runAppend(view: any): void {
   // the setInterval(16ms) fallback from firing another sync that would
   // re-evaluate each-formulas with stale values.
   (globalThis as any).__gxtPendingSync = false;
-  (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+  // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange` canonical
+  // state migrated to module-local `_gxtPendingSyncFromPropertyChangeFlag`
+  // in `compile.ts`. Test-helper writer-contract — routes through the
+  // bridge setter.
+  getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
   // Reset interval sync budget after an explicit sync
   getGxtRenderer()?.compilePipeline.resetIntervalBudget?.();
   // Phase 3 step 7: the post-render flushRenderErrors() call was deleted.
@@ -136,7 +149,11 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   // fallback from firing another sync that could produce incorrect DOM.
   // The explicit sync above already handled all pending updates.
   (globalThis as any).__gxtPendingSync = false;
-  (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+  // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange` canonical
+  // state migrated to module-local `_gxtPendingSyncFromPropertyChangeFlag`
+  // in `compile.ts`. Test-helper writer-contract — routes through the
+  // bridge setter.
+  getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
   // Also clear tagsToRevalidate to prevent stale cells from re-evaluating
   const clearTags = (globalThis as any).__gxtClearTagsToRevalidate;
   if (typeof clearTags === 'function') clearTags();

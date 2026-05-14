@@ -4324,10 +4324,18 @@ const _POST_RENDER_MAX_REENTRY = 3;
   const g = globalThis as any;
   // Clear the pending flag before firing hooks so we can detect if a hook
   // (e.g. `this.set(...)` inside didUpdate) dirtied new state.
+  // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange` canonical
+  // state migrated to module-local `_gxtPendingSyncFromPropertyChangeFlag`
+  // in `compile.ts`. Cross-file save-read routes through the bridge getter
+  // (load-order-safe optional chain — by the time `__gxtPostRenderHooks`
+  // fires, compile.ts's `installCompilePipelinePart` has run and the
+  // getter is installed). See `getPendingSyncFromPropertyChange` /
+  // `setPendingSyncFromPropertyChange` doc in gxt-bridge.ts.
+  const _cpPRH = getGxtRenderer()?.compilePipeline;
   const savedPending = !!g.__gxtPendingSync;
-  const savedPendingPC = !!g.__gxtPendingSyncFromPropertyChange;
+  const savedPendingPC = !!_cpPRH?.getPendingSyncFromPropertyChange?.();
   g.__gxtPendingSync = false;
-  g.__gxtPendingSyncFromPropertyChange = false;
+  _cpPRH?.setPendingSyncFromPropertyChange?.(false);
 
   for (const { inst } of indexed) {
     triggerLifecycleHook(inst, 'didUpdate');
@@ -4347,13 +4355,19 @@ const _POST_RENDER_MAX_REENTRY = 3;
   // the runTask returns.
   const hookProducedChanges = !!g.__gxtPendingSync;
   // Restore the outer pending flags if the hooks didn't contribute new changes
+  // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange` canonical
+  // state migrated to module-local `_gxtPendingSyncFromPropertyChangeFlag`
+  // in `compile.ts`. Restore-side cross-file writers route through the
+  // bridge setter; the OR-restore path reads the post-hook value via the
+  // bridge getter and OR's it with the saved value.
   if (!hookProducedChanges) {
     g.__gxtPendingSync = savedPending;
-    g.__gxtPendingSyncFromPropertyChange = savedPendingPC;
+    _cpPRH?.setPendingSyncFromPropertyChange?.(savedPendingPC);
   } else {
     // OR the outer pending flags back in so nothing is lost
     g.__gxtPendingSync = g.__gxtPendingSync || savedPending;
-    g.__gxtPendingSyncFromPropertyChange = g.__gxtPendingSyncFromPropertyChange || savedPendingPC;
+    const _curPC = !!_cpPRH?.getPendingSyncFromPropertyChange?.();
+    _cpPRH?.setPendingSyncFromPropertyChange?.(_curPC || savedPendingPC);
   }
   if (hookProducedChanges && _postRenderHookReentryDepth < _POST_RENDER_MAX_REENTRY) {
     _postRenderHookReentryDepth++;
@@ -11016,7 +11030,16 @@ function handleManagedComponent(
       } finally {
         // Clear any pending sync that was scheduled during the handler
         (globalThis as any).__gxtPendingSync = false;
-        (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+        // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
+        // canonical state migrated to module-local
+        // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`.
+        // Cross-file writer routes through the bridge setter
+        // (load-order-safe optional chain — by the time a `wrapHandler`-
+        // wrapped event handler fires, compile.ts's
+        // `installCompilePipelinePart` has run and the setter is
+        // installed). See `setPendingSyncFromPropertyChange` doc in
+        // gxt-bridge.ts.
+        getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
       }
     };
     if (typeof instance.change === 'function') {

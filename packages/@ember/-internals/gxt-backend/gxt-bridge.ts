@@ -625,6 +625,92 @@ export interface GxtFormatCapabilities {
  *    (manager.ts:579's TRUE pairs with renderer.ts:1373's FALSE; compile.ts's
  *    body-end writer at L5636 pairs with renderer.ts:1373's FALSE; the
  *    cleanup writer at L6268 stands alone).
+ *  - `__gxtPendingSyncFromPropertyChange` — MIGRATED IN SLICE 36 to
+ *    `getPendingSyncFromPropertyChange()` + `setPendingSyncFromPropertyChange(value)`
+ *    on this namespace (paired get/set bridge surface — slice-14/35
+ *    paired-methods pattern, applied to a single boolean flag). Flag 3 of
+ *    the 4-flag pending-sync cluster (`__gxtPendingSync` /
+ *    `__gxtHadPendingSync` / `__gxtPendingSyncFromPropertyChange` /
+ *    `__gxtSyncIsPropertyDriven`); flag 4 closed in slice 34 and flag 2
+ *    closed in slice 35. The pre-slice-36 topology was 14 writers and 2
+ *    readers spanning 7 files / 4 packages:
+ *     Writers (14 sites):
+ *       - `gxt-backend/compile.ts:3066` (init slot to false — DROPPED in
+ *         slice 36 since the module-local boolean defaults to `false`).
+ *       - `gxt-backend/compile.ts:3888` (intra-file —
+ *         `__gxtTriggerReRender` body — set TRUE on a real property change
+ *         observed by `_notifyPropertiesChanged`).
+ *       - `gxt-backend/compile.ts:5685` (intra-file — `__gxtSyncDomNow`
+ *         body — clear after capturing into `__gxtHadPendingSync` and
+ *         `__gxtSyncIsPropertyDriven`).
+ *       - `gxt-backend/compile.ts:6309` (intra-file — cross-test cleanup —
+ *         clear at end of test teardown phase).
+ *       - `gxt-backend/manager.ts:4330` (cross-file —
+ *         `__gxtPostRenderHooks` save-restore around
+ *         `didUpdate`/`didRender` — clear before hooks).
+ *       - `gxt-backend/manager.ts:4352` (cross-file — restore unchanged
+ *         saved value when hooks did NOT produce new changes).
+ *       - `gxt-backend/manager.ts:4356` (cross-file — restore-OR'd saved
+ *         value when hooks DID produce new changes).
+ *       - `gxt-backend/manager.ts:11019` (cross-file — Textarea-like
+ *         `wrapHandler` tail finally — clear after user-interaction
+ *         handler so the handler's property changes do not survive past
+ *         the handler frame).
+ *       - `glimmer/lib/templates/root.ts:1075` (cross-package — outlet
+ *         model-update rerender — set TRUE before calling
+ *         `__gxtSyncDomNow` so the formula re-evaluating the outlet
+ *         model picks up the change).
+ *       - `routing/router.ts:106` (cross-package — transition LinkTo
+ *         path — set TRUE before calling `__gxtSyncDomNow` after dirtying
+ *         `currentState` so registered classic reactors flush
+ *         synchronously before the next assertion).
+ *       - `internal-test-helpers/lib/run.ts:47` (test-helper —
+ *         `runAppend` post-run cleanup when no afterRender-scheduled
+ *         property change observed).
+ *       - `internal-test-helpers/lib/run.ts:62` (test-helper —
+ *         `runAppend` tail flush after syncNow).
+ *       - `internal-test-helpers/lib/run.ts:139` (test-helper — `runTask`
+ *         tail flush after syncNow).
+ *       - `internal-test-helpers/lib/test-cases/rendering.ts:141`
+ *         (test-helper — `RenderingTestCase.teardown` post-destroy
+ *         flush).
+ *       - `internal-test-helpers/lib/test-cases/rendering.ts:185`
+ *         (test-helper — `render()` post-runAppend flush to prevent the
+ *         setInterval fallback from triggering a morph from init-phase
+ *         property changes).
+ *       - `internal-test-helpers/lib/test-cases/abstract.ts:140`
+ *         (test-helper — `AbstractTestCase.teardown` finally-block flush).
+ *       - `internal-test-helpers/lib/test-cases/abstract-application.ts:73`
+ *         (test-helper — `AbstractApplicationTestCase.teardown`
+ *         finally-block flush).
+ *     Readers (2 sites, both intra-`compile.ts`):
+ *       - `compile.ts:5671` — `__gxtSyncDomNow` body — capture into
+ *         `_gxtSetHadPendingSync` (mirrors `__gxtHadPendingSync`).
+ *       - `compile.ts:5683` — `__gxtSyncDomNow` body — capture into
+ *         `_gxtSetSyncIsPropertyDriven` (survivor mirror across
+ *         `__gxtForceEmberRerender`).
+ *    Slice 36 routes intra-`compile.ts` writers/readers through the
+ *    module-local `_gxtSetPendingSyncFromPropertyChange` /
+ *    `_gxtGetPendingSyncFromPropertyChange` helpers directly
+ *    (slice-22/24/27/30/31/32/33/34/35 intra-file-writer/reader
+ *    precedent); the 4 cross-file `manager.ts` writers, 2 cross-package
+ *    writers (templates/root.ts + routing/router.ts), and 7 test-helper
+ *    writers (`internal-test-helpers`) route through
+ *    `compilePipeline.setPendingSyncFromPropertyChange(value)`. Net -1
+ *    globalThis slot. Test-helper bridge-writer pattern established in
+ *    this slice for reuse by flag 1 (`__gxtPendingSync`) in slice 37.
+ *
+ *    Bridge shape decision: paired get/set (slice-14/35 paired-methods
+ *    pattern). Slice 36 cannot use slice-20/22/23/24's read-only
+ *    predicate or slice-29's mark+consume because slice 36 has cross-
+ *    file/cross-package WRITERS across 4 packages (manager.ts +
+ *    templates/root.ts + routing/router.ts + internal-test-helpers) in
+ *    addition to intra-file readers; both surfaces must be reachable.
+ *    No `with*` save-restore variant is exposed: the writers are straight-
+ *    line value assignments (the save-restore in manager.ts:4327-4357
+ *    operates on TWO flags — `__gxtPendingSync` and
+ *    `__gxtPendingSyncFromPropertyChange` — and reads/writes a saved
+ *    local; a single-flag `with*` helper would not match its shape).
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -2028,6 +2114,107 @@ export interface GxtCompilePipelineCapabilities {
    * allocations.
    */
   setHadPendingSync?(value: boolean): void;
+
+  /**
+   * Read the `__gxtPendingSyncFromPropertyChange` boolean flag. Returns
+   * `true` if a real property change (notifyPropertyChange via
+   * `__gxtTriggerReRender`) has been observed since the last
+   * `__gxtSyncDomNow` flush captured-and-cleared the flag. Distinguishes
+   * a property-driven sync from a cell-creation-during-initial-render
+   * sync (the latter also sets `__gxtPendingSync` true, but NOT this
+   * flag) so `__gxtSyncDomNow` can correctly gate `gxtSyncDom()` and
+   * route `__gxtHadPendingSync` / `__gxtSyncIsPropertyDriven` survivor
+   * flags into the downstream phases (modifier replay, force-rerender,
+   * destroy-error capture).
+   *
+   * Pre-slice-36 readers (2 sites, both intra-`compile.ts`):
+   *  - `compile.ts:5671` — `__gxtSyncDomNow` body — capture into
+   *    `_gxtSetHadPendingSync(!!flag)`. The captured `__gxtHadPendingSync`
+   *    is then read in Phase 1 gates and cross-package by glimmer's
+   *    modifier-replay + force-rerender-start sites.
+   *  - `compile.ts:5683` — `__gxtSyncDomNow` body — capture into
+   *    `_gxtSetSyncIsPropertyDriven(!!flag)`. The captured
+   *    `__gxtSyncIsPropertyDriven` is then read cross-file in manager.ts's
+   *    `__gxtDestroyUnclaimedPoolEntries` destroy-error capture gate.
+   *
+   * Slice-36 (Cluster B): graduates the canonical state from the pre-
+   * slice-36 `globalThis.__gxtPendingSyncFromPropertyChange` slot to the
+   * module-local boolean `_gxtPendingSyncFromPropertyChangeFlag` in
+   * `compile.ts`. The 2 intra-file readers route through the module-
+   * local `_gxtGetPendingSyncFromPropertyChange()` getter directly
+   * (slice-22/24/27/30/31/32/33/34/35 intra-file-reader precedent). No
+   * cross-package readers exist in the pre-slice-36 topology — the bridge
+   * getter exists for symmetry with the setter and for potential future
+   * consumers (e.g. test-helpers that need to inspect the flag before
+   * clearing it). Net globalThis surface delta: -1 slot (paired with
+   * `setPendingSyncFromPropertyChange`).
+   *
+   * Bridge-not-yet-installed edge: callers that route through this
+   * bridge getter use `getGxtRenderer()?.compilePipeline.getPendingSyncFromPropertyChange?.() ?? false`.
+   * Both optional chains return `undefined` when either the renderer or
+   * the method is not yet installed; the `?? false` coerces to FALSE,
+   * which mirrors pre-slice-36 semantics where
+   * `globalThis.__gxtPendingSyncFromPropertyChange === undefined`
+   * (pre-first-sync edge) coerced via `!!` to FALSE.
+   *
+   * Fast-check: the implementation reads the module-local
+   * `_gxtPendingSyncFromPropertyChangeFlag` boolean — one boolean read;
+   * zero allocations. Matches slice-35's `getHadPendingSync()` body shape.
+   */
+  getPendingSyncFromPropertyChange?(): boolean;
+
+  /**
+   * Write the `__gxtPendingSyncFromPropertyChange` boolean flag. The
+   * flag's lifetime and semantics are described in the
+   * `getPendingSyncFromPropertyChange` doc above.
+   *
+   * Pre-slice-36 writers (14 sites — see migration history docblock at
+   * top of this interface for the full list). Slice 36 routes intra-
+   * `compile.ts` writers (5 sites) through the module-local
+   * `_gxtSetPendingSyncFromPropertyChange(value)` setter directly; the
+   * cross-file `manager.ts` writers (4 sites — post-render-hooks save/
+   * restore + handler-tail clear), the 2 cross-package writers
+   * (templates/root.ts:1075 outlet rerender + routing/router.ts:106
+   * transition LinkTo), and the 7 test-helper writers (3 in `run.ts` +
+   * 1 each in `test-cases/{rendering,abstract,abstract-application}.ts`)
+   * route through this bridge setter (`compilePipeline.setPendingSyncFromPropertyChange?.(value)`).
+   *
+   * The test-helper writer-contract: clear the flag in
+   * `teardown` / `runTask` / `runAppend` / `render` tail-finally blocks
+   * so the setInterval(16ms) fallback flusher does NOT pick up stale
+   * sync state from the previous test. This is the FIRST slice to
+   * route test-helper writers through the bridge — establishes the
+   * pattern that flag 1 (`__gxtPendingSync`) will reuse in slice 37.
+   *
+   * Slice-36 (Cluster B): graduates the canonical state from the pre-
+   * slice-36 `globalThis.__gxtPendingSyncFromPropertyChange` slot to the
+   * module-local boolean `_gxtPendingSyncFromPropertyChangeFlag` in
+   * `compile.ts`. Net globalThis surface delta: -1 slot (paired with
+   * `getPendingSyncFromPropertyChange`).
+   *
+   * Bridge-not-yet-installed edge: cross-file/cross-package/test-helper
+   * writers use `getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(value)`.
+   * Both optional chains short-circuit to `undefined` (no-op) when the
+   * renderer or the method is not yet installed. This is load-order-
+   * safe because the writers fire AFTER module init in practice
+   * (`runTask` / `runAppend` / `teardown` paths all run after
+   * compile.ts's `installCompilePipelinePart` at file EOF has executed).
+   *
+   * Bridge shape decision: paired get/set (slice-14/35 paired-methods
+   * pattern) because slice 36 has cross-file/cross-package WRITERS
+   * across 4 packages (manager.ts + templates/root.ts + routing/router.ts
+   * + internal-test-helpers) — the setter surface must be reachable
+   * from all of them. No `with*` save-restore variant: the only save-
+   * restore-shaped writer pair is manager.ts:4327-4357's
+   * `__gxtPostRenderHooks` save/restore, which operates on TWO flags
+   * (`__gxtPendingSync` and `__gxtPendingSyncFromPropertyChange`) — a
+   * single-flag `with*` helper would not match its shape.
+   *
+   * Fast-check: the implementation writes the module-local
+   * `_gxtPendingSyncFromPropertyChangeFlag` boolean — one boolean
+   * assignment; zero allocations.
+   */
+  setPendingSyncFromPropertyChange?(value: boolean): void;
 }
 
 /**

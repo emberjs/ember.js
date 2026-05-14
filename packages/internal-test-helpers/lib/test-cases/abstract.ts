@@ -9,6 +9,15 @@ import { runDestroy, runLoopSettled, runTask } from '../run';
 import { assert } from '@ember/debug';
 import { rerenderComponent } from '../component-helper';
 import { _resetRenderers } from '@ember/-internals/glimmer';
+// Slice-36 (Cluster B) test-helper writer for
+// `__gxtPendingSyncFromPropertyChange` — routes flag clears through the
+// bridge setter (canonical state migrated to module-local
+// `_gxtPendingSyncFromPropertyChangeFlag` in
+// `@ember/-internals/gxt-backend/compile.ts`). See
+// `setPendingSyncFromPropertyChange` doc in gxt-bridge.ts. Establishes
+// the test-helper-bridge-writer pattern for flag 1 (`__gxtPendingSync`)
+// in slice 37.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -137,7 +146,11 @@ export abstract class AbstractStrictTestCase {
     } finally {
       _resetRenderers();
       (globalThis as any).__gxtPendingSync = false;
-      (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+      // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
+      // canonical state migrated to module-local
+      // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`.
+      // Test-helper writer-contract — routes through the bridge setter.
+      getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
       // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed.
       // Clear stale render errors so they don't leak into the next test's
       // beforeEach. Errors like backtracking assertions are caught by

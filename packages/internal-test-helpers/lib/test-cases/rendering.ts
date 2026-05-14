@@ -1,5 +1,14 @@
 import type { Renderer } from '@ember/-internals/glimmer';
 import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
+// Slice-36 (Cluster B) test-helper writer for
+// `__gxtPendingSyncFromPropertyChange` — routes flag clears through the
+// bridge setter (canonical state migrated to module-local
+// `_gxtPendingSyncFromPropertyChangeFlag` in
+// `@ember/-internals/gxt-backend/compile.ts`). See
+// `setPendingSyncFromPropertyChange` doc in gxt-bridge.ts. Establishes
+// the test-helper-bridge-writer pattern for flag 1 (`__gxtPendingSync`)
+// in slice 37.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { EventDispatcher } from '@ember/-internals/views';
 import Component from '@ember/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
@@ -138,7 +147,11 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       _resetRenderers();
       // Reset pending sync AFTER destroy
       (globalThis as any).__gxtPendingSync = false;
-      (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+      // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
+      // canonical state migrated to module-local
+      // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`.
+      // Test-helper writer-contract — routes through the bridge setter.
+      getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
       // Replace #qunit-fixture element to drop accumulated event listeners
       // (EventDispatcher.setup adds listeners that aren't always cleaned up)
       const fixture = document.getElementById('qunit-fixture');
@@ -182,7 +195,10 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     // the setInterval fallback from triggering a morph (Phase 2b). Property
     // change notifications during the initial render (e.g., from EmberObject.create
     // in modifier managers) should NOT cause a morph — the DOM is already correct.
-    (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+    // Slice-36 (Cluster B): canonical state migrated to module-local
+    // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`. Test-helper
+    // writer-contract — routes through the bridge setter.
+    getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
   }
 
   renderComponent(component: object, options: { expect: string }) {

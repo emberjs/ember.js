@@ -1,5 +1,11 @@
 import { privatize as P } from '@ember/-internals/container';
 import type { BootEnvironment, OutletState, OutletView } from '@ember/-internals/glimmer';
+// Slice-36 (Cluster B) cross-package writer for
+// `__gxtPendingSyncFromPropertyChange` — set TRUE before a transition-
+// driven `__gxtSyncDomNow` call so the sync is recognized as property-
+// driven and `gxtSyncDom()` re-evaluates the routing-service formulas.
+// See `setPendingSyncFromPropertyChange` doc in gxt-bridge.ts.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { computed, get, set } from '@ember/object';
 import type { default as Owner, FactoryManager } from '@ember/owner';
 import { getOwner } from '@ember/owner';
@@ -103,7 +109,11 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
           const syncDomNow = (globalThis as any).__gxtSyncDomNow;
           if (typeof syncDomNow === 'function') {
             (globalThis as any).__gxtPendingSync = true;
-            (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
+            // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
+            // canonical state migrated to module-local
+            // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`.
+            // Cross-package writer routes through the bridge setter.
+            getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(true);
             syncDomNow();
           }
         }

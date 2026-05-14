@@ -1072,7 +1072,16 @@ export default function createRootTemplate(_owner: any) {
             const syncDomNow = (globalThis as any).__gxtSyncDomNow;
             if (typeof syncDomNow === 'function') {
               (globalThis as any).__gxtPendingSync = true;
-              (globalThis as any).__gxtPendingSyncFromPropertyChange = true;
+              // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
+              // canonical state migrated to module-local
+              // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`.
+              // Cross-package writer routes through the bridge setter
+              // (load-order-safe optional chain — by the time this
+              // outlet-model-update path fires, compile.ts's
+              // `installCompilePipelinePart` has run and the setter is
+              // installed). See `setPendingSyncFromPropertyChange` doc in
+              // gxt-bridge.ts.
+              getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(true);
               syncDomNow();
             }
             return;

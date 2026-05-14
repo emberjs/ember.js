@@ -2,6 +2,15 @@ import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import AbstractTestCase from './abstract';
 import { runDestroy, runTask, runLoopSettled } from '../run';
+// Slice-36 (Cluster B) test-helper writer for
+// `__gxtPendingSyncFromPropertyChange` — routes flag clears through the
+// bridge setter (canonical state migrated to module-local
+// `_gxtPendingSyncFromPropertyChangeFlag` in
+// `@ember/-internals/gxt-backend/compile.ts`). See
+// `setPendingSyncFromPropertyChange` doc in gxt-bridge.ts. Establishes
+// the test-helper-bridge-writer pattern for flag 1 (`__gxtPendingSync`)
+// in slice 37.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
 import type ApplicationInstance from '@ember/application/instance';
@@ -70,7 +79,11 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
       super.teardown();
     } finally {
       (globalThis as any).__gxtPendingSync = false;
-      (globalThis as any).__gxtPendingSyncFromPropertyChange = false;
+      // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
+      // canonical state migrated to module-local
+      // `_gxtPendingSyncFromPropertyChangeFlag` in `compile.ts`.
+      // Test-helper writer-contract — routes through the bridge setter.
+      getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
       // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed.
       // Clear stale render errors so they don't leak into the next test.
       const clearErrors = (globalThis as any).__gxtClearRenderErrors;
