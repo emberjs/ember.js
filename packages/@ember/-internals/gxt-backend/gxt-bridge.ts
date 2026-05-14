@@ -389,6 +389,17 @@ export interface GxtFormatCapabilities {
  *    `_tagHelperInstanceCache` declaration; reader in the test-cleanup
  *    region. Zero-bridge intra-file refactor; drops 1 globalThis slot.
  *    See slices 43-48, 56 for analogous zero-bridge precedents.
+ *  - `__curriedRenderInfos` — intra-compile.ts lazy-init array. MIGRATED IN
+ *    SLICE 58 (Cluster B) to module-local `const _curriedRenderInfos: any[]`
+ *    in `compile.ts`. Hybrid of slice-48 (lazy-init-collapse) and slice-56/57
+ *    (intra-file graduation): the 3 functional sites (reader at the
+ *    CurriedComponent re-render branch, test-cleanup `length = 0` reset, and
+ *    push site inside the curried-component registration block) now access
+ *    the module-local array directly, and the runtime `if (!...) ... = []`
+ *    lazy-init at the push site is collapsed because the const is eagerly
+ *    initialized at module-load. Zero-bridge intra-file refactor; drops 1
+ *    globalThis slot. See slices 43-48, 56, 57 for analogous zero-bridge
+ *    precedents and slice 48 in particular for the lazy-init-collapse pattern.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's

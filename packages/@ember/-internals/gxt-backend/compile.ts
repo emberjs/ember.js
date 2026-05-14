@@ -2589,6 +2589,16 @@ function _resolveCurriedArgs(curried: any): {
   return { name: curried.__name, args: resolved, positionals: resolvedPos };
 }
 
+// Module-local registry of curried-component render infos.
+// Cluster B slice 58: graduated from `(globalThis as any).__curriedRenderInfos`
+// to a top-level `const` array. The lazy-init pattern that used to live at
+// the push site (slice-48 collapse) is no longer needed because the array
+// is eagerly initialized at module-load. The reader, the test-cleanup
+// `length = 0` reset, and the push site are all intra-file and now access
+// this binding directly. Entries are object literals typed as `any` at
+// construction (see push site for shape).
+const _curriedRenderInfos: any[] = [];
+
 // Helper: snapshot curried args on a render info for later comparison.
 function _snapshotCurriedArgs(info: any, curried: any) {
   const snap = _resolveCurriedArgs(curried);
@@ -6385,8 +6395,9 @@ function _resetTemplateOnlyState() {
       }
       // Re-render CurriedComponent marker regions
       try {
-        const infos = (globalThis as any).__curriedRenderInfos;
-        if (infos) {
+        // Cluster B slice 58: intra-file direct read of module-local `_curriedRenderInfos`.
+        const infos = _curriedRenderInfos;
+        if (infos.length) {
           for (const info of infos) {
             const {
               item: getter,
@@ -6551,9 +6562,8 @@ setInterval(() => {
   // Template cache entries are keyed by template string so identical
   // templates safely reuse compiled functions.
   // Clear curried render infos
-  if ((globalThis as any).__curriedRenderInfos) {
-    (globalThis as any).__curriedRenderInfos.length = 0;
-  }
+  // Cluster B slice 58: intra-file direct reset of module-local `_curriedRenderInfos`.
+  _curriedRenderInfos.length = 0;
   // Clear helper instances (already destroyed by __gxtDestroyTrackedInstances)
   if ((globalThis as any).__gxtHelperInstances) {
     (globalThis as any).__gxtHelperInstances.length = 0;
@@ -14009,11 +14019,10 @@ export function precompileTemplate(
               };
               // Snapshot initial curried args for change detection
               _snapshotCurriedArgs(curriedRenderInfo, finalResult);
-              // Register for manual re-rendering on property changes
-              if (!(globalThis as any).__curriedRenderInfos) {
-                (globalThis as any).__curriedRenderInfos = [];
-              }
-              (globalThis as any).__curriedRenderInfos.push(curriedRenderInfo);
+              // Register for manual re-rendering on property changes.
+              // Cluster B slice 58: lazy-init collapsed — `_curriedRenderInfos` is
+              // a module-local const eagerly initialized at module-load.
+              _curriedRenderInfos.push(curriedRenderInfo);
 
               gxtEffect(() => {
                 // Determine the current curried component.
