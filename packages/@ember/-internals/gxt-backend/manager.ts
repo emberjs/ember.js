@@ -784,22 +784,32 @@ const _gxtBridgeShouldWarnStyle = (element: unknown, value?: string) =>
  */
 let _rebuildInProgress = false;
 
+// Slice-61 (Cluster B): graduated from `(globalThis as any).
+// __gxtSuppressDirtyTagForDuringRebuild` to this module-local `let`. Writer
+// sites (set-true at the top of `_gxtRebuildViewTreeFromDom`, set-false in
+// its `finally`) and the single reader (inside the `__classicDirtyTagFor`
+// rebuild guard wrap below) all live intra-`manager.ts`, so no
+// globalThis indirection is needed. Bundled @lifeart/gxt runtime has zero
+// references — verified by grep of `node_modules/.pnpm/@lifeart+gxt@0.0.61/`.
+// See gxt-bridge.ts slice-61 entry for the full topology / precedents.
+let _gxtSuppressDirtyTagForDuringRebuild = false;
+
 // Wrap __classicDirtyTagFor once so it can no-op during a view-tree rebuild.
 // validator.ts installs the original as globalThis.__classicDirtyTagFor; we
 // intercept here. Idempotent — re-running this module won't double-wrap.
 //
-// Only hard-suppress during __gxtRebuildViewTreeFromDom (via
-// __gxtSuppressDirtyTagForDuringRebuild). For Phase 1 arg write-backs, we
-// do NOT suppress here — instead we let dirtyTagFor mark the tag dirty and
-// bump the global revision (needed for within-sync template re-reads), and
-// the rescheduling-only suppression lives in validator.ts, keyed off
-// __gxtSuppressDirtyInRcSet.
+// Only hard-suppress during __gxtRebuildViewTreeFromDom (via the
+// module-local `_gxtSuppressDirtyTagForDuringRebuild` flag above). For
+// Phase 1 arg write-backs, we do NOT suppress here — instead we let
+// dirtyTagFor mark the tag dirty and bump the global revision (needed for
+// within-sync template re-reads), and the rescheduling-only suppression
+// lives in validator.ts, keyed off __gxtSuppressDirtyInRcSet.
 (function installClassicDirtyTagForRebuildGuard() {
   const g = globalThis as any;
   const orig = g.__classicDirtyTagFor;
   if (typeof orig !== 'function' || orig.__gxtRebuildGuarded) return;
   const wrapped = function classicDirtyTagForGuarded(obj: any, key: any) {
-    if (g.__gxtSuppressDirtyTagForDuringRebuild) return;
+    if (_gxtSuppressDirtyTagForDuringRebuild) return;
     return orig(obj, key);
   };
   (wrapped as any).__gxtRebuildGuarded = true;
@@ -823,7 +833,7 @@ let _rebuildInProgress = false;
 function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
   if (_rebuildInProgress) return;
   _rebuildInProgress = true;
-  (globalThis as any).__gxtSuppressDirtyTagForDuringRebuild = true;
+  _gxtSuppressDirtyTagForDuringRebuild = true;
   try {
       const owner = (globalThis as any).owner;
       // Collect registries from all live pool instances (they know their owner),
@@ -991,7 +1001,7 @@ function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
       /* ignore — best effort fixup */
     } finally {
       _rebuildInProgress = false;
-      (globalThis as any).__gxtSuppressDirtyTagForDuringRebuild = false;
+      _gxtSuppressDirtyTagForDuringRebuild = false;
     }
   };
 

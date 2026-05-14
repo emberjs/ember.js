@@ -220,7 +220,8 @@ export interface GxtBacktrackingCapabilities {
  *    flag whose reads/writes are entirely intra-file (manager.ts). The
  *    bridge is method-call shaped; state-flag semantics is a separate
  *    pattern. The flag could become a module-local `let` independently of
- *    the bridge migration.
+ *    the bridge migration. LATER MIGRATED IN SLICE 61 (Cluster B) — see
+ *    the slice 61 entry further down for the full topology.
  */
 export interface GxtViewUtilsCapabilities {
   /**
@@ -429,6 +430,27 @@ export interface GxtFormatCapabilities {
  *    writer/reader/clearer topology. Zero-bridge intra-file refactor;
  *    drops 1 globalThis slot. See slices 43-48, 56-59 for analogous
  *    zero-bridge precedents.
+ *  - `__gxtSuppressDirtyTagForDuringRebuild` — intra-manager.ts boolean
+ *    state flag suppressing `__classicDirtyTagFor` writes while a view-tree
+ *    rebuild is in progress. MIGRATED IN SLICE 61 (Cluster B) to module-
+ *    local `let _gxtSuppressDirtyTagForDuringRebuild = false` in `manager.ts`.
+ *    Set-true writer at the entry of `_gxtRebuildViewTreeFromDom` (paired
+ *    with the established sibling `_rebuildInProgress = true` re-entry
+ *    guard); set-false writer in the `finally` block of the same function,
+ *    paired with `_rebuildInProgress = false`. Single reader inside the
+ *    `installClassicDirtyTagForRebuildGuard` IIFE's `classicDirtyTagForGuarded`
+ *    wrap (early-returns when the flag is true so no fresh
+ *    `__classicDirtyTagFor` work / no scheduled revalidations fire from
+ *    within the rebuild). Both writer sites and the reader live entirely
+ *    intra-`manager.ts`; the bundled @lifeart/gxt runtime has zero
+ *    references (verified by grep of
+ *    `node_modules/.pnpm/@lifeart+gxt@0.0.61/`). No save/restore wrappers,
+ *    no host hook chains. The slot was explicitly called out as a slice-3
+ *    deferred exclusion (see the slice-3 "NOT included" note above) for
+ *    exactly this graduation pattern; same shape as slices 43-44
+ *    (`__gxtTrackArgSource` triad). Zero-bridge intra-file refactor; drops
+ *    1 globalThis slot. See slices 43-48, 56-60 for analogous zero-bridge
+ *    precedents.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
