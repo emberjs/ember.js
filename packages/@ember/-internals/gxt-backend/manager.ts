@@ -1498,12 +1498,9 @@ function getCachedOrCreateInstance(
             !entry.instance.isDestroyed &&
             !entry.instance.isDestroying
           ) {
-            let markedSet = (globalThis as any).__gxtInstancesMarkedForDestruction;
-            if (!markedSet) {
-              markedSet = new Set();
-              (globalThis as any).__gxtInstancesMarkedForDestruction = markedSet;
-            }
-            markedSet.add(entry.instance);
+            // (slice 53: was `(globalThis as any).__gxtInstancesMarkedForDestruction`
+            // with a lazy-init read+write — collapsed to direct const access)
+            _instancesMarkedForDestruction.add(entry.instance);
           }
         }
       }
@@ -4621,14 +4618,30 @@ let _currentPassRenderedPassId = -1;
 // Used to detect which instances were removed after the rebuild.
 let _preRerenderSnapshot: Set<any> = new Set();
 
+// Instances explicitly marked for destruction during a force-rerender
+// (e.g. dynamic component switching via `{{component this.name}}` where the
+// new instance lands in a different pool keyed by factory and the old
+// instance in the previous pool is unclaimed and should be destroyed).
+//
+// (Cluster B slice 53) Graduated from `(globalThis as any).__gxtInstancesMarkedForDestruction`
+// to a module-local const initialized eagerly at module-load time. The
+// previous lazy-init read+write pattern at the producer site
+// (`__gxtMarkUnclaimedEntriesForDestruction` in `setupComponentManager`)
+// collapses to a direct `_instancesMarkedForDestruction.add(...)` call; the
+// two consumer sites in `_gxtSnapshotLiveInstances` (cycle-start clear) and
+// `_gxtDestroyUnclaimedPoolEntries` (mark-and-delete check) read the const
+// directly. All 4 functional sites are intra-`manager.ts`; zero cross-file
+// consumers (verified by exhaustive grep). Zero-bridge intra-file migration.
+const _instancesMarkedForDestruction = new Set<any>();
+
 // (Cluster B slice 5) Exposed via the gxt-bridge as
 // `compilePipeline.snapshotLiveInstances`.
 // Was `(globalThis as any).__gxtSnapshotLiveInstances`.
 function _gxtSnapshotLiveInstances(): void {
   _preRerenderSnapshot.clear();
   // Clear the marked-for-destruction set from the previous cycle
-  const markedSet = (globalThis as any).__gxtInstancesMarkedForDestruction;
-  if (markedSet) markedSet.clear();
+  // (slice 53: was `(globalThis as any).__gxtInstancesMarkedForDestruction`)
+  _instancesMarkedForDestruction.clear();
   for (const instance of _allLiveInstances) {
     _preRerenderSnapshot.add(instance);
   }
@@ -4712,13 +4725,13 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
 
       // Check for instances explicitly marked for destruction during the
       // force-rerender (e.g., dynamic component switching via {{component}}).
-      // These are added to __gxtInstancesMarkedForDestruction by the rendering
+      // These are added to `_instancesMarkedForDestruction` by the rendering
       // code when a new instance replaces an old one at the same position.
+      // (slice 53: was `(globalThis as any).__gxtInstancesMarkedForDestruction`)
       if (isAlive) {
-        const markedForDestruction = (globalThis as any).__gxtInstancesMarkedForDestruction;
-        if (markedForDestruction && markedForDestruction.has(instance)) {
+        if (_instancesMarkedForDestruction.has(instance)) {
           isAlive = false;
-          markedForDestruction.delete(instance);
+          _instancesMarkedForDestruction.delete(instance);
         }
       }
 

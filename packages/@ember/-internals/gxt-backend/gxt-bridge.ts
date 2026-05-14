@@ -2027,6 +2027,111 @@ export interface GxtFormatCapabilities {
  *    module-local `let`, ~7 inline accessor migrations, +18 LOC
  *    docblock for the new module-local + +3 LOC light comment edits.
  *    0 new bridge methods, 0 new import edges.
+ *
+ * 53. (Cluster B slice 53) Retired `__gxtInstancesMarkedForDestruction`
+ *    globalThis slot. The slot held a `Set<any>` of pool-instance
+ *    references explicitly marked for destruction during a force-rerender
+ *    (e.g. dynamic-component swap via `{{component this.name}}` where the
+ *    new instance lands in a different pool keyed by factory; the old
+ *    instance in the previous pool is unclaimed and needs its destroy
+ *    lifecycle fired). Producer: the `__gxtIsForceRerender`-gated loop
+ *    inside `setupComponentManager` (manager.ts:1490-1511) that iterates
+ *    parent-pool entries and tags unclaimed live instances. Consumers:
+ *    `_gxtSnapshotLiveInstances` (cycle-start `.clear()` call —
+ *    manager.ts:4630 pre-slice-53) and `_gxtDestroyUnclaimedPoolEntries`
+ *    (mark-and-delete check at manager.ts:4718 pre-slice-53). All 4
+ *    functional sites were intra-`manager.ts`; zero cross-file consumers
+ *    (verified by exhaustive grep across `packages/`).
+ *
+ *    Pre-slice-53 topology (audit confirmed — exactly 4 functional sites
+ *    + 1 comment, ALL in `manager.ts`):
+ *      - manager.ts:1501 — producer lazy-init read:
+ *        `let markedSet = (globalThis as any).__gxtInstancesMarkedForDestruction;`
+ *      - manager.ts:1504 — producer lazy-init write:
+ *        `(globalThis as any).__gxtInstancesMarkedForDestruction = markedSet;`
+ *      - manager.ts:4630 — consumer read for cycle-start clear:
+ *        `const markedSet = (globalThis as any).__gxtInstancesMarkedForDestruction;`
+ *      - manager.ts:4718 — consumer read for mark-and-delete check:
+ *        `const markedForDestruction = (globalThis as any).__gxtInstancesMarkedForDestruction;`
+ *      - manager.ts:4715 — comment-only reference (1 line — lightly
+ *        edited in slice 53 to point at the new module-local
+ *        `_instancesMarkedForDestruction` const).
+ *
+ *    Sites moved (slice 53):
+ *      - packages/@ember/-internals/gxt-backend/manager.ts: introduced
+ *        new module-local `const _instancesMarkedForDestruction = new
+ *        Set<any>();` adjacent to the existing `_preRerenderSnapshot`
+ *        declaration (~L4622-L4636) with a docblock explaining its
+ *        semantics and the slice-53 migration. Collapsed the producer
+ *        lazy-init pattern (L1501+L1504) into a single direct
+ *        `_instancesMarkedForDestruction.add(entry.instance)` call —
+ *        no lazy-init needed because the const is eagerly initialized
+ *        at module-load time. Redirected the two consumer reads at
+ *        L4630 (`_gxtSnapshotLiveInstances`) and L4718
+ *        (`_gxtDestroyUnclaimedPoolEntries`) to access the const
+ *        directly; collapsed the `if (markedForDestruction && ...)` guard
+ *        in the consumer at L4718 to a simple `if
+ *        (_instancesMarkedForDestruction.has(instance))` since the const
+ *        is guaranteed initialized at module-load time. The comment line
+ *        at L4715 was lightly edited to point at the new module-local
+ *        name.
+ *      - packages/@ember/-internals/gxt-backend/gxt-bridge.ts: append
+ *        the full slice-53 entry to the migration-history docblock above
+ *        `GxtCompilePipelineCapabilities`. NO new bridge methods
+ *        (zero-bridge intra-file). No stale-note rewrite is needed
+ *        because no prior slice referenced
+ *        `__gxtInstancesMarkedForDestruction` in this file.
+ *
+ *    State-home decision: `manager.ts` — all 4 functional accessors live
+ *    in `manager.ts` (the producer inside `setupComponentManager`; the
+ *    two consumers inside `_gxtSnapshotLiveInstances` and
+ *    `_gxtDestroyUnclaimedPoolEntries`). The slot's lifecycle is tightly
+ *    coupled to the unclaimed-pool sweep code path; placing the const
+ *    adjacent to `_preRerenderSnapshot` (the sibling state cleared in the
+ *    same `_gxtSnapshotLiveInstances` cycle-start function) is the
+ *    natural cohort. Matches slice-48 / slice-52 manager.ts state-home
+ *    precedent.
+ *
+ *    Bridge shape decision: ZERO-bridge intra-file. All functional sites
+ *    are inside `manager.ts`. No cross-file consumer ever existed (the
+ *    slot's producer-consumer chain was self-contained within the
+ *    `manager.ts` force-rerender / unclaimed-sweep pipeline from the
+ *    beginning). No bridge method needed; module-local `const` is
+ *    sufficient — and stronger than slice-52's `let` because this slot's
+ *    identity is stable across the lifetime of the module (only its
+ *    contents mutate via `add`/`delete`/`clear`). Slice-48 precedent
+ *    (`__gxtNestedTrackingProxies`) applies directly.
+ *
+ *    ZERO new import edges in slice 53: only inline accessor edits + one
+ *    new `const` declaration adjacent to existing module-local state. No
+ *    `getGxtRenderer` calls, no `installCompilePipelinePart` calls, no
+ *    new bridge-import statements added. Slice 53 matches slices 43, 44,
+ *    45, 46, 47, 48, 49, 50, 51, 52 as a zero-bridge Cluster B slice —
+ *    the ELEVENTH consecutive.
+ *
+ *    Bridge interface evolution (slice 53 — no API change): no bridge
+ *    interface is extended in this slice (zero-bridge intra-file). The
+ *    migration-history docblock IS extended with the full slice-53 entry.
+ *    ELEVENTH consecutive Cluster B slice (after 43, 44, 45, 46, 47, 48,
+ *    49, 50, 51, 52) to ship without a new bridge method.
+ *
+ *    Hot-path concern: the producer (manager.ts:1490-1511) only fires
+ *    under `__gxtIsForceRerender`, which is a relatively cold path
+ *    (only on force-rerender entry, not on every render pass). The two
+ *    consumer reads execute once per `_gxtSnapshotLiveInstances`
+ *    invocation (cycle-start) and once per pool-entry inspection inside
+ *    `_gxtDestroyUnclaimedPoolEntries` (per-instance loop). All three
+ *    paths benefit from the const becoming a direct closure-local read
+ *    instead of a `(globalThis as any).foo` property-lookup walk; the
+ *    consumer at L4718 also drops one redundant truthiness guard per
+ *    iteration. Small but real improvement on the unclaimed-sweep cold
+ *    path and a slightly tighter inner-loop in the per-instance check.
+ *
+ *    Count delta (slice 53): -1 globalThis slot retired, +1 new
+ *    module-local `const`, 4 inline accessor migrations (1 producer
+ *    lazy-init collapse + 2 consumer reads + 1 consumer guard collapse),
+ *    +14 LOC docblock for the new module-local + ~4 LOC light comment
+ *    edits. 0 new bridge methods, 0 new import edges.
  */
 export interface GxtCompilePipelineCapabilities {
   /**
