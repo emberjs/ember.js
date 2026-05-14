@@ -11247,8 +11247,6 @@ function renderClassicComponent(
   componentDef: any,
   owner: any
 ): any {
-  const g = globalThis as any;
-
   // Check if this is a reused instance from the pool during force-rerender.
   // If so, skip initial lifecycle hooks (willRender, willInsertElement, etc.)
   // since the component already went through its initial render lifecycle.
@@ -11552,17 +11550,19 @@ function renderClassicComponent(
   if (!suppressTrigger) {
     return _renderBody();
   }
+  // Slice-28 (Cluster B): closes the longest-runway campaign. The pre-slice-28
+  // inline globalThis save/null/restore fallback is dropped — all readers of
+  // `globalThis.__gxtTriggerReRender` were migrated in slices 25-27, so the
+  // bridge `withTriggerSuppressed(fn)` helper (slice 17) is the single
+  // surface for suppression. We branch on whether the bridge method is
+  // installed rather than `?? _renderBody()` because `_renderBody` could
+  // return `undefined` (treated as falsy by `??`) — branching avoids any
+  // double-invocation risk.
   const _withSuppressed = getGxtRenderer()?.compilePipeline.withTriggerSuppressed;
   if (_withSuppressed) {
     return _withSuppressed(_renderBody);
   }
-  const prevTriggerReRender = g.__gxtTriggerReRender;
-  g.__gxtTriggerReRender = null;
-  try {
-    return _renderBody();
-  } finally {
-    g.__gxtTriggerReRender = prevTriggerReRender;
-  }
+  return _renderBody();
 }
 
 /**

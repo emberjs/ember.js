@@ -153,18 +153,18 @@ export function track(cb: () => void): any {
     }
   };
 
+  // Slice-28 (Cluster B): closes the longest-runway campaign. The pre-slice-28
+  // inline globalThis save/clear/restore fallback is dropped — all readers
+  // of `globalThis.__gxtTriggerReRender` were migrated in slices 25-27, so
+  // the bridge `withTriggerSuppressed(fn)` helper (slice 17) is the single
+  // suppression surface. We avoid `?? _runTrack()` because `_runTrack`
+  // returns `undefined` and would cause a second invocation; instead branch
+  // on whether the bridge method is installed.
   const _withSuppressed = getGxtRenderer()?.compilePipeline.withTriggerSuppressed;
   if (_withSuppressed) {
     _withSuppressed(_runTrack);
   } else {
-    const g = globalThis as any;
-    const savedTrigger = g.__gxtTriggerReRender;
-    g.__gxtTriggerReRender = undefined;
-    try {
-      _runTrack();
-    } finally {
-      g.__gxtTriggerReRender = savedTrigger;
-    }
+    _runTrack();
   }
 
   // If no specific tags were consumed, the frame's `cb()` did not depend

@@ -3389,35 +3389,44 @@ const _gxtTriggerReRender = function (obj: object, keyName: string) {
     }
   }
 };
-(globalThis as any).__gxtTriggerReRender = _gxtTriggerReRender;
+// Slice-28 (Cluster B): canonical `globalThis.__gxtTriggerReRender` writer
+// DROPPED. All readers were migrated to either the bridge
+// `compilePipeline.triggerReRender(...)` method (slices 25-27 cross-package
+// readers) or direct intra-file calls of `_gxtTriggerReRender` (slice 27
+// compile.ts:6413/6481/6698 mut cell update paths). The two save-restore
+// writer sites (`manager.ts` first-render suppression, `validator.ts`
+// track() reentrancy guard) were routed through
+// `compilePipeline.withTriggerSuppressed(fn)` in slice 28. Net -1
+// globalThis slot, closing the longest-runway Cluster B campaign that
+// started in slice 25.
 
 // Slice-17 (Cluster B): typed save-restore helper that graduates the two
 // pre-slice-17 suppression sites (`validator.ts:117` track() reentrancy guard
 // and `manager.ts:11219` first-render suppression for new classic components)
-// to a bridge method. Both sites previously inlined the `save = g.__gxtTriggerReRender;
-// g.__gxtTriggerReRender = null/undefined; try { ... } finally { g.__gxtTriggerReRender = save; }`
-// dance. The helper encapsulates the same pattern so the suppression contract
-// is a single documented surface. See `withTriggerSuppressed` doc in
-// gxt-bridge.ts.
+// to a bridge method. Both sites previously inlined the
+// `save = g.__gxtTriggerReRender; g.__gxtTriggerReRender = null/undefined;
+// try { ... } finally { g.__gxtTriggerReRender = save; }` dance. The helper
+// encapsulates the same pattern so the suppression contract is a single
+// documented surface. See `withTriggerSuppressed` doc in gxt-bridge.ts.
+//
+// Slice-28 (Cluster B): with the canonical globalThis writer dropped at the
+// closer of the longest-runway campaign, this helper no longer needs to
+// save/clear/restore the globalThis slot — no external readers consume it.
+// The helper is now a pure module-local flag save/restore (the slice-25
+// `_gxtTriggerSuppressedFlag` is the single suppression surface for all
+// readers, both bridge and intra-file).
 function _gxtWithTriggerSuppressed<T>(fn: () => T): T {
-  const g: any = globalThis as any;
-  const saved = g.__gxtTriggerReRender;
-  g.__gxtTriggerReRender = undefined;
-  // Slice-25 (Cluster B): additionally set the module-local
-  // `_gxtTriggerSuppressedFlag` so bridge readers (`metal/tracked.ts:308`,
-  // `glimmer-tracking.ts:63`) that route through
-  // `compilePipeline.triggerReRender(...)` also observe the suppression
-  // (the bridge slot is NOT cleared; the flag-gate inside
-  // `_gxtTriggerReRender` is the suppression surface for them). The
-  // save/restore is re-entrancy-safe (`wasSuppressed` preserves an
-  // enclosing frame's flag value if any).
+  // Slice-28 (Cluster B): save/restore the module-local
+  // `_gxtTriggerSuppressedFlag` only. The pre-slice-28 inline globalThis
+  // save/clear/restore is dropped (canonical writer at compile.ts:3392
+  // dropped — no external readers). The save/restore is re-entrancy-safe
+  // (`wasSuppressed` preserves an enclosing frame's flag value if any).
   const wasSuppressed = _gxtTriggerSuppressedFlag;
   _gxtTriggerSuppressedFlag = true;
   try {
     return fn();
   } finally {
     _gxtTriggerSuppressedFlag = wasSuppressed;
-    g.__gxtTriggerReRender = saved;
   }
 }
 

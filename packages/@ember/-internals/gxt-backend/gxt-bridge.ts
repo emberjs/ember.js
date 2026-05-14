@@ -433,10 +433,15 @@ export interface GxtFormatCapabilities {
  *    The `__gxtInTriggerReRender` toggle is folded into the canonical body
  *    itself (replacing core.ts's wrap entirely — its body became a no-op so
  *    the file is just deleted of the wrap). The `__gxtTriggerReRender`
- *    globalThis writer is RETAINED because the save-restore suppression
- *    sites at `validator.ts:117-143` and `manager.ts:11219-11480` swap the
- *    global slot temporarily; pre-slice-15 those sites observed the wrapped
- *    version, so dual exposure preserves their semantics.
+ *    globalThis writer was RETAINED through slice 27 because save-restore
+ *    suppression sites at `validator.ts:117-143` and `manager.ts:11219-11480`
+ *    swapped the global slot temporarily; pre-slice-15 those sites observed
+ *    the wrapped version, so dual exposure preserved their semantics.
+ *    Slice 28 (Cluster B) routed those two sites through
+ *    `withTriggerSuppressed(fn)` and DROPPED the canonical
+ *    `globalThis.__gxtTriggerReRender = _gxtTriggerReRender` writer at
+ *    `compile.ts:3392`, closing the longest-runway campaign (slices 25-28)
+ *    with net -1 globalThis slot.
  *
  *    Chain dispatch is hot-path (called from every `notifyPropertyChange`).
  *    The canonical body iterates the BEFORE-chain (if non-empty) before its
@@ -759,14 +764,19 @@ export interface GxtCompilePipelineCapabilities {
    * direct-call sites are identical to bridge-call sites because the
    * suppression flag is checked at the entry of `_gxtTriggerReRender`.
    *
-   * The globalThis writer is RETAINED post-slice-27 because the two save-
-   * restore writer sites (`manager.ts:11549-11554` and
-   * `validator.ts:161-166`) still consume the function via globalThis.
-   * Slice 28 will route those two save-restore sites through the existing
-   * `withTriggerSuppressed(fn)` bridge helper and drop the canonical
+   * Slice-28 (Cluster B): closes the longest-runway reader-migration
+   * campaign. The two save-restore writer sites (`manager.ts` first-render
+   * suppression for new classic components; `validator.ts` track()
+   * reentrancy guard) are routed through `withTriggerSuppressed(fn)` (the
+   * slice-17 bridge helper) and the canonical
    * `globalThis.__gxtTriggerReRender = _gxtTriggerReRender` writer at
-   * compile.ts:3392 — finally closing the longest-runway campaign with
-   * net -1 globalThis slot.
+   * `compile.ts:3392` is DROPPED. With no external readers and no external
+   * writers, the globalThis slot is fully retired (net -1 globalThis slot
+   * for the campaign — slices 25-28 migrated 9 cross-package readers, 3
+   * intra-file readers, and 2 save-restore writers; canonical writer drop
+   * closes it). `_gxtWithTriggerSuppressed` (the helper body for
+   * `withTriggerSuppressed`) is simplified to module-local flag save/
+   * restore only (no globalThis touch).
    *
    * Previously: `(globalThis as any).__gxtTriggerReRender`.
    */
@@ -807,45 +817,40 @@ export interface GxtCompilePipelineCapabilities {
   addAfterTriggerReRender?(fn: (obj: object, keyName: string) => void): () => void;
 
   /**
-   * Run `fn` with `__gxtTriggerReRender` suppressed (the globalThis slot
-   * temporarily swapped to `undefined`). Returns whatever `fn` returns; the
-   * trigger is restored on completion via `try/finally` (including when `fn`
+   * Run `fn` with `_gxtTriggerReRender` suppressed (the module-local
+   * `_gxtTriggerSuppressedFlag` in compile.ts is set to `true` for the
+   * duration of `fn`). Returns whatever `fn` returns; the prior flag value
+   * is restored on completion via `try/finally` (including when `fn`
    * throws).
    *
-   * Slice-17 (Cluster B): graduates the two save-restore suppression sites
-   * (`validator.ts:117` — track() reentrancy guard; `manager.ts:11219` —
-   * first-render suppression for new classic components) to a typed bridge
-   * method. Pre-slice-17 both sites manually saved/restored
+   * Slice-17 (Cluster B): graduated the two save-restore suppression sites
+   * (`validator.ts` track() reentrancy guard; `manager.ts` first-render
+   * suppression for new classic components) to a typed bridge method.
+   * Pre-slice-17 both sites manually saved/restored
    * `globalThis.__gxtTriggerReRender`; the helper encapsulates the same
-   * pattern so the suppression contract becomes a documented API surface
-   * rather than scattered swap pairs.
+   * pattern so the suppression contract is a documented API surface rather
+   * than scattered swap pairs.
    *
-   * Suppression semantics: all in-flight readers of
-   * `(globalThis as any).__gxtTriggerReRender` (across metal, glimmer,
-   * compile.ts) will observe `undefined` for the duration of `fn` and skip
-   * their dispatch. The bridge's own `triggerReRender(...)` slot is NOT
-   * cleared (it still references `_gxtTriggerReRender` directly).
+   * Suppression semantics: the canonical `_gxtTriggerReRender` function in
+   * compile.ts checks `_gxtTriggerSuppressedFlag` at its single entry point
+   * and short-circuits when the flag is `true`. All readers — bridge
+   * readers (`compilePipeline.triggerReRender(...)`), direct intra-file
+   * callers in compile.ts, and the canonical body itself — observe the
+   * same no-op for the duration of `fn`.
    *
-   * Slice-25 (Cluster B): with the first two cross-package READERS
-   * (`metal/tracked.ts:308`, `glimmer-tracking.ts:63`) migrated to consume
-   * `compilePipeline.triggerReRender(...)`, the suppression contract is
-   * preserved for bridge readers via a new module-local
-   * `_gxtTriggerSuppressedFlag` in compile.ts. The helper now sets the flag
-   * in parallel with the globalThis-clear; `_gxtTriggerReRender` short-
-   * circuits at entry when the flag is `true`. Net result: both globalThis-
-   * readers AND bridge-readers observe a no-op for the duration of `fn`.
-   * No new globalThis slot.
+   * Slice-25 (Cluster B): the module-local `_gxtTriggerSuppressedFlag` was
+   * introduced as the cross-cutting suppression surface so bridge readers
+   * (newly migrated off the globalThis slot) observed suppression in
+   * parallel with the pre-slice-28 globalThis-clear.
    *
-   * The `__gxtTriggerReRender` globalThis writer at `compile.ts:3392` is
-   * RETAINED post-slice-27 because the TWO save-restore writer sites
-   * (`manager.ts:11549-11554` first-render suppression for new classic
-   * components; `validator.ts:161-166` track() reentrancy guard) still
-   * read/write the globalThis slot. Slice 28 will route those two save-
-   * restore sites through this `withTriggerSuppressed(fn)` helper (which
-   * already encapsulates the same save-restore pattern) and then drop the
-   * canonical `globalThis.__gxtTriggerReRender = _gxtTriggerReRender`
-   * writer at compile.ts:3392 — finally closing the longest-runway
-   * campaign with net -1 globalThis slot.
+   * Slice-28 (Cluster B): with all readers (slices 25-27) and both save-
+   * restore writer sites (this slice) migrated, the canonical
+   * `globalThis.__gxtTriggerReRender = _gxtTriggerReRender` writer at
+   * `compile.ts:3392` is DROPPED. `_gxtWithTriggerSuppressed` is
+   * simplified to pure module-local flag save/restore (no globalThis
+   * touch). The `withTriggerSuppressed(fn)` surface is unchanged — the
+   * contract for callers is identical pre/post slice 28. Net -1 globalThis
+   * slot, closing the longest-runway Cluster B campaign.
    */
   withTriggerSuppressed?<T>(fn: () => T): T;
 
