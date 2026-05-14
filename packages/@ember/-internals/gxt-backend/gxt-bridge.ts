@@ -4822,6 +4822,64 @@ export interface GxtCompilePipelineCapabilities {
    * allocations.
    */
   setMutContext?(value: unknown): void;
+
+  /**
+   * Read-only access to the resolver-cache counters object that mirrors the
+   * Glimmer `ConstantsImpl` per-namespace definition counters
+   * (`componentDefinitionCount` / `helperDefinitionCount` /
+   * `modifierDefinitionCount`). In GXT mode the Glimmer VM is bypassed, so
+   * its `ProgramConstants` counters never advance; the GXT-side tracker
+   * maintains parallel counters in `ember-gxt-wrappers.ts`'s
+   * `_trackHelperDefinition` / `_trackComponentDefinition` and the renderer
+   * copies them onto the live `EvaluationContext.constants` object on every
+   * `renderer._context` read so the `ember-glimmer runtime resolver cache`
+   * test's `renderer._context.constants` read sees the same values.
+   *
+   * Returns the LIVE module-local object reference (NOT a snapshot copy);
+   * callers may read the counters but MUST NOT mutate them. The writers
+   * (`_trackHelperDefinition` / `_trackComponentDefinition` in
+   * `ember-gxt-wrappers.ts`) increment the counters as part of the
+   * helper/component-name dedup pass that runs during template compilation.
+   * The single cross-file reader (`glimmer/lib/renderer.ts:2972` `_context`
+   * getter) reads the counters under the `__GXT_MODE__` gate and copies
+   * them onto `(ctx.constants as { ...DefinitionCount: number })` for the
+   * test assertion to observe.
+   *
+   * Previously: `(globalThis as any).__gxtResolverCacheCounters` — a
+   * lazy-init self-assign at `ember-gxt-wrappers.ts:249` that published
+   * the module-local `_resolverCacheCounters` object via the globalThis
+   * slot for cross-file reach. Slice 78 graduates the canonical object
+   * to a plain module-local `const _resolverCacheCounters` declaration
+   * and exposes it through this typed-bridge getter. Net -1 globalThis
+   * slot, +1 new bridge method.
+   *
+   * Bridge shape decision: single-method read
+   * (`getResolverCacheCounters?(): ResolverCacheCounters | undefined`).
+   * Matches slice 32's `getAllPoolArrays?(): Set<unknown[]> | undefined`
+   * precedent — read-only live-reference getter. The renderer's hot path
+   * is the per-render `_context` getter; the bridge call dispatches one
+   * `getGxtRenderer()` plus one property/method dereference, equivalent
+   * to the pre-slice-78 globalThis property walk.
+   *
+   * Bridge-not-yet-installed edge: the cross-file reader uses
+   * `?.() ?? undefined` (returns `undefined` when the renderer is not
+   * yet installed or the method is not yet registered). The renderer's
+   * `if (counters && ctx && (ctx as any).constants)` truthy-gate maps
+   * directly to the pre-slice-78 `if (counters && ...)` semantics. The
+   * `ember-gxt-wrappers.ts` module-init runs `installCompilePipelinePart`
+   * at module-load time alongside the slice-42 `getMutContext`/
+   * `setMutContext` install at L96 — well before the first
+   * `renderer._context` read fires during a render.
+   *
+   * Fast-check: implementation is `() => _resolverCacheCounters` — one
+   * variable read; zero allocations. Identical hot-path cost to the
+   * pre-slice-78 globalThis property read.
+   */
+  getResolverCacheCounters?(): {
+    componentDefinitionCount: number;
+    helperDefinitionCount: number;
+    modifierDefinitionCount: number;
+  };
 }
 
 /**

@@ -2968,8 +2968,18 @@ export class Renderer extends BaseRenderer {
     // cache test (`ember-glimmer runtime resolver cache`) reads these to
     // verify caching behaviour. Mirror the counters onto the live context
     // from the GXT-side tracker so the assertions see the same changes.
+    //
+    // Slice-78 (Cluster B): routes through the typed-bridge getter
+    // `compilePipeline.getResolverCacheCounters?.()` rather than the
+    // pre-slice-78 `(globalThis as any).__gxtResolverCacheCounters` slot.
+    // The bridge returns the live module-local reference declared in
+    // `gxt-backend/ember-gxt-wrappers.ts:249` (see the slice-78 docblock
+    // there). Optional-chain short-circuits to `undefined` if the bridge
+    // is not yet installed (load-order edge — classic-Ember build) or if
+    // the `__GXT_MODE__` gate is true but the gxt-backend hasn't loaded
+    // yet; both edges preserve the pre-slice-78 truthy-guard semantics.
     if (__GXT_MODE__) {
-      const counters = (globalThis as any).__gxtResolverCacheCounters;
+      const counters = getGxtRenderer()?.compilePipeline.getResolverCacheCounters?.();
       if (counters && ctx && (ctx as any).constants) {
         const constants = (ctx as any).constants as {
           componentDefinitionCount: number;

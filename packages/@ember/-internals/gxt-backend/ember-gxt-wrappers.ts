@@ -246,10 +246,41 @@ let managedHelperBucketCache = new WeakMap<
 // definition reuse from the GXT path. The renderer's `_context` getter copies
 // these onto the live EvaluationContext.constants object in GXT mode so the
 // test's `renderer._context.constants` read sees the latest values.
-const _resolverCacheCounters = (g.__gxtResolverCacheCounters = g.__gxtResolverCacheCounters || {
+//
+// Slice-78 (Cluster B): graduated from the pre-slice-78 lazy-init
+// `globalThis.__gxtResolverCacheCounters` slot to this module-local
+// `const _resolverCacheCounters` declaration, paired with a single-method
+// typed-bridge surface (`getResolverCacheCounters(): ResolverCacheCounters`)
+// on the `compilePipeline` namespace. The intra-file writers (4 sites at
+// L266/L270/L278/L282 inside `_trackHelperDefinition` /
+// `_trackComponentDefinition`) continue to mutate the module-local Set's
+// counters directly via the `_resolverCacheCounters` alias (already the
+// canonical writer alias pre-slice-78). The sole cross-file reader
+// (`glimmer/lib/renderer.ts:2972` — the `_context` getter copies these onto
+// the live `EvaluationContext.constants` object when `__GXT_MODE__` is set)
+// now routes through `getGxtRenderer()?.compilePipeline.getResolverCacheCounters?.()`,
+// which returns the same live module-local reference. Slice-32's
+// `getAllPoolArrays(): Set<unknown[]> | undefined` is the precedent — both
+// return live module-local references through a bridge getter. Net -1
+// globalThis slot, +1 new bridge method on `compilePipeline`.
+const _resolverCacheCounters: {
+  componentDefinitionCount: number;
+  helperDefinitionCount: number;
+  modifierDefinitionCount: number;
+} = {
   componentDefinitionCount: 0,
   helperDefinitionCount: 0,
   modifierDefinitionCount: 0,
+};
+// Register the slice-78 typed-bridge getter on the `compilePipeline` namespace
+// so the cross-file reader in `glimmer/lib/renderer.ts` can route through the
+// bridge to access the live counters object. Pattern mirrors the slice-42
+// `installCompilePipelinePart({ getMutContext, setMutContext })` at L96 above —
+// the call queues into `_pendingCompilePipelineParts` if `setGxtRenderer` has
+// not yet fired (manager.ts loads after this file in some entry paths) and
+// merges immediately otherwise.
+installCompilePipelinePart({
+  getResolverCacheCounters: () => _resolverCacheCounters,
 });
 const _seenHelperDefinitions = (g.__gxtSeenHelperDefinitions =
   g.__gxtSeenHelperDefinitions || new WeakSet<object>());
