@@ -381,6 +381,31 @@ export interface GxtViewUtilsCapabilities {
  *    confirmed single-threaded synchronous render: setter (template-fn
  *    invoke) → reader+clear (shim invoke). Net -2 globalThis slots.)
  *
+ *    (Slice 77 update: `__gxtInElementDrainDeferred` — drain-fn pointer
+ *    for the in-element deferred-render queue. Pre-slice-77 the inner-
+ *    block-defined `_drainInElementDeferQueue` arrow was published as a
+ *    globalThis slot (compile.ts:1892) so the two intra-`compile.ts`
+ *    readers (depth-1→0 gate in `_gxtSetIsRendering` at L1796 +
+ *    post-rebuild finalization in `__gxtFlushAfterInsertQueue` wrap at
+ *    L5523) could reach it from outside the block scope. Slice-64's
+ *    stale docblock for `__gxtInElementDeferredRender` had claimed the
+ *    drain side "remains a globalThis slot because manager.ts and the
+ *    renderPass-depth gate above at L1746 consume it from outside this
+ *    block." Post-slice-64 re-audit (2026-05-15) confirmed zero
+ *    functional readers in `manager.ts` (only a doc-comment reference
+ *    at L828 describing the slice-11 wrap), zero in
+ *    `glimmer/lib/renderer.ts`, zero in `node_modules/@lifeart/gxt`.
+ *    Both functional readers are intra-`compile.ts`. The block-scope
+ *    wrapper was a local-scope encapsulation choice — not a cross-
+ *    package boundary. Slice 77 hoists the pointer to a module-local
+ *    `let _drainInElementDeferQueue: (() => void) | undefined;`
+ *    declared at module top; the setup block assigns the inner-defined
+ *    arrow into the module-local instead of `globalThis`. Both readers
+ *    swap globalThis property accesses for direct module-local
+ *    reads with the `typeof === 'function'` guard preserved for
+ *    defensive ordering. Net -1 globalThis slot. Zero new bridge
+ *    surface. Zero cross-file edits.)
+ *
  *    (Slice 73 update: `__gxtUnboundEval` + `__gxtUnboundResetSlots` were
  *    formerly in this exclusion bucket — both EMITTED-CODE consumers with
  *    no module-local reach. Slice 73 retired BOTH via paired inline-
@@ -617,10 +642,13 @@ export interface GxtFormatCapabilities {
  *    intra-`compile.ts`; the bundled @lifeart/gxt runtime has zero
  *    references (verified by grep of
  *    `node_modules/.pnpm/@lifeart+gxt@0.0.61/`). The drain side
- *    (`__gxtInElementDrainDeferred`) REMAINS a globalThis slot because
- *    manager.ts (slice-1 install gate) and the renderPass-depth-0 gate
- *    at `compile.ts:1746` consume it from outside the in-element bare
- *    block — out of scope for slice 64. Zero-bridge intra-file refactor;
+ *    (`__gxtInElementDrainDeferred`) was deferred at slice 64 (claimed
+ *    to need cross-block access for manager.ts and the renderPass-depth-0
+ *    gate); the slice-64 claim about manager.ts was stale — post-slice-77
+ *    re-audit confirmed manager.ts has only a doc-comment reference at
+ *    L828, no functional reader. Slice 77 retires the drain side via
+ *    the same intra-file graduation pattern (module-local pointer
+ *    `let _drainInElementDeferQueue`). Zero-bridge intra-file refactor;
  *    drops 1 globalThis slot. See slices 43-48, 56-63 for analogous
  *    zero-bridge precedents.
  *  - `__gxtRootOutletRerenderMap` — intra-`glimmer/lib/templates/root.ts`

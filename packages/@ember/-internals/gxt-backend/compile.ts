@@ -143,6 +143,42 @@ function _gxtIeSet(insertBefore: unknown, append: boolean): void {
   _gxtIeAppendMode = append;
 }
 
+// Cluster B slice 77 (intra-file zero-bridge graduation, -1 net):
+//
+//   `__gxtInElementDrainDeferred` (drain-fn pointer):
+//     Pre-slice-77 the in-element deferred-render drain function was
+//     published as a globalThis slot at the bottom of the
+//     `_inElementDeferQueue` setup block (compile.ts:1892) and read by
+//     two intra-`compile.ts` consumers — the render-pass-end gate in
+//     `_gxtSetIsRendering` (compile.ts:1796) and the post-rebuild
+//     finalization in `__gxtFlushAfterInsertQueue`'s wrap (compile.ts:5523).
+//     Slice-64's docblock for `__gxtInElementDeferredRender` had claimed
+//     the drain side "remains a globalThis slot because manager.ts and
+//     the renderPass-depth gate above at L1746 consume it from outside
+//     this block." Post-slice-64 re-audit (2026-05-15) confirms zero
+//     functional readers in `manager.ts` (only a doc-comment reference
+//     at L828 describing the slice-11 wrap), zero in
+//     `glimmer/lib/renderer.ts`, zero in `node_modules/@lifeart/gxt`.
+//     Both functional readers are intra-`compile.ts`. The block-scope
+//     wrapper (`{ const _drainInElementDeferQueue = ... ; ... }`) was a
+//     local-scope encapsulation choice — not a cross-package boundary.
+//
+//     Slice 77 graduates the drain pointer to a module-local
+//     `let _drainInElementDeferQueue: (() => void) | undefined;`
+//     declared at module scope. The block scope retains its existing
+//     contents (`_origFlush` capture + `__gxtFlushAfterInsertQueue` wrap)
+//     but the inner-defined drain function is assigned into the module-
+//     local instead of `globalThis`. Both intra-file readers swap their
+//     `(globalThis as any).__gxtInElementDrainDeferred` reads for direct
+//     module-local accesses (with the same `typeof === 'function'`
+//     guard preserved for defensive ordering — the module-local is
+//     `undefined` until the block at L1875-1903 runs at module load,
+//     and the readers could in principle fire before then if a render
+//     triggers from another module's eager init; the guard preserves
+//     the pre-slice-77 defensive behavior). Net -1 globalThis slot.
+//     Zero new bridge surface. Zero cross-file edits.
+let _drainInElementDeferQueue: (() => void) | undefined;
+
 /** Replace all hyphens with underscores without regex */
 function hyphenToUnderscore(str: string): string {
   return str.split('-').join('_');
@@ -1793,7 +1829,12 @@ function _gxtSetIsRendering(on: boolean): void {
     // __gxtRebuildViewTreeFromDom or __gxtFlushAfterInsertQueue.
     if (_renderPassDepth === 0) {
       try {
-        const drain = (globalThis as any).__gxtInElementDrainDeferred;
+        // Cluster B slice 77: was `(globalThis as any).__gxtInElementDrainDeferred`.
+        // Now reads the module-local `_drainInElementDeferQueue` pointer assigned
+        // by the in-element-defer setup block below (compile.ts:~1930). Guard
+        // preserves pre-slice-77 defensive behavior — the pointer is undefined
+        // until module-load runs the setup block.
+        const drain = _drainInElementDeferQueue;
         if (typeof drain === 'function') drain();
       } catch {
         /* ignore */
@@ -1868,12 +1909,20 @@ function _gxtWithRendering<T>(fn: () => T): T {
 // the $_inElement override below. Since both sites live in this file
 // and the bundled @lifeart/gxt runtime does not reference it, the queue
 // itself is now a module-local binding and the consumer push()es into it
-// directly. The drain side (`__gxtInElementDrainDeferred`) remains a
-// globalThis slot because manager.ts and the renderPass-depth gate above
-// at L1746 consume it from outside this block.
+// directly.
+//
+// Slice 77: the drain side (`__gxtInElementDrainDeferred`) is graduated
+// to a module-local pointer too. Post-slice-64 re-audit (2026-05-15)
+// confirmed zero functional readers outside `compile.ts` — both
+// consumers (`_gxtSetIsRendering` depth-1→0 gate at L1796 and the
+// `__gxtFlushAfterInsertQueue` wrap at L5530-ish) are intra-file. The
+// drain function is assigned into the module-local
+// `_drainInElementDeferQueue` declared near the top of the module
+// (after the slice-77 docblock). The setup block below assigns the
+// inner-defined arrow into the module-local instead of `globalThis`.
 const _inElementDeferQueue: Array<() => void> = [];
 {
-  const _drainInElementDeferQueue = () => {
+  const _drainImpl = () => {
     while (_inElementDeferQueue.length > 0) {
       const cb = _inElementDeferQueue.shift()!;
       try {
@@ -1889,7 +1938,9 @@ const _inElementDeferQueue: Array<() => void> = [];
       }
     }
   };
-  (globalThis as any).__gxtInElementDrainDeferred = _drainInElementDeferQueue;
+  // Slice 77: was `(globalThis as any).__gxtInElementDrainDeferred = _drainImpl`.
+  // Now writes to the module-local pointer declared at top of module.
+  _drainInElementDeferQueue = _drainImpl;
 
   // Wrap globalThis.__gxtFlushAfterInsertQueue so callers going through
   // it (demo path, ember-gxt-wrappers, etc.) also drain the queue.
@@ -1898,7 +1949,7 @@ const _inElementDeferQueue: Array<() => void> = [];
     try {
       if (typeof _origFlush === 'function') _origFlush();
     } finally {
-      _drainInElementDeferQueue();
+      _drainImpl();
     }
   };
 
@@ -5516,11 +5567,18 @@ function _afterRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
   // document — so document.getElementById() can finally resolve any
   // in-element targets whose host div was rendered in the same pass.
   // This covers the renderComponent strict-mode path that does NOT
-  // go through globalThis.__gxtFlushAfterInsertQueue. The drain function
-  // is exposed via globalThis because `_drainInElementDeferQueue` lives
-  // in a block scope earlier in this file (not accessible at this scope).
+  // go through globalThis.__gxtFlushAfterInsertQueue.
+  //
+  // Cluster B slice 77: was `(globalThis as any).__gxtInElementDrainDeferred`.
+  // Pre-slice-77 the drain function was exposed via globalThis because the
+  // inner `_drainInElementDeferQueue` arrow lived in a block scope earlier
+  // in the file (not lexically accessible at this scope). Slice 77 hoists
+  // the pointer to a module-local `let _drainInElementDeferQueue` declared
+  // at module top — both intra-file readers (this site + `_gxtSetIsRendering`
+  // depth-1→0 gate) now access it directly. Guard preserved for defensive
+  // ordering (pointer is undefined until the setup block at module-load).
   try {
-    const drain = (globalThis as any).__gxtInElementDrainDeferred;
+    const drain = _drainInElementDeferQueue;
     if (typeof drain === 'function') drain();
   } catch {
     /* ignore */
