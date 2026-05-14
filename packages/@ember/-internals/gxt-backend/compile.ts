@@ -6410,7 +6410,16 @@ installRuntimePart({
                 }
               }
               // Trigger re-render via multiple mechanisms:
-              const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+              // Slice-27 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+              // raw-globalThis read to the module-local `_gxtTriggerReRender`
+              // function (declared above at L3337). Intra-file direct call
+              // — preferred over the `compilePipeline.triggerReRender` bridge
+              // here because the function is in scope, avoiding the bridge
+              // lookup overhead and any (theoretical) install-order concern.
+              // Suppression semantics preserved by the slice-25 module-local
+              // `_gxtTriggerSuppressedFlag` short-circuit at the entry of
+              // `_gxtTriggerReRender` (cleared by `_gxtWithTriggerSuppressed`).
+              const triggerReRender = _gxtTriggerReRender;
               if (triggerReRender) {
                 // Dirty cells along the property path for GXT formula tracking
                 if (obj != null && parts.length > 1) {
@@ -6469,7 +6478,12 @@ installRuntimePart({
             // Fire a re-render trigger so GXT's trackedArgCells sync runs
             // for dependent children (important when the fallback path
             // bypassed Ember's set() and its notifyPropertyChange chain).
-            const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+            // Slice-27 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+            // raw-globalThis read to the module-local `_gxtTriggerReRender`
+            // function (intra-file direct call). Suppression semantics
+            // preserved by the slice-25 `_gxtTriggerSuppressedFlag` short-
+            // circuit at the entry of `_gxtTriggerReRender`.
+            const triggerReRender = _gxtTriggerReRender;
             if (triggerReRender) {
               try {
                 triggerReRender(capturedCtx, propName);
@@ -6681,7 +6695,12 @@ installRuntimePart({
         }
       }
       // Trigger re-render
-      const triggerReRender = (globalThis as any).__gxtTriggerReRender;
+      // Slice-27 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+      // raw-globalThis read to the module-local `_gxtTriggerReRender`
+      // function (intra-file direct call). Suppression semantics preserved
+      // by the slice-25 `_gxtTriggerSuppressedFlag` short-circuit at the
+      // entry of `_gxtTriggerReRender`.
+      const triggerReRender = _gxtTriggerReRender;
       if (triggerReRender && o != null) {
         const rk = typeof k === 'string' && k.includes('.') ? k.split('.')[0]! : k;
         triggerReRender(o, rk);

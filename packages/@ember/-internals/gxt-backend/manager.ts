@@ -5511,7 +5511,17 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
   const _readonlyKeys = instance?.__gxtReadonlyKeys || new Set<string>();
   const _mutCellKeys = instance?.__gxtMutCellKeys || new Set<string>();
   const _rawArgGetters = instance?.__gxtRawArgGetters || {};
-  const triggerReRenderForAttrs = (globalThis as any).__gxtTriggerReRender;
+  // Slice-27 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+  // raw-globalThis read to `compilePipeline.triggerReRender` bridge method.
+  // Capture-once at attrs-proxy setup (matching the pre-slice-27 capture
+  // shape and mirroring slice-26's manager.ts:2054 PROPERTY_DID_CHANGE
+  // override capture-once). The bridge method is optional; when not
+  // installed `triggerReRenderForAttrs` is `undefined`, matching the
+  // pre-slice-27 behavior (the truthy guards on the two call sites at
+  // L5690-5691 and L5696 already skip undefined). Suppression semantics
+  // preserved by the slice-25 module-local `_gxtTriggerSuppressedFlag`
+  // short-circuit in compile.ts.
+  const triggerReRenderForAttrs = getGxtRenderer()?.compilePipeline.triggerReRender;
   if (args && typeof args === 'object') {
     for (const key of Object.keys(args)) {
       if (key.startsWith('Symbol') || _isGxtInternalArgKey(key)) continue;
