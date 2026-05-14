@@ -4350,6 +4350,36 @@ let _gxtPreFlushFiredFalse: Set<IfWatcherCb> | undefined;
 // semantics are tolerant of `undefined`. Zero-bridge.
 let _gxtCurrentParentIfRef: any = undefined;
 
+// Cluster B slice 67: graduated from `(globalThis as any).__gxtCommentRegistry`
+// + `(globalThis as any).__gxtCommentCounter` (paired -2 slot migration) to
+// module-local bindings. The registry maps a stable plain-ASCII token (e.g.
+// `__gxtCmt_42`) to the literal HTML comment source captured by
+// `_preserveHtmlComments`; the counter monotonically increments per registered
+// comment so each token is unique within the process. The template emission
+// path writes a `<EmberHtmlRaw @value={{(__gxtCommentLookup "<token>")}} />`
+// in place of the original `<!-- ... -->` and the `__gxtCommentLookup` resolver
+// (registered as a built-in helper key — preserved as-is per template-emission
+// contract) reads the registry back at render time to recover the literal
+// comment text without sending curly-brace-containing comment bodies through
+// the GXT parser. Audit confirmed exactly 3 functional sites across both
+// identifiers — all intra-`gxt-backend/compile.ts`:
+//   - Writer pair inside `_preserveHtmlComments`: `_gxtCommentRegistry[token] =
+//     full` keyed by `__gxtCmt_${++_gxtCommentCounter}`.
+//   - Reader inside the `__gxtCommentLookup` built-in resolver:
+//     `_gxtCommentRegistry[key]` lookup with empty-string fallback.
+// Zero cross-file consumers; the bundled @lifeart/gxt runtime has zero
+// references to either identifier (verified by grep of
+// `node_modules/.pnpm/@lifeart+gxt@0.0.61/`, per slice-55's lesson from
+// slice-54's revert). Lazy-init is COLLAPSED — registry is eagerly initialized
+// to `Object.create(null)` and counter to `0` at module load, dropping the
+// runtime `if (!g.__gxtCommentRegistry)` / `if (typeof g.__gxtCommentCounter
+// !== 'number')` fallbacks. Same lazy-init-collapse + intra-file graduation
+// shape as slices 58 / 62 / 65 (paired-slot precedent: slice 62 which dropped
+// 2 slots in one slice). Zero-bridge intra-file refactor; drops 2 globalThis
+// slots in one slice (net -2).
+const _gxtCommentRegistry: Record<string, string> = Object.create(null);
+let _gxtCommentCounter = 0;
+
 // Persistent set of classic-component wrapper DOM ids that the user has
 // directly toggled to `false` via a click handler calling set()/toggleProperty.
 // Used by the __gxtRebuildViewTreeFromDom wrap below to reset the view-
@@ -7554,9 +7584,11 @@ installRuntimePart({
   // is a plain-ASCII identifier with no mustache characters, so it
   // survives the GXT parser without being interpreted as a mustache.
   __gxtCommentLookup: (token: unknown) => {
-    const g = globalThis as unknown as { __gxtCommentRegistry?: Record<string, string> };
+    // Reader for slice-67 module-local `_gxtCommentRegistry` — the lazy-init
+    // `g.__gxtCommentRegistry &&` guard is dropped since the const is eagerly
+    // initialized at module load (Object.create(null) — no prototype chain).
     const key = typeof token === 'string' ? token : String(token ?? '');
-    return (g.__gxtCommentRegistry && g.__gxtCommentRegistry[key]) || '';
+    return _gxtCommentRegistry[key] || '';
   },
 };
 
@@ -12262,19 +12294,18 @@ function transformOutletMustaches(code: string): string {
  */
 function _preserveHtmlComments(template: string): string {
   if (!template || template.indexOf('<!--') === -1) return template;
-  // Register each comment body in a global registry keyed by a stable
-  // token. The template emits a call to a global helper that resolves
-  // the token back to the literal comment source at render time. This
-  // avoids feeding the curly-brace-containing comment text back through
-  // the GXT parser, which would otherwise interpret `{{...}}` as
-  // mustache expressions.
-  const g = globalThis as unknown as {
-    __gxtCommentRegistry?: Record<string, string>;
-    __gxtCommentCounter?: number;
-  };
-  if (!g.__gxtCommentRegistry)
-    g.__gxtCommentRegistry = Object.create(null) as Record<string, string>;
-  if (typeof g.__gxtCommentCounter !== 'number') g.__gxtCommentCounter = 0;
+  // Register each comment body in a module-local registry keyed by a stable
+  // token. The template emits a call to a built-in helper that resolves the
+  // token back to the literal comment source at render time. This avoids
+  // feeding the curly-brace-containing comment text back through the GXT
+  // parser, which would otherwise interpret `{{...}}` as mustache expressions.
+  //
+  // Slice 67: `_gxtCommentRegistry` + `_gxtCommentCounter` are module-locals
+  // declared at the top of the file (next to `_gxtCurrentParentIfRef`). The
+  // pre-slice-67 lazy-init guards (`if (!g.__gxtCommentRegistry)` /
+  // `if (typeof g.__gxtCommentCounter !== 'number')`) are collapsed — the
+  // const is eagerly initialized to `Object.create(null)` and the counter
+  // to `0` at module load.
   let out = '';
   let i = 0;
   const n = template.length;
@@ -12286,8 +12317,8 @@ function _preserveHtmlComments(template: string): string {
         break;
       }
       const full = template.slice(i, end + 3);
-      const token = `__gxtCmt_${++g.__gxtCommentCounter!}`;
-      g.__gxtCommentRegistry![token] = full;
+      const token = `__gxtCmt_${++_gxtCommentCounter}`;
+      _gxtCommentRegistry[token] = full;
       // Emit an EmberHtmlRaw invocation whose @value is a subexpression
       // calling our built-in lookup helper with a plain-ASCII token.
       // The GXT parser sees only alphanumeric content — no curly braces.

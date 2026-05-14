@@ -602,6 +602,53 @@ export interface GxtFormatCapabilities {
  *    one read). Same intra-file pattern as slices 43-48, 56-65. 21st
  *    consecutive Cluster B zero-bridge slice (after 43-53, 56-65).
  *    Zero-bridge intra-file refactor; drops 1 globalThis slot.
+ *  - `__gxtCommentRegistry` + `__gxtCommentCounter` — paired intra-compile.ts
+ *    HTML-comment preservation registry. The registry maps a stable plain-
+ *    ASCII token (e.g. `__gxtCmt_42`) to the literal `<!-- ... -->` source
+ *    captured by `_preserveHtmlComments`; the counter monotonically
+ *    increments per registered comment so each token is unique within the
+ *    process. The template emission path writes a `<EmberHtmlRaw
+ *    @value={{(__gxtCommentLookup "<token>")}} />` in place of the
+ *    original comment and the `__gxtCommentLookup` resolver (registered
+ *    as a built-in helper KEY — preserved as-is per template-emission
+ *    contract since the resolver name is referenced by generated template
+ *    source) reads the registry back at render time to recover the
+ *    literal comment text without sending curly-brace-containing comment
+ *    bodies through the GXT parser. MIGRATED IN SLICE 67 (Cluster B) by
+ *    graduating both `(globalThis as any).__gxtCommentRegistry` and
+ *    `(globalThis as any).__gxtCommentCounter` to module-local
+ *    `const _gxtCommentRegistry: Record<string, string> =
+ *    Object.create(null)` + `let _gxtCommentCounter = 0` declared next to
+ *    the slice-66 `_gxtCurrentParentIfRef` flag near the top of
+ *    `compile.ts`. Audit confirmed exactly 3 functional sites across
+ *    both identifiers — all intra-`gxt-backend/compile.ts`: the writer
+ *    pair inside `_preserveHtmlComments` (`_gxtCommentRegistry[token] =
+ *    full` keyed by `__gxtCmt_${++_gxtCommentCounter}` at the former
+ *    L12289-L12290) and the reader inside the `__gxtCommentLookup`
+ *    built-in resolver (`_gxtCommentRegistry[key]` lookup with empty-
+ *    string fallback at the former L7556-L7559). Zero cross-file
+ *    consumers; the bundled @lifeart/gxt runtime has zero references to
+ *    either identifier (verified by grep of
+ *    `node_modules/.pnpm/@lifeart+gxt@0.0.61/`, per slice-55's lesson
+ *    from slice-54's revert). Lazy-init COLLAPSED — the pre-slice-67
+ *    runtime `if (!g.__gxtCommentRegistry)` /
+ *    `if (typeof g.__gxtCommentCounter !== 'number')` fallbacks are
+ *    dropped because the const/let are eagerly initialized at module
+ *    load (registry as `Object.create(null)` with no prototype chain so
+ *    `registry[key]` is collision-free against `Object.prototype`
+ *    inherited names; counter as `0` so the first `++` write yields
+ *    token `__gxtCmt_1` exactly as before). The `__gxtCommentLookup`
+ *    resolver KEY itself REMAINS in the built-in helper registry —
+ *    template emission writes its literal name into the generated
+ *    `<EmberHtmlRaw @value={{(__gxtCommentLookup "...")}} />` output,
+ *    so renaming it would break compiled template source; out of scope
+ *    for slice 67. Same lazy-init-collapse + intra-file graduation shape
+ *    as slices 58 / 62 / 65; structural twin of slice 62 (the prior
+ *    paired-slot Cluster B slice — `__gxtTemplateOnlyRenderedSet` +
+ *    `__gxtTemplateOnlyStack`). 22nd consecutive Cluster B zero-bridge
+ *    slice (after 43-53, 56-66). Zero-bridge intra-file refactor; drops
+ *    2 globalThis slots in one slice (net -2 — second paired-slot
+ *    Cluster B slice after slice 62).
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
