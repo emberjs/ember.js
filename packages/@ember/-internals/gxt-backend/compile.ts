@@ -5871,8 +5871,22 @@ queueMicrotask(patchGlobalEachSync);
 // live entirely intra-`compile.ts`; the bundled @lifeart/gxt runtime has zero
 // references. Same hybrid pattern as slice 58 (lazy-init collapse) +
 // slices 56-60 (intra-file graduation).
+//
+// Slice-63 (Cluster B): the paired counter
+// `globalThis.__gxtTemplateOnlyRenderedSetPassId` (a numeric pass-id snapshot
+// that gates the Set-clear inside the $_tag thunk) is graduated to a
+// module-local `let _gxtTemplateOnlyRenderedSetPassId: number | undefined`
+// here. Audit confirmed exactly 2 functional sites (reader + writer in the
+// same pass-id-changed gate block at L9893-9894 that owns the slice-62 Set
+// `.clear()`), entirely intra-`compile.ts`; the bundled @lifeart/gxt runtime
+// has zero references. Initialized to `undefined` so the first read in any
+// render pass mismatches `_curPass` (a `number | 0` from
+// `__emberRenderPassId`) and triggers the initial clear, matching the
+// pre-slice-63 globalThis-undefined semantics. Same intra-file pattern as
+// slice 62 (its direct sibling).
 const _gxtTemplateOnlyRenderedSet = new Set<string>();
 const _gxtTemplateOnlyStack: string[] = [];
+let _gxtTemplateOnlyRenderedSetPassId: number | undefined = undefined;
 function _rebuildBacktrackingMsgWithTemplateOnly(msg: string): string {
   if (_gxtTemplateOnlyRenderedSet.size === 0) return msg;
   const lines = msg.split('\n');
@@ -9887,11 +9901,13 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // file via `installBacktrackingPart` (slice 10) reads this set
             // to inject template-only names into the render tree.
             // Reset the set if the renderPassId changed since the last entry.
+            // Slice-63: `_gxtTemplateOnlyRenderedSetPassId` is the module-local
+            // pass-id snapshot (pre-slice-63 lived on globalThis); paired with
+            // slice-62's `_gxtTemplateOnlyRenderedSet`.
             {
-              const _g = globalThis as any;
-              const _curPass = _g.__emberRenderPassId || 0;
-              if (_g.__gxtTemplateOnlyRenderedSetPassId !== _curPass) {
-                _g.__gxtTemplateOnlyRenderedSetPassId = _curPass;
+              const _curPass = (globalThis as any).__emberRenderPassId || 0;
+              if (_gxtTemplateOnlyRenderedSetPassId !== _curPass) {
+                _gxtTemplateOnlyRenderedSetPassId = _curPass;
                 _gxtTemplateOnlyRenderedSet.clear();
               }
             }

@@ -491,6 +491,22 @@ export interface GxtFormatCapabilities {
  *    (net -2 — first paired-slot slice since the slice-43-44
  *    `__gxtTrackArgSource` triad). See slices 43-48, 56-61 for
  *    analogous zero-bridge precedents.
+ *  - `__gxtTemplateOnlyRenderedSetPassId` — intra-compile.ts numeric
+ *    pass-id snapshot that gates the slice-62 Set `.clear()` inside the
+ *    $_tag thunk. MIGRATED IN SLICE 63 (Cluster B) to module-local
+ *    `let _gxtTemplateOnlyRenderedSetPassId: number | undefined = undefined`
+ *    adjacent to the slice-62 declarations in `compile.ts`. Audit confirmed
+ *    exactly 2 functional sites (reader + writer in the same
+ *    pass-id-changed gate block that owns the slice-62 Set `.clear()`),
+ *    entirely intra-`compile.ts`; the bundled @lifeart/gxt runtime has zero
+ *    references (verified by grep of
+ *    `node_modules/.pnpm/@lifeart+gxt@0.0.61/`). Initialized to `undefined`
+ *    so the first read in any render pass mismatches `_curPass` (a
+ *    `number | 0` from `__emberRenderPassId`) and triggers the initial
+ *    clear, matching the pre-slice-63 globalThis-undefined semantics. Same
+ *    intra-file pattern as slice 62 (its direct sibling). Zero-bridge
+ *    intra-file refactor; drops 1 globalThis slot. See slices 43-48,
+ *    56-62 for analogous zero-bridge precedents.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
