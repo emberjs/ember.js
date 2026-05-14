@@ -3534,7 +3534,22 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
   // captures tags dirtied inside the install track frame and schedules an update.
   // We mirror that by calling the registered watcher, which flags the instance
   // for an additional updateModifier call after install returns.
-  const modWatchers = (globalThis as any).__gxtModifierInstallWatchers;
+  //
+  // Slice-33 (Cluster B): canonical state is the module-local
+  // `_modifierInstallWatchers` Map in `gxt-backend/manager.ts` (writer at
+  // manager.ts's modifier-install code path — direct `.set(instance, watcher)`
+  // / `.delete(instance)` pair around the `installModifier` track frame, the
+  // pre-slice-33 `globalThis.__gxtModifierInstallWatchers` lazy-init dance is
+  // dropped). This cross-file reader routes through
+  // `compilePipeline.getModifierInstallWatchers?.()` (slice-32 read-only
+  // `Set`-getter precedent applied to a `Map`). The bridge getter returns
+  // the live Map when the bridge is installed, `undefined` otherwise
+  // (defensive optional chain on the install method itself); the surrounding
+  // `instanceof Map && size > 0` gate continues to short-circuit when the
+  // bridge is not yet installed (the gate's `instanceof Map` half handles
+  // the `undefined` case, and the `size > 0` half handles the always-defined
+  // empty-Map case for the post-slice-33 always-defined module-local Map).
+  const modWatchers = getGxtRenderer()?.compilePipeline.getModifierInstallWatchers?.();
   if (modWatchers instanceof Map && modWatchers.size > 0) {
     const watcher = modWatchers.get(obj);
     if (typeof watcher === 'function') watcher();

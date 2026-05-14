@@ -1066,6 +1066,28 @@ function _gxtGetAllPoolArrays(): Set<PoolEntry[]> {
   return _allPoolArrays;
 }
 
+// Slice-33 (Cluster B): canonical state for the per-modifier-install
+// "dirty-during-install" watcher Map. Pre-slice-33 this Map lived on
+// `globalThis.__gxtModifierInstallWatchers` and was lazy-initialized by the
+// writer (manager.ts:9127-9132 — `prevInstallWatcher instanceof Map ?
+// prevInstallWatcher : new Map()` then publish back to globalThis). The
+// canonical state is now this module-local Map (always-defined at module
+// init), keyed by modifier instance with a per-instance notify-watcher
+// callback. The Map is mutated intra-file by the modifier-install code path
+// (`.set(instance, watcher)` on entry to `installModifier`, `.delete(instance)`
+// on its `finally`), and read cross-file by `compile.ts`'s
+// `_gxtTriggerReRenderBody` (which looks up the watcher for the dirtied
+// object during a notifyPropertyChange and fires it to flag the install
+// frame). The bridge surface is read-only: cross-file readers route through
+// `compilePipeline.getModifierInstallWatchers?.()` (slice-32 read-only
+// `Map`-getter precedent, paralleling the slice-32 `Set`-getter shape).
+// See `getModifierInstallWatchers` doc in `gxt-bridge.ts` for the full
+// migration topology. Net globalThis surface delta: -1 slot.
+const _modifierInstallWatchers = new Map<object, () => void>();
+function _gxtGetModifierInstallWatchers(): Map<object, () => void> {
+  return _modifierInstallWatchers;
+}
+
 // Sentinel object for root-level components (no parent view)
 const ROOT_PARENT_SENTINEL = {};
 
@@ -9124,12 +9146,19 @@ const $_MANAGERS = {
           // instance is set during install, we fire `updateModifier` once right
           // after install returns.
           let _selfSetDuringInstall = false;
-          const prevInstallWatcher = (globalThis as any).__gxtModifierInstallWatchers;
-          const installWatchers: Map<object, () => void> =
-            prevInstallWatcher instanceof Map ? prevInstallWatcher : new Map();
-          if (!(prevInstallWatcher instanceof Map)) {
-            (globalThis as any).__gxtModifierInstallWatchers = installWatchers;
-          }
+          // Slice-33 (Cluster B): canonical state is the module-local
+          // `_modifierInstallWatchers` Map declared near `_allPoolArrays`
+          // above. The pre-slice-33 `(globalThis as any).__gxtModifierInstallWatchers`
+          // lazy-init dance (check-`instanceof Map`-or-create-and-publish) is
+          // dropped — the module-local Map is always-defined at file load, so
+          // the writer is now a direct `.set(instance, ...)` / `.delete(instance)`
+          // pair around the `installModifier` track frame. The cross-file
+          // reader in `compile.ts._gxtTriggerReRenderBody` routes through
+          // `compilePipeline.getModifierInstallWatchers?.()` (slice-32
+          // read-only `Set`-getter precedent applied to a `Map`). See
+          // `getModifierInstallWatchers` doc in `gxt-bridge.ts`. Net -1
+          // globalThis slot.
+          const installWatchers = _modifierInstallWatchers;
           if (instance) {
             installWatchers.set(instance, () => {
               _selfSetDuringInstall = true;
@@ -12986,6 +13015,23 @@ setGxtRenderer({
     // intra-file by `getCachedOrCreateInstance` / `_gxtClearInstancePools`.
     // See `getAllPoolArrays` doc in gxt-bridge.ts. Net -1 globalThis slot.
     getAllPoolArrays: _gxtGetAllPoolArrays,
+    // Slice-33 (Cluster B): seeded here with the canonical
+    // `_gxtGetModifierInstallWatchers` getter exposing the manager.ts-local
+    // `_modifierInstallWatchers` Map. Replaces the pre-slice-33
+    // `globalThis.__gxtModifierInstallWatchers` slot (lazy-init writer at
+    // manager.ts:9127-9132 above — the `instanceof Map ? : new Map()` +
+    // publish-back-to-globalThis dance, now collapsed to a direct
+    // `.set(instance, ...)` / `.delete(instance)` pair on the module-local
+    // Map; cross-file reader at compile.ts's `_gxtTriggerReRenderBody` —
+    // notifyPropertyChange dispatch into the per-instance watcher to flag
+    // the modifier's install frame as dirty for the post-install
+    // updateModifier scheduling). The cross-file reader routes through this
+    // bridge getter. Read-only — the Map is mutated intra-file by the
+    // modifier-install code path only (per-install `.set(instance, watcher)`
+    // on entry to `installModifier` and `.delete(instance)` on its
+    // `finally`). See `getModifierInstallWatchers` doc in gxt-bridge.ts.
+    // Net -1 globalThis slot.
+    getModifierInstallWatchers: _gxtGetModifierInstallWatchers,
   },
   renderPass: {
     // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is

@@ -516,6 +516,30 @@ export interface GxtFormatCapabilities {
  *    expose a read-only `Set`-getter bridge method (slices 19/20/22 are
  *    read-only booleans, slice 30 is a read-only integer-getter; slice 32
  *    is the `Set`-getter analogue).
+ *  - `__gxtModifierInstallWatchers` — MIGRATED IN SLICE 33 to
+ *    `getModifierInstallWatchers()` on this namespace. The pre-slice-33
+ *    topology was 1 writer (manager.ts modifier-install code path inside
+ *    the `installModifier` block — lazy-init dance:
+ *    `prev = g.__gxtModifierInstallWatchers; map = prev instanceof Map ?
+ *    prev : new Map(); if (!(prev instanceof Map)) g.__gxtModifierInstallWatchers = map;`
+ *    then `map.set(instance, watcher)` on entry, `map.delete(instance)` on
+ *    `finally`) and 1 cross-file reader (compile.ts's
+ *    `_gxtTriggerReRenderBody` — `modWatchers instanceof Map && size > 0`
+ *    gate, then `modWatchers.get(obj)` to find the per-instance notify
+ *    watcher and call it). Slice 33 matches the slice-32 read-only-getter
+ *    shape applied to a `Map`-valued canonical state instead of a `Set` —
+ *    the cross-file reader was the only consumer needing a bridge surface,
+ *    and the read-only contract reflects that the Map is mutated intra-file
+ *    by the modifier-install code path only (per-install set on entry,
+ *    delete on `finally`). The canonical state moves from
+ *    `globalThis.__gxtModifierInstallWatchers` (lazy-init on first install)
+ *    to the always-defined module-local `_modifierInstallWatchers` in
+ *    `gxt-backend/manager.ts` — collapsing the lazy-init dance to a direct
+ *    `.set` / `.delete` pair. The `__gxtModifierInstallWatchers` globalThis
+ *    slot is DROPPED in this slice — net -1 globalThis surface. First slice
+ *    to expose a read-only `Map`-getter bridge method (slices 19/20/22 are
+ *    read-only booleans, slice 30 is a read-only integer-getter, slice 32
+ *    is a read-only `Set`-getter; slice 33 is the `Map`-getter analogue).
  */
 export interface GxtCompilePipelineCapabilities {
   /**
@@ -1621,6 +1645,100 @@ export interface GxtCompilePipelineCapabilities {
    * -1 globalThis surface.
    */
   getAllPoolArrays?(): Set<unknown[]> | undefined;
+
+  /**
+   * Read-only access to the Map of per-modifier-install "dirty-during-install"
+   * watcher callbacks tracked by manager.ts's custom-modifier-manager install
+   * path. The Map is keyed by modifier instance (the object created by
+   * `manager.createModifier`); each value is a notify-watcher function that
+   * sets a per-install `_selfSetDuringInstall = true` flag when called.
+   * Mutations (`.set(instance, watcher)` on entry to `installModifier`,
+   * `.delete(instance)` on its `finally`) happen intra-file in `manager.ts`;
+   * the bridge surface is read-only.
+   *
+   * Purpose: classic Ember's `CustomModifierManager` wraps `installModifier`
+   * in a `track()` frame, and if the modifier's install hook mutates its own
+   * tracked state (e.g. `this.set('savedElement', ...)` that was implicitly
+   * READ by the set path itself), classic captures the tag in the frame and
+   * schedules an `updateModifier` on the next validation tick — producing
+   * an extra `didUpdate` hook call. GXT mimics this by registering a
+   * per-modifier-instance notify watcher for the duration of
+   * `installModifier`. If `compile.ts`'s `_gxtTriggerReRenderBody` sees a
+   * `notifyPropertyChange` for an object whose modifier-install frame is
+   * currently active, it dispatches the registered watcher, which flags the
+   * instance for a single post-install `updateModifier` call.
+   *
+   * Slice-33 (Cluster B): graduates the canonical state from the pre-slice-33
+   * `globalThis.__gxtModifierInstallWatchers` slot (lazy-init writer at
+   * `manager.ts:9127-9132` — the `instanceof Map ? : new Map()` +
+   * publish-back-to-globalThis dance, gated by `prevInstallWatcher instanceof
+   * Map`) to the module-local `_modifierInstallWatchers` Map in
+   * `gxt-backend/manager.ts` (always-defined at module init). The lazy-init
+   * dance is dropped: the post-slice-33 writer is a direct `.set(instance,
+   * watcher)` on entry to `installModifier` and `.delete(instance)` on its
+   * `finally`. The bridge contract preserves the pre-slice-33 semantics:
+   * `getModifierInstallWatchers?.()` returns the live Map when the bridge
+   * is installed (always non-`undefined`), `undefined` otherwise (defensive
+   * optional chain on the install method itself).
+   *
+   * Reader topology after slice 33:
+   *  - cross-file `compile.ts` (1 site — `_gxtTriggerReRenderBody` hot path
+   *    consulted on every notifyPropertyChange dispatch): routes through
+   *    `compilePipeline.getModifierInstallWatchers?.()` and gates with the
+   *    pre-existing `instanceof Map && size > 0` guard. The `instanceof Map`
+   *    half handles the bridge-not-yet-installed case (returns `undefined`);
+   *    the `size > 0` half short-circuits the empty-Map fast path between
+   *    modifier-install frames (which is the common case — the Map only has
+   *    entries during an active `installModifier` call, scope of one
+   *    synchronous track frame).
+   *
+   * Bridge shape decision: single-method read (`getModifierInstallWatchers?():
+   * Map<object, () => void> | undefined`). Matches the slice-32 read-only
+   * `Set`-getter pattern applied to a `Map`-valued canonical state — same
+   * minimal-method shape used for any opaque-reference state with N internal
+   * writers + M external readers where the writer's mutation operations
+   * don't need to be exposed. No writer is exposed — the Map is mutated
+   * intra-file by the modifier-install code path only. No save-restore
+   * variant is exposed (no caller needs to temporarily swap the watcher
+   * registry; install frames are per-instance keyed and non-overlapping
+   * across instances).
+   *
+   * Namespace decision: `compilePipeline`. The canonical state lives in
+   * `manager.ts` but the bridge namespace is contributed via the direct
+   * `setGxtRenderer` seeding (alongside `syncAllWrappers`,
+   * `clearInstancePools`, `snapshotLiveInstances`, the slice-14
+   * dynamic-component listener triad, and the slice-32 `getAllPoolArrays`
+   * getter — all manager.ts-canonical compilePipeline methods). Same
+   * namespace pattern as slices 13/14/32.
+   *
+   * Bridge interface evolution (slice 33 — twenty-sixth API change):
+   * `GxtCompilePipelineCapabilities` extended with ONE new optional method
+   * (`getModifierInstallWatchers?(): Map<object, () => void> | undefined`) —
+   * read-only `Map` access. First slice in Cluster B to expose a read-only
+   * `Map`-getter bridge method (slices 19/20/22 are read-only booleans,
+   * slice 30 is a read-only integer-getter, slice 32 is a read-only
+   * `Set`-getter; slice 33 is the `Map`-getter analogue).
+   *
+   * Bridge-not-yet-installed edge: cross-file reader uses the pre-existing
+   * `instanceof Map && size > 0` gate on the return value. The `instanceof
+   * Map` half short-circuits the `undefined` return when the bridge is not
+   * yet installed (slice-32's `if (allPools)` truthy-coerce equivalent).
+   * The manager.ts writer (`_modifierInstallWatchers = new Map()` at
+   * module-init) runs before any `setGxtRenderer` is observable by a
+   * reader, so the canonical Map is always populated (though typically
+   * empty) when the `getModifierInstallWatchers` getter is callable.
+   *
+   * Fast-check: implementation is `return _modifierInstallWatchers;` — one
+   * variable read; zero allocations. Identical hot-path cost to the
+   * pre-slice-33 globalThis read. The reader's `instanceof Map && size > 0`
+   * gate continues to dominate the post-slice-33 cost: the empty-Map
+   * common-case path takes one Map `size === 0` check and falls through;
+   * the rare active-install-frame path takes one `Map.get(obj)` lookup and
+   * one typeof check before firing the watcher. The
+   * `__gxtModifierInstallWatchers` globalThis slot is DROPPED in this
+   * slice — net -1 globalThis surface.
+   */
+  getModifierInstallWatchers?(): Map<object, () => void> | undefined;
 }
 
 /**
