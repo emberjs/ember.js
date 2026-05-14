@@ -2017,11 +2017,18 @@ function createComponentInstance(
       // Try proxy-based tracking first (works when parent has a proxy render context)
       try {
         (globalThis as any).__gxtTrackArgSource = true;
-        (globalThis as any).__gxtLastArgSourceKey = null;
-        (globalThis as any).__gxtLastArgSourceCtx = null;
+        // Slice-43 (Cluster B): module-local clear+read replaces the pre-
+        // slice-43 `globalThis.__gxtLastArgSourceKey` /
+        // `__gxtLastArgSourceCtx` accesses. Same `null`-sentinel semantics:
+        // `null` (post-clear, pre-getter-invoke) and the probe-detected
+        // (prop, target) pair (post-getter-invoke) are both observed by
+        // the truthy-check at the `if (detectedKey && detectedCtx)` line
+        // below.
+        _lastArgSourceKey = null;
+        _lastArgSourceCtx = null;
         argGetter();
-        const detectedKey = (globalThis as any).__gxtLastArgSourceKey;
-        const detectedCtx = (globalThis as any).__gxtLastArgSourceCtx;
+        const detectedKey = _lastArgSourceKey;
+        const detectedCtx = _lastArgSourceCtx;
         (globalThis as any).__gxtTrackArgSource = false;
         if (detectedKey && detectedCtx) {
           twoWayBindings[key] = { sourceCtx: detectedCtx, sourceKey: detectedKey };
@@ -3869,6 +3876,55 @@ const _UPDATE_HOOKS_FOR_MARK = new Set([
 // Writer cost: identical (single variable write either way).
 let _gxtSyncAllInFlightPass = 0;
 let _gxtSyncAllInFlightCycle = 0;
+
+// Slice-43 (Cluster B): module-local detected-source-context slot for the
+// two-way binding "arg source" detection pass. Pre-slice-43 these were
+// `globalThis.__gxtLastArgSourceKey` (the property name detected by the
+// proxy trap as the source of an arg getter's read) and
+// `globalThis.__gxtLastArgSourceCtx` (the proxy target / parent
+// renderContext that owned that property). The detection pass runs
+// inside `_installPropertyDidChangeOverride`'s two-way binding probe
+// block: for each component arg, the probe sets a global "track arg
+// source" flag, clears these two slots, invokes the arg getter (which
+// reaches into the parent's proxy renderContext and trips the trap
+// installed at the bottom of this file in the proxy `get` handler at
+// L6786-6787), then reads the two slots back to discover which
+// (parent, key) pair the getter resolved to. The detection is purely
+// scoped to the probe try-block — the slots have no lifetime beyond a
+// single getter invocation; they are written by the proxy trap and
+// consumed immediately. All 6 sites (2 writers in the proxy `get`
+// handler + 2 clears + 2 reads in the probe block) are intra-file in
+// `manager.ts` (confirmed by exhaustive grep across `packages/`).
+//
+// Slice 43 graduates both slots to module-local `_lastArgSourceKey` /
+// `_lastArgSourceCtx` (slice-31 zero-bridge precedent — pure intra-file
+// reader+writer cluster, no cross-file consumers, no bridge surface
+// required). The pre-slice-43 typing was `(globalThis as any).xxx`,
+// post-slice-43 the locals are typed `any` to preserve the same surface
+// (the values are either `string | null` for the key and `unknown | null`
+// for the ctx, all consumers null-check before use). Net globalThis
+// surface delta: -2 slots.
+//
+// Topology:
+//   Writers (2 sites, both in the renderContext proxy `get` handler at
+//   the bottom of this file — fires on every property read through the
+//   proxy when the track-arg-source flag is set):
+//     - `_lastArgSourceKey = prop` (the prop being read)
+//     - `_lastArgSourceCtx = target` (the proxy's target / parent
+//       renderContext)
+//   Readers + clearers (4 sites, all in
+//   `_installPropertyDidChangeOverride`'s two-way binding probe block):
+//     - `_lastArgSourceKey = null` (pre-probe clear)
+//     - `_lastArgSourceCtx = null` (pre-probe clear)
+//     - `const detectedKey = _lastArgSourceKey` (post-probe read)
+//     - `const detectedCtx = _lastArgSourceCtx` (post-probe read)
+//
+// Pre-slice-43 cost per write/read was 1 globalThis property access.
+// Post-slice-43 cost is 1 module-local read/write — strictly cheaper.
+// The proxy `get` trap is hot (fires on every renderContext property
+// read), so the trap-side savings are non-negligible.
+let _lastArgSourceKey: any = null;
+let _lastArgSourceCtx: any = null;
 
 function _wrapInstanceTriggerForSyncAllMark(inst: any): void {
   if (!inst || typeof inst.trigger !== 'function' || inst.__gxtTriggerWrapped) return;
@@ -6783,8 +6839,14 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           prop !== 'toString' &&
           prop !== 'valueOf'
         ) {
-          (globalThis as any).__gxtLastArgSourceKey = prop;
-          (globalThis as any).__gxtLastArgSourceCtx = target;
+          // Slice-43 (Cluster B): module-local writers replace the pre-
+          // slice-43 `globalThis.__gxtLastArgSourceKey` /
+          // `__gxtLastArgSourceCtx` writes. The detection consumer in
+          // `_installPropertyDidChangeOverride` reads these module-locals
+          // immediately after the argGetter call that trips this proxy
+          // trap.
+          _lastArgSourceKey = prop;
+          _lastArgSourceCtx = target;
         }
       }
 
