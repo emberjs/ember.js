@@ -6563,9 +6563,8 @@ setInterval(() => {
     (globalThis as any).__gxtClearHelperCache();
   }
   // Clear the helper instance cache used by $_tag
-  if (typeof (globalThis as any).__gxtClearTagHelperCache === 'function') {
-    (globalThis as any).__gxtClearTagHelperCache();
-  }
+  // Cluster B slice 57: intra-file direct call to module-local `_gxtClearTagHelperCache`.
+  _gxtClearTagHelperCache();
   // Clear component instance pools to prevent stale reuse across tests
   // Slice-13 (Cluster B): migrated to `compilePipeline.clearInstancePools`.
   getGxtRenderer()?.compilePipeline.clearInstancePools?.();
@@ -6774,9 +6773,11 @@ setInterval(() => {
 
 // Cache for helper instances created in $_tag to prevent re-creation during
 // force re-render (which does innerHTML='' + full rebuild). Keyed by helper name.
-// Cleared during test teardown via __gxtClearTagHelperCache.
+// Cleared during test teardown via `_gxtClearTagHelperCache` (Cluster B slice 57).
 const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: any }>();
-(globalThis as any).__gxtClearTagHelperCache = () => _tagHelperInstanceCache.clear();
+function _gxtClearTagHelperCache(): void {
+  _tagHelperInstanceCache.clear();
+}
 // Expose so the $_if helper-destroy hook can drop cached entries whose
 // instances it's about to destroy.
 (globalThis as any).__gxtTagHelperInstanceCache = _tagHelperInstanceCache;

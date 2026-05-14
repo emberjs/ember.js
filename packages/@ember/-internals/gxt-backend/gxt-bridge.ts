@@ -383,6 +383,12 @@ export interface GxtFormatCapabilities {
  *    in `compile.ts`. Zero-bridge intra-file refactor; the reader at the
  *    test-cleanup region now calls the function directly. Drops 1
  *    globalThis slot. See slices 43-48 for analogous zero-bridge precedents.
+ *  - `__gxtClearTagHelperCache` — intra-compile.ts read+write. MIGRATED IN
+ *    SLICE 57 (Cluster B) to module-local function `_gxtClearTagHelperCache`
+ *    in `compile.ts`, structural twin of slice 56. Producer adjacent to
+ *    `_tagHelperInstanceCache` declaration; reader in the test-cleanup
+ *    region. Zero-bridge intra-file refactor; drops 1 globalThis slot.
+ *    See slices 43-48, 56 for analogous zero-bridge precedents.
  *  - `__gxtTrackArgSource` / `__gxtLastArgSourceCtx` / `__gxtLastArgSourceKey`
  *    — intra-manager.ts state flags. Same exclusion pattern as slice 3's
  *    `__gxtSuppressDirtyTagForDuringRebuild` and slice 4's
