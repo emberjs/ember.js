@@ -196,6 +196,21 @@ function hyphenToUnderscore(str: string): string {
 let _inlineUnboundCounter = 0;
 
 /**
+ * Module-local monotonic counter for fallback render-context IDs.
+ *
+ * Used at two sites in this file (managers.component.handle ctx-id fallback and
+ * the template.render() renderContext fallback) when no `gxtRoot` id is
+ * available. Starts at 100 to mirror the historical `(g.__gxtContextId || 100) + 1`
+ * truthy-coerce semantics — first allocation mints `101`, then monotonically
+ * increases.
+ *
+ * Graduated from `globalThis.__gxtContextId` to a module-local in Cluster B
+ * slice 82 — repo-wide grep confirmed zero cross-file consumers (no other
+ * package, harness, or fixture reads it; installed GXT runtime is also clean).
+ */
+let _contextId = 100;
+
+/**
  * Post-process the GXT-compiled code: wrap bare `unbound(...)` calls that are
  * NOT already inside a `__gxtUnboundEval(...)` wrapper with a caching wrapper.
  *
@@ -8788,7 +8803,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           /* frozen, ignore */
         }
       } else if (!ctx[COMPONENT_ID_PROPERTY as any]) {
-        ctx[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId = (g.__gxtContextId || 100) + 1;
+        ctx[COMPONENT_ID_PROPERTY as any] = ++_contextId;
       }
     }
 
@@ -15181,8 +15196,7 @@ export function precompileTemplate(
               }
             } else if (!renderContext[COMPONENT_ID_PROPERTY as any]) {
               // Fallback: mint a unique ID (old behavior) if gxtRoot has no id.
-              renderContext[COMPONENT_ID_PROPERTY as any] = g.__gxtContextId =
-                (g.__gxtContextId || 100) + 1;
+              renderContext[COMPONENT_ID_PROPERTY as any] = ++_contextId;
             }
           }
 
