@@ -2882,10 +2882,10 @@ export { _wrappedMH as $_maybeHelper, _wrappedTag as $_tag, _wrappedDc as $_dc }
 // intrinsic `HTMLInputElement.prototype.value` (etc.) setter — a single
 // chokepoint shared by every chunk. The override only rewrites undefined and
 // null values; everything else passes through untouched.
+let _emberFormValueUndefinedPatched = false;
 (function patchFormElementValueUndefined() {
   if (typeof HTMLInputElement === 'undefined') return;
-  const g2: any = globalThis as any;
-  if (g2.__gxtEmberFormValueUndefinedPatched) return;
+  if (_emberFormValueUndefinedPatched) return;
   const protos = [
     typeof HTMLInputElement !== 'undefined' ? HTMLInputElement.prototype : null,
     typeof HTMLTextAreaElement !== 'undefined' ? HTMLTextAreaElement.prototype : null,
@@ -2908,7 +2908,7 @@ export { _wrappedMH as $_maybeHelper, _wrappedTag as $_tag, _wrappedDc as $_dc }
       configurable: true,
     });
   }
-  g2.__gxtEmberFormValueUndefinedPatched = true;
+  _emberFormValueUndefinedPatched = true;
 })();
 
 // =============================================================================
