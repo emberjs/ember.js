@@ -72,11 +72,13 @@ export abstract class AbstractStrictTestCase {
 
   afterEach() {
     try {
-      // Clean up GXT active components before destroy
-      const gxtCleanup = (globalThis as any).__gxtCleanupActiveComponents;
-      if (typeof gxtCleanup === 'function') {
-        gxtCleanup();
-      }
+      // Clean up GXT active components before destroy.
+      // Slice-107 (Cluster B): routes through bridge — see
+      // `cleanupActiveComponents` doc in gxt-bridge.ts. Reuses the existing
+      // `getGxtRenderer` import. The optional-chain provides the same
+      // null-tolerant guard as the pre-slice-107 `typeof === 'function'`
+      // check for classic-Ember builds (where gxt-backend was never loaded).
+      getGxtRenderer()?.compilePipeline.cleanupActiveComponents?.();
 
       runDestroy(this);
 

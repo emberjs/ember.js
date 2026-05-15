@@ -7198,8 +7198,26 @@ setInterval(() => {
   }
 }, 16); // ~60fps
 
-// Cleanup function to reset GXT state between tests
-(globalThis as any).__gxtCleanupActiveComponents = function () {
+// Cleanup function to reset GXT state between tests.
+//
+// Slice-107 (Cluster B): graduated from the pre-slice-107 globalThis writer
+// `(globalThis as any).__gxtCleanupActiveComponents = function () { ... };`
+// to a module-local `function _gxtCleanupActiveComponents(): void`
+// declaration. The function is registered on the typed bridge via
+// `installCompilePipelinePart({ cleanupActiveComponents: _gxtCleanupActiveComponents })`
+// in the install block at EOF below. Three cross-package readers in
+// `internal-test-helpers/lib/test-cases/{abstract-application,abstract,
+// rendering}.ts` now route through
+// `getGxtRenderer()?.compilePipeline.cleanupActiveComponents?.()`. The
+// repo-root HTML harness reader in `packages/demo/tests.html:290` (and
+// any other harness-level guarded reader) is left in place — it's guarded
+// by `typeof globalThis.__gxtCleanupActiveComponents === 'function'` and
+// no-ops cleanly post-retirement; the canonical per-test cleanup runs via
+// the bridge call from the test-case `afterEach` hooks. Same retire-writer-
+// keep-harness-guard pattern as slice 55 (`__gxtClearRenderErrors`) and
+// slice 101 (`__gxtResetIntervalBudget`). See `cleanupActiveComponents`
+// doc in gxt-bridge.ts.
+function _gxtCleanupActiveComponents(): void {
   // Destroy all tracked component instances first (fires willDestroy hooks)
   // (Cluster B pilot) — typed bridge call. Was __gxtDestroyTrackedInstances.
   getGxtRenderer()?.destruction.destroyTrackedInstances();
@@ -7346,7 +7364,7 @@ setInterval(() => {
   } catch {
     /* ignore - VM internals may not be available */
   }
-};
+}
 
 // Set GXT mode flag
 (globalThis as any).__GXT_MODE__ = true;
@@ -16406,6 +16424,18 @@ installCompilePipelinePart({
   // access in the same slice. Net -1 globalThis slot, +1 bridge method. Get-
   // only collection-return shape mirrors slice-69 `getWrapperUserFalseSet`.
   getTagHelperInstanceCache: () => _tagHelperInstanceCache,
+  // Slice-107 (Cluster B): graduates the pre-slice-107 globalThis writer
+  // `(globalThis as any).__gxtCleanupActiveComponents = function () { ... };`
+  // (formerly at L7202) to a typed bridge method on `compilePipeline`. The
+  // function is the canonical per-test GXT-state-reset routine called from
+  // 3 cross-package `afterEach` readers in `internal-test-helpers/lib/
+  // test-cases/{abstract-application,abstract,rendering}.ts`. Function body
+  // is unchanged — same destruction, cache-clear, flag-reset, and VM-map-
+  // clear sequence; only the publication mechanism changes from
+  // globalThis dual-write to bridge registration. Net -1 globalThis slot,
+  // +1 new bridge method on `compilePipeline`. See `cleanupActiveComponents`
+  // doc in gxt-bridge.ts.
+  cleanupActiveComponents: _gxtCleanupActiveComponents,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

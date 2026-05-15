@@ -90,11 +90,13 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   afterEach() {
     try {
-      // Clean up GXT active components first (if using GXT)
-      const gxtCleanup = (globalThis as any).__gxtCleanupActiveComponents;
-      if (typeof gxtCleanup === 'function') {
-        gxtCleanup();
-      }
+      // Clean up GXT active components first (if using GXT).
+      // Slice-107 (Cluster B): routes through bridge — see
+      // `cleanupActiveComponents` doc in gxt-bridge.ts. Reuses the existing
+      // `getGxtRenderer` import. The optional-chain provides the same
+      // null-tolerant guard as the pre-slice-107 `typeof === 'function'`
+      // check for classic-Ember builds (where gxt-backend was never loaded).
+      getGxtRenderer()?.compilePipeline.cleanupActiveComponents?.();
       // (Cluster B slice 5 orphan cleanup) __gxtSyncScheduled reset removed —
       // flag had no readers anywhere in source.
 

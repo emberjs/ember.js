@@ -5998,6 +5998,143 @@ export interface GxtCompilePipelineCapabilities {
     obj: object,
     changedKey: string
   ): Array<{ key: string; value: unknown }>;
+
+  /**
+   * Reset GXT state between tests. Destroys all tracked component instances
+   * (firing willDestroy hooks), clears block-params / slot-params / slots-
+   * context stacks, drains the curried-render-infos array, clears the
+   * helper-instance cache (`$_maybeHelper`) and the tag-helper-instance
+   * cache (`$_tag`), clears component instance pools, clears stale
+   * ifWatchers, destroys cached engine instances from `{{mount}}` so
+   * `Namespace.destroy()` removes them from `NAMESPACES`, clears pending
+   * if-watcher notifications, clears dynamic-component change listeners
+   * and the stale `$_dc_ember` getter, resets the GXT pending-sync /
+   * pending-sync-from-property-change / had-pending-sync / had-nested-
+   * object-change / syncing flags, resets the rendering `$slots` / `$fw`
+   * globals, and clears the GXT VM's internal `TREE` / `CHILD` / `PARENT`
+   * / `relatedTags` / `tagsToRevalidate` / `opsForTag` Maps to prevent
+   * unbounded memory growth across tests. Each sub-step is wrapped in its
+   * own try/catch so a failure in one bucket doesn't skip the rest.
+   *
+   * Implementation lives in `gxt-backend/compile.ts` (the canonical home of
+   * the block-params / slot-params / curried-render-infos / engine-
+   * instances / pending-sync / had-nested-object-change / syncing module-
+   * locals AND the only file with line-of-sight to the GXT-runtime `getVM`
+   * / `getRenderTree` globals exposed in dev mode). Sub-step dispatch
+   * routes through the existing slice-13 `clearInstancePools`, slice-14
+   * `clearDynamicComponentListeners`, slice-88 `clearHelperCache`,
+   * `destruction.destroyTrackedInstances` bridge entries and intra-file
+   * helpers `_gxtClearTagHelperCache` / `_gxtClearIfWatchers` /
+   * `_gxtSetPendingSync` etc. The function is registered on the bridge via
+   * `installCompilePipelinePart({ cleanupActiveComponents:
+   * _gxtCleanupActiveComponents })` at compile.ts's EOF install block.
+   *
+   * Consumers (3 cross-package readers, all `afterEach` hooks in test-case
+   * base classes in `@ember/internal-test-helpers`):
+   *   - `lib/test-cases/abstract-application.ts:71` —
+   *     `ApplicationTestCase#afterEach` (cleans GXT state before
+   *     `runDestroy(this.applicationInstance)` / `runDestroy(this.application)`).
+   *   - `lib/test-cases/abstract.ts:76` —
+   *     `AbstractStrictTestCase#afterEach` (cleans GXT state before
+   *     `runDestroy(this)`).
+   *   - `lib/test-cases/rendering.ts:94` —
+   *     `RenderingTestCase#afterEach` (cleans GXT state before
+   *     `runDestroy(this.component)` / `runDestroy(this.owner)`).
+   * All three readers already import `getGxtRenderer` from
+   * `@ember/-internals/gxt-backend/gxt-bridge` — no new import edges.
+   *
+   * Slice-107 (Cluster B): replaces the pre-slice-107 globalThis writer
+   * `(globalThis as any).__gxtCleanupActiveComponents = function () { ... };`
+   * at `compile.ts:7202` and the 3 pre-slice-107 cross-package readers in
+   * `internal-test-helpers/lib/test-cases/`:
+   *   `const gxtCleanup = (globalThis as any).__gxtCleanupActiveComponents;
+   *    if (typeof gxtCleanup === 'function') { gxtCleanup(); }`
+   * The writer is graduated to a module-local `function
+   * _gxtCleanupActiveComponents(): void` declaration in compile.ts, with the
+   * function body unchanged. Each reader routes through
+   * `getGxtRenderer()?.compilePipeline.cleanupActiveComponents?.()` — the
+   * optional-chain providing the same null-tolerant guard as the pre-slice-
+   * 107 `typeof === 'function'` check for classic-Ember builds (where
+   * gxt-backend was never loaded — the cleanup is then skipped, matching
+   * the pre-slice semantics). Repo-root HTML harness reader in
+   * `packages/demo/tests.html:290` is RETAINED, guarded by `typeof
+   * globalThis.__gxtCleanupActiveComponents === 'function'`, and now no-ops
+   * cleanly post-retirement; the per-test bridge call from the test-case
+   * `afterEach` hooks above already covers the cleanup path. Same retire-
+   * writer-keep-harness-guard pattern as slice 55 (`__gxtClearRenderErrors`)
+   * and slice 101 (`__gxtResetIntervalBudget`). Net -1 globalThis slot,
+   * +1 new bridge method on `compilePipeline`.
+   *
+   * Bridge shape decision: typed-bridge `cleanupActiveComponents(): void`
+   * method on `GxtCompilePipelineCapabilities`. Cross-file/cross-package
+   * pattern (3 readers across 3 files in `internal-test-helpers/`)
+   * precludes zero-bridge; the slot is structurally a test-helper hook
+   * exported by the GXT backend for the test infrastructure. Mirrors slice
+   * 55 `clearRenderErrors`, slice 88 `clearHelperCache`, and slice 100
+   * `getClassHelperInstanceCache` — void-return clear-pattern method on
+   * `compilePipeline`. One new bridge method, no new install-API namespace
+   * (registered directly inside the existing `installCompilePipelinePart`
+   * block at compile.ts's EOF — compile.ts is the function-home file).
+   *
+   * Namespace decision: `compilePipeline`. The function is the canonical
+   * per-test reset for the entire compile-pipeline-owned GXT state cluster
+   * (block-params, slot-params, curried-render-infos, engine-instances,
+   * the 4-flag pending-sync state, etc.), and its sub-step dispatch routes
+   * through the existing slice-13 `clearInstancePools`, slice-14
+   * `clearDynamicComponentListeners`, slice-88 `clearHelperCache`, and
+   * `destruction.destroyTrackedInstances` bridge entries (all already on
+   * `compilePipeline` or `destruction`). Sits naturally alongside the
+   * existing `compilePipeline.clear*` family.
+   *
+   * State-home: `gxt-backend/compile.ts` (canonical owner of the
+   * `blockParamsStack` / `currentSlotParams` / `slotsContextStack` /
+   * `_curriedRenderInfos` / `_gxtEngineInstances` / `_pendingIfWatcherNotifications`
+   * / `_gxtPendingSyncFlag` / `_gxtPendingSyncFromPropertyChangeFlag` /
+   * `_gxtHadPendingSyncFlag` / `_gxtHadNestedObjectChangeFlag` /
+   * `_gxtSyncingFlag` module-locals). compile.ts contributes the function
+   * to the bridge via `installCompilePipelinePart({ cleanupActiveComponents:
+   * _gxtCleanupActiveComponents })` at the existing EOF install block
+   * (no new install-API edge, no new module import).
+   *
+   * Bridge-not-yet-installed edge: the cross-package readers in
+   * `internal-test-helpers/lib/test-cases/{abstract-application,abstract,
+   * rendering}.ts` route through `getGxtRenderer()?.compilePipeline.
+   * cleanupActiveComponents?.()`. The optional chain short-circuits to
+   * `undefined` when either the renderer or the method is not yet
+   * installed; in classic-Ember builds (no GXT backend loaded) the entire
+   * cleanup is skipped, matching the pre-slice-107 semantics where the
+   * `typeof gxtCleanup === 'function'` check returned false and the
+   * cleanup body was unreachable. In practice the bridge IS installed by
+   * the time `afterEach` runs: compile.ts's module init runs the
+   * `installCompilePipelinePart({ cleanupActiveComponents, ... })` at the
+   * EOF install block, which executes during the very first test-helper
+   * import that pulls in gxt-backend.
+   *
+   * Fast-check: the implementation is the same body that lived inside the
+   * pre-slice-107 globalThis function-expression — `destroyTrackedInstances`,
+   * stack clears, cache clears, flag resets, VM-map clears. The bridge
+   * call adds one `getGxtRenderer()` + one property dereference + one
+   * optional-call to the same body; trivially cheap on the per-test
+   * teardown path (the descriptor iteration and instance destruction are
+   * the dominant cost, not the bridge dispatch).
+   *
+   * Hot-path concern: NONE. The retired globalThis writer was assigned
+   * ONCE at module init (single property write, replaced by one
+   * `installCompilePipelinePart` registration that's amortized at init
+   * time). The 3 readers each fire ONCE per test (in `afterEach`); the
+   * bridge dispatch overhead vs. globalThis-typeof-guard is negligible at
+   * the call frequency. Trivially cheap.
+   *
+   * Pattern is the cross-package function-pointer-write+multi-reader
+   * category — same shape as slice 55 `clearRenderErrors` (3 cross-package
+   * readers across `internal-test-helpers/`), slice 88 `clearHelperCache`
+   * (cross-file reader in compile.ts cleanup body), slice 100
+   * `getClassHelperInstanceCache` (cross-file reader). -1 net globalThis
+   * slot, +1 bridge method on `compilePipeline`.
+   *
+   * Previously: `(globalThis as any).__gxtCleanupActiveComponents`.
+   */
+  cleanupActiveComponents?(): void;
 }
 
 /**
