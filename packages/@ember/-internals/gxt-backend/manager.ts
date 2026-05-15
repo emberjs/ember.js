@@ -470,7 +470,7 @@ if (typeof _gxtSetComponentRenderErrorReporter === 'function') {
 // `_tagHelperInstanceCache` invalidates, and `compute()` runs again.
 // =============================================================================
 
-(globalThis as any).__gxtInstallHelperRecomputeBridge = function (instance: any): void {
+function _installHelperRecomputeBridge(instance: any): void {
   if (!instance || typeof instance !== 'object') return;
   if ((instance as any).__gxtHelperRecomputeBridgeInstalled) return;
 
@@ -605,7 +605,7 @@ if (typeof _gxtSetComponentRenderErrorReporter === 'function') {
   } catch {
     /* ignore */
   }
-};
+}
 
 // Install the bridge hook onto `__gxtHelperInstances` so every class-based
 // helper instance that compile.ts registers for destruction gets its
@@ -630,7 +630,7 @@ if (typeof _gxtSetComponentRenderErrorReporter === 'function') {
     (arr as any).push = function (...items: any[]) {
       for (const it of items) {
         try {
-          g.__gxtInstallHelperRecomputeBridge?.(it);
+          _installHelperRecomputeBridge(it);
         } catch {
           /* ignore */
         }
