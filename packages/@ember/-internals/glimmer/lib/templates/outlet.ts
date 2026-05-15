@@ -27,7 +27,18 @@ class EmberOutletElement extends HTMLElement {
     // wrapper (e.g., root-9) would fire connectedCallback, read the NEW route's
     // outlet state, and render the new route's template with the old wrapper's
     // view on the parentView stack — corrupting the parentView of new components.
-    if ((globalThis as any).__gxtDestroyReattachInProgress) {
+    //
+    // Slice-89 (Cluster B): cross-package reader routes through the typed-
+    // bridge getter `compilePipeline.getDestroyReattachInProgress?.()`. The
+    // `?.()` chain returns `undefined` when either the renderer or the method
+    // is not yet installed (e.g., classic-Ember build path where gxt-backend
+    // was never loaded); the truthy `if (...)` guard coerces `undefined` to
+    // FALSE, matching pre-slice-89 semantics where
+    // `globalThis.__gxtDestroyReattachInProgress === undefined` (pre-first-
+    // destroy-reattach edge) coerced to FALSE. See
+    // `getDestroyReattachInProgress` doc in gxt-bridge.ts and module-local
+    // definition in compile.ts.
+    if (getGxtRenderer()?.compilePipeline.getDestroyReattachInProgress?.()) {
       return;
     }
 

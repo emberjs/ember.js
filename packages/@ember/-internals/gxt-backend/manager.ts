@@ -4849,7 +4849,16 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   // NEW route), and renders the new route's template with root-9 still on the
   // parentView stack — causing new-route components (root-5, root-6) to get
   // parentView = root-9 and disappear from getRootViews.
-  (globalThis as any).__gxtDestroyReattachInProgress = true;
+  //
+  // Slice-89 (Cluster B): cross-file writer (manager.ts -> compile.ts canonical
+  // state) routes through the typed-bridge setter
+  // `compilePipeline.setDestroyReattachInProgress(value)`. The `?.()` chain
+  // short-circuits to no-op when the renderer or method is not yet installed
+  // — matching pre-slice-89 semantics where the globalThis write was always
+  // safe but the reader's `if ((globalThis as any).__gxtDestroyReattachInProgress)`
+  // coerced `undefined` to FALSE. See `setDestroyReattachInProgress` doc in
+  // gxt-bridge.ts and module-local definition in compile.ts.
+  getGxtRenderer()?.compilePipeline.setDestroyReattachInProgress?.(true);
   try {
     for (const instance of unclaimed) {
       try {
@@ -4863,7 +4872,7 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
       }
     }
   } finally {
-    (globalThis as any).__gxtDestroyReattachInProgress = false;
+    getGxtRenderer()?.compilePipeline.setDestroyReattachInProgress?.(false);
   }
 
   for (const instance of unclaimed) {

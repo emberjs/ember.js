@@ -3849,6 +3849,58 @@ function _gxtSetInAfterRender(on: boolean): void {
   _gxtInAfterRenderFlag = on;
 }
 
+// Slice-89 (Cluster B): graduates the `__gxtDestroyReattachInProgress` boolean
+// flag from the pre-slice-89 `globalThis.__gxtDestroyReattachInProgress` slot
+// to the module-local boolean `_gxtDestroyReattachInProgressFlag` in
+// `compile.ts`, paired with a 2-method get/set bridge surface
+// (`getDestroyReattachInProgress` + `setDestroyReattachInProgress`) on the
+// `compilePipeline` namespace. The flag is set TRUE for the duration of a
+// destroy-phase reattach loop that temporarily re-attaches disconnected
+// component elements to `document.body` / `#qunit-fixture` so that
+// `willDestroyElement` / `willClearRender` hooks see
+// `document.body.contains(this.element) === true` during the destroy phase.
+// Cleared FALSE in a paired `finally` after the lifecycle hooks run and the
+// elements are detached again. The flag gates the `<ember-outlet>` custom
+// element's `connectedCallback` body (`glimmer/lib/templates/outlet.ts:30`):
+// when a destroy-phase reattach fires `connectedCallback` on an inner
+// `<ember-outlet>` (e.g., one nested inside a just-removed component wrapper
+// like `root-9`), the callback MUST skip rendering — without this gate the
+// callback would read `__currentOutletState` (the NEW route after the
+// transition), render the new route's template, and corrupt the parentView
+// stack (the new route's components would get `parentView = root-9` and
+// disappear from `getRootViews`).
+//
+// The pre-slice-89 topology was 4 writers (2 in `manager.ts` cross-file pair
+// at L4852/L4866 set TRUE/FALSE around the `__gxtDestroyUnclaimedPoolEntries`
+// Phase 1 reattach IIFE + 2 in `compile.ts` intra-file pair at L5827/L5841
+// set TRUE/FALSE around the outlet-tracking-arg inverse-branch destroy
+// reattach IIFE) and 1 reader (cross-package in
+// `glimmer/lib/templates/outlet.ts:30` `connectedCallback` guard). Slice 89
+// routes the 2 intra-`compile.ts` writers through the module-local
+// `_gxtSetDestroyReattachInProgress` helper directly (slice-22/24/27/30/31/
+// 32/33/34/35/36/37/38/40/41 intra-file precedent); the 2 cross-file writers
+// in `manager.ts` and the 1 cross-package reader in
+// `glimmer/lib/templates/outlet.ts` route through the new paired bridge
+// methods. Net globalThis surface delta: -1 slot. Bridge shape decision:
+// paired get/set (slice-14/35/36/37/38/40/41 paired-methods pattern, same as
+// slice 41) because slice 89 has cross-file WRITERS (`manager.ts`) and a
+// cross-package READER (`glimmer/lib/templates/outlet.ts`) — both surfaces
+// must be reachable via the bridge. ZERO new import edges: `manager.ts`
+// already imports `getGxtRenderer` (slice 6+) and `outlet.ts` already imports
+// `getGxtRenderer` (slice 3).
+//
+// State home: `compile.ts` (alongside the other intra-file paired bridges
+// added in slices 37/38/40/41) per the "canonical state lives where it's
+// primarily mutated" rule (2 of 4 writers are intra-file in compile.ts) and
+// consistency with the other module-local boolean-flag paired bridges.
+let _gxtDestroyReattachInProgressFlag = false;
+function _gxtGetDestroyReattachInProgress(): boolean {
+  return _gxtDestroyReattachInProgressFlag;
+}
+function _gxtSetDestroyReattachInProgress(on: boolean): void {
+  _gxtDestroyReattachInProgressFlag = on;
+}
+
 // Slice-36 (Cluster B): graduates the `__gxtPendingSyncFromPropertyChange`
 // boolean flag from the pre-slice-36 `globalThis.__gxtPendingSyncFromPropertyChange`
 // slot to the module-local boolean `_gxtPendingSyncFromPropertyChangeFlag` in
@@ -5824,7 +5876,15 @@ function patchGlobalEachSync() {
                   : (inst: any) => inst && inst.element;
                 const tempContainer = document.getElementById('qunit-fixture') || document.body;
                 const reattached: Array<{ element: Element }> = [];
-                (g as any).__gxtDestroyReattachInProgress = true;
+                // Slice-89 (Cluster B): write to module-local
+                // `_gxtDestroyReattachInProgressFlag` via the module-private
+                // setter (canonical state graduated from
+                // `globalThis.__gxtDestroyReattachInProgress` in slice 89).
+                // Intra-file writer routes through the module-local helper
+                // directly per the slice-22/24/27/30/.../41 precedent. See
+                // `getDestroyReattachInProgress` / `setDestroyReattachInProgress`
+                // doc in gxt-bridge.ts and module-local definition above.
+                _gxtSetDestroyReattachInProgress(true);
                 try {
                   for (const inst of ordered) {
                     try {
@@ -5838,7 +5898,7 @@ function patchGlobalEachSync() {
                     }
                   }
                 } finally {
-                  (g as any).__gxtDestroyReattachInProgress = false;
+                  _gxtSetDestroyReattachInProgress(false);
                 }
                 for (const inst of ordered) {
                   try {
@@ -15860,6 +15920,25 @@ installCompilePipelinePart({
   // local definition above (`_gxtInAfterRenderFlag`).
   getInAfterRender: _gxtGetInAfterRender,
   setInAfterRender: _gxtSetInAfterRender,
+  // Slice-89 (Cluster B): graduates `__gxtDestroyReattachInProgress` from the
+  // globalThis slot to a 2-method paired get/set bridge surface (slice-14/35/
+  // 36/37/38/40/41 paired-methods pattern). The flag is written by 4 sites
+  // pre-slice-89 (2 in `manager.ts:4852/4866` cross-file pair around
+  // `__gxtDestroyUnclaimedPoolEntries` Phase 1 reattach IIFE + 2 in
+  // `compile.ts:5827/5841` intra-file pair around the outlet-tracking-arg
+  // inverse-branch destroy reattach IIFE) and read by 1 cross-package site
+  // pre-slice-89 (`glimmer/lib/templates/outlet.ts:30` `connectedCallback`
+  // guard at the top of the body). Intra-file writers route through the
+  // module-local `_gxtSetDestroyReattachInProgress` helper directly; cross-
+  // file writers (manager.ts) route through
+  // `compilePipeline.setDestroyReattachInProgress(value)`; cross-package
+  // reader (outlet.ts) routes through
+  // `compilePipeline.getDestroyReattachInProgress?.()`. Net -1 globalThis
+  // slot. See `getDestroyReattachInProgress` / `setDestroyReattachInProgress`
+  // doc in gxt-bridge.ts and module-local definition above
+  // (`_gxtDestroyReattachInProgressFlag`).
+  getDestroyReattachInProgress: _gxtGetDestroyReattachInProgress,
+  setDestroyReattachInProgress: _gxtSetDestroyReattachInProgress,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
