@@ -6135,6 +6135,162 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `(globalThis as any).__gxtCleanupActiveComponents`.
    */
   cleanupActiveComponents?(): void;
+
+  /**
+   * Run `fn` while the morph-render in-progress flag is `true` AND the
+   * morph-modifier-invocations array is exposed to the modifier-manager
+   * handle path. The save-restore pair sets both pieces of state on entry,
+   * invokes `fn` (the `(gxtTemplate as any).render(freshContext, tempContainer)`
+   * call in `renderer.ts:967-983`), and clears the flag back to `false` and
+   * the invocations slot back to `null` on completion (including when `fn`
+   * throws) via try/finally. The caller passes the empty invocations array
+   * it owns — `withMorphRender` only writes the bridge-visible slot and never
+   * mutates the array itself; mutation happens via the modifier-manager
+   * `handle` reader (which pushes `{ modifier, element, props, hashArgs }`
+   * entries onto the same array the caller still holds a reference to).
+   *
+   * Slice-108 (Cluster B): paired migration of `__gxtMorphModifierInvocations`
+   * + `__gxtMorphRenderInProgress` from the pre-slice-108 globalThis writer
+   * pair at `glimmer/lib/renderer.ts:975-981` to this typed save-restore
+   * helper + two paired read accessors. The renderer.ts writer pre-slice-108
+   * was a tightly-coupled inline pair:
+   *
+   *   const morphModInvocations: any[] = [];
+   *   (globalThis as any).__gxtMorphModifierInvocations = morphModInvocations;
+   *   (globalThis as any).__gxtMorphRenderInProgress = true;
+   *   try {
+   *     (gxtTemplate as any).render(freshContext, tempContainer);
+   *   } finally {
+   *     (globalThis as any).__gxtMorphRenderInProgress = false;
+   *     (globalThis as any).__gxtMorphModifierInvocations = null;
+   *     popParentView();
+   *   }
+   *
+   * Slice 108 folds the save-set-restore pair into one bridge surface (same
+   * with*+is*+get* shape as slice 22's `withCurrentlyRendering` /
+   * `isCurrentlyRendering` — boolean flag toggled by a save-restore wrapper
+   * + a paired predicate — extended with one read accessor for the pending-
+   * invocations array because the manager.ts modifier-manager `handle`
+   * reader needs both pieces of state: gate on the flag, push onto the
+   * array). The `popParentView()` cleanup at the original site remains in
+   * the renderer.ts caller — it is bookend to a `pushParentView(component)`
+   * earlier in the function body, not part of the morph-render state pair.
+   *
+   * Bridge shape decision: with+is+get triad on `compilePipeline`. The
+   * paired flag+array state is conceptually one unit (flag indicates the
+   * array slot is populated; array IS the queue for replay) and is set/
+   * cleared together by exactly one writer. Slice 22's `withCurrentlyRendering`
+   * + `isCurrentlyRendering` is the canonical save-restore wrapper precedent
+   * (boolean flag toggled by try/finally pair); slice 108 extends that
+   * pattern with a `getMorphModifierInvocations()` accessor for the
+   * companion array that comes along for the ride. The wrapper accepts the
+   * `invocations` array as an argument so the caller retains ownership and
+   * can iterate it post-`withMorphRender` to replay queued modifier installs
+   * against real DOM elements (the modifier-replay loop in renderer.ts
+   * immediately after the morph-and-diff pass).
+   *
+   * Reader contract (3 readers, all in `gxt-backend`):
+   *  - `manager.ts:8938` — modifier-manager `handle` flag-check gate (intercept
+   *    modifier installation during morph re-renders). Routed through
+   *    `getGxtRenderer()?.compilePipeline.isMorphRenderInProgress?.()`.
+   *  - `manager.ts:8941` — modifier-manager `handle` invocations-array push
+   *    (queues the modifier invocation for post-morph replay). Routed
+   *    through `getGxtRenderer()?.compilePipeline.getMorphModifierInvocations?.()`.
+   *  - `compile.ts:15905` — `$_each` empty-comment cleanup gate during
+   *    morph re-renders (skips empty-comment removal on temp containers).
+   *    Intra-file reader; routes directly through the module-local
+   *    `_gxtIsMorphRenderInProgress` helper (slice-22/24/27/...etc. intra-
+   *    file-reader precedent).
+   *
+   * State-home decision: `gxt-backend/compile.ts`. compile.ts is the
+   * canonical compile-pipeline state home (slice 35/36/37/40/41/89/97 paired
+   * flags) and one of the 3 readers already lives in the same file — the
+   * other 2 readers in manager.ts are sibling intra-package files. The
+   * writer in renderer.ts is the same cross-package contributor pattern as
+   * slice 96 `_gxtForceEmberRerender` (renderer.ts contributes state into
+   * compilePipeline via `installCompilePipelinePart`).
+   *
+   * Namespace decision: `compilePipeline`. Same as slices 22/96/107 — the
+   * morph-render lifecycle is a sub-phase of the GXT template render
+   * pipeline (the temp-container render between `gxtTemplate.render` invocation
+   * and the `morphChildren(gxtRenderTarget, tempContainer)` diff). Bridge
+   * interface evolution: slice 108 — 43rd API change.
+   *
+   * Bridge-not-yet-installed edge: the cross-package writer (renderer.ts)
+   * routes through `getGxtRenderer()?.compilePipeline.withMorphRender?.(...)`
+   * with an `?? noop` fallback that runs `fn()` without setting state when
+   * the bridge isn't installed yet — matching pre-slice-108 semantics where
+   * the slot was `undefined` and the manager.ts gate's `!truthy` short-
+   * circuited to "not a morph render". In practice the bridge IS installed
+   * by the time renderer.ts's morph-fallback path runs: compile.ts's module
+   * init runs `installCompilePipelinePart({ withMorphRender, ... })` at the
+   * EOF install block, which executes during the very first test-helper
+   * import that pulls in gxt-backend (before any render).
+   *
+   * After slice 108 the `__gxtMorphRenderInProgress` AND
+   * `__gxtMorphModifierInvocations` globalThis slots are BOTH DROPPED: the
+   * canonical state is the module-local `_gxtMorphRenderInProgressFlag` +
+   * `_gxtMorphModifierInvocations` bindings in `compile.ts`, the bridge
+   * methods are the sole cross-package surface, and the intra-file reader
+   * (`compile.ts:15905`) uses the module-local helper directly. Net
+   * globalThis surface delta: -2 slots paired (slice-62/65/73/75/89/107
+   * paired-slot precedent).
+   *
+   * Previously: `(globalThis as any).__gxtMorphRenderInProgress` +
+   * `(globalThis as any).__gxtMorphModifierInvocations`.
+   */
+  withMorphRender?<T>(invocations: any[], fn: () => T): T;
+
+  /**
+   * Read-only predicate for the morph-render in-progress flag set by
+   * `withMorphRender(invocations, fn)` above. Returns `true` iff the
+   * current synchronous stack is nested inside the temp-container render
+   * pass that produces the diff input for `morphChildren(gxtRenderTarget,
+   * tempContainer)` in renderer.ts:986. Used by `manager.ts:8938`'s
+   * modifier-manager `handle` gate (intercepts modifier installation on
+   * temp elements — those installs would drift the add/remove counter
+   * tracked by `INTERNAL_MODIFIER_MANAGERS`) and by `compile.ts:15905`'s
+   * `$_each` empty-comment cleanup gate (skips empty-comment removal so
+   * the morph diff sees the same comment topology on both sides).
+   *
+   * Slice-108 (Cluster B): paired with `withMorphRender` (above) and
+   * `getMorphModifierInvocations` (below). Bridge-not-yet-installed edge:
+   * defaults to `false` (the safe value — the slot was `undefined` pre-
+   * slice-108, which the pre-slice gate's `!truthy` check treated as "not
+   * a morph render"). Fast-check: the implementation reads the module-
+   * local `_gxtMorphRenderInProgressFlag` boolean — one boolean read; zero
+   * allocations. Same shape as slice-22's `isCurrentlyRendering`.
+   */
+  isMorphRenderInProgress?(): boolean;
+
+  /**
+   * Read-only accessor for the morph-modifier-invocations array exposed
+   * during a `withMorphRender(invocations, fn)` frame. Returns the array
+   * passed to `withMorphRender`, or `null` when no morph render is in
+   * progress (slot is cleared in the wrapper's `finally`). The
+   * modifier-manager `handle` reader at `manager.ts:8941` reads the array
+   * (when non-null) and pushes a `{ modifier, element, props, hashArgs }`
+   * entry to queue the invocation for post-morph replay against the real
+   * DOM element (the modifier-replay loop in renderer.ts immediately after
+   * the morph-and-diff pass).
+   *
+   * Slice-108 (Cluster B): paired with `withMorphRender` (above) and
+   * `isMorphRenderInProgress` (above). The slot semantics intentionally
+   * mirror the pre-slice-108 `(globalThis as any).__gxtMorphModifierInvocations`
+   * value: the array reference IS the queue; readers must check for `null`
+   * (or use the `isMorphRenderInProgress` predicate first) before pushing.
+   * Same array-identity contract as pre-slice-108: the caller (renderer.ts)
+   * owns the array and retains the reference for post-morph iteration; the
+   * bridge slot is just a publish channel for the cross-package reader.
+   *
+   * Bridge-not-yet-installed edge: defaults to `null` (the safe value —
+   * the slot was `undefined` pre-slice-108, which the pre-slice reader's
+   * `if (pending)` truthy check treated as "no queue to push to"; `null`
+   * preserves that semantics). Fast-check: the implementation reads the
+   * module-local `_gxtMorphModifierInvocations` reference — one variable
+   * read; zero allocations.
+   */
+  getMorphModifierInvocations?(): any[] | null;
 }
 
 /**

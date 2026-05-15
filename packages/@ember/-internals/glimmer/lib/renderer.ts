@@ -971,14 +971,37 @@ class ClassicRootState {
                 // so we can replay them as updates on real DOM elements after
                 // morphing.  Modifier installation on temp elements is suppressed
                 // to avoid drifting add/remove counters.
+                //
+                // Slice-108 (Cluster B): paired migration of
+                // `__gxtMorphModifierInvocations` + `__gxtMorphRenderInProgress`
+                // from the pre-slice-108 globalThis writer pair to the typed
+                // bridge save-restore wrapper `withMorphRender(invocations, fn)`.
+                // The caller retains ownership of the `morphModInvocations`
+                // array and continues to iterate it post-`withMorphRender`
+                // (the modifier-replay loop below at L1020). The bridge
+                // wrapper folds the inline save-set-flag+set-array / try-fn /
+                // finally-clear-flag+clear-array pair into one documented
+                // surface (slice-22 `withCurrentlyRendering` save-restore
+                // precedent extended with the companion array slot). Bridge-
+                // not-yet-installed edge: `?? fn()` fallback runs the body
+                // without exposing state (matches pre-slice-108 semantics
+                // where the manager.ts gate's `!truthy` short-circuited to
+                // "not a morph render"; harmless — the modifier-manager just
+                // installs normally on the temp container instead of queuing
+                // for replay, which only happens in classic-Ember builds
+                // before gxt-backend is loaded).
                 const morphModInvocations: any[] = [];
-                (globalThis as any).__gxtMorphModifierInvocations = morphModInvocations;
-                (globalThis as any).__gxtMorphRenderInProgress = true;
+                const _withMorphRender =
+                  getGxtRenderer()?.compilePipeline.withMorphRender;
                 try {
-                  (gxtTemplate as any).render(freshContext, tempContainer);
+                  if (_withMorphRender) {
+                    _withMorphRender(morphModInvocations, () => {
+                      (gxtTemplate as any).render(freshContext, tempContainer);
+                    });
+                  } else {
+                    (gxtTemplate as any).render(freshContext, tempContainer);
+                  }
                 } finally {
-                  (globalThis as any).__gxtMorphRenderInProgress = false;
-                  (globalThis as any).__gxtMorphModifierInvocations = null;
                   popParentView();
                 }
                 // Morph: update existing DOM nodes in-place where possible

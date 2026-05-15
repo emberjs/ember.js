@@ -8935,10 +8935,21 @@ const $_MANAGERS = {
       // container.  Instead of installing modifiers on temp elements (which
       // drifts add/remove counters), find the corresponding real DOM element
       // and update its cached modifier with fresh args.
-      if ((globalThis as any).__gxtMorphRenderInProgress) {
+      //
+      // Slice-108 (Cluster B): paired migration of the morph-render state
+      // pair to the typed bridge save-restore wrapper. Pre-slice-108 reads
+      // `(globalThis as any).__gxtMorphRenderInProgress` /
+      // `(globalThis as any).__gxtMorphModifierInvocations`. Bridge-not-yet-
+      // installed edge: optional-chain short-circuits to `undefined`, which
+      // the `if` gate treats as "not a morph render" — matching pre-slice
+      // semantics where the slot was `undefined` and the truthy check
+      // failed. See `withMorphRender` / `isMorphRenderInProgress` /
+      // `getMorphModifierInvocations` doc in gxt-bridge.ts.
+      const _cp = getGxtRenderer()?.compilePipeline;
+      if (_cp?.isMorphRenderInProgress?.()) {
         // During morph re-renders, collect modifier invocations so they can
         // be replayed as updates on real DOM elements after morphing.
-        const pending = (globalThis as any).__gxtMorphModifierInvocations;
+        const pending = _cp.getMorphModifierInvocations?.();
         if (pending) {
           pending.push({ modifier, element, props, hashArgs });
         }

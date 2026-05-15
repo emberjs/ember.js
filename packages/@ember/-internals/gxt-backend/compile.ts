@@ -3742,6 +3742,68 @@ function _gxtSetHadNestedObjectChange(on: boolean): void {
   _gxtHadNestedObjectChangeFlag = on;
 }
 
+// Slice-108 (Cluster B): paired migration of `__gxtMorphRenderInProgress`
+// (boolean flag) + `__gxtMorphModifierInvocations` (modifier-invocations
+// queue array) from the pre-slice-108 globalThis writer pair at
+// `glimmer/lib/renderer.ts:975-981` (a tightly-coupled inline save-set-
+// restore triplet wrapping `(gxtTemplate as any).render(freshContext,
+// tempContainer)`) to a typed save-restore bridge wrapper
+// (`withMorphRender(invocations, fn)`) plus paired read accessors
+// (`isMorphRenderInProgress()` + `getMorphModifierInvocations()`).
+//
+// Both pieces of state describe the same "we are currently rendering into
+// a throwaway tempContainer that will be diffed against the live DOM by
+// `morphChildren`" lifecycle phase: the flag is the gate (manager.ts'
+// modifier-manager `handle` reader at L8938 + compile.ts' `$_each` empty-
+// comment cleanup gate at L15905), the array is the side-channel queue
+// (manager.ts L8941 — modifiers seen on temp elements push entries for
+// post-morph replay against the real DOM). Tightly coupled: the array is
+// always assigned together with the flag set to TRUE, and cleared to
+// `null` together with the flag set to FALSE. Slice 108 folds the pair
+// into one with*+is*+get* triad on `compilePipeline` (slice-22
+// `withCurrentlyRendering` / `isCurrentlyRendering` precedent — boolean
+// flag toggled by a save-restore wrapper + a paired predicate — extended
+// with one get* accessor for the companion array).
+//
+// State-home decision: `compile.ts`. compile.ts is the canonical compile-
+// pipeline state home (slice 35/36/37/40/41/89/97 paired flags) and one
+// of the 3 readers already lives in the same file at L15905; the 2
+// manager.ts readers are sibling intra-package files. The writer in
+// renderer.ts is the same cross-package contributor pattern as slice 96
+// `_gxtForceEmberRerender` (renderer.ts contributes state into
+// compilePipeline via `installCompilePipelinePart`).
+//
+// Re-entrancy contract: save-restore wrap pattern (slice-22 precedent).
+// On entry, save the prior flag and invocations slot; set the new values;
+// invoke `fn`; on completion (including throw), restore the prior values
+// via try/finally. Nested `withMorphRender` calls stack correctly: an
+// inner frame's state is restored to the outer frame's state on exit.
+// In practice no nested morph render occurs (the morph-fallback path is
+// not re-entered from within a temp-container template body), but the
+// save-restore pattern is the canonical save-set-restore Cluster B shape.
+// Net globalThis surface delta: -2 slots paired (slice-62/65/73/75/89/107
+// paired-slot precedent).
+let _gxtMorphRenderInProgressFlag = false;
+let _gxtMorphModifierInvocations: any[] | null = null;
+function _gxtIsMorphRenderInProgress(): boolean {
+  return _gxtMorphRenderInProgressFlag;
+}
+function _gxtGetMorphModifierInvocations(): any[] | null {
+  return _gxtMorphModifierInvocations;
+}
+function _gxtWithMorphRender<T>(invocations: any[], fn: () => T): T {
+  const prevFlag = _gxtMorphRenderInProgressFlag;
+  const prevInvocations = _gxtMorphModifierInvocations;
+  _gxtMorphRenderInProgressFlag = true;
+  _gxtMorphModifierInvocations = invocations;
+  try {
+    return fn();
+  } finally {
+    _gxtMorphRenderInProgressFlag = prevFlag;
+    _gxtMorphModifierInvocations = prevInvocations;
+  }
+}
+
 // Slice-98 (Cluster B): graduates the `__gxtDeferredSyncError` deferred-error
 // slot from the pre-slice-98 `(globalThis as any).__gxtDeferredSyncError`
 // read/write/clear trio to a module-local `_gxtDeferredSyncError` binding in
@@ -15902,7 +15964,11 @@ export function precompileTemplate(
           // contains real visible content (other element children). This skips
           // top-level fragment children where empty comments may be
           // each-block topMarkers/bottomMarkers needed for re-render alignment.
-          if (g.__gxtMorphRenderInProgress && parentElement) {
+          // Slice-108 (Cluster B): intra-file reader for the morph-render
+          // in-progress flag — direct module-local access (slice-22/24/27/.../97
+          // intra-file-reader precedent). Pre-slice-108 read
+          // `g.__gxtMorphRenderInProgress`.
+          if (_gxtIsMorphRenderInProgress() && parentElement) {
             try {
               const _allElements: Element[] = [];
               if ((parentElement as any).querySelectorAll) {
@@ -16436,6 +16502,26 @@ installCompilePipelinePart({
   // +1 new bridge method on `compilePipeline`. See `cleanupActiveComponents`
   // doc in gxt-bridge.ts.
   cleanupActiveComponents: _gxtCleanupActiveComponents,
+  // Slice-108 (Cluster B): paired migration of `__gxtMorphRenderInProgress`
+  // (boolean flag) + `__gxtMorphModifierInvocations` (modifier-invocations
+  // queue array). Both globalThis slots are DROPPED in this slice; the
+  // canonical state is now the module-local `_gxtMorphRenderInProgressFlag`
+  // + `_gxtMorphModifierInvocations` bindings above. Cross-package writer
+  // in `glimmer/lib/renderer.ts:975-981` routes through
+  // `compilePipeline.withMorphRender(invocations, fn)`. Cross-package
+  // readers in `manager.ts:8938` (modifier-manager `handle` flag gate) +
+  // `manager.ts:8941` (modifier-manager `handle` invocations-array push)
+  // route through `compilePipeline.isMorphRenderInProgress?.()` and
+  // `compilePipeline.getMorphModifierInvocations?.()`. Intra-file reader
+  // at `compile.ts:15905` (`$_each` empty-comment cleanup gate) routes
+  // through the module-local `_gxtIsMorphRenderInProgress` helper
+  // directly (slice-22/24/27/30/31/.../97 intra-file-reader precedent).
+  // Net -2 globalThis slots paired. See `withMorphRender` /
+  // `isMorphRenderInProgress` / `getMorphModifierInvocations` docs in
+  // gxt-bridge.ts.
+  withMorphRender: _gxtWithMorphRender,
+  isMorphRenderInProgress: _gxtIsMorphRenderInProgress,
+  getMorphModifierInvocations: _gxtGetMorphModifierInvocations,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
