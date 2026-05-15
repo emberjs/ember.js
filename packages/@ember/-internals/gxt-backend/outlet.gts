@@ -285,7 +285,8 @@ class EmberMountElement extends HTMLElement {
   disconnectedCallback() {
     this._rendered = false;
     // During force-rerender elements are removed and recreated; don't destroy
-    // the engine instance — it will be reused via __gxtEngineInstances cache.
+    // the engine instance — it will be reused via the shared engine cache
+    // (slice 90: `compilePipeline.getEngineInstances()`).
     if (!(globalThis as any).__gxtIsForceRerender) {
       if (this._engineInstance && typeof this._engineInstance.destroy === 'function') {
         try { this._engineInstance.destroy(); } catch { /* ignore */ }
@@ -305,9 +306,17 @@ class EmberMountElement extends HTMLElement {
     const owner = (globalThis as any).owner;
     if (!owner) return;
 
-    // Use a global cache to prevent duplicate engine instances when the
+    // Use a shared cache to prevent duplicate engine instances when the
     // application template is re-rendered (which creates new <ember-mount> elements).
-    const engineCache: Map<string, any> = ((globalThis as any).__gxtEngineInstances ||= new Map<string, any>());
+    // Cluster B slice 90: graduated from the pre-slice-90
+    // `globalThis.__gxtEngineInstances` slot to the module-local
+    // `_gxtEngineInstances` Map in `compile.ts`, accessed through the typed
+    // bridge `compilePipeline.getEngineInstances()`. The optional-chain short-
+    // circuits to `undefined` for classic-Ember builds (where gxt-backend is
+    // never loaded and `<ember-mount>` is never constructed); the body bails
+    // early in that case. See `getEngineInstances` doc in gxt-bridge.ts.
+    const engineCache = getGxtRenderer()?.compilePipeline.getEngineInstances?.();
+    if (!engineCache) return;
 
     try {
       // Check if we already have an engine instance for this name

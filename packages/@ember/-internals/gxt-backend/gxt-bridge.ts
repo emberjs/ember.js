@@ -5144,6 +5144,75 @@ export interface GxtCompilePipelineCapabilities {
    * assignment; zero allocations.
    */
   setDestroyReattachInProgress?(value: boolean): void;
+
+  /**
+   * Return the (lazy-initialized) cache of engine instances keyed by engine
+   * name. The cache holds one engine instance per `{{mount "engine-name"}}`
+   * invocation — reused across re-renders of the parent template so that
+   * `<ember-mount>` elements recreated by a force-rerender don't double-
+   * instantiate the engine. Engines created via `factoryFor('engine:name')`
+   * are inserted on first `<ember-mount>` connection and destroyed in the
+   * compile.ts between-test teardown (`_gxtClearOnSetup` body) — destroying
+   * both the inner `__gxtOriginalEngine` (which `init`-ed itself into the
+   * `Namespace.NAMESPACES` table) and the cached engine instance so the
+   * "Should not have any NAMESPACES" assertion passes.
+   *
+   * Pre-slice-90 topology (1 writer + 3 readers):
+   *  - writer: `outlet.gts:310` — `<ember-mount>.renderEngine` body — lazy-
+   *    init via `((globalThis as any).__gxtEngineInstances ||= new
+   *    Map<string, any>())`. Returns the same Map on every call (idempotent
+   *    on the cache slot, just `.get(engineName)` after).
+   *  - reader: `compile.ts:6910` — `_gxtClearOnSetup` teardown body, guard
+   *    check `if ((globalThis as any).__gxtEngineInstances)` before
+   *    iteration.
+   *  - reader: `compile.ts:6911` — `_gxtClearOnSetup` teardown body, the
+   *    `for (const [, engineInst] of (globalThis as any).
+   *    __gxtEngineInstances)` iteration that destroys each cached engine.
+   *  - reader: `compile.ts:6935` — `_gxtClearOnSetup` teardown body,
+   *    `.clear()` call to drop all entries after destruction.
+   *
+   * Slice-90 (Cluster B): graduates the canonical state from the pre-
+   * slice-90 `globalThis.__gxtEngineInstances` slot to the module-local
+   * `Map<string, any>` `_gxtEngineInstances` in `compile.ts`. The single
+   * cross-package writer (`outlet.gts:310`) routes through this bridge
+   * getter — the getter implementation handles the lazy-init under the
+   * hood (returns the same Map every call; the `||=` is replaced by the
+   * always-initialized module-local declaration). The 3 intra-`compile.ts`
+   * readers route directly to the module-local `_gxtEngineInstances`
+   * (slice-22/24/27/.../89 intra-file precedent). Net globalThis surface
+   * delta: -1 slot.
+   *
+   * Bridge shape decision: single-method `getEngineInstances?(): Map<string,
+   * any>` getter on `GxtCompilePipelineCapabilities` (slice-78 / slice-69 /
+   * slice-43 single-method-getter pattern). No setter is required because
+   * the Map identity never changes — only its contents are mutated by
+   * consumers via `Map.get` / `Map.set` / `Map.clear` on the returned
+   * reference. The `outlet.gts` writer becomes `const engineCache =
+   * getGxtRenderer()?.compilePipeline.getEngineInstances?.(); if
+   * (!engineCache) return;` — replacing the pre-slice-90 lazy-init
+   * expression. The 3 intra-file readers bypass the bridge entirely (read
+   * the module-local directly).
+   *
+   * Bridge-not-yet-installed edge: the cross-package writer in
+   * `outlet.gts` uses `getGxtRenderer()?.compilePipeline.
+   * getEngineInstances?.()`. Both optional chains short-circuit to
+   * `undefined` when either the renderer or the method is not yet
+   * installed; the call site guards on `if (!engineCache) return;`
+   * which matches the pre-slice-90 semantics where, if the slot is
+   * undefined, the lazy-init creates an empty Map and the `.get` returns
+   * `undefined` (no cached engine; the body falls through to factory
+   * lookup). The new short-circuit is slightly more conservative — it
+   * skips the entire engine render for classic-Ember builds where
+   * gxt-backend is never loaded. That's load-order-safe because in
+   * classic-Ember `<ember-mount>` is never constructed (the gxt-backend
+   * custom element is what defines that tag).
+   *
+   * Fast-check: the implementation returns the module-local `Map`
+   * reference — one property read, zero allocations. The lazy-init `||=`
+   * is gone because the module-local is initialized to `new Map()` at
+   * module-load time (smaller hot-path).
+   */
+  getEngineInstances?(): Map<string, any>;
 }
 
 /**

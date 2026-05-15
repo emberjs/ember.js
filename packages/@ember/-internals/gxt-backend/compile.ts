@@ -3901,6 +3901,54 @@ function _gxtSetDestroyReattachInProgress(on: boolean): void {
   _gxtDestroyReattachInProgressFlag = on;
 }
 
+// Slice-90 (Cluster B): graduates the `__gxtEngineInstances` Map cache from
+// the pre-slice-90 `globalThis.__gxtEngineInstances` slot to the module-local
+// `_gxtEngineInstances` Map in `compile.ts`, paired with a single-method
+// `getEngineInstances` getter bridge on the `compilePipeline` namespace.
+//
+// The cache holds one engine instance per `{{mount "engine-name"}}`
+// invocation — reused across re-renders of the parent template so that
+// `<ember-mount>` elements recreated by a force-rerender don't double-
+// instantiate the engine. Engines are inserted on first `<ember-mount>`
+// connection (outlet.gts:310 `renderEngine`) and destroyed in the compile.ts
+// between-test teardown (`_gxtClearOnSetup` body at L6910-6935) — destroying
+// both the inner `__gxtOriginalEngine` (which `init`-ed itself into the
+// `Namespace.NAMESPACES` table) and the cached engine instance so the
+// "Should not have any NAMESPACES" assertion passes.
+//
+// Pre-slice-90 topology (1 writer + 3 readers):
+//  - cross-package writer: `outlet.gts:310` — lazy-init via
+//    `((globalThis as any).__gxtEngineInstances ||= new Map<string, any>())`.
+//  - intra-file reader: `compile.ts:6910` — guard check before iteration.
+//  - intra-file reader: `compile.ts:6911` — iteration to destroy each engine.
+//  - intra-file reader: `compile.ts:6935` — `.clear()` call to empty the map.
+//
+// Slice-90 routes the 1 cross-package writer through the bridge getter
+// (`compilePipeline.getEngineInstances()`); the 3 intra-`compile.ts`
+// readers route directly to `_gxtEngineInstances` (slice-22/24/27/.../89
+// intra-file precedent — no need to bounce through the bridge from a file
+// that owns the canonical state). ZERO new import edges: `outlet.gts`
+// already imports `getGxtRenderer` at L3.
+//
+// Bridge shape decision: single-method `getEngineInstances?(): Map<string,
+// any>` getter on `GxtCompilePipelineCapabilities` (slice-78 / slice-69 /
+// slice-43 single-method-getter pattern). No setter is required because
+// the Map identity never changes — only its contents are mutated by
+// consumers via `Map.get` / `Map.set` / `Map.clear` on the returned
+// reference. The lazy-init `||=` from the pre-slice-90 writer is replaced
+// by the always-initialized module-local declaration (`new Map()` at
+// module-load time, smaller hot-path).
+//
+// State home: `compile.ts` — 3 of 4 functional sites (75%) are intra-file
+// (the 3 readers in `_gxtClearOnSetup`); the only cross-file site is the
+// single writer in `outlet.gts`. Per the "canonical state lives where it's
+// primarily mutated/read" rule and consistency with slices 37/38/40/41/89
+// (other module-local typed-bridge state in compile.ts).
+const _gxtEngineInstances: Map<string, any> = new Map<string, any>();
+function _gxtGetEngineInstances(): Map<string, any> {
+  return _gxtEngineInstances;
+}
+
 // Slice-36 (Cluster B): graduates the `__gxtPendingSyncFromPropertyChange`
 // boolean flag from the pre-slice-36 `globalThis.__gxtPendingSyncFromPropertyChange`
 // slot to the module-local boolean `_gxtPendingSyncFromPropertyChangeFlag` in
@@ -6907,8 +6955,14 @@ setInterval(() => {
   _gxtClearIfWatchers();
   // Destroy cached engine instances from {{mount}} so Namespace.destroy()
   // removes them from NAMESPACES (prevents "Should not have any NAMESPACES" failures).
-  if ((globalThis as any).__gxtEngineInstances) {
-    for (const [, engineInst] of (globalThis as any).__gxtEngineInstances) {
+  // Cluster B slice 90: intra-file direct read from module-local
+  // `_gxtEngineInstances` (slice-22/24/27/.../89 intra-file precedent). The
+  // module-local is always-initialized (`new Map()` at module-load time), so
+  // the pre-slice-90 truthy guard on the globalThis slot becomes a `.size`
+  // guard — skip iteration when the cache is empty (matches the pre-slice-90
+  // semantics where an `undefined` slot also skipped the body).
+  if (_gxtEngineInstances.size > 0) {
+    for (const [, engineInst] of _gxtEngineInstances) {
       try {
         // Destroy the original engine class instance (its init added it to NAMESPACES)
         const origEngine = engineInst?.__gxtOriginalEngine;
@@ -6932,7 +6986,7 @@ setInterval(() => {
         /* ignore */
       }
     }
-    (globalThis as any).__gxtEngineInstances.clear();
+    _gxtEngineInstances.clear();
   }
   // Clear pending if-watcher notifications from the previous test
   _pendingIfWatcherNotifications.length = 0;
@@ -15939,6 +15993,19 @@ installCompilePipelinePart({
   // (`_gxtDestroyReattachInProgressFlag`).
   getDestroyReattachInProgress: _gxtGetDestroyReattachInProgress,
   setDestroyReattachInProgress: _gxtSetDestroyReattachInProgress,
+  // Slice-90 (Cluster B): graduates `__gxtEngineInstances` from the globalThis
+  // slot to a single-method `getEngineInstances` getter bridge (slice-78 /
+  // slice-69 / slice-43 single-method-getter pattern). The Map cache is
+  // written by 1 cross-package writer pre-slice-90 (`outlet.gts:310` —
+  // `<ember-mount>.renderEngine` body lazy-init) and read by 3 intra-file
+  // sites (`compile.ts:6910/6911/6935` — `_gxtClearOnSetup` between-test
+  // teardown body's guard + iteration + clear). The cross-package writer
+  // now routes through `compilePipeline.getEngineInstances?.()`; the 3
+  // intra-file readers route directly to the module-local
+  // `_gxtEngineInstances` Map (slice-22/24/27/.../89 intra-file precedent).
+  // Net -1 globalThis slot. See `getEngineInstances` doc in gxt-bridge.ts
+  // and module-local definition above (`_gxtEngineInstances`).
+  getEngineInstances: _gxtGetEngineInstances,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
