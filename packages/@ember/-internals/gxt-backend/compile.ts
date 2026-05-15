@@ -13658,17 +13658,6 @@ export function precompileTemplate(
     // serializer (element.ts wraps component children in arrow functions in IS_GLIMMER_COMPAT_MODE)
 
     compilationResult.code = modifiedCode;
-    // Temporary debug: capture compiled code for scope-valued templates
-    if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
-      const _g2 = globalThis as any;
-      if (!_g2.__gxtDebugCompiledCodes) _g2.__gxtDebugCompiledCodes = [];
-      _g2.__gxtDebugCompiledCodes.push({
-        template: templateString.slice(0, 200),
-        code: modifiedCode.slice(0, 500),
-        scopeKeys: Object.keys(options.scopeValues),
-        bindings: Array.from(scopeBindings),
-      });
-    }
     try {
       const needsArgsAlias = modifiedCode.includes('$a.');
       const needsSlots = modifiedCode.includes('$slots');
