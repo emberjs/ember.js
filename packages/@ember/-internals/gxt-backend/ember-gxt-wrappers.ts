@@ -2776,14 +2776,25 @@ export function installEmberWrappers() {
   _patchGxtEntriesOf();
 }
 
+// Slice-83 (Cluster B): graduates the `__gxtEntriesOfPatchScheduled` boolean
+// dedup latch from `globalThis.__gxtEntriesOfPatchScheduled` to this
+// module-local `_entriesOfPatchScheduled`. The flag guards the
+// microtask-deferred re-entry path in `_patchGxtEntriesOf` so that multiple
+// callers (helper-object-not-yet-registered branch) collapse to a single
+// pending microtask. All 3 sites (1 reader at the if-guard, 1 set-true writer
+// at scheduling, 1 reset-false writer inside the microtask) are intra-file in
+// `ember-gxt-wrappers.ts`, so globalness was incidental and module-local
+// storage is strictly sufficient. Pattern mirrors slice 77's
+// `_inElementDrainDeferred` boolean dedup latch.
+let _entriesOfPatchScheduled = false;
 function _patchGxtEntriesOf(): void {
   const BUILTIN = g.__EMBER_BUILTIN_HELPERS__;
   if (!BUILTIN) {
     // Helpers object not yet registered by compile.ts — retry via microtask
-    if (!g.__gxtEntriesOfPatchScheduled) {
-      g.__gxtEntriesOfPatchScheduled = true;
+    if (!_entriesOfPatchScheduled) {
+      _entriesOfPatchScheduled = true;
       queueMicrotask(() => {
-        g.__gxtEntriesOfPatchScheduled = false;
+        _entriesOfPatchScheduled = false;
         _patchGxtEntriesOf();
       });
     }
