@@ -5900,6 +5900,104 @@ export interface GxtCompilePipelineCapabilities {
    * path cost to the pre-slice-100 globalThis property read.
    */
   getClassHelperInstanceCache?(): Map<string, any> | undefined;
+
+  /**
+   * Recompute the cached values of all classic computed-property descriptors
+   * on `obj` whose `_dependentKeys` array references `changedKey` (either
+   * directly or as a dotted-path prefix `<changedKey>.foo`). Returns a list
+   * of `{ key, value }` pairs for each recomputed CP, ready for the caller
+   * to push into the corresponding GXT cell via `cellFor(obj, key).update(value)`.
+   *
+   * Implementation lives in `@ember/-internals/metal/lib/property_events.ts`
+   * (where the classic `beginPropertyChanges` / `endPropertyChanges` deferred
+   * counter lives — the function MUST early-return an empty array inside a
+   * deferred batch so dependent CP re-evaluation is postponed until batch
+   * close, mirroring classic Ember semantics). Routes the meta lookup
+   * through `peekMeta` and the per-CP recompute through `descriptor.get(obj,
+   * propKey)` (cache-aware path) with fallbacks to `descriptor._getter` and
+   * the no-arg `descriptor.get` for older descriptor shapes. CPs with no
+   * cached revision (`meta.revisionFor(propKey) === undefined`) are skipped
+   * to avoid eagerly invoking user getters with side effects on properties
+   * the caller has never read.
+   *
+   * Sole consumer: `compile.ts:4459` inside `__gxtTriggerReRender`'s
+   * post-`cellFor(obj, keyName).update(newValue)` derived-CP propagation
+   * loop. Wrapped in a try/catch so any descriptor / meta access failure
+   * silently skips the CP fan-out (the primary cell update already fired
+   * above, so renders still observe the user-set value; dependent CPs will
+   * lazily recompute on next read).
+   *
+   * Slice-106 (Cluster B): replaces the pre-slice-106 globalThis writer
+   * `(globalThis as any).__gxtRecomputeDependents = function (obj, changedKey)
+   * { ... };` at `metal/property_events.ts:268` and the single pre-slice-106
+   * cross-package reader at `compile.ts:4459`:
+   *   `const recompute = (globalThis as any).__gxtRecomputeDependents;
+   *    if (typeof recompute === 'function') {
+   *      const dependents = recompute(obj, keyName);
+   *      ...
+   *    }`
+   * The writer is graduated to a module-local `function _gxtRecomputeDependents(obj,
+   * changedKey)` declaration in property_events.ts (slice-96 reverse-flow
+   * function-pointer precedent — canonical state lives where it's primarily
+   * mutated/read: the `deferred` batch counter, `peekMeta` reader, and the
+   * CP descriptor knowledge all live in metal). The reader routes through
+   * `getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj, keyName)`,
+   * the optional-chain providing the same null-tolerant guard as the
+   * pre-slice-106 `typeof === 'function'` check for classic-Ember builds
+   * (where gxt-backend was never loaded — the dependent-CP fan-out is then
+   * skipped, matching the pre-slice semantics). Net -1 globalThis slot,
+   * +1 new bridge method on `compilePipeline`.
+   *
+   * Bridge shape decision: typed-bridge `recomputeDependents(obj, changedKey):
+   * Array<{ key, value }>` method on `GxtCompilePipelineCapabilities`
+   * (slice-96 `forceEmberRerender` reverse-flow precedent — function-pointer
+   * pair with state-home in the writer's own file). Cross-package shape:
+   * writer in `@ember/-internals/metal` (property_events.ts) + reader in
+   * `@ember/-internals/gxt-backend` (compile.ts). Direction: property_events.ts
+   * contributes via `installCompilePipelinePart({ recomputeDependents:
+   * _gxtRecomputeDependents })`, extending its existing `getGxtRenderer`
+   * import from `@ember/-internals/gxt-backend/gxt-bridge` with the
+   * `installCompilePipelinePart` named import (slice-9 / slice-95 / slice-96
+   * reverse-flow install precedent).
+   *
+   * Namespace decision: `compilePipeline`. The function is semantically part
+   * of the GXT cell-update fan-out fired from compile.ts's
+   * `__gxtTriggerReRender` (the same handler that wraps GXT-side cell updates
+   * for classic computed properties); sits alongside the slice-46
+   * `getCellFor`-style accessors and other compile-pipeline-owned compute
+   * surfaces on `compilePipeline`. The state it consumes (the `deferred`
+   * batch counter from `beginPropertyChanges` / `endPropertyChanges`,
+   * `peekMeta` lookup, classic CP descriptor knowledge) lives in metal; the
+   * install runs at module init.
+   *
+   * Bridge-not-yet-installed edge: the cross-package reader in compile.ts
+   * uses `getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj,
+   * keyName)`. The optional chain short-circuits to `undefined` when either
+   * the renderer or the method is not yet installed; the reader checks the
+   * returned `dependents` array for truthiness before the `for ... of` loop
+   * (matches the pre-slice-106 `typeof === 'function'` guard semantics
+   * where, if the slot was undefined, the dependent-CP fan-out was simply
+   * skipped). In practice the bridge IS installed by the time
+   * `__gxtTriggerReRender` fires: property_events.ts's module init runs the
+   * `installCompilePipelinePart` immediately after the function declaration,
+   * and `__gxtTriggerReRender` is only invoked from runtime cell update
+   * paths once the GXT runtime is live.
+   *
+   * Fast-check: the implementation is the same body that lived inside the
+   * pre-slice-106 globalThis function-expression — `deferred > 0` short-
+   * circuit, `peekMeta` lookup, `forEachDescriptors` iteration over CP
+   * descriptors, `revisionFor` filter, `descriptor.get` cache-aware
+   * recompute. The bridge call adds one `getGxtRenderer()` + one property
+   * dereference + one optional-call to the same body; trivially cheap on
+   * the cell-update path (the descriptor iteration and the user-getter
+   * invocation are the dominant cost, not the bridge dispatch).
+   *
+   * Previously: `(globalThis as any).__gxtRecomputeDependents`.
+   */
+  recomputeDependents?(
+    obj: object,
+    changedKey: string
+  ): Array<{ key: string; value: unknown }>;
 }
 
 /**

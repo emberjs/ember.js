@@ -4455,10 +4455,22 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
   // Ember computed properties (e.g., @computed('message') get formattedMessage())
   // are replaced by cell-backed getters when cellFor is called. When the underlying
   // dependency changes, we need to re-evaluate the computed getter and update its cell.
+  //
+  // Slice-106 (Cluster B): the pre-slice-106 globalThis function-pointer
+  // `(globalThis as any).__gxtRecomputeDependents` is RETIRED. Routes
+  // through `getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj,
+  // keyName)`. The optional-chain provides the same null-tolerant guard as
+  // the pre-slice-106 `typeof === 'function'` check (classic-Ember builds
+  // without gxt-backend simply skip the dependent-CP fan-out). The
+  // `dependents` truthiness check inside the try body matches the pre-
+  // slice-106 semantics where, if the slot was undefined, the entire
+  // `for ... of` loop body was unreachable. See `recomputeDependents` doc
+  // in gxt-bridge.ts. State home is `metal/property_events.ts` (canonical
+  // owner of the `deferred` batch counter, `peekMeta` reader, and classic
+  // CP descriptor knowledge).
   try {
-    const recompute = (globalThis as any).__gxtRecomputeDependents;
-    if (typeof recompute === 'function') {
-      const dependents: Array<{ key: string; value: unknown }> = recompute(obj, keyName);
+    const dependents = getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj, keyName);
+    if (dependents) {
       for (const { key, value } of dependents) {
         try {
           const dc = cellFor(obj, key, /* skipDefine */ true);

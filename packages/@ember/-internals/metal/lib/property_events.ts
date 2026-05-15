@@ -14,7 +14,7 @@ import { assert } from '@ember/debug';
 // `_gxtWithInTriggerReRender` so the CP.get re-entrance guard still
 // observes the flag for the body's duration regardless. See
 // `withInTriggerReRender` doc in gxt-bridge.ts.
-import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+import { getGxtRenderer, installCompilePipelinePart } from '@ember/-internals/gxt-backend/gxt-bridge';
 import {
   flushSyncObservers,
   resumeObserverDeactivation,
@@ -264,71 +264,92 @@ function changeProperties(callback: () => void): void {
 // { key, value } pairs for each recomputed property.
 // This is called from compile.ts __gxtTriggerReRender after the primary
 // cell is updated, so that derived computed properties are also refreshed.
-{
-  (globalThis as any).__gxtRecomputeDependents = function (
-    obj: object,
-    changedKey: string
-  ): Array<{ key: string; value: unknown }> {
-    const results: Array<{ key: string; value: unknown }> = [];
-    // Inside a `beginPropertyChanges`/`endPropertyChanges` batch, classic
-    // Ember never evaluates dependent computed properties — it defers all
-    // re-evaluation until the batch closes and observers flush. Mirror that
-    // here: returning an empty results array tells compile.ts's
-    // __gxtTriggerReRender loop not to eagerly update the dependent CPs'
-    // cells. GXT's own cell invalidation still happens via `dirtyTagFor`,
-    // so the next genuine read (observer callback, `get()`, render) will
-    // lazily recompute through the CP descriptor with a fresh value.
-    if (deferred > 0) return results;
-    try {
-      const meta = peekMeta(obj);
-      if (!meta) return results;
-      meta.forEachDescriptors((propKey: string, descriptor: any) => {
-        if (!descriptor || !descriptor._dependentKeys) return;
-        const deps: string[] = descriptor._dependentKeys;
-        // Check if changedKey matches any dependent key (including path prefixes)
-        let matches = false;
-        for (const dep of deps) {
-          if (dep === changedKey || dep.startsWith(changedKey + '.')) {
-            matches = true;
-            break;
-          }
+//
+// Slice-106 (Cluster B): graduated from the pre-slice-106 globalThis writer
+// `(globalThis as any).__gxtRecomputeDependents = function (obj, changedKey)
+// { ... };` to a plain module-local `function _gxtRecomputeDependents(obj,
+// changedKey)` declaration exposed through the
+// `compilePipeline.recomputeDependents` typed-bridge method. Pattern mirrors
+// slice-96's `forceEmberRerender` (same shape: cross-package
+// function-pointer pair, writer in metal/glimmer canonical-state owner,
+// reader in gxt-backend, install via `installCompilePipelinePart` from the
+// writer's file — slice-9 / slice-95 / slice-96 reverse-flow install
+// precedent). The single cross-package reader at `compile.ts:4459` (the
+// post-`cellFor(obj, keyName).update(newValue)` derived-CP propagation
+// loop inside `__gxtTriggerReRender`) routes through
+// `getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj, keyName)`,
+// the optional-chain providing the same null-tolerant guard as the
+// pre-slice-106 `typeof === 'function'` check. State home: this file owns
+// the `deferred` batch counter from `beginPropertyChanges` /
+// `endPropertyChanges` (which the function MUST early-return inside), the
+// `peekMeta` import, and the classic CP descriptor knowledge — so the
+// function stays here and is registered via `installCompilePipelinePart`.
+// See `recomputeDependents` doc in gxt-bridge.ts. Net -1 globalThis slot,
+// +1 new bridge method on `compilePipeline`.
+function _gxtRecomputeDependents(
+  obj: object,
+  changedKey: string
+): Array<{ key: string; value: unknown }> {
+  const results: Array<{ key: string; value: unknown }> = [];
+  // Inside a `beginPropertyChanges`/`endPropertyChanges` batch, classic
+  // Ember never evaluates dependent computed properties — it defers all
+  // re-evaluation until the batch closes and observers flush. Mirror that
+  // here: returning an empty results array tells compile.ts's
+  // __gxtTriggerReRender loop not to eagerly update the dependent CPs'
+  // cells. GXT's own cell invalidation still happens via `dirtyTagFor`,
+  // so the next genuine read (observer callback, `get()`, render) will
+  // lazily recompute through the CP descriptor with a fresh value.
+  if (deferred > 0) return results;
+  try {
+    const meta = peekMeta(obj);
+    if (!meta) return results;
+    meta.forEachDescriptors((propKey: string, descriptor: any) => {
+      if (!descriptor || !descriptor._dependentKeys) return;
+      const deps: string[] = descriptor._dependentKeys;
+      // Check if changedKey matches any dependent key (including path prefixes)
+      let matches = false;
+      for (const dep of deps) {
+        if (dep === changedKey || dep.startsWith(changedKey + '.')) {
+          matches = true;
+          break;
         }
-        if (!matches) return;
-        // Classic Ember semantics: a CP that has never been consumed
-        // (no cached revision) should NOT be eagerly evaluated here.
-        // Eager evaluation would (a) invoke user getters with side
-        // effects prematurely and (b) propagate change events to async
-        // observers that were registered on CPs the caller never read.
-        // Wait for the next lazy read to recompute through the descriptor.
-        if (meta.revisionFor(propKey) === undefined) return;
-        // Recompute using the descriptor's cache-aware `get(obj, keyName)`
-        // method when available. Calling `_getter` directly bypasses the CP
-        // cache path, which for user-defined getters with side effects (e.g.
-        // `this.incCallCount++`) means the computed runs an extra time —
-        // once here during notifyPropertyChange, and once more when the
-        // caller later reads the property through the descriptor. Routing
-        // through `descriptor.get` updates meta.valueFor/revisionFor so the
-        // subsequent read is a cache hit with the freshly-computed value.
-        try {
-          let newValue: unknown;
-          if (typeof descriptor.get === 'function' && descriptor.get.length >= 2) {
-            newValue = descriptor.get(obj, propKey);
-          } else if (typeof descriptor._getter === 'function') {
-            newValue = descriptor._getter.call(obj, propKey);
-          } else if (typeof descriptor.get === 'function') {
-            newValue = descriptor.get(obj, propKey);
-          }
-          results.push({ key: propKey, value: newValue });
-        } catch {
-          /* skip if getter throws */
+      }
+      if (!matches) return;
+      // Classic Ember semantics: a CP that has never been consumed
+      // (no cached revision) should NOT be eagerly evaluated here.
+      // Eager evaluation would (a) invoke user getters with side
+      // effects prematurely and (b) propagate change events to async
+      // observers that were registered on CPs the caller never read.
+      // Wait for the next lazy read to recompute through the descriptor.
+      if (meta.revisionFor(propKey) === undefined) return;
+      // Recompute using the descriptor's cache-aware `get(obj, keyName)`
+      // method when available. Calling `_getter` directly bypasses the CP
+      // cache path, which for user-defined getters with side effects (e.g.
+      // `this.incCallCount++`) means the computed runs an extra time —
+      // once here during notifyPropertyChange, and once more when the
+      // caller later reads the property through the descriptor. Routing
+      // through `descriptor.get` updates meta.valueFor/revisionFor so the
+      // subsequent read is a cache hit with the freshly-computed value.
+      try {
+        let newValue: unknown;
+        if (typeof descriptor.get === 'function' && descriptor.get.length >= 2) {
+          newValue = descriptor.get(obj, propKey);
+        } else if (typeof descriptor._getter === 'function') {
+          newValue = descriptor._getter.call(obj, propKey);
+        } else if (typeof descriptor.get === 'function') {
+          newValue = descriptor.get(obj, propKey);
         }
-      });
-    } catch {
-      /* skip if meta access fails */
-    }
-    return results;
-  };
+        results.push({ key: propKey, value: newValue });
+      } catch {
+        /* skip if getter throws */
+      }
+    });
+  } catch {
+    /* skip if meta access fails */
+  }
+  return results;
 }
+installCompilePipelinePart({ recomputeDependents: _gxtRecomputeDependents });
 
 // Expose notifyPropertyChange on globalThis so @tracked setters can call it
 // without circular imports. Always set (not gated on __GXT_MODE__) because
