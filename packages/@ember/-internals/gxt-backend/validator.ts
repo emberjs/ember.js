@@ -838,22 +838,45 @@ function _fireClassicReactors() {
   }
 }
 
-// Snapshot the reactor population at a checkpoint (testStart / testDone).
-(globalThis as any).__gxtLeakSnapshot = function (label: string) {
-  if (!(globalThis as any).__GXT_LEAK_DEBUG__) return;
-  const buckets = new Map<string, number>();
-  for (const cb of _classicReactors) {
-    const meta = _reactorMeta.get(cb);
-    const key = meta ? `src=${meta.source} regAt="${meta.registeredAtTest}"` : '<no-meta>';
-    buckets.set(key, (buckets.get(key) || 0) + 1);
-  }
-  // eslint-disable-next-line no-console
-  console.log(`[leak-debug] === ${label} === total reactors=${_classicReactors.size}`);
-  for (const [key, count] of buckets) {
-    // eslint-disable-next-line no-console
-    console.log(`[leak-debug]   ${count}× ${key}`);
-  }
-};
+// Slice 104 (Cluster B): the pre-slice-104 init writer
+// `(globalThis as any).__gxtLeakSnapshot = function (label: string) { ... };`
+// is retired. Fresh repo-wide audit confirmed it as a pure orphan-writer
+// publication with NO live consumers needing the global slot:
+//   - 0 in-package readers (`packages/@ember/-internals/`, `packages/@ember/`,
+//     `packages/@glimmer/`, `packages/@glimmer-workspace/`).
+//   - 0 readers in the bundled `@lifeart/gxt@0.0.61` runtime
+//     (`node_modules/.pnpm/@lifeart+gxt@0.0.61/node_modules/@lifeart/gxt/dist/`)
+//     across `dom-*.js`, `gxt.runtime-compiler.es.js`, and every other
+//     published artifact (zero matches).
+//   - 0 references in `scripts/` (debug-artifact scripts).
+//   - 0 references in `packages/@glimmer-workspace/integration-tests/lib/modes/
+//     rehydration/gxt-delegate.ts` (the slice-102 trap path).
+//   - 2 harness call-sites in `index.html` (testStart L67-68, testDone
+//     L115-116) — both guarded with `if (typeof globalThis.__gxtLeakSnapshot
+//     === 'function')` so the call cleanly skips when the writer is absent.
+//     This is the same retire-writer-keep-harness-guard pattern as slice 55
+//     (`__gxtClearRenderErrors`), slice 101 (`__gxtResetIntervalBudget`),
+//     and slice 103 (`__gxtMarkObjectAsDirty`).
+// The function body itself was already a no-op for every standard test run:
+// it short-circuits unless `globalThis.__GXT_LEAK_DEBUG__` is truthy, which
+// is unset by default. The harness calls have therefore never produced any
+// functional behavior in CI / pnpm test runs — only when a developer
+// manually flips the `__GXT_LEAK_DEBUG__` flag from the browser console for
+// reactor-leak diagnostics. Slice-102 lesson check: the harness fallback
+// path here produces NO behavioral difference (the guarded call simply
+// does not execute), unlike the slice-102 `__gxtCompileTemplate` fallback
+// which switched compile output to empty render. Safe to retire.
+// (Pattern matches slice 86 `__gxtDebugCompiledCodes` and slice 77
+// `__gxtCurriedRenderInfos` / `__gxtCondSeenIds` — write-only debug-
+// investigation residue retired after fresh enumeration confirmed zero
+// production / GXT-runtime / harness-as-fallback consumers.)
+//
+// The `_classicReactors` set and `_reactorMeta` map remain live state used
+// by the surrounding leak-tracking instrumentation (e.g., the foreign-fire
+// counters in `_runReactors` above) and by `dirtyTagFor` below. Only the
+// side-effectful globalThis publication of the snapshot function is removed;
+// developers needing the diagnostic can revive it by re-publishing locally
+// or invoke an exported equivalent in a future debug-only build.
 
 // Wrap dirtyTagFor to also bump the global revision AND mark the specific tag as dirty
 const gxtDirtyTagFor = validator.dirtyTagFor;
