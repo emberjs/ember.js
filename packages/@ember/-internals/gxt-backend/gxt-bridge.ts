@@ -2934,10 +2934,14 @@ export interface GxtCompilePipelineCapabilities {
    * runTask to prevent the interval-driven fallback from being permanently
    * starved by a long test.
    *
-   * NOTE: the source globalThis writer in compile.ts is RETAINED in addition
-   * to the bridge install because `packages/demo/tests.html` (an HTML test
-   * harness, can't import TS) reads this hook via globalThis. Dual exposure
-   * pattern; same as `compileTemplate`.
+   * Slice-101 (Cluster B): the source globalThis writer in compile.ts has
+   * been RETIRED. The repo-root harness readers (`index.html:106`,
+   * `packages/demo/tests.html:302`) are guarded by
+   * `typeof globalThis.__gxtResetIntervalBudget === 'function'` and no-op
+   * cleanly post-retirement — their per-test reset is already covered by
+   * `runAppend` / `runTask` calling this bridge method before each test.
+   * Same retire-writer-keep-harness-guard pattern as slice 55
+   * (`__gxtClearRenderErrors`).
    *
    * Previously: `(globalThis as any).__gxtResetIntervalBudget`.
    */

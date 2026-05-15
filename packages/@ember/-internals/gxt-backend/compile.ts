@@ -7139,14 +7139,22 @@ let _intervalSyncBudget = 3;
 // module-local `let` `_intervalSyncBudget` (also read by the setInterval
 // below). See `installCompilePipelinePart` call at module bottom.
 //
-// The globalThis writer is RETAINED alongside the bridge install because
-// `packages/demo/tests.html` (an HTML test harness) reads this hook via
-// `globalThis.__gxtResetIntervalBudget` and cannot import the bridge.
-// Same dual-exposure pattern as `__gxtCompileTemplate`.
+// Slice-101 (Cluster B): the pre-slice-101 globalThis writer
+// `(globalThis as any).__gxtResetIntervalBudget = _gxtResetIntervalBudget;`
+// is RETIRED. The only in-package consumers (`internal-test-helpers/lib/
+// run.ts:97` in `runAppend` and `run.ts:193` in `runTask`) already route
+// through the bridge — `getGxtRenderer()?.compilePipeline.
+// resetIntervalBudget?.()` — installed by the `installCompilePipelinePart`
+// call at module bottom. The remaining repo-root harness readers
+// (`index.html:106`, `packages/demo/tests.html:302`) are guarded by
+// `typeof globalThis.__gxtResetIntervalBudget === 'function'` and no-op
+// cleanly post-retirement; their per-test reset is already covered by
+// `runAppend` / `runTask` calling `resetIntervalBudget` through the bridge
+// before each test runs. Same retire-writer-keep-harness-guard pattern as
+// slice 55 (`__gxtClearRenderErrors`).
 function _gxtResetIntervalBudget(): void {
   _intervalSyncBudget = 3;
 }
-(globalThis as any).__gxtResetIntervalBudget = _gxtResetIntervalBudget;
 setInterval(() => {
   // Slice-37 (Cluster B): reads module-local `_gxtPendingSyncFlag`
   // (graduated from `globalThis.__gxtPendingSync`). Intra-file reader
