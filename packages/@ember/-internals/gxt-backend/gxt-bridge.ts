@@ -5278,6 +5278,109 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `(globalThis as any).__gxtNewRenderPass`.
    */
   newRenderPass?(): void;
+
+  /**
+   * Fire post-render lifecycle hooks (`didUpdate` / `didRender`) for all
+   * component instances queued in manager.ts's module-local `_updatedInstances`
+   * array. Called after DOM sync completes (PHASE 3 of `_gxtSyncDomNow`, after
+   * the force-rerender DOM update). The implementation:
+   *
+   *   1. Bails immediately if `_updatedInstances.length === 0`.
+   *   2. Stable-sorts the queue: deeper components first (via
+   *      `_viewDepth`); siblings at the same depth fire in insertion order.
+   *   3. Drains `_updatedInstances` to length 0 BEFORE firing hooks, so a
+   *      follow-up sync triggered from inside a hook does not see the same
+   *      hooks queued for re-fire.
+   *   4. Saves/clears the two pending-sync flags (`getPendingSync` /
+   *      `getPendingSyncFromPropertyChange`, both via the slice-36/37
+   *      bridge surfaces) so the post-hook re-check can detect whether a
+   *      hook (e.g., `this.set(...)` inside `didUpdate`) dirtied new state.
+   *   5. Calls `triggerLifecycleHook(inst, 'didUpdate')` then
+   *      `triggerLifecycleHook(inst, 'didRender')` for each instance in
+   *      the sorted order.
+   *   6. Drains pending `render.component` instrumentation finalizers via
+   *      `_drainPendingRerenderInstrumentFinalizers` (classic Ember's
+   *      `didUpdateLayout` equivalent).
+   *   7. Inspects the post-hook pending-sync flag; if hooks did NOT
+   *      produce new changes, restores the saved values verbatim; if
+   *      they DID, OR's the saved values back in so nothing is lost.
+   *   8. If hooks produced changes AND the recursion-depth guard
+   *      `_postRenderHookReentryDepth` is below `_POST_RENDER_MAX_REENTRY`
+   *      (3), bumps the guard and re-enters `__gxtSyncDomNow` via the
+   *      slice-24 `compilePipeline.withSyncing(false, fn)` save-restore
+   *      helper (clearing the syncing re-entrancy flag so the recursive
+   *      syncDomNow call is permitted). On bridge-unavailable, calls
+   *      `syncNow()` directly (the GXT pipeline isn't loaded, so there is
+   *      no `_gxtSyncingFlag` to clear). The guard is decremented in a
+   *      finally block.
+   *
+   * Called from compile.ts's `_gxtSyncDomNow` try block, PHASE 3 (after
+   * force-rerender DOM update and the modifier-update-tracking flush in
+   * PHASE 2d).
+   *
+   * Slice-92 (Cluster B): replaces the pre-slice-92 globalThis writer
+   * `(globalThis as any).__gxtPostRenderHooks = function () { ... };`
+   * at `manager.ts:4549` and the pre-slice-92 globalThis reader
+   * `const postRender = (globalThis as any).__gxtPostRenderHooks; if
+   * (typeof postRender === 'function') postRender();` at
+   * `compile.ts:6753-6754`. The writer is graduated to a module-local
+   * `function _gxtPostRenderHooks(): void { ... }` declaration next to
+   * the `_postRenderHookReentryDepth` / `_POST_RENDER_MAX_REENTRY`
+   * recursion-guard counter in manager.ts (slice-91 function-pointer
+   * pattern, canonical state lives where it's primarily mutated/read).
+   * The reader routes through
+   * `getGxtRenderer()?.compilePipeline.postRenderHooks?.()`, the
+   * optional-chain providing the same null-tolerant guard as the
+   * pre-slice-92 `typeof === 'function'` check for classic-Ember builds
+   * (where gxt-backend was never loaded). Net -1 globalThis slot.
+   *
+   * Bridge shape decision: typed-bridge `postRenderHooks(): void` method
+   * on `GxtCompilePipelineCapabilities` (slice-55 `clearRenderErrors` /
+   * slice-87 `notifyHelperPropertyChange` / slice-88 `clearHelperCache` /
+   * slice-91 `newRenderPass` precedent — void-returning bridge method
+   * invoked from a sibling intra-package reader). State home: manager.ts
+   * (canonical owner of `_updatedInstances`, `_postRenderHookReentryDepth`,
+   * `_POST_RENDER_MAX_REENTRY`, `_viewDepth`, and the lifecycle-hook /
+   * instrumentation-finalizer machinery); the function lives there,
+   * registered via `setGxtRenderer`'s compilePipeline namespace
+   * (alongside the slice-91 `newRenderPass` entry), NOT via
+   * `installCompilePipelinePart` from compile.ts (different installer-
+   * direction than slice 87/88/89/90, which all routed through
+   * compile.ts or ember-gxt-wrappers.ts).
+   *
+   * Bridge-not-yet-installed edge: the cross-file reader in compile.ts
+   * uses `getGxtRenderer()?.compilePipeline.postRenderHooks?.()`. Both
+   * optional chains short-circuit to `undefined` when either the renderer
+   * or the method is not yet installed; the no-args `?.()` call simply
+   * does nothing in that case (matches the pre-slice-92 semantics where,
+   * if the slot was undefined, the `typeof === 'function'` guard skipped
+   * the call). The new short-circuit is conservative — it skips the
+   * post-render hook firing entirely for classic-Ember builds where
+   * gxt-backend is never loaded. That's load-order-safe because in
+   * classic-Ember `_gxtSyncDomNow` is never invoked.
+   *
+   * Re-entry via bridge: when hooks dirty new state and the recursion-
+   * depth guard permits re-entry, the function calls the slice-24
+   * `withSyncing(false, fn)` bridge helper which calls
+   * `globalThis.__gxtSyncDomNow` (still a globalThis writer — not yet
+   * migrated). That recursive `__gxtSyncDomNow` call lands back in
+   * `_gxtSyncDomNow`'s try block and re-fires PHASE 3 (this same
+   * post-render hooks bridge call) — the recursion-guard counter bounds
+   * the depth to 3 so a perpetually self-dirtying hook cannot loop
+   * forever.
+   *
+   * Fast-check: the implementation is the same body that lived inside
+   * the pre-slice-92 globalThis function-expression — sort the queue,
+   * fire two lifecycle hooks per instance, save/restore two pending
+   * flags via the slice-36/37 bridge surfaces, drain instrumentation
+   * finalizers, optionally re-enter sync via the slice-24 bridge. The
+   * bridge call adds one `getGxtRenderer()` + one property dereference +
+   * one optional-call to the same body; trivially cheap on the sync-cycle
+   * hot path.
+   *
+   * Previously: `(globalThis as any).__gxtPostRenderHooks`.
+   */
+  postRenderHooks?(): void;
 }
 
 /**

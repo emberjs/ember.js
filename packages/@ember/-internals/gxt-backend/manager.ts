@@ -4546,7 +4546,29 @@ const _POST_RENDER_MAX_REENTRY = 3;
 // Post-render lifecycle hooks — called after DOM sync completes.
 // Order: deepest children first; siblings at the same depth fire in insertion
 // order (i.e., the order they appear in _updatedInstances). Parents fire last.
-(globalThis as any).__gxtPostRenderHooks = function () {
+//
+// Slice-92 (Cluster B): graduated from the pre-slice-92 globalThis writer
+// `(globalThis as any).__gxtPostRenderHooks = function () { ... };` to a plain
+// module-local `function _gxtPostRenderHooks()` declaration exposed through the
+// `compilePipeline.postRenderHooks` typed-bridge method. Pattern mirrors slice-91's
+// `newRenderPass` (same shape: void-returning bridge method invoked from an
+// intra-package reader; same intra-`gxt-backend` 1W/1R function-pointer topology;
+// slice-55 / slice-87 / slice-88 / slice-91 typed-bridge function-pointer precedent).
+// Sole reader at `compile.ts:6753-6754` (inside the `_gxtSyncDomNow` try block,
+// PHASE 3 post-render hooks) routes through
+// `getGxtRenderer()?.compilePipeline.postRenderHooks?.()` — the optional-chain
+// provides the same null-tolerant guard as the pre-slice-92 `typeof === 'function'`
+// check. State home: manager.ts (canonical owner of `_updatedInstances`,
+// `_postRenderHookReentryDepth`, `_POST_RENDER_MAX_REENTRY`, `_viewDepth`, and the
+// `triggerLifecycleHook` / `_drainPendingRerenderInstrumentFinalizers` /
+// `_fireRerenderInstrumentStart` machinery the function body consults). The
+// function stays here and is registered via this file's `setGxtRenderer`
+// compilePipeline namespace (alongside the slice-12/13/14/32/33/39/91 entries),
+// NOT via `installCompilePipelinePart` from compile.ts (different installer-
+// direction than slice 87/88/89/90 which routed through compile.ts or
+// ember-gxt-wrappers.ts). Net -1 globalThis slot, +1 new bridge method on
+// `compilePipeline`.
+function _gxtPostRenderHooks(): void {
   if (_updatedInstances.length === 0) return;
 
   // Stable sort: deeper components first, preserve insertion order for same depth
@@ -4657,7 +4679,7 @@ const _POST_RENDER_MAX_REENTRY = 3;
       _postRenderHookReentryDepth--;
     }
   }
-};
+}
 
 // Track ALL live component instances for destroy detection.
 const _allLiveInstances = new Set<any>();
@@ -13412,6 +13434,17 @@ setGxtRenderer({
     // `getGxtRenderer()?.compilePipeline.newRenderPass?.()`. See
     // `newRenderPass` doc in gxt-bridge.ts. Net -1 globalThis slot.
     newRenderPass: _gxtNewRenderPass,
+    // Slice-92 (Cluster B): seeded here with the canonical `_gxtPostRenderHooks`
+    // function (defined above next to the `_postRenderHookReentryDepth` /
+    // `_POST_RENDER_MAX_REENTRY` recursion-guard and the `_updatedInstances`
+    // queue it drains). Replaces the pre-slice-92 globalThis writer at L4549
+    // (`(globalThis as any).__gxtPostRenderHooks = function () { ... };`, now
+    // retired). The sole reader in `compile.ts:6753` (inside `_gxtSyncDomNow`
+    // try block, PHASE 3 post-render hooks after the force-rerender DOM update)
+    // routes through `getGxtRenderer()?.compilePipeline.postRenderHooks?.()`.
+    // See `postRenderHooks` doc in gxt-bridge.ts. Slice-91 typed-bridge function-
+    // pointer precedent. Net -1 globalThis slot.
+    postRenderHooks: _gxtPostRenderHooks,
   },
   renderPass: {
     // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is

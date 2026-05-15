@@ -6749,9 +6749,14 @@ function _resetTemplateOnlyState() {
       }
       // PHASE 3: Post-render hooks (didUpdate, didRender) — fire after DOM
       // is fully updated by the force-rerender.
+      // Slice-92 (Cluster B): routes through the typed `compilePipeline.
+      // postRenderHooks` bridge — see `postRenderHooks` doc in gxt-bridge.ts.
+      // The optional-chain provides the same null-tolerant guard as the
+      // pre-slice-92 `typeof === 'function'` check (short-circuits to a
+      // no-op when manager.ts has not yet seeded the compilePipeline
+      // namespace, e.g., in classic-Ember builds).
       try {
-        const postRender = (globalThis as any).__gxtPostRenderHooks;
-        if (typeof postRender === 'function') postRender();
+        getGxtRenderer()?.compilePipeline.postRenderHooks?.();
       } catch {
         /* ignore */
       }
