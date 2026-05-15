@@ -5827,6 +5827,75 @@ export interface GxtCompilePipelineCapabilities {
    * the pre-slice-99 globalThis property read.
    */
   getTagHelperInstanceCache?(): Map<string, { instance: any; recomputeTag: any }> | undefined;
+
+  /**
+   * Get the `classHelperInstanceCache` Map (the `ember-gxt-wrappers.ts`-owned
+   * per-helper-name cache for class-based helper instances created via
+   * `$_maybeHelper`). Returns the live `Map<string, any>` whose entries are
+   * either a raw helper instance, a `{ __managerBucket: true, bucket, ... }`
+   * wrapper for setHelperManager-bridged helpers, or — for the synthetic
+   * `__tagDirtySentinel__` entry — the manager-bucket-shaped object whose
+   * `lastArgsSer` setter propagates classic-tag dirties into the cached tag-
+   * helper instances (slice-99 bridge consumer).
+   *
+   * Consumers (cross-file):
+   *
+   *   1. `validator.ts` — inside `dirtyTagFor` (called from
+   *      `_glimmerGlobalContext.dirtyTagFor` and from
+   *      `dirtyTagForGuarded`/Ember's classic tag-mutation path). On every
+   *      classic-tag dirty the loop walks every cached class-based helper
+   *      bucket and stamps a fresh `lastArgsSer = '__classic_tag_dirty__' +
+   *      globalRevisionCounter` so that the next `$_maybeHelper` invocation
+   *      takes the cache-miss branch and re-runs `delegate.getValue()`. The
+   *      cache-key bump is essential because helpers that close over non-arg
+   *      `@tracked` state (functional helpers reading `service.name`, class-
+   *      based helpers reading a module-level tracked instance) would
+   *      otherwise return stale cached values keyed solely by argsSer.
+   *
+   *   2. `compile.ts` — three intra-package read sites inside the `$_if`
+   *      branch-swap helper-destroy hook (at L5285 `evictFromCache(...)` and
+   *      at L5326/L5339 in `snapshotCacheKeys` / `destroyNewCacheEntriesSince`).
+   *      The hook walks the cache, identifies cache entries whose instances
+   *      belong to the just-evaluated `{{#if}}` branch, and removes them so
+   *      the next render creates fresh helper instances with their full
+   *      lifecycle (init / willDestroy / etc.). A fourth read at L5544 inside
+   *      `destroyHelpersIn` (the `ifCondition.syncState` watcher) performs
+   *      the same `cache.forEach` walk to evict by instance identity.
+   *
+   * Pre-slice-100 reader pattern (4 sites, all cross-file):
+   *  - `validator.ts:954` — `(globalThis as any).__gxtClassHelperInstanceCache as Map<string, any> | undefined;`
+   *  - `compile.ts:5285` — `evictFromCache(_g.__gxtClassHelperInstanceCache);` inside the `branchSwapHelperDestroyHook`
+   *  - `compile.ts:5326` — `const cache = _g.__gxtClassHelperInstanceCache;` inside `snapshotCacheKeys`
+   *  - `compile.ts:5339` — `const cache = _g.__gxtClassHelperInstanceCache;` inside `destroyNewCacheEntriesSince`
+   *  - `compile.ts:5544` — `const cache = g2.__gxtClassHelperInstanceCache;` inside `destroyHelpersIn` (`ifCondition.syncState` watcher)
+   *
+   * Slice-100 (Cluster B — milestone slice): graduates the canonical state
+   * from the pre-slice-100 `(globalThis as any).__gxtClassHelperInstanceCache
+   * = classHelperInstanceCache` publish at the cache declaration to this
+   * typed get-only accessor on the compile pipeline. All five cross-file
+   * readers route through `getGxtRenderer()?.compilePipeline.
+   * getClassHelperInstanceCache?.()`. Bridge shape mirrors slice-99's
+   * `getTagHelperInstanceCache` (the direct sibling: tag-helper-instance
+   * cache vs class-helper-instance cache; both compile-pipeline-owned per-
+   * helper-name caches with the same map-iterate consumer pattern in
+   * validator.ts's classic-tag-dirty propagator) and slice-69's
+   * `getWrapperUserFalseSet` (get-only collection-return accessor). Net -1
+   * globalThis slot, +1 bridge method.
+   *
+   * Bridge-not-yet-installed semantics: optional-chain
+   * `getClassHelperInstanceCache?.()` returns undefined before `ember-gxt-
+   * wrappers.ts`'s `installCompilePipelinePart` at L215 fires (early classic-
+   * tag-dirty firings during module init can race with the bridge install);
+   * the reader bodies' existing `if (!cache || typeof cache.forEach !==
+   * 'function') return;` / `if (helperCache && helperCache.size > 0)` guards
+   * short-circuit — matches pre-slice-100 semantics where the slot was
+   * undefined → the loop body skipped silently.
+   *
+   * Fast-check: 1 closure read per call (returning the captured
+   * `classHelperInstanceCache` reference); zero allocations. Identical hot-
+   * path cost to the pre-slice-100 globalThis property read.
+   */
+  getClassHelperInstanceCache?(): Map<string, any> | undefined;
 }
 
 /**

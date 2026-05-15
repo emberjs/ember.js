@@ -951,7 +951,20 @@ export function dirtyTagFor(obj: any, key: any) {
   // is only to make sure the cache doesn't serve stale data to that
   // re-render.
   try {
-    const helperCache = (globalThis as any).__gxtClassHelperInstanceCache as
+    // Slice-100 (Cluster B — milestone slice): route through the get-only
+    // typed-bridge accessor `compilePipeline.getClassHelperInstanceCache?.()`
+    // (registered by `ember-gxt-wrappers.ts`'s `installCompilePipelinePart`
+    // at L215). Pre-slice-100 this reader pulled from
+    // `(globalThis as any).__gxtClassHelperInstanceCache` — the globalThis
+    // publish at the cache declaration was dropped in slice 100 in favour
+    // of the bridge surface. Optional-chain returns undefined when
+    // `ember-gxt-wrappers.ts` has not yet executed its bridge install
+    // (extremely-early classic-tag-dirty firing during module init) — the
+    // existing `if (helperCache && helperCache.size > 0)` guard short-
+    // circuits, matching pre-slice-100 semantics where the slot was
+    // undefined → the loop body was skipped. See `getClassHelperInstanceCache`
+    // doc in gxt-bridge.ts.
+    const helperCache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.() as
       | Map<string, any>
       | undefined;
     if (helperCache && helperCache.size > 0) {

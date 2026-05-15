@@ -5282,7 +5282,17 @@ function patchGlobalIf() {
             /* ignore */
           }
         };
-        evictFromCache(_g.__gxtClassHelperInstanceCache);
+        // Slice-100 (Cluster B — milestone slice): route through the get-only
+        // typed-bridge accessor `compilePipeline.getClassHelperInstanceCache?.()`
+        // (registered by `ember-gxt-wrappers.ts`'s `installCompilePipelinePart`
+        // at L215). Pre-slice-100 this reader pulled from
+        // `_g.__gxtClassHelperInstanceCache` — the globalThis publish at the
+        // cache declaration was dropped in slice 100 in favour of the bridge
+        // surface. The existing `evictFromCache` body's
+        // `if (cache && typeof cache.forEach === 'function')` guard short-
+        // circuits when the bridge returns undefined — matches pre-slice-100
+        // semantics. See `getClassHelperInstanceCache` doc in gxt-bridge.ts.
+        evictFromCache(getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.());
         // Slice-99 (Cluster B): intra-`compile.ts` reader of `_tagHelperInstanceCache`
         // (the module-local Map declared near L7389). Pre-slice-99 this read
         // through the `(globalThis as any).__gxtTagHelperInstanceCache` slot;
@@ -5323,7 +5333,14 @@ function patchGlobalIf() {
       let preBranchCacheKeys: Set<string> | null = null;
       const snapshotCacheKeys = () => {
         try {
-          const cache = _g.__gxtClassHelperInstanceCache;
+          // Slice-100 (Cluster B — milestone slice): see slice-100 doc on the
+          // `evictFromCache(getGxtRenderer()?.compilePipeline.
+          // getClassHelperInstanceCache?.())` site ~22 lines above for the
+          // full migration rationale. Pre-slice-100 this read `_g.
+          // __gxtClassHelperInstanceCache`. The `if (cache && typeof
+          // cache.forEach === 'function')` guard short-circuits when the
+          // bridge returns undefined (pre-bridge-install).
+          const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
           if (cache && typeof cache.forEach === 'function') {
             const s = new Set<string>();
             cache.forEach((_v: any, k: string) => s.add(k));
@@ -5336,7 +5353,13 @@ function patchGlobalIf() {
       };
       const destroyNewCacheEntriesSince = (prev: Set<string> | null) => {
         try {
-          const cache = _g.__gxtClassHelperInstanceCache;
+          // Slice-100 (Cluster B — milestone slice): see slice-100 doc on the
+          // `evictFromCache(getGxtRenderer()?.compilePipeline.
+          // getClassHelperInstanceCache?.())` site ~38 lines above for the
+          // full migration rationale. Pre-slice-100 this read `_g.
+          // __gxtClassHelperInstanceCache`. The early-return guard short-
+          // circuits when the bridge returns undefined (pre-bridge-install).
+          const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
           if (!cache || typeof cache.forEach !== 'function') return;
           const toDelete: string[] = [];
           cache.forEach((_v: any, k: string) => {
@@ -5539,9 +5562,18 @@ function patchGlobalIf() {
           scope.clear();
           // Also remove from the shared classHelperInstanceCache so subsequent
           // renders create fresh instances with their full lifecycle.
-          const g2 = globalThis as any;
           try {
-            const cache = g2.__gxtClassHelperInstanceCache;
+            // Slice-100 (Cluster B — milestone slice): route through the
+            // get-only typed-bridge accessor `compilePipeline.
+            // getClassHelperInstanceCache?.()` (registered by `ember-gxt-
+            // wrappers.ts`'s `installCompilePipelinePart` at L215). Pre-slice-
+            // 100 this read from a local `g2 = globalThis as any` alias as
+            // `g2.__gxtClassHelperInstanceCache`. The `if (cache && typeof
+            // cache.forEach === 'function')` guard short-circuits when the
+            // bridge returns undefined (pre-bridge-install). The `g2` local
+            // alias was inlined since this was its only use. See
+            // `getClassHelperInstanceCache` doc in gxt-bridge.ts.
+            const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
             if (cache && typeof cache.forEach === 'function') {
               const toDelete: any[] = [];
               cache.forEach((v: any, k: any) => {

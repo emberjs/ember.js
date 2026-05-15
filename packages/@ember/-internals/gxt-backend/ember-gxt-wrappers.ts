@@ -169,9 +169,17 @@ function findHelperManager(obj: any): any {
 // Keyed by helper name for simple per-invocation caching.
 // Cleared during test teardown via compilePipeline.clearHelperCache (slice 88).
 const classHelperInstanceCache = new Map<string, any>();
-// Expose to compile.ts so it can evict entries when an if-block tears down
-// its class-based helper instances and they need to be re-created fresh.
-(globalThis as any).__gxtClassHelperInstanceCache = classHelperInstanceCache;
+// Slice-100 (Cluster B — milestone slice): graduates the pre-slice-100
+// `(globalThis as any).__gxtClassHelperInstanceCache = classHelperInstanceCache;`
+// publish to a typed get-only bridge method `compilePipeline.
+// getClassHelperInstanceCache` (registered in the `installCompilePipelinePart`
+// block at L215 below). Mirrors slice-99's `getTagHelperInstanceCache` shape
+// (the direct sibling slot — tag-helper-instance cache vs class-helper-
+// instance cache; both compile-pipeline-owned per-helper-name caches whose
+// consumers iterate the live map). All five cross-file readers (1 in
+// `validator.ts`, 4 in `compile.ts`) now route through `getGxtRenderer()?.
+// compilePipeline.getClassHelperInstanceCache?.()`. Net -1 globalThis slot,
+// +1 bridge method. See `getClassHelperInstanceCache` doc in gxt-bridge.ts.
 // Cache for simple (function-based) helper results to deduplicate calls within
 // the same sync cycle. Keyed by helper name, stores last args serialization + result.
 const simpleHelperResultCache = new Map<string, { argsSer: string; result: any }>();
@@ -214,6 +222,22 @@ function _gxtClearHelperCache(): void {
 // yet fired and merges immediately otherwise.
 installCompilePipelinePart({
   clearHelperCache: _gxtClearHelperCache,
+  // Slice-100 (Cluster B — milestone slice): get-only typed-bridge accessor
+  // for the `classHelperInstanceCache` Map declared at L171 above (the cache
+  // holds per-helper-name class-based helper instances + their manager-
+  // bucket wrappers, created in `$_maybeHelper`). Pre-slice-100 the cache
+  // was published as `(globalThis as any).__gxtClassHelperInstanceCache` at
+  // the cache declaration; this slice drops that publish in favour of the
+  // typed bridge surface. The five cross-file readers — 1 in `validator.ts`
+  // (the `dirtyTagFor` loop that stamps `lastArgsSer` on every bucket to
+  // force cache-miss on the next `$_maybeHelper` invocation) and 4 in
+  // `compile.ts` (the `$_if` branch-swap helper-destroy hook's evict /
+  // snapshot / destroyNew / destroyHelpersIn walks) — route through this
+  // get-only method. Net -1 globalThis slot, +1 bridge method. Get-only
+  // collection-return shape mirrors slice-99 `getTagHelperInstanceCache`
+  // (the direct sibling slot — same compile-pipeline ownership, same per-
+  // helper-name map shape, same map-iterate consumer pattern).
+  getClassHelperInstanceCache: () => classHelperInstanceCache,
 });
 
 // Tag-dirty bridge sentinel.
