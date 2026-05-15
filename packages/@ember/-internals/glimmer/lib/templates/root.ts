@@ -900,16 +900,35 @@ export default function createRootTemplate(_owner: any) {
         _renderPass.markTemplateRendered(renderContext);
         if (model && typeof model === 'object') _renderPass.markTemplateRendered(model);
       }
-      (globalThis as any).__gxtInOutletRender = true;
-      try {
+      // Slice-110 (Cluster B): the `__gxtInOutletRender` globalThis flag is
+      // graduated to the typed bridge as a paired `withInOutletRender(fn)` /
+      // `isInOutletRender()` surface on `compilePipeline`. The pre-slice-110
+      // set-true / try / finally-set-false pair around
+      // `renderTemplateWithContext` is now folded into the bridge wrap. The
+      // `_renderPass?.endRenderPass()` post-call (paired with the
+      // `_renderPass?.beginRenderPass()` above) still fires unconditionally
+      // in the outer `try/finally` to preserve the slice-8 render-pass
+      // pairing — the bridge wrap is independent of the render-pass pairing.
+      // For classic-Ember builds (no GXT backend loaded) the optional chain
+      // short-circuits and the body runs unwrapped via `?? renderFn()` —
+      // matching pre-slice-110 semantics where the reader's `!!(undefined)`
+      // coerced to `false`. See `withInOutletRender` doc in gxt-bridge.ts.
+      const _cp110 = getGxtRenderer()?.compilePipeline;
+      const renderFn = (): void => {
         renderTemplateWithContext(
           routeTemplate,
           targetElement || parentElement,
           renderContext,
           outletOwner
         );
+      };
+      try {
+        if (_cp110?.withInOutletRender) {
+          _cp110.withInOutletRender(renderFn);
+        } else {
+          renderFn();
+        }
       } finally {
-        (globalThis as any).__gxtInOutletRender = false;
         _renderPass?.endRenderPass();
       }
 

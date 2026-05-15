@@ -6414,6 +6414,181 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `(globalThis as any).__gxtForceRerender`.
    */
   forceRerender?(instance: any): void;
+
+  /**
+   * Run `fn` while the `__gxtInOutletRender` flag is `true`; the flag is
+   * restored to its prior value on completion via `try/finally` (including
+   * when `fn` throws). Returns whatever `fn` returns. The flag is consumed
+   * by `gxt-backend/manager.ts:3306`'s `_buildRenderTree` body — used
+   * together with `__currentOutletState` to decide whether to rebuild the
+   * parentView-derived `renderTreeParts` with the proper outlet hierarchy
+   * that the Glimmer VM produces (route-name "{{outlet}} for X" / route X
+   * entries). Outside the outlet render frame the flag is `false` and
+   * `_buildRenderTree` retains the bare parentView-derived render-tree
+   * parts.
+   *
+   * Slice-110 (Cluster B): paired-bridge migration of the pre-slice-110
+   * dual writer at `glimmer/lib/templates/root.ts:903/912`:
+   *
+   *   (globalThis as any).__gxtInOutletRender = true;
+   *   try {
+   *     renderTemplateWithContext(routeTemplate, targetElement || parentElement,
+   *       renderContext, outletOwner);
+   *   } finally {
+   *     (globalThis as any).__gxtInOutletRender = false;
+   *     _renderPass?.endRenderPass();
+   *   }
+   *
+   * The two writes form a balanced set-true / try / finally-set-false
+   * pair — the canonical save-restore shape (mirroring slice-18's
+   * `withInTriggerReRender` and slice-22's `withCurrentlyRendering`). The
+   * single cross-package reader at `gxt-backend/manager.ts:3306`:
+   *
+   *   const inOutletRender = !!(globalThis as any).__gxtInOutletRender;
+   *
+   * routes through `compilePipeline.isInOutletRender?.() ?? false` (read
+   * surface below). The pre-slice-110 `!!` coercion treated `undefined`
+   * as `false`, which the `?? false` bridge fallback preserves for the
+   * bridge-not-yet-installed edge.
+   *
+   * Pre-slice-110 topology (audited verbatim against current source):
+   *   Writers (1 paired site, in glimmer package):
+   *     - glimmer/lib/templates/root.ts:903 (set TRUE just before the
+   *       `renderTemplateWithContext` call) + L912 (set FALSE in the
+   *       enclosing `try/finally`'s `finally`). The two writes are the
+   *       canonical wrap-a-synchronous-body-in-a-state-flag-toggle
+   *       pattern (slice-17/18/22/27 precedent).
+   *   Readers (1 cross-package site, in gxt-backend package):
+   *     - gxt-backend/manager.ts:3306 (`_buildRenderTree` body — used
+   *       together with `__currentOutletState` to gate the outlet-
+   *       hierarchy rebuild of `renderTreeParts`).
+   *
+   * GXT-runtime ownership audit: 0 matches under
+   * `node_modules/.pnpm/@lifeart+gxt` published artifacts, 0 in repo-root
+   * `index.html`, 0 in scripts/, 0 in dist/, 0 in `packages/demo/`, 0 in
+   * harness test runners. The slot is purely an Ember-internal outlet-
+   * render-pass marker — no external readers/writers to retain.
+   *
+   * Bridge shape decision: paired `withInOutletRender<T>(fn): T` (writer)
+   * + `isInOutletRender(): boolean` (reader). The pre-slice-110 writer
+   * sites form a balanced set-true / try / finally-set-false pair around
+   * a single `renderTemplateWithContext` call — the canonical "wrap a
+   * synchronous body in a state-flag toggle" pattern (slice-17/18/22/27
+   * precedent). The reader is a read-only predicate. Paired bridge shape
+   * mirrors slice-18's `withInTriggerReRender` / `isInTriggerReRender`
+   * and slice-22's `withCurrentlyRendering` / `isCurrentlyRendering`. Two
+   * new bridge methods, no new install-API namespace (registered inside
+   * the existing `installCompilePipelinePart({ ... })` block at compile.ts
+   * EOF alongside the slice-108 `withMorphRender` /
+   * `isMorphRenderInProgress` paired entries).
+   *
+   * Namespace decision: `compilePipeline`. The flag is semantically a
+   * scope-modifier on the GXT outlet-render pipeline — a boolean toggle
+   * paired begin/end around a synchronous render body, gating a
+   * downstream consumer (here `_buildRenderTree`) on whether the current
+   * frame is inside the outlet-render call. Same shape category as
+   * `withInTriggerReRender` (slice 18) / `withCurrentlyRendering` (slice
+   * 22) / `withMorphRender` (slice 108) — all live on
+   * `compilePipeline`.
+   *
+   * State-home: `gxt-backend/compile.ts`. The canonical state is the
+   * module-local `_gxtInOutletRenderFlag` boolean defined alongside the
+   * other compilePipeline boolean toggles (slice 17/18/22/23/24/27/30/
+   * 31/97/108 precedent — all the "scope-modifier boolean on the GXT
+   * render/sync pipeline" toggles live in compile.ts). Although the
+   * pre-slice-110 writer lived in `glimmer/lib/templates/root.ts`
+   * (cross-package contributor — same pattern as slice 96's
+   * `forceEmberRerender` and slice 108's `withMorphRender` where
+   * renderer.ts contributes state into compilePipeline via the bridge
+   * writer), and the reader lives in `gxt-backend/manager.ts`, the
+   * bridge state lives in compile.ts because:
+   *   1) State-home convention is compile.ts for the compilePipeline
+   *      boolean-toggle category;
+   *   2) The state belongs to the compile-pipeline-scoped state cluster
+   *      (alongside `_renderPassDepth`, `_gxtInTriggerReRenderFlag`,
+   *      `_gxtCurrentlyRenderingFlag`, `_gxtMorphRenderInProgressFlag`),
+   *      not to manager.ts's render-tree builder which only reads it as
+   *      a one-frame gate;
+   *   3) Installing it from `installCompilePipelinePart` at compile.ts
+   *      EOF avoids the cycle that would arise if manager.ts owned the
+   *      state and compile.ts had to import it.
+   *
+   * Bridge-not-yet-installed edge: the cross-package writer in
+   * `glimmer/lib/templates/root.ts` uses
+   * `getGxtRenderer()?.compilePipeline.withInOutletRender?.(fn) ?? fn()`.
+   * The optional chain short-circuits to `undefined` when either the
+   * renderer or the method is not yet installed; the `?? fn()` fallback
+   * runs the body unwrapped (with no flag toggle) — matching the pre-
+   * slice-110 semantics if the slot was undefined (the reader's
+   * `!!(globalThis...)` coerced to `false`, and the body ran the same
+   * `renderTemplateWithContext` call regardless). The cross-package
+   * reader at `manager.ts:3306` uses
+   * `getGxtRenderer()?.compilePipeline.isInOutletRender?.() ?? false` —
+   * defaulting to `false` matches the pre-slice-110 `!!(undefined) ===
+   * false` coercion. In practice the bridge IS installed by the time
+   * either site fires: `installCompilePipelinePart` runs at compile.ts
+   * module init (before any template renders), and both root.ts and
+   * manager.ts only execute their respective sites during/after the
+   * first outlet render — which is well after compile.ts has finished
+   * its install pass. For classic-Ember builds (no GXT backend loaded),
+   * neither root.ts (this is the gxt-templated outlet body) nor
+   * manager.ts's `_buildRenderTree` outlet branch fires, so the bridge
+   * short-circuit is moot.
+   *
+   * Re-entrancy contract: save-restore wrap pattern (slice-18/22/27/108
+   * precedent). On entry, save the prior flag; set to `true`; invoke
+   * `fn`; on completion (including throw), restore the prior flag via
+   * try/finally. Nested `withInOutletRender` calls stack correctly: an
+   * inner frame's state is restored to the outer frame's state on exit.
+   * In practice no nested outlet-render occurs (the outlet body is the
+   * top-level frame and is not re-entered during its
+   * `renderTemplateWithContext` call), but the save-restore pattern is
+   * the canonical Cluster B shape.
+   *
+   * Hot-path concern: NONE. The writer fires ONCE per outlet render
+   * (a top-level event, far from per-revalidation hot paths). The
+   * reader fires once per `_buildRenderTree` call (DevTools render-tree
+   * inspection — rare). The bridge dispatch overhead vs. globalThis
+   * read/write is negligible at this call frequency.
+   *
+   * Fast-check: the implementations are the same body shape as slices
+   * 18 / 22 / 27 / 108 — `function _gxtWithInOutletRender(fn) { const
+   * prev = _gxtInOutletRenderFlag; _gxtInOutletRenderFlag = true; try {
+   * return fn(); } finally { _gxtInOutletRenderFlag = prev; } }` and
+   * `function _gxtIsInOutletRender() { return _gxtInOutletRenderFlag;
+   * }`. Trivially cheap.
+   *
+   * After slice-110 the `__gxtInOutletRender` globalThis slot is
+   * DROPPED. The canonical state is `_gxtInOutletRenderFlag` in
+   * compile.ts. Net globalThis surface delta: -1 slot. +2 paired bridge
+   * methods on `compilePipeline`.
+   *
+   * Previously: `(globalThis as any).__gxtInOutletRender`.
+   */
+  withInOutletRender?<T>(fn: () => T): T;
+
+  /**
+   * Read-only predicate for the in-outlet-render flag set by
+   * `withInOutletRender(fn)` above. Returns `true` iff the current
+   * synchronous stack is nested inside the `renderTemplateWithContext`
+   * call in `glimmer/lib/templates/root.ts`'s outlet-render path.
+   *
+   * Slice-110 (Cluster B): paired with `withInOutletRender` (above).
+   * The sole cross-package reader at `gxt-backend/manager.ts:3306`
+   * (`_buildRenderTree` body) routes through
+   * `compilePipeline.isInOutletRender?.() ?? false` — the `?? false`
+   * fallback matches the pre-slice-110 `!!(undefined) === false`
+   * coercion the previous code used. See `withInOutletRender` doc
+   * above for the full pre/post topology, state-home decision, and
+   * bridge-not-yet-installed edge handling.
+   *
+   * Matches slice-18's `isInTriggerReRender()` / slice-22's
+   * `isCurrentlyRendering()` / slice-108's `isMorphRenderInProgress()`
+   * body shape.
+   *
+   * Previously: `!!(globalThis as any).__gxtInOutletRender`.
+   */
+  isInOutletRender?(): boolean;
 }
 
 /**

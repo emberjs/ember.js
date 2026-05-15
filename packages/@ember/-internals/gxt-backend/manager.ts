@@ -3303,7 +3303,15 @@ export function checkBacktracking(targetObj: any, key: string): void {
   // If rendering inside an outlet context, build the outlet hierarchy.
   // This matches Glimmer VM's render tree which includes outlet entries.
   const outletState = (globalThis as any).__currentOutletState;
-  const inOutletRender = !!(globalThis as any).__gxtInOutletRender;
+  // Slice-110 (Cluster B): the `__gxtInOutletRender` globalThis flag is
+  // graduated to the typed bridge as a paired `withInOutletRender(fn)` /
+  // `isInOutletRender()` surface on `compilePipeline`. The pre-slice-110
+  // read `!!(globalThis as any).__gxtInOutletRender` is replaced by
+  // `getGxtRenderer()?.compilePipeline.isInOutletRender?.() ?? false` —
+  // the `?? false` fallback preserves the pre-slice-110 `!!(undefined)
+  // === false` coercion for the bridge-not-yet-installed edge. See
+  // `isInOutletRender` doc in gxt-bridge.ts.
+  const inOutletRender = getGxtRenderer()?.compilePipeline.isInOutletRender?.() ?? false;
   if (outletState && inOutletRender) {
     // Clear parentView-derived entries (e.g., "controller:routeWithError")
     // and rebuild with the proper outlet hierarchy that Glimmer VM produces.

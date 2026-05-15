@@ -3804,6 +3804,77 @@ function _gxtWithMorphRender<T>(invocations: any[], fn: () => T): T {
   }
 }
 
+// Slice-110 (Cluster B): paired typed-bridge migration of the
+// `__gxtInOutletRender` boolean flag (set TRUE for the duration of the
+// `renderTemplateWithContext(routeTemplate, ...)` call inside
+// `glimmer/lib/templates/root.ts`'s outlet render path, restored to FALSE
+// on the surrounding `try/finally`'s `finally`). The flag is consumed by
+// `gxt-backend/manager.ts:3306`'s `_buildRenderTree` body — used together
+// with `__currentOutletState` to decide whether to rebuild the parentView-
+// derived `renderTreeParts` with the proper outlet hierarchy that the
+// Glimmer VM produces (route-name "{{outlet}} for X" / route X entries).
+// Outside the outlet render frame, the flag is `false` and the function
+// retains the bare parentView-derived render-tree parts.
+//
+// State-home: `compile.ts` (this file). The canonical state is the
+// module-local `_gxtInOutletRenderFlag` boolean declared below. Same
+// state-home as the other compilePipeline boolean toggles graduated by
+// slices 17/18/22/23/24/27/30/31/97 (the canonical "scope-modifier
+// boolean on the GXT render/sync pipeline" category). Although the
+// writer lives in `glimmer/lib/templates/root.ts` (cross-package
+// contributor — same as slice 96 `forceEmberRerender` and slice 108
+// `withMorphRender` where renderer.ts contributes state into
+// compilePipeline via the bridge writer), and the reader lives in
+// `gxt-backend/manager.ts` (cross-package reader — same as slice 96 /
+// 108), the bridge methods are defined here in compile.ts because:
+//   1) State-home convention is compile.ts for the compilePipeline
+//      boolean-toggle category (slice 17/18/22/23/24/27 precedent);
+//   2) The state itself is conceptually owned by the
+//      compile-pipeline-scoped state cluster (alongside
+//      `_renderPassDepth`, `_gxtInTriggerReRenderFlag`,
+//      `_gxtCurrentlyRenderingFlag`, `_gxtMorphRenderInProgressFlag`,
+//      etc.), not by manager.ts's render-tree builder which only reads
+//      it as a one-frame gate;
+//   3) Installing it from `installCompilePipelinePart` at compile.ts EOF
+//      matches the slice-108 paired precedent — manager.ts cannot define
+//      these without re-introducing a cycle since compile.ts is the
+//      canonical home for the render-pipeline state cluster.
+//
+// Paired bridge shape: `withInOutletRender<T>(fn: () => T): T` (writer)
+// + `isInOutletRender(): boolean` (reader). Mirrors slice-18's
+// `withInTriggerReRender` / `isInTriggerReRender` and slice-22's
+// `withCurrentlyRendering` / `isCurrentlyRendering` paired surfaces. Pure
+// balanced save-restore wrap (no depth counter, no transition side-
+// effects) — same shape as slices 18/22. Re-entrancy contract: save the
+// prior flag on entry, set to `true`, restore prior on `finally` exit.
+// In practice no nested outlet-render occurs (the outlet-render call is
+// the top-level renderTemplateWithContext frame and is not re-entered
+// during its body), but the save-restore is the canonical Cluster B
+// shape.
+//
+// Net globalThis surface delta: -1 slot (`__gxtInOutletRender`). The
+// pre-slice-110 dual writer at `glimmer/lib/templates/root.ts:903/912`
+// (try-finally pair around `renderTemplateWithContext`) routes through
+// `compilePipeline.withInOutletRender?.(fn)`, and the cross-package
+// reader at `gxt-backend/manager.ts:3306` routes through
+// `compilePipeline.isInOutletRender?.() ?? false`. The optional-chain
+// fallback at the reader matches the pre-slice-110 `!!(globalThis...)`
+// coercion which treated `undefined` as `false` (the safe value — outside
+// an outlet render frame, we should NOT rebuild the renderTreeParts).
+let _gxtInOutletRenderFlag = false;
+function _gxtIsInOutletRender(): boolean {
+  return _gxtInOutletRenderFlag;
+}
+function _gxtWithInOutletRender<T>(fn: () => T): T {
+  const prev = _gxtInOutletRenderFlag;
+  _gxtInOutletRenderFlag = true;
+  try {
+    return fn();
+  } finally {
+    _gxtInOutletRenderFlag = prev;
+  }
+}
+
 // Slice-98 (Cluster B): graduates the `__gxtDeferredSyncError` deferred-error
 // slot from the pre-slice-98 `(globalThis as any).__gxtDeferredSyncError`
 // read/write/clear trio to a module-local `_gxtDeferredSyncError` binding in
@@ -16522,6 +16593,21 @@ installCompilePipelinePart({
   withMorphRender: _gxtWithMorphRender,
   isMorphRenderInProgress: _gxtIsMorphRenderInProgress,
   getMorphModifierInvocations: _gxtGetMorphModifierInvocations,
+  // Slice-110 (Cluster B): paired typed-bridge migration of the
+  // `__gxtInOutletRender` boolean flag. Pre-slice-110 the writer at
+  // `glimmer/lib/templates/root.ts:903/912` (try-finally pair around the
+  // `renderTemplateWithContext` call in the outlet-render path) wrote to
+  // `(globalThis as any).__gxtInOutletRender = true/false`, and the cross-
+  // package reader at `gxt-backend/manager.ts:3306` coerced the slot with
+  // `!!(globalThis as any).__gxtInOutletRender` to decide whether
+  // `_buildRenderTree` should rebuild `renderTreeParts` with the proper
+  // outlet hierarchy. Slice-110 graduates BOTH sides to typed bridge
+  // methods. The canonical state is the module-local
+  // `_gxtInOutletRenderFlag` defined above; the globalThis slot is
+  // DROPPED. Net -1 globalThis surface. See `withInOutletRender` /
+  // `isInOutletRender` doc in gxt-bridge.ts.
+  withInOutletRender: _gxtWithInOutletRender,
+  isInOutletRender: _gxtIsInOutletRender,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
