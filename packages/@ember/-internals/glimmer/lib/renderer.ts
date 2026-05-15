@@ -1825,8 +1825,10 @@ class RendererState {
 
   revalidate(renderer: BaseRenderer): void {
     // In GXT mode, isValid() returns true to prevent infinite revalidation.
-    // But explicit .rerender() calls set __gxtForceRerender on the component
-    // and need a sync pass to flush the hooks.
+    // But explicit .rerender() calls route through
+    // `compilePipeline.forceRerender(this)` (slice-109; pre-slice-109 this
+    // was the globalThis writer `__gxtForceRerender`) on the component and
+    // need a sync pass to flush the hooks.
     if (__GXT_MODE__) {
       // Slice-37 (Cluster B): `__gxtPendingSync` canonical state migrated
       // to module-local `_gxtPendingSyncFlag` in `compile.ts`. Cross-

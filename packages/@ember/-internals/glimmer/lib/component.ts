@@ -35,6 +35,13 @@ import {
   getComponentCapturedArgs,
 } from './component-managers/curly';
 import { hasDOM } from '@ember/-internals/browser-environment';
+// Slice-109 (Cluster B): typed-bridge route for the per-instance forced-
+// rerender mark used by `Component.prototype._rerender` below. Replaces the
+// pre-slice-109 cross-package globalThis lookup
+// (`(globalThis as any).__gxtForceRerender`). See `forceRerender` doc in
+// gxt-bridge.ts. Distinct from slice-96's `forceEmberRerender()` (no-args
+// full-tree morph fallback).
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
@@ -1035,10 +1042,18 @@ class Component<S = unknown>
     dirtyTag(this[DIRTY_TAG]);
     // In GXT mode, mark this specific instance for forced rerender so
     // the update lifecycle hooks fire for it and its ancestors.
-    const forceRerender = (globalThis as any).__gxtForceRerender;
-    if (typeof forceRerender === 'function') {
-      forceRerender(this);
-    }
+    //
+    // Slice-109 (Cluster B): routes through the typed bridge
+    // `compilePipeline.forceRerender` (registered by manager.ts's
+    // `setGxtRenderer({ compilePipeline: { ..., forceRerender } })` at
+    // module init). The optional chain provides the same null-tolerant
+    // guard as the pre-slice-109 `typeof === 'function'` check for
+    // classic-Ember builds (where gxt-backend was never loaded — the
+    // forced-rerender mark is then skipped, matching pre-slice
+    // semantics). The pre-slice-109 globalThis reader
+    // `const forceRerender = (globalThis as any).__gxtForceRerender;`
+    // is retired. See `forceRerender` doc in gxt-bridge.ts.
+    getGxtRenderer()?.compilePipeline.forceRerender?.(this);
     this._superRerender();
   }
 

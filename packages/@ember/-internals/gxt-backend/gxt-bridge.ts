@@ -6291,6 +6291,129 @@ export interface GxtCompilePipelineCapabilities {
    * read; zero allocations.
    */
   getMorphModifierInvocations?(): any[] | null;
+
+  /**
+   * Mark a component instance as having been explicitly rerendered via
+   * `.rerender()`. Adds the instance to the manager.ts module-local
+   * `_forcedRerenderInstances` Set; the next `__gxtSyncAllWrappers` pass
+   * fires update lifecycle hooks for the instance AND for every ancestor
+   * up the `parentView` chain (matching Ember's tree-revalidation behavior
+   * where parent views also receive update hooks when a child is
+   * rerendered). The Set is consulted via `_shouldForceRerender(instance)`
+   * (manager.ts intra-file helper) during the post-sync hook fan-out.
+   *
+   * Slice-109 (Cluster B): replaces the pre-slice-109 globalThis writer
+   * `(globalThis as any).__gxtForceRerender = function (instance) { ... };`
+   * at `manager.ts:3853` and the sole pre-slice-109 cross-package reader
+   * at `glimmer/lib/component.ts:1038`:
+   *
+   *   const forceRerender = (globalThis as any).__gxtForceRerender;
+   *   if (typeof forceRerender === 'function') {
+   *     forceRerender(this);
+   *   }
+   *
+   * (in `Component.prototype._rerender`, fired when the user calls
+   * `component.rerender()`). The writer is graduated to a module-local
+   * `function _gxtForceRerender(instance: any): void` declaration in
+   * manager.ts, and registered on the bridge via the existing
+   * `setGxtRenderer({ compilePipeline: { ..., forceRerender } })` block
+   * (slice-91 `newRenderPass` / slice-92 `postRenderHooks` precedent —
+   * function-pointer state-home in manager.ts, registered alongside the
+   * other compile-pipeline-owned compute surfaces seeded by manager.ts).
+   * The reader routes through
+   * `getGxtRenderer()?.compilePipeline.forceRerender?.(this)` — the
+   * optional-chain provides the same null-tolerant guard as the
+   * pre-slice-109 `typeof === 'function'` check for classic-Ember builds
+   * (where gxt-backend was never loaded — the forced-rerender mark is
+   * then skipped, matching pre-slice semantics). Net -1 globalThis slot,
+   * +1 new bridge method on `compilePipeline`.
+   *
+   * Distinct from slice-96's `forceEmberRerender()` — that is a no-args
+   * full-tree morph fallback fired from `__gxtSyncDomNow` Phase 2b and
+   * from the helper-recompute path. This `forceRerender(instance)` takes
+   * an instance argument and only marks it for post-sync update-hook
+   * fan-out; it does NOT trigger a render itself (the dirtyTag call in
+   * `_rerender` does that). The two slots evolved independently and share
+   * only a similar naming prefix.
+   *
+   * Bridge shape decision: typed-bridge `forceRerender(instance: any):
+   * void` method on `GxtCompilePipelineCapabilities`. Cross-package
+   * function-pointer-write+single-cross-package-reader pattern (same
+   * shape as slice 91 `newRenderPass` / slice 92 `postRenderHooks` —
+   * function-pointer state-home in manager.ts, single cross-file reader;
+   * slice 109 differs only in that the reader lives in glimmer's
+   * `component.ts` rather than compile.ts, but the install direction
+   * (manager.ts → bridge) and reader-routes-via-optional-chain semantics
+   * are identical). One new bridge method, no new install-API namespace
+   * (registered directly inside the existing
+   * `setGxtRenderer({ compilePipeline: { ... } })` block at manager.ts
+   * L13446-13559 alongside the slice-91 `newRenderPass` and slice-92
+   * `postRenderHooks` entries).
+   *
+   * Namespace decision: `compilePipeline`. The function is semantically
+   * part of the GXT post-sync update-hook fan-out path — the
+   * `_forcedRerenderInstances` Set it mutates is consulted by
+   * `_shouldForceRerender` in `__gxtSyncAllWrappers` (the post-runTask
+   * DOM sync pipeline that runs the update lifecycle hooks). Sits
+   * naturally alongside the slice-91 `newRenderPass` / slice-92
+   * `postRenderHooks` entries that also live on `compilePipeline` and
+   * fire from the same post-sync hook pipeline.
+   *
+   * State-home: `gxt-backend/manager.ts`. The `_forcedRerenderInstances`
+   * Set (the canonical state mutated by this writer) is a manager.ts
+   * module-local at L3846, and the sole intra-file reader
+   * `_shouldForceRerender` is in the same file at L3862. The cross-
+   * package reader in glimmer's component.ts only invokes the writer —
+   * it does not touch the Set directly. The function `_gxtForceRerender`
+   * is declared as a module-local `function` declaration near L3853
+   * (replacing the pre-slice-109 function-expression assigned to
+   * globalThis), with the function body unchanged.
+   *
+   * Bridge-not-yet-installed edge: the cross-package reader in
+   * component.ts uses `getGxtRenderer()?.compilePipeline.forceRerender?.(
+   * this)`. The optional chain short-circuits to `undefined` when either
+   * the renderer or the method is not yet installed; the bridge call
+   * simply does nothing in that case (matches the pre-slice-109
+   * semantics where, if the slot was undefined, the `typeof === 'function'`
+   * guard skipped the call). In practice the bridge IS installed by the
+   * time `Component.prototype._rerender` fires: manager.ts's module init
+   * runs the `setGxtRenderer({ compilePipeline: { ..., forceRerender } })`
+   * call at L13408 during the very first test-helper import that pulls
+   * in gxt-backend (before any `Component` instance can be instantiated,
+   * let alone have `.rerender()` called on it). For classic-Ember builds
+   * (no GXT backend loaded), the bridge short-circuits and the forced-
+   * rerender mark is skipped — `_rerender`'s `dirtyTag` call still fires
+   * and the classic re-render path handles the work, matching pre-slice
+   * semantics where the globalThis slot was never set.
+   *
+   * Fast-check: the implementation is the same body that lived inside
+   * the pre-slice-109 globalThis function-expression — one
+   * `_forcedRerenderInstances.add(instance)` call. The bridge call adds
+   * one `getGxtRenderer()` + one property dereference + one optional-
+   * call to the same body; trivially cheap on the `.rerender()` call
+   * path (which is rare — only user-initiated explicit rerenders).
+   *
+   * Hot-path concern: NONE. The retired globalThis writer was assigned
+   * ONCE at module init (single property write, replaced by one
+   * `setGxtRenderer` registration that's amortized at init time). The
+   * one reader fires only when user code explicitly invokes
+   * `component.rerender()`; the bridge dispatch overhead vs. globalThis-
+   * typeof-guard is negligible at the call frequency. Trivially cheap.
+   *
+   * Pattern is the cross-package function-pointer-write+single-cross-
+   * package-reader category — same shape as slice 91 `newRenderPass`
+   * (manager.ts state-home, single intra-package reader in compile.ts)
+   * and slice 92 `postRenderHooks` (manager.ts state-home, single intra-
+   * package reader in compile.ts). Slice 109 extends to a cross-PACKAGE
+   * reader (in glimmer's component.ts rather than compile.ts), but the
+   * install topology (manager.ts → setGxtRenderer.compilePipeline →
+   * reader via getGxtRenderer optional chain) is the canonical typed-
+   * bridge function-pointer pattern. -1 net globalThis slot, +1 bridge
+   * method on `compilePipeline`.
+   *
+   * Previously: `(globalThis as any).__gxtForceRerender`.
+   */
+  forceRerender?(instance: any): void;
 }
 
 /**

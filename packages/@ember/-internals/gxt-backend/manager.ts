@@ -3849,10 +3849,23 @@ const _forcedRerenderInstances = new Set<any>();
  * Mark a component as having been explicitly rerendered via .rerender().
  * This triggers update lifecycle hooks for the instance and its ancestor
  * chain on the next sync pass.
+ *
+ * Slice-109 (Cluster B): graduates the pre-slice-109 globalThis writer
+ * `(globalThis as any).__gxtForceRerender = function (instance) { ... };`
+ * to this module-local `function _gxtForceRerender(instance: any): void`
+ * declaration. Registered on the bridge via the existing
+ * `setGxtRenderer({ compilePipeline: { ..., forceRerender:
+ * _gxtForceRerender } })` block at the file EOF. The sole cross-package
+ * reader at `glimmer/lib/component.ts:1038` routes through
+ * `getGxtRenderer()?.compilePipeline.forceRerender?.(this)`. See
+ * `forceRerender` doc in gxt-bridge.ts. Distinct from slice-96's
+ * `forceEmberRerender()` (no-args full-tree morph fallback fired from
+ * `__gxtSyncDomNow` Phase 2b). Net -1 globalThis slot, +1 bridge method
+ * on `compilePipeline`.
  */
-(globalThis as any).__gxtForceRerender = function (instance: any) {
+function _gxtForceRerender(instance: any): void {
   _forcedRerenderInstances.add(instance);
-};
+}
 
 /**
  * Check if an instance should receive forced-rerender hooks.
@@ -13556,6 +13569,19 @@ setGxtRenderer({
     // See `postRenderHooks` doc in gxt-bridge.ts. Slice-91 typed-bridge function-
     // pointer precedent. Net -1 globalThis slot.
     postRenderHooks: _gxtPostRenderHooks,
+    // Slice-109 (Cluster B): seeded here with the canonical `_gxtForceRerender`
+    // function (defined above next to the `_forcedRerenderInstances` Set it
+    // mutates). Replaces the pre-slice-109 globalThis writer at L3853
+    // (`(globalThis as any).__gxtForceRerender = function (instance) { ... };`,
+    // now retired). The sole cross-package reader in
+    // `glimmer/lib/component.ts:1038` (inside `Component.prototype._rerender`,
+    // fired when user code calls `component.rerender()`) routes through
+    // `getGxtRenderer()?.compilePipeline.forceRerender?.(this)`. See
+    // `forceRerender` doc in gxt-bridge.ts. Distinct from slice-96's
+    // `forceEmberRerender()` (no-args full-tree morph fallback fired from
+    // `__gxtSyncDomNow` Phase 2b). Slice-91/92 typed-bridge function-pointer
+    // precedent. Net -1 globalThis slot.
+    forceRerender: _gxtForceRerender,
   },
   renderPass: {
     // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is
