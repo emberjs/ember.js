@@ -6953,15 +6953,16 @@ setInterval(() => {
 //      (GXT trims these when adjacent to a mustache interpolation).
 // Internal whitespace inside a text node is left intact, so tests that assert
 // on exact content strings are unaffected.
+let _qunitWhitespacePatched = false;
 (function patchQUnitForGxtWhitespace() {
   const g: any = globalThis as any;
-  if (g.__gxtQUnitWhitespacePatched) return;
+  if (_qunitWhitespacePatched) return;
   const applyPatch = () => {
     const Q = g.QUnit;
     if (typeof Q === 'undefined' || !Q.equiv || !Q.assert) {
       return false;
     }
-    if (g.__gxtQUnitWhitespacePatched) return true;
+    if (_qunitWhitespacePatched) return true;
     const isTokenArray = (x: unknown): boolean => {
       if (!Array.isArray(x)) return false;
       for (let i = 0; i < x.length; i++) {
@@ -7008,7 +7009,7 @@ setInterval(() => {
         return origDeepEqual.call(this, actual, expected, message);
       };
     }
-    g.__gxtQUnitWhitespacePatched = true;
+    _qunitWhitespacePatched = true;
     return true;
   };
   // QUnit may not be available when this module first evaluates (e.g. in
