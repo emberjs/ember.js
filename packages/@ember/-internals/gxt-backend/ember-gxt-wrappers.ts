@@ -365,7 +365,22 @@ function _trackComponentDefinition(nameOrFactory: string | object | null | undef
 // When a property changes on a component, invalidate managed helper caches
 // so the next render pass picks up the changes. We DON'T re-compute values
 // here to avoid double-counting (GXT's native reactivity may also trigger).
-(g as any).__gxtNotifyHelperPropertyChange = function (_obj: any, _key: string) {
+//
+// Slice-87 (Cluster B): graduated from the pre-slice-87 globalThis writer
+// `(globalThis as any).__gxtNotifyHelperPropertyChange = function (...)` to a
+// plain module-local `function _gxtNotifyHelperPropertyChange(...)` declaration
+// exposed through the `compilePipeline.notifyHelperPropertyChange` typed-bridge
+// method. Pattern mirrors slice-55's `clearRenderErrors` (same shape: void-
+// returning bridge method invoked from a sibling intra-package reader) and
+// slice-78's `getResolverCacheCounters` install (same file, same
+// `installCompilePipelinePart` install pattern). Sole reader at
+// `manager.ts:565` (helper-recompute path inside the `__gxtTriggerReRender`
+// after-body) routes through
+// `getGxtRenderer()?.compilePipeline.notifyHelperPropertyChange?.(this,
+// '__gxtRecomputeTagRef')` — the optional-chain provides the same
+// null-tolerant guard as the pre-slice-87 `typeof === 'function'` check.
+// Net -1 globalThis slot, +1 new bridge method on `compilePipeline`.
+function _gxtNotifyHelperPropertyChange(_obj: unknown, _key: string): void {
   for (const [, cached] of classHelperInstanceCache as Map<string, any>) {
     if (cached && cached.__managerBucket) {
       // Invalidate the args serialization so the next $_maybeHelper call
@@ -373,7 +388,17 @@ function _trackComponentDefinition(nameOrFactory: string | object | null | undef
       cached.lastArgsSer = null;
     }
   }
-};
+}
+// Register the slice-87 typed-bridge method on the `compilePipeline` namespace
+// so the cross-file reader in `manager.ts` can route through the bridge.
+// Pattern mirrors the slice-78 `installCompilePipelinePart({
+// getResolverCacheCounters })` at L282-L284 and the slice-42 `getMutContext`/
+// `setMutContext` install at L96-L99 — the call queues into
+// `_pendingCompilePipelineParts` if `setGxtRenderer` has not yet fired and
+// merges immediately otherwise.
+installCompilePipelinePart({
+  notifyHelperPropertyChange: _gxtNotifyHelperPropertyChange,
+});
 
 function createEmberMaybeHelper(original: Function) {
   // Cache the last known owner so that re-evaluations during reactive updates

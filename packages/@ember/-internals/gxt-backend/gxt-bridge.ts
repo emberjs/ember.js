@@ -4880,6 +4880,74 @@ export interface GxtCompilePipelineCapabilities {
     helperDefinitionCount: number;
     modifierDefinitionCount: number;
   };
+
+  /**
+   * Invalidate the `classHelperInstanceCache` (in `ember-gxt-wrappers.ts`)
+   * so the next `$_maybeHelper` invocation re-runs `delegate.getValue(bucket)`
+   * (which calls the helper's `compute()` with fresh state) instead of
+   * short-circuiting on the cached `lastArgsSer` dedup string. Called from
+   * the `__gxtRecomputeTagRef` after-body inside `manager.ts`'s
+   * `__gxtTriggerReRender` patch (the helper-recompute path that fires
+   * after `cellFor(obj, keyName).update(...)` returns) so that subsequent
+   * renders see the recomputed result rather than the previous cached one.
+   *
+   * Iterates the `classHelperInstanceCache` map and, for every cached entry
+   * whose `__managerBucket` is truthy (i.e. an Ember-helper-manager-backed
+   * bucket, NOT a function helper or the `__tagDirtySentinel__` placeholder),
+   * clears its `lastArgsSer` to `null`. Function-helper / simple-helper
+   * cache entries are untouched — those have separate caches with their
+   * own invalidation paths.
+   *
+   * The (`_obj`, `_key`) arguments are part of the legacy pre-slice-87
+   * signature (`function (obj: any, key: string)`) and are CURRENTLY
+   * UNUSED — the cache invalidation is unconditional rather than scoped
+   * to the object/key pair. Preserved in the signature for symmetry with
+   * the call site at `manager.ts:565` (which passes `this,
+   * '__gxtRecomputeTagRef'`) and for future per-key scoping if/when the
+   * helper cache grows a key-indexed dependency tracker.
+   *
+   * Best-effort: caller wraps the bridge call in a `try/catch` (defensive
+   * — the bridge method itself is loop-safe and won't throw, but the
+   * surrounding `__gxtTriggerReRender` after-body iterates external state
+   * that may not be in a consistent shape).
+   *
+   * Previously: `(globalThis as any).__gxtNotifyHelperPropertyChange` —
+   * a `function (_obj, _key) { ... }` written at
+   * `ember-gxt-wrappers.ts:368` (writer) and read with a `typeof ===
+   * 'function'` guard at `manager.ts:565` (reader). Slice 87 graduates
+   * the writer to a module-local function `_gxtNotifyHelperPropertyChange`
+   * and routes the reader through this typed-bridge method. Net -1
+   * globalThis slot, +1 new bridge method.
+   *
+   * Bridge shape decision: typed-bridge `notifyHelperPropertyChange(obj:
+   * unknown, key: string): void` method on `GxtCompilePipelineCapabilities`.
+   * Cross-file pattern (1 reader in `manager.ts`, 1 writer in
+   * `ember-gxt-wrappers.ts`) — both intra-package, mirrors slice-55's
+   * `clearRenderErrors` shape (same `void`-returning bridge method, same
+   * intra-package cross-file pair) and slice-78's `getResolverCacheCounters`
+   * install (same file, same `installCompilePipelinePart` registration
+   * pattern). The void-return shape matches the pre-slice-87 function's
+   * implicit `undefined` return.
+   *
+   * Bridge-not-yet-installed edge: the reader uses `?.()` (no-op when the
+   * renderer is not yet installed or the method is not yet registered).
+   * The pre-slice-87 `typeof === 'function'` guard maps directly to the
+   * optional-chain (both short-circuit to a no-op when the host hook
+   * isn't installed — classic-Ember build path). The
+   * `ember-gxt-wrappers.ts` module-init runs `installCompilePipelinePart`
+   * at module-load time alongside the slice-42 / slice-78 install calls
+   * — well before the first `__gxtTriggerReRender` after-body fires
+   * during a render.
+   *
+   * Fast-check: implementation is a single `for` loop over the
+   * `classHelperInstanceCache` map with one boolean check and one
+   * property assignment per managed-bucket entry; zero allocations.
+   * The cache is typically small (one entry per unique helper name
+   * invoked in the current template scope plus the `__tagDirtySentinel__`
+   * placeholder). Identical hot-path cost to the pre-slice-87 globalThis
+   * property read + indirect call.
+   */
+  notifyHelperPropertyChange?(obj: unknown, key: string): void;
 }
 
 /**

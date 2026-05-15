@@ -561,9 +561,22 @@ function _installHelperRecomputeBridge(instance: any): void {
           // delegate.getValue(bucket), which calls compute() with fresh state.
           // The cache is keyed by helper name and short-circuits when args
           // haven't changed — which is exactly the case after recompute().
+          //
+          // Slice-87 (Cluster B): migrated the pre-slice-87 globalThis read
+          // `(globalThis as any).__gxtNotifyHelperPropertyChange` +
+          // `typeof === 'function'` guard pattern to the typed-bridge
+          // `compilePipeline.notifyHelperPropertyChange` method. The
+          // optional-chain (`?.()`) provides the same null-tolerant guard
+          // as the pre-slice-87 typeof check — when `setGxtRenderer` has not
+          // yet been called (classic-Ember build) or the host hook hasn't
+          // been installed (ember-gxt-wrappers.ts not yet loaded), the call
+          // is a no-op. See `notifyHelperPropertyChange` doc in
+          // gxt-bridge.ts.
           try {
-            const notify = (globalThis as any).__gxtNotifyHelperPropertyChange;
-            if (typeof notify === 'function') notify(this, '__gxtRecomputeTagRef');
+            getGxtRenderer()?.compilePipeline.notifyHelperPropertyChange?.(
+              this,
+              '__gxtRecomputeTagRef'
+            );
           } catch {
             /* ignore */
           }
