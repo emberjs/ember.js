@@ -5213,6 +5213,71 @@ export interface GxtCompilePipelineCapabilities {
    * module-load time (smaller hot-path).
    */
   getEngineInstances?(): Map<string, any>;
+
+  /**
+   * Bump the manager.ts-local `_updateHookPassId` counter at the start of a
+   * new render pass. The counter is consulted by `markInstanceUpdated` /
+   * `wasInstanceUpdatedThisPass` and `markInstanceRenderHookFired` /
+   * `wasInstanceRenderHookFiredThisPass` (all manager.ts intra-file) to
+   * gate update/render lifecycle hooks against per-instance pass tracking.
+   * Incrementing the counter at the start of each `_gxtSyncDomNow` cycle
+   * ensures the per-instance `_instanceUpdatePassMap` / `_instanceRenderHookPassMap`
+   * WeakMap entries from the previous pass no longer match — the next call
+   * to `wasInstanceUpdatedThisPass(instance)` returns `false`, so the
+   * lifecycle-hook firing path runs again for the new pass (preventing
+   * stale skips). Without this bump, the same instance would be skipped
+   * across multiple render passes within one test run.
+   *
+   * Called from compile.ts's `_gxtSyncDomNow` try-block, immediately before
+   * PHASE 0's if-watcher pre-flush (`_pendingIfWatcherNotifications`
+   * processing).
+   *
+   * Slice-91 (Cluster B): replaces the pre-slice-91 globalThis writer
+   * `(globalThis as any).__gxtNewRenderPass = function () { _updateHookPassId++; };`
+   * at `manager.ts:2532` and the pre-slice-91 globalThis reader
+   * `const newPass = (globalThis as any).__gxtNewRenderPass; if (typeof newPass
+   * === 'function') newPass();` at `compile.ts:6394-6395`. The writer is
+   * graduated to a module-local `function _gxtNewRenderPass(): void {
+   * _updateHookPassId++; }` declaration next to the `_updateHookPassId`
+   * counter in manager.ts (slice-87 / slice-88 function-pointer pattern,
+   * canonical state lives where it's primarily mutated/read). The reader
+   * routes through `getGxtRenderer()?.compilePipeline.newRenderPass?.()`,
+   * the optional-chain providing the same null-tolerant guard as the
+   * pre-slice-91 `typeof === 'function'` check for classic-Ember builds
+   * (where gxt-backend was never loaded). Net -1 globalThis slot.
+   *
+   * Bridge shape decision: typed-bridge `newRenderPass(): void` method on
+   * `GxtCompilePipelineCapabilities` (slice-55 `clearRenderErrors` /
+   * slice-87 `notifyHelperPropertyChange` / slice-88 `clearHelperCache`
+   * precedent — void-returning bridge method invoked from a sibling
+   * intra-package reader). State home: manager.ts (canonical owner of
+   * `_updateHookPassId`); the function lives there, registered via
+   * `setGxtRenderer`'s compilePipeline namespace (alongside
+   * `syncWrapper` / `syncAllWrappers` / slice-32/33/39 getters), NOT via
+   * `installCompilePipelinePart` from compile.ts (different installer-
+   * direction than slice 87/88/89/90, which all routed through
+   * compile.ts or ember-gxt-wrappers.ts).
+   *
+   * Bridge-not-yet-installed edge: the cross-file reader in compile.ts
+   * uses `getGxtRenderer()?.compilePipeline.newRenderPass?.()`. Both
+   * optional chains short-circuit to `undefined` when either the renderer
+   * or the method is not yet installed; the no-args `?.()` call simply
+   * does nothing in that case (matches the pre-slice-91 semantics where,
+   * if the slot was undefined, the `typeof === 'function'` guard skipped
+   * the call). The new short-circuit is conservative — it skips the
+   * pass-id bump entirely for classic-Ember builds where gxt-backend is
+   * never loaded. That's load-order-safe because in classic-Ember
+   * `_gxtSyncDomNow` is never invoked.
+   *
+   * Fast-check: the implementation is a single `_updateHookPassId++`
+   * read-modify-write — one number increment, zero allocations. The
+   * bridge call adds one `getGxtRenderer()` + one property dereference +
+   * one optional-call to a one-line module-local mutation; trivially
+   * cheap on the sync-cycle hot path.
+   *
+   * Previously: `(globalThis as any).__gxtNewRenderPass`.
+   */
+  newRenderPass?(): void;
 }
 
 /**

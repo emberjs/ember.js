@@ -2528,10 +2528,28 @@ function wasInstanceRenderHookFiredThisPass(instance: any): boolean {
   return _instanceRenderHookPassMap.get(instance) === _updateHookPassId;
 }
 
-// Increment the pass ID at the start of each render cycle
-(globalThis as any).__gxtNewRenderPass = function () {
+// Slice-91 (Cluster B): graduated from the pre-slice-91 globalThis writer
+// `(globalThis as any).__gxtNewRenderPass = function () { _updateHookPassId++; };`
+// to a plain module-local `function _gxtNewRenderPass()` declaration exposed
+// through the `compilePipeline.newRenderPass` typed-bridge method. Pattern
+// mirrors slice-55's `clearRenderErrors` (same shape: void-returning bridge
+// method invoked from an intra-package reader) and slice-87 / slice-88's
+// `notifyHelperPropertyChange` / `clearHelperCache` (same intra-gxt-backend
+// 1W/1R function-pointer topology). Sole reader at `compile.ts:6394`
+// (inside the `_gxtSyncDomNow` try block, immediately before PHASE 0
+// if-watcher pre-flush) routes through
+// `getGxtRenderer()?.compilePipeline.newRenderPass?.()` — the optional-chain
+// provides the same null-tolerant guard as the pre-slice-91 `typeof
+// === 'function'` check. State home: manager.ts owns `_updateHookPassId`
+// (the counter the function increments), so the function stays here and
+// is registered via this file's `setGxtRenderer` compilePipeline namespace
+// (alongside the slice-12/13/14/32/33/39 entries). Net -1 globalThis slot,
+// +1 new bridge method on `compilePipeline`.
+//
+// Increment the pass ID at the start of each render cycle.
+function _gxtNewRenderPass(): void {
   _updateHookPassId++;
-};
+}
 
 function updateInstanceWithNewArgs(instance: any, args: any): boolean {
   if (!instance || !args) return false;
@@ -13385,6 +13403,15 @@ setGxtRenderer({
     // `getPendingModifierDestroys` doc in gxt-bridge.ts. Net -1 globalThis
     // slot.
     getPendingModifierDestroys: _gxtGetPendingModifierDestroys,
+    // Slice-91 (Cluster B): seeded here with the canonical `_gxtNewRenderPass`
+    // function (defined above next to the `_updateHookPassId` counter it
+    // increments). Replaces the pre-slice-91 globalThis writer at L2532
+    // (`(globalThis as any).__gxtNewRenderPass = function () { ... };`, now
+    // retired). The sole reader in `compile.ts:6394` (inside `_gxtSyncDomNow`
+    // try block, before PHASE 0 if-watcher pre-flush) routes through
+    // `getGxtRenderer()?.compilePipeline.newRenderPass?.()`. See
+    // `newRenderPass` doc in gxt-bridge.ts. Net -1 globalThis slot.
+    newRenderPass: _gxtNewRenderPass,
   },
   renderPass: {
     // Slice-8: triad seeded here; the `beforeBeginRenderPass` host hook is

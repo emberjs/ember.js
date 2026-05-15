@@ -6390,9 +6390,14 @@ function _resetTemplateOnlyState() {
     // Wrap ALL phases in try/finally so __gxtSyncing is ALWAYS reset,
     // even if an unexpected error escapes a catch block.
     try {
-      // Start a new render pass to prevent double-firing of lifecycle hooks
-      const newPass = (globalThis as any).__gxtNewRenderPass;
-      if (typeof newPass === 'function') newPass();
+      // Start a new render pass to prevent double-firing of lifecycle hooks.
+      // Slice-91 (Cluster B): routes through the typed `compilePipeline.
+      // newRenderPass` bridge — see `newRenderPass` doc in gxt-bridge.ts.
+      // The optional-chain provides the same null-tolerant guard as the
+      // pre-slice-91 `typeof === 'function'` check (short-circuits to a
+      // no-op when manager.ts has not yet seeded the compilePipeline
+      // namespace, e.g., in classic-Ember builds).
+      getGxtRenderer()?.compilePipeline.newRenderPass?.();
       // PHASE 0: Pre-flush FALSE-flip if-watchers BEFORE gxtSyncDom. This ensures
       // any outer {{#if}} that toggles to false in the batch tears down its branch
       // FIRST, so when GXT's native sync evaluates inner conditional formulas, the
