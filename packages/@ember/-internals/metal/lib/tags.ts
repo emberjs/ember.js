@@ -87,7 +87,25 @@ export function markObjectAsDirty(obj: object, propertyKey: string): void {
   dirtyTagFor(obj, SELF_TAG);
 }
 
-// Expose markObjectAsDirty on globalThis for GXT integration.
-// This allows compile.ts to dirty a component's Ember SELF_TAG when
-// a property changes on an object that is a VALUE of a component property.
-(globalThis as any).__gxtMarkObjectAsDirty = markObjectAsDirty;
+// Cluster B slice 103 — RETIRED orphan globalThis writer.
+// Previously this module published `(globalThis as any).__gxtMarkObjectAsDirty =
+// markObjectAsDirty;` as a side-effectful side-channel for GXT integration.
+// The slot had ZERO consumers across the entire codebase:
+//   - 0 readers in `packages/` (verified via repo-wide grep of
+//     `__gxtMarkObjectAsDirty`; the sole reference at
+//     `gxt-backend/compile.ts:4439` is a comment mentioning the function name
+//     in an English sentence describing deferred tag-dirty bookkeeping, not a
+//     globalThis read);
+//   - 0 readers in the bundled `@lifeart/gxt` runtime
+//     (`node_modules/@lifeart/gxt/dist/`), unlike the GXT-CONTRACT slots
+//     `__gxtToBool` / `__gxtFormula` / `__gxtGetCellOrFormula` which are
+//     genuinely consumed by GXT's `setupCondition` / formula path;
+//   - 0 readers in repo-root HTML harnesses (`index.html`,
+//     `packages/demo/tests.html`).
+// `markObjectAsDirty` itself is still imported and used in-package via the
+// proper ESM export (`@ember/-internals/metal` re-exports it at
+// `index.ts:72`; `metal/lib/property_events.ts:23` imports and invokes it
+// inside `notifyPropertyChange`), so the function remains live.
+// Orphan-writer cleanup pattern (precedents: slice 101
+// `__gxtResetIntervalBudget`, slice 86 `__gxtDebugCompiledCodes`, slice 77
+// `__gxtCurriedRenderInfos` / `__gxtCondSeenIds`).
