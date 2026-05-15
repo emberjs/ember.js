@@ -5395,9 +5395,9 @@ export interface GxtCompilePipelineCapabilities {
    *      morphing triggers cell updates that schedule additional force-
    *      rerenders.
    *   2. Reads `getHadPendingSync()` (slice-35 bridge getter) and
-   *      `__gxtHadNestedObjectChange` (still globalThis — to be migrated in
-   *      a later slice) to decide whether to fall back to a full-tree
-   *      force-rerender when no root's own tag moved.
+   *      `getHadNestedObjectChange()` (slice-97 bridge getter) to decide
+   *      whether to fall back to a full-tree force-rerender when no root's
+   *      own tag moved.
    *   3. Consumes `_gxtDirtyRootsAtSync` (slice-46 module-local stash
    *      populated by `_gxtUpdateRootTagValues`) for the pre-sync dirty set,
    *      falling back to live tag-comparison for call-sites that don't go
@@ -5415,9 +5415,9 @@ export interface GxtCompilePipelineCapabilities {
    *      deferred render errors stashed on `classicRoot.__gxtDeferredError`
    *      so they propagate to `assert.throws` in test contexts.
    *   6. The outer `finally` clears `_gxtForceRerenderInProgress`, calls
-   *      `setHadPendingSync(false)` (slice-35 bridge setter), clears
-   *      `__gxtHadNestedObjectChange = false` (still globalThis), and clears
-   *      `_gxtDirtyRootsAtSync = undefined` (slice-46 module-local).
+   *      `setHadPendingSync(false)` (slice-35 bridge setter), calls
+   *      `setHadNestedObjectChange(false)` (slice-97 bridge setter), and
+   *      clears `_gxtDirtyRootsAtSync = undefined` (slice-46 module-local).
    *
    * Called from:
    *   - `compile.ts:6716` — `_gxtSyncDomNow`'s PHASE 2b morph fallback,
@@ -5425,8 +5425,9 @@ export interface GxtCompilePipelineCapabilities {
    *     `__gxtDeferredSyncError` for propagation after sync completes.
    *   - `manager.ts:602` — patched `recompute` body after helper-cache
    *     invalidation: sets `setHadPendingSync(true)` and
-   *     `__gxtHadNestedObjectChange = true`, then calls
-   *     `forceEmberRerender()` to force a full-tree morph so the formula
+   *     `setHadNestedObjectChange(true)` (slice-97 bridge setter), then
+   *     calls `forceEmberRerender()` to force a full-tree morph so the
+   *     formula
    *     reading the helper cell re-evaluates against the new computed
    *     result.
    *
@@ -5620,6 +5621,152 @@ export interface GxtCompilePipelineCapabilities {
    * slice-18/22/24's wrapper body shape.
    */
   withSuppressDirtyInRcSet?<T>(fn: () => T): T;
+
+  /**
+   * Read the `__gxtHadNestedObjectChange` boolean flag. Returns `true` iff
+   * a nested-object property mutation has been observed since the last
+   * `_gxtForceEmberRerender` finally-block (or between-test reset) cleared
+   * the flag. A "nested-object change" is a property mutation on an object
+   * that is NOT the SELF_TAG-owning root component — e.g., `set(m,
+   * 'message', ...)` where `m` is a nested EmberObject reachable through a
+   * component's @args, or `foo.set('text', ...)` where `foo` is a plain
+   * tracked class instance. These mutations don't dirty any component's
+   * SELF_TAG (Ember only dirties the object's own tag), so the cell-based
+   * sync pipeline alone won't propagate the change to formulas like
+   * `{{this.m.formattedMessage}}`. The flag signals to
+   * `_gxtForceEmberRerender` that it should fall back to a full-tree
+   * `classicRoot.render()` over all GXT roots so computed properties /
+   * aliases re-evaluate against the new nested object state.
+   *
+   * Sole consumer (slice-97 pre-migration): `glimmer/lib/renderer.ts:1408`,
+   * inside `_gxtForceEmberRerender`'s body — captured into
+   * `hadNestedObjectChange` and combined with `hadPendingSync` to decide
+   * whether to fall back to `allGxtRoots` when no root's own tag moved
+   * (the `rootsToRender = effectiveDirtyRoots.length > 0 ?
+   * effectiveDirtyRoots : hadPendingSync && hadNestedObjectChange ?
+   * allGxtRoots : []` ternary at renderer.ts:1452).
+   *
+   * Pre-slice-97 writers setting TRUE (4 sites):
+   *  - `compile.ts:4522` (intra-file, inside `__gxtTriggerReRender`'s
+   *    nested-object-change detection, `_deferredTagDirties.length > 0`
+   *    branch — Case 1: tag dirtying was reverse-looked-up via
+   *    `_objectValueCellMap` explicit cell registration). Routes through
+   *    the module-local `_gxtSetHadNestedObjectChange` directly.
+   *  - `compile.ts:4565` (intra-file, inside the `else if (obj && typeof
+   *    obj === 'object')` branch when `obj` is NOT a CUSTOM-managed
+   *    component — Case 2: mutated object is not itself a root component,
+   *    treated as a nested object for cross-root propagation). Routes
+   *    through the module-local helper directly.
+   *  - `compile.ts:4569` (intra-file, inside the `catch` of the
+   *    custom-managed-component check — conservative fallback: if the
+   *    check throws, treat as nested-object). Routes through the
+   *    module-local helper directly.
+   *  - `gxt-backend/manager.ts:601` (cross-file — helper-recompute path
+   *    after cache invalidation; sets TRUE paired with
+   *    `setHadPendingSync(true)` before calling
+   *    `compilePipeline.forceEmberRerender?.()` so the full-tree morph
+   *    runs and lets the formula reading the helper cell re-evaluate).
+   *    Routes through this bridge setter.
+   *
+   * Pre-slice-97 clearers setting FALSE (2 sites):
+   *  - `compile.ts:7088` (intra-file — between-test reset block alongside
+   *    the slice-35/36/37 paired-sync-flag clearers). Routes through the
+   *    module-local helper directly.
+   *  - `glimmer/lib/renderer.ts:1494` (cross-package —
+   *    `_gxtForceEmberRerender`'s finally-block clear alongside
+   *    `setHadPendingSync(false)`). Routes through this bridge setter.
+   *
+   * Slice-97 (Cluster B): graduates the canonical state from the pre-
+   * slice-97 `globalThis.__gxtHadNestedObjectChange` slot to the module-
+   * local boolean `_gxtHadNestedObjectChangeFlag` in `compile.ts`. The 3
+   * intra-file writers + 1 intra-file clearer route through the module-
+   * local `_gxtSetHadNestedObjectChange(value)` helper directly (slice-22/
+   * 24/27/30/31/32/33/34/35 intra-file-writer precedent); the cross-file
+   * writer at `manager.ts:601` and the cross-package clearer at
+   * `renderer.ts:1494` route through this bridge setter; the sole cross-
+   * package reader at `renderer.ts:1408` routes through this bridge
+   * getter. Net globalThis surface delta: -1 slot (paired with
+   * `setHadNestedObjectChange`).
+   *
+   * Bridge-not-yet-installed edge: the cross-package reader uses
+   * `getGxtRenderer()?.compilePipeline.getHadNestedObjectChange?.()` and
+   * coerces with `!!` to FALSE. That matches pre-slice-97 semantics where
+   * `globalThis.__gxtHadNestedObjectChange === undefined` (pre-first-
+   * mutation edge) coerced via `!!` to FALSE. The reader at
+   * renderer.ts:1408 runs only inside `_gxtForceEmberRerender` (reached
+   * via Phase 2b of `__gxtSyncDomNow` or manager.ts:602's helper-
+   * recompute path); both reach paths run AFTER compile.ts's module init
+   * has completed the final `installCompilePipelinePart` block at file
+   * EOF, so the bridge IS installed in practice and the getter returns
+   * the real boolean value.
+   *
+   * Bridge shape decision: paired get/set (slice-14/35/36/37 paired-
+   * methods pattern) — slice 97 has cross-file/cross-package WRITERS
+   * (manager.ts:601 helper-recompute path + glimmer/lib/renderer.ts:1494
+   * morph-fallback finally) in addition to cross-package readers
+   * (renderer.ts:1408 morph-fallback gate) — both surfaces must be
+   * reachable. Mirrors slice-35's `_gxtHadPendingSyncFlag` shape exactly
+   * (both flags are boolean morph-pipeline state cleared by
+   * `_gxtForceEmberRerender`'s finally and read inside
+   * `_gxtForceEmberRerender` to decide whether to fall back to a full-
+   * tree force-rerender — slice 97's paired bridge naturally follows
+   * slice 35's paired bridge).
+   *
+   * State-home decision: `compile.ts` (3 of 4 writers and the between-
+   * test reset clearer live in compile.ts; the cross-file writer in
+   * manager.ts also lives in the gxt-backend package; only the morph-
+   * fallback clearer and the morph-fallback reader live cross-package
+   * in renderer.ts). Consistent with slice-17/18/20/22/24/29/30/34/35/
+   * 36/37/38/40/41/89/95's "canonical state lives in compile.ts
+   * alongside the other compilePipeline state" rule.
+   *
+   * Fast-check: reads the module-local `_gxtHadNestedObjectChangeFlag`
+   * boolean — one boolean read; zero allocations. Matches slice-35's
+   * `getHadPendingSync()` body shape.
+   *
+   * Previously: `(globalThis as any).__gxtHadNestedObjectChange`.
+   */
+  getHadNestedObjectChange?(): boolean;
+
+  /**
+   * Write the `__gxtHadNestedObjectChange` boolean flag. The flag's
+   * lifetime and semantics are described in the `getHadNestedObjectChange`
+   * doc above.
+   *
+   * Slice-97 (Cluster B): graduates the canonical state from the pre-
+   * slice-97 `globalThis.__gxtHadNestedObjectChange` slot to the module-
+   * local boolean `_gxtHadNestedObjectChangeFlag` in `compile.ts`. The 3
+   * intra-file writers (compile.ts L4522/L4565/L4569) + 1 intra-file
+   * clearer (compile.ts L7088 between-test reset) route through the
+   * module-local `_gxtSetHadNestedObjectChange(value)` setter directly;
+   * the 1 cross-file writer (manager.ts:601 helper-recompute path) +
+   * the 1 cross-package clearer (glimmer/lib/renderer.ts:1494 morph-
+   * fallback finally) route through this bridge setter. Net globalThis
+   * surface delta: -1 slot (paired with `getHadNestedObjectChange`).
+   *
+   * Bridge-not-yet-installed edge: cross-file / cross-package writers
+   * use `getGxtRenderer()?.compilePipeline.setHadNestedObjectChange?.(
+   * value)`. Both optional chains short-circuit to `undefined` (no-op)
+   * when either the renderer or the method is not yet installed — the
+   * pre-slice-97 writers' assignment to
+   * `globalThis.__gxtHadNestedObjectChange` also would have been observed
+   * only by the reader inside `_gxtForceEmberRerender`, which runs AFTER
+   * compile.ts's module init (so by the time any writer fires, the
+   * bridge is installed in practice).
+   *
+   * Bridge shape decision: paired get/set (slice-14/35/36/37 paired-
+   * methods pattern) — see `getHadNestedObjectChange` for the full
+   * rationale (slice 97 has both cross-package readers AND cross-file/
+   * cross-package writers, both surfaces must be reachable, mirrors
+   * slice-35's `_gxtHadPendingSyncFlag` paired shape exactly).
+   *
+   * Fast-check: writes the module-local `_gxtHadNestedObjectChangeFlag`
+   * boolean — one boolean assignment; zero allocations. Matches
+   * slice-35's `setHadPendingSync()` body shape.
+   *
+   * Previously: `(globalThis as any).__gxtHadNestedObjectChange`.
+   */
+  setHadNestedObjectChange?(value: boolean): void;
 }
 
 /**

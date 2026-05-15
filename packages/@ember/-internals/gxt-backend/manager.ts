@@ -598,7 +598,15 @@ function _installHelperRecomputeBridge(instance: any): void {
             // setter is installed). See `setHadPendingSync` doc in
             // gxt-bridge.ts for the full migration narrative.
             getGxtRenderer()?.compilePipeline.setHadPendingSync?.(true);
-            (globalThis as any).__gxtHadNestedObjectChange = true;
+            // Slice-97 (Cluster B): canonical state migrated from
+            // `globalThis.__gxtHadNestedObjectChange` to module-local
+            // `_gxtHadNestedObjectChangeFlag` in `compile.ts`. Cross-file
+            // writer routes through the bridge setter (load-order-safe
+            // optional chain — by the time this helper-recompute path
+            // fires, compile.ts's `installCompilePipelinePart` has run
+            // and the setter is installed). See `setHadNestedObjectChange`
+            // doc in gxt-bridge.ts for the full migration narrative.
+            getGxtRenderer()?.compilePipeline.setHadNestedObjectChange?.(true);
             // Slice-96 (Cluster B): `__gxtForceEmberRerender` canonical state
             // migrated to module-local `_gxtForceEmberRerender` in
             // renderer.ts (state-home: renderer.ts owns the `renderers[]`

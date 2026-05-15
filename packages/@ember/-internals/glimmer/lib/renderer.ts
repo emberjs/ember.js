@@ -1405,7 +1405,14 @@ function _gxtForceEmberRerender(): void {
     // `installCompilePipelinePart` has run and the getter is installed).
     // See `getHadPendingSync` doc in gxt-bridge.ts.
     const hadPendingSync = !!getGxtRenderer()?.compilePipeline.getHadPendingSync?.();
-    const hadNestedObjectChange = !!(globalThis as any).__gxtHadNestedObjectChange;
+    // Slice-97 (Cluster B): canonical state migrated from
+    // `globalThis.__gxtHadNestedObjectChange` to module-local
+    // `_gxtHadNestedObjectChangeFlag` in `compile.ts`. Cross-package
+    // reader routes through the bridge getter (load-order-safe optional
+    // chain — by the time `_gxtForceEmberRerender` fires, compile.ts's
+    // `installCompilePipelinePart` has run and the getter is installed).
+    // See `getHadNestedObjectChange` doc in gxt-bridge.ts.
+    const hadNestedObjectChange = !!getGxtRenderer()?.compilePipeline.getHadNestedObjectChange?.();
     // Collect roots whose own tag moved RIGHT NOW (after Phase 1a of
     // __gxtSyncDomNow, before Phase 1b updateRootTagValues was called).
     // If __gxtUpdateRootTagValues was already called earlier in this sync,
@@ -1491,7 +1498,12 @@ function _gxtForceEmberRerender(): void {
     // routes through the bridge setter. See `setHadPendingSync` doc in
     // gxt-bridge.ts.
     getGxtRenderer()?.compilePipeline.setHadPendingSync?.(false);
-    (globalThis as any).__gxtHadNestedObjectChange = false;
+    // Slice-97 (Cluster B): canonical state migrated from
+    // `globalThis.__gxtHadNestedObjectChange` to module-local
+    // `_gxtHadNestedObjectChangeFlag` in `compile.ts`. Cross-package
+    // writer routes through the bridge setter. See
+    // `setHadNestedObjectChange` doc in gxt-bridge.ts.
+    getGxtRenderer()?.compilePipeline.setHadNestedObjectChange?.(false);
     // Slice 46 (Cluster B): module-local dirty-roots stash. See declaration
     // near `renderers`.
     _gxtDirtyRootsAtSync = undefined;

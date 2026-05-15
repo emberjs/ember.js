@@ -3690,6 +3690,51 @@ function _gxtSetHadPendingSync(on: boolean): void {
   _gxtHadPendingSyncFlag = on;
 }
 
+// Slice-97 (Cluster B): graduates the `__gxtHadNestedObjectChange` boolean
+// flag from the pre-slice-97 `globalThis.__gxtHadNestedObjectChange` slot to
+// the module-local boolean `_gxtHadNestedObjectChangeFlag` in `compile.ts`,
+// paired with a 2-method get/set bridge surface (`getHadNestedObjectChange`
+// + `setHadNestedObjectChange`) on the `compilePipeline` namespace. The
+// flag survives `__gxtSyncDomNow`'s Phase-1 sync but is cleared by
+// `_gxtForceEmberRerender`'s finally-block (in renderer.ts) and by the
+// between-test reset block in `compile.ts`. Pre-slice-97 topology was 4
+// writers setting TRUE (3 intra-`compile.ts` at L4522/L4565/L4569 inside
+// `__gxtTriggerReRender`'s nested-object-change detection, 1 cross-file
+// in `gxt-backend/manager.ts:601` helper-recompute path) and 2 clearers
+// setting FALSE (1 intra-`compile.ts` at L7088 between-test reset, 1
+// cross-package in `glimmer/lib/renderer.ts:1494` morph-fallback finally),
+// plus 1 cross-package reader at `glimmer/lib/renderer.ts:1408` inside
+// `_gxtForceEmberRerender` (the slice-96 migrated function) where the
+// flag's TRUE value gates the full-tree morph fallback when no root's own
+// tag moved. Slice 97 routes intra-`compile.ts` writers/readers through
+// `_gxtSetHadNestedObjectChange` / `_gxtGetHadNestedObjectChange` directly
+// (slice-22/24/27/30/31/32/33/34/35 intra-file-writer precedent); the
+// cross-file writer at `manager.ts:601` routes through
+// `compilePipeline.setHadNestedObjectChange?.(true)`; the cross-package
+// clearer at `glimmer/lib/renderer.ts:1494` routes through
+// `compilePipeline.setHadNestedObjectChange?.(false)`; the cross-package
+// reader at `glimmer/lib/renderer.ts:1408` routes through
+// `compilePipeline.getHadNestedObjectChange?.() ?? false`. Net globalThis
+// surface delta: -1 slot. Bridge shape decision: paired get/set (slice-14/
+// 35/36 paired-methods pattern) instead of slice-20/22/23/24's read-only
+// predicate because slice 97 has cross-file/cross-package WRITERS in
+// addition to readers — both surfaces must be reachable. State-home
+// decision: `compile.ts` — 3 of 4 writers and the between-test reset
+// clearer live in `compile.ts`; the cross-file writer in manager.ts also
+// lives in the gxt-backend package; only the morph-fallback clearer and
+// the morph-fallback reader live cross-package in renderer.ts. Mirrors
+// slice-35's `_gxtHadPendingSyncFlag` shape exactly (both flags are
+// boolean morph-pipeline state cleared by `_gxtForceEmberRerender`'s
+// finally; both are read inside `_gxtForceEmberRerender` to decide whether
+// to fall back to a full-tree force-rerender).
+let _gxtHadNestedObjectChangeFlag = false;
+function _gxtGetHadNestedObjectChange(): boolean {
+  return _gxtHadNestedObjectChangeFlag;
+}
+function _gxtSetHadNestedObjectChange(on: boolean): void {
+  _gxtHadNestedObjectChangeFlag = on;
+}
+
 // Slice-37 (Cluster B): graduates the `__gxtPendingSync` boolean flag from
 // the pre-slice-37 `globalThis.__gxtPendingSync` slot to the module-local
 // boolean `_gxtPendingSyncFlag` in `compile.ts`, paired with a 2-method
@@ -4519,7 +4564,12 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
   // passed as @args whose property mutations don't trigger SELF_TAG changes
   // on any component.
   if (_deferredTagDirties && _deferredTagDirties.length > 0) {
-    (globalThis as any).__gxtHadNestedObjectChange = true;
+    // Slice-97 (Cluster B): write to module-local
+    // `_gxtHadNestedObjectChangeFlag` (graduated from
+    // `globalThis.__gxtHadNestedObjectChange`). Intra-file writer routes
+    // through the helper directly (no bridge indirection — slice-35
+    // intra-file-writer precedent).
+    _gxtSetHadNestedObjectChange(true);
   } else if (obj && typeof obj === 'object') {
     // If `obj` is NOT a CUSTOM-managed component instance (root OR child),
     // treat it as a nested-object mutation that needs cross-root propagation
@@ -4562,11 +4612,17 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
         }
       }
       if (!isCustomManagedComponent) {
-        (globalThis as any).__gxtHadNestedObjectChange = true;
+        // Slice-97 (Cluster B): write to module-local
+        // `_gxtHadNestedObjectChangeFlag` (graduated from
+        // `globalThis.__gxtHadNestedObjectChange`).
+        _gxtSetHadNestedObjectChange(true);
       }
     } catch {
       // If the check fails, be conservative and treat as nested-object.
-      (globalThis as any).__gxtHadNestedObjectChange = true;
+      // Slice-97 (Cluster B): write to module-local
+      // `_gxtHadNestedObjectChangeFlag` (graduated from
+      // `globalThis.__gxtHadNestedObjectChange`).
+      _gxtSetHadNestedObjectChange(true);
     }
   }
   // Defer if-watcher notifications to __gxtSyncDomNow so batched property
@@ -7085,7 +7141,11 @@ setInterval(() => {
   // Slice-35 (Cluster B): write to module-local `_gxtHadPendingSyncFlag`
   // (graduated from `globalThis.__gxtHadPendingSync`).
   _gxtSetHadPendingSync(false);
-  (globalThis as any).__gxtHadNestedObjectChange = false;
+  // Slice-97 (Cluster B): write to module-local
+  // `_gxtHadNestedObjectChangeFlag` (graduated from
+  // `globalThis.__gxtHadNestedObjectChange`). Intra-file clearer routes
+  // through the helper directly (between-test reset block).
+  _gxtSetHadNestedObjectChange(false);
   // Slice-24 (Cluster B): reset module-local `_gxtSyncingFlag` (graduated
   // from `globalThis.__gxtSyncing`). Mirrors slice-22's
   // `__gxtCurrentlyRendering` cleanup pattern in this same body.
@@ -16128,6 +16188,27 @@ installCompilePipelinePart({
   // definitions above (`_gxtSuppressDirtyInRcSetFlag`).
   isDirtyInRcSetSuppressed: _gxtIsDirtyInRcSetSuppressed,
   withSuppressDirtyInRcSet: _gxtWithSuppressDirtyInRcSet,
+  // Slice-97 (Cluster B): graduates `__gxtHadNestedObjectChange` from the
+  // globalThis slot to a 2-method paired get/set bridge surface (slice-14/
+  // 35/36/37 paired-methods pattern). The flag is written by 4 sites
+  // pre-slice-97 setting TRUE (3 intra-`compile.ts` at L4522/L4565/L4569
+  // inside `__gxtTriggerReRender`'s nested-object-change detection + 1
+  // cross-file in `gxt-backend/manager.ts:601` helper-recompute path) and
+  // cleared by 2 sites setting FALSE (1 intra-`compile.ts` at L7088
+  // between-test reset + 1 cross-package in `glimmer/lib/renderer.ts:1494`
+  // `_gxtForceEmberRerender` finally), and read by 1 cross-package site
+  // at `glimmer/lib/renderer.ts:1408` inside `_gxtForceEmberRerender` (the
+  // morph-fallback gate). Intra-file writers/readers route through the
+  // module-local `_gxtSetHadNestedObjectChange` /
+  // `_gxtGetHadNestedObjectChange` helpers directly; cross-file/cross-
+  // package writers route through `compilePipeline.setHadNestedObjectChange(
+  // value)`; cross-package readers route through
+  // `compilePipeline.getHadNestedObjectChange?.() ?? false`. Net -1
+  // globalThis slot. See `getHadNestedObjectChange` /
+  // `setHadNestedObjectChange` docs in gxt-bridge.ts and module-local
+  // definition above (`_gxtHadNestedObjectChangeFlag`).
+  getHadNestedObjectChange: _gxtGetHadNestedObjectChange,
+  setHadNestedObjectChange: _gxtSetHadNestedObjectChange,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
