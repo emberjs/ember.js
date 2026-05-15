@@ -6831,9 +6831,11 @@ setInterval(() => {
     (globalThis as any).__gxtHelperInstances.length = 0;
   }
   // Clear the helper instance cache used by $_maybeHelper
-  if (typeof (globalThis as any).__gxtClearHelperCache === 'function') {
-    (globalThis as any).__gxtClearHelperCache();
-  }
+  // Slice-88 (Cluster B): routes through bridge — see clearHelperCache doc
+  // in gxt-bridge.ts. Reuses existing `getGxtRenderer` import at L1431. The
+  // optional-chain provides the same null-tolerant guard as the pre-slice-88
+  // `typeof === 'function'` check.
+  getGxtRenderer()?.compilePipeline.clearHelperCache?.();
   // Clear the helper instance cache used by $_tag
   // Cluster B slice 57: intra-file direct call to module-local `_gxtClearTagHelperCache`.
   _gxtClearTagHelperCache();

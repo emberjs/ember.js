@@ -167,7 +167,7 @@ function findHelperManager(obj: any): any {
 
 // Cache for class-based helper instances created via $_maybeHelper.
 // Keyed by helper name for simple per-invocation caching.
-// Cleared during test teardown via __gxtClearHelperCache.
+// Cleared during test teardown via compilePipeline.clearHelperCache (slice 88).
 const classHelperInstanceCache = new Map<string, any>();
 // Expose to compile.ts so it can evict entries when an if-block tears down
 // its class-based helper instances and they need to be re-created fresh.
@@ -181,7 +181,21 @@ let managedHelperBucketCache = new WeakMap<
   any,
   { bucket: any; delegate: any; reactiveArgs: { positional: any[]; named: Record<string, any> } }
 >();
-(g as any).__gxtClearHelperCache = () => {
+// Slice-88 (Cluster B): graduated from the pre-slice-88 globalThis writer
+// `(g as any).__gxtClearHelperCache = () => { ... }` to a plain module-local
+// `function _gxtClearHelperCache()` declaration exposed through the
+// `compilePipeline.clearHelperCache` typed-bridge method. Pattern mirrors
+// slice-55's `clearRenderErrors` (same shape: void-returning bridge method
+// with both cross-package and intra-package readers) and slice-87's
+// `notifyHelperPropertyChange` install (same file, same
+// `installCompilePipelinePart` install pattern). Readers at
+// `internal-test-helpers/lib/run.ts:134` (cross-package, in `runDestroy`)
+// and `compile.ts` (intra-package, in `_gxtClearOnSetup`) route through
+// `getGxtRenderer()?.compilePipeline.clearHelperCache?.()` — the
+// optional-chain provides the same null-tolerant guard as the pre-slice-88
+// `typeof === 'function'` check. Net -1 globalThis slot, +1 new bridge
+// method on `compilePipeline`.
+function _gxtClearHelperCache(): void {
   // Preserve the tag-dirty sentinel — it has no per-test state and re-installing
   // it after every test teardown is unnecessary (and would race with subsequent
   // dirtyTagFor invalidations that fire during the next test's render).
@@ -190,7 +204,17 @@ let managedHelperBucketCache = new WeakMap<
   if (sentinel) classHelperInstanceCache.set('__tagDirtySentinel__', sentinel);
   simpleHelperResultCache.clear();
   managedHelperBucketCache = new WeakMap();
-};
+}
+// Register the slice-88 typed-bridge method on the `compilePipeline` namespace
+// so the cross-file readers in `internal-test-helpers/lib/run.ts` and
+// `compile.ts` can route through the bridge. Pattern mirrors the slice-87
+// `installCompilePipelinePart({ notifyHelperPropertyChange })` at L399 below
+// and the slice-78 `getResolverCacheCounters` install at L282-L284 — the
+// call queues into `_pendingCompilePipelineParts` if `setGxtRenderer` has not
+// yet fired and merges immediately otherwise.
+installCompilePipelinePart({
+  clearHelperCache: _gxtClearHelperCache,
+});
 
 // Tag-dirty bridge sentinel.
 //

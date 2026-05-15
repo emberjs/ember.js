@@ -131,10 +131,11 @@ export function runDestroy(toDestroy: any): void {
       helperInstances.length = 0;
     }
     // Also clear the helper instance cache
-    const clearCache = (globalThis as any).__gxtClearHelperCache;
-    if (typeof clearCache === 'function') {
-      clearCache();
-    }
+    // Slice-88 (Cluster B): routes through bridge — see clearHelperCache doc
+    // in gxt-bridge.ts. Reuses existing `getGxtRenderer` import (slice 36+
+    // precedent). The optional-chain provides the same null-tolerant guard
+    // as the pre-slice-88 `typeof === 'function'` check.
+    getGxtRenderer()?.compilePipeline.clearHelperCache?.();
   }
 }
 

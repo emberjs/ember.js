@@ -4948,6 +4948,82 @@ export interface GxtCompilePipelineCapabilities {
    * property read + indirect call.
    */
   notifyHelperPropertyChange?(obj: unknown, key: string): void;
+
+  /**
+   * Reset the three helper-instance caches owned by
+   * `ember-gxt-wrappers.ts`: `classHelperInstanceCache`,
+   * `simpleHelperResultCache`, and `managedHelperBucketCache`. Preserves
+   * the `__tagDirtySentinel__` entry in `classHelperInstanceCache` (a
+   * synthetic listener that forwards dirty signals to compile.ts's
+   * `_tagHelperInstanceCache` — re-installing it after every teardown is
+   * unnecessary and would race with subsequent `dirtyTagFor` invalidations
+   * that fire during the next test's render). The `managedHelperBucketCache`
+   * is rebuilt as a fresh `WeakMap` rather than `.clear()`'d because it is
+   * declared `let` with a `WeakMap` value (WeakMaps don't support `.clear()`
+   * directly without a re-creation).
+   *
+   * Called from internal-test-helpers' `runDestroy` (which fires after
+   * `run(destroy, toDestroy)` returns — i.e. when a test's owner /
+   * component tree has been destroyed and the helper caches' entries are
+   * referencing dead instances that the next test must not see) and from
+   * compile.ts's `_gxtClearOnSetup` between-test reset (which runs after
+   * the QUnit testStart sweep clears stale render errors but before the
+   * next test's first render — drops any cache entries that survived
+   * `runDestroy` because they were created OUTSIDE a destroyable owner
+   * tree, e.g. `_tagHelperInstanceCache` shadow entries created by the
+   * `__tagDirtySentinel__` listener but never associated with an owner).
+   *
+   * Slice-88 (Cluster B): replaces the pre-slice-88 globalThis writer
+   * `(g as any).__gxtClearHelperCache = () => { ... }` at
+   * `ember-gxt-wrappers.ts:184` and the two reader sites:
+   *   - cross-package: `internal-test-helpers/lib/run.ts:134` (the
+   *     `runDestroy` body — a `const clearCache = (globalThis as any)
+   *     .__gxtClearHelperCache; if (typeof clearCache === 'function')
+   *     clearCache();` typeof-guarded call pattern).
+   *   - intra-gxt-backend: `compile.ts:6834` (the `_gxtClearOnSetup`
+   *     between-test reset body — a `if (typeof (globalThis as any)
+   *     .__gxtClearHelperCache === 'function') { (globalThis as any)
+   *     .__gxtClearHelperCache(); }` typeof-guarded call pattern).
+   * Both readers now route through
+   * `getGxtRenderer()?.compilePipeline.clearHelperCache?.()`, the
+   * optional-chain providing the same null-tolerant guard for
+   * classic-Ember builds (where gxt-backend was never loaded) and the
+   * bridge-not-yet-installed edge.
+   *
+   * Bridge shape decision: typed-bridge `clearHelperCache(): void` method
+   * on `GxtCompilePipelineCapabilities`. Cross-file pattern (2 readers: 1
+   * cross-package in `internal-test-helpers/lib/run.ts`, 1 intra-package
+   * in `compile.ts`; 1 writer in `ember-gxt-wrappers.ts`) — mirrors
+   * slice-55's `clearRenderErrors` shape (same `void`-returning bridge
+   * method, same cross-package + intra-package reader split with a
+   * single writer in a sibling intra-package file) and slice-87's
+   * `notifyHelperPropertyChange` install (same file, same
+   * `installCompilePipelinePart` registration pattern). The void-return
+   * shape matches the pre-slice-88 arrow function's implicit `undefined`
+   * return. No arguments — the cache reset is unconditional.
+   *
+   * Bridge-not-yet-installed edge: the readers use `?.()` (no-op when
+   * the renderer is not yet installed or the method is not yet
+   * registered). The pre-slice-88 `typeof === 'function'` guard maps
+   * directly to the optional-chain (both short-circuit to a no-op when
+   * the host hook isn't installed — classic-Ember build path). The
+   * `ember-gxt-wrappers.ts` module-init runs `installCompilePipelinePart`
+   * at module-load time alongside the slice-42 / slice-78 / slice-87
+   * install calls — well before the first `runDestroy` /
+   * `_gxtClearOnSetup` call fires.
+   *
+   * Fast-check: implementation reads the slot once, dereferences the
+   * `__tagDirtySentinel__` entry, calls `.clear()` on
+   * `classHelperInstanceCache`, conditionally re-inserts the sentinel,
+   * calls `.clear()` on `simpleHelperResultCache`, and re-assigns
+   * `managedHelperBucketCache` to a fresh `WeakMap`. Five operations,
+   * runs only at test-teardown / test-setup (NOT on every render).
+   * Cost is dominated by the `Map.clear()` calls, which are O(n) in
+   * the cache size — typically small (one entry per unique helper name
+   * invoked in the prior test). Identical hot-path cost to the
+   * pre-slice-88 globalThis property read + indirect call.
+   */
+  clearHelperCache?(): void;
 }
 
 /**
