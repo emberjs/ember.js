@@ -1350,8 +1350,15 @@ const gxtEffect = _effectFromDirectImport;
 const gxtSyncDom = _syncDomFromDirectImport;
 const gxtFormula = _formulaFromDirectImport;
 
-// Expose formula on globalThis so patchedEachSync can create reactive MergedCells
-(globalThis as any).__gxtFormula = gxtFormula;
+// Cluster B slice 94: `__gxtFormula` was previously published on globalThis here
+// so `patchedEachSync` (further down in this same module, ~L6020) could read it
+// back via `g.__gxtFormula` and wrap each-getter functions in reactive
+// MergedCells. The publish/read pair was vestigial: the directly-imported
+// `gxtFormula` binding above is already in module scope at the read site, so
+// the patchedEachSync block now uses the module-local binding directly,
+// eliminating the global round-trip. (The bundled @lifeart/gxt runtime
+// independently writes its own `globalThis.__gxtFormula` slot via
+// `setupGlobalScope`; we no longer participate.)
 
 // Phase 4.1: stale-aware GXT root context isolation.
 //
@@ -6015,9 +6022,9 @@ function patchGlobalEachSync() {
 
     // Wrap items cell/getter to normalize collection values.
     // CRITICAL: $_eachSync expects a Cell/MergedCell (with .id and .value),
-    // NOT a plain getter function. Wrap in __gxtFormula so that
-    // opcodeFor(tag, ...) can track reactivity and read .value correctly.
-    const gxtFormula = g.__gxtFormula;
+    // NOT a plain getter function. Wrap in the module-local `gxtFormula`
+    // binding (directly imported from @lifeart/gxt at the top of this file,
+    // slice-94 zero-bridge graduation — no more `g.__gxtFormula` round-trip).
     // Register the underlying array of an iterable wrapper as an "array owner"
     // of (component, propertyName) so that '[]'/'length' KVO notifications on
     // mutations (unshiftObject/pushObject) propagate to the component cell.
