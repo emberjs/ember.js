@@ -7304,10 +7304,11 @@ function _rerenderInstrumentationPayload(component: any) {
 // Ember's OutletComponentManager fires `render.outlet` for each outlet
 // re-render, and tests subscribe to `render` (which matches `render.outlet`)
 // to verify routing instrumentation.
+let _rootOutletRerenderInstrumentInstalled = false;
 (function installRootOutletRerenderInstrumentation() {
   const g = globalThis as any;
-  if (g.__gxtRootOutletRerenderInstrumentInstalled) return;
-  g.__gxtRootOutletRerenderInstrumentInstalled = true;
+  if (_rootOutletRerenderInstrumentInstalled) return;
+  _rootOutletRerenderInstrumentInstalled = true;
 
   let current: ((ref: any) => void) | null = g.__gxtRootOutletRerender ?? null;
 
