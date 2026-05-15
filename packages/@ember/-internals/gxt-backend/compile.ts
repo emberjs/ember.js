@@ -5283,7 +5283,17 @@ function patchGlobalIf() {
           }
         };
         evictFromCache(_g.__gxtClassHelperInstanceCache);
-        evictFromCache(_g.__gxtTagHelperInstanceCache);
+        // Slice-99 (Cluster B): intra-`compile.ts` reader of `_tagHelperInstanceCache`
+        // (the module-local Map declared near L7389). Pre-slice-99 this read
+        // through the `(globalThis as any).__gxtTagHelperInstanceCache` slot;
+        // since the cache lives in this same file the reader can access the
+        // module-local directly. The forward reference is safe — this arrow
+        // body executes at runtime (inside the `branchSwapHelperDestroyHook`
+        // closure), long after module init has hoisted the `const` binding.
+        // See `getTagHelperInstanceCache` doc in gxt-bridge.ts for the get-only
+        // bridge method used by ember-gxt-wrappers.ts (the only cross-file
+        // reader).
+        evictFromCache(_tagHelperInstanceCache);
         for (const inst of copy) {
           try {
             if (
@@ -7390,9 +7400,19 @@ const _tagHelperInstanceCache = new Map<string, { instance: any; recomputeTag: a
 function _gxtClearTagHelperCache(): void {
   _tagHelperInstanceCache.clear();
 }
-// Expose so the $_if helper-destroy hook can drop cached entries whose
-// instances it's about to destroy.
-(globalThis as any).__gxtTagHelperInstanceCache = _tagHelperInstanceCache;
+// Slice-99 (Cluster B): graduates the pre-slice-99
+// `(globalThis as any).__gxtTagHelperInstanceCache = _tagHelperInstanceCache;`
+// publish to a typed get-only bridge method `compilePipeline.getTagHelperInstanceCache`
+// (registered in the `installCompilePipelinePart` block at EOF below). Mirrors
+// slice-69's `getWrapperUserFalseSet` get-only collection-return pattern and
+// the slice-78 `getResolverCacheCounters` shape. The cross-file reader at
+// `ember-gxt-wrappers.ts:248` (the `_tagDirtySentinel.lastArgsSer` setter
+// that propagates classic-tag dirties into cached tag-helper instances) now
+// routes through `getGxtRenderer()?.compilePipeline.getTagHelperInstanceCache?.()`.
+// The intra-file reader at the slice-99 `evictFromCache(_tagHelperInstanceCache)`
+// call above (inside `branchSwapHelperDestroyHook`) was converted to direct
+// module-local access in the same slice. Net -1 globalThis slot, +1 bridge
+// method. See `getTagHelperInstanceCache` doc in gxt-bridge.ts.
 
 // Expose $_MANAGERS on globalThis so the $_tag wrapper can access it.
 // IMPORTANT: We store the GXT-original reference so that manager.ts can
@@ -16306,6 +16326,22 @@ installCompilePipelinePart({
   // definition above (`_gxtHadNestedObjectChangeFlag`).
   getHadNestedObjectChange: _gxtGetHadNestedObjectChange,
   setHadNestedObjectChange: _gxtSetHadNestedObjectChange,
+  // Slice-99 (Cluster B): get-only typed-bridge accessor for the
+  // `_tagHelperInstanceCache` Map declared at L7389 above (the cache holds
+  // `{ instance, recomputeTag }` entries for tag-helpers created in `$_tag`
+  // to survive force-rerenders that wipe and rebuild the DOM). Pre-slice-99
+  // the cache was published as `(globalThis as any).__gxtTagHelperInstanceCache`
+  // at the cache declaration; this slice drops that publish in favour of the
+  // typed bridge surface. The single cross-file reader at
+  // `ember-gxt-wrappers.ts:248` (inside the `_tagDirtySentinel.lastArgsSer`
+  // setter — propagates classic-tag dirties into cached tag-helper instances
+  // by clearing `inst.__gxtLastArgsSerialized` to force a fresh compute())
+  // routes through this get-only method. The intra-file reader at the
+  // slice-99 `evictFromCache(_tagHelperInstanceCache)` call (inside
+  // `branchSwapHelperDestroyHook`) was converted to direct module-local
+  // access in the same slice. Net -1 globalThis slot, +1 bridge method. Get-
+  // only collection-return shape mirrors slice-69 `getWrapperUserFalseSet`.
+  getTagHelperInstanceCache: () => _tagHelperInstanceCache,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

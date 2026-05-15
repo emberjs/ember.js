@@ -245,7 +245,16 @@ installCompilePipelinePart({
     set lastArgsSer(v: string | null) {
       this._val = v;
       try {
-        const tagCache = (globalThis as any).__gxtTagHelperInstanceCache as
+        // Slice-99 (Cluster B): route through the get-only typed-bridge
+        // accessor `compilePipeline.getTagHelperInstanceCache?.()` (registered
+        // by `compile.ts`'s `installCompilePipelinePart` at EOF). Pre-slice-99
+        // this reader pulled from `(globalThis as any).__gxtTagHelperInstanceCache`
+        // — the globalThis publish at the cache declaration was dropped in
+        // slice 99 in favour of the bridge surface. Optional-chain returns
+        // undefined when compile.ts has not yet executed its bridge install
+        // (extremely-early classic-tag-dirty firing) — matches pre-slice-99
+        // semantics where the slot was undefined → the loop body skipped.
+        const tagCache = getGxtRenderer()?.compilePipeline.getTagHelperInstanceCache?.() as
           | Map<string, { instance: any }>
           | undefined;
         if (!tagCache || tagCache.size === 0) return;

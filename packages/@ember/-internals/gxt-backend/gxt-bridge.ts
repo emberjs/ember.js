@@ -5769,6 +5769,64 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `(globalThis as any).__gxtHadNestedObjectChange`.
    */
   setHadNestedObjectChange?(value: boolean): void;
+
+  /**
+   * Get the `_tagHelperInstanceCache` Map (the compile.ts-owned per-helper-
+   * name cache for tag-helper instances created via `$_tag`). Returns a
+   * `Map<string, { instance, recomputeTag }>` whose entries persist across
+   * force-rerenders (which wipe and rebuild the DOM via `innerHTML = ''`)
+   * so a single helper instance + its `recomputeTag` survive in-place
+   * instead of being recreated each render pass.
+   *
+   * Consumer (cross-file): `ember-gxt-wrappers.ts` — inside the
+   * `_tagDirtySentinel.lastArgsSer` setter (the bridge that propagates
+   * classic-tag dirties from `dirtyTagForGuarded` into cached tag-helper
+   * instances). When the synthetic sentinel entry is dirtied (by
+   * `validator.ts` iterating `__gxtClassHelperInstanceCache` on every
+   * `dirtyTagFor` call), the setter walks every cached tag-helper instance
+   * and clears its `__gxtLastArgsSerialized` dedup key — forcing compile.ts's
+   * helperGetter to re-run `compute()` instead of returning a stale cached
+   * result. Without this propagation, classic-tag mutations on EXTERNAL
+   * objects captured in a tag-helper's closure would not invalidate that
+   * helper's compute() result, leading to stale renders.
+   *
+   * Consumer (intra-`compile.ts`): the `evictFromCache(_tagHelperInstanceCache)`
+   * call inside `branchSwapHelperDestroyHook` (the `$_if` branch-swap helper-
+   * destroy hook installed at compile.ts ~L5249). This reader was converted
+   * to direct module-local access in slice 99 (the cache lives in the same
+   * file as the consumer; no bridge surface required for the intra-file
+   * read).
+   *
+   * Pre-slice-99 reader (1 site, cross-file):
+   *  - `ember-gxt-wrappers.ts:248` — `const tagCache = (globalThis as any).
+   *    __gxtTagHelperInstanceCache as Map<...> | undefined;` inside the
+   *    `_tagDirtySentinel.lastArgsSer` setter (described above). The setter
+   *    body `if (!tagCache || tagCache.size === 0) return;` short-circuits
+   *    when the cache is empty or missing — matches the slice-99 bridge
+   *    `getTagHelperInstanceCache?.()` returning undefined when compile.ts
+   *    has not yet run its `installCompilePipelinePart` at EOF.
+   *
+   * Slice-99 (Cluster B): graduates the canonical state from the pre-slice-99
+   * `globalThis.__gxtTagHelperInstanceCache` slot to the typed get-only
+   * accessor. The intra-`compile.ts` reader was converted to direct module-
+   * local access; the cross-file `ember-gxt-wrappers.ts` reader routes
+   * through this bridge method. Bridge shape mirrors slice-69's
+   * `getWrapperUserFalseSet` (get-only collection-return accessor) and
+   * slice-78's `getResolverCacheCounters` (get-only typed-bridge accessor).
+   * Net -1 globalThis slot, +1 bridge method.
+   *
+   * Bridge-not-yet-installed semantics: optional-chain
+   * `getTagHelperInstanceCache?.()` returns undefined before compile.ts's
+   * `installCompilePipelinePart` at EOF fires; the reader body's
+   * `if (!tagCache || tagCache.size === 0) return;` short-circuits — matches
+   * pre-slice-99 semantics where the slot was undefined → the loop body
+   * skipped silently.
+   *
+   * Fast-check: 1 closure read (returning the captured `_tagHelperInstanceCache`
+   * reference); zero allocations on every call. Identical hot-path cost to
+   * the pre-slice-99 globalThis property read.
+   */
+  getTagHelperInstanceCache?(): Map<string, { instance: any; recomputeTag: any }> | undefined;
 }
 
 /**
