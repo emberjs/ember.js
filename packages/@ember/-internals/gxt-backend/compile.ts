@@ -1437,6 +1437,13 @@ import { installEmberWrappers } from './ember-gxt-wrappers';
 // this module. The bridge is populated by manager.ts at its module init time.
 import { getGxtRenderer } from './gxt-bridge';
 
+// Slice-105 intra-package consolidation — `peekInstanceCapture` replaces three
+// `(globalThis as any).__gxtLastCreatedEmberInstance` reads in the $_tag
+// component thunk's template-only-detection snapshots. The writer
+// (`setInstanceCapture` in `./manager`) now stores into a module-local; the
+// peek helper exposes it to this file. -1 globalThis slot, +0 bridge methods.
+import { peekInstanceCapture } from './manager';
+
 const _SLOTS_SYM = Symbol.for('gxt-slots');
 
 /**
@@ -10556,18 +10563,20 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // Track the render path for template-only components. They don't
             // appear in the parentView chain (no instance), so the backtracking
             // diagnostic (`checkBacktracking` in manager.ts) doesn't see
-            // them when building its `- While rendering:` tree. Snapshot the
-            // `__gxtLastCreatedEmberInstance` before handle() runs; after
-            // handle() completes, if __gxtLastCreatedEmberInstance is null
-            // (renderGlimmerComponent path) this was a template-only render
-            // — add its kebabName to a per-render set. The
-            // `transformBacktrackingMessage` host hook contributed by this
-            // file via `installBacktrackingPart` (slice 10) reads this set
-            // to inject template-only names into the render tree.
+            // them when building its `- While rendering:` tree. After handle()
+            // completes, if `peekInstanceCapture()` returns null (the
+            // renderGlimmerComponent path passed `null` to setInstanceCapture)
+            // this was a template-only render — add its kebabName to a
+            // per-render set. The `transformBacktrackingMessage` host hook
+            // contributed by this file via `installBacktrackingPart` (slice 10)
+            // reads this set to inject template-only names into the render tree.
             // Reset the set if the renderPassId changed since the last entry.
             // Slice-63: `_gxtTemplateOnlyRenderedSetPassId` is the module-local
             // pass-id snapshot (pre-slice-63 lived on globalThis); paired with
             // slice-62's `_gxtTemplateOnlyRenderedSet`.
+            // Slice-105: the pre-handle() snapshot (`_lastCreatedBefore`) was
+            // dead code — captured but never read. Removed alongside the
+            // globalThis→module-local consolidation.
             {
               const _curPass = (globalThis as any).__emberRenderPassId || 0;
               if (_gxtTemplateOnlyRenderedSetPassId !== _curPass) {
@@ -10575,7 +10584,6 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 _gxtTemplateOnlyRenderedSet.clear();
               }
             }
-            const _lastCreatedBefore = (globalThis as any).__gxtLastCreatedEmberInstance;
             _gxtTemplateOnlyStack.push(kebabName);
             // During a force-rerender (e.g., runTask(() => set(items, ...))),
             // manager.ts's renderClassicComponent skips willRender/willUpdate
@@ -10608,15 +10616,19 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               }
               // Template-only components are identified by the fact that
               // renderGlimmerComponent calls setInstanceCapture(null) — so
-              // after handle(), __gxtLastCreatedEmberInstance is null.
+              // after handle(), peekInstanceCapture() returns null.
               // Classic components are still captured as their instance.
-              const _lastCreatedAfter = (globalThis as any).__gxtLastCreatedEmberInstance;
+              // Slice-105: read via the intra-package `peekInstanceCapture`
+              // helper instead of `(globalThis as any).__gxtLastCreatedEmberInstance`.
+              const _lastCreatedAfter = peekInstanceCapture();
               if (_lastCreatedAfter === null) {
                 _gxtTemplateOnlyRenderedSet.add(kebabName);
               }
             }
             if (__forceRerenderSnapshot) {
-              const _inst = (globalThis as any).__gxtLastCreatedEmberInstance;
+              // Slice-105: read via the intra-package `peekInstanceCapture`
+              // helper instead of `(globalThis as any).__gxtLastCreatedEmberInstance`.
+              const _inst = peekInstanceCapture();
               // Fire willRender/willUpdate ONLY if __gxtSyncAllWrappers did not
               // already fire them on this instance for the current sync cycle.
               // syncAll is wrapped above to stamp `__gxtSyncAllFiredCycleId`

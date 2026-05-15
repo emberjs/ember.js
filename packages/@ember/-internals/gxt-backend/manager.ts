@@ -168,12 +168,30 @@ function _gxtEffectWithOwner(owner: object | null | undefined, cb: () => void): 
 // dead code. Removed as part of the destruction-slice bridge migration.
 
 // Stack-based instance capture for $_dc_ember lifecycle tracking.
+// (Cluster B slice 105, 2026-05-15) — `__gxtLastCreatedEmberInstance` was
+// retired as a globalThis slot. The slot had a single writer (`setInstanceCapture`,
+// below) and three readers, ALL of which lived inside this package's
+// `compile.ts` (template-only-render detection snapshots in the $_tag
+// component thunk, around `handle()`). Pre-slice-105 audit confirmed 0
+// readers in the bundled @lifeart/gxt runtime
+// (`node_modules/.pnpm/@lifeart+gxt@0.0.61/`), 0 readers in
+// `packages/@glimmer-workspace/integration-tests/lib/modes/rehydration/
+// gxt-delegate.ts` (slice-102 trap surface), 0 readers in `index.html` /
+// `packages/demo/tests.html`, and 0 readers in `scripts/`. With every
+// consumer intra-package, the slot is replaced by a module-local
+// `_lastCreatedEmberInstance` plus an exported `peekInstanceCapture()`
+// reader; compile.ts imports the helper and the cross-module globalThis
+// channel disappears. -1 net globalThis slot, +0 bridge methods.
+//
 // Previously a single global (__gxtLastCreatedEmberInstance) was used, which
 // broke when nested components were created during handle() — only the LAST
-// instance survived, and __dcCaptureInstance got the wrong one.
-// Now: before calling handle(), push a null slot; creation code sets the top;
-// after handle(), pop and use the captured value.
+// instance survived, and __dcCaptureInstance got the wrong one. The pre-existing
+// stack scaffolding (`_instanceCaptureStack`, `pushInstanceCapture`,
+// `popInstanceCapture`) is retained intact: `setInstanceCapture` still
+// updates the top of the stack when present, preserving the option to
+// re-enable the per-handle() push/pop pattern without further changes.
 const _instanceCaptureStack: Array<any> = [];
+let _lastCreatedEmberInstance: any = null;
 function pushInstanceCapture() {
   _instanceCaptureStack.push(null);
 }
@@ -184,8 +202,18 @@ function setInstanceCapture(inst: any) {
   if (_instanceCaptureStack.length > 0) {
     _instanceCaptureStack[_instanceCaptureStack.length - 1] = inst;
   }
-  // Keep the global for backward compat with any other consumers
-  (globalThis as any).__gxtLastCreatedEmberInstance = inst;
+  _lastCreatedEmberInstance = inst;
+}
+/**
+ * Slice-105 intra-package reader — exported for compile.ts to peek at the
+ * most-recent instance captured by `setInstanceCapture` (typically called
+ * from `renderClassicComponent` / `renderGlimmerComponent` below). Replaces
+ * three `(globalThis as any).__gxtLastCreatedEmberInstance` reads in the
+ * $_tag component thunk. Returns `null` when the last render path was a
+ * template-only component (renderGlimmerComponent passes `null`).
+ */
+export function peekInstanceCapture(): any {
+  return _lastCreatedEmberInstance;
 }
 // (Cluster B pilot) — exposed as `destruction.destroyDestroyable` through the
 // gxt-bridge at module bottom (was `(globalThis as any).__gxtDestroyDestroyableFn`).
