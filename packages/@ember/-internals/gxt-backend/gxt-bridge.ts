@@ -5422,7 +5422,9 @@ export interface GxtCompilePipelineCapabilities {
    * Called from:
    *   - `compile.ts:6716` — `_gxtSyncDomNow`'s PHASE 2b morph fallback,
    *     wrapping the call in a try/catch that stashes any rerender error in
-   *     `__gxtDeferredSyncError` for propagation after sync completes.
+   *     the module-local `_gxtDeferredSyncError` slot (slice-98 zero-bridge
+   *     graduation from the retired `globalThis.__gxtDeferredSyncError`
+   *     slot) for propagation after sync completes.
    *   - `manager.ts:602` — patched `recompute` body after helper-cache
    *     invalidation: sets `setHadPendingSync(true)` and
    *     `setHadNestedObjectChange(true)` (slice-97 bridge setter), then

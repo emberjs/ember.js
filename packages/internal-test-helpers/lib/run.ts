@@ -196,8 +196,11 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   // because __gxtDestroyUnclaimedPoolEntries Phase 3 captured throws into
   // _renderErrors without re-throwing. Now Phase 3 throws the first error
   // directly (manager.ts:~4250), which propagates through __gxtSyncDomNow's
-  // __gxtDeferredSyncError re-throw (compile.ts:~5737) and escapes the
-  // syncNow() call above naturally. No flush needed.
+  // re-throw of the module-local `_gxtDeferredSyncError` slot
+  // (slice-98 zero-bridge graduation from the retired
+  // `globalThis.__gxtDeferredSyncError` slot — see compile.ts
+  // `_gxtDeferredSyncError` module-local) and escapes the syncNow() call
+  // above naturally. No flush needed.
   return result;
 }
 

@@ -3735,6 +3735,89 @@ function _gxtSetHadNestedObjectChange(on: boolean): void {
   _gxtHadNestedObjectChangeFlag = on;
 }
 
+// Slice-98 (Cluster B): graduates the `__gxtDeferredSyncError` deferred-error
+// slot from the pre-slice-98 `(globalThis as any).__gxtDeferredSyncError`
+// read/write/clear trio to a module-local `_gxtDeferredSyncError` binding in
+// `compile.ts` (intra-file zero-bridge graduation, slice-66/77/93/94
+// precedent). The slot holds an error captured during `_gxtSyncDomNow`'s
+// morph-fallback try/catch — Phase 2b (`forceEmberRerender` rerender error)
+// and Phase 2c (`destroyUnclaimedPoolEntries` destroy error) — so that the
+// error can be re-thrown AFTER the `finally`-block sync-state cleanup runs
+// (`_gxtSetSyncing(false)` + `_gxtSetSyncIsPropertyDriven(false)`). Without
+// the defer, the throw would skip the finally's flag-reset and leave
+// `_gxtSyncingFlag === true`, causing every subsequent `_gxtSyncDomNow` call
+// to short-circuit on the re-entrancy guard and become a permanent no-op
+// (the same crash mode slice-24 documented for `__gxtSyncing`).
+//
+// Pre-slice-98 topology (audited verbatim against current source):
+//   Functional sites (5, ALL intra-`compile.ts`, all inside `_gxtSyncDomNow`):
+//     - L6784-6785 (writer #1) — Phase 2b morph-fallback catch:
+//         (globalThis as any).__gxtDeferredSyncError =
+//           (globalThis as any).__gxtDeferredSyncError || rerenderErr;
+//       First-error-wins coalescing (`existing || newErr`) so a Phase 2b
+//       throw isn't shadowed by a later Phase 2c throw.
+//     - L6794-6795 (writer #2) — Phase 2c destroy-unclaimed catch: same
+//       first-error-wins coalescing for `destroyErr`. Phase 2b error wins
+//       because it ran first.
+//     - L6981 (reader) — captured into local `deferredSyncErr` immediately
+//       AFTER the function-body `finally` block ran (so syncing flag is
+//       cleared before we re-throw).
+//     - L6983 (clearer) — `(globalThis as any).__gxtDeferredSyncError = null;`
+//       clears BEFORE the re-throw so the next sync cycle starts clean.
+//     - L6984 (throw) — `throw deferredSyncErr;` re-throws to propagate the
+//       error to `runTask`'s caller (typically `assert.throws` in tests).
+//
+//   Non-functional sites (informational only; no read/write):
+//     - `gxt-backend/manager.ts:5072` — docblock breadcrumb inside
+//       `destroyUnclaimedPoolEntries` describing where Phase 3 throws end up.
+//     - `internal-test-helpers/lib/run.ts:199` — docblock breadcrumb in
+//       `runTask` explaining why the post-task `flushRenderErrors()` drain is
+//       no longer needed (the throw propagates naturally via this slot).
+//     - `gxt-bridge.ts:5425` — docblock reference inside `forceEmberRerender`
+//       describing how compile.ts's morph-fallback catches its throw.
+//
+//   Orphan writers (DEFENSIVE between-test resets, no Ember reader after
+//   slice 98 — left in place per slice 97's no-cleanup convention for
+//   test-harness orphans; they become no-op writes to an unused globalThis
+//   slot once Ember no longer reads it):
+//     - `index.html:95` (QUnit.testStart) — `globalThis.__gxtDeferredSyncError = null;`
+//     - `index.html:127` (QUnit.testDone) — same.
+//     - `packages/demo/tests.html:300` (QUnit.testStart) — same.
+//     - `packages/demo/tests.html:313` (QUnit.testDone) — same.
+//
+// Audit decision (zero-bridge graduate): all 5 functional sites are
+// intra-`compile.ts` and intra-`_gxtSyncDomNow` (the writers, the reader,
+// the clearer, and the throw all live in the same function body, within
+// ~200 lines of each other). The 3 cross-file references are all docblock
+// breadcrumbs — pure documentation, never executed. There are zero
+// cross-file consumers in Ember code, and `grep -rn '__gxtDeferredSyncError'
+// node_modules/.pnpm/@lifeart+gxt@*/` returns zero hits (the GXT runtime
+// does not participate in this slot either). The slice-66/77/93/94
+// zero-bridge graduation pattern applies cleanly: replace the 4 read/write
+// sites with direct module-local accesses, retire the globalThis slot.
+//
+// State-home decision: `compile.ts`. All 5 functional sites are already
+// here; the state is semantically part of the `_gxtSyncDomNow` post-runTask
+// DOM sync pipeline alongside `_gxtSyncingFlag` (slice-24),
+// `_gxtPendingSyncFlag` (slice-37), `_gxtHadPendingSyncFlag` (slice-35),
+// and the slice-97 `_gxtHadNestedObjectChangeFlag`. Placement directly
+// after slice-97's nested-object-change flag groups all the morph-fallback
+// captured-state declarations together.
+//
+// Bridge shape decision: ZERO BRIDGE. No cross-file consumers means no
+// bridge surface is needed. The 3 cross-file docblock breadcrumbs are
+// updated to point at the new module-local binding rather than the retired
+// globalThis slot. Net globalThis surface delta: -1 slot
+// (`__gxtDeferredSyncError`).
+//
+// Type choice: `unknown` (not `Error | null`). The Phase 2b and Phase 2c
+// throws can theoretically be any thrown value (JavaScript permits
+// `throw 'string'`, `throw 42`, etc.), and the pre-slice-98 globalThis
+// slot was typed as `any`, accepting anything. `unknown` is the
+// type-safe equivalent that still allows a bare `throw deferredSyncErr;`
+// statement (which TypeScript permits for all types including `unknown`).
+let _gxtDeferredSyncError: unknown = null;
+
 // Slice-37 (Cluster B): graduates the `__gxtPendingSync` boolean flag from
 // the pre-slice-37 `globalThis.__gxtPendingSync` slot to the module-local
 // boolean `_gxtPendingSyncFlag` in `compile.ts`, paired with a 2-method
@@ -6780,9 +6863,13 @@ function _resetTemplateOnlyState() {
         // gxt-bridge.ts.
         getGxtRenderer()?.compilePipeline.forceEmberRerender?.();
       } catch (rerenderErr) {
-        // Store the error so it can be re-thrown after sync completes
-        (globalThis as any).__gxtDeferredSyncError =
-          (globalThis as any).__gxtDeferredSyncError || rerenderErr;
+        // Store the error so it can be re-thrown after sync completes.
+        // Slice-98 (Cluster B): write to module-local `_gxtDeferredSyncError`
+        // (graduated from `globalThis.__gxtDeferredSyncError`). First-error-
+        // wins coalescing preserved verbatim — a Phase 2b throw must not be
+        // shadowed by a later Phase 2c throw at L6794. See module-local
+        // definition above for the slice-98 migration narrative.
+        _gxtDeferredSyncError = _gxtDeferredSyncError || rerenderErr;
       }
       // PHASE 2c: Destroy unclaimed instances — components that were in
       // the old render but not in the new one (e.g., {{each}} items removed).
@@ -6790,9 +6877,12 @@ function _resetTemplateOnlyState() {
         // (Cluster B pilot) — typed bridge call. Was __gxtDestroyUnclaimedPoolEntries.
         getGxtRenderer()?.destruction.destroyUnclaimedPoolEntries();
       } catch (destroyErr) {
-        // Store destroy errors for propagation to assert.throws
-        (globalThis as any).__gxtDeferredSyncError =
-          (globalThis as any).__gxtDeferredSyncError || destroyErr;
+        // Store destroy errors for propagation to assert.throws.
+        // Slice-98 (Cluster B): write to module-local `_gxtDeferredSyncError`
+        // (graduated from `globalThis.__gxtDeferredSyncError`). First-error-
+        // wins coalescing preserved — a Phase 2b rerender throw captured at
+        // L6789 wins over this Phase 2c destroy throw.
+        _gxtDeferredSyncError = _gxtDeferredSyncError || destroyErr;
       }
       // PHASE 2c2: Rebuild view-tree parent/child relationships from DOM ancestry.
       // Slice-11 (Cluster B): typed bridge call via `viewUtils.rebuildViewTreeFromDom`.
@@ -6977,10 +7067,17 @@ function _resetTemplateOnlyState() {
       _gxtSetSyncIsPropertyDriven(false);
     }
     // Re-throw any deferred errors from the force-rerender or lifecycle phases
-    // so they propagate to assert.throws() in tests
-    const deferredSyncErr = (globalThis as any).__gxtDeferredSyncError;
+    // so they propagate to assert.throws() in tests.
+    // Slice-98 (Cluster B): read+clear module-local `_gxtDeferredSyncError`
+    // (graduated from `globalThis.__gxtDeferredSyncError`). The read happens
+    // AFTER the outer try/finally above has already reset `_gxtSyncingFlag`
+    // and `_gxtSyncIsPropertyDrivenFlag`, so the throw escapes with a clean
+    // sync state — the next `_gxtSyncDomNow` call will not short-circuit on
+    // the re-entrancy guard. Clear before throwing so the slot starts the
+    // next sync cycle empty.
+    const deferredSyncErr = _gxtDeferredSyncError;
     if (deferredSyncErr) {
-      (globalThis as any).__gxtDeferredSyncError = null;
+      _gxtDeferredSyncError = null;
       throw deferredSyncErr;
     }
   }

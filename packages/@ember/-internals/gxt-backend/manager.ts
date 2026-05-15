@@ -5069,9 +5069,13 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   // First-error-wins for Phase 3 destroy/willDestroy throws. Loop iterates to
   // completion so every unclaimed instance gets a destroy attempt, then we
   // re-throw the first error at the end. The throw escapes __gxtSyncDomNow
-  // (compile.ts catches → __gxtDeferredSyncError → re-throws at line ~5737),
-  // which lets runTask propagate the error to assert.throws naturally —
-  // without needing a post-task flushRenderErrors() drain of _renderErrors.
+  // (compile.ts catches → module-local `_gxtDeferredSyncError` slot,
+  // slice-98 zero-bridge graduation from the retired `globalThis
+  // .__gxtDeferredSyncError` slot — see compile.ts `_gxtDeferredSyncError`
+  // module-local; re-thrown at the tail of `_gxtSyncDomNow` after the
+  // outer try/finally has reset the sync-state flags), which lets runTask
+  // propagate the error to assert.throws naturally — without needing a
+  // post-task flushRenderErrors() drain of _renderErrors.
   let firstPhase3Error: Error | null = null;
   for (const instance of unclaimed) {
     try {
