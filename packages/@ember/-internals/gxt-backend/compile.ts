@@ -8271,6 +8271,43 @@ function _resolveHasBlockArgs(arg1: any, arg2: any): { slots: any; name: string 
   return false;
 };
 
+// Cluster B slice 93: graduated from `(globalThis as any).__gxtNamespace` to a
+// module-local binding. Implements the SVG/MathML namespace IIFE channel: when
+// the `$_c_ember` override (below) intercepts a GXT `$_SVGProvider` /
+// `$_MathMLProvider` / `$_HTMLProvider` component invocation, it stashes the
+// caller's existing namespace, sets `_gxtNamespace` to the provider's namespace
+// flag (`'svg'` / `'mathml'` / `null`) for the duration of the default-slot
+// execution, then restores the previous value in a `finally` block. The wrapped
+// `g.$_tag` reader (further down in this same module) consults the binding to
+// decide whether to use `document.createElementNS(SVG_NS|MATHML_NS, tag)`
+// instead of GXT's default `createElement`, and four sibling
+// originalTag-wrap guards (also in this module) short-circuit their plain-HTML
+// attribute/SafeString cleanup paths when a namespace is active (the SVG /
+// MathML branches handle their own attribute application via `applyNsAttr`).
+//
+// Audit confirmed exactly 8 functional sites — all intra-`compile.ts`:
+//   - 3 writers inside `$_c_ember`'s namespace-provider intercept IIFE:
+//     save (`const prevNs = g.__gxtNamespace`), set (`g.__gxtNamespace = ns`)
+//     in the try-block prologue, and restore (`g.__gxtNamespace = prevNs`) in
+//     the finally block.
+//   - 1 reader inside the wrapped `g.$_tag` body that dispatches on
+//     `currentNs === 'svg' | 'mathml'` to pick the correct namespace URI.
+//   - 4 read-guards in the originalTag wrap that skip plain-HTML cleanup
+//     (nullish-attr filter, nullish-attr-cleanup tracker, SafeString HTML
+//     injection, post-apply prop-position attribute application) when a
+//     namespace is active (the SVG branch above already handled attrs).
+//
+// Zero cross-file consumers; the bundled `@lifeart/gxt` runtime has zero
+// references to `__gxtNamespace` across all pinned versions in
+// `node_modules/.pnpm/@lifeart+gxt@*/` (verified per slice-55's lesson from
+// slice-54's revert). Lazy-init NOT required — save/restore semantics are
+// tolerant of `undefined` (the prologue stashes whatever was there before,
+// even if it was never set). Same intra-file zero-bridge graduation shape as
+// slice 66 (`_gxtCurrentParentIfRef`) which migrated the same save/set/restore
+// IIFE pattern with `undefined`-tolerant save/restore semantics. Zero-bridge
+// intra-file refactor; drops 1 globalThis slot.
+let _gxtNamespace: string | undefined;
+
 // Override $_c to handle CurriedComponent — when a GXT binding (e.g., from {{#let}})
 // resolves to a CurriedComponent, we need to render it through the Ember component manager
 // instead of GXT's normal component constructor path.
@@ -8290,13 +8327,14 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       const slots = args?.[$SLOTS] || args?.args?.[$SLOTS];
       const defaultSlot = slots?.default;
       if (typeof defaultSlot === 'function') {
-        const prevNs = g.__gxtNamespace;
-        if (ns) g.__gxtNamespace = ns;
+        // Cluster B slice 93: was `(globalThis as any).__gxtNamespace`.
+        const prevNs = _gxtNamespace;
+        if (ns) _gxtNamespace = ns;
         try {
           const result = defaultSlot(ctx);
           return result;
         } finally {
-          g.__gxtNamespace = prevNs;
+          _gxtNamespace = prevNs;
         }
       }
       // No default slot — return empty
@@ -10901,10 +10939,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       };
     }
 
-    // SVG/MathML namespace handling: when __gxtNamespace is set (by $_c_ember
+    // SVG/MathML namespace handling: when _gxtNamespace is set (by $_c_ember
     // when it intercepts $_SVGProvider/$_MathMLProvider), create elements in the
     // correct namespace using createElementNS instead of GXT's default createElement.
-    const currentNs = g.__gxtNamespace;
+    // Cluster B slice 93: was `(globalThis as any).__gxtNamespace`.
+    const currentNs = _gxtNamespace;
     if (currentNs && resolvedTag && typeof resolvedTag === 'string') {
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const MATHML_NS = 'http://www.w3.org/1998/Math/MathML';
@@ -11240,7 +11279,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // to a no-op by dropping the entry for the *initial* render (the getter
     // still gets wrapped by GXT's effect system to re-add it later; but our
     // wrapping approach here only affects the first synchronous pass).
-    if (tagProps && tagProps !== g.$_edp && typeof tag === 'string' && !g.__gxtNamespace) {
+    // Cluster B slice 93: was `!g.__gxtNamespace`.
+    if (tagProps && tagProps !== g.$_edp && typeof tag === 'string' && !_gxtNamespace) {
       const filteredAttrs = Array.isArray(tagProps[1])
         ? tagProps[1].filter((entry: [string, unknown]) => {
             if (!Array.isArray(entry) || entry.length < 2) return true;
@@ -11260,11 +11300,12 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // After GXT renders, we'll strip those attributes from the DOM element so
     // Ember-style "null/undefined means no attribute" semantics win.
     const _nullishAttrsForCleanup: string[] = [];
+    // Cluster B slice 93: was `!g.__gxtNamespace`.
     if (
       tagProps &&
       tagProps !== g.$_edp &&
       typeof tag === 'string' &&
-      !g.__gxtNamespace &&
+      !_gxtNamespace &&
       Array.isArray(tagProps[1])
     ) {
       for (const entry of tagProps[1]) {
@@ -11291,11 +11332,12 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // and `_normalizeStringValue` strips it to ''. Capture the raw HTML
     // from toHTML() here and inject it into the element after originalTag.
     const _safeHtmlInjections: Array<{ html: string }> = [];
+    // Cluster B slice 93: was `!g.__gxtNamespace`.
     if (
       tagProps &&
       tagProps !== g.$_edp &&
       typeof tag === 'string' &&
-      !g.__gxtNamespace &&
+      !_gxtNamespace &&
       Array.isArray(tagProps[2])
     ) {
       for (const entry of tagProps[2]) {
@@ -11418,11 +11460,12 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // slots) are dropped. Apply anything that looks like a plain attribute
     // name to the rendered element so both static and dynamic sibling
     // attributes end up on the DOM.
+    // Cluster B slice 93: was `!g.__gxtNamespace`.
     if (
       tagProps &&
       tagProps !== g.$_edp &&
       typeof tag === 'string' &&
-      !g.__gxtNamespace &&
+      !_gxtNamespace &&
       result instanceof Element
     ) {
       const props = tagProps[0];
