@@ -599,8 +599,16 @@ function _installHelperRecomputeBridge(instance: any): void {
             // gxt-bridge.ts for the full migration narrative.
             getGxtRenderer()?.compilePipeline.setHadPendingSync?.(true);
             (globalThis as any).__gxtHadNestedObjectChange = true;
-            const force = (globalThis as any).__gxtForceEmberRerender;
-            if (typeof force === 'function') force();
+            // Slice-96 (Cluster B): `__gxtForceEmberRerender` canonical state
+            // migrated to module-local `_gxtForceEmberRerender` in
+            // renderer.ts (state-home: renderer.ts owns the `renderers[]`
+            // registry + the slice-45/46 cycle state). Cross-package reader
+            // routes through the bridge method (load-order-safe optional
+            // chain — by the time this helper-recompute path fires,
+            // renderer.ts's `installCompilePipelinePart` has run and the
+            // method is installed). See `forceEmberRerender` doc in
+            // gxt-bridge.ts.
+            getGxtRenderer()?.compilePipeline.forceEmberRerender?.();
           } catch {
             /* ignore */
           }

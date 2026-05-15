@@ -6713,8 +6713,16 @@ function _resetTemplateOnlyState() {
       // cover the change (computed properties, prototype chain changes).
       // The morph preserves DOM node stability.
       try {
-        const forceRerender = (globalThis as any).__gxtForceEmberRerender;
-        if (typeof forceRerender === 'function') forceRerender();
+        // Slice-96 (Cluster B): `__gxtForceEmberRerender` canonical state
+        // migrated to module-local `_gxtForceEmberRerender` in
+        // renderer.ts (state-home: renderer.ts owns the `renderers[]`
+        // registry + the slice-45/46 cycle state). Cross-package reader
+        // routes through the bridge method (load-order-safe optional
+        // chain — by the time `_gxtSyncDomNow`'s PHASE 2b morph fallback
+        // fires, renderer.ts's `installCompilePipelinePart` has run and
+        // the method is installed). See `forceEmberRerender` doc in
+        // gxt-bridge.ts.
+        getGxtRenderer()?.compilePipeline.forceEmberRerender?.();
       } catch (rerenderErr) {
         // Store the error so it can be re-thrown after sync completes
         (globalThis as any).__gxtDeferredSyncError =

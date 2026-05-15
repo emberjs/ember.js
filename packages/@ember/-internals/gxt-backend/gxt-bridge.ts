@@ -5383,6 +5383,122 @@ export interface GxtCompilePipelineCapabilities {
   postRenderHooks?(): void;
 
   /**
+   * Force-rerender all GXT roots whose own tag moved in the current sync
+   * cycle. Called as the fallback morph path from `_gxtSyncDomNow` (PHASE 2b)
+   * after GXT's native cell-based DOM sync (PHASE 1) has run, and from
+   * manager.ts's helper-recompute patched-recompute path (L602) to force a
+   * full-tree morph that lets formulas reading helper cells re-evaluate.
+   * The implementation:
+   *
+   *   1. Bails immediately if `_gxtForceRerenderInProgress` is `true` (slice-45
+   *      module-local re-entrancy guard), preventing infinite loops when
+   *      morphing triggers cell updates that schedule additional force-
+   *      rerenders.
+   *   2. Reads `getHadPendingSync()` (slice-35 bridge getter) and
+   *      `__gxtHadNestedObjectChange` (still globalThis — to be migrated in
+   *      a later slice) to decide whether to fall back to a full-tree
+   *      force-rerender when no root's own tag moved.
+   *   3. Consumes `_gxtDirtyRootsAtSync` (slice-46 module-local stash
+   *      populated by `_gxtUpdateRootTagValues`) for the pre-sync dirty set,
+   *      falling back to live tag-comparison for call-sites that don't go
+   *      through the sync pipeline.
+   *   4. Builds `effectiveDirtyRoots` (intersection of `dirtyRootsFromSync`
+   *      with the live `allGxtRoots`) and `rootsToRender` (the dirty subset
+   *      if non-empty, else `allGxtRoots` when `hadPendingSync &&
+   *      hadNestedObjectChange`, else empty — no spurious full re-renders
+   *      for child-tracked mutations that don't dirty any root tag).
+   *   5. For each `rootToRender`: bumps the global render-pass ID
+   *      (`__emberRenderPassId`), sets `__gxtIsForceRerender = true` for the
+   *      duration of the `classicRoot.render()` call so the instance pool
+   *      reuses existing instances (avoiding spurious init/render lifecycle-
+   *      hook fires), restores the flag in a finally, and re-throws any
+   *      deferred render errors stashed on `classicRoot.__gxtDeferredError`
+   *      so they propagate to `assert.throws` in test contexts.
+   *   6. The outer `finally` clears `_gxtForceRerenderInProgress`, calls
+   *      `setHadPendingSync(false)` (slice-35 bridge setter), clears
+   *      `__gxtHadNestedObjectChange = false` (still globalThis), and clears
+   *      `_gxtDirtyRootsAtSync = undefined` (slice-46 module-local).
+   *
+   * Called from:
+   *   - `compile.ts:6716` — `_gxtSyncDomNow`'s PHASE 2b morph fallback,
+   *     wrapping the call in a try/catch that stashes any rerender error in
+   *     `__gxtDeferredSyncError` for propagation after sync completes.
+   *   - `manager.ts:602` — patched `recompute` body after helper-cache
+   *     invalidation: sets `setHadPendingSync(true)` and
+   *     `__gxtHadNestedObjectChange = true`, then calls
+   *     `forceEmberRerender()` to force a full-tree morph so the formula
+   *     reading the helper cell re-evaluates against the new computed
+   *     result.
+   *
+   * Slice-96 (Cluster B): replaces the pre-slice-96 globalThis writer
+   * `(globalThis as any).__gxtForceEmberRerender = function () { ... };`
+   * at `glimmer/lib/renderer.ts:1363` and the two pre-slice-96 globalThis
+   * readers:
+   *   - `compile.ts:6716` — `const forceRerender = (globalThis as any)
+   *     .__gxtForceEmberRerender; if (typeof forceRerender === 'function')
+   *     forceRerender();`
+   *   - `manager.ts:602` — `const force = (globalThis as any)
+   *     .__gxtForceEmberRerender; if (typeof force === 'function') force();`
+   * The writer is graduated to a module-local `function
+   * _gxtForceEmberRerender(): void { ... }` declaration in renderer.ts
+   * (slice-91 / slice-92 function-pointer precedent, canonical state lives
+   * where it's primarily mutated/read — the `renderers[]` registry plus
+   * the slice-45/46 `_gxtForceRerenderInProgress` / `_gxtDirtyRootsAtSync`
+   * module-local cycle state all live in renderer.ts). The two readers
+   * route through `getGxtRenderer()?.compilePipeline.forceEmberRerender?.()`,
+   * the optional-chain providing the same null-tolerant guard as the
+   * pre-slice-96 `typeof === 'function'` check for classic-Ember builds
+   * (where gxt-backend was never loaded). Net -1 globalThis slot, +1 new
+   * bridge method on `compilePipeline`.
+   *
+   * Bridge shape decision: typed-bridge `forceEmberRerender(): void` method
+   * on `GxtCompilePipelineCapabilities` (slice-91 `newRenderPass` /
+   * slice-92 `postRenderHooks` precedent — void-returning bridge method
+   * cross-package function-pointer pair, with state-home in the writer's
+   * own file). Cross-package shape: writer in `@ember/-internals/glimmer`
+   * (renderer.ts) + readers in `@ember/-internals/gxt-backend`
+   * (manager.ts + compile.ts). Direction: renderer.ts contributes via
+   * `installCompilePipelinePart({ forceEmberRerender: _gxtForceEmberRerender })`,
+   * the same reverse-flow install used by slice-9's `installRootComponentPart`
+   * (renderer.ts → gxt-bridge cross-package writer precedent).
+   *
+   * Namespace decision: `compilePipeline`. The function is semantically
+   * part of the GXT post-runTask DOM sync pipeline (PHASE 2b morph
+   * fallback, invoked from `_gxtSyncDomNow`'s try block alongside the
+   * slice-91 `newRenderPass` / slice-92 `postRenderHooks` entries that
+   * also live on `compilePipeline`). The state it consumes
+   * (`_gxtForceRerenderInProgress`, `_gxtDirtyRootsAtSync`, `renderers[]`)
+   * lives in renderer.ts; the install API runs at module init.
+   *
+   * Bridge-not-yet-installed edge: the two cross-file readers in
+   * compile.ts and manager.ts use
+   * `getGxtRenderer()?.compilePipeline.forceEmberRerender?.()`. Both
+   * optional chains short-circuit to `undefined` when either the renderer
+   * or the method is not yet installed; the no-args `?.()` call simply
+   * does nothing in that case (matches the pre-slice-96 semantics where,
+   * if the slot was undefined, the `typeof === 'function'` guard skipped
+   * the call). In practice the bridge IS installed by the time
+   * `_gxtSyncDomNow` fires or the helper-recompute path runs (both gated
+   * on the GXT runtime being live, which is gated on renderer.ts module
+   * init having completed). The new short-circuit is conservative — it
+   * skips the morph entirely for classic-Ember builds where gxt-backend
+   * is never loaded. That's load-order-safe because in classic-Ember
+   * `_gxtSyncDomNow` is never invoked.
+   *
+   * Fast-check: the implementation is the same body that lived inside the
+   * pre-slice-96 globalThis function-expression — re-entrancy guard,
+   * dirty-roots collection across all `renderers[]`, scoped or full-tree
+   * `classicRoot.render()` calls, deferred-error re-throw, finally-block
+   * cycle-state reset. The bridge call adds one `getGxtRenderer()` + one
+   * property dereference + one optional-call to the same body; trivially
+   * cheap on the sync-cycle hot path (the morph itself is the dominant
+   * cost, not the bridge dispatch).
+   *
+   * Previously: `(globalThis as any).__gxtForceEmberRerender`.
+   */
+  forceEmberRerender?(): void;
+
+  /**
    * Read-only predicate for the `__gxtSuppressDirtyInRcSet` boolean flag.
    * Returns `true` iff the current synchronous stack is nested inside a
    * `withSuppressDirtyInRcSet(fn)` frame (one of the 4 manager.ts

@@ -9,8 +9,14 @@ import { getViewElement, getViewId, setViewElement } from '@ember/-internals/vie
 // updateRootTagValues}` — renderer.ts is the first non-gxt-backend file to
 // install a capabilities part. See gxt-bridge.ts `GxtRootComponentCapabilities`
 // for the namespace docs.
+// (Cluster B slice 96) Bridge writer for `compilePipeline.forceEmberRerender`
+// — renderer.ts contributes the morph-fallback function to the compilePipeline
+// namespace via `installCompilePipelinePart` (slice-9 reverse-flow install
+// precedent). See gxt-bridge.ts `forceEmberRerender` doc for the namespace /
+// shape decision narrative.
 import {
   getGxtRenderer,
+  installCompilePipelinePart,
   installRootComponentPart,
 } from '@ember/-internals/gxt-backend/gxt-bridge';
 
@@ -1357,10 +1363,31 @@ if (!__GXT_MODE__) {
   });
 }
 
-// Expose a function to force re-render all GXT roots.
-// Called from __gxtSyncDomNow when GXT's cell tracking misses changes
-// made through Ember's set() / notifyPropertyChange.
-(globalThis as any).__gxtForceEmberRerender = function () {
+// Force re-render all GXT roots whose own tag moved in the current sync
+// cycle. Called from __gxtSyncDomNow when GXT's cell tracking misses changes
+// made through Ember's set() / notifyPropertyChange, and from manager.ts's
+// patched-recompute helper-recompute path to force a full-tree morph that
+// lets formulas reading helper cells re-evaluate.
+//
+// Slice-96 (Cluster B): graduated from the pre-slice-96 globalThis writer
+// `(globalThis as any).__gxtForceEmberRerender = function () { ... };` to
+// a plain module-local `function _gxtForceEmberRerender()` declaration
+// exposed through the `compilePipeline.forceEmberRerender` typed-bridge
+// method. Pattern mirrors slice-91's `newRenderPass` and slice-92's
+// `postRenderHooks` (same shape: void-returning bridge method invoked from
+// sibling cross-package readers). The two readers at `compile.ts:6716`
+// (PHASE 2b morph fallback inside `_gxtSyncDomNow`) and `manager.ts:602`
+// (patched-recompute helper-recompute path) route through
+// `getGxtRenderer()?.compilePipeline.forceEmberRerender?.()` — the
+// optional-chain provides the same null-tolerant guard as the pre-slice-96
+// `typeof === 'function'` check. State home: renderer.ts owns the
+// `renderers[]` registry plus the slice-45/46 module-local cycle state
+// (`_gxtForceRerenderInProgress` re-entrancy guard, `_gxtDirtyRootsAtSync`
+// pre-sync dirty list), so the function stays here and is registered via
+// `installCompilePipelinePart` (slice-9 reverse-flow install precedent).
+// See `forceEmberRerender` doc in gxt-bridge.ts. Net -1 globalThis slot,
+// +1 new bridge method on `compilePipeline`.
+function _gxtForceEmberRerender(): void {
   // Re-entrancy guard: prevent infinite loops when morphing triggers
   // cell updates that schedule additional force-rerenders.
   // Slice 45 (Cluster B): canonical state migrated from
@@ -1469,7 +1496,21 @@ if (!__GXT_MODE__) {
     // near `renderers`.
     _gxtDirtyRootsAtSync = undefined;
   }
-};
+}
+
+// Slice-96 (Cluster B): publish the renderer-owned force-rerender morph
+// fallback to the gxt-bridge `compilePipeline` namespace. Mirrors slice-9's
+// `installRootComponentPart` reverse-flow install (renderer.ts contributes
+// to a bridge namespace consumed inside `@ember/-internals/gxt-backend`).
+// Replaces the pre-slice-96 globalThis writer at L1363
+// (`(globalThis as any).__gxtForceEmberRerender = function () { ... };`,
+// now retired). The two cross-package readers at `compile.ts:6716` and
+// `manager.ts:602` route through
+// `getGxtRenderer()?.compilePipeline.forceEmberRerender?.()`. See
+// `forceEmberRerender` doc in gxt-bridge.ts. Net -1 globalThis slot.
+installCompilePipelinePart({
+  forceEmberRerender: _gxtForceEmberRerender,
+});
 
 // Check if the given object is a GXT root-component's `root` (i.e., a
 // component that owns a top-level renderer state). Used by compile.ts's
