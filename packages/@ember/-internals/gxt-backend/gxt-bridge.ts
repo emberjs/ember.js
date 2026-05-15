@@ -5381,6 +5381,129 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `(globalThis as any).__gxtPostRenderHooks`.
    */
   postRenderHooks?(): void;
+
+  /**
+   * Read-only predicate for the `__gxtSuppressDirtyInRcSet` boolean flag.
+   * Returns `true` iff the current synchronous stack is nested inside a
+   * `withSuppressDirtyInRcSet(fn)` frame (one of the 4 manager.ts
+   * internal-arg-write-back regions that must NOT schedule another GXT sync
+   * cycle from inside their write-back).
+   *
+   * Sole consumer: `validator.ts:888`, inside the `classicDirtyTagForGuarded`
+   * body. When TRUE, the validator dirties the tag and bumps the global
+   * revision (so within-sync template re-reads see the new value) BUT
+   * skips `__gxtExternalSchedule()` and `_glimmerGlobalContext.scheduleRevalidate()`
+   * — preventing a backburner re-entry loop on curly component tests where
+   * the rcSet internal write-back would otherwise trigger an immediate
+   * re-schedule and recursive sync.
+   *
+   * Slice-95 (Cluster B): graduates the canonical state from the pre-
+   * slice-95 `globalThis.__gxtSuppressDirtyInRcSet` slot to the module-
+   * local `_gxtSuppressDirtyInRcSetFlag` in `compile.ts`. The single
+   * cross-file reader in `validator.ts` routes through this bridge
+   * predicate. Net globalThis surface delta: -1 slot (paired with
+   * `withSuppressDirtyInRcSet`).
+   *
+   * Bridge-not-yet-installed edge: validator.ts uses
+   * `getGxtRenderer()?.compilePipeline.isDirtyInRcSetSuppressed?.()` and
+   * coerces to FALSE (the surrounding `if (!...)` treats undefined as
+   * falsy → the suppression-OFF path runs). That matches pre-slice-95
+   * semantics where the globalThis slot defaulted to undefined and the
+   * `if (!gSched.__gxtSuppressDirtyInRcSet)` check passed (so the
+   * `__gxtExternalSchedule` call ran). The bridge predicate is installed
+   * at compile.ts module init via the final `installCompilePipelinePart`
+   * block at file EOF; validator.ts's `classicDirtyTagFor` install runs
+   * at manager.ts module init; by the time any rcSet write-back fires,
+   * both have completed.
+   *
+   * Fast-check: reads the module-local `_gxtSuppressDirtyInRcSetFlag`
+   * boolean — one boolean read; zero allocations. Matches slice-20/22/24/
+   * 29/30/34's predicate body shape.
+   */
+  isDirtyInRcSetSuppressed?(): boolean;
+
+  /**
+   * Run `fn` while the `__gxtSuppressDirtyInRcSet` boolean flag is set to
+   * `true` (save the prior value, set the flag, invoke `fn`, then restore
+   * the prior value via `try/finally`). Returns whatever `fn` returns.
+   * Re-entrancy-safe: an enclosing frame's value is preserved by the
+   * save-restore pattern (nested calls stack correctly).
+   *
+   * Slice-95 (Cluster B): graduates the cross-file writer sites for
+   * `__gxtSuppressDirtyInRcSet` to a typed bridge helper. Slice-18
+   * `withInTriggerReRender` precedent — fixed-value (TRUE-for-body)
+   * variant of slice-24's `withSyncing(value, fn)` since all 4 writer
+   * regions in manager.ts use the identical save-set-TRUE-restore pattern
+   * (no FALSE-for-body callers).
+   *
+   * Pre-slice-95 writers (4 sites, all intra-`manager.ts`, all save-
+   * set-TRUE-for-body-restore via try/finally — pre-slice-95 each
+   * expanded into a 3-statement triplet: capture prev → set TRUE inside
+   * try → restore prev in finally):
+   *  - `manager.ts:2782` — `_rcSet` (curly-component arg dispatch in the
+   *    `if (newValue !== oldValue)` branch where `key !== 'elementId'`):
+   *    suppresses the schedule for the `instance[key] = newValue` write-
+   *    back paired with `instance.__gxtDispatchingArgs = true`.
+   *  - `manager.ts:2820` — `_rcSet` (the arg-reset loop body for keys
+   *    that disappear from the new args set): suppresses the schedule
+   *    for the `instance[key] = undefined` write-back paired with
+   *    `instance.__gxtDispatchingArgs = true`.
+   *  - `manager.ts:4208` — dynamic-component arg-changed sync (the
+   *    `if (argChanged)` body when `entry.instance && key !== 'class' &&
+   *    !cellEntry.skipInstanceAssign`): suppresses the schedule for the
+   *    `entry.instance[key] = newValue` write-back; this body has an
+   *    inner try with catch-and-ignore to swallow assignment errors,
+   *    with the suppression restore in the outer finally.
+   *  - `manager.ts:4268` — dynamic-component arg-changed sync (the
+   *    `else if (argActuallyChanged)` body in the locally-overridden
+   *    branch): same shape as L4208 — suppresses the schedule for the
+   *    `entry.instance[key] = newValue` write-back with an inner
+   *    catch-and-ignore and an outer finally-restore.
+   *
+   * All 4 writer regions migrate to a `withSuppressDirtyInRcSet(() => {
+   * entry.instance.__gxtDispatchingArgs = true; try { instance[key] =
+   * newValue; } finally { entry.instance.__gxtDispatchingArgs = false; }
+   * });` shape. The two manager.ts writers at L4208 and L4268 preserve
+   * their pre-slice-95 inner `try { ... } catch (catch-and-ignore) finally
+   * { __gxtDispatchingArgs = false }` shape inside the lambda body —
+   * the wrapper's try/finally handles the suppress-flag restore, the
+   * lambda's inner try/catch/finally handles the dispatching-arg restore
+   * and assignment-error swallowing.
+   *
+   * Bridge shape decision: TRUE-for-body fixed wrapper (slice-18
+   * `withInTriggerReRender` precedent — paired-method pattern: single
+   * predicate + single TRUE-for-body wrapper, no separate setter).
+   * Slice 95 cannot use slice-29's mark+consume because the flag uses
+   * a try/finally save-set-restore pattern (the 4 paired open/close
+   * triplets aren't one-shot consumer boundaries). Slice 95 cannot use
+   * slice-35/36/37/38/40/41's paired get/set because all writers want
+   * TRUE-for-body semantics (no FALSE-for-body or straight-line
+   * assignment writer), making the wrapper a strictly tighter fit than
+   * a paired setter the callers would have to wrap manually.
+   *
+   * State home: `compile.ts` (consistent with slice-17/18/20/22/24/29/30/
+   * 34/35/36/37/38/40/41/89's "canonical state lives in compile.ts
+   * alongside the other compilePipeline state" rule). The 4 writers are
+   * in manager.ts (separate file within the same package); manager.ts
+   * already imports `getGxtRenderer` (slice-6+), so no new import edges.
+   *
+   * Bridge-not-yet-installed edge: manager.ts uses
+   * `getGxtRenderer()?.compilePipeline.withSuppressDirtyInRcSet?.(fn)` at
+   * each of the 4 writer sites. If the bridge isn't installed yet, the
+   * optional chain returns `undefined` and the body would never run.
+   * Each writer site falls back to running the lambda body directly so
+   * the assignment still happens. In practice the bridge IS installed by
+   * the time any rcSet write-back fires (the dispatch path is gated on
+   * a fully-rendered template, which is gated on compile.ts module init
+   * having completed). Without the suppression in the fallback path, the
+   * scheduler may queue an extra re-render — harmless but extra work.
+   *
+   * Fast-check: writes the module-local `_gxtSuppressDirtyInRcSetFlag`
+   * boolean — one boolean read + one boolean write + one function call
+   * + one boolean restore; zero allocations beyond the closure. Matches
+   * slice-18/22/24's wrapper body shape.
+   */
+  withSuppressDirtyInRcSet?<T>(fn: () => T): T;
 }
 
 /**

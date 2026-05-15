@@ -2776,17 +2776,36 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
         // Update the instance property (but not elementId - it's frozen)
         if (key !== 'elementId') {
           // Set dispatching flag so setters know this is an arg update from parent.
-          // Also set __gxtSuppressDirtyInRcSet so classicDirtyTagForGuarded no-ops
-          // during this internal write-back — prevents re-scheduling another sync.
-          const g = globalThis as any;
-          const prevSuppress = g.__gxtSuppressDirtyInRcSet;
-          try {
-            instance.__gxtDispatchingArgs = true;
-            g.__gxtSuppressDirtyInRcSet = true;
-            instance[key] = newValue;
-          } finally {
-            instance.__gxtDispatchingArgs = false;
-            g.__gxtSuppressDirtyInRcSet = prevSuppress;
+          // Also suppress __gxtSuppressDirtyInRcSet so classicDirtyTagForGuarded
+          // no-ops during this internal write-back — prevents re-scheduling
+          // another sync.
+          //
+          // Slice-95 (Cluster B): migrated the pre-slice-95 raw-globalThis
+          // save-set-true-restore triplet (capture `prev`, set TRUE inside
+          // try, restore `prev` in finally) to
+          // `compilePipeline.withSuppressDirtyInRcSet(fn)` — the TRUE-for-
+          // body save-restore wrapper handles the suppress-flag save/restore
+          // pair; the inner try/finally retains the `__gxtDispatchingArgs`
+          // save/restore pair (whose restore must happen WHEN the assignment
+          // body has finished, INSIDE the suppress frame, so that any
+          // dispatching-arg consumers also see the suppression).
+          const withSuppress = getGxtRenderer()?.compilePipeline.withSuppressDirtyInRcSet;
+          const body = () => {
+            try {
+              instance.__gxtDispatchingArgs = true;
+              instance[key] = newValue;
+            } finally {
+              instance.__gxtDispatchingArgs = false;
+            }
+          };
+          if (withSuppress) {
+            withSuppress(body);
+          } else {
+            // Bridge-not-yet-installed fallback: run the body directly. The
+            // scheduler may queue an extra re-render — harmless but extra
+            // work; matches pre-bridge semantics where the suppression slot
+            // was undefined.
+            body();
           }
         }
         lastArgValues[key] = newValue;
@@ -2816,15 +2835,24 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
     for (const key of Object.keys(lastArgValues)) {
       if (key === 'elementId' || key === 'id') continue;
       if (!newKeySet.has(key) && lastArgValues[key] !== undefined) {
-        const g = globalThis as any;
-        const prevSuppress = g.__gxtSuppressDirtyInRcSet;
-        try {
-          instance.__gxtDispatchingArgs = true;
-          g.__gxtSuppressDirtyInRcSet = true;
-          instance[key] = undefined;
-        } finally {
-          instance.__gxtDispatchingArgs = false;
-          g.__gxtSuppressDirtyInRcSet = prevSuppress;
+        // Slice-95 (Cluster B): migrated the pre-slice-95 raw-globalThis
+        // save-set-true-restore triplet (capture `prev`, set TRUE inside
+        // try, restore `prev` in finally) to
+        // `compilePipeline.withSuppressDirtyInRcSet(fn)`. See the writer
+        // at L2782 for the full rationale.
+        const withSuppress = getGxtRenderer()?.compilePipeline.withSuppressDirtyInRcSet;
+        const body = () => {
+          try {
+            instance.__gxtDispatchingArgs = true;
+            instance[key] = undefined;
+          } finally {
+            instance.__gxtDispatchingArgs = false;
+          }
+        };
+        if (withSuppress) {
+          withSuppress(body);
+        } else {
+          body();
         }
         // If the property has a cell-backed getter from createRenderContext,
         // the setter may have set _useLocal=false but the getter still calls
@@ -4205,17 +4233,30 @@ function _gxtSyncAllWrappersBody(): void {
               key !== 'classNames' &&
               !cellEntry.skipInstanceAssign
             ) {
-              const g = globalThis as any;
-              const prevSuppress = g.__gxtSuppressDirtyInRcSet;
-              try {
-                entry.instance.__gxtDispatchingArgs = true;
-                g.__gxtSuppressDirtyInRcSet = true;
-                entry.instance[key] = newValue;
-              } catch {
-                /* ignore */
-              } finally {
-                entry.instance.__gxtDispatchingArgs = false;
-                g.__gxtSuppressDirtyInRcSet = prevSuppress;
+              // Slice-95 (Cluster B): migrated the pre-slice-95 raw-globalThis
+              // save-set-true-restore triplet (capture `prev`, set TRUE inside
+              // try, restore `prev` in finally — wrapping a try/catch/finally
+              // for dispatching-arg restore + assignment-error swallow) to
+              // `compilePipeline.withSuppressDirtyInRcSet(fn)`. The wrapper
+              // handles the suppress-flag save/restore pair; the inner
+              // try/catch/finally retains the `__gxtDispatchingArgs` save/
+              // restore pair AND the catch-and-ignore semantics for the
+              // assignment (some setters can throw — pre-slice-95 swallowed).
+              const withSuppress = getGxtRenderer()?.compilePipeline.withSuppressDirtyInRcSet;
+              const body = () => {
+                try {
+                  entry.instance.__gxtDispatchingArgs = true;
+                  entry.instance[key] = newValue;
+                } catch {
+                  /* ignore */
+                } finally {
+                  entry.instance.__gxtDispatchingArgs = false;
+                }
+              };
+              if (withSuppress) {
+                withSuppress(body);
+              } else {
+                body();
               }
             }
             hasChanges = true;
@@ -4262,19 +4303,30 @@ function _gxtSyncAllWrappersBody(): void {
             ) {
               // Set dispatching flag so the setter knows this is an arg update
               // (not an explicit set from component code) and should clear useLocal.
-              // Also set __gxtSuppressDirtyInRcSet so classicDirtyTagForGuarded
+              // Also suppress __gxtSuppressDirtyInRcSet so classicDirtyTagForGuarded
               // no-ops during this write-back — prevents scheduling another sync.
-              const g = globalThis as any;
-              const prevSuppress = g.__gxtSuppressDirtyInRcSet;
-              try {
-                entry.instance.__gxtDispatchingArgs = true;
-                g.__gxtSuppressDirtyInRcSet = true;
-                entry.instance[key] = newValue;
-              } catch {
-                /* ignore */
-              } finally {
-                entry.instance.__gxtDispatchingArgs = false;
-                g.__gxtSuppressDirtyInRcSet = prevSuppress;
+              //
+              // Slice-95 (Cluster B): migrated the pre-slice-95 raw-globalThis
+              // save-set-true-restore triplet (capture `prev`, set TRUE inside
+              // try, restore `prev` in finally — wrapping a try/catch/finally
+              // for dispatching-arg restore + assignment-error swallow) to
+              // `compilePipeline.withSuppressDirtyInRcSet(fn)`. See the writer
+              // at L4228 for the full rationale.
+              const withSuppress = getGxtRenderer()?.compilePipeline.withSuppressDirtyInRcSet;
+              const body = () => {
+                try {
+                  entry.instance.__gxtDispatchingArgs = true;
+                  entry.instance[key] = newValue;
+                } catch {
+                  /* ignore */
+                } finally {
+                  entry.instance.__gxtDispatchingArgs = false;
+                }
+              };
+              if (withSuppress) {
+                withSuppress(body);
+              } else {
+                body();
               }
               // When there are active $_dc dynamic component listeners,
               // call notifyPropertyChange to dirty Ember tags for @computed

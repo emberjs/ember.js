@@ -884,8 +884,16 @@ export function dirtyTagFor(obj: any, key: any) {
   // rescheduling another sync triggers a backburner re-entry loop on curly
   // tests. We still need the tag marked dirty and the global revision bumped
   // so within-sync template re-reads see the new value.
+  //
+  // Slice-95 (Cluster B): migrated the pre-slice-95
+  // `(globalThis as any).__gxtSuppressDirtyInRcSet` reader to the typed-bridge
+  // predicate `compilePipeline.isDirtyInRcSetSuppressed?.()`. Returns
+  // `undefined` when the bridge isn't installed yet (the optional chain
+  // short-circuits) — coerced to FALSE by the `!` so the schedule call runs,
+  // matching pre-slice-95 semantics where the globalThis slot defaulted to
+  // undefined → the `if (!...)` check passed and `schedule()` ran.
   const gSched = globalThis as any;
-  if (!gSched.__gxtSuppressDirtyInRcSet) {
+  if (!getGxtRenderer()?.compilePipeline.isDirtyInRcSetSuppressed?.()) {
     const schedule = gSched.__gxtExternalSchedule;
     if (typeof schedule === 'function') {
       schedule();

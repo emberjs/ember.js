@@ -3592,6 +3592,47 @@ function _gxtWithSyncing<T>(value: boolean, fn: () => T): T {
   }
 }
 
+// Slice-95 (Cluster B): graduates the `__gxtSuppressDirtyInRcSet` boolean
+// flag to a module-local boolean (`_gxtSuppressDirtyInRcSetFlag`) and DROPS
+// the `globalThis.__gxtSuppressDirtyInRcSet` slot entirely. The flag is set
+// to TRUE while manager.ts is performing internal arg write-backs (the
+// `instance[key] = newValue` assignment in `rcSet`/dynamic-component arg
+// dispatch) so that `validator.ts`'s `classicDirtyTagFor` wrapper can mark
+// the tag dirty and bump the global revision WITHOUT scheduling another
+// GXT sync — preventing a backburner re-entry loop on curly component tests.
+//
+// Pre-slice-95 topology: 4 writers (all in `manager.ts`, all save-set-TRUE-
+// for-body-restore via try/finally — see manager.ts L2782/L2820/L4208/L4268)
+// + 1 reader in `validator.ts:888` (the `classicDirtyTagForGuarded` body
+// gate: `if (!gSched.__gxtSuppressDirtyInRcSet) { schedule(); scheduleRevalidate(); }`).
+// Net globalThis surface delta: -1 slot.
+//
+// Bridge shape decision: `withSuppressDirtyInRcSet<T>(fn): T` (TRUE-for-body
+// save-restore wrapper, slice-18 `withInTriggerReRender` precedent — fixed-
+// value variant of slice-24's `withSyncing(value, fn)`) + `isDirtyInRcSetSuppressed():
+// boolean` read-only predicate (slice-20/22/24 precedent). All 4 writers in
+// manager.ts are uniform `save → set TRUE → fn() → restore` patterns so the
+// wrapper collapses 11 writer/save/restore sites into 4 wrapper calls. The
+// reader is single, intra-package (validator.ts).
+//
+// Namespace decision: `compilePipeline` (consistent with slice-17/18/20/22/24/
+// 29/30/34/35/36/37/38/40/41/89 — all flag-shaped state-modifier helpers
+// live here; validator.ts already routes `withTriggerSuppressed` through
+// `compilePipeline`).
+let _gxtSuppressDirtyInRcSetFlag = false;
+function _gxtIsDirtyInRcSetSuppressed(): boolean {
+  return _gxtSuppressDirtyInRcSetFlag;
+}
+function _gxtWithSuppressDirtyInRcSet<T>(fn: () => T): T {
+  const wasSuppressed = _gxtSuppressDirtyInRcSetFlag;
+  _gxtSuppressDirtyInRcSetFlag = true;
+  try {
+    return fn();
+  } finally {
+    _gxtSuppressDirtyInRcSetFlag = wasSuppressed;
+  }
+}
+
 // Slice-34 (Cluster B): graduates the `__gxtSyncIsPropertyDriven` boolean
 // flag to a module-local boolean (`_gxtSyncIsPropertyDrivenFlag`) and DROPS
 // the `globalThis.__gxtSyncIsPropertyDriven` slot entirely. The flag is set
@@ -16066,6 +16107,19 @@ installCompilePipelinePart({
   // Net -1 globalThis slot. See `getEngineInstances` doc in gxt-bridge.ts
   // and module-local definition above (`_gxtEngineInstances`).
   getEngineInstances: _gxtGetEngineInstances,
+  // Slice-95 (Cluster B): graduates `__gxtSuppressDirtyInRcSet` from the
+  // globalThis slot to a 2-method bridge surface — `isDirtyInRcSetSuppressed`
+  // read-only predicate (single reader: `validator.ts:888`
+  // `classicDirtyTagForGuarded` body gate) + `withSuppressDirtyInRcSet(fn)`
+  // TRUE-for-body save-restore wrapper (4 writers, all in `manager.ts` —
+  // `_rcSet` arg dispatch L2782/L2820 + arg-changed sync L4208/L4268, each
+  // pre-slice-95 a manual save-set-true-restore try/finally triplet). The
+  // wrapper collapses 11 writer/save/restore sites into 4 wrapper calls.
+  // Net -1 globalThis slot. See `withSuppressDirtyInRcSet` /
+  // `isDirtyInRcSetSuppressed` docs in gxt-bridge.ts and module-local
+  // definitions above (`_gxtSuppressDirtyInRcSetFlag`).
+  isDirtyInRcSetSuppressed: _gxtIsDirtyInRcSetSuppressed,
+  withSuppressDirtyInRcSet: _gxtWithSuppressDirtyInRcSet,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
