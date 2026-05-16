@@ -2871,6 +2871,33 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
           const body = () => {
             try {
               instance.__gxtDispatchingArgs = true;
+              // Cluster A Phase 1.5: update the GXT cell BEFORE the legacy
+              // assignment so that any synchronous reader (child template
+              // formula reading `{{this.foo}}`) sees the new value. The
+              // legacy assignment below remains the canonical setter path
+              // and may trigger notifyPropertyChange; once Phase 2 defers
+              // the cascade body, that path no longer runs synchronously,
+              // so the cell must be hot by this point.
+              try {
+                const _gxtCellFor = (globalThis as any).__gxtCellFor;
+                if (typeof _gxtCellFor === 'function') {
+                  // skipDefine=true: don't install a cell-backed property
+                  // descriptor; the cascade body (when it runs) creates the
+                  // cell on demand. Using false here would replace the
+                  // tracked-property descriptor and break two-way bindings
+                  // (verified empirically against
+                  // `curly-components-test.js:2920`).
+                  const _cell = _gxtCellFor(instance, key, /* skipDefine */ true);
+                  _cell?.update?.(newValue);
+                }
+              } catch (cellErr) {
+                if (DEBUG) {
+                  // eslint-disable-next-line no-console
+                  console.warn('[gxt] arg-pass cell.update failed', { key, cellErr });
+                }
+                // Continue to legacy assignment; tracked setter path remains
+                // the canonical fallback (see CLAUDE.md no-silent-swallow rule).
+              }
               instance[key] = newValue;
             } finally {
               instance.__gxtDispatchingArgs = false;
@@ -2922,6 +2949,22 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
         const body = () => {
           try {
             instance.__gxtDispatchingArgs = true;
+            // Cluster A Phase 1.5: update the GXT cell BEFORE the legacy
+            // assignment so the new (undefined) value is visible to any
+            // synchronous reader. See Site A above for full rationale.
+            try {
+              const _gxtCellFor = (globalThis as any).__gxtCellFor;
+              if (typeof _gxtCellFor === 'function') {
+                // skipDefine=true: see Site A — don't install descriptor.
+                const _cell = _gxtCellFor(instance, key, /* skipDefine */ true);
+                _cell?.update?.(undefined);
+              }
+            } catch (cellErr) {
+              if (DEBUG) {
+                // eslint-disable-next-line no-console
+                console.warn('[gxt] arg-reset cell.update failed', { key, cellErr });
+              }
+            }
             instance[key] = undefined;
           } finally {
             instance.__gxtDispatchingArgs = false;
@@ -4370,6 +4413,30 @@ function _gxtSyncAllWrappersBody(): void {
               const body = () => {
                 try {
                   entry.instance.__gxtDispatchingArgs = true;
+                  // Cluster A Phase 1.5: refresh the per-instance cellFor cell
+                  // BEFORE the legacy assignment so child template formulas
+                  // reading `{{this.<key>}}` see the new value synchronously.
+                  // `cellEntry.cell` above is the arg-tracking cell on the
+                  // owning syncAll context; the per-instance cell looked up
+                  // by `cellFor(instance, key)` is a distinct slot (one per
+                  // (instance, key) pair) and must be updated separately.
+                  try {
+                    const _gxtCellFor = (globalThis as any).__gxtCellFor;
+                    if (typeof _gxtCellFor === 'function') {
+                      // skipDefine=true: don't replace the tracked descriptor.
+                      // See Site A for rationale.
+                      const _cell = _gxtCellFor(entry.instance, key, /* skipDefine */ true);
+                      _cell?.update?.(newValue);
+                    }
+                  } catch (cellErr) {
+                    if (DEBUG) {
+                      // eslint-disable-next-line no-console
+                      console.warn('[gxt] arg-pass cell.update failed (initOverridden)', {
+                        key,
+                        cellErr,
+                      });
+                    }
+                  }
                   entry.instance[key] = newValue;
                 } catch {
                   /* ignore */
@@ -4440,6 +4507,29 @@ function _gxtSyncAllWrappersBody(): void {
               const body = () => {
                 try {
                   entry.instance.__gxtDispatchingArgs = true;
+                  // Cluster A Phase 1.5: refresh the per-instance cellFor cell
+                  // BEFORE the legacy assignment. This is the curly-binding
+                  // failure path identified in the Phase 2 post-mortem
+                  // (`curly-components-test.js:2920` two-way-binding upstream
+                  // flow). Cell must be hot before the cascade body runs
+                  // (synchronous OR deferred under Phase 2). See Site A above.
+                  try {
+                    const _gxtCellFor = (globalThis as any).__gxtCellFor;
+                    if (typeof _gxtCellFor === 'function') {
+                      // skipDefine=true: don't replace the tracked descriptor.
+                      // See Site A for rationale.
+                      const _cell = _gxtCellFor(entry.instance, key, /* skipDefine */ true);
+                      _cell?.update?.(newValue);
+                    }
+                  } catch (cellErr) {
+                    if (DEBUG) {
+                      // eslint-disable-next-line no-console
+                      console.warn('[gxt] arg-pass cell.update failed (sync)', {
+                        key,
+                        cellErr,
+                      });
+                    }
+                  }
                   entry.instance[key] = newValue;
                 } catch {
                   /* ignore */
