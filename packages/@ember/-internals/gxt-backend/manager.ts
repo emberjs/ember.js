@@ -1404,7 +1404,10 @@ function getCachedOrCreateInstance(
   }
 
   // Track render pass ID - reset claimed flags when a new render pass starts
-  const currentPassId = (globalThis as any).__emberRenderPassId || 0;
+  // Slice-124 (Cluster B): read render-pass id via the bridge
+  // (canonical state graduated from `globalThis.__emberRenderPassId` to the
+  // module-local `_emberRenderPassId` in `glimmer/lib/renderer.ts`).
+  const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
   if ((pool as any).__lastPassId !== currentPassId) {
     // New render pass - reset claimed and updatedThisPass flags
     (pool as any).__lastPassId = currentPassId;
@@ -4248,7 +4251,10 @@ function _gxtSyncAllWrappers(): void {
   // module-local `_gxtSyncAllInFlightPass` / `_gxtSyncAllInFlightCycle`.
   // All readers are intra-file (5 sites in this module) so no bridge
   // method is exposed — leaner than slice 30's cross-file-reader topology.
-  const __curPass = g.__emberRenderPassId || 0;
+  // Slice-124 (Cluster B): read render-pass id via the bridge (canonical
+  // state graduated from `globalThis.__emberRenderPassId` to the module-
+  // local `_emberRenderPassId` in `glimmer/lib/renderer.ts`).
+  const __curPass = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
   _gxtSyncAllInFlightPass = __curPass;
   // Slice-30 (Cluster B): read the sync-cycle counter via the bridge
   // (canonical state graduated from `globalThis.__gxtSyncCycleId` to the
@@ -4953,7 +4959,8 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
       // never "connected" after insertion. Consider them alive if they were
       // rendered in the current pass or if they are claimed in a pool.
       if (!isAlive && instance.tagName === '' && !instance.isDestroyed && !instance.isDestroying) {
-        const passId = (globalThis as any).__emberRenderPassId || 0;
+        // Slice-124 (Cluster B): bridge-routed render-pass id read.
+        const passId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
         if (
           instance.__gxtRenderedInPass === passId ||
           _currentPassRenderedInstances.has(instance)
@@ -10034,7 +10041,8 @@ function handleStringComponent(
   return () => {
     // If this closure was already evaluated in this render pass, return cached result.
     // This prevents duplicate component instances when GXT re-evaluates formulas.
-    const currentRenderPassId = (globalThis as any).__emberRenderPassId || 0;
+    // Slice-124 (Cluster B): bridge-routed render-pass id read.
+    const currentRenderPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
     if (_cachedResult !== undefined && _cachedRenderPassId === currentRenderPassId) {
       return _cachedResult;
     }
@@ -10270,7 +10278,8 @@ function handleCustomManagedComponent(
     const { namedArgs, positionalArgs, liveNamed, livePositional } = buildCustomManagedArgs(args);
 
     // Check for a cached instance from a previous render pass (for instance reuse on re-render)
-    const currentPassId = (globalThis as any).__emberRenderPassId || 0;
+    // Slice-124 (Cluster B): bridge-routed render-pass id read.
+    const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
     let pool = _customManagedPool.get(ComponentClass);
     if (!pool) {
       pool = [];
@@ -10507,7 +10516,8 @@ function buildCustomManagedArgs(args: any) {
       let lastPassId: number = -1;
       let cachedValue: any = undefined;
       const memoGet = function () {
-        const currentPassId = (globalThis as any).__emberRenderPassId | 0;
+        // Slice-124 (Cluster B): bridge-routed render-pass id read.
+        const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
         if (currentPassId > 0 && currentPassId === lastPassId) {
           return cachedValue;
         }
@@ -10527,7 +10537,8 @@ function buildCustomManagedArgs(args: any) {
     let lastPassId: number = -1;
     let cachedValue: any = undefined;
     const memoGet = function () {
-      const currentPassId = (globalThis as any).__emberRenderPassId | 0;
+      // Slice-124 (Cluster B): bridge-routed render-pass id read.
+      const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
       if (currentPassId > 0 && currentPassId === lastPassId) {
         return cachedValue;
       }
@@ -11850,7 +11861,8 @@ function handleClassicComponent(factory: any, args: any, fw: any, ctx: any, owne
   let _cachedResult: any = undefined;
   let _cachedRenderPassId: number = -1;
   return () => {
-    const currentRenderPassId = (globalThis as any).__emberRenderPassId || 0;
+    // Slice-124 (Cluster B): bridge-routed render-pass id read.
+    const currentRenderPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
     if (_cachedResult !== undefined && _cachedRenderPassId === currentRenderPassId) {
       return _cachedResult;
     }
@@ -11994,7 +12006,8 @@ function renderClassicComponent(
       // Track this instance as rendered in the current pass.
       // Use a flag directly on the instance to survive any timing issues
       // with set/passId tracking.
-      const passId = (globalThis as any).__emberRenderPassId || 0;
+      // Slice-124 (Cluster B): bridge-routed render-pass id read.
+      const passId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
       if (_currentPassRenderedPassId !== passId) {
         _currentPassRenderedInstances.clear();
         _currentPassRenderedPassId = passId;

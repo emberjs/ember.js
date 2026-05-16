@@ -348,7 +348,8 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
   const ownerSeenInPass: WeakMap<object, number> = new WeakMap<object, number>();
   let ownerlessSeenInPass: number | null = null;
   const wrapped: any = function (owner?: any) {
-    const currentPass = ((globalThis as any).__emberRenderPassId as number) || 0;
+    // Slice-124 (Cluster B): bridge-routed render-pass id read.
+    const currentPass = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
     if (owner && typeof owner === 'object') {
       const cached = ownerTemplates.get(owner);
       if (cached !== undefined) {
@@ -409,7 +410,7 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
 // Eagerly publish the instrumentation so the `template` shim sees it even
 // when `template(precompile(...))` is called before any `compile()`.
 // (Cluster B slice 6) Bridge install (replaces the prior globalThis publish).
-import { installCompilePipelinePart } from './gxt-bridge';
+import { getGxtRenderer, installCompilePipelinePart } from './gxt-bridge';
 installCompilePipelinePart({
   instrumentFactory: _instrumentFactory,
 });

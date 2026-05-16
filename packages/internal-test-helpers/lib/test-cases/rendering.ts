@@ -201,7 +201,11 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
     // Increment render pass ID before starting a new render transaction
     // This ensures all components in this render share the same pass ID
-    (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
+    // Slice-124 (Cluster B): test-helper writer routes through the bridge
+    // incrementer (canonical state migrated to module-local
+    // `_emberRenderPassId` in `@ember/-internals/glimmer/lib/renderer.ts`).
+    // See `incrementRenderPassId` doc in gxt-bridge.ts.
+    getGxtRenderer()?.viewUtils.incrementRenderPassId?.();
 
     runAppend(this.component);
 
@@ -225,7 +229,10 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
   rerender() {
     this.#assertNotAwaiting('rerender');
     // Increment render pass ID for re-renders too
-    (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
+    // Slice-124 (Cluster B): test-helper writer routes through the bridge
+    // incrementer (canonical state migrated to module-local
+    // `_emberRenderPassId` in `@ember/-internals/glimmer/lib/renderer.ts`).
+    getGxtRenderer()?.viewUtils.incrementRenderPassId?.();
     this.component!.rerender();
   }
 

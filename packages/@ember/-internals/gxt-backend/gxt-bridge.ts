@@ -408,6 +408,98 @@ export interface GxtViewUtilsCapabilities {
    * Previously: tail of the wrap-by-reassignment at compile.ts L1981.
    */
   afterFlushAfterInsertQueue?(): void;
+
+  /**
+   * Read the current render-pass id counter. The counter is a monotonically
+   * increasing integer advanced once per top-level render / re-render
+   * transaction (`renderer.ts`'s force-rerender loop, the test-helper
+   * `render` / `rerender` entry points). It serves as a "logical clock" for
+   * the GXT-backend render machinery — gxt-backend modules cache per-pass
+   * state on dozens of hot paths (instance-pool claim-flag resets, custom-
+   * managed component pool resets, arg-getter memoization, template-only
+   * rendered-set resets, style-binding XSS warn dedup, classic-component
+   * rendered-in-pass tracking, formula-result cache invalidation,
+   * template-factory hit/miss counters, etc.).
+   *
+   * Returns `0` when the bridge is not yet installed (matching the pre-
+   * slice-124 truthy-coerce `|| 0` semantics that all 12 reader sites
+   * shared). All gxt-backend readers route through
+   * `getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0`.
+   *
+   * Slice-124 (Cluster B): paired with `incrementRenderPassId` — graduates
+   * the pre-slice-124 globalThis slot `__emberRenderPassId` to a typed
+   * bridge getter+incrementer pair on the `viewUtils` namespace. Canonical
+   * state is now a module-local `_emberRenderPassId: number` in
+   * `glimmer/lib/renderer.ts` (the natural lifecycle owner — the
+   * force-rerender loop is the dominant writer). The reverse-flow install
+   * mirrors slice 9's `installRootComponentPart` pattern (writer outside
+   * gxt-backend, readers inside): renderer.ts contributes both methods
+   * via `installViewUtilsPart`.
+   *
+   * Reader topology after slice 124:
+   *  - intra-package gxt-backend/manager.ts (9 sites): route through
+   *    `getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0`.
+   *  - intra-package gxt-backend/compile.ts (2 sites): route through the
+   *    bridge with the same `?? 0` fallback.
+   *  - intra-package gxt-backend/ember-template-compiler.ts (1 site):
+   *    routes through the bridge with the same `?? 0` fallback.
+   *
+   * Writer topology after slice 124:
+   *  - intra-file glimmer/lib/renderer.ts (1 site, force-rerender loop):
+   *    calls module-local `_incrementEmberRenderPassId()` directly
+   *    (intra-file cheapness, mirrors slice-30's intra-file writer
+   *    precedent for `_gxtIncrementSyncCycleId`).
+   *  - cross-package internal-test-helpers rendering.ts (2 sites,
+   *    `render` + `rerender` entry points): route through
+   *    `getGxtRenderer()?.viewUtils.incrementRenderPassId?.()`.
+   *
+   * Bridge shape decision: paired getter+incrementer (slice-30's read-only
+   * getter shape was sufficient because the sync-cycle counter has exactly
+   * one canonical writer, all intra-file; the render-pass counter has 3
+   * canonical writers across 2 packages, so cross-package writers need
+   * a typed-bridge incrementer — same as slice-22's withFlag-style
+   * paired-write pattern but for a counter rather than a boolean).
+   *
+   * Namespace decision: `viewUtils`. The counter is owned by the
+   * renderer (glimmer/lib/renderer.ts) and consumed by view-machinery
+   * code inside gxt-backend — component-instance pool resets,
+   * customManaged pool resets, dynamic-component formula re-eval caching,
+   * arg-getter memoization, template-factory hit/miss counters. Sits
+   * alongside slice 11's `rebuildViewTreeFromDom` / slice 114's
+   * `flushAfterInsertQueue` on `viewUtils` — all three are
+   * render-lifecycle hooks consumed by GXT-backend's view machinery.
+   *
+   * Bridge-not-yet-installed edge: every reader uses `?.() ?? 0`,
+   * matching the pre-slice-124 `(globalThis as any).__emberRenderPassId
+   * || 0` truthy-coerce-undefined-to-0 semantics. The two cross-package
+   * writers (`rendering.ts`) use `?.()` (no fallback needed — the
+   * undefined short-circuit is harmless because the test-helper writer
+   * sites are only reached after the renderer is registered).
+   *
+   * Fast-check: implementation is `return _emberRenderPassId;` — one
+   * variable read; zero allocations. Identical hot-path cost to the
+   * pre-slice-124 globalThis read on every reader.
+   *
+   * Previously: `(globalThis as any).__emberRenderPassId` (reader pattern
+   * `((globalThis as any).__emberRenderPassId || 0)`; writer pattern
+   * `(globalThis as any).__emberRenderPassId = ((globalThis as any)
+   * .__emberRenderPassId || 0) + 1`).
+   */
+  getRenderPassId?(): number;
+
+  /**
+   * Advance the render-pass id counter by 1. Paired with `getRenderPassId`
+   * (slice-124, Cluster B). Called by the renderer's force-rerender loop
+   * (intra-file, uses the module-local `_incrementEmberRenderPassId`
+   * directly) and by the test-helper `render` / `rerender` entry points
+   * (cross-package, routes through this bridge method).
+   *
+   * Returns void. The new value is observable via `getRenderPassId()`.
+   *
+   * Previously: `(globalThis as any).__emberRenderPassId = ((globalThis
+   * as any).__emberRenderPassId || 0) + 1`.
+   */
+  incrementRenderPassId?(): void;
 }
 
 /**

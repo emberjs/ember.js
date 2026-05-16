@@ -18,6 +18,7 @@ import {
   getGxtRenderer,
   installCompilePipelinePart,
   installRootComponentPart,
+  installViewUtilsPart,
 } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 // Expose setViewElement on globalThis for GXT manager to use (avoids circular dep)
@@ -1514,7 +1515,12 @@ function _gxtForceEmberRerender(): void {
       // so the instance pool resets claimed flags and REUSES existing
       // instances instead of creating new ones (which would fire
       // spurious init/render lifecycle hooks).
-      (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
+      // Slice-124 (Cluster B): intra-file write of the module-local
+      // `_emberRenderPassId` (graduated from
+      // `(globalThis as any).__emberRenderPassId`). See
+      // `getRenderPassId` / `incrementRenderPassId` docs in
+      // gxt-bridge.ts for the slice topology.
+      _incrementEmberRenderPassId();
       // Slice-112 (Cluster B): paired typed-bridge migration of the
       // `__gxtIsForceRerender` boolean flag. Pre-slice-112 this site set
       // `(globalThis as any).__gxtIsForceRerender = true` before
@@ -1658,6 +1664,33 @@ function _gxtUpdateRootTagValues(): void {
 installRootComponentPart({
   isRootComponent: _gxtIsRootComponent,
   updateRootTagValues: _gxtUpdateRootTagValues,
+});
+
+// Slice-124 (Cluster B): canonical state for the `__emberRenderPassId`
+// counter. Pre-slice-124 this was the globalThis slot
+// `(globalThis as any).__emberRenderPassId` written by 3 sites
+// (renderer.ts force-rerender loop below + 2 test-helper writers in
+// `internal-test-helpers/lib/test-cases/rendering.ts`) and read by 12
+// sites in gxt-backend (manager.ts × 9, compile.ts × 2,
+// ember-template-compiler.ts × 1). Slice 124 graduates the slot to a
+// module-local `_emberRenderPassId` here in renderer.ts (the natural
+// owner — the force-rerender loop is the dominant writer) and exposes
+// a paired typed-bridge getter+incrementer on the `viewUtils` namespace.
+// Reverse-flow install via `installViewUtilsPart` mirrors slice 9's
+// `installRootComponentPart` and slice 96's
+// `installCompilePipelinePart({ forceEmberRerender })` pattern. See
+// `getRenderPassId` / `incrementRenderPassId` docs in gxt-bridge.ts for
+// the full topology narrative.
+let _emberRenderPassId = 0;
+function _getEmberRenderPassId(): number {
+  return _emberRenderPassId;
+}
+function _incrementEmberRenderPassId(): void {
+  _emberRenderPassId = _emberRenderPassId + 1;
+}
+installViewUtilsPart({
+  getRenderPassId: _getEmberRenderPassId,
+  incrementRenderPassId: _incrementEmberRenderPassId,
 });
 
 // (Cluster B slice 9 orphan cleanup) The pre-slice `(globalThis as any)

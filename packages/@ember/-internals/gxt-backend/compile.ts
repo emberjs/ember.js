@@ -11227,7 +11227,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // dead code — captured but never read. Removed alongside the
             // globalThis→module-local consolidation.
             {
-              const _curPass = (globalThis as any).__emberRenderPassId || 0;
+              // Slice-124 (Cluster B): bridge-routed render-pass id read.
+              const _curPass = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
               if (_gxtTemplateOnlyRenderedSetPassId !== _curPass) {
                 _gxtTemplateOnlyRenderedSetPassId = _curPass;
                 _gxtTemplateOnlyRenderedSet.clear();
@@ -11849,7 +11850,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // Slice-112 (Cluster B): intra-file read of the module-local
         // `_gxtIsForceRerenderFlag` via the bridge-namespace predicate.
         if (!_gxtIsForceRerender()) {
-          const currentPassId = (globalThis as any).__emberRenderPassId || 0;
+          // Slice-124 (Cluster B): bridge-routed render-pass id read.
+          const currentPassId = getGxtRenderer()?.viewUtils.getRenderPassId?.() ?? 0;
           if (_styleWarnedPassId !== currentPassId) {
             // Check if the string value came from a SafeString.toString() conversion.
             // For quoted attrs like style="{{safeExpr}}", __gxtNormAttr calls
