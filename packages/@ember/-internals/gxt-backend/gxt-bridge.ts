@@ -6589,6 +6589,155 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `!!(globalThis as any).__gxtInOutletRender`.
    */
   isInOutletRender?(): boolean;
+
+  /**
+   * Set the captured top-level outlet ref. Called by
+   * `glimmer/lib/templates/root.ts` after the outlet-render block creates
+   * a fresh `instance.outletRef`, so downstream consumers can walk the
+   * outlet hierarchy on demand. The captured ref is the head of an
+   * `outlets.main.outlets.main...` chain that mirrors the route-nesting
+   * structure produced by Glimmer VM's outlet-render path.
+   *
+   * Slice-111 (Cluster B): paired set/get typed-bridge migration of the
+   * pre-slice-111 single writer at `glimmer/lib/templates/root.ts:956`:
+   *
+   *   (globalThis as any).__gxtTopOutletRef = instance.outletRef;
+   *
+   * The two cross-package/cross-file readers at:
+   *
+   *   - `gxt-backend/manager.ts:3320` (`_buildRenderTree` outlet branch
+   *      — walks `topOutletRef.outlets.main...` to emit the
+   *      `{{outlet}} for X / X / {{outlet}} for Y / Y / ...`
+   *      `renderTreeParts` sequence that matches Glimmer VM's render-
+   *      tree output);
+   *   - `glimmer/lib/renderer.ts:1133` (OutletView property-driven
+   *      re-render fallback — uses the captured ref when
+   *      `(gxtRoot as any).ref` is missing);
+   *
+   * route through `compilePipeline.getTopOutletRef?.()` (see below). The
+   * pre-slice-111 globalThis slot returned `undefined` until the writer
+   * fired at least once; the bridge fallback `?? undefined` preserves
+   * the same not-yet-set semantics.
+   *
+   * Pre-slice-111 topology (audited verbatim against current source):
+   *   Writers (1 site, in glimmer package):
+   *     - glimmer/lib/templates/root.ts:956 — captures
+   *       `instance.outletRef` after the outlet-render block, inside the
+   *       closure-built re-render function.
+   *   Readers (2 sites, cross-package + cross-file):
+   *     - gxt-backend/manager.ts:3320 (`_buildRenderTree` outlet
+   *       hierarchy walker — slice-110 sibling, gated on
+   *       `__currentOutletState` + `isInOutletRender()` from slice 110);
+   *     - glimmer/lib/renderer.ts:1133 (OutletView re-render fallback —
+   *       reads the captured ref when `gxtRoot.ref` is missing).
+   *
+   * GXT-runtime ownership audit: 0 matches under
+   * `node_modules/.pnpm/@lifeart+gxt` published artifacts, 0 in repo-root
+   * `index.html`, 0 in scripts/, 0 in dist/, 0 in `packages/demo/`, 0 in
+   * harness test runners. The slot is purely an Ember-internal outlet-
+   * ref-capture marker — no external readers/writers to retain.
+   *
+   * Bridge shape decision: paired `setTopOutletRef(ref): void` (writer)
+   * + `getTopOutletRef(): any` (reader). The slot carries a captured-ref
+   * VALUE (not a flag toggle around a body), so the natural shape is
+   * set/get rather than the slice-110 `withX(fn)` scope-modifier wrap.
+   * Get/set paired surface mirrors the pre-slice-111 globalThis assign-
+   * and-read pattern directly. Two new bridge methods, no new install-
+   * API namespace (registered inside the existing
+   * `installCompilePipelinePart` block at compile.ts EOF alongside the
+   * slice-110 `withInOutletRender` / `isInOutletRender` paired entries).
+   *
+   * Namespace decision: `compilePipeline`. The captured ref is
+   * semantically a render-pipeline state-cluster member alongside
+   * slice-110's `_gxtInOutletRenderFlag` — both are written by root.ts's
+   * outlet-render path and consumed by manager.ts's `_buildRenderTree`
+   * outlet branch. Same namespace category as slice 110.
+   *
+   * State-home: `gxt-backend/compile.ts`. The canonical state is the
+   * module-local `_gxtTopOutletRef` binding defined alongside slice-110's
+   * `_gxtInOutletRenderFlag` (the paired outlet-render machinery).
+   * Although the writer lives in `glimmer/lib/templates/root.ts` (cross-
+   * package contributor — same as slice 110 / 96 / 108) and the readers
+   * live in `gxt-backend/manager.ts` + `glimmer/lib/renderer.ts`, the
+   * bridge state lives in compile.ts because:
+   *   1) State-home convention is compile.ts for the compilePipeline
+   *      ref/value-capture category (slice 65 / 100 precedent);
+   *   2) The state belongs to the same outlet-render state cluster as
+   *      slice-110's `_gxtInOutletRenderFlag` — paired sibling slots
+   *      both written by root.ts's outlet-render path;
+   *   3) Installing it from `installCompilePipelinePart` at compile.ts
+   *      EOF mirrors slice-110 — no cycle introduced.
+   *
+   * Bridge-not-yet-installed edge: the cross-package writer in
+   * `glimmer/lib/templates/root.ts` uses
+   * `getGxtRenderer()?.compilePipeline.setTopOutletRef?.(instance.outletRef)`.
+   * The optional chain short-circuits to `undefined` when either the
+   * renderer or the method is not yet installed; the captured ref is
+   * silently dropped on the floor — matching the pre-slice-111 semantics
+   * where, if no read site fired before the next write, the ref had no
+   * downstream effect anyway. The cross-package/cross-file readers use
+   * `getGxtRenderer()?.compilePipeline.getTopOutletRef?.() ?? undefined`
+   * — defaulting to `undefined` matches the pre-slice-111 globalThis
+   * read which returned `undefined` when the slot had not yet been set.
+   * In practice the bridge IS installed by the time either site fires:
+   * `installCompilePipelinePart` runs at compile.ts module init (before
+   * any template renders), and root.ts only writes the ref during the
+   * first outlet render — well after compile.ts has finished its install
+   * pass. For classic-Ember builds (no GXT backend loaded), root.ts's
+   * outlet-render branch does not execute the gxt-templated path, so
+   * neither writer nor readers fire and the bridge short-circuit is moot.
+   *
+   * Re-entrancy / overwrite contract: each write OVERWRITES the prior
+   * captured ref. There is no save-restore wrap (that would be the
+   * slice-110 `withInOutletRender` shape) because the captured ref is a
+   * persistent latest-value, not a scoped frame. Successive outlet
+   * renders capture progressively-newer refs, and consumers always read
+   * the LAST-CAPTURED ref. In practice each top-level outlet render
+   * produces a fresh `instance.outletRef`, and the `_buildRenderTree`
+   * reader fires after the writer has captured the current frame's ref.
+   *
+   * Hot-path concern: NONE. The writer fires ONCE per top-level outlet
+   * render. The manager.ts reader fires once per `_buildRenderTree` call
+   * (DevTools render-tree inspection — rare). The renderer.ts reader
+   * fires once per OutletView property-driven re-render. The bridge
+   * dispatch overhead vs. globalThis read/write is negligible at this
+   * call frequency.
+   *
+   * Fast-check: the implementations are trivial — `function
+   * _gxtSetTopOutletRef(ref) { _gxtTopOutletRef = ref; }` and `function
+   * _gxtGetTopOutletRef() { return _gxtTopOutletRef; }`. Mirrors the
+   * slice-65 / 100 ref-capture get-only family but adds a paired writer
+   * because the writer is cross-package (root.ts → compile.ts state).
+   *
+   * After slice-111 the `__gxtTopOutletRef` globalThis slot is DROPPED.
+   * The canonical state is `_gxtTopOutletRef` in compile.ts. Net
+   * globalThis surface delta: -1 slot. +2 paired bridge methods on
+   * `compilePipeline`.
+   *
+   * Previously: `(globalThis as any).__gxtTopOutletRef`.
+   */
+  setTopOutletRef?(ref: any): void;
+
+  /**
+   * Read the captured top-level outlet ref written by `setTopOutletRef`
+   * above. Returns `undefined` if no outlet render has yet captured a
+   * ref (matching the pre-slice-111 `(globalThis as any).__gxtTopOutletRef`
+   * read which returned `undefined` for an unset slot).
+   *
+   * Slice-111 (Cluster B): paired with `setTopOutletRef` (above). The
+   * two cross-package/cross-file readers at `gxt-backend/manager.ts:3320`
+   * (`_buildRenderTree` outlet hierarchy walker) and
+   * `glimmer/lib/renderer.ts:1133` (OutletView re-render fallback) route
+   * through `compilePipeline.getTopOutletRef?.() ?? undefined`. The
+   * `?? undefined` fallback preserves the pre-slice-111 globalThis-read
+   * semantics. See `setTopOutletRef` doc above for the full pre/post
+   * topology, state-home decision, and bridge-not-yet-installed edge.
+   *
+   * Mirrors the slice-65 / 100 ref-capture get-only family.
+   *
+   * Previously: `(globalThis as any).__gxtTopOutletRef`.
+   */
+  getTopOutletRef?(): any;
 }
 
 /**

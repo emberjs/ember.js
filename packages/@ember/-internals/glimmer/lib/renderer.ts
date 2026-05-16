@@ -1130,7 +1130,20 @@ class ClassicRootState {
               // which clears innerHTML and re-renders the outlet state.
               const outletRerender = (globalThis as any).__gxtRootOutletRerender;
               if (typeof outletRerender === 'function') {
-                const outletRef = (gxtRoot as any).ref || (globalThis as any).__gxtTopOutletRef;
+                // Slice-111 (Cluster B): the `__gxtTopOutletRef` globalThis
+                // slot is graduated to the typed bridge as a paired
+                // `setTopOutletRef(ref)` / `getTopOutletRef()` surface on
+                // `compilePipeline`. The pre-slice-111 fallback read
+                // `(globalThis as any).__gxtTopOutletRef` is replaced by
+                // `getGxtRenderer()?.compilePipeline.getTopOutletRef?.() ??
+                // undefined` — the `?? undefined` fallback preserves the
+                // pre-slice-111 globalThis-read semantics where unset slot
+                // returned `undefined` and the surrounding `if (outletRef)`
+                // short-circuited the `outletRerender` call. See
+                // `getTopOutletRef` doc in gxt-bridge.ts.
+                const outletRef =
+                  (gxtRoot as any).ref ||
+                  (getGxtRenderer()?.compilePipeline.getTopOutletRef?.() ?? undefined);
                 if (outletRef) {
                   outletRerender(outletRef);
                 }

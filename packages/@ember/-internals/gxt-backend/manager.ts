@@ -3316,8 +3316,18 @@ export function checkBacktracking(targetObj: any, key: string): void {
     // Clear parentView-derived entries (e.g., "controller:routeWithError")
     // and rebuild with the proper outlet hierarchy that Glimmer VM produces.
     renderTreeParts.length = 0;
-    // Build outlet hierarchy from the top-level outlet ref
-    const topOutletRef = (globalThis as any).__gxtTopOutletRef;
+    // Build outlet hierarchy from the top-level outlet ref.
+    // Slice-111 (Cluster B): the `__gxtTopOutletRef` globalThis slot is
+    // graduated to the typed bridge as a paired `setTopOutletRef(ref)` /
+    // `getTopOutletRef()` surface on `compilePipeline`. The pre-slice-111
+    // read `(globalThis as any).__gxtTopOutletRef` is replaced by
+    // `getGxtRenderer()?.compilePipeline.getTopOutletRef?.() ?? undefined` —
+    // the `?? undefined` fallback preserves the pre-slice-111 globalThis-
+    // read semantics where unset slot returned `undefined` and the
+    // surrounding `if (topOutletRef)` short-circuited the chain walk. See
+    // `getTopOutletRef` doc in gxt-bridge.ts.
+    const topOutletRef =
+      getGxtRenderer()?.compilePipeline.getTopOutletRef?.() ?? undefined;
     if (topOutletRef) {
       const outletChain: string[] = [];
       const routeName = outletState.render?.name;

@@ -952,8 +952,20 @@ export default function createRootTemplate(_owner: any) {
       lastNestedSnapshot = snapshotOutletTree(outletState);
     }
 
-    // Store the top-level outlet ref for re-rendering on property changes
-    (globalThis as any).__gxtTopOutletRef = instance.outletRef;
+    // Store the top-level outlet ref for re-rendering on property changes.
+    // Slice-111 (Cluster B): the `__gxtTopOutletRef` globalThis slot is
+    // graduated to the typed bridge as a paired `setTopOutletRef(ref)` /
+    // `getTopOutletRef()` surface on `compilePipeline`. The pre-slice-111
+    // single writer `(globalThis as any).__gxtTopOutletRef = instance
+    // .outletRef` is replaced by the bridge writer below; the cross-package
+    // / cross-file readers in `gxt-backend/manager.ts:3320` (`_buildRender
+    // Tree` outlet branch) and `glimmer/lib/renderer.ts` (OutletView re-
+    // render fallback) route through `compilePipeline.getTopOutletRef?.()
+    // ?? undefined`. The optional chain short-circuits to no-op when the
+    // bridge is not yet installed (classic-Ember builds — moot since the
+    // outlet-render branch does not execute the gxt-templated path). See
+    // `setTopOutletRef` / `getTopOutletRef` doc in gxt-bridge.ts.
+    getGxtRenderer()?.compilePipeline.setTopOutletRef?.(instance.outletRef);
 
     // Track the last render context and args for cell-based updates
     let lastRenderContext: any = null;
