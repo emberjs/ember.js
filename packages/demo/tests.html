@@ -284,7 +284,9 @@
 
       // --- GXT global test hooks ---
       QUnit.testStart(function () {
-        globalThis.__gxtTestTransition = false;
+        // Slice-121 (Cluster B): pre-slice-121 wrote
+        // `globalThis.__gxtTestTransition = false;` here. Slot retired
+        // (reader-only orphan in compile.ts L7738, dropped) — write removed.
         if (globalThis.__gxtOpCount !== undefined) globalThis.__gxtOpCount = 0;
         globalThis.__gxtSyncing = false;
         var cleanup = globalThis.__gxtCleanupActiveComponents;
@@ -305,8 +307,10 @@
       });
 
       QUnit.testDone(function (details) {
-        // Reset GXT state between tests
-        globalThis.__gxtTestTransition = true;
+        // Reset GXT state between tests.
+        // Slice-121 (Cluster B): pre-slice-121 wrote
+        // `globalThis.__gxtTestTransition = true;` here. Slot retired
+        // (reader-only orphan in compile.ts L7738, dropped) — write removed.
         globalThis.__gxtSyncing = false;
         globalThis.__gxtPendingSync = false;
         globalThis.__gxtPendingSyncFromPropertyChange = false;

@@ -70,8 +70,10 @@
         } catch (_e) {
           /* ignore */
         }
-        // Signal that we're no longer in a test transition
-        globalThis.__gxtTestTransition = false;
+        // Slice-121 (Cluster B): pre-slice-121 wrote
+        // `globalThis.__gxtTestTransition = false;` here. The slot was
+        // retired (reader-only orphan in compile.ts L7738, dropped) — write
+        // removed.
         // Reset the operation counter so each test gets a fresh budget
         if (globalThis.__gxtOpCount !== undefined) {
           globalThis.__gxtOpCount = 0;
@@ -118,8 +120,12 @@
         } catch (_e) {
           /* ignore */
         }
-        // Signal that we're between tests — interval timer should not fire
-        globalThis.__gxtTestTransition = true;
+        // Slice-121 (Cluster B): pre-slice-121 wrote
+        // `globalThis.__gxtTestTransition = true;` here. The slot was retired
+        // (reader-only orphan in compile.ts L7738, dropped) — write removed.
+        // The first interval guard (`_gxtGetPendingSync()`) already short-
+        // circuits between tests because the next line below resets
+        // `__gxtPendingSync = false`.
         // Safety net: reset syncing flag after each test in case it got stuck
         globalThis.__gxtSyncing = false;
         globalThis.__gxtPendingSync = false;

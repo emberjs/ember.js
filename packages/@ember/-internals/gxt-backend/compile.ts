@@ -7702,11 +7702,29 @@ function _resetTemplateOnlyState() {
 // Also schedule a fallback setTimeout flush for non-test scenarios
 // where __gxtSyncDomNow isn't called explicitly.
 // Guards:
-// 1. Skip if __gxtSyncing is stuck true (prevents piling up on a hung sync)
-// 2. Skip during QUnit test transitions (__gxtTestTransition flag)
+// 1. Skip if no pending sync (`_gxtGetPendingSync()` — slice-37 module-local).
+// 2. Skip if __gxtSyncing is stuck true (prevents piling up on a hung sync).
 // 3. Budget: max 3 consecutive interval-triggered syncs without an explicit
 //    runTask-triggered sync in between. Prevents the interval from driving
 //    an infinite re-render loop when tests produce continuous dirty state.
+//
+// Slice-121 (Cluster B): the pre-slice-121 second guard
+// `if ((globalThis as any).__gxtTestTransition) return;` is RETIRED. Audit
+// confirmed `__gxtTestTransition` was a reader-only orphan in `packages/`
+// (zero TS/JS writers; zero references in bundled `@lifeart+gxt` runtime
+// across 0.0.53, 0.0.60, 0.0.61). The only writers were the QUnit
+// `testStart`/`testDone` hooks in `index.html` and `packages/demo/tests.html`
+// flipping the flag between tests. The guard was provably redundant: both
+// `testStart` and `testDone` already reset `globalThis.__gxtPendingSync =
+// false` (and slice-37's `_gxtPendingSyncFlag` mirror, via the bridge
+// installed at module bottom), so the FIRST guard (`_gxtGetPendingSync()`
+// at the head of the setInterval body) already short-circuits the interval
+// between tests. Same dead-code retirement shape as slice-86
+// (`__gxtDebugCompiledCodes` write-only slot drop) and slice-118
+// (`__gxtDirtyTagFor` reader-fallback drop). The four HTML harness writers
+// (index.html:74,122; packages/demo/tests.html:287,309) are dropped in the
+// same slice because, with the reader gone, the writes are pure dead-stores.
+// Net globalThis surface delta: -1 slot.
 let _intervalSyncBudget = 3;
 // (Cluster B slice 6) Exposed via the gxt-bridge as
 // `compilePipeline.resetIntervalBudget`. Function closes over the
@@ -7734,8 +7752,6 @@ setInterval(() => {
   // (graduated from `globalThis.__gxtPendingSync`). Intra-file reader
   // routes through the helper directly (no bridge indirection).
   if (_gxtGetPendingSync()) {
-    // Don't fire during test transitions
-    if ((globalThis as any).__gxtTestTransition) return;
     // Don't fire if a sync is already in progress (stuck flag).
     // Slice-24 (Cluster B): reads module-local `_gxtSyncingFlag`.
     if (_gxtIsSyncing()) return;
