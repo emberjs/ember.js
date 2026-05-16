@@ -96,8 +96,17 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
           // service, so we also dirty the service's tag directly. This
           // matches the semantics upstream Glimmer VM already achieves via
           // its chain-tag machinery.
-          const dirtyTagFor =
-            (globalThis as any).__classicDirtyTagFor || (globalThis as any).__gxtDirtyTagFor;
+          // Slice-118 (Cluster B): the historical `|| (globalThis as any).__gxtDirtyTagFor`
+          // fallback was an aspirational early-naming alias that no module ever
+          // wrote (zero writers in `packages/`, zero writers in the bundled
+          // GXT runtime dist). The primary slot `__classicDirtyTagFor` is
+          // populated unconditionally at module-load by validator.ts's
+          // top-level `(globalThis as any).__classicDirtyTagFor = ...`
+          // statement (validator.ts:509), so the `||` branch was provably
+          // dead. Reader-only `typeof === 'function'` guard preserved below
+          // so a future absence (e.g. validator.ts not yet evaluated) still
+          // falls through to `notifyPropertyChange`.
+          const dirtyTagFor = (globalThis as any).__classicDirtyTagFor;
           if (typeof dirtyTagFor === 'function') {
             dirtyTagFor(routing, 'currentState');
           } else if (typeof routing.notifyPropertyChange === 'function') {
