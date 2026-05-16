@@ -30,14 +30,18 @@ const _gxtRootOutletRerenderMap = new Map<any, (ref: any) => void>();
 
 function ensureGxtContext() {
   const lib = _gxtLib();
-  let gxtRootContext = (globalThis as any).__gxtRootContext;
+  // Slice-119 (Cluster B): canonical state lives in compile.ts as the
+  // module-local `_gxtRootContext`; route through the
+  // `compilePipeline.getRootContext` / `setRootContext` bridge.
+  const _cp119 = getGxtRenderer()?.compilePipeline;
+  let gxtRootContext = _cp119?.getRootContext?.();
   if (!gxtRootContext) {
     gxtRootContext = lib.createRoot(document);
     // Create proper DOM API and provide it to the context
     // This sets fastRenderingContext which is checked first by initDOM
     gxtDomApi = new lib.HTMLBrowserDOMApi(document);
     lib.provideContext(gxtRootContext, lib.RENDERING_CONTEXT, gxtDomApi);
-    (globalThis as any).__gxtRootContext = gxtRootContext;
+    _cp119?.setRootContext?.(gxtRootContext);
   }
   // Always set the context before rendering
   const currentContext = lib.getParentContext();
@@ -189,7 +193,8 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
           lib.renderComponent(tpl, {
             element: target,
             args: ctx?.args || {},
-            owner: (globalThis as any).__gxtRootContext,
+            // Slice-119: route through the compilePipeline bridge.
+            owner: getGxtRenderer()?.compilePipeline.getRootContext?.(),
           });
           return; // renderComponent handles everything
         }

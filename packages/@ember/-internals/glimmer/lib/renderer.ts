@@ -70,9 +70,13 @@ function ensureGxtContext() {
     // This sets fastRenderingContext which is checked first by initDOM
     const domApi = getGxtDomApi();
     lib.provideContext(gxtRootContext, lib.RENDERING_CONTEXT, domApi);
-    // Expose on globalThis so compile.ts can reuse the same root context
-    // instead of creating new roots that pollute the shared context chain
-    (globalThis as any).__gxtRootContext = gxtRootContext;
+    // Publish to compile.ts's canonical state so it can reuse the same root
+    // context instead of creating new roots that pollute the shared context
+    // chain. Slice-119 (Cluster B): canonical state lives in compile.ts as
+    // the module-local `_gxtRootContext`; routed through
+    // `compilePipeline.setRootContext` (pre-slice-119 this was a direct
+    // `(globalThis as any).__gxtRootContext = gxtRootContext` write).
+    getGxtRenderer()?.compilePipeline.setRootContext?.(gxtRootContext);
   }
   // Always ensure context is set before rendering
   const currentContext = lib.getParentContext();

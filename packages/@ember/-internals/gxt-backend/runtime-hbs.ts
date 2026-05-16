@@ -21,6 +21,9 @@ import { createRoot as gxtCreateRoot, setParentContext as gxtSetParentContext } 
 // Install Ember wrappers on globalThis (idempotent)
 import { installEmberWrappers } from './ember-gxt-wrappers';
 
+// (Cluster B slice 119) Bridge accessors for the ambient GXT root context.
+import { getGxtRenderer } from './gxt-bridge';
+
 // Ensure global scope is set up
 if (!isGlobalScopeReady()) {
   setupGlobalScope();
@@ -148,11 +151,15 @@ export function hbs(strings: TemplateStringsArray, ...values: any[]): any {
 
       try {
         // Use shared GXT root context to avoid multiple roots fighting
-        // over the parent context when modules are deduplicated
-        let gxtRoot = (globalThis as any).__gxtRootContext;
+        // over the parent context when modules are deduplicated.
+        // Slice-119 (Cluster B): canonical state lives in compile.ts as
+        // the module-local `_gxtRootContext`; route through the
+        // `compilePipeline.getRootContext` / `setRootContext` bridge.
+        const _cp119 = getGxtRenderer()?.compilePipeline;
+        let gxtRoot = _cp119?.getRootContext?.();
         if (!gxtRoot) {
           gxtRoot = gxtCreateRoot(document);
-          (globalThis as any).__gxtRootContext = gxtRoot;
+          _cp119?.setRootContext?.(gxtRoot);
         }
         gxtSetParentContext(gxtRoot);
 

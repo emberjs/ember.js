@@ -7816,6 +7816,72 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `(globalThis as any).__gxtSkipTextEffects`.
    */
   getSkipTextEffects?(): boolean;
+
+  /**
+   * Slice-119 (Cluster B): paired accessors for the ambient GXT root
+   * context cached by compile.ts's `_getOrCreateGxtRoot` helper. The
+   * root is a `gxt.Root` instance created via `gxtCreateRoot(document)`
+   * and reused across nested renders (outlet re-renders, component
+   * mounts, manager.ts container renders) so they share the same
+   * parent-context chain. compile.ts owns the canonical state plus the
+   * stale-aware lazy-init in `_getOrCreateGxtRoot` (see slice-118
+   * predecessor narrative). Cross-file lazy-init readers/writers
+   * (glimmer/lib/renderer.ts:75, glimmer/lib/templates/root.ts:33+40,
+   * gxt-backend/outlet.gts:168+171/398+401, gxt-backend/runtime-hbs.ts:152+155)
+   * all participate in the SAME ambient slot: read what compile.ts
+   * holds, and on first-arrival in a fresh page also publish their
+   * eagerly-constructed Root through `setRootContext` so the
+   * compile.ts canonical state is seeded before `_getOrCreateGxtRoot`
+   * runs.
+   *
+   * Topology: 5 lazy-init writers (one in compile.ts, four cross-file
+   * — renderer.ts, root.ts, outlet.gts × 2, runtime-hbs.ts) and 8
+   * readers across the same files (compile.ts × 3 — including the
+   * resolver fallback at L9797 and the rendering-context recovery at
+   * L11990; outlet.gts × 2; runtime-hbs.ts × 1; root.ts × 2). The
+   * canonical state is the module-local `_gxtRootContext` in
+   * compile.ts; the cross-file writer/reader pairs route through this
+   * bridge.
+   *
+   * Bridge-not-yet-installed edge: the cross-file readers all guard
+   * `getGxtRenderer()?.compilePipeline.getRootContext?.()`, which
+   * returns `undefined` if the bridge has not been installed yet. The
+   * cross-file writers similarly call `setRootContext?.(value)`. The
+   * lazy-init `if (!root)` check then proceeds to create a fresh Root
+   * exactly as before. Once compile.ts's
+   * `installCompilePipelinePart` runs (at EOF, after manager.ts's
+   * initial `setGxtRenderer`), all subsequent reads/writes see the
+   * canonical module-local binding.
+   *
+   * Why a paired GETTER+SETTER bridge rather than a graduated
+   * `getOrCreateRootContext()` helper: each cross-file site has
+   * slightly different construction details (e.g., renderer.ts and
+   * root.ts both call `provideContext(root, RENDERING_CONTEXT,
+   * domApi)` to seed the rendering context with a DOM API; outlet.gts
+   * and runtime-hbs.ts do not). Centralising the creation in a single
+   * bridge method would require either replicating the DOM-API seed
+   * (incorrect for outlet.gts/runtime-hbs.ts — they prefer compile.ts's
+   * lazy-init that defers DOM-API attach to `gxtInitDOM`) or growing
+   * an options parameter. Paired get/set keeps the construction logic
+   * at each site (preserving the existing semantics exactly) while
+   * graduating only the canonical-state lookup and write-through to a
+   * typed bridge.
+   *
+   * Fast-check: implementations are trivially cheap —
+   * `function _getGxtRootContext() { return _gxtRootContext; }` and
+   * `function _setGxtRootContext(v) { _gxtRootContext = v; }`. Same
+   * body shape as slices 111 (setTopOutletRef/getTopOutletRef) and 115
+   * (setSkipTextEffects/getSkipTextEffects).
+   *
+   * After slice-119 the `__gxtRootContext` globalThis slot is
+   * DROPPED. The canonical state is `_gxtRootContext` in compile.ts.
+   * Net globalThis surface delta: -1 slot. +2 paired bridge methods
+   * on `compilePipeline`.
+   *
+   * Previously: `(globalThis as any).__gxtRootContext`.
+   */
+  getRootContext?(): any;
+  setRootContext?(value: any): void;
 }
 
 /**

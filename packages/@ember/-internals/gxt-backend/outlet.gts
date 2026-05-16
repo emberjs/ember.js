@@ -164,11 +164,15 @@ class EmberOutletElement extends HTMLElement {
       // rendering inside the outlet fails with "Cannot read properties
       // of undefined (reading 'Symbol()')" because te() returns undefined.
       // Use the shared root context (same as runtime-hbs uses).
+      // Slice-119 (Cluster B): canonical state lives in compile.ts as the
+      // module-local `_gxtRootContext`. Read/write via the
+      // `compilePipeline.getRootContext` / `setRootContext` bridge.
       const savedParent = getParentContext();
-      let gxtRoot = (globalThis as any).__gxtRootContext;
+      const _cp119 = getGxtRenderer()?.compilePipeline;
+      let gxtRoot = _cp119?.getRootContext?.();
       if (!gxtRoot) {
         gxtRoot = createRoot(document);
-        (globalThis as any).__gxtRootContext = gxtRoot;
+        _cp119?.setRootContext?.(gxtRoot);
       }
       setParentContext(gxtRoot);
 
@@ -394,11 +398,15 @@ class EmberMountElement extends HTMLElement {
       (globalThis as any).owner = engineInstance;
 
       // Set up GXT rendering context
+      // Slice-119 (Cluster B): canonical state lives in compile.ts as the
+      // module-local `_gxtRootContext`. Read/write via the
+      // `compilePipeline.getRootContext` / `setRootContext` bridge.
       const savedParent = getParentContext();
-      let gxtRoot = (globalThis as any).__gxtRootContext;
+      const _cp119 = getGxtRenderer()?.compilePipeline;
+      let gxtRoot = _cp119?.getRootContext?.();
       if (!gxtRoot) {
         gxtRoot = createRoot(document);
-        (globalThis as any).__gxtRootContext = gxtRoot;
+        _cp119?.setRootContext?.(gxtRoot);
       }
       setParentContext(gxtRoot);
 

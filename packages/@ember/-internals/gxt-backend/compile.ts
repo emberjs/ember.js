@@ -1372,8 +1372,11 @@ const gxtFormula = _formulaFromDirectImport;
 // re-renders, component mounts, manager.ts container renders) happen into
 // DIFFERENT parent elements and still need to share the same parent-context
 // chain. So instead of partitioning by parent, we keep a single ambient root
-// (still exposed via `globalThis.__gxtRootContext` for legacy consumers) and
-// transparently rebuild it when the previous root has been torn down.
+// (held in the module-local `_gxtRootContext` binding below, exposed to
+// cross-file consumers via `compilePipeline.getRootContext` / `setRootContext`
+// — see slice 119 docs in gxt-bridge.ts; pre-slice-119 this was a
+// `globalThis.__gxtRootContext` slot) and transparently rebuild it when the
+// previous root has been torn down.
 //
 // A root is considered stale if:
 //   - its RENDERING_CONTEXT slot is null/undefined (test cleanup wiped it), OR
@@ -1409,11 +1412,26 @@ function _gxtRootIsStale(root: any): boolean {
   return false;
 }
 
+// Slice-119 (Cluster B): canonical state for the ambient GXT root context.
+// Was `(globalThis as any).__gxtRootContext` pre-slice-119; graduated to a
+// module-local binding owned by this file. Cross-file lazy-init writers /
+// readers (glimmer/lib/renderer.ts, glimmer/lib/templates/root.ts,
+// gxt-backend/outlet.gts, gxt-backend/runtime-hbs.ts) route through
+// `compilePipeline.getRootContext?.()` / `compilePipeline.setRootContext?.(v)`
+// — see slice 119 docs in `gxt-bridge.ts` for the narrative.
+let _gxtRootContext: any = null;
+function _getGxtRootContext(): any {
+  return _gxtRootContext;
+}
+function _setGxtRootContext(value: any): void {
+  _gxtRootContext = value;
+}
+
 function _getOrCreateGxtRoot(_parentElement: Element): any {
-  let root = (globalThis as any).__gxtRootContext;
+  let root = _gxtRootContext;
   if (!root || _gxtRootIsStale(root)) {
     root = gxtCreateRoot(document);
-    (globalThis as any).__gxtRootContext = root;
+    _gxtRootContext = root;
   }
   return root;
 }
@@ -9794,7 +9812,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // actually registered (the root). Without this, the $_if/$_each walker crashes
     // with "Cannot read properties of undefined (reading 'Symbol()')".
     if (ctx && typeof ctx === 'object' && COMPONENT_ID_PROPERTY) {
-      const gxtRootCtx = (globalThis as any).__gxtRootContext;
+      // Slice-119: read intra-file canonical state directly (was a globalThis
+      // `__gxtRootContext` read pre-slice-119).
+      const gxtRootCtx = _gxtRootContext;
       const rootId = gxtRootCtx && gxtRootCtx[COMPONENT_ID_PROPERTY as any];
       if (rootId !== undefined && rootId !== null) {
         try {
@@ -11987,7 +12007,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       const existing = (ctx as any)[rcKey];
       if (existing == null) {
         try {
-          const gxtRoot = (globalThis as any).__gxtRootContext;
+          // Slice-119: read intra-file canonical state directly (was a
+          // globalThis `__gxtRootContext` read pre-slice-119).
+          const gxtRoot = _gxtRootContext;
           const rootRc = gxtRoot && gxtRoot[rcKey];
           if (rootRc && rootRc.element !== null) {
             (ctx as any)[rcKey] = rootRc;
@@ -16061,10 +16083,12 @@ export function precompileTemplate(
           // Phase 4.1: per-parent-element root isolation. Use a WeakMap keyed on
           // parentElement so repeated renders into the same parent share a root
           // (preserving outlet re-render semantics), but renders into distinct
-          // parents get fresh, isolated roots. The legacy
-          // `globalThis.__gxtRootContext` alias is updated inside
+          // parents get fresh, isolated roots. The module-local
+          // `_gxtRootContext` canonical state (slice 119) is updated inside
           // `_getOrCreateGxtRoot` so downstream consumers (e.g. the component-ID
-          // fallback in the resolver) still read the current root.
+          // fallback in the resolver) still read the current root, either
+          // directly intra-file or via `compilePipeline.getRootContext` from
+          // cross-file callers.
           const gxtRoot = _getOrCreateGxtRoot(parentElement);
           gxtSetParentContext(gxtRoot);
 
@@ -17170,6 +17194,17 @@ installCompilePipelinePart({
   getHelperInstances: _gxtGetHelperInstances,
   pushHelperInstance: _gxtPushHelperInstance,
   setHelperInstancePushHook: _gxtSetHelperInstancePushHook,
+  // Slice-119 (Cluster B): paired accessors for the module-local
+  // `_gxtRootContext` binding declared near `_getOrCreateGxtRoot` above.
+  // Replaces the pre-slice-119 `globalThis.__gxtRootContext` ambient slot.
+  // Cross-file lazy-init writers/readers (renderer.ts, root.ts, outlet.gts,
+  // runtime-hbs.ts) route through these methods; intra-file consumers
+  // (resolver fallback at ~L9797, rendering-context recovery at ~L11990,
+  // and `_getOrCreateGxtRoot`) read the module-local binding directly.
+  // Net -1 globalThis slot, +2 paired bridge methods. See `getRootContext`
+  // / `setRootContext` doc in gxt-bridge.ts.
+  getRootContext: _getGxtRootContext,
+  setRootContext: _setGxtRootContext,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
