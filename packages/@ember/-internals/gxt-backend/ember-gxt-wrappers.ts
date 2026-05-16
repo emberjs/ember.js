@@ -583,10 +583,15 @@ function createEmberMaybeHelper(original: Function) {
               ) {
                 const destroyable = delegate.getDestroyable(bucket);
                 if (destroyable) {
-                  const helperInstances = g.__gxtHelperInstances;
-                  if (Array.isArray(helperInstances)) {
-                    helperInstances.push(destroyable);
-                  }
+                  // Slice-116 (Cluster B): routes through typed bridge
+                  // `compilePipeline.pushHelperInstance?.()`. The bridge
+                  // method fires manager.ts's registered push-hook
+                  // (`_installHelperRecomputeBridge`) BEFORE pushing onto
+                  // the canonical module-local `_gxtHelperInstances` array
+                  // in compile.ts. Replaces pre-slice-116 globalThis read +
+                  // Array.isArray guard + push. See `pushHelperInstance`
+                  // doc in gxt-bridge.ts.
+                  getGxtRenderer()?.compilePipeline.pushHelperInstance?.(destroyable);
                 }
               }
 
@@ -903,10 +908,10 @@ function createEmberMaybeHelper(original: Function) {
                 ) {
                   const destroyable = delegate.getDestroyable(bucket);
                   if (destroyable) {
-                    const helperInstances = g.__gxtHelperInstances;
-                    if (Array.isArray(helperInstances)) {
-                      helperInstances.push(destroyable);
-                    }
+                    // Slice-116 (Cluster B): routes through typed bridge
+                    // `compilePipeline.pushHelperInstance?.()`. See
+                    // `pushHelperInstance` doc in gxt-bridge.ts.
+                    getGxtRenderer()?.compilePipeline.pushHelperInstance?.(destroyable);
                     // Associate with the enclosing `{{#if}}` branch (if any)
                     // so that destroy + willDestroy fire on branch teardown,
                     // matching Ember's classic Helper lifecycle semantics.
@@ -1077,10 +1082,10 @@ function createEmberMaybeHelper(original: Function) {
               instance = factory.create();
               classHelperInstanceCache.set(name, instance);
               // Also register for destruction
-              const helperInstances = g.__gxtHelperInstances;
-              if (Array.isArray(helperInstances)) {
-                helperInstances.push(instance);
-              }
+              // Slice-116 (Cluster B): routes through typed bridge
+              // `compilePipeline.pushHelperInstance?.()`. See
+              // `pushHelperInstance` doc in gxt-bridge.ts.
+              getGxtRenderer()?.compilePipeline.pushHelperInstance?.(instance);
               // If this helper was created during an `{{#if}}` branch render,
               // associate it with that branch's teardown scope so destroy +
               // willDestroy fire on branch swap (not only on component teardown).

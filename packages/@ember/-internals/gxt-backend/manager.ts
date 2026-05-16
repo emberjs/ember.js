@@ -664,46 +664,48 @@ function _installHelperRecomputeBridge(instance: any): void {
   }
 }
 
-// Install the bridge hook onto `__gxtHelperInstances` so every class-based
-// helper instance that compile.ts registers for destruction gets its
-// recompute() wired through GXT automatically. We wrap the array's `push`
-// method in place. If compile.ts replaces the array (e.g. during cache
-// clear), we reinstall on next access via a getter-triggered re-wrap.
-(function _installHelperInstancesHook() {
-  const g = globalThis as any;
-  const install = (arr: any[]): void => {
-    if (!Array.isArray(arr) || (arr as any).__gxtRecomputeHookInstalled) return;
-    try {
-      Object.defineProperty(arr, '__gxtRecomputeHookInstalled', {
-        value: true,
-        writable: false,
-        enumerable: false,
-        configurable: true,
-      });
-    } catch {
-      return;
-    }
-    const origPush = arr.push.bind(arr);
-    (arr as any).push = function (...items: any[]) {
-      for (const it of items) {
-        try {
-          _installHelperRecomputeBridge(it);
-        } catch {
-          /* ignore */
-        }
-      }
-      return origPush(...items);
-    };
-  };
-  // If the array already exists, wrap it now.
-  if (Array.isArray(g.__gxtHelperInstances)) {
-    install(g.__gxtHelperInstances);
-  } else {
-    // Create it proactively so compile.ts picks up the wrapped instance.
-    g.__gxtHelperInstances = [];
-    install(g.__gxtHelperInstances);
+// Slice-116 (Cluster B): replaces the pre-slice-116 `_installHelperInstancesHook`
+// IIFE that mutated the globalThis `__gxtHelperInstances` array's `.push`
+// method in place — wrapping every push with
+// `_installHelperRecomputeBridge(item)` BEFORE delegating to the original
+// push. The slice-116 form moves the hook dispatch INTO the
+// `pushHelperInstance` body in compile.ts (the canonical state-home), and
+// manager.ts registers the hook via a typed bridge surface
+// `compilePipeline.setHelperInstancePushHook?.(_installHelperRecomputeBridge)`.
+//
+// Load-order: compile.ts loads AFTER manager.ts (compile.ts imports
+// `peekInstanceCapture` from manager.ts at L1445), so the bridge is not
+// yet installed at this point in module init. The `queueMicrotask` defers
+// the registration call until compile.ts's `installCompilePipelinePart`
+// at EOF has run — microtasks drain at the end of the synchronous
+// module-init phase, well before any render fires a push. This is the
+// SAME defer pattern used by slice-11's wrap-by-reassignment installer
+// (manager.ts:889 `4-step retry-install dance` — pre-slice-11) which has
+// since been replaced by a host hook, demonstrating that the microtask
+// defer is the canonical solution for cross-package install ordering
+// where the dependent module imports from the dependency.
+//
+// Net behavior is identical to pre-slice-116:
+//  - every push onto `_gxtHelperInstances` triggers
+//    `_installHelperRecomputeBridge(inst)` (best-effort, errors swallowed)
+//    BEFORE the array.push fires
+//  - the hook install is idempotent (the bridge call sets a closure-local
+//    `let` in compile.ts; calling it twice is benign)
+//  - the array identity is stable (slice-69/90 stable-collection-identity
+//    precedent); contents are mutated in place via `pushHelperInstance` +
+//    `length = 0`.
+//
+// Net globalThis surface delta: -1 slot (the array publish), -1
+// prototype mutation (the `.push` wrap). +3 paired bridge methods on
+// `compilePipeline` (set / get / push). See `setHelperInstancePushHook`
+// / `getHelperInstances` / `pushHelperInstance` docs in gxt-bridge.ts.
+queueMicrotask(() => {
+  try {
+    getGxtRenderer()?.compilePipeline.setHelperInstancePushHook?.(_installHelperRecomputeBridge);
+  } catch {
+    /* ignore — best-effort, matches pre-slice-116 IIFE try/catch */
   }
-})();
+});
 
 // =============================================================================
 // Global Registries
@@ -5372,7 +5374,12 @@ function _gxtDestroyTrackedInstances(): void {
   }
 
   // Phase 4: destroy tracked helper instances (class-based helpers created in $_tag)
-  const helperInstances = (globalThis as any).__gxtHelperInstances;
+  // Slice-116 (Cluster B): routes through typed bridge
+  // `compilePipeline.getHelperInstances?.()`. The bridge returns the
+  // canonical module-local `_gxtHelperInstances` array from compile.ts.
+  // Replaces pre-slice-116 globalThis read. See `getHelperInstances`
+  // doc in gxt-bridge.ts.
+  const helperInstances = getGxtRenderer()?.compilePipeline.getHelperInstances?.();
   if (Array.isArray(helperInstances)) {
     for (const helperInst of helperInstances) {
       try {

@@ -117,7 +117,12 @@ export function runDestroy(toDestroy: any): void {
     }
     // In GXT mode, also destroy tracked helper instances when a component is destroyed.
     // Class-based helpers need proper destroy lifecycle (willDestroy, destroy).
-    const helperInstances = (globalThis as any).__gxtHelperInstances;
+    // Slice-116 (Cluster B): routes through typed bridge
+    // `compilePipeline.getHelperInstances?.()`. The bridge returns the
+    // canonical module-local `_gxtHelperInstances` array from compile.ts.
+    // Replaces pre-slice-116 globalThis read. See `getHelperInstances`
+    // doc in gxt-bridge.ts.
+    const helperInstances = getGxtRenderer()?.compilePipeline.getHelperInstances?.();
     if (Array.isArray(helperInstances) && helperInstances.length > 0) {
       for (const inst of helperInstances) {
         try {

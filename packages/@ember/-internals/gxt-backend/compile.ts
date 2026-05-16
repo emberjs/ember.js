@@ -7648,9 +7648,13 @@ function _gxtCleanupActiveComponents(): void {
   // Cluster B slice 58: intra-file direct reset of module-local `_curriedRenderInfos`.
   _curriedRenderInfos.length = 0;
   // Clear helper instances (already destroyed by __gxtDestroyTrackedInstances)
-  if ((globalThis as any).__gxtHelperInstances) {
-    (globalThis as any).__gxtHelperInstances.length = 0;
-  }
+  // Cluster B slice 116: intra-file direct reset of module-local
+  // `_gxtHelperInstances`. Replaces pre-slice-116 globalThis read +
+  // length=0 — same identity, contents drop. See
+  // `_gxtHelperInstances` doc above and `getHelperInstances` /
+  // `pushHelperInstance` / `setHelperInstancePushHook` docs in
+  // gxt-bridge.ts.
+  _gxtHelperInstances.length = 0;
   // Clear the helper instance cache used by $_maybeHelper
   // Slice-88 (Cluster B): routes through bridge — see clearHelperCache doc
   // in gxt-bridge.ts. Reuses existing `getGxtRenderer` import at L1431. The
@@ -7875,7 +7879,44 @@ let _qunitWhitespacePatched = false;
 })();
 
 // Track class-based helper instances for destruction during test teardown
-(globalThis as any).__gxtHelperInstances = (globalThis as any).__gxtHelperInstances || [];
+//
+// Slice-116 (Cluster B): graduates the pre-slice-116 lazy-init
+// `(globalThis as any).__gxtHelperInstances = (globalThis as any).
+// __gxtHelperInstances || [];` to the module-local `_gxtHelperInstances`
+// below (canonical state). The array identity is stable across the
+// module lifetime (slice-69/90 stable-collection-identity precedent —
+// contents mutated via push + length=0, identity never reassigned).
+//
+// Pushes are funneled through `_gxtPushHelperInstance(inst)` so the
+// optional push-hook (`_gxtHelperInstancePushHook`, set by manager.ts
+// via `compilePipeline.setHelperInstancePushHook` to install the
+// classic-helper-recompute GXT bridge — see
+// `_installHelperRecomputeBridge` in manager.ts) fires synchronously
+// BEFORE the array push. The hook is optional (null until manager.ts
+// registers it via queueMicrotask after this module's
+// `installCompilePipelinePart` has run); when null the push proceeds
+// without the bridge install. This matches pre-slice-116 semantics
+// where manager.ts's IIFE-installed `.push` interceptor was a best-
+// effort wrapper that no-op'd silently when the helper instance had
+// no RECOMPUTE_TAG symbol.
+const _gxtHelperInstances: any[] = [];
+let _gxtHelperInstancePushHook: ((inst: any) => void) | null = null;
+function _gxtPushHelperInstance(inst: any): void {
+  if (_gxtHelperInstancePushHook) {
+    try {
+      _gxtHelperInstancePushHook(inst);
+    } catch {
+      /* ignore — best-effort, matches pre-slice-116 IIFE try/catch */
+    }
+  }
+  _gxtHelperInstances.push(inst);
+}
+function _gxtGetHelperInstances(): any[] {
+  return _gxtHelperInstances;
+}
+function _gxtSetHelperInstancePushHook(hook: (inst: any) => void): void {
+  _gxtHelperInstancePushHook = hook;
+}
 
 // Cache for helper instances created in $_tag to prevent re-creation during
 // force re-render (which does innerHTML='' + full rebuild). Keyed by helper name.
@@ -10292,10 +10333,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                       recomputeTag,
                     });
                     // Register for destruction
-                    const destroyableInstances = g.__gxtHelperInstances;
-                    if (Array.isArray(destroyableInstances)) {
-                      destroyableInstances.push(helperInstance);
-                    }
+                    // Cluster B slice 116: intra-file direct push via module-local
+                    // helper that fires the registered push-hook (manager.ts's
+                    // `_installHelperRecomputeBridge`) before pushing. Replaces
+                    // pre-slice-116 globalThis read + Array.isArray guard + push.
+                    _gxtPushHelperInstance(helperInstance);
                     // Associate with the enclosing `{{#if}}` branch (if any) so
                     // destroy+willDestroy fire on branch teardown, matching the
                     // classic Ember Helper lifecycle (see class-based helper
@@ -16973,6 +17015,59 @@ installCompilePipelinePart({
   // ref-typed).
   setSkipTextEffects: _gxtSetSkipTextEffects,
   getSkipTextEffects: _gxtGetSkipTextEffects,
+  // Slice-116 (Cluster B): typed-bridge migration of the
+  // `__gxtHelperInstances` destroy-tracking array. Pre-slice-116 the
+  // array was published on globalThis with a lazy-init at compile.ts:7878
+  // (`(globalThis as any).__gxtHelperInstances = (globalThis as any).
+  // __gxtHelperInstances || [];`). The intra-file clear at compile.ts:7651-
+  // 7652 (test-teardown reset in `_gxtClearOnSetup`) and the intra-file
+  // push at compile.ts:10295 (inside `$_tag` class-helper-instance creation)
+  // were converted to direct module-local access (slice-22/.../99 intra-
+  // file precedent). The three cross-file pushes in `ember-gxt-wrappers.ts`
+  // (L586 / L906 / L1080 — setHelperManager-bridged helpers + class-based
+  // `$_maybeHelper` cache) route through `compilePipeline.pushHelperInstance?.()`.
+  // The two cross-file iterate-destroy readers in `gxt-backend/manager.ts:5375`
+  // (`Phase 4` of `_gxtDestroyTrackedInstances`) and `internal-test-helpers/
+  // lib/run.ts:120` (post-`destroy()` helper-instance teardown) route through
+  // `compilePipeline.getHelperInstances?.()`. The canonical state is the
+  // module-local `_gxtHelperInstances` array at compile.ts:7877; the
+  // globalThis slot is DROPPED. Net -1 globalThis surface, +3 bridge methods
+  // on `compilePipeline` (set / get / push).
+  //
+  // Bridge shape decision: paired set/get with a separate `pushHelperInstance`
+  // mutator (slice-69/90 stable-collection-identity precedent — collection
+  // identity is stable across the module lifetime; contents are mutated in
+  // place by push + length=0). The `pushHelperInstance` mutator fires the
+  // optional registered push-hook BEFORE the array push — the hook is set
+  // by manager.ts via `setHelperInstancePushHook(_installHelperRecomputeBridge)`
+  // to install the classic-helper-recompute GXT bridge on each pushed
+  // instance. Pre-slice-116 this hook was installed via `.push` method
+  // interception in a manager.ts IIFE (manager.ts:672-706) that mutated
+  // the array prototype in place; the bridge form moves the hook
+  // dispatch into the `pushHelperInstance` body itself, eliminating
+  // prototype mutation. Net behavior is identical: every push triggers
+  // `_installHelperRecomputeBridge(inst)` (best-effort, errors swallowed),
+  // then the array receives the instance.
+  //
+  // Bridge-not-yet-installed semantics: optional-chain `pushHelperInstance?.()`
+  // / `getHelperInstances?.()` returns undefined / no-ops before compile.ts's
+  // `installCompilePipelinePart` at EOF fires; the call sites' existing
+  // `if (!arr) return;` / Array.isArray guards short-circuit — matches
+  // pre-slice-116 semantics where the slot was undefined → the loop body
+  // skipped silently. The push-hook is registered by manager.ts via
+  // queueMicrotask after this module's `installCompilePipelinePart` runs,
+  // so by the time any cross-file push fires (render time, well after
+  // module init), the hook is installed.
+  //
+  // Fast-check: `getHelperInstances` is one closure read (returning the
+  // captured `_gxtHelperInstances` reference); `pushHelperInstance` is
+  // one optional-chain call + one array.push; `setHelperInstancePushHook`
+  // is one assignment. Zero allocations on hot paths. See
+  // `getHelperInstances` / `pushHelperInstance` / `setHelperInstancePushHook`
+  // doc in gxt-bridge.ts.
+  getHelperInstances: _gxtGetHelperInstances,
+  pushHelperInstance: _gxtPushHelperInstance,
+  setHelperInstancePushHook: _gxtSetHelperInstancePushHook,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
