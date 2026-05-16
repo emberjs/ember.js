@@ -1971,16 +1971,19 @@ const _inElementDeferQueue: Array<() => void> = [];
   // Now writes to the module-local pointer declared at top of module.
   _drainInElementDeferQueue = _drainImpl;
 
-  // Wrap globalThis.__gxtFlushAfterInsertQueue so callers going through
-  // it (demo path, ember-gxt-wrappers, etc.) also drain the queue.
-  const _origFlush = (globalThis as any).__gxtFlushAfterInsertQueue;
-  (globalThis as any).__gxtFlushAfterInsertQueue = function () {
-    try {
-      if (typeof _origFlush === 'function') _origFlush();
-    } finally {
-      _drainImpl();
-    }
-  };
+  // Slice-114 (Cluster B): the pre-slice-114 wrap-by-reassignment that
+  // captured `_origFlush = (globalThis as any).__gxtFlushAfterInsertQueue`
+  // and reassigned the slot to call `_origFlush()` then `_drainImpl()` is
+  // RETIRED. Replaced by the `afterFlushAfterInsertQueue` typed AFTER host
+  // hook contributed by compile.ts via `installViewUtilsPart` at file EOF
+  // (using the module-local `_drainInElementDeferQueue` pointer assigned
+  // just above). The bridge adapter `_gxtBridgeFlushAfterInsertQueue` in
+  // manager.ts dispatches the after-hook AFTER the main `flushAfterInsertQueue`
+  // body runs — same shape as slice 11's `afterRebuildViewTreeFromDom`.
+  // The 2 cross-package callers (`__gxtSyncDomNow` Phase 3b below + the
+  // `$_dc_ember` swap path in ember-gxt-wrappers.ts) now route through the
+  // bridge instead of the wrapped globalThis writer. See `flushAfterInsertQueue`
+  // / `afterFlushAfterInsertQueue` docs in gxt-bridge.ts.
 
   // NOTE: We deliberately do NOT install an Object.defineProperty getter/
   // setter wrap on globalThis.__gxtRebuildViewTreeFromDom here. A previous
@@ -2000,8 +2003,22 @@ const _inElementDeferQueue: Array<() => void> = [];
   // see each other's child cells (classic cell-aliasing pattern).
   //
   // The in-element deferred queue is still drained via the
-  // __gxtFlushAfterInsertQueue wrap above, which covers the demo /
-  // ember-gxt-wrappers code path.
+  // `afterFlushAfterInsertQueue` slice-114 host hook (installed at file
+  // EOF via `installViewUtilsPart`), which covers the demo / ember-gxt-
+  // wrappers code path.
+}
+
+// Slice-114 (Cluster B): host hook contributed via `installViewUtilsPart`
+// (see module bottom). Runs AFTER manager.ts's `flushAfterInsertQueue` body
+// completes, dispatched by the `_gxtBridgeFlushAfterInsertQueue` adapter in
+// manager.ts. Drains the in-element deferred-render queue via the module-
+// local `_drainInElementDeferQueue` pointer (assigned in the in-element bare
+// block above). Replaces the pre-slice-114 wrap-by-reassignment at L1976-1983
+// (`_origFlush` capture + reassign). Same shape as slice 11's
+// `_afterRebuildViewTreeFromDom`.
+function _afterFlushAfterInsertQueue(): void {
+  const drain = _drainInElementDeferQueue;
+  if (typeof drain === 'function') drain();
 }
 
 // Override GXT's $_inElement with an Ember-compatible version.
@@ -7358,9 +7375,15 @@ function _resetTemplateOnlyState() {
       // toggles cond). These callbacks are pushed to _afterInsertQueue in
       // renderClassicComponent and would otherwise never fire because the
       // outlet-rerender / sync path doesn't call flushAfterInsertQueue().
+      //
+      // Slice-114 (Cluster B): typed bridge call via
+      // `viewUtils.flushAfterInsertQueue`. The bridge slot is the slice-114
+      // adapter `_gxtBridgeFlushAfterInsertQueue` which also dispatches the
+      // `afterFlushAfterInsertQueue` host hook contributed by this file via
+      // `installViewUtilsPart` (in-element deferred-render drain). Was
+      // `(globalThis as any).__gxtFlushAfterInsertQueue`.
       try {
-        const flushDIE = (globalThis as any).__gxtFlushAfterInsertQueue;
-        if (typeof flushDIE === 'function') flushDIE();
+        getGxtRenderer()?.viewUtils.flushAfterInsertQueue?.();
       } catch {
         /* ignore */
       }
@@ -16904,4 +16927,12 @@ installViewUtilsPart({
   // freshly-constructed component instances whose wrapper id was user-
   // toggled false) now routes through this bridge method.
   getWrapperUserFalseSet: () => _wrapperIfUserFalse,
+  // Slice-114 (Cluster B): replaces the pre-slice-114 wrap-by-reassignment
+  // at L1976-1983 (`_origFlush` capture + reassign to inject tail
+  // `_drainImpl()`) — see `_afterFlushAfterInsertQueue` definition earlier
+  // in this file. The host hook runs AFTER manager.ts's
+  // `flushAfterInsertQueue` body completes, dispatched by the
+  // `_gxtBridgeFlushAfterInsertQueue` adapter in manager.ts. Same shape as
+  // slice 11's `afterRebuildViewTreeFromDom`.
+  afterFlushAfterInsertQueue: _afterFlushAfterInsertQueue,
 });

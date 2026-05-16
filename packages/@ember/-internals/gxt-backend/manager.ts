@@ -1086,6 +1086,32 @@ function _gxtBridgeRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
   }
 }
 
+// Slice-114 bridge adapter. Wraps `flushAfterInsertQueue` (the exported
+// manager.ts function defined later in this file) so that AFTER the queue is
+// drained, the `afterFlushAfterInsertQueue` host hook contributed by
+// compile.ts via `installViewUtilsPart` runs to drain the in-element
+// deferred-render queue (`_drainInElementDeferQueue` in compile.ts).
+//
+// Reads the hook via `getGxtRenderer()` rather than capturing a reference at
+// adapter-creation time so contributions arriving via the deferred install
+// queue (when compile.ts loads after manager.ts) are picked up on first call.
+// Errors from the body and from the hook are swallowed independently,
+// matching the pre-slice-114 wrap's `try { _origFlush() } finally { _drainImpl() }`
+// shape at compile.ts:1978-1983 (drain ran even if the body threw).
+function _gxtBridgeFlushAfterInsertQueue(): void {
+  try {
+    flushAfterInsertQueue();
+  } catch {
+    /* ignore — best effort, matches pre-slice-114 wrap try/finally */
+  }
+  try {
+    const after = getGxtRenderer()?.viewUtils.afterFlushAfterInsertQueue;
+    if (typeof after === 'function') after();
+  } catch {
+    /* ignore — best effort, matches pre-slice-114 wrap try/finally */
+  }
+}
+
 /**
  * Add a child view to a parent's childViews array.
  * Mimics Ember's CoreView.addChildView behavior.
@@ -3441,13 +3467,21 @@ export function clearRenderErrors(): void {
  * Called from the renderer after the GXT template.render() call has
  * synchronously appended all DOM into the live document.
  */
-// Expose flushAfterInsertQueue on globalThis so ember-gxt-wrappers.ts (the
-// $_dc_ember string path) can flush after reactive swaps insert new DOM
-// nodes — otherwise __gxtEverInserted never gets set for swapped-in instances,
-// which causes the willDestroy gate to skip the user override on swap-out.
-(globalThis as any).__gxtFlushAfterInsertQueue = function () {
-  flushAfterInsertQueue();
-};
+// Slice-114 (Cluster B): the pre-slice-114 globalThis writer
+// `(globalThis as any).__gxtFlushAfterInsertQueue = function () { ... }`
+// is RETIRED in favor of registration via the `viewUtils.flushAfterInsertQueue`
+// bridge method (seeded in the `setGxtRenderer` call at file EOF). The two
+// cross-package callers (compile.ts:`__gxtSyncDomNow` Phase 3b +
+// ember-gxt-wrappers.ts:`$_dc_ember` swap path) now route through the
+// typed bridge. The pre-slice-114 compile.ts wrap-by-reassignment at
+// compile.ts:1976-1983 (`_origFlush` capture + reassign to inject tail
+// drain via `_drainImpl()`) is replaced by the `afterFlushAfterInsertQueue`
+// host hook contributed by compile.ts via `installViewUtilsPart`. The
+// bridge adapter `_gxtBridgeFlushAfterInsertQueue` (defined below) runs
+// the main body then dispatches the after-hook. Mirrors slice 11's AFTER
+// host-hook shape — slice 114 is the next wrap-by-reassignment slice to
+// reuse the slice-11 pattern. See `flushAfterInsertQueue` doc in
+// gxt-bridge.ts.
 
 export function flushAfterInsertQueue(): void {
   while (_afterInsertQueue.length > 0) {
@@ -13440,6 +13474,16 @@ setGxtRenderer({
     // `beginRenderPass` and slice 10's transformer dispatch on
     // `checkBacktracking` — slice 11 is the third distinct host-hook shape).
     rebuildViewTreeFromDom: _gxtBridgeRebuildViewTreeFromDom,
+    // Slice-114 (Cluster B): `flushAfterInsertQueue` seeded here; the
+    // `afterFlushAfterInsertQueue` host hook is contributed by compile.ts
+    // via `installViewUtilsPart` to drain the in-element deferred-render
+    // queue (`_drainInElementDeferQueue`) — replacing the pre-slice-114
+    // wrap-by-reassignment at compile.ts:1976-1983 (`_origFlush` capture +
+    // reassign to inject tail drain). The adapter
+    // `_gxtBridgeFlushAfterInsertQueue` dispatches the after-hook AFTER the
+    // main body runs — same shape as slice-11's `_gxtBridgeRebuildViewTreeFromDom`.
+    // The pre-slice-114 globalThis writer at manager.ts L3448 is retired.
+    flushAfterInsertQueue: _gxtBridgeFlushAfterInsertQueue,
   },
   format: {
     shouldWarnStyle: _gxtBridgeShouldWarnStyle,

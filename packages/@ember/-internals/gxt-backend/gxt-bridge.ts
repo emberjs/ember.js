@@ -337,6 +337,77 @@ export interface GxtViewUtilsCapabilities {
    * compile.ts L4425, reader at manager.ts L1807).
    */
   getWrapperUserFalseSet?(): Set<string> | undefined;
+
+  /**
+   * Flush all queued `didInsertElement` / `didRender` callbacks accumulated in
+   * manager.ts's `_afterInsertQueue` during a render pass, then trigger
+   * `rebuildViewTreeFromDom` (which itself dispatches the slice-11
+   * `afterRebuildViewTreeFromDom` host hook). Called from the renderer after
+   * the GXT `template.render()` call has synchronously appended all DOM into
+   * the live document.
+   *
+   * Slice-114 (Cluster B): the bridge adapter installed by manager.ts wraps
+   * the canonical `flushAfterInsertQueue()` body so that AFTER the queue is
+   * drained, the optional `afterFlushAfterInsertQueue` host hook contributed
+   * by compile.ts (via `installViewUtilsPart`) fires — replacing the pre-
+   * slice-114 wrap-by-reassignment at compile.ts:1976 (which captured the
+   * manager.ts globalThis writer in `_origFlush` and reassigned the slot to
+   * call `_origFlush()` then `_drainImpl()` for the in-element deferred-
+   * render queue). The slice-11 AFTER host-hook pattern is reused verbatim
+   * for the wrap-body-relocation — slice 114 is the FOURTH wrap-by-
+   * reassignment slice to use the slice-11 AFTER host-hook (after slices
+   * 11 / 12 / 13 / 110-113 cluster).
+   *
+   * NOTE: intra-`manager.ts` callers of the exported `flushAfterInsertQueue`
+   * function bypass the bridge adapter (and thus the after-hook). Pre-
+   * slice-114 the same asymmetry held: intra-manager.ts callers called the
+   * raw exported body directly, while cross-package callers came through
+   * the wrapped globalThis writer that triggered the in-element drain. The
+   * direct intra-file caller is the renderer-side `flushAfterInsertQueue`
+   * at the tail of `_render` which doesn't NEED the in-element drain
+   * (in-element deferred renders enqueue from compile.ts's `$_inElement`
+   * shim during a render pass; the renderer-side flush happens at depth-0
+   * pass-end which is independent). The 2 cross-package callers
+   * (compile.ts:`__gxtSyncDomNow` Phase 3b + ember-gxt-wrappers.ts:
+   * `$_dc_ember` swap path) DO need the drain.
+   *
+   * Best-effort: errors thrown from the body or from the after-hook are
+   * caught and ignored at the bridge-adapter level, matching the pre-
+   * slice-114 wrap's `try { _origFlush() } finally { _drainImpl() }`
+   * shape (both halves protected).
+   *
+   * Previously: `(globalThis as any).__gxtFlushAfterInsertQueue` (writer at
+   * manager.ts L3448 + wrapped-with-tail-drain at compile.ts L1977).
+   */
+  flushAfterInsertQueue?(): void;
+
+  /**
+   * Host hook contributed by compile.ts (via `installViewUtilsPart`) that runs
+   * AFTER manager.ts's `flushAfterInsertQueue` body. Used to drain the in-
+   * element deferred-render queue (`_drainInElementDeferQueue` module-local
+   * pointer in compile.ts, seeded in the in-element bare block) so that
+   * `{{#in-element}}` block bodies whose compile-time literal id targets
+   * resolved to null during an active render pass get a second-chance
+   * render once the outer parent's DocumentFragment has been committed to
+   * the live document.
+   *
+   * Pre-slice-114 this logic lived in a wrap-by-reassignment at
+   * compile.ts:1976-1983 which captured manager.ts's globalThis writer in
+   * `_origFlush` and reassigned the slot to call `_origFlush()` (best-
+   * effort with `typeof === 'function'` guard) followed by `_drainImpl()`
+   * (the in-element drain) in a `try/finally` so the drain always ran.
+   * Slice 114 promotes this to a typed AFTER host hook — same shape as
+   * slice 11's `afterRebuildViewTreeFromDom`.
+   *
+   * Best-effort: errors thrown from the hook are caught and ignored at the
+   * bridge-adapter level in manager.ts, matching the pre-slice-114 wrap's
+   * try/finally semantics (the drain ran even if `_origFlush()` threw —
+   * the new shape mirrors that by catching both halves independently). Only
+   * one contributor at a time is supported (compile.ts).
+   *
+   * Previously: tail of the wrap-by-reassignment at compile.ts L1981.
+   */
+  afterFlushAfterInsertQueue?(): void;
 }
 
 /**

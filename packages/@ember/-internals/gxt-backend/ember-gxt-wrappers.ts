@@ -2482,9 +2482,15 @@ function createEmberDc(original: Function) {
           // __gxtEverInserted flag gets set. Without this, the subsequent
           // swap-out would skip the user willDestroy override due to the
           // __gxtEverInserted gate in patchedComponentClass.willDestroy.
+          //
+          // Slice-114 (Cluster B): typed bridge call via
+          // `viewUtils.flushAfterInsertQueue`. The bridge slot is the
+          // slice-114 adapter `_gxtBridgeFlushAfterInsertQueue` which also
+          // dispatches the `afterFlushAfterInsertQueue` host hook contributed
+          // by compile.ts via `installViewUtilsPart` (in-element deferred-
+          // render drain). Was `(g as any).__gxtFlushAfterInsertQueue`.
           try {
-            const flushFn = (g as any).__gxtFlushAfterInsertQueue;
-            if (typeof flushFn === 'function') flushFn();
+            getGxtRenderer()?.viewUtils.flushAfterInsertQueue?.();
           } catch {
             /* ignore */
           }
