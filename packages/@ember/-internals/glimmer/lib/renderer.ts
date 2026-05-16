@@ -2481,9 +2481,19 @@ function _renderComponentGxt(
     // (before the parent re-renders) and cause double getter evaluations.
     // Top-level renderComponent calls (wasRendering=false) DO need text effects
     // for trackedObject reactivity.
-    const prevSkipTextEffects = (globalThis as any).__gxtSkipTextEffects;
+    //
+    // Slice-115 (Cluster B): the flag is now routed through the typed
+    // bridge — `compilePipeline.setSkipTextEffects(value)` / `compilePipeline.
+    // getSkipTextEffects()` (state-home compile.ts). Pre-slice-115 this
+    // pair wrote `(globalThis as any).__gxtSkipTextEffects = prev / true`.
+    // The optional-chain fallback (writer short-circuits to undefined,
+    // reader `?? false` defaults) preserves the pre-slice-115 semantics
+    // when the bridge is not yet installed. See `setSkipTextEffects` doc
+    // in gxt-bridge.ts for the full narrative.
+    const _compilePipeline = getGxtRenderer()?.compilePipeline;
+    const prevSkipTextEffects = _compilePipeline?.getSkipTextEffects?.() ?? false;
     if (wasRendering) {
-      (globalThis as any).__gxtSkipTextEffects = true;
+      _compilePipeline?.setSkipTextEffects?.(true);
     }
     // Wrap the template render so we can re-invoke it from a classic-tag
     // reactor. This is the same pattern used by renderLinkToElement in
@@ -2505,9 +2515,13 @@ function _renderComponentGxt(
       _rendering = true;
       const prevOwnerLocal = (globalThis as any).owner;
       (globalThis as any).owner = owner;
-      const prevSkip = (globalThis as any).__gxtSkipTextEffects;
+      // Slice-115 (Cluster B): routed through `compilePipeline.
+      // {set,get}SkipTextEffects` bridge methods (state-home compile.ts).
+      // Pre-slice-115 read/wrote `(globalThis as any).__gxtSkipTextEffects`.
+      const _pipelineLocal = getGxtRenderer()?.compilePipeline;
+      const prevSkip = _pipelineLocal?.getSkipTextEffects?.() ?? false;
       const wasRenderingLocal = typeof _isRendering === 'function' ? _isRendering() : false;
-      if (wasRenderingLocal) (globalThis as any).__gxtSkipTextEffects = true;
+      if (wasRenderingLocal) _pipelineLocal?.setSkipTextEffects?.(true);
       try {
         // Scoped re-render: clear only the nodes within this entry's
         // range, then render fresh content back into the same range. This
@@ -2522,7 +2536,8 @@ function _renderComponentGxt(
           renderIntoRegion(template, renderContext);
         }
       } finally {
-        (globalThis as any).__gxtSkipTextEffects = prevSkip;
+        // Slice-115 (Cluster B): routed through bridge — see entry comment.
+        _pipelineLocal?.setSkipTextEffects?.(prevSkip);
         (globalThis as any).owner = prevOwnerLocal;
         _rendering = false;
       }
@@ -2608,8 +2623,9 @@ function _renderComponentGxt(
 
     try {
       // Render the template into the target (initial render)
+      // Slice-115 (Cluster B): routed through bridge — see entry comment.
       if (wasRendering) {
-        (globalThis as any).__gxtSkipTextEffects = true;
+        _compilePipeline?.setSkipTextEffects?.(true);
       }
       if (typeof _withRendering === 'function') {
         _withRendering(() => {
@@ -2619,7 +2635,8 @@ function _renderComponentGxt(
         renderIntoRegion(template, renderContext);
       }
     } finally {
-      (globalThis as any).__gxtSkipTextEffects = prevSkipTextEffects;
+      // Slice-115 (Cluster B): routed through bridge — see entry comment.
+      _compilePipeline?.setSkipTextEffects?.(prevSkipTextEffects);
       // Arm the reactor: from now on, classic-tag dirties will trigger
       // _doRender. This is done in `finally` so that any tag dirties
       // that happened DURING initial render (e.g. from component init

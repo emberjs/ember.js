@@ -7294,6 +7294,183 @@ export interface GxtCompilePipelineCapabilities {
    * set-time inside `_gxtSetRootOutletRerender`.
    */
   setRootOutletRerenderWrap?(wrap: (fn: any) => any): void;
+
+  /**
+   * Write the "skip text effects" flag consulted by `compile.ts`'s text-node
+   * reactive-binding setup inside the `$_text` glimmer-template result fork.
+   * Companion to `getSkipTextEffects` (read surface below).
+   *
+   * Slice-115 (Cluster B): paired typed-bridge migration of the
+   * `__gxtSkipTextEffects` boolean flag. Pre-slice-115 the writer pair at
+   * `glimmer/lib/renderer.ts:2484/2486/2508-2510/2525/2612/2622` (the
+   * `_renderComponent` Ember-glimmer-only public API entrypoint — five
+   * conditional save-restore-wrap writes across the outer initial-render
+   * frame and the inner `_doRender` classic-reactor body) wrote:
+   *
+   *   const prevSkipTextEffects = (globalThis as any).__gxtSkipTextEffects;
+   *   if (wasRendering) (globalThis as any).__gxtSkipTextEffects = true;
+   *   try {
+   *     // outer initial render OR inner _doRender body — depending on site
+   *     if (wasRendering) (globalThis as any).__gxtSkipTextEffects = true;
+   *     ...render the template...
+   *   } finally {
+   *     (globalThis as any).__gxtSkipTextEffects = prevSkipTextEffects;
+   *   }
+   *
+   * around each renderComponent template render so that nested
+   * `renderComponent` calls (called during an existing render pass — e.g.
+   * from a `@cached` getter during template evaluation) suppress GXT-effect
+   * creation for text nodes. The single cross-package reader at
+   * `gxt-backend/compile.ts:15624` (inside the `$_text` reactive-binding
+   * setup of the glimmer-template forked branch) reads the slot and
+   * short-circuits the `gxtEffect(() => { ... })` setup if truthy —
+   * returning the bare text node directly instead.
+   *
+   * The reason for the skip: nested renders are static snapshots — the
+   * parent render destroys and recreates the nested render whenever its
+   * tracked deps change. Independent text effects in the nested render
+   * would fire out-of-order (before the parent re-renders) and cause
+   * double getter evaluations. Top-level renderComponent calls
+   * (wasRendering=false) DO need text effects for trackedObject
+   * reactivity, hence the conditional set-true gated on `wasRendering`.
+   *
+   * Pre-slice-115 topology (audited verbatim against current source):
+   *
+   *   Writers (5 sites at 7 lines, all in `glimmer/lib/renderer.ts`'s
+   *   `_renderComponent` entrypoint):
+   *     - L2484 (save prev) + L2486 (conditional set TRUE if `wasRendering`):
+   *       outer initial-render frame entry — save current flag, set TRUE
+   *       only when called nested inside an existing render pass.
+   *     - L2508 (save prev) + L2510 (conditional set TRUE if
+   *       `wasRenderingLocal`) + L2525 (restore prev in `finally`): inner
+   *       `_doRender` classic-reactor body — independent save-restore pair
+   *       around the scoped re-render scope (classic-reactor fires this
+   *       body on classic-tag dirty after initial render completes).
+   *     - L2612 (re-assert set TRUE inside outer try-block when
+   *       `wasRendering`) + L2622 (restore prev in outer `finally`):
+   *       outer initial-render frame `try / finally` — the re-assert is a
+   *       defensive reinforcement (the L2486 write is already true if
+   *       wasRendering, but the inner classic-reactor's L2525 finally may
+   *       have restored to a different prev value if it fired BEFORE
+   *       initial render completed; the L2612 re-assert ensures the
+   *       initial-render template body sees the correct flag).
+   *
+   *   Reader (1 cross-package site):
+   *     - gxt-backend/compile.ts:15624 — inside the `$_text` reactive-
+   *       binding fork of the glimmer-template result handling. Tests the
+   *       slot via `if ((globalThis as any).__gxtSkipTextEffects) { return
+   *       textNode; }` — returns the bare text node without setting up a
+   *       `gxtEffect` if the flag is truthy.
+   *
+   * GXT-runtime ownership audit: 0 matches under
+   * `node_modules/.pnpm/@lifeart+gxt` published artifacts, 0 in repo-root
+   * `index.html`, 0 in scripts/, 0 in `packages/demo/`, 0 in harness test
+   * runners. The slot is purely an Ember-internal nested-renderComponent
+   * gate — no external readers/writers to retain.
+   *
+   * Bridge shape decision: paired `setSkipTextEffects(value: boolean):
+   * void` (writer) + `getSkipTextEffects(): boolean` (reader) methods on
+   * `GxtCompilePipelineCapabilities`. Set/get paired surface mirrors the
+   * pre-slice-115 globalThis assign-and-read pattern directly. The
+   * pre-slice-115 writer-pair shape is NOT a balanced wrap-the-body-in-
+   * begin-end (the `wasRendering` conditional only fires set-true for
+   * the truthy branch — the falsy branch leaves the prior value
+   * untouched). That conditional save/conditional-set/unconditional-restore
+   * pattern is best expressed as paired set/get with the writers retaining
+   * the conditional logic, not as a `withSkipTextEffects(fn)` wrap.
+   * Mirrors slice-111's `setTopOutletRef` / `getTopOutletRef` (paired
+   * set/get for a captured VALUE) — but boolean-typed here rather than
+   * ref-typed. Two new bridge methods, no new install-API namespace
+   * (registered inside the existing `installCompilePipelinePart({ ... })`
+   * block at compile.ts EOF alongside slices 110/111/112/113 entries).
+   *
+   * Namespace decision: `compilePipeline`. The flag is semantically part
+   * of the GXT render pipeline — a per-frame gate on the text-node
+   * reactive-effect setup inside the glimmer-template `$_text` fork.
+   * Same namespace category as slice-110's `withInOutletRender`, slice
+   * 111's `setTopOutletRef`, slice 112's `withForceRerender`, and slice
+   * 113's `setRootOutletRerender` — all live on `compilePipeline`.
+   *
+   * State-home: `gxt-backend/compile.ts`. Same precedent as slices
+   * 110/111/112 — bridge state for compilePipeline-namespace ref/flag
+   * captures lives in compile.ts, even when the writer is cross-package
+   * (in `glimmer/lib/renderer.ts`) and the reader is intra-file. The
+   * sole reader at compile.ts L15624 reads the canonical module-local
+   * directly (intra-file zero-overhead, slice-30 precedent) rather than
+   * round-tripping through the bridge predicate.
+   *
+   * Bridge-not-yet-installed edge: the five cross-package writer sites
+   * in `glimmer/lib/renderer.ts` use `getGxtRenderer()?.compilePipeline.
+   * setSkipTextEffects?.(value)`. The optional chain short-circuits to
+   * `undefined` when either the renderer or the method is not yet
+   * installed; in that case the write is silently dropped (matching the
+   * pre-slice-115 semantics where the globalThis slot would simply not
+   * affect the cross-package reader, which would then default to falsy).
+   * The reader uses the intra-file module-local directly, so its
+   * fallback is the initial `false` value of the module-local binding —
+   * matching the pre-slice-115 `(globalThis as any).__gxtSkipTextEffects`
+   * read which returned `undefined` (falsy) when the slot had not yet
+   * been written. In practice the bridge IS installed by the time
+   * either site fires: `installCompilePipelinePart` runs at compile.ts
+   * module init (before any template renders), and renderer.ts's
+   * `_renderComponent` only writes the flag during a render — well after
+   * compile.ts has finished its install pass. For classic-Ember builds
+   * (no GXT backend loaded), renderer.ts's `_renderComponent` entrypoint
+   * also short-circuits the writes (and there is no compile.ts reader
+   * to consult), so the bridge short-circuit is moot.
+   *
+   * Save-restore semantics: the pre-slice-115 writer pairs preserve a
+   * "save prior on entry, restore prior on finally" pattern via
+   * `prevSkipTextEffects = read; ... try { ... } finally { write(prev); }`.
+   * The slice-115 migration preserves this verbatim — the renderer.ts
+   * writers still read the prior value via `getSkipTextEffects()` on
+   * entry, store it in a local, and write it back via
+   * `setSkipTextEffects(prev)` in `finally`. Net behavior identical.
+   *
+   * Hot-path concern: NONE. The writer fires once per renderComponent
+   * call (top-level public API — typically zero to a handful per QUnit
+   * test). The reader fires once per text-node binding inside a
+   * renderComponent template render. The bridge dispatch overhead vs.
+   * globalThis read/write is negligible at this call frequency.
+   *
+   * Fast-check: the implementations are trivially cheap —
+   * `function _gxtSetSkipTextEffects(v) { _gxtSkipTextEffectsFlag = v; }`
+   * and `function _gxtGetSkipTextEffects() { return
+   * _gxtSkipTextEffectsFlag; }`. Same body shape as slices 111
+   * (setTopOutletRef/getTopOutletRef).
+   *
+   * After slice-115 the `__gxtSkipTextEffects` globalThis slot is
+   * DROPPED. The canonical state is `_gxtSkipTextEffectsFlag` in
+   * compile.ts. Net globalThis surface delta: -1 slot. +2 paired bridge
+   * methods on `compilePipeline`.
+   *
+   * Previously: `(globalThis as any).__gxtSkipTextEffects = value`.
+   */
+  setSkipTextEffects?(value: boolean): void;
+
+  /**
+   * Read-only accessor for the "skip text effects" flag set by
+   * `setSkipTextEffects(value)` above. Returns `true` iff the current
+   * synchronous stack is inside a nested `renderComponent` call (i.e.,
+   * one made during an existing render pass) and the `$_text`
+   * reactive-binding fork should short-circuit `gxtEffect()` creation.
+   *
+   * Slice-115 (Cluster B): paired with `setSkipTextEffects` (above).
+   * The sole cross-package reader at `gxt-backend/compile.ts:15624`
+   * (inside the `$_text` reactive-binding fork of the glimmer-template
+   * result handling) is intra-file with the state-home, so it reads
+   * the module-local `_gxtSkipTextEffectsFlag` binding DIRECTLY rather
+   * than round-tripping through this bridge predicate (slice-30
+   * precedent — intra-file zero-overhead). This bridge accessor is
+   * provided for symmetry with `setSkipTextEffects` and for any future
+   * external readers that may need to consult the flag.
+   *
+   * Matches slice-111's `getTopOutletRef()` body shape (paired
+   * accessor for a captured VALUE).
+   *
+   * Previously: `(globalThis as any).__gxtSkipTextEffects`.
+   */
+  getSkipTextEffects?(): boolean;
 }
 
 /**
