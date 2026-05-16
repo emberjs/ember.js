@@ -34,6 +34,7 @@ import expandProperties from './expand_properties';
 import { addObserver, setObserverSuspended } from './observer';
 import type { PropertyDidChange } from './property_events';
 import {
+  _gxtCPIsInvalidating,
   beginPropertyChanges,
   endPropertyChanges,
   hasPropertyDidChange,
@@ -485,7 +486,7 @@ export class ComputedProperty extends ComputedDescriptor {
         }
       }
       // GXT integration: classic mode never installs cells/formulas, so
-      // `_cpSetInFlight`, `__gxtCPInvalidationSet`, and `__gxtInTriggerReRender`
+      // `_cpSetInFlight`, `_gxtCPInvalidationSet`, and `__gxtInTriggerReRender`
       // are always empty/undefined and the three short-circuits below would
       // never fire. Skip the lookups entirely when not in GXT mode — these
       // run on every CP get cache miss, including the 2998-row teardown
@@ -511,19 +512,24 @@ export class ComputedProperty extends ComputedDescriptor {
         // re-render, a `get()` in user code, or a finalized runloop observer
         // flush — will recompute through this same path once the cascade
         // has settled.
-        const g: any = globalThis as any;
         // Narrow the re-entrance guard to the exact (obj, keyName) that is
         // currently being invalidated. Re-entrant reads of OTHER CPs during
         // the cascade (e.g. a template re-render reading an unrelated CP)
         // must still be allowed to recompute normally.
-        const inv: WeakMap<object, Set<string>> | undefined = g.__gxtCPInvalidationSet;
-        if (inv) {
-          const perObj = inv.get(obj);
-          if (perObj && perObj.has(keyName)) {
-            let stored = meta.valueFor(keyName);
-            consumeTag(propertyTag);
-            return stored;
-          }
+        //
+        // Slice-122 (Cluster B): graduated from `(globalThis as any).__gxtCPInvalidationSet`
+        // raw-globalThis WeakMap read to the typed `_gxtCPIsInvalidating(obj, keyName)`
+        // predicate imported from sibling `./property_events`. The predicate
+        // returns the same per-(obj, keyName) boolean the pre-slice-122
+        // inline `inv.get(obj)?.has(keyName)` produced — semantics preserved.
+        // See the `_gxtCPInvalidationSet` doc block at the head of
+        // `property_events.ts` for the intra-package zero-bridge migration
+        // rationale (sibling-of `_inCPSetFor` shape — same module-local
+        // WeakMap pattern declared in this file at line 95).
+        if (_gxtCPIsInvalidating(obj, keyName)) {
+          let stored = meta.valueFor(keyName);
+          consumeTag(propertyTag);
+          return stored;
         }
         // Classic Ember semantics: a CP that has never been consumed (no
         // cached revision) should not be lazily evaluated during a change

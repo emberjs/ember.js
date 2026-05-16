@@ -43,6 +43,56 @@ export function hasPropertyDidChange(obj: unknown): obj is PropertyDidChange {
 
 let deferred = 0;
 
+// Slice-122 (Cluster B): `__gxtCPInvalidationSet` globalThis WeakMap graduated
+// to a module-local `WeakMap<object, Set<string>>` plus a typed
+// `_gxtCPIsInvalidating(obj, keyName)` predicate exposed to its sole sibling
+// reader in `metal/lib/computed.ts`. Pre-slice-122 audit confirmed all five
+// sites (init + set + clear in `property_events.ts`, one read in
+// `property_events.ts`, one read in `computed.ts`) lived inside the same
+// `@ember/-internals/metal` package with no cross-package readers (zero refs
+// across `node_modules/.pnpm/` GXT runtime versions, zero refs across the rest
+// of `packages/`). Pattern mirrors the sibling `_cpSetInFlight` /
+// `_inCPSetFor` module-local declared at the head of `computed.ts` (same
+// `WeakMap<object, Set<string>>` shape, same per-(obj, keyName) granularity,
+// same boolean predicate read shape). State ownership: `property_events.ts`
+// owns the WeakMap because `notifyPropertyChange` is the canonical writer of
+// the invalidation lifecycle (the marker is added in the `try` head and
+// removed in the `finally`, scoped to one notify call). `computed.ts`'s read
+// only checks membership during CP.get re-entrance and never mutates. Net -1
+// globalThis slot, 0 bridge methods (zero-bridge graduation — intra-package
+// import, no `compilePipeline` involvement). 122 cluster-B slices landed
+// cumulatively.
+const _gxtCPInvalidationSet: WeakMap<object, Set<string>> = new WeakMap();
+function _gxtCPMarkInvalidating(obj: object, keyName: string): boolean {
+  // Returns whether the (obj, keyName) marker was already present (so the
+  // caller knows whether to remove it on the way out — preserves the
+  // pre-slice-122 `wasPresent` clear-only-if-added semantics).
+  let perObj = _gxtCPInvalidationSet.get(obj);
+  if (!perObj) {
+    perObj = new Set();
+    _gxtCPInvalidationSet.set(obj, perObj);
+  }
+  const wasPresent = perObj.has(keyName);
+  if (!wasPresent) perObj.add(keyName);
+  return wasPresent;
+}
+function _gxtCPClearInvalidating(obj: object, keyName: string): void {
+  const perObj = _gxtCPInvalidationSet.get(obj);
+  if (perObj) perObj.delete(keyName);
+}
+/**
+ * Returns whether (obj, keyName) is currently mid-flight inside a
+ * `notifyPropertyChange` invalidation cascade. Used by `CP.get` in
+ * `computed.ts` to short-circuit a re-entrant read (originating from
+ * `dirtyTagFor` → GXT formula re-evaluation) and return the last cached value
+ * without re-invoking the user getter — preserving classic Ember's invariant
+ * that "dirtying a tag does not itself evaluate the CP".
+ */
+export function _gxtCPIsInvalidating(obj: object, keyName: string): boolean {
+  const perObj = _gxtCPInvalidationSet.get(obj);
+  return perObj !== undefined && perObj.has(keyName);
+}
+
 /**
   This function is called just after an object property has changed.
   It will notify any observers and clear caches among other things.
@@ -86,12 +136,14 @@ function notifyPropertyChange(
   // bookkeeping there — `clearItems4` issues thousands of notifies.
   let wasPresent = true;
   if (__GXT_MODE__) {
-    const g: any = globalThis as any;
-    if (!g.__gxtCPInvalidationSet) g.__gxtCPInvalidationSet = new WeakMap();
-    const perObj: Set<string> = g.__gxtCPInvalidationSet.get(obj) || new Set();
-    if (!g.__gxtCPInvalidationSet.has(obj)) g.__gxtCPInvalidationSet.set(obj, perObj);
-    wasPresent = perObj.has(keyName);
-    if (!wasPresent) perObj.add(keyName);
+    // Slice-122 (Cluster B): graduated from `(globalThis as any).__gxtCPInvalidationSet`
+    // lazy-init WeakMap writer to the module-local `_gxtCPMarkInvalidating(obj, keyName)`
+    // helper at the head of this file. The helper returns whether the marker was
+    // already present, preserving the pre-slice-122 `wasPresent` semantics
+    // (clear-only-if-added in the `finally` block below). See the
+    // `_gxtCPInvalidationSet` doc block above for the intra-package
+    // zero-bridge migration rationale.
+    wasPresent = _gxtCPMarkInvalidating(obj, keyName);
   }
 
   try {
@@ -202,13 +254,13 @@ function notifyPropertyChange(
     }
   } finally {
     // Clear the narrow CP invalidation marker only if we added it here.
+    // Slice-122 (Cluster B): graduated from `(globalThis as any).__gxtCPInvalidationSet`
+    // raw-globalThis read+delete to the module-local
+    // `_gxtCPClearInvalidating(obj, keyName)` helper. See the
+    // `_gxtCPInvalidationSet` doc block above for the intra-package
+    // zero-bridge migration rationale.
     if (!wasPresent) {
-      const g2: any = globalThis as any;
-      const inv: WeakMap<object, Set<string>> | undefined = g2.__gxtCPInvalidationSet;
-      if (inv) {
-        const s = inv.get(obj);
-        if (s) s.delete(keyName);
-      }
+      _gxtCPClearInvalidating(obj, keyName);
     }
   }
 }
