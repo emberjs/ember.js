@@ -461,15 +461,28 @@ export default function createRootTemplate(_owner: any) {
           renderContext.args = {};
         }
 
-        // Store the render context for cross-cell dirtying
-        if (!(globalThis as any).__gxtComponentContexts) {
-          (globalThis as any).__gxtComponentContexts = new WeakMap();
+        // Store the render context for cross-cell dirtying.
+        // Slice-120 (Cluster B): cross-file lazy-init writer/reader
+        // graduates to `compilePipeline.getComponentContextsMap?.()` (single
+        // get-only with internal lazy-init — slice-100 stable-reference
+        // precedent). The bridge guarantees a single WeakMap instance
+        // across all call sites; pre-slice-120 each site had its own lazy-
+        // init check against `globalThis.__gxtComponentContexts`. The
+        // optional-chain handles the (impossible in practice — see slice
+        // 120 docs in `gxt-bridge.ts`) bridge-not-yet-installed edge: if
+        // `getComponentContextsMap?.()` returns undefined, the `if (ctxsMap)`
+        // guard short-circuits and the registration is skipped (matches
+        // pre-slice-120 semantics where the slot was undefined and the
+        // lazy-init proceeded — but compile.ts's `installCompilePipelinePart`
+        // runs at module init, before any RootTemplate render-time call
+        // can fire, so the guard never trips at runtime).
+        const ctxsMap = getGxtRenderer()?.compilePipeline.getComponentContextsMap?.();
+        if (ctxsMap) {
+          if (!ctxsMap.has(component)) {
+            ctxsMap.set(component, new Set());
+          }
+          ctxsMap.get(component)!.add(renderContext);
         }
-        const ctxsMap = (globalThis as any).__gxtComponentContexts;
-        if (!ctxsMap.has(component)) {
-          ctxsMap.set(component, new Set());
-        }
-        ctxsMap.get(component).add(renderContext);
 
         // Install GXT cells for keys declared on the component's
         // `Component.extend({ key: value })` properties that never became
@@ -772,15 +785,17 @@ export default function createRootTemplate(_owner: any) {
       // Register the renderContext in __gxtComponentContexts so that
       // __gxtTriggerReRender(controller, key) can find and update cells
       // on this renderContext. The map is keyed by prototype.
+      // Slice-120 (Cluster B): cross-file lazy-init writer/reader routes
+      // through `compilePipeline.getComponentContextsMap?.()` — see the
+      // sibling site near L465 for the slice-120 narrative.
       if (controller && typeof controller === 'object') {
-        if (!(globalThis as any).__gxtComponentContexts) {
-          (globalThis as any).__gxtComponentContexts = new WeakMap();
+        const ctxsMap = getGxtRenderer()?.compilePipeline.getComponentContextsMap?.();
+        if (ctxsMap) {
+          if (!ctxsMap.has(controller)) {
+            ctxsMap.set(controller, new Set());
+          }
+          ctxsMap.get(controller)!.add(renderContext);
         }
-        const ctxsMap = (globalThis as any).__gxtComponentContexts;
-        if (!ctxsMap.has(controller)) {
-          ctxsMap.set(controller, new Set());
-        }
-        ctxsMap.get(controller).add(renderContext);
       }
 
       // Install GXT cells on the render context so property reads inside formulas

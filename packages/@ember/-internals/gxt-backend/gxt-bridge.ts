@@ -7882,6 +7882,114 @@ export interface GxtCompilePipelineCapabilities {
    */
   getRootContext?(): any;
   setRootContext?(value: any): void;
+
+  /**
+   * Slice-120 (Cluster B — milestone slice): get-only accessor with
+   * internal lazy-init for the GXT component-context registry — a
+   * `WeakMap` keyed by component / controller instances (or their
+   * prototypes for the manager.ts proto-keyed entries) whose values are
+   * a `Set` of every render-context that wraps the keyed object. The
+   * map underpins cross-cell dirtying: when a value is `set()` on a
+   * component instance, `notifyIfWatchers` / `flushPendingIfWatchers`
+   * walk every render-context derived from that component (which holds
+   * its own GXT cells installed during the initial render — see
+   * compile.ts L4900-4960) and dirty the matching cell so `gxtEffect`
+   * re-runs and the DOM updates.
+   *
+   * Consumers (cross-file lazy-init writers/readers):
+   *
+   *   1. `glimmer/lib/templates/root.ts:465-468` — inside the
+   *      `RootTemplate` render path, after the renderContext is
+   *      constructed for the resolved component. Pre-slice-120 the body
+   *      lazy-init-checked the globalThis slot, allocated a fresh
+   *      WeakMap if absent, then `ctxsMap.set(component, new Set())`
+   *      followed by `ctxsMap.get(component).add(renderContext)` (with
+   *      a `has(component)` short-circuit before the Set allocation).
+   *      Post-slice-120 the lazy-init is internal to this bridge — the
+   *      site fetches the map via the optional-chain and runs the
+   *      `has` / `set` / `get().add` dance on the returned WeakMap.
+   *
+   *   2. `glimmer/lib/templates/root.ts:776-779` — inside the
+   *      controller-bound outlet rendering path. Same lazy-init shape
+   *      as #1 but the WeakMap is keyed by the controller instance
+   *      (not the component). The two registrations share the same
+   *      WeakMap so subsequent `notifyIfWatchers` walks can find render
+   *      contexts derived from either the component or the controller.
+   *
+   *   3. `@ember/routing/route.ts:922` — inside `refresh()` (QP fix for
+   *      Issue #13263). Reads the WeakMap to find render contexts that
+   *      wrap the route's controller, then mirrors their own QP values
+   *      back to the controller so the QP observer chain fires on
+   *      subsequent refreshes. Read-only consumer (no write).
+   *
+   * Intra-`compile.ts` consumers (5 sites, all use the module-local
+   * `_getOrCreateGxtComponentContexts` helper directly — slice-30/115
+   * zero-overhead precedent):
+   *  - compile.ts:5005 — inside the value-`set()` watcher walk that
+   *    dirties cells on every render-context derived from the just-
+   *    mutated component (the candidate-expansion read).
+   *  - compile.ts:5428 — inside `_orderIfWatchers` candidate expansion.
+   *  - compile.ts:5495 — inside `notifyIfWatchers` candidate expansion.
+   *  - compile.ts:7347 — inside `flushPendingIfWatchers` Phase D fan-
+   *    out (legacy watcher reach).
+   *  - compile.ts:16199-16202 — inside `templateFactory.render`'s
+   *    render-context registration block. Pre-slice-120 the lazy-init
+   *    check + Set allocation lived inline against the globalThis slot;
+   *    post-slice-120 the helper returns the always-stable map and the
+   *    intra-file site runs the `has`/`set`/`get().add` dance on it.
+   *
+   * The test-teardown reset at `compile.ts:7818` (inside
+   * `_gxtClearOnSetup`) graduates from `(globalThis as any).
+   * __gxtComponentContexts = new WeakMap();` to the module-local
+   * `_resetGxtComponentContexts()` helper — re-allocates a fresh
+   * WeakMap and stores it in the canonical binding. Cross-file readers
+   * re-fetch through this bridge on every access (no long-lived
+   * caching), so the new WeakMap propagates immediately on the next
+   * call.
+   *
+   * Pre-slice-120 reader/writer pattern (~9 sites across 3 files):
+   *  - compile.ts × 6 (L5005 read, L5428 read, L5495 read, L7347 read,
+   *    L7818 reset-write, L16199-16202 lazy-init write + read)
+   *  - root.ts × 2 (L465-468 lazy-init write + read, L776-779 lazy-init
+   *    write + read)
+   *  - route.ts × 1 (L922 read-only)
+   *
+   * Bridge-not-yet-installed semantics: the cross-file readers use
+   * `getGxtRenderer()?.compilePipeline.getComponentContextsMap?.()`
+   * which returns `undefined` if the renderer / bridge has not been
+   * installed yet. The reader bodies' existing falsy-guard short-
+   * circuits — matches pre-slice-120 semantics where the globalThis
+   * slot was undefined → the lazy-init wrote one and proceeded.
+   * compile.ts's `installCompilePipelinePart` runs at module-init time
+   * (EOF), before any of the cross-file callers fire (all are inside
+   * render-time method bodies, not module init); by the time any
+   * cross-file caller hits the bridge, the install has completed.
+   *
+   * Why a SINGLE get-only with internal lazy-init rather than paired
+   * get+set (slice-119 precedent): every cross-file writer in slice-119
+   * had distinct construction details (DOM-API seeding vs deferred
+   * attach) that made a centralised create-helper impossible. In
+   * contrast, the slice-120 lazy-init is a TRIVIAL `new WeakMap()` —
+   * no DOM seeding, no per-site customisation — so the slice-100
+   * stable-reference + internal-lazy-init pattern (`getClassHelperInstanceCache`,
+   * `getTagHelperInstanceCache`) applies cleanly. The WeakMap identity
+   * is shared across all sites by construction (single bridge return
+   * value), removing any ambiguity about which map a given writer
+   * targets.
+   *
+   * Fast-check: 1 closure read (returning the captured
+   * `_gxtComponentContexts` reference after the lazy-init short-
+   * circuit); zero allocations on every call after the first. Identical
+   * hot-path cost to the pre-slice-120 globalThis property read.
+   *
+   * After slice-120 the `__gxtComponentContexts` globalThis slot is
+   * DROPPED. The canonical state is `_gxtComponentContexts` in
+   * compile.ts. Net globalThis surface delta: -1 slot. +1 bridge method
+   * on `compilePipeline`.
+   *
+   * Previously: `(globalThis as any).__gxtComponentContexts`.
+   */
+  getComponentContextsMap?(): WeakMap<object, Set<object>>;
 }
 
 /**

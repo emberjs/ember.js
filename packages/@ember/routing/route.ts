@@ -8,6 +8,10 @@ import {
 import { meta as metaFor } from '@ember/-internals/meta';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
+// Slice-120 (Cluster B): cross-file reader for `compilePipeline.getComponentContextsMap?.()`.
+// Sibling `@ember/routing/router.ts` already imports `getGxtRenderer` (slice-65
+// precedent); route.ts gains the import here.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { default as BucketCache } from './lib/cache';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
@@ -919,7 +923,16 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     if (__GXT_MODE__) {
       try {
         let controller = this.controller;
-        let ctxsMap = (globalThis as any).__gxtComponentContexts;
+        // Slice-120 (Cluster B): cross-file reader graduates to
+        // `compilePipeline.getComponentContextsMap?.()` (single get-only with
+        // internal lazy-init — slice-100 stable-reference precedent). The
+        // bridge returns the same WeakMap that `root.ts`'s lazy-init writers
+        // populated at outlet render time. The optional-chain handles the
+        // bridge-not-yet-installed edge (impossible in practice — see slice
+        // 120 docs in `gxt-bridge.ts`); the `ctxsMap?.has(controller)` short-
+        // circuit handles the no-render-yet-happened edge (matches pre-slice-
+        // 120 semantics where the globalThis slot was undefined).
+        let ctxsMap = getGxtRenderer()?.compilePipeline.getComponentContextsMap?.();
         if (controller && ctxsMap && ctxsMap.has(controller)) {
           // SAFETY: Since `_qp` is protected we can't infer the type
           let queryParams = get(this, '_qp') as Route<Model>['_qp'];

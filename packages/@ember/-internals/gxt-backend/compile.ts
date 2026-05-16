@@ -1436,6 +1436,44 @@ function _getOrCreateGxtRoot(_parentElement: Element): any {
   return root;
 }
 
+// Slice-120 (Cluster B — milestone slice): canonical state for the GXT
+// component-context registry. Was `(globalThis as any).__gxtComponentContexts`
+// pre-slice-120; graduated to a module-local binding owned by this file. The
+// map is a `WeakMap` keyed by component / controller instances (or their
+// prototypes for the manager.ts proto-keyed entries) whose values are a `Set`
+// of every render-context that wraps the keyed object. The map underpins
+// cross-cell dirtying: when a value is `set()` on a component instance, we
+// walk every render-context derived from that component (which holds its own
+// GXT cells installed during the initial render — see compile.ts L4900-4960)
+// and dirty the matching cell so `gxtEffect` re-runs and the DOM updates.
+//
+// Cross-file lazy-init writers/readers (glimmer/lib/templates/root.ts:465-468,
+// 776-779; @ember/routing/route.ts:922) and intra-file readers (compile.ts
+// L5005, L5428, L5495, L7347) all route through this single WeakMap
+// reference; the bridge surface `compilePipeline.getComponentContextsMap?.()`
+// (slice-100 stable-reference + internal-lazy-init precedent) returns the
+// always-stable map handle so every reader sees the same instance.
+//
+// Test-teardown reset: the `_gxtClearOnSetup` body at compile.ts:7818
+// (pre-slice-120 wrote `(globalThis as any).__gxtComponentContexts = new
+// WeakMap();`) graduates to a direct module-local reassignment via this
+// helper. The reset replaces the binding (re-allocates a fresh WeakMap);
+// cross-file readers re-fetch the map through the bridge on every access (no
+// long-lived caching), so the new WeakMap propagates immediately on the next
+// call. See slice 120 docs in `gxt-bridge.ts` for the narrative.
+let _gxtComponentContexts: WeakMap<object, Set<object>> | null = null;
+function _getOrCreateGxtComponentContexts(): WeakMap<object, Set<object>> {
+  let map = _gxtComponentContexts;
+  if (!map) {
+    map = new WeakMap<object, Set<object>>();
+    _gxtComponentContexts = map;
+  }
+  return map;
+}
+function _resetGxtComponentContexts(): void {
+  _gxtComponentContexts = new WeakMap<object, Set<object>>();
+}
+
 // NOTE: a `(globalThis as any).__gxtSymbols = { ... }` writer previously lived
 // here, claiming to expose GXT symbols for renderer.ts / root.ts. Those
 // modules in fact read `globalThis.__lifeartGxt` (assigned in manager.ts),
@@ -5002,7 +5040,15 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
   // GXT's $_if formula tracks cells on Object.create(component) wrappers.
   // The contexts map is keyed by prototype, so we check both obj and its prototype.
   try {
-    const ctxsMap = (globalThis as any).__gxtComponentContexts;
+    // Slice-120 (Cluster B): intra-file reader routes through the
+    // module-local lazy-init helper directly (slice-30/115 zero-overhead
+    // precedent). The map is always non-null after first call; pre-slice-120
+    // this read `(globalThis as any).__gxtComponentContexts` which could be
+    // undefined before first write, so the outer `if (ctxsMap)` guard was
+    // required. Post-slice-120 the map is unconditionally a WeakMap (lazy-
+    // init guaranteed), so the guard becomes a tautology — but we keep the
+    // truthy-check for parity (the structure is unchanged).
+    const ctxsMap = _getOrCreateGxtComponentContexts();
     if (ctxsMap) {
       // Check both the object itself and its prototype as keys
       const candidates = [obj];
@@ -5425,12 +5471,14 @@ function _orderIfWatcherFlush(
     } catch {
       /* ignore */
     }
-    const ctxsMap = (globalThis as any).__gxtComponentContexts;
+    // Slice-120 (Cluster B): intra-file reader, see canonical-state comment
+    // near L1450.
+    const ctxsMap = _getOrCreateGxtComponentContexts();
     if (ctxsMap) {
       const ctxs = ctxsMap.get(obj);
       if (ctxs) {
         for (const ctx of ctxs) {
-          const raw = ctx?.__gxtRawTarget || ctx;
+          const raw = (ctx as any)?.__gxtRawTarget || ctx;
           if (!candidates.includes(raw)) candidates.push(raw);
         }
       }
@@ -5492,12 +5540,14 @@ function notifyIfWatchers(obj: object, key: string) {
   // broadcast the notify to sibling instances and fire their watchers,
   // collapsing their {{#if}} branches on an unrelated toggle (cell-
   // aliasing bug).
-  const ctxsMap = (globalThis as any).__gxtComponentContexts;
+  // Slice-120 (Cluster B): intra-file reader, see canonical-state comment
+  // near L1450.
+  const ctxsMap = _getOrCreateGxtComponentContexts();
   if (ctxsMap) {
     const ctxs = ctxsMap.get(obj);
     if (ctxs) {
       for (const ctx of ctxs) {
-        const raw = ctx?.__gxtRawTarget || ctx;
+        const raw = (ctx as any)?.__gxtRawTarget || ctx;
         if (!candidates.includes(raw)) candidates.push(raw);
       }
     }
@@ -7344,12 +7394,14 @@ function _resetTemplateOnlyState() {
             } catch {
               /* ignore */
             }
-            const ctxsMap = (globalThis as any).__gxtComponentContexts;
+            // Slice-120 (Cluster B): intra-file reader, see canonical-state
+            // comment near L1450.
+            const ctxsMap = _getOrCreateGxtComponentContexts();
             if (ctxsMap) {
               const ctxs = ctxsMap.get(obj);
               if (ctxs) {
                 for (const ctx of ctxs) {
-                  const raw = ctx?.__gxtRawTarget || ctx;
+                  const raw = (ctx as any)?.__gxtRawTarget || ctx;
                   if (!candidates.includes(raw)) candidates.push(raw);
                 }
               }
@@ -7814,10 +7866,13 @@ function _gxtCleanupActiveComponents(): void {
   // classic Component.extend properties changed via set()).
   (globalThis as any).__dcComponentGetter = null;
   getGxtRenderer()?.compilePipeline.clearDynamicComponentListeners?.();
-  // Clear component contexts to prevent stale render contexts accumulating
-  if ((globalThis as any).__gxtComponentContexts) {
-    (globalThis as any).__gxtComponentContexts = new WeakMap();
-  }
+  // Clear component contexts to prevent stale render contexts accumulating.
+  // Slice-120 (Cluster B): graduated to module-local `_gxtComponentContexts`
+  // (was `(globalThis as any).__gxtComponentContexts`). Reset via the
+  // helper that replaces the binding with a fresh WeakMap. Cross-file
+  // readers re-fetch through `compilePipeline.getComponentContextsMap?.()`
+  // on every access, so the new WeakMap propagates immediately.
+  _resetGxtComponentContexts();
   // Reset pending sync flags to prevent timer-based re-renders leaking into next test.
   // A setInterval(16ms) checks __gxtPendingSync and calls __gxtSyncDomNow() which can
   // trigger __gxtForceEmberRerender (innerHTML='' + rebuild) on the next test's DOM.
@@ -16196,14 +16251,16 @@ export function precompileTemplate(
           if (context && typeof context === 'object') {
             const proto = Object.getPrototypeOf(context);
             if (proto && proto !== Object.prototype) {
-              if (!(globalThis as any).__gxtComponentContexts) {
-                (globalThis as any).__gxtComponentContexts = new WeakMap();
-              }
-              const ctxsMap = (globalThis as any).__gxtComponentContexts;
+              // Slice-120 (Cluster B): intra-file writer/reader graduates to
+              // the module-local lazy-init helper (slice-30/115 zero-
+              // overhead precedent). Pre-slice-120 the lazy-init check +
+              // assignment lived inline against the `globalThis.__gxtComponentContexts`
+              // slot.
+              const ctxsMap = _getOrCreateGxtComponentContexts();
               if (!ctxsMap.has(proto)) {
                 ctxsMap.set(proto, new Set());
               }
-              ctxsMap.get(proto).add(context);
+              ctxsMap.get(proto)!.add(context);
             }
           }
 
@@ -17205,6 +17262,18 @@ installCompilePipelinePart({
   // / `setRootContext` doc in gxt-bridge.ts.
   getRootContext: _getGxtRootContext,
   setRootContext: _setGxtRootContext,
+  // Slice-120 (Cluster B — milestone slice): the canonical
+  // `_gxtComponentContexts` WeakMap binding declared near `_getOrCreateGxtRoot`
+  // above. Replaces the pre-slice-120 `globalThis.__gxtComponentContexts`
+  // ambient slot. Cross-file lazy-init writers/readers
+  // (glimmer/lib/templates/root.ts L465-468/L776-779, @ember/routing/route.ts
+  // L922) route through this single get-only accessor with internal lazy-init
+  // (slice-100 stable-reference precedent); intra-file consumers (compile.ts
+  // L5005/L5428/L5495/L7347/L16199 and the L7818 test-teardown reset via
+  // `_resetGxtComponentContexts`) call the module-local helpers directly
+  // (slice-30/115 zero-overhead precedent). Net -1 globalThis slot, +1
+  // bridge method. See `getComponentContextsMap` doc in gxt-bridge.ts.
+  getComponentContextsMap: _getOrCreateGxtComponentContexts,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`
