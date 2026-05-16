@@ -983,8 +983,13 @@ function createEmberMaybeHelper(original: Function) {
                           if (_cached.helperCell && _cached.helperCell.update) {
                             _cached.helperCell.update(newResult);
                           }
-                          // Trigger DOM sync
-                          const syncDomNow = g.__gxtSyncDomNow;
+                          // Trigger DOM sync.
+                          // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical
+                          // function migrated to module-local `_gxtSyncDomNow`
+                          // in `compile.ts`. Cross-file reader routes through
+                          // the bridge method. See `syncDomNow` doc in
+                          // gxt-bridge.ts.
+                          const syncDomNow = getGxtRenderer()?.compilePipeline.syncDomNow;
                           if (typeof syncDomNow === 'function') {
                             queueMicrotask(() => syncDomNow());
                           }

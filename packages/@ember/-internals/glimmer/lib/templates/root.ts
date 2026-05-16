@@ -1140,17 +1140,24 @@ export default function createRootTemplate(_owner: any) {
             }
             // Update outletState
             lastRenderContext.outletState = effectiveOutlet;
-            // Sync DOM now so GXT formulas re-evaluate and update text nodes
-            const syncDomNow = (globalThis as any).__gxtSyncDomNow;
+            // Sync DOM now so GXT formulas re-evaluate and update text nodes.
+            // Slice-37 (Cluster B): `__gxtPendingSync` canonical state
+            // migrated to module-local `_gxtPendingSyncFlag` in
+            // `compile.ts`. Cross-package writer routes through the
+            // bridge setter (load-order-safe optional chain — by the
+            // time this outlet-model-update path fires, compile.ts's
+            // `installCompilePipelinePart` has run and the setter is
+            // installed). See `setPendingSync` doc in gxt-bridge.ts.
+            //
+            // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function
+            // migrated to module-local `_gxtSyncDomNow` in `compile.ts`.
+            // Cross-package reader routes through the bridge method on the
+            // same compilePipeline namespace we already dereference for
+            // setPendingSync / setPendingSyncFromPropertyChange below. See
+            // `syncDomNow` doc in gxt-bridge.ts.
+            const _cpRoot = getGxtRenderer()?.compilePipeline;
+            const syncDomNow = _cpRoot?.syncDomNow;
             if (typeof syncDomNow === 'function') {
-              // Slice-37 (Cluster B): `__gxtPendingSync` canonical state
-              // migrated to module-local `_gxtPendingSyncFlag` in
-              // `compile.ts`. Cross-package writer routes through the
-              // bridge setter (load-order-safe optional chain — by the
-              // time this outlet-model-update path fires, compile.ts's
-              // `installCompilePipelinePart` has run and the setter is
-              // installed). See `setPendingSync` doc in gxt-bridge.ts.
-              const _cpRoot = getGxtRenderer()?.compilePipeline;
               _cpRoot?.setPendingSync?.(true);
               // Slice-36 (Cluster B): `__gxtPendingSyncFromPropertyChange`
               // canonical state migrated to module-local

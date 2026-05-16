@@ -5669,6 +5669,120 @@ export interface GxtCompilePipelineCapabilities {
   forceEmberRerender?(): void;
 
   /**
+   * Flush pending GXT DOM updates synchronously. Called by the runloop's
+   * `onEnd` hook (when `__gxtPendingSync` is true and `__gxtRunTaskActive`
+   * is false), by `runAppend` / `runTask` test helpers after their callback,
+   * by the 16ms `setInterval` fallback in compile.ts when no other caller
+   * has flushed in the budget window, by the manager.ts post-render-hook
+   * re-entry path (wrapped in `withSyncing(false, ...)`), by
+   * `validator.ts`'s `classicDirtyTagFor` after the global revision bump,
+   * by the ember-gxt-wrappers helper recompute path (microtask-queued),
+   * by the routing transition LinkTo path, by the OutletView re-render
+   * fallback in renderer.ts, by the classic-reactor fire in renderer.ts,
+   * and by root.ts's outlet-model-update path. The body lives in
+   * `compile.ts` and consumes the canonical `_gxtPendingSyncFlag` /
+   * `_gxtSyncingFlag` / `_gxtSyncIsPropertyDrivenFlag` / `_gxtSyncCycleId`
+   * module-local state graduated in slices 24/30/34/36/37.
+   *
+   * Slice-125 (Cluster B — close-out batch slice): graduates the canonical
+   * function from the pre-slice-125 globalThis writer
+   * `(globalThis as any).__gxtSyncDomNow = function () { ... };` at
+   * `compile.ts:7128` to a module-local `function _gxtSyncDomNow(): void`
+   * declaration exposed through the `compilePipeline.syncDomNow` typed-
+   * bridge method. Pattern mirrors slice-96's `forceEmberRerender` /
+   * slice-91's `newRenderPass` (same shape: void-returning bridge method
+   * invoked from sibling cross-package readers). All 11 reader sites in
+   * packages/ route through `getGxtRenderer()?.compilePipeline.syncDomNow?.()`
+   * — the optional-chain provides the same null-tolerant guard as the
+   * pre-slice-125 `typeof === 'function'` check for classic-Ember builds
+   * (where gxt-backend was never loaded).
+   *
+   * Reader topology after slice 125 (11 sites across 7 files / 6 packages):
+   *  - intra-file `compile.ts:7762` (the 16ms `setInterval` fallback) —
+   *    calls the module-local `_gxtSyncDomNow()` directly (no bridge
+   *    indirection — function is in scope).
+   *  - intra-package `gxt-backend/manager.ts:4848` (post-render-hook
+   *    re-entry, wrapped in `withSyncing(false, ...)`).
+   *  - intra-package `gxt-backend/validator.ts:1555` (post-dirty-bump
+   *    sync inside `classicDirtyTagFor`).
+   *  - intra-package `gxt-backend/ember-gxt-wrappers.ts:987` (helper
+   *    recompute path, microtask-queued).
+   *  - cross-package `internal-test-helpers/lib/run.ts:76` (`runAppend`
+   *    post-callback flush).
+   *  - cross-package `internal-test-helpers/lib/run.ts:177` (`runTask`
+   *    post-callback flush).
+   *  - cross-package `@ember/runloop/index.ts:90` (runloop `onEnd` hook,
+   *    gated on `getPendingSync() && !getRunTaskActive()`).
+   *  - cross-package `@ember/-internals/glimmer/renderer.ts:1401`
+   *    (OutletView re-render fallback when no other GXT instance is live).
+   *  - cross-package `@ember/-internals/glimmer/renderer.ts:2627`
+   *    (classic-reactor `fireReactor` post-`_doRender` flush).
+   *  - cross-package `@ember/-internals/glimmer/templates/root.ts:1144`
+   *    (outlet-model-update path after `ctxCell.value = newModel`).
+   *  - cross-package `@ember/routing/router.ts:118` (transition LinkTo
+   *    post-`dirtyTagFor` flush).
+   *
+   * Writer topology after slice 125:
+   *  - intra-file `compile.ts:7128` (the canonical body — graduated to a
+   *    module-local `function _gxtSyncDomNow(): void` declaration; the
+   *    `(globalThis as any).__gxtSyncDomNow = _gxtSyncDomNow` slot is
+   *    RETAINED for dual exposure so the repo-root `index.html` /
+   *    `packages/demo/tests.html` harness probes and the dev scripts
+   *    in `scripts/debug-artifacts/*.mjs` (which both read and wrap the
+   *    slot) keep working without further surgery — same dual-exposure
+   *    pattern as slice-15 `triggerReRender` which retained the global
+   *    slot for the save-restore suppression sites). The cross-package
+   *    `@glimmer-workspace/integration-tests` rehydration delegate retains
+   *    its globalThis probe at `gxt-delegate.ts:220-228` for the same
+   *    test-harness-probe reason (the delegate is itself a test harness
+   *    that may be exercised before any GXT renderer is installed).
+   *
+   * Bridge shape decision: typed-bridge `syncDomNow(): void` method on
+   * `GxtCompilePipelineCapabilities` (slice-91 `newRenderPass` / slice-92
+   * `postRenderHooks` / slice-96 `forceEmberRerender` precedent — void-
+   * returning bridge method invoked from sibling cross-package readers
+   * via `getGxtRenderer()?.compilePipeline.syncDomNow?.()`). State home:
+   * `compile.ts` (canonical owner of `_gxtSyncDomNow` body, plus all of
+   * the sync-pipeline module-local cycle state graduated in slices 24
+   * through 37 + 95); the function stays there and is registered via
+   * `installCompilePipelinePart` at file EOF (slice-87/88/96 precedent —
+   * function lives in the file that owns the consumed state).
+   *
+   * Bridge-not-yet-installed edge: the 10 cross-file readers use
+   * `getGxtRenderer()?.compilePipeline.syncDomNow?.()`. Both optional
+   * chains short-circuit to `undefined` when either the renderer or the
+   * method is not yet installed; the no-args `?.()` call simply does
+   * nothing in that case (matches the pre-slice-125 semantics where, if
+   * the slot was undefined, the `typeof === 'function'` guard skipped
+   * the call). In practice the bridge IS installed by the time any of
+   * the readers fire — they are gated on the GXT runtime being live,
+   * which is gated on `compile.ts` module init having completed (and
+   * `installCompilePipelinePart` at file EOF runs at module init).
+   * For classic-Ember builds where gxt-backend is never loaded,
+   * `_gxtSyncDomNow` is never needed and all readers short-circuit
+   * cleanly.
+   *
+   * Fast-check: the bridge call adds one `getGxtRenderer()` + one
+   * property dereference + one optional-call to the same body that
+   * lived inside the pre-slice-125 globalThis function-expression. The
+   * dispatch is trivially cheap compared to the sync-cycle body itself
+   * (which iterates wrappers, drains the after-insert queue, runs
+   * post-render hooks, and may invoke `forceEmberRerender`). Net
+   * surface delta: +1 new bridge method on `compilePipeline`; 0
+   * globalThis slots dropped in `packages/` (the slot is retained for
+   * dual exposure — repo-root harness and dev scripts).
+   *
+   * Cluster B close-out: this is the final batch slice per audit
+   * direction (slice 124 memory note recommended writer-side + bridge
+   * install with readers migrated in a final pass — slice 125 IS that
+   * final pass, combining writer graduation, bridge install, and all 11
+   * reader-site migrations into one slice for clean close-out).
+   *
+   * Previously: `(globalThis as any).__gxtSyncDomNow`.
+   */
+  syncDomNow?(): void;
+
+  /**
    * Read-only predicate for the `__gxtSuppressDirtyInRcSet` boolean flag.
    * Returns `true` iff the current synchronous stack is nested inside a
    * `withSuppressDirtyInRcSet(fn)` frame (one of the 4 manager.ts

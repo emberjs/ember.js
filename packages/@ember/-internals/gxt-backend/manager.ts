@@ -4844,8 +4844,13 @@ function _gxtPostRenderHooks(): void {
       // builds never publish it); if not yet installed we skip the syncNow
       // attempt entirely (without the GXT pipeline loaded, there is no sync
       // to flush — same null-safe pattern as `syncNow` itself).
-      const _withSyncing = getGxtRenderer()?.compilePipeline.withSyncing;
-      const syncNow = g.__gxtSyncDomNow;
+      // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function migrated
+      // to module-local `_gxtSyncDomNow` in `compile.ts`. Cross-package reader
+      // routes through the bridge method. See `syncDomNow` doc in
+      // gxt-bridge.ts.
+      const _cpSync = getGxtRenderer()?.compilePipeline;
+      const _withSyncing = _cpSync?.withSyncing;
+      const syncNow = _cpSync?.syncDomNow;
       if (typeof _withSyncing === 'function' && typeof syncNow === 'function') {
         _withSyncing(false, () => {
           try {

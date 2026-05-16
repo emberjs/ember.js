@@ -1551,11 +1551,12 @@ export function dirtyTag(tag: any) {
     } catch {
       /* noop */
     }
-    // Flush GXT DOM sync so the updated value is visible immediately
-    const syncNow = (globalThis as any).__gxtSyncDomNow;
-    if (typeof syncNow === 'function') {
-      syncNow();
-    }
+    // Flush GXT DOM sync so the updated value is visible immediately.
+    // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function migrated
+    // to module-local `_gxtSyncDomNow` in `compile.ts`. Cross-file reader
+    // routes through the bridge method. See `syncDomNow` doc in
+    // gxt-bridge.ts.
+    getGxtRenderer()?.compilePipeline.syncDomNow?.();
   }
 }
 

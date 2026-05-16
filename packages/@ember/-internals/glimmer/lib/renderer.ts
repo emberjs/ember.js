@@ -1398,7 +1398,12 @@ if (!__GXT_MODE__) {
       _cpBB?.getPendingSync?.() &&
       !_cpBB?.getRunTaskActive?.()
     ) {
-      const syncNow = (globalThis as any).__gxtSyncDomNow;
+      // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function migrated
+      // to module-local `_gxtSyncDomNow` in `compile.ts`. Cross-package
+      // reader routes through the bridge method on the same compilePipeline
+      // namespace we already dereferenced above. See `syncDomNow` doc in
+      // gxt-bridge.ts.
+      const syncNow = _cpBB?.syncDomNow;
       if (typeof syncNow === 'function') {
         try {
           syncNow();
@@ -2622,10 +2627,13 @@ function _renderComponentGxt(
         } catch {
           /* ignore individual reactor errors */
         }
-        // After re-render, flush GXT DOM so the new text content is visible
+        // After re-render, flush GXT DOM so the new text content is visible.
+        // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function
+        // migrated to module-local `_gxtSyncDomNow` in `compile.ts`. Cross-
+        // package reader routes through the bridge method. See `syncDomNow`
+        // doc in gxt-bridge.ts.
         try {
-          const syncNow = (globalThis as any).__gxtSyncDomNow;
-          if (typeof syncNow === 'function') syncNow();
+          getGxtRenderer()?.compilePipeline.syncDomNow?.();
         } catch {
           /* ignore */
         }

@@ -7125,7 +7125,29 @@ function _resetTemplateOnlyState() {
 
 // Flush pending GXT DOM updates synchronously.
 // Called after runTask() completes so test assertions see updated DOM.
-(globalThis as any).__gxtSyncDomNow = function () {
+//
+// Slice-125 (Cluster B — close-out batch slice): graduated from the pre-
+// slice-125 globalThis writer
+// `(globalThis as any).__gxtSyncDomNow = function () { ... };` to a plain
+// module-local `function _gxtSyncDomNow(): void` declaration exposed
+// through the `compilePipeline.syncDomNow` typed-bridge method (registered
+// in `installCompilePipelinePart` at file EOF). Pattern mirrors slice-96's
+// `forceEmberRerender` / slice-91's `newRenderPass` (same shape: void-
+// returning bridge method invoked from sibling cross-package readers). All
+// 11 reader sites in `packages/` route through
+// `getGxtRenderer()?.compilePipeline.syncDomNow?.()` (the optional-chain
+// providing the same null-tolerant guard as the pre-slice-125
+// `typeof === 'function'` check). The `(globalThis as any).__gxtSyncDomNow`
+// slot is RETAINED for dual exposure (see install block at EOF) — the
+// repo-root `index.html` / `packages/demo/tests.html` harness probes and
+// the dev scripts in `scripts/debug-artifacts/*.mjs` (which both READ and
+// WRAP the slot) keep working without further surgery, same dual-exposure
+// pattern as slice-15 `triggerReRender`. The cross-package
+// `@glimmer-workspace/integration-tests` rehydration delegate retains its
+// globalThis probe for the same harness-probe reason. See `syncDomNow`
+// doc in gxt-bridge.ts. Net +1 new bridge method on `compilePipeline`;
+// 0 globalThis slots dropped in `packages/` (dual-published).
+function _gxtSyncDomNow(): void {
   // Re-entrancy guard: prevent infinite sync loops when force-rerender
   // triggers cell updates that schedule additional syncs.
   // Slice-24 (Cluster B): reads module-local `_gxtSyncingFlag` (graduated
@@ -7697,7 +7719,18 @@ function _resetTemplateOnlyState() {
       throw deferredSyncErr;
     }
   }
-};
+}
+
+// Slice-125 (Cluster B — close-out batch slice): dual-publish the canonical
+// `_gxtSyncDomNow` module-local function declaration on `globalThis` so the
+// repo-root harness probes (`index.html` / `packages/demo/tests.html`) and
+// dev-debug scripts (`scripts/debug-artifacts/*.mjs`, which both READ and
+// WRAP the slot) keep working without further surgery. All in-package
+// readers route through `compilePipeline.syncDomNow?.()` via the bridge
+// (registered below in the final `installCompilePipelinePart` block at
+// file EOF). Same dual-exposure pattern as slice-15 `triggerReRender`.
+// See `syncDomNow` doc in gxt-bridge.ts.
+(globalThis as any).__gxtSyncDomNow = _gxtSyncDomNow;
 
 // Also schedule a fallback setTimeout flush for non-test scenarios
 // where __gxtSyncDomNow isn't called explicitly.
@@ -7759,7 +7792,10 @@ setInterval(() => {
     if (_intervalSyncBudget <= 0) return;
     _intervalSyncBudget--;
     try {
-      (globalThis as any).__gxtSyncDomNow();
+      // Slice-125 (Cluster B): intra-file reader calls the module-local
+      // `_gxtSyncDomNow` directly (no bridge indirection — function is in
+      // scope here). See `syncDomNow` doc in gxt-bridge.ts.
+      _gxtSyncDomNow();
     } catch {
       /* ignore - errors will be caught by QUnit */
     }
@@ -17292,6 +17328,23 @@ installCompilePipelinePart({
   // (slice-30/115 zero-overhead precedent). Net -1 globalThis slot, +1
   // bridge method. See `getComponentContextsMap` doc in gxt-bridge.ts.
   getComponentContextsMap: _getOrCreateGxtComponentContexts,
+  // Slice-125 (Cluster B — close-out batch slice): expose the canonical
+  // sync-pipeline flush function via the typed bridge. Replaces 10 cross-
+  // file readers that previously did
+  // `const sn = (globalThis as any).__gxtSyncDomNow; if (typeof sn ===
+  // 'function') sn();` (internal-test-helpers/run.ts × 2, @ember/runloop/
+  // index.ts × 1, gxt-backend/manager.ts × 1, gxt-backend/validator.ts × 1,
+  // gxt-backend/ember-gxt-wrappers.ts × 1, glimmer/renderer.ts × 2,
+  // glimmer/templates/root.ts × 1, @ember/routing/router.ts × 1). All now
+  // route through `getGxtRenderer()?.compilePipeline.syncDomNow?.()`. The
+  // 1 intra-file reader in this file's 16ms setInterval calls the module-
+  // local `_gxtSyncDomNow` directly. The `(globalThis as any).__gxtSyncDomNow`
+  // slot is RETAINED via dual-publish at the function-declaration site for
+  // the repo-root harness probes (`index.html` / `tests.html`) and the
+  // dev-debug scripts (`scripts/debug-artifacts/*.mjs`) which both READ and
+  // WRAP the slot — same dual-exposure pattern as slice-15 `triggerReRender`.
+  // See `syncDomNow` doc in gxt-bridge.ts.
+  syncDomNow: _gxtSyncDomNow,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

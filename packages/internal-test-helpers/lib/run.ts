@@ -70,13 +70,14 @@ export function runAppend(view: any): void {
     getGxtRenderer()?.compilePipeline.setPendingSyncFromPropertyChange?.(false);
   }
   // In GXT mode, flush pending DOM updates synchronously after append
-  // so test assertions see the rendered DOM immediately
+  // so test assertions see the rendered DOM immediately.
+  // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function migrated to
+  // module-local `_gxtSyncDomNow` in `compile.ts`. Cross-package reader
+  // routes through the bridge method. See `syncDomNow` doc in
+  // gxt-bridge.ts.
   const resetMC2 = (globalThis as any).__resetManagedComponentCounters;
   if (typeof resetMC2 === 'function') resetMC2();
-  const syncNow = (globalThis as any).__gxtSyncDomNow;
-  if (typeof syncNow === 'function') {
-    syncNow();
-  }
+  getGxtRenderer()?.compilePipeline.syncDomNow?.();
   // After sync, clear any pending sync flags that were set during the sync
   // itself (e.g., from syncAll triggering property changes). This prevents
   // the setInterval(16ms) fallback from firing another sync that would
@@ -170,14 +171,15 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
     getGxtRenderer()?.compilePipeline.setRunTaskActive?.(false);
   }
   // In GXT mode, flush pending DOM updates synchronously after the task
-  // so test assertions see the updated DOM immediately
-  // Advance managed-component generation so slot counters reset
+  // so test assertions see the updated DOM immediately.
+  // Advance managed-component generation so slot counters reset.
+  // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function migrated to
+  // module-local `_gxtSyncDomNow` in `compile.ts`. Cross-package reader
+  // routes through the bridge method. See `syncDomNow` doc in
+  // gxt-bridge.ts.
   const resetMC = (globalThis as any).__resetManagedComponentCounters;
   if (typeof resetMC === 'function') resetMC();
-  const syncNow = (globalThis as any).__gxtSyncDomNow;
-  if (typeof syncNow === 'function') {
-    syncNow();
-  }
+  getGxtRenderer()?.compilePipeline.syncDomNow?.();
   // After the sync, clear any pending flags to prevent the setInterval(16ms)
   // fallback from firing another sync that could produce incorrect DOM.
   // The explicit sync above already handled all pending updates.

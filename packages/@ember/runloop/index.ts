@@ -87,7 +87,13 @@ function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
       // gate). See `getRunTaskActive` doc in gxt-bridge.ts.
       const _cpRL = getGxtRenderer()?.compilePipeline;
       if (_cpRL?.getPendingSync?.() && !_cpRL?.getRunTaskActive?.()) {
-        const syncNow = (globalThis as any).__gxtSyncDomNow;
+        // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function
+        // migrated to module-local `_gxtSyncDomNow` in `compile.ts`.
+        // Cross-package reader routes through the bridge method on the
+        // same compilePipeline namespace we already dereferenced for
+        // the getPendingSync / getRunTaskActive predicates above. See
+        // `syncDomNow` doc in gxt-bridge.ts.
+        const syncNow = _cpRL?.syncDomNow;
         if (typeof syncNow === 'function') {
           try {
             syncNow();
