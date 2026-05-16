@@ -403,9 +403,25 @@ function _gxtRecomputeDependents(
 }
 installCompilePipelinePart({ recomputeDependents: _gxtRecomputeDependents });
 
-// Expose notifyPropertyChange on globalThis so @tracked setters can call it
-// without circular imports. Always set (not gated on __GXT_MODE__) because
-// the GXT flag is set in compile.ts which loads after core modules.
-(globalThis as any).__emberNotifyPropertyChange = notifyPropertyChange;
+// Slice-123 (Cluster B): graduated from the pre-slice-123 globalThis writer
+// `(globalThis as any).__emberNotifyPropertyChange = notifyPropertyChange;`
+// to a typed `compilePipeline.notifyPropertyChange(obj, keyName, _meta, value)`
+// bridge method. Pre-slice-123 topology was 1 writer here + 2 readers
+// (intra-metal `tracked.ts:287` raw-globalThis guard; cross-package
+// `gxt-backend/manager.ts:4461` raw-globalThis guard). Pattern mirrors
+// slice-106 `__gxtRecomputeDependents` — a cross-package function-pointer
+// pair where canonical state lives in the writer's own file. The
+// intra-metal reader graduates to a direct sibling import of the locally-
+// declared `notifyPropertyChange` (drops the globalThis hop entirely —
+// matches the slice-122 intra-package zero-bridge precedent: `tracked.ts`
+// already imports peers like `dirtyTagFor`, `SELF_TAG` from `./tags` and
+// `CHAIN_PASS_THROUGH` from `./chain-tags`). Only the cross-package
+// `gxt-backend/manager.ts` reader routes through the bridge — that file
+// cannot directly import from `@ember/-internals/metal/lib/property_events`
+// (the dependency direction is metal→gxt-backend via `gxt-bridge`, and a
+// reverse direct edge would loop). See `notifyPropertyChange` doc in
+// gxt-bridge.ts. Net -1 globalThis slot, +1 new bridge method on
+// `compilePipeline`.
+installCompilePipelinePart({ notifyPropertyChange });
 
 export { notifyPropertyChange, beginPropertyChanges, endPropertyChanges, changeProperties };

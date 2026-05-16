@@ -20,6 +20,18 @@ import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
+// Slice-123 (Cluster B): the intra-metal `notifyPropertyChange` reader (the
+// `__GXT_MODE__`-gated `_notifyPropChange(this, key)` call inside the
+// @tracked setter, post-`dirtyTagFor`) graduated from the pre-slice-123
+// `(globalThis as any).__emberNotifyPropertyChange` raw-globalThis hop to
+// a direct sibling import. This file already imports from peers
+// `./chain-tags`, `./decorator`, and `./tags`, so adding `./property_events`
+// is a straightforward sibling edge with no new module boundary crossed
+// (matches the slice-122 intra-package zero-bridge precedent). Only the
+// cross-package `gxt-backend/manager.ts` reader still routes through
+// `compilePipeline.notifyPropertyChange`. See `notifyPropertyChange` doc
+// in gxt-bridge.ts.
+import { notifyPropertyChange } from './property_events';
 import { SELF_TAG } from './tags';
 
 const {
@@ -283,11 +295,18 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     }
     // In GXT mode, notify the Ember property system so that sync observers
     // and tag dirtying work correctly for QP tracking.
+    //
+    // Slice-123 (Cluster B): retired the pre-slice-123 raw-globalThis hop
+    // `const _notifyPropChange = (globalThis as any).__emberNotifyPropertyChange;`
+    // + `typeof === 'function'` guard in favour of a direct sibling import
+    // of `notifyPropertyChange` from `./property_events`. The
+    // `notifyPropertyChange` symbol is always defined here (the import
+    // graph guarantees property_events.ts evaluates before tracked.ts in
+    // both classic and GXT modes — observer.ts → property_events.ts →
+    // tracked.ts via the property_set.ts edge). See the slice-123 import
+    // docblock at the top of this file.
     if (__GXT_MODE__) {
-      const _notifyPropChange = (globalThis as any).__emberNotifyPropertyChange;
-      if (typeof _notifyPropChange === 'function') {
-        _notifyPropChange(this, key);
-      }
+      notifyPropertyChange(this, key);
     }
     // Notify GXT for cross-object reactivity — when a tracked property changes
     // on a non-component object (e.g., a Counter or Person class), dirty all

@@ -4457,9 +4457,22 @@ function _gxtSyncAllWrappersBody(): void {
                 entry.instance &&
                 typeof entry.instance.trigger === 'function'
               ) {
+                // Slice-123 (Cluster B): retired the pre-slice-123 raw-globalThis
+                // hop `(globalThis as any).__emberNotifyPropertyChange` +
+                // `typeof === 'function'` guard in favour of the typed
+                // `compilePipeline.notifyPropertyChange?.(obj, keyName)` bridge.
+                // The optional chain mirrors the pre-slice-123 guard semantics:
+                // if the bridge method has not been installed (only reachable
+                // before property_events.ts's module-init
+                // `installCompilePipelinePart` call has fired — unreachable from
+                // any classic-component arg-sync entry point), the call is a
+                // no-op, matching the pre-slice-123 `typeof === 'function'`
+                // short-circuit. State home: `metal/lib/property_events.ts`
+                // (canonical owner of `notifyPropertyChange`); install runs at
+                // module init via `installCompilePipelinePart`. See
+                // `notifyPropertyChange` doc in gxt-bridge.ts.
                 try {
-                  const npc = (globalThis as any).__emberNotifyPropertyChange;
-                  if (typeof npc === 'function') npc(entry.instance, key);
+                  getGxtRenderer()?.compilePipeline.notifyPropertyChange?.(entry.instance, key);
                 } catch {
                   /* ignore */
                 }

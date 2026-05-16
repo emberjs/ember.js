@@ -6249,6 +6249,109 @@ export interface GxtCompilePipelineCapabilities {
   ): Array<{ key: string; value: unknown }>;
 
   /**
+   * Notify Ember's property-change system that `obj[keyName]` has changed.
+   * Invokes the metal `notifyPropertyChange(obj, keyName, _meta?, value?)`
+   * canonical writer — same body that runs `markObjectAsDirty`, fires
+   * `propertyDidChange` callbacks, propagates to sync observers, and (in
+   * GXT mode) drives the GXT cell-update fan-out. Returns void.
+   *
+   * Slice-123 (Cluster B): replaces the pre-slice-123 globalThis writer
+   * `(globalThis as any).__emberNotifyPropertyChange = notifyPropertyChange;`
+   * at `metal/lib/property_events.ts:409` and TWO pre-slice-123 readers:
+   *
+   *   1. Cross-package reader (graduated to this bridge): at
+   *      `gxt-backend/manager.ts:4461` inside the classic-component
+   *      `$_dc` dynamic-component arg-sync fan-out, the pre-slice-123
+   *      raw-globalThis guard
+   *        `const npc = (globalThis as any).__emberNotifyPropertyChange;
+   *         if (typeof npc === 'function') npc(entry.instance, key);`
+   *      is replaced by
+   *        `getGxtRenderer()?.compilePipeline.notifyPropertyChange?.(
+   *           entry.instance, key);`
+   *      The optional chain provides the same null-tolerant guard as the
+   *      pre-slice-123 `typeof === 'function'` check.
+   *   2. Intra-package reader (graduated to a DIRECT sibling import,
+   *      bypassing the bridge entirely): the `__GXT_MODE__`-gated
+   *      `_notifyPropChange(this, key)` call inside the `@tracked` setter
+   *      at `metal/lib/tracked.ts:287` now imports `notifyPropertyChange`
+   *      directly from `./property_events` — matches the slice-122 intra-
+   *      package zero-bridge precedent and the existing sibling-import
+   *      shape (`array_events.ts`, `property_set.ts`, `set_properties.ts`
+   *      already import from `./property_events`).
+   *
+   * Bridge shape decision: typed-bridge `notifyPropertyChange(obj, keyName,
+   * _meta?, value?): void` method on `GxtCompilePipelineCapabilities`
+   * (slice-106 `recomputeDependents` structural twin — same shape: cross-
+   * package function-pointer pair, writer in metal's `property_events.ts`
+   * canonical-state owner, reader in gxt-backend, install via
+   * `installCompilePipelinePart` from the writer's file — slice-9 /
+   * slice-95 / slice-96 / slice-106 reverse-flow install precedent).
+   * Cross-package shape: writer in `@ember/-internals/metal`
+   * (property_events.ts) + 1 reader in `@ember/-internals/gxt-backend`
+   * (manager.ts). Direction: property_events.ts contributes the canonical
+   * `notifyPropertyChange` function (already imported at the top of the
+   * file) to the bridge via `installCompilePipelinePart({
+   * notifyPropertyChange })`, using its existing `getGxtRenderer` /
+   * `installCompilePipelinePart` import edge from
+   * `@ember/-internals/gxt-backend/gxt-bridge` (no new module edge).
+   *
+   * Namespace decision: `compilePipeline`. The function is the canonical
+   * GXT-mode property-change writer; sits alongside slice-106
+   * `recomputeDependents` (the dependent-CP fan-out that it triggers) and
+   * the existing slice-22 `withInTriggerReRender` re-entrance helper that
+   * `notifyPropertyChange` itself routes through. All three live on
+   * `compilePipeline`. The state it manages (the
+   * `__gxtInTriggerReRender` flag, the `_gxtCPInvalidationSet` WeakMap,
+   * the `deferred` batch counter, the `notifyDepth` recursion guard) lives
+   * in `metal/lib/property_events.ts`; the install runs at module init.
+   *
+   * State-home: `metal/lib/property_events.ts` (canonical owner of
+   * `notifyPropertyChange` — the function declaration, the
+   * `peekMeta`/`Meta` imports, the `markObjectAsDirty` writer, the
+   * `flushSyncObservers` / `resumeObserverDeactivation` /
+   * `suspendedObserverDeactivation` observer-machinery edges, the GXT
+   * `withInTriggerReRender` re-entrance wrap, AND the
+   * `_gxtCPMarkInvalidating`/`_gxtCPClearInvalidating` cascade-marker
+   * lifecycle all live there). property_events.ts contributes the
+   * function to the bridge via `installCompilePipelinePart({
+   * notifyPropertyChange })` immediately after the existing slice-106
+   * `installCompilePipelinePart({ recomputeDependents: _gxtRecomputeDependents })`
+   * call — same reverse-flow install used by slice-106.
+   *
+   * Bridge-not-yet-installed edge: the cross-package reader in manager.ts
+   * uses `getGxtRenderer()?.compilePipeline.notifyPropertyChange?.(
+   * entry.instance, key)`. The optional chain short-circuits to
+   * `undefined` when either the renderer or the method is not yet
+   * installed; the existing surrounding try/catch (preserved verbatim)
+   * still swallows any thrown error. In practice the bridge IS installed
+   * by the time the `$_dc` dynamic-component arg-sync fan-out fires:
+   * property_events.ts's module init runs the `installCompilePipelinePart`
+   * immediately after the slice-106 install call, and the dynamic-
+   * component arg-sync path is only reachable from runtime render paths
+   * once the GXT runtime is live (`_gxtHasStringDynamicComponentListeners()`
+   * predicate further gates the call to listener-present cases).
+   *
+   * Fast-check: the implementation is the same `notifyPropertyChange`
+   * function body that the pre-slice-123 raw-globalThis read invoked —
+   * no behavioral change to the property-change body, just the dispatch
+   * surface. The bridge call adds one `getGxtRenderer()` + one property
+   * dereference + one optional-call to the same body on the cross-package
+   * path; trivially cheap on a path already gated by listener-present
+   * + `entry.instance.trigger`-present predicates. The intra-package
+   * reader's direct-sibling-import path is ZERO dispatch overhead beyond
+   * the function call itself (matches the slice-122 zero-bridge
+   * graduation cost profile).
+   *
+   * Previously: `(globalThis as any).__emberNotifyPropertyChange`.
+   */
+  notifyPropertyChange?(
+    obj: object,
+    keyName: string,
+    _meta?: unknown,
+    value?: unknown
+  ): void;
+
+  /**
    * Reset GXT state between tests. Destroys all tracked component instances
    * (firing willDestroy hooks), clears block-params / slot-params / slots-
    * context stacks, drains the curried-render-infos array, clears the
