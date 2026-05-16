@@ -7497,64 +7497,25 @@ function _rerenderInstrumentationPayload(component: any) {
   return component.instrumentDetails({ initialRender: false });
 }
 
-// Install a setter interceptor on `globalThis.__gxtRootOutletRerender` that
-// wraps every assigned function with `render.outlet` instrumentation. The
-// outlet re-render function is registered by `templates/root.ts` AFTER this
-// module loads, so we intercept the assignment itself. Every route
-// transition that calls `setOutletState` invokes this function; classic
-// Ember's OutletComponentManager fires `render.outlet` for each outlet
-// re-render, and tests subscribe to `render` (which matches `render.outlet`)
-// to verify routing instrumentation.
-let _rootOutletRerenderInstrumentInstalled = false;
-(function installRootOutletRerenderInstrumentation() {
-  const g = globalThis as any;
-  if (_rootOutletRerenderInstrumentInstalled) return;
-  _rootOutletRerenderInstrumentInstalled = true;
-
-  let current: ((ref: any) => void) | null = g.__gxtRootOutletRerender ?? null;
-
-  const wrap = (fn: any): any => {
-    if (typeof fn !== 'function') return fn;
-    if ((fn as any).__gxtInstrumented) return fn;
-    const wrapped = function (this: any, outletRef: any) {
-      let finalizer: (() => void) | null = null;
-      try {
-        finalizer = _gxtInstrumentStart(
-          'render.outlet',
-          _outletRerenderInstrumentationPayload,
-          outletRef
-        );
-      } catch {
-        /* ignore */
-      }
-      try {
-        return fn.call(this, outletRef);
-      } finally {
-        if (finalizer) {
-          try {
-            finalizer();
-          } catch {
-            /* ignore */
-          }
-        }
-      }
-    };
-    (wrapped as any).__gxtInstrumented = true;
-    return wrapped;
-  };
-
-  try {
-    Object.defineProperty(g, '__gxtRootOutletRerender', {
-      configurable: true,
-      get: () => (current ? wrap(current) : undefined),
-      set: (v: any) => {
-        current = v;
-      },
-    });
-  } catch {
-    /* if property is already non-configurable, skip */
-  }
-})();
+// Register an instrumentation wrap on the root-outlet rerender dispatcher
+// that fires `render.outlet` instrumentation around every dispatcher
+// invocation. The outlet re-render function is registered by
+// `templates/root.ts` via `compilePipeline.setRootOutletRerender(fn)` after
+// this module loads; the wrap below is applied at set-time so every
+// registered dispatcher is instrumented. Every route transition that calls
+// `setOutletState` invokes this function; classic Ember's
+// OutletComponentManager fires `render.outlet` for each outlet re-render,
+// and tests subscribe to `render` (which matches `render.outlet`) to verify
+// routing instrumentation.
+//
+// Slice-113 (Cluster B): the `installRootOutletRerenderInstrumentation`
+// IIFE is RELOCATED to file EOF (after the `setGxtRenderer` call) so that
+// the bridge is installed by the time the IIFE invokes
+// `getGxtRenderer()?.compilePipeline.setRootOutletRerenderWrap?.(wrap)`.
+// The wrap function (`_outletRerenderInstrumentationPayload` +
+// `_gxtInstrumentStart` closure with `__gxtInstrumented` idempotency
+// check) is defined inside the EOF IIFE. See `setRootOutletRerenderWrap`
+// doc in gxt-bridge.ts and the EOF IIFE below for the relocated body.
 
 function _outletRerenderInstrumentationPayload(_outletRef: any) {
   return { object: 'outlet' };
@@ -13662,4 +13623,57 @@ setGxtRenderer({
   }
   // Deferred-retry path: compile.ts hasn't published its contribution yet.
   queueMicrotask(_gxtInstallTriggerReRenderHostHooks);
+})();
+
+// Slice-113 (Cluster B): register the root-outlet-rerender instrumentation
+// wrap on the typed bridge. Pre-slice-113 this was an `Object.defineProperty`
+// setter trap on `globalThis.__gxtRootOutletRerender` installed at module
+// load (formerly at L7509). The wrap closure fires `render.outlet`
+// instrumentation around every dispatcher invocation. Slice-113 moves the
+// wrap to a typed bridge registration channel (`setRootOutletRerenderWrap`)
+// on `compilePipeline`. The IIFE is positioned at file EOF (AFTER the
+// `setGxtRenderer` call above) so the bridge is installed by the time
+// `getGxtRenderer()?.compilePipeline.setRootOutletRerenderWrap?.(wrap)`
+// fires. Same deferred-retry shape as `_gxtInstallTriggerReRenderHostHooks`
+// above (slice-15) — if compile.ts's `installCompilePipelinePart` payload
+// hasn't yet been merged into the bridge, retry via `queueMicrotask` until
+// `setRootOutletRerenderWrap` becomes callable. See
+// `setRootOutletRerenderWrap` doc in gxt-bridge.ts.
+(function _gxtInstallRootOutletRerenderInstrumentation() {
+  const cp = getGxtRenderer()?.compilePipeline;
+  const wrap = (fn: any): any => {
+    if (typeof fn !== 'function') return fn;
+    if ((fn as any).__gxtInstrumented) return fn;
+    const wrapped = function (this: any, outletRef: any) {
+      let finalizer: (() => void) | null = null;
+      try {
+        finalizer = _gxtInstrumentStart(
+          'render.outlet',
+          _outletRerenderInstrumentationPayload,
+          outletRef
+        );
+      } catch {
+        /* ignore */
+      }
+      try {
+        return fn.call(this, outletRef);
+      } finally {
+        if (finalizer) {
+          try {
+            finalizer();
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    };
+    (wrapped as any).__gxtInstrumented = true;
+    return wrapped;
+  };
+  if (cp && typeof cp.setRootOutletRerenderWrap === 'function') {
+    cp.setRootOutletRerenderWrap(wrap);
+    return;
+  }
+  // Deferred-retry path: compile.ts hasn't published its contribution yet.
+  queueMicrotask(_gxtInstallRootOutletRerenderInstrumentation);
 })();

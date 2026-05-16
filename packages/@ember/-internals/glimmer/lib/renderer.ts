@@ -1128,7 +1128,14 @@ class ClassicRootState {
             } else if (gxtRoot && 'state' in gxtRoot && 'ref' in gxtRoot) {
               // OutletView re-render: call the root outlet re-render function
               // which clears innerHTML and re-renders the outlet state.
-              const outletRerender = (globalThis as any).__gxtRootOutletRerender;
+              // Slice-113 (Cluster B): routed through
+              // `compilePipeline.getRootOutletRerender?.() ?? null` — the
+              // `?? null` fallback matches the pre-slice-113
+              // `(globalThis as any).__gxtRootOutletRerender` `undefined`
+              // semantics which the `typeof === 'function'` guard treated as
+              // falsy. See `getRootOutletRerender` doc in gxt-bridge.ts.
+              const outletRerender =
+                getGxtRenderer()?.compilePipeline.getRootOutletRerender?.() ?? null;
               if (typeof outletRerender === 'function') {
                 // Slice-111 (Cluster B): the `__gxtTopOutletRef` globalThis
                 // slot is graduated to the typed bridge as a paired

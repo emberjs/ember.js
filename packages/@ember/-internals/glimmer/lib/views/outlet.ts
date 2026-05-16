@@ -11,6 +11,8 @@ import type { Reference } from '@glimmer/reference';
 import { createComputeRef, updateRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
+// (Cluster B slice 113) Bridge reader for the root-outlet rerender dispatcher.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';
 import type { OutletState } from '../utils/outlet';
@@ -154,7 +156,14 @@ export default class OutletView {
     // The root render function handles the top-level route (the one that
     // root.ts renders directly, skipping the -outlet template).
     {
-      const rootRenderFn = (globalThis as any).__gxtRootOutletRerender;
+      // Slice-113 (Cluster B): routed through
+      // `compilePipeline.getRootOutletRerender?.() ?? null` — the `?? null`
+      // fallback matches the pre-slice-113 `(globalThis as any)
+      // .__gxtRootOutletRerender` `undefined` semantics which the
+      // `typeof === 'function'` guard treated as falsy. See
+      // `getRootOutletRerender` doc in gxt-bridge.ts.
+      const rootRenderFn =
+        getGxtRenderer()?.compilePipeline.getRootOutletRerender?.() ?? null;
       if (typeof rootRenderFn === 'function') {
         // Snapshot active outlets BEFORE the root re-render. The root re-render
         // may create new <ember-outlet> elements (via innerHTML='' + renderOutletState).

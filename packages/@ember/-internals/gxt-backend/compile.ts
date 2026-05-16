@@ -4013,6 +4013,63 @@ function _gxtWithForceRerender<T>(fn: () => T): T {
   }
 }
 
+// Slice-113 (Cluster B): paired typed-bridge migration of the
+// `__gxtRootOutletRerender` cross-package dispatcher slot. Pre-slice-113
+// the writer at `glimmer/lib/templates/root.ts:1258` assigned a
+// `(outletRef) => void` dispatcher closure to the globalThis slot, and
+// a second writer (the `Object.defineProperty` setter trap in
+// `gxt-backend/manager.ts:7547`) intercepted every assignment to apply
+// `render.outlet` instrumentation around the dispatcher. Three readers
+// in `glimmer/lib/renderer.ts:1131`, `glimmer/lib/views/outlet.ts:157`,
+// and `glimmer/lib/templates/root.ts:591` consumed the slot.
+//
+// Slice-113 graduates ALL three sides to typed bridge methods:
+//   - root.ts writer → `compilePipeline.setRootOutletRerender?.(fn)`;
+//   - manager.ts wrap interceptor → `compilePipeline
+//     .setRootOutletRerenderWrap?.(wrap)` (called once at IIFE time);
+//   - three readers → `compilePipeline.getRootOutletRerender?.() ??
+//     null` with the `typeof === 'function'` guard preserved.
+//
+// State-home is here in compile.ts (compilePipeline convention).
+// `_gxtRootOutletRerenderRaw` holds the already-wrapped dispatcher;
+// `_gxtRootOutletRerenderWrap` holds the instrumentation wrap registered
+// by manager.ts (defaults to identity so a not-yet-registered wrap is
+// a no-op). The wrap is applied at SET-TIME (inside
+// `_gxtSetRootOutletRerender`) — simpler than the pre-slice-113
+// `Object.defineProperty` getter trap which applied it at READ-TIME.
+// Manager.ts's wrap closure already has its own `__gxtInstrumented`
+// idempotency check, so re-applying the wrap to an already-wrapped
+// function is a no-op (matches pre-slice-113 semantics where
+// `wrap(current)` returned the same fn).
+//
+// Net globalThis surface delta: -1 slot (`__gxtRootOutletRerender`).
+let _gxtRootOutletRerenderRaw: ((ref: any) => void) | null = null;
+let _gxtRootOutletRerenderWrap: (fn: any) => any = (fn) => fn;
+function _gxtSetRootOutletRerender(fn: ((ref: any) => void) | null): void {
+  if (fn === null) {
+    _gxtRootOutletRerenderRaw = null;
+    return;
+  }
+  _gxtRootOutletRerenderRaw = _gxtRootOutletRerenderWrap(fn);
+}
+function _gxtGetRootOutletRerender(): ((ref: any) => void) | null {
+  return _gxtRootOutletRerenderRaw;
+}
+function _gxtSetRootOutletRerenderWrap(wrap: (fn: any) => any): void {
+  _gxtRootOutletRerenderWrap = wrap;
+  // Re-wrap currently stored dispatcher so a late-registered wrap
+  // applies to an already-set dispatcher. In practice manager.ts's
+  // IIFE registers the wrap BEFORE root.ts ever registers a
+  // dispatcher (manager.ts loads as part of gxt-backend index init,
+  // root.ts only writes during first `factory.render`), so this
+  // branch is dead in practice — but it preserves the pre-slice-113
+  // `Object.defineProperty` getter semantics where wrap was applied
+  // lazily on every read.
+  if (_gxtRootOutletRerenderRaw !== null) {
+    _gxtRootOutletRerenderRaw = wrap(_gxtRootOutletRerenderRaw);
+  }
+}
+
 // Slice-98 (Cluster B): graduates the `__gxtDeferredSyncError` deferred-error
 // slot from the pre-slice-98 `(globalThis as any).__gxtDeferredSyncError`
 // read/write/clear trio to a module-local `_gxtDeferredSyncError` binding in
@@ -16791,6 +16848,26 @@ installCompilePipelinePart({
   // depth counter, no transition side-effects).
   withForceRerender: _gxtWithForceRerender,
   isForceRerender: _gxtIsForceRerender,
+  // Slice-113 (Cluster B): triple typed-bridge migration of the
+  // `__gxtRootOutletRerender` cross-package dispatcher slot. Pre-slice-113
+  // the writer at `glimmer/lib/templates/root.ts:1258` assigned a
+  // `(outletRef) => void` dispatcher closure to the globalThis slot, and
+  // a second writer in `gxt-backend/manager.ts:7547` (the
+  // `installRootOutletRerenderInstrumentation` IIFE) installed an
+  // `Object.defineProperty` setter trap that wrapped every incoming
+  // dispatcher with `render.outlet` instrumentation. Three readers in
+  // `glimmer/lib/renderer.ts:1131`, `glimmer/lib/views/outlet.ts:157`,
+  // and `glimmer/lib/templates/root.ts:591` consumed the slot. Slice-113
+  // graduates ALL three sides to typed bridge methods. The canonical
+  // state is the module-local `_gxtRootOutletRerenderRaw` (wrapped
+  // dispatcher) + `_gxtRootOutletRerenderWrap` (instrumentation wrap)
+  // bindings above; the globalThis slot is DROPPED. Net -1 globalThis
+  // surface, +3 paired bridge methods on `compilePipeline`. See
+  // `setRootOutletRerender` / `getRootOutletRerender` /
+  // `setRootOutletRerenderWrap` doc in gxt-bridge.ts.
+  setRootOutletRerender: _gxtSetRootOutletRerender,
+  getRootOutletRerender: _gxtGetRootOutletRerender,
+  setRootOutletRerenderWrap: _gxtSetRootOutletRerenderWrap,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

@@ -581,14 +581,19 @@ export default function createRootTemplate(_owner: any) {
 
     // CASE 2: OutletView rendering (routes)
     // When called from __gxtForceEmberRerender (force re-render path), skip the
-    // re-render entirely. OutletView content is managed by __gxtRootOutletRerender
-    // (called from setOutletState). Re-rendering here would APPEND a second copy
-    // of the application template to parentElement, creating duplicate components
-    // and corrupting the view registry (e.g., root-1 appearing twice, root-6 missing).
+    // re-render entirely. OutletView content is managed by the root-outlet
+    // rerender dispatcher (called from setOutletState). Re-rendering here would
+    // APPEND a second copy of the application template to parentElement,
+    // creating duplicate components and corrupting the view registry (e.g.,
+    // root-1 appearing twice, root-6 missing).
     // Slice-112 (Cluster B): routed through `compilePipeline.isForceRerender?.() ?? false`.
+    // Slice-113 (Cluster B): the dispatcher truthy-guard is routed through
+    // `compilePipeline.getRootOutletRerender?.() ?? null` — the `?? null`
+    // fallback matches the pre-slice-113 `(globalThis as any).__gxtRootOutletRerender`
+    // `undefined` semantics (both `undefined` and `null` are falsy in this guard).
     if (
       (getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false) &&
-      (globalThis as any).__gxtRootOutletRerender
+      (getGxtRenderer()?.compilePipeline.getRootOutletRerender?.() ?? null)
     ) {
       return { nodes: [], ctx: context };
     }
@@ -1248,19 +1253,28 @@ export default function createRootTemplate(_owner: any) {
       _gxtRootOutletRerenderMap.set(instance.outletRef, rerenderForThisRoot);
     }
 
-    // Install a global dispatch shim. It forwards the call to the closure
+    // Install a dispatch shim. It forwards the call to the closure
     // registered for the outletRef being re-rendered. If the ref has no
     // registered closure (e.g. setOutletState was called BEFORE the initial
     // render registered this root), do nothing — the initial render will
     // pick up the latest state. Do NOT fall back to another root's closure,
     // because that would cause the second visit's state changes to bleed
     // into the first visit's rootElement (the Ember Islands regression).
-    (globalThis as any).__gxtRootOutletRerender = (outletRef: any) => {
+    // Slice-113 (Cluster B): the dispatcher is registered via
+    // `compilePipeline.setRootOutletRerender(fn)` (typed bridge) rather
+    // than `(globalThis as any).__gxtRootOutletRerender = fn`. The
+    // instrumentation wrap registered by `gxt-backend/manager.ts`'s
+    // `setRootOutletRerenderWrap` is applied at set-time inside the
+    // bridge — net behavior identical to the pre-slice-113
+    // `Object.defineProperty` setter trap that wrapped on assignment.
+    // See `setRootOutletRerender` doc in gxt-bridge.ts.
+    const _gxtRootOutletDispatcher = (outletRef: any) => {
       if (outletRef && _gxtRootOutletRerenderMap.has(outletRef)) {
         _gxtRootOutletRerenderMap.get(outletRef)!(outletRef);
       }
       // No fallback: unregistered refs are ignored.
     };
+    getGxtRenderer()?.compilePipeline.setRootOutletRerender?.(_gxtRootOutletDispatcher);
 
     // Perform initial render
     renderOutletState(instance.outletRef);

@@ -6948,6 +6948,281 @@ export interface GxtCompilePipelineCapabilities {
    * Previously: `!!(globalThis as any).__gxtIsForceRerender`.
    */
   isForceRerender?(): boolean;
+
+  /**
+   * Register the root-outlet-rerender dispatch closure. Companion to
+   * `getRootOutletRerender` (read surface) and
+   * `setRootOutletRerenderWrap` (instrumentation wrapper registration).
+   *
+   * Slice-113 (Cluster B): paired typed-bridge migration of the
+   * `__gxtRootOutletRerender` cross-package dispatcher slot. Pre-
+   * slice-113 the single writer at
+   * `glimmer/lib/templates/root.ts:1258` (inside `createRootTemplate`'s
+   * `factory.render` closure, fired once per root outlet visit) wrote:
+   *
+   *   (globalThis as any).__gxtRootOutletRerender = (outletRef: any) => {
+   *     if (outletRef && _gxtRootOutletRerenderMap.has(outletRef)) {
+   *       _gxtRootOutletRerenderMap.get(outletRef)!(outletRef);
+   *     }
+   *     // No fallback: unregistered refs are ignored.
+   *   };
+   *
+   * The dispatcher closure looks up the per-outletRef rerender function
+   * in the `_gxtRootOutletRerenderMap` (module-local in
+   * `glimmer/lib/templates/root.ts`, graduated from globalThis in slice
+   * 65 — see slice 65 entry above). Multiple concurrent
+   * ApplicationInstances (Ember Islands setup) each register their own
+   * closure keyed by `instance.outletRef`, so `setOutletState` on either
+   * root re-renders into the correct DOM target without clobbering the
+   * other.
+   *
+   * A second writer in `gxt-backend/manager.ts:7547` (the
+   * `installRootOutletRerenderInstrumentation` module-load IIFE)
+   * installed an `Object.defineProperty` setter on globalThis that
+   * intercepted every assignment to `__gxtRootOutletRerender` and
+   * wrapped the incoming function with `render.outlet` instrumentation
+   * (`_gxtInstrumentStart('render.outlet', ...)`) before storing.
+   * Reads returned the wrapped form. The wrap closure is module-local
+   * to manager.ts (it closes over `_gxtInstrumentStart` and
+   * `_outletRerenderInstrumentationPayload`).
+   *
+   * Three cross-package + cross-file readers consult the slot to call
+   * the dispatcher:
+   *
+   *   - `glimmer/lib/renderer.ts:1131` (OutletView force-rerender
+   *     re-render path — `const outletRerender = (globalThis as any)
+   *     .__gxtRootOutletRerender; if (typeof outletRerender ===
+   *     'function') outletRerender(outletRef);`);
+   *   - `glimmer/lib/views/outlet.ts:157` (`setOutletState` direct
+   *     trigger path — same shape `const rootRenderFn = (globalThis as
+   *     any).__gxtRootOutletRerender; if (typeof rootRenderFn ===
+   *     'function') rootRenderFn(this.ref);`);
+   *   - `glimmer/lib/templates/root.ts:591` (OutletView short-circuit
+   *     truthy guard — `(globalThis as any).__gxtRootOutletRerender`
+   *     used purely for its presence inside the `isForceRerender()`
+   *     short-circuit branch; if a dispatcher is registered AND
+   *     force-rerender is active, the OutletView returns empty nodes
+   *     because the outlet content is managed separately via
+   *     setOutletState → dispatcher).
+   *
+   * route through `compilePipeline.getRootOutletRerender?.() ?? null`
+   * (read surface below). The pre-slice-113 `typeof === 'function'`
+   * check coerced `undefined` (slot never written) to false; the
+   * `?? null` bridge fallback preserves that semantics — readers' guard
+   * remains `if (typeof rootRenderFn === 'function')`.
+   *
+   * Pre-slice-113 topology (audited verbatim against current source):
+   *
+   *   Writers (2 sites — 1 cross-file dispatcher install + 1 cross-
+   *   package instrumentation interceptor IIFE):
+   *     - glimmer/lib/templates/root.ts:1258 — assigns the per-visit
+   *       dispatcher closure into the slot. Fires once per
+   *       `factory.render` invocation (once per Ember visit/boot).
+   *     - gxt-backend/manager.ts:7509-7557 — module-load IIFE installs
+   *       an `Object.defineProperty` get/set interceptor on globalThis
+   *       that wraps every incoming dispatcher with `render.outlet`
+   *       instrumentation. Reads `g.__gxtRootOutletRerender ?? null`
+   *       once at install time to capture any pre-existing value; then
+   *       traps all future writes.
+   *
+   *   Readers (3 sites — 2 dispatch call sites + 1 truthy guard):
+   *     - glimmer/lib/renderer.ts:1131 (OutletView force-rerender
+   *       branch);
+   *     - glimmer/lib/views/outlet.ts:157 (`setOutletState` re-render
+   *       trigger);
+   *     - glimmer/lib/templates/root.ts:591 (truthy guard for the
+   *       force-rerender + OutletView-registered short-circuit).
+   *
+   * GXT-runtime ownership audit: 0 matches under `node_modules/.pnpm/
+   * @lifeart+gxt` published artifacts, 0 in repo-root `index.html`, 0
+   * in `packages/demo/`, 0 in harness test runners (only debug-
+   * artifact scripts under `scripts/debug-artifacts/` monkey-patch the
+   * slot for ad-hoc tracing — those are not part of any baseline gate
+   * and may be updated post-migration if/when used). The slot is purely
+   * an Ember-internal outlet-rerender bridge — no external readers/
+   * writers to retain.
+   *
+   * Bridge shape decision: three paired methods
+   *   - `setRootOutletRerender(fn): void` (dispatcher writer; called
+   *     by root.ts at visit-setup time);
+   *   - `getRootOutletRerender(): ((ref: any) => void) | null` (reader;
+   *     returns the stored dispatcher fully wrapped with
+   *     instrumentation if a wrap has been registered);
+   *   - `setRootOutletRerenderWrap(wrap): void` (instrumentation-wrap
+   *     registration; called by manager.ts at module-load IIFE time).
+   *
+   * The wrap-registration channel preserves the pre-slice-113
+   * `Object.defineProperty`-on-globalThis interceptor semantics
+   * without globalThis. Manager.ts's IIFE switches from
+   * `Object.defineProperty(g, '__gxtRootOutletRerender', { get, set })`
+   * to `getGxtRenderer()?.compilePipeline.setRootOutletRerenderWrap
+   * ?.(wrap)`. The wrap is then applied inside
+   * `_gxtSetRootOutletRerender` immediately when root.ts registers the
+   * dispatcher, and inside `_gxtGetRootOutletRerender` as a no-op
+   * (raw is already wrapped). The wrap is also applied lazily on
+   * subsequent re-registration (if any).
+   *
+   * Why three methods, not two? The pre-slice-113 globalThis slot had
+   * implicit set-time wrapping via the `Object.defineProperty` setter.
+   * To preserve that semantics typed, the wrap must be registerable
+   * independently from the dispatcher itself — manager.ts owns the
+   * wrap (closes over module-local instrumentation helpers), root.ts
+   * owns the raw dispatcher closure. Three methods cleanly separates
+   * these concerns. Alternative single-method shapes (e.g.,
+   * `rerenderOutlet(ref): void` that internally consults a
+   * map+wrap) would either fragment state across both manager.ts and
+   * compile.ts or pull manager.ts's instrumentation helpers into
+   * compile.ts — both worse than the registration channel.
+   *
+   * Namespace decision: `compilePipeline`. The dispatcher is part of
+   * the GXT render pipeline (it triggers a per-outletRef re-render
+   * pass). Same namespace category as slice-110/111's outlet-render
+   * cluster (`withInOutletRender` / `setTopOutletRef`) — all three
+   * live on `compilePipeline` because they coordinate the outlet
+   * rendering machinery.
+   *
+   * State-home: `gxt-backend/compile.ts`. The canonical state is a
+   * pair of module-local bindings in compile.ts:
+   *   - `let _gxtRootOutletRerenderRaw: ((ref: any) => void) | null =
+   *     null;` (the wrapped dispatcher closure registered by root.ts;
+   *     wrap is applied at set-time);
+   *   - `let _gxtRootOutletRerenderWrap: (fn: any) => any = (fn) =>
+   *     fn;` (the instrumentation wrap registered by manager.ts;
+   *     defaults to identity so a not-yet-registered wrap is a no-op).
+   * State-home follows the slice 17/18/22/23/24/27/30/31/97/108/110/
+   * 111/112 precedent: although the dispatcher writer lives in
+   * `glimmer/lib/templates/root.ts` (cross-package contributor — same
+   * pattern as slices 96/108/110/111/112 where renderer.ts / root.ts
+   * contribute state into compilePipeline via the bridge writer), the
+   * state belongs in compile.ts because:
+   *   1) State-home convention is compile.ts for `compilePipeline`-
+   *      hosted state (slice 17 onwards);
+   *   2) The state belongs to the compile-pipeline-scoped state
+   *      cluster (alongside the slice-110/111 outlet-render cluster
+   *      `_gxtInOutletRenderFlag` / `_gxtTopOutletRef`), not to
+   *      manager.ts which only contributes the instrumentation wrap
+   *      via `setRootOutletRerenderWrap`, nor to root.ts which only
+   *      contributes the dispatcher closure via
+   *      `setRootOutletRerender`;
+   *   3) Installing it from `installCompilePipelinePart` at compile.ts
+   *      EOF avoids the cycle that would arise if manager.ts owned the
+   *      state and compile.ts had to import it.
+   *
+   * Bridge-not-yet-installed edge: all three call sites use the
+   * `getGxtRenderer()?.compilePipeline.X?.(...)` optional-chain
+   * pattern. If the bridge is not yet installed, writes are silently
+   * dropped (matches pre-slice-113 globalThis-write semantics where a
+   * write before the IIFE installed the interceptor would have been
+   * direct, unwrapped, and still readable — but since manager.ts's
+   * IIFE runs at gxt-backend index load time, AND root.ts's dispatcher
+   * assignment only fires on first `factory.render`, in practice the
+   * bridge is always installed by the time root.ts writes). Readers
+   * default to `null` (`?? null`) — preserving the pre-slice-113
+   * `(globalThis as any).__gxtRootOutletRerender` `undefined` semantics
+   * since both `undefined` and `null` fail the `typeof === 'function'`
+   * check. For classic-Ember builds (no GXT backend loaded), root.ts
+   * doesn't render with GXT (no `__gxtCompiled` template), so neither
+   * writer nor readers fire — bridge short-circuit is moot.
+   *
+   * Module-load ordering: manager.ts's IIFE calls
+   * `setRootOutletRerenderWrap(wrap)` at module-init time. Once
+   * compile.ts has registered its `installCompilePipelinePart` payload
+   * (also at module-init), the wrap is stored. After that, root.ts's
+   * `setRootOutletRerender(dispatcher)` call applies the wrap
+   * immediately. In `__GXT_MODE__`, compile.ts and manager.ts both
+   * load before any template render — verified by tracing the
+   * gxt-backend index module dependency graph (compile.ts is imported
+   * by manager.ts, manager.ts is imported by index.ts which is loaded
+   * via `__GXT_MODE__` gate before any template renders).
+   *
+   * Re-entrancy: writes are last-writer-wins. The dispatcher itself is
+   * a single closure shared across all readers (matches pre-slice-113
+   * semantics — both renderer.ts and outlet.ts read the same slot).
+   * Per-outletRef dispatch happens inside the closure via the
+   * module-local `_gxtRootOutletRerenderMap` in root.ts.
+   *
+   * Hot-path concern: NONE. The dispatcher writer fires once per
+   * visit/boot (a setup-time event). The wrap-registration writer
+   * fires once at manager.ts module init. The readers fire once per
+   * `setOutletState` / force-rerender — typically zero to a handful
+   * per QUnit test. Bridge dispatch overhead vs. globalThis read is
+   * negligible at this call frequency.
+   *
+   * Pattern is the cross-package dispatcher slot with cross-package
+   * instrumentation wrapper category. Mirrors the typed-bridge
+   * paired-method approach of slices 110/111/112 but with a third
+   * registration channel for the instrumentation wrap.
+   *
+   * After slice-113 the `__gxtRootOutletRerender` globalThis slot is
+   * DROPPED. The canonical state is `_gxtRootOutletRerenderRaw` +
+   * `_gxtRootOutletRerenderWrap` in compile.ts. Net globalThis surface
+   * delta: -1 slot. +3 paired bridge methods on `compilePipeline`.
+   *
+   * Previously: `(globalThis as any).__gxtRootOutletRerender = fn` (via
+   * `Object.defineProperty` setter trap).
+   */
+  setRootOutletRerender?(fn: ((ref: any) => void) | null): void;
+
+  /**
+   * Read the currently-registered root-outlet-rerender dispatcher
+   * closure (with `render.outlet` instrumentation wrap applied if a
+   * wrap is registered).
+   *
+   * Slice-113 (Cluster B): paired with `setRootOutletRerender` (above).
+   * All three cross-package + cross-file readers route through
+   * `compilePipeline.getRootOutletRerender?.() ?? null` — the
+   * `?? null` fallback matches the pre-slice-113 `undefined` semantics
+   * which the previous `typeof rootRenderFn === 'function'` check
+   * treated as falsy. See `setRootOutletRerender` doc above for the
+   * full pre/post topology, state-home decision, and bridge-not-yet-
+   * installed edge handling.
+   *
+   * Previously: `(globalThis as any).__gxtRootOutletRerender` (read via
+   * `Object.defineProperty` getter trap which applied the
+   * instrumentation wrap on read; slice-113 moves the wrap to set-time
+   * to simplify the read surface).
+   */
+  getRootOutletRerender?(): ((ref: any) => void) | null;
+
+  /**
+   * Register an instrumentation wrap that will be applied to every
+   * dispatcher passed to `setRootOutletRerender(fn)`. Applied at
+   * set-time (not at get-time as in the pre-slice-113
+   * `Object.defineProperty` getter trap) for simpler reader semantics.
+   *
+   * Slice-113 (Cluster B): called once at gxt-backend/manager.ts
+   * module-init from `installRootOutletRerenderInstrumentation` IIFE
+   * (formerly the `Object.defineProperty(g, '__gxtRootOutletRerender',
+   * { get, set })` block at L7547). The wrap closes over the
+   * module-local `_gxtInstrumentStart` helper and
+   * `_outletRerenderInstrumentationPayload` to fire `render.outlet`
+   * instrumentation events around every dispatcher invocation.
+   *
+   * Wrap idempotency: the wrap function in manager.ts already checks
+   * `(fn as any).__gxtInstrumented` and short-circuits to the
+   * already-wrapped function — so even if compile.ts's set-time wrap
+   * is applied to an already-wrapped function, no double-instrumentation
+   * fires. This matches the pre-slice-113 `wrap(current)` getter
+   * semantics.
+   *
+   * Bridge-not-yet-installed edge: if compile.ts has not yet
+   * registered its `installCompilePipelinePart` payload at manager.ts
+   * IIFE time, the optional chain on `setRootOutletRerenderWrap?.(...)`
+   * short-circuits and no wrap is registered — but in practice
+   * `installCompilePipelinePart` is buffered via
+   * `_pendingCompilePipelineParts` until `setGxtRenderer` fires, so
+   * the dispatcher methods are registered before any compile.ts
+   * method is callable. Manager.ts calls `setRootOutletRerenderWrap`
+   * AFTER `setGxtRenderer` has registered compile.ts's part — bridge
+   * is always installed by then.
+   *
+   * Previously: `Object.defineProperty(g, '__gxtRootOutletRerender',
+   * { configurable: true, get: () => current ? wrap(current) :
+   * undefined, set: (v) => current = v })` in manager.ts L7547. Slice-
+   * 113 moves the wrap to a registration channel and applies it at
+   * set-time inside `_gxtSetRootOutletRerender`.
+   */
+  setRootOutletRerenderWrap?(wrap: (fn: any) => any): void;
 }
 
 /**
