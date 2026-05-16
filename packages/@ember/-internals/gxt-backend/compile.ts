@@ -3944,6 +3944,75 @@ function _gxtSetTopOutletRef(ref: any): void {
   _gxtTopOutletRef = ref;
 }
 
+// Slice-112 (Cluster B): paired typed-bridge migration of the
+// `__gxtIsForceRerender` boolean flag. Pre-slice-112 the writer pair at
+// `glimmer/lib/renderer.ts:1507/1516` (try-finally) wrote
+// `(globalThis as any).__gxtIsForceRerender = true/false` around the
+// `classicRoot.render()` body, and eight cross-package + cross-file
+// readers consulted the slot:
+//
+//   - `gxt-backend/manager.ts:815` (`_shouldWarnStyle`);
+//   - `gxt-backend/manager.ts:1557` (pool-claim sweep on factory swap);
+//   - `gxt-backend/manager.ts:2934` (`pushedUpdatedInstance` skip);
+//   - `gxt-backend/manager.ts:5996` (ember-component init bypass);
+//   - `gxt-backend/manager.ts:11903` (`_buildDom` reused-from-pool gate);
+//   - `gxt-backend/compile.ts:10832` (`__forceRerenderSnapshot` in $_tag);
+//   - `gxt-backend/compile.ts:11425` (style-binding XSS warn suppression);
+//   - `gxt-backend/outlet.gts:290` (engine-instance cache reuse);
+//   - `glimmer/lib/templates/root.ts:588` (OutletView short-circuit);
+//
+// Slice-112 graduates BOTH sides to typed bridge methods. The canonical
+// state is the module-local `_gxtIsForceRerenderFlag` boolean below;
+// the globalThis slot is DROPPED.
+//
+// State-home: `compile.ts` (this file). Same state-home as the other
+// compilePipeline boolean toggles (slice 17/18/22/23/24/27/30/31/97/108/
+// 110 precedent — the canonical "scope-modifier boolean on the GXT
+// render/sync pipeline" category). Although the pre-slice-112 writer
+// lives in `glimmer/lib/renderer.ts` (cross-package contributor — same
+// pattern as slices 96/108/110/111) and most readers live in
+// `gxt-backend/`, the bridge state lives here because compile.ts is the
+// canonical home for the compilePipeline boolean cluster.
+//
+// Paired bridge shape: `withForceRerender<T>(fn): T` (writer) +
+// `isForceRerender(): boolean` (reader). Mirrors slice-18 / slice-22 /
+// slice-108 / slice-110 paired surfaces. Pure balanced save-restore
+// wrap (no depth counter, no transition side-effects) — same shape as
+// slices 18/22/108/110. Re-entrancy contract: save the prior flag on
+// entry, set to `true`, restore prior on `finally` exit. In practice
+// no nested force-rerender occurs (the body is the top-level
+// `classicRoot.render()` frame and is not re-entered during its body),
+// but the save-restore is the canonical Cluster B shape.
+//
+// Deferred-error preservation: the pre-slice-112 writer-pair body had a
+// `catch (renderErr) { /* stash on classicRoot.__gxtDeferredError */ }`
+// block between the set-true and the finally-set-false. The slice-112
+// migration preserves that catch — the `fn` argument passed to
+// `withForceRerender` carries the try/catch internally, so the bridge
+// sees a normal-return `fn` and the deferred-error stash happens before
+// the bridge's `finally` resets the flag. Net behavior identical.
+//
+// Net globalThis surface delta: -1 slot (`__gxtIsForceRerender`).
+// The pre-slice-112 dual writer at `glimmer/lib/renderer.ts:1507/1516`
+// routes through `compilePipeline.withForceRerender?.(fn) ?? fn()`, and
+// the eight cross-package + cross-file readers route through
+// `compilePipeline.isForceRerender?.() ?? false`. The optional-chain
+// fallback at the readers matches the pre-slice-112 `if (undefined)`
+// falsy coercion which treated `undefined` as "not in force-rerender".
+let _gxtIsForceRerenderFlag = false;
+function _gxtIsForceRerender(): boolean {
+  return _gxtIsForceRerenderFlag;
+}
+function _gxtWithForceRerender<T>(fn: () => T): T {
+  const prev = _gxtIsForceRerenderFlag;
+  _gxtIsForceRerenderFlag = true;
+  try {
+    return fn();
+  } finally {
+    _gxtIsForceRerenderFlag = prev;
+  }
+}
+
 // Slice-98 (Cluster B): graduates the `__gxtDeferredSyncError` deferred-error
 // slot from the pre-slice-98 `(globalThis as any).__gxtDeferredSyncError`
 // read/write/clear trio to a module-local `_gxtDeferredSyncError` binding in
@@ -10829,7 +10898,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // `set()` inside willRender propagates through Ember's
             // notifyPropertyChange → __gxtTriggerReRender → cell.update chain
             // and the DOM is re-read in the post-runTask sync.
-            const __forceRerenderSnapshot = (globalThis as any).__gxtIsForceRerender;
+            // Slice-112 (Cluster B): intra-file read of the module-local
+            // `_gxtIsForceRerenderFlag` via the bridge-namespace predicate
+            // (zero overhead, mirrors slice-30 intra-file precedent for the
+            // module-local sync-cycle counter). The snapshot captures the
+            // flag BEFORE `handle()` runs so the post-`finally` block can
+            // gate willRender/didUpdateAttrs fan-out on whether we were in
+            // the force-rerender frame.
+            const __forceRerenderSnapshot = _gxtIsForceRerender();
             let handleResult: any;
             let rendered: any;
             try {
@@ -11422,7 +11498,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         if (val == null || val === false || val === '') return null;
         // Non-safe dynamic value — potentially warn for style binding XSS.
         // Do not warn during force-rerender (the initial render already warned).
-        if (!(globalThis as any).__gxtIsForceRerender) {
+        // Slice-112 (Cluster B): intra-file read of the module-local
+        // `_gxtIsForceRerenderFlag` via the bridge-namespace predicate.
+        if (!_gxtIsForceRerender()) {
           const currentPassId = (globalThis as any).__emberRenderPassId || 0;
           if (_styleWarnedPassId !== currentPassId) {
             // Check if the string value came from a SafeString.toString() conversion.
@@ -16696,6 +16774,23 @@ installCompilePipelinePart({
   // path and consumed by manager.ts's `_buildRenderTree` outlet branch).
   setTopOutletRef: _gxtSetTopOutletRef,
   getTopOutletRef: _gxtGetTopOutletRef,
+  // Slice-112 (Cluster B): paired typed-bridge migration of the
+  // `__gxtIsForceRerender` boolean flag. Pre-slice-112 the writer pair at
+  // `glimmer/lib/renderer.ts:1507/1516` (try-finally around
+  // `classicRoot.render()`) wrote to `(globalThis as any).__gxtIsForceRerender
+  // = true/false`, and eight cross-package + cross-file readers (5 in
+  // manager.ts, 2 in compile.ts, 1 in outlet.gts, 1 in
+  // glimmer/lib/templates/root.ts) consulted the slot with truthy
+  // coercion to gate lifecycle/warning/destroy/pool-claim branches.
+  // Slice-112 graduates BOTH sides to typed bridge methods. The
+  // canonical state is the module-local `_gxtIsForceRerenderFlag`
+  // defined above; the globalThis slot is DROPPED. Net -1 globalThis
+  // surface, +2 paired bridge methods on `compilePipeline`. See
+  // `withForceRerender` / `isForceRerender` doc in gxt-bridge.ts.
+  // Mirrors slice-110's body shape directly (save-restore wrap, no
+  // depth counter, no transition side-effects).
+  withForceRerender: _gxtWithForceRerender,
+  isForceRerender: _gxtIsForceRerender,
 });
 
 // Slice-8 (Cluster B): replaces the pre-slice-8 `_installTemplateOnlyResetHook`

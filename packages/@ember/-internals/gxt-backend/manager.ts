@@ -812,7 +812,9 @@ const _styleWarnedElements = new WeakSet<object>();
 
 function _shouldWarnStyle(element: unknown, _value?: string): boolean {
   // During force-rerender, suppress all style warnings — the initial render already warned.
-  if ((globalThis as any).__gxtIsForceRerender) return false;
+  // Slice-112 (Cluster B): routed through `compilePipeline.isForceRerender?.() ?? false`
+  // (paired with renderer.ts's `withForceRerender` wrap). See gxt-bridge.ts.
+  if (getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false) return false;
   if (element && typeof element === 'object') {
     if (_styleWarnedElements.has(element as object)) return false;
     _styleWarnedElements.add(element as object);
@@ -1554,7 +1556,8 @@ function getCachedOrCreateInstance(
   // parent. When the component name changes (e.g., {{component this.name}}),
   // the new instance goes into a different pool (keyed by factory). The old
   // instance in the previous pool is unclaimed and should be destroyed.
-  if ((globalThis as any).__gxtIsForceRerender) {
+  // Slice-112 (Cluster B): routed through `compilePipeline.isForceRerender?.() ?? false`.
+  if (getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false) {
     const parentPools = instancePools.get(parentKey);
     if (parentPools) {
       for (const [, poolArr] of parentPools) {
@@ -2931,7 +2934,11 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
     // Skip during force-rerender (innerHTML='' + rebuild): the element is not in
     // the DOM at this point, so hooks that check this.element would fail.
     // __gxtSyncAllWrappers will fire the correct hooks after DOM is rebuilt.
-    if (!wasInstanceUpdatedThisPass(instance) && !(globalThis as any).__gxtIsForceRerender) {
+    // Slice-112 (Cluster B): routed through `compilePipeline.isForceRerender?.() ?? false`.
+    if (
+      !wasInstanceUpdatedThisPass(instance) &&
+      !(getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false)
+    ) {
       triggerLifecycleHook(instance, 'didUpdateAttrs');
       triggerLifecycleHook(instance, 'didReceiveAttrs');
       // Mark this instance as having had update hooks fired this pass
@@ -5993,7 +6000,8 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
   // reads from the prototype getter (which computes fresh values).
   // Only remove getters that shadow PURE getters (no setter) — tracked
   // property getters (with both get/set) should be preserved.
-  if ((globalThis as any).__gxtIsForceRerender && instance) {
+  // Slice-112 (Cluster B): routed through `compilePipeline.isForceRerender?.() ?? false`.
+  if ((getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false) && instance) {
     try {
       const ownKeys = Object.getOwnPropertyNames(instance);
       for (const key of ownKeys) {
@@ -11900,7 +11908,8 @@ function renderClassicComponent(
   // If so, skip initial lifecycle hooks (willRender, willInsertElement, etc.)
   // since the component already went through its initial render lifecycle.
   const isReused = instance && instance.__gxtReusedFromPool;
-  const isForceRerender = (globalThis as any).__gxtIsForceRerender;
+  // Slice-112 (Cluster B): routed through `compilePipeline.isForceRerender?.() ?? false`.
+  const isForceRerender = getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false;
   const reusedWithChanges = isReused && !!instance.__gxtPoolHasArgChanges;
   if (isReused) {
     delete instance.__gxtReusedFromPool;

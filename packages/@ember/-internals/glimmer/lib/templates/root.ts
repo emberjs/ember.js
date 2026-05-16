@@ -585,7 +585,11 @@ export default function createRootTemplate(_owner: any) {
     // (called from setOutletState). Re-rendering here would APPEND a second copy
     // of the application template to parentElement, creating duplicate components
     // and corrupting the view registry (e.g., root-1 appearing twice, root-6 missing).
-    if ((globalThis as any).__gxtIsForceRerender && (globalThis as any).__gxtRootOutletRerender) {
+    // Slice-112 (Cluster B): routed through `compilePipeline.isForceRerender?.() ?? false`.
+    if (
+      (getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false) &&
+      (globalThis as any).__gxtRootOutletRerender
+    ) {
       return { nodes: [], ctx: context };
     }
     // Per-outlet rerender registry (`_gxtRootOutletRerenderMap`) is declared

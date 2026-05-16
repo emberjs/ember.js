@@ -1504,16 +1504,35 @@ function _gxtForceEmberRerender(): void {
       // instances instead of creating new ones (which would fire
       // spurious init/render lifecycle hooks).
       (globalThis as any).__emberRenderPassId = ((globalThis as any).__emberRenderPassId || 0) + 1;
-      (globalThis as any).__gxtIsForceRerender = true;
-      try {
-        classicRoot.render();
-      } catch (renderErr) {
-        // Store render error so it can propagate to assert.throws
-        if (!classicRoot.__gxtDeferredError) {
-          classicRoot.__gxtDeferredError = renderErr;
+      // Slice-112 (Cluster B): paired typed-bridge migration of the
+      // `__gxtIsForceRerender` boolean flag. Pre-slice-112 this site set
+      // `(globalThis as any).__gxtIsForceRerender = true` before
+      // `classicRoot.render()` and reset it to `false` in the enclosing
+      // `finally`. Slice-112 routes BOTH writes through
+      // `compilePipeline.withForceRerender?.(fn) ?? fn()` — the optional
+      // chain short-circuits to the unwrapped body when the bridge is
+      // not yet installed (matching pre-slice-112 semantics where the
+      // readers' truthy check coerced `undefined` to `false`). The
+      // deferred-error stash on `classicRoot.__gxtDeferredError` stays
+      // INSIDE the wrapped body so it captures `renderErr` before the
+      // bridge's `finally` resets the flag — net behavior identical to
+      // the pre-slice-112 set-true / try / catch / finally-set-false
+      // pair. See `withForceRerender` doc in gxt-bridge.ts.
+      const _renderFn = () => {
+        try {
+          classicRoot.render();
+        } catch (renderErr) {
+          // Store render error so it can propagate to assert.throws
+          if (!classicRoot.__gxtDeferredError) {
+            classicRoot.__gxtDeferredError = renderErr;
+          }
         }
-      } finally {
-        (globalThis as any).__gxtIsForceRerender = false;
+      };
+      const _withForceRerender = getGxtRenderer()?.compilePipeline.withForceRerender;
+      if (_withForceRerender) {
+        _withForceRerender(_renderFn);
+      } else {
+        _renderFn();
       }
       // Re-throw deferred errors (from lifecycle hooks like destroy)
       if (classicRoot.__gxtDeferredError) {

@@ -287,7 +287,8 @@ class EmberMountElement extends HTMLElement {
     // During force-rerender elements are removed and recreated; don't destroy
     // the engine instance — it will be reused via the shared engine cache
     // (slice 90: `compilePipeline.getEngineInstances()`).
-    if (!(globalThis as any).__gxtIsForceRerender) {
+    // Slice-112 (Cluster B): routed through `compilePipeline.isForceRerender?.() ?? false`.
+    if (!(getGxtRenderer()?.compilePipeline.isForceRerender?.() ?? false)) {
       if (this._engineInstance && typeof this._engineInstance.destroy === 'function') {
         try { this._engineInstance.destroy(); } catch { /* ignore */ }
       }
