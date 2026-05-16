@@ -915,7 +915,10 @@ function createEmberMaybeHelper(original: Function) {
                     // Associate with the enclosing `{{#if}}` branch (if any)
                     // so that destroy + willDestroy fire on branch teardown,
                     // matching Ember's classic Helper lifecycle semantics.
-                    const ifScope2 = g.__gxtCurrentHelperScope;
+                    // Slice-117 (Cluster B): routes through typed bridge
+                    // `compilePipeline.getCurrentHelperScope?.()`. See
+                    // `getCurrentHelperScope` doc in gxt-bridge.ts.
+                    const ifScope2 = getGxtRenderer()?.compilePipeline.getCurrentHelperScope?.();
                     if (ifScope2 && typeof ifScope2.add === 'function') {
                       try {
                         ifScope2.add(destroyable);
@@ -1089,7 +1092,10 @@ function createEmberMaybeHelper(original: Function) {
               // If this helper was created during an `{{#if}}` branch render,
               // associate it with that branch's teardown scope so destroy +
               // willDestroy fire on branch swap (not only on component teardown).
-              const ifScope = g.__gxtCurrentHelperScope;
+              // Slice-117 (Cluster B): routes through typed bridge
+              // `compilePipeline.getCurrentHelperScope?.()`. See
+              // `getCurrentHelperScope` doc in gxt-bridge.ts.
+              const ifScope = getGxtRenderer()?.compilePipeline.getCurrentHelperScope?.();
               if (ifScope && typeof ifScope.add === 'function') {
                 try {
                   ifScope.add(instance);

@@ -3961,6 +3961,82 @@ function _gxtSetTopOutletRef(ref: any): void {
   _gxtTopOutletRef = ref;
 }
 
+// Slice-117 (Cluster B): paired set/get typed-bridge migration of the
+// `__gxtCurrentHelperScope` ref-capture slot. Pre-slice-117 three intra-file
+// save-restore writer pairs in compile.ts's `patchGlobalIf`/`wrapBranch`
+// (at compile.ts:5488/5624, 5489 and 5592/5616, 5593) wrote
+// `(globalThis as any).__gxtCurrentHelperScope = scope / prev` around the
+// branch evaluation body (`fn.apply(this, branchArgs)` / `inner.apply(this,
+// innerArgs)`), publishing a per-branch `Set<any>` (`trueBranchHelpers` /
+// `falseBranchHelpers`) so cross-file class-helper instantiation paths could
+// associate freshly-created helper instances with the enclosing `{{#if}}`
+// branch's teardown scope (matching Ember's classic Helper lifecycle —
+// destroy + willDestroy fire on branch swap, not only on component teardown).
+// Three readers consulted the slot:
+//
+//   - compile.ts:10345 — intra-file read inside `$_tag` class-based-helper
+//     instance creation block. After pushing the freshly-created instance
+//     into `_tagHelperInstanceCache` + the destroy-tracking array, the
+//     reader calls `ifScopeTag.add(helperInstance)` to wire the instance
+//     to the enclosing branch scope.
+//   - ember-gxt-wrappers.ts:918 — cross-file read inside `$_maybeHelper`'s
+//     branch-swap recreation branch (cached bucket needs full recreation),
+//     calls `ifScope2.add(destroyable)` after the bridge-pushed instance.
+//   - ember-gxt-wrappers.ts:1092 — cross-file read inside `$_maybeHelper`'s
+//     class-based-helper path (factory.create() cache miss), calls
+//     `ifScope.add(instance)` after the bridge-pushed instance.
+//
+// Each reader treats a non-`null`/`undefined` `scope` with a callable
+// `.add(...)` as the active branch scope; absence or non-Set values
+// short-circuit silently.
+//
+// State-home: `compile.ts` (this file). The canonical state is the
+// module-local `_gxtCurrentHelperScope` binding declared below. State-home
+// follows slice-111's `_gxtTopOutletRef` precedent (paired ref-capture slot
+// in the compilePipeline ref/value-capture category — slice 65 / 100 / 111
+// precedent for ref-capture state living in compile.ts). The writers ARE
+// all intra-file (compile.ts's `patchGlobalIf`), so the bridge `set` surface
+// is currently unused cross-file; we ship it anyway to mirror slice-111's
+// paired set/get shape and to permit any future cross-file writer to
+// extend through the typed surface rather than re-publishing on globalThis.
+// Intra-file writers and the intra-file reader at compile.ts:10345 use the
+// module-local `_gxtCurrentHelperScope` directly (slice-22/24/27/.../99/116
+// intra-file precedent — zero overhead, bypasses bridge dispatch).
+//
+// Paired bridge shape: `setCurrentHelperScope(scope: any): void` (writer)
+// + `getCurrentHelperScope(): any` (reader). Get/set paired surface mirrors
+// the pre-slice-117 globalThis assign-and-read pattern directly. The slot
+// carries a captured-scope VALUE (a `Set<any>` or null/undefined; intra-file
+// frames save/restore the prior value around a body), not a flag toggle —
+// natural shape is set/get rather than a `withX` scope-modifier wrap.
+// Two new bridge methods, no new install-API namespace (registered inside
+// the existing `installCompilePipelinePart` block at compile.ts EOF
+// alongside the slice-111 `setTopOutletRef` / `getTopOutletRef` paired
+// entries).
+//
+// Re-entrancy / overwrite contract: each write OVERWRITES the prior captured
+// scope. Intra-file callers in `patchGlobalIf`/`wrapBranch` save the prior
+// scope into a local `prev`/`prev2` binding and restore it in `finally` so
+// nested branch evaluations correctly restore the outer scope. Bridge
+// writers are responsible for save-restore themselves (the bridge does NOT
+// auto-wrap — same as slice-111's `setTopOutletRef`).
+//
+// Net globalThis surface delta: -1 slot (`__gxtCurrentHelperScope`). The
+// three intra-file writer pairs and the intra-file reader graduate to the
+// module-local binding directly; the two cross-file readers in
+// ember-gxt-wrappers.ts route through
+// `getGxtRenderer()?.compilePipeline.getCurrentHelperScope?.()`. The
+// optional-chain fallback at the readers matches the pre-slice-117
+// globalThis read which returned `undefined` when the slot had not yet
+// been set.
+let _gxtCurrentHelperScope: any = null;
+function _gxtGetCurrentHelperScope(): any {
+  return _gxtCurrentHelperScope;
+}
+function _gxtSetCurrentHelperScope(scope: any): void {
+  _gxtCurrentHelperScope = scope;
+}
+
 // Slice-112 (Cluster B): paired typed-bridge migration of the
 // `__gxtIsForceRerender` boolean flag. Pre-slice-112 the writer pair at
 // `glimmer/lib/renderer.ts:1507/1516` (try-finally) wrote
@@ -5459,7 +5535,6 @@ function patchGlobalIf() {
     const wrapBranch = (fn: any, scope: Set<any>) => {
       if (typeof fn !== 'function') return fn;
       return function wrappedBranch(this: any, ...branchArgs: any[]) {
-        const g2 = globalThis as any;
         // Suppress branch evaluation when our parent {{#if}} collapsed earlier
         // in the same sync cycle. GXT calls the bound original syncState from
         // its tag-listener loop, which then calls renderState → trueBranch
@@ -5485,8 +5560,10 @@ function patchGlobalIf() {
         } catch {
           /* ignore — fall through to normal eval */
         }
-        const prev = g2.__gxtCurrentHelperScope;
-        g2.__gxtCurrentHelperScope = scope;
+        // Slice-117 (Cluster B): intra-file save-restore frame on the
+        // module-local `_gxtCurrentHelperScope`. See doc above.
+        const prev = _gxtCurrentHelperScope;
+        _gxtCurrentHelperScope = scope;
         // Push this IfCondition (via a stable ref holder) onto the parent-If
         // stack so nested $_if invocations during fn() can record us as their
         // parent. Using a ref holder is required because origIf may invoke
@@ -5588,9 +5665,10 @@ function patchGlobalIf() {
           if (typeof result === 'function') {
             const inner = result;
             const wrappedInner = function wrappedInnerBranch(this: any, ...innerArgs: any[]) {
-              const g3 = globalThis as any;
-              const prev2 = g3.__gxtCurrentHelperScope;
-              g3.__gxtCurrentHelperScope = scope;
+              // Slice-117 (Cluster B): intra-file save-restore frame on the
+              // module-local `_gxtCurrentHelperScope`. See doc above.
+              const prev2 = _gxtCurrentHelperScope;
+              _gxtCurrentHelperScope = scope;
               const prev3 = _gxtCurrentParentIfRef;
               _gxtCurrentParentIfRef = ifConditionRef;
               const ifcRef2 = ifConditionRef.ifCondition;
@@ -5613,7 +5691,7 @@ function patchGlobalIf() {
                     /* ignore */
                   }
                 }
-                g3.__gxtCurrentHelperScope = prev2;
+                _gxtCurrentHelperScope = prev2;
                 _gxtCurrentParentIfRef = prev3;
               }
             };
@@ -5621,7 +5699,7 @@ function patchGlobalIf() {
           }
           return result;
         } finally {
-          g2.__gxtCurrentHelperScope = prev;
+          _gxtCurrentHelperScope = prev;
           _gxtCurrentParentIfRef = prevParentIf;
         }
       };
@@ -10341,8 +10419,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                     // Associate with the enclosing `{{#if}}` branch (if any) so
                     // destroy+willDestroy fire on branch teardown, matching the
                     // classic Ember Helper lifecycle (see class-based helper
-                    // lifecycle test).
-                    const ifScopeTag = (globalThis as any).__gxtCurrentHelperScope;
+                    // lifecycle test). Slice-117 (Cluster B): direct intra-file
+                    // read of the module-local `_gxtCurrentHelperScope`.
+                    const ifScopeTag = _gxtCurrentHelperScope;
                     if (ifScopeTag && typeof ifScopeTag.add === 'function') {
                       try {
                         ifScopeTag.add(helperInstance);
@@ -16958,6 +17037,29 @@ installCompilePipelinePart({
   // path and consumed by manager.ts's `_buildRenderTree` outlet branch).
   setTopOutletRef: _gxtSetTopOutletRef,
   getTopOutletRef: _gxtGetTopOutletRef,
+  // Slice-117 (Cluster B): paired set/get typed-bridge migration of the
+  // `__gxtCurrentHelperScope` ref-capture slot. Pre-slice-117 three intra-
+  // file save-restore writer pairs at compile.ts:5488/5624, 5489 and
+  // 5592/5616, 5593 wrote `(globalThis as any).__gxtCurrentHelperScope =
+  // scope / prev` around branch evaluation in `patchGlobalIf`/`wrapBranch`,
+  // and three readers (1 intra-file at compile.ts:10345 inside `$_tag`
+  // class-helper instance creation; 2 cross-file at ember-gxt-wrappers.ts
+  // L918/L1092 inside `$_maybeHelper`'s branch-swap and class-based-helper
+  // paths) read the slot to call `scope.add(instance)` and wire the helper
+  // to the enclosing `{{#if}}` branch's teardown set. Slice-117 graduates
+  // BOTH sides to typed bridge methods. The canonical state is the module-
+  // local `_gxtCurrentHelperScope` defined above; the globalThis slot is
+  // DROPPED. Net -1 globalThis surface, +2 paired bridge methods on
+  // `compilePipeline`. See `setCurrentHelperScope` / `getCurrentHelperScope`
+  // doc in gxt-bridge.ts. Mirrors slice-111's `setTopOutletRef` /
+  // `getTopOutletRef` paired set/get shape directly (captured-value pair;
+  // scope-typed here rather than ref-typed). Companion to slice-116's
+  // helper-destroy-tracking array (the per-branch scope and the global
+  // destroy-tracking array form a coherent state cluster — both written by
+  // helper-instance creation paths and consumed by branch/component
+  // teardown).
+  setCurrentHelperScope: _gxtSetCurrentHelperScope,
+  getCurrentHelperScope: _gxtGetCurrentHelperScope,
   // Slice-112 (Cluster B): paired typed-bridge migration of the
   // `__gxtIsForceRerender` boolean flag. Pre-slice-112 the writer pair at
   // `glimmer/lib/renderer.ts:1507/1516` (try-finally around
