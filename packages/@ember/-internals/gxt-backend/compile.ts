@@ -3380,6 +3380,17 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
 // conditional is updated.
 let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = [];
 
+// Cluster A Phase 1.6: extracted helper for pushing an if-watcher notification.
+// Originally inlined inside `_gxtTriggerReRenderBody`. Extracting it allows
+// Phase 2 (cascade defer) to call this helper synchronously from
+// `_gxtTriggerReRender`'s enqueue path — preserving multi-click-in-one-
+// runtask ordering on different keys (each click must register its
+// if-watcher entry before Phase 0's pre-flush drains the pending list) —
+// while still deferring the rest of the cascade body to Phase 0.5.
+function _pushIfWatcherNotification(obj: object, keyName: string): void {
+  _pendingIfWatcherNotifications.push({ obj, keyName });
+}
+
 // GXT re-render trigger hook - called by Ember's notifyPropertyChange.
 // Since GXT's own cell updates are captured by __gxtExternalSchedule,
 // this hook only needs to mark that a sync is pending.
@@ -5273,7 +5284,11 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
   // inner conditionals before outer ones are updated (e.g., set(cond2, true)
   // triggers inner IfCondition to create components, but set(cond1, false)
   // hasn't happened yet to suppress the outer conditional).
-  _pendingIfWatcherNotifications.push({ obj, keyName });
+  //
+  // Cluster A Phase 1.6: routed through `_pushIfWatcherNotification` so the
+  // enqueue side (Phase 2 `_gxtTriggerReRender`) can call the helper
+  // synchronously alongside the deferred cascade body. See helper definition.
+  _pushIfWatcherNotification(obj, keyName);
 };
 
 // ---- Cross-module-instance $_if fix ----
