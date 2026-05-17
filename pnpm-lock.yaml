@@ -3075,11 +3075,11 @@ importers:
         specifier: ^7.29.0
         version: 7.29.0(@babel/core@7.29.0)
       '@babel/runtime':
-        specifier: ^7.28.6
+        specifier: ^7.29.2
         version: 7.29.2
       '@ember/optional-features':
-        specifier: ^2.3.0
-        version: 2.3.0
+        specifier: ^3.0.0
+        version: 3.0.0(@types/node@22.19.15)
       '@ember/string':
         specifier: ^4.0.1
         version: 4.0.1
@@ -3109,16 +3109,16 @@ importers:
         version: 3.0.6(@babel/core@7.29.0)(@embroider/core@4.4.7)
       '@embroider/vite':
         specifier: ^1.7.2
-        version: 1.7.2(@embroider/core@4.4.7)(vite@7.3.2(@types/node@22.19.15)(lightningcss@1.32.0)(terser@5.46.1))
+        version: 1.7.2(@embroider/core@4.4.7)(vite@8.0.10(@types/node@22.19.15)(esbuild@0.27.7)(terser@5.46.1))
       '@eslint/js':
-        specifier: ^9.39.2
+        specifier: ^9.39.4
         version: 9.39.4
       '@glimmer/component':
         specifier: workspace:^
         version: link:../../packages/@glimmer/component
       '@rollup/plugin-babel':
-        specifier: ^6.1.0
-        version: 6.1.0(@babel/core@7.29.0)(rollup@4.60.3)
+        specifier: ^7.0.0
+        version: 7.0.0(@babel/core@7.29.0)(rollup@4.60.3)
       babel-plugin-ember-template-compilation:
         specifier: ^4.0.0
         version: 4.0.0
@@ -3135,8 +3135,8 @@ importers:
         specifier: ^8.3.1
         version: 8.3.1(@babel/core@7.29.0)
       ember-cli-deprecation-workflow:
-        specifier: ^4.0.0
-        version: 4.0.1(@babel/core@7.29.0)
+        specifier: ^3.4.0
+        version: 3.4.0(ember-source@)
       ember-load-initializers:
         specifier: ^3.0.1
         version: 3.0.1(ember-source@)
@@ -3150,7 +3150,7 @@ importers:
         specifier: ^9.0.4
         version: 9.0.4(@babel/core@7.29.0)(@ember/test-helpers@5.4.1(@babel/core@7.29.0))(qunit@2.25.0)
       ember-resolver:
-        specifier: ^13.1.1
+        specifier: ^13.2.0
         version: 13.2.0
       ember-source:
         specifier: workspace:*
@@ -3159,7 +3159,7 @@ importers:
         specifier: ^7.9.3
         version: 7.9.3
       eslint:
-        specifier: ^9.39.2
+        specifier: ^9.39.4
         version: 9.39.4
       eslint-config-prettier:
         specifier: ^10.1.8
@@ -3195,14 +3195,14 @@ importers:
         specifier: ^38.0.0
         version: 38.0.0(stylelint@16.26.1(typescript@5.9.3))
       testem:
-        specifier: ^3.17.0
+        specifier: ^3.19.1
         version: 3.19.1(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
       tracked-built-ins:
-        specifier: ^4.1.0
+        specifier: ^4.1.2
         version: 4.1.2(@babel/core@7.29.0)
       vite:
-        specifier: ^7.3.1
-        version: 7.3.2(@types/node@22.19.15)(lightningcss@1.32.0)(terser@5.46.1)
+        specifier: ^8.0.10
+        version: 8.0.10(@types/node@22.19.15)(esbuild@0.27.7)(terser@5.46.1)
 
   tests/node-vitest:
     dependencies:
@@ -4045,6 +4045,10 @@ packages:
     resolution: {integrity: sha512-+M8CkPledQEaDbfIlwlq6Phgpm5jdT3a6WVDJk7b/zadw5xAJkuQKVK7DgR0SFgHGiWlyn6a8AU5p2mCA706RA==}
     engines: {node: 10.* || 12.* || >= 14}
 
+  '@ember/optional-features@3.0.0':
+    resolution: {integrity: sha512-HMQqZoBb16I4NyHfQglIYjopSG6folcEJah2WPa0FuolWRA/8cS5ozQmFK5BQx7cijTQJxj6viLpQK9KrXuYdw==}
+    engines: {node: '>= 20.19'}
+
   '@ember/string@4.0.1':
     resolution: {integrity: sha512-VWeng8BSWrIsdPfffOQt/bKwNKJL7+37gPFh/6iZZ9bke+S83kKqkS30poo4bTGfRcMnvAE0ie7txom+iDu81Q==}
 
@@ -4575,12 +4579,6 @@ packages:
   '@lint-todo/utils@13.1.1':
     resolution: {integrity: sha512-F5z53uvRIF4dYfFfJP3a2Cqg+4P1dgJchJsFnsZE0eZp0LK8X7g2J0CsJHRgns+skpXOlM7n5vFGwkWCWj8qJg==}
     engines: {node: 12.* || >= 14}
-
-  '@napi-rs/wasm-runtime@1.1.2':
-    resolution: {integrity: sha512-sNXv5oLJ7ob93xkZ1XnxisYhGYXfaG9f65/ZgYuAu3qt7b3NadcOEhLvx28hv31PgX8SZJRYrAIPQilQmFpLVw==}
-    peerDependencies:
-      '@emnapi/core': ^1.7.1
-      '@emnapi/runtime': ^1.7.1
 
   '@napi-rs/wasm-runtime@1.1.4':
     resolution: {integrity: sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==}
@@ -7753,9 +7751,6 @@ packages:
     engines: {node: '>= 18'}
     peerDependencies:
       ember-source: '>= 3.28.0'
-
-  ember-cli-deprecation-workflow@4.0.1:
-    resolution: {integrity: sha512-XJzUZVXyb6/nFKU7GzGRlHlcAl4KtkioBTjfuIHp1aysbRZ6XxYLSPtP090EbOxQBtYwAPsH2kPAtPS86tL2RA==}
 
   ember-cli-get-component-path-option@1.0.0:
     resolution: {integrity: sha512-k47TDwcJ2zPideBCZE8sCiShSxQSpebY2BHcX2DdipMmBox5gsfyVrbKJWIHeSTTKyEUgmBIvQkqTOozEziCZA==}
@@ -13841,6 +13836,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@ember/optional-features@3.0.0(@types/node@22.19.15)':
+    dependencies:
+      ember-cli-version-checker: 5.1.2
+      inquirer: 13.3.2(@types/node@22.19.15)
+      silent-error: 1.1.1
+      tinyglobby: 0.2.16
+    transitivePeerDependencies:
+      - '@types/node'
+      - supports-color
+
   '@ember/string@4.0.1': {}
 
   '@ember/test-helpers@5.4.1(@babel/core@7.29.0)':
@@ -14536,13 +14541,6 @@ snapshots:
       tslib: 2.8.1
       upath: 2.0.1
 
-  '@napi-rs/wasm-runtime@1.1.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
-    dependencies:
-      '@emnapi/core': 1.10.0
-      '@emnapi/runtime': 1.10.0
-      '@tybys/wasm-util': 0.10.1
-    optional: true
-
   '@napi-rs/wasm-runtime@1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
       '@emnapi/core': 1.10.0
@@ -14805,7 +14803,7 @@ snapshots:
 
   '@oxc-resolver/binding-wasm32-wasi@11.19.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.1.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@napi-rs/wasm-runtime': 1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -15974,7 +15972,7 @@ snapshots:
   '@types/eslint-scope@3.7.7':
     dependencies:
       '@types/eslint': 9.6.1
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
 
   '@types/eslint@8.56.12':
     dependencies:
@@ -15983,7 +15981,7 @@ snapshots:
 
   '@types/eslint@9.6.1':
     dependencies:
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
       '@types/json-schema': 7.0.15
 
   '@types/estree@1.0.8': {}
@@ -15992,7 +15990,7 @@ snapshots:
 
   '@types/fs-extra@9.0.13':
     dependencies:
-      '@types/node': 20.19.37
+      '@types/node': 22.19.15
 
   '@types/glob@9.0.0':
     dependencies:
@@ -16031,13 +16029,13 @@ snapshots:
   '@types/rimraf@3.0.2':
     dependencies:
       '@types/glob': 9.0.0
-      '@types/node': 20.19.37
+      '@types/node': 22.19.15
 
   '@types/rsvp@4.0.9': {}
 
   '@types/ssri@7.1.5':
     dependencies:
-      '@types/node': 20.19.37
+      '@types/node': 22.19.15
 
   '@types/supports-color@8.1.3': {}
 
@@ -17808,13 +17806,13 @@ snapshots:
 
   css-loader@5.2.7(webpack@5.105.4(@swc/core@1.15.21)):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.5.8)
+      icss-utils: 5.1.0(postcss@8.5.13)
       loader-utils: 2.0.4
-      postcss: 8.5.8
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.8)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.8)
-      postcss-modules-scope: 3.2.1(postcss@8.5.8)
-      postcss-modules-values: 4.0.0(postcss@8.5.8)
+      postcss: 8.5.13
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.13)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.13)
+      postcss-modules-scope: 3.2.1(postcss@8.5.13)
+      postcss-modules-values: 4.0.0(postcss@8.5.13)
       postcss-value-parser: 4.2.0
       schema-utils: 3.3.0
       semver: 7.7.4
@@ -17822,13 +17820,13 @@ snapshots:
 
   css-loader@5.2.7(webpack@5.105.4):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.5.8)
+      icss-utils: 5.1.0(postcss@8.5.13)
       loader-utils: 2.0.4
-      postcss: 8.5.8
-      postcss-modules-extract-imports: 3.1.0(postcss@8.5.8)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.5.8)
-      postcss-modules-scope: 3.2.1(postcss@8.5.8)
-      postcss-modules-values: 4.0.0(postcss@8.5.8)
+      postcss: 8.5.13
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.13)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.13)
+      postcss-modules-scope: 3.2.1(postcss@8.5.13)
+      postcss-modules-values: 4.0.0(postcss@8.5.13)
       postcss-value-parser: 4.2.0
       schema-utils: 3.3.0
       semver: 7.7.4
@@ -18215,14 +18213,6 @@ snapshots:
       ember-cli-babel: 8.3.1(@babel/core@7.29.0)
       ember-source: 'link:'
     transitivePeerDependencies:
-      - supports-color
-
-  ember-cli-deprecation-workflow@4.0.1(@babel/core@7.29.0):
-    dependencies:
-      '@embroider/addon-shim': 1.10.2
-      decorator-transforms: 2.3.2(@babel/core@7.29.0)
-    transitivePeerDependencies:
-      - '@babel/core'
       - supports-color
 
   ember-cli-get-component-path-option@1.0.0: {}
@@ -19129,7 +19119,7 @@ snapshots:
       '@humanfs/node': 0.16.7
       '@humanwhocodes/module-importer': 1.0.1
       '@humanwhocodes/retry': 0.4.3
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
       ajv: 6.14.0
       chalk: 4.1.2
       cross-spawn: 7.0.6
@@ -20232,9 +20222,9 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  icss-utils@5.1.0(postcss@8.5.8):
+  icss-utils@5.1.0(postcss@8.5.13):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.13
 
   ieee754@1.2.1: {}
 
@@ -21798,26 +21788,26 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postcss-modules-extract-imports@3.1.0(postcss@8.5.8):
+  postcss-modules-extract-imports@3.1.0(postcss@8.5.13):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.13
 
-  postcss-modules-local-by-default@4.2.0(postcss@8.5.8):
+  postcss-modules-local-by-default@4.2.0(postcss@8.5.13):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.5.8)
-      postcss: 8.5.8
+      icss-utils: 5.1.0(postcss@8.5.13)
+      postcss: 8.5.13
       postcss-selector-parser: 7.1.1
       postcss-value-parser: 4.2.0
 
-  postcss-modules-scope@3.2.1(postcss@8.5.8):
+  postcss-modules-scope@3.2.1(postcss@8.5.13):
     dependencies:
-      postcss: 8.5.8
+      postcss: 8.5.13
       postcss-selector-parser: 7.1.1
 
-  postcss-modules-values@4.0.0(postcss@8.5.8):
+  postcss-modules-values@4.0.0(postcss@8.5.13):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.5.8)
-      postcss: 8.5.8
+      icss-utils: 5.1.0(postcss@8.5.13)
+      postcss: 8.5.13
 
   postcss-resolve-nested-selector@0.1.6: {}
 
