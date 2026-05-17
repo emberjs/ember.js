@@ -183,13 +183,33 @@ function notifyPropertyChange(
         // wrap still sets the flag for the body's duration, which is what
         // the CP.get re-entrance guard cares about. See `withInTriggerReRender`
         // doc in gxt-bridge.ts.
+        // Cluster A Phase 1.7a: forward the optional `value` parameter through
+        // the trigger when the caller passed it (uses the existing
+        // `arguments.length === 4` discriminator pattern — see L246 below for
+        // the same pattern around `PROPERTY_DID_CHANGE`). This unlocks the
+        // Phase 1.7b enqueue-site `cellFor(...).update(value)` which removes
+        // the body's dependency on the synchronous `obj[keyName]` getter
+        // read for the ~85% of write traffic that already passes value
+        // (set() at property_set.ts:118 + @tracked setter at tracked.ts:309).
+        // Capture `arguments.length` to a const so the arrow closure observes
+        // the outer notifyPropertyChange's call-shape (arrows don't have their
+        // own `arguments`, but capturing avoids any TS/transform ambiguity).
+        const _hasValueArg = arguments.length === 4;
         const _withIn = _cp?.withInTriggerReRender;
         if (_withIn) {
           _withIn(() => {
-            _triggerReRender(obj, keyName);
+            if (_hasValueArg) {
+              _triggerReRender(obj, keyName, value);
+            } else {
+              _triggerReRender(obj, keyName);
+            }
           });
         } else {
-          _triggerReRender(obj, keyName);
+          if (_hasValueArg) {
+            _triggerReRender(obj, keyName, value);
+          } else {
+            _triggerReRender(obj, keyName);
+          }
         }
       }
     }

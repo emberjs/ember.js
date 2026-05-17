@@ -3223,7 +3223,7 @@ export interface GxtCompilePipelineCapabilities {
    *
    * Previously: `(globalThis as any).__gxtTriggerReRender`.
    */
-  triggerReRender?(obj: object, keyName: string): void;
+  triggerReRender?(obj: object, keyName: string, value?: unknown): void;
 
   /**
    * Register a BEFORE-chain host hook to run BEFORE the canonical

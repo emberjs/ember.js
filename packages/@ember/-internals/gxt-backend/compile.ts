@@ -4746,7 +4746,14 @@ function _gxtSetPendingSyncFromPropertyChange(on: boolean): void {
 // globalThis slot); only the `_gxtWithTriggerSuppressed` writer sets it.
 let _gxtTriggerSuppressedFlag = false;
 
-const _gxtTriggerReRender = function (obj: object, keyName: string) {
+const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unknown) {
+  // Cluster A Phase 1.7a: signature extended with optional `value` parameter.
+  // Plumbed through `notifyPropertyChange(obj, keyName, _meta, value)` via the
+  // bridge so the body's `cellFor(obj, keyName).update(obj[keyName])` getter
+  // read can be replaced with an immediate cell.update(value) at the enqueue
+  // site for the ~85% of write traffic that already passes value (set() +
+  // @tracked setter). Phase 1.7a is pure plumbing — `value` is forwarded to
+  // `_gxtTriggerReRenderBody` but not yet consumed there.
   // Slice-25 (Cluster B): honor the module-local suppression flag at the
   // single entry point. When `_gxtWithTriggerSuppressed(fn)` is in flight
   // the flag is `true` and we short-circuit — matching the legacy
@@ -4787,7 +4794,7 @@ const _gxtTriggerReRender = function (obj: object, keyName: string) {
   // dropped). The wrap shape is unchanged; only the canonical state moved.
   try {
     _gxtWithInTriggerReRender(() => {
-      _gxtTriggerReRenderBody(obj, keyName);
+      _gxtTriggerReRenderBody(obj, keyName, value);
     });
   } finally {
     if (_afterTriggerReRender.length > 0) {
@@ -4842,7 +4849,13 @@ function _gxtWithTriggerSuppressed<T>(fn: () => T): T {
   }
 }
 
-const _gxtTriggerReRenderBody = function (obj: object, keyName: string) {
+const _gxtTriggerReRenderBody = function (obj: object, keyName: string, _value?: unknown) {
+  // Cluster A Phase 1.7a: signature accepts optional `_value` (the new value
+  // forwarded by `_gxtTriggerReRender`). The body does NOT yet use it — the
+  // existing `const newValue = (obj as any)[keyName]; cellFor(...).update(newValue)`
+  // remains the cell-update authority for this phase. Phase 1.7b will move the
+  // cell.update earlier (to the enqueue site) using the passed value, making
+  // the body's getter read a redundant no-op revision bump.
   // Custom modifier manager: notify install-phase watcher if this object is a
   // modifier instance whose installModifier is currently running. Classic Ember
   // captures tags dirtied inside the install track frame and schedules an update.
