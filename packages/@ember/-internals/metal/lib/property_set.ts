@@ -115,7 +115,14 @@ export function _setProp(obj: object, keyName: string, value: any) {
     }
 
     if (currentValue !== value) {
-      notifyPropertyChange(obj, keyName);
+      // Cluster A Phase 1.7b: forward `value` as the 4th arg so the GXT
+      // trigger can `cellFor(obj, keyName, true)?.update(value)` synchronously
+      // at the enqueue site, eliminating the body's `obj[keyName]` getter
+      // read. Pass `null` for `_meta` so `notifyPropertyChange` does its
+      // standard `peekMeta(obj)` lookup. set() is the highest-traffic write
+      // path; combined with the @tracked setter at tracked.ts:309 this
+      // covers ~85% of write traffic per Phase 1.7 audit.
+      notifyPropertyChange(obj, keyName, null, value);
     }
   }
 

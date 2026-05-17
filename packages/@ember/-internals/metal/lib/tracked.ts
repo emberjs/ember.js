@@ -306,7 +306,15 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // tracked.ts via the property_set.ts edge). See the slice-123 import
     // docblock at the top of this file.
     if (__GXT_MODE__) {
-      notifyPropertyChange(this, key);
+      // Cluster A Phase 1.7b: forward `newValue` (the setter parameter — the
+      // name `value` is taken by the getter's local at L201; the setter
+      // parameter is `newValue` per L258) as the 4th arg so
+      // _gxtTriggerReRender can perform an immediate
+      // `cellFor(this, key, true)?.update(newValue)` at the enqueue site,
+      // skipping the body's `obj[keyName]` getter read. Combined with the
+      // set() patch at property_set.ts:118 this covers ~85% of GXT-mode
+      // write traffic.
+      notifyPropertyChange(this, key, null, newValue);
     }
     // Notify GXT for cross-object reactivity — when a tracked property changes
     // on a non-component object (e.g., a Counter or Person class), dirty all

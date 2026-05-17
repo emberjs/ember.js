@@ -4764,6 +4764,34 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
   // `_gxtTriggerReRender` via `compilePipeline.triggerReRender(...)`, so
   // the flag-gate is the ONLY surface that preserves their suppression.
   if (_gxtTriggerSuppressedFlag) return;
+  // Cluster A Phase 1.7b: when the caller passed `value` (3rd arg present —
+  // notifyPropertyChange→trigger forwards it from set() at property_set.ts:118
+  // and the @tracked setter at tracked.ts:309), perform an immediate
+  // `cellFor(obj, keyName, true)?.update(value)` at this enqueue site. This
+  // eliminates the body's `const newValue = (obj as any)[keyName]; cellFor
+  // (...).update(newValue)` getter-read dependency for the ~85% of write
+  // traffic on the value-passing paths. The body's own cell.update at
+  // L~4923-4928 becomes a no-op revision bump (Cell.update at
+  // reactive.ts:446-449 short-circuits when the new value is === the stored
+  // one, since this immediate write already set it). Use the same
+  // globalThis.__gxtCellFor indirection as the four Phase 1.5 arg-pass sites
+  // in manager.ts (L2882/L2956/L4424/L4517) for consistency — no new import
+  // edges. skipDefine=true matches the Phase-1.5 empirical correction:
+  // skipDefine=false would replace Ember's tracked-property descriptor and
+  // break two-way bindings. Idempotent — runs even when Phase 1.7c cascade-
+  // defer is not yet applied (body still runs synchronously after this); the
+  // body's second cell.update on the same value is a no-op.
+  if (arguments.length >= 3) {
+    try {
+      const _cellForFn = (globalThis as any).__gxtCellFor;
+      if (typeof _cellForFn === 'function') {
+        const _c = _cellForFn(obj, keyName, /* skipDefine */ true);
+        _c?.update?.(value);
+      }
+    } catch (cellErr) {
+      console.warn('[gxt] Phase 1.7b immediate cell.update failed', { keyName, cellErr });
+    }
+  }
   // Slice-15: dispatch the BEFORE-chain (empty-chain check is a
   // length-zero short-circuit so per-call overhead stays at one cmp + one
   // branch when nothing is registered).
