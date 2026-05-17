@@ -3380,6 +3380,78 @@ function registerArrayOwner(array: any, ownerObj: object, ownerKey: string) {
 // conditional is updated.
 let _pendingIfWatcherNotifications: Array<{ obj: object; keyName: string }> = [];
 
+// Cluster A Phase 2b: deferred cascade queue infrastructure.
+//
+// The Phase 2a body-split landed `_gxtTriggerReRenderSyncCore`
+// (synchronous-mandatory) + `_gxtTriggerReRenderDeferred` (deferrable
+// cascade work: modifier-install watcher, array-owner fan-out,
+// objectValueCellMap fan-out, syncWrapper). Phase 2b adds the queue +
+// dedupe + drain plumbing that Phase 2c will use to actually move the
+// drain to `_gxtSyncDomNow` Phase 0.5.
+//
+// Phase 2b keeps the drain SYNCHRONOUS at the end of `_gxtTriggerReRender`,
+// so there is NO observable timing change vs Phase 2a. The whole point of
+// this phase is to validate the queue + dedupe + re-entrancy mechanics
+// independently before Phase 2c flips the timing.
+//
+// Dedupe shape: WeakMap<obj, Set<keyName>>. The Set lives only for the
+// duration of a single drain pass (cleared in the finally of the outer
+// trigger call). Re-entrant enqueues during a drain pass land in the
+// SAME queue (cursor-loop drain at `_drainCascadeQueue`) so we never lose
+// a trigger; the Set dedupes within the pass to prevent the same
+// (obj, keyName) from running the Deferred body twice.
+let _deferredCascadeQueue: Array<{ obj: object; keyName: string }> = [];
+let _deferredCascadeIndex: WeakMap<object, Set<string>> = new WeakMap();
+let _drainInProgress = false;
+const _MAX_DRAIN = 1000;
+
+// Cluster A Phase 2b: liveness guard for drain entries. The Phase 1.7c
+// forensic identified two failure modes (failures 2&3 from the
+// "pushObject of undefined — each-toggling sibling modules" investigation)
+// where `_arrayOwnerMap` retained stale `{obj, key}` owner references
+// from PREVIOUS tests; when drain ran the Deferred body for `(array, '[]')`
+// after `afterEach` nulled the test controllers, the cellFor propagation
+// hit a dead context. The guard skips entries whose owner is destroyed
+// before the deferred body runs.
+function _isOwnerAlive(obj: object): boolean {
+  if (!obj || typeof obj !== 'object') return false;
+  if ((obj as any).isDestroyed === true) return false;
+  if ((obj as any).isDestroying === true) return false;
+  return true;
+}
+
+// Cluster A Phase 2b: cursor-loop drain (NOT `.splice(0)`). Re-entrant
+// enqueues during a Deferred body run land at the queue tail; the cursor
+// loop picks them up in the SAME pass. `_MAX_DRAIN=1000` bounds runaway
+// cascades (the Phase 1.7c hang root cause — `get prop() { return new ... }`
+// identity-churn — was structurally fixed by Phase 2a's removal of the
+// outer-obj sibling-getter rescan, but a defensive cap is cheap insurance).
+function _drainCascadeQueue(): void {
+  let i = 0;
+  while (i < _deferredCascadeQueue.length && i < _MAX_DRAIN) {
+    const entry = _deferredCascadeQueue[i++]!;
+    const { obj, keyName } = entry;
+    // Liveness guard — skip dead owners (handles array-owner-fan-out case
+    // where `_arrayOwnerMap` retains stale {obj, key} from afterEach-nulled
+    // controllers — see Phase 1.7c forensic failures 2&3).
+    if (!_isOwnerAlive(obj)) continue;
+    try {
+      _gxtWithInTriggerReRender(() => _gxtTriggerReRenderDeferred(obj, keyName));
+    } catch (drainErr) {
+      // Surface drain errors per CLAUDE.md no-silent-swallow rule.
+      // Matches the unconditional `console.warn` pattern already in use at
+      // L5228 (`_innerSiblingRescanDepth` cap) and the ifWatcher error sites.
+      console.warn('[gxt] Phase 2b drain entry failed', { keyName, drainErr });
+    }
+  }
+  if (i >= _MAX_DRAIN) {
+    console.warn(
+      '[gxt] Phase 2b drain hit MAX_DRAIN cap',
+      _deferredCascadeQueue.length
+    );
+  }
+}
+
 // Cluster A Phase 1.6: extracted helper for pushing an if-watcher notification.
 // Originally inlined inside `_gxtTriggerReRenderBody`. Extracting it allows
 // Phase 2 (cascade defer) to call this helper synchronously from
@@ -4822,19 +4894,39 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
   // dropped). The wrap shape is unchanged; only the canonical state moved.
   //
   // Cluster A Phase 2a: the body is split into SyncCore (synchronous-mandatory
-  // cell/flag work) and Deferred (deferrable cascade work). Both are still
-  // called synchronously here — Phase 2b will add the deferred queue
-  // infrastructure; Phase 2c will actually defer drain to `_gxtSyncDomNow`
-  // Phase 0.5. We invoke each through its own `_gxtWithInTriggerReRender`
-  // frame so the flag-toggle contract is preserved across both halves
-  // identically.
+  // cell/flag work) and Deferred (deferrable cascade work). Phase 2a called
+  // both synchronously here.
+  //
+  // Cluster A Phase 2b: SyncCore is still synchronous, every call. The
+  // Deferred half is now ENQUEUED into `_deferredCascadeQueue` with
+  // WeakMap+Set dedupe, and drained at the END of `_gxtTriggerReRender` —
+  // still synchronously, so there is NO observable timing change vs Phase
+  // 2a. The point of 2b is to validate the queue/dedupe/re-entrancy
+  // mechanics independently before Phase 2c moves the drain to
+  // `_gxtSyncDomNow` Phase 0.5.
+  //
+  // Re-entrancy: if a Deferred body run calls `_gxtTriggerReRender`
+  // recursively, the inner call's SyncCore fires immediately (read-after-
+  // set contract), the inner call's Deferred is enqueued (dedupe may catch
+  // it), and the inner call SKIPS the drain because `_drainInProgress` is
+  // true. The outer call's cursor loop in `_drainCascadeQueue` picks up
+  // the new tail entry in the SAME pass (bounded by `_MAX_DRAIN=1000`).
   try {
     _gxtWithInTriggerReRender(() => {
       _gxtTriggerReRenderSyncCore(obj, keyName, value, hasValueArg);
     });
-    _gxtWithInTriggerReRender(() => {
-      _gxtTriggerReRenderDeferred(obj, keyName);
-    });
+
+    // Enqueue the Deferred half with dedupe.
+    let seen = _deferredCascadeIndex.get(obj);
+    if (!seen) {
+      seen = new Set();
+      _deferredCascadeIndex.set(obj, seen);
+    }
+    if (!seen.has(keyName)) {
+      seen.add(keyName);
+      _deferredCascadeQueue.push({ obj, keyName });
+    }
+
     // Cluster A Phase 2a: hoisted from the former body's L5332. Phase 1.6
     // factored this into the `_pushIfWatcherNotification` helper precisely
     // so the enqueue site (here) can call it after the SyncCore/Deferred
@@ -4842,6 +4934,26 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
     // call enqueues exactly one pending if-watcher notification (drained by
     // `_gxtSyncDomNow`).
     _pushIfWatcherNotification(obj, keyName);
+
+    // Cluster A Phase 2b: drain SYNCHRONOUSLY at end of trigger. No timing
+    // change vs Phase 2a. The `_drainInProgress` guard makes us re-entrant-
+    // safe: if a Deferred body recursively calls `_gxtTriggerReRender`,
+    // the inner call enqueues but defers draining — the outer cursor loop
+    // picks up the new entries. The queue + index are reset in finally so
+    // dedupe is per-trigger-call, not global.
+    //
+    // Phase 2c will REMOVE this synchronous drain and instead drain at
+    // `_gxtSyncDomNow` Phase 0.5.
+    if (!_drainInProgress) {
+      _drainInProgress = true;
+      try {
+        _drainCascadeQueue();
+      } finally {
+        _drainInProgress = false;
+        _deferredCascadeQueue.length = 0;
+        _deferredCascadeIndex = new WeakMap();
+      }
+    }
   } finally {
     if (_afterTriggerReRender.length > 0) {
       for (let i = 0; i < _afterTriggerReRender.length; i++) {
@@ -7996,6 +8108,14 @@ function _gxtCleanupActiveComponents(): void {
   }
   // Clear pending if-watcher notifications from the previous test
   _pendingIfWatcherNotifications.length = 0;
+  // Cluster A Phase 2b: clear deferred-cascade queue + index + in-progress
+  // flag between tests so queue state never leaks across the test boundary.
+  // (Phase 2b still drains synchronously at end of every trigger, so the
+  // queue should be empty here anyway — this is defensive insurance for
+  // Phase 2c when the drain timing moves to `_gxtSyncDomNow` Phase 0.5.)
+  _deferredCascadeQueue.length = 0;
+  _deferredCascadeIndex = new WeakMap();
+  _drainInProgress = false;
   // Clear dynamic component change listeners and stale getter from $_dc_ember.
   // Slice-14 (Cluster B): the Set + string-path counter migrated to manager.ts
   // module-local state behind the bridge's
