@@ -87,6 +87,19 @@ moduleFor(
       });
     }
 
+    ['@test it throws a useful assertion when dynamic component name is an object'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
+        this.render('{{component this.componentName}}', {
+          componentName: { name: 'not-a-component' },
+        });
+      }, /The `{{component}}` helper received an invalid value\. It expects a component definition, or a string component name in non-strict mode\./);
+    }
+
     ['@test it has an element']() {
       let instance;
 
