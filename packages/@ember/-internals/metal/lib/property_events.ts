@@ -113,7 +113,7 @@ export function _gxtCPIsInvalidating(obj: object, keyName: string): boolean {
 */
 // Re-entrancy depth counter for notifyPropertyChange
 let _notifyDepth = 0;
-const MAX_NOTIFY_DEPTH = 10;
+const MAX_NOTIFY_DEPTH = 100;
 
 function notifyPropertyChange(
   obj: object,
