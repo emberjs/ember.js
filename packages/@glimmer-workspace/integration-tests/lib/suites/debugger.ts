@@ -87,6 +87,31 @@ export class DebuggerSuite extends RenderTest {
     this.assertStableNodes();
   }
 
+  @test({ kind: 'templateOnly' })
+  'debugger in template-only component logs template-only message'() {
+    let originalInfo = console.info;
+    let messages: string[] = [];
+
+    console.info = (...args: unknown[]) => {
+      messages.push(args.join(' '));
+    };
+
+    try {
+      resetDebuggerCallback();
+
+      this.registerComponent('TemplateOnly', 'DebugTest', '{{debugger}}');
+
+      this.render('<DebugTest @foo="bar" />', {});
+
+      this.assert.deepEqual(messages, [
+        "Use `get(<path>)` to debug this template. For named arguments, use `get('@argName')`.",
+      ]);
+    } finally {
+      console.info = originalInfo;
+      resetDebuggerCallback();
+    }
+  }
+
   @test
   'can get locals'() {
     let expectedContext = {
