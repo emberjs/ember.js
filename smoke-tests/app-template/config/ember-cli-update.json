@@ -3,7 +3,7 @@
   "packages": [
     {
       "name": "@ember-tooling/classic-build-app-blueprint",
-      "version": "6.11.0",
+      "version": "6.12.0",
       "blueprints": [
         {
           "name": "@ember-tooling/classic-build-app-blueprint",
