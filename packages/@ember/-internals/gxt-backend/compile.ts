@@ -4746,14 +4746,36 @@ function _gxtSetPendingSyncFromPropertyChange(on: boolean): void {
 // globalThis slot); only the `_gxtWithTriggerSuppressed` writer sets it.
 let _gxtTriggerSuppressedFlag = false;
 
+// Cluster A Phase 2a: bounded depth counter for the inner sibling-getter
+// rescan inside `_walkRenderContexts`. The pre-Phase-2a outer-obj sibling
+// rescan (former L4980-5012) was identified as the hang root cause — a
+// `get prop() { return new ... }` pattern on `obj` itself caused unbounded
+// queue growth via identity-churn. That outer rescan is REMOVED in 2a; the
+// inner one (on render-context wrappers via `cellTarget`) covers the
+// legitimate aliased-getter case but is still vulnerable to the same
+// identity-churn pattern in user code. We bound it defensively. The counter
+// is a single integer (cheap), incremented on entry / decremented in finally,
+// and the rescan is skipped (with a warn) once depth exceeds the limit. The
+// limit of 3 matches the prototype-chain walk depth used elsewhere in the
+// body and is comfortably above any reasonable wrapper-aliased-getter chain.
+let _innerSiblingRescanDepth = 0;
+const _INNER_SIBLING_RESCAN_MAX_DEPTH = 3;
+
 const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unknown) {
   // Cluster A Phase 1.7a: signature extended with optional `value` parameter.
   // Plumbed through `notifyPropertyChange(obj, keyName, _meta, value)` via the
   // bridge so the body's `cellFor(obj, keyName).update(obj[keyName])` getter
   // read can be replaced with an immediate cell.update(value) at the enqueue
   // site for the ~85% of write traffic that already passes value (set() +
-  // @tracked setter). Phase 1.7a is pure plumbing — `value` is forwarded to
-  // `_gxtTriggerReRenderBody` but not yet consumed there.
+  // @tracked setter).
+  //
+  // Cluster A Phase 2a: the Phase 1.7b enqueue-site cell.update block is
+  // REMOVED — its work is now performed by `_gxtTriggerReRenderSyncCore`'s
+  // primary cellFor.update (called below), which already takes `value`
+  // directly when `hasValueArg` is true (skipping the getter read). Keeping
+  // both would be a redundant write on the same revision; SyncCore is the
+  // single source of truth for the cell.update.
+  //
   // Slice-25 (Cluster B): honor the module-local suppression flag at the
   // single entry point. When `_gxtWithTriggerSuppressed(fn)` is in flight
   // the flag is `true` and we short-circuit — matching the legacy
@@ -4764,34 +4786,12 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
   // `_gxtTriggerReRender` via `compilePipeline.triggerReRender(...)`, so
   // the flag-gate is the ONLY surface that preserves their suppression.
   if (_gxtTriggerSuppressedFlag) return;
-  // Cluster A Phase 1.7b: when the caller passed `value` (3rd arg present —
-  // notifyPropertyChange→trigger forwards it from set() at property_set.ts:118
-  // and the @tracked setter at tracked.ts:309), perform an immediate
-  // `cellFor(obj, keyName, true)?.update(value)` at this enqueue site. This
-  // eliminates the body's `const newValue = (obj as any)[keyName]; cellFor
-  // (...).update(newValue)` getter-read dependency for the ~85% of write
-  // traffic on the value-passing paths. The body's own cell.update at
-  // L~4923-4928 becomes a no-op revision bump (Cell.update at
-  // reactive.ts:446-449 short-circuits when the new value is === the stored
-  // one, since this immediate write already set it). Use the same
-  // globalThis.__gxtCellFor indirection as the four Phase 1.5 arg-pass sites
-  // in manager.ts (L2882/L2956/L4424/L4517) for consistency — no new import
-  // edges. skipDefine=true matches the Phase-1.5 empirical correction:
-  // skipDefine=false would replace Ember's tracked-property descriptor and
-  // break two-way bindings. Idempotent — runs even when Phase 1.7c cascade-
-  // defer is not yet applied (body still runs synchronously after this); the
-  // body's second cell.update on the same value is a no-op.
-  if (arguments.length >= 3) {
-    try {
-      const _cellForFn = (globalThis as any).__gxtCellFor;
-      if (typeof _cellForFn === 'function') {
-        const _c = _cellForFn(obj, keyName, /* skipDefine */ true);
-        _c?.update?.(value);
-      }
-    } catch (cellErr) {
-      console.warn('[gxt] Phase 1.7b immediate cell.update failed', { keyName, cellErr });
-    }
-  }
+  // Cluster A Phase 2a: detect whether the caller passed a value so SyncCore
+  // can skip the `(obj as any)[keyName]` getter read for the ~85% of write
+  // traffic on the value-passing paths (notifyPropertyChange→trigger forwards
+  // it from set() at property_set.ts:118 and the @tracked setter at
+  // tracked.ts:309).
+  const hasValueArg = arguments.length >= 3;
   // Slice-15: dispatch the BEFORE-chain (empty-chain check is a
   // length-zero short-circuit so per-call overhead stays at one cmp + one
   // branch when nothing is registered).
@@ -4820,10 +4820,28 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
   // Slice-23 (Cluster B): `_gxtWithInTriggerReRender` now reads/writes the
   // module-local `_gxtInTriggerReRenderFlag` (the `globalThis` slot is
   // dropped). The wrap shape is unchanged; only the canonical state moved.
+  //
+  // Cluster A Phase 2a: the body is split into SyncCore (synchronous-mandatory
+  // cell/flag work) and Deferred (deferrable cascade work). Both are still
+  // called synchronously here — Phase 2b will add the deferred queue
+  // infrastructure; Phase 2c will actually defer drain to `_gxtSyncDomNow`
+  // Phase 0.5. We invoke each through its own `_gxtWithInTriggerReRender`
+  // frame so the flag-toggle contract is preserved across both halves
+  // identically.
   try {
     _gxtWithInTriggerReRender(() => {
-      _gxtTriggerReRenderBody(obj, keyName, value);
+      _gxtTriggerReRenderSyncCore(obj, keyName, value, hasValueArg);
     });
+    _gxtWithInTriggerReRender(() => {
+      _gxtTriggerReRenderDeferred(obj, keyName);
+    });
+    // Cluster A Phase 2a: hoisted from the former body's L5332. Phase 1.6
+    // factored this into the `_pushIfWatcherNotification` helper precisely
+    // so the enqueue site (here) can call it after the SyncCore/Deferred
+    // pair completes. This is the contract: every `_gxtTriggerReRender`
+    // call enqueues exactly one pending if-watcher notification (drained by
+    // `_gxtSyncDomNow`).
+    _pushIfWatcherNotification(obj, keyName);
   } finally {
     if (_afterTriggerReRender.length > 0) {
       for (let i = 0; i < _afterTriggerReRender.length; i++) {
@@ -4877,83 +4895,126 @@ function _gxtWithTriggerSuppressed<T>(fn: () => T): T {
   }
 }
 
-const _gxtTriggerReRenderBody = function (obj: object, keyName: string, _value?: unknown) {
-  // Cluster A Phase 1.7a: signature accepts optional `_value` (the new value
-  // forwarded by `_gxtTriggerReRender`). The body does NOT yet use it — the
-  // existing `const newValue = (obj as any)[keyName]; cellFor(...).update(newValue)`
-  // remains the cell-update authority for this phase. Phase 1.7b will move the
-  // cell.update earlier (to the enqueue site) using the passed value, making
-  // the body's getter read a redundant no-op revision bump.
-  // Custom modifier manager: notify install-phase watcher if this object is a
-  // modifier instance whose installModifier is currently running. Classic Ember
-  // captures tags dirtied inside the install track frame and schedules an update.
-  // We mirror that by calling the registered watcher, which flags the instance
-  // for an additional updateModifier call after install returns.
-  //
-  // Slice-33 (Cluster B): canonical state is the module-local
-  // `_modifierInstallWatchers` Map in `gxt-backend/manager.ts` (writer at
-  // manager.ts's modifier-install code path — direct `.set(instance, watcher)`
-  // / `.delete(instance)` pair around the `installModifier` track frame, the
-  // pre-slice-33 `globalThis.__gxtModifierInstallWatchers` lazy-init dance is
-  // dropped). This cross-file reader routes through
-  // `compilePipeline.getModifierInstallWatchers?.()` (slice-32 read-only
-  // `Set`-getter precedent applied to a `Map`). The bridge getter returns
-  // the live Map when the bridge is installed, `undefined` otherwise
-  // (defensive optional chain on the install method itself); the surrounding
-  // `instanceof Map && size > 0` gate continues to short-circuit when the
-  // bridge is not yet installed (the gate's `instanceof Map` half handles
-  // the `undefined` case, and the `size > 0` half handles the always-defined
-  // empty-Map case for the post-slice-33 always-defined module-local Map).
-  const modWatchers = getGxtRenderer()?.compilePipeline.getModifierInstallWatchers?.();
-  if (modWatchers instanceof Map && modWatchers.size > 0) {
-    const watcher = modWatchers.get(obj);
-    if (typeof watcher === 'function') watcher();
+// Cluster A Phase 2a helper: encapsulates the proto-walk + COMPONENT_MANAGERS
+// lookup formerly inlined in `_gxtTriggerReRenderBody` (former L5285-5308) for
+// the `hadNestedObjectChange` decision. Returns `true` iff `obj` is itself a
+// root-component OR a custom-managed component instance (registered via
+// `setComponentManager` → COMPONENT_MANAGERS). Classic Ember Components
+// (registered via setInternalComponentManager → INTERNAL_MANAGERS) are
+// deliberately treated as NOT custom-managed — their `set()` depends on the
+// force-rerender to pick up alias / CP changes reliably.
+//
+// Helper extraction is purely structural — semantics are identical to the
+// inlined version, including the 8-deep prototype-chain bound and the
+// `getOwnPropertyDescriptor`-via-`has`-and-`has`-on-proto pattern.
+function _isCustomManagedComponent(obj: object): boolean {
+  // (Cluster B slice 9) Was `(globalThis as any).__gxtIsRootComponent`.
+  // Now read via the gxt-bridge `rootComponent` namespace; the writer is
+  // `glimmer/lib/renderer.ts` (the first cross-package writer for an
+  // install-API namespace).
+  const isRoot = getGxtRenderer()?.rootComponent.isRootComponent;
+  if (typeof isRoot === 'function' && isRoot(obj)) {
+    return true;
   }
-  // Handle KVO array mutations: when '[]' or 'length' is notified on an array,
-  // dirty the cells of all component properties that reference this array.
-  // Note: KVO array mutation tracking (pushObject/shiftObject) is handled
-  // by dirtying cells on objects that reference the array. This is a best-effort
-  // approach since GXT's $_eachSync may not re-render for same-reference arrays.
-  if (keyName === '[]' || keyName === 'length') {
-    if (Array.isArray(obj)) {
-      const owners = _arrayOwnerMap.get(obj);
-      if (owners) {
-        for (const { obj: ownerObj, key: ownerKey } of owners) {
-          try {
-            // Use skipDefine=true to avoid overwriting custom getters on renderContext
-            // that were set up during createRenderContext. The custom getter reads
-            // from the Ember instance via a getter function, while cellFor's default
-            // getter reads from cell._value which may be stale for same-ref arrays.
-            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-            if (c) c.update(obj);
-          } catch {
-            /* ignore */
-          }
-        }
+  const compMgrs = (globalThis as any).COMPONENT_MANAGERS;
+  if (compMgrs && typeof compMgrs.has === 'function') {
+    let proto: any = Object.getPrototypeOf(obj);
+    let depth = 0;
+    while (proto && proto !== Object.prototype && depth < 8) {
+      const ctor = proto.constructor;
+      if (compMgrs.has(ctor) || compMgrs.has(proto)) {
+        return true;
       }
-    } else if (obj && typeof obj === 'object') {
-      // Non-Array iterable wrappers (ArrayDelegate / ArrayProxy / Set / etc.)
-      // — `arrayContentDidChange` notifies '[]'/'length' on the wrapper itself.
-      // Look up registered owners for the WRAPPER and dirty their cells. The
-      // owners map was populated by patchedEachSync's iterable-aware
-      // registration so that mutating the underlying array reaches the
-      // component cell, allowing the existing Xt instance's syncList listener
-      // to fire (instead of waiting for the destructive force-rerender to
-      // create a fresh keyMap-empty Xt that loses DOM stability).
-      const owners = _arrayOwnerMap.get(obj);
-      if (owners) {
-        for (const { obj: ownerObj, key: ownerKey } of owners) {
-          try {
-            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-            if (c) c.update(obj);
-          } catch {
-            /* ignore */
-          }
-        }
+      proto = Object.getPrototypeOf(proto);
+      depth++;
+    }
+  }
+  return false;
+}
+
+// Cluster A Phase 2a helper: encapsulates the candidates-list + ctxsMap walk
+// formerly inlined in `_gxtTriggerReRenderBody` (former L5106-5117). Invokes
+// `fn(ctx, isProto)` for each registered render context derived from `obj`
+// (and from its prototype, where contexts are aggregated per prototype for
+// classic-Ember components sharing a base class). `isProto` is `true` iff the
+// context was found under the prototype bucket rather than under `obj`
+// itself — callers use this to apply the cell-aliasing filter that prevents
+// `obj`'s new value from leaking into sibling-instance cells under the same
+// prototype.
+//
+// Semantics match the inlined version exactly. The `_getOrCreateGxtComponentContexts`
+// helper is always non-null (slice-120 lazy-init guarantee), so callers do
+// NOT need a truthy guard on the returned map.
+function _walkRenderContexts(
+  obj: object,
+  fn: (ctx: object, isProto: boolean) => void
+): void {
+  // Slice-120 (Cluster B): intra-file reader routes through the
+  // module-local lazy-init helper directly (slice-30/115 zero-overhead
+  // precedent). The map is always non-null after first call; pre-slice-120
+  // this read `(globalThis as any).__gxtComponentContexts` which could be
+  // undefined before first write, so the outer guard was required.
+  const ctxsMap = _getOrCreateGxtComponentContexts();
+  if (!ctxsMap) return;
+  // Check both the object itself and its prototype as keys.
+  const candidates: object[] = [obj];
+  try {
+    const proto = Object.getPrototypeOf(obj);
+    if (proto && proto !== Object.prototype) candidates.push(proto);
+  } catch {
+    /* ignore */
+  }
+
+  for (const candidate of candidates) {
+    const ctxs = ctxsMap.get(candidate);
+    if (!ctxs) continue;
+    const isProto = candidate !== obj;
+    for (const ctx of ctxs) {
+      try {
+        fn(ctx, isProto);
+      } catch {
+        /* ignore */
       }
     }
   }
-  const newValue = (obj as any)[keyName];
+}
+
+// Cluster A Phase 2a: the canonical `_gxtTriggerReRenderBody` is split into
+// `_gxtTriggerReRenderSyncCore` (synchronous-mandatory: cell.update,
+// recomputeDependents, prototype-chain cell, render-context fan-out with
+// bounded inner sibling-getter rescan, nested-path root, all flag-sets,
+// hadNestedObjectChange decision) and `_gxtTriggerReRenderDeferred`
+// (deferrable: modifier-install watcher, array-owner fan-out,
+// objectValueCellMap fan-out, syncWrapper).
+//
+// In Phase 2a BOTH functions are still called synchronously by
+// `_gxtTriggerReRender`, so observable behavior is identical to the
+// pre-2a single body — minus the single intentional removal of the outer-obj
+// sibling-getter rescan (former L4980-5012, identified by Phase 1.7c
+// forensic as the hang root cause via identity-churn from
+// `get prop() { return new ... }` patterns). The inner sibling-getter rescan
+// on render-context wrappers (`cellTarget`, former L5146-5172) is preserved
+// because it covers the legitimate aliased-getter case (controller `model`
+// + `get derived() { return this.model + 1 }` pattern), and is additionally
+// bounded by `_innerSiblingRescanDepth` against the same identity-churn
+// hazard.
+//
+// Phase 2b will add the deferred queue infrastructure for the Deferred half;
+// Phase 2c will actually drain it from `_gxtSyncDomNow` Phase 0.5.
+function _gxtTriggerReRenderSyncCore(
+  obj: object,
+  keyName: string,
+  value: unknown,
+  hasValueArg: boolean
+): void {
+  // Primary cell.update on `obj` itself. Pre-Phase-2a this read
+  // `const newValue = (obj as any)[keyName]` unconditionally; Phase 2a uses
+  // the passed `value` directly when `hasValueArg` is true (the ~85% of
+  // write traffic that comes through set() / @tracked setter), eliminating
+  // the getter call. The fallback getter read preserves correctness for
+  // legacy callers that don't pass `value` (notifyPropertyChange invocations
+  // that omit the value argument).
+  const newValue = hasValueArg ? value : (obj as any)[keyName];
   try {
     // Use skipDefine=true to avoid replacing tracked setters on the object.
     // The tracked setter calls dirtyTagFor which bumps the global revision
@@ -4971,63 +5032,30 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string, _value?:
       /* ignore */
     }
   }
-  // Re-evaluate cells for OTHER properties on the same object that have
-  // cellFor-installed getters. Native getters (e.g., get countAlias() { return this.count; })
-  // don't declare dependencies. When 'count' changes, the cell for 'countAlias'
-  // is stale. Re-read the property's current value (which goes through the
-  // original prototype getter or tracked getter) and update the cell.
-  // Only scan own properties that have getters (installed by cellFor).
-  try {
-    const ownKeys = Object.getOwnPropertyNames(obj);
-    for (const ownKey of ownKeys) {
-      if (ownKey === keyName) continue; // Already updated
-      try {
-        const desc = Object.getOwnPropertyDescriptor(obj, ownKey);
-        if (desc && desc.get && desc.configurable) {
-          // This looks like a cellFor-installed getter. Get the cell and update it
-          // by reading the ORIGINAL prototype getter's value.
-          let protoGetter: (() => any) | null = null;
-          let proto = Object.getPrototypeOf(obj);
-          while (proto && proto !== Object.prototype) {
-            const protoDesc = Object.getOwnPropertyDescriptor(proto, ownKey);
-            if (protoDesc && protoDesc.get) {
-              protoGetter = protoDesc.get;
-              break;
-            }
-            proto = Object.getPrototypeOf(proto);
-          }
-          if (protoGetter) {
-            // Call the original prototype getter to get fresh value
-            const freshVal = protoGetter.call(obj);
-            const oc = cellFor(obj, ownKey, /* skipDefine */ true);
-            if (oc) oc.update(freshVal);
-          }
-        }
-      } catch {
-        /* skip */
-      }
-    }
-  } catch {
-    /* ignore */
-  }
-  // Dirty cells that hold `obj` as their VALUE (reverse lookup).
-  // This handles the case where a template reads {{this.m.formattedMessage}} —
-  // the formula tracks cell(renderContext, 'm'), and when m.message changes,
-  // we need to dirty that cell so the formula re-evaluates with the new
-  // computed property result.
+  // Cluster A Phase 2a: the outer-obj sibling-getter rescan (former L4980-5012,
+  // `Object.getOwnPropertyNames(obj)` + prototype-getter walk on the outer
+  // object) is REMOVED. It was redundant with the render-context wrapper
+  // variant inside `_walkRenderContexts` below (which covers the legitimate
+  // aliased-getter case via `cellTarget`), and Phase 1.7c forensic identified
+  // it as the hang root cause: `get prop() { return new ... }` patterns on
+  // `obj` itself caused unbounded queue growth via identity-churn (each
+  // re-invocation produced a fresh instance, defeating the per-obj WeakMap
+  // dedupe and ballooning the deferred queue).
+
   // Collect owners that need their Ember tag dirtied for force-rerender.
   // The actual dirtying is deferred to AFTER gxtSyncDom + updateRootTagValues.
+  //
+  // Cluster A Phase 2a: this block is split — the OWNER COUNT decision drives
+  // the `_gxtSetHadNestedObjectChange(true)` flag-set below (SyncCore), but
+  // the actual `cellFor(...).update(obj)` fan-out on the owners is performed
+  // by `_gxtTriggerReRenderDeferred` (deferrable cascade work). For Phase 2a
+  // Deferred is still called synchronously immediately after SyncCore, so
+  // observable behavior is unchanged.
   let _deferredTagDirties: Array<{ obj: object; key: string }> | null = null;
   try {
     const owners = _objectValueCellMap.get(obj);
     if (owners) {
       for (const { obj: ownerObj, key: ownerKey } of owners) {
-        try {
-          const oc = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-          if (oc) oc.update(obj);
-        } catch {
-          /* ignore */
-        }
         // Defer markObjectAsDirty to after gxtSyncDom + updateRootTagValues
         if (!_deferredTagDirties) _deferredTagDirties = [];
         _deferredTagDirties.push({ obj: ownerObj, key: ownerKey });
@@ -5044,22 +5072,14 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string, _value?:
   // Slice-106 (Cluster B): the pre-slice-106 globalThis function-pointer
   // `(globalThis as any).__gxtRecomputeDependents` is RETIRED. Routes
   // through `getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj,
-  // keyName)`. The optional-chain provides the same null-tolerant guard as
-  // the pre-slice-106 `typeof === 'function'` check (classic-Ember builds
-  // without gxt-backend simply skip the dependent-CP fan-out). The
-  // `dependents` truthiness check inside the try body matches the pre-
-  // slice-106 semantics where, if the slot was undefined, the entire
-  // `for ... of` loop body was unreachable. See `recomputeDependents` doc
-  // in gxt-bridge.ts. State home is `metal/property_events.ts` (canonical
-  // owner of the `deferred` batch counter, `peekMeta` reader, and classic
-  // CP descriptor knowledge).
+  // keyName)`. State home is `metal/property_events.ts`.
   try {
     const dependents = getGxtRenderer()?.compilePipeline.recomputeDependents?.(obj, keyName);
     if (dependents) {
-      for (const { key, value } of dependents) {
+      for (const { key, value: depValue } of dependents) {
         try {
           const dc = cellFor(obj, key, /* skipDefine */ true);
-          if (dc) dc.update(value);
+          if (dc) dc.update(depValue);
         } catch {
           /* ignore */
         }
@@ -5090,94 +5110,82 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string, _value?:
   }
   // Also dirty cells on ALL render contexts derived from this component.
   // GXT's $_if formula tracks cells on Object.create(component) wrappers.
-  // The contexts map is keyed by prototype, so we check both obj and its prototype.
+  // The contexts map is keyed by prototype, so we check both obj and its
+  // prototype. Cluster A Phase 2a: walk delegated to `_walkRenderContexts`
+  // helper; the per-ctx callback body is unchanged except for the bounded
+  // inner-sibling-rescan guard added by Phase 2a.
   try {
-    // Slice-120 (Cluster B): intra-file reader routes through the
-    // module-local lazy-init helper directly (slice-30/115 zero-overhead
-    // precedent). The map is always non-null after first call; pre-slice-120
-    // this read `(globalThis as any).__gxtComponentContexts` which could be
-    // undefined before first write, so the outer `if (ctxsMap)` guard was
-    // required. Post-slice-120 the map is unconditionally a WeakMap (lazy-
-    // init guaranteed), so the guard becomes a tautology — but we keep the
-    // truthy-check for parity (the structure is unchanged).
-    const ctxsMap = _getOrCreateGxtComponentContexts();
-    if (ctxsMap) {
-      // Check both the object itself and its prototype as keys
-      const candidates = [obj];
-      try {
-        const proto = Object.getPrototypeOf(obj);
-        if (proto && proto !== Object.prototype) candidates.push(proto);
-      } catch {
-        /* ignore */
+    _walkRenderContexts(obj, (ctx, isProto) => {
+      // Use the raw target if ctx is a Proxy — cells are installed on the
+      // raw target during initial render, so we must update the SAME cell.
+      const cellTarget = (ctx as any).__gxtRawTarget || ctx;
+      // For proto-keyed ctxs: only update cells whose raw target IS obj.
+      // The prototype bucket aggregates contexts from every instance
+      // sharing the prototype (e.g., every x-toggle instance). Without
+      // this filter, obj's new value leaks into every sibling instance's
+      // cell — the cell-aliasing bug that broke the View tree tests by
+      // flipping all x-toggle {{#if}} branches at once whenever one was
+      // toggled.
+      if (isProto && cellTarget !== obj) return;
+      const rc = cellFor(cellTarget, keyName, /* skipDefine */ false);
+      if (rc) {
+        rc.update(newValue);
       }
-
-      for (const candidate of candidates) {
-        const ctxs = ctxsMap.get(candidate);
-        if (!ctxs) continue;
-        const isProto = candidate !== obj;
-        const newValue = (obj as any)[keyName];
-        for (const ctx of ctxs) {
+      // Also re-evaluate sibling getter cells on the same render context.
+      // When a controller's `model` is updated on the renderContext, any
+      // plain JS getter on the controller prototype that reads `this.model`
+      // (e.g. `get derived() { return this.model + 1 }`) has a cell
+      // installed on the renderContext (see root.ts prototype-getter pass),
+      // but that cell is static — it captured the initial value and has
+      // no declared dependency on `model`. Walk the renderContext's own
+      // keys and, for each key whose value comes from a prototype getter,
+      // re-read via that getter and refresh the cell so formulas tracking
+      // the getter key re-evaluate.
+      //
+      // Cluster A Phase 2a: bounded by `_innerSiblingRescanDepth` against
+      // identity-churn from wrapper-aliased getters that return new
+      // instances per call. The outer-obj rescan (former L4980-5012) had
+      // no such bound and was the Phase 1.7c hang root cause; this one is
+      // smaller in scope (only render-context wrappers) but defensively
+      // bounded with the same depth limit used for the prototype-chain walk.
+      if (_innerSiblingRescanDepth >= _INNER_SIBLING_RESCAN_MAX_DEPTH) {
+        console.warn('[gxt] inner sibling-getter rescan depth exceeded', {
+          keyName,
+          depth: _innerSiblingRescanDepth,
+        });
+        return;
+      }
+      _innerSiblingRescanDepth++;
+      try {
+        const ownKeys = Object.getOwnPropertyNames(cellTarget);
+        for (const ownKey of ownKeys) {
+          if (ownKey === keyName) continue;
+          if (ownKey.startsWith('_') || ownKey.startsWith('$')) continue;
           try {
-            // Use the raw target if ctx is a Proxy — cells are installed on the
-            // raw target during initial render, so we must update the SAME cell.
-            const cellTarget = (ctx as any).__gxtRawTarget || ctx;
-            // For proto-keyed ctxs: only update cells whose raw target IS obj.
-            // The prototype bucket aggregates contexts from every instance
-            // sharing the prototype (e.g., every x-toggle instance). Without
-            // this filter, obj's new value leaks into every sibling instance's
-            // cell — the cell-aliasing bug that broke the View tree tests by
-            // flipping all x-toggle {{#if}} branches at once whenever one was
-            // toggled.
-            if (isProto && cellTarget !== obj) continue;
-            const rc = cellFor(cellTarget, keyName, /* skipDefine */ false);
-            if (rc) {
-              rc.update(newValue);
-            }
-            // Also re-evaluate sibling getter cells on the same render context.
-            // When a controller's `model` is updated on the renderContext, any
-            // plain JS getter on the controller prototype that reads `this.model`
-            // (e.g. `get derived() { return this.model + 1 }`) has a cell
-            // installed on the renderContext (see root.ts prototype-getter pass),
-            // but that cell is static — it captured the initial value and has
-            // no declared dependency on `model`. Walk the renderContext's own
-            // keys and, for each key whose value comes from a prototype getter,
-            // re-read via that getter and refresh the cell so formulas tracking
-            // the getter key re-evaluate.
-            try {
-              const ownKeys = Object.getOwnPropertyNames(cellTarget);
-              for (const ownKey of ownKeys) {
-                if (ownKey === keyName) continue;
-                if (ownKey.startsWith('_') || ownKey.startsWith('$')) continue;
-                try {
-                  const ownDesc = Object.getOwnPropertyDescriptor(cellTarget, ownKey);
-                  if (!ownDesc || !ownDesc.get || !ownDesc.configurable) continue;
-                  let protoGetter: (() => any) | null = null;
-                  let p = Object.getPrototypeOf(cellTarget);
-                  while (p && p !== Object.prototype) {
-                    const pd = Object.getOwnPropertyDescriptor(p, ownKey);
-                    if (pd && pd.get) {
-                      protoGetter = pd.get;
-                      break;
-                    }
-                    p = Object.getPrototypeOf(p);
-                  }
-                  if (!protoGetter) continue;
-                  const freshVal = protoGetter.call(cellTarget);
-                  const oc = cellFor(cellTarget, ownKey, /* skipDefine */ true);
-                  if (oc) oc.update(freshVal);
-                } catch {
-                  /* skip */
-                }
+            const ownDesc = Object.getOwnPropertyDescriptor(cellTarget, ownKey);
+            if (!ownDesc || !ownDesc.get || !ownDesc.configurable) continue;
+            let protoGetter: (() => any) | null = null;
+            let p = Object.getPrototypeOf(cellTarget);
+            while (p && p !== Object.prototype) {
+              const pd = Object.getOwnPropertyDescriptor(p, ownKey);
+              if (pd && pd.get) {
+                protoGetter = pd.get;
+                break;
               }
-            } catch {
-              /* ignore */
+              p = Object.getPrototypeOf(p);
             }
+            if (!protoGetter) continue;
+            const freshVal = protoGetter.call(cellTarget);
+            const oc = cellFor(cellTarget, ownKey, /* skipDefine */ true);
+            if (oc) oc.update(freshVal);
           } catch {
-            /* ignore */
+            /* skip */
           }
         }
+      } finally {
+        _innerSiblingRescanDepth--;
       }
-    }
+    });
   } catch {
     /* ignore */
   }
@@ -5194,24 +5202,13 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string, _value?:
       /* ignore */
     }
   }
-  // Sync wrapper element if the object has attribute/class bindings.
-  // (Cluster B slice 5) Was `(globalThis as any).__gxtSyncWrapper`.
-  try {
-    getGxtRenderer()?.compilePipeline.syncWrapper(obj, keyName);
-  } catch {
-    /* ignore */
-  }
 
   // Slice-37 (Cluster B): write to module-local `_gxtPendingSyncFlag`
-  // (graduated from `globalThis.__gxtPendingSync`). See module-local
-  // definition above for the migration narrative. Intra-file writer
-  // routes through the helper directly (no bridge indirection).
+  // (graduated from `globalThis.__gxtPendingSync`).
   _gxtSetPendingSync(true);
   // Slice-36 (Cluster B): write to module-local
   // `_gxtPendingSyncFromPropertyChangeFlag` (graduated from
-  // `globalThis.__gxtPendingSyncFromPropertyChange`). See module-local
-  // definition above for the migration narrative. Intra-file writer
-  // routes through the helper directly (no bridge indirection).
+  // `globalThis.__gxtPendingSyncFromPropertyChange`).
   _gxtSetPendingSyncFromPropertyChange(true);
   // If this property change originated from a `schedule('afterRender', ...)`
   // callback, record that fact. runAppend uses this to decide whether a
@@ -5221,30 +5218,9 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string, _value?:
   // pattern) and must trigger gxtSyncDom, while property changes from
   // component init (e.g. Textarea's internal bindings) are init artifacts
   // that should not cause a post-runAppend full sync.
-  // Slice-40 (Cluster B): write to module-local
-  // `_gxtAfterRenderPropertyChangeFlag` (graduated from
-  // `globalThis.__gxtAfterRenderPropertyChange`). See module-local
-  // definition above for the migration narrative. Intra-file writer
-  // routes through the helper directly (no bridge indirection).
-  // Slice-41 (Cluster B): read from module-local `_gxtInAfterRenderFlag`
-  // (graduated from `globalThis.__gxtInAfterRender`). See module-local
-  // definition above for the migration narrative. Intra-file reader
-  // routes through the helper directly (no bridge indirection).
   if (_gxtGetInAfterRender()) {
     _gxtSetAfterRenderPropertyChange(true);
   }
-  // (Cluster B slice 5 orphan cleanup) The `__gxtHadNestedPropertyChange`
-  // flag previously set here had no readers anywhere in the source tree.
-  // The detection logic was dead code; both this writer and the reset writer
-  // (Phase 2 of __gxtForceEmberRerender) were removed.
-  // DON'T call gxtSyncDom() here — property changes may be batched (e.g.,
-  // set(cond2, true); set(cond1, false) in a single runTask). Calling
-  // gxtSyncDom after each set() processes inner conditionals before outer
-  // ones have been updated, creating components that should never exist.
-  // Instead, let __gxtSyncDomNow handle all cell updates atomically
-  // after the entire runTask callback completes.
-  // The cells are already dirtied (via cell.update above), and the
-  // __gxtSyncDomNow call from runTask will process them correctly.
   // Signal to __gxtForceEmberRerender that nested object changes occurred.
   // When a property changes on a nested object (e.g., set(m, 'message', ...)
   // or foo.set('text', ...)), the component's SELF_TAG is NOT dirtied by
@@ -5261,9 +5237,7 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string, _value?:
   if (_deferredTagDirties && _deferredTagDirties.length > 0) {
     // Slice-97 (Cluster B): write to module-local
     // `_gxtHadNestedObjectChangeFlag` (graduated from
-    // `globalThis.__gxtHadNestedObjectChange`). Intra-file writer routes
-    // through the helper directly (no bridge indirection — slice-35
-    // intra-file-writer precedent).
+    // `globalThis.__gxtHadNestedObjectChange`).
     _gxtSetHadNestedObjectChange(true);
   } else if (obj && typeof obj === 'object') {
     // If `obj` is NOT a CUSTOM-managed component instance (root OR child),
@@ -5281,56 +5255,115 @@ const _gxtTriggerReRenderBody = function (obj: object, keyName: string, _value?:
     // classic components' set() goes through notifyPropertyChange and
     // depends on the force-rerender to pick up alias / computed property
     // changes reliably.
+    //
+    // Cluster A Phase 2a: proto-walk + manager lookup delegated to the
+    // `_isCustomManagedComponent` helper; behavior identical to the inlined
+    // version including the conservative-on-error path (caught exception
+    // treats as nested-object).
     try {
-      let isCustomManagedComponent = false;
-      // (Cluster B slice 9) Was `(globalThis as any).__gxtIsRootComponent`.
-      // Now read via the gxt-bridge `rootComponent` namespace; the writer is
-      // `glimmer/lib/renderer.ts` (the first cross-package writer for an
-      // install-API namespace).
-      const isRoot = getGxtRenderer()?.rootComponent.isRootComponent;
-      if (typeof isRoot === 'function' && isRoot(obj)) {
-        isCustomManagedComponent = true;
-      } else {
-        const compMgrs = (globalThis as any).COMPONENT_MANAGERS;
-        if (compMgrs && typeof compMgrs.has === 'function') {
-          let proto: any = Object.getPrototypeOf(obj);
-          let depth = 0;
-          while (proto && proto !== Object.prototype && depth < 8) {
-            const ctor = proto.constructor;
-            if (compMgrs.has(ctor) || compMgrs.has(proto)) {
-              isCustomManagedComponent = true;
-              break;
-            }
-            proto = Object.getPrototypeOf(proto);
-            depth++;
-          }
-        }
-      }
-      if (!isCustomManagedComponent) {
-        // Slice-97 (Cluster B): write to module-local
-        // `_gxtHadNestedObjectChangeFlag` (graduated from
-        // `globalThis.__gxtHadNestedObjectChange`).
+      if (!_isCustomManagedComponent(obj)) {
         _gxtSetHadNestedObjectChange(true);
       }
     } catch {
       // If the check fails, be conservative and treat as nested-object.
-      // Slice-97 (Cluster B): write to module-local
-      // `_gxtHadNestedObjectChangeFlag` (graduated from
-      // `globalThis.__gxtHadNestedObjectChange`).
       _gxtSetHadNestedObjectChange(true);
     }
   }
-  // Defer if-watcher notifications to __gxtSyncDomNow so batched property
-  // changes are applied atomically. Firing syncState here would process
-  // inner conditionals before outer ones are updated (e.g., set(cond2, true)
-  // triggers inner IfCondition to create components, but set(cond1, false)
-  // hasn't happened yet to suppress the outer conditional).
+}
+
+function _gxtTriggerReRenderDeferred(obj: object, keyName: string): void {
+  // Custom modifier manager: notify install-phase watcher if this object is a
+  // modifier instance whose installModifier is currently running. Classic Ember
+  // captures tags dirtied inside the install track frame and schedules an update.
+  // We mirror that by calling the registered watcher, which flags the instance
+  // for an additional updateModifier call after install returns.
   //
-  // Cluster A Phase 1.6: routed through `_pushIfWatcherNotification` so the
-  // enqueue side (Phase 2 `_gxtTriggerReRender`) can call the helper
-  // synchronously alongside the deferred cascade body. See helper definition.
-  _pushIfWatcherNotification(obj, keyName);
-};
+  // Slice-33 (Cluster B): canonical state is the module-local
+  // `_modifierInstallWatchers` Map in `gxt-backend/manager.ts`. This
+  // cross-file reader routes through
+  // `compilePipeline.getModifierInstallWatchers?.()`.
+  const modWatchers = getGxtRenderer()?.compilePipeline.getModifierInstallWatchers?.();
+  if (modWatchers instanceof Map && modWatchers.size > 0) {
+    const watcher = modWatchers.get(obj);
+    if (typeof watcher === 'function') watcher();
+  }
+  // Handle KVO array mutations: when '[]' or 'length' is notified on an array,
+  // dirty the cells of all component properties that reference this array.
+  // Note: KVO array mutation tracking (pushObject/shiftObject) is handled
+  // by dirtying cells on objects that reference the array. This is a best-effort
+  // approach since GXT's $_eachSync may not re-render for same-reference arrays.
+  //
+  // Cluster A Phase 2a: no owner-liveness guard yet — Phase 2b will add it
+  // (the destroyed-owner hazard surfaced in Phase 1.7c retry only manifests
+  // when this fan-out runs AFTER `afterEach` nulls test instances, which
+  // requires Deferred to actually be deferred — for 2a it still runs
+  // synchronously so no liveness check is needed).
+  if (keyName === '[]' || keyName === 'length') {
+    if (Array.isArray(obj)) {
+      const owners = _arrayOwnerMap.get(obj);
+      if (owners) {
+        for (const { obj: ownerObj, key: ownerKey } of owners) {
+          try {
+            // Use skipDefine=true to avoid overwriting custom getters on renderContext
+            // that were set up during createRenderContext. The custom getter reads
+            // from the Ember instance via a getter function, while cellFor's default
+            // getter reads from cell._value which may be stale for same-ref arrays.
+            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+            if (c) c.update(obj);
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    } else if (obj && typeof obj === 'object') {
+      // Non-Array iterable wrappers (ArrayDelegate / ArrayProxy / Set / etc.)
+      // — `arrayContentDidChange` notifies '[]'/'length' on the wrapper itself.
+      // Look up registered owners for the WRAPPER and dirty their cells.
+      const owners = _arrayOwnerMap.get(obj);
+      if (owners) {
+        for (const { obj: ownerObj, key: ownerKey } of owners) {
+          try {
+            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+            if (c) c.update(obj);
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    }
+  }
+  // Dirty cells that hold `obj` as their VALUE (reverse lookup).
+  // This handles the case where a template reads {{this.m.formattedMessage}} —
+  // the formula tracks cell(renderContext, 'm'), and when m.message changes,
+  // we need to dirty that cell so the formula re-evaluates with the new
+  // computed property result.
+  //
+  // Cluster A Phase 2a: the OWNER-COLLECTION decision is performed in
+  // SyncCore (drives the `_gxtSetHadNestedObjectChange(true)` flag-set); the
+  // ACTUAL `cellFor(...).update(obj)` fan-out happens here (deferrable).
+  try {
+    const owners = _objectValueCellMap.get(obj);
+    if (owners) {
+      for (const { obj: ownerObj, key: ownerKey } of owners) {
+        try {
+          const oc = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+          if (oc) oc.update(obj);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  // Sync wrapper element if the object has attribute/class bindings.
+  // (Cluster B slice 5) Was `(globalThis as any).__gxtSyncWrapper`.
+  try {
+    getGxtRenderer()?.compilePipeline.syncWrapper(obj, keyName);
+  } catch {
+    /* ignore */
+  }
+}
 
 // ---- Cross-module-instance $_if fix ----
 //
