@@ -987,7 +987,7 @@ export class Renderer extends BaseRenderer {
   }
 
   getBounds(component: View): {
-    parentElement: SimpleElement;
+    parentElement: SimpleNode;
     firstNode: SimpleNode;
     lastNode: SimpleNode;
   } {
