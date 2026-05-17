@@ -4935,25 +4935,18 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
     // `_gxtSyncDomNow`).
     _pushIfWatcherNotification(obj, keyName);
 
-    // Cluster A Phase 2b: drain SYNCHRONOUSLY at end of trigger. No timing
-    // change vs Phase 2a. The `_drainInProgress` guard makes us re-entrant-
-    // safe: if a Deferred body recursively calls `_gxtTriggerReRender`,
-    // the inner call enqueues but defers draining — the outer cursor loop
-    // picks up the new entries. The queue + index are reset in finally so
-    // dedupe is per-trigger-call, not global.
+    // Cluster A Phase 2c: the synchronous end-of-trigger drain block was
+    // REMOVED. The Deferred half is now drained in `_gxtSyncDomNow` Phase 0.5
+    // (between Phase 0 pre-flush FALSE-flip and Phase 1 `gxtSyncDom()`). The
+    // queue + index are reset in finally inside the Phase 0.5 drain so dedupe
+    // remains per-sync-pass.
     //
-    // Phase 2c will REMOVE this synchronous drain and instead drain at
-    // `_gxtSyncDomNow` Phase 0.5.
-    if (!_drainInProgress) {
-      _drainInProgress = true;
-      try {
-        _drainCascadeQueue();
-      } finally {
-        _drainInProgress = false;
-        _deferredCascadeQueue.length = 0;
-        _deferredCascadeIndex = new WeakMap();
-      }
-    }
+    // Corrected bin assignment: the three cell.update fan-outs
+    // (_arrayOwnerMap Array branch + _arrayOwnerMap non-Array wrapper branch
+    // + _objectValueCellMap reverse-lookup) were promoted to SyncCore — they
+    // must run synchronously because template formulas in the same runtask
+    // read those owner cells. Only the modifier-install watcher and
+    // syncWrapper side-effects are deferred.
   } finally {
     if (_afterTriggerReRender.length > 0) {
       for (let i = 0; i < _afterTriggerReRender.length; i++) {
@@ -5200,6 +5193,79 @@ function _gxtTriggerReRenderSyncCore(
   } catch {
     /* ignore */
   }
+  // Cluster A Phase 2c (corrected): the `_arrayOwnerMap` fan-out (both
+  // branches — Array-typed at one site, non-Array wrapper at another) and the
+  // `_objectValueCellMap` reverse-lookup fan-out were misbinned as Deferred
+  // in earlier Phase 2c attempts. Two prior attempts regressed the
+  // "considers array proxies with empty arrays falsy" smoke tests because
+  // template formulas in the SAME runtask read those owner cells: deferring
+  // their `cell.update` until Phase 0.5 created a read-after-set
+  // inconsistency where the formula observed stale state. Moving these
+  // fan-outs into SyncCore restores the read-after-set contract.
+  //
+  // Per-owner `_isOwnerAlive(ownerObj)` checks are retained as a defensive
+  // measure (carried forward from the second attempt) — they are harmless
+  // when owners are live, and inexpensive enough that the SyncCore hot path
+  // tolerates them.
+  if (keyName === '[]' || keyName === 'length') {
+    if (Array.isArray(obj)) {
+      const owners = _arrayOwnerMap.get(obj);
+      if (owners) {
+        for (const { obj: ownerObj, key: ownerKey } of owners) {
+          if (!_isOwnerAlive(ownerObj)) continue;
+          try {
+            // Use skipDefine=true to avoid overwriting custom getters on renderContext
+            // that were set up during createRenderContext. The custom getter reads
+            // from the Ember instance via a getter function, while cellFor's default
+            // getter reads from cell._value which may be stale for same-ref arrays.
+            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+            if (c) c.update(obj);
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    } else if (obj && typeof obj === 'object') {
+      // Non-Array iterable wrappers (ArrayDelegate / ArrayProxy / Set / etc.)
+      // — `arrayContentDidChange` notifies '[]'/'length' on the wrapper itself.
+      // Look up registered owners for the WRAPPER and dirty their cells.
+      const owners = _arrayOwnerMap.get(obj);
+      if (owners) {
+        for (const { obj: ownerObj, key: ownerKey } of owners) {
+          if (!_isOwnerAlive(ownerObj)) continue;
+          try {
+            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+            if (c) c.update(obj);
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    }
+  }
+  // Reverse-lookup fan-out: dirty cells that hold `obj` as their VALUE.
+  // This handles the case where a template reads {{this.m.formattedMessage}} —
+  // the formula tracks cell(renderContext, 'm'), and when m.message changes,
+  // we need to dirty that cell so the formula re-evaluates with the new
+  // computed property result. Same-runtask template formulas read these
+  // owner cells, so the cell.update must run synchronously (Phase 2c
+  // corrected bin assignment).
+  try {
+    const owners = _objectValueCellMap.get(obj);
+    if (owners) {
+      for (const { obj: ownerObj, key: ownerKey } of owners) {
+        if (!_isOwnerAlive(ownerObj)) continue;
+        try {
+          const oc = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+          if (oc) oc.update(obj);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
   // Also update cells on the prototype chain.
   // cellFor creates cells keyed by object identity. If a cell-backed getter
   // was installed on a prototype (e.g., via Component.extend({foo: true})),
@@ -5384,6 +5450,15 @@ function _gxtTriggerReRenderSyncCore(
 }
 
 function _gxtTriggerReRenderDeferred(obj: object, keyName: string): void {
+  // Cluster A Phase 2c (corrected bin assignment): Deferred is now minimal.
+  // The three cell.update fan-outs (_arrayOwnerMap Array branch +
+  // _arrayOwnerMap non-Array wrapper branch + _objectValueCellMap reverse-
+  // lookup) were promoted to SyncCore because template formulas in the same
+  // runtask read those owner cells — deferring their update creates a
+  // read-after-set inconsistency. What remains here are the two side-effects
+  // that do NOT participate in same-runtask formula reads: the modifier-
+  // install watcher dispatch and the wrapper-element sync.
+
   // Custom modifier manager: notify install-phase watcher if this object is a
   // modifier instance whose installModifier is currently running. Classic Ember
   // captures tags dirtied inside the install track frame and schedules an update.
@@ -5398,75 +5473,6 @@ function _gxtTriggerReRenderDeferred(obj: object, keyName: string): void {
   if (modWatchers instanceof Map && modWatchers.size > 0) {
     const watcher = modWatchers.get(obj);
     if (typeof watcher === 'function') watcher();
-  }
-  // Handle KVO array mutations: when '[]' or 'length' is notified on an array,
-  // dirty the cells of all component properties that reference this array.
-  // Note: KVO array mutation tracking (pushObject/shiftObject) is handled
-  // by dirtying cells on objects that reference the array. This is a best-effort
-  // approach since GXT's $_eachSync may not re-render for same-reference arrays.
-  //
-  // Cluster A Phase 2a: no owner-liveness guard yet — Phase 2b will add it
-  // (the destroyed-owner hazard surfaced in Phase 1.7c retry only manifests
-  // when this fan-out runs AFTER `afterEach` nulls test instances, which
-  // requires Deferred to actually be deferred — for 2a it still runs
-  // synchronously so no liveness check is needed).
-  if (keyName === '[]' || keyName === 'length') {
-    if (Array.isArray(obj)) {
-      const owners = _arrayOwnerMap.get(obj);
-      if (owners) {
-        for (const { obj: ownerObj, key: ownerKey } of owners) {
-          try {
-            // Use skipDefine=true to avoid overwriting custom getters on renderContext
-            // that were set up during createRenderContext. The custom getter reads
-            // from the Ember instance via a getter function, while cellFor's default
-            // getter reads from cell._value which may be stale for same-ref arrays.
-            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-            if (c) c.update(obj);
-          } catch {
-            /* ignore */
-          }
-        }
-      }
-    } else if (obj && typeof obj === 'object') {
-      // Non-Array iterable wrappers (ArrayDelegate / ArrayProxy / Set / etc.)
-      // — `arrayContentDidChange` notifies '[]'/'length' on the wrapper itself.
-      // Look up registered owners for the WRAPPER and dirty their cells.
-      const owners = _arrayOwnerMap.get(obj);
-      if (owners) {
-        for (const { obj: ownerObj, key: ownerKey } of owners) {
-          try {
-            const c = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-            if (c) c.update(obj);
-          } catch {
-            /* ignore */
-          }
-        }
-      }
-    }
-  }
-  // Dirty cells that hold `obj` as their VALUE (reverse lookup).
-  // This handles the case where a template reads {{this.m.formattedMessage}} —
-  // the formula tracks cell(renderContext, 'm'), and when m.message changes,
-  // we need to dirty that cell so the formula re-evaluates with the new
-  // computed property result.
-  //
-  // Cluster A Phase 2a: the OWNER-COLLECTION decision is performed in
-  // SyncCore (drives the `_gxtSetHadNestedObjectChange(true)` flag-set); the
-  // ACTUAL `cellFor(...).update(obj)` fan-out happens here (deferrable).
-  try {
-    const owners = _objectValueCellMap.get(obj);
-    if (owners) {
-      for (const { obj: ownerObj, key: ownerKey } of owners) {
-        try {
-          const oc = cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-          if (oc) oc.update(obj);
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-  } catch {
-    /* ignore */
   }
   // Sync wrapper element if the object has attribute/class bindings.
   // (Cluster B slice 5) Was `(globalThis as any).__gxtSyncWrapper`.
@@ -7451,6 +7457,26 @@ function _gxtSyncDomNow(): void {
           _gxtPreFlushFiredFalse = fired0;
         } catch {
           /* ignore */
+        }
+      }
+      // PHASE 0.5: Drain the deferred cascade queue. Cluster A Phase 2c moves
+      // the drain from the end of `_gxtTriggerReRender` to here, so the
+      // Deferred half (modifier-install watcher + syncWrapper) batches across
+      // every trigger that fired in this runtask. The three cell.update
+      // fan-outs (_arrayOwnerMap + _objectValueCellMap) live in SyncCore now,
+      // so deferring this remaining work no longer breaks same-runtask
+      // template reads. Re-entrance during drain is handled by
+      // `_drainInProgress`; recursive `_gxtTriggerReRender` calls during a
+      // Deferred body enqueue at the tail and the cursor loop picks them up
+      // in the same pass (bounded by `_MAX_DRAIN=1000`).
+      if (_deferredCascadeQueue.length > 0) {
+        _drainInProgress = true;
+        try {
+          _drainCascadeQueue();
+        } finally {
+          _drainInProgress = false;
+          _deferredCascadeQueue.length = 0;
+          _deferredCascadeIndex = new WeakMap();
         }
       }
       // Only run gxtSyncDom when a real property change triggered the sync.
