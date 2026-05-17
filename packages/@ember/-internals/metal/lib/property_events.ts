@@ -111,10 +111,6 @@ export function _gxtCPIsInvalidating(obj: object, keyName: string): boolean {
   @since 3.1.0
   @public
 */
-// Re-entrancy depth counter for notifyPropertyChange
-let _notifyDepth = 0;
-const MAX_NOTIFY_DEPTH = 100;
-
 function notifyPropertyChange(
   obj: object,
   keyName: string,
@@ -233,44 +229,39 @@ function notifyPropertyChange(
       }
     }
 
-    // Guard against infinite re-entrant notifyPropertyChange calls
-    // This can happen when GXT rendering triggers property changes that
-    // trigger more rendering in a cycle
-    if (_notifyDepth >= MAX_NOTIFY_DEPTH) {
-      return;
-    }
-    _notifyDepth++;
+    // Cluster A Phase 3a (step 2): MAX_NOTIFY_DEPTH guard removed.
+    // The original `_notifyDepth >= MAX_NOTIFY_DEPTH` counter (initially 10,
+    // raised to 100 in step 1 with no regression) was added during GXT
+    // bring-up as a hang-prevention measure. Phase 2 (cascade defer) +
+    // Phase 2a (outer-obj sibling-rescan removal) eliminated the GXT-internal
+    // cycle source, and step 1 confirmed the bound is not load-bearing.
 
     // GXT infinite loop detection
     if (typeof (globalThis as any).__gxtOpCheck === 'function') {
       (globalThis as any).__gxtOpCheck();
     }
-    try {
-      markObjectAsDirty(obj, keyName);
+    markObjectAsDirty(obj, keyName);
 
-      if (deferred <= 0) {
-        flushSyncObservers();
+    if (deferred <= 0) {
+      flushSyncObservers();
+    }
+
+    // Skip `PROPERTY_DID_CHANGE` when notifying on a prototype-meta object:
+    // classic Ember returns early before reaching this hook (see the guard
+    // above), and the `notifyPropertyChange` contract tests assert that
+    // prototypes never fire the hook.
+    if (!isProtoNotify && PROPERTY_DID_CHANGE in obj) {
+      // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
+      assert('property did change hook is invalid', hasPropertyDidChange(obj));
+
+      // we need to check the arguments length here; there's a check in Component's `PROPERTY_DID_CHANGE`
+      // that checks its arguments length, so we have to explicitly not call this with `value`
+      // if it is not passed to `notifyPropertyChange`
+      if (arguments.length === 4) {
+        obj[PROPERTY_DID_CHANGE](keyName, value);
+      } else {
+        obj[PROPERTY_DID_CHANGE](keyName);
       }
-
-      // Skip `PROPERTY_DID_CHANGE` when notifying on a prototype-meta object:
-      // classic Ember returns early before reaching this hook (see the guard
-      // above), and the `notifyPropertyChange` contract tests assert that
-      // prototypes never fire the hook.
-      if (!isProtoNotify && PROPERTY_DID_CHANGE in obj) {
-        // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
-        assert('property did change hook is invalid', hasPropertyDidChange(obj));
-
-        // we need to check the arguments length here; there's a check in Component's `PROPERTY_DID_CHANGE`
-        // that checks its arguments length, so we have to explicitly not call this with `value`
-        // if it is not passed to `notifyPropertyChange`
-        if (arguments.length === 4) {
-          obj[PROPERTY_DID_CHANGE](keyName, value);
-        } else {
-          obj[PROPERTY_DID_CHANGE](keyName);
-        }
-      }
-    } finally {
-      _notifyDepth--;
     }
   } finally {
     // Clear the narrow CP invalidation marker only if we added it here.
