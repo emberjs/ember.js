@@ -1,18 +1,5 @@
 import type { Factory, Resolver } from '@ember/-internals/owner';
 
-const KNOWN_EASY_PLURALS = new Set([
-  'adapter',
-  'component',
-  'controller',
-  'helper',
-  'model',
-  'modifier',
-  'route',
-  'serializer',
-  'service',
-  'template',
-]);
-
 export class StrictResolver implements Resolver {
   // Ember's router uses this flag to decide whether to auto-generate
   // `${name}_loading` and `${name}_error` substates for routes defined in
@@ -38,11 +25,11 @@ export class StrictResolver implements Resolver {
   }
 
   #plural(word: string) {
-    if (KNOWN_EASY_PLURALS.has(word)) {
-      return word + 's';
+    if (word === 'config') {
+      return word;
     }
 
-    return word;
+    return word + 's';
   }
 
   resolve(fullName: string): Factory<object> | object | undefined {
