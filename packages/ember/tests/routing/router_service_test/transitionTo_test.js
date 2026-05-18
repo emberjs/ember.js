@@ -439,5 +439,103 @@ moduleFor(
         assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
       });
     }
+
+    async ['@test RouterService#transitionTo with route name and unchanged query params does not re-run parent model hook'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let parentModelHookCallCount = 0;
+
+      this.add(
+        'route:parent',
+        class extends Route {
+          model() {
+            parentModelHookCallCount++;
+            return {};
+          }
+        }
+      );
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: {
+            sort: {
+              refreshModel: true,
+            },
+          },
+          sort: 'ASC',
+        })
+      );
+
+      let queryParams = this.buildQueryParams({ sort: 'DESC' });
+
+      await this.visit('/child?sort=DESC');
+
+      assert.equal(parentModelHookCallCount, 1, 'parent model hook called on initial visit');
+
+      await this.routerService.transitionTo('parent.child', queryParams);
+
+      assert.equal(
+        parentModelHookCallCount,
+        1,
+        'parent model hook not re-run when query params are unchanged'
+      );
+
+      assert.equal(
+        this.routerService.get('currentURL'),
+        '/child?sort=DESC',
+        'currentURL remains unchanged'
+      );
+    }
+
+    async ['@test RouterService#transitionTo with URL string and unchanged query params does not re-run parent model hook'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let parentModelHookCallCount = 0;
+
+      this.add(
+        'route:parent',
+        class extends Route {
+          model() {
+            parentModelHookCallCount++;
+            return {};
+          }
+        }
+      );
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: {
+            sort: {
+              refreshModel: true,
+            },
+          },
+          sort: 'ASC',
+        })
+      );
+
+      await this.visit('/child?sort=DESC');
+
+      assert.equal(parentModelHookCallCount, 1, 'parent model hook called on initial visit');
+
+      await this.routerService.transitionTo('/child?sort=DESC');
+
+      assert.equal(
+        parentModelHookCallCount,
+        1,
+        'parent model hook not re-run when query params are unchanged'
+      );
+
+      assert.equal(
+        this.routerService.get('currentURL'),
+        '/child?sort=DESC',
+        'currentURL remains unchanged'
+      );
+    }
   }
 );
