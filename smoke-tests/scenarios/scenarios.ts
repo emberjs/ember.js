@@ -27,6 +27,7 @@ function embroiderVite(project: Project) {}
 // v2AppScenarios means every test that runs against v2AppScenarios also
 // runs against this configuration.
 function strictResolver(project: Project) {
+  project.removeDependency('ember-resolver');
   project.mergeFiles({
     app: {
       'app.js': `
