@@ -439,5 +439,86 @@ moduleFor(
         assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
       });
     }
+
+    async ['@test Redirecting to same route with query params from beforeModel works via transition'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.add(
+        'route:parent.child',
+        class extends Route {
+          @service
+          router;
+
+          beforeModel(transition) {
+            if (!transition.to.queryParams.bar) {
+              return this.router.transitionTo('parent.child', {
+                queryParams: { bar: '1' },
+              });
+            }
+          }
+        }
+      );
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['bar'],
+          bar: null,
+        })
+      );
+
+      await this.visit('/');
+      await this.routerService.transitionTo('parent.child').followRedirects();
+
+      assert.equal(
+        this.routerService.get('currentURL'),
+        '/child?bar=1',
+        'redirected to self with query param'
+      );
+
+      assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
+    }
+
+    async ['@test Redirecting to same route with query params from beforeModel works via direct visit'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.add(
+        'route:parent.child',
+        class extends Route {
+          @service
+          router;
+
+          beforeModel(transition) {
+            if (!transition.to.queryParams.bar) {
+              return this.router.transitionTo('parent.child', {
+                queryParams: { bar: '1' },
+              });
+            }
+          }
+        }
+      );
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['bar'],
+          bar: null,
+        })
+      );
+
+      await this.visit('/child');
+
+      assert.equal(
+        this.routerService.get('currentURL'),
+        '/child?bar=1',
+        'redirected to self with query param'
+      );
+
+      assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
+    }
   }
 );
