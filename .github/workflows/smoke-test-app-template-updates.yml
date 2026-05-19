@@ -3,7 +3,7 @@ name: Update smoke-test templates
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 9 * * 1' # weekly on Monday; job will self-gate to every 10 weeks
+    - cron: "0 9 * * 1" # weekly on Monday; job will self-gate to every 10 weeks
 
 permissions:
   contents: read
@@ -46,6 +46,8 @@ jobs:
           node-version: 20
       - name: Setup pnpm
         uses: pnpm/action-setup@91ab88e2619ed1f46221f0ba42d1492c02baf788 # v6.0.6
+        with:
+          version: 10.33.2
       - name: Generate ember-test-app using classic blueprint
         run: |
           set -euo pipefail
@@ -89,6 +91,8 @@ jobs:
           node-version: 20
       - name: Setup pnpm
         uses: pnpm/action-setup@91ab88e2619ed1f46221f0ba42d1492c02baf788 # v6.0.6
+        with:
+          version: 10.33.2
       - name: Generate v2-app-template
         run: |
           set -euo pipefail
