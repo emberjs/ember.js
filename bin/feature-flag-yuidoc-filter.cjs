@@ -1,4 +1,4 @@
-const FEATURES = require('../broccoli/features');
+const FEATURES = require('../broccoli/features.cjs');
 
 function isClassToBeIncluded(item, featuresToFilter) {
   if (item.category) {

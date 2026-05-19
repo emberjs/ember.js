@@ -76,7 +76,6 @@ export default [
       'qunit/no-commented-tests': 'off',
       'qunit/require-expect': 'off',
 
-      'disable-features/disable-async-await': 'error',
       'disable-features/disable-generator-functions': 'error',
       // Doesn't work with package.json#exports
       'import/no-unresolved': 'off',
@@ -234,12 +233,10 @@ export default [
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
       'node-tests/**/*.js',
-      'tests/node/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
       'bin/**/*.mjs',
-      'tests/docs/*.js',
       'server/**/*.js',
       'broccoli/**/*.*',
       '**/ember-cli-build.*',
@@ -258,12 +255,9 @@ export default [
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
       'node-tests/**/*.js',
-      'tests/node/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
-      'bin/**/*.*',
-      'tests/docs/*.js',
       '**/ember-cli-build.*',
       '**/*.cjs',
     ],
@@ -293,7 +287,7 @@ export default [
     },
   },
   {
-    files: ['tests/docs/**/*.js', 'tests/node/**/*.js'],
+    files: ['tests/docs/**/*.cjs', 'tests/node/**/*.cjs'],
 
     languageOptions: {
       globals: {

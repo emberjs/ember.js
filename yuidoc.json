@@ -15,6 +15,6 @@
     ],
     "exclude": "vendor",
     "outdir": "docs",
-    "preprocessor": "bin/feature-flag-yuidoc-filter"
+    "preprocessor": "bin/feature-flag-yuidoc-filter.cjs"
   }
 }
