@@ -3,7 +3,7 @@ name: Update smoke-test templates
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 9 * * 1' # weekly on Monday; job will self-gate to every 10 weeks
+    - cron: "0 9 * * 1" # weekly on Monday; job will self-gate to every 10 weeks
 
 permissions:
   contents: read
@@ -45,7 +45,9 @@ jobs:
         with:
           node-version: 20
       - name: Setup pnpm
-        uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
+        uses: pnpm/action-setup@91ab88e2619ed1f46221f0ba42d1492c02baf788 # v6.0.6
+        with:
+          version: 10.33.2
       - name: Generate ember-test-app using classic blueprint
         run: |
           set -euo pipefail
@@ -61,7 +63,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Create PR
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.SMOKE_TEST_TEMPLATE_GEN_TOKEN }}
           branch: smoke-tests/update-app-template
@@ -88,7 +90,9 @@ jobs:
         with:
           node-version: 20
       - name: Setup pnpm
-        uses: pnpm/action-setup@903f9c1a6ebcba6cf41d87230be49611ac97822e # v6.0.3
+        uses: pnpm/action-setup@91ab88e2619ed1f46221f0ba42d1492c02baf788 # v6.0.6
+        with:
+          version: 10.33.2
       - name: Generate v2-app-template
         run: |
           set -euo pipefail
@@ -103,7 +107,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Create PR
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.SMOKE_TEST_TEMPLATE_GEN_TOKEN }}
           branch: smoke-tests/update-v2-app-template
