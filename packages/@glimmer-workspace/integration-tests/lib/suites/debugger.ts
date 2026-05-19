@@ -113,6 +113,36 @@ export class DebuggerSuite extends RenderTest {
   }
 
   @test
+  'debugger in class-backed component logs context message with named argument hint'() {
+    let originalInfo = console.info;
+    let messages: string[] = [];
+
+    console.info = (...args: unknown[]) => {
+      messages.push(args.join(' '));
+    };
+
+    try {
+      resetDebuggerCallback();
+
+      this.registerComponent(
+        'Glimmer',
+        'DebugTest',
+        '{{debugger}}',
+        class extends GlimmerishComponent {}
+      );
+
+      this.render('<DebugTest @foo="bar" />', {});
+
+      this.assert.deepEqual(messages, [
+        "Use `context`, and `get(<path>)` to debug this template. For named arguments, use `get('@argName')`.",
+      ]);
+    } finally {
+      console.info = originalInfo;
+      resetDebuggerCallback();
+    }
+  }
+
+  @test
   'can get locals'() {
     let expectedContext = {
       foo: 'bar',

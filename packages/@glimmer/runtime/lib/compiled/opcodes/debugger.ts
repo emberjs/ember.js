@@ -16,7 +16,9 @@ export type DebugCallback = (context: unknown, get: DebugGet) => void;
 function debugCallback(context: unknown, get: DebugGet): void {
   if (context !== null && context !== undefined) {
     // eslint-disable-next-line no-console
-    console.info('Use `context`, and `get(<path>)` to debug this template.');
+    console.info(
+      "Use `context`, and `get(<path>)` to debug this template. For named arguments, use `get('@argName')`."
+    );
 
     // for example...
     context === get('this');
