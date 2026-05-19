@@ -1,6 +1,6 @@
 'use strict';
 
-const FEATURES = require('./features');
+const FEATURES = require('./features.cjs');
 
 module.exports = function canaryFeatures() {
   return [

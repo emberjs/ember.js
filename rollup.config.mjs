@@ -12,8 +12,8 @@ const require = createRequire(import.meta.url);
 const { PackageCache, packageName } = require('@embroider/shared-internals');
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const packageCache = PackageCache.shared('ember-source', projectRoot);
-const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin');
-const canaryFeatures = require('./broccoli/canary-features');
+const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.cjs');
+const canaryFeatures = require('./broccoli/canary-features.cjs');
 
 const testDependencies = [
   'qunit',

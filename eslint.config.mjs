@@ -1,5 +1,5 @@
 import emberInternal from 'eslint-plugin-ember-internal';
-import emberLocal from './eslint-rules/index.js';
+import emberLocal from './eslint-rules/index.cjs';
 import importPlugin from 'eslint-plugin-import';
 import qunitPluginRecommended from 'eslint-plugin-qunit/configs/recommended';
 import disableFeatures from 'eslint-plugin-disable-features';
@@ -238,22 +238,16 @@ export default [
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
-      'bin/**/*.js',
       'bin/**/*.mjs',
       'tests/docs/*.js',
-      'config/**/*.js',
-      'lib/**/*.js',
       'server/**/*.js',
-      '**/testem.js',
-      '**/testem.ci-browsers.js',
-      '**/testem.browserstack.js',
-      'broccoli/**/*.js',
-      '**/ember-cli-build.js',
+      'broccoli/**/*.*',
+      '**/ember-cli-build.*',
       '**/*.cjs',
     ],
   },
   {
-    files: ['bin/changelog.js'],
+    files: ['bin/changelog.*'],
     rules: {
       'n/hashbang': 'off',
     },
@@ -268,17 +262,9 @@ export default [
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
-      'bin/**/*.js',
-      'bin/**/*.mjs',
+      'bin/**/*.*',
       'tests/docs/*.js',
-      'config/**/*.js',
-      'lib/**/*.js',
-      'server/**/*.js',
-      '**/testem.js',
-      '**/testem.ci-browsers.js',
-      '**/testem.browserstack.js',
-      'broccoli/**/*.js',
-      '**/ember-cli-build.js',
+      '**/ember-cli-build.*',
       '**/*.cjs',
     ],
 

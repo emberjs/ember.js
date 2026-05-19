@@ -12,7 +12,7 @@ import baseConfig from './babel.config.mjs';
 
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
-const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.js');
+const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.cjs');
 const isProduction = process.env.EMBER_ENV === 'production';
 
 export default {
@@ -22,7 +22,7 @@ export default {
     [
       '@babel/preset-env',
       {
-        targets: require('./config/targets.js'),
+        targets: require('./config/targets.cjs'),
       },
     ],
   ],
