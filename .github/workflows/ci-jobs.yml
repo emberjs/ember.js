@@ -254,7 +254,7 @@ jobs:
           firefox-version: 115.9.1esr
       - run: firefox --version
       - name: test
-        run: pnpm ember test --path dist -c testem.ci-browsers.js
+        run: pnpm ember test --path dist -c testem.ci-browsers.cjs
 
   perf-check:
     name: Perf script still works
