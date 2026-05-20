@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const buildInfo = require('../broccoli/build-info').buildInfo();
+const buildInfo = require('../broccoli/build-info.cjs').buildInfo();
 
 async function exec(command, args) {
   const { execa } = await import('execa');

@@ -4,7 +4,7 @@ import Project from './fixtures/project.js';
 
 const require = createRequire(import.meta.url);
 const emberSourceRoot = dirname(require.resolve('ember-source/package.json'));
-const Overrides = require(join(emberSourceRoot, 'lib', 'overrides'));
+const Overrides = require(join(emberSourceRoot, 'lib', 'overrides.cjs'));
 
 function cmp(a, b) {
   if (a == undefined || a < b) {

@@ -1,5 +1,5 @@
 import emberInternal from 'eslint-plugin-ember-internal';
-import emberLocal from './eslint-rules/index.js';
+import emberLocal from './eslint-rules/index.cjs';
 import importPlugin from 'eslint-plugin-import';
 import qunitPluginRecommended from 'eslint-plugin-qunit/configs/recommended';
 import disableFeatures from 'eslint-plugin-disable-features';
@@ -76,7 +76,6 @@ export default [
       'qunit/no-commented-tests': 'off',
       'qunit/require-expect': 'off',
 
-      'disable-features/disable-async-await': 'error',
       'disable-features/disable-generator-functions': 'error',
       // Doesn't work with package.json#exports
       'import/no-unresolved': 'off',
@@ -234,26 +233,18 @@ export default [
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
       'node-tests/**/*.js',
-      'tests/node/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
-      'bin/**/*.js',
       'bin/**/*.mjs',
-      'tests/docs/*.js',
-      'config/**/*.js',
-      'lib/**/*.js',
       'server/**/*.js',
-      '**/testem.js',
-      '**/testem.ci-browsers.js',
-      '**/testem.browserstack.js',
-      'broccoli/**/*.js',
-      '**/ember-cli-build.js',
+      'broccoli/**/*.*',
+      '**/ember-cli-build.*',
       '**/*.cjs',
     ],
   },
   {
-    files: ['bin/changelog.js'],
+    files: ['bin/changelog.*'],
     rules: {
       'n/hashbang': 'off',
     },
@@ -264,21 +255,10 @@ export default [
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
       'node-tests/**/*.js',
-      'tests/node/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
-      'bin/**/*.js',
-      'bin/**/*.mjs',
-      'tests/docs/*.js',
-      'config/**/*.js',
-      'lib/**/*.js',
-      'server/**/*.js',
-      '**/testem.js',
-      '**/testem.ci-browsers.js',
-      '**/testem.browserstack.js',
-      'broccoli/**/*.js',
-      '**/ember-cli-build.js',
+      '**/ember-cli-build.*',
       '**/*.cjs',
     ],
 
@@ -307,7 +287,7 @@ export default [
     },
   },
   {
-    files: ['tests/docs/**/*.js', 'tests/node/**/*.js'],
+    files: ['tests/docs/**/*.cjs', 'tests/node/**/*.cjs'],
 
     languageOptions: {
       globals: {

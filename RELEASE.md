@@ -36,7 +36,7 @@ Rarely, a change is needed on an older version but not needed on main or newer v
 1. `git push` to let CI run. You must push changes before running the CHANGELOG generation as it uses the GitHub API to find PRs.
 1. Generate Changelog:
    ```bash
-   HEAD=release PRIOR_VERSION=v5.10.1-ember-source ./bin/changelog.js | uniq | pbcopy
+   HEAD=release PRIOR_VERSION=v5.10.1-ember-source ./bin/changelog.cjs | uniq | pbcopy
    ```
 1. Put the results in `CHANGELOG.md` under a heading for the new point release. Clean up the changelog, see [Producing the CHANGELOG](#producing-the-changelog) for the details.
 1. Commit with message:
@@ -80,7 +80,7 @@ After release, if it is the latest LTS, tag as LTS with `npm dist-tag add ember-
 1. `git push` to let CI run. You must push changes before running the CHANGELOG generation as it uses the GitHub API to find PRs.
 1. Generate Changelog
    ```bash
-   HEAD=beta PRIOR_VERSION=v5.12.0-beta.1-ember-source ./bin/changelog.js | uniq | pbcopy
+   HEAD=beta PRIOR_VERSION=v5.12.0-beta.1-ember-source ./bin/changelog.cjs | uniq | pbcopy
    ```
 1. Put the results in `CHANGELOG.md` under a heading for the new beta release. Clean up the changelog, see [Producing the CHANGELOG](#producing-the-changelog) for the details.
 1. Commit with message:
@@ -118,7 +118,7 @@ After release, if it is the latest LTS, tag as LTS with `npm dist-tag add ember-
 1. `git push` to let CI run. You must push changes before running the CHANGELOG generation as it uses the GitHub API to find PRs.
 1. Generate Changelog. The `PRIOR_VERSION` should be the last beta release of the series.
    ```bash
-   HEAD=beta PRIOR_VERSION=v5.12.0-beta.6-ember-source ./bin/changelog.js | uniq | pbcopy
+   HEAD=beta PRIOR_VERSION=v5.12.0-beta.6-ember-source ./bin/changelog.cjs | uniq | pbcopy
    ```
 1. Put the results in `CHANGELOG.md` under a heading for the new stable release. Combine the previous `beta` headings into one entry. Clean up the changelog, see [Producing the CHANGELOG](#producing-the-changelog) for the details.
 1. Commit with message
@@ -167,7 +167,7 @@ After release, if it is the latest LTS, tag as LTS with `npm dist-tag add ember-
 1. Find the `sha` of the last commit common to `main` and the old `beta` branch. This is typically the cherry-pick of the CHANGELOG entry.
 1. Generate Changelog. The `PRIOR_VERSION` is that `sha`:
    ```bash
-   HEAD=main PRIOR_VERSION=3daedddaafd638a4a6b12e0265df30255d1512e5 ./bin/changelog.js | uniq | pbcopy
+   HEAD=main PRIOR_VERSION=3daedddaafd638a4a6b12e0265df30255d1512e5 ./bin/changelog.cjs | uniq | pbcopy
    ```
 1. Put the results in `CHANGELOG.md` under a heading for the new beta release. Clean up the changelog, see [Producing the CHANGELOG](#producing-the-changelog) for the details.
 1. Commit with message:

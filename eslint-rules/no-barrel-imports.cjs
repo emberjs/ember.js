@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 'use strict';
 
 const fs = require('node:fs');

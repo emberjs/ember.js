@@ -1,6 +1,6 @@
 'use strict';
 
-const { buildVersion, parseTagVersion, buildFromParts } = require('../../broccoli/build-info');
+const { buildVersion, parseTagVersion, buildFromParts } = require('../../broccoli/build-info.cjs');
 
 QUnit.module('buildVersion', () => {
   flatMap(
