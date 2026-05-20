@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "7.2.0-alpha.1.nvp-make-cjs-cjs+50c44c5b",
+  "version": "7.2.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -362,10 +362,5 @@
       ]
     }
   },
-  "packageManager": "pnpm@10.33.2",
-  "_originalVersion": "7.2.0-alpha.1",
-  "_versionPreviouslyCalculated": true,
-  "publishConfig": {
-    "tag": "alpha"
-  }
+  "packageManager": "pnpm@10.33.2"
 }
