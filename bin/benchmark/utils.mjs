@@ -58,7 +58,12 @@ export async function waitForServer(url, { timeout = 30_000, interval = 500 } = 
 
 export async function buildEmberSource(cwd) {
   await run('pnpm', ['install'], { cwd });
-  await run('node', ['./bin/build-for-publishing.*'], { cwd });
+
+  if (existsSync(join(process.cwd(), './bin/build-for-publishing.js'))) {
+    await run('node', ['./bin/build-for-publishing.js'], { cwd });
+    return;
+  }
+  await run('node', ['./bin/build-for-publishing.cjs'], { cwd });
 }
 
 /**
