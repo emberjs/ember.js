@@ -18,8 +18,9 @@
 
 ## v7.0.0 (May 11, 2026)
 
-- [#21240](https://github.com/emberjs/ember.js/pull/21240) [CLEANUP] Remove deprecated amd bundles and `use-ember-modules` optional feature per [RFC #1101](https://rfcs.emberjs.com/id/1101-deprecate-ember-vendor-bundles).
-- [#21275](https://github.com/emberjs/ember.js/pull/21275) [CLEANUP] Remove ember barrel file (`import Ember from 'ember'`) per [RFC #1003](https://rfcs.emberjs.com/id/1003-deprecation-import-ember-from-ember).
+- [BREAKING] Features and APIs that were deprecated until v7.0 will now throw exceptions and the related code will be removed imminently. For a list of deprecations, see the [Deprecation Guide](https://deprecations.emberjs.com/v6.x).
+- [#21240](https://github.com/emberjs/ember.js/pull/21240) [BREAKING] Remove deprecated amd bundles and `use-ember-modules` optional feature per [RFC #1101](https://rfcs.emberjs.com/id/1101-deprecate-ember-vendor-bundles).
+- [#21275](https://github.com/emberjs/ember.js/pull/21275) [BREAKING] Remove ember barrel file (`import Ember from 'ember'`) per [RFC #1003](https://rfcs.emberjs.com/id/1003-deprecation-import-ember-from-ember).
 - [#21056](https://github.com/emberjs/ember.js/pull/21056) [CLEANUP] Remove '@ember/application's lazy load / onLoad stuff (private API)
 - [#21058](https://github.com/emberjs/ember.js/pull/21058) [CLEANUP] Remove template-compiler bootstrap for script tags
 - [#21198](https://github.com/emberjs/ember.js/pull/21198) [CLEANUP] Remove `_globalsMode` and `_prepareForGlobalsMode` from `Application`
