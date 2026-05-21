@@ -232,10 +232,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
-      'node-tests/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
-      'blueprints/**/*.js',
       'bin/**/*.mjs',
       'server/**/*.js',
       'broccoli/**/*.*',
@@ -254,10 +252,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
-      'node-tests/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
-      'blueprints/**/*.js',
       '**/ember-cli-build.*',
       '**/*.cjs',
     ],
@@ -278,7 +274,7 @@ export default [
     },
   },
   {
-    files: ['node-tests/**/*.js'],
+    files: ['node-tests/**/*.cjs'],
 
     languageOptions: {
       globals: {
