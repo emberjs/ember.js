@@ -1,5 +1,6 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
+import { getEngineParent } from '@ember/engine/parent';
 import { DEBUG } from '@glimmer/env';
 import type {
   CapturedArguments,
@@ -57,8 +58,18 @@ export const outletHelper = internalHelper(
       scope
     );
 
+    let outletStateRef = scope.get('outletState') as Reference<OutletState | undefined>;
+
+    let isNonRoutableEngine =
+      getEngineParent(owner as any) !== undefined && (owner as any).routable !== true;
+
+    assert(
+      '{{outlet}} may only be used in route templates. It cannot be used in component templates or non-routable engine templates.',
+      !isNonRoutableEngine && valueForRef(outletStateRef) !== undefined
+    );
+
     let outletRef = createComputeRef(() => {
-      let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
+      let state = valueForRef(outletStateRef);
       return state?.outlets?.main;
     });
 
