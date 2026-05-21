@@ -14,7 +14,7 @@ inputs:
   use-node-modules-cache:
     description: "Whether to use the node-modules cache"
     required: false
-    default: "true"
+    default: "false" # We don't want to use the cache. It causes false passes of CI when updating actions and workflows.
 
 runs:
   using: "composite"
@@ -22,6 +22,7 @@ runs:
     - name: Install pnpm
       uses: pnpm/action-setup@91ab88e2619ed1f46221f0ba42d1492c02baf788 # v6.0.6
       with:
+        cache: false
         version: 10.33.2
         run_install: false
     - name: Install Node.js (WITH cache)
@@ -35,6 +36,7 @@ runs:
       if: ${{ inputs.use-node-modules-cache != 'true' }}
       uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
       with:
+        package-manager-cache: false
         node-version: "${{ inputs.node-version }}"
         registry-url: "https://registry.npmjs.org"
 
