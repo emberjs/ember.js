@@ -14,7 +14,7 @@ const expect = chai.expect;
 const file = chai.file;
 const fs = require('fs-extra');
 
-const fixture = require('../helpers/fixture');
+const fixture = require('../helpers/fixture.cjs');
 
 function strictRouteTemplate(routeName, { addTitle = true } = {}) {
   if (addTitle) {

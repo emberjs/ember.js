@@ -8,7 +8,7 @@ const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-const fixture = require('../helpers/fixture');
+const fixture = require('../helpers/fixture.cjs');
 
 describe('Blueprint: helper-addon', function () {
   setupTestHooks(this);
