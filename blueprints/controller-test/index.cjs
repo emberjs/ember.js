@@ -5,7 +5,7 @@ const stringUtil = require('ember-cli-string-utils');
 const path = require('path');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const { modulePrefixForProject } = require('../-utils');
+const { modulePrefixForProject } = require('../-utils.cjs');
 
 module.exports = {
   description: 'Generates a controller unit test.',

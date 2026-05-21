@@ -6,7 +6,7 @@ const pathUtil = require('ember-cli-path-utils');
 const stringUtils = require('ember-cli-string-utils');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const { modulePrefixForProject } = require('../-utils');
+const { modulePrefixForProject } = require('../-utils.cjs');
 
 module.exports = {
   description: 'Generates an acceptance test for a feature.',

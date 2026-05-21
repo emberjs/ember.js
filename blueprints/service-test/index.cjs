@@ -1,7 +1,7 @@
 'use strict';
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const { modulePrefixForProject } = require('../-utils');
+const { modulePrefixForProject } = require('../-utils.cjs');
 
 module.exports = {
   description: 'Generates a service unit test.',

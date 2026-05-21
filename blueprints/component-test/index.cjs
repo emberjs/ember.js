@@ -6,7 +6,7 @@ const getPathOption = require('ember-cli-get-component-path-option');
 const semver = require('semver');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const { modulePrefixForProject } = require('../-utils');
+const { modulePrefixForProject } = require('../-utils.cjs');
 
 function invocationFor(options) {
   let parts = options.entity.name.split('/');

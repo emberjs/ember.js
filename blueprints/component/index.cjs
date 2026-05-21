@@ -5,7 +5,7 @@ const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
 const SilentError = require('silent-error');
-const { generateComponentSignature } = require('../-utils');
+const { generateComponentSignature } = require('../-utils.cjs');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
