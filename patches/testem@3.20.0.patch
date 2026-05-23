@@ -1,0 +1,27 @@
+diff --git a/lib/server/index.js b/lib/server/index.js
+index c9fdc8db600dae9631233141bda4f3af217d934c..b70fe04de0757848a386b59478b341e265aa8cea 100644
+--- a/lib/server/index.js
++++ b/lib/server/index.js
+@@ -399,6 +399,8 @@ class Server extends EventEmitter {
+         this.emit('file-requested', filePath);
+       });
+     } else {
++      // Upstream PR: https://github.com/testem/testem/pull/2013
++      var sendOptions = { dotfiles: 'allow' };
+       fs.promises.stat(filePath)
+         .then(stat => {
+           this.emit('file-requested', filePath);
+@@ -408,11 +410,11 @@ class Server extends EventEmitter {
+               res.render(dirListingPage, { files: files });
+             });
+           }
+-          res.sendFile(filePath);
++          res.sendFile(filePath, sendOptions);
+         })
+         .catch(() => {
+           this.emit('file-requested', filePath);
+-          res.sendFile(filePath);
++          res.sendFile(filePath, sendOptions);
+         });
+     }
+   }
