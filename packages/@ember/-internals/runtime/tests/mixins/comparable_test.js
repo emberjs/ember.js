@@ -1,7 +1,8 @@
 import EmberObject, { get } from '@ember/object';
 import { compare } from '@ember/utils';
 import Comparable from '../../lib/mixins/comparable';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../deprecations';
 
 class Rectangle extends EmberObject.extend(Comparable) {
   length = 0;
@@ -22,11 +23,17 @@ moduleFor(
   'Comparable',
   class extends AbstractTestCase {
     beforeEach() {
+      expectDeprecation(
+        /The `Comparable` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_COMPARABLE_MIXIN.isEnabled
+      );
       r1 = Rectangle.create({ length: 6, width: 12 });
       r2 = Rectangle.create({ length: 6, width: 13 });
     }
 
-    ['@test should be comparable and return the correct result'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_COMPARABLE_MIXIN.isRemoved
+    )} @test should be comparable and return the correct result`](assert) {
       assert.equal(Comparable.detect(r1), true);
       assert.equal(compare(r1, r1), 0);
       assert.equal(compare(r1, r2), -1);
