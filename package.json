@@ -250,7 +250,6 @@
       "@ember/object/mixin.js": "ember-source/@ember/object/mixin.js",
       "@ember/object/observable.js": "ember-source/@ember/object/observable.js",
       "@ember/object/observers.js": "ember-source/@ember/object/observers.js",
-      "@ember/object/promise-proxy-mixin.js": "ember-source/@ember/object/promise-proxy-mixin.js",
       "@ember/object/proxy.js": "ember-source/@ember/object/proxy.js",
       "@ember/owner/index.js": "ember-source/@ember/owner/index.js",
       "@ember/reactive/collections.js": "ember-source/@ember/reactive/collections.js",

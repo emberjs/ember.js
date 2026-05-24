@@ -1,10 +1,8 @@
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
-import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
-import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
@@ -91,34 +89,6 @@ moduleFor(
 
       runTask(() => this.context.set('first', 'max'));
       this.assertText('max jackson | max jackson');
-    }
-
-    '@test creating an array proxy inside a tracking context does not trigger backtracking assertion'() {
-      let PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
-
-      class LoaderComponent extends GlimmerishComponent {
-        get data() {
-          if (!this._data) {
-            this._data = PromiseArray.create({
-              promise: Promise.resolve([1, 2, 3]),
-            });
-          }
-
-          return this._data;
-        }
-      }
-
-      this.owner.register(
-        'component:loader',
-        setComponentTemplate(
-          precompileTemplate('{{#each this.data as |item|}}{{item}}{{/each}}'),
-          LoaderComponent
-        )
-      );
-
-      this.render('<Loader/>');
-
-      this.assertText('123');
     }
 
     '@test creating an array proxy inside a tracking context and immediately updating its content before usage does not trigger backtracking assertion'() {
