@@ -14,8 +14,6 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
-import Enumerable from '@ember/enumerable';
-import MutableEnumerable from '@ember/enumerable/mutable';
 import compare from '@ember/utils/lib/compare';
 import typeOf from '@ember/utils/lib/type-of';
 import Observable from '@ember/object/observable';
@@ -242,11 +240,10 @@ function mapBy<T>(this: EmberArray<T>, key: string) {
   primitives to use it: `length()` and `objectAt()`.
 
   @class EmberArray
-  @uses Enumerable
   @since Ember 0.9.0
   @public
 */
-interface EmberArray<T> extends Enumerable {
+interface EmberArray<T> {
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -1199,7 +1196,7 @@ interface EmberArray<T> extends Enumerable {
   */
   without(value: T): NativeArray<T>;
 }
-const EmberArray = Mixin.create(Enumerable, {
+const EmberArray = Mixin.create({
   init() {
     this._super(...arguments);
     setEmberArray(this);
@@ -1488,10 +1485,9 @@ const EmberArray = Mixin.create(Enumerable, {
 
   @class MutableArray
   @uses EmberArray
-  @uses MutableEnumerable
   @public
 */
-interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
+interface MutableArray<T> extends EmberArray<T> {
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -1747,7 +1743,7 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   */
   addObjects(objects: T[]): this;
 }
-const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
+const MutableArray = Mixin.create(EmberArray, {
   clear() {
     let len = this.length;
     if (len === 0) {
