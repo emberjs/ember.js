@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
       preserveEntrySignatures: 'strict',
       input: ['index.html'],
       output: {
-        preserveModules: true,
+        preserveModules: false,
       },
     },
     minify: mode === 'production',
