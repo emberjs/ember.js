@@ -4,9 +4,10 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
-import TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
 import type ViewStates from '@ember/-internals/views/lib/views/states';
-import ActionSupport from '@ember/-internals/views/lib/mixins/action_support';
+import inspect from '@ember/debug/lib/inspect';
+import { context } from '@ember/-internals/environment/lib/context';
+import computed from '@ember/-internals/metal/lib/computed';
 import {
   addChildView,
   getChildViews,
@@ -52,6 +53,42 @@ const elMatches: typeof Element.prototype.matches | undefined =
 function matches(el: Element, selector: string): boolean {
   assert('cannot call `matches` in fastboot mode', elMatches !== undefined);
   return elMatches.call(el, selector);
+}
+
+interface Sendable {
+  send(action: string, ...context: unknown[]): unknown;
+}
+
+type TriggerActionOptions = {
+  action?: string;
+  target?: unknown;
+  actionContext?: unknown;
+};
+
+function isSendable(obj: unknown): obj is Sendable {
+  return obj != null && typeof obj === 'object' && typeof (obj as Sendable).send === 'function';
+}
+
+function getTarget(instance: { target: unknown; _target?: unknown }) {
+  let target = get(instance, 'target');
+  if (target) {
+    if (typeof target === 'string') {
+      let value = get(instance, target);
+      if (value === undefined) {
+        value = get(context.lookup, target);
+      }
+
+      return value;
+    } else {
+      return target;
+    }
+  }
+
+  if (instance._target) {
+    return instance._target;
+  }
+
+  return null;
 }
 
 /**
@@ -786,19 +823,15 @@ declare const SIGNATURE: unique symbol;
 
   @class Component
   @extends Ember.CoreView
-  @uses Ember.TargetActionSupport
-  @uses Ember.ActionSupport
   @public
 */
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Component<S = unknown>
-  extends CoreView, TargetActionSupport, ActionSupport, ComponentMethods {}
+  extends CoreView, ComponentMethods {}
 
 class Component<S = unknown>
   extends CoreView.extend(
-    TargetActionSupport,
-    ActionSupport,
     {
       // These need to be overridable via extend/create but should still
       // have a default. Defining them here is the best way to achieve that.
@@ -808,6 +841,96 @@ class Component<S = unknown>
       didUpdateAttrs() {},
       willRender() {},
       willUpdate() {},
+
+      // triggerAction support
+      target: null,
+      action: null,
+      actionContext: null,
+
+      actionContextObject: computed('actionContext', function () {
+        let actionContext = get(this, 'actionContext');
+        if (typeof actionContext === 'string') {
+          let value = get(this, actionContext);
+          if (value === undefined) {
+            value = get(context.lookup, actionContext);
+          }
+          return value;
+        } else {
+          return actionContext;
+        }
+      }),
+
+      /**
+        Send an `action` with an `actionContext` to a `target`.
+
+        The `action`, `target`, and `actionContext` are read from the component instance
+        unless they are provided in the optional `opts` argument. If `actionContext` is
+        omitted, the component instance is used as the default context.
+
+        @method triggerAction
+        @param opts {Object} (optional, with the optional keys action, target and/or actionContext)
+        @return {Boolean} true if the action was sent successfully and did not return false
+        @private
+      */
+      triggerAction(opts: TriggerActionOptions = {}) {
+        let { action, target, actionContext } = opts;
+        action = action || get(this, 'action');
+        target = target || getTarget(this);
+
+        if (actionContext === undefined) {
+          actionContext = get(this, 'actionContextObject') || this;
+        }
+
+        let context = Array.isArray(actionContext) ? actionContext : [actionContext];
+
+        if (target && action) {
+          let ret;
+
+          if (isSendable(target)) {
+            ret = target.send(action, ...context);
+          } else {
+            assert(
+              `The action '${action}' did not exist on ${target}`,
+              typeof (target as any)[action] === 'function'
+            );
+            ret = (target as any)[action](...context);
+          }
+
+          if (ret !== false) {
+            return true;
+          }
+        }
+
+        return false;
+      },
+
+      // action sending support
+      send(actionName: string, ...args: unknown[]) {
+        assert(
+          `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
+          !this.isDestroying && !this.isDestroyed
+        );
+
+        let action = this.actions && this.actions[actionName];
+
+        if (action) {
+          let shouldBubble = action.apply(this, args) === true;
+          if (!shouldBubble) {
+            return;
+          }
+        }
+
+        let target = get(this, 'target');
+        if (target) {
+          assert(
+            `The \`target\` for ${this} (${target}) does not have a \`send\` method`,
+            typeof target.send === 'function'
+          );
+          target.send(...arguments);
+        } else {
+          assert(`${inspect(this)} had no action handler for: ${actionName}`, action);
+        }
+      },
     } as ComponentMethods,
     {
       concatenatedProperties: ['attributeBindings', 'classNames', 'classNameBindings'],
@@ -840,6 +963,13 @@ class Component<S = unknown>
     @public
   */
   declare classNames: string[];
+
+  declare target: unknown;
+  declare action: string | null;
+  declare actionContext: unknown;
+  declare actionContextObject: unknown;
+  declare triggerAction: (opts?: TriggerActionOptions) => boolean;
+  declare send: (actionName: string, ...args: unknown[]) => void;
 
   /**
     A list of properties of the view to apply as class names. If the property

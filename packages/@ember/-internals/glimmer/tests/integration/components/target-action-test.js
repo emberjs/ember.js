@@ -4,6 +4,7 @@ import { action, set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
+import { context } from '@ember/-internals/environment';
 
 import { Component } from '../../utils/helpers';
 
@@ -194,6 +195,324 @@ moduleFor(
       expectAssertion(() => {
         component.send('trigger-me-dead');
       }, "Attempted to call .send() with the action 'trigger-me-dead' on the destroyed object 'component:rip-alley'.");
+    }
+  }
+);
+
+moduleFor(
+  'Components test: triggerAction',
+  class extends RenderingTestCase {
+    ['@test returns false if no target or action are specified'](assert) {
+      let component;
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction(), false);
+    }
+
+    ['@test invokes target method by action name'](assert) {
+      assert.expect(2);
+      let component;
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = EmberObject.create({
+            anEvent() {
+              assert.ok(true, 'anEvent method was called');
+            },
+          });
+          action = 'anEvent';
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction(), true);
+    }
+
+    ['@test invokes target.send when target has send()'](assert) {
+      assert.expect(3);
+      let component;
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = EmberObject.create({
+            send(evt, ctx) {
+              assert.equal(evt, 'anEvent', 'send() method was invoked with correct event name');
+              assert.equal(ctx, component, 'send() method was invoked with correct context');
+            },
+          });
+          action = 'anEvent';
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction(), true);
+    }
+
+    ['@test resolves target from property path string'](assert) {
+      assert.expect(2);
+      let component;
+      let myTarget = EmberObject.create({
+        anEvent() {
+          assert.ok(true, 'anEvent method was called on resolved target');
+        },
+      });
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = 'myTarget';
+          myTarget = myTarget;
+          action = 'anEvent';
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction(), true);
+    }
+
+    ['@test resolves target from global path when property not found on component'](assert) {
+      assert.expect(2);
+      let originalLookup = context.lookup;
+      let lookup = {};
+      context.lookup = lookup;
+
+      let component;
+      lookup.Test = {};
+      lookup.Test.targetObj = EmberObject.create({
+        anEvent() {
+          assert.ok(true, 'anEvent method was called on global object');
+        },
+      });
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = 'Test.targetObj';
+          action = 'anEvent';
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction(), true);
+
+      context.lookup = originalLookup;
+    }
+
+    ['@test uses actionContext object specified as a property on the component'](assert) {
+      assert.expect(2);
+      let component;
+      let ctx = {};
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = EmberObject.create({
+            anEvent(c) {
+              assert.strictEqual(c, ctx, 'anEvent method was called with the expected context');
+            },
+          });
+          action = 'anEvent';
+          actionContext = ctx;
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction(), true);
+    }
+
+    ['@test resolves actionContext from property path string'](assert) {
+      assert.expect(2);
+      let component;
+      let aContext = {};
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = EmberObject.create({
+            anEvent(c) {
+              assert.strictEqual(c, aContext, 'actionContext was resolved via property path');
+            },
+          });
+          action = 'anEvent';
+          actionContext = 'aContext';
+          aContext = aContext;
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction(), true);
+    }
+
+    ['@test uses target specified in argument over property target'](assert) {
+      assert.expect(2);
+      let component;
+      let targetObj = EmberObject.create({
+        anEvent() {
+          assert.ok(true, 'anEvent method was called on override target');
+        },
+      });
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          action = 'anEvent';
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction({ target: targetObj }), true);
+    }
+
+    ['@test uses action specified in argument over property action'](assert) {
+      assert.expect(2);
+      let component;
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = EmberObject.create({
+            anEvent() {
+              assert.ok(true, 'anEvent method was called via override action');
+            },
+          });
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction({ action: 'anEvent' }), true);
+    }
+
+    ['@test uses actionContext specified in argument over property actionContext'](assert) {
+      assert.expect(2);
+      let component;
+      let ctx = {};
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = EmberObject.create({
+            anEvent(c) {
+              assert.strictEqual(c, ctx, 'override actionContext was passed');
+            },
+          });
+          action = 'anEvent';
+          actionContext = 'wrong';
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction({ actionContext: ctx }), true);
+    }
+
+    ['@test array actionContext becomes multiple arguments'](assert) {
+      assert.expect(3);
+      let component;
+      let param1 = 'someParam';
+      let param2 = 'someOtherParam';
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = EmberObject.create({
+            anEvent(first, second) {
+              assert.strictEqual(first, param1, 'first param matches');
+              assert.strictEqual(second, param2, 'second param matches');
+            },
+          });
+          action = 'anEvent';
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction({ actionContext: [param1, param2] }), true);
+    }
+
+    ['@test null actionContext is passed as null'](assert) {
+      assert.expect(2);
+      let component;
+
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
+          init() {
+            super.init(...arguments);
+            component = this;
+          }
+          target = EmberObject.create({
+            anEvent(ctx) {
+              assert.strictEqual(ctx, null, 'null actionContext was passed');
+            },
+          });
+          action = 'anEvent';
+        }
+      );
+
+      this.render('{{foo-bar}}');
+
+      assert.strictEqual(component.triggerAction({ actionContext: null }), true);
     }
   }
 );
