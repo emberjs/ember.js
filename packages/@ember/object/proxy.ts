@@ -2,8 +2,20 @@
 @module @ember/object/proxy
 */
 
+import { get, set } from '@ember/-internals/metal';
+import { meta } from '@ember/-internals/meta/lib/meta';
+import { tagForObject } from '@ember/-internals/metal/lib/tags';
+import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { FrameworkObject } from '@ember/object/-internals';
-import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
+import computed from '@ember/-internals/metal/lib/computed';
+import { setProxy } from '@ember/-internals/utils/lib/is_proxy';
+import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
+import {
+  ContentProxy,
+  contentFor,
+  customTagForProxy,
+} from '@ember/-internals/runtime/lib/proxy-utils';
+import { assert } from '@ember/debug';
 
 /**
   `ObjectProxy` forwards all properties not defined by the proxy itself
@@ -79,15 +91,20 @@ import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
 
   @class ObjectProxy
   @extends EmberObject
-  @uses Ember.ProxyMixin
   @public
 */
-interface ObjectProxy<Content = unknown> extends _ProxyMixin<Content> {
-  // Proxies forward to their content. This behavior *actually* comes from the
-  // ProxyMixin type itself, via its `unknownProperty` implementation, but if we
-  // try to apply it there, `ObjectProxy` does not correctly extend both the
-  // `EmberObject` and `ProxyMixin` types. Instead, we apply it here, and that
-  // gives us the desired behavior for this which actually *use* `ObjectProxy`.
+interface ObjectProxy<Content = unknown> extends ContentProxy<Content> {
+  isTruthy: boolean;
+
+  unknownProperty<K extends keyof Content>(key: K): Content[K] | undefined;
+  unknownProperty(key: string): unknown;
+
+  setUnknownProperty<K extends keyof Content>(key: K, value: Content[K]): Content[K];
+  setUnknownProperty<V>(key: string, value: V): V;
+
+  // Proxies forward to their content via `unknownProperty` and
+  // `setUnknownProperty`. The type overloads here merge Content and `this`
+  // so callers get the correct result type.
   get<K extends keyof Content>(keyName: K): Content[K];
   get<K extends keyof this>(keyname: K): this[K];
   get(keyName: string): unknown;
@@ -119,8 +136,49 @@ interface ObjectProxy<Content = unknown> extends _ProxyMixin<Content> {
   setProperties<T extends Record<string, unknown>>(hash: T): T;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-class ObjectProxy<Content = unknown> extends FrameworkObject {}
-ObjectProxy.PrototypeMixin.reopen(_ProxyMixin);
+class ObjectProxy<Content = unknown> extends FrameworkObject {
+  content: unknown = null;
+
+  init(...args: unknown[]) {
+    super.init(...args);
+    setProxy(this);
+    tagForObject(this);
+    setCustomTagFor(this, customTagForProxy);
+  }
+
+  willDestroy() {
+    this.set('content', null);
+    super.willDestroy();
+  }
+
+  @computed('content')
+  get isTruthy(): boolean {
+    return Boolean(get(this, 'content'));
+  }
+
+  unknownProperty(key: string): unknown {
+    let content = contentFor(this);
+    return content ? get(content, key) : undefined;
+  }
+
+  setUnknownProperty(key: string, value: unknown): unknown {
+    let m = meta(this);
+
+    if (m.isInitializing() || m.isPrototypeMeta(this)) {
+      defineProperty(this, key, null, value);
+      return value;
+    }
+
+    let content = contentFor(this);
+
+    assert(
+      `Cannot delegate set('${key}', ${value}) to the 'content' property of object proxy ${this}: its 'content' is undefined.`,
+      content
+    );
+
+    // SAFETY: We don't actually guarantee that this is an object, so this isn't necessarily safe :(
+    return set(content as object, key, value);
+  }
+}
 
 export default ObjectProxy;

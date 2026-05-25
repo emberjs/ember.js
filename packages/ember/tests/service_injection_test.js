@@ -1,7 +1,6 @@
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
-import { _ProxyMixin } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -37,7 +36,7 @@ moduleFor(
           myService;
         }
       );
-      let MyService = class extends Service.extend(_ProxyMixin) {
+      let MyService = class extends Service {
         init() {
           super.init(...arguments);
 

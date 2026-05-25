@@ -1,7 +1,7 @@
 /**
 @module @ember/object
 */
-import type ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
+import type { ContentProxy } from '@ember/-internals/runtime/lib/proxy-utils';
 import { setProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
@@ -168,7 +168,7 @@ _getProp({ unknownProperty() {} }, 1 as any);
 get({}, 'foo');
 get({}, 'foo.bar');
 
-let fakeProxy = {} as ProxyMixin<unknown>;
+let fakeProxy = {} as ContentProxy<unknown>;
 setProxy(fakeProxy);
 
 track(() => _getProp({}, 'a'));
