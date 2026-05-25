@@ -560,12 +560,12 @@ export function setOwner(object: object, owner: Owner): void {
   glimmerSetOwner(object, owner);
 }
 
-// Defines the type for the ContainerProxyMixin. When we rationalize our Owner
+// Defines the container-facing portion of the Owner API. When we rationalize our Owner
 // *not* to work via mixins, we will be able to delete this entirely, in favor
 // of just using the Owner class itself.
 /**
  * The interface for a container proxy, which is itself a private API used
- * by the private `ContainerProxyMixin` as part of the base definition of
+ * by concrete owner implementations as part of the base definition of
  * `EngineInstance`.
  *
  * @class ContainerProxy

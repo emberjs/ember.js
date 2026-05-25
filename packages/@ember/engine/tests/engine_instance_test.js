@@ -1,6 +1,9 @@
 import Engine, { getEngineParent, setEngineParent } from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
-import { run } from '@ember/runloop';
+import EmberObject from '@ember/object';
+import { run, schedule } from '@ember/runloop';
+import { getOwner } from '@ember/-internals/owner';
+import { destroy } from '@glimmer/destroyable';
 import { factory } from 'internal-test-helpers';
 import {
   moduleFor,
@@ -68,6 +71,56 @@ moduleFor(
         postComponent2,
         'lookup creates a brand new instance because previous one was reset'
       );
+    }
+
+    ['@test provides ownerInjection helper method'](assert) {
+      engineInstance = run(() => EngineInstance.create({ base: engine }));
+
+      let result = engineInstance.ownerInjection();
+
+      assert.equal(getOwner(result), engineInstance, 'returns an object with an associated owner');
+    }
+
+    ['@test actions queue completes before destruction'](assert) {
+      assert.expect(1);
+
+      engineInstance = run(() => EngineInstance.create({ base: engine }));
+
+      let AuthService = class extends EmberObject {
+        willDestroy() {
+          assert.ok(getOwner(this).lookup('service:auth'), 'can still lookup');
+        }
+      };
+
+      engineInstance.register('service:auth', AuthService);
+
+      let service = engineInstance.lookup('service:auth');
+
+      run(() => {
+        schedule('actions', service, 'destroy');
+        engineInstance.destroy();
+      });
+    }
+
+    ['@test being destroyed by @ember/destroyable properly destroys the container and created instances'](
+      assert
+    ) {
+      assert.expect(1);
+
+      engineInstance = run(() => EngineInstance.create({ base: engine }));
+
+      let FooService = class extends EmberObject {
+        willDestroy() {
+          assert.ok(true, 'is properly destroyed');
+        }
+      };
+
+      engineInstance.register('service:foo', FooService);
+      engineInstance.lookup('service:foo');
+
+      run(() => {
+        destroy(engineInstance);
+      });
     }
 
     ['@test can be booted when its parent has been set'](assert) {

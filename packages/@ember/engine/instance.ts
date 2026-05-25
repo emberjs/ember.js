@@ -7,16 +7,16 @@ import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
 import { assert } from '@ember/debug';
 import { default as Registry, privatize as P } from '@ember/-internals/container/lib/registry';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
+import { join, schedule } from '@ember/runloop';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './parent';
-import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
-import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
-import type { InternalOwner } from '@ember/-internals/owner';
+import type { InternalOwner, RegisterOptions, Factory } from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
 import { type FullName, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
 import type Application from '@ember/application';
 import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type { SimpleElement } from '@simple-dom/interface';
+import type Container from '@ember/-internals/container/lib/container';
 
 export interface BootOptions {
   isBrowser?: boolean;
@@ -41,19 +41,11 @@ export interface EngineInstanceOptions {
   @public
   @class EngineInstance
   @extends EmberObject
-  @uses RegistryProxyMixin
-  @uses ContainerProxyMixin
 */
 
-// Note on types: since `EngineInstance` uses `RegistryProxyMixin` and
-// `ContainerProxyMixin`, which respectively implement the same `RegistryMixin`
-// and `ContainerMixin` types used to define `InternalOwner`, this is the same
-// type as `InternalOwner` from TS's POV. The point of the explicit `extends`
-// clauses for `InternalOwner` and `Owner` is to keep us honest: if this stops
-// type checking, we have broken part of our public API contract. Medium-term,
-// the goal here is to `EngineInstance` simple be `Owner`.
-interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
-class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
+// `EngineInstance` implements the registry/container proxy APIs directly.
+interface EngineInstance extends InternalOwner, Owner {}
+class EngineInstance extends EmberObject {
   /**
    @private
    @method setupRegistry
@@ -81,6 +73,9 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
   [ENGINE_PARENT]?: EngineInstance;
 
   _booted = false;
+
+  declare __container__: Container;
+  declare __registry__: Registry;
 
   init(properties: object | undefined) {
     super.init(properties);
@@ -171,23 +166,6 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
   }
 
   /**
-   Unregister a factory.
-
-   Overrides `RegistryProxy#unregister` in order to clear any cached instances
-   of the unregistered factory.
-
-   @public
-   @method unregister
-   @param {String} fullName
-   */
-  unregister(fullName: FullName) {
-    this.__container__.reset(fullName);
-
-    // We overwrote this method from RegistryProxyMixin.
-    this.__registry__.unregister(fullName);
-  }
-
-  /**
     Build a new `EngineInstance` that's a child of this instance.
 
     Engines must be registered by name with their parent engine
@@ -256,6 +234,76 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
       let singleton = parent.lookup(key) as object;
       this.register(key, singleton, { instantiate: false });
     });
+  }
+
+  // ContainerProxy implementation:
+
+  ownerInjection() {
+    return this.__container__.ownerInjection();
+  }
+
+  lookup<Type extends string, Name extends string>(fullName: FullName<Type, Name>, options?: RegisterOptions) {
+    return this.__container__.lookup(fullName, options);
+  }
+
+  factoryFor<Type extends string, Name extends string>(fullName: FullName<Type, Name>) {
+    return this.__container__.factoryFor(fullName);
+  }
+
+  destroy() {
+    let container = this.__container__;
+
+    if (container) {
+      join(() => {
+        container.destroy();
+        schedule('destroy', container, 'finalizeDestroy');
+      });
+    }
+
+    super.destroy();
+  }
+
+  // RegistryProxy implementation:
+
+  resolveRegistration(fullName: FullName): Factory<object> | object | undefined {
+    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
+    return this.__registry__.resolve(fullName);
+  }
+
+  register(fullName: FullName, factory: Factory<object> | object, options?: RegisterOptions) {
+    this.__registry__.register(fullName, factory, options);
+  }
+
+  unregister(fullName: FullName) {
+    this.__container__.reset(fullName);
+    this.__registry__.unregister(fullName);
+  }
+
+  hasRegistration(fullName: FullName): boolean {
+    return this.__registry__.has(fullName);
+  }
+
+  registeredOption<K extends keyof RegisterOptions>(
+    fullName: FullName,
+    optionName: K
+  ): RegisterOptions[K] | undefined {
+    return this.__registry__.getOption(fullName, optionName);
+  }
+
+  registerOptions(fullName: FullName, options: RegisterOptions) {
+    this.__registry__.options(fullName, options);
+  }
+
+  registeredOptions(fullName: FullName): RegisterOptions | undefined {
+    return this.__registry__.getOptions(fullName);
+  }
+
+  registerOptionsForType(type: string, options: RegisterOptions) {
+    this.__registry__.optionsForType(type, options);
+  }
+
+  registeredOptionsForType(type: string): RegisterOptions | undefined {
+    return this.__registry__.getOptionsForType(type);
   }
 }
 

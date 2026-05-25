@@ -14,7 +14,7 @@ import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
 import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
-import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
+import type { RegistryProxy, RegisterOptions, Factory, FullName } from '@ember/-internals/owner';
 
 function props(obj: object) {
   let properties = [];
@@ -50,12 +50,11 @@ export interface Initializer<T> {
 
   @class Engine
   @extends Ember.Namespace
-  @uses RegistryProxyMixin
   @public
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface Engine extends RegistryProxyMixin {}
-class Engine extends Namespace.extend(RegistryProxyMixin) {
+interface Engine extends RegistryProxy {}
+class Engine extends Namespace {
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
   static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
 
@@ -329,6 +328,7 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     @public
   */
   declare Resolver: ResolverClass;
+  declare __registry__: Registry;
 
   init(properties: object | undefined) {
     super.init(properties);
@@ -442,6 +442,48 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     }
 
     graph.topsort(cb);
+  }
+
+  // RegistryProxy implementation:
+
+  resolveRegistration(fullName: FullName): Factory<object> | object | undefined {
+    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
+    return this.__registry__.resolve(fullName);
+  }
+
+  register(fullName: FullName, factory: Factory<object> | object, options?: RegisterOptions) {
+    this.__registry__.register(fullName, factory, options);
+  }
+
+  unregister(fullName: FullName) {
+    this.__registry__.unregister(fullName);
+  }
+
+  hasRegistration(fullName: FullName): boolean {
+    return this.__registry__.has(fullName);
+  }
+
+  registeredOption<K extends keyof RegisterOptions>(
+    fullName: FullName,
+    optionName: K
+  ): RegisterOptions[K] | undefined {
+    return this.__registry__.getOption(fullName, optionName);
+  }
+
+  registerOptions(fullName: FullName, options: RegisterOptions) {
+    this.__registry__.options(fullName, options);
+  }
+
+  registeredOptions(fullName: FullName): RegisterOptions | undefined {
+    return this.__registry__.getOptions(fullName);
+  }
+
+  registerOptionsForType(type: string, options: RegisterOptions) {
+    this.__registry__.optionsForType(type, options);
+  }
+
+  registeredOptionsForType(type: string): RegisterOptions | undefined {
+    return this.__registry__.getOptionsForType(type);
   }
 }
 
