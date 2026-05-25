@@ -1,12 +1,10 @@
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const fs = require('fs');
-const path = require('path');
+import typescriptBlueprintPolyfill from 'ember-cli-typescript-blueprint-polyfill';
+import { modulePrefixForProject } from '../-utils.js';
 
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const { modulePrefixForProject } = require('../-utils');
-
-module.exports = {
+export default {
   description: 'Generates an instance initializer unit test.',
 
   shouldTransformTypeScript: true,

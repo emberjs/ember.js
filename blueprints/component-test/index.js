@@ -1,12 +1,10 @@
-'use strict';
+import path from 'node:path';
+import stringUtil from 'ember-cli-string-utils';
+import getPathOption from 'ember-cli-get-component-path-option';
+import semver from 'semver';
 
-const path = require('path');
-const stringUtil = require('ember-cli-string-utils');
-const getPathOption = require('ember-cli-get-component-path-option');
-const semver = require('semver');
-
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const { modulePrefixForProject } = require('../-utils');
+import typescriptBlueprintPolyfill from 'ember-cli-typescript-blueprint-polyfill';
+import { modulePrefixForProject } from '../-utils.js';
 
 function invocationFor(options) {
   let parts = options.entity.name.split('/');
@@ -19,7 +17,7 @@ function invocationForStrictComponentAuthoringFormat(options) {
   return stringUtil.classify(componentName);
 }
 
-module.exports = {
+export default {
   description: 'Generates a component integration or unit test.',
 
   shouldTransformTypeScript: true,

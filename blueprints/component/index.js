@@ -1,16 +1,14 @@
-'use strict';
+import chalk from 'chalk';
+import stringUtil from 'ember-cli-string-utils';
+import getPathOption from 'ember-cli-get-component-path-option';
+import normalizeEntityName from 'ember-cli-normalize-entity-name';
+import SilentError from 'silent-error';
+import { generateComponentSignature } from '../-utils.js';
 
-const chalk = require('chalk');
-const stringUtil = require('ember-cli-string-utils');
-const getPathOption = require('ember-cli-get-component-path-option');
-const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const SilentError = require('silent-error');
-const { generateComponentSignature } = require('../-utils');
-
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
+import typescriptBlueprintPolyfill from 'ember-cli-typescript-blueprint-polyfill';
 
 // intentionally avoiding use-edition-detector
-module.exports = {
+export default {
   description: 'Generates a component.',
 
   shouldTransformTypeScript: true,

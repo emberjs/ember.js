@@ -1,14 +1,12 @@
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import pathUtil from 'ember-cli-path-utils';
+import stringUtils from 'ember-cli-string-utils';
 
-const fs = require('fs');
-const path = require('path');
-const pathUtil = require('ember-cli-path-utils');
-const stringUtils = require('ember-cli-string-utils');
+import typescriptBlueprintPolyfill from 'ember-cli-typescript-blueprint-polyfill';
+import { modulePrefixForProject } from '../-utils.js';
 
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const { modulePrefixForProject } = require('../-utils');
-
-module.exports = {
+export default {
   description: 'Generates an acceptance test for a feature.',
 
   shouldTransformTypeScript: true,
