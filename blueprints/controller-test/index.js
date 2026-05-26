@@ -1,13 +1,11 @@
-'use strict';
+import stringUtil from 'ember-cli-string-utils';
 
-const stringUtil = require('ember-cli-string-utils');
+import path from 'node:path';
 
-const path = require('path');
+import typescriptBlueprintPolyfill from 'ember-cli-typescript-blueprint-polyfill';
+import { modulePrefixForProject } from '../-utils.js';
 
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const { modulePrefixForProject } = require('../-utils');
-
-module.exports = {
+export default {
   description: 'Generates a controller unit test.',
 
   shouldTransformTypeScript: true,

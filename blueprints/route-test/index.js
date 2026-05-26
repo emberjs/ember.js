@@ -1,12 +1,10 @@
-'use strict';
+import path from 'node:path';
+import stringUtil from 'ember-cli-string-utils';
 
-const path = require('path');
-const stringUtil = require('ember-cli-string-utils');
+import typescriptBlueprintPolyfill from 'ember-cli-typescript-blueprint-polyfill';
+import { modulePrefixForProject } from '../-utils.js';
 
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const { modulePrefixForProject } = require('../-utils');
-
-module.exports = {
+export default {
   description: 'Generates a route unit test.',
 
   shouldTransformTypeScript: true,

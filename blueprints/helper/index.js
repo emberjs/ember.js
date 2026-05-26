@@ -1,10 +1,8 @@
-'use strict';
+import normalizeEntityName from 'ember-cli-normalize-entity-name';
 
-const normalizeEntityName = require('ember-cli-normalize-entity-name');
+import typescriptBlueprintPolyfill from 'ember-cli-typescript-blueprint-polyfill';
 
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-
-module.exports = {
+export default {
   description: 'Generates a helper function.',
 
   shouldTransformTypeScript: true,
