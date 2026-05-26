@@ -15,6 +15,7 @@ import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
 import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
 import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
+import { StrictResolver } from './lib/strict-resolver';
 
 function props(obj: object) {
   let properties = [];
@@ -328,7 +329,17 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     @property resolver
     @public
   */
-  declare Resolver: ResolverClass;
+  Resolver: ResolverClass = StrictResolver;
+
+  /**
+    Set this to opt-in to using a strict resolver that will only return the
+    given set of ES modules. The names of the modules should all be relative to
+    the root of the app and start with "./"
+
+    @property modules
+    @public
+  */
+  declare modules?: Record<string, unknown>;
 
   init(properties: object | undefined) {
     super.init(properties);
