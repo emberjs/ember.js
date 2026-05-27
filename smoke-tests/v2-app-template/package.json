@@ -73,7 +73,7 @@
     "qunit-dom": "^3.5.0",
     "stylelint": "^16.26.1",
     "stylelint-config-standard": "^38.0.0",
-    "testem": "^3.20.0",
+    "testem": "^3.20.1",
     "tracked-built-ins": "^4.1.0",
     "vite": "^7.3.1"
   },
