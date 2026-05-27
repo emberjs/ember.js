@@ -17,12 +17,12 @@ function has(array: Array<string>, item: string): boolean {
 }
 
 function checkURI(tagName: Nullable<string>, attribute: string): boolean {
-  return (tagName === null || has(badTags, tagName)) && has(badAttributes, attribute);
+  return (tagName === null || has(badTags, tagName)) && has(badAttributes, attribute.toLowerCase());
 }
 
 function checkDataURI(tagName: Nullable<string>, attribute: string): boolean {
   if (tagName === null) return false;
-  return has(badTagsForDataURI, tagName) && has(badAttributesForDataURI, attribute);
+  return has(badTagsForDataURI, tagName) && has(badAttributesForDataURI, attribute.toLowerCase());
 }
 
 export function requiresSanitization(tagName: string, attribute: string): boolean {

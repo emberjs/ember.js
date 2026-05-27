@@ -573,6 +573,18 @@ export class AttributesTests extends RenderTest {
     this.assertHTML('<svg viewBox="0 0 100 100" />');
     this.assertStableNodes();
   }
+
+  @test
+  'sanitizes url attributes regardless of attribute name case'() {
+    this.render('<a HREF={{this.foo}}></a>', { foo: 'javascript:foo()' });
+    this.assertHTML('<a href="unsafe:javascript:foo()"></a>');
+
+    this.rerender({ foo: 'http://foo.bar' });
+    this.assertHTML('<a href="http://foo.bar"></a>');
+
+    this.rerender({ foo: 'javascript:foo()' });
+    this.assertHTML('<a href="unsafe:javascript:foo()"></a>');
+  }
 }
 
 jitSuite(AttributesTests);
