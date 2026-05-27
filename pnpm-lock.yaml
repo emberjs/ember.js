@@ -10,6 +10,7 @@ overrides:
   ember-cli-htmlbars: ^7.0.0
   babel-plugin-ember-template-compilation: ^4.0.0
   ember-cli-babel: ^8.3.1
+  testem: ^3.20.1
 
 patchedDependencies:
   '@tracerbench/core@8.0.1':
@@ -10088,9 +10089,6 @@ packages:
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
-  node-notifier@10.0.1:
-    resolution: {integrity: sha512-YX7TSyDukOZ0g+gmzjB6abKu+hTGvO8+8+gIFDsRCU2t8fLV/P2unmt+LGFaIa4y64aX98Qksa97rgz4vMNeLQ==}
-
   node-releases@2.0.36:
     resolution: {integrity: sha512-TdC8FSgHz8Mwtw9g5L4gR/Sh9XhSP/0DEkQxfEFXOpiul5IiHgHan2VhYYb6agDSfp4KuvltmGApc8HMgUrIkA==}
 
@@ -11661,11 +11659,6 @@ packages:
   testem-failure-only-reporter@1.0.0:
     resolution: {integrity: sha512-G3fC1FSW/mI2ElrzaJfGEtTHBB7U1IFimwC1oIpUc1+wYsgw+2tCUV1t+cB/dsBbryq4Cbe1NQ397fJ2maCs7g==}
 
-  testem@3.20.0:
-    resolution: {integrity: sha512-SSFfJQK/SGruISFjoKG2jCYwK596wWNPJFj2Wo77GzeIUxZ8ZjuwpyF01uekTLu4ITL6i9R4m1sWaKPK/HsunA==}
-    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
-    hasBin: true
-
   testem@3.20.1:
     resolution: {integrity: sha512-HMbcVlrRDt+GjEGJZrPSCp0XFzM7SSdmLvNSJm++hIITEIMoccCQGikvelOO/NjfZJ0HTZCEyvg3+CIStjaZqQ==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
@@ -12047,11 +12040,6 @@ packages:
   uuid@2.0.3:
     resolution: {integrity: sha512-FULf7fayPdpASncVy4DLh3xydlXEJJpvIELjYjNeQWYUZ9pclcpvCZSr2gkmN2FrrGcI7G/cJsIEwk5/8vfXpg==}
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
-
-  uuid@8.3.2:
-    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
-    hasBin: true
 
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
@@ -18386,7 +18374,7 @@ snapshots:
       silent-error: 1.1.1
       sort-package-json: 3.6.1
       symlink-or-copy: 1.3.1
-      testem: 3.20.0(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
+      testem: 3.20.1(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
       tiny-lr: 2.0.0
       tree-sync: 2.1.0
       walk-sync: 4.0.1
@@ -21129,15 +21117,6 @@ snapshots:
 
   node-int64@0.4.0: {}
 
-  node-notifier@10.0.1:
-    dependencies:
-      growly: 1.3.0
-      is-wsl: 2.2.0
-      semver: 7.8.1
-      shellwords: 0.1.1
-      uuid: 8.3.2
-      which: 2.0.2
-
   node-releases@2.0.36: {}
 
   node-uuid@1.4.8: {}
@@ -23006,84 +22985,6 @@ snapshots:
       - walrus
       - whiskers
 
-  testem@3.20.0(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8):
-    dependencies:
-      '@xmldom/xmldom': 0.9.10
-      backbone: 1.6.1
-      charm: 1.0.2
-      chokidar: 5.0.0
-      commander: 14.0.3
-      compression: 1.8.1
-      consolidate: 1.0.4(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(lodash@4.18.1)(mustache@4.2.0)(underscore@1.13.8)
-      execa: 9.6.1
-      express: 5.2.1
-      glob: 13.0.6
-      http-proxy: 1.18.1
-      js-yaml: 4.1.1
-      lodash: 4.18.1
-      minimatch: 10.2.5
-      mkdirp: 3.0.1
-      mustache: 4.2.0
-      node-notifier: 10.0.1
-      printf: 0.6.1
-      proc-log: 6.1.0
-      rimraf: 6.1.3
-      socket.io: 4.8.3
-      spawn-args: 0.2.0
-      styled_string: 0.0.1
-      tap-parser: 18.3.4
-    transitivePeerDependencies:
-      - '@babel/core'
-      - arc-templates
-      - atpl
-      - bracket-template
-      - bufferutil
-      - coffee-script
-      - debug
-      - dot
-      - dust
-      - dustjs-helpers
-      - dustjs-linkedin
-      - eco
-      - ect
-      - ejs
-      - haml-coffee
-      - hamlet
-      - hamljs
-      - handlebars
-      - hogan.js
-      - htmling
-      - jazz
-      - jqtpl
-      - just
-      - liquid-node
-      - liquor
-      - mote
-      - nunjucks
-      - plates
-      - pug
-      - qejs
-      - ractive
-      - react
-      - react-dom
-      - slm
-      - supports-color
-      - swig
-      - swig-templates
-      - teacup
-      - templayed
-      - then-pug
-      - tinyliquid
-      - toffee
-      - twig
-      - twing
-      - underscore
-      - utf-8-validate
-      - vash
-      - velocityjs
-      - walrus
-      - whiskers
-
   testem@3.20.1(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8):
     dependencies:
       '@xmldom/xmldom': 0.9.10
@@ -23586,8 +23487,6 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@2.0.3: {}
-
-  uuid@8.3.2: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
