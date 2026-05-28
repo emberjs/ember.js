@@ -140,7 +140,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
       else: 'else here',
     });
 
-    this.assertComponent('<button name="false"></button>');
+    this.assertComponent('<button></button>');
     this.assertStableRerender();
   }
 
@@ -151,7 +151,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
       template: 'block here',
     });
 
-    this.assertComponent('<button name="false"></button>');
+    this.assertComponent('<button></button>');
     this.assertStableRerender();
   }
 
@@ -174,7 +174,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
       template: 'block here',
     });
 
-    this.assertComponent('<button name="false"></button>');
+    this.assertComponent('<button></button>');
     this.assertStableRerender();
   }
 
@@ -184,7 +184,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
       layout: '<button name={{has-block-params}}></button>',
     });
 
-    this.assertComponent('<button name="false"></button>');
+    this.assertComponent('<button></button>');
     this.assertStableRerender();
   }
 
