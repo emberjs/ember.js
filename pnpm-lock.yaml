@@ -10,6 +10,7 @@ overrides:
   ember-cli-htmlbars: ^7.0.0
   babel-plugin-ember-template-compilation: ^4.0.0
   ember-cli-babel: ^8.3.1
+  testem: ^3.20.1
 
 patchedDependencies:
   '@tracerbench/core@8.0.1':
@@ -18,9 +19,6 @@ patchedDependencies:
   agadoo:
     hash: c1058fc9952e79cd32c4681e029134a3dce79fd43dcd50a3dde1cda5d7e0e802
     path: patches/agadoo.patch
-  testem@3.20.0:
-    hash: 0faf1dcd9d0d895ec2def36aa49ea2bc57394df3a249bfd991b146f85c9706f4
-    path: patches/testem@3.20.0.patch
 
 importers:
 
@@ -244,8 +242,8 @@ importers:
         specifier: ^5.42.0
         version: 5.46.1
       testem:
-        specifier: ^3.20.0
-        version: 3.20.0(patch_hash=0faf1dcd9d0d895ec2def36aa49ea2bc57394df3a249bfd991b146f85c9706f4)(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
+        specifier: ^3.20.1
+        version: 3.20.1(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
       testem-failure-only-reporter:
         specifier: ^1.0.0
         version: 1.0.0(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
@@ -3198,8 +3196,8 @@ importers:
         specifier: ^38.0.0
         version: 38.0.0(stylelint@16.26.1(typescript@5.9.3))
       testem:
-        specifier: ^3.20.0
-        version: 3.20.0(patch_hash=0faf1dcd9d0d895ec2def36aa49ea2bc57394df3a249bfd991b146f85c9706f4)(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
+        specifier: ^3.20.1
+        version: 3.20.1(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
       tracked-built-ins:
         specifier: ^4.1.0
         version: 4.1.2(@babel/core@7.29.0)
@@ -10091,9 +10089,6 @@ packages:
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
-  node-notifier@10.0.1:
-    resolution: {integrity: sha512-YX7TSyDukOZ0g+gmzjB6abKu+hTGvO8+8+gIFDsRCU2t8fLV/P2unmt+LGFaIa4y64aX98Qksa97rgz4vMNeLQ==}
-
   node-releases@2.0.36:
     resolution: {integrity: sha512-TdC8FSgHz8Mwtw9g5L4gR/Sh9XhSP/0DEkQxfEFXOpiul5IiHgHan2VhYYb6agDSfp4KuvltmGApc8HMgUrIkA==}
 
@@ -11664,8 +11659,8 @@ packages:
   testem-failure-only-reporter@1.0.0:
     resolution: {integrity: sha512-G3fC1FSW/mI2ElrzaJfGEtTHBB7U1IFimwC1oIpUc1+wYsgw+2tCUV1t+cB/dsBbryq4Cbe1NQ397fJ2maCs7g==}
 
-  testem@3.20.0:
-    resolution: {integrity: sha512-SSFfJQK/SGruISFjoKG2jCYwK596wWNPJFj2Wo77GzeIUxZ8ZjuwpyF01uekTLu4ITL6i9R4m1sWaKPK/HsunA==}
+  testem@3.20.1:
+    resolution: {integrity: sha512-HMbcVlrRDt+GjEGJZrPSCp0XFzM7SSdmLvNSJm++hIITEIMoccCQGikvelOO/NjfZJ0HTZCEyvg3+CIStjaZqQ==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
     hasBin: true
 
@@ -11760,6 +11755,9 @@ packages:
   to-regex-range@5.0.1:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
+
+  toasted-notifier@10.1.0:
+    resolution: {integrity: sha512-SvAufC4t75lRqwQtComPeDC93j8Toy3BRsD1cMIZ+YdfxTnIyxQb+YCuhXohNFDGJPI+RgOYImkDX76fTo1YDA==}
 
   toidentifier@1.0.1:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
@@ -12042,11 +12040,6 @@ packages:
   uuid@2.0.3:
     resolution: {integrity: sha512-FULf7fayPdpASncVy4DLh3xydlXEJJpvIELjYjNeQWYUZ9pclcpvCZSr2gkmN2FrrGcI7G/cJsIEwk5/8vfXpg==}
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
-
-  uuid@8.3.2:
-    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
-    hasBin: true
 
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
@@ -18381,7 +18374,7 @@ snapshots:
       silent-error: 1.1.1
       sort-package-json: 3.6.1
       symlink-or-copy: 1.3.1
-      testem: 3.20.0(patch_hash=0faf1dcd9d0d895ec2def36aa49ea2bc57394df3a249bfd991b146f85c9706f4)(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
+      testem: 3.20.1(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
       tiny-lr: 2.0.0
       tree-sync: 2.1.0
       walk-sync: 4.0.1
@@ -21124,15 +21117,6 @@ snapshots:
 
   node-int64@0.4.0: {}
 
-  node-notifier@10.0.1:
-    dependencies:
-      growly: 1.3.0
-      is-wsl: 2.2.0
-      semver: 7.8.1
-      shellwords: 0.1.1
-      uuid: 8.3.2
-      which: 2.0.2
-
   node-releases@2.0.36: {}
 
   node-uuid@1.4.8: {}
@@ -22948,7 +22932,7 @@ snapshots:
 
   testem-failure-only-reporter@1.0.0(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8):
     dependencies:
-      testem: 3.20.0(patch_hash=0faf1dcd9d0d895ec2def36aa49ea2bc57394df3a249bfd991b146f85c9706f4)(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
+      testem: 3.20.1(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
     transitivePeerDependencies:
       - '@babel/core'
       - arc-templates
@@ -23001,7 +22985,7 @@ snapshots:
       - walrus
       - whiskers
 
-  testem@3.20.0(patch_hash=0faf1dcd9d0d895ec2def36aa49ea2bc57394df3a249bfd991b146f85c9706f4)(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8):
+  testem@3.20.1(@babel/core@7.29.0)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8):
     dependencies:
       '@xmldom/xmldom': 0.9.10
       backbone: 1.6.1
@@ -23019,7 +23003,6 @@ snapshots:
       minimatch: 10.2.5
       mkdirp: 3.0.1
       mustache: 4.2.0
-      node-notifier: 10.0.1
       printf: 0.6.1
       proc-log: 6.1.0
       rimraf: 6.1.3
@@ -23027,6 +23010,7 @@ snapshots:
       spawn-args: 0.2.0
       styled_string: 0.0.1
       tap-parser: 18.3.4
+      toasted-notifier: 10.1.0
     transitivePeerDependencies:
       - '@babel/core'
       - arc-templates
@@ -23175,6 +23159,14 @@ snapshots:
   to-regex-range@5.0.1:
     dependencies:
       is-number: 7.0.0
+
+  toasted-notifier@10.1.0:
+    dependencies:
+      growly: 1.3.0
+      is-wsl: 2.2.0
+      semver: 7.8.1
+      shellwords: 0.1.1
+      which: 2.0.2
 
   toidentifier@1.0.1: {}
 
@@ -23495,8 +23487,6 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@2.0.3: {}
-
-  uuid@8.3.2: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
