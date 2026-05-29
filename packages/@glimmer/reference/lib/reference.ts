@@ -23,7 +23,7 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator/lib/validators';
-import { consumeTag, track } from '@glimmer/validator/lib/tracking';
+import { beginTrackFrame, consumeTag, endTrackFrame } from '@glimmer/validator/lib/tracking';
 
 export const REFERENCE: ReferenceSymbol = Symbol('REFERENCE') as ReferenceSymbol;
 
@@ -201,14 +201,18 @@ export function valueForRef<T>(_ref: Reference<T>): T {
     } else {
       const { compute } = ref;
 
-      const newTag = track(() => {
+      // Inlined `track()`: opening the frame directly avoids allocating a thunk
+      // closure on every (re)compute. This is the hottest path in the VM — every
+      // reference read that needs evaluation passes through here.
+      beginTrackFrame(DEBUG && ref.debugLabel);
+      try {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         lastValue = ref.lastValue = compute!();
-      }, DEBUG && ref.debugLabel);
+      } finally {
+        tag = ref.tag = endTrackFrame();
+      }
 
-      tag = ref.tag = newTag;
-
-      ref.lastRevision = valueForTag(newTag);
+      ref.lastRevision = valueForTag(tag);
     }
   } else {
     lastValue = ref.lastValue;

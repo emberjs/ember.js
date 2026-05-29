@@ -64,10 +64,12 @@ function keyForPath(path: string): KeyFor {
 
 function makeKeyFor(key: string) {
   switch (key) {
+    // `@key`/`@index` produce a unique value per position by construction, so
+    // they never collide and don't need the duplicate-key dedup pass.
     case '@key':
-      return uniqueKeyFor(KEY);
+      return KEY;
     case '@index':
-      return uniqueKeyFor(INDEX);
+      return INDEX;
     case '@identity':
       return uniqueKeyFor(IDENTITY);
     default:
@@ -148,7 +150,10 @@ function identityForNthOccurence(value: unknown, count: number) {
  * Glimmer know that it should reuse the DOM for the previous nth occurence.
  */
 function uniqueKeyFor(keyFor: KeyFor) {
-  let seen = new WeakMapWithPrimitives<number>();
+  // Per-pass state, discarded when the iteration completes — a plain `Map`
+  // (which keys on objects and primitives alike) is enough; the weak-keyed
+  // dual-map dance is only needed for the long-lived global `IDENTITIES`.
+  let seen = new Map<unknown, number>();
 
   return (value: unknown, memo: unknown) => {
     let key = keyFor(value, memo);
