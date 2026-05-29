@@ -63,7 +63,11 @@ function findProtocolForURL() {
       let protocol = null;
 
       if (typeof url === 'string') {
-        protocol = nodeURL.parse(url).protocol;
+        // browsers strip ASCII tab/newline/CR from urls before navigating, so
+        // `java\nscript:` runs as `javascript:`. `url.parse` keeps them and reports
+        // a null protocol, slipping past the badProtocols check. Strip them here to
+        // match the WHATWG `URL` parser used on the non-fastboot path.
+        protocol = nodeURL.parse(url.replace(/[\t\n\r]/gu, '')).protocol;
       }
 
       return protocol === null ? ':' : protocol;
