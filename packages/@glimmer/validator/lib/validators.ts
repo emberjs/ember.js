@@ -122,6 +122,18 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   }
 
   [COMPUTE](): Revision {
+    // Fast path for subtag-less tags (property tags, cell tags, plain
+    // dirtyable/updatable tags — the overwhelming majority). With no subtags to
+    // fold in, the value is always just `revision`, which `dirtyTag` keeps
+    // current, so none of the `lastChecked`/`isUpdating`/cycle machinery below
+    // (which exists purely to memoize subtag recursion) is needed. This runs on
+    // every `validateTag`/`valueForTag`, i.e. every reference read.
+    let { subtag } = this;
+
+    if (subtag === null) {
+      return this.revision;
+    }
+
     let { lastChecked } = this;
 
     if (this.isUpdating) {
@@ -135,24 +147,22 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
       this.lastChecked = $REVISION;
 
       try {
-        let { subtag, revision } = this;
+        let { revision } = this;
 
-        if (subtag !== null) {
-          if (Array.isArray(subtag)) {
-            for (const tag of subtag) {
-              let value = tag[COMPUTE]();
-              revision = Math.max(value, revision);
-            }
+        if (Array.isArray(subtag)) {
+          for (const tag of subtag) {
+            let value = tag[COMPUTE]();
+            revision = Math.max(value, revision);
+          }
+        } else {
+          let subtagValue = subtag[COMPUTE]();
+
+          if (subtagValue === this.subtagBufferCache) {
+            revision = Math.max(revision, this.lastValue);
           } else {
-            let subtagValue = subtag[COMPUTE]();
-
-            if (subtagValue === this.subtagBufferCache) {
-              revision = Math.max(revision, this.lastValue);
-            } else {
-              // Clear the temporary buffer cache
-              this.subtagBufferCache = null;
-              revision = Math.max(revision, subtagValue);
-            }
+            // Clear the temporary buffer cache
+            this.subtagBufferCache = null;
+            revision = Math.max(revision, subtagValue);
           }
         }
 
