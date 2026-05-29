@@ -5,6 +5,7 @@ export type ComputeReference = 1;
 export type UnboundReference = 2;
 export type InvokableReference = 3;
 export type CellReference = 4;
+export type PropertyReference = 5;
 
 export interface ReferenceTypes {
   readonly Constant: ConstantReference;
@@ -12,6 +13,7 @@ export interface ReferenceTypes {
   readonly Unbound: UnboundReference;
   readonly Invokable: InvokableReference;
   readonly Cell: CellReference;
+  readonly Property: PropertyReference;
 }
 
 export type ReferenceType =
@@ -19,7 +21,8 @@ export type ReferenceType =
   | ComputeReference
   | UnboundReference
   | InvokableReference
-  | CellReference;
+  | CellReference
+  | PropertyReference;
 
 declare const REFERENCE: unique symbol;
 export type ReferenceSymbol = typeof REFERENCE;

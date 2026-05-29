@@ -5,6 +5,7 @@ import type {
   ConstantReference,
   InvokableReference,
   Nullable,
+  PropertyReference,
   Reference,
   ReferenceSymbol,
   ReferenceType,
@@ -32,6 +33,7 @@ const COMPUTE: ComputeReference = 1;
 const UNBOUND: UnboundReference = 2;
 const INVOKABLE: InvokableReference = 3;
 const CELL: CellReference = 4;
+const PROPERTY: PropertyReference = 5;
 
 export type { Reference as default };
 export type { Reference };
@@ -53,6 +55,11 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
 
   public compute: Nullable<() => T> = null;
   public update: Nullable<(val: T) => void> = null;
+
+  // For PROPERTY references: the parent reference and the property path, stored
+  // as data instead of being captured in getter/setter closures.
+  public propertyParent: Nullable<Reference> = null;
+  public propertyPath: Nullable<string> = null;
 
   public debugLabel?: string;
 
@@ -175,8 +182,9 @@ export function isConstRef(_ref: Reference) {
 
 export function isUpdatableRef(_ref: Reference) {
   const ref = _ref as ReferenceImpl;
+  const type = ref[REFERENCE];
 
-  return ref[REFERENCE] === CELL || ref.update !== null;
+  return type === CELL || type === PROPERTY || ref.update !== null;
 }
 
 export function valueForRef<T>(_ref: Reference<T>): T {
@@ -199,20 +207,33 @@ export function valueForRef<T>(_ref: Reference<T>): T {
       lastValue = ref.lastValue;
       ref.lastRevision = valueForTag(tag as Tag);
     } else {
-      const { compute } = ref;
-
       // Inlined `track()`: opening the frame directly avoids allocating a thunk
       // closure on every (re)compute. This is the hottest path in the VM — every
       // reference read that needs evaluation passes through here.
       beginTrackFrame(DEBUG && ref.debugLabel);
+      let newTag!: Tag;
       try {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-        lastValue = ref.lastValue = compute!();
+        if (ref[REFERENCE] === PROPERTY) {
+          // A property reference reads `path` off its parent's value. Holding
+          // the parent + path as data (rather than getter/setter closures) is
+          // what lets `childRefFor` avoid two closure allocations per access.
+          const parent = valueForRef(ref.propertyParent as Reference);
+          lastValue = ref.lastValue = isDict(parent)
+            ? (getProp(parent, ref.propertyPath as string) as T)
+            : undefined;
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+          lastValue = ref.lastValue = ref.compute!();
+        }
       } finally {
-        tag = ref.tag = endTrackFrame();
+        // Always end the frame to keep the tracking stack balanced, but commit
+        // the new tag/revision only on success (below) — matching `track()`'s
+        // semantics so a throwing getter leaves the reference's tag untouched.
+        newTag = endTrackFrame();
       }
 
-      ref.lastRevision = valueForTag(tag);
+      tag = ref.tag = newTag;
+      ref.lastRevision = valueForTag(newTag);
     }
   } else {
     lastValue = ref.lastValue;
@@ -232,6 +253,15 @@ export function updateRef(_ref: Reference, value: unknown) {
     if (ref.lastValue !== value) {
       ref.lastValue = value;
       dirtyTag(ref.tag as DirtyableTag);
+    }
+    return;
+  }
+
+  if (ref[REFERENCE] === PROPERTY) {
+    // Inline `setProp` on the parent's value — mirrors the old childRefFor setter.
+    const parent = valueForRef(ref.propertyParent as Reference);
+    if (isDict(parent)) {
+      setProp(parent, ref.propertyPath as string, value);
     }
     return;
   }
@@ -269,26 +299,18 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
       child = UNDEFINED_REFERENCE;
     }
   } else {
-    child = createComputeRef(
-      () => {
-        const parent = valueForRef(parentRef);
-
-        if (isDict(parent)) {
-          return getProp(parent, path);
-        }
-      },
-      (val) => {
-        const parent = valueForRef(parentRef);
-
-        if (isDict(parent)) {
-          return setProp(parent, path, val);
-        }
-      }
-    );
+    // A PROPERTY reference: `getProp`/`setProp` of `path` on the parent's value.
+    // Storing the parent + path as data (handled inline by valueForRef/updateRef)
+    // avoids allocating the getter and setter closures this used to need.
+    const propertyRef = new ReferenceImpl(PROPERTY);
+    propertyRef.propertyParent = parentRef;
+    propertyRef.propertyPath = path;
 
     if (DEBUG) {
-      child.debugLabel = `${parentRef.debugLabel}.${path}`;
+      propertyRef.debugLabel = `${parentRef.debugLabel}.${path}`;
     }
+
+    child = propertyRef;
   }
 
   children.set(path, child);
@@ -314,9 +336,10 @@ if (DEBUG) {
     const ref = createComputeRef(() => valueForRef(inner), update);
 
     // A debug alias is a genuine compute reference (it recomputes through
-    // `inner`); never inherit the CELL type, whose fast paths assume the value
-    // lives directly on the reference.
-    ref[REFERENCE] = inner[REFERENCE] === CELL ? COMPUTE : inner[REFERENCE];
+    // `inner`); never inherit the CELL/PROPERTY types, whose fast paths assume
+    // the value (or parent + path) lives directly on the reference.
+    const innerType = inner[REFERENCE];
+    ref[REFERENCE] = innerType === CELL || innerType === PROPERTY ? COMPUTE : innerType;
 
     ref.debugLabel = debugLabel;
 
