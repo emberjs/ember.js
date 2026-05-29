@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask, runAppend } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -87,7 +87,9 @@ moduleFor(
       });
     }
 
-    ['@test it throws a useful assertion when dynamic component name is an object'](assert) {
+    ['@test it throws a useful assertion for an invalid dynamic component value in non-strict mode'](
+      assert
+    ) {
       if (!DEBUG) {
         assert.expect(0);
         return;
@@ -97,7 +99,36 @@ moduleFor(
         this.render('{{component this.componentName}}', {
           componentName: { name: 'not-a-component' },
         });
-      }, /The `{{component}}` helper received an invalid value\. It expects a component definition, or a string component name in non-strict mode\./);
+      }, /The `{{component}}` helper received an invalid value\. It expects a component definition or a string component name\./);
+    }
+
+    ['@test it throws a useful assertion for an invalid dynamic component value in strict mode'](
+      assert
+    ) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
+        this.owner.register(
+          'template:-top-level',
+          this.compile('{{component this.componentName}}', {
+            moduleName: '-top-level',
+            strictMode: true,
+          })
+        );
+
+        let attrs = {
+          componentName: { name: 'not-a-component' },
+          tagName: '',
+          layoutName: '-top-level',
+        };
+
+        this.owner.register('component:-top-level', Component.extend(attrs));
+        this.component = this.owner.lookup('component:-top-level');
+        runAppend(this.component);
+      }, /The `{{component}}` helper received an invalid value\. In strict mode, it expects a component definition\./);
     }
 
     ['@test it has an element']() {

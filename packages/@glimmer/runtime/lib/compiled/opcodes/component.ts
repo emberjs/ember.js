@@ -177,7 +177,9 @@ APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => 
         isCurriedValue(component) ||
         ((typeof component === 'object' || typeof component === 'function') &&
           hasInternalComponentManager(component)),
-      'The `{{component}}` helper received an invalid value. It expects a component definition, or a string component name in non-strict mode.'
+      isStrict
+        ? 'The `{{component}}` helper received an invalid value. In strict mode, it expects a component definition.'
+        : 'The `{{component}}` helper received an invalid value. It expects a component definition or a string component name.'
     );
   }
 
