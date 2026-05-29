@@ -9,34 +9,74 @@ import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './v
 
 /**
  * An object that that tracks @tracked properties that were consumed.
+ *
+ * The vast majority of tracking frames consume zero or one tag (a single
+ * `{{property}}` read, a constant, etc.), so the first tag is held in a plain
+ * field and the `Set` is allocated lazily only when a *second, distinct* tag is
+ * consumed. Trackers themselves are pooled (see `allocTracker`/`freeTracker`)
+ * because frames are strictly nested, so the per-frame `new Tracker()` +
+ * `new Set()` pair — previously allocated on every reference recompute — is
+ * avoided entirely in the common case.
  */
 class Tracker {
-  private tags = new Set<Tag>();
-  private last: Tag | null = null;
+  first: Tag | null = null;
+  set: Set<Tag> | null = null;
 
   add(tag: Tag) {
     if (tag === CONSTANT_TAG) return;
-
-    this.tags.add(tag);
 
     if (DEBUG) {
       unwrap(debug.markTagAsConsumed)(tag);
     }
 
-    this.last = tag;
+    let { set } = this;
+
+    if (set !== null) {
+      set.add(tag);
+      return;
+    }
+
+    let { first } = this;
+
+    if (first === null) {
+      this.first = tag;
+    } else if (first !== tag) {
+      set = this.set = new Set();
+      set.add(first);
+      set.add(tag);
+    }
   }
 
   combine(): Tag {
-    let { tags } = this;
+    let { first, set } = this;
 
-    if (tags.size === 0) {
+    if (set !== null) {
+      return combine(Array.from(set));
+    } else if (first === null) {
       return CONSTANT_TAG;
-    } else if (tags.size === 1) {
-      return this.last as Tag;
     } else {
-      return combine(Array.from(this.tags));
+      return first;
     }
   }
+
+  reset() {
+    this.first = null;
+    this.set = null;
+  }
+}
+
+// Trackers are pooled: a frame's tracker is dead the moment `combine()` has run
+// in `endTrackFrame`, and frames are strictly nested (LIFO), so a closed
+// tracker can be reset and handed to the next `beginTrackFrame`.
+const TRACKER_POOL: Tracker[] = [];
+
+function allocTracker(): Tracker {
+  return TRACKER_POOL.pop() ?? new Tracker();
+}
+
+function freeTracker(tracker: Tracker): void {
+  tracker.reset();
+  TRACKER_POOL.push(tracker);
 }
 
 /**
@@ -59,7 +99,7 @@ const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 export function beginTrackFrame(debuggingContext?: string | false): void {
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
 
-  CURRENT_TRACKER = new Tracker();
+  CURRENT_TRACKER = allocTracker();
 
   if (DEBUG) {
     unwrap(debug.beginTrackingTransaction)(debuggingContext);
@@ -79,7 +119,10 @@ export function endTrackFrame(): Tag {
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  return unwrap(current).combine();
+  let tracker = unwrap(current);
+  let tag = tracker.combine();
+  freeTracker(tracker);
+  return tag;
 }
 
 export function beginUntrackFrame(): void {
