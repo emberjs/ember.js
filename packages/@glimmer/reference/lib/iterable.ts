@@ -3,12 +3,12 @@ import type { Nullable } from '@glimmer/interfaces';
 import { getPath, toIterator } from '@glimmer/global-context';
 import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 import { isIndexable } from '@glimmer/util/lib/collections';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 
 import type { Reference, ReferenceEnvironment } from './reference';
 
 import { createComputeRef, valueForRef } from './reference';
+
+export { createIteratorItemRef } from './reference';
 
 export interface IterationItem<T, U> {
   key: unknown;
@@ -183,24 +183,6 @@ export function createIteratorRef(listRef: Reference, key: string) {
 
     return new IteratorWrapper(maybeIterator, keyFor);
   });
-}
-
-export function createIteratorItemRef(_value: unknown) {
-  let value = _value;
-  let tag = createTag();
-
-  return createComputeRef(
-    () => {
-      consumeTag(tag);
-      return value;
-    },
-    (newValue) => {
-      if (value !== newValue) {
-        value = newValue;
-        dirtyTag(tag);
-      }
-    }
-  );
 }
 
 class IteratorWrapper implements OpaqueIterator {

@@ -1,5 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import type {
+  CellReference,
   ComputeReference,
   ConstantReference,
   InvokableReference,
@@ -10,11 +11,18 @@ import type {
   UnboundReference,
 } from '@glimmer/interfaces';
 import type { Revision } from '@glimmer/validator/lib/validators';
-import type { Tag } from '@glimmer/interfaces';
+import type { DirtyableTag, Tag } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { getProp, setProp } from '@glimmer/global-context';
 import { isDict } from '@glimmer/util/lib/collections';
-import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import {
+  CONSTANT_TAG,
+  createTag,
+  DIRTY_TAG as dirtyTag,
+  INITIAL,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator/lib/validators';
 import { consumeTag, track } from '@glimmer/validator/lib/tracking';
 
 export const REFERENCE: ReferenceSymbol = Symbol('REFERENCE') as ReferenceSymbol;
@@ -23,6 +31,7 @@ const CONSTANT: ConstantReference = 0;
 const COMPUTE: ComputeReference = 1;
 const UNBOUND: UnboundReference = 2;
 const INVOKABLE: InvokableReference = 3;
+const CELL: CellReference = 4;
 
 export type { Reference as default };
 export type { Reference };
@@ -115,6 +124,28 @@ export function createComputeRef<T = unknown>(
   return ref;
 }
 
+/**
+ * A `Cell` reference holds a value directly behind a single dirtyable tag. It is
+ * the reference used for `{{#each}}` block params (the item value and its index),
+ * which are created and updated by the millions when rendering large lists.
+ *
+ * Unlike a generic compute reference, a cell has no dependencies to discover: its
+ * value lives on the reference itself and its tag never changes. That lets
+ * `valueForRef` skip the `track()` frame (a `Tracker` + `Set` allocation per read)
+ * and lets `updateRef` mutate the value inline, so a cell needs no `compute`/
+ * `update` closures at all — just the reference object and its tag.
+ */
+export function createIteratorItemRef<T>(value: T): Reference<T> {
+  const ref = new ReferenceImpl<T>(CELL);
+  const tag = createTag();
+
+  ref.tag = tag;
+  ref.lastValue = value;
+  ref.lastRevision = valueForTag(tag);
+
+  return ref;
+}
+
 export function createReadOnlyRef(ref: Reference): Reference {
   if (!isUpdatableRef(ref)) return ref;
 
@@ -145,7 +176,7 @@ export function isConstRef(_ref: Reference) {
 export function isUpdatableRef(_ref: Reference) {
   const ref = _ref as ReferenceImpl;
 
-  return ref.update !== null;
+  return ref[REFERENCE] === CELL || ref.update !== null;
 }
 
 export function valueForRef<T>(_ref: Reference<T>): T {
@@ -161,27 +192,45 @@ export function valueForRef<T>(_ref: Reference<T>): T {
   let lastValue;
 
   if (tag === null || !validateTag(tag, lastRevision)) {
-    const { compute } = ref;
+    if (ref[REFERENCE] === CELL) {
+      // A cell's value is stored on the reference and gated by a fixed tag, so
+      // there are no dependencies to (re)discover — read the stored value and
+      // re-snapshot the tag without opening a tracking frame.
+      lastValue = ref.lastValue;
+      ref.lastRevision = valueForTag(tag as Tag);
+    } else {
+      const { compute } = ref;
 
-    const newTag = track(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      lastValue = ref.lastValue = compute!();
-    }, DEBUG && ref.debugLabel);
+      const newTag = track(() => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+        lastValue = ref.lastValue = compute!();
+      }, DEBUG && ref.debugLabel);
 
-    tag = ref.tag = newTag;
+      tag = ref.tag = newTag;
 
-    ref.lastRevision = valueForTag(newTag);
+      ref.lastRevision = valueForTag(newTag);
+    }
   } else {
     lastValue = ref.lastValue;
   }
 
-  consumeTag(tag);
+  consumeTag(tag as Tag);
 
   return lastValue as T;
 }
 
 export function updateRef(_ref: Reference, value: unknown) {
   const ref = _ref as ReferenceImpl;
+
+  if (ref[REFERENCE] === CELL) {
+    // Equality-gated inline update — no closure indirection. Mirrors the old
+    // `createIteratorItemRef` setter semantics.
+    if (ref.lastValue !== value) {
+      ref.lastValue = value;
+      dirtyTag(ref.tag as DirtyableTag);
+    }
+    return;
+  }
 
   const update = expect(ref.update, 'called update on a non-updatable reference');
 
@@ -260,7 +309,10 @@ if (DEBUG) {
     const update = isUpdatableRef(inner) ? (value: unknown): void => updateRef(inner, value) : null;
     const ref = createComputeRef(() => valueForRef(inner), update);
 
-    ref[REFERENCE] = inner[REFERENCE];
+    // A debug alias is a genuine compute reference (it recomputes through
+    // `inner`); never inherit the CELL type, whose fast paths assume the value
+    // lives directly on the reference.
+    ref[REFERENCE] = inner[REFERENCE] === CELL ? COMPUTE : inner[REFERENCE];
 
     ref.debugLabel = debugLabel;
 

@@ -4,19 +4,22 @@ export type ConstantReference = 0;
 export type ComputeReference = 1;
 export type UnboundReference = 2;
 export type InvokableReference = 3;
+export type CellReference = 4;
 
 export interface ReferenceTypes {
   readonly Constant: ConstantReference;
   readonly Compute: ComputeReference;
   readonly Unbound: UnboundReference;
   readonly Invokable: InvokableReference;
+  readonly Cell: CellReference;
 }
 
 export type ReferenceType =
   | ConstantReference
   | ComputeReference
   | UnboundReference
-  | InvokableReference;
+  | InvokableReference
+  | CellReference;
 
 declare const REFERENCE: unique symbol;
 export type ReferenceSymbol = typeof REFERENCE;
