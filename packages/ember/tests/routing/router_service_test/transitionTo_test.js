@@ -439,5 +439,121 @@ moduleFor(
         assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
       });
     }
+
+    async ['@test RouterService#transitionTo with route name and unchanged application query params does not abort or re-run application model hook'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let applicationModelHookCallCount = 0;
+
+      this.add(
+        'route:application',
+        class extends Route {
+          queryParams = {
+            filter: {
+              refreshModel: true,
+            },
+            sort: {
+              refreshModel: true,
+            },
+          };
+
+          model() {
+            applicationModelHookCallCount++;
+            return {};
+          }
+        }
+      );
+
+      this.add(
+        'controller:application',
+        Controller.extend({
+          queryParams: ['filter', 'sort'],
+          filter: '',
+          sort: '',
+        })
+      );
+
+      await this.visit('/?filter=&sort=');
+
+      assert.equal(
+        applicationModelHookCallCount,
+        1,
+        'application model hook called on initial visit'
+      );
+
+      await this.routerService.transitionTo('parent.child');
+
+      assert.equal(
+        this.routerService.get('currentRouteName'),
+        'parent.child',
+        'transitioned to child route'
+      );
+
+      assert.equal(
+        applicationModelHookCallCount,
+        1,
+        'application model hook not re-run when transitioning with unchanged sticky query params'
+      );
+    }
+
+    async ['@test RouterService#transitionTo with URL string and unchanged application query params does not abort or re-run application model hook'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let applicationModelHookCallCount = 0;
+
+      this.add(
+        'route:application',
+        class extends Route {
+          queryParams = {
+            filter: {
+              refreshModel: true,
+            },
+            sort: {
+              refreshModel: true,
+            },
+          };
+
+          model() {
+            applicationModelHookCallCount++;
+            return {};
+          }
+        }
+      );
+
+      this.add(
+        'controller:application',
+        Controller.extend({
+          queryParams: ['filter', 'sort'],
+          filter: '',
+          sort: '',
+        })
+      );
+
+      await this.visit('/?filter=&sort=');
+
+      assert.equal(
+        applicationModelHookCallCount,
+        1,
+        'application model hook called on initial visit'
+      );
+
+      await this.routerService.transitionTo('/child?filter=&sort=');
+
+      assert.equal(
+        this.routerService.get('currentRouteName'),
+        'parent.child',
+        'transitioned to child route'
+      );
+
+      assert.equal(
+        applicationModelHookCallCount,
+        1,
+        'application model hook not re-run when transitioning with unchanged query params'
+      );
+    }
   }
 );
