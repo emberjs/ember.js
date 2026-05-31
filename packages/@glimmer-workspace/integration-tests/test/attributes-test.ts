@@ -719,3 +719,21 @@ jitSuite(
     protected isSelfClosing = false;
   }
 );
+
+jitSuite(
+  class extends BoundValuesToSpecialAttributeTests {
+    static suiteName = 'button[formaction] attribute';
+    protected tag = 'button';
+    protected attr = 'formaction';
+  }
+);
+
+jitSuite(
+  class extends BoundValuesToSpecialAttributeTests {
+    static suiteName = 'input[formaction] attribute';
+    protected tag = 'input';
+    protected attr = 'formaction';
+    protected override isEmptyElement = true;
+    protected isSelfClosing = false;
+  }
+);
