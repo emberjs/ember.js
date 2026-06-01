@@ -8,9 +8,16 @@ const badTags = ['A', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM'];
 
 const badTagsForDataURI = ['EMBED'];
 
+// Tags whose URL attribute is loaded as a nested document. A `data:` URL there
+// is rendered and can execute script just like `javascript:`, so it has to be
+// neutralized even though such tags legitimately point at http(s) resources.
+const badTagsForDataProtocol = ['IFRAME', 'OBJECT'];
+
 const badAttributes = ['href', 'src', 'background', 'action'];
 
 const badAttributesForDataURI = ['src'];
+
+const badAttributesForDataProtocol = ['src', 'data'];
 
 function has(array: Array<string>, item: string): boolean {
   return array.indexOf(item) !== -1;
@@ -25,8 +32,17 @@ function checkDataURI(tagName: Nullable<string>, attribute: string): boolean {
   return has(badTagsForDataURI, tagName) && has(badAttributesForDataURI, attribute);
 }
 
+function checkDataProtocol(tagName: Nullable<string>, attribute: string): boolean {
+  if (tagName === null) return false;
+  return has(badTagsForDataProtocol, tagName) && has(badAttributesForDataProtocol, attribute);
+}
+
 export function requiresSanitization(tagName: string, attribute: string): boolean {
-  return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
+  return (
+    checkURI(tagName, attribute) ||
+    checkDataURI(tagName, attribute) ||
+    checkDataProtocol(tagName, attribute)
+  );
 }
 
 interface NodeUrlParseResult {
@@ -115,6 +131,13 @@ export function sanitizeAttributeValue(
   if (checkURI(tagName, attribute)) {
     let protocol = protocolForUrl(str);
     if (has(badProtocols, protocol)) {
+      return `unsafe:${str}`;
+    }
+  }
+
+  if (checkDataProtocol(tagName, attribute)) {
+    let protocol = protocolForUrl(str);
+    if (protocol === 'data:' || has(badProtocols, protocol)) {
       return `unsafe:${str}`;
     }
   }
