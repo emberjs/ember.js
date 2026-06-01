@@ -573,6 +573,54 @@ export class AttributesTests extends RenderTest {
     this.assertHTML('<svg viewBox="0 0 100 100" />');
     this.assertStableNodes();
   }
+
+  @test
+  'svg a[href] marks javascript: protocol as unsafe'() {
+    this.render('<svg><a href={{this.foo}}></a></svg>', { foo: 'javascript:foo()' });
+    let anchor = (this.element.firstChild as SimpleElement).firstChild as SimpleElement;
+    this.assert.strictEqual(this.readDOMAttr('href', anchor), 'unsafe:javascript:foo()');
+
+    this.rerender({ foo: 'http://foo.bar' });
+    this.assert.strictEqual(this.readDOMAttr('href', anchor), 'http://foo.bar');
+  }
+
+  @test
+  'svg a[xlink:href] marks javascript: protocol as unsafe'() {
+    this.render('<svg><a xlink:href={{this.foo}}></a></svg>', { foo: 'javascript:foo()' });
+    let anchor = (this.element.firstChild as SimpleElement).firstChild as SimpleElement;
+    this.assert.strictEqual(this.readDOMAttr('xlink:href', anchor), 'unsafe:javascript:foo()');
+
+    this.rerender({ foo: 'http://foo.bar' });
+    this.assert.strictEqual(this.readDOMAttr('xlink:href', anchor), 'http://foo.bar');
+  }
+
+  @test
+  'marks data: urls as unsafe on iframe[src] and object[data]'() {
+    this.render('<iframe src={{this.foo}}></iframe>', {
+      foo: 'data:text/html,<script>alert(1)</script>',
+    });
+    this.assertHTML('<iframe src="unsafe:data:text/html,<script>alert(1)</script>"></iframe>');
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'https://example.com/page' });
+    this.assertHTML('<iframe src="https://example.com/page"></iframe>');
+    this.assertStableNodes();
+  }
+
+  @test
+  'object[data] marks data: and javascript: urls as unsafe but allows http'() {
+    this.render('<object data={{this.foo}}></object>', {
+      foo: 'data:text/html,<script>alert(1)</script>',
+    });
+    this.assertHTML('<object data="unsafe:data:text/html,<script>alert(1)</script>"></object>');
+
+    this.rerender({ foo: 'javascript:foo()' });
+    this.assertHTML('<object data="unsafe:javascript:foo()"></object>');
+
+    this.rerender({ foo: 'https://example.com/doc.pdf' });
+    this.assertHTML('<object data="https://example.com/doc.pdf"></object>');
+    this.assertStableNodes();
+  }
 }
 
 jitSuite(AttributesTests);
@@ -717,5 +765,32 @@ jitSuite(
     protected attr = 'src';
     protected override isEmptyElement = true;
     protected isSelfClosing = false;
+  }
+);
+
+jitSuite(
+  class extends BoundValuesToSpecialAttributeTests {
+    static suiteName = 'button[formaction] attribute';
+    protected tag = 'button';
+    protected attr = 'formaction';
+  }
+);
+
+jitSuite(
+  class extends BoundValuesToSpecialAttributeTests {
+    static suiteName = 'input[formaction] attribute';
+    protected tag = 'input';
+    protected attr = 'formaction';
+    protected override isEmptyElement = true;
+    protected isSelfClosing = false;
+  }
+);
+
+jitSuite(
+  class extends BoundValuesToSpecialAttributeTests {
+    static suiteName = 'area[href] attribute';
+    protected tag = 'area';
+    protected attr = 'href';
+    protected override isEmptyElement = true;
   }
 );
