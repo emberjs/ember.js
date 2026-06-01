@@ -21,6 +21,14 @@ import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 
 import type { HighLevelStatementOp } from './syntax/compilers';
 
+import {
+  VM_CLONE_NAVIGATE_ELEMENT_OP,
+  VM_CLONE_NAVIGATE_INTO_OP,
+  VM_CLONE_POP_OP,
+  VM_CLONE_TEMPLATE_OP,
+} from '@glimmer/constants/lib/syscall-ops';
+
+import { analyzeClonable } from './clone/analyze';
 import { debugCompiler } from './compiler';
 import { templateCompilationContext } from './opcode-builder/context';
 import { encodeOp } from './opcode-builder/encoder';
@@ -97,8 +105,30 @@ export function compileStatements(
     encodeOp(encoder, evaluation, meta, op as BuilderOp | HighLevelOp);
   }
 
-  for (const statement of statements) {
-    sCompiler.compile(pushOp, statement);
+  // SPIKE: if the block is a clonable static-shape element tree, emit a
+  // clone-and-patch sequence (build the skeleton once, clone per instance, run
+  // only the dynamic parts) instead of the node-by-node element opcodes.
+  const clonable = analyzeClonable(statements as unknown[]);
+
+  if (clonable) {
+    pushOp(VM_CLONE_TEMPLATE_OP as never, clonable.html as never);
+
+    for (const part of clonable.parts) {
+      const path = part.path.join('.') as never;
+
+      if (part.kind === 'attr') {
+        pushOp(VM_CLONE_NAVIGATE_ELEMENT_OP as never, path);
+        sCompiler.compile(pushOp, part.statement as Statement);
+      } else {
+        pushOp(VM_CLONE_NAVIGATE_INTO_OP as never, path);
+        sCompiler.compile(pushOp, part.statement as Statement);
+        pushOp(VM_CLONE_POP_OP as never);
+      }
+    }
+  } else {
+    for (const statement of statements) {
+      sCompiler.compile(pushOp, statement);
+    }
   }
 
   let handle = context.encoder.commit(meta.size);

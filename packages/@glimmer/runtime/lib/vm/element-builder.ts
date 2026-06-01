@@ -89,6 +89,10 @@ export class NewTreeBuilder implements TreeBuilder {
   public operations: Nullable<ElementOperations> = null;
   private env: Environment;
 
+  // SPIKE: clone-based rendering. The root of the currently-cloned skeleton, used
+  // to resolve dynamic-part paths for navigation.
+  public cloneRoot: Nullable<SimpleNode> = null;
+
   readonly cursors = new Stack<Cursor>();
   private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
   private blockStack = new Stack<AppendingBlock>();
@@ -307,6 +311,56 @@ export class NewTreeBuilder implements TreeBuilder {
     this.dom.insertBefore(this.element, node, this.nextSibling);
     return node;
   }
+
+  // ---- SPIKE: clone-based rendering ----------------------------------------
+  //
+  // A clonable block's static skeleton is built once and `cloneNode`d per
+  // instance; only the dynamic parts then run, navigating to their target nodes.
+
+  /** Insert an already-cloned skeleton fragment into the current cursor and
+   * record its nodes as the block's bounds. The single element child becomes the
+   * `cloneRoot` that navigate calls resolve paths from (top-level text — e.g.
+   * the whitespace around a `{{#each}}` row — is inserted but not navigated). */
+  pushClonedRoot(fragment: SimpleNode): void {
+    let root: Nullable<SimpleNode> = null;
+    const nodes: SimpleNode[] = [];
+    for (let n = fragment.firstChild; n !== null; n = n.nextSibling) {
+      nodes.push(n);
+      if (root === null && (n as { nodeType: number }).nodeType === 1) root = n;
+    }
+    this.dom.insertBefore(this.element, fragment, this.nextSibling);
+    for (const node of nodes) this.didAppendNode(node);
+    this.cloneRoot = root;
+  }
+
+  private resolvePath(path: string): SimpleNode {
+    let node = this.cloneRoot as SimpleNode;
+    if (path === '') return node;
+    for (const part of path.split('.')) {
+      node = node.childNodes[Number(part)] as SimpleNode;
+    }
+    return node;
+  }
+
+  /** Position `constructing` at a clone node so a following dynamic-attribute
+   * opcode (which writes to `constructing`) targets it. */
+  cloneNavigateElement(path: string): void {
+    this.constructing = this.resolvePath(path) as unknown as SimpleElement;
+  }
+
+  /** Enter a clone element so a following dynamic-content opcode appends into it.
+   * Uses a remote block so the interior node does not extend the item's bounds. */
+  cloneNavigateInto(path: string): void {
+    let element = this.resolvePath(path) as unknown as SimpleElement;
+    this.pushElement(element, null);
+    this.pushBlock(new AppendingBlockImpl(element), true);
+  }
+
+  cloneNavigatePop(): void {
+    this.popBlock();
+    this.popElement();
+  }
+  // --------------------------------------------------------------------------
 
   __appendFragment(fragment: SimpleDocumentFragment): Bounds {
     let first = fragment.firstChild;
