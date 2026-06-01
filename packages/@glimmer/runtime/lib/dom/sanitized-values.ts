@@ -8,7 +8,7 @@ const badTags = ['A', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM'];
 
 const badTagsForDataURI = ['EMBED'];
 
-const badAttributes = ['href', 'src', 'background', 'action'];
+const badAttributes = ['href', 'src', 'background', 'action', 'xlink:href'];
 
 const badAttributesForDataURI = ['src'];
 
@@ -25,8 +25,11 @@ function checkDataURI(tagName: Nullable<string>, attribute: string): boolean {
   return has(badTagsForDataURI, tagName) && has(badAttributesForDataURI, attribute);
 }
 
-export function requiresSanitization(tagName: string, attribute: string): boolean {
-  return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
+export function requiresSanitization(tagName: Nullable<string>, attribute: string): boolean {
+  // SVG element tagNames are lowercase (e.g. `a`), so they never match the
+  // uppercase `badTags` entries unless we normalize first.
+  let normalizedTag = tagName === null ? tagName : tagName.toUpperCase();
+  return checkURI(normalizedTag, attribute) || checkDataURI(normalizedTag, attribute);
 }
 
 interface NodeUrlParseResult {

@@ -573,6 +573,26 @@ export class AttributesTests extends RenderTest {
     this.assertHTML('<svg viewBox="0 0 100 100" />');
     this.assertStableNodes();
   }
+
+  @test
+  'svg a[href] marks javascript: protocol as unsafe'() {
+    this.render('<svg><a href={{this.foo}}></a></svg>', { foo: 'javascript:foo()' });
+    let anchor = (this.element.firstChild as SimpleElement).firstChild as SimpleElement;
+    this.assert.strictEqual(this.readDOMAttr('href', anchor), 'unsafe:javascript:foo()');
+
+    this.rerender({ foo: 'http://foo.bar' });
+    this.assert.strictEqual(this.readDOMAttr('href', anchor), 'http://foo.bar');
+  }
+
+  @test
+  'svg a[xlink:href] marks javascript: protocol as unsafe'() {
+    this.render('<svg><a xlink:href={{this.foo}}></a></svg>', { foo: 'javascript:foo()' });
+    let anchor = (this.element.firstChild as SimpleElement).firstChild as SimpleElement;
+    this.assert.strictEqual(this.readDOMAttr('xlink:href', anchor), 'unsafe:javascript:foo()');
+
+    this.rerender({ foo: 'http://foo.bar' });
+    this.assert.strictEqual(this.readDOMAttr('xlink:href', anchor), 'http://foo.bar');
+  }
 }
 
 jitSuite(AttributesTests);
