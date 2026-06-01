@@ -4,7 +4,7 @@ import { isSafeString, normalizeStringValue } from '../dom/normalize';
 
 const badProtocols = ['javascript:', 'vbscript:'];
 
-const badTags = ['A', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM'];
+const badTags = ['A', 'AREA', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM'];
 
 const badTagsForDataURI = ['EMBED'];
 
