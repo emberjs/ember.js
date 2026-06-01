@@ -26,7 +26,14 @@ function checkDataURI(tagName: Nullable<string>, attribute: string): boolean {
 }
 
 export function requiresSanitization(tagName: string, attribute: string): boolean {
-  return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
+  // `badTags`/`badTagsForDataURI` are listed in the uppercase form that HTML
+  // elements report from `tagName`. Elements in other namespaces (e.g. an SVG
+  // `<a href>`) preserve their authored case, so `element.tagName` is `'a'`
+  // rather than `'A'`. Normalize here so the build-time gate matches what
+  // `sanitizeAttributeValue` already does, and the URL sanitization control
+  // can't be bypassed simply by living in the SVG namespace.
+  const upperTagName = tagName.toUpperCase();
+  return checkURI(upperTagName, attribute) || checkDataURI(upperTagName, attribute);
 }
 
 interface NodeUrlParseResult {

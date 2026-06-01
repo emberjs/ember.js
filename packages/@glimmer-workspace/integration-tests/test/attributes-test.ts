@@ -145,6 +145,25 @@ export class AttributesTests extends RenderTest {
   }
 
   @test
+  'svg a[href] is marked as unsafe (sanitization is not namespace-dependent)'() {
+    // SVG-namespaced elements preserve their authored (lowercase) tag name, so
+    // `element.tagName` is `'a'` rather than the `'A'` an HTML anchor reports.
+    // URL sanitization must still apply, otherwise `<svg><a href>` is an XSS
+    // bypass for the same `javascript:` URLs that are blocked on `<a href>`.
+    this.render('<svg><a href="{{this.foo}}"></a></svg>', { foo: 'javascript:foo()' });
+    this.assertHTML('<svg><a href="unsafe:javascript:foo()"></a></svg>');
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'http://foo.bar' });
+    this.assertHTML('<svg><a href="http://foo.bar"></a></svg>');
+    this.assertStableNodes();
+
+    this.rerender({ foo: 'javascript:foo()' });
+    this.assertHTML('<svg><a href="unsafe:javascript:foo()"></a></svg>');
+    this.assertStableNodes();
+  }
+
+  @test
   'triple curlies in attribute position'() {
     this.render('<div data-bar="bar" data-foo={{{this.rawString}}}>Hello</div>', {
       rawString: 'TRIPLE',
