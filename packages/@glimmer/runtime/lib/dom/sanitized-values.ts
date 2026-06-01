@@ -17,19 +17,19 @@ function has(array: Array<string>, item: string): boolean {
 }
 
 function checkURI(tagName: Nullable<string>, attribute: string): boolean {
-  return (tagName === null || has(badTags, tagName)) && has(badAttributes, attribute);
+  // SVG element tagNames are lowercase (e.g. `a`), so they never match the
+  // uppercase `badTags` entries unless we normalize first.
+  let normalizedTag = tagName === null ? tagName : tagName.toUpperCase();
+  return (normalizedTag === null || has(badTags, normalizedTag)) && has(badAttributes, attribute);
 }
 
 function checkDataURI(tagName: Nullable<string>, attribute: string): boolean {
   if (tagName === null) return false;
-  return has(badTagsForDataURI, tagName) && has(badAttributesForDataURI, attribute);
+  return has(badTagsForDataURI, tagName.toUpperCase()) && has(badAttributesForDataURI, attribute);
 }
 
 export function requiresSanitization(tagName: Nullable<string>, attribute: string): boolean {
-  // SVG element tagNames are lowercase (e.g. `a`), so they never match the
-  // uppercase `badTags` entries unless we normalize first.
-  let normalizedTag = tagName === null ? tagName : tagName.toUpperCase();
-  return checkURI(normalizedTag, attribute) || checkDataURI(normalizedTag, attribute);
+  return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
 }
 
 interface NodeUrlParseResult {
@@ -111,7 +111,7 @@ export function sanitizeAttributeValue(
     return value.toHTML();
   }
 
-  const tagName = element.tagName.toUpperCase();
+  const tagName = element.tagName;
 
   let str = normalizeStringValue(value);
 
