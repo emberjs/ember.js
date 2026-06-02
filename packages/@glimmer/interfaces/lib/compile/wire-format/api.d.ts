@@ -364,7 +364,32 @@ export type SyntaxWithInternal =
  */
 export type SerializedBlock = [statements: Statements.Statement[]];
 
-export type SerializedInlineBlock = [statements: Statements.Statement[], parameters: number[]];
+/**
+ * SPIKE (clone-based rendering): a build-time descriptor attached to a block
+ * whose body is a static-shape element tree with only leaf dynamics. The
+ * precompiler analyzes the block once and emits this; the runtime clones the
+ * skeleton HTML per instance and binds each dynamic part rather than executing
+ * node-by-node element-building opcodes. `p` (DOM path) is relative to the
+ * single cloned root element.
+ */
+export interface SerializedClonePart {
+  k: 'a' | 'c'; // attr | content
+  p: number[]; // child-index path from the cloned root element
+  e: Expressions.Expression; // value expression bound to the node
+  n?: string; // attr name (attr parts only)
+  t?: boolean; // trusting (attr parts only)
+}
+
+export interface SerializedCloneTemplate {
+  h: string; // skeleton HTML
+  p: SerializedClonePart[];
+}
+
+export type SerializedInlineBlock = [
+  statements: Statements.Statement[],
+  parameters: number[],
+  clone?: SerializedCloneTemplate,
+];
 
 /**
  * A JSON object that the compiled TemplateBlock was serialized into.
@@ -373,6 +398,7 @@ export type SerializedTemplateBlock = [
   statements: Statements.Statement[],
   locals: string[],
   upvars: string[],
+  clone?: SerializedCloneTemplate,
 ];
 
 /**

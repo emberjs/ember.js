@@ -23,7 +23,6 @@ import type { HighLevelStatementOp } from './syntax/compilers';
 
 import { VM_CLONE_BIND_ALL_OP, VM_CLONE_TEMPLATE_OP } from '@glimmer/constants/lib/syscall-ops';
 
-import { analyzeClonable } from './clone/analyze';
 import { expr } from './opcode-builder/helpers/expr';
 import { debugCompiler } from './compiler';
 import { templateCompilationContext } from './opcode-builder/context';
@@ -48,7 +47,9 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
     // Part of CompilableTemplate
     readonly symbolTable: S,
     // Used for debugging
-    readonly moduleName = 'plain block'
+    readonly moduleName = 'plain block',
+    // SPIKE: build-time clone descriptor for this block, if clonable.
+    readonly clone?: WireFormat.SerializedCloneTemplate
   ) {}
 
   // Part of CompilableTemplate
@@ -58,14 +59,15 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
 }
 
 export function compilable(layout: LayoutWithContext, moduleName: string): CompilableProgram {
-  let [statements, symbols] = layout.block;
+  let [statements, symbols, , clone] = layout.block;
   return new CompilableTemplateImpl(
     statements,
     meta(layout),
     {
       symbols,
     },
-    moduleName
+    moduleName,
+    clone
   );
 }
 
@@ -79,9 +81,9 @@ function maybeCompile(
 
   compilable.compiled.set(context, PLACEHOLDER_HANDLE);
 
-  let { statements, meta } = compilable;
+  let { statements, meta, clone } = compilable;
 
-  let result = compileStatements(statements, meta, context);
+  let result = compileStatements(statements, meta, context, clone);
   compilable.compiled.set(context, result);
 
   return result;
@@ -90,7 +92,8 @@ function maybeCompile(
 export function compileStatements(
   statements: Statement[],
   meta: BlockMetadata,
-  syntaxContext: EvaluationContext
+  syntaxContext: EvaluationContext,
+  clone?: WireFormat.SerializedCloneTemplate
 ): HandleResult {
   let sCompiler = STATEMENTS;
   let context = templateCompilationContext(syntaxContext, meta);
@@ -101,29 +104,27 @@ export function compileStatements(
     encodeOp(encoder, evaluation, meta, op as BuilderOp | HighLevelOp);
   }
 
-  // SPIKE: if the block is a clonable static-shape element tree, emit a
-  // clone-and-patch sequence (build the skeleton once, clone per instance, run
-  // only the dynamic parts) instead of the node-by-node element opcodes.
-  const clonable = analyzeClonable(statements as unknown[]);
+  // SPIKE: clone-based rendering. The precompiler (build time) already
+  // determined whether this block is a clonable static-shape element tree and,
+  // if so, attached a descriptor (skeleton HTML + positional dynamic parts).
+  // Emit the clone-and-patch sequence: clone the skeleton once per instance,
+  // push each dynamic part's value reference, then bind them all + register a
+  // single composite item-updater in one op — instead of node-by-node element
+  // opcodes + a navigate/dynamic/updating opcode per part.
+  if (clone) {
+    pushOp(VM_CLONE_TEMPLATE_OP, clone.h);
 
-  if (clonable) {
-    // Compiled-bind path: clone the skeleton, push each dynamic part's value
-    // reference, then bind them all + register a single composite item-updater
-    // in one op — instead of a navigate + dynamic opcode + updating opcode per
-    // part. `meta` describes each part positionally (matching push order).
-    pushOp(VM_CLONE_TEMPLATE_OP as never, clonable.html as never);
-
-    for (const part of clonable.parts) {
-      expr(pushOp, part.valueExpr as WireFormat.Expression);
+    for (const part of clone.p) {
+      expr(pushOp, part.e);
     }
 
-    const meta = clonable.parts.map((part) =>
-      part.kind === 'attr'
-        ? { k: 'a', p: part.path.join('.'), n: part.attrName, t: part.trusting }
-        : { k: 'c', p: part.path.join('.') }
+    const meta = clone.p.map((part) =>
+      part.k === 'a'
+        ? { k: 'a', p: part.p.join('.'), n: part.n, t: part.t }
+        : { k: 'c', p: part.p.join('.') }
     );
 
-    pushOp(VM_CLONE_BIND_ALL_OP as never, JSON.stringify(meta) as never);
+    pushOp(VM_CLONE_BIND_ALL_OP as never, JSON.stringify(meta));
   } else {
     for (const statement of statements) {
       sCompiler.compile(pushOp, statement);
@@ -143,7 +144,13 @@ export function compilableBlock(
   block: SerializedInlineBlock | SerializedBlock,
   containing: BlockMetadata
 ): CompilableBlock {
-  return new CompilableTemplateImpl<BlockSymbolTable>(block[0], containing, {
-    parameters: block[1] || (EMPTY_ARRAY as number[]),
-  });
+  return new CompilableTemplateImpl<BlockSymbolTable>(
+    block[0],
+    containing,
+    {
+      parameters: (block as SerializedInlineBlock)[1] || (EMPTY_ARRAY as number[]),
+    },
+    'plain block',
+    (block as SerializedInlineBlock)[2]
+  );
 }

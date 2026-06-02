@@ -1,38 +1,38 @@
+import type { WireFormat } from '@glimmer/interfaces';
 import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
-import { inflateAttrName, inflateTagName } from '../syntax/statements';
-
 /**
- * SPIKE: clone-based rendering.
+ * SPIKE: clone-based rendering — build-time analysis.
  *
  * Detects a block whose entire body is a single *static-shape* element tree with
  * only "leaf" dynamics (dynamic attributes, and dynamic text content that is the
- * sole child of its element). For such a block we build the static skeleton HTML
- * once, `cloneNode` it per instance, and run only the dynamic parts — instead of
- * executing node-by-node element-building opcodes for every instance.
+ * sole child of its element). For such a block the precompiler emits a
+ * `SerializedCloneTemplate`: the static skeleton HTML plus a positional list of
+ * dynamic parts. At runtime the skeleton is `cloneNode`d per instance and only
+ * the dynamic parts run — instead of executing node-by-node element-building
+ * opcodes for every instance.
  *
  * Anything outside the supported subset (components, nested blocks, modifiers,
  * `...attributes`, yields, namespaced attrs, static text mixed with dynamic
- * content, multiple roots, …) makes the block non-clonable → fall back to normal
- * opcode compilation.
+ * content, multiple roots, …) makes the block non-clonable → `null`, and the
+ * block compiles through the normal opcode path.
  *
- * Paths in `parts` are relative to the single cloned root element (so `[]` is the
+ * Paths in `p` are relative to the single cloned root element (so `[]` is the
  * root itself, `[0]` its first child, `[1,0]` the first child of its second
  * child, …). The skeleton HTML is generated with no inter-tag whitespace, so a
  * clone's `childNodes` indices line up with these paths exactly.
  */
 
-export interface ClonePart {
-  kind: 'attr' | 'content';
-  path: number[];
-  valueExpr: unknown; // the expression whose ref is bound to the clone node
-  attrName?: string; // attr parts only
-  trusting?: boolean; // attr parts only
+// Well-known name tables (wire format deflates these to numeric indices).
+const INFLATE_ATTR_TABLE = ['class', 'id', 'value', 'name', 'type', 'style', 'href'];
+const INFLATE_TAG_TABLE = ['div', 'span', 'p', 'a'];
+
+function inflateTagName(tagName: string | number): string {
+  return typeof tagName === 'string' ? tagName : (INFLATE_TAG_TABLE[tagName] as string);
 }
 
-export interface CloneTemplate {
-  html: string;
-  parts: ClonePart[];
+function inflateAttrName(attrName: string | number): string {
+  return typeof attrName === 'string' ? attrName : (INFLATE_ATTR_TABLE[attrName] as string);
 }
 
 const { OpenElement, FlushElement, CloseElement, StaticAttr } = SexpOpcodes;
@@ -53,11 +53,13 @@ interface Frame {
   index: number; // this element's index within its parent
 }
 
-export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
+export function analyzeClonable(
+  statements: WireFormat.Statement[]
+): WireFormat.SerializedCloneTemplate | null {
   if (statements.length === 0) return null;
 
   let html = '';
-  const parts: ClonePart[] = [];
+  const parts: WireFormat.SerializedClonePart[] = [];
   const frames: Frame[] = [];
   let rootChildCount = 0;
   let rootElementCount = 0; // top-level elements (must be exactly one)
@@ -73,11 +75,11 @@ export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
     switch (statement[0] as number) {
       case OpenElement: {
         if (constructing) return null;
-        const index = frames.length === 0 ? rootChildCount : frames[frames.length - 1]!.childCount;
+        const parent = frames[frames.length - 1];
+        const index = parent ? parent.childCount : rootChildCount;
         constructing = {
-          tag: inflateTagName(statement[1] as never),
+          tag: inflateTagName(statement[1] as string | number),
           attrs: '',
-          // path to this element, relative to root (root itself => [])
           path: frames.length === 0 ? [] : [...insidePath(), index],
         };
         break;
@@ -85,7 +87,7 @@ export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
 
       case StaticAttr: {
         if (!constructing || statement[3] != null || typeof statement[2] !== 'string') return null;
-        constructing.attrs += ` ${inflateAttrName(statement[1] as never)}="${escapeAttr(statement[2])}"`;
+        constructing.attrs += ` ${inflateAttrName(statement[1] as string | number)}="${escapeAttr(statement[2])}"`;
         break;
       }
 
@@ -93,11 +95,11 @@ export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
       case TrustingDynamicAttr: {
         if (!constructing || statement[3] != null) return null;
         parts.push({
-          kind: 'attr',
-          path: constructing.path.slice(),
-          valueExpr: statement[2],
-          attrName: inflateAttrName(statement[1] as never),
-          trusting: (statement[0] as number) === TrustingDynamicAttr,
+          k: 'a',
+          p: constructing.path.slice(),
+          e: statement[2] as WireFormat.Expression,
+          n: inflateAttrName(statement[1] as string | number),
+          t: (statement[0] as number) === TrustingDynamicAttr,
         });
         break;
       }
@@ -105,13 +107,14 @@ export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
       case FlushElement: {
         if (!constructing) return null;
         html += `<${constructing.tag}${constructing.attrs}>`;
-        const index = frames.length === 0 ? rootChildCount : frames[frames.length - 1]!.childCount;
-        if (frames.length === 0) {
+        const parent = frames[frames.length - 1];
+        const index = parent ? parent.childCount : rootChildCount;
+        if (parent) {
+          parent.childCount++;
+        } else {
           rootChildCount++;
           rootElementCount++;
           if (rootElementCount > 1) return null; // more than one root element
-        } else {
-          frames[frames.length - 1]!.childCount++;
         }
         frames.push({ tag: constructing.tag, childCount: 0, hasDynamicContent: false, index });
         constructing = null;
@@ -125,7 +128,6 @@ export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
         // `Append` with a string value is *static text*. It's emitted into the
         // skeleton (occupying a child slot, keeping later paths aligned). Only
         // cautious (escaped) static text is supported — trusting raw HTML bails.
-        // This includes top-level whitespace text around the root element.
         if (typeof statement[1] === 'string') {
           if ((statement[0] as number) === TrustingAppend) return null;
           const frame = frames[frames.length - 1];
@@ -144,21 +146,23 @@ export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
         const frame = frames[frames.length - 1];
         if (!frame || frame.childCount !== 0 || frame.hasDynamicContent) return null;
         frame.hasDynamicContent = true;
-        parts.push({ kind: 'content', path: insidePath(), valueExpr: statement[1] });
+        parts.push({ k: 'c', p: insidePath(), e: statement[1] as WireFormat.Expression });
         break;
       }
 
       case Comment: {
         const frame = frames[frames.length - 1];
         if (constructing || !frame || frame.hasDynamicContent) return null;
-        html += `<!--${statement[1]}-->`;
+        html += `<!--${statement[1] as string}-->`;
         frame.childCount++;
         break;
       }
 
       case CloseElement: {
-        if (constructing || frames.length === 0) return null;
-        html += `</${frames.pop()!.tag}>`;
+        if (constructing) return null;
+        const closing = frames.pop();
+        if (!closing) return null;
+        html += `</${closing.tag}>`;
         break;
       }
 
@@ -171,5 +175,5 @@ export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
   if (rootElementCount !== 1) return null; // require exactly one root element
   if (parts.length === 0 || html.length === 0) return null;
 
-  return { html, parts };
+  return { h: html, p: parts };
 }

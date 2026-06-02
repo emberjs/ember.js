@@ -76,9 +76,6 @@ export class Fragment implements Bounds {
   }
 }
 
-// SPIKE: parsed clone navigation paths ("1.0" → [1, 0]), shared across builders.
-const PARSED_PATHS = new Map<string, number[]>();
-
 export class NewTreeBuilder implements TreeBuilder {
   declare debug?: () => {
     blocks: AppendingBlock[];
@@ -318,12 +315,13 @@ export class NewTreeBuilder implements TreeBuilder {
   // ---- SPIKE: clone-based rendering ----------------------------------------
   //
   // A clonable block's static skeleton is built once and `cloneNode`d per
-  // instance; only the dynamic parts then run, navigating to their target nodes.
+  // instance; the `CLONE_BIND_ALL` opcode then navigates from `cloneRoot` to
+  // each dynamic part and binds it.
 
   /** Insert an already-cloned skeleton fragment into the current cursor and
    * record its nodes as the block's bounds. The single element child becomes the
-   * `cloneRoot` that navigate calls resolve paths from (top-level text — e.g.
-   * the whitespace around a `{{#each}}` row — is inserted but not navigated). */
+   * `cloneRoot` that the bind opcode resolves part paths from (top-level text —
+   * e.g. the whitespace around a `{{#each}}` row — is inserted but not a root). */
   pushClonedRoot(fragment: SimpleNode): void {
     let root: Nullable<SimpleNode> = null;
     const nodes: SimpleNode[] = [];
@@ -334,41 +332,6 @@ export class NewTreeBuilder implements TreeBuilder {
     this.dom.insertBefore(this.element, fragment, this.nextSibling);
     for (const node of nodes) this.didAppendNode(node);
     this.cloneRoot = root;
-  }
-
-  private resolvePath(path: string): SimpleNode {
-    let node = this.cloneRoot as SimpleNode;
-    if (path === '') return node;
-    // Parse "1.0" → [1,0] once and cache; navigate runs per dynamic part per
-    // instance (40k+ times for a 10k-row list), so avoid re-splitting strings.
-    let indices = PARSED_PATHS.get(path);
-    if (indices === undefined) {
-      indices = path.split('.').map(Number);
-      PARSED_PATHS.set(path, indices);
-    }
-    for (const index of indices) {
-      node = node.childNodes[index] as SimpleNode;
-    }
-    return node;
-  }
-
-  /** Position `constructing` at a clone node so a following dynamic-attribute
-   * opcode (which writes to `constructing`) targets it. */
-  cloneNavigateElement(path: string): void {
-    this.constructing = this.resolvePath(path) as unknown as SimpleElement;
-  }
-
-  /** Enter a clone element so a following dynamic-content opcode appends into it.
-   * Uses a remote block so the interior node does not extend the item's bounds. */
-  cloneNavigateInto(path: string): void {
-    let element = this.resolvePath(path) as unknown as SimpleElement;
-    this.pushElement(element, null);
-    this.pushBlock(new AppendingBlockImpl(element), true);
-  }
-
-  cloneNavigatePop(): void {
-    this.popBlock();
-    this.popElement();
   }
   // --------------------------------------------------------------------------
 

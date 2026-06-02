@@ -14,6 +14,7 @@ import * as src from '@glimmer/syntax/lib/source/api';
 import { normalize } from '@glimmer/syntax/lib/v2/normalize';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
+import { attachCloneDescriptors } from './clone/transform';
 import pass0 from './passes/1-normalization/index';
 import { visit as pass2 } from './passes/2-encoding/index';
 
@@ -94,6 +95,8 @@ export function precompileJSON(
   }
 
   if (block.isOk) {
+    // SPIKE: attach clone descriptors (build-time clone-based rendering analysis).
+    attachCloneDescriptors(block.value);
     return [block.value, locals];
   } else {
     throw block.reason;

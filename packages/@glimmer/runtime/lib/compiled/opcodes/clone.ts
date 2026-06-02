@@ -1,6 +1,5 @@
 import type {
   Environment,
-  Nullable,
   Reference,
   SimpleElement,
   SimpleNode,
@@ -27,12 +26,9 @@ import { dynamicAttribute } from '../../vm/attributes/dynamic';
  * whole row, replacing the per-part navigate + dynamic opcode + updating opcode.
  */
 
-interface PartDesc {
-  k: 'a' | 'c';
-  p: string; // path, e.g. "1.0"
-  n?: string; // attr name
-  t?: boolean; // trusting
-}
+type PartDesc =
+  | { k: 'c'; p: string } // content; p = path e.g. "1.0"
+  | { k: 'a'; p: string; n: string; t?: boolean }; // attr; n = name, t = trusting
 
 const TEMPLATE_CACHE = new Map<string, Node>();
 const META_CACHE = new Map<string, PartDesc[]>();
@@ -41,7 +37,6 @@ const PATH_CACHE = new Map<string, number[]>();
 function templateFor(html: string): Node {
   let node = TEMPLATE_CACHE.get(html);
   if (node === undefined) {
-    // eslint-disable-next-line no-undef
     const el = document.createElement('template');
     el.innerHTML = html;
     node = el.content; // fragment with exactly one element child (+ maybe text)
@@ -105,8 +100,8 @@ APPEND_OPCODES.add(VM_CLONE_BIND_ALL_OP as never, (vm, { op1 }) => {
   const count = descriptors.length;
 
   // References were pushed in part order; pop into matching slots.
-  const refs: Reference[] = new Array(count);
-  for (let i = count - 1; i >= 0; i--) refs[i] = vm.stack.pop() as Reference;
+  const refs = new Array<Reference>(count);
+  for (let i = count - 1; i >= 0; i--) refs[i] = vm.stack.pop();
 
   const builder = vm.tree() as NewTreeBuilder;
   const root = builder.cloneRoot as SimpleNode;
@@ -114,24 +109,25 @@ APPEND_OPCODES.add(VM_CLONE_BIND_ALL_OP as never, (vm, { op1 }) => {
   const live: LivePart[] = [];
 
   for (let i = 0; i < count; i++) {
-    const desc = descriptors[i]!;
-    const ref = refs[i]!;
+    const desc = descriptors[i];
+    const ref = refs[i];
+    if (!desc || !ref) continue;
     const node = navigate(root, desc.p);
 
     if (desc.k === 'c') {
       const value = valueForRef(ref);
       const str = isEmpty(value) ? '' : String(value);
-      const text = node.ownerDocument!.createTextNode(str);
+      const text = node.ownerDocument.createTextNode(str);
       (node as SimpleElement).insertBefore(text, null);
       if (!isConstRef(ref)) live.push({ kind: 'c', ref, node: text, last: str });
     } else {
       const element = node as SimpleElement;
-      const attr = dynamicAttribute(element, desc.n!, null, desc.t);
+      const attr = dynamicAttribute(element, desc.n, null, desc.t);
       // `set` writes via the builder's `constructing`; point it at our node.
       const prev = builder.constructing;
       builder.constructing = element;
       attr.set(builder, valueForRef(ref), env);
-      builder.constructing = prev as Nullable<SimpleElement>;
+      builder.constructing = prev;
       if (!isConstRef(ref)) live.push({ kind: 'a', ref, attr });
     }
   }
