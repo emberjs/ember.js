@@ -76,6 +76,9 @@ export class Fragment implements Bounds {
   }
 }
 
+// SPIKE: parsed clone navigation paths ("1.0" → [1, 0]), shared across builders.
+const PARSED_PATHS = new Map<string, number[]>();
+
 export class NewTreeBuilder implements TreeBuilder {
   declare debug?: () => {
     blocks: AppendingBlock[];
@@ -336,8 +339,15 @@ export class NewTreeBuilder implements TreeBuilder {
   private resolvePath(path: string): SimpleNode {
     let node = this.cloneRoot as SimpleNode;
     if (path === '') return node;
-    for (const part of path.split('.')) {
-      node = node.childNodes[Number(part)] as SimpleNode;
+    // Parse "1.0" → [1,0] once and cache; navigate runs per dynamic part per
+    // instance (40k+ times for a 10k-row list), so avoid re-splitting strings.
+    let indices = PARSED_PATHS.get(path);
+    if (indices === undefined) {
+      indices = path.split('.').map(Number);
+      PARSED_PATHS.set(path, indices);
+    }
+    for (const index of indices) {
+      node = node.childNodes[index] as SimpleNode;
     }
     return node;
   }
