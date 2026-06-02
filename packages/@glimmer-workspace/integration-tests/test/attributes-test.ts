@@ -785,3 +785,12 @@ jitSuite(
     protected isSelfClosing = false;
   }
 );
+
+jitSuite(
+  class extends BoundValuesToSpecialAttributeTests {
+    static suiteName = 'area[href] attribute';
+    protected tag = 'area';
+    protected attr = 'href';
+    protected override isEmptyElement = true;
+  }
+);
