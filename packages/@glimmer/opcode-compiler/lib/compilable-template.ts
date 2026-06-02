@@ -21,14 +21,10 @@ import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 
 import type { HighLevelStatementOp } from './syntax/compilers';
 
-import {
-  VM_CLONE_NAVIGATE_ELEMENT_OP,
-  VM_CLONE_NAVIGATE_INTO_OP,
-  VM_CLONE_POP_OP,
-  VM_CLONE_TEMPLATE_OP,
-} from '@glimmer/constants/lib/syscall-ops';
+import { VM_CLONE_BIND_ALL_OP, VM_CLONE_TEMPLATE_OP } from '@glimmer/constants/lib/syscall-ops';
 
 import { analyzeClonable } from './clone/analyze';
+import { expr } from './opcode-builder/helpers/expr';
 import { debugCompiler } from './compiler';
 import { templateCompilationContext } from './opcode-builder/context';
 import { encodeOp } from './opcode-builder/encoder';
@@ -111,20 +107,23 @@ export function compileStatements(
   const clonable = analyzeClonable(statements as unknown[]);
 
   if (clonable) {
+    // Compiled-bind path: clone the skeleton, push each dynamic part's value
+    // reference, then bind them all + register a single composite item-updater
+    // in one op — instead of a navigate + dynamic opcode + updating opcode per
+    // part. `meta` describes each part positionally (matching push order).
     pushOp(VM_CLONE_TEMPLATE_OP as never, clonable.html as never);
 
     for (const part of clonable.parts) {
-      const path = part.path.join('.') as never;
-
-      if (part.kind === 'attr') {
-        pushOp(VM_CLONE_NAVIGATE_ELEMENT_OP as never, path);
-        sCompiler.compile(pushOp, part.statement as Statement);
-      } else {
-        pushOp(VM_CLONE_NAVIGATE_INTO_OP as never, path);
-        sCompiler.compile(pushOp, part.statement as Statement);
-        pushOp(VM_CLONE_POP_OP as never);
-      }
+      expr(pushOp, part.valueExpr as WireFormat.Expression);
     }
+
+    const meta = clonable.parts.map((part) =>
+      part.kind === 'attr'
+        ? { k: 'a', p: part.path.join('.'), n: part.attrName, t: part.trusting }
+        : { k: 'c', p: part.path.join('.') }
+    );
+
+    pushOp(VM_CLONE_BIND_ALL_OP as never, JSON.stringify(meta) as never);
   } else {
     for (const statement of statements) {
       sCompiler.compile(pushOp, statement);

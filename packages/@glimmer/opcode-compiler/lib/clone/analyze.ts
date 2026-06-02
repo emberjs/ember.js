@@ -25,7 +25,9 @@ import { inflateAttrName, inflateTagName } from '../syntax/statements';
 export interface ClonePart {
   kind: 'attr' | 'content';
   path: number[];
-  statement: unknown; // original wire statement, compiled normally after navigation
+  valueExpr: unknown; // the expression whose ref is bound to the clone node
+  attrName?: string; // attr parts only
+  trusting?: boolean; // attr parts only
 }
 
 export interface CloneTemplate {
@@ -90,7 +92,13 @@ export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
       case DynamicAttr:
       case TrustingDynamicAttr: {
         if (!constructing || statement[3] != null) return null;
-        parts.push({ kind: 'attr', path: constructing.path.slice(), statement });
+        parts.push({
+          kind: 'attr',
+          path: constructing.path.slice(),
+          valueExpr: statement[2],
+          attrName: inflateAttrName(statement[1] as never),
+          trusting: (statement[0] as number) === TrustingDynamicAttr,
+        });
         break;
       }
 
@@ -136,7 +144,7 @@ export function analyzeClonable(statements: unknown[]): CloneTemplate | null {
         const frame = frames[frames.length - 1];
         if (!frame || frame.childCount !== 0 || frame.hasDynamicContent) return null;
         frame.hasDynamicContent = true;
-        parts.push({ kind: 'content', path: insidePath(), statement });
+        parts.push({ kind: 'content', path: insidePath(), valueExpr: statement[1] });
         break;
       }
 

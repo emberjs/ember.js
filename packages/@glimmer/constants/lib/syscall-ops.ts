@@ -193,8 +193,9 @@ export const VM_CLONE_TEMPLATE_OP = 113;
 export const VM_CLONE_NAVIGATE_ELEMENT_OP = 114;
 export const VM_CLONE_NAVIGATE_INTO_OP = 115;
 export const VM_CLONE_POP_OP = 116;
+export const VM_CLONE_BIND_ALL_OP = 117;
 
-export const VM_SYSCALL_SIZE = 117 satisfies VmSize;
+export const VM_SYSCALL_SIZE = 118 satisfies VmSize;
 
 export function isOp(value: number): value is VmOp {
   return value >= 16;
