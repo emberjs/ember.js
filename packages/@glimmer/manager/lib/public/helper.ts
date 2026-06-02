@@ -16,10 +16,12 @@ import {
   createComputeRef,
   createConstRef,
   UNDEFINED_REFERENCE,
+  valueForRef,
 } from '@glimmer/reference/lib/reference';
 
 import type { ManagerFactory } from './index';
 
+import { FunctionHelperManager } from '../internal/defaults';
 import { argsProxyFor } from '../util/args-proxy';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 
@@ -120,6 +122,34 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
   getHelper(definition: HelperDefinitionState): Helper {
     return (capturedArgs, owner) => {
       let manager = this.getDelegateFor(owner as O | undefined);
+
+      // Fast path: the built-in function-helper manager reifies its arguments
+      // eagerly, so the lazy args Proxies that `argsProxyFor` builds (two Proxy
+      // allocations per invocation) are pure overhead. Call the function with
+      // reified args directly — same tag consumption, no Proxies.
+      if (manager instanceof FunctionHelperManager) {
+        const fn = definition as (...args: unknown[]) => unknown;
+        const { positional, named } = capturedArgs;
+        return createComputeRef(
+          () => {
+            const args = positional.map(valueForRef);
+            let hasNamed = false;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            for (const _key in named) {
+              hasNamed = true;
+              break;
+            }
+            if (hasNamed) {
+              const reified: Record<string, unknown> = {};
+              for (const key in named) reified[key] = valueForRef(named[key]!);
+              return fn(...args, reified);
+            }
+            return fn(...args);
+          },
+          null,
+          DEBUG && manager.getDebugName!(definition)
+        );
+      }
 
       const args = argsProxyFor(capturedArgs, 'helper');
       const bucket = manager.createHelper(definition, args);
