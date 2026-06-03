@@ -46,6 +46,12 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   blockDepth = 0;
   startingBlockOffset: number;
 
+  // SPIKE: clone-based rendering inserts an empty-slot skeleton, which can't
+  // adopt the server's filled DOM; fall back to HTML insertion (clearMismatch).
+  protected override get supportsClone(): boolean {
+    return false;
+  }
+
   constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error('Rehydration with nextSibling not supported');

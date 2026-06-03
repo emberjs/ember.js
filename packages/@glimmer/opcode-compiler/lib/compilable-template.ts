@@ -21,12 +21,26 @@ import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 
 import type { HighLevelStatementOp } from './syntax/compilers';
 
-import { VM_CLONE_BIND_ALL_OP, VM_CLONE_TEMPLATE_OP } from '@glimmer/constants/lib/syscall-ops';
+import {
+  VM_CLONE_BIND_ATTRS_OP,
+  VM_CLONE_ENTER_SLOT_OP,
+  VM_CLONE_EXIT_SLOT_OP,
+  VM_CLONE_GUARD_OP,
+  VM_CLONE_TEMPLATE_OP,
+} from '@glimmer/constants/lib/syscall-ops';
+import {
+  VM_INVOKE_STATIC_OP,
+  VM_JUMP_OP,
+  VM_POP_FRAME_OP,
+  VM_PUSH_FRAME_OP,
+} from '@glimmer/constants/lib/vm-ops';
 
 import { expr } from './opcode-builder/helpers/expr';
 import { debugCompiler } from './compiler';
 import { templateCompilationContext } from './opcode-builder/context';
 import { encodeOp } from './opcode-builder/encoder';
+import { HighLevelBuilderOpcodes } from './opcode-builder/opcodes';
+import { labelOperand, stdlibOperand } from './opcode-builder/operands';
 import { meta } from './opcode-builder/helpers/shared';
 import { STATEMENTS } from './syntax/statements';
 
@@ -107,24 +121,59 @@ export function compileStatements(
   // SPIKE: clone-based rendering. The precompiler (build time) already
   // determined whether this block is a clonable static-shape element tree and,
   // if so, attached a descriptor (skeleton HTML + positional dynamic parts).
-  // Emit the clone-and-patch sequence: clone the skeleton once per instance,
-  // push each dynamic part's value reference, then bind them all + register a
-  // single composite item-updater in one op — instead of node-by-node element
-  // opcodes + a navigate/dynamic/updating opcode per part.
+  //
+  // Emit BOTH paths behind a runtime guard, because cloning only works on a real
+  // browser document (serialization and rehydration must run the normal
+  // node-by-node opcodes to adopt/produce server DOM):
+  //
+  //   CLONE_GUARD -> ELSE          // jump to normal path if !canCloneInto()
+  //   CLONE_TEMPLATE + exprs + CLONE_BIND_ALL
+  //   JUMP -> END
+  //   ELSE: <normal statement opcodes>
+  //   END:
+  //
+  // In the browser the guard falls through to the fast clone+bind path; nothing
+  // changes for any other builder.
   if (clone) {
+    const attrParts = clone.p.filter((p) => p.k === 'a');
+    const contentParts = clone.p.filter((p) => p.k === 'c');
+
+    pushOp(HighLevelBuilderOpcodes.StartLabels);
+    pushOp(VM_CLONE_GUARD_OP as never, labelOperand('CLONE_ELSE'));
+
     pushOp(VM_CLONE_TEMPLATE_OP, clone.h);
 
-    for (const part of clone.p) {
-      expr(pushOp, part.e);
+    // Dynamic attributes: push every value reference, then bind them all to
+    // their clone nodes + register one composite updater, in a single op.
+    if (attrParts.length > 0) {
+      for (const part of attrParts) {
+        expr(pushOp, part.e);
+      }
+      const attrMeta = attrParts.map((part) => ({ p: part.p.join('.'), n: part.n, t: part.t }));
+      pushOp(VM_CLONE_BIND_ATTRS_OP as never, JSON.stringify(attrMeta));
     }
 
-    const meta = clone.p.map((part) =>
-      part.k === 'a'
-        ? { k: 'a', p: part.p.join('.'), n: part.n, t: part.t }
-        : { k: 'c', p: part.p.join('.') }
-    );
+    // Dynamic content: enter the cloned slot element and run the normal content
+    // append (content-type aware, handles text / safe HTML / node / fragment and
+    // type-changing updates) so cloned content matches normal rendering exactly.
+    for (const part of contentParts) {
+      pushOp(VM_CLONE_ENTER_SLOT_OP as never, part.p.join('.'));
+      pushOp(VM_PUSH_FRAME_OP);
+      expr(pushOp, part.e);
+      pushOp(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-append'));
+      pushOp(VM_POP_FRAME_OP);
+      pushOp(VM_CLONE_EXIT_SLOT_OP as never);
+    }
 
-    pushOp(VM_CLONE_BIND_ALL_OP as never, JSON.stringify(meta));
+    pushOp(VM_JUMP_OP, labelOperand('CLONE_END'));
+
+    pushOp(HighLevelBuilderOpcodes.Label, 'CLONE_ELSE');
+    for (const statement of statements) {
+      sCompiler.compile(pushOp, statement);
+    }
+
+    pushOp(HighLevelBuilderOpcodes.Label, 'CLONE_END');
+    pushOp(HighLevelBuilderOpcodes.StopLabels);
   } else {
     for (const statement of statements) {
       sCompiler.compile(pushOp, statement);

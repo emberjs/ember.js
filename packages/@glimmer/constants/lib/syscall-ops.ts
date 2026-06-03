@@ -189,12 +189,18 @@ export const VM_GET_DYNAMIC_VAR_OP = 111 satisfies VmGetDynamicVar;
 export const VM_LOG_OP = 112 satisfies VmLog;
 
 // SPIKE: clone-based rendering opcodes (no branded interface types yet).
-// CLONE_TEMPLATE clones the skeleton; CLONE_BIND_ALL binds all dynamic parts +
-// registers one composite item updater.
+// CLONE_GUARD jumps to the normal-opcode path when the builder can't clone
+// (serialization, rehydration). CLONE_TEMPLATE clones the skeleton.
+// CLONE_BIND_ATTRS binds all dynamic attributes + registers one composite
+// updater. CLONE_ENTER_SLOT / CLONE_EXIT_SLOT bracket a dynamic-content slot so
+// the normal content opcodes (content-type aware) run inside the cloned node.
 export const VM_CLONE_TEMPLATE_OP = 113;
-export const VM_CLONE_BIND_ALL_OP = 114;
+export const VM_CLONE_BIND_ATTRS_OP = 114;
+export const VM_CLONE_GUARD_OP = 115;
+export const VM_CLONE_ENTER_SLOT_OP = 116;
+export const VM_CLONE_EXIT_SLOT_OP = 117;
 
-export const VM_SYSCALL_SIZE = 115 satisfies VmSize;
+export const VM_SYSCALL_SIZE = 118 satisfies VmSize;
 
 export function isOp(value: number): value is VmOp {
   return value >= 16;

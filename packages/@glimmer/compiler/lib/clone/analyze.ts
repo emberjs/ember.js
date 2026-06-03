@@ -37,6 +37,7 @@ function inflateAttrName(attrName: string | number): string {
 
 const { OpenElement, FlushElement, CloseElement, StaticAttr } = SexpOpcodes;
 const { DynamicAttr, TrustingDynamicAttr, Append, TrustingAppend, Comment } = SexpOpcodes;
+const { GetSymbol } = SexpOpcodes;
 
 function escapeAttr(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
@@ -76,6 +77,11 @@ export function analyzeClonable(
       case OpenElement: {
         if (constructing) return null;
         const parent = frames[frames.length - 1];
+        // Dynamic content is only supported as the *sole* child of its element
+        // (the skeleton leaves an empty slot, filled at runtime). An element
+        // sibling after dynamic content would push the content out of place, so
+        // bail and let the block compile through the normal opcodes.
+        if (parent && parent.hasDynamicContent) return null;
         const index = parent ? parent.childCount : rootChildCount;
         constructing = {
           tag: inflateTagName(statement[1] as string | number),
@@ -94,11 +100,18 @@ export function analyzeClonable(
       case DynamicAttr:
       case TrustingDynamicAttr: {
         if (!constructing || statement[3] != null) return null;
+        // `value` (and other form-control properties) are applied as live DOM
+        // properties whose result depends on sibling attributes (e.g. an input's
+        // value clamps to its min/max) and on whether the element is attached.
+        // The clone path binds attributes after inserting the element, which can
+        // change that result, so bail and let the normal opcodes handle it.
+        const attrName = inflateAttrName(statement[1] as string | number);
+        if (attrName === 'value') return null;
         parts.push({
           k: 'a',
           p: constructing.path.slice(),
           e: statement[2] as WireFormat.Expression,
-          n: inflateAttrName(statement[1] as string | number),
+          n: attrName,
           t: (statement[0] as number) === TrustingDynamicAttr,
         });
         break;
@@ -142,11 +155,21 @@ export function analyzeClonable(
         }
 
         // Dynamic content (an expression). Only supported inside an element, as
-        // the sole child, so the skeleton can leave the slot empty.
+        // the sole child, so the skeleton can leave the slot empty. Trusting
+        // content (`{{{x}}}`) renders raw HTML — not a single value bind — so it
+        // compiles through the normal opcodes.
+        if ((statement[0] as number) === TrustingAppend) return null;
         const frame = frames[frames.length - 1];
         if (!frame || frame.childCount !== 0 || frame.hasDynamicContent) return null;
+        // Restrict to a `GetSymbol` value (block-local / argument / `this` path):
+        // such a value is always rendered as text by `expr` + a text bind. Other
+        // content — helper calls, free-variable resolution, concats — needs the
+        // statement-level content compiler (content-type dispatch, helper
+        // resolution) that `expr` alone can't reproduce, so the block bails.
+        const contentExpr = statement[1];
+        if (!Array.isArray(contentExpr) || contentExpr[0] !== GetSymbol) return null;
         frame.hasDynamicContent = true;
-        parts.push({ k: 'c', p: insidePath(), e: statement[1] as WireFormat.Expression });
+        parts.push({ k: 'c', p: insidePath(), e: contentExpr as WireFormat.Expression });
         break;
       }
 

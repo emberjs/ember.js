@@ -76,6 +76,28 @@ export class Fragment implements Bounds {
   }
 }
 
+// SPIKE: clone-based rendering — browser `cloneNode` fast path.
+// The skeleton HTML for each clonable block is parsed into a `<template>` once
+// and `cloneNode`d per instance (much cheaper than re-parsing or re-running
+// element opcodes). Only available on a real browser document.
+const BROWSER_DOCUMENT = typeof document !== 'undefined' ? document : null;
+
+const SKELETON_CACHE = new Map<string, { cloneNode(deep: boolean): SimpleNode }>();
+
+// Parsed clone content-slot paths ("1.0" → [1, 0]), shared across builders.
+const PARSED_PATHS = new Map<string, number[]>();
+
+function cloneSkeleton(html: string): SimpleNode {
+  let content = SKELETON_CACHE.get(html);
+  if (content === undefined) {
+    const el = document.createElement('template');
+    el.innerHTML = html;
+    content = el.content as unknown as { cloneNode(deep: boolean): SimpleNode };
+    SKELETON_CACHE.set(html, content);
+  }
+  return content.cloneNode(true);
+}
+
 export class NewTreeBuilder implements TreeBuilder {
   declare debug?: () => {
     blocks: AppendingBlock[];
@@ -318,11 +340,31 @@ export class NewTreeBuilder implements TreeBuilder {
   // instance; the `CLONE_BIND_ALL` opcode then navigates from `cloneRoot` to
   // each dynamic part and binds it.
 
-  /** Insert an already-cloned skeleton fragment into the current cursor and
-   * record its nodes as the block's bounds. The single element child becomes the
-   * `cloneRoot` that the bind opcode resolves part paths from (top-level text —
-   * e.g. the whitespace around a `{{#each}}` row — is inserted but not a root). */
-  pushClonedRoot(fragment: SimpleNode): void {
+  /** Whether this builder can use the `cloneNode` fast path. Overridden to
+   * `false` by builders whose DOM isn't a clone-capable browser document
+   * (serialization) or where cloning would defeat node adoption (rehydration).
+   * When this is false the `CLONE_GUARD` opcode jumps to the normal node-by-node
+   * opcode path instead, so those builders behave exactly as before. */
+  protected get supportsClone(): boolean {
+    return true;
+  }
+
+  /** Runtime gate for the `CLONE_GUARD` opcode: only clone when this builder
+   * supports it and is operating on the real browser document (the only place
+   * `<template>`/`cloneNode` is available and the produced nodes are native). */
+  canCloneInto(): boolean {
+    return (
+      this.supportsClone &&
+      BROWSER_DOCUMENT !== null &&
+      (this.element.ownerDocument as unknown) === BROWSER_DOCUMENT
+    );
+  }
+
+  /** Clone a clonable block's static skeleton from its `html` and set the single
+   * root element as `cloneRoot` for the bind opcode to resolve part paths from.
+   * Only reached when `canCloneInto()` is true (guaranteed by `CLONE_GUARD`). */
+  pushClonedTemplate(html: string): void {
+    const fragment = cloneSkeleton(html);
     let root: Nullable<SimpleNode> = null;
     const nodes: SimpleNode[] = [];
     for (let n = fragment.firstChild; n !== null; n = n.nextSibling) {
@@ -332,6 +374,33 @@ export class NewTreeBuilder implements TreeBuilder {
     this.dom.insertBefore(this.element, fragment, this.nextSibling);
     for (const node of nodes) this.didAppendNode(node);
     this.cloneRoot = root;
+  }
+
+  /** Resolve a `"1.0"`-style child-index path from `cloneRoot` to a clone node. */
+  private resolveClonePath(path: string): SimpleNode {
+    let node = this.cloneRoot as SimpleNode;
+    if (path === '') return node;
+    let indices = PARSED_PATHS.get(path);
+    if (indices === undefined) {
+      indices = path.split('.').map(Number);
+      PARSED_PATHS.set(path, indices);
+    }
+    for (const index of indices) node = node.childNodes[index] as SimpleNode;
+    return node;
+  }
+
+  /** Enter a cloned element as a fresh appending block so the following normal
+   * content opcodes (content-type aware: text / safe HTML / node / fragment, and
+   * type-changing updates) append into it as its sole child. */
+  cloneEnterSlot(path: string): void {
+    const element = this.resolveClonePath(path) as SimpleElement;
+    this.pushElement(element, null);
+    this.pushBlock(new AppendingBlockImpl(element), true);
+  }
+
+  cloneExitSlot(): void {
+    this.popBlock();
+    this.popElement();
   }
   // --------------------------------------------------------------------------
 

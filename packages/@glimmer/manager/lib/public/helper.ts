@@ -130,24 +130,28 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
       if (manager instanceof FunctionHelperManager) {
         const fn = definition as (...args: unknown[]) => unknown;
         const { positional, named } = capturedArgs;
-        return createComputeRef(
-          () => {
-            const args = positional.map(valueForRef);
-            let hasNamed = false;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            for (const _key in named) {
-              hasNamed = true;
-              break;
-            }
-            if (hasNamed) {
-              const reified: Record<string, unknown> = {};
-              for (const key in named) reified[key] = valueForRef(named[key]!);
-              return fn(...args, reified);
-            }
-            return fn(...args);
+        const debugName = DEBUG && manager.getDebugName(definition);
+
+        // No named args (the common case): call with reified positional only —
+        // no Proxy allocation at all.
+        if (Object.keys(named).length === 0) {
+          return createComputeRef(() => fn(...positional.map(valueForRef)), null, debugName);
+        }
+
+        // With named args, pass a lazy named object so that named args the
+        // function never reads are not consumed (and so don't over-track) —
+        // matching `FunctionHelperManager.getValue`. This is one Proxy instead of
+        // the two that `argsProxyFor` builds.
+        const lazyNamed = new Proxy(named, {
+          get: (target, key) => {
+            const ref = target[key as string];
+            return ref === undefined ? undefined : valueForRef(ref);
           },
+        });
+        return createComputeRef(
+          () => fn(...positional.map(valueForRef), lazyNamed),
           null,
-          DEBUG && manager.getDebugName!(definition)
+          debugName
         );
       }
 

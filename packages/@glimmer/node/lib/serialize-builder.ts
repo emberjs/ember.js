@@ -33,6 +33,12 @@ function currentNode(
 class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   private serializeBlockDepth = 0;
 
+  // SPIKE: clone-based rendering — serialize via the (non-browser) DOM's own
+  // HTML insertion rather than `cloneNode`, so the skeleton lands in this tree.
+  protected override get supportsClone(): boolean {
+    return false;
+  }
+
   override __openBlock(): void {
     let { tagName } = this.element;
 
