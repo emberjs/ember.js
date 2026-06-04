@@ -24,8 +24,9 @@ function has(array: Array<string>, item: string): boolean {
 }
 
 function checkURI(tagName: Nullable<string>, attribute: string): boolean {
-  // SVG element tagNames are lowercase (e.g. `a`), so they never match the
-  // uppercase `badTags` entries unless we normalize first.
+  // SVG tagNames are case-preserved, so the SVG `<a>` element comes through as
+  // lowercase `a` and never matches the uppercase `badTags` entries unless we
+  // normalize first.
   return (tagName === null || has(badTags, tagName.toUpperCase())) && has(badAttributes, attribute);
 }
 
