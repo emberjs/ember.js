@@ -145,6 +145,40 @@ export class AttributesTests extends RenderTest {
   }
 
   @test
+  'button[formaction] is marked as unsafe'() {
+    // `formaction` overrides the owning form's `action` at submit time, so it
+    // is the same submission-URL sink as `<form action>` and must reject
+    // `javascript:` URLs. Otherwise it is a drop-in bypass for the `action`
+    // sanitization.
+    this.render('<form><button formaction="{{this.foo}}"></button></form>', {
+      foo: 'javascript:foo()',
+    });
+    this.assertHTML('<form><button formaction="unsafe:javascript:foo()"></button></form>');
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'http://foo.bar' });
+    this.assertHTML('<form><button formaction="http://foo.bar"></button></form>');
+    this.assertStableNodes();
+
+    this.rerender({ foo: 'javascript:foo()' });
+    this.assertHTML('<form><button formaction="unsafe:javascript:foo()"></button></form>');
+    this.assertStableNodes();
+  }
+
+  @test
+  'input[formaction] is marked as unsafe'() {
+    this.render('<form><input type="submit" formaction="{{this.foo}}" /></form>', {
+      foo: 'javascript:foo()',
+    });
+    this.assertHTML('<form><input type="submit" formaction="unsafe:javascript:foo()" /></form>');
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'http://foo.bar' });
+    this.assertHTML('<form><input type="submit" formaction="http://foo.bar" /></form>');
+    this.assertStableNodes();
+  }
+
+  @test
   'triple curlies in attribute position'() {
     this.render('<div data-bar="bar" data-foo={{{this.rawString}}}>Hello</div>', {
       rawString: 'TRIPLE',

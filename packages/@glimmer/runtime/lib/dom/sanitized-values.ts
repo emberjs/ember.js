@@ -4,11 +4,19 @@ import { isSafeString, normalizeStringValue } from '../dom/normalize';
 
 const badProtocols = ['javascript:', 'vbscript:'];
 
-const badTags = ['A', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM'];
+// `BUTTON`/`INPUT` are included because a submit `<button>` or
+// `<input type="submit"|"image">` may carry a `formaction` attribute, which
+// overrides the owning `<form>`'s `action` at submission time. Without them the
+// `action`/`formaction` URL sanitization below would only guard `<form action>`
+// and could be bypassed by moving the same `javascript:` URL onto the submit
+// control's `formaction`.
+const badTags = ['A', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM', 'BUTTON', 'INPUT'];
 
 const badTagsForDataURI = ['EMBED'];
 
-const badAttributes = ['href', 'src', 'background', 'action'];
+// `formaction` mirrors `action`: it is the per-submit-control override of a
+// form's submission URL and must be sanitized for the same reason.
+const badAttributes = ['href', 'src', 'background', 'action', 'formaction'];
 
 const badAttributesForDataURI = ['src'];
 
