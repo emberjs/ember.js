@@ -16,11 +16,9 @@ import { createConstRef } from '@glimmer/reference/lib/reference';
 import type RouterService from '@ember/routing/router-service';
 import { internalHelper } from './internal-helper';
 
-export default internalHelper(
-  (_args: CapturedArguments, owner: InternalOwner | undefined) => {
-    assert('[BUG] missing owner', owner);
-    const router = owner.lookup('service:router') as RouterService;
-    // rootURL is a static configuration value — safe to use a const ref.
-    return createConstRef(router.rootURL, 'root-url');
-  }
-);
+export default internalHelper((_args: CapturedArguments, owner: InternalOwner | undefined) => {
+  assert('[BUG] missing owner', owner);
+  const router = owner.lookup('service:router') as RouterService;
+  // rootURL is a static configuration value — safe to use a const ref.
+  return createConstRef(router.rootURL, 'root-url');
+});

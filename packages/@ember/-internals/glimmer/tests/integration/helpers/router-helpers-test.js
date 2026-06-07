@@ -136,10 +136,7 @@ moduleFor(
   'Router helpers: {{root-url}}',
   class extends ApplicationTestCase {
     async ['@test returns the default rootURL'](assert) {
-      this.add(
-        'template:index',
-        precompileTemplate(`<span id="result">{{root-url}}</span>`)
-      );
+      this.add('template:index', precompileTemplate(`<span id="result">{{root-url}}</span>`));
 
       await this.visit('/');
       assert.equal(this.$('#result').text(), '/', 'returns default rootURL of "/"');
@@ -432,7 +429,6 @@ moduleFor(
         assert.equal(this.$('#about-out').text(), 'false', 'about not transitioning-out after');
       });
     }
-
   }
 );
 
@@ -464,8 +460,16 @@ moduleFor(
 
     async ['@test returns false when model is null'](assert) {
       await this.visit('/');
-      assert.equal(this.$('#result-in').text(), 'false', 'is-transitioning-in false with null model');
-      assert.equal(this.$('#result-out').text(), 'false', 'is-transitioning-out false with null model');
+      assert.equal(
+        this.$('#result-in').text(),
+        'false',
+        'is-transitioning-in false with null model'
+      );
+      assert.equal(
+        this.$('#result-out').text(),
+        'false',
+        'is-transitioning-out false with null model'
+      );
     }
   }
 );

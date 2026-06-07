@@ -41,7 +41,8 @@ export default internalHelper(
     return createComputeRef(
       () => {
         let routeRef = positional[0];
-        let routeName = routeRef !== undefined ? (valueForRef(routeRef) as string | null | undefined) : undefined;
+        let routeName =
+          routeRef !== undefined ? (valueForRef(routeRef) as string | null | undefined) : undefined;
         // eslint-disable-next-line @typescript-eslint/no-empty-object-type
         let models = positional.slice(1).map((ref) => valueForRef(ref)) as {}[];
         let queryParamsRef = named['queryParams'];
