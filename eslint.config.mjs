@@ -18,7 +18,7 @@ export default [
     ignores: [
       'blueprints/*/*files/**/*.js',
       'blueprints/*/*files/**/*.ts',
-      'node-tests/fixtures/**/*.js',
+      'tests/node-blueprints/tests/fixtures/**/*.js',
       'docs/',
       '**/.*',
       '**/dist/',
@@ -232,7 +232,7 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
-      'node-tests/**/*.js',
+      'tests/node-blueprints/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
@@ -254,7 +254,7 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
-      'node-tests/**/*.js',
+      'tests/node-blueprints/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
@@ -278,7 +278,7 @@ export default [
     },
   },
   {
-    files: ['node-tests/**/*.js'],
+    files: ['tests/node-blueprints/**/*.js'],
 
     languageOptions: {
       globals: {
@@ -506,6 +506,13 @@ export default [
     ignores: ['packages/@ember/**/tests/**', 'packages/@glimmer/**/test/**'],
     rules: {
       'ember-local/no-barrel-imports': 'error',
+    },
+  },
+  {
+    files: ['tests/node-blueprints/**/*'],
+    rules: {
+      // This package is not published, so we don't care about the extraneous check
+      'n/no-extraneous-require': 'off',
     },
   },
 ];

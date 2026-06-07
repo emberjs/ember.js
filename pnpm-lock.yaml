@@ -3205,6 +3205,22 @@ importers:
         specifier: ^7.3.1
         version: 7.3.3(@types/node@22.19.19)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
 
+  tests/node-blueprints:
+    dependencies:
+      ember-source:
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      ember-cli-blueprint-test-helpers:
+        specifier: ^0.19.2
+        version: 0.19.2
+      fs-extra:
+        specifier: ^11.1.1
+        version: 11.3.5
+      mocha:
+        specifier: ^11.0.0
+        version: 11.7.6
+
   tests/node-vitest:
     dependencies:
       agadoo:

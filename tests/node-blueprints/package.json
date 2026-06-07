@@ -1,0 +1,19 @@
+{
+  "name": "ember-test-node-blueprints",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Node-focused smoke test template for ember-source",
+  "scripts": {
+    "test:node": "mocha tests/**/*-test.js"
+  },
+  "files": [],
+  "dependencies": {
+    "ember-source": "workspace:*"
+  },
+  "devDependencies": {
+    "ember-cli-blueprint-test-helpers": "^0.19.2",
+    "fs-extra": "^11.1.1",
+    "mocha": "^11.0.0"
+  }
+}
