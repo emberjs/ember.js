@@ -29,50 +29,30 @@
   @for Ember.Templates.helpers
   @public
 */
-import type { CapturedArguments, Maybe } from '@glimmer/interfaces';
-import type { InternalOwner } from '@ember/-internals/owner';
-import { assert } from '@ember/debug';
-import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { tagFor } from '@glimmer/validator/lib/meta';
+import type { Maybe } from '@glimmer/interfaces';
 import type Route from '@ember/routing/route';
 import type { RouterState, RoutingService } from '@ember/routing/-internals';
-import { internalHelper } from './internal-helper';
+import { service } from '@ember/service';
+import Helper from '@ember/component/helper';
 import { isMissing } from './-router-helpers-utils';
 
-export default internalHelper(
-  ({ positional, named }: CapturedArguments, owner: InternalOwner | undefined) => {
-    assert('[BUG] missing owner', owner);
-    const routing = owner.lookup('service:-routing') as RoutingService<Route>;
+export default class IsActiveHelper extends Helper {
+  @service('-routing') declare private routing: RoutingService<Route>;
 
-    return createComputeRef(
-      () => {
-        let routeRef = positional[0];
-        let routeName =
-          routeRef !== undefined ? (valueForRef(routeRef) as string | null | undefined) : undefined;
-        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-        let models = positional.slice(1).map((ref) => valueForRef(ref)) as {}[];
-        let queryParamsRef = named['queryParams'];
-        let queryParams =
-          queryParamsRef !== undefined
-            ? (valueForRef(queryParamsRef) as Record<string, unknown>)
-            : undefined;
+  compute(
+    [routeName, ...models]: [string | null | undefined, ...unknown[]],
+    { queryParams }: { queryParams?: Record<string, unknown> }
+  ): boolean {
+    if (isMissing(routeName) || models.some(isMissing)) {
+      return false;
+    }
 
-        consumeTag(tagFor(routing, 'currentState'));
+    const state = this.routing.currentState as Maybe<RouterState>;
+    if (isMissing(state)) {
+      return false;
+    }
 
-        if (isMissing(routeName) || models.some(isMissing)) {
-          return false;
-        }
-
-        let state = routing.currentState as Maybe<RouterState>;
-        if (isMissing(state)) {
-          return false;
-        }
-
-        return routing.isActiveForRoute(models, queryParams, routeName, state);
-      },
-      null,
-      'is-active'
-    );
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    return this.routing.isActiveForRoute(models as {}[], queryParams, routeName, state);
   }
-);
+}

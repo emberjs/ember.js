@@ -20,58 +20,39 @@
   @for Ember.Templates.helpers
   @public
 */
-import type { CapturedArguments, Maybe } from '@glimmer/interfaces';
-import type { InternalOwner } from '@ember/-internals/owner';
-import { assert } from '@ember/debug';
-import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { tagFor } from '@glimmer/validator/lib/meta';
+import type { Maybe } from '@glimmer/interfaces';
 import type Route from '@ember/routing/route';
 import type { RouterState, RoutingService } from '@ember/routing/-internals';
-import { internalHelper } from './internal-helper';
+import { service } from '@ember/service';
+import Helper from '@ember/component/helper';
 import { isMissing } from './-router-helpers-utils';
 
-export default internalHelper(
-  ({ positional, named }: CapturedArguments, owner: InternalOwner | undefined) => {
-    assert('[BUG] missing owner', owner);
-    const routing = owner.lookup('service:-routing') as RoutingService<Route>;
+export default class IsTransitioningInHelper extends Helper {
+  @service('-routing') declare private routing: RoutingService<Route>;
 
-    return createComputeRef(
-      () => {
-        let routeRef = positional[0];
-        let routeName =
-          routeRef !== undefined ? (valueForRef(routeRef) as string | null | undefined) : undefined;
-        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-        let models = positional.slice(1).map((ref) => valueForRef(ref)) as {}[];
-        let queryParamsRef = named['queryParams'];
-        let queryParams =
-          queryParamsRef !== undefined
-            ? (valueForRef(queryParamsRef) as Record<string, unknown>)
-            : undefined;
+  compute(
+    [routeName, ...models]: [string | null | undefined, ...unknown[]],
+    { queryParams }: { queryParams?: Record<string, unknown> }
+  ): boolean {
+    if (isMissing(routeName) || models.some(isMissing)) {
+      return false;
+    }
 
-        consumeTag(tagFor(routing, 'currentState'));
-        consumeTag(tagFor(routing, 'targetState'));
+    const current = this.routing.currentState as Maybe<RouterState>;
+    const target = this.routing.targetState as Maybe<RouterState>;
 
-        if (isMissing(routeName) || models.some(isMissing)) {
-          return false;
-        }
+    // No transition in flight.
+    if (isMissing(target) || current === target) {
+      return false;
+    }
 
-        let current = routing.currentState as Maybe<RouterState>;
-        let target = routing.targetState as Maybe<RouterState>;
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    const castedModels = models as {}[];
+    const isCurrentlyActive =
+      !isMissing(current) &&
+      this.routing.isActiveForRoute(castedModels, queryParams, routeName, current);
+    const willBeActive = this.routing.isActiveForRoute(castedModels, queryParams, routeName, target);
 
-        // No transition in flight.
-        if (isMissing(target) || current === target) {
-          return false;
-        }
-
-        let isCurrentlyActive =
-          !isMissing(current) && routing.isActiveForRoute(models, queryParams, routeName, current);
-        let willBeActive = routing.isActiveForRoute(models, queryParams, routeName, target);
-
-        return !isCurrentlyActive && willBeActive;
-      },
-      null,
-      'is-transitioning-in'
-    );
+    return !isCurrentlyActive && willBeActive;
   }
-);
+}

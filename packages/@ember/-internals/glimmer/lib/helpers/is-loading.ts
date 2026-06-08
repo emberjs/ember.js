@@ -19,20 +19,8 @@
   @for Ember.Templates.helpers
   @public
 */
-import type { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
-import { internalHelper } from './internal-helper';
 import { isMissing } from './-router-helpers-utils';
 
-export default internalHelper(({ positional }: CapturedArguments) => {
-  return createComputeRef(
-    () => {
-      let routeRef = positional[0];
-      let routeName = routeRef !== undefined ? valueForRef(routeRef) : undefined;
-      let models = positional.slice(1).map((ref) => valueForRef(ref));
-      return isMissing(routeName) || models.some(isMissing);
-    },
-    null,
-    'is-loading'
-  );
-});
+export default function isLoading(routeName: unknown, ...models: unknown[]): boolean {
+  return isMissing(routeName) || models.some(isMissing);
+}
