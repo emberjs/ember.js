@@ -35,16 +35,10 @@ import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as resolve } from './helpers/-resolve';
 import { default as trackArray } from './helpers/-track-array';
 import { default as eachIn } from './helpers/each-in';
-import { default as isActive } from './helpers/is-active';
-import { default as isLoading } from './helpers/is-loading';
-import { default as isTransitioningIn } from './helpers/is-transitioning-in';
-import { default as isTransitioningOut } from './helpers/is-transitioning-out';
 import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
-import { default as rootUrl } from './helpers/root-url';
 import { default as unbound } from './helpers/unbound';
 import { default as uniqueId } from './helpers/unique-id';
-import { default as urlFor } from './helpers/url-for';
 
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
@@ -115,12 +109,6 @@ const BUILTIN_HELPERS: Record<string, object> = {
   get,
   hash,
   'unique-id': uniqueId,
-  'url-for': urlFor,
-  'root-url': rootUrl,
-  'is-active': isActive,
-  'is-loading': isLoading,
-  'is-transitioning-in': isTransitioningIn,
-  'is-transitioning-out': isTransitioningOut,
 };
 
 if (DEBUG) {

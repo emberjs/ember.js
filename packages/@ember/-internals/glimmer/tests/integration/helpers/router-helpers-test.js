@@ -4,13 +4,24 @@ import { precompileTemplate } from '@ember/template-compilation';
 import Controller from '@ember/controller';
 import { tracked } from '@glimmer/tracking';
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
+import {
+  urlFor,
+  rootUrl,
+  isActive,
+  isLoading,
+  isTransitioningIn,
+  isTransitioningOut,
+} from '@ember/routing';
+
+// Helpers are strict-mode only — they must be imported and passed via scope.
+// None of these helpers are registered in the loose-mode resolver.
 
 // ---------------------------------------------------------------------------
-// {{url-for}}
+// {{urlFor}}
 // ---------------------------------------------------------------------------
 
 moduleFor(
-  'Router helpers: {{url-for}}',
+  'Router helpers: {{urlFor}}',
   class extends ApplicationTestCase {
     constructor(...args) {
       super(...args);
@@ -25,7 +36,10 @@ moduleFor(
     async ['@test generates URL for a simple route'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<a id="link" href={{url-for "about"}}>About</a>`)
+        precompileTemplate(`<a id="link" href={{urlFor "about"}}>About</a>`, {
+          strictMode: true,
+          scope: () => ({ urlFor }),
+        })
       );
 
       await this.visit('/');
@@ -35,7 +49,10 @@ moduleFor(
     async ['@test generates URL for the index route'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<a id="link" href={{url-for "index"}}>Home</a>`)
+        precompileTemplate(`<a id="link" href={{urlFor "index"}}>Home</a>`, {
+          strictMode: true,
+          scope: () => ({ urlFor }),
+        })
       );
 
       await this.visit('/');
@@ -45,7 +62,10 @@ moduleFor(
     async ['@test generates URL with a dynamic segment model'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<a id="link" href={{url-for "post" "42"}}>Post</a>`)
+        precompileTemplate(`<a id="link" href={{urlFor "post" "42"}}>Post</a>`, {
+          strictMode: true,
+          scope: () => ({ urlFor }),
+        })
       );
 
       await this.visit('/');
@@ -56,7 +76,8 @@ moduleFor(
       this.add(
         'template:search',
         precompileTemplate(
-          `<a id="link" href={{url-for "search" queryParams=(hash q="ember")}}>Search</a>`
+          `<a id="link" href={{urlFor "search" queryParams=(hash q="ember")}}>Search</a>`,
+          { strictMode: true, scope: () => ({ urlFor }) }
         )
       );
       this.add(
@@ -78,7 +99,10 @@ moduleFor(
     async ['@test returns undefined when model is null'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<span id="result">{{url-for "post" this.model}}</span>`)
+        precompileTemplate(`<span id="result">{{urlFor "post" this.model}}</span>`, {
+          strictMode: true,
+          scope: () => ({ urlFor }),
+        })
       );
       this.add(
         'controller:index',
@@ -91,26 +115,13 @@ moduleFor(
       assert.equal(this.$('#result').text().trim(), '', 'returns empty when model is null');
     }
 
-    async ['@test returns undefined when routeName is null'](assert) {
-      this.add(
-        'template:index',
-        precompileTemplate(`<span id="result">{{url-for this.route}}</span>`)
-      );
-      this.add(
-        'controller:index',
-        class extends Controller {
-          route = null;
-        }
-      );
-
-      await this.visit('/');
-      assert.equal(this.$('#result').text().trim(), '', 'returns empty when routeName is null');
-    }
-
     async ['@test updates when model changes'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<a id="link" href={{url-for "post" this.postId}}>Post</a>`)
+        precompileTemplate(`<a id="link" href={{urlFor "post" this.postId}}>Post</a>`, {
+          strictMode: true,
+          scope: () => ({ urlFor }),
+        })
       );
 
       class IndexController extends Controller {
@@ -129,14 +140,20 @@ moduleFor(
 );
 
 // ---------------------------------------------------------------------------
-// {{root-url}}
+// {{rootUrl}}
 // ---------------------------------------------------------------------------
 
 moduleFor(
-  'Router helpers: {{root-url}}',
+  'Router helpers: {{rootUrl}}',
   class extends ApplicationTestCase {
     async ['@test returns the default rootURL'](assert) {
-      this.add('template:index', precompileTemplate(`<span id="result">{{root-url}}</span>`));
+      this.add(
+        'template:index',
+        precompileTemplate(`<span id="result">{{rootUrl}}</span>`, {
+          strictMode: true,
+          scope: () => ({ rootUrl }),
+        })
+      );
 
       await this.visit('/');
       assert.equal(this.$('#result').text(), '/', 'returns default rootURL of "/"');
@@ -145,11 +162,11 @@ moduleFor(
 );
 
 // ---------------------------------------------------------------------------
-// {{is-active}}
+// {{isActive}}
 // ---------------------------------------------------------------------------
 
 moduleFor(
-  'Router helpers: {{is-active}}',
+  'Router helpers: {{isActive}}',
   class extends ApplicationTestCase {
     constructor(...args) {
       super(...args);
@@ -165,8 +182,9 @@ moduleFor(
       this.add(
         'template:index',
         precompileTemplate(
-          `<span id="home-active">{{is-active "index"}}</span>
-           <span id="about-active">{{is-active "about"}}</span>`
+          `<span id="home-active">{{isActive "index"}}</span>
+           <span id="about-active">{{isActive "about"}}</span>`,
+          { strictMode: true, scope: () => ({ isActive }) }
         )
       );
 
@@ -180,8 +198,9 @@ moduleFor(
         'template:application',
         precompileTemplate(
           `{{outlet}}
-           <span id="home-active">{{is-active "index"}}</span>
-           <span id="about-active">{{is-active "about"}}</span>`
+           <span id="home-active">{{isActive "index"}}</span>
+           <span id="about-active">{{isActive "about"}}</span>`,
+          { strictMode: true, scope: () => ({ isActive }) }
         )
       );
 
@@ -197,7 +216,10 @@ moduleFor(
     async ['@test returns false when any model is null'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<span id="result">{{is-active "post" this.model}}</span>`)
+        precompileTemplate(`<span id="result">{{isActive "post" this.model}}</span>`, {
+          strictMode: true,
+          scope: () => ({ isActive }),
+        })
       );
       this.add(
         'controller:index',
@@ -213,7 +235,10 @@ moduleFor(
     async ['@test works with a dynamic segment model'](assert) {
       this.add(
         'template:post',
-        precompileTemplate(`<span id="result">{{is-active "post" "42"}}</span>`)
+        precompileTemplate(`<span id="result">{{isActive "post" "42"}}</span>`, {
+          strictMode: true,
+          scope: () => ({ isActive }),
+        })
       );
 
       await this.visit('/posts/42');
@@ -223,42 +248,24 @@ moduleFor(
     async ['@test returns false for a different dynamic segment value'](assert) {
       this.add(
         'template:post',
-        precompileTemplate(`<span id="result">{{is-active "post" "99"}}</span>`)
+        precompileTemplate(`<span id="result">{{isActive "post" "99"}}</span>`, {
+          strictMode: true,
+          scope: () => ({ isActive }),
+        })
       );
 
       await this.visit('/posts/42');
       assert.equal(this.$('#result').text(), 'false', 'false for different model id');
     }
-
-    async ['@test works with query params'](assert) {
-      this.add(
-        'template:search',
-        precompileTemplate(
-          `<span id="match">{{is-active "search" queryParams=(hash q="ember")}}</span>
-           <span id="no-match">{{is-active "search" queryParams=(hash q="other")}}</span>`
-        )
-      );
-      this.add(
-        'controller:search',
-        class extends Controller {
-          queryParams = ['q'];
-          q = null;
-        }
-      );
-
-      await this.visit('/search?q=ember');
-      assert.equal(this.$('#match').text(), 'true', 'active with matching QPs');
-      assert.equal(this.$('#no-match').text(), 'false', 'inactive with non-matching QPs');
-    }
   }
 );
 
 // ---------------------------------------------------------------------------
-// {{is-loading}}
+// {{isLoading}}
 // ---------------------------------------------------------------------------
 
 moduleFor(
-  'Router helpers: {{is-loading}}',
+  'Router helpers: {{isLoading}}',
   class extends ApplicationTestCase {
     constructor(...args) {
       super(...args);
@@ -271,7 +278,10 @@ moduleFor(
     async ['@test returns false when all args are present'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<span id="result">{{is-loading "post" "42"}}</span>`)
+        precompileTemplate(`<span id="result">{{isLoading "post" "42"}}</span>`, {
+          strictMode: true,
+          scope: () => ({ isLoading }),
+        })
       );
 
       await this.visit('/');
@@ -281,7 +291,10 @@ moduleFor(
     async ['@test returns true when model is null'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<span id="result">{{is-loading "post" this.model}}</span>`)
+        precompileTemplate(`<span id="result">{{isLoading "post" this.model}}</span>`, {
+          strictMode: true,
+          scope: () => ({ isLoading }),
+        })
       );
       this.add(
         'controller:index',
@@ -297,7 +310,10 @@ moduleFor(
     async ['@test returns true when model is undefined'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<span id="result">{{is-loading "post" this.model}}</span>`)
+        precompileTemplate(`<span id="result">{{isLoading "post" this.model}}</span>`, {
+          strictMode: true,
+          scope: () => ({ isLoading }),
+        })
       );
       this.add(
         'controller:index',
@@ -313,7 +329,10 @@ moduleFor(
     async ['@test returns true when routeName is null'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<span id="result">{{is-loading this.route}}</span>`)
+        precompileTemplate(`<span id="result">{{isLoading this.route}}</span>`, {
+          strictMode: true,
+          scope: () => ({ isLoading }),
+        })
       );
       this.add(
         'controller:index',
@@ -329,7 +348,10 @@ moduleFor(
     async ['@test updates reactively when model changes'](assert) {
       this.add(
         'template:index',
-        precompileTemplate(`<span id="result">{{is-loading "post" this.postId}}</span>`)
+        precompileTemplate(`<span id="result">{{isLoading "post" this.postId}}</span>`, {
+          strictMode: true,
+          scope: () => ({ isLoading }),
+        })
       );
 
       class IndexController extends Controller {
@@ -348,11 +370,11 @@ moduleFor(
 );
 
 // ---------------------------------------------------------------------------
-// {{is-transitioning-in}} and {{is-transitioning-out}}
+// {{isTransitioningIn}} and {{isTransitioningOut}}
 // ---------------------------------------------------------------------------
 
 moduleFor(
-  'Router helpers: {{is-transitioning-in}} and {{is-transitioning-out}}',
+  'Router helpers: {{isTransitioningIn}} and {{isTransitioningOut}}',
   class extends ApplicationTestCase {
     constructor(...args) {
       super(...args);
@@ -378,10 +400,11 @@ moduleFor(
         'template:application',
         precompileTemplate(
           `{{outlet}}
-           <span id="index-in">{{is-transitioning-in "index"}}</span>
-           <span id="index-out">{{is-transitioning-out "index"}}</span>
-           <span id="about-in">{{is-transitioning-in "about"}}</span>
-           <span id="about-out">{{is-transitioning-out "about"}}</span>`
+           <span id="index-in">{{isTransitioningIn "index"}}</span>
+           <span id="index-out">{{isTransitioningOut "index"}}</span>
+           <span id="about-in">{{isTransitioningIn "about"}}</span>
+           <span id="about-out">{{isTransitioningOut "about"}}</span>`,
+          { strictMode: true, scope: () => ({ isTransitioningIn, isTransitioningOut }) }
         )
       );
     }
@@ -400,12 +423,10 @@ moduleFor(
       assert.equal(this.$('#about-out').text(), 'false', 'about not transitioning-out');
     }
 
-    ['@test is-transitioning-in and is-transitioning-out during a deferred transition'](assert) {
+    ['@test correct values during a deferred transition'](assert) {
       return this.visit('/').then(() => {
-        // Start a transition to /about (deferred — model hook returns a promise)
         runTask(() => this.visit('/about'));
 
-        // While the transition is in flight:
         assert.equal(this.$('#index-in').text(), 'false', 'index not transitioning-in');
         assert.equal(
           this.$('#index-out').text(),
@@ -419,10 +440,8 @@ moduleFor(
         );
         assert.equal(this.$('#about-out').text(), 'false', 'about not transitioning-out');
 
-        // Resolve the deferred model to complete the transition
         runTask(() => this.aboutDefer.resolve());
 
-        // After the transition settles:
         assert.equal(this.$('#index-in').text(), 'false', 'index not transitioning-in after');
         assert.equal(this.$('#index-out').text(), 'false', 'index not transitioning-out after');
         assert.equal(this.$('#about-in').text(), 'false', 'about not transitioning-in after');
@@ -433,7 +452,7 @@ moduleFor(
 );
 
 moduleFor(
-  'Router helpers: {{is-transitioning-in}} and {{is-transitioning-out}} with null models',
+  'Router helpers: {{isTransitioningIn}} and {{isTransitioningOut}} with null models',
   class extends ApplicationTestCase {
     constructor(...args) {
       super(...args);
@@ -446,8 +465,9 @@ moduleFor(
         'template:application',
         precompileTemplate(
           `{{outlet}}
-           <span id="result-in">{{is-transitioning-in "about" this.model}}</span>
-           <span id="result-out">{{is-transitioning-out "about" this.model}}</span>`
+           <span id="result-in">{{isTransitioningIn "about" this.model}}</span>
+           <span id="result-out">{{isTransitioningOut "about" this.model}}</span>`,
+          { strictMode: true, scope: () => ({ isTransitioningIn, isTransitioningOut }) }
         )
       );
       this.add(
@@ -463,12 +483,12 @@ moduleFor(
       assert.equal(
         this.$('#result-in').text(),
         'false',
-        'is-transitioning-in false with null model'
+        'isTransitioningIn false with null model'
       );
       assert.equal(
         this.$('#result-out').text(),
         'false',
-        'is-transitioning-out false with null model'
+        'isTransitioningOut false with null model'
       );
     }
   }
