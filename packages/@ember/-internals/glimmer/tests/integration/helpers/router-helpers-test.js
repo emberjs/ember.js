@@ -480,11 +480,7 @@ moduleFor(
 
     async ['@test returns false when model is null'](assert) {
       await this.visit('/');
-      assert.equal(
-        this.$('#result-in').text(),
-        'false',
-        'isTransitioningIn false with null model'
-      );
+      assert.equal(this.$('#result-in').text(), 'false', 'isTransitioningIn false with null model');
       assert.equal(
         this.$('#result-out').text(),
         'false',
