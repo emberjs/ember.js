@@ -45,6 +45,11 @@ export default class IsActiveHelper extends Helper {
       return false;
     }
 
+    // Also track currentRouteName: during loading/error substates the URL
+    // doesn't change but the active route name does, so isActive() alone
+    // (which only consumes currentURL) would miss those transitions.
+    void this.router.currentRouteName;
+
     const args = queryParams ? [...models, { queryParams }] : [...models];
     return this.router.isActive(routeName, ...args);
   }

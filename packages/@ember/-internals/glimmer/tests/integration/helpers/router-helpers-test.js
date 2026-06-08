@@ -257,6 +257,50 @@ moduleFor(
       await this.visit('/posts/42');
       assert.equal(this.$('#result').text(), 'false', 'false for different model id');
     }
+
+    async ['@test stays false during loading substate (URL unchanged, route name changes)'](
+      assert
+    ) {
+      let aboutDefer = RSVP.defer();
+
+      this.add(
+        'route:about',
+        class extends Route {
+          model() {
+            return aboutDefer.promise;
+          }
+        }
+      );
+
+      this.add(
+        'template:about-loading',
+        precompileTemplate(`<div id="loading-spinner"></div>`, { strictMode: true, scope: () => ({}) })
+      );
+
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `{{outlet}}<span id="about-active">{{isActive "about"}}</span>`,
+          { strictMode: true, scope: () => ({ isActive }) }
+        )
+      );
+
+      await this.visit('/');
+      assert.equal(this.$('#about-active').text(), 'false', 'false before navigation');
+
+      let visitPromise = this.visit('/about');
+      // While in the loading substate, currentURL is still '/' but
+      // currentRouteName has changed — isActive must still return false.
+      assert.equal(
+        this.$('#about-active').text(),
+        'false',
+        'false during loading substate'
+      );
+
+      aboutDefer.resolve();
+      await visitPromise;
+      assert.equal(this.$('#about-active').text(), 'true', 'true after model resolves');
+    }
   }
 );
 
