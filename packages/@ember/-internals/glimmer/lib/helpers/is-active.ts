@@ -29,15 +29,13 @@
   @for Ember.Templates.helpers
   @public
 */
-import type { Maybe } from '@glimmer/interfaces';
-import type Route from '@ember/routing/route';
-import type { RouterState, RoutingService } from '@ember/routing/-internals';
+import type RouterService from '@ember/routing/router-service';
 import { service } from '@ember/service';
 import Helper from '@ember/component/helper';
 import { isMissing } from './-router-helpers-utils';
 
 export default class IsActiveHelper extends Helper {
-  @service('-routing') declare private routing: RoutingService<Route>;
+  @service('router') declare private router: RouterService;
 
   compute(
     [routeName, ...models]: [string | null | undefined, ...unknown[]],
@@ -47,12 +45,7 @@ export default class IsActiveHelper extends Helper {
       return false;
     }
 
-    const state = this.routing.currentState as Maybe<RouterState>;
-    if (isMissing(state)) {
-      return false;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    return this.routing.isActiveForRoute(models as {}[], queryParams, routeName, state);
+    const args = queryParams ? [...models, { queryParams }] : [...models];
+    return this.router.isActive(routeName, ...args);
   }
 }

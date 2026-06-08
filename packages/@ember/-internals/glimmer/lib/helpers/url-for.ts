@@ -23,14 +23,13 @@
   @for Ember.Templates.helpers
   @public
 */
-import type Route from '@ember/routing/route';
-import type { RoutingService } from '@ember/routing/-internals';
+import type RouterService from '@ember/routing/router-service';
 import { service } from '@ember/service';
 import Helper from '@ember/component/helper';
 import { isMissing } from './-router-helpers-utils';
 
 export default class UrlForHelper extends Helper {
-  @service('-routing') declare private routing: RoutingService<Route>;
+  @service('router') declare private router: RouterService;
 
   compute(
     [routeName, ...models]: [string | null | undefined, ...unknown[]],
@@ -40,12 +39,8 @@ export default class UrlForHelper extends Helper {
       return undefined;
     }
 
-    // Access currentState to track route state changes (e.g. QP updates),
-    // mirroring LinkTo's href behavior.
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    this.routing.currentState;
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    return this.routing.generateURL(routeName, models as {}[], queryParams ?? {});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const args: any[] = queryParams ? [...models, { queryParams }] : [...models];
+    return this.router.urlFor(routeName, ...args);
   }
 }

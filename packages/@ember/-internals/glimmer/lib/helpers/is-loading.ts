@@ -22,5 +22,5 @@
 import { isMissing } from './-router-helpers-utils';
 
 export default function isLoading(routeName: unknown, ...models: unknown[]): boolean {
-  return isMissing(routeName) || models.some(isMissing);
+  return !routeName || models.some(isMissing);
 }
