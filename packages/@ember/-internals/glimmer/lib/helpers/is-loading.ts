@@ -22,10 +22,7 @@
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { internalHelper } from './internal-helper';
-
-function isMissing(value: unknown): value is null | undefined {
-  return value === null || value === undefined;
-}
+import { isMissing } from './-router-helpers-utils';
 
 export default internalHelper(({ positional }: CapturedArguments) => {
   return createComputeRef(

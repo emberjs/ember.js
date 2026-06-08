@@ -32,10 +32,7 @@ import { tagFor } from '@glimmer/validator/lib/meta';
 import type Route from '@ember/routing/route';
 import type { RoutingService } from '@ember/routing/-internals';
 import { internalHelper } from './internal-helper';
-
-function isMissing(value: unknown): value is null | undefined {
-  return value === null || value === undefined;
-}
+import { isMissing } from './-router-helpers-utils';
 
 export default internalHelper(
   ({ positional, named }: CapturedArguments, owner: InternalOwner | undefined) => {
