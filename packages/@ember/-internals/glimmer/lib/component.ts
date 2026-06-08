@@ -784,6 +784,18 @@ declare const SIGNATURE: unique symbol;
   * `dragEnd`
   * `drop`
 
+  > **Note on legacy `{{action}}` usage:** In Ember versions where the legacy
+  > `{{action}}` modifier was available, classic component event handler methods
+  > could be combined with `{{action}}`, including action modifiers forwarded
+  > through `...attributes`. This combination relied on Ember's legacy event
+  > dispatching system and had subtle ordering semantics, particularly when
+  > handlers were placed on the same element versus nested elements.
+  >
+  > The `{{action}}` modifier was deprecated and is no longer available in
+  > current Ember. See the
+  > [template-action deprecation guide](https://deprecations.emberjs.com/id/template-action/)
+  > for migration details. Use the `{{on}}` modifier instead.
+
   @class Component
   @extends Ember.CoreView
   @uses Ember.TargetActionSupport
