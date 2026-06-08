@@ -870,6 +870,46 @@ moduleFor(
       assert.equal(indexController.get('omg'), 'lol');
     }
 
+    ['@test query params caching works with reset namespaces'](assert) {
+      assert.expect(2);
+
+      this.router.map(function () {
+        this.route('parent', { path: '/parent/:parent_id/' }, function () {
+          this.route('child', { path: '/child/:child_id' }, function () {
+            this.route('grandchild', { path: '/grandchild', resetNamespace: true });
+          });
+        });
+      });
+
+      this.add(
+        'route:parent',
+        Route.extend({
+          model() {},
+        })
+      );
+
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          model() {},
+        })
+      );
+
+      this.add(
+        'route:grandchild',
+        Route.extend({
+          model() {},
+        })
+      );
+
+      this.setSingleQPController('grandchild', 'query', '');
+
+      return this.visitAndAssert('/parent/1/child/2/grandchild?query=foo').then(() => {
+        this.transitionTo('grandchild', { id: 3 });
+        this.assertCurrentPath('/parent/1/child/3/grandchild');
+      });
+    }
+
     async ['@test can opt into a replace query by specifying replace:true in the Route config hash'](
       assert
     ) {
