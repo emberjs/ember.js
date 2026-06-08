@@ -120,6 +120,29 @@ function basicTest(scenarios: Scenarios, appName: string) {
             `,
           },
           integration: {
+            'private-field-access-test.gjs': `
+              import { module, test } from 'qunit';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { render } from '@ember/test-helpers';
+              import Component from '@glimmer/component';
+
+              module('private field access', function (hooks) {
+                setupRenderingTest(hooks);
+
+                test('it works', async function (assert) {
+                  class HelloWorld extends Component {
+                    #foo = 'hello there';
+
+                    <template>
+                      {{this.#foo}}
+                    </template>
+                  }
+                  await render(HelloWorld);
+
+                  assert.dom().hasText('hello there');
+                });
+              });
+            `,
             'tracked-built-ins-macro-test.gjs': `
               import { module, test } from 'qunit';
               import { TrackedArray } from 'tracked-built-ins';
