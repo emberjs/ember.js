@@ -1,16 +1,20 @@
 /**
-  The `{{url-for}}` helper returns a URL string for a given route, matching the
+  The `{{urlFor}}` helper returns a URL string for a given route, matching the
   same arguments as `<LinkTo>`. Unlike `<LinkTo>`, it returns a string value
   rather than rendering an anchor element.
 
+  ```javascript
+  import { urlFor } from '@ember/routing';
+  ```
+
   ```handlebars
-  <a href={{url-for "profile" this.user}}>Profile</a>
+  <a href={{urlFor "profile" this.user}}>Profile</a>
   ```
 
   With query params:
 
   ```handlebars
-  <a href={{url-for "posts" queryParams=(hash page=2)}}>Page 2</a>
+  <a href={{urlFor "posts" queryParams=(hash page=2)}}>Page 2</a>
   ```
 
   Returns `undefined` if the route name or any model is null/undefined (loading state).

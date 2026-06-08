@@ -1,13 +1,17 @@
 /**
-  The `{{is-loading}}` helper returns `true` if the route name or any of the
+  The `{{isLoading}}` helper returns `true` if the route name or any of the
   passed models are null or undefined, mirroring the loading state that
   `<LinkTo>` detects when it renders `#` as the href.
 
+  ```javascript
+  import { isLoading, urlFor } from '@ember/routing';
+  ```
+
   ```handlebars
-  {{#if (is-loading "post" this.post)}}
+  {{#if (isLoading "post" this.post)}}
     Loading…
   {{else}}
-    <a href={{url-for "post" this.post}}>{{this.post.title}}</a>
+    <a href={{urlFor "post" this.post}}>{{this.post.title}}</a>
   {{/if}}
   ```
 

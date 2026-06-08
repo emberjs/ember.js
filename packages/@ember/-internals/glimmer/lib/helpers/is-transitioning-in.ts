@@ -1,13 +1,17 @@
 /**
-  The `{{is-transitioning-in}}` helper returns `true` when the application is
+  The `{{isTransitioningIn}}` helper returns `true` when the application is
   currently transitioning *into* the specified route — i.e., the route is not
   yet active but will become active when the in-flight transition settles.
 
   This corresponds to the `ember-transitioning-in` CSS class that `<LinkTo>`
   applies during such transitions.
 
+  ```javascript
+  import { isTransitioningIn } from '@ember/routing';
+  ```
+
   ```handlebars
-  <a class={{if (is-transitioning-in "about") "entering"}}>About</a>
+  <a class={{if (isTransitioningIn "about") "entering"}}>About</a>
   ```
 
   Returns `false` when no transition is in flight or the route is already active.

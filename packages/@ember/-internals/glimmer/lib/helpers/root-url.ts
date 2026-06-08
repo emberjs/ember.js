@@ -1,8 +1,12 @@
 /**
-  The `{{root-url}}` helper returns the application's configured `rootURL`.
+  The `{{rootUrl}}` helper returns the application's configured `rootURL`.
+
+  ```javascript
+  import { rootUrl } from '@ember/routing';
+  ```
 
   ```handlebars
-  <a href="{{root-url}}profile">Profile</a>
+  <a href="{{rootUrl}}profile">Profile</a>
   ```
 
   @method root-url

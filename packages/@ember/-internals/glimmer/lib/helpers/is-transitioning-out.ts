@@ -1,13 +1,17 @@
 /**
-  The `{{is-transitioning-out}}` helper returns `true` when the application is
+  The `{{isTransitioningOut}}` helper returns `true` when the application is
   currently transitioning *away from* the specified route — i.e., the route is
   active now but will no longer be active when the in-flight transition settles.
 
   This corresponds to the `ember-transitioning-out` CSS class that `<LinkTo>`
   applies during such transitions.
 
+  ```javascript
+  import { isTransitioningOut } from '@ember/routing';
+  ```
+
   ```handlebars
-  <a class={{if (is-transitioning-out "about") "leaving"}}>About</a>
+  <a class={{if (isTransitioningOut "about") "leaving"}}>About</a>
   ```
 
   Returns `false` when no transition is in flight or the route is not currently active.

@@ -1,22 +1,26 @@
 /**
-  The `{{is-active}}` helper returns `true` if the given route (and optional
+  The `{{isActive}}` helper returns `true` if the given route (and optional
   models / query params) matches the application's current route state — the
   same logic that `<LinkTo>` uses to apply its `active` CSS class.
 
+  ```javascript
+  import { isActive } from '@ember/routing';
+  ```
+
   ```handlebars
-  <a class={{if (is-active "about") "active"}}>About</a>
+  <a class={{if (isActive "about") "active"}}>About</a>
   ```
 
   With a dynamic segment:
 
   ```handlebars
-  {{is-active "post" this.post}}
+  {{isActive "post" this.post}}
   ```
 
   With query params:
 
   ```handlebars
-  {{is-active "posts" queryParams=(hash page=2)}}
+  {{isActive "posts" queryParams=(hash page=2)}}
   ```
 
   Returns `false` if the route name or any model is null/undefined (loading state).
