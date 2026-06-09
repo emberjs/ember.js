@@ -47,8 +47,19 @@ export interface Environment {
 
   isInteractive: boolean;
   debugRenderTree?: DebugRenderTree | undefined;
+  // Render-tree scope tracker backing `makeContext` (RFC #1154). Unlike
+  // debugRenderTree this is always present, because it backs a real feature.
+  // Only the render-node lifecycle is part of this interface; provide/lookup
+  // happen through the module-level helpers in `@glimmer/runtime`.
+  renderScope: RenderScopeTracker;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError?: ((error: any) => boolean) | undefined;
+}
+
+export interface RenderScopeTracker {
+  create(bucket: object): void;
+  enter(bucket: object): void;
+  exit(): void;
 }
 
 export interface RuntimeOptions {
