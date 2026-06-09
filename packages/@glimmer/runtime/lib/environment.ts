@@ -21,6 +21,7 @@ import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 
 import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
+import { RenderScopeTracker, setCurrentRenderScopeTracker } from './render-scope';
 import { isArgumentError } from './vm/arguments';
 
 export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
@@ -108,6 +109,7 @@ export class EnvironmentImpl implements Environment {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError: ((error: any) => boolean) | undefined;
   debugRenderTree: DebugRenderTree<object> | undefined;
+  renderScope: RenderScopeTracker = new RenderScopeTracker();
 
   constructor(
     options: EnvironmentOptions,
@@ -145,6 +147,8 @@ export class EnvironmentImpl implements Environment {
     );
 
     this.debugRenderTree?.begin();
+    this.renderScope.begin();
+    setCurrentRenderScopeTracker(this.renderScope);
 
     this[TRANSACTION] = new TransactionImpl();
   }
@@ -179,6 +183,7 @@ export class EnvironmentImpl implements Environment {
     transaction.commit();
 
     this.debugRenderTree?.commit();
+    setCurrentRenderScopeTracker(undefined);
 
     this.delegate.onTransactionCommit();
   }
