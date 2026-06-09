@@ -67,8 +67,6 @@ setInternalComponentManager(
   to use these semantics for its templates but cannot be certain it will only be consumed by applications that have enabled the
   `template-only-glimmer-components` optional feature.
 
-  @example
-
   ```js
   import { templateOnlyComponent } from '@glimmer/runtime';
 

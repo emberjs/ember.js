@@ -1285,7 +1285,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     the framework will use it.
     If it is not defined, a basic `Controller` instance would be used.
 
-    @example Behavior of a basic Controller
+    Example Behavior of a basic Controller
 
     ```app/routes/post.js
     import Route from '@ember/routing/route';

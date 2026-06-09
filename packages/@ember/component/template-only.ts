@@ -14,9 +14,7 @@
 
   Addons may want to use this method directly to ensure that a template-only component is treated consistently in all Ember versions (Ember versions
   before 4.0 have a "template-only-glimmer-components" optional feature that causes a standalone `.hbs` file to be interpreted differently).
-
-  @example
-
+    
   ```js
   import templateOnly from '@ember/component/template-only';
 

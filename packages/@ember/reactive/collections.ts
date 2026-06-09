@@ -16,7 +16,6 @@
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
  *
- * @example
  * ```javascript
  * import { trackedArray } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -59,7 +58,6 @@ export { trackedArray } from '@glimmer/validator/lib/collections/array';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)
  *
- * @example
  * ```gjs
  * import { trackedObject } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -102,7 +100,6 @@ export { trackedObject } from '@glimmer/validator/lib/collections/object';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
  *
- * @example
  * ```gjs
  * import { trackedSet } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -149,7 +146,6 @@ export { trackedSet } from '@glimmer/validator/lib/collections/set';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet)
  *
- * @example
  * ```gjs
  * import { trackedWeakSet } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -187,7 +183,6 @@ export { trackedWeakSet } from '@glimmer/validator/lib/collections/weak-set';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
  *
- * @example
  * ```gjs
  * import { trackedMap } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -234,7 +229,6 @@ export { trackedMap } from '@glimmer/validator/lib/collections/map';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap)
  *
- * @example
  * ```gjs
  * import { trackedWeakMap } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
