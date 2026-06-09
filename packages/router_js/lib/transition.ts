@@ -72,6 +72,14 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
   isIntermediate = false;
   [REDIRECT_DESTINATION_SYMBOL]?: Transition<R>;
 
+  // AbortController for the navigation. Managers receive its `signal` via
+  // `AsyncNavigationState` and can pass it to `fetch()` or any other
+  // AbortSignal consumer. The signal aborts whenever the transition is no
+  // longer the active one (explicit cancel or superseded by a newer
+  // transition).
+  abortController = new AbortController();
+  signal: AbortSignal = this.abortController.signal;
+
   /**
     In non-production builds, this function will return the stack that this Transition was
     created within. In production builds, this function will not be present.
@@ -292,6 +300,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
   rollback() {
     if (!this.isAborted) {
       log(this.router, this.sequence, this.targetName + ': transition was aborted');
+      this.abortController.abort();
 
       if (DEBUG) {
         let error = new Error(`Transition aborted stack`);

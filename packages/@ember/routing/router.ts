@@ -3,13 +3,21 @@ import type {
   BootEnvironment,
   default as OutletView,
 } from '@ember/-internals/glimmer/lib/views/outlet';
-import type { OutletState } from '@ember/-internals/glimmer/lib/utils/outlet';
+import type { OutletState, RenderState } from '@ember/-internals/glimmer/lib/utils/outlet';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import type { FactoryManager } from '@ember/-internals/owner';
+import { getOwner as getInternalOwner } from '@ember/-internals/owner';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
+import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
+import type { RouteManager, RouteStateBucket } from '@ember/-internals/routing/route-managers/api';
+import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
+import {
+  findRouteStateName,
+  findRouteSubstateName,
+} from '@ember/-internals/routing/route-managers/classic/substates';
 import { default as BucketCache } from './lib/cache';
 import { default as DSL, type DSLCallback } from './lib/dsl';
 import RouterState from './lib/router_state';
@@ -31,18 +39,19 @@ import { A as emberA } from '@ember/array';
 import typeOf from '@ember/utils/lib/type-of';
 import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
-import { cancel, once, run, scheduleOnce } from '@ember/runloop';
+import { cancel, once, run } from '@ember/runloop';
+import { Promise as RSVPPromise } from 'rsvp';
 import { DEBUG } from '@glimmer/env';
 import {
-  type QueryParamMeta,
   type default as Route,
+  type QueryParamMeta,
   defaultSerialize,
   getFullQueryParams,
-  getRenderState,
   hasDefaultSerialize,
 } from '@ember/routing/route';
 import type {
   InternalRouteInfo,
+  InternalTransition,
   ModelFor,
   RouteInfo,
   RouteInfoWithAttributes,
@@ -197,6 +206,14 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _engineInfoByRoute = Object.create(null);
   _routerService: RouterService;
 
+  // Per-owner caches for the manager-driven route lookup path. Buckets are
+  // keyed by owner first so that engine routes (which can reuse local names)
+  // stay isolated. Manager instances are similarly keyed first by owner,
+  // then by the factory function that produced them, so that routes sharing
+  // a factory share one manager within a given owner.
+  #routeBuckets = new WeakMap<Owner, Map<string, RouteStateBucket>>();
+  #routeManagerInstances = new WeakMap<Owner, WeakMap<object, RouteManager>>();
+
   _slowTransitionTimer: Timer | null = null;
 
   private namespace: any;
@@ -318,61 +335,113 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     this._routerService = routerService;
   }
 
+  /**
+    Returns the `Route` instance for `name`, creating it through the route
+    manager registered against the route class on first access. Subsequent
+    calls return the same instance.
+
+    When `engineOwner` is provided, the name is the local route name within
+    that engine container. Otherwise this resolves engine routes by their
+    fully-qualified name via `_engineInfoByRoute`.
+
+    @private
+   */
+  getRoute(name: string, engineOwner?: Owner): Route | undefined {
+    if (name === 'undefined') {
+      return undefined;
+    }
+
+    assert('Name should not start with "route:"', !name.startsWith('route:'));
+
+    let routeOwner: Owner;
+    let routeName = name;
+
+    if (engineOwner) {
+      routeOwner = engineOwner;
+    } else {
+      let mainOwner = getOwner(this);
+      assert('Router is unexpectedly missing an owner', mainOwner);
+      routeOwner = mainOwner;
+
+      const engineInfo = this._engineInfoByRoute[routeName];
+      if (engineInfo) {
+        routeOwner = this._getEngineInstance(engineInfo);
+        routeName = engineInfo.localFullName;
+      }
+    }
+
+    let ownerBuckets = this.#routeBuckets.get(routeOwner);
+    if (!ownerBuckets) {
+      ownerBuckets = new Map();
+      this.#routeBuckets.set(routeOwner, ownerBuckets);
+    }
+
+    let bucket = ownerBuckets.get(routeName);
+    if (bucket === undefined) {
+      const fullRouteName = `route:${routeName}` as const;
+      let factoryManager = routeOwner.factoryFor(fullRouteName);
+
+      if (!factoryManager) {
+        // Auto-generate a default route if none is registered.
+        // SAFETY: configured in commonSetupRegistry in @ember/application/lib.
+        let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
+        routeOwner.register(fullRouteName, class extends DefaultRoute {});
+        factoryManager = routeOwner.factoryFor(fullRouteName);
+
+        if (DEBUG) {
+          if (this.namespace.LOG_ACTIVE_GENERATION) {
+            info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
+          }
+        }
+      }
+
+      assert('BUG: Missing factory for route', factoryManager);
+      const RouteClass = factoryManager.class as object;
+
+      if (routeOwner !== getOwner(this) && !hasDefaultSerialize((RouteClass as any).prototype)) {
+        throw new Error('Defining a custom serialize method on an Engine route is not supported.');
+      }
+
+      const managerFactory = getRouteManager(RouteClass);
+      assert(
+        `No route manager is registered for route '${routeName}'. ` +
+          `Use \`setRouteManager\` to associate a manager with the route class.`,
+        managerFactory !== undefined
+      );
+
+      let ownerManagers = this.#routeManagerInstances.get(routeOwner);
+      if (!ownerManagers) {
+        ownerManagers = new WeakMap();
+        this.#routeManagerInstances.set(routeOwner, ownerManagers);
+      }
+      let manager = ownerManagers.get(managerFactory);
+      if (manager === undefined) {
+        manager = managerFactory(routeOwner);
+        ownerManagers.set(managerFactory, manager);
+      }
+
+      bucket = manager.createRoute(RouteClass, { name: routeName });
+      ownerBuckets.set(routeName, bucket);
+    }
+
+    const route = bucket.route as Route;
+    assert('Expected route bucket to expose a `route` instance', route !== undefined);
+    return route;
+  }
+
   _initRouterJs(): void {
     let location = get(this, 'location') as EmberLocation;
     let router = this;
     const owner = getOwner(this);
     assert('Router is unexpectedly missing an owner', owner);
-    let seen = Object.create(null);
 
     class PrivateRouter extends Router<Route> {
       getRoute(name: string): Route {
-        let routeName = name;
-        let routeOwner = owner;
-        let engineInfo = router._engineInfoByRoute[routeName];
-
-        if (engineInfo) {
-          let engineInstance = router._getEngineInstance(engineInfo);
-
-          routeOwner = engineInstance;
-          routeName = engineInfo.localFullName;
-        }
-
-        let fullRouteName = `route:${routeName}` as const;
-
-        assert('Route is unexpectedly missing an owner', routeOwner);
-
-        let route = routeOwner.lookup(fullRouteName) as Route | undefined;
-
-        if (seen[name]) {
-          assert('seen routes should exist', route);
-          return route;
-        }
-
-        seen[name] = true;
-
-        if (!route) {
-          // SAFETY: this is configured in `commonSetupRegistry` in the
-          // `@ember/application/lib` package.
-          let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
-          routeOwner.register(fullRouteName, class extends DefaultRoute {});
-          route = routeOwner.lookup(fullRouteName) as Route;
-
-          if (DEBUG) {
-            if (router.namespace.LOG_ACTIVE_GENERATION) {
-              info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
-            }
-          }
-        }
-
-        route._setRouteName(routeName);
-
-        if (engineInfo && !hasDefaultSerialize(route)) {
-          throw new Error(
-            'Defining a custom serialize method on an Engine route is not supported.'
-          );
-        }
-
+        // All route instantiation, manager dispatch, and engine-owner
+        // resolution lives on EmberRouter.getRoute. This wrapper just
+        // delegates.
+        const route = router.getRoute(name);
+        assert(`Expected to find route '${name}'`, route !== undefined);
         return route;
       }
 
@@ -451,7 +520,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
       transitionDidError(error: TransitionError, transition: Transition) {
         if (error.wasAborted || transition.isAborted) {
-          // If the error was a transition erorr or the transition aborted
+          // If the error was a transition error or the transition aborted
           // log the abort.
           return logAbort(transition);
         } else {
@@ -484,6 +553,28 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         } else {
           this.updateURL(url);
         }
+      }
+
+      onRouteInvokableReady(
+        routeInfo: InternalRouteInfo<Route>,
+        transition: InternalTransition<Route>,
+        routeIndex: number
+      ): void {
+        router.onRouteInvokableReady(routeInfo, transition, routeIndex);
+      }
+
+      onIntermediateTransition(
+        newState: TransitionState<Route>,
+        transition: InternalTransition<Route>
+      ): void {
+        router.onIntermediateTransition(newState, transition);
+      }
+
+      onTransitionSettled(
+        transition: InternalTransition<Route>,
+        newState: TransitionState<Route>
+      ): Promise<void> {
+        return router.onTransitionSettled(transition, newState);
       }
     }
 
@@ -594,11 +685,228 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     return true;
   }
 
+  /**
+    Called by router_js when a route's `getInvokable` resolves. Writes the
+    route into `currentRouteInfos` at its slot and schedules a re-render so
+    the outlet tree builds up incrementally instead of waiting for the whole
+    transition to settle.
+
+    @private
+   */
+  onRouteInvokableReady(
+    routeInfo: InternalRouteInfo<Route>,
+    _transition: InternalTransition<Route>,
+    routeIndex: number
+  ): void {
+    const currentRouteInfos = this._routerMicrolib.currentRouteInfos ?? [];
+    currentRouteInfos[routeIndex] = routeInfo;
+    this._routerMicrolib.currentRouteInfos = currentRouteInfos;
+    once(this as any, '_setOutlets');
+  }
+
+  /**
+    Called by router_js for intermediate transitions (loading and error
+    substates). Splices the substate into `currentRouteInfos` without
+    disturbing already-rendering ancestor routes, and fires
+    `didEnter` so classic activate/setup runs.
+
+    @private
+   */
+  onIntermediateTransition(
+    newState: TransitionState<Route>,
+    transition: InternalTransition<Route>
+  ): void {
+    const microlib = this._routerMicrolib;
+    const partition = microlib.partitionRoutes(microlib.state!, newState);
+
+    microlib.currentRouteInfos = [...partition.unchanged, ...partition.entered];
+    microlib.oldState = microlib.state;
+    microlib.state = newState;
+
+    for (const routeInfo of partition.entered) {
+      const route = routeInfo.route;
+      if (!route?.manager) {
+        continue;
+      }
+
+      route.manager.didEnter(route.bucket, {
+        transition,
+        to: routeInfo,
+        enter: true,
+      } as never);
+    }
+
+    once(this as any, '_setOutlets');
+  }
+
+  /**
+    Called by router_js once every route in the transition has resolved.
+    Runs the rest of the lifecycle through the RouteManager API:
+
+      1. `willExit` + `exit` on routes leaving the hierarchy
+      2. `willExit(isExiting=false)` on routes whose context updated
+      3. Awaits every entering/updating route's `enterPromise`
+      4. `didEnter` on entered and updated-context routes
+      5. `didExit` on exited routes
+      6. URL update, query param finalisation, `didTransition` events
+
+    Errors thrown by `didEnter` (i.e. `setup`/`setupController`) are routed
+    through `transitionDidError` so they reach error substates the same way
+    rejections from `enter` do.
+
+    @private
+   */
+  onTransitionSettled(
+    activeTransition: InternalTransition<Route>,
+    newState: TransitionState<Route>
+  ): Promise<void> {
+    const microlib = this._routerMicrolib;
+    const partition = microlib.partitionRoutes(microlib.state!, newState);
+
+    microlib.oldState = microlib.state;
+    microlib.state = newState;
+
+    for (const exitingRouteInfo of partition.exited) {
+      const route = exitingRouteInfo.route;
+      if (route !== undefined) {
+        route.manager.willExit(route.bucket, {
+          transition: activeTransition,
+          isExiting: true,
+        } as never);
+        route.manager.exit(route.bucket, { transition: activeTransition } as never);
+      }
+    }
+
+    // Filter exited routes out of currentRouteInfos. Truncating to
+    // `unchanged.length` would lose entering routes that
+    // `onRouteInvokableReady` already wrote at higher indices.
+    const exitedRouteObjects = new Set(partition.exited.map((ri) => ri.route));
+    if (microlib.currentRouteInfos) {
+      microlib.currentRouteInfos = microlib.currentRouteInfos.filter(
+        (cri) => !exitedRouteObjects.has(cri.route)
+      );
+    }
+
+    for (const resetRouteInfo of partition.reset) {
+      const route = resetRouteInfo.route;
+      if (route !== undefined && route.manager && route.bucket !== undefined) {
+        route.manager.willExit(route.bucket, {
+          transition: activeTransition,
+          isExiting: false,
+        } as never);
+      }
+    }
+
+    // Await all entering/updating routes' enter promises. Swallow
+    // rejections here: a rejected enterPromise has already been routed
+    // through `transitionDidError`; rethrowing would fire the global RSVP
+    // unhandled rejection handler on subsequent transitions.
+    const enteringRouteInfos = [...partition.entered, ...partition.updatedContext];
+    const enterPromises = enteringRouteInfos.map((routeInfo) => {
+      const p = routeInfo.enterPromise ?? RSVPPromise.resolve(undefined);
+      return p.catch(() => undefined);
+    });
+
+    return RSVPPromise.all(enterPromises).then(() => {
+      activeTransition.isActive = false;
+      // Only clear `activeTransition` if it's still us. A click during the
+      // enter-loading phase will have replaced microlib.activeTransition
+      // with a newer transition (and aborted us via redirect()).
+      if (microlib.activeTransition === activeTransition) {
+        microlib.activeTransition = undefined;
+      }
+
+      if (this.isDestroying || this.isDestroyed) {
+        return;
+      }
+      if (activeTransition.isAborted) {
+        return;
+      }
+
+      try {
+        for (const enteredRouteInfo of partition.entered) {
+          const route = enteredRouteInfo.route;
+          if (route !== undefined) {
+            route.manager.didEnter(route.bucket, {
+              transition: activeTransition,
+              to: enteredRouteInfo,
+              enter: true,
+            } as never);
+          }
+        }
+
+        for (const updatedRouteInfo of partition.updatedContext) {
+          const route = updatedRouteInfo.route;
+          if (route !== undefined) {
+            route.manager.didEnter(route.bucket, {
+              transition: activeTransition,
+              to: updatedRouteInfo,
+              enter: false,
+            } as never);
+          }
+        }
+      } catch (error) {
+        // setup/activate inside didEnter can throw. Route through
+        // transitionDidError so the error bubbles to route error handlers
+        // and the default error substate lookup, the same way rejections
+        // from `enter` do.
+        const errorRoute = newState.routeInfos[newState.routeInfos.length - 1]?.route;
+        const reason = microlib.transitionDidError(
+          {
+            error: error as Error,
+            route: errorRoute,
+            wasAborted: false,
+          } as unknown as TransitionError,
+          activeTransition
+        );
+        throw reason;
+      }
+
+      for (const exitedRouteInfo of partition.exited) {
+        const route = exitedRouteInfo.route;
+        if (route !== undefined) {
+          route.manager.didExit(route.bucket, { transition: activeTransition } as never);
+        }
+      }
+
+      let routeInfoSnapshot = newState.routeInfos.slice();
+      microlib.currentRouteInfos = routeInfoSnapshot;
+
+      microlib.state!.queryParams = microlib.finalizeQueryParamChange(
+        microlib.currentRouteInfos!,
+        newState.queryParams,
+        activeTransition
+      );
+
+      microlib._updateURL(activeTransition, newState);
+
+      once(this as any, '_setOutlets');
+
+      microlib.triggerEvent(microlib.currentRouteInfos, true, 'didTransition', []);
+      microlib.didTransition(microlib.currentRouteInfos);
+      microlib.toInfos(activeTransition, newState.routeInfos, true);
+      microlib.routeDidChange(activeTransition);
+    });
+  }
+
   _setOutlets() {
     // This is triggered async during Route#willDestroy.
     // If the router is also being destroyed we do not want to
     // to create another this._toplevelView (and leak the renderer)
     if (this.isDestroying || this.isDestroyed) {
+      return;
+    }
+
+    // Skip rendering when the application instance was booted with
+    // `shouldRender: false`. The full transition lifecycle still runs
+    // (resolve, controllers, models) but no DOM is created. Used by
+    // `application.visit()` in non-rendering scenarios such as fastboot
+    // prefetching or route-only unit tests.
+    let environmentOwner = getOwner(this);
+    let environment = environmentOwner?.lookup('-environment:main') as
+      | { options?: { shouldRender?: boolean } }
+      | undefined;
+    if (environment?.options?.shouldRender === false) {
       return;
     }
 
@@ -612,31 +920,56 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     for (let routeInfo of routeInfos) {
       let route = routeInfo.route!;
-      let render = getRenderState(route);
+      let manager = route.manager;
+      let bucket = route.bucket;
 
-      if (render) {
-        let state: OutletState = {
-          render,
-          outlets: {
-            main: undefined,
-          },
-        };
-
-        if (parent) {
-          parent.outlets.main = state;
-        } else {
-          root = state;
-        }
-
-        parent = state;
-      } else {
-        // It used to be that we would create a stub entry and keep traversing,
-        // but I don't think that is necessary anymore – if a parent route did
-        // not render, then the child routes have nowhere to render into these
-        // days. That wasn't always the case since in the past any route can
-        // render into any other route's outlets.
+      // Skip routes that have not been registered through a manager. This
+      // should not happen for any Route subclass (the classic manager is
+      // registered against Route itself), but guards against
+      // partially-initialised state during teardown.
+      if (manager === undefined || bucket === undefined) {
         break;
       }
+
+      // Trigger the manager to populate the invokable. A route manager
+      // populates the bucket synchronously inside getInvokable before the
+      // returned promise resolves, so reading bucket.invokable on the next
+      // line is safe.
+      manager.getInvokable(bucket);
+
+      let wrapper = manager.getRouteWrapper(bucket);
+      let invokable = bucket.invokable;
+
+      if (invokable === undefined) {
+        break;
+      }
+
+      let owner = getInternalOwner(route);
+      assert('Route is unexpectedly missing an owner', owner);
+
+      let render: RenderState = {
+        owner,
+        name: route.routeName,
+        controller: route.controller,
+        model: route.currentModel,
+        wrapper,
+        invokable,
+        bucket,
+        routeInfo,
+      };
+
+      let state: OutletState = {
+        render,
+        outlets: { main: undefined },
+      };
+
+      if (parent) {
+        parent.outlets.main = state;
+      } else {
+        root = state;
+      }
+
+      parent = state;
     }
 
     // when a transitionTo happens after the validation phase
@@ -938,7 +1271,18 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       (key: string, value: unknown, qp: QueryParam | undefined) => {
         if (qp) {
           delete queryParams[key];
-          queryParams[qp.urlKey] = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
+          let route = qp.route;
+          let manager = route.manager;
+          assert(
+            'Expected a classic-interop route manager to serialize a query param',
+            hasClassicInterop(manager)
+          );
+          queryParams[qp.urlKey] = manager.serializeQueryParam(
+            route.bucket,
+            value,
+            qp.urlKey,
+            qp.type
+          );
         } else if (value === undefined) {
           return; // We don't serialize undefined values
         } else {
@@ -988,7 +1332,18 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         // because all values will be treated as strings
         if (qp) {
           delete queryParams[key];
-          queryParams[qp.prop] = qp.route.deserializeQueryParam(value, qp.urlKey, qp.type);
+          let route = qp.route;
+          let manager = route.manager;
+          assert(
+            'Expected a classic-interop route manager to deserialize a query param',
+            hasClassicInterop(manager)
+          );
+          queryParams[qp.prop] = manager.deserializeQueryParam(
+            route.bucket,
+            value,
+            qp.urlKey,
+            qp.type
+          );
         }
       }
     );
@@ -1135,7 +1490,14 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   */
   _getQPMeta(routeInfo: InternalRouteInfo<Route>) {
     let route = routeInfo.route;
-    return route && (get(route, '_qp') as Route['_qp']);
+    if (!route) {
+      return route;
+    }
+    let manager = route.manager;
+    if (!hasClassicInterop(manager)) {
+      return undefined;
+    }
+    return manager.qp(route.bucket);
   }
 
   /**
@@ -1316,17 +1678,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         }
       }
     }
-  }
-
-  _scheduleLoadingEvent(transition: Transition, originRoute: Route) {
-    this._cancelSlowTransitionTimer();
-    this._slowTransitionTimer = scheduleOnce(
-      'routerTransitions',
-      this,
-      this._handleSlowTransition,
-      transition,
-      originRoute
-    );
   }
 
   currentState: null | RouterState = null;
@@ -1520,15 +1871,6 @@ function forEachRouteAbove(
 // These get invoked when an action bubbles above ApplicationRoute
 // and are not meant to be overridable.
 let defaultActionHandlers = {
-  willResolveModel<R extends Route>(
-    this: EmberRouter,
-    _routeInfos: InternalRouteInfo<Route>[],
-    transition: Transition,
-    originRoute: R
-  ) {
-    this._scheduleLoadingEvent(transition, originRoute);
-  },
-
   // Attempt to find an appropriate error route or substate to enter.
   error(
     this: EmberRouter,
@@ -1566,36 +1908,6 @@ let defaultActionHandlers = {
 
     logError(error, `Error while processing route: ${transition.targetName}`);
   },
-
-  // Attempt to find an appropriate loading route or substate to enter.
-  loading(this: EmberRouter, routeInfos: InternalRouteInfo<Route>[], transition: Transition) {
-    let router = this;
-
-    let routeInfoWithSlowLoading = routeInfos[routeInfos.length - 1];
-
-    forEachRouteAbove(routeInfos, (route, routeInfo) => {
-      // We don't check the leaf most routeInfos since that would
-      // technically be below where we're at in the route hierarchy.
-      if (routeInfo !== routeInfoWithSlowLoading) {
-        // Check for the existence of a 'loading' route.
-        let loadingRouteName = findRouteStateName(route, 'loading');
-        if (loadingRouteName) {
-          router.intermediateTransitionTo(loadingRouteName);
-          return false;
-        }
-      }
-
-      // Check for loading substate
-      let loadingSubstateName = findRouteSubstateName(route, 'loading');
-      if (loadingSubstateName) {
-        router.intermediateTransitionTo(loadingSubstateName);
-        return false;
-      }
-
-      // Don't bubble above pivot route.
-      return (transition.pivotHandler as any) !== route;
-    });
-  },
 };
 
 function logError(_error: any, initialMessage: string) {
@@ -1625,67 +1937,6 @@ function logError(_error: any, initialMessage: string) {
   }
 
   console.error(...errorArgs); //eslint-disable-line no-console
-}
-
-/**
-  Finds the name of the substate route if it exists for the given route. A
-  substate route is of the form `route_state`, such as `foo_loading`.
-
-  @private
-  @param {Route} route
-  @param {String} state
-  @return {String}
-*/
-function findRouteSubstateName(route: Route, state: string) {
-  let owner = getOwner(route);
-  assert('Route is unexpectedly missing an owner', owner);
-
-  let { routeName, fullRouteName, _router: router } = route;
-
-  let substateName = `${routeName}_${state}`;
-  let substateNameFull = `${fullRouteName}_${state}`;
-
-  return routeHasBeenDefined(owner, router, substateName, substateNameFull) ? substateNameFull : '';
-}
-
-/**
-  Finds the name of the state route if it exists for the given route. A state
-  route is of the form `route.state`, such as `foo.loading`. Properly Handles
-  `application` named routes.
-
-  @private
-  @param {Route} route
-  @param {String} state
-  @return {String}
-*/
-function findRouteStateName(route: Route, state: string) {
-  let owner = getOwner(route);
-  assert('Route is unexpectedly missing an owner', owner);
-
-  let { routeName, fullRouteName, _router: router } = route;
-
-  let stateName = routeName === 'application' ? state : `${routeName}.${state}`;
-  let stateNameFull = fullRouteName === 'application' ? state : `${fullRouteName}.${state}`;
-
-  return routeHasBeenDefined(owner, router, stateName, stateNameFull) ? stateNameFull : '';
-}
-
-/**
-  Determines whether or not a route has been defined by checking that the route
-  is in the Router's map and the owner has a registration for that route.
-
-  @private
-  @param {Owner} owner
-  @param {Router} router
-  @param {String} localName
-  @param {String} fullName
-  @return {Boolean}
-*/
-function routeHasBeenDefined(owner: Owner, router: any, localName: string, fullName: string) {
-  let routerHasRoute = router.hasRoute(fullName);
-  let ownerHasRoute =
-    owner.factoryFor(`template:${localName}`) || owner.factoryFor(`route:${localName}`);
-  return routerHasRoute && ownerHasRoute;
 }
 
 export function triggerEvent<N extends MethodNamesOf<typeof defaultActionHandlers>>(

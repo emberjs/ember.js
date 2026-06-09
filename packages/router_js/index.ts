@@ -17,3 +17,9 @@ export {
   type RouteInfoWithAttributes,
   type ModelFor,
 } from './lib/route-info';
+
+export {
+  throwIfAborted,
+  isTransitionAborted,
+  type TransitionAbortedError,
+} from './lib/transition-aborted-error';

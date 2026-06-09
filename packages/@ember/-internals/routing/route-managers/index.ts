@@ -1,16 +1,9 @@
-export {
-  controllerFor,
-  generateController,
-  generateControllerFactory,
-  DSL as RouterDSL,
-} from '@ember/routing/-internals';
+/**
+  Internal barrel for the route manager API. Re-exports the public surface so
+  consumers inside `@ember/-internals` can import from a single place.
+*/
 
-export {
-  routeCapabilities,
-  setRouteManager,
-  getRouteManager,
-  hasClassicInterop,
-} from './route-managers';
+export { routeCapabilities, hasClassicInterop } from './api';
 
 export type {
   RouteManager,
@@ -30,4 +23,6 @@ export type {
   ExitState,
   DidExitState,
   CreateRouteArgs,
-} from './route-managers';
+} from './api';
+
+export { setRouteManager, getRouteManager } from './registry';

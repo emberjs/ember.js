@@ -1,10 +1,11 @@
 import { Promise } from 'rsvp';
 import type { Dict } from './core';
-import type { Route, ResolvedRouteInfo } from './route-info';
+import type { ResolvedRouteInfo, Route, RouteInfo } from './route-info';
 import type InternalRouteInfo from './route-info';
 import type Transition from './transition';
 import { forEach, promiseLabel } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
+import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
 
 interface IParams {
   [key: string]: unknown;
@@ -56,10 +57,13 @@ function proceed<R extends Route>(
   resolvedRouteInfo: ResolvedRouteInfo<R>
 ): void | Promise<void> {
   let wasAlreadyResolved = currentState.routeInfos[transition.resolveIndex]!.isResolved;
-
+  const routeIndex = transition.resolveIndex;
   // Swap the previously unresolved routeInfo with
   // the resolved routeInfo
   currentState.routeInfos[transition.resolveIndex++] = resolvedRouteInfo;
+
+  // a couple of tests have no router instance
+  transition.router?.onRouteInvokableReady(resolvedRouteInfo, transition, routeIndex);
 
   if (!wasAlreadyResolved) {
     // Call the redirect hook. The reason we call it here
@@ -68,8 +72,14 @@ function proceed<R extends Route>(
     // already-resolved route.
     let { route } = resolvedRouteInfo;
     if (route !== undefined) {
-      if (route.redirect) {
-        route.redirect(resolvedRouteInfo.context, transition);
+      let manager = route.manager;
+      if (manager !== undefined && hasClassicInterop(manager) && route.bucket !== undefined) {
+        manager.redirect(
+          route.bucket,
+          resolvedRouteInfo as unknown as RouteInfo,
+          resolvedRouteInfo.context,
+          transition
+        );
       }
     }
   }

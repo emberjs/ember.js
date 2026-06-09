@@ -86,91 +86,99 @@ export const outletHelper = internalHelper(
           // If we are crossing an engine mount point, this is how the owner
           // gets switched.
           let outletOwner = outletState?.render?.owner ?? owner;
-
-          let named = dict<Reference>();
-
-          // Here we either have a raw template that needs to be normalized,
-          // or a component that we can render as-is. `RouteTemplate` upgrades
-          // the template into a component so we can have a unified code path.
-          // We still store the original `template` value, because we rely on
-          // its identity for the stability check, and the `RouteTemplate`
-          // wrapper doesn't dedup for us.
-          let template = state.template;
           let component: object;
 
-          if (hasInternalComponentManager(template)) {
-            component = template;
-          } else {
-            if (DEBUG) {
-              // We don't appear to have a standard way or a brand to check, but for the
-              // purpose of avoiding obvious user errors, this probably gets you close
-              // enough.
-              let isTemplate = (template: unknown): template is Template => {
-                if (template === null || typeof template !== 'object') {
-                  return false;
-                } else {
-                  let t = template as Partial<Template>;
-                  return t.result === 'ok' || t.result === 'error';
-                }
-              };
-
-              // We made it past the `TemplateFactory` instantiation before
-              // getting here, so either we got unlucky where the invalid type
-              // happens to be a function that didn't mind taking owner as an
-              // argument, or this was directly set by something like test
-              // helpers.
-              if (!isTemplate(template)) {
-                let label: string;
-
-                try {
-                  label = `\`${String(template)}\``;
-                } catch {
-                  label = 'an unknown object';
-                }
-
-                assert(
-                  `Failed to render the \`${state.name}\` route: expected ` +
-                    `a component or Template object, but got ${label}.`
-                );
-              }
-            }
-
-            component = makeRouteTemplate(outletOwner, state.name, template as Template);
+          let wrapperArgs = dict<Reference>();
+          // Only curry @controller when the route has one.
+          const controller = outletState?.render?.controller;
+          if (controller !== undefined) {
+            wrapperArgs['controller'] = createConstRef(controller, '@controller');
           }
 
-          // Component is stable for the lifetime of the outlet
-          named['Component'] = createConstRef(component, '@Component');
-
-          // Controller is stable for the lifetime of the outlet
-          named['controller'] = createConstRef(state.controller, '@controller');
-
-          // Create a ref for the model
           let modelRef = childRefFromParts(outletRef, ['render', 'model']);
-
-          // Store the value of the model
           let model = valueForRef(modelRef);
 
-          // Create a compute ref which we pass in as the `{{@model}}` reference
-          // for the outlet. This ref will update and return the value of the
-          // model _until_ the outlet itself changes. Once the outlet changes,
-          // dynamic scope also changes, and so the original model ref would not
-          // provide the correct updated value. So we stop updating and return
-          // the _last_ model value for that outlet.
-          named['model'] = createComputeRef(() => {
+          wrapperArgs['model'] = createComputeRef(() => {
             if (lastState === state) {
-              model = valueForRef(modelRef);
+              let currentOutlet = valueForRef(outletRef);
+              if (currentOutlet?.render?.controller === controller) {
+                model = valueForRef(modelRef);
+              }
             }
-
             return model;
           });
 
           if (DEBUG) {
-            named['model'] = createDebugAliasRef!('@model', named['model']);
+            wrapperArgs['model'] = createDebugAliasRef!('@model', wrapperArgs['model']);
           }
 
+          if (state.wrapper !== undefined && state.invokable !== undefined) {
+            wrapperArgs['Component'] = createConstRef(state.invokable, '@Component');
+
+            if (state.routeInfo !== undefined) {
+              wrapperArgs['routeInfo'] = createConstRef(state.routeInfo, '@routeInfo');
+            }
+
+            component = curry(
+              0 as CurriedComponent,
+              state.wrapper,
+              outletOwner,
+              createCapturedArgs(wrapperArgs, EMPTY_POSITIONAL),
+              false
+            );
+          } else {
+            // Legacy `setOutletState` path: a raw template or a pre-built
+            // component definition. Older test-helpers and liquid-fire-style
+            // addons call `setOutletState` with a `template` and a
+            // `controller`. We curry `@controller` and `@model` directly onto
+            // the makeRouteTemplate-wrapped component so the RouteTemplate
+            // manager can read them when computing `self`.
+            let template = state.template;
+
+            if (hasInternalComponentManager(template)) {
+              component = template;
+            } else {
+              if (DEBUG) {
+                let isTemplate = (template: unknown): template is Template => {
+                  if (template === null || typeof template !== 'object') {
+                    return false;
+                  } else {
+                    let t = template as Partial<Template>;
+                    return t.result === 'ok' || t.result === 'error';
+                  }
+                };
+
+                if (!isTemplate(template)) {
+                  let label: string;
+                  try {
+                    label = `\`${String(template)}\``;
+                  } catch {
+                    label = 'an unknown object';
+                  }
+
+                  assert(
+                    `Failed to render the \`${state.name}\` route: expected ` +
+                      `a component or Template object, but got ${label}.`
+                  );
+                }
+              }
+
+              let routeTemplate = makeRouteTemplate(outletOwner, state.name, template as Template);
+
+              component = curry(
+                0 as CurriedComponent,
+                routeTemplate,
+                outletOwner,
+                createCapturedArgs(wrapperArgs, EMPTY_POSITIONAL),
+                false
+              );
+            }
+          }
+
+          let named = dict<Reference>();
+          named['Component'] = createConstRef(component, '@Component');
           let args = createCapturedArgs(named, EMPTY_POSITIONAL);
 
-          // Package up everything
           outlet = curry(
             0 as CurriedComponent,
             new OutletComponent(owner, state),
@@ -195,7 +203,24 @@ function stateFor(
   if (outlet === undefined) return null;
   let render = outlet.render;
   if (render === undefined) return null;
-  let template = render.template;
+
+  // Manager-driven path: prefer wrapper + invokable when present.
+  if (render.wrapper !== undefined && render.invokable !== undefined) {
+    return {
+      ref,
+      name: render.name,
+      template: render.invokable,
+      controller: render.controller,
+      wrapper: render.wrapper,
+      invokable: render.invokable,
+      bucket: render.bucket,
+      routeInfo: render.routeInfo,
+    };
+  }
+
+  // Legacy path: raw template from setOutletState callers.
+  const template = render.template;
+
   // The type doesn't actually allow for `null`, but if we make it past this
   // point it is really important that we have _something_ to render. We could
   // assert, but that is probably overly strict for very little to gain.
@@ -215,6 +240,10 @@ function isStable(
 ): boolean {
   if (state === null || lastState === null) {
     return false;
+  }
+
+  if (state.wrapper !== undefined || lastState.wrapper !== undefined) {
+    return state.wrapper === lastState.wrapper;
   }
 
   return state.template === lastState.template && state.controller === lastState.controller;

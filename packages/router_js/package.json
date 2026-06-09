@@ -8,12 +8,12 @@
   "exports": {
     ".": "./index.ts"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer/env": "workspace:*"
   },
   "devDependencies": {
+    "@ember/-internals": "workspace:*",
     "@types/qunit": "^2.9.6",
     "@types/rsvp": "^4.0.4",
     "backburner.js": "^2.6.0",
