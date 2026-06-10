@@ -617,8 +617,12 @@ export class AttributesTests extends RenderTest {
     this.rerender({ foo: 'javascript:foo()' });
     this.assertHTML('<object data="unsafe:javascript:foo()"></object>');
 
-    this.rerender({ foo: 'https://example.com/doc.pdf' });
-    this.assertHTML('<object data="https://example.com/doc.pdf"></object>');
+    // the allowed URL must be same-origin and actually loadable: Safari 15
+    // hangs (and times out the BrowserStack run) when an <object> points at
+    // unreachable cross-origin content
+    let allowedUrl = new URL('/testem.js', window.location.href).href;
+    this.rerender({ foo: allowedUrl });
+    this.assertHTML(`<object data="${allowedUrl}"></object>`);
     this.assertStableNodes();
   }
 }
