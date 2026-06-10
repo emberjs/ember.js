@@ -444,7 +444,48 @@
   @public
  */
 
-export { default as template, templateCacheCounters } from '@glimmer/opcode-compiler/lib/template';
+import {
+  templateFactory as _templateFactory,
+  templateCacheCounters,
+} from '@glimmer/opcode-compiler';
+export { templateCacheCounters };
+
+// (Cluster B slice 6) Bridge reader for `compileTemplate` and
+// `instrumentFactory`. Both are contributed by gxt-backend's compile.ts /
+// ember-template-compiler.ts via `installCompilePipelinePart`. Classic
+// builds never load gxt-backend so `getGxtRenderer()` returns null and
+// the optional-chain DCEs away under `__GXT_MODE__ = false`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+
+// GXT-aware `template` shim. In GXT mode, the ember-template-compiler's
+// `precompile()` returns a JSON marker string containing `{__gxtTemplate,
+// source, moduleName}` rather than the classic Glimmer block-spec. Passing
+// that marker to the classic `templateFactory` crashes with "undefined is
+// not valid JSON" on first render because `block` is absent. When we
+// detect a GXT marker, delegate to the GXT runtime compiler instead so
+// the resulting factory behaves like any other GXT-compiled template, and
+// wrap it with the same cache counter instrumentation used by
+// `ember-template-compiler.ts::compile()`.
+function template(spec: unknown): ReturnType<typeof _templateFactory> {
+  if (spec && typeof spec === 'object') {
+    const anySpec = spec as Record<string, unknown>;
+    if (anySpec['__gxtTemplate'] === true) {
+      const cp = getGxtRenderer()?.compilePipeline;
+      const gxtCompile = cp?.compileTemplate;
+      const instrument = cp?.instrumentFactory;
+      const source = anySpec['source'];
+      const moduleName = anySpec['moduleName'];
+      if (typeof gxtCompile === 'function' && typeof source === 'string') {
+        const factory = gxtCompile(source, { moduleName });
+        const out =
+          typeof instrument === 'function' ? instrument(factory, { moduleName }) : factory;
+        return out as ReturnType<typeof _templateFactory>;
+      }
+    }
+  }
+  return _templateFactory(spec as Parameters<typeof _templateFactory>[0]);
+}
+export { template };
 
 export { default as RootTemplate } from './lib/templates/root';
 export { default as Input } from './lib/components/input';

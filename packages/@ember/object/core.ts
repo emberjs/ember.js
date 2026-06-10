@@ -21,6 +21,26 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
+// Slice-20 (Cluster B): DEBUG proxy trap's `_isInternalPath` predicate at
+// L320-326 below reads three GXT state flags (`__gxtIsRendering`,
+// `__gxtSyncing`, `__gxtInTriggerReRender`) to decide whether to bypass the
+// "lookup against ObjectProxy without setUnknownProperty" assertion when
+// templates / internal plumbing access proxy properties. Slices 18 and 19
+// added `isInTriggerReRender()` and `isRendering()` bridge predicates but
+// deferred this trap because migrating one flag while leaving the others
+// raw didn't improve the import-edge count net. Slice 20 adds the missing
+// `isSyncing()` predicate (slice-19 counterpart) and migrates the entire
+// 3-flag predicate to bridge-routed calls as a unit.
+//
+// Slice-21 dropped the `__gxtIsRendering` globalThis fallback (its writer
+// was removed in the same slice). Slice-23 dropped the
+// `__gxtInTriggerReRender` globalThis fallback (its writer was removed in
+// slice 23). Slice-24 dropped the `__gxtSyncing` globalThis fallback
+// (its writer was removed in slice 24). With slice 24, ALL THREE GXT
+// state-flag reads in the proxy-trap predicate go through the bridge
+// exclusively — no globalThis fallbacks remain. See `isSyncing` /
+// `isRendering` / `isInTriggerReRender` docs in gxt-bridge.ts.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 type EmberClassConstructor<T> = new (owner?: Owner) => T;
 
@@ -57,6 +77,29 @@ const wasApplied = new WeakSet();
 const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
+
+// Slice-15 (Cluster B): the pre-slice-15 `ensureTriggerReRenderWrapped`
+// wrap-by-reassignment is DELETED. Its only body — toggling
+// `__gxtInTriggerReRender` around the canonical trigger — is now folded
+// directly into compile.ts's canonical body's try/finally (see slice-15 doc
+// in `gxt-bridge.ts`). Every trigger invocation now sets the flag
+// unconditionally (without needing a wrap), so the DEBUG proxy-trap branch
+// at the call site below no longer needs an installer prelude.
+//
+// The proxy trap branch reads `__gxtInTriggerReRender` (via the bridge
+// `compilePipeline.isInTriggerReRender()` predicate post-slice-20). The
+// flag is set by:
+//   1. `metal/property_events.ts:96-101` (caller-side, canonical
+//      `notifyPropertyChange` entry — same as pre-slice-15).
+//   2. The canonical `triggerReRender` body in `compile.ts` (slice-15
+//      addition — replaces this file's pre-slice-15 wrap).
+// Both writers use the same `wasInside`/restore pattern, so re-entrant calls
+// remain safe.
+//
+// Slice-23 (Cluster B): the `__gxtInTriggerReRender` globalThis slot is
+// dropped. Canonical state is `_gxtInTriggerReRenderFlag` module-local in
+// `compile.ts`; the bridge predicate `compilePipeline.isInTriggerReRender()`
+// is the sole cross-package reader surface.
 
 const destroyCalled = new Set();
 
@@ -140,7 +183,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
       } else if (hasSetUnknownProperty(obj) && !(keyName in obj)) {
         obj.setUnknownProperty(keyName, value);
       } else {
-        if (DEBUG) {
+        if (DEBUG && !__GXT_MODE__) {
           defineProperty(obj, keyName, null, value, m); // setup mandatory setter
         } else {
           (obj as any)[keyName] = value;
@@ -245,6 +288,8 @@ class CoreObject {
 
     let self;
     if (DEBUG && hasUnknownProperty(this)) {
+      // Slice-15: the pre-slice-15 `ensureTriggerReRenderWrapped()` call was
+      // deleted (its wrap body is folded into compile.ts's canonical trigger).
       let messageFor = (obj: unknown, property: unknown) => {
         return (
           `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
@@ -285,6 +330,66 @@ class CoreObject {
 
           let value = target.unknownProperty.call(receiver, property);
 
+          // In GXT mode, templates and internal plumbing (notifyPropertyChange →
+          // __gxtTriggerReRender, dotted-path notifications, sync passes) access
+          // proxy properties directly. Bypass the assertion when:
+          //   - we're inside a template render pass (`isRendering()`),
+          //   - we're inside the GXT sync flush (`isSyncing()`),
+          //   - we're inside `triggerReRender` itself (`isInTriggerReRender()`), or
+          //   - the property name is a dotted path (only Ember plumbing emits
+          //     these via `notifyPropertyChange(obj, 'foo.bar')`).
+          // User code (`proxy.foo`) hits none of these, so the assertion still
+          // fires for the original use case.
+          //
+          // Slice-20 (Cluster B): route all three GXT state-flag reads through
+          // the typed `compilePipeline` bridge predicates introduced in slices
+          // 18/19/20. Falls back to raw globalThis reads when the bridge has
+          // not been populated yet (the bridge install runs once compile.ts
+          // has loaded; before then this trap is unreachable since it only
+          // fires under DEBUG ObjectProxy access, and proxy creation also
+          // requires the GXT pipeline to be loaded). See `isSyncing` /
+          // `isRendering` / `isInTriggerReRender` docs in gxt-bridge.ts.
+          //
+          // Slice-21 (Cluster B): drop the `__gxtIsRendering` globalThis
+          // fallback branch — the bridge `isRendering()` predicate is the
+          // canonical source after slice 21 (the `__gxtIsRendering` and
+          // `__gxtSetIsRendering` globalThis writers are removed in the
+          // same slice). If the bridge has not been installed at trap-fire
+          // time we default to `false` (treat as "not in a render pass"),
+          // which is safe — without the GXT pipeline loaded, the trap
+          // cannot be hit.
+          //
+          // Slice-23 (Cluster B): drop the `__gxtInTriggerReRender`
+          // globalThis fallback branch — the bridge `isInTriggerReRender()`
+          // predicate is the canonical source after slice 23 (the
+          // `__gxtInTriggerReRender` globalThis writer is removed in the
+          // same slice). Default to `false` when the bridge is unavailable,
+          // same rationale as slice 21.
+          //
+          // Slice-24 (Cluster B): drop the `__gxtSyncing` globalThis fallback
+          // branch — the bridge `isSyncing()` predicate is the canonical
+          // source after slice 24 (the `__gxtSyncing` globalThis writer is
+          // removed in the same slice). Default to `false` when the bridge
+          // is unavailable, same rationale as slices 21/23. Closes the
+          // slice-20 deferral. With this change, ALL THREE GXT state-flag
+          // reads in the proxy-trap predicate go through the bridge
+          // exclusively — no globalThis fallbacks remain.
+          const _pipeline = getGxtRenderer()?.compilePipeline;
+          const _isRen = _pipeline?.isRendering;
+          const _isSyn = _pipeline?.isSyncing;
+          const _isInTrig = _pipeline?.isInTriggerReRender;
+          const _renderingNow = typeof _isRen === 'function' ? _isRen() : false;
+          const _syncingNow = typeof _isSyn === 'function' ? _isSyn() : false;
+          const _inTriggerNow = typeof _isInTrig === 'function' ? _isInTrig() : false;
+          const _isInternalPath =
+            _renderingNow ||
+            _syncingNow ||
+            _inTriggerNow ||
+            (typeof property === 'string' && property.indexOf('.') !== -1);
+          if (_isInternalPath) {
+            return value;
+          }
+
           if (typeof value !== 'function') {
             assert(messageFor(receiver, property), value === undefined || value === null);
           }
@@ -295,7 +400,7 @@ class CoreObject {
     }
 
     const destroyable = self;
-    registerDestructor(self, ensureDestroyCalled, true);
+    registerDestructor(self, () => ensureDestroyCalled(self), true);
     registerDestructor(self, () => destroyable.willDestroy());
 
     // disable chains

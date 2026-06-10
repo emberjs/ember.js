@@ -984,8 +984,8 @@ moduleFor(
 class LazyObject {
   value = 123;
 
-  @computed('_value')
   // eslint-disable-next-line no-dupe-class-members
+  @computed('_value')
   get value() {
     return get(this, '_value');
   }

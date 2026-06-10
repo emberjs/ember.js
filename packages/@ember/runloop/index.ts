@@ -3,6 +3,13 @@ import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
 import Backburner, { type Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
+// Slice-37 (Cluster B) cross-package reader for `__gxtPendingSync` — the
+// canonical state has migrated to module-local `_gxtPendingSyncFlag` in
+// `@ember/-internals/gxt-backend/compile.ts`. The runloop's `onEnd` hook
+// reads the flag via the bridge getter. `gxt-bridge` is a LEAF module (no
+// internal gxt-backend deps) so this import does not introduce a cycle
+// with `gxt-backend/destroyable.ts:26`'s import of `@ember/runloop`.
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 export type { Timer };
 
@@ -42,15 +49,75 @@ function onBegin(current: DeferredActionQueues) {
   currentRunLoop = current;
 }
 
+// In GXT mode, async observer flushing can cause infinite loops because
+// GXT rendering triggers notifyPropertyChange -> dirtyTagFor which bumps
+// CURRENT_TAG. Use a per-runloop budget to limit total flush calls while
+// still allowing QP observers to fire.
+let _gxtFlushBudget = 0;
+const GXT_MAX_FLUSH_BUDGET = 20;
+
 function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
-  flushAsyncObservers(schedule);
+  if (__GXT_MODE__) {
+    if (_gxtFlushBudget < GXT_MAX_FLUSH_BUDGET) {
+      _gxtFlushBudget++;
+      flushAsyncObservers(schedule);
+    }
+    // Reset budget when all runloops complete
+    if (!next) {
+      _gxtFlushBudget = 0;
+      // Flush GXT DOM updates when the outermost run loop ends, but ONLY if
+      // we're not inside a runTask call (which has its own explicit sync).
+      // This ensures tracked property changes from bare run() calls (e.g.,
+      // renderComponent tests) are reflected in the DOM before assertions run,
+      // without double-syncing during runTask calls.
+      // Slice-37 (Cluster B): `__gxtPendingSync` canonical state migrated
+      // to module-local `_gxtPendingSyncFlag` in `compile.ts`. Cross-
+      // package reader routes through the bridge getter (load-order-safe
+      // optional chain — by the time the onEnd hook fires for a non-
+      // terminal runloop, compile.ts's `installCompilePipelinePart` has
+      // run and the getter is installed). See `getPendingSync` doc in
+      // gxt-bridge.ts.
+      // Slice-38 (Cluster B): `__gxtRunTaskActive` canonical state migrated
+      // to module-local `_gxtRunTaskActiveFlag` in `compile.ts`. Cross-
+      // package reader routes through the bridge getter (paired
+      // topologically with the slice-37 `getPendingSync` reader above —
+      // both flags read together in this `pending && !runTaskActive`
+      // gate). See `getRunTaskActive` doc in gxt-bridge.ts.
+      const _cpRL = getGxtRenderer()?.compilePipeline;
+      if (_cpRL?.getPendingSync?.() && !_cpRL?.getRunTaskActive?.()) {
+        // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function
+        // migrated to module-local `_gxtSyncDomNow` in `compile.ts`.
+        // Cross-package reader routes through the bridge method on the
+        // same compilePipeline namespace we already dereferenced for
+        // the getPendingSync / getRunTaskActive predicates above. See
+        // `syncDomNow` doc in gxt-bridge.ts.
+        const syncNow = _cpRL?.syncDomNow;
+        if (typeof syncNow === 'function') {
+          try {
+            syncNow();
+          } catch {
+            /* errors handled by sync */
+          }
+        }
+      }
+    }
+  } else {
+    flushAsyncObservers(schedule);
+  }
 }
 
 function flush(queueName: string, next: () => void) {
   if (queueName === 'render' || queueName === _rsvpErrorQueue) {
-    flushAsyncObservers(schedule);
+    if (__GXT_MODE__) {
+      if (_gxtFlushBudget < GXT_MAX_FLUSH_BUDGET) {
+        _gxtFlushBudget++;
+        flushAsyncObservers(schedule);
+      }
+    } else {
+      flushAsyncObservers(schedule);
+    }
   }
 
   next();
@@ -436,6 +503,47 @@ export function schedule<T, U extends keyof T>(
   ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function schedule(...args: any[]): Timer {
+  // In GXT mode, wrap 'afterRender' callbacks so we can detect when a
+  // property change originated from a lifecycle-scheduled callback. Tests
+  // like `afterRender set` rely on `schedule('afterRender', () => this.set(...))`
+  // to re-render the DOM inside runAppend. The set() triggers
+  // _notifyPropertiesChanged which sets __gxtPendingSyncFromPropertyChange,
+  // and the flag must survive runAppend's post-run cleanup for syncNow() to
+  // run gxtSyncDom. We mark the change as "from afterRender" so runAppend
+  // can distinguish it from Init-phase property changes (e.g. Textarea's
+  // internal bindings during init, which should NOT survive to syncNow).
+  if (__GXT_MODE__ && args[0] === 'afterRender') {
+    const idx = args.length >= 3 && typeof args[2] === 'function' ? 2 : 1;
+    const origFn = args[idx];
+    if (typeof origFn === 'function') {
+      args[idx] = function gxtAfterRenderWrapper(this: any, ...a: any[]) {
+        // Slice-41 (Cluster B): `__gxtInAfterRender` canonical state migrated
+        // to module-local `_gxtInAfterRenderFlag` in `compile.ts`. The
+        // save/set/finally-restore triplet around the user callback routes
+        // through the paired bridge getter+setter (load-order-safe optional
+        // chain — by the time a `schedule('afterRender', cb)` callback
+        // actually fires, compile.ts's `installCompilePipelinePart` at
+        // file EOF has run and both methods are installed; the wrapper
+        // closure is built lazily inside `schedule(...)` and the wrapped
+        // body runs inside backburner's afterRender queue, which is well
+        // past gxt-backend module init). See `getInAfterRender` /
+        // `setInAfterRender` doc in gxt-bridge.ts. The `_cpIAR` pipeline-
+        // cache local (slice-37's `_cpRA` pattern + slice-38's `_cpRL` /
+        // `_cpBB` two-flag pattern + slice-40's `_cpAR` single-flag get-
+        // then-set pattern) caches the pipeline once for the three calls
+        // (save read + set TRUE + finally restore) on the same logical
+        // afterRender wrapper invocation.
+        const _cpIAR = getGxtRenderer()?.compilePipeline;
+        const prev = _cpIAR?.getInAfterRender?.() ?? false;
+        _cpIAR?.setInAfterRender?.(true);
+        try {
+          return origFn.apply(this, a);
+        } finally {
+          _cpIAR?.setInAfterRender?.(prev);
+        }
+      };
+    }
+  }
   // @ts-expect-error TS doesn't like the rest args here
   return _backburner.schedule(...args);
 }

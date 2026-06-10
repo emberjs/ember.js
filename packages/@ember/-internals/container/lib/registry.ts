@@ -21,8 +21,7 @@ export interface Injection {
 }
 
 export interface ResolverClass
-  extends
-    Factory<Resolver>,
+  extends Factory<Resolver>,
     Partial<{
       new (...args: any): Resolver;
     }> {}

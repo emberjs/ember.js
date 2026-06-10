@@ -116,11 +116,14 @@ const ROUTE_TEMPLATE_MANAGER = new RouteTemplateManager();
  * so unless the stability is desirable for other reasons, it's probably not
  * worth caching this.
  */
-export class RouteTemplate implements ComponentDefinition<
-  RouteTemplateDefinitionState,
-  RouteTemplateInstanceState,
-  RouteTemplateManager
-> {
+export class RouteTemplate
+  implements
+    ComponentDefinition<
+      RouteTemplateDefinitionState,
+      RouteTemplateInstanceState,
+      RouteTemplateManager
+    >
+{
   // handle is not used by this custom definition
   public handle = -1;
   public resolvedName: string;

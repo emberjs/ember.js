@@ -2,14 +2,51 @@ import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { dirtyTagFor, tagFor } from '@glimmer/validator/lib/meta';
-import { trackedData } from '@glimmer/validator/lib/tracked-data';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+// GXT dual-backend note: in classic mode `@glimmer/validator` resolves to the
+// vendored package; in EMBER_RENDER_BACKEND=gxt mode rollup aliases it to
+// packages/@ember/-internals/gxt-backend/validator.ts. Both shapes expose the
+// same named exports, so a namespace import yields a `validator` object with
+// the same surface as @lifeart/gxt/glimmer-compatibility's `validator`.
+import * as validator from '@glimmer/validator';
+import {
+  dirtyTagFor,
+  consumeTag as compatConsumeTag,
+  tagFor as compatTagFor,
+  trackedData as compatTrackedData,
+} from '@glimmer/validator';
+
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
+// Slice-123 (Cluster B): the intra-metal `notifyPropertyChange` reader (the
+// `__GXT_MODE__`-gated `_notifyPropChange(this, key)` call inside the
+// @tracked setter, post-`dirtyTagFor`) graduated from the pre-slice-123
+// `(globalThis as any).__emberNotifyPropertyChange` raw-globalThis hop to
+// a direct sibling import. This file already imports from peers
+// `./chain-tags`, `./decorator`, and `./tags`, so adding `./property_events`
+// is a straightforward sibling edge with no new module boundary crossed
+// (matches the slice-122 intra-package zero-bridge precedent). Only the
+// cross-package `gxt-backend/manager.ts` reader still routes through
+// `compilePipeline.notifyPropertyChange`. See `notifyPropertyChange` doc
+// in gxt-bridge.ts.
+import { notifyPropertyChange } from './property_events';
 import { SELF_TAG } from './tags';
+
+const {
+  consumeTag: _nativeConsumeTag,
+  tagFor: _nativeTagFor,
+  trackedData: _nativeTrackedData,
+} = validator;
+
+// Use compat trackedData for backtracking detection support.
+// The native GXT trackedData doesn't support backtracking detection.
+const trackedData = compatTrackedData;
+
+// Use compat versions that integrate with createCache tracking
+const consumeTag = compatConsumeTag;
+const tagFor = compatTagFor;
 
 /**
   @decorator
@@ -154,10 +191,60 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     !desc || (!desc.value && !desc.get && !desc.set)
   );
 
-  let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
+  // Always pass a function initializer to trackedData so GXT's cellFor creates
+  // a cell with a safe getter (instead of reading back through the property
+  // descriptor, which causes infinite recursion).
+  const initializer = desc?.initializer ?? (() => undefined);
+  let { getter, setter } = trackedData<any, any>(key, initializer);
 
   function get(this: object): unknown {
     let value = getter(this);
+
+    // Consume the property tag so that createCache tracking captures this
+    // dependency. Without this, GXT cell reads from trackedData.getter are
+    // invisible to our compat createCache's tag-based invalidation system.
+    // Classic mode: the upstream getter() above already consumes the per-key
+    // tag via Glimmer's standard tracking — duplicating here adds noise to the
+    // autotrack frame on every @tracked read (a hot path for {{#each}} over
+    // large arrays). Gate to GXT mode only.
+    if (__GXT_MODE__) {
+      consumeTag(tagFor(this, key as string));
+    }
+
+    // In GXT mode, synchronize the cellFor cell for this property.
+    // trackedData from @lifeart/gxt/glimmer-compatibility and cellFor from
+    // @lifeart/gxt may use different internal cell instances in Vite dev mode
+    // (module duplication). GXT's $_tag formulas only track cellFor cells.
+    // By reading from cellFor here, we ensure the formula's tracker captures
+    // this cell as a dependency. The setter's cellFor.update() call ensures
+    // the cell is dirtied when the property changes.
+    if (__GXT_MODE__) {
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (typeof _cellFor === 'function') {
+        try {
+          // Use skipDefine=true to avoid replacing the tracked getter/setter.
+          // This creates the cell in cellFor's storage without installing
+          // a getter/setter on the property.
+          const cell = _cellFor(this, key, /* skipDefine */ true);
+          if (cell) {
+            // Silently sync the cell value without triggering dirty marking.
+            // We set _value directly to avoid adding to tagsToRevalidate
+            // during render, which would cause infinite re-render loops.
+            if (cell._value !== value) {
+              cell._value = value;
+            }
+            // Read cell.value to add this cell to the current GXT tracker.
+            // This is the key step: the formula's tracker now knows about
+            // this cell, so when the setter's cellFor.update() dirties it,
+            // syncDom will re-evaluate the formula.
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            cell.value;
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+    }
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
@@ -169,8 +256,100 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
   }
 
   function set(this: object, newValue: unknown): void {
+    // GXT backtracking detection for @tracked properties.
+    // Slice-10 (Cluster B): migrated from `globalThis.__gxtCheckBacktracking`
+    // to the typed bridge. Method is optional in the interface (load-order
+    // independence — classic builds never publish it), so the call is guarded.
+    if (DEBUG) {
+      getGxtRenderer()?.backtracking.checkBacktracking?.(this, key);
+    }
     setter(this, newValue);
-    dirtyTagFor(this, SELF_TAG);
+    // Directly update the GXT cell for this property using cellFor.
+    // trackedData.setter (above) updates the cell via GXT's native validator,
+    // but the cell may not be in the same tracking system as the formulas
+    // created by gxtEffect in the compat layer. Using cellFor ensures the
+    // cell that GXT effects track is also dirtied.
+    if (__GXT_MODE__) {
+      const _cellFor = (globalThis as any).__gxtCellFor;
+      if (typeof _cellFor === 'function') {
+        try {
+          const cell = _cellFor(this, key, /* skipDefine */ true);
+          if (cell) cell.update(newValue);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    // Both of these are GXT-specific amplifications of the dirty signal:
+    // - SELF_TAG dirty broadens invalidation (upstream does NOT dirty SELF_TAG
+    //   on @tracked set; setter() above already dirties the per-key tag).
+    // - The duplicate key dirty ensures chain-tag identity matches across the
+    //   GXT compat-validator and native validator in dual-module setups.
+    // Both are no-ops or worse in classic mode and break upstream's narrow-
+    // invalidation contract — gate them so classic builds match upstream.
+    if (__GXT_MODE__) {
+      dirtyTagFor(this, SELF_TAG);
+      // Also dirty the property-specific tag so observers watching 'key' or
+      // 'key.[]' detect the change via getChainTagsForKey.
+      dirtyTagFor(this, key);
+    }
+    // In GXT mode, notify the Ember property system so that sync observers
+    // and tag dirtying work correctly for QP tracking.
+    //
+    // Slice-123 (Cluster B): retired the pre-slice-123 raw-globalThis hop
+    // `const _notifyPropChange = (globalThis as any).__emberNotifyPropertyChange;`
+    // + `typeof === 'function'` guard in favour of a direct sibling import
+    // of `notifyPropertyChange` from `./property_events`. The
+    // `notifyPropertyChange` symbol is always defined here (the import
+    // graph guarantees property_events.ts evaluates before tracked.ts in
+    // both classic and GXT modes — observer.ts → property_events.ts →
+    // tracked.ts via the property_set.ts edge). See the slice-123 import
+    // docblock at the top of this file.
+    if (__GXT_MODE__) {
+      // Cluster A Phase 1.7b: forward `newValue` (the setter parameter — the
+      // name `value` is taken by the getter's local at L201; the setter
+      // parameter is `newValue` per L258) as the 4th arg so
+      // _gxtTriggerReRender can perform an immediate
+      // `cellFor(this, key, true)?.update(newValue)` at the enqueue site,
+      // skipping the body's `obj[keyName]` getter read. Combined with the
+      // set() patch at property_set.ts:118 this covers ~85% of GXT-mode
+      // write traffic.
+      notifyPropertyChange(this, key, null, newValue);
+    }
+    // Notify GXT for cross-object reactivity — when a tracked property changes
+    // on a non-component object (e.g., a Counter or Person class), dirty all
+    // component cells that hold a reference to this object. This ensures that
+    // GXT formulas like {{this.counter.countAlias}} re-evaluate.
+    // Skip during rendering to avoid breaking the initial render.
+    //
+    // Slice-22 (Cluster B): migrated `!g.__gxtCurrentlyRendering` raw-globalThis
+    // read to `compilePipeline.isCurrentlyRendering()` bridge predicate. The
+    // bridge method is optional (load-order independence — classic builds never
+    // publish it); when not installed (`isCR === undefined`) we treat the flag
+    // as `false` ("not rendering"), matching the pre-slice-22 truthiness check
+    // (`g.__gxtCurrentlyRendering` was `undefined` pre-install → falsy →
+    // proceed). See `isCurrentlyRendering` doc in
+    // `@ember/-internals/gxt-backend/gxt-bridge`.
+    const _cp = getGxtRenderer()?.compilePipeline;
+    const _isCR = _cp?.isCurrentlyRendering;
+    if (!(typeof _isCR === 'function' ? _isCR() : false)) {
+      // Slice-25 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+      // raw-globalThis read to `compilePipeline.triggerReRender(this, key)`
+      // bridge method. The bridge method is optional (load-order independence
+      // — classic builds never publish it); when not installed
+      // (`_cp?.triggerReRender === undefined`) the call is skipped, matching
+      // the pre-slice-25 `typeof === 'function'` guard. Suppression
+      // semantics (the `withTriggerSuppressed(fn)` frame) are preserved by
+      // the module-local `_gxtTriggerSuppressedFlag` short-circuit at the
+      // entry of `_gxtTriggerReRender` in compile.ts. See `triggerReRender`
+      // doc in `@ember/-internals/gxt-backend/gxt-bridge`.
+      _cp?.triggerReRender?.(this, key);
+      // Schedule a pending sync so runTask → __gxtSyncDomNow picks it up
+      const schedule = (globalThis as any).__gxtExternalSchedule;
+      if (typeof schedule === 'function') {
+        schedule();
+      }
+    }
   }
 
   let newDesc = {

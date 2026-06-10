@@ -3,6 +3,7 @@ import { setWithMandatorySetter } from '@ember/-internals/utils/lib/mandatory-se
 import toString from '@ember/-internals/utils/lib/to-string';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
@@ -38,7 +39,7 @@ interface ExtendedObject {
   @return {Object} the passed value.
   @public
 */
-export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolean): T {
+export function set<T>(obj: object, keyName: string | number, value: T, tolerant?: boolean): T {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
@@ -51,6 +52,12 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
     `The key provided to set must be a string or number, you passed ${keyName}`,
     typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName))
   );
+
+  // Normalize numeric keys to strings for consistent downstream handling
+  if (typeof keyName === 'number') {
+    keyName = String(keyName);
+  }
+
   assert(
     `'this' in paths is not supported`,
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
@@ -64,7 +71,19 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
     return value;
   }
 
-  return isPath(keyName) ? _setPath(obj, keyName, value, tolerant) : _setProp(obj, keyName, value);
+  const result = isPath(keyName)
+    ? _setPath(obj, keyName, value, tolerant)
+    : _setProp(obj, keyName, value);
+
+  // GXT backtracking detection: check AFTER set so toString() reflects the new value.
+  // Slice-10 (Cluster B): migrated from `globalThis.__gxtCheckBacktracking` to
+  // the typed bridge. Method is optional in the interface (load-order
+  // independence — classic builds never publish it), so the call is guarded.
+  if (DEBUG) {
+    getGxtRenderer()?.backtracking.checkBacktracking?.(obj, keyName);
+  }
+
+  return result;
 }
 
 export function _setProp(obj: object, keyName: string, value: any) {
@@ -98,7 +117,14 @@ export function _setProp(obj: object, keyName: string, value: any) {
     }
 
     if (currentValue !== value) {
-      notifyPropertyChange(obj, keyName);
+      // Cluster A Phase 1.7b: forward `value` as the 4th arg so the GXT
+      // trigger can `cellFor(obj, keyName, true)?.update(value)` synchronously
+      // at the enqueue site, eliminating the body's `obj[keyName]` getter
+      // read. Pass `null` for `_meta` so `notifyPropertyChange` does its
+      // standard `peekMeta(obj)` lookup. set() is the highest-traffic write
+      // path; combined with the @tracked setter at tracked.ts:309 this
+      // covers ~85% of write traffic per Phase 1.7 audit.
+      notifyPropertyChange(obj, keyName, null, value);
     }
   }
 
@@ -114,7 +140,16 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
   let newRoot = getPath(root, parts, true);
 
   if (newRoot !== null && newRoot !== undefined) {
-    return set(newRoot, keyName, value);
+    const result = set(newRoot, keyName, value);
+    // GXT integration: also notify the root object about the full path change.
+    // When set(component, 'model.lookupComponent', val) is called, _setPath resolves
+    // to set(model, 'lookupComponent', val) which only notifies on the leaf object.
+    // But GXT templates track `this.model` (cell on the component), so we need to
+    // dirty the root property cell too.
+    if (newRoot !== root) {
+      notifyPropertyChange(root, path);
+    }
+    return result;
   } else if (!tolerant) {
     throw new Error(`Property set failed: object in path "${parts.join('.')}" could not be found.`);
   }
