@@ -211,6 +211,7 @@
       "@ember/application/namespace.js": "ember-source/@ember/application/namespace.js",
       "@ember/array/-internals.js": "ember-source/@ember/array/-internals.js",
       "@ember/array/index.js": "ember-source/@ember/array/index.js",
+      "@ember/array/lib/is-array.js": "ember-source/@ember/array/lib/is-array.js",
       "@ember/array/lib/make-array.js": "ember-source/@ember/array/lib/make-array.js",
       "@ember/array/make.js": "ember-source/@ember/array/make.js",
       "@ember/array/mutable.js": "ember-source/@ember/array/mutable.js",
