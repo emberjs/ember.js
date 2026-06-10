@@ -1,6 +1,6 @@
 import { get } from '@ember/-internals/metal/lib/property_get';
 import type { InternalFactory, default as Owner } from '@ember/-internals/owner';
-import Controller from '@ember/controller';
+import type Controller from '@ember/controller';
 import { assert, info } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
@@ -65,8 +65,8 @@ export default function generateController(owner: Owner, controllerName: string)
   generateControllerFactory(owner, controllerName);
 
   let fullName = `controller:${controllerName}` as const;
-  let instance = owner.lookup(fullName);
-  assert('Expected an instance of controller', instance instanceof Controller);
+  let instance = owner.lookup(fullName) as Controller;
+  assert('Expected an instance of controller', instance != null && instance.isController === true);
 
   if (DEBUG) {
     if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {

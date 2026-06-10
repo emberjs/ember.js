@@ -1,7 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert } from '@ember/debug';
-import EngineInstance from '@ember/engine/instance';
+import type EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { precompileTemplate } from '@ember/template-compilation';
 import type {
@@ -97,15 +97,16 @@ class OutletComponentManager
       if (parentOwner && parentOwner !== currentOwner) {
         assert(
           'Expected currentOwner to be an EngineInstance',
-          currentOwner instanceof EngineInstance
+          currentOwner != null && 'buildChildEngineInstance' in currentOwner
         );
 
-        let { mountPoint } = currentOwner;
+        let engineInstance = currentOwner as EngineInstance;
+        let { mountPoint } = engineInstance;
 
         if (mountPoint) {
           state.engine = {
             mountPoint,
-            instance: currentOwner,
+            instance: engineInstance,
           };
         }
       }
