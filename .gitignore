@@ -18,6 +18,8 @@ assets/bpm_styles.css
 coverage
 dist
 dist-prod
+# Assembled consumable GXT package (scripts/build-gxt-package.mjs output)
+dist-gxt-package
 /docs
 lib/*/tests/all.js
 lib/*/tests/qunit*

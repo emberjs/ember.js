@@ -1,5 +1,5 @@
 import { Project, Scenarios } from 'scenario-tester';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 
 function classic(project: Project) {
   project.mergeFiles({
@@ -84,6 +84,25 @@ export const strictAppScenarios = Scenarios.fromProject(() =>
   })
 ).expand({
   strictResolver,
+});
+
+// Swap `ember-source` for the assembled consumable GXT package
+// (`dist-gxt-package/`, produced by scripts/build-gxt-package.mjs) in place, so
+// the v2 app consumes the GXT-backend build with zero app-code change. This is
+// the acceptance vehicle for the `ember-source-gxt` packaging MVP (RFC §5.5,
+// design doc §5). Requires `node scripts/build-gxt-package.mjs` to have run.
+function emberSourceGxt(project: Project) {
+  project.linkDevDependency('ember-source', {
+    target: resolve(__dirname, '../../dist-gxt-package'),
+  });
+}
+
+export const gxtAppScenarios = Scenarios.fromProject(() =>
+  Project.fromDir(dirname(require.resolve('../v2-app-template/package.json')), {
+    linkDevDeps: true,
+  })
+).expand({
+  emberSourceGxt,
 });
 
 function node(project: Project) {

@@ -437,7 +437,7 @@ template) was compiled through both pipelines:
 
 | # | Capability under strict-mode Embroider | Status with GXT today | Root cause | Effort |
 | - | -------------------------------------- | --------------------- | ---------- | ------ |
-| 1 | Consume the GXT runtime as a normal dependency | BROKEN | No published/consumable `ember-source-gxt`. The classic `ember-source` dist embeds the Glimmer VM, and the GXT runtime shims under `packages/@ember/-internals/gxt-backend/` are **not** in `ember-source`'s `package.json` `exports`. The `EMBER_RENDER_BACKEND=gxt` Rollup variant (`rollup.config.mjs`) can bake the `@glimmer/*→shim` swaps into a self-contained dist, but it has never been emitted/validated as a standalone consumable package. | M |
+| 1 | Consume the GXT runtime as a normal dependency | **MVP LANDED in-repo (2026-06-10)** — was BROKEN | The classic `ember-source` dist embeds the Glimmer VM, and the GXT runtime shims under `packages/@ember/-internals/gxt-backend/` are not in classic `ember-source`'s `exports`. **Resolved by `scripts/build-gxt-package.mjs`**, which assembles a git-ignored `dist-gxt-package/` (mechanism (b)): a clean (`rm -rf dist`-first, no stale VM) `EMBER_RENDER_BACKEND=gxt` Rollup dist, a derived `package.json` named `ember-source-gxt` with the **GXT** `renamed-modules` (the 10 VM entries dropped, `@glimmer/application`+`@glimmer/utils` added), the exact-pinned `@lifeart/gxt`, and a GXT-patched addon-main. It self-verifies (no stale `@glimmer/runtime`, `@glimmer/validator` is the GXT shim, single-sourced reactive core, only declared/self/`@lifeart/gxt` externals) and is consumed by the `emberSourceGxt` scenario (`smoke-tests/scenarios/scenarios.ts`) via `linkDevDependency('ember-source', { target })`; `smoke-tests/scenarios/gxt-consumable-test.ts` (Tier-1) is green (5/5). **Still open (L-item, row 2):** GXT template compilation inside Embroider, and publishing/CI (RFC §9–§10). | M (MVP done) |
 | 2 | Compile `.gjs`/`.gts`/`.hbs` for GXT inside an Embroider build | BROKEN | Embroider's template pipeline is hardwired to `babel-plugin-ember-template-compilation` → Glimmer wire-format. GXT requires its own `@lifeart/gxt/compiler` **Vite plugin** → `$_tag` reactive trees. The two transforms are mutually exclusive over the same `.gjs`, and GXT's compiler is not part of `ember-source`'s published surface — it is a bundler plugin the consumer would have to install and run **instead of** `@embroider/vite`'s `ember()` template handling. | L |
 | 3 | Resolve container/compat-registered components, helpers, modifiers | BROKEN | GXT's `$_c`/`$_maybeHelper`/`$_dc` primitives use GXT-native resolution and bypass both Embroider's static resolution and Ember's container. The bridge that re-points them at Ember container resolution (`gxtEmberWrapperRedirect` in `vite.config.mjs` → `@ember/-internals/gxt-backend/ember-gxt-wrappers`) is an **unshipped, ember.js-repo-only Vite plugin**; without it, compat-resolved invokables are invisible. | M |
 | – | Resolve the `@lifeart/gxt` runtime import that GXT-compiled output emits | OK — **not** a blocker | `@lifeart/gxt` is a bare npm specifier; Embroider's static resolver resolves it as an ordinary dependency. The `@glimmer/*→shim` aliases that the RFC feared are **internal to `ember-source`'s own Rollup build** (baked by the `EMBER_RENDER_BACKEND=gxt` variant) and are never seen by the consumer's resolver. The "won't obey arbitrary aliases" framing therefore does not describe the actual failure. | n/a |
@@ -453,6 +453,25 @@ full-app scenario for the **classic** backend too, so it is not a GXT
 signal; exercising the app end-to-end requires first producing a
 publishable-shaped `ember-source` (e.g. via `scenario.prepare()` /
 `pnpm install` prepack). Effort to unblock the harness: S.
+
+**Harness-note update (2026-06-10): the S-item is addressed for the GXT
+package.** The assembled `ember-source-gxt` addon-main
+(`scripts/build-gxt-package.mjs`) now exposes a **defined,
+`require.resolve`-able `absolutePaths.templateCompiler`**, so
+`ember-cli-htmlbars@7`'s
+`findAddonByName('ember-source').absolutePaths.templateCompiler` no longer
+hits `TypeError: Cannot read properties of undefined`. Tier-1 assertions 4–5
+exercise exactly that path and are green. **Honest caveat:** the file it
+points at (`dist/ember-template-compiler.js`) is currently a documented
+fail-loud **stub**, not the real classic wire-format compiler. A
+self-contained CJS extraction of the compiler is not possible from the GXT
+Rollup output because that build chunk-merges the ESM-only `@lifeart/gxt`
+(reached via `@ember/-internals/metal`'s `@lifeart/gxt/glimmer-compatibility`
+import) into the template-compiler's shared-chunk graph; producing the real
+CJS compiler needs a dedicated classic (non-GXT) Rollup pass and is
+descoped. This is acceptable for the MVP because real template compilation in
+GXT mode is the `@lifeart/gxt` Vite plugin's job (the open L-item, row 2),
+not this entry's.
 
 **Conclusion.** Strict-mode Embroider + GXT is **blocked, not merely
 unvalidated.** The blocker is not Embroider's static resolver rejecting
