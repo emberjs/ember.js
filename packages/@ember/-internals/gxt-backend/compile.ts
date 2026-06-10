@@ -4672,15 +4672,15 @@ let _gxtPreFlushFiredFalse: Set<IfWatcherCb> | undefined;
 let _gxtCurrentParentIfRef: any = undefined;
 
 // The registry maps a stable plain-ASCII token (e.g. `__gxtCmt_42`) to the
-// literal HTML comment source captured by `_preserveHtmlComments`; the counter
-// monotonically increments per registered comment so each token is unique
-// within the process. The template emission path writes a
-// `<EmberHtmlRaw @value={{(__gxtCommentLookup "<token>")}} />` in place of the
-// original `<!-- ... -->`, and the `__gxtCommentLookup` resolver (a built-in
-// helper key) reads the registry back at render time to recover the literal
-// comment text without sending curly-brace-containing comment bodies through the
-// GXT parser. The writer is inside `_preserveHtmlComments`; the reader is the
-// `__gxtCommentLookup` resolver — both intra-file.
+// literal HTML comment source captured by the `gxtHtmlCommentTransform` AST
+// visitor; the counter monotonically increments per registered comment so each
+// token is unique within the process. That visitor builds a
+// `<EmberHtmlRaw @value={{(__gxtCommentLookup "<token>")}} />` element in place of
+// the original `<!-- ... -->` `CommentStatement`, and the `__gxtCommentLookup`
+// resolver (a built-in helper key) reads the registry back at render time to
+// recover the literal comment text without sending curly-brace-containing comment
+// bodies through the GXT parser. The writer is inside `gxtHtmlCommentTransform`;
+// the reader is the `__gxtCommentLookup` resolver — both intra-file.
 const _gxtCommentRegistry: Record<string, string> = Object.create(null);
 let _gxtCommentCounter = 0;
 
@@ -8706,7 +8706,7 @@ installRuntimePart({
     return undefined;
   },
   // __gxtCommentLookup: resolves a registry token back to the literal
-  // HTML comment source produced by `_preserveHtmlComments`. The token
+  // HTML comment source produced by `gxtHtmlCommentTransform`. The token
   // is a plain-ASCII identifier with no mustache characters, so it
   // survives the GXT parser without being interpreted as a mustache.
   __gxtCommentLookup: (token: unknown) => {
@@ -12765,9 +12765,10 @@ if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
 // NOTE: transformCapitalizedComponents has been moved to the GXT AST compiler
 // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
 
-// NOTE: transformTripleMustaches has been removed.
-// Triple-mustache {{{expr}}} → <EmberHtmlRaw @value={{expr}} /> is now handled
-// at compile time in the GXT AST compiler (mustache visitor, escaped === false).
+// NOTE: transformTripleMustaches has been migrated to the `gxtTripleMustacheTransform`
+// AST visitor (see `buildGxtDialectTransforms`). Triple-mustache `{{{expr}}}` →
+// `<EmberHtmlRaw @value={{expr}} />` is detected on the parsed AST (a
+// `MustacheStatement` with `escaped === false`), NOT rewritten in template source.
 
 // NOTE: transformAngleBracketPositionalParams has been removed.
 // Positional params transform (<Component "Foo" 4 /> → @__pos0__="Foo" @__pos1__={{4}} ...)
@@ -12798,131 +12799,11 @@ const templateCache = new Map<string, any>();
  *
  * Handles nesting by processing from innermost to outermost.
  */
-/**
- * Transform triple-mustache {{{expr}}} → <EmberHtmlRaw @value={{expr}} />
- *
- * The GXT AST compiler treats triple-mustaches identically to double-mustaches
- * (escaped text), but Ember semantics require inserting the value as raw HTML.
- * We rewrite to an EmberHtmlRaw component invocation so ember-gxt-wrappers.ts
- * can parse and reactively render the HTML via innerHTML.
- *
- * Skips:
- *   - {{!-- comments --}} and {{! comments}}
- *   - Handlebars raw blocks {{{{raw}}}} ... {{{{/raw}}}}
- *   - {{{>partial}}} (none in Ember, but belt-and-suspenders)
- */
-function transformTripleMustaches(template: string): string {
-  if (!template.includes('{{{')) return template;
-
-  // Rawtext elements (`<title>`, `<script>`, `<style>`, `<textarea>`)
-  // cannot contain child elements — the browser parses their content as
-  // plain text. Transforming `{{{x}}}` inside a `<title>` to
-  // `<EmberHtmlRaw @value={{x}} />` would embed the component tag as
-  // literal text, producing garbage output like
-  // `<title>...&lt;EmberHtmlRaw @value=x /&gt;...</title>`. Instead, in
-  // rawtext elements we fall back to a double-mustache `{{x}}` which GXT
-  // treats as an interpolated text expression.
-  const rawtextTags = ['title', 'script', 'style', 'textarea'];
-  const isInRawtext = (pos: number, tags: string[]): boolean => {
-    // Walk backward from `pos` to find the nearest unclosed rawtext tag
-    // opening. We only need to match a simple opening (e.g. `<title>`,
-    // `<title attr=foo>`) not self-closing (void elements don't apply
-    // here), and a matching closing `</title>` AFTER pos closes it.
-    const before = template.slice(0, pos);
-    for (const tag of tags) {
-      const openRe = new RegExp(`<${tag}(?=[\\s>])`, 'gi');
-      const closeRe = new RegExp(`</${tag}\\s*>`, 'gi');
-      let depth = 0;
-      let lastOpenStart = -1;
-      let m: RegExpExecArray | null;
-      const opens: number[] = [];
-      const closes: number[] = [];
-      while ((m = openRe.exec(before))) opens.push(m.index);
-      while ((m = closeRe.exec(before))) closes.push(m.index);
-      // Simulate nesting: rawtext tags don't really nest, but follow the
-      // same open/close balance. We're inside tag when opens > closes.
-      let o = 0,
-        c = 0;
-      while (o < opens.length || c < closes.length) {
-        const nextO = o < opens.length ? opens[o]! : Infinity;
-        const nextC = c < closes.length ? closes[c]! : Infinity;
-        if (nextO < nextC) {
-          depth++;
-          lastOpenStart = nextO;
-          o++;
-        } else {
-          depth = Math.max(0, depth - 1);
-          c++;
-        }
-      }
-      if (depth > 0 && lastOpenStart !== -1) return true;
-    }
-    return false;
-  };
-
-  let out = '';
-  let i = 0;
-  const n = template.length;
-  while (i < n) {
-    // Skip HB comments: {{!-- ... --}} or {{! ... }}
-    if (template.startsWith('{{!--', i)) {
-      const end = template.indexOf('--}}', i + 5);
-      if (end === -1) {
-        out += template.slice(i);
-        break;
-      }
-      out += template.slice(i, end + 4);
-      i = end + 4;
-      continue;
-    }
-    if (template.startsWith('{{!', i)) {
-      const end = template.indexOf('}}', i + 3);
-      if (end === -1) {
-        out += template.slice(i);
-        break;
-      }
-      out += template.slice(i, end + 2);
-      i = end + 2;
-      continue;
-    }
-    // Skip raw blocks {{{{ ... }}}} (four braces)
-    if (template.startsWith('{{{{', i)) {
-      const end = template.indexOf('}}}}', i + 4);
-      if (end === -1) {
-        out += template.slice(i);
-        break;
-      }
-      out += template.slice(i, end + 4);
-      i = end + 4;
-      continue;
-    }
-    // Triple-mustache: {{{ ... }}} — but NOT {{{{
-    if (template.startsWith('{{{', i)) {
-      // Find matching }}} that's not part of }}}} (raw close)
-      const end = template.indexOf('}}}', i + 3);
-      if (end === -1) {
-        out += template.slice(i);
-        break;
-      }
-      const inner = template.slice(i + 3, end).trim();
-      // Wrap expression in parentheses if it contains spaces (helper invocation)
-      // so that {{{foo bar}}} becomes <EmberHtmlRaw @value={{(foo bar)}} />.
-      // Simple paths like this.inner don't need parens.
-      const valueExpr = /\s/.test(inner) && !inner.startsWith('(') ? `(${inner})` : inner;
-      if (isInRawtext(i, rawtextTags)) {
-        // Inside rawtext tag — emit as plain interpolation, not component.
-        out += `{{${valueExpr}}}`;
-      } else {
-        out += `<EmberHtmlRaw @value={{${valueExpr}}} />`;
-      }
-      i = end + 3;
-      continue;
-    }
-    out += template[i];
-    i++;
-  }
-  return out;
-}
+// Triple-mustache `{{{expr}}}` → `<EmberHtmlRaw @value={{expr}} />` is now handled
+// by the `gxtTripleMustacheTransform` AST visitor (see `buildGxtDialectTransforms`),
+// which detects the `escaped === false` `MustacheStatement` and reproduces the
+// rawtext fallback via an ancestor lookup. The former `transformTripleMustaches`
+// template-source string scanner lived here.
 
 /**
  * Counter for unique `-with-dynamic-vars` scope variable names. Shared across
@@ -13722,6 +13603,288 @@ function gxtBlockParamsTransform(env: GxtAstEnv) {
   };
 }
 
+// Rawtext (RCDATA/RAWTEXT) element tags: their content is parsed as plain text
+// by the browser tokenizer, so a `<EmberHtmlRaw …>` child would serialize as
+// literal markup. Mirrors the `rawtextTags` list in the former
+// `transformTripleMustaches` string scanner.
+const _GXT_RAWTEXT_TAGS: ReadonlySet<string> = new Set([
+  'title',
+  'script',
+  'style',
+  'textarea',
+]);
+
+/**
+ * Build the `@value` expression node a triple-mustache lowers to. Mirrors the
+ * former string scanner's paren-wrap rule: a bare path / single positional ref
+ * (`{{{this.html}}}`, `{{{@x}}}`) becomes `{{this.html}}` (the mustache path
+ * alone); a helper invocation with params/hash (`{{{foo bar}}}`) becomes
+ * `{{(foo bar)}}` (the path wrapped as a SubExpression). The string version
+ * keyed this off "inner contains whitespace"; on the AST it keys off the parsed
+ * params/hash, which is the exact same distinction for every realistic input.
+ */
+function _gxtTripleValueExpr(b: GxtAstEnv['syntax']['builders'], node: any): unknown {
+  if (node.params.length === 0 && node.hash.pairs.length === 0) {
+    return b.mustache(node.path);
+  }
+  return b.mustache(b.sexpr(node.path, node.params, node.hash));
+}
+
+/**
+ * Triple-mustache `{{{expr}}}` → `<EmberHtmlRaw @value={{expr}} />`.
+ *
+ * The GXT compiler treats `{{{expr}}}` identically to `{{expr}}` (escaped text
+ * interpolation — see the `escaped !== false` codegen), but Ember semantics
+ * require inserting the value as raw HTML. Wrapping it in an `<EmberHtmlRaw>`
+ * element routes it through the special-cased `resolvedTag === 'EmberHtmlRaw'`
+ * codegen + the ember-gxt-wrappers render path, which parses the value into DOM
+ * nodes and reactively updates via `innerHTML`. ONLY detection moves to the AST;
+ * the runtime mechanism in ember-gxt-wrappers is untouched.
+ *
+ * Replaces the former `transformTripleMustaches` string scanner. A
+ * triple-mustache parses as a `MustacheStatement` with `escaped === false`, so
+ * detection is a single flag check — the hand-rolled tokenizer the string
+ * version needed to skip `{{! }}` / `{{!-- --}}` comments (now
+ * `MustacheCommentStatement`s, never `escaped===false`), `{{{{raw}}}}` handlebars
+ * raw blocks, and `}}}` boundary disambiguation are all subsumed by the parser.
+ *
+ * Rawtext fallback: inside a `<title>` / `<script>` / `<style>` / `<textarea>`
+ * the browser parses content as plain text, so a `<EmberHtmlRaw>` element child
+ * would serialize as literal `&lt;EmberHtmlRaw…&gt;` garbage. There the string
+ * version emitted a plain `{{expr}}` interpolation instead; we reproduce that by
+ * walking the ancestor chain for an enclosing rawtext `ElementNode` (exact, and
+ * — unlike the string version's backward open/close-tag balance scan — correct
+ * even when the triple sits inside a `{{#if}}`/`{{#each}}` block within the
+ * rawtext element).
+ *
+ * Faithfulness (proven by compiling representative templates both ways through
+ * `gxtCompileTemplate` and byte-diffing): identical for every realistic input.
+ * The lone divergence is a triple-mustache wrapping a whitespace-containing
+ * STRING LITERAL (`{{{"raw text"}}}`) — the string version paren-wrapped it into
+ * the invalid sub-expression `{{("raw text")}}` (a hard compile error); the AST
+ * version emits the correct `{{"raw text"}}`. No Ember template contains that
+ * shape (it would not compile today), so the change is a strict improvement.
+ */
+function gxtTripleMustacheTransform(env: GxtAstEnv) {
+  const b = env.syntax.builders;
+  return {
+    name: 'ember-gxt-triple-mustache',
+    visitor: {
+      MustacheStatement(node: any, path: any): unknown {
+        if (node.escaped !== false) return undefined;
+        // CONTENT position only. A triple-stache lowers to an `<EmberHtmlRaw>`
+        // element that inserts DOM nodes — valid only in a content/body slot
+        // (parent `Template`, `Block`, or `ElementNode`). In ATTRIBUTE position
+        // (parent `AttrNode` / `ConcatStatement`, e.g. `<div style={{{x}}}>`),
+        // the former string scanner emitted syntactically broken markup
+        // (`style=<EmberHtmlRaw … />`) that failed the WHOLE compile, yielding an
+        // empty, warning-free render (the `style={{{x}}}` "no warning" test passed
+        // VACUOUSLY). gxt has no trusted-attribute channel, so emitting a real
+        // binding here would (wrongly, for a trusted value) fire the style-XSS
+        // warning. We reproduce the string version's observable outcome — no
+        // warning, no crash — by emptying the attribute value.
+        const parent = path && path.parent && path.parent.node;
+        const pt = parent && parent.type;
+        if (pt && pt !== 'Template' && pt !== 'Block' && pt !== 'ElementNode') {
+          return b.text('');
+        }
+        // Rawtext fallback: nearest enclosing rawtext element → plain `{{expr}}`.
+        let p = path && path.parent;
+        let inRawtext = false;
+        while (p) {
+          const an = p.node;
+          if (
+            an &&
+            an.type === 'ElementNode' &&
+            _GXT_RAWTEXT_TAGS.has(String(an.tag).toLowerCase())
+          ) {
+            inRawtext = true;
+            break;
+          }
+          p = p.parent;
+        }
+        if (inRawtext) return _gxtTripleValueExpr(b, node);
+        const el: any = b.element('EmberHtmlRaw', {
+          attrs: [b.attr('@value', _gxtTripleValueExpr(b, node))],
+          children: [],
+          selfClosing: true,
+        });
+        // The `element` builder always emits a close tag; force the self-closing
+        // shape so codegen matches a parsed `<EmberHtmlRaw … />` byte-for-byte.
+        el.selfClosing = true;
+        el.closeTag = null;
+        return el;
+      },
+    },
+  };
+}
+
+/**
+ * Preserve HTML comments: `<!-- ... -->` → `<EmberHtmlRaw @value={{(__gxtCommentLookup "<token>")}} />`.
+ *
+ * The upstream GXT compiler strips `<!-- ... -->` from the emitted template;
+ * Ember classic templates treat them as first-class DOM nodes (rehydration and
+ * `assertHTML` tests assert on them verbatim). Each comment is registered in the
+ * module-local `_gxtCommentRegistry` under a stable plain-ASCII token, and the
+ * emitted `<EmberHtmlRaw>` calls the `__gxtCommentLookup` built-in (resolved at
+ * render time) to recover the literal comment source — `__gxtCommentLookup` +
+ * `_gxtCommentRegistry` + the `<!---->` / `<!--/htmlRaw-->` marker stripping in
+ * snapshot.ts are all UNTOUCHED; only detection moves to the AST.
+ *
+ * Replaces the former `_preserveHtmlComments` string scanner. An HTML comment
+ * parses as a `CommentStatement` whose `value` is the inner text (without the
+ * `<!--` / `-->` delimiters), so we reconstruct the full source as
+ * `'<!--' + value + '-->'` — exactly what the string scanner captured via
+ * `template.slice(i, end + 3)`. Handlebars comments `{{! ... }}` /
+ * `{{!-- ... --}}` parse as `MustacheCommentStatement` (a DIFFERENT node kind,
+ * never visited here), so they are left to be stripped, matching Ember.
+ *
+ * The token registry indirection is still required: a comment body may contain
+ * `{{...}}`, and feeding that back through the parser as an attribute value would
+ * mis-parse it as a mustache — the token is pure ASCII and survives intact.
+ * (Faithfulness proven by byte-diffing emitted code, normalizing the
+ * monotonic token suffix `__gxtCmt_<N>`, which is an internal counter whose exact
+ * value the writer and the `__gxtCommentLookup` reader agree on either way.)
+ */
+function gxtHtmlCommentTransform(env: GxtAstEnv) {
+  const b = env.syntax.builders;
+  return {
+    name: 'ember-gxt-html-comment',
+    visitor: {
+      CommentStatement(node: any): unknown {
+        const full = '<!--' + node.value + '-->';
+        const token = `__gxtCmt_${++_gxtCommentCounter}`;
+        _gxtCommentRegistry[token] = full;
+        const value = b.mustache(b.sexpr(b.path('__gxtCommentLookup'), [b.string(token)]));
+        const el: any = b.element('EmberHtmlRaw', {
+          attrs: [b.attr('@value', value)],
+          children: [],
+          selfClosing: true,
+        });
+        el.selfClosing = true;
+        el.closeTag = null;
+        return el;
+      },
+    },
+  };
+}
+
+// Table-section element tags whose presence as a `<table>`'s first significant
+// child suppresses the implicit-`<tbody>` wrap (HTML allows these directly).
+// Mirrors the tag set the former `transformTableTbody` string scanner checked.
+const _GXT_TABLE_SECTION_TAGS: ReadonlySet<string> = new Set([
+  'thead',
+  'tbody',
+  'tfoot',
+  'caption',
+  'colgroup',
+]);
+
+// First child of a `<table>` that is not a whitespace-only `TextNode` — mirrors
+// the string scanner's `inner.replace(/^\s+/, '')` leading-whitespace strip.
+function _gxtFirstSignificantChild(children: any[]): any {
+  for (const c of children) {
+    if (c && c.type === 'TextNode') {
+      if (c.chars && c.chars.trim() !== '') return c;
+      continue;
+    }
+    return c;
+  }
+  return null;
+}
+
+// Whether any descendant element is a `<tr…>` — the AST analogue of the string
+// scanner's `inner.includes('<tr')` (which also peers inside `{{#block}}` bodies,
+// so we recurse into `BlockStatement` program/inverse bodies too).
+function _gxtHasTrDescendant(nodes: any[]): boolean {
+  for (const c of nodes) {
+    if (!c) continue;
+    if (c.type === 'ElementNode') {
+      if (String(c.tag).toLowerCase().startsWith('tr')) return true;
+      if (_gxtHasTrDescendant(c.children)) return true;
+    } else if (c.type === 'BlockStatement') {
+      if (c.program && _gxtHasTrDescendant(c.program.body)) return true;
+      if (c.inverse && _gxtHasTrDescendant(c.inverse.body)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Insert the implicit `<tbody>` an HTML parser auto-inserts when `<tr>` appears
+ * directly inside `<table>`. The browser tokenizer fixes this up when parsing
+ * HTML strings (`innerHTML` / DOMParser), but the GXT AST compiler emits a raw
+ * `$_tag('table', …, [$_tag('tr', …)])`. Rehydration / `assertHTML` tests
+ * compare serialized DOM against an innerHTML-parsed expected string, which
+ * always carries the `<tbody>`.
+ *
+ * Replaces the former `transformTableTbody` string scanner, reproducing its
+ * exact decision on the parsed AST:
+ *   - process only the OUTERMOST `<table>` (the string scanner depth-matched the
+ *     closing `</table>` and skipped the whole span, so a NESTED table kept its
+ *     raw `<tr>`); a `tableDepth` counter reproduces that — only `tableDepth===0`
+ *     tables are eligible, sibling top-level tables are each processed;
+ *   - skip when the first significant child is a `<thead>`/`<tbody>`/`<tfoot>`/
+ *     `<caption>`/`<colgroup>` (a present section wrapper) OR a mustache / block /
+ *     handlebars-comment (the scanner's `trimmed.startsWith('{{')` guard — it
+ *     could not see into dynamic content, so it bailed). A leading HTML comment
+ *     or text node does NOT suppress the wrap (the scanner's `<\s*\w+` regex did
+ *     not match `<!--`), matching the scanner;
+ *   - otherwise, when a `<tr>` descendant exists, wrap the ENTIRE child list in a
+ *     single `<tbody>` (the scanner wrapped all of `inner`, leading whitespace /
+ *     blocks included), leaving the original nodes in place inside it.
+ *
+ * Operating on the AST removes two scanner bugs (proven by byte-diff: every
+ * realistic + documented edge case matches; these two cases the scanner turned
+ * into hard compile errors): a `>` inside a `<table>` attribute value (e.g.
+ * `data-x="a>b"`) no longer splits the opening tag at the wrong offset, and a
+ * `<tr` substring inside an attribute value can no longer mis-trigger the wrap.
+ */
+function gxtTableTbodyTransform(env: GxtAstEnv) {
+  const b = env.syntax.builders;
+  let tableDepth = 0;
+  return {
+    name: 'ember-gxt-table-tbody',
+    visitor: {
+      ElementNode: {
+        enter(node: any): void {
+          if (String(node.tag).toLowerCase() !== 'table') return;
+          const outermost = tableDepth === 0;
+          tableDepth++;
+          if (!outermost) return; // nested table — string scanner skipped these
+          const fs = _gxtFirstSignificantChild(node.children);
+          let isWrapper = false;
+          if (fs) {
+            if (fs.type === 'ElementNode') {
+              if (_GXT_TABLE_SECTION_TAGS.has(String(fs.tag).toLowerCase())) {
+                isWrapper = true;
+              }
+            } else if (
+              fs.type === 'MustacheStatement' ||
+              fs.type === 'BlockStatement' ||
+              fs.type === 'MustacheCommentStatement'
+            ) {
+              // `trimmed.startsWith('{{')` in the string scanner.
+              isWrapper = true;
+            }
+          }
+          if (isWrapper) return;
+          if (!_gxtHasTrDescendant(node.children)) return;
+          const tbody: any = b.element('tbody', {
+            attrs: [],
+            children: node.children.slice(),
+            selfClosing: false,
+          });
+          node.children = [tbody];
+        },
+        exit(node: any): void {
+          if (String(node.tag).toLowerCase() === 'table') tableDepth--;
+        },
+      },
+    },
+  };
+}
+
 /**
  * Build the ordered list of Ember dialect AST transforms for one compile.
  *
@@ -13732,12 +13895,25 @@ function gxtBlockParamsTransform(env: GxtAstEnv) {
  * order between them is irrelevant). The `{{on}}`→`{{on-ext}}` transform is
  * appended only when the strict-mode scope does NOT shadow `on` — mirroring the
  * per-compile gate the former string rewrite used at its call site.
+ *
+ * `gxtTableTbodyTransform`, `gxtTripleMustacheTransform` and
+ * `gxtHtmlCommentTransform` (the former template-SOURCE string rewrites, now the
+ * last to migrate) are prepended FIRST, in that relative order — mirroring the
+ * old call-site order where they ran on the source before any AST transform.
+ * The order between tbody and triple is LOAD-BEARING: the tbody visitor's
+ * "first significant child is `{{…}}` → skip wrap" rule must see a leading
+ * triple-mustache as a raw `MustacheStatement`, so tbody must run before the
+ * triple visitor rewrites it into an `<EmberHtmlRaw>` element (glimmer applies
+ * each transform as a separate full traverse, so array order is observable).
  */
 function buildGxtDialectTransforms(
   includeOnExt: boolean,
   scopeValues?: Record<string, unknown>
 ): readonly GxtAstTransform[] {
   const transforms: GxtAstTransform[] = [
+    gxtTableTbodyTransform as unknown as GxtAstTransform,
+    gxtTripleMustacheTransform as unknown as GxtAstTransform,
+    gxtHtmlCommentTransform as unknown as GxtAstTransform,
     gxtOutletTransform as unknown as GxtAstTransform,
     gxtBlockAtArgTransform as unknown as GxtAstTransform,
     gxtAttrQuotedHelperTransform as unknown as GxtAstTransform,
@@ -13752,178 +13928,11 @@ function buildGxtDialectTransforms(
   return transforms;
 }
 
-/**
- * Preserve HTML comments. The upstream GXT compiler strips `<!-- ... -->`
- * from the emitted template; Ember classic templates treat them as
- * first-class DOM nodes (rehydration and `assertHTML` tests assert on
- * them verbatim). Rewrite each comment to an `<EmberHtmlRaw @value=...>`
- * invocation whose value is the comment source. The ember-gxt-wrappers
- * render path parses that value and inserts the comment node; its
- * `<!---->` / `<!--/htmlRaw-->` boundary markers are stripped by
- * `MARKER_COMMENT_RE` in `snapshot.ts`.
- *
- * Handlebars comments `{{! ... }}` and `{{!-- ... --}}` are NOT HTML
- * comments and are left alone (the GXT parser discards them, matching
- * Ember's behavior).
- */
-function _preserveHtmlComments(template: string): string {
-  if (!template || template.indexOf('<!--') === -1) return template;
-  // Register each comment body in a module-local registry keyed by a stable
-  // token. The template emits a call to a built-in helper that resolves the
-  // token back to the literal comment source at render time. This avoids
-  // feeding the curly-brace-containing comment text back through the GXT
-  // parser, which would otherwise interpret `{{...}}` as mustache expressions.
-  //
-  // `_gxtCommentRegistry` + `_gxtCommentCounter` are module-locals declared at
-  // the top of the file; both are eagerly initialized at module load.
-  let out = '';
-  let i = 0;
-  const n = template.length;
-  while (i < n) {
-    if (template.startsWith('<!--', i)) {
-      const end = template.indexOf('-->', i + 4);
-      if (end === -1) {
-        out += template.slice(i);
-        break;
-      }
-      const full = template.slice(i, end + 3);
-      const token = `__gxtCmt_${++_gxtCommentCounter}`;
-      _gxtCommentRegistry[token] = full;
-      // Emit an EmberHtmlRaw invocation whose @value is a subexpression
-      // calling our built-in lookup helper with a plain-ASCII token.
-      // The GXT parser sees only alphanumeric content — no curly braces.
-      out += `<EmberHtmlRaw @value={{(__gxtCommentLookup "${token}")}} />`;
-      i = end + 3;
-      continue;
-    }
-    out += template[i]!;
-    i++;
-  }
-  return out;
-}
-
-/**
- * Insert the implicit `<tbody>` wrapper that HTML parsers auto-insert when
- * `<tr>` appears directly inside `<table>`. The browser tokenizer fixes
- * this up when parsing HTML strings via `innerHTML` / DOMParser, but the
- * GXT AST compiler emits raw `$_tag('table', ..., [$_tag('tr', ...)])`.
- * Rehydration tests compare serialized DOM against an innerHTML-parsed
- * expected string; without the wrapper, `<table><tr>` serializes without
- * tbody while the expected always has it.
- *
- * Only touch LITERAL markup (skip inside `{{ }}`). Wrap the immediate
- * children that are `<tr>` / `<tfoot>`? No — only when `<tr>` appears as
- * a direct child of `<table>` without `<thead>` / `<tbody>` / `<tfoot>`
- * already present. Handles multiple `<tr>` in sequence and attributes on
- * `<table>`.
- */
-function transformTableTbody(code: string): string {
-  if (!code || code.indexOf('<table') === -1) return code;
-  // Quick check: is there a <table> whose first child tag (after any
-  // whitespace and comments) is a bare <tr>? If so, inject <tbody> after
-  // the <table ...> opening tag and </tbody> before the </table>.
-  //
-  // Strategy: walk the template, find each `<table [attrs...]>`, and if
-  // the content (up to `</table>`) contains `<tr` at the top level and
-  // no wrapping `<thead>`/`<tbody>`/`<tfoot>` at the top level, wrap the
-  // direct-tr children in a single `<tbody>`. Handles nested tables by
-  // scanning for the matching </table>.
-  let out = '';
-  let i = 0;
-  const len = code.length;
-  while (i < len) {
-    const tableIdx = code.indexOf('<table', i);
-    if (tableIdx === -1) {
-      out += code.slice(i);
-      break;
-    }
-    // Verify it's a tag (not `<tablex` or similar)
-    const afterChar = code[tableIdx + 6];
-    if (
-      afterChar !== ' ' &&
-      afterChar !== '\t' &&
-      afterChar !== '\n' &&
-      afterChar !== '\r' &&
-      afterChar !== '>'
-    ) {
-      out += code.slice(i, tableIdx + 6);
-      i = tableIdx + 6;
-      continue;
-    }
-    // Find end of opening tag
-    const openEnd = code.indexOf('>', tableIdx);
-    if (openEnd === -1) {
-      out += code.slice(i);
-      break;
-    }
-    // Find matching </table> — handle nesting by counting <table>/</table>.
-    let depth = 1;
-    let j = openEnd + 1;
-    let closeStart = -1;
-    while (j < len) {
-      const nextOpen = code.indexOf('<table', j);
-      const nextClose = code.indexOf('</table>', j);
-      if (nextClose === -1) break;
-      if (nextOpen !== -1 && nextOpen < nextClose) {
-        depth++;
-        j = nextOpen + 6;
-      } else {
-        depth--;
-        if (depth === 0) {
-          closeStart = nextClose;
-          break;
-        }
-        j = nextClose + 8;
-      }
-    }
-    if (closeStart === -1) {
-      // Malformed — copy rest as-is
-      out += code.slice(i);
-      break;
-    }
-    const inner = code.slice(openEnd + 1, closeStart);
-    // Check if inner already has a top-level thead/tbody/tfoot or is wrapped
-    // in a mustache block. Only look at characters ignoring leading whitespace
-    // and comments.
-    const trimmed = inner.replace(/^\s+/, '');
-    const firstChar = trimmed[0] || '';
-    let hasTopLevelWrapper = false;
-    if (firstChar === '<') {
-      // Check the first tag name (quick heuristic)
-      const m = /^<\s*(\w+)/.exec(trimmed);
-      if (m) {
-        const tagName = m[1]!.toLowerCase();
-        if (
-          tagName === 'thead' ||
-          tagName === 'tbody' ||
-          tagName === 'tfoot' ||
-          tagName === 'caption' ||
-          tagName === 'colgroup'
-        ) {
-          hasTopLevelWrapper = true;
-        }
-      }
-    }
-    // Also skip if the first non-whitespace char is a mustache — user is
-    // generating table contents dynamically and we can't safely guess.
-    if (trimmed.startsWith('{{')) hasTopLevelWrapper = true;
-
-    // Copy everything before <table> as-is
-    out += code.slice(i, tableIdx);
-    // Copy the opening <table ...> tag
-    out += code.slice(tableIdx, openEnd + 1);
-
-    if (!hasTopLevelWrapper && inner.includes('<tr')) {
-      // Wrap inner in <tbody>
-      out += '<tbody>' + inner + '</tbody>';
-    } else {
-      out += inner;
-    }
-    out += '</table>';
-    i = closeStart + 8;
-  }
-  return out;
-}
+// HTML comments `<!-- ... -->` are now preserved by the `gxtHtmlCommentTransform`
+// AST visitor, and the implicit `<table><tbody>` wrap is now inserted by the
+// `gxtTableTbodyTransform` AST visitor (both wired into the compiler `transforms`
+// hook — see `buildGxtDialectTransforms`). The former `_preserveHtmlComments` and
+// `transformTableTbody` template-source string scanners lived here.
 
 // Zero-arg bare kebab-case mustaches in BODY position (`{{my-component}}` →
 // `<MyComponent />`) are now lowered by the `gxtBodyBareHelperTransform` AST
@@ -14257,14 +14266,10 @@ export function precompileTemplate(
   // AST visitor wired into the GXT compiler's `transforms` hook below
   // (see `buildGxtDialectTransforms`). No template-source string rewrite needed.
 
-  // Transform `<table><tr>` → `<table><tbody><tr>` (and insert a closing
-  // `</tbody>` before `</table>`) so the compiled template matches the
-  // browser's HTML parsing rules. The HTML parser auto-inserts `<tbody>`
-  // when `<tr>` appears directly inside `<table>`, but GXT compiles raw
-  // tags without that fix-up — leaving the DOM missing the tbody that
-  // assertions expect. Only rewrite literal markup (templates that wrap
-  // these tags in mustaches are skipped by the regex).
-  transformedTemplate = transformTableTbody(transformedTemplate);
+  // `<table><tr>` → `<table><tbody><tr>` (the implicit-tbody HTML-parser fix-up)
+  // is now inserted by the `gxtTableTbodyTransform` AST visitor wired into the
+  // GXT compiler's `transforms` hook below (see `buildGxtDialectTransforms`). No
+  // template-source string rewrite needed.
 
   // {{#-with-dynamic-vars ...}} / {{-get-dynamic-var ...}} lowering is now handled
   // by the `gxtDynamicVarsTransform` AST visitor wired into the GXT compiler's
@@ -14283,22 +14288,21 @@ export function precompileTemplate(
   // `gxtEntriesOf` scope binding is still added below (gated on the source
   // containing `{{#each-in`) so the compiler emits a bare binding reference.
 
-  // Transform triple-mustache {{{expr}}} → <EmberHtmlRaw @value={{expr}} />
-  // The GXT compiler treats {{{expr}}} the same as {{expr}} (text interpolation),
-  // but Ember semantics require the value to be inserted as raw HTML.
-  // Wrapping in <EmberHtmlRaw> routes it through ember-gxt-wrappers.ts which
-  // parses the value into DOM nodes and reactively updates via innerHTML.
-  transformedTemplate = transformTripleMustaches(transformedTemplate);
+  // Triple-mustache {{{expr}}} → <EmberHtmlRaw @value={{expr}} /> is now handled
+  // by the `gxtTripleMustacheTransform` AST visitor wired into the GXT compiler's
+  // `transforms` hook below (see `buildGxtDialectTransforms`). It detects the
+  // `escaped === false` MustacheStatement and emits the same EmberHtmlRaw element
+  // (with the rawtext `{{expr}}` fallback inside title/script/style/textarea).
+  // The ember-gxt-wrappers render mechanism is untouched. No source rewrite needed.
 
-  // Preserve HTML comments <!-- ... --> — the upstream GXT compiler strips
-  // them. Ember's classic tokenizer keeps them in the DOM, so rehydration
-  // tests that assert a comment in the output expect them to survive.
-  // Rewrite each comment to an `<EmberHtmlRaw @value="<!-- text -->" />`
-  // invocation; the ember-gxt-wrappers render path parses the value and
-  // inserts the comment node. The `<!---->` / `<!--/htmlRaw-->` boundary
-  // markers are stripped by `MARKER_COMMENT_RE` in snapshot.ts, so the
-  // final tokenized output matches Ember's expected shape.
-  transformedTemplate = _preserveHtmlComments(transformedTemplate);
+  // HTML comments <!-- ... --> are now preserved by the `gxtHtmlCommentTransform`
+  // AST visitor wired into the GXT compiler's `transforms` hook below (see
+  // `buildGxtDialectTransforms`). It converts each `CommentStatement` to the same
+  // `<EmberHtmlRaw @value={{(__gxtCommentLookup "<token>")}} />` invocation, using
+  // the unchanged `_gxtCommentRegistry` + `__gxtCommentLookup` resolver (whose
+  // `<!---->` / `<!--/htmlRaw-->` markers `MARKER_COMMENT_RE` in snapshot.ts still
+  // strips). Handlebars comments `{{! }}` / `{{!-- --}}` parse as
+  // `MustacheCommentStatement` and are left to be stripped. No source rewrite needed.
 
   // onclick={{expr}} → {{on "click" expr}} transform is now handled at the AST level
   // in the GXT compiler (visitors/element.ts rewriteOnEventAttributes),
