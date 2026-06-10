@@ -755,10 +755,37 @@ this section is documentation-only.)
    four lazy-init writers gain "read the current ambient (swapped) root,"
    which they already do.
 
-This is deliberately **not** landed speculatively: it has no consumer until a
-FastBoot/SSR driver exists, and adding dead API to `compile.ts` (with its
-required full-suite gate) for zero behavioral benefit is exactly the
-half-refactor this analysis avoids.
+**Wave 3 status (2026-06-10) — step 1 ✅ upstream, step 2 ✅ LANDED (consumer
+plumbing).** Step 1 shipped upstream in `@lifeart/gxt` 0.0.64
+(`setNodeCounter` / `getNodeCounter` / `withRenderRoot` / `createRenderRootState`,
+verified present in ember's consumed dist). Step 2 is now implemented as
+`compilePipeline.withRootContext(ctx, fn)` (`compile.ts`, beside the
+`getRootContext`/`setRootContext` bridge, dual-published on
+`globalThis.__gxtWithRootContext` for an out-of-package SSR driver). It snapshots
+the three (a)-class singletons (`_gxtRootContext`, `_gxtTopOutletRef`, the
+`_gxtEngineInstances` *contents* — the `const` Map identity is preserved by
+clear+repopulate), runs the body inside
+`withRenderRoot(createRenderRootState(), fn)` so the upstream node-counter /
+parent-context / rendering-context globals are isolated too, and restores the
+outer ambient state on exit **including on throw**, checkpointing the mutated
+per-root state back into `ctx` (mirroring `withRenderRoot`'s own idiom). It is
+**ADDITIVE**: no browser/render-path caller exists, so single-root behavior is
+byte-identical; it is dormant until a FastBoot/SSR driver wraps each request.
+Verified by runtime probe under the gxt vite server (two sequential
+`withRootContext` invocations each see a fresh node counter at 0 — isolated, not
+leaking the prior root's mutation; outer counter restored on normal AND throw
+exit; `ctx` checkpointed). This is the RFC §5.1 test-2/3/4 shape exercised against
+the live consumer. Step 3 (cross-package signature change) remains unneeded — the
+four lazy-init writers already read the ambient (now-swappable) root through the
+unchanged get/set bridge.
+
+The earlier "deliberately not landed speculatively" caveat (no consumer ⇒ no dead
+API) is now satisfied: the SSR program's per-request driver is the waiting
+consumer, the additive seam carries zero behavioral risk, and node-testing the
+seam in isolation is impractical (compile.ts's import graph needs the full gxt
+vite build; the repo's `vitest` harness rejects the root `vite.config.mjs`
+`resolvePackages` plugin), so correctness is established by the runtime probe plus
+the full GXT suite gate that the `compile.ts` touch already mandates.
 
 #### 7.1.2 Phase 4.2 — nested-engine outlet cursor-ID translation
 
@@ -821,6 +848,56 @@ re-parsing Glimmer-VM-style `%cursor:N%` / `%+b:N%` block markers via a
 This unblocks the `partial rehydration ::` suite's `clearedNodes`/stable-node
 assertions and is the prerequisite for real `{{mount}}`/engine SSR, which §7(4)
 otherwise leaves `UNTESTED`.
+
+**Wave 3 status (2026-06-10) — step 1 ✅ upstream; step 2 ⛔ DESCOPED to this
+addendum (two consumer-side blockers, empirically verified).** Upstream step 1
+landed: `withRehydration(cb, args, target, root?, { baseOffset })` is present in
+0.0.64 (the dist `rehydration` chunk seeds `setNodeCounter(options?.baseOffset ?? 0)`
+on entry, saves/restores the outer counter, and reports the unmatched-node residue
+as the cleared set). The delegate rewrite (step 2) was attempted and **descoped**
+because the ember GXT delegate's *runtime-compile* architecture violates the two
+preconditions the recipe assumes. Both were confirmed by live probe against the
+gxt vite server:
+
+- **(B1) No `data-node-id` markers at the runner's page path.** GXT emits
+  `data-node-id`/`$[N]` markers only when `IN_SSR_ENV` is true, and in the consumed
+  0.0.64 dist `IN_SSR_ENV` is baked as `location.pathname === "/tests.html"` (a
+  free identifier, no `define` override in GXT mode). The GXT test runner navigates
+  to `http://localhost:5180/?module=…` — pathname `/` — so `IN_SSR_ENV` is **false**
+  during every gated run. Probe: the delegate's server-render path
+  (`__gxtCompileTemplate(...).render(...)`) emits `<section><b>hi</b></section>`
+  (no markers) at `/`, but `<section data-node-id="2"><b data-node-id="1">…` at
+  `/tests.html`. The partial-rehydration boundary therefore carries **no**
+  `data-node-id` at gate time, so `baseOffset` is always `0` and `withRehydration`
+  has nothing to align against — it would walk an unmarked tree, mis-align, and
+  either throw `Rehydration failed…` / `withRehydrationStack is not empty` or clear
+  every server node (regressing both `clearedNodes.length === 0` and
+  `assertStableNodes`).
+- **(B2) No `renderComponent`-compatible component for `withRehydration`.**
+  `withRehydration(comp, …)` requires `comp: typeof Component` and internally calls
+  `renderComponent(comp, { args, element, owner })`. The delegate registers and
+  renders templates through the *runtime-compile* path (`__gxtCompileTemplate` →
+  `templateFn` → `itemToNode` → `appendChild`, `compile.ts:render()`), which never
+  produces a GXT `Component` subclass. Probe: feeding the runtime-compiler's output
+  to `renderComponent` throws `Cannot read properties of undefined (reading 'push')`
+  (`protoComponent: false`). Bridging a runtime-compiled template to a
+  `$template`/`$_fin`-wired `Component` is a substantial `compile.ts`-scale feature,
+  not a delegate edit — exactly the regression-prone deep refactor §7.1 rejects.
+
+**Consequence.** The committed baseline already records all rehydration modules
+(`partial rehydration` 2/2, `rehydration` 123/123, `chaos-*` 2/2, `{{in-element}}`
+8/8) as **passing**, because the current delegate fabricates `clearedNodes: []` and
+the `clearedNodes.length === 0` assertions are satisfied trivially. There is thus
+**no failing test to flip green**, and any live `withRehydration` call would turn a
+green module **red** at the `/` gate. The honest outcome is to keep the delegate's
+runtime behavior unchanged (no regression) and record the precise blocker map here.
+A real boundary-seeded rehydration on the consumer side is gated on EITHER serving
+the suite at a `IN_SSR_ENV`-true path (so the server pass emits markers) AND adding
+a template→`Component` bridge, OR re-architecting the delegate's server+client
+passes onto GXT-native `renderComponent`/`withRehydration` end-to-end (so both
+sides share the node-counter sequence). Both are out of scope for a consumer-side
+wave; the upstream mechanism itself is validated by glimmer-next's own
+`ssr/rehydration.test.ts` boundary-seeding test (RFC §5.2 test 7).
 
 ### 8. Debug and Ember Inspector parity
 

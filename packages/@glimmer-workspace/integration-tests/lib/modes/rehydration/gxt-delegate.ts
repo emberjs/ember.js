@@ -17,9 +17,22 @@
  *   - Block-comment marker formats (`<!--%+b:1%-->` etc.) that tests
  *     hard-code against Glimmer-VM's `serializeBuilder`. Assertions
  *     that spell those out literally will still fail.
- *   - Real counter-based alignment. We re-run the template client-side
- *     against a fresh cursor; any `rehydrationStats.clearedNodes`
- *     assertions will be reported as zero clears.
+ *   - Real boundary-seeded counter alignment (`withRehydration(...,
+ *     { baseOffset })`). The upstream API exists (`@lifeart/gxt` 0.0.64),
+ *     but two consumer-side preconditions do NOT hold for this delegate's
+ *     runtime-compile path, so we keep re-rendering the template client-side
+ *     against a fresh cursor and report `rehydrationStats.clearedNodes` as an
+ *     empty set (see RFC §7.1.2 "Wave 3 status" for the full blocker map):
+ *       (B1) the server pass emits GXT `data-node-id`/`$[N]` markers only when
+ *         `IN_SSR_ENV` is true, which the consumed dist bakes as
+ *         `location.pathname === "/tests.html"`; the GXT runner loads `/`, so
+ *         the boundary carries no node-id and there is nothing to align against;
+ *       (B2) `withRehydration` requires a `renderComponent`-compatible
+ *         `Component` class, but this delegate renders compiled *template
+ *         factories* via `template.render()`, never `renderComponent`.
+ *     A live `withRehydration` call here would mis-align an unmarked tree and
+ *     turn the (currently green) partial-rehydration suite red — so this is
+ *     intentionally left as the documented follow-up, not a fabricated win.
  *
  * What it DOES give us:
  *   - The delegate constructor no longer loads `@simple-dom/document` +
