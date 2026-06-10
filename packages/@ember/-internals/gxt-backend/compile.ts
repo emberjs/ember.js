@@ -893,6 +893,16 @@ import {
   getTracker as _gxtGetTracker,
   resolveRenderable as _gxtResolveRenderable,
   $_TO_VALUE as _gxtOrigToValue,
+  // Phase 4.1 SSR consumer plumbing (RFC §7.1.1 step 2). The per-render-root
+  // state primitives from glimmer-next master (≥0.0.64): a fresh, fully-isolated
+  // RenderRootState and the synchronous save/swap/restore runner that scopes the
+  // upstream node-counter / parent-context / rendering-context module-globals to
+  // one render root. Consumed only by `_gxtWithRootContext` below (additive; no
+  // browser-path caller).
+  // @ts-ignore - per-root render API (added upstream in 0.0.64)
+  withRenderRoot as _gxtWithRenderRoot,
+  // @ts-ignore - per-root render API (added upstream in 0.0.64)
+  createRenderRootState as _gxtCreateRenderRootState,
 } from '@lifeart/gxt';
 
 // Use direct imports for cellFor/effect/syncDom — the manualChunks consolidation
@@ -3811,6 +3821,69 @@ function _gxtSetDestroyReattachInProgress(on: boolean): void {
 const _gxtEngineInstances: Map<string, any> = new Map<string, any>();
 function _gxtGetEngineInstances(): Map<string, any> {
   return _gxtEngineInstances;
+}
+
+// Phase 4.1 SSR consumer plumbing (RFC §7.1.1 step 2). `withRootContext(ctx, fn)`
+// runs `fn` against an ISOLATED render root: it snapshots the three (a)-class
+// ember-side root-scoped singletons enumerated in the RFC — `_gxtRootContext`
+// (the ambient GXT `Root`), `_gxtTopOutletRef` (the captured top outlet), and the
+// `_gxtEngineInstances` map (engine mount-point registry) — installs the per-root
+// state carried by `ctx` (defaulting to a fresh/empty root), wraps the body in
+// glimmer-next's `withRenderRoot(createRenderRootState(), …)` so the UPSTREAM
+// module-globals (node counter, parent-context stack, rendering context) are
+// likewise swapped to a fresh isolated set, and restores the outer ambient state
+// on exit — including on throw — while checkpointing the (possibly mutated) per-root
+// state back into `ctx` (mirroring `withRenderRoot`'s own save/checkpoint/restore
+// idiom for `RenderRootState`).
+//
+// CRITICAL: this is ADDITIVE. Nothing in the existing browser/render path calls it;
+// the default ambient module-globals remain untouched and single-root behavior is
+// byte-identical unless a caller explicitly invokes `withRootContext`. There is no
+// consumer until a FastBoot/SSR driver exists — each SSR request would become
+// `withRootContext(freshCtx, () => render(...))`. It is SYNCHRONOUS ONLY: `fn` must
+// mint all DOM synchronously before returning (matching `withRenderRoot`'s non-goal —
+// no `await` inside the swapped window), or the swapped globals leak across requests.
+//
+// `_gxtEngineInstances` is a `const` whose identity must stay stable (cross-package
+// consumers hold the reference), so it is swapped by clearing + repopulating its
+// CONTENTS rather than reassigning the binding.
+interface GxtRootContextState {
+  rootContext?: any;
+  topOutletRef?: any;
+  engineInstances?: Map<string, any>;
+}
+function _gxtWithRootContext<T>(ctx: GxtRootContextState | null | undefined, fn: () => T): T {
+  // Snapshot the outer (ambient) ember-side root state.
+  const _prevRootContext = _gxtRootContext;
+  const _prevTopOutletRef = _gxtTopOutletRef;
+  const _prevEngineEntries: Array<[string, any]> = Array.from(_gxtEngineInstances.entries());
+  // Install the per-root ember state (a fresh, empty root by default).
+  _gxtRootContext = ctx?.rootContext ?? null;
+  _gxtTopOutletRef = ctx?.topOutletRef ?? null;
+  _gxtEngineInstances.clear();
+  if (ctx?.engineInstances) {
+    for (const [k, v] of ctx.engineInstances) _gxtEngineInstances.set(k, v);
+  }
+  try {
+    // Wrap the body in the upstream render root so the node-counter / parent-context
+    // / rendering-context module-globals are swapped for a fresh isolated set and
+    // restored on exit (also on throw) by `withRenderRoot`'s own `finally`.
+    return _gxtWithRenderRoot(_gxtCreateRenderRootState(), fn);
+  } finally {
+    // Checkpoint the (possibly mutated) per-root ember state back into `ctx` so the
+    // caller can reuse it for a subsequent pass on the same root, then restore the
+    // outer ambient state. Runs on the throw path too, so a failed render never
+    // leaks its root into the ambient globals.
+    if (ctx) {
+      ctx.rootContext = _gxtRootContext;
+      ctx.topOutletRef = _gxtTopOutletRef;
+      ctx.engineInstances = new Map(_gxtEngineInstances);
+    }
+    _gxtRootContext = _prevRootContext;
+    _gxtTopOutletRef = _prevTopOutletRef;
+    _gxtEngineInstances.clear();
+    for (const [k, v] of _prevEngineEntries) _gxtEngineInstances.set(k, v);
+  }
 }
 
 // "Pending sync from property change" flag, paired with a 2-method get/set
@@ -16905,6 +16978,14 @@ export default function templateCompilation() {
 // globalThis and cannot depend on `@ember/-internals`.
 (globalThis as any).__gxtCompileTemplate = compileTemplate;
 
+// Phase 4.1 SSR consumer plumbing (RFC §7.1.1 step 2). Dual-published alongside
+// the bridge entry above so an out-of-package SSR driver (or a harness probe) that
+// cannot import `@ember/-internals/gxt-backend/compile` can reach the per-root
+// runner via globalThis — exactly as `gxt-delegate.ts` reads `__gxtCompileTemplate`.
+// ADDITIVE: nothing in the browser path invokes it; merely assigning the global
+// changes no behavior.
+(globalThis as any).__gxtWithRootContext = _gxtWithRootContext;
+
 // @internal — exported for unit testing only
 export const __test_internals = {
   hyphenToUnderscore,
@@ -17131,6 +17212,13 @@ installCompilePipelinePart({
   // route through these; intra-file consumers read the module-local directly.
   getRootContext: _getGxtRootContext,
   setRootContext: _setGxtRootContext,
+  // Phase 4.1 SSR consumer plumbing (RFC §7.1.1 step 2): synchronous per-root
+  // save/swap/restore runner. ADDITIVE — no browser-path caller; dormant until a
+  // FastBoot/SSR driver wraps each request in `withRootContext(freshCtx, () => …)`.
+  // Also dual-published on `globalThis.__gxtWithRootContext` (mirroring
+  // `__gxtCompileTemplate`) so an out-of-package SSR driver that cannot import
+  // `@ember/-internals` can still reach it.
+  withRootContext: _gxtWithRootContext,
   // Get-only accessor (with internal lazy-init) for the canonical
   // `_gxtComponentContexts` WeakMap. Cross-file lazy-init writers/readers
   // (glimmer/lib/templates/root.ts, @ember/routing/route.ts) route through it;
