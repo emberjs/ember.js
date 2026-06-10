@@ -479,6 +479,57 @@ Option 1 is the committed target. Option 2 is the fallback if
 coordination with the Glimmer team does not conclude by the Phase 3
 milestone.
 
+**Status — Option 2 fallback machinery implemented in-repo; protocol
+extraction remains the preferred path.** The fallback is no longer a
+paper plan: the in-repo pieces that make Option 2 shippable exist and
+are tested.
+
+- **Sibling package** — `packages/@glimmer/component-gxt/`
+  (workspace-private, like the other in-repo GXT packages). Its `.`
+  entry re-exports `@glimmer/component` 2.x's entire public surface
+  (the default `Component` base class — that is the whole public API of
+  `@glimmer/component` 2.x). Its `./reactive` entry re-exports the
+  reactive-runtime symbols the package is built against
+  (`createTag`, `CURRENT_TAG`, `tracked`, `cached`, `createCache`,
+  `getValue`) from `@ember/-internals/gxt-backend/*` — the same shim
+  modules the GXT rollup alias map injects for the rest of the bundle —
+  so its symbols are identity-equal with the GXT build's reactive core
+  rather than a second copy. The package is thin re-export/delegate, not
+  a reimplementation, and (like the `gxt-backend` shims and the `demo`
+  workspace) is excluded from the classic root `tsconfig.json`
+  type-check because its specifiers only resolve under the GXT alias
+  map.
+- **Identity test** —
+  `packages/@glimmer/component-gxt/__tests__/identity.test.ts` asserts
+  `===` between the symbols reached "through `@glimmer/component-gxt`"
+  and the same symbols reached through the `gxt-backend` shims
+  (`createTag`, `CURRENT_TAG`, `tracked`, `cached`, cache primitives),
+  and demonstrates the fork it closes by showing those are NOT the
+  classic `@glimmer/validator` copies. (`Tag` is a TS interface, not a
+  runtime value; `getCustomTagFor` lives in the heavyweight
+  `@glimmer/manager` shim and is out of scope for the lightweight test.)
+  It runs through the `demo` workspace's vitest:
+  `cd packages/demo && ./node_modules/.bin/vitest run --config
+  ./vitest.gxt-identity.config.mts`.
+- **Installer-refusal guard** — `scripts/ember-cli-gxt.mjs`'s `enable`
+  path now scans the consumer's `package.json` for a direct
+  `@glimmer/component` dependency and (when a srcDir is given) greps app
+  source for reachable `@glimmer/component` imports — distinguishing the
+  `@glimmer/component-gxt` sibling so it does not false-positive. On a
+  hit it prints the RFC-mandated refusal explaining the swap and exits
+  non-zero (no package.json mutation); `status` reports the guard state.
+
+**What shipping Option 2 for real still requires:** the consumable
+`ember-source-gxt` packaging from §5.5 (the `M` packaging item). Until
+that exists, `@glimmer/component-gxt` is in-repo fallback machinery and
+is not published, and `ember-addon.backend = 'gxt'` remains the
+placeholder read by nothing that §5.5 documents — so the installer
+guard is forward-looking: it blocks `enable` from silently introducing
+the fork once that packaging lands, but cannot itself perform a real
+dependency swap today. The in-repo workspace GXT build does not hit the
+fork at all, because it alias-injects the shims for every consumer in
+the bundle (`rollup.config.mjs`).
+
 ### 7. FastBoot + engines disposition
 
 The earlier internal plan said "GXT has no SSR" and scoped rehydration

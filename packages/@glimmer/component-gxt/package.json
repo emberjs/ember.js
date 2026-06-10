@@ -1,0 +1,21 @@
+{
+  "name": "@glimmer/component-gxt",
+  "version": "2.1.1",
+  "private": true,
+  "description": "RFC §6 Option-2 fallback: a GXT-backed sibling of @glimmer/component. Re-exports the @glimmer/component public API and binds its reactive core (createTag / CURRENT_TAG / @tracked) to the GXT shims so symbol identity does NOT fork against an npm-installed @glimmer/component. Workspace-private build-time machinery; not published yet (see RFC §5.5 / §6 — depends on the unshipped ember-source-gxt packaging).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./reactive": "./src/reactive.ts"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/emberjs/ember.js",
+  "scripts": {},
+  "dependencies": {
+    "@glimmer/component": "workspace:*"
+  },
+  "comment-on-gxt-backend": "The reactive core this package binds to (`@ember/-internals/gxt-backend/*`, see src/reactive.ts) is provided by the GXT rollup alias map (rollup.config.mjs), NOT by npm resolution. It is therefore intentionally NOT declared as a dependency here — `@ember/-internals/gxt-backend` is not a pnpm workspace package. When the real `ember-source-gxt` packaging exists (RFC §5.5), these specifiers resolve through that package.",
+  "engines": {
+    "node": ">= 18"
+  }
+}
