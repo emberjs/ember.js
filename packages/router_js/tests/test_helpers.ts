@@ -9,6 +9,7 @@ import type { TransitionError } from '../lib/transition-state';
 import type { UnrecognizedURLError } from '../lib/unrecognized-url-error';
 import { isTransitionAborted, throwIfAborted } from '../lib/transition-aborted-error';
 import { Promise } from 'rsvp';
+import type { RouteStateBucket } from '@ember/-internals/routing';
 
 // A useful function to allow you to ignore transition errors in a testing context
 export async function ignoreTransitionError(transition: Transition) {
@@ -135,7 +136,7 @@ class TestRouteManager implements RouteManagerLike {
 
   createRoute(handler: Route, args: { name: string }): TestRouteBucket {
     const bucket = new TestRouteBucket(handler, args);
-    handler.bucket = bucket as unknown as object;
+    handler.bucket = bucket as unknown as RouteStateBucket;
     handler.manager = this as unknown as Route['manager'];
     return bucket;
   }
