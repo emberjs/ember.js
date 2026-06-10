@@ -1051,7 +1051,6 @@ function addChildView(parent: any, child: any): void {
  * 4. If no unclaimed instance exists, create a new one and add to pool
  */
 const instancePools = new WeakMap<any, Map<any, PoolEntry[]>>();
-const parentRenderFrames = new WeakMap<any, Symbol>();
 
 // Track all pool arrays for iteration in __gxtDestroyUnclaimedPoolEntries.
 // Intra-file readers use `_allPoolArrays` directly; the cross-file reader in
@@ -13642,14 +13641,6 @@ const __gxtOnCounters: { adds: number; removes: number } = { adds: 0, removes: 0
 // install-then-destroy behaviour).
 const __gxtOnListenerMap: WeakMap<Element, Map<string, number>> = new WeakMap();
 let __gxtOnDomApiPatched = false;
-
-function __gxtCountListeners(el: Element): number {
-  const byType = __gxtOnListenerMap.get(el);
-  if (!byType) return 0;
-  let total = 0;
-  for (const n of byType.values()) total += n;
-  return total;
-}
 
 function __gxtInstallOnElementPatch(): void {
   if (__gxtOnDomApiPatched) return;

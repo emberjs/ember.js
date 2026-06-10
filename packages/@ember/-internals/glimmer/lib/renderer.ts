@@ -782,13 +782,7 @@ class ClassicRootState {
             (this as any).__gxtDeferredError = renderError;
           }
 
-          // Store references for re-rendering
-          const gxtTemplate = template;
           const gxtRoot = root;
-          const gxtOwner = owner;
-          // Use actualRenderTarget (the wrapper element if created) for re-rendering
-          const gxtRenderTarget = actualRenderTarget;
-          const gxtRootState = this;
 
           // Capture the component's self tag for reactivity tracking
           // This allows us to detect when Ember's set() changes properties

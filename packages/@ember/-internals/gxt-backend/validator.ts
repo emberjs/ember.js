@@ -81,9 +81,6 @@ export const {
 // re-running the callback and comparing results.
 let _trackingTagStack: Set<any>[] | null = null;
 
-// A monotonic counter for tag revisions in the track/validateTag system.
-let _trackRevision = 0;
-
 export function track(cb: () => void): any {
   // Entering an explicit tracking frame: temporarily clear the local
   // untrack depth so that inner consumeTag calls register and nested
@@ -1056,17 +1053,6 @@ const tagLastSnapshotRevision = new WeakMap<object, number>();
 
 // Track dirty revisions - when a tag was last dirtied (in globalRevisionCounter space)
 const tagDirtyRevision = new WeakMap<object, number>();
-
-// Get the revision for a tag (for storing as lastRevision).
-// Uses globalRevisionCounter so all revisions are in the same space.
-function getTagSnapshotRevision(tag: any): number {
-  if (!tagLastSnapshotRevision.has(tag)) {
-    // Don't bump the counter here - just use the current value.
-    // Bumping would cause false invalidations for track tags.
-    tagLastSnapshotRevision.set(tag, globalRevisionCounter);
-  }
-  return tagLastSnapshotRevision.get(tag)!;
-}
 
 // Mark a tag as dirtied at the current revision (uses globalRevisionCounter)
 function markTagDirty(tag: any): void {
