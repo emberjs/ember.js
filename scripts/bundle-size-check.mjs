@@ -6,11 +6,45 @@
 // Reads scripts/bundle-budgets.json and checks every entry's raw/gzip/brotli
 // size against its recorded budget. Fails (exit 1) if any metric exceeds its
 // budget by more than 5 percent.
+//
+// An entry's `path` may be either a single file (legacy AMD layout) or a
+// DIRECTORY. The current rollup build (`npx rollup --config`) emits an ESM
+// chunk tree under `dist/prod` (prod) and `dist/dev` (debug) rather than the
+// historical single-file `dist/ember.prod.js` / `dist/ember.debug.js` AMD
+// bundles. For a directory entry the gate concatenates every `*.js` under it
+// (sorted for determinism) and measures raw/gzip/brotli on the concatenation —
+// the single-bundle-equivalent size of the whole backend output.
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { gzipSync, brotliCompressSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, join } from 'node:path';
+
+// Recursively collect every `*.js` file under `dir`, returned sorted so the
+// concatenation (and therefore the measured gzip/brotli sizes) is stable
+// across machines and runs.
+function collectJsFiles(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...collectJsFiles(full));
+    } else if (entry.isFile() && entry.name.endsWith('.js')) {
+      out.push(full);
+    }
+  }
+  return out.sort();
+}
+
+// Returns the concatenated bytes for an entry path: the file itself if `abs`
+// is a single file, or the sorted concatenation of every `*.js` under it if
+// `abs` is a directory.
+function readEntryBytes(abs) {
+  if (statSync(abs).isDirectory()) {
+    return Buffer.concat(collectJsFiles(abs).map((f) => readFileSync(f)));
+  }
+  return readFileSync(abs);
+}
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, '..');
@@ -57,7 +91,7 @@ for (const entry of budget.entries) {
     continue;
   }
 
-  const buf = readFileSync(abs);
+  const buf = readEntryBytes(abs);
   const raw = buf.byteLength;
   const gz = gzipSync(buf).byteLength;
   const br = brotliCompressSync(buf).byteLength;
