@@ -138,6 +138,10 @@ export default class CurlyComponentManager
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket>
 {
+  // Identifies curly managers without requiring an import of this module
+  // (and the full classic component machinery) just to compare identities.
+  readonly [CURLY_COMPONENT_BRAND] = true;
+
   protected templateFor(component: Component): CompilableProgram | null {
     let { layout, layoutName } = component;
     let owner = getOwner(component);
@@ -559,6 +563,5 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
 };
 
 export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
-(CURLY_COMPONENT_MANAGER as unknown as Record<symbol, boolean>)[CURLY_COMPONENT_BRAND] = true;
 
 export { CURLY_COMPONENT_BRAND, isCurlyManager } from './curly-symbols';
