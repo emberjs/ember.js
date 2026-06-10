@@ -231,7 +231,7 @@ backed by the session's 14-module test result, the compat layer in
 | Ember Data reactivity                                            | UNTESTED    | Ember Data's tracked/computed usage is not in the spike. `@ember-data/debug` imports from `@glimmer/interfaces` and needs verification (`/tmp/gxt-plan-review-domain.md` §2.7).                                                                                                        |
 | FastBoot / SSR rehydration                                       | PARTIAL     | GXT has a **complete** native SSR + rehydration subsystem (~1000 lines of runtime, 52 tests — see `/tmp/gxt-ssr-exploration.md` §2-§3). The gap is the **FastBoot bridge**: SimpleDOM vs happy-dom, opcode markers vs counter markers. Size: 2-4 weeks, not multi-month. See §8 below. |
 | Ember Inspector integration                                      | UNSUPPORTED | No GXT-native component-tree adapter exists. Needs its own plan and owner; see §9.                                                                                                                                                                                                     |
-| Strict mode templates / v2 addons                                | UNVALIDATED | Embroider strict mode resolves imports statically and will not obey arbitrary `vite.config.mjs` aliases. `/tmp/gxt-plan-review-domain.md` §2.6 flags this as a blocker for modern apps. Phase 2 must produce a built `ember-source-gxt` package.                                       |
+| Strict mode templates / v2 addons                                | BLOCKED (validated 2026-06-10) | Empirically validated against the `smoke-tests/v2-app-template` Embroider+Vite app (strict by default under `@embroider/compat` 4.x, where `staticInvokables` is the only remaining static flag and `staticEmberSource`/`staticAddonTrees`/`staticComponents`/etc. are removed-and-always-`true`). Three independent blockers, none of which is alias resolution. See §5.5 for the dual-compile evidence, root causes, and effort classes. |
 | Dynamic `mut` / two-way bindings through computed properties     | PASS        | Session fix landed; verified.                                                                                                                                                                                                                                                          |
 | Observers / `didUpdate` lifecycle                                | PASS        | Session fix landed; verified.                                                                                                                                                                                                                                                          |
 | `(hash)` / `(array)` helper identity across renders              | UNVALIDATED | GXT closure evaluation may produce fresh objects where Glimmer reused references; anything relying on `===` in `didUpdateAttrs` or modifier arg comparison could silently over-invalidate. Flagged in domain review §2.3. Needs explicit test coverage before preview exits.           |
@@ -378,6 +378,70 @@ byte-identity — otherwise every downstream typed consumer of
 `ember-source` sees `import('@ember/-internals/render-backend').Tag`
 instead of `import('@glimmer/validator').Tag`, which is a
 public-types-surface change.
+
+#### 5.5 Strict-mode Embroider validation (empirical, 2026-06-10)
+
+The feature-matrix row "Strict mode templates / v2 addons" was carried
+as `UNVALIDATED` with the stated reason "Embroider strict mode resolves
+imports statically and will not obey arbitrary `vite.config.mjs`
+aliases." That reason is **imprecise** and is corrected here by an
+empirical pass against the in-repo `smoke-tests/v2-app-template`
+(`@embroider/compat`/`@embroider/core` 4.x + `@embroider/vite`, which is
+strict-by-default — `staticEmberSource`/`staticAddonTrees`/`staticComponents`/`staticHelpers`/`staticModifiers`
+are all removed and forced to `true`, and `staticInvokables` is the only
+remaining toggle, set in the `optimized` recommended preset).
+
+**Method.** A single representative `.gjs` (component with args + a
+yielded contextual-component block, a function helper, the `{{on}}`
+modifier, `{{#each}}`, `{{#if}}`, and `{{outlet}}` via the application
+template) was compiled through both pipelines:
+
+1. Embroider's strict pipeline: `content-tag` → `babel-plugin-ember-template-compilation`
+   using `ember-source`'s `ember-template-compiler` (`targetFormat: 'wire'`).
+2. GXT's own compiler: `@lifeart/gxt/compiler`'s `transform()` (the same
+   compiler the `GXT_MODE=true` test harness uses).
+
+**Result — the two compilers emit mutually incompatible modules.**
+
+- Embroider strict emits `setComponentTemplate(createTemplateFactory({ block: "<Glimmer wire-format opcodes>", scope: () => ({ on, shout, Card }), isStrictMode: true }), this)`.
+  Rendering this requires the Glimmer VM (`@glimmer/runtime`,
+  `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/wire-format`)
+  — exactly the packages the GXT backend **drops**
+  (`rollup.config.mjs` `GXT_DROPPED_ENTRIES`).
+- GXT emits `[$template] = function () { return $_fin([$_tag(...), $_if(...), $_each(...), $_c(Card, ...)], this) }`
+  plus a ~40-symbol import of `$_tag`/`$_if`/`$_each`/`$_c`/`$_dc`/`$_maybeHelper`/…
+  from `@lifeart/gxt`. There is no wire-format and no
+  `@ember/template-factory`/`setComponentTemplate` at all.
+
+**Root-cause-resolved blocker matrix** (none of these is alias resolution):
+
+| # | Capability under strict-mode Embroider | Status with GXT today | Root cause | Effort |
+| - | -------------------------------------- | --------------------- | ---------- | ------ |
+| 1 | Consume the GXT runtime as a normal dependency | BROKEN | No published/consumable `ember-source-gxt`. The classic `ember-source` dist embeds the Glimmer VM, and the GXT runtime shims under `packages/@ember/-internals/gxt-backend/` are **not** in `ember-source`'s `package.json` `exports`. The `EMBER_RENDER_BACKEND=gxt` Rollup variant (`rollup.config.mjs`) can bake the `@glimmer/*→shim` swaps into a self-contained dist, but it has never been emitted/validated as a standalone consumable package. | M |
+| 2 | Compile `.gjs`/`.gts`/`.hbs` for GXT inside an Embroider build | BROKEN | Embroider's template pipeline is hardwired to `babel-plugin-ember-template-compilation` → Glimmer wire-format. GXT requires its own `@lifeart/gxt/compiler` **Vite plugin** → `$_tag` reactive trees. The two transforms are mutually exclusive over the same `.gjs`, and GXT's compiler is not part of `ember-source`'s published surface — it is a bundler plugin the consumer would have to install and run **instead of** `@embroider/vite`'s `ember()` template handling. | L |
+| 3 | Resolve container/compat-registered components, helpers, modifiers | BROKEN | GXT's `$_c`/`$_maybeHelper`/`$_dc` primitives use GXT-native resolution and bypass both Embroider's static resolution and Ember's container. The bridge that re-points them at Ember container resolution (`gxtEmberWrapperRedirect` in `vite.config.mjs` → `@ember/-internals/gxt-backend/ember-gxt-wrappers`) is an **unshipped, ember.js-repo-only Vite plugin**; without it, compat-resolved invokables are invisible. | M |
+| – | Resolve the `@lifeart/gxt` runtime import that GXT-compiled output emits | OK — **not** a blocker | `@lifeart/gxt` is a bare npm specifier; Embroider's static resolver resolves it as an ordinary dependency. The `@glimmer/*→shim` aliases that the RFC feared are **internal to `ember-source`'s own Rollup build** (baked by the `EMBER_RENDER_BACKEND=gxt` variant) and are never seen by the consumer's resolver. The "won't obey arbitrary aliases" framing therefore does not describe the actual failure. | n/a |
+
+**Harness note (orthogonal to GXT).** A full `vite build` of
+`smoke-tests/v2-app-template` against the **dev `ember-source`
+checkout** fails before any backend question is reached: Embroider's
+`classicEmberSupport()` runs a classic ember-cli prebuild, and
+`ember-cli-htmlbars` reads `ember-source.absolutePaths.templateCompiler`,
+which the unbuilt dev checkout does not expose (`TypeError: Cannot read
+properties of undefined (reading 'templateCompiler')`). This blocks the
+full-app scenario for the **classic** backend too, so it is not a GXT
+signal; exercising the app end-to-end requires first producing a
+publishable-shaped `ember-source` (e.g. via `scenario.prepare()` /
+`pnpm install` prepack). Effort to unblock the harness: S.
+
+**Conclusion.** Strict-mode Embroider + GXT is **blocked, not merely
+unvalidated.** The blocker is not Embroider's static resolver rejecting
+aliases; it is (1) the absence of a consumable `ember-source-gxt`
+runtime, (2) the mutually exclusive template-compiler contract (Glimmer
+wire-format vs GXT `$_tag` trees), and (3) the unshipped
+container-resolution bridge. All three are the §5.2 "required shipping
+form" work and a consumer-side compiler-integration story; none is a
+small wiring fix. No forced/hacky workaround was attempted.
 
 ### 6. `@glimmer/component` disposition
 
@@ -679,8 +743,15 @@ for this RFC.
   throughput, memory-at-steady-state. Phase 3 deliverable. This RFC
   intentionally does not state any perf claim.
 - **Embroider v2-addon + strict-mode integration exact contract
-  (§5).** The resolver-alias strategy is the current plan but has not
-  been proven against a real v2 addon graph.
+  (§5).** Partially resolved by the 2026-06-10 validation pass (§5.5):
+  the failure mode is now root-caused (no consumable `ember-source-gxt`
+  runtime; mutually exclusive template-compiler contract; unshipped
+  container-resolution bridge) and is **not** the alias-resolution risk
+  originally stated. What remains open is the affirmative contract — a
+  shipped `ember-source-gxt` plus a consumer-side mechanism that swaps
+  Embroider's `babel-plugin-ember-template-compilation` step for GXT's
+  compiler and re-points GXT's invokable primitives at container
+  resolution. Not yet proven against a real v2 addon graph.
 
 ---
 
