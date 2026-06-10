@@ -14,11 +14,12 @@
  * DIFFERENT object, which is exactly the symbol-identity duplication RFC §6
  * warns about.
  *
- * How to run (gxt-backend `__tests__` are not wired to an npm script; they run
- * through the demo workspace's vitest, which is the only one installed):
+ * How to run (this test and the gxt-backend compat-layer unit tests run
+ * together through the demo workspace's vitest — the only one installed — via
+ * one npm script):
  *
- *   cd packages/demo && ./node_modules/.bin/vitest run \
- *     --config ./vitest.gxt-identity.config.mts
+ *   cd packages/demo && pnpm test:gxt-unit
+ *     # (vitest run --config ./vitest.gxt-unit.config.mts)
  *
  * The config aliases `@glimmer/component-gxt[/reactive]` and the two
  * `@ember/-internals/gxt-backend/*` shim subpaths to their source files — the

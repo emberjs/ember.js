@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "clean": "rm -rf ./node_modules/.vite",
-    "start": "pnpm run clean && pnpm dev"
+    "start": "pnpm run clean && pnpm dev",
+    "test:gxt-unit": "vitest run --config ./vitest.gxt-unit.config.mts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

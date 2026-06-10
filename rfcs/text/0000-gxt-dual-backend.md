@@ -547,9 +547,10 @@ are tested.
   classic `@glimmer/validator` copies. (`Tag` is a TS interface, not a
   runtime value; `getCustomTagFor` lives in the heavyweight
   `@glimmer/manager` shim and is out of scope for the lightweight test.)
-  It runs through the `demo` workspace's vitest:
-  `cd packages/demo && ./node_modules/.bin/vitest run --config
-  ./vitest.gxt-identity.config.mts`.
+  It runs through the `demo` workspace's vitest, alongside the
+  gxt-backend compat-layer unit tests, via one command:
+  `cd packages/demo && pnpm test:gxt-unit` (config:
+  `./vitest.gxt-unit.config.mts`).
 - **Installer-refusal guard** — `scripts/ember-cli-gxt.mjs`'s `enable`
   path now scans the consumer's `package.json` for a direct
   `@glimmer/component` dependency and (when a srcDir is given) greps app
