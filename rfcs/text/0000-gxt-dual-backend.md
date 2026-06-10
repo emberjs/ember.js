@@ -137,14 +137,30 @@ All 11 dual-backend integration tasks have landed on branch
 
 **Bundle-size observation**
 
-- Measured at Phase 3: GXT prod bundle is **3,482,502 bytes raw** vs classic's
-  **2,045,674 bytes raw** — approximately **70% larger** raw, **68% larger**
-  gzip.
-- The delta is dominated by `@lifeart/gxt`'s reactive core and bundled
-  template compiler before any tree-shaking is applied to the GXT side.
-- A Phase 2.5 bundle attribution audit (`rollup-plugin-visualizer` sweep) is
-  the recommended next step before quoting this number publicly. Until that
-  audit lands, treat the 70% premium as a worst-case upper bound.
+- The GXT prod build (`dist/prod`, sorted-concat of every `*.js`) is
+  **2,532,078 bytes raw / 657,904 gzip** vs classic's
+  **1,973,907 bytes raw / 492,512 gzip** — approximately **+28% raw** and
+  **+34% gzip**. (The earlier "~70% larger / 3.48 MB raw" figure was a
+  worst-case upper bound taken before any tree-shaking; it is superseded.)
+- The Phase 2.5/2.6 audit landed the structural wins: `@lifeart/gxt` is now
+  **externalized** (a bare-specifier import resolved by the host, not inlined),
+  which also dropped its transitive `@glimmer/syntax` + `@handlebars/parser` +
+  `simple-html-tokenizer` (~600KB raw). The template compiler, inspector
+  adapter, debug-render-tree, and runtime-hbs shims tree-shake cleanly out of
+  the prod runtime graph.
+- A `rollup-plugin-visualizer` sweep (`BUNDLE_VISUALIZER=1`) attributes the
+  remaining +558KB raw delta almost entirely to the **gxt-backend compat
+  layer**: `manager.ts` ~461KB, `validator.ts` ~82KB, `reference.ts` ~23KB,
+  `helper-manager.ts` ~19KB, `destroyable.ts` ~11KB. `@glimmer/runtime`,
+  `@glimmer/syntax`, and `@glimmer/compiler` are byte-identical in both builds
+  (the template compiler plus the retained VM); GXT mode drops ~69KB of
+  `@glimmer/{validator,manager,reference,destroyable}` by shimming them.
+- The residual delta is therefore **genuine runtime bridge logic, not a
+  tree-shaking failure**. A further reduction would require either shrinking
+  `manager.ts`/`validator.ts` or marking `@lifeart/gxt`'s own package as
+  side-effect-free (`"sideEffects": ["./dist/gxt.ember-inspector.es.js"]`) so
+  consumer bundlers can tree-shake the parts of the reactive core an app does
+  not reach — tracked as a glimmer-next release item.
 
 **Compat layer location**
 
