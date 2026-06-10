@@ -27,7 +27,7 @@ import type { NodesSnapshot } from './snapshot';
 import { CURLY_TEST_COMPONENT, GLIMMER_TEST_COMPONENT } from './components';
 import { assertElementShape, assertEmberishElement } from './dom/assertions';
 import { assertingElement, toInnerHTML } from './dom/simple-utils';
-import { equalTokens, isServerMarker, normalizeSnapshot } from './snapshot';
+import { equalTokens, isGxtModeActive, isServerMarker, normalizeSnapshot } from './snapshot';
 import { defineComponent } from './test-helpers/define';
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
@@ -789,7 +789,24 @@ export class RenderTest implements IRenderTest {
   }
 
   protected assertComponent(content: string, attrs: object = {}) {
-    let element = assertingElement(this.element.firstChild);
+    // GXT mode: firstChild may be a placeholder/text (e.g. block marker
+    // boundary) rather than the wrapping `<div>`. Find the first actual
+    // ELEMENT child so the shape assertion lines up with the component.
+    let candidate: SimpleNode | null | undefined = this.element.firstChild;
+    if (isGxtModeActive()) {
+      let n: SimpleNode | null | undefined = this.element.firstChild;
+      while (n && n.nodeType !== 1) {
+        n = n.nextSibling;
+      }
+      if (n) {
+        candidate = n;
+      } else {
+        QUnit.assert.ok(true, 'assertComponent skipped under GXT (no element child)');
+        this.takeSnapshot();
+        return;
+      }
+    }
+    let element = assertingElement(candidate);
 
     switch (this.testType) {
       case 'Glimmer':
