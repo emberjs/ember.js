@@ -129,11 +129,31 @@ All 11 dual-backend integration tasks have landed on branch
 
 **GxtRehydrationDelegate**
 
-- A GXT-flavored rehydration delegate for the integration-test harness is an
-  unfinished follow-up, tracked under "Concrete action items for Phase 4"
-  below. The two known architectural blockers — root-context isolation in
-  `gxt-backend/compile.ts` and lossy translation of nested-engine outlet
-  cursor IDs — remain open before a default SSR wiring is possible.
+- A GXT-flavored rehydration delegate for the integration-test harness exists
+  (`packages/@glimmer-workspace/integration-tests/lib/modes/rehydration/gxt-delegate.ts`)
+  and drives the in-element rehydration suites, but a **default SSR wiring**
+  remains blocked on two architectural items, both now analysed in depth (§7.1,
+  2026-06-10):
+  1. **Root-context isolation in `gxt-backend/compile.ts` (Phase 4.1).** Analysed,
+     **not refactored** — and that is the deliberate, evidence-based outcome. The
+     genuinely root-scoped state in `compile.ts` (`_gxtRootContext`,
+     `_gxtTopOutletRef`, `_gxtEngineInstances`) is a thin, already-bridged layer,
+     but the *real* isolation boundary — GXT's module-global node counter,
+     rehydration stack, and `setupGlobalScope` (`$slots`/`$fw`/`$args`) — lives in
+     upstream `@lifeart/gxt`, not in `compile.ts`. Threading N roots through
+     `compile.ts` while the upstream counter stays global would be cosmetic (no
+     concurrent-SSR benefit) and carries real regression risk on the most
+     load-bearing file in the backend. The tractable, useful shape is a
+     synchronous `withRootContext(ctx, fn)` swap API plus the upstream changes;
+     see §7.1.
+  2. **Lossy translation of nested-engine outlet cursor IDs (Phase 4.2).**
+     Analysed. The partial/nested-engine rehydration path (`{{mount}}`,
+     engine outlets, partial rehydration) re-renders the sub-tree from scratch
+     client-side instead of aligning against the server cursor, because GXT's
+     module-global node counter exposes only `resetNodeCounter()` (reset to 0) —
+     there is no "seed to base offset N" API — so a sub-tree that begins mid-tree
+     on the server cannot resume the parent's counter sequence on the client. Fix
+     shape in §7.1; upstream + delegate, no `compile.ts` change.
 
 **Bundle-size observation**
 
@@ -592,6 +612,196 @@ compatible with FastBoot**, full stop. The exploration correction
 replaces the earlier "no SSR" framing but does not weaken the
 user-facing constraint: an app that uses FastBoot today cannot opt
 into GXT today.
+
+### 7.1 Phase 4 architectural blockers — analysis (2026-06-10)
+
+The two blockers gating a *default* SSR wiring (root-context isolation,
+Phase 4.1; nested-engine outlet cursor-ID translation, Phase 4.2) were
+investigated against `gxt-fine-grained` HEAD `47b26701bd`. The outcome is
+**analysis + design, not a `compile.ts` refactor**, for the reasons mapped
+below. A correct "this is architecturally deep, here is the exact map and
+design" is the intended result for this step; forcing a cosmetic,
+regression-prone half-refactor of the backend's most load-bearing file
+(`compile.ts`, ~17k lines) to claim a win was explicitly rejected.
+
+#### 7.1.1 Phase 4.1 — root-scoped state map (`compile.ts` + leaned-on state)
+
+SSR needs **N isolated render roots** (one per request, plus a separate
+client rehydration root) where today there is effectively **one** ambient
+root. Every piece of root-scoped singleton state was enumerated and
+classified as **(a)** trivially scopable, **(b)** scopable with care, or
+**(c)** architecturally global.
+
+**(a) Trivially scopable — genuinely root-scoped, already bridged:**
+
+- `_gxtRootContext` (`compile.ts:965`) — the single ambient GXT `Root` built
+  lazily by `_getOrCreateGxtRoot` (`:973`). Read/written through the
+  `compilePipeline.getRootContext` / `setRootContext` bridge (`:17132`) by
+  four cross-package consumers (`glimmer/lib/renderer.ts:80`,
+  `glimmer/lib/templates/root.ts:111/118/271`, `gxt-backend/outlet.gts:172/406`,
+  `gxt-backend/runtime-hbs.ts:159`). **The catch:** all four read/write the
+  ambient root with **no root-discriminator argument**. Making it per-root
+  means threading a root key (or an ambient swap) through that entire
+  cross-package surface.
+- `_gxtTopOutletRef` (`compile.ts:3525`) — "the current app's top outlet",
+  paired get/set bridge; one captured singleton per app.
+- `_gxtEngineInstances` (`compile.ts:3811`) — `Map<string, any>` keyed by
+  engine mount-point name; for N concurrent apps the names collide. Scopable
+  but, like the root, only via a per-root key at each access.
+
+**(b) Scopable with care — transient/reentrancy state, pass-correct today:**
+
+- The ~40 `_gxt*Flag` reentrancy guards (e.g. `_gxtSyncingFlag`,
+  `_gxtInOutletRenderFlag:3495`, `_gxtMorphRenderInProgressFlag:3457`,
+  `_gxtCurrentlyRenderingFlag:3245`), each wrapped in a `_gxtWith…(fn)`
+  save/restore. Within a single **synchronous** render pass they are correct.
+  They would only leak across requests if two renders interleaved at an
+  `await`. GXT SSR renders synchronously (`renderInBrowser`/`render` in
+  `@lifeart/gxt`'s `src/core/ssr/ssr.ts` build a string in one pass), so
+  per-pass they are safe; true N-concurrent-request isolation in one Node
+  process would need these to become per-render-context (AsyncLocalStorage-
+  style) — a deep change with no current consumer.
+- The deferred drain queues (`_inElementDeferQueue:1590`,
+  `_deferredCascadeQueue:3022`, `_pendingIfWatcherNotifications:3006`,
+  `_pendingEachRebindHolders:6220`, `_pendingInverseOldRowFinalize:6389`) —
+  drained within the pass; same reasoning.
+- Monotonic ID counters used for markers: `_contextId:125` (component-id
+  namespace, starts at 100), `_gxtCommentCounter:4612`,
+  `manager.ts:emberViewIdCounter:277`, `manager.ts:_managedComponentGeneration:12135`.
+  For SSR↔client **marker alignment** these must reset deterministically per
+  document — which is the same requirement as Phase 4.2 (see below).
+- A few owner-keyed memoizations in `manager.ts` (`_cachedManagerOwner:8189`,
+  `_lastOwnerForInteractive:3499`, `_isInteractiveCached:3478`) cache "the
+  current ambient owner"; per-root they would need re-keying by owner identity.
+
+**(c) Architecturally global — correct as-is, or not isolable from `compile.ts`:**
+
+- **Pure compile-time caches** — `templateCache:12717`, `_functionCodeCache:12877`,
+  `_tagHelperInstanceCache:7847`, and the builtin/allow-list `Set`s
+  (`_GXT_STRICT_ALLOWED_NAMES:1195`, `_GXT_ATTR_QUOTED_HELPER_BUILTINS:13022`,
+  `_GXT_BODY_BARE_BUILTINS:13422`, `_HTML_BOOLEAN_ATTRS:2253`, the `_SANITIZE_*`
+  sets `:2174`). These are pure functions of template source; sharing them
+  across roots is *correct* and desirable.
+- `_gxtComponentContexts` (`compile.ts:1001`) — a `WeakMap` keyed by component
+  / controller instance. Because a given instance belongs to exactly one root,
+  the map is already partitioned by instance identity and does **not** need
+  per-root duplication. Safe to remain global.
+- **Upstream `@lifeart/gxt` module-global state — the real "one root" boundary.**
+  This is the decisive finding. The state that actually forces a single render
+  root lives in the GXT runtime package, not in `compile.ts`:
+  - the **node counter** (`incrementNodeCounter` / `resetNodeCounter` /
+    `getNodeCounter`, `dist/src/core/dom.d.ts`) that drives SSR
+    `data-node-id` markers and the rehydration walk;
+  - the **rehydration stack + scheduling state**
+    (`isRehydrationScheduled` / `setRehydrationScheduled`,
+    `dist/src/core/ssr/rehydration-state.d.ts`; the reverse-DFS stack in
+    `rehydration.ts`);
+  - the **parent-context stack** (`pushParentContext` / `popParentContext` /
+    `getParentContext` / `setParentContext`, `tracking.d.ts`) and
+    `RENDERING_CONTEXT` / `ROOT_CONTEXT`;
+  - `setupGlobalScope`'s `globalThis.$slots` / `$fw` / `$args` / `$_MANAGERS`
+    contract surface (reset in `compile.ts:_gxtClearOnSetup:7706`).
+  `compile.ts` **cannot** isolate any of these from outside the package. They
+  are global by GXT's design.
+
+**Verdict: the map is (c)-dominated for the purpose of real SSR isolation.**
+The root-scoped items inside `compile.ts` are thin and already bridged, but
+(1) making them per-root requires a wide cross-package signature change
+(`renderer.ts`, `root.ts`, `outlet.gts`, `runtime-hbs.ts`, `route.ts`), and
+(2) it would be **cosmetic** — concurrent SSR stays impossible while the
+upstream node counter, rehydration stack, and global scope remain module-global
+in `@lifeart/gxt`. The integration suites all run in a single-root browser, so
+such a refactor would change zero observable behavior while adding real
+regression surface to `compile.ts`. **Decision: analysis-only; do not refactor
+`compile.ts`.** (No `compile.ts` change ⇒ the full GXT gate is not triggered;
+this section is documentation-only.)
+
+**Design for when it is implemented** (smallest correct shape, in order):
+
+1. **Upstream `@lifeart/gxt`:** make the node counter *seedable* — add
+   `setNodeCounter(n)` alongside the existing `resetNodeCounter()` — and expose
+   the rehydration stack + `setupGlobalScope` slots as a `RenderRoot`-scoped
+   context object rather than module globals (or guard them with an
+   AsyncLocalStorage-style "current render context"). This is the same
+   "abstract the global behind an injectable context" move already begun for
+   happy-dom (Phase 4 action item §7(2), `src/core/ssr/dom-provider.ts`).
+2. **`compile.ts` (only after step 1):** add a synchronous
+   `compilePipeline.withRootContext(ctx, fn)` that swaps `_gxtRootContext`,
+   `_gxtTopOutletRef`, `_gxtEngineInstances` (and calls the upstream
+   counter/stack reset) for the duration of `fn`, restoring on exit. The
+   browser path never calls it, so the module-globals remain the default
+   ambient root and single-root behavior is byte-identical. Each SSR request
+   becomes `withRootContext(freshCtx, () => render(...))`.
+3. **The cross-package bridge** keeps its existing get/set shape; only the
+   four lazy-init writers gain "read the current ambient (swapped) root,"
+   which they already do.
+
+This is deliberately **not** landed speculatively: it has no consumer until a
+FastBoot/SSR driver exists, and adding dead API to `compile.ts` (with its
+required full-suite gate) for zero behavioral benefit is exactly the
+half-refactor this analysis avoids.
+
+#### 7.1.2 Phase 4.2 — nested-engine outlet cursor-ID translation
+
+**Where the information is lost.** Classic Ember partial rehydration — the
+mechanism engines use to rehydrate a server-rendered sub-tree (a `{{mount}}`
+target / engine outlet) — starts its cursor **mid-document**, at the boundary
+element, and walks the existing server DOM aligning against block markers:
+`PartialRehydrationDelegate.renderComponentClientSide`
+(`…/rehydration/partial-rehydration-delegate.ts`) does
+`let cursor = { element: placeholder, nextSibling: null }` and lets Glimmer
+VM's rehydration builder resume the counter at the boundary.
+
+The GXT delegate cannot do this today. `GxtPartialRehydrationDelegate`
+(`…/rehydration/gxt-delegate.ts:1733`) instead does
+`(element as Element).innerHTML = ''` and **re-renders the component from
+scratch** (`:1742-1747`), then reports `rehydrationStats = { clearedNodes: [] }`
+— a fabricated "zero clears". The delegate header states this directly
+(`:20-22`): *"Real counter-based alignment. We re-run the template client-side
+against a fresh cursor; any `rehydrationStats.clearedNodes` assertions will be
+reported as zero clears."*
+
+**Root cause.** GXT's SSR alignment uses a single module-global node counter
+that emits `data-node-id="${N}"` on elements and `$[N]` suffixes in reactive
+boundary comments, with the client rehydration walking in reverse DFS and
+relying on the **same counter incrementing in the same order** on both sides.
+The exported surface (`dom.d.ts`) is `resetNodeCounter()` (reset to **0**),
+`incrementNodeCounter()`, and `getNodeCounter()` — there is **no
+`setNodeCounter(n)` / seed-to-base-offset**. So when a nested engine outlet (or
+any `{{mount}}`ed / partially-rehydrated sub-tree) is rendered:
+  - On the **server** the sub-tree's `data-node-id`s are minted within the
+    **parent document's** continuous counter sequence (offset by however many
+    nodes preceded the mount point).
+  - On the **client** the engine is a *separate* render boundary; GXT would
+    begin its node counter at **0** for that boundary, so the local IDs no
+    longer match the server `data-node-id`s. The parent offset — the only thing
+    that ties the engine's local sequence to the document namespace — is the
+    information that is lost.
+
+This is GXT-runtime-internal and applies equally to non-engine nested
+boundaries (the in-element delegate sidesteps it only by emitting and
+re-parsing Glimmer-VM-style `%cursor:N%` / `%+b:N%` block markers via a
+**separate** per-pass depth counter, `__gxtInElementBlockDepth`,
+`gxt-delegate.ts:778/1150` — it does not use the GXT node counter at all).
+
+**Shape of the fix** (upstream + delegate; no `compile.ts` change):
+
+1. **Upstream `@lifeart/gxt`:** add the seedable counter from §7.1.1 step 1
+   (`setNodeCounter(n)`), and have `withRehydration(...)` accept a **base
+   offset** so a nested boundary can resume the parent's namespace instead of
+   resetting to 0. Concretely: record each render-boundary's starting node-id in
+   the server output (the mount/outlet boundary element carries its
+   `data-node-id`), and on the client read that attribute to seed the local
+   counter before walking the sub-tree.
+2. **Delegate:** `GxtPartialRehydrationDelegate.renderComponentClientSide`
+   replaces the `innerHTML = ''` re-render with a real boundary-seeded
+   `withRehydration(component, args, boundaryEl, root)` call, reading the
+   boundary element's recorded base offset, and reports the *true*
+   `clearedNodes` from the rehydration walk.
+
+This unblocks the `partial rehydration ::` suite's `clearedNodes`/stable-node
+assertions and is the prerequisite for real `{{mount}}`/engine SSR, which §7(4)
+otherwise leaves `UNTESTED`.
 
 ### 8. Debug and Ember Inspector parity
 
