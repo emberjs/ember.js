@@ -10,6 +10,8 @@ import { Renderer } from './renderer';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
+import './syntax/register-routing-keywords';
+import './register-classic-helper';
 
 export function setupApplicationRegistry(registry: Registry): void {
   // because we are using injections we can't use instantiate false

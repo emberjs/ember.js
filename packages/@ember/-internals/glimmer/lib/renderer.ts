@@ -47,7 +47,7 @@ import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/inte
 import type Component from './component';
 import { hasDOM } from '../../browser-environment';
 import type ClassicComponent from './component';
-import { BOUNDS } from './component-managers/curly';
+import { BOUNDS } from './component-managers/curly-symbols';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import { EmberEnvironmentDelegate } from './environment';
