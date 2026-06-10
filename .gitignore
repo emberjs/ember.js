@@ -55,3 +55,14 @@ npm-debug.log
 # couple of the files. Once it is, we can switch this over to just ignoring
 # `types/stable` entirely.
 types/stable
+
+# GXT migration debug scripts (ad-hoc, not tracked)
+/scripts/debug-artifacts/
+
+# Ephemeral GXT test outputs (keep baseline + triage)
+/test-results/gxt-last-run.json
+/test-results/gxt-summary.json
+/test-results/rehydration/
+
+# Claude agent working state
+/.claude/

@@ -87,8 +87,11 @@ jobs:
         run: pnpm vite build --mode=development
         env:
           NODE_ENV: development
+          GXT_MODE: 'true'
       - name: test
         run: pnpm test
+        env:
+          GXT_MODE: 'true'
 
   variant-tests:
     name: ${{ matrix.name }}
@@ -123,12 +126,14 @@ jobs:
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
         env:
           NODE_ENV: ${{ matrix.BUILD || 'development' }}
+          GXT_MODE: 'true'
       - name: test
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
           RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
+          GXT_MODE: 'true'
 
         run: pnpm test
 

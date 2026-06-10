@@ -1,0 +1,42 @@
+name: GXT dual-build matrix
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - glimmer-next-fresh
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.backend }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [classic, gxt]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Build (${{ matrix.backend }})
+        run: |
+          rm -rf dist
+          if [ "${{ matrix.backend }}" = "gxt" ]; then
+            EMBER_RENDER_BACKEND=gxt npx rollup --config rollup.config.mjs
+          else
+            npx rollup --config rollup.config.mjs
+          fi
+      - name: Upload dist artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dist-${{ matrix.backend }}
+          path: dist/prod/packages/
+          if-no-files-found: warn
