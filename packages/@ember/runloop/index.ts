@@ -41,6 +41,9 @@ function onBegin(current: DeferredActionQueues) {
   currentRunLoop = current;
 }
 
+// null is safe here: async observers can only exist via
+// `@ember/-internals/metal/lib/observer`, whose module evaluation registers
+// the flush.
 let asyncObserverFlush: ((scheduleFn: typeof schedule) => void) | null = null;
 
 export function registerAsyncObserverFlush(fn: (scheduleFn: typeof schedule) => void): void {

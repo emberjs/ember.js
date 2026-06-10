@@ -1,6 +1,6 @@
 import { getFactoryFor } from '@ember/-internals/container/lib/container';
 import { assert } from '@ember/debug';
-import { _instrumentStart } from '@ember/instrumentation';
+import { _instrumentStart } from '@ember/instrumentation/lib/internal-instrument';
 import { DEBUG } from '@glimmer/env';
 import type {
   ComponentDefinition,
@@ -14,7 +14,7 @@ import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
 import { CONSTANT_TAG } from '@glimmer/validator/lib/validators';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import type Component from '../component';
-import type { DynamicScope } from '../renderer';
+import type { DynamicScope } from '../classic-renderer';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   DIRTY_TAG,

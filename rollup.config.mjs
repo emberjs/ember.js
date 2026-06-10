@@ -241,6 +241,14 @@ function packages() {
   entryFiles = [
     ...entryFiles,
     ...glob.sync(`{${rolledUpPackages().join(',')}}/index.{js,ts}`, { cwd: 'packages' }),
+
+    // Side-effect registration modules must be standalone files with stable
+    // paths (not folded into hashed chunks) so that the package.json
+    // `sideEffects` allowlist can reference them.
+    '@ember/-internals/glimmer/lib/register-classic-helper.ts',
+    '@ember/-internals/glimmer/lib/register-curly-component.ts',
+    '@ember/-internals/glimmer/lib/syntax/register-routing-keywords.ts',
+    '@glimmer/runtime/lib/debug-render-tree-register.ts',
   ];
 
   return Object.fromEntries(

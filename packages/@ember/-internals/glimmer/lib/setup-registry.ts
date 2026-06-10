@@ -6,11 +6,13 @@ import Input from './components/input';
 import LinkTo from './components/link-to';
 import Textarea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
-import { Renderer } from './renderer';
+import { Renderer } from './classic-renderer';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
 import './syntax/register-routing-keywords';
+import './register-curly-component';
+import '@glimmer/runtime/lib/debug-render-tree-register';
 import './register-classic-helper';
 
 export function setupApplicationRegistry(registry: Registry): void {

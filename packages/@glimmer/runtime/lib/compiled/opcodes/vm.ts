@@ -60,209 +60,9 @@ import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/valida
 import type { UpdatingVM } from '../../vm';
 import type { VM } from '../../vm/append';
 
-import { APPEND_OPCODES } from '../../opcodes';
+import type { AppendOpcodes } from '../../opcodes';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
-
-APPEND_OPCODES.add(VM_CHILD_SCOPE_OP, (vm) => vm.pushChildScope());
-
-APPEND_OPCODES.add(VM_POP_SCOPE_OP, (vm) => vm.popScope());
-
-APPEND_OPCODES.add(VM_PUSH_DYNAMIC_SCOPE_OP, (vm) => vm.pushDynamicScope());
-
-APPEND_OPCODES.add(VM_POP_DYNAMIC_SCOPE_OP, (vm) => vm.popDynamicScope());
-
-APPEND_OPCODES.add(VM_CONSTANT_OP, (vm, { op1: other }) => {
-  vm.stack.push(vm.constants.getValue(decodeHandle(other)));
-});
-
-APPEND_OPCODES.add(VM_CONSTANT_REFERENCE_OP, (vm, { op1: other }) => {
-  vm.stack.push(createConstRef(vm.constants.getValue(decodeHandle(other)), false));
-});
-
-APPEND_OPCODES.add(VM_PRIMITIVE_OP, (vm, { op1: primitive }) => {
-  let stack = vm.stack;
-
-  if (isHandle(primitive)) {
-    // it is a handle which does not already exist on the stack
-    let value = vm.constants.getValue(decodeHandle(primitive));
-    stack.push(value);
-  } else {
-    // is already an encoded immediate or primitive handle
-    stack.push(decodeImmediate(primitive));
-  }
-});
-
-APPEND_OPCODES.add(VM_PRIMITIVE_REFERENCE_OP, (vm) => {
-  let stack = vm.stack;
-  let value = check(stack.pop(), CheckPrimitive);
-  let ref;
-
-  if (value === undefined) {
-    ref = UNDEFINED_REFERENCE;
-  } else if (value === null) {
-    ref = NULL_REFERENCE;
-  } else if (value === true) {
-    ref = TRUE_REFERENCE;
-  } else if (value === false) {
-    ref = FALSE_REFERENCE;
-  } else {
-    ref = createPrimitiveRef(value);
-  }
-
-  stack.push(ref);
-});
-
-APPEND_OPCODES.add(VM_DUP_OP, (vm, { op1: register, op2: offset }) => {
-  let position = check(vm.fetchValue(check(register, CheckRegister)), CheckNumber) - offset;
-  vm.stack.dup(position);
-});
-
-APPEND_OPCODES.add(VM_POP_OP, (vm, { op1: count }) => {
-  vm.stack.pop(count);
-});
-
-APPEND_OPCODES.add(VM_LOAD_OP, (vm, { op1: register }) => {
-  vm.load(check(register, CheckSyscallRegister));
-});
-
-APPEND_OPCODES.add(VM_FETCH_OP, (vm, { op1: register }) => {
-  vm.fetch(check(register, CheckSyscallRegister));
-});
-
-APPEND_OPCODES.add(VM_BIND_DYNAMIC_SCOPE_OP, (vm, { op1: _names }) => {
-  let names = vm.constants.getArray<string>(_names);
-  vm.bindDynamicScope(names);
-});
-
-APPEND_OPCODES.add(VM_ENTER_OP, (vm, { op1: args }) => {
-  vm.enter(args);
-});
-
-APPEND_OPCODES.add(VM_EXIT_OP, (vm) => {
-  vm.exit();
-});
-
-APPEND_OPCODES.add(VM_PUSH_SYMBOL_TABLE_OP, (vm, { op1: _table }) => {
-  let stack = vm.stack;
-  stack.push(vm.constants.getValue(_table));
-});
-
-APPEND_OPCODES.add(VM_PUSH_BLOCK_SCOPE_OP, (vm) => {
-  let stack = vm.stack;
-  stack.push(vm.scope());
-});
-
-APPEND_OPCODES.add(VM_COMPILE_BLOCK_OP, (vm: VM) => {
-  let stack = vm.stack;
-  let block = stack.pop<Nullable<CompilableTemplate> | 0>();
-
-  if (block) {
-    stack.push(vm.compile(block));
-  } else {
-    stack.push(null);
-  }
-});
-
-APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
-  let { stack } = vm;
-
-  let handle = check(stack.pop(), CheckNullable(CheckHandle));
-  let scope = check(stack.pop(), CheckNullable(CheckScope));
-  let table = check(stack.pop(), CheckNullable(CheckBlockSymbolTable));
-
-  let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
-
-  if (table === null || handle === null) {
-    assert(
-      handle === null && table === null,
-      `Expected both handle and table to be null if either is null`
-    );
-    // To balance the pop{Frame,Scope}
-    vm.lowlevel.pushFrame();
-    vm.pushScope(scope ?? vm.scope());
-
-    return;
-  }
-
-  let invokingScope = expect(scope, 'BUG: expected scope');
-
-  // If necessary, create a child scope
-  {
-    let locals = table.parameters;
-    let localsCount = locals.length;
-
-    if (localsCount > 0) {
-      invokingScope = invokingScope.child();
-
-      for (let i = 0; i < localsCount; i++) {
-        invokingScope.bindSymbol(unwrap(locals[i]), args.at(i));
-      }
-    }
-  }
-
-  vm.lowlevel.pushFrame();
-  vm.pushScope(invokingScope);
-
-  vm.call(handle);
-});
-
-APPEND_OPCODES.add(VM_JUMP_IF_OP, (vm, { op1: target }) => {
-  let reference = check(vm.stack.pop(), CheckReference);
-  let value = Boolean(valueForRef(reference));
-
-  if (isConstRef(reference)) {
-    if (value) {
-      vm.lowlevel.goto(target);
-    }
-  } else {
-    if (value) {
-      vm.lowlevel.goto(target);
-    }
-
-    vm.updateWith(new Assert(reference));
-  }
-});
-
-APPEND_OPCODES.add(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {
-  let reference = check(vm.stack.pop(), CheckReference);
-  let value = Boolean(valueForRef(reference));
-
-  if (isConstRef(reference)) {
-    if (!value) {
-      vm.lowlevel.goto(target);
-    }
-  } else {
-    if (!value) {
-      vm.lowlevel.goto(target);
-    }
-
-    vm.updateWith(new Assert(reference));
-  }
-});
-
-APPEND_OPCODES.add(VM_JUMP_EQ_OP, (vm, { op1: target, op2: comparison }) => {
-  let other = check(vm.stack.peek(), CheckNumber);
-
-  if (other === comparison) {
-    vm.lowlevel.goto(target);
-  }
-});
-
-APPEND_OPCODES.add(VM_ASSERT_SAME_OP, (vm) => {
-  let reference = check(vm.stack.peek(), CheckReference);
-
-  if (!isConstRef(reference)) {
-    vm.updateWith(new Assert(reference));
-  }
-});
-
-APPEND_OPCODES.add(VM_TO_BOOLEAN_OP, (vm) => {
-  let { stack } = vm;
-  let valueRef = check(stack.pop(), CheckReference);
-
-  stack.push(createComputeRef(() => toBool(valueForRef(valueRef))));
-});
 
 export class Assert implements UpdatingOpcode {
   private last: unknown;
@@ -342,4 +142,206 @@ export class EndTrackFrameOpcode implements UpdatingOpcode {
     let tag = endTrackFrame();
     this.target.didModify(tag);
   }
+}
+
+export function defineVmOpcodes(APPEND_OPCODES: AppendOpcodes): void {
+  APPEND_OPCODES.add(VM_CHILD_SCOPE_OP, (vm) => vm.pushChildScope());
+
+  APPEND_OPCODES.add(VM_POP_SCOPE_OP, (vm) => vm.popScope());
+
+  APPEND_OPCODES.add(VM_PUSH_DYNAMIC_SCOPE_OP, (vm) => vm.pushDynamicScope());
+
+  APPEND_OPCODES.add(VM_POP_DYNAMIC_SCOPE_OP, (vm) => vm.popDynamicScope());
+
+  APPEND_OPCODES.add(VM_CONSTANT_OP, (vm, { op1: other }) => {
+    vm.stack.push(vm.constants.getValue(decodeHandle(other)));
+  });
+
+  APPEND_OPCODES.add(VM_CONSTANT_REFERENCE_OP, (vm, { op1: other }) => {
+    vm.stack.push(createConstRef(vm.constants.getValue(decodeHandle(other)), false));
+  });
+
+  APPEND_OPCODES.add(VM_PRIMITIVE_OP, (vm, { op1: primitive }) => {
+    let stack = vm.stack;
+
+    if (isHandle(primitive)) {
+      // it is a handle which does not already exist on the stack
+      let value = vm.constants.getValue(decodeHandle(primitive));
+      stack.push(value);
+    } else {
+      // is already an encoded immediate or primitive handle
+      stack.push(decodeImmediate(primitive));
+    }
+  });
+
+  APPEND_OPCODES.add(VM_PRIMITIVE_REFERENCE_OP, (vm) => {
+    let stack = vm.stack;
+    let value = check(stack.pop(), CheckPrimitive);
+    let ref;
+
+    if (value === undefined) {
+      ref = UNDEFINED_REFERENCE;
+    } else if (value === null) {
+      ref = NULL_REFERENCE;
+    } else if (value === true) {
+      ref = TRUE_REFERENCE;
+    } else if (value === false) {
+      ref = FALSE_REFERENCE;
+    } else {
+      ref = createPrimitiveRef(value);
+    }
+
+    stack.push(ref);
+  });
+
+  APPEND_OPCODES.add(VM_DUP_OP, (vm, { op1: register, op2: offset }) => {
+    let position = check(vm.fetchValue(check(register, CheckRegister)), CheckNumber) - offset;
+    vm.stack.dup(position);
+  });
+
+  APPEND_OPCODES.add(VM_POP_OP, (vm, { op1: count }) => {
+    vm.stack.pop(count);
+  });
+
+  APPEND_OPCODES.add(VM_LOAD_OP, (vm, { op1: register }) => {
+    vm.load(check(register, CheckSyscallRegister));
+  });
+
+  APPEND_OPCODES.add(VM_FETCH_OP, (vm, { op1: register }) => {
+    vm.fetch(check(register, CheckSyscallRegister));
+  });
+
+  APPEND_OPCODES.add(VM_BIND_DYNAMIC_SCOPE_OP, (vm, { op1: _names }) => {
+    let names = vm.constants.getArray<string>(_names);
+    vm.bindDynamicScope(names);
+  });
+
+  APPEND_OPCODES.add(VM_ENTER_OP, (vm, { op1: args }) => {
+    vm.enter(args);
+  });
+
+  APPEND_OPCODES.add(VM_EXIT_OP, (vm) => {
+    vm.exit();
+  });
+
+  APPEND_OPCODES.add(VM_PUSH_SYMBOL_TABLE_OP, (vm, { op1: _table }) => {
+    let stack = vm.stack;
+    stack.push(vm.constants.getValue(_table));
+  });
+
+  APPEND_OPCODES.add(VM_PUSH_BLOCK_SCOPE_OP, (vm) => {
+    let stack = vm.stack;
+    stack.push(vm.scope());
+  });
+
+  APPEND_OPCODES.add(VM_COMPILE_BLOCK_OP, (vm: VM) => {
+    let stack = vm.stack;
+    let block = stack.pop<Nullable<CompilableTemplate> | 0>();
+
+    if (block) {
+      stack.push(vm.compile(block));
+    } else {
+      stack.push(null);
+    }
+  });
+
+  APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
+    let { stack } = vm;
+
+    let handle = check(stack.pop(), CheckNullable(CheckHandle));
+    let scope = check(stack.pop(), CheckNullable(CheckScope));
+    let table = check(stack.pop(), CheckNullable(CheckBlockSymbolTable));
+
+    let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
+
+    if (table === null || handle === null) {
+      assert(
+        handle === null && table === null,
+        `Expected both handle and table to be null if either is null`
+      );
+      // To balance the pop{Frame,Scope}
+      vm.lowlevel.pushFrame();
+      vm.pushScope(scope ?? vm.scope());
+
+      return;
+    }
+
+    let invokingScope = expect(scope, 'BUG: expected scope');
+
+    // If necessary, create a child scope
+    {
+      let locals = table.parameters;
+      let localsCount = locals.length;
+
+      if (localsCount > 0) {
+        invokingScope = invokingScope.child();
+
+        for (let i = 0; i < localsCount; i++) {
+          invokingScope.bindSymbol(unwrap(locals[i]), args.at(i));
+        }
+      }
+    }
+
+    vm.lowlevel.pushFrame();
+    vm.pushScope(invokingScope);
+
+    vm.call(handle);
+  });
+
+  APPEND_OPCODES.add(VM_JUMP_IF_OP, (vm, { op1: target }) => {
+    let reference = check(vm.stack.pop(), CheckReference);
+    let value = Boolean(valueForRef(reference));
+
+    if (isConstRef(reference)) {
+      if (value) {
+        vm.lowlevel.goto(target);
+      }
+    } else {
+      if (value) {
+        vm.lowlevel.goto(target);
+      }
+
+      vm.updateWith(new Assert(reference));
+    }
+  });
+
+  APPEND_OPCODES.add(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {
+    let reference = check(vm.stack.pop(), CheckReference);
+    let value = Boolean(valueForRef(reference));
+
+    if (isConstRef(reference)) {
+      if (!value) {
+        vm.lowlevel.goto(target);
+      }
+    } else {
+      if (!value) {
+        vm.lowlevel.goto(target);
+      }
+
+      vm.updateWith(new Assert(reference));
+    }
+  });
+
+  APPEND_OPCODES.add(VM_JUMP_EQ_OP, (vm, { op1: target, op2: comparison }) => {
+    let other = check(vm.stack.peek(), CheckNumber);
+
+    if (other === comparison) {
+      vm.lowlevel.goto(target);
+    }
+  });
+
+  APPEND_OPCODES.add(VM_ASSERT_SAME_OP, (vm) => {
+    let reference = check(vm.stack.peek(), CheckReference);
+
+    if (!isConstRef(reference)) {
+      vm.updateWith(new Assert(reference));
+    }
+  });
+
+  APPEND_OPCODES.add(VM_TO_BOOLEAN_OP, (vm) => {
+    let { stack } = vm;
+    let valueRef = check(stack.pop(), CheckReference);
+
+    stack.push(createComputeRef(() => toBool(valueForRef(valueRef))));
+  });
 }

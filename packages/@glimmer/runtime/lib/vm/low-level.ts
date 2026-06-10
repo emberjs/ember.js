@@ -16,11 +16,6 @@ import { $fp, $pc, $ra, $sp } from '@glimmer/vm/lib/registers';
 import type { DebugState } from '../opcodes';
 import type { VM } from './append';
 
-// Loading the VM is what creates the demand for opcode handlers — its
-// `evaluateSyscall` calls `APPEND_OPCODES.evaluate(...)`. Pull bootstrap in
-// here (rather than at the package barrel) so consumers using deep imports
-// still get every opcode handler registered before the VM runs.
-import '../bootstrap';
 import { APPEND_OPCODES } from '../opcodes';
 
 export type LowLevelRegisters = [$pc: number, $ra: number, $sp: number, $fp: number];

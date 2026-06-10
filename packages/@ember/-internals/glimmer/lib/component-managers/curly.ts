@@ -12,7 +12,7 @@ import {
 } from '@ember/-internals/views/lib/system/utils';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
-import { _instrumentStart } from '@ember/instrumentation';
+import { _instrumentStart } from '@ember/instrumentation/lib/internal-instrument';
 import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
@@ -48,7 +48,7 @@ import {
 } from '@glimmer/validator/lib/tracking';
 import { validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type Component from '../component';
-import type { DynamicScope } from '../renderer';
+import type { DynamicScope } from '../classic-renderer';
 import type RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
 import {
@@ -70,7 +70,13 @@ export function getComponentCapturedArgs(
   return COMPONENT_ARGS_MAP.get(component);
 }
 
-export { BOUNDS, DIRTY_TAG, IS_DISPATCHING_ATTRS } from './curly-symbols';
+export {
+  BOUNDS,
+  CURLY_COMPONENT_BRAND,
+  DIRTY_TAG,
+  IS_DISPATCHING_ATTRS,
+  isCurlyManager,
+} from './curly-symbols';
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 
@@ -563,5 +569,3 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
 };
 
 export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
-
-export { CURLY_COMPONENT_BRAND, isCurlyManager } from './curly-symbols';

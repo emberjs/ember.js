@@ -25,6 +25,13 @@ import { $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm/lib/register
 
 import type { LowLevelVM, VM } from './vm';
 import type { Externs } from './vm/low-level';
+import { defineDomOpcodes } from './compiled/opcodes/dom';
+import { defineDebuggerOpcodes } from './compiled/opcodes/debugger';
+import { defineComponentOpcodes } from './compiled/opcodes/component';
+import { defineExpressionOpcodes } from './compiled/opcodes/expressions';
+import { defineListOpcodes } from './compiled/opcodes/lists';
+import { defineContentOpcodes } from './compiled/opcodes/content';
+import { defineVmOpcodes } from './compiled/opcodes/vm';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -218,4 +225,16 @@ export function externs(vm: VM): Externs | undefined {
     : undefined;
 }
 
-export const APPEND_OPCODES = new AppendOpcodes();
+export const APPEND_OPCODES = /* #__PURE__ */ defineOpcodes();
+
+function defineOpcodes(): AppendOpcodes {
+  const appendOpcodes = new AppendOpcodes();
+  defineDomOpcodes(appendOpcodes);
+  defineDebuggerOpcodes(appendOpcodes);
+  defineComponentOpcodes(appendOpcodes);
+  defineExpressionOpcodes(appendOpcodes);
+  defineListOpcodes(appendOpcodes);
+  defineContentOpcodes(appendOpcodes);
+  defineVmOpcodes(appendOpcodes);
+  return appendOpcodes;
+}

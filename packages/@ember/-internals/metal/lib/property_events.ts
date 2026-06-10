@@ -3,17 +3,21 @@ import { peekMeta } from '@ember/-internals/meta/lib/meta';
 import { assert } from '@ember/debug';
 import { markObjectAsDirty } from './tags';
 
+// null is safe here: these hooks only matter once an observer exists, and the
+// only way to create one is through `./observer`, whose module evaluation
+// registers all three. Keep that coupling in mind when moving observer APIs.
 let observerFlushSync: (() => void) | null = null;
 let observerSuspendDeactivation: (() => void) | null = null;
 let observerResumeDeactivation: (() => void) | null = null;
 
-export function registerObserverFlushSync(fn: () => void): void {
-  observerFlushSync = fn;
-}
-
-export function registerObserverDeactivationHooks(suspend: () => void, resume: () => void): void {
-  observerSuspendDeactivation = suspend;
-  observerResumeDeactivation = resume;
+export function registerObserverHooks(hooks: {
+  flushSync: () => void;
+  suspend: () => void;
+  resume: () => void;
+}): void {
+  observerFlushSync = hooks.flushSync;
+  observerSuspendDeactivation = hooks.suspend;
+  observerResumeDeactivation = hooks.resume;
 }
 
 /**

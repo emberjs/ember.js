@@ -1,7 +1,7 @@
 import type { FactoryManager, InternalFactory, InternalOwner } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { _instrumentStart } from '@ember/instrumentation';
+import { _instrumentStart } from '@ember/instrumentation/lib/internal-instrument';
 import { DEBUG } from '@glimmer/env';
 import type {
   ClassicResolver,
@@ -93,6 +93,9 @@ const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
 };
 
 export function registerBuiltInKeywordHelper(name: string, helper: object): void {
+  // Both tables must be written: BUILTIN_HELPERS copies BUILTIN_KEYWORD_HELPERS
+  // via spread exactly once, at module evaluation, so registrations that happen
+  // afterwards would otherwise be visible to only one of the two lookup paths.
   BUILTIN_KEYWORD_HELPERS[name] = helper;
   BUILTIN_HELPERS[name] = helper;
 }
@@ -170,6 +173,17 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
     if (definition === undefined) {
       return null;
     }
+
+    assert(
+      `Attempted to resolve \`helper:${name}\`, which is a classic class-based helper, ` +
+        'but classic helper support was not loaded. It is loaded when an Ember Application ' +
+        'boots (via `@ember/-internals/glimmer/lib/register-classic-helper`).',
+      !(
+        classicHelperHandler === null &&
+        typeof definition === 'function' &&
+        (definition as { isHelperFactory?: boolean }).isHelperFactory === true
+      )
+    );
 
     if (typeof definition === 'function' && classicHelperHandler !== null) {
       let result = classicHelperHandler(definition, factory);

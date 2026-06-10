@@ -7,6 +7,8 @@ import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
 import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 
+// null is safe here: a descriptor's setter can only be a computed setter if
+// `./decorator` created it, and that module's evaluation registers the check.
 let computedSetterCheck: ((setter: (this: object, value: unknown) => void) => boolean) | null =
   null;
 

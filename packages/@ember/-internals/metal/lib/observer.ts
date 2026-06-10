@@ -8,7 +8,7 @@ import { tagMetaFor } from '@glimmer/validator/lib/meta';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';
-import { registerObserverDeactivationHooks, registerObserverFlushSync } from './property_events';
+import { registerObserverHooks } from './property_events';
 
 interface ActiveObserver {
   tag: Tag;
@@ -272,6 +272,9 @@ function destroyObservers(target: object) {
   if (ASYNC_OBSERVERS.size > 0) ASYNC_OBSERVERS.delete(target);
 }
 
-registerObserverFlushSync(flushSyncObservers);
-registerObserverDeactivationHooks(suspendedObserverDeactivation, resumeObserverDeactivation);
+registerObserverHooks({
+  flushSync: flushSyncObservers,
+  suspend: suspendedObserverDeactivation,
+  resume: resumeObserverDeactivation,
+});
 registerAsyncObserverFlush(flushAsyncObservers);

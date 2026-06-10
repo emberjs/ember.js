@@ -13,7 +13,7 @@ import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
-import type { Renderer } from '../renderer';
+import type { Renderer } from '../classic-renderer';
 import type { OutletState } from '../utils/outlet';
 
 export interface BootEnvironment {

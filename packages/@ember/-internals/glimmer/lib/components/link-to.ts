@@ -5,7 +5,7 @@ import inspect from '@ember/debug/lib/inspect';
 import { assert, debugFreeze, warn } from '@ember/debug';
 import { getEngineParent } from '@ember/engine/parent';
 import type EngineInstance from '@ember/engine/instance';
-import { flaggedInstrument } from '@ember/instrumentation';
+import { flaggedInstrument } from '@ember/instrumentation/lib/internal-instrument';
 import { action } from '@ember/object';
 import { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';

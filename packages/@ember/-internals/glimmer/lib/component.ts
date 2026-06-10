@@ -1,4 +1,4 @@
-import type { View } from './renderer';
+import type { View } from './classic-renderer';
 import { descriptorForProperty, nativeDescDecorator } from '@ember/-internals/metal/lib/decorator';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
@@ -18,13 +18,12 @@ import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
-import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { isUpdatableRef, updateRef } from '@glimmer/reference/lib/reference';
 import { normalizeProperty } from '@glimmer/runtime/lib/dom/props';
 import type { DirtyableTag } from '@glimmer/interfaces';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import type { SimpleElement } from '@simple-dom/interface';
-import { CURLY_COMPONENT_MANAGER, getComponentCapturedArgs } from './component-managers/curly';
+import { getComponentCapturedArgs } from './component-managers/curly';
 import { BOUNDS, DIRTY_TAG, IS_DISPATCHING_ATTRS } from './component-managers/curly-symbols';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 
@@ -1676,12 +1675,5 @@ class Component<S = unknown>
     return '@ember/component';
   }
 }
-
-// We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
-Component.reopenClass({
-  positionalParams: [],
-});
-
-setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
 
 export default Component;
