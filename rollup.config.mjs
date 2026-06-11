@@ -745,22 +745,26 @@ const allowedCycles = [
 ];
 
 // Replace the bare `__GXT_MODE__` identifier with the boolean literal for the
-// classic rollup build. The classic dist NEVER runs in GXT mode (the GXT test
-// harness uses vite directly, see vite.config.mjs), so this always inlines
-// `false`. After this transform, terser/DCE collapses
-// `if (__GXT_MODE__) { ... }` → `if (false) { ... }` → dead-branch elimination.
+// CURRENT rollup backend: `false` for the classic dist, `true` for the
+// EMBER_RENDER_BACKEND=gxt dist (mirroring what the vite GXT harness defines).
+// Modules shared by both backends branch on this flag — e.g.
+// templates/root.ts and templates/outlet.ts export the classic precompiled
+// template vs the GXT factory — so hardcoding `false` here shipped the wrong
+// branch into whichever dist runs the other backend. After this transform,
+// terser/DCE collapses `if (__GXT_MODE__) { ... }` to the live branch.
 //
 // `@rollup/plugin-replace` is avoided to skip a new dependency. The match is
 // trivially constrained to the literal identifier (\b__GXT_MODE__\b) and the
 // produced source matches what plugin-replace would emit.
 function replaceGxtModeFlag() {
   const GXT_MODE_RE = /\b__GXT_MODE__\b/g;
+  const literal = String(USE_GXT_BACKEND);
   return {
     name: 'replace-gxt-mode-flag',
     transform(code, id) {
       if (id.includes('/node_modules/')) return null;
       if (!code.includes('__GXT_MODE__')) return null;
-      const replaced = code.replace(GXT_MODE_RE, 'false');
+      const replaced = code.replace(GXT_MODE_RE, literal);
       if (replaced === code) return null;
       return { code: replaced, map: null };
     },

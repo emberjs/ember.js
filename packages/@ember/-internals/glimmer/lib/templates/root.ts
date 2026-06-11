@@ -3,6 +3,9 @@
 // would resolve to the real VM source in GXT builds (scripts/gxt-alias-map.mjs).
 // eslint-disable-next-line ember-local/no-barrel-imports
 import { getComponentTemplate } from '@glimmer/manager';
+// Classic-build template compiler (build-time macro in classic pipelines; the
+// GXT-aliased shim in GXT mode, where the call site below is dead-branched).
+import { precompileTemplate } from '@ember/template-compilation';
 // Bridge reader for `registerObjectValueOwner`.
 import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 // Lazy accessor for @lifeart/gxt symbols. The gxt-backend module (only loaded
@@ -480,8 +483,10 @@ function getTemplateForComponent(component: any, owner: any): any {
   return null;
 }
 
-// Export as a factory function for Ember's template registration system
-export default function createRootTemplate(_owner: any) {
+// Factory function for Ember's template registration system (GXT backend).
+// The default export below picks this or the classic precompiled template by
+// build-time backend flag.
+function createRootTemplate(_owner: any) {
   // Create a factory that returns a gxt-compatible result
   const factory = () => {
     // Return empty nodes - the actual rendering is done via the render method
@@ -1510,3 +1515,22 @@ export default function createRootTemplate(_owner: any) {
 
   return factory;
 }
+
+// The classic root template — upstream's precompiled `{{component this}}`,
+// consumed by the Glimmer VM (setup-registry.ts registers it as
+// `template:-root`). The initializer is short-circuited in GXT builds so the
+// GXT-aliased `@ember/template-compilation` shim is never invoked at
+// module-init time; the rollup/vite pipelines inline `__GXT_MODE__` to a
+// literal, so exactly one branch survives DCE in each dist. Shipping
+// `createRootTemplate` unconditionally broke every CLASSIC runtime consumer
+// of the dist (the VM received a fake GXT compile handle and crashed on its
+// first opcode — caught by the tracerbench perf job, the only CI job that
+// runs the built classic dist).
+const ClassicRootTemplate = __GXT_MODE__
+  ? undefined
+  : precompileTemplate(`{{component this}}`, {
+      moduleName: 'packages/@ember/-internals/glimmer/lib/templates/root.hbs',
+      strictMode: true,
+    });
+
+export default (__GXT_MODE__ ? createRootTemplate : ClassicRootTemplate) as any;

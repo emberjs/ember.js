@@ -12,6 +12,10 @@
 // The bridge module is a leaf with no side effects, so the import is safe to
 // pull from a non-gxt-backend package even under classic rollup.
 import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+// Classic-build template compiler (build-time macro in classic pipelines; the
+// GXT-aliased shim in GXT mode, where the call site below is dead-branched).
+import { precompileTemplate } from '@ember/template-compilation';
+import { outletHelper } from '../syntax/outlet';
 
 class EmberOutletElement extends HTMLElement {
   private _rendered = false;
@@ -320,9 +324,11 @@ if (typeof customElements !== 'undefined' && !customElements.get('ember-outlet')
   customElements.define('ember-outlet', EmberOutletElement);
 }
 
-// Export as a factory function for Ember's template registration system
-// This is a simplified outlet that just renders nested templates - no GXT primitives needed
-export default function createOutletTemplate(_owner: any) {
+// Factory function for Ember's template registration system (GXT backend).
+// This is a simplified outlet that just renders nested templates - no GXT primitives needed.
+// The default export below picks this or the classic precompiled template by
+// build-time backend flag.
+function createOutletTemplate(_owner: any) {
   // The outlet template factory
   const factory = () => {
     // Return empty nodes - the actual rendering is done via the render method
@@ -463,3 +469,23 @@ export default function createOutletTemplate(_owner: any) {
 
   return factory;
 }
+
+// The classic outlet template — upstream's precompiled
+// `{{component (outletHelper)}}`, consumed by the Glimmer VM. The initializer
+// is short-circuited in GXT builds so the GXT-aliased
+// `@ember/template-compilation` shim is never invoked at module-init time;
+// the rollup/vite pipelines inline `__GXT_MODE__` to a literal, so exactly
+// one branch survives DCE in each dist. See the matching note in
+// templates/root.ts — shipping `createOutletTemplate` unconditionally broke
+// classic runtime consumers of the dist.
+const ClassicOutletTemplate = __GXT_MODE__
+  ? undefined
+  : precompileTemplate(`{{component (outletHelper)}}`, {
+      moduleName: 'packages/@ember/-internals/glimmer/lib/templates/outlet.hbs',
+      strictMode: true,
+      scope() {
+        return { outletHelper };
+      },
+    });
+
+export default (__GXT_MODE__ ? createOutletTemplate : ClassicOutletTemplate) as any;
