@@ -384,7 +384,13 @@ class ClassicRootState {
   public result: GlimmerRenderResult | undefined;
   public destroyed: boolean;
   public render: () => void;
-  readonly env: Environment;
+  readonly #getContext: () => EvaluationContext;
+  // Resolved lazily — touching it forces the VM evaluation context (see the
+  // constructor's getContext doc). No internal reader remains; kept for
+  // parity with the classic RootState surface.
+  get env(): Environment {
+    return this.#getContext().env;
+  }
   public isGxt: boolean = false; // Track if this root uses GXT templates
   public isOutletView: boolean = false; // Track if this root is an OutletView
   public gxtNeedsRerender: boolean = false; // Flag for GXT re-render scheduling
@@ -393,7 +399,11 @@ class ClassicRootState {
 
   constructor(
     public root: Component | OutletView,
-    context: EvaluationContext,
+    // Lazy: resolving the context forces the VM evaluation context (4MB
+    // program heap) into existence — see `createContext` on RendererData.
+    // Under __GXT_MODE__ the GXT branch below never needs it; only the
+    // classic Glimmer fallback branch resolves the thunk.
+    getContext: () => EvaluationContext,
     owner: object,
     template: Template,
     self: Reference<unknown>,
@@ -409,7 +419,7 @@ class ClassicRootState {
     this.id = root instanceof OutletView ? guidFor(root) : getViewId(root);
     this.result = undefined;
     this.destroyed = false;
-    this.env = context.env;
+    this.#getContext = getContext;
 
     this.render = errorLoopTransaction(() => {
       // Guard against infinite render depth (e.g., engine mounting loops).
@@ -815,7 +825,9 @@ class ClassicRootState {
           // Deferred lifecycle errors are stored on __gxtDeferredError and
           // re-thrown by renderRoots (outside errorLoopTransaction).
         } else {
-          // Use standard glimmer rendering
+          // Use standard glimmer rendering (resolves the lazy VM context —
+          // correct here: this branch actually runs the Glimmer VM)
+          const context = getContext();
           let iterator = renderMain(
             context,
             owner,
@@ -1364,8 +1376,21 @@ type Resolver = ClassicResolver;
 
 interface RendererData {
   owner: object;
-  context: EvaluationContext;
   builder: IBuilder;
+  isInteractive: boolean;
+  /**
+   * Lazily builds the classic-VM evaluation context (ProgramHeapImpl's
+   * Int32Array heap + constants pool + environment delegate). Deferred
+   * because under the GXT backend the VM never executes, yet every
+   * Application/RenderingTestCase boot constructs a renderer — and hot
+   * NON-VM paths (`remove()`'s isInteractive check, `rerender()`,
+   * `clearAllRoots`) must not force it: eagerly allocating a fresh program
+   * heap per test exhausted the cumulative single-page testem realm
+   * ("RangeError: Array buffer allocation failed" out of `artifacts()`).
+   * `isInteractive` is therefore carried as a plain boolean here instead of
+   * being read through `context.env`.
+   */
+  createContext(): EvaluationContext;
 }
 
 class RendererState {
@@ -1410,8 +1435,10 @@ class RendererState {
     return this.#data.builder;
   }
 
+  #context: EvaluationContext | null = null;
+
   get context(): EvaluationContext {
-    return this.#data.context;
+    return (this.#context ??= this.#data.createContext());
   }
 
   get env(): Environment {
@@ -1419,7 +1446,7 @@ class RendererState {
   }
 
   get isInteractive(): boolean {
-    return this.#data.context.env.isInteractive;
+    return this.#data.isInteractive;
   }
 
   renderRoot(root: RootState, renderer: BaseRenderer): RootState {
@@ -1478,7 +1505,7 @@ class RendererState {
       }
       initialRootsLength = roots.length;
 
-      inTransaction(this.context.env, () => {
+      const renderRootsPass = () => {
         // ensure that for the first iteration of the loop
         // each root is processed
         for (let i = 0; i < roots.length; i++) {
@@ -1513,7 +1540,20 @@ class RendererState {
         }
 
         this.#lastRevision = valueForTag(CURRENT_TAG);
-      });
+      };
+
+      if (__GXT_MODE__) {
+        // GXT roots never enqueue VM-transaction work (no opcodes run), so
+        // the env transaction would be empty bookkeeping — but reading
+        // `this.context.env` to start it would force the lazy VM evaluation
+        // context into existence (a 4MB ProgramHeapImpl Int32Array per
+        // renderer; one renderer per test exhausted the V8 ArrayBuffer cage
+        // across the cumulative testem run — see `createContext` on
+        // RendererData). Run the pass directly instead.
+        renderRootsPass();
+      } else {
+        inTransaction(this.context.env, renderRootsPass);
+      }
     } while (roots.length > initialRootsLength);
 
     // remove any roots that were destroyed during this transaction
@@ -2547,31 +2587,41 @@ class BaseRenderer {
     resolver: Resolver,
     builder: IBuilder
   ) {
-    let sharedArtifacts = artifacts();
+    // The VM evaluation context is handed to RendererState as a LAZY thunk —
+    // see the `createContext` doc on `RendererData` for why (per-test program
+    // heap allocations exhausted the cumulative GXT testem realm; non-VM
+    // paths like `remove()`/`rerender()` must stay allocation-free).
+    const createContext = (): EvaluationContext => {
+      let sharedArtifacts = artifacts();
 
-    /**
-     * SAFETY: are there consequences for being looser with *this* owner?
-     *         the public API for `owner` is kinda `Partial<InternalOwner>`
-     *         aka: implement only what you need.
-     *         But for actual ember apps, you *need* to implement everything
-     *         an app needs (which will actually change and become less over time)
-     */
-    let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
-    let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
-    let context = new EvaluationContextImpl(
-      sharedArtifacts,
-      (heap) => new RuntimeOpImpl(heap),
-      options
-    );
+      /**
+       * SAFETY: are there consequences for being looser with *this* owner?
+       *         the public API for `owner` is kinda `Partial<InternalOwner>`
+       *         aka: implement only what you need.
+       *         But for actual ember apps, you *need* to implement everything
+       *         an app needs (which will actually change and become less over time)
+       */
+      let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
+      let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
+      return new EvaluationContextImpl(sharedArtifacts, (heap) => new RuntimeOpImpl(heap), options);
+    };
 
     this.state = RendererState.create(
       {
         owner,
-        context,
         builder,
+        isInteractive: envOptions.isInteractive,
+        createContext,
       },
       this
     );
+
+    if (!__GXT_MODE__) {
+      // Classic builds keep the EAGER constructor-time VM context exactly as
+      // before (the `__GXT_MODE__` literal is inlined by both build
+      // pipelines, so this touch is dead-branched only in GXT dists).
+      void this.state.context;
+    }
   }
 
   get debugRenderTree(): DebugRenderTree {
@@ -2739,7 +2789,7 @@ export class Renderer extends BaseRenderer {
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new ClassicRootState(
       root,
-      this.state.context,
+      () => this.state.context,
       this.state.owner,
       this._rootTemplate,
       self,
