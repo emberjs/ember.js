@@ -1,5 +1,7 @@
 import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
 import inject from '@ember/-internals/metal/lib/injected_property';
+import { defineProperty } from '@ember/-internals/metal/lib/properties';
+import type { ExtendedMethodDecorator } from '@ember/-internals/metal/lib/decorator';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
@@ -24,7 +26,7 @@ import states from './states';
 */
 
 interface CoreView extends Evented, ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
+class CoreView extends /* #__PURE__ */ FrameworkObject.extend(Evented, ActionHandler) {
   isView = true;
 
   declare _states: typeof states;
@@ -64,7 +66,6 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
     this._currentState = this._states.preRender;
   }
 
-  @inject('renderer', '-dom')
   declare renderer: Renderer;
 
   instrumentDetails(hash: Record<string, unknown>) {
@@ -100,6 +101,22 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
 }
 
 // Declare on the prototype to have a single shared value.
-CoreView.prototype._states = states;
+const CoreViewWithStates = /* #__PURE__ */ (() => {
+  // This was `@inject('renderer', '-dom')` on the field, but a decorator
+  // forces an impure `static {}` block into the class body, which blocks
+  // tree-shaking of the whole class. Applying the injection decorator through
+  // `defineProperty` is what classic mixin application does with the same
+  // value.
+  defineProperty(
+    CoreView.prototype,
+    'renderer',
+    inject('renderer', '-dom') as unknown as ExtendedMethodDecorator
+  );
 
-export default CoreView;
+  CoreView.prototype._states = states;
+  return CoreView;
+})();
+
+type CoreViewWithStates = CoreView;
+
+export default CoreViewWithStates;

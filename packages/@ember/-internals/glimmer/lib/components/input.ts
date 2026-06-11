@@ -11,9 +11,11 @@ import InputTemplate from '../templates/input';
 import AbstractInput, { valueFrom } from './abstract-input';
 import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 
-let isValidInputType: (type: string) => boolean;
+const isValidInputType: (type: string) => boolean = /* #__PURE__ */ (() => {
+  if (!hasDOM) {
+    return (type: string) => type !== '';
+  }
 
-if (hasDOM) {
   const INPUT_TYPES: Record<string, boolean | undefined> = Object.create(null);
   const INPUT_ELEMENT = document.createElement('input');
 
@@ -21,7 +23,7 @@ if (hasDOM) {
   INPUT_TYPES['text'] = true;
   INPUT_TYPES['checkbox'] = true;
 
-  isValidInputType = (type: string) => {
+  return (type: string) => {
     let isValid = INPUT_TYPES[type];
 
     if (isValid === undefined) {
@@ -39,9 +41,7 @@ if (hasDOM) {
 
     return isValid;
   };
-} else {
-  isValidInputType = (type: string) => type !== '';
-}
+})();
 
 /**
   See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
@@ -159,48 +159,69 @@ if (hasDOM) {
   @param {Hash} options
   @public
 */
-class _Input extends AbstractInput {
-  static toString(): string {
-    return 'Input';
-  }
-
-  /**
-   * The HTML class attribute.
-   */
-  get class(): string {
-    if (this.isCheckbox) {
-      return 'ember-checkbox ember-view';
-    } else {
-      return 'ember-text-field ember-view';
-    }
-  }
-
-  /**
-   * The HTML type attribute.
-   */
-  get type(): string {
-    let type = this.named('type');
-
-    if (type === null || type === undefined) {
-      return 'text';
+const _Input = /* #__PURE__ */ (() => {
+  class _Input extends AbstractInput {
+    static toString(): string {
+      return 'Input';
     }
 
-    assert(
-      'The `@type` argument to the <Input> component must be a string',
-      typeof type === 'string'
-    );
+    /**
+     * The HTML class attribute.
+     */
+    get class(): string {
+      if (this.isCheckbox) {
+        return 'ember-checkbox ember-view';
+      } else {
+        return 'ember-text-field ember-view';
+      }
+    }
 
-    return isValidInputType(type) ? type : 'text';
-  }
+    /**
+     * The HTML type attribute.
+     */
+    get type(): string {
+      let type = this.named('type');
 
-  get isCheckbox(): boolean {
-    return this.named('type') === 'checkbox';
-  }
+      if (type === null || type === undefined) {
+        return 'text';
+      }
 
-  private _checked = valueFrom(this.args.named['checked']);
+      assert(
+        'The `@type` argument to the <Input> component must be a string',
+        typeof type === 'string'
+      );
 
-  get checked(): unknown {
-    if (this.isCheckbox) {
+      return isValidInputType(type) ? type : 'text';
+    }
+
+    get isCheckbox(): boolean {
+      return this.named('type') === 'checkbox';
+    }
+
+    private _checked = valueFrom(this.args.named['checked']);
+
+    get checked(): unknown {
+      if (this.isCheckbox) {
+        warn(
+          '`<Input @type="checkbox" />` reflects its checked state via the `@checked` argument. ' +
+            'You wrote `<Input @type="checkbox" @value={{...}} />` which is likely not what you intended. ' +
+            'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
+          untrack(
+            () =>
+              this.args.named['checked'] !== undefined ||
+              this.args.named['value'] === undefined ||
+              typeof valueForRef(this.args.named['value']) === 'string'
+          ),
+          { id: 'ember.built-in-components.input-checkbox-value' }
+        );
+
+        return this._checked.get();
+      } else {
+        return undefined;
+      }
+    }
+
+    set checked(checked: unknown) {
       warn(
         '`<Input @type="checkbox" />` reflects its checked state via the `@checked` argument. ' +
           'You wrote `<Input @type="checkbox" @value={{...}} />` which is likely not what you intended. ' +
@@ -214,63 +235,46 @@ class _Input extends AbstractInput {
         { id: 'ember.built-in-components.input-checkbox-value' }
       );
 
-      return this._checked.get();
-    } else {
-      return undefined;
+      this._checked.set(checked);
+    }
+
+    @action change(event: Event): void {
+      if (this.isCheckbox) {
+        this.checkedDidChange(event);
+      } else {
+        super.change(event);
+      }
+    }
+
+    @action input(event: Event): void {
+      if (!this.isCheckbox) {
+        super.input(event);
+      }
+    }
+
+    @action checkedDidChange(event: Event): void {
+      let element = event.target;
+      assert('[BUG] element must be an <input>', element instanceof HTMLInputElement);
+      this.checked = element.checked;
+    }
+
+    protected isSupportedArgument(name: string): boolean {
+      let supportedArguments = [
+        'type',
+        'value',
+        'checked',
+        'enter',
+        'insert-newline',
+        'escape-press',
+      ];
+
+      return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
     }
   }
 
-  set checked(checked: unknown) {
-    warn(
-      '`<Input @type="checkbox" />` reflects its checked state via the `@checked` argument. ' +
-        'You wrote `<Input @type="checkbox" @value={{...}} />` which is likely not what you intended. ' +
-        'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
-      untrack(
-        () =>
-          this.args.named['checked'] !== undefined ||
-          this.args.named['value'] === undefined ||
-          typeof valueForRef(this.args.named['value']) === 'string'
-      ),
-      { id: 'ember.built-in-components.input-checkbox-value' }
-    );
+  return _Input;
+})();
 
-    this._checked.set(checked);
-  }
-
-  @action change(event: Event): void {
-    if (this.isCheckbox) {
-      this.checkedDidChange(event);
-    } else {
-      super.change(event);
-    }
-  }
-
-  @action input(event: Event): void {
-    if (!this.isCheckbox) {
-      super.input(event);
-    }
-  }
-
-  @action checkedDidChange(event: Event): void {
-    let element = event.target;
-    assert('[BUG] element must be an <input>', element instanceof HTMLInputElement);
-    this.checked = element.checked;
-  }
-
-  protected isSupportedArgument(name: string): boolean {
-    let supportedArguments = [
-      'type',
-      'value',
-      'checked',
-      'enter',
-      'insert-newline',
-      'escape-press',
-    ];
-
-    return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
-  }
-}
-
-const Input = opaquify(_Input, InputTemplate) as Input;
+const Input = /* #__PURE__ */ opaquify(_Input, InputTemplate) as Input;
 interface Input extends Opaque<'component:input'>, OpaqueInternalComponentConstructor {}
 export default Input;

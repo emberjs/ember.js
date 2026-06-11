@@ -157,21 +157,25 @@ export function _getPath(obj: unknown, path: string | string[], forSet?: boolean
 
 export default get;
 
-// Warm it up
-_getProp('foo' as any, 'a');
-_getProp('foo' as any, 1 as any);
-_getProp({}, 'a');
-_getProp({}, 1 as any);
-_getProp({ unknownProperty() {} }, 'a');
-_getProp({ unknownProperty() {} }, 1 as any);
+// Called from the renderer at module evaluation so that rendering apps warm
+// these inline caches exactly as before, while consumers that never render
+// can tree-shake the property machinery away.
+export function warmGetters(): void {
+  _getProp('foo' as any, 'a');
+  _getProp('foo' as any, 1 as any);
+  _getProp({}, 'a');
+  _getProp({}, 1 as any);
+  _getProp({ unknownProperty() {} }, 'a');
+  _getProp({ unknownProperty() {} }, 1 as any);
 
-get({}, 'foo');
-get({}, 'foo.bar');
+  get({}, 'foo');
+  get({}, 'foo.bar');
 
-let fakeProxy = {} as ProxyMixin<unknown>;
-setProxy(fakeProxy);
+  let fakeProxy = {} as ProxyMixin<unknown>;
+  setProxy(fakeProxy);
 
-track(() => _getProp({}, 'a'));
-track(() => _getProp({}, 1 as any));
-track(() => _getProp({ a: [] }, 'a'));
-track(() => _getProp({ a: fakeProxy }, 'a'));
+  track(() => _getProp({}, 'a'));
+  track(() => _getProp({}, 1 as any));
+  track(() => _getProp({ a: [] }, 'a'));
+  track(() => _getProp({ a: fakeProxy }, 'a'));
+}

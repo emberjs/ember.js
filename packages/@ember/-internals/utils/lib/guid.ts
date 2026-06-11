@@ -50,7 +50,7 @@ const NON_OBJECT_GUIDS = new Map();
   @type String
   @final
 */
-export const GUID_KEY = intern(`__ember${Date.now()}`);
+export const GUID_KEY = /* #__PURE__ */ intern(`__ember${Date.now()}`);
 
 /**
   Generates a new guid, optionally saving the guid to the object that you

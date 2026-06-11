@@ -67,10 +67,10 @@ export function createPrimitiveRef<T extends string | symbol | number | boolean 
   return ref;
 }
 
-export const UNDEFINED_REFERENCE = createPrimitiveRef(undefined);
-export const NULL_REFERENCE = createPrimitiveRef(null);
-export const TRUE_REFERENCE = createPrimitiveRef(true as const);
-export const FALSE_REFERENCE = createPrimitiveRef(false as const);
+export const UNDEFINED_REFERENCE = /* #__PURE__ */ createPrimitiveRef(undefined);
+export const NULL_REFERENCE = /* #__PURE__ */ createPrimitiveRef(null);
+export const TRUE_REFERENCE = /* #__PURE__ */ createPrimitiveRef(true as const);
+export const FALSE_REFERENCE = /* #__PURE__ */ createPrimitiveRef(false as const);
 
 export function createConstRef<T>(value: T, debugLabel: false | string): Reference<T> {
   const ref = new ReferenceImpl<T>(CONSTANT);

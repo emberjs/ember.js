@@ -73,7 +73,7 @@ export const DIRTY_TAG = Symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
 export const BOUNDS = Symbol('BOUNDS');
 
-const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
+const EMBER_VIEW_REF = /* #__PURE__ */ createPrimitiveRef('ember-view');
 
 function aliasIdToElementId(args: VMArguments, props: any) {
   if (args.named.has('id')) {
@@ -559,7 +559,7 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: false,
 };
 
-export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
+export const CURLY_COMPONENT_MANAGER = /* #__PURE__ */ new CurlyComponentManager();
 
 export function isCurlyManager(manager: object): boolean {
   return manager === CURLY_COMPONENT_MANAGER;

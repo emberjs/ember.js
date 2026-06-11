@@ -140,31 +140,35 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   @see {Ember.Templates.components.Textarea}
   @public
 **/
-class _Textarea extends AbstractInput {
-  static toString(): string {
-    return 'Textarea';
+const _Textarea = /* #__PURE__ */ (() => {
+  class _Textarea extends AbstractInput {
+    static toString(): string {
+      return 'Textarea';
+    }
+
+    get class(): string {
+      return 'ember-text-area ember-view';
+    }
+
+    // See abstract-input.ts for why these are needed
+
+    @action change(event: Event): void {
+      super.change(event);
+    }
+
+    @action input(event: Event): void {
+      super.input(event);
+    }
+
+    protected isSupportedArgument(name: string): boolean {
+      let supportedArguments = ['type', 'value', 'enter', 'insert-newline', 'escape-press'];
+      return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
+    }
   }
 
-  get class(): string {
-    return 'ember-text-area ember-view';
-  }
+  return _Textarea;
+})();
 
-  // See abstract-input.ts for why these are needed
-
-  @action change(event: Event): void {
-    super.change(event);
-  }
-
-  @action input(event: Event): void {
-    super.input(event);
-  }
-
-  protected isSupportedArgument(name: string): boolean {
-    let supportedArguments = ['type', 'value', 'enter', 'insert-newline', 'escape-press'];
-    return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
-  }
-}
-
-const Textarea = opaquify(_Textarea, TextareaTemplate) as Textarea;
+const Textarea = /* #__PURE__ */ opaquify(_Textarea, TextareaTemplate) as Textarea;
 interface Textarea extends Opaque<'component:textarea'>, OpaqueInternalComponentConstructor {}
 export default Textarea;

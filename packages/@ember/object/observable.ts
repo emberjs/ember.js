@@ -416,7 +416,7 @@ interface Observable {
   */
   cacheFor<K extends keyof this>(key: K): unknown;
 }
-const Observable = Mixin.create({
+const Observable = /* #__PURE__ */ Mixin.create({
   get(keyName: string) {
     return get(this, keyName);
   },

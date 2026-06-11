@@ -1,7 +1,7 @@
 const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 const fnToString = Function.prototype.toString;
 
-export const checkHasSuper = (() => {
+export const checkHasSuper = /* #__PURE__ */ (() => {
   let sourceAvailable =
     fnToString
       .call(function (this: any) {
@@ -20,10 +20,13 @@ export const checkHasSuper = (() => {
   };
 })();
 
-const HAS_SUPER_MAP = new WeakMap();
+export const ROOT = /* #__PURE__ */ Object.freeze(function () {});
 
-export const ROOT = Object.freeze(function () {});
-HAS_SUPER_MAP.set(ROOT, false);
+const HAS_SUPER_MAP = /* #__PURE__ */ (() => {
+  const map = new WeakMap();
+  map.set(ROOT, false);
+  return map;
+})();
 
 function hasSuper(func: Function) {
   let hasSuper = HAS_SUPER_MAP.get(func);

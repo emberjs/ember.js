@@ -51,7 +51,7 @@ function hasToStringExtension(val: unknown): val is HasToStringExtension {
     typeof (val as HasToStringExtension).toStringExtension === 'function'
   );
 }
-const reopen = Mixin.prototype.reopen;
+const reopen = /* #__PURE__ */ (() => Mixin.prototype.reopen)();
 
 const wasApplied = new WeakSet();
 const prototypeMixinMap = new WeakMap();
