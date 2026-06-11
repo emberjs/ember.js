@@ -25,13 +25,17 @@ const context = buildUntouchableThis('`fn` helper');
   to a component invoked within the loop. Here's how you could use the `fn`
   helper to pass both the function and its arguments together:
 
-    ```app/templates/components/items-listing.hbs
-  {{#each @items as |item|}}
-    <DisplayItem @item=item @select={{fn this.handleSelected item}} />
-  {{/each}}
+  ```app/components/items-listing.gjs
+  import DisplayItem from './display-item';
+    
+  <template>
+    {{#each @items as |item|}}
+      <DisplayItem @item=item @select={{fn this.handleSelected item}} />
+    {{/each}}
+  </template>
   ```
 
-  ```app/components/items-list.js
+  ```app/components/items-list.gjs
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
@@ -42,7 +46,7 @@ const context = buildUntouchableThis('`fn` helper');
   }
   ```
 
-  In this case the `display-item` component will receive a normal function
+  In this case the `DisplayItem` component will receive a normal function
   that it can invoke. When it invokes the function, the `handleSelected`
   function will receive the `item` and any arguments passed, thanks to the
   `fn` helper.
@@ -59,7 +63,7 @@ const context = buildUntouchableThis('`fn` helper');
   `handleSelected` is properly bound to the `items-list`, but let's explore what
   happens if we left out the arrow function:
 
-  ```app/components/items-list.js
+  ```app/components/items-list.gjs
   import Component from '@glimmer/component';
 
   export default class ItemsList extends Component {

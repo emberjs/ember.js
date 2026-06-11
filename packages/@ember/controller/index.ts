@@ -39,7 +39,7 @@ interface ControllerMixin<T> extends ActionHandler {
   /**
     The object to which actions from the view should be sent.
 
-    For example, when a Handlebars template uses the `{{action}}` helper,
+    For example, when a template uses the `{{action}}` helper,
     it will attempt to send the action to the view's controller's `target`.
 
     By default, the value of the target property is set to the router, and

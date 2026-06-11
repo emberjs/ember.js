@@ -17,26 +17,34 @@
   using the block form to wrap the section of template you want to conditionally render.
   Like so:
 
-  ```app/templates/application.hbs
-  <Weather />
+  ```app/templates/application.gjs
+  import Weather from '../components/weather';
+    
+  <template>
+    <Weather />
+  </template>
   ```
 
-  ```app/components/weather.hbs
-  {{! will not render because greeting is undefined}}
-  {{#if @isRaining}}
-    Yes, grab an umbrella!
-  {{/if}}
+  ```app/components/weather.gjs
+  <template>
+    {{! will not render because greeting is undefined}}
+    {{#if @isRaining}}
+      Yes, grab an umbrella!
+    {{/if}}
+  </template>
   ```
 
   You can also define what to show if the property is falsey by using
   the `else` helper.
 
-  ```app/components/weather.hbs
-  {{#if @isRaining}}
-    Yes, grab an umbrella!
-  {{else}}
-    No, it's lovely outside!
-  {{/if}}
+  ```app/components/weather.gjs
+  <template>
+    {{#if @isRaining}}
+      Yes, grab an umbrella!
+    {{else}}
+      No, it's lovely outside!
+    {{/if}}
+  </template>
   ```
 
   You are also able to combine `else` and `if` helpers to create more complex
@@ -44,20 +52,26 @@
 
   For the following template:
 
-   ```app/components/weather.hbs
-  {{#if @isRaining}}
-    Yes, grab an umbrella!
-  {{else if @isCold}}
-    Grab a coat, it's chilly!
-  {{else}}
-    No, it's lovely outside!
-  {{/if}}
+   ```app/components/weather.gjs
+  <template>
+    {{#if @isRaining}}
+      Yes, grab an umbrella!
+    {{else if @isCold}}
+      Grab a coat, it's chilly!
+    {{else}}
+      No, it's lovely outside!
+    {{/if}}
+  </template>  
   ```
 
   If you call it by saying `isCold` is true:
 
-  ```app/templates/application.hbs
-  <Weather @isCold={{true}} />
+  ```app/templates/application.gjs
+  import Weather from '../components/weather';
+    
+  <template>
+    <Weather @isCold={{true}} />
+  </template>
   ```
 
   Then `Grab a coat, it's chilly!` will be rendered.
@@ -71,12 +85,18 @@
 
   For example, if `useLongGreeting` is truthy, the following:
 
-  ```app/templates/application.hbs
-  <Greeting @useLongGreeting={{true}} />
+  ```app/templates/application.gjs
+  import Greeting from '../components/greeting';
+  
+  <template>
+    <Greeting @useLongGreeting={{true}} />
+  <template>
   ```
 
-  ```app/components/greeting.hbs
-  {{if @useLongGreeting "Hello" "Hi"}} Alex
+  ```app/components/greeting.gjs
+  <template>
+    {{if @useLongGreeting "Hello" "Hi"}} Alex
+  <template>
   ```
 
   Will render:
@@ -108,12 +128,18 @@
 
   For example, if you pass a falsey `useLongGreeting` to the `Greeting` component:
 
-  ```app/templates/application.hbs
-  <Greeting @useLongGreeting={{false}} />
+  ```app/templates/application.gjs
+  import Greeting from '../components/greeting';
+    
+  <template>
+    <Greeting @useLongGreeting={{false}} />
+  </template>
   ```
 
-  ```app/components/greeting.hbs
-  {{unless @useLongGreeting "Hi" "Hello"}} Ben
+  ```app/components/greeting.gjs
+  <template>
+    {{unless @useLongGreeting "Hi" "Hello"}} Ben
+  </template>
   ```
 
   Then it will display:
@@ -128,14 +154,20 @@
 
   The following will not render anything:
 
-  ```app/templates/application.hbs
-  <Greeting />
+  ```app/templates/application.gjs
+  import Greeting from '../components/greeting';
+    
+  <template>
+    <Greeting />
+  </template>
   ```
 
-  ```app/components/greeting.hbs
-  {{#unless @greeting}}
-    No greeting was found. Why not set one?
-  {{/unless}}
+  ```app/components/greeting.gjs
+  <template>
+    {{#unless @greeting}}
+      No greeting was found. Why not set one?
+    {{/unless}}
+  </template>
   ```
 
   You can also use an `else` helper with the `unless` block. The
@@ -143,18 +175,24 @@
 
   If you have the following component:
 
-  ```app/components/logged-in.hbs
-  {{#unless @userData}}
-    Please login.
-  {{else}}
-    Welcome back!
-  {{/unless}}
+  ```app/components/logged-in.gjs
+  <template>
+    {{#unless @userData}}
+      Please login.
+    {{else}}
+      Welcome back!
+    {{/unless}}
+  </template>
   ```
 
   Calling it with a truthy `userData`:
 
-  ```app/templates/application.hbs
-  <LoggedIn @userData={{hash username="Zoey"}} />
+  ```app/templates/application.gjs
+  import LoggedIn from '../components/logged-in';
+    
+  <template>
+    <LoggedIn @userData={{hash username="Zoey"}} />
+  </template>
   ```
 
   Will render:
@@ -165,8 +203,12 @@
 
   and calling it with a falsey `userData`:
 
-  ```app/templates/application.hbs
-  <LoggedIn @userData={{false}} />
+  ```app/templates/application.gjs
+  import LoggedIn from '../components/logged-in';
+
+  <template>
+    <LoggedIn @userData={{false}} />
+  </template>
   ```
 
   Will render:
