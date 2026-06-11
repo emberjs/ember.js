@@ -4,9 +4,9 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import glob from 'glob';
 import * as resolveExports from 'resolve.exports';
-import { rollup } from 'rollup';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
+import { hasNoSideEffects } from './bin/side-effect-detection/index.mjs';
 
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
@@ -556,44 +556,6 @@ function packageMeta() {
 let cleanedSideEffects = false;
 function updateSideEffects() {
   let manifestPath = resolve(projectRoot, 'package.json');
-  let entryId = '\0side-effect-probe-entry';
-
-  async function hasNoSideEffects(file) {
-    let bundle;
-    try {
-      bundle = await rollup({
-        input: entryId,
-        treeshake: {
-          moduleSideEffects: 'no-external',
-          /**
-           * The few property accesses that remain after the above
-           * tree-shaking (e.g. reading Mixin.prototype.reopen) are not
-           * effectful, so they shouldn't force a whole file into the
-           * sideEffects list.
-           */
-          propertyReadSideEffects: false,
-        },
-        onwarn() {},
-        plugins: [
-          {
-            name: 'side-effect-probe',
-            resolveId(source, importer) {
-              if (source === entryId) return entryId;
-              if (importer === file) return { id: source, external: true };
-              return null;
-            },
-            load(id) {
-              if (id === entryId) return `import ${JSON.stringify(file)};`;
-            },
-          },
-        ],
-      });
-      let { output } = await bundle.generate({ format: 'es' });
-      return output[0].code.trim() === '';
-    } finally {
-      if (bundle) await bundle.close();
-    }
-  }
 
   return {
     name: 'update-side-effects-in-package-json',
