@@ -15,28 +15,31 @@ import { internalHelper } from './internal-helper';
 
   For example, these two usages are equivalent:
 
-  ```app/components/developer-detail.js
+  ```app/components/developer-detail.gjs
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
+  import { get } from '@ember/object';
 
   export default class extends Component {
     @tracked developer = {
       name: "Sandi Metz",
       language: "Ruby"
     }
+    
+    <template>
+      {{this.developer.name}}
+      {{get this.developer "name"}}
+    </template>
   }
-  ```
-
-  ```handlebars
-  {{this.developer.name}}
-  {{get this.developer "name"}}
   ```
 
   If there were several facts about a person, the `{{get}}` helper can dynamically
   pick one:
 
-  ```app/templates/application.hbs
-  <DeveloperDetail @factName="language" />
+  ```app/templates/application.gjs
+  <template>
+    <DeveloperDetail @factName="language" />
+  </template>
   ```
 
   ```handlebars
@@ -46,10 +49,11 @@ import { internalHelper } from './internal-helper';
   For a more complex example, this template would allow the user to switch
   between showing the user's height and weight with a click:
 
-  ```app/components/developer-detail.js
+  ```app/components/developer-detail.gjs
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
-
+  import { get } from '@ember/object';
+    
   export default class extends Component {
     @tracked developer = {
       name: "Sandi Metz",
@@ -61,27 +65,15 @@ import { internalHelper } from './internal-helper';
     showFact = (fact) => {
       this.currentFact = fact;
     }
+    
+    <template>
+      {{get this.developer this.currentFact}}
+
+      <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
+      <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
+    </template>
   }
   ```
-
-  ```app/components/developer-detail.js
-  {{get this.developer this.currentFact}}
-
-  <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
-  <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
-  ```
-
-  The `{{get}}` helper can also respect mutable values itself. For example:
-
-  ```app/components/developer-detail.js
-  <Input @value={{mut (get this.person this.currentFact)}} />
-
-  <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
-  <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
-  ```
-
-  Would allow the user to swap what fact is being displayed, and also edit
-  that fact via a two-way mutable binding.
 
   @public
   @method get
