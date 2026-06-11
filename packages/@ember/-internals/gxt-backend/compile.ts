@@ -893,28 +893,16 @@ import {
   getTracker as _gxtGetTracker,
   resolveRenderable as _gxtResolveRenderable,
   $_TO_VALUE as _gxtOrigToValue,
+  // Phase 4.1 SSR per-render-root state primitives (RFC §7.1.1 step 2).
+  // `createRenderRootState` mints a fresh, fully-isolated RenderRootState and
+  // `withRenderRoot` is the synchronous save/swap/restore runner that scopes the
+  // upstream node-counter / parent-context / rendering-context module-globals to
+  // one render root. Both are published by `@lifeart/gxt` (runtime + types) as of
+  // 0.0.65 — the version this repo pins — so they bind via a plain named import.
+  // Sole consumer is `_gxtWithRootContext` below (additive, SSR-only).
+  withRenderRoot as _gxtWithRenderRoot,
+  createRenderRootState as _gxtCreateRenderRootState,
 } from '@lifeart/gxt';
-
-// Phase 4.1 SSR consumer plumbing (RFC §7.1.1 step 2). The per-render-root
-// state primitives — `createRenderRootState` (a fresh, fully-isolated
-// RenderRootState) and `withRenderRoot` (the synchronous save/swap/restore
-// runner that scopes the upstream node-counter / parent-context /
-// rendering-context module-globals to one render root) — exist on glimmer-next
-// master but are NOT in the published `@lifeart/gxt` 0.0.64 on npm, which is
-// what consumers (and CI's frozen-lockfile install) actually resolve. A *named*
-// ESM import of a missing export is a hard link-time SyntaxError that takes down
-// this entire module — and with it every test, since the QUnit page's eager
-// glob transitively imports compile.ts. Resolve the two optional symbols off a
-// namespace import instead: that yields `undefined` when the export is absent
-// rather than failing to link. `_gxtWithRootContext` (the sole consumer —
-// additive, SSR-only, no browser/render-path caller) degrades to a plain `fn()`
-// when the API is unavailable.
-import * as _gxtPkgNs from '@lifeart/gxt';
-const _gxtWithRenderRoot = (_gxtPkgNs as Record<string, unknown>).withRenderRoot as
-  | (<T>(state: unknown, fn: () => T) => T)
-  | undefined;
-const _gxtCreateRenderRootState = (_gxtPkgNs as Record<string, unknown>)
-  .createRenderRootState as (() => unknown) | undefined;
 
 // Use direct imports for cellFor/effect/syncDom — the manualChunks consolidation
 // ensures all GXT internals share a single module instance (gxt.core.es.js).
@@ -3878,16 +3866,9 @@ function _gxtWithRootContext<T>(ctx: GxtRootContextState | null | undefined, fn:
   try {
     // Wrap the body in the upstream render root so the node-counter / parent-context
     // / rendering-context module-globals are swapped for a fresh isolated set and
-    // restored on exit (also on throw) by `withRenderRoot`'s own `finally`.
-    //
-    // When the per-root render API isn't present in the installed @lifeart/gxt
-    // (e.g. published 0.0.64), fall back to running the body against the ambient
-    // upstream module-globals. The ember-side root state swap (above/below) still
-    // applies; only the upstream node-counter/context isolation is skipped. Safe
-    // because there is no browser/SSR caller of `_gxtWithRootContext` yet.
-    return _gxtWithRenderRoot && _gxtCreateRenderRootState
-      ? _gxtWithRenderRoot(_gxtCreateRenderRootState(), fn)
-      : fn();
+    // restored on exit (also on throw) by `withRenderRoot`'s own `finally`. The
+    // ember-side root state swap (above/below) applies in addition.
+    return _gxtWithRenderRoot(_gxtCreateRenderRootState(), fn);
   } finally {
     // Checkpoint the (possibly mutated) per-root ember state back into `ctx` so the
     // caller can reuse it for a subsequent pass on the same root, then restore the
