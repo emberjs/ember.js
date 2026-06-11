@@ -333,9 +333,10 @@ in. See `/tmp/gxt-plan-review-bundling.md` and
 
 #### 5.1 Transition artifact — Vite alias is not a shipping strategy
 
-The current spike uses `vite.config.mjs` resolver aliases (lines
-98-188, `GXT_MODE=true`) to rewrite `@glimmer/*` imports to the
-`packages/demo/compat/*.ts` shims. **This approach is a test-time
+The test harness uses `vite.config.mjs` resolver aliases (the `resolve.alias`
+array under `useGxt`, `GXT_MODE=true`) to rewrite `@glimmer/*` / `@ember/*` /
+`ember-template-compiler` imports to the compat shims under
+`packages/@ember/-internals/gxt-backend/*.ts`. **This approach is a test-time
 transition artifact only.** Embroider strict mode and stage-3
 resolution do not honor arbitrary aliases, so a published
 `ember-source-gxt` that relies on Vite aliases would be DOA for any
@@ -358,7 +359,7 @@ GXT-compiled sources, with no runtime alias step. Concretely:
   **inside** `rollup.config.mjs` as a second build variant.
 - `ember-source-gxt` is a separate Rollup build variant, invoked via
   `EMBER_RENDER_BACKEND=gxt` (or equivalent) that swaps the
-  `exposedDependencies()` list in `rollup.config.mjs:255-281` to
+  `exposedDependencies()` list in `rollup.config.mjs` to
   point at the GXT-side shim implementations where classic pointed at
   `packages/@glimmer/*`. The output is published as a distinct npm
   package.
@@ -481,6 +482,49 @@ wire-format vs GXT `$_tag` trees), and (3) the unshipped
 container-resolution bridge. All three are the §5.2 "required shipping
 form" work and a consumer-side compiler-integration story; none is a
 small wiring fix. No forced/hacky workaround was attempted.
+
+#### 5.6 Build-time wiring architecture (2026-06-11)
+
+The two build pipelines describe the SAME `@glimmer/* | @ember/* |
+ember-template-compiler` → gxt-backend-shim redirect, in two different
+shapes (a Rollup exact-key resolver map vs a Vite `resolve.alias` array). They
+historically maintained the table twice, and the rebase onto upstream main
+proved the resulting sync-fragility: upstream's vendored `@glimmer/*` migration
+introduced deep-path imports (e.g. `@glimmer/validator/lib/tracking`) that the
+Vite tree must collapse onto the single shim file, and the prefix-string aliases
+present in only one config silently broke. The canonical table now lives once,
+in `scripts/gxt-alias-map.mjs` (`GXT_SHIM_ALIASES`), and both configs derive
+their own format from it — `rollup.config.mjs` builds the exact-key map (the
+`subpathTolerant` flag is Vite-only: deep `@glimmer/*` imports in the Rollup
+graph resolve to the real vendored in-repo source), and `vite.config.mjs` builds
+the alias array, turning `subpathTolerant` entries into anchored
+deep-path-matching regexes. The class of skew the rebase hit is now impossible.
+
+The same module exposes the single "is the GXT backend enabled" predicate,
+`isGxtEnabled(env)`, which honors **both** historical flags — `GXT_MODE=true`
+(the Vite dev/test harness) and `EMBER_RENDER_BACKEND=gxt` (the Rollup
+production build). `vite.config.mjs` reads it, so a bare
+`EMBER_RENDER_BACKEND=gxt npx vite` now also enables GXT mode (additive — the CI
+harness only ever sets `GXT_MODE`, and the benchmark Vite configs already set
+both). Two readers are *intentionally* NOT folded onto the OR-helper, a
+**deliberate, load-bearing asymmetry** documented at the helper:
+
+- `rollup.config.mjs` keys its `USE_GXT_BACKEND` off `EMBER_RENDER_BACKEND`
+  *alone*, because `vite.config.mjs` imports `exposedDependencies()` /
+  `resolvePackages()` from `rollup.config.mjs` while `GXT_MODE` is set — if
+  `USE_GXT_BACKEND` also flipped on `GXT_MODE`, those Rollup helpers would start
+  externalizing the `@lifeart/gxt` dist paths and injecting the Rollup overrides,
+  both wrong for the Vite dev server (which serves those files and applies its
+  own alias).
+- `babel.config.mjs` keys its template-precompilation decision off `GXT_MODE`
+  *alone*: under the Vite/GXT harness the `@lifeart/gxt` compiler owns template
+  compilation (so the classic `babel-plugin-ember-template-compilation` is
+  skipped), while the Rollup `EMBER_RENDER_BACKEND=gxt` *publish* build keeps the
+  classic precompile pass. Flipping babel on `EMBER_RENDER_BACKEND` would change
+  which plugins run in that publish build — not a provably behavior-preserving
+  change — so it is left keyed to `GXT_MODE`.
+
+This asymmetry is *why* the two flags exist and is preserved on purpose.
 
 ### 6. `@glimmer/component` disposition
 
@@ -756,10 +800,18 @@ this section is documentation-only.)
    four lazy-init writers gain "read the current ambient (swapped) root,"
    which they already do.
 
-**Wave 3 status (2026-06-10) — step 1 ✅ upstream, step 2 ✅ LANDED (consumer
-plumbing).** Step 1 shipped upstream in `@lifeart/gxt` 0.0.64
-(`setNodeCounter` / `getNodeCounter` / `withRenderRoot` / `createRenderRootState`,
-verified present in ember's consumed dist). Step 2 is now implemented as
+**Wave 3 status (2026-06-10; binding refreshed 2026-06-11) — step 1 ✅ upstream,
+step 2 ✅ LANDED (consumer plumbing).** Step 1 shipped upstream in two parts:
+the seedable counter (`setNodeCounter` / `getNodeCounter`) in `@lifeart/gxt`
+0.0.64, and the per-render-root primitives (`withRenderRoot` /
+`createRenderRootState`, plus the `RenderRootState` type) in **0.0.65** — the
+version ember now pins and consumes. Because the published 0.0.64 lacked the
+per-root primitives, the consumer initially resolved them off a namespace import
+with `undefined`-tolerance (so a named import of a missing export could not take
+down the module at link time). With 0.0.65 publishing them in both the runtime
+ESM and the `.d.ts`, that degradation was removed: `compile.ts` now binds
+`withRenderRoot` / `createRenderRootState` via a plain **named import** and calls
+them unconditionally. Step 2 is implemented as
 `compilePipeline.withRootContext(ctx, fn)` (`compile.ts`, beside the
 `getRootContext`/`setRootContext` bridge, dual-published on
 `globalThis.__gxtWithRootContext` for an out-of-package SSR driver). It snapshots
@@ -1127,16 +1179,19 @@ _References cited from the review reports:_
 
 _Engineering spike references:_
 
-- `vite.config.mjs:98-188` — current GXT_MODE alias list (transition
-  artifact only)
-- `rollup.config.mjs:255-281` — `exposedDependencies()` where the
-  classic-vs-GXT build variant branch belongs
+- `scripts/gxt-alias-map.mjs` — the single canonical specifier→shim table
+  (`GXT_SHIM_ALIASES`) and `isGxtEnabled()` predicate consumed by both build
+  pipelines (see §5.6)
+- `vite.config.mjs` — the `GXT_MODE=true` `resolve.alias` array, derived from
+  the shared table (transition artifact only)
+- `rollup.config.mjs` — `exposedDependencies()`, where the classic-vs-GXT build
+  variant branch lives (the GXT overrides are derived from the shared table)
 - `packages/@ember/-internals/metal/lib/` — 19 files missing from the
   original Phase 2 scope
 - `packages/@ember/-internals/glimmer/lib/` — 51 files in the
   original Phase 2 scope
-- `packages/demo/compat/` — the current compat layer (validator.ts,
-  reference.ts, destroyable.ts, manager.ts, compile.ts, outlet.gts,
-  and the supporting files)
+- `packages/@ember/-internals/gxt-backend/` — the compat shim layer
+  (validator.ts, reference.ts, destroyable.ts, manager.ts, compile.ts,
+  outlet.gts, and the supporting files)
 - Commits `5176f4b229`, `9005f9892b`, `14cd323211` — recent
   contextual-component and outlet stabilization
