@@ -233,7 +233,7 @@ interface ControllerMixin<T> extends ActionHandler {
   */
   replaceRoute(...args: RouteArgs): Transition;
 }
-const ControllerMixin = Mixin.create(ActionHandler, {
+const ControllerMixin = /* @__PURE__ */ Mixin.create(ActionHandler, {
   /* ducktype as a controller */
   isController: true,
 
@@ -315,7 +315,7 @@ const ControllerMixin = Mixin.create(ActionHandler, {
   @public
 */
 interface Controller<_T = unknown> extends FrameworkObject, ControllerMixin<_T> {}
-class Controller<_T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
+class Controller<_T = unknown> extends /* @__PURE__ */ FrameworkObject.extend(ControllerMixin) {}
 
 /**
   Creates a property that lazily looks up another controller in the container.

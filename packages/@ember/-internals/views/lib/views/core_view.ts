@@ -24,7 +24,7 @@ import states from './states';
 */
 
 interface CoreView extends Evented, ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
+class CoreView extends /* @__PURE__ */ FrameworkObject.extend(Evented, ActionHandler) {
   isView = true;
 
   declare _states: typeof states;

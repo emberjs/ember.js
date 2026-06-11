@@ -256,7 +256,10 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) implements IRoute {
+class Route<Model = unknown>
+  extends /* @__PURE__ */ EmberObject.extend(ActionHandler, Evented)
+  implements IRoute
+{
   static isRouteFactory = true;
 
   // These properties will end up appearing in the public interface because we

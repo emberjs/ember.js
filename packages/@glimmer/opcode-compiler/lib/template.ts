@@ -41,6 +41,7 @@ export interface TemplateWithIdAndReferrer extends TemplateOk {
  * that handles lazy parsing the template and to create per env singletons
  * of the template.
  */
+/* @__NO_SIDE_EFFECTS__ */
 export default function templateFactory({
   id: templateId,
   moduleName,

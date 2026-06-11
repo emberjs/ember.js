@@ -796,7 +796,7 @@ interface Component<S = unknown>
   extends CoreView, TargetActionSupport, ActionSupport, ComponentMethods {}
 
 class Component<S = unknown>
-  extends CoreView.extend(
+  extends /* @__PURE__ */ CoreView.extend(
     TargetActionSupport,
     ActionSupport,
     {

@@ -149,7 +149,7 @@ interface Evented {
    */
   has(name: string): boolean;
 }
-const Evented = Mixin.create({
+const Evented = /* @__PURE__ */ Mixin.create({
   on(name: string, target: object, method?: string | Function) {
     addListener(this, name, target, method);
     return this;

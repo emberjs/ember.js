@@ -17,6 +17,6 @@ import Mixin from '@ember/object/mixin';
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface MutableEnumerable extends Enumerable {}
-const MutableEnumerable = Mixin.create(Enumerable);
+const MutableEnumerable = /* @__PURE__ */ Mixin.create(Enumerable);
 
 export default MutableEnumerable;

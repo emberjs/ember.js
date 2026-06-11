@@ -21,7 +21,7 @@ interface RegistryProxyMixin extends RegistryProxy {
   /** @internal */
   __registry__: Registry;
 }
-const RegistryProxyMixin = Mixin.create({
+const RegistryProxyMixin = /* @__PURE__ */ Mixin.create({
   __registry__: null,
 
   resolveRegistration(fullName: string) {

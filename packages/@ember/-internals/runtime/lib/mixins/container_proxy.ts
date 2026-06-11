@@ -21,7 +21,7 @@ interface ContainerProxyMixin extends ContainerProxy {
   /** @internal */
   __container__: Container;
 }
-const ContainerProxyMixin = Mixin.create({
+const ContainerProxyMixin = /* @__PURE__ */ Mixin.create({
   /**
    The container stores state.
 

@@ -14,7 +14,7 @@ import { assert } from '@ember/debug';
 interface ActionSupport {
   send(actionName: string, ...args: unknown[]): void;
 }
-const ActionSupport = Mixin.create({
+const ActionSupport = /* @__PURE__ */ Mixin.create({
   send(actionName: string, ...args: unknown[]) {
     assert(
       `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,

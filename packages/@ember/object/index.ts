@@ -36,7 +36,7 @@ export { default as computed } from '@ember/-internals/metal/lib/computed';
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface EmberObject extends Observable {}
-class EmberObject extends CoreObject.extend(Observable) {
+class EmberObject extends /* @__PURE__ */ CoreObject.extend(Observable) {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;

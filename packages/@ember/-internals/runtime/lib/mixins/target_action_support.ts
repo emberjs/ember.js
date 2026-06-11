@@ -31,7 +31,7 @@ interface TargetActionSupport {
   /** @internal */
   _target?: unknown;
 }
-const TargetActionSupport = Mixin.create({
+const TargetActionSupport = /* @__PURE__ */ Mixin.create({
   target: null,
   action: null,
   actionContext: null,

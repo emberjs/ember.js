@@ -27,8 +27,9 @@ import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';
 import { DEFAULT_TEMPLATE } from './util/default-template';
 
 const WELL_KNOWN_EMPTY_ARRAY: unknown = Object.freeze([]);
-const STARTER_CONSTANTS = constants(WELL_KNOWN_EMPTY_ARRAY);
-const WELL_KNOWN_EMPTY_ARRAY_POSITION: number = STARTER_CONSTANTS.indexOf(WELL_KNOWN_EMPTY_ARRAY);
+const STARTER_CONSTANTS = /* @__PURE__ */ constants(WELL_KNOWN_EMPTY_ARRAY);
+const WELL_KNOWN_EMPTY_ARRAY_POSITION: number =
+  /* @__PURE__ */ STARTER_CONSTANTS.indexOf(WELL_KNOWN_EMPTY_ARRAY);
 
 export class ConstantsImpl implements ProgramConstants {
   protected reifiedArrs: { [key: number]: unknown[] } = {

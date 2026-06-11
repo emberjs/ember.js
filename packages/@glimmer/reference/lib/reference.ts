@@ -52,6 +52,7 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
   }
 }
 
+/* @__NO_SIDE_EFFECTS__ */
 export function createPrimitiveRef<T extends string | symbol | number | boolean | null | undefined>(
   value: T
 ): Reference<T> {
@@ -72,6 +73,7 @@ export const NULL_REFERENCE = createPrimitiveRef(null);
 export const TRUE_REFERENCE = createPrimitiveRef(true as const);
 export const FALSE_REFERENCE = createPrimitiveRef(false as const);
 
+/* @__NO_SIDE_EFFECTS__ */
 export function createConstRef<T>(value: T, debugLabel: false | string): Reference<T> {
   const ref = new ReferenceImpl<T>(CONSTANT);
 
@@ -85,6 +87,7 @@ export function createConstRef<T>(value: T, debugLabel: false | string): Referen
   return ref;
 }
 
+/* @__NO_SIDE_EFFECTS__ */
 export function createUnboundRef<T>(value: T, debugLabel: false | string): Reference<T> {
   const ref = new ReferenceImpl<T>(UNBOUND);
 
@@ -98,6 +101,7 @@ export function createUnboundRef<T>(value: T, debugLabel: false | string): Refer
   return ref;
 }
 
+/* @__NO_SIDE_EFFECTS__ */
 export function createComputeRef<T = unknown>(
   compute: () => T,
   update: Nullable<(value: T) => void> = null,
@@ -115,6 +119,7 @@ export function createComputeRef<T = unknown>(
   return ref;
 }
 
+/* @__NO_SIDE_EFFECTS__ */
 export function createReadOnlyRef(ref: Reference): Reference {
   if (!isUpdatableRef(ref)) return ref;
 
@@ -125,6 +130,7 @@ export function isInvokableRef(ref: Reference) {
   return ref[REFERENCE] === INVOKABLE;
 }
 
+/* @__NO_SIDE_EFFECTS__ */
 export function createInvokableRef(inner: Reference): Reference {
   const ref = createComputeRef(
     () => valueForRef(inner),

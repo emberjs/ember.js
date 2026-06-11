@@ -15,6 +15,6 @@ import Mixin from '@ember/object/mixin';
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Enumerable {}
-const Enumerable = Mixin.create();
+const Enumerable = /* @__PURE__ */ Mixin.create();
 
 export default Enumerable;

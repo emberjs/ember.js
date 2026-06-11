@@ -21,7 +21,7 @@ interface ActionHandler {
   actions?: Record<string, (...args: any[]) => unknown>;
   send(actionName: string, ...args: unknown[]): void;
 }
-const ActionHandler = Mixin.create({
+const ActionHandler = /* @__PURE__ */ Mixin.create({
   mergedProperties: ['actions'],
 
   /**

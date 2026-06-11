@@ -18,7 +18,7 @@ import Mixin from '@ember/object/mixin';
 interface Comparable {
   compare: ((a: unknown, b: unknown) => -1 | 0 | 1) | null;
 }
-const Comparable = Mixin.create({
+const Comparable = /* @__PURE__ */ Mixin.create({
   /**
     __Required.__ You must implement this method to apply this mixin.
 
