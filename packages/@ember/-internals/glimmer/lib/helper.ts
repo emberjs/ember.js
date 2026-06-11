@@ -99,9 +99,7 @@ declare const SIGNATURE: unique symbol;
   @public
   @since 1.13.0
 */
-// ESLint doesn't understand declaration merging.
-/* eslint-disable import/export */
-export default interface Helper<S = unknown> {
+interface Helper<S = unknown> {
   /**
     Override this function when writing a class-based helper.
 
@@ -113,7 +111,7 @@ export default interface Helper<S = unknown> {
   */
   compute(positional: Positional<S>, named: Named<S>): Return<S>;
 }
-export default class Helper<S = unknown> extends FrameworkObject {
+class Helper<S = unknown> extends FrameworkObject {
   static isHelperFactory = true;
   static [IS_CLASSIC_HELPER] = true;
 
@@ -179,7 +177,6 @@ export default class Helper<S = unknown> extends FrameworkObject {
     join(() => dirtyTag(this[RECOMPUTE_TAG]));
   }
 }
-/* eslint-enable import/export */
 
 export function isClassicHelper(obj: object): boolean {
   return (obj as any)[IS_CLASSIC_HELPER] === true;
@@ -257,11 +254,18 @@ function isFactoryManager(obj: unknown): obj is InternalFactoryManager<object> {
   return obj != null && 'class' in (obj as InternalFactoryManager<object>);
 }
 
-setHelperManager((owner: InternalOwner | undefined): ClassicHelperManager => {
-  return new ClassicHelperManager(owner);
-}, Helper);
+const HelperWithManager = /* #__PURE__ */ setHelperManager(
+  (owner: InternalOwner | undefined): ClassicHelperManager => {
+    return new ClassicHelperManager(owner);
+  },
+  Helper
+);
 
-export const CLASSIC_HELPER_MANAGER = getInternalHelperManager(Helper);
+type HelperWithManager<S = unknown> = Helper<S>;
+
+export default HelperWithManager;
+
+export const CLASSIC_HELPER_MANAGER = /* #__PURE__ */ getInternalHelperManager(HelperWithManager);
 
 ///////////
 
@@ -298,7 +302,10 @@ class SimpleClassicHelperManager implements HelperManager<() => unknown> {
 
 const SIMPLE_CLASSIC_HELPER_MANAGER = new SimpleClassicHelperManager();
 
-setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
+const WrapperWithManager = /* #__PURE__ */ (() => {
+  setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
+  return Wrapper;
+})();
 
 /*
   Function-based helpers need to present with a constructor signature so that
@@ -400,5 +407,5 @@ export function helper(
   //
   // Long-term, this entire construct can go away in favor of deprecating the
   // `helper()` invocation in favor of using plain functions.
-  return new Wrapper(helperFn) as unknown as FunctionBasedHelper<any>;
+  return new WrapperWithManager(helperFn) as unknown as FunctionBasedHelper<any>;
 }

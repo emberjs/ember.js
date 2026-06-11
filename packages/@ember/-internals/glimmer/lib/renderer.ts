@@ -42,7 +42,8 @@ import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment'
 import { renderComponent as glimmerRenderComponent, renderMain } from '@glimmer/runtime/lib/render';
 import { dict } from '@glimmer/util/lib/collections';
 import { unwrapTemplate } from './component-managers/unwrap-template';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import { CURRENT_TAG, validateTag, valueForTag, warmTags } from '@glimmer/validator/lib/validators';
+import { warmGetters } from '@ember/-internals/metal/lib/property_get';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import type Component from './component';
 import { hasDOM } from '../../browser-environment';
@@ -56,6 +57,11 @@ import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
 import { makeRouteTemplate } from './component-managers/route-template';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
+
+// Warm the tag and property-read inline caches. Rendering is the hot path
+// that benefits; doing it here keeps the warmup out of non-rendering graphs.
+warmTags();
+warmGetters();
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
 

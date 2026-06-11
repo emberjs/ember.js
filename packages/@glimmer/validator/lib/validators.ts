@@ -42,8 +42,11 @@ const CONSTANT_TAG_ID: ICONSTANT_TAG_ID = 3;
 
 //////////
 
-export const COMPUTE: TagComputeSymbol = Symbol('TAG_COMPUTE') as TagComputeSymbol;
-Reflect.set(globalThis, 'COMPUTE_SYMBOL', COMPUTE);
+export const COMPUTE: TagComputeSymbol = /* #__PURE__ */ (() => {
+  const compute = Symbol('TAG_COMPUTE');
+  Reflect.set(globalThis, 'COMPUTE_SYMBOL', compute);
+  return compute;
+})() as TagComputeSymbol;
 
 //////////
 
@@ -243,7 +246,7 @@ export function createUpdatableTag(): UpdatableTag {
 
 //////////
 
-export const CONSTANT_TAG: ConstantTag = new MonomorphicTagImpl(CONSTANT_TAG_ID);
+export const CONSTANT_TAG: ConstantTag = /* #__PURE__ */ new MonomorphicTagImpl(CONSTANT_TAG_ID);
 
 export function isConstTag(tag: Tag): tag is ConstantTag {
   return tag === CONSTANT_TAG;
@@ -273,28 +276,31 @@ export class CurrentTag implements Tag {
   }
 }
 
-export const CURRENT_TAG = new CurrentTag();
+export const CURRENT_TAG = /* #__PURE__ */ new CurrentTag();
 
 //////////
 
 export const combine = MonomorphicTagImpl.combine;
 
-// Warm
+// Called from the renderer at module evaluation so that rendering apps warm
+// the tag system exactly as before, while consumers that never render can
+// tree-shake the tag machinery away.
+export function warmTags(): void {
+  let tag1 = createUpdatableTag();
+  let tag2 = createUpdatableTag();
+  let tag3 = createUpdatableTag();
 
-let tag1 = createUpdatableTag();
-let tag2 = createUpdatableTag();
-let tag3 = createUpdatableTag();
-
-valueForTag(tag1);
-DIRTY_TAG(tag1);
-valueForTag(tag1);
-UPDATE_TAG(tag1, combine([tag2, tag3]));
-valueForTag(tag1);
-DIRTY_TAG(tag2);
-valueForTag(tag1);
-DIRTY_TAG(tag3);
-valueForTag(tag1);
-UPDATE_TAG(tag1, tag3);
-valueForTag(tag1);
-DIRTY_TAG(tag3);
-valueForTag(tag1);
+  valueForTag(tag1);
+  DIRTY_TAG(tag1);
+  valueForTag(tag1);
+  UPDATE_TAG(tag1, combine([tag2, tag3]));
+  valueForTag(tag1);
+  DIRTY_TAG(tag2);
+  valueForTag(tag1);
+  DIRTY_TAG(tag3);
+  valueForTag(tag1);
+  UPDATE_TAG(tag1, tag3);
+  valueForTag(tag1);
+  DIRTY_TAG(tag3);
+  valueForTag(tag1);
+}

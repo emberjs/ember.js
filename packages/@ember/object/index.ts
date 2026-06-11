@@ -36,7 +36,7 @@ export { default as computed } from '@ember/-internals/metal/lib/computed';
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface EmberObject extends Observable {}
-class EmberObject extends CoreObject.extend(Observable) {
+class EmberObject extends /* #__PURE__ */ CoreObject.extend(Observable) {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;
@@ -169,13 +169,13 @@ function setupAction(
   };
 }
 
-export function action(
+function action(
   target: ElementDescriptor[0],
   key: ElementDescriptor[1],
   desc: ElementDescriptor[2]
 ): PropertyDescriptor;
-export function action(desc: PropertyDescriptor): ExtendedMethodDecorator;
-export function action(
+function action(desc: PropertyDescriptor): ExtendedMethodDecorator;
+function action(
   ...args: ElementDescriptor | [PropertyDescriptor]
 ): PropertyDescriptor | ExtendedMethodDecorator {
   let actionFn: object | Function;
@@ -221,8 +221,13 @@ export function action(
   return setupAction(target, key, actionFn);
 }
 
-// SAFETY: TS types are weird with decorators. This should work.
-setClassicDecorator(action as ExtendedMethodDecorator);
+const actionDecorator = /* #__PURE__ */ (() => {
+  // SAFETY: TS types are weird with decorators. This should work.
+  setClassicDecorator(action as ExtendedMethodDecorator);
+  return action;
+})();
+
+export { actionDecorator as action };
 
 // ..........................................................
 // OBSERVER HELPER

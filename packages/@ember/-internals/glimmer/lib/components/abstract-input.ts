@@ -11,7 +11,7 @@ import {
 import type { EventListener } from './internal';
 import InternalComponent from './internal';
 
-const UNINITIALIZED: unknown = Object.freeze({});
+const UNINITIALIZED: unknown = /* #__PURE__ */ Object.freeze({});
 
 type VirtualEventListener = (value: string, event: Event) => void;
 
@@ -49,21 +49,25 @@ interface Value {
   set(value: unknown): void;
 }
 
-class LocalValue implements Value {
-  @tracked private value: unknown;
+const LocalValue = /* #__PURE__ */ (() => {
+  class LocalValue implements Value {
+    @tracked private value: unknown;
 
-  constructor(value: unknown) {
-    this.value = value;
+    constructor(value: unknown) {
+      this.value = value;
+    }
+
+    get(): unknown {
+      return this.value;
+    }
+
+    set(value: unknown): void {
+      this.value = value;
+    }
   }
 
-  get(): unknown {
-    return this.value;
-  }
-
-  set(value: unknown): void {
-    this.value = value;
-  }
-}
+  return LocalValue;
+})();
 
 class UpstreamValue implements Value {
   constructor(private reference: Reference<unknown>) {}
@@ -105,7 +109,7 @@ class ForkedValue implements Value {
   }
 }
 
-export default abstract class AbstractInput extends InternalComponent {
+abstract class AbstractInput extends InternalComponent {
   validateArguments(): void {
     assert(
       `The ${this.constructor} component does not take any positional arguments`,
@@ -125,7 +129,7 @@ export default abstract class AbstractInput extends InternalComponent {
     this._value.set(value);
   }
 
-  @action valueDidChange(event: Event): void {
+  valueDidChange(event: Event): void {
     this.value = valueForEvent(event);
   }
 
@@ -151,7 +155,7 @@ export default abstract class AbstractInput extends InternalComponent {
     this.valueDidChange(event);
   }
 
-  @action keyUp(event: KeyboardEvent): void {
+  keyUp(event: KeyboardEvent): void {
     switch (event.key) {
       case 'Enter':
         this.listenerFor('enter')(event);
@@ -183,3 +187,17 @@ export default abstract class AbstractInput extends InternalComponent {
     return virtualEvents.indexOf(name) !== -1;
   }
 }
+
+// `@action` on the methods would compile to an impure `static {}` block in
+// the class body, which blocks tree-shaking of the whole class. Applying the
+// same decorator imperatively, folded into the exported binding, is
+// equivalent and shakes away with the export.
+export default /* #__PURE__ */ (() => {
+  // Equivalent to what `@action` compiles to (the legacy decorator protocol),
+  // without the impure `static {}` block in the class body.
+  for (const key of ['valueDidChange', 'keyUp'] as const) {
+    const desc = Object.getOwnPropertyDescriptor(AbstractInput.prototype, key)!;
+    Object.defineProperty(AbstractInput.prototype, key, action(AbstractInput.prototype, key, desc));
+  }
+  return AbstractInput;
+})();

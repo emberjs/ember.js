@@ -1,7 +1,7 @@
 import { precompileTemplate } from '@ember/template-compilation';
 import { on } from '@ember/modifier/on';
 
-export default precompileTemplate(
+export default /* #__PURE__ */ precompileTemplate(
   `<textarea
   {{!-- for compatibility --}}
   id={{this.id}}

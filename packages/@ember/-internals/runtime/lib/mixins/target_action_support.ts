@@ -31,26 +31,30 @@ interface TargetActionSupport {
   /** @internal */
   _target?: unknown;
 }
-const TargetActionSupport = Mixin.create({
-  target: null,
-  action: null,
-  actionContext: null,
+// IIFE form rather than a bare annotation: the mixin body contains nested
+// `computed(...)` calls, which defeat statement-level purity analysis of a
+// directly-annotated call.
+const TargetActionSupport = /* #__PURE__ */ (() =>
+  Mixin.create({
+    target: null,
+    action: null,
+    actionContext: null,
 
-  actionContextObject: computed('actionContext', function () {
-    let actionContext = get(this, 'actionContext');
+    actionContextObject: computed('actionContext', function () {
+      let actionContext = get(this, 'actionContext');
 
-    if (typeof actionContext === 'string') {
-      let value = get(this, actionContext);
-      if (value === undefined) {
-        value = get(context.lookup, actionContext);
+      if (typeof actionContext === 'string') {
+        let value = get(this, actionContext);
+        if (value === undefined) {
+          value = get(context.lookup, actionContext);
+        }
+        return value;
+      } else {
+        return actionContext;
       }
-      return value;
-    } else {
-      return actionContext;
-    }
-  }),
+    }),
 
-  /**
+    /**
   The following is private and vestigial.
   Send an `action` with an `actionContext` to a `target`. The action, actionContext
   and target will be retrieved from properties of the object. For example:
@@ -108,38 +112,38 @@ const TargetActionSupport = Mixin.create({
   @return {Boolean} true if the action was sent successfully and did not return false
   @private
   */
-  triggerAction(opts: { action?: string; target?: unknown; actionContext?: unknown } = {}) {
-    let { action, target, actionContext } = opts;
-    action = action || get(this, 'action');
-    target = target || getTarget(this);
+    triggerAction(opts: { action?: string; target?: unknown; actionContext?: unknown } = {}) {
+      let { action, target, actionContext } = opts;
+      action = action || get(this, 'action');
+      target = target || getTarget(this);
 
-    if (actionContext === undefined) {
-      actionContext = get(this, 'actionContextObject') || this;
-    }
-
-    let context = Array.isArray(actionContext) ? actionContext : [actionContext];
-
-    if (target && action) {
-      let ret;
-
-      if (isSendable(target)) {
-        ret = target.send(action, ...context);
-      } else {
-        assert(
-          `The action '${action}' did not exist on ${target}`,
-          typeof (target as any)[action] === 'function'
-        );
-        ret = (target as any)[action](...context);
+      if (actionContext === undefined) {
+        actionContext = get(this, 'actionContextObject') || this;
       }
 
-      if (ret !== false) {
-        return true;
-      }
-    }
+      let context = Array.isArray(actionContext) ? actionContext : [actionContext];
 
-    return false;
-  },
-});
+      if (target && action) {
+        let ret;
+
+        if (isSendable(target)) {
+          ret = target.send(action, ...context);
+        } else {
+          assert(
+            `The action '${action}' did not exist on ${target}`,
+            typeof (target as any)[action] === 'function'
+          );
+          ret = (target as any)[action](...context);
+        }
+
+        if (ret !== false) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+  }))();
 
 interface Sendable {
   send(action: string, ...context: unknown[]): unknown;

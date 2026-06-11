@@ -40,7 +40,7 @@ export class TemplateOnlyComponentManager implements InternalComponentManager {
 export const TEMPLATE_ONLY_COMPONENT_MANAGER = new TemplateOnlyComponentManager();
 
 // This is only exported for types, don't use this class directly
-export class TemplateOnlyComponentDefinition {
+class TemplateOnlyComponentDefinitionImpl {
   constructor(
     public moduleName = '@glimmer/component/template-only',
     public name = '(unknown template-only component)'
@@ -51,10 +51,17 @@ export class TemplateOnlyComponentDefinition {
   }
 }
 
-setInternalComponentManager(
-  TEMPLATE_ONLY_COMPONENT_MANAGER,
-  TemplateOnlyComponentDefinition.prototype
-);
+const TemplateOnlyComponentDefinition = /* #__PURE__ */ (() => {
+  setInternalComponentManager(
+    TEMPLATE_ONLY_COMPONENT_MANAGER,
+    TemplateOnlyComponentDefinitionImpl.prototype
+  );
+  return TemplateOnlyComponentDefinitionImpl;
+})();
+
+type TemplateOnlyComponentDefinition = TemplateOnlyComponentDefinitionImpl;
+
+export { TemplateOnlyComponentDefinition };
 
 /**
   This utility function is used to declare a given component has no backing class. When the rendering engine detects this it

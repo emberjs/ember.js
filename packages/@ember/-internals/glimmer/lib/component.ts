@@ -1,5 +1,5 @@
 import type { View } from './renderer';
-import { descriptorForProperty, nativeDescDecorator } from '@ember/-internals/metal/lib/decorator';
+import { descriptorForProperty } from '@ember/-internals/metal/lib/decorator';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
@@ -795,28 +795,35 @@ declare const SIGNATURE: unique symbol;
 interface Component<S = unknown>
   extends CoreView, TargetActionSupport, ActionSupport, ComponentMethods {}
 
-class Component<S = unknown>
-  extends CoreView.extend(
-    TargetActionSupport,
-    ActionSupport,
-    {
-      // These need to be overridable via extend/create but should still
-      // have a default. Defining them here is the best way to achieve that.
-      didReceiveAttrs() {},
-      didRender() {},
-      didUpdate() {},
-      didUpdateAttrs() {},
-      willRender() {},
-      willUpdate() {},
-    } as ComponentMethods,
-    {
-      concatenatedProperties: ['attributeBindings', 'classNames', 'classNameBindings'],
-      classNames: EMPTY_ARRAY,
-      classNameBindings: EMPTY_ARRAY,
-    }
-  )
-  implements PropertyDidChange
-{
+// Hoisted out of the `extends` clause: when the class is unused, rolldown
+// rewrites `class X extends EXPR {}` into a bare `EXPR;` statement and drops
+// the PURE annotation along with the class, leaving the heritage call
+// unshakeable. As a const initializer the annotation survives in both rollup
+// and rolldown.
+// Typed as `typeof CoreView` so the declaration is nameable in the emitted
+// d.ts (the mixin members are provided by the `interface Component` merge
+// below, exactly as before). The runtime value still carries the mixins.
+const ComponentBase = /* #__PURE__ */ CoreView.extend(
+  TargetActionSupport,
+  ActionSupport,
+  {
+    // These need to be overridable via extend/create but should still
+    // have a default. Defining them here is the best way to achieve that.
+    didReceiveAttrs() {},
+    didRender() {},
+    didUpdate() {},
+    didUpdateAttrs() {},
+    willRender() {},
+    willUpdate() {},
+  } as ComponentMethods,
+  {
+    concatenatedProperties: ['attributeBindings', 'classNames', 'classNameBindings'],
+    classNames: EMPTY_ARRAY,
+    classNameBindings: EMPTY_ARRAY,
+  }
+) as unknown as typeof CoreView;
+
+class Component<S = unknown> extends ComponentBase implements PropertyDidChange {
   isComponent = true;
 
   // SAFETY: this has no runtime existence whatsoever; it is a "phantom type"
@@ -1308,11 +1315,6 @@ class Component<S = unknown>
     @default []
     @private
   */
-  // @ts-expect-error TODO: Fix these types
-  @nativeDescDecorator({
-    configurable: false,
-    enumerable: false,
-  })
   get childViews() {
     return getChildViews(this);
   }
@@ -1418,8 +1420,6 @@ class Component<S = unknown>
     @type DOMElement
     @public
   */
-  // @ts-expect-error The types are not correct here
-  @nativeDescDecorator({ configurable: false, enumerable: false })
   get element() {
     return this.renderer.getElement(this);
   }
@@ -1682,11 +1682,28 @@ class Component<S = unknown>
   }
 }
 
-// We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
-Component.reopenClass({
-  positionalParams: [],
-});
+// The manager association and `positionalParams` only matter when the class
+// itself is in use, so they are folded into the exported binding: a consumer
+// that never uses the class (e.g. imports only `setComponentTemplate` from
+// `@ember/component`) can tree-shake all of this away.
+const ComponentWithBranding = /* #__PURE__ */ (() => {
+  // These were `@nativeDescDecorator({ configurable: false, enumerable: false })`
+  // on the getters, but decorators force an impure `static {}` block into the
+  // class body, which blocks tree-shaking of the whole class. An
+  // attributes-only `defineProperty` keeps the getter and flips the flags,
+  // which is exactly what the decorator compiled down to.
+  for (const key of ['childViews', 'element'] as const) {
+    Object.defineProperty(Component.prototype, key, { configurable: false, enumerable: false });
+  }
 
-setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
+  // We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
+  Component.reopenClass({
+    positionalParams: [],
+  });
 
-export default Component;
+  return setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
+})();
+
+type ComponentWithBranding<S = unknown> = Component<S>;
+
+export default ComponentWithBranding;

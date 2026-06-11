@@ -54,7 +54,7 @@ class ElementComponentManager {
 
 const ELEMENT_COMPONENT_MANAGER = new ElementComponentManager();
 
-class ElementComponentDefinition {
+class ElementComponentDefinitionImpl {
   constructor(public tagName: string) {}
 
   toString(): string {
@@ -62,10 +62,15 @@ class ElementComponentDefinition {
   }
 }
 
-setInternalComponentManager(
-  ELEMENT_COMPONENT_MANAGER as unknown as InternalComponentManager,
-  ElementComponentDefinition.prototype
-);
+const ElementComponentDefinition = /* #__PURE__ */ (() => {
+  setInternalComponentManager(
+    ELEMENT_COMPONENT_MANAGER as unknown as InternalComponentManager,
+    ElementComponentDefinitionImpl.prototype
+  );
+  return ElementComponentDefinitionImpl;
+})();
+
+type ElementComponentDefinition = ElementComponentDefinitionImpl;
 
 // Cache component definitions per tag name to avoid creating duplicate definitions
 const ELEMENT_DEFINITIONS = new Map<string, ElementComponentDefinition>();
