@@ -262,7 +262,7 @@ declare const SIGNATURE: unique symbol;
 
   And then use it in the component's template:
 
-  ```app/templates/components/person-profile.hbs
+  ```app/components/person-profile.hbs
   <h1>{{this.displayName}}</h1>
   {{yield}}
   ```
@@ -650,7 +650,7 @@ declare const SIGNATURE: unique symbol;
   The `layout` property should be set to the default export of a template
   module, which is the name of a template file without the `.hbs` extension.
 
-  ```app/templates/components/person-profile.hbs
+  ```app/components/person-profile.hbs
   <h1>Person's Title</h1>
   <div class='details'>{{yield}}</div>
   ```
