@@ -119,6 +119,18 @@ All 11 dual-backend integration tasks have landed on branch
   smoke suite on every PR. Bundle-size budget check (`scripts/bundle-size-check.mjs`)
   and API-surface contract tests (`scripts/gxt-test-runner/contract-tests.mjs`) are
   included in the CI gate (Phase 3, `10f62465ce`).
+- `.github/workflows/gxt-full.yml` is the nightly full-suite-vs-baseline run
+  (`schedule` + `workflow_dispatch`; files a regression issue on failure). Its
+  inputs were re-verified post-rebase (tracked `test-results/gxt-baseline.json`,
+  all runner flags valid, `diff.mjs` present). **Registration caveat (2026-06-11):
+  GitHub only registers `schedule`/`workflow_dispatch` workflows from a repo's
+  DEFAULT branch.** On a fork whose default branch lacks the file, the nightly
+  silently never fires (push-triggered smoke/dual-build are unaffected — they run
+  from the pushed branch's own file). The nightly becomes active only once
+  `gxt-full.yml` lands on the default branch of whichever repo hosts it. Every
+  component it composes (the `--full --baseline` runner path, `--auto-serve`, the
+  shared setup action's Playwright install) is meanwhile exercised by the local
+  full-suite gate plus the push-triggered smoke workflow.
 
 **Install UX**
 
