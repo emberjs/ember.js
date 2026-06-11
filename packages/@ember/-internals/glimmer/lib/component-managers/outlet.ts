@@ -21,7 +21,7 @@ import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/referen
 import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
 import { unwrapTemplate } from './unwrap-template';
 
-import type { DynamicScope } from '../renderer';
+import type { DynamicScope } from '../classic-renderer';
 import type { OutletState } from '../utils/outlet';
 import type OutletView from '../views/outlet';
 

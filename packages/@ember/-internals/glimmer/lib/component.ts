@@ -1,4 +1,4 @@
-import type { View } from './renderer';
+import type { View } from './classic-renderer';
 import { descriptorForProperty, nativeDescDecorator } from '@ember/-internals/metal/lib/decorator';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
@@ -25,12 +25,12 @@ import type { DirtyableTag } from '@glimmer/interfaces';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import type { SimpleElement } from '@simple-dom/interface';
 import {
-  BOUNDS,
   CURLY_COMPONENT_MANAGER,
   DIRTY_TAG,
   IS_DISPATCHING_ATTRS,
   getComponentCapturedArgs,
 } from './component-managers/curly';
+import { BOUNDS } from './utils/bounds';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 
 // Keep track of which component classes have already been processed for lazy event setup.
