@@ -1873,7 +1873,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     
   This exists primarily for historic reasons and should not be used
   in new code. Prefer native [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
-  or [trackedArray](https://api.emberjs.com/ember/release/functions/@ember%2Freactive%2Fcollections/trackedArray).
+  or [trackedArray](/ember/release/functions/@ember%2Freactive%2Fcollections/trackedArray).
 
   Example
 
