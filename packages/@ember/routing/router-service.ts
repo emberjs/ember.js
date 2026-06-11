@@ -35,7 +35,7 @@ function cleanURL(url: string, rootURL: string) {
    In this example, the Router service is injected into a component to initiate a transition
    to a dedicated route:
 
-   ```app/components/example.js
+   ```app/components/example.gjs
    import Component from '@glimmer/component';
    import { action } from '@ember/object';
    import { service } from '@ember/service';
@@ -99,7 +99,7 @@ class RouterService extends Service.extend(Evented) {
      specific model from a Component in the first action, and in the second we trigger
      a query-params only transition.
 
-     ```app/components/example.js
+     ```app/components/example.gjs
      import Component from '@glimmer/component';
      import { action } from '@ember/object';
      import { service } from '@ember/service';
@@ -741,7 +741,7 @@ class RouterService extends Service.extend(Evented) {
     and doesn't change the active route).
 
     Usage example:
-    ```app/components/header.js
+    ```app/components/header.gjs
       import Component from '@glimmer/component';
       import { service } from '@ember/service';
       import { notEmpty } from '@ember/object/computed';

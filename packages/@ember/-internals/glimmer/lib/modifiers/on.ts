@@ -10,7 +10,7 @@
   For example, if you'd like to run a function on your component when a `<button>`
   in the components template is clicked you might do something like:
 
-  ```app/components/like-post.js
+  ```app/components/like-post.gjs
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
@@ -71,7 +71,7 @@
   properly bound to the `LikePost` Component, but let's explore what happens if we
   left out `@action`:
 
-  ```app/components/like-post.js
+  ```app/components/like-post.gjs
   import Component from '@glimmer/component';
 
   export default class LikePost extends Component {
