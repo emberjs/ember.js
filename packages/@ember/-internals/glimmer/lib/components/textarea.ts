@@ -15,7 +15,11 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   This template:
 
   ```handlebars
-  <Textarea @value="A bunch of text" />
+  import { Textarea } from '@ember/component';
+
+  <template>
+    <Textarea @value="A bunch of text" />
+  </template>
   ```
 
   Would result in the following HTML:
@@ -32,17 +36,17 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   In the following example, the `writtenWords` property on the component will be updated as the user
   types 'Lots of text' into the text area of their browser's window.
 
-  ```app/components/word-editor.js
+  ```app/components/word-editor.gjs
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
   export default class WordEditorComponent extends Component {
     @tracked writtenWords = "Lots of text that IS bound";
+    
+    <template>
+      <Textarea @value={{writtenWords}} />
+    </template>
   }
-  ```
-
-  ```handlebars
-  <Textarea @value={{writtenWords}} />
   ```
 
   Would result in the following HTML:
