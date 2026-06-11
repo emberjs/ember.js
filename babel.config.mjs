@@ -9,6 +9,13 @@
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Deliberately keyed off GXT_MODE *alone*, NOT the shared `isGxtEnabled()`
+// helper (scripts/gxt-alias-map.mjs). Under the Vite/GXT test harness
+// (GXT_MODE=true) the @lifeart/gxt compiler owns template compilation, so the
+// classic `babel-plugin-ember-template-compilation` below is skipped. The Rollup
+// `EMBER_RENDER_BACKEND=gxt` publish build, by contrast, intentionally keeps the
+// classic precompile pass — so this must not also flip on EMBER_RENDER_BACKEND.
+// See gxt-alias-map.mjs `isGxtEnabled` for the full asymmetry rationale.
 const useGxt = process.env.GXT_MODE === 'true';
 
 export default {

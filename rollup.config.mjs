@@ -6,6 +6,7 @@ import glob from 'glob';
 import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
+import { GXT_SHIM_DIR, GXT_SHIM_ALIASES } from './scripts/gxt-alias-map.mjs';
 
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
@@ -369,22 +370,18 @@ export function exposedDependencies() {
   // packages/@ember/-internals/gxt-backend/*.ts, and drop the VM/compiler
   // packages from the entry map entirely. Dropping them from the entry map is
   // enough for rollup to eliminate them from the output.
-  const compatDir = resolve(packageCache.appRoot, 'packages/@ember/-internals/gxt-backend');
-  const gxtOverrides = {
-    '@glimmer/validator': resolve(compatDir, 'validator.ts'),
-    '@glimmer/manager': resolve(compatDir, 'manager.ts'),
-    '@glimmer/reference': resolve(compatDir, 'reference.ts'),
-    '@glimmer/destroyable': resolve(compatDir, 'destroyable.ts'),
-    '@glimmer/tracking': resolve(compatDir, 'glimmer-tracking.ts'),
-    '@glimmer/tracking/primitives/cache': resolve(compatDir, 'glimmer-tracking.ts'),
-    // ember-template-compiler is shim-replaced so @ember/template-compilation
-    // etc. don't end up pulling in @glimmer/syntax + @glimmer/compiler.
-    'ember-template-compiler': resolve(compatDir, 'ember-template-compiler.ts'),
-    '@ember/template-compilation': resolve(compatDir, 'compile.ts'),
-    '@ember/-internals/deprecations': resolve(compatDir, 'deprecate.ts'),
-    '@glimmer/application': resolve(compatDir, 'glimmer-application.ts'),
-    '@glimmer/utils': resolve(compatDir, 'glimmer-util.ts'),
-  };
+  //
+  // The specifier → shim table is shared with vite.config.mjs via
+  // scripts/gxt-alias-map.mjs so the two pipelines cannot drift. Rollup uses
+  // exact-key matching (the `subpathTolerant` flag is vite-only — see that
+  // module's docs) and appends the `.ts` extension that resolveTS would
+  // otherwise have to discover. `ember-template-compiler` is shim-replaced so
+  // @ember/template-compilation etc. don't pull in @glimmer/syntax +
+  // @glimmer/compiler.
+  const compatRoot = resolve(packageCache.appRoot, GXT_SHIM_DIR);
+  const gxtOverrides = Object.fromEntries(
+    GXT_SHIM_ALIASES.map(({ find, shim }) => [find, resolve(compatRoot, `${shim}.ts`)])
+  );
 
   return { ...classic, ...gxtOverrides };
 }

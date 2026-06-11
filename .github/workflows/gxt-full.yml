@@ -19,8 +19,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        with:
+          install-playwright: 'true'
       - name: Run GXT full suite vs baseline
         id: gxt-run
         env:

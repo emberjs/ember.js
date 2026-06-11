@@ -13,6 +13,12 @@ import {
   exposedDependencies,
   hiddenDependencies,
 } from './rollup.config.mjs';
+import {
+  GXT_SHIM_DIR,
+  GXT_SHIM_ALIASES,
+  gxtSubpathRegExp,
+  isGxtEnabled,
+} from './scripts/gxt-alias-map.mjs';
 import { templateTag } from '@embroider/vite';
 
 const localRequire = createRequire(import.meta.url);
@@ -31,8 +37,12 @@ const owerrideRoot = import.meta.url;
 export default defineConfig(({ mode }) => {
   process.env.EMBER_ENV = mode;
 
-  // Use GXT_MODE=true to enable glimmer-next integration
-  const useGxt = process.env.GXT_MODE === 'true';
+  // Use GXT_MODE=true to enable glimmer-next integration. `isGxtEnabled` also
+  // honors EMBER_RENDER_BACKEND=gxt (additive — the vite harness only ever sets
+  // GXT_MODE in CI, but the benchmark vite configs set both, and this keeps a
+  // bare `EMBER_RENDER_BACKEND=gxt npx vite` working). See scripts/gxt-alias-map.mjs
+  // for why rollup's USE_GXT_BACKEND must NOT symmetrically honor GXT_MODE.
+  const useGxt = isGxtEnabled();
 
   // preserveModules + preserveEntrySignatures previously emitted per-source
   // chunks for the GXT smoke runner. That harness uses Vite's dev server
@@ -172,97 +182,26 @@ export default defineConfig(({ mode }) => {
             '@lifeart/gxt/runtime-compiler',
           ],
           alias: [
-            {
-              find: 'ember-template-compiler',
-              replacement: fileURLToPath(
-                new URL(
-                  `./packages/@ember/-internals/gxt-backend/ember-template-compiler`,
-                  owerrideRoot
-                )
-              ),
-            },
+            // The `@glimmer/* | @ember/* | ember-template-compiler` → shim
+            // redirects are derived from the SAME table the rollup build uses
+            // (scripts/gxt-alias-map.mjs), so the two pipelines cannot drift.
+            // `subpathTolerant` entries become anchored regexes so deep-path
+            // imports introduced by upstream's vendored @glimmer/* migration
+            // (e.g. `@glimmer/manager/lib/public/template`,
+            // `@glimmer/validator/lib/tracking`, `@glimmer/reference/lib/iterable`)
+            // collapse onto the single shim file. A bare string `find` would
+            // prefix-rewrite the subpath onto a nonexistent shim PATH; the shims
+            // are complete package replacements that re-export the full surface.
+            ...GXT_SHIM_ALIASES.map(({ find, shim, subpathTolerant }) => ({
+              find: subpathTolerant ? gxtSubpathRegExp(find) : find,
+              replacement: fileURLToPath(new URL(`./${GXT_SHIM_DIR}/${shim}`, owerrideRoot)),
+            })),
             // Alias internal-test-helpers compile to use gxt compilation
+            // (vite test harness only — not part of the shared shim table).
             {
               find: /^internal-test-helpers\/lib\/compile$/,
               replacement: fileURLToPath(
                 new URL(`./packages/@ember/-internals/gxt-backend/test-compile`, owerrideRoot)
-              ),
-            },
-            {
-              find: '@ember/template-compilation',
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/compile`, owerrideRoot)
-              ),
-            },
-            {
-              find: '@ember/-internals/deprecations',
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/deprecate`, owerrideRoot)
-              ),
-            },
-            {
-              find: '@glimmer/application',
-              replacement: fileURLToPath(
-                new URL(
-                  `./packages/@ember/-internals/gxt-backend/glimmer-application`,
-                  owerrideRoot
-                )
-              ),
-            },
-            {
-              find: '@glimmer/utils',
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/glimmer-util`, owerrideRoot)
-              ),
-            },
-            {
-              // Regex (not bare string) so deep-path imports introduced by
-              // upstream's vendored @glimmer/* migration (e.g.
-              // `@glimmer/manager/lib/public/template`) also collapse onto the
-              // single GXT shim file. A string `find` would prefix-rewrite the
-              // subpath onto the shim PATH (`.../manager/lib/public/template`),
-              // which does not exist. The shim is a complete package
-              // replacement that re-exports the full surface.
-              find: /^@glimmer\/manager(\/.*)?$/,
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/manager`, owerrideRoot)
-              ),
-            },
-            {
-              find: '@glimmer/tracking/primitives/cache',
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/glimmer-tracking`, owerrideRoot)
-              ),
-            },
-            {
-              find: '@glimmer/tracking',
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/glimmer-tracking`, owerrideRoot)
-              ),
-            },
-            {
-              // Regex so deep-path imports (e.g. `@glimmer/validator/lib/tracking`,
-              // `/lib/validators`, `/lib/debug`) from upstream's vendored
-              // @glimmer/* also collapse onto the single GXT shim file.
-              find: /^@glimmer\/validator(\/.*)?$/,
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/validator`, owerrideRoot)
-              ),
-            },
-            {
-              find: '@glimmer/destroyable',
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/destroyable`, owerrideRoot)
-              ),
-            },
-            {
-              // Regex so deep-path imports (e.g. `@glimmer/reference/lib/reference`,
-              // `/lib/iterable`) from upstream's vendored @glimmer/* also collapse
-              // onto the single GXT shim file. The shim re-exports the full
-              // @glimmer/reference surface (reference + iterable symbols).
-              find: /^@glimmer\/reference(\/.*)?$/,
-              replacement: fileURLToPath(
-                new URL(`./packages/@ember/-internals/gxt-backend/reference`, owerrideRoot)
               ),
             },
             {
