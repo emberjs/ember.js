@@ -198,9 +198,11 @@ All 11 dual-backend integration tasks have landed on branch
 
 - Canonical location: `packages/@ember/-internals/gxt-backend/` (Phase 1,
   `9f86bc2276`).
-- Old location `packages/demo/compat/` is preserved during the transition and
-  marked deprecated via `packages/demo/compat/DEPRECATED.md`. Only the new
-  location is referenced by the Rollup and Vite alias tables.
+- Old location `packages/demo/compat/` was preserved during the transition
+  (marked deprecated via a `DEPRECATED.md`) and has since been **deleted**; the
+  canonical location is the only one that exists. Both the Rollup and Vite
+  pipelines reference it through the single shared alias table
+  (`scripts/gxt-alias-map.mjs`, see §5.6).
 
 ## Detailed design
 
@@ -242,8 +244,9 @@ divergence in the release notes.
 ### 2. Feature support matrix
 
 This is the authoritative status as of the Phase 0 spike. Each row is
-backed by the session's 14-module test result, the compat layer in
-`packages/demo/compat/`, or an explicit untested/unvalidated flag.
+backed by the session's 14-module test result, the compat layer (then at
+`packages/demo/compat/`, now `packages/@ember/-internals/gxt-backend/`), or an
+explicit untested/unvalidated flag.
 
 | Feature                                                          | Status      | Notes                                                                                                                                                                                                                                                                                  |
 | ---------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -673,12 +676,12 @@ multi-month.
    the host can supply either happy-dom or SimpleDOM. This is the
    cleanest integration with FastBoot.
 3. **Audit the compat layer for node-safe DOM assumptions.** Hard
-   cases are `packages/demo/compat/manager.ts` (uses MutationObserver,
-   which neither SimpleDOM nor happy-dom fully models),
-   `packages/demo/compat/compile.ts` (mounts temporary DOM containers
-   for runtime template compilation), and
-   `packages/demo/compat/outlet.gts` (assumes live event handlers).
-   Estimate: ~1 week per hard file.
+   cases are `packages/@ember/-internals/gxt-backend/manager.ts` (uses
+   MutationObserver, which neither SimpleDOM nor happy-dom fully models),
+   `packages/@ember/-internals/gxt-backend/compile.ts` (mounts temporary DOM
+   containers for runtime template compilation), and
+   `packages/@ember/-internals/gxt-backend/outlet.gts` (assumes live event
+   handlers). Estimate: ~1 week per hard file.
 4. **Engines.** `{{mount}}` is currently `UNTESTED`. Lazy engines with
    asset-map-driven bundle splits are a separate risk surface and are
    out of scope for the preview exit unless explicitly validated.
