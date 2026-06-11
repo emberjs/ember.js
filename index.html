@@ -96,6 +96,11 @@
         globalThis.__gxtPendingSyncFromPropertyChange = false;
         globalThis.__gxtDeferredSyncError = null;
         globalThis.__gxtForceRerenderInProgress = false;
+        // A mid-render throw in a prior test can leave the live-render signal
+        // set (see the templateFn.call catch in compile.ts); a stale truthy
+        // value makes every later {{unbound}} deferred pass look live and
+        // silently un-freezes unbound values. Always start a test clear.
+        globalThis.__gxtCurrentTemplateThis = undefined;
         // Drain any render-error queue left over from a prior test. Async
         // paths (afterInsert callbacks, deferred sync) can push into
         // _renderErrors after runAppend's flushRenderErrors() ran, leaving
@@ -135,6 +140,20 @@
         // Reset op counter
         if (globalThis.__gxtOpCount !== undefined) {
           globalThis.__gxtOpCount = 0;
+        }
+        // Periodically force GC when the harness exposes it (testem passes
+        // --js-flags=--expose-gc, see testem.cjs). The cumulative single-page
+        // run accumulates renderer GC debt across ~10k tests; without this the
+        // realm eventually fails allocations outright (RangeError: Array
+        // buffer allocation failed). Every-50 cadence mirrors the Playwright
+        // runner's session-recycle GC.
+        globalThis.__gxtTestDoneCount = (globalThis.__gxtTestDoneCount || 0) + 1;
+        if (typeof window.gc === 'function' && globalThis.__gxtTestDoneCount % 50 === 0) {
+          try {
+            window.gc();
+          } catch (_e) {
+            /* ignore */
+          }
         }
       });
     </script>

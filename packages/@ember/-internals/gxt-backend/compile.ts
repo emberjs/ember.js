@@ -16707,11 +16707,29 @@ export function precompileTemplate(
           }
           try {
             result = compilationResult.templateFn.call(renderContext);
+          } catch (e) {
+            // THROW path: the itemToNode-loop `finally` below (which owns the
+            // `_gxtCurrentTemplateThis` / isRendering restore on the success
+            // path) will never run, so restore here. Leaving the GLOBAL
+            // `__gxtCurrentTemplateThis` set would poison every subsequent
+            // `{{unbound}}` evaluation in the realm: the live/deferred
+            // detection (`!globalThis.__gxtCurrentTemplateThis`, see the
+            // unboundEvalInjection) misclassifies deferred passes as live and
+            // unbound values silently un-freeze. Invisible in the per-module
+            // Playwright runner (fresh realm per module) but a hard cumulative
+            // failure in the single-page testem run, where one mid-render
+            // throw broke every later "does not update when unbound" test.
+            gxtSetIsRendering(false);
+            _gxtCurrentTemplateThis = _prevTemplateThis;
+            (globalThis as any).__gxtCurrentTemplateThis = _prevTemplateThis;
+            throw e;
           } finally {
-            // NOTE: `_gxtCurrentTemplateThis` is intentionally NOT reset here —
-            // itemToNode (where the initial-undefined capture frame consults it)
-            // runs in the result-processing loop BELOW, after this `.call`
-            // returns. It is restored in the itemToNode-loop `finally` instead.
+            // NOTE: `_gxtCurrentTemplateThis` is intentionally NOT reset here
+            // on the SUCCESS path — itemToNode (where the initial-undefined
+            // capture frame consults it) runs in the result-processing loop
+            // BELOW, after this `.call` returns. It is restored in the
+            // itemToNode-loop `finally` instead (and in the catch above when
+            // the template body throws).
             // Stop blocking tracked setters from calling __gxtTriggerReRender,
             // but KEEP isRendering=true so that GXT formulas created during
             // itemToNode (e.g., gxtEffect for reactive text nodes) properly
