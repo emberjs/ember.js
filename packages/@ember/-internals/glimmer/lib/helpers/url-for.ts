@@ -7,13 +7,13 @@
   import { urlFor } from '@ember/routing';
   ```
 
-  ```handlebars
+  ```gjs
   <a href={{urlFor "profile" this.user}}>Profile</a>
   ```
 
   With query params:
 
-  ```handlebars
+  ```gjs
   <a href={{urlFor "posts" queryParams=(hash page=2)}}>Page 2</a>
   ```
 

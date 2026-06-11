@@ -5,7 +5,7 @@
   import { rootUrl } from '@ember/routing';
   ```
 
-  ```handlebars
+  ```gjs
   <a href="{{rootUrl}}profile">Profile</a>
   ```
 

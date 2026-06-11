@@ -7,7 +7,7 @@
   import { isLoading, urlFor } from '@ember/routing';
   ```
 
-  ```handlebars
+  ```gjs
   {{#if (isLoading "post" this.post)}}
     Loading…
   {{else}}

@@ -10,7 +10,7 @@
   import { isTransitioningOut } from '@ember/routing';
   ```
 
-  ```handlebars
+  ```gjs
   <a class={{if (isTransitioningOut "about") "leaving"}}>About</a>
   ```
 

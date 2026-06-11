@@ -10,7 +10,7 @@
   import { isTransitioningIn } from '@ember/routing';
   ```
 
-  ```handlebars
+  ```gjs
   <a class={{if (isTransitioningIn "about") "entering"}}>About</a>
   ```
 

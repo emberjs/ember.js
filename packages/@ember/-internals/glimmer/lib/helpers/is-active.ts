@@ -7,19 +7,19 @@
   import { isActive } from '@ember/routing';
   ```
 
-  ```handlebars
+  ```gjs
   <a class={{if (isActive "about") "active"}}>About</a>
   ```
 
   With a dynamic segment:
 
-  ```handlebars
+  ```gjs
   {{isActive "post" this.post}}
   ```
 
   With query params:
 
-  ```handlebars
+  ```gjs
   {{isActive "posts" queryParams=(hash page=2)}}
   ```
 
