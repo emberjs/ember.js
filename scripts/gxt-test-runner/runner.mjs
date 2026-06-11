@@ -34,6 +34,127 @@ const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, '..', '..');
 const RUNNER_VERSION = 'scripts/gxt-test-runner/runner.mjs@v1';
 
+// ---------- Boot diagnostics ----------
+// The single most common CI-only failure is "the page never boots": the QUnit
+// test page loads but fewer than the expected modules register, so discovery's
+// waitForFunction times out. Locally everything is green, so the only way to
+// know WHY in CI is to capture the evidence the page/server emit while booting.
+// These ring buffers retain the tail of: the vite dev server's own stdout/stderr
+// (transform 500s, staleness warnings, resolve failures), the page's console
+// messages, uncaught page errors, failed network requests, and any HTTP >= 400
+// responses (a vite transform error surfaces as a 500 whose URL names the exact
+// module that broke the eager-glob import chain). dumpDiagnostics() prints them
+// on discovery failure (and any top-level harness error).
+const RING_MAX = 400;
+const serverLogLines = [];
+const pageConsole = [];
+const pageErrors = [];
+const pageBadResponses = [];
+const pageFailedRequests = [];
+function ringPush(arr, line) {
+  arr.push(line);
+  if (arr.length > RING_MAX) arr.shift();
+}
+function captureServerLog(buf) {
+  const text = buf.toString();
+  for (const line of text.split(/\r?\n/)) {
+    // Strip ANSI so the CI log stays grep-able.
+    const clean = line.replace(/\x1b\[[0-9;]*m/g, '');
+    if (clean.trim().length === 0) continue;
+    ringPush(serverLogLines, clean);
+  }
+}
+function attachPageDiagnostics(page) {
+  page.on('console', (msg) => {
+    try {
+      ringPush(pageConsole, `[${msg.type()}] ${msg.text()}`.slice(0, 1000));
+    } catch {}
+  });
+  page.on('pageerror', (err) => {
+    try {
+      ringPush(
+        pageErrors,
+        String(err && err.stack ? err.stack : err)
+          .split('\n')
+          .slice(0, 5)
+          .join('\n')
+      );
+    } catch {}
+  });
+  page.on('requestfailed', (req) => {
+    try {
+      const f = req.failure();
+      ringPush(pageFailedRequests, `${req.method()} ${req.url()} — ${(f && f.errorText) || 'failed'}`);
+    } catch {}
+  });
+  page.on('response', (res) => {
+    try {
+      const s = res.status();
+      if (s >= 400) ringPush(pageBadResponses, `${s} ${res.url()}`);
+    } catch {}
+  });
+}
+let _diagnosticsDumped = false;
+async function dumpDiagnostics(page, label) {
+  if (_diagnosticsDumped) return;
+  _diagnosticsDumped = true;
+  const w = (s) => process.stderr.write(s);
+  w(`\n[runner] ===== BOOT DIAGNOSTICS (${label}) =====\n`);
+  if (page) {
+    try {
+      const state = await Promise.race([
+        page.evaluate(() => ({
+          url: location.href,
+          qunit: typeof QUnit,
+          moduleCount:
+            typeof QUnit !== 'undefined' && QUnit.config && QUnit.config.modules
+              ? QUnit.config.modules.length
+              : -1,
+          hasCollector: !!window.__gxtCollector,
+          title: document.title,
+          // A vite runtime-error overlay (or a thrown boot error) leaves its
+          // message in the body — the first 1.2k usually contains the stack.
+          bodyText: ((document.body && document.body.innerText) || '').slice(0, 1200),
+        })),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('diag-eval-timeout')), 5000)),
+      ]);
+      w(
+        `[runner] page: url=${state.url} QUnit=${state.qunit} ` +
+          `modules=${state.moduleCount} collector=${state.hasCollector} ` +
+          `title=${JSON.stringify(state.title)}\n`
+      );
+      if (state.bodyText && state.bodyText.trim()) {
+        w(`[runner] page body text (first 1.2k):\n${state.bodyText}\n`);
+      }
+    } catch (e) {
+      w(`[runner] page.evaluate for diagnostics failed: ${e.message}\n`);
+    }
+  }
+  if (pageBadResponses.length) {
+    w(`[runner] HTTP >=400 responses (${pageBadResponses.length}; these name the broken modules):\n`);
+    for (const l of pageBadResponses.slice(-40)) w(`    ${l}\n`);
+  }
+  if (pageFailedRequests.length) {
+    w(`[runner] failed requests (last 20 of ${pageFailedRequests.length}):\n`);
+    for (const l of pageFailedRequests.slice(-20)) w(`    ${l}\n`);
+  }
+  if (pageErrors.length) {
+    w(`[runner] uncaught page errors (last 20 of ${pageErrors.length}):\n`);
+    for (const l of pageErrors.slice(-20)) w(`    ${l.replace(/\n/g, '\n      ')}\n`);
+  }
+  if (pageConsole.length) {
+    w(`[runner] page console (last 60 of ${pageConsole.length}):\n`);
+    for (const l of pageConsole.slice(-60)) w(`    ${l}\n`);
+  }
+  if (serverLogLines.length) {
+    w(`[runner] vite server log (last 80 of ${serverLogLines.length}):\n`);
+    for (const l of serverLogLines.slice(-80)) w(`    ${l}\n`);
+  } else {
+    w(`[runner] (no vite server log captured — server was already up, or --auto-serve not used)\n`);
+  }
+  w(`[runner] ===== END BOOT DIAGNOSTICS =====\n`);
+}
+
 // Lock file prevents concurrent runner instances. Each runner spawns 1 chromium
 // + ~8 child processes; parallel runs cause the laptop freeze documented in PR
 // #21340 (17+ chrome-headless-shell at 55%+ CPU each).
@@ -266,8 +387,12 @@ async function startAutoServe(url) {
     env: { ...process.env, GXT_MODE: 'true' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
-  child.stdout.on('data', () => {});
-  child.stderr.on('data', () => {});
+  // Retain the dev server's output in a ring buffer so dumpDiagnostics() can
+  // show WHY the page failed to boot (transform 500s, resolve failures, the
+  // GXT staleness banner, etc.). Previously discarded — which is exactly why
+  // CI logs showed nothing but the downstream waitForFunction timeout.
+  child.stdout.on('data', captureServerLog);
+  child.stderr.on('data', captureServerLog);
   const ok = await waitForServer(url, 120_000);
   if (!ok) {
     child.kill();
@@ -294,6 +419,9 @@ async function getSession(browser, opts) {
     _sessionOpts = opts;
   }
   const page = await ctx.newPage();
+  // Capture console / pageerror / failed-request / HTTP>=400 evidence for
+  // boot-failure diagnostics. Re-attached on every fresh session.
+  attachPageDiagnostics(page);
   _session = { ctx, page };
   return _session;
 }
@@ -348,7 +476,12 @@ async function discoverModules(browser, url) {
     // (first Vite request may return before all modules have registered).
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
+        const tGoto = Date.now();
         await page.goto(discoverUrl, { timeout: 180_000, waitUntil: 'load' });
+        process.stdout.write(
+          `[runner] discovery attempt ${attempt}: goto resolved in ${((Date.now() - tGoto) / 1000).toFixed(1)}s — ` +
+            `waiting for QUnit modules to register...\n`
+        );
         // NOTE: the 3rd arg is the options bag. Passing `{ timeout }` as the
         // 2nd arg makes Playwright treat it as the (ignored) page-function
         // argument and silently fall back to the 30s default — too short for
@@ -384,8 +517,14 @@ async function discoverModules(browser, url) {
       } catch (e) {
         lastErr = e;
       }
+      process.stderr.write(
+        `[runner] discovery attempt ${attempt}/3 failed: ${lastErr && lastErr.message}\n`
+      );
       await delay(2000);
     }
+    // Page never booted with the expected module set. Dump everything we
+    // captured so CI logs reveal the root cause instead of a bare timeout.
+    await dumpDiagnostics(page, 'module-discovery').catch(() => {});
     throw lastErr || new Error('module discovery failed');
   }
 }
@@ -1004,6 +1143,11 @@ async function main() {
     else hardExit = 0;
   } catch (err) {
     process.stderr.write(`[runner] harness error: ${err.stack || err}\n`);
+    // Surface boot evidence for any harness error (no-op if discovery already
+    // dumped it). _session may be live even when the error came from elsewhere.
+    try {
+      await dumpDiagnostics(_session && _session.page, 'harness-error');
+    } catch {}
     hardExit = 3;
   } finally {
     await cleanup('finally');
