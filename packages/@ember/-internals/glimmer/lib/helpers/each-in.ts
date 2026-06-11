@@ -126,7 +126,7 @@ import { internalHelper } from './internal-helper';
 
   For example, given this component definition:
 
-  ```app/components/developer-details.js
+  ```app/components/developer-details.gjs
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
@@ -135,21 +135,19 @@ import { internalHelper } from './internal-helper';
       "name": "Shelly Sails",
       "age": 42
     };
+    
+    <template>
+      <ul>
+        {{#each-in this.developer as |key value|}}
+          <li>{{key}}: {{value}}</li>
+        {{/each-in}}
+      </ul>
+    </template>
   }
   ```
 
   This template would display all properties on the `developer`
-  object in a list:
-
-  ```app/components/developer-details.hbs
-  <ul>
-    {{#each-in this.developer as |key value|}}
-      <li>{{key}}: {{value}}</li>
-    {{/each-in}}
-  </ul>
-  ```
-
-  Outputting their name and age:
+  object in a list, outputting their name and age:
 
   ```html
   <ul>
