@@ -10,7 +10,7 @@
 import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
-import { pascalToKebab, isAllDigits } from './utils';
+import { pascalToKebab, isAllDigits, parseInElementInsertBefore } from './utils';
 import {
   initChildViews as _emberInitChildViews,
   getElementView as _emberGetElementView,
@@ -679,73 +679,9 @@ function hasAttrsInBlockParams(str: string): boolean {
   return false;
 }
 
-/**
- * Parse {{#in-element dest insertBefore=expr}} and replace with {{#in-element dest}}.
- * Returns { result: string, insertBefore: string | null }.
- */
-function parseInElementInsertBefore(template: string): {
-  result: string;
-  insertBefore: string | null;
-} {
-  const marker = '{{#in-element';
-  let insertBefore: string | null = null;
-  let idx = template.indexOf(marker);
-  if (idx === -1) return { result: template, insertBefore: null };
-
-  let result = '';
-  let searchFrom = 0;
-  while (idx !== -1) {
-    let pos = idx + marker.length;
-    // Skip whitespace
-    while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
-    // Read dest (non-whitespace, non-})
-    const destStart = pos;
-    while (
-      pos < template.length &&
-      template[pos] !== ' ' &&
-      template[pos] !== '\t' &&
-      template[pos] !== '}'
-    )
-      pos++;
-    const dest = template.slice(destStart, pos);
-    // Skip whitespace
-    while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
-    // Check for insertBefore=
-    const ibMarker = 'insertBefore=';
-    if (
-      pos + ibMarker.length <= template.length &&
-      template.slice(pos, pos + ibMarker.length) === ibMarker
-    ) {
-      pos += ibMarker.length;
-      const exprStart = pos;
-      while (
-        pos < template.length &&
-        template[pos] !== ' ' &&
-        template[pos] !== '\t' &&
-        template[pos] !== '}'
-      )
-        pos++;
-      insertBefore = template.slice(exprStart, pos);
-      // Skip whitespace
-      while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
-      // Skip }}
-      if (pos + 1 < template.length && template[pos] === '}' && template[pos + 1] === '}') {
-        result += template.slice(searchFrom, idx) + `{{#in-element ${dest}}}`;
-        searchFrom = pos + 2;
-      } else {
-        result += template.slice(searchFrom, pos);
-        searchFrom = pos;
-      }
-    } else {
-      // No insertBefore, leave as-is
-      result += template.slice(searchFrom, pos);
-      searchFrom = pos;
-    }
-    idx = template.indexOf(marker, searchFrom);
-  }
-  result += template.slice(searchFrom);
-  return { result, insertBefore };
-}
+// parseInElementInsertBefore moved to ./utils (zero-dependency module) so the
+// node vitest gate can unit-test it without compile.ts's full module graph.
+// Imported at the top of this file; still re-exported via __test_internals.
 
 /**
  * Check if a template contains a dynamic helper pattern like {{helper this.xxx}} or {{helper @xxx}}.
@@ -13906,12 +13842,65 @@ function gxtTableTbodyTransform(env: GxtAstEnv) {
  * triple visitor rewrites it into an `<EmberHtmlRaw>` element (glimmer applies
  * each transform as a separate full traverse, so array order is observable).
  */
+// Every builder the dialect visitors call (the full `GxtAstEnv` surface). If
+// an upstream @lifeart/gxt release changes its compiler's AST/builders shape,
+// the visitors would otherwise fail silently or emit wrong code — this list
+// backs the once-per-process fail-loud assertion below.
+const GXT_REQUIRED_BUILDERS = [
+  'element',
+  'path',
+  'block',
+  'mustache',
+  'sexpr',
+  'hash',
+  'pair',
+  'string',
+  'blockItself',
+  'elementModifier',
+  'attr',
+  'text',
+] as const;
+
+let _gxtAstEnvShapeChecked = false;
+
+/**
+ * Fail-loud guard on the upstream `CompileOptions.transforms` contract: the
+ * first time the GXT compiler invokes a dialect transform builder, assert the
+ * `env.syntax.builders` factory exposes every method the 11 visitors use.
+ * Runs once per process at builder-call time (NOT as its own transform pass),
+ * so it adds zero AST traversals and zero per-compile cost after the first.
+ */
+function assertGxtAstEnvShape(env: GxtAstEnv): void {
+  if (_gxtAstEnvShapeChecked) return;
+  _gxtAstEnvShapeChecked = true;
+  const builders = (env as { syntax?: { builders?: Record<string, unknown> } })?.syntax?.builders;
+  const missing = builders
+    ? GXT_REQUIRED_BUILDERS.filter((name) => typeof builders[name] !== 'function')
+    : [...GXT_REQUIRED_BUILDERS];
+  if (missing.length > 0) {
+    throw new Error(
+      `[gxt-backend] @lifeart/gxt AST-transform contract violation: ` +
+        `env.syntax.builders is missing ${missing.join(', ')}. The installed ` +
+        `@lifeart/gxt compiler's AST shape has drifted from what the Ember ` +
+        `dialect transforms (buildGxtDialectTransforms) were written against — ` +
+        `check the @lifeart/gxt version pin before debugging template output.`
+    );
+  }
+}
+
 function buildGxtDialectTransforms(
   includeOnExt: boolean,
   scopeValues?: Record<string, unknown>
 ): readonly GxtAstTransform[] {
   const transforms: GxtAstTransform[] = [
-    gxtTableTbodyTransform as unknown as GxtAstTransform,
+    // The tbody builder is wrapped with the once-per-process env-shape guard
+    // (see assertGxtAstEnvShape). It must stay FIRST in the array regardless
+    // (the tbody↔triple order is load-bearing, see the doc comment above), so
+    // wrapping it guards every later visitor too.
+    ((env: GxtAstEnv) => {
+      assertGxtAstEnvShape(env);
+      return gxtTableTbodyTransform(env);
+    }) as unknown as GxtAstTransform,
     gxtTripleMustacheTransform as unknown as GxtAstTransform,
     gxtHtmlCommentTransform as unknown as GxtAstTransform,
     gxtOutletTransform as unknown as GxtAstTransform,

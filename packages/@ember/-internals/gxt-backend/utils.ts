@@ -95,3 +95,89 @@ export function splitWhitespace(str: string): string[] {
 export function doubleColonToSlash(str: string): string {
   return str.split('::').join('/');
 }
+
+/**
+ * Parse {{#in-element dest insertBefore=expr}} and replace with {{#in-element dest}}.
+ * Returns { result: string, insertBefore: string | null }.
+ *
+ * Runs on the template SOURCE before the GXT compiler parses it (the
+ * `insertBefore` hash pair must be extracted structurally because the GXT
+ * `$_inElement` runtime takes it out-of-band — see compile.ts, which threads
+ * the extracted expression through `_inElementInsertBefore`). Lives here
+ * (zero-dependency module) so the node vitest gate can unit-test it without
+ * pulling in compile.ts's full module graph.
+ */
+export function parseInElementInsertBefore(template: string): {
+  result: string;
+  insertBefore: string | null;
+} {
+  const marker = '{{#in-element';
+  let insertBefore: string | null = null;
+  let idx = template.indexOf(marker);
+  if (idx === -1) return { result: template, insertBefore: null };
+
+  let result = '';
+  let searchFrom = 0;
+  while (idx !== -1) {
+    let pos = idx + marker.length;
+    // Skip whitespace
+    while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
+    // Read dest (non-whitespace, non-})
+    const destStart = pos;
+    while (
+      pos < template.length &&
+      template[pos] !== ' ' &&
+      template[pos] !== '\t' &&
+      template[pos] !== '}'
+    )
+      pos++;
+    const dest = template.slice(destStart, pos);
+    // Skip whitespace
+    while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
+    // Check for insertBefore=
+    const ibMarker = 'insertBefore=';
+    if (
+      pos + ibMarker.length <= template.length &&
+      template.slice(pos, pos + ibMarker.length) === ibMarker
+    ) {
+      pos += ibMarker.length;
+      const exprStart = pos;
+      // A quoted value may contain `}` or whitespace (insertBefore="a}b");
+      // scan to the closing quote so a brace inside the string can neither
+      // truncate the captured value nor leave `insertBefore=` residue in the
+      // rewritten template. Unquoted values keep the bare-token scan.
+      const quote = template[pos];
+      if (quote === '"' || quote === "'") {
+        pos++;
+        while (pos < template.length && template[pos] !== quote) pos++;
+        if (pos < template.length) pos++; // include the closing quote
+      } else {
+        while (
+          pos < template.length &&
+          template[pos] !== ' ' &&
+          template[pos] !== '\t' &&
+          template[pos] !== '}'
+        )
+          pos++;
+      }
+      insertBefore = template.slice(exprStart, pos);
+      // Skip whitespace
+      while (pos < template.length && (template[pos] === ' ' || template[pos] === '\t')) pos++;
+      // Skip }}
+      if (pos + 1 < template.length && template[pos] === '}' && template[pos + 1] === '}') {
+        result += template.slice(searchFrom, idx) + `{{#in-element ${dest}}}`;
+        searchFrom = pos + 2;
+      } else {
+        result += template.slice(searchFrom, pos);
+        searchFrom = pos;
+      }
+    } else {
+      // No insertBefore, leave as-is
+      result += template.slice(searchFrom, pos);
+      searchFrom = pos;
+    }
+    idx = template.indexOf(marker, searchFrom);
+  }
+  result += template.slice(searchFrom);
+  return { result, insertBefore };
+}

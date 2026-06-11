@@ -481,38 +481,10 @@ describe('findThisAttrsPatterns', () => {
   });
 });
 
-// ============================================================
-// parseInElementInsertBefore
-// ============================================================
-describe('parseInElementInsertBefore', () => {
-  it('extracts insertBefore and removes it from template', () => {
-    const input = '{{#in-element dest insertBefore=null}}content{{/in-element}}';
-    const { result, insertBefore } = t.parseInElementInsertBefore(input);
-    expect(insertBefore).toBe('null');
-    expect(result).toContain('{{#in-element dest}}');
-    expect(result).not.toContain('insertBefore');
-  });
-
-  it('returns null insertBefore when not present', () => {
-    const input = '{{#in-element dest}}content{{/in-element}}';
-    const { result, insertBefore } = t.parseInElementInsertBefore(input);
-    expect(insertBefore).toBeNull();
-    expect(result).toContain('{{#in-element dest}}');
-  });
-
-  it('returns original string when no in-element', () => {
-    const input = '<div>hello</div>';
-    const { result, insertBefore } = t.parseInElementInsertBefore(input);
-    expect(result).toBe(input);
-    expect(insertBefore).toBeNull();
-  });
-
-  it('handles empty string', () => {
-    const { result, insertBefore } = t.parseInElementInsertBefore('');
-    expect(result).toBe('');
-    expect(insertBefore).toBeNull();
-  });
-});
+// parseInElementInsertBefore moved to ../utils (zero-dependency module);
+// its tests live in utils.test.ts, which runs in the fast node vitest gate
+// (this suite only runs in the full browser harness — see the DOCUMENTED
+// SKIP in packages/demo/vitest.gxt-unit.config.mts).
 
 // ============================================================
 // hasDynamicHelper

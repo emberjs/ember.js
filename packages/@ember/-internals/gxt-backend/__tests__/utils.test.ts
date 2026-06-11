@@ -6,6 +6,7 @@ import {
   dasherize,
   splitWhitespace,
   doubleColonToSlash,
+  parseInElementInsertBefore,
 } from '../utils';
 
 describe('pascalToKebab', () => {
@@ -196,5 +197,59 @@ describe('doubleColonToSlash', () => {
 
   it('handles :: at start and end', () => {
     expect(doubleColonToSlash('::Foo::')).toBe('/Foo/');
+  });
+});
+
+describe('parseInElementInsertBefore', () => {
+  it('extracts insertBefore and removes it from template', () => {
+    const input = '{{#in-element dest insertBefore=null}}content{{/in-element}}';
+    const { result, insertBefore } = parseInElementInsertBefore(input);
+    expect(insertBefore).toBe('null');
+    expect(result).toContain('{{#in-element dest}}');
+    expect(result).not.toContain('insertBefore');
+  });
+
+  it('returns null insertBefore when not present', () => {
+    const input = '{{#in-element dest}}content{{/in-element}}';
+    const { result, insertBefore } = parseInElementInsertBefore(input);
+    expect(insertBefore).toBeNull();
+    expect(result).toContain('{{#in-element dest}}');
+  });
+
+  it('returns original string when no in-element', () => {
+    const input = '<div>hello</div>';
+    const { result, insertBefore } = parseInElementInsertBefore(input);
+    expect(result).toBe(input);
+    expect(insertBefore).toBeNull();
+  });
+
+  it('handles empty string', () => {
+    const { result, insertBefore } = parseInElementInsertBefore('');
+    expect(result).toBe('');
+    expect(insertBefore).toBeNull();
+  });
+
+  it('extracts a double-quoted value containing }', () => {
+    const input = '{{#in-element dest insertBefore="a}b"}}content{{/in-element}}';
+    const { result, insertBefore } = parseInElementInsertBefore(input);
+    expect(insertBefore).toBe('"a}b"');
+    expect(result).toContain('{{#in-element dest}}');
+    expect(result).not.toContain('insertBefore');
+  });
+
+  it('extracts a single-quoted value containing whitespace', () => {
+    const input = "{{#in-element dest insertBefore='a b'}}content{{/in-element}}";
+    const { result, insertBefore } = parseInElementInsertBefore(input);
+    expect(insertBefore).toBe("'a b'");
+    expect(result).toContain('{{#in-element dest}}');
+    expect(result).not.toContain('insertBefore');
+  });
+
+  it('leaves the template untouched on an unterminated quoted value', () => {
+    // Malformed input: the scan runs to end-of-string, the `}}` check fails,
+    // and the rewrite is skipped — fail-safe, no crash, template unchanged.
+    const input = '{{#in-element dest insertBefore="oops}}content{{/in-element}}';
+    const { result } = parseInElementInsertBefore(input);
+    expect(result).toBe(input);
   });
 });
