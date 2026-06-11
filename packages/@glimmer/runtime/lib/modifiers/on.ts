@@ -254,11 +254,7 @@ function addEventListener(
   For example, if you'd like to run a function on your component when a `<button>`
   in the components template is clicked you might do something like:
 
-  ```app/components/like-post.hbs
-  <button {{on 'click' this.saveLike}}>Like this post!</button>
-  ```
-
-  ```app/components/like-post.js
+  ```app/components/like-post.gjs
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
@@ -267,6 +263,10 @@ function addEventListener(
       // someone likes your post!
       // better send a request off to your server...
     }
+    
+    <template>
+      <button {{on 'click' this.saveLike}}>Like this post!</button>
+    </template>
   }
   ```
 
@@ -314,7 +314,7 @@ function addEventListener(
   properly bound to the `items-list`, but let's explore what happens if we
   left out the arrow function:
 
-  ```app/components/like-post.js
+  ```app/components/like-post.gjs
   import Component from '@glimmer/component';
 
   export default class LikePostComponent extends Component {
