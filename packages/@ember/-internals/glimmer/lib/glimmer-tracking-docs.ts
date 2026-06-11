@@ -26,17 +26,7 @@
   property changes, any templates that used that property, directly or
   indirectly, will rerender. For instance, consider this component:
 
-  ```handlebars
-  <div>Count: {{this.count}}</div>
-  <div>Times Ten: {{this.timesTen}}</div>
-  <div>
-    <button {{on "click" this.plusOne}}>
-      Plus One
-    </button>
-  </div>
-  ```
-
-  ```javascript
+  ```gjs
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
   import { action } from '@ember/object';
@@ -52,6 +42,16 @@
     plusOne() {
       this.count += 1;
     }
+    
+    <template>
+      <div>Count: {{this.count}}</div>
+      <div>Times Ten: {{this.timesTen}}</div>
+      <div>
+        <button {{on "click" this.plusOne}}>
+          Plus One
+        </button>
+      </div>
+    </template>
   }
   ```
 
@@ -61,7 +61,7 @@
   will cause a rerender when updated - this includes through method calls and
   other means:
 
-  ```javascript
+  ```gjs
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
