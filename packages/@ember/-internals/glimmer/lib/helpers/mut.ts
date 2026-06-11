@@ -24,7 +24,6 @@ import { internalHelper } from './internal-helper';
   ```app/components/my-child.gjs
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
-  import { on } from '@ember/modifier';
     
   export default class MyChild extends Component {
     @action
