@@ -667,4 +667,3 @@ export class BaseRenderer {
   //   this.state.renderRoot(component);
   // }
 }
-
