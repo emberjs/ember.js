@@ -307,10 +307,10 @@ export class JitRenderDelegate implements RenderDelegate {
     let ctx: Record<string, unknown>;
     if (typeof component === 'function') {
       try {
-        const Ctor = component as new (owner: unknown, args: Record<string, unknown>) => Record<
-          string,
-          unknown
-        >;
+        const Ctor = component as new (
+          owner: unknown,
+          args: Record<string, unknown>
+        ) => Record<string, unknown>;
         ctx = new Ctor(undefined, args ?? {});
       } catch (e) {
         // Surface the construction failure to the test so it isn't silently

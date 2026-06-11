@@ -90,8 +90,9 @@ import {
 // bumped, host code reads the hooks off the namespace and no-ops when
 // undefined. Once the dep is upgraded these can become normal named imports.
 import * as __lifeartGxtForOptional from '@lifeart/gxt';
-const _gxtSetOpcodeErrorReporter: ((fn: ((err: unknown, ctx?: unknown) => void) | null) => void) | undefined =
-  (__lifeartGxtForOptional as any).setOpcodeErrorReporter;
+const _gxtSetOpcodeErrorReporter:
+  | ((fn: ((err: unknown, ctx?: unknown) => void) | null) => void)
+  | undefined = (__lifeartGxtForOptional as any).setOpcodeErrorReporter;
 const _gxtSetComponentRenderErrorReporter:
   | ((fn: ((err: unknown, ctx?: unknown) => void) | null) => void)
   | undefined = (__lifeartGxtForOptional as any).setComponentRenderErrorReporter;
@@ -99,8 +100,8 @@ const _gxtSetComponentRenderErrorReporter:
 // fine-grained custom-managed arg effect to update a CP-backed text node from
 // inside the sync drain). Read off the namespace so the host no-ops on older
 // runtimes that lack it.
-const _gxtFlushCellOpcodes: ((cell: unknown) => void) | undefined =
-  (__lifeartGxtForOptional as any).flushCellOpcodes;
+const _gxtFlushCellOpcodes: ((cell: unknown) => void) | undefined = (__lifeartGxtForOptional as any)
+  .flushCellOpcodes;
 // Namespace import + globalThis stash so glimmer/lib/renderer.ts and
 // glimmer/lib/views/outlet.ts can pull GXT symbols without statically
 // importing @lifeart/gxt themselves. Classic-Ember consumers (e.g.,
@@ -803,175 +804,173 @@ function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
   _rebuildInProgress = true;
   _gxtSuppressDirtyTagForDuringRebuild = true;
   try {
-      const owner = (globalThis as any).owner;
-      // Collect registries from all live pool instances (they know their owner),
-      // plus the current globalThis.owner and any explicit registry passed in.
-      const registries = new Set<any>();
-      if (explicitRegistry) registries.add(explicitRegistry);
-      for (const pool of _allPoolArrays) {
-        for (const entry of pool) {
-          const inst = entry.instance;
-          if (!inst || inst.isDestroyed || inst.isDestroying) continue;
-          try {
-            const instOwner = _glimmerGetOwner(inst) || owner;
-            const reg = instOwner?.lookup?.('-view-registry:main');
-            if (reg) registries.add(reg);
-          } catch {
-            /* ignore */
-          }
-        }
-      }
-      if (owner) {
+    const owner = (globalThis as any).owner;
+    // Collect registries from all live pool instances (they know their owner),
+    // plus the current globalThis.owner and any explicit registry passed in.
+    const registries = new Set<any>();
+    if (explicitRegistry) registries.add(explicitRegistry);
+    for (const pool of _allPoolArrays) {
+      for (const entry of pool) {
+        const inst = entry.instance;
+        if (!inst || inst.isDestroyed || inst.isDestroying) continue;
         try {
-          const reg = owner.lookup?.('-view-registry:main');
+          const instOwner = _glimmerGetOwner(inst) || owner;
+          const reg = instOwner?.lookup?.('-view-registry:main');
           if (reg) registries.add(reg);
         } catch {
           /* ignore */
         }
       }
-      if (registries.size === 0) return;
+    }
+    if (owner) {
+      try {
+        const reg = owner.lookup?.('-view-registry:main');
+        if (reg) registries.add(reg);
+      } catch {
+        /* ignore */
+      }
+    }
+    if (registries.size === 0) return;
 
-      for (const registry of registries) {
-        const viewIds = Object.keys(registry);
-        // Pass 1: clear CHILD_VIEW_IDS for every live tagged view with a live
-        // element — we're about to repopulate from live DOM ancestry.
-        const liveElFor = new Map<any, Element>();
-        const disconnectedIds: string[] = [];
-        for (const id of viewIds) {
-          const view = registry[id];
-          if (!view || view.isDestroyed || view.isDestroying) continue;
-          // Tagless components (tagName === '') have no wrapper element. Leave
-          // their CHILD_VIEW_IDS alone — we can't walk DOM ancestry from them.
-          if (view.tagName === '') continue;
-          // Prefer document.getElementById(elementId) because setViewElement may
-          // still reference a discarded node from a prior force-rerender cycle.
-          let el: Element | null = null;
-          const elementId: string | undefined = view.elementId || id;
-          if (elementId && typeof document !== 'undefined') {
-            try {
-              el = document.getElementById(elementId);
-            } catch {
-              /* ignore */
-            }
-          }
-          if (!el) {
-            const cached = getViewElement(view) || view.element;
-            if (cached && (cached as any).isConnected) el = cached as Element;
-          }
-          if (!el) {
-            disconnectedIds.push(id);
-            continue;
-          }
-          liveElFor.set(view, el);
-          // Refresh element↔view mapping so pass 2's DOM walk finds this view.
+    for (const registry of registries) {
+      const viewIds = Object.keys(registry);
+      // Pass 1: clear CHILD_VIEW_IDS for every live tagged view with a live
+      // element — we're about to repopulate from live DOM ancestry.
+      const liveElFor = new Map<any, Element>();
+      const disconnectedIds: string[] = [];
+      for (const id of viewIds) {
+        const view = registry[id];
+        if (!view || view.isDestroyed || view.isDestroying) continue;
+        // Tagless components (tagName === '') have no wrapper element. Leave
+        // their CHILD_VIEW_IDS alone — we can't walk DOM ancestry from them.
+        if (view.tagName === '') continue;
+        // Prefer document.getElementById(elementId) because setViewElement may
+        // still reference a discarded node from a prior force-rerender cycle.
+        let el: Element | null = null;
+        const elementId: string | undefined = view.elementId || id;
+        if (elementId && typeof document !== 'undefined') {
           try {
-            setElementView(el, view);
-          } catch {
-            /* ignore */
-          }
-          try {
-            setViewElement(view, el);
-          } catch {
-            /* ignore */
-          }
-          try {
-            _initChildViews(view);
+            el = document.getElementById(elementId);
           } catch {
             /* ignore */
           }
         }
-        // Disconnected tagged views stay in the registry (pool reuse can re-show
-        // them), but clear their CHILD_VIEW_IDS so getChildViews doesn't return
-        // a stale snapshot of a subtree hidden by {{#if}}.
-        for (const id of disconnectedIds) {
-          const v = registry[id];
-          if (v)
-            try {
-              _initChildViews(v);
-            } catch {
-              /* ignore */
-            }
+        if (!el) {
+          const cached = getViewElement(view) || view.element;
+          if (cached && (cached as any).isConnected) el = cached as Element;
         }
-        // Pass 2: walk each live tagged view's DOM ancestry and wire parentView
-        // + CHILD_VIEW_IDS on the nearest ancestor that maps to another live view.
-        for (const id of viewIds) {
-          const view = registry[id];
-          if (!view || view.isDestroyed || view.isDestroying) continue;
-          if (view.tagName === '') continue;
-          const el = liveElFor.get(view);
-          if (!el) continue;
-          let ancestorView: any = null;
-          let node: any = (el as any).parentNode;
-          while (node) {
-            if (node.nodeType === 1) {
-              const candidate = getElementView(node as Element);
-              if (
-                candidate &&
-                candidate !== view &&
-                !candidate.isDestroyed &&
-                !candidate.isDestroying
-              ) {
-                // Prefer the registry's view entry (may differ from candidate
-                // if instance was replaced/pooled). Falls back to candidate.
-                const cid = getViewId(candidate);
-                const regEntry = registry[cid];
-                ancestorView =
-                  regEntry && !regEntry.isDestroyed && !regEntry.isDestroying
-                    ? regEntry
-                    : candidate;
-                break;
-              }
-            }
-            node = node.parentNode;
+        if (!el) {
+          disconnectedIds.push(id);
+          continue;
+        }
+        liveElFor.set(view, el);
+        // Refresh element↔view mapping so pass 2's DOM walk finds this view.
+        try {
+          setElementView(el, view);
+        } catch {
+          /* ignore */
+        }
+        try {
+          setViewElement(view, el);
+        } catch {
+          /* ignore */
+        }
+        try {
+          _initChildViews(view);
+        } catch {
+          /* ignore */
+        }
+      }
+      // Disconnected tagged views stay in the registry (pool reuse can re-show
+      // them), but clear their CHILD_VIEW_IDS so getChildViews doesn't return
+      // a stale snapshot of a subtree hidden by {{#if}}.
+      for (const id of disconnectedIds) {
+        const v = registry[id];
+        if (v)
+          try {
+            _initChildViews(v);
+          } catch {
+            /* ignore */
           }
-          // Reconcile parentView + CHILD_VIEW_IDS.
-          const currentPV = view.parentView;
-          if (ancestorView) {
-            if (currentPV !== ancestorView) {
-              try {
-                view.parentView = ancestorView;
-              } catch {
-                /* ignore */
-              }
+      }
+      // Pass 2: walk each live tagged view's DOM ancestry and wire parentView
+      // + CHILD_VIEW_IDS on the nearest ancestor that maps to another live view.
+      for (const id of viewIds) {
+        const view = registry[id];
+        if (!view || view.isDestroyed || view.isDestroying) continue;
+        if (view.tagName === '') continue;
+        const el = liveElFor.get(view);
+        if (!el) continue;
+        let ancestorView: any = null;
+        let node: any = (el as any).parentNode;
+        while (node) {
+          if (node.nodeType === 1) {
+            const candidate = getElementView(node as Element);
+            if (
+              candidate &&
+              candidate !== view &&
+              !candidate.isDestroyed &&
+              !candidate.isDestroying
+            ) {
+              // Prefer the registry's view entry (may differ from candidate
+              // if instance was replaced/pooled). Falls back to candidate.
+              const cid = getViewId(candidate);
+              const regEntry = registry[cid];
+              ancestorView =
+                regEntry && !regEntry.isDestroyed && !regEntry.isDestroying ? regEntry : candidate;
+              break;
             }
+          }
+          node = node.parentNode;
+        }
+        // Reconcile parentView + CHILD_VIEW_IDS.
+        const currentPV = view.parentView;
+        if (ancestorView) {
+          if (currentPV !== ancestorView) {
             try {
-              _addChildView(ancestorView, view);
+              view.parentView = ancestorView;
             } catch {
               /* ignore */
             }
-          } else if (
-            currentPV &&
-            !currentPV.isDestroyed &&
-            !currentPV.isDestroying &&
-            currentPV.tagName === '' &&
-            (currentPV._debugContainerKey === 'component:-top-level' ||
-              currentPV.layoutName === '-top-level')
-          ) {
-            // Current parentView is the test harness's tagless `-top-level`
-            // wrapper, which has no DOM element for ancestry walking. Preserve
-            // parentView and record the CHILD_VIEW_IDS entry.
-            try {
-              _addChildView(currentPV, view);
-            } catch {
-              /* ignore */
-            }
-          } else if (currentPV !== null && currentPV !== undefined) {
-            // True DOM root: ensure parentView is null so getRootViews sees it.
-            try {
-              view.parentView = null;
-            } catch {
-              /* ignore */
-            }
+          }
+          try {
+            _addChildView(ancestorView, view);
+          } catch {
+            /* ignore */
+          }
+        } else if (
+          currentPV &&
+          !currentPV.isDestroyed &&
+          !currentPV.isDestroying &&
+          currentPV.tagName === '' &&
+          (currentPV._debugContainerKey === 'component:-top-level' ||
+            currentPV.layoutName === '-top-level')
+        ) {
+          // Current parentView is the test harness's tagless `-top-level`
+          // wrapper, which has no DOM element for ancestry walking. Preserve
+          // parentView and record the CHILD_VIEW_IDS entry.
+          try {
+            _addChildView(currentPV, view);
+          } catch {
+            /* ignore */
+          }
+        } else if (currentPV !== null && currentPV !== undefined) {
+          // True DOM root: ensure parentView is null so getRootViews sees it.
+          try {
+            view.parentView = null;
+          } catch {
+            /* ignore */
           }
         }
       }
-    } catch {
-      /* ignore — best effort fixup */
-    } finally {
-      _rebuildInProgress = false;
-      _gxtSuppressDirtyTagForDuringRebuild = false;
     }
-  };
+  } catch {
+    /* ignore — best effort fixup */
+  } finally {
+    _rebuildInProgress = false;
+    _gxtSuppressDirtyTagForDuringRebuild = false;
+  }
+}
 
 // Bridge adapter. Wraps `_gxtRebuildViewTreeFromDom` so that AFTER the main
 // rebuild body finishes (regardless of throw / early return on the re-entry
@@ -3323,8 +3322,7 @@ export function checkBacktracking(targetObj: any, key: string): void {
     // Build outlet hierarchy from the top-level outlet ref. The `?? undefined`
     // fallback returns undefined when the slot is unset, so the surrounding
     // `if (topOutletRef)` short-circuits the chain walk.
-    const topOutletRef =
-      getGxtRenderer()?.compilePipeline.getTopOutletRef?.() ?? undefined;
+    const topOutletRef = getGxtRenderer()?.compilePipeline.getTopOutletRef?.() ?? undefined;
     if (topOutletRef) {
       const outletChain: string[] = [];
       const routeName = outletState.render?.name;
@@ -3505,11 +3503,7 @@ function isInteractiveModeChecked(): boolean {
   return isInteractiveMode();
 }
 
-function triggerLifecycleHook(
-  instance: any,
-  hookName: string,
-  opts?: { rethrow?: boolean }
-): void {
+function triggerLifecycleHook(instance: any, hookName: string, opts?: { rethrow?: boolean }): void {
   if (!instance) return;
   // In non-interactive mode, suppress interactive-only hooks
   if (INTERACTIVE_ONLY_HOOKS.has(hookName) && !isInteractiveModeChecked()) {
@@ -4207,9 +4201,7 @@ function _gxtSyncAllWrappersBody(): void {
                   // explicitly here, re-entrancy-guarded by `__gxtInvokingCpSetter`
                   // (so when the descriptor DID forward, this is a no-op the
                   // second time).
-                  if (
-                    !(entry.instance as any).__gxtInvokingCpSetter
-                  ) {
+                  if (!(entry.instance as any).__gxtInvokingCpSetter) {
                     try {
                       const _cp = _findCpWithSetterFor(entry.instance, key);
                       if (_cp) {
@@ -4330,9 +4322,7 @@ function _gxtSyncAllWrappersBody(): void {
                   // explicitly here, re-entrancy-guarded by `__gxtInvokingCpSetter`
                   // (so when the descriptor DID forward, this is a no-op the
                   // second time).
-                  if (
-                    !(entry.instance as any).__gxtInvokingCpSetter
-                  ) {
+                  if (!(entry.instance as any).__gxtInvokingCpSetter) {
                     try {
                       const _cp = _findCpWithSetterFor(entry.instance, key);
                       if (_cp) {
@@ -5019,8 +5009,7 @@ function _gxtDestroyUnclaimedPoolEntries(): void {
   // finally block before this Phase runs. The bridge predicate defaults to
   // falsy when not yet installed, so `_outerSuppressCapture` defaults to true
   // before the first __gxtSyncDomNow call.
-  const _outerSuppressCapture =
-    !getGxtRenderer()?.compilePipeline.isSyncIsPropertyDriven?.();
+  const _outerSuppressCapture = !getGxtRenderer()?.compilePipeline.isSyncIsPropertyDriven?.();
   // Snapshot the prior value so the matching `finally`-disarm only restores it
   // if WE set it (preserves outer re-entrant arms).
   const _hadPriorSuppress = _suppressDestroyCapture;
@@ -5616,10 +5605,7 @@ function _gxtFinalizeInverseOldRows(rows: ReadonlyArray<any>, cycle: number): vo
       ) {
         instance.destroy();
       }
-      if (
-        typeof instance.willDestroy === 'function' &&
-        !(instance as any).__gxtWillDestroyFired
-      ) {
+      if (typeof instance.willDestroy === 'function' && !(instance as any).__gxtWillDestroyFired) {
         instance.willDestroy();
       }
     } catch {
@@ -6624,10 +6610,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
         // use it as the live getter. This makes the arg reactive: the installed
         // arg-cell effect re-reads the thunk (→ outer source cell) and dirties
         // downstream readers when the parent mutates.
-        if (
-          !getter &&
-          typeof descriptor?.value === 'function'
-        ) {
+        if (!getter && typeof descriptor?.value === 'function') {
           const thunk = descriptor.value as any;
           if (
             !thunk.prototype &&
@@ -6915,10 +6898,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
           }
         }
         // Treat as a plain-native collision so the cached native getter is used.
-        const _useCachedNativeGetter =
-          protoGetterIsPlainNative &&
-          !!protoGetterFn &&
-          !!instance;
+        const _useCachedNativeGetter = protoGetterIsPlainNative && !!protoGetterFn && !!instance;
         if (hasComputedGetter) {
           // Property has a computed getter — install a cell-backed
           // descriptor manually. We used to call cellFor(skipDefine=false)
@@ -7697,9 +7677,7 @@ function removeGxtArtifacts(container: Element | DocumentFragment): void {
     }
     // Never strip live list top/bottom/item markers — the syncList opcode
     // mutates DOM relative to them on later updates.
-    if (
-      _gxtListMarkers.has(node)
-    ) {
+    if (_gxtListMarkers.has(node)) {
       continue;
     }
     if (text.includes('placeholder') || text === '') {
@@ -8763,9 +8741,8 @@ const $_MANAGERS = {
               // and the splat carried nothing. Mirrors the `$fw` assignment
               // in `createRenderContext` (line ~6317).
               const propsFromArgs = args?.[$PROPS_SYMBOL];
-              const fwForRender = (Array.isArray(fw) ? fw : null)
-                || (Array.isArray(propsFromArgs) ? propsFromArgs : null)
-                || [[], [], []];
+              const fwForRender = (Array.isArray(fw) ? fw : null) ||
+                (Array.isArray(propsFromArgs) ? propsFromArgs : null) || [[], [], []];
               renderCtx.$fw = fwForRender;
               const container = document.createDocumentFragment();
               renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
@@ -8813,9 +8790,8 @@ const $_MANAGERS = {
             // Forward splat-attrs into `$fw` (see sibling branch above for
             // the full rationale + same fix shape).
             const propsFromArgs2 = args?.[$PROPS_SYMBOL];
-            const fwForRender2 = (Array.isArray(fw) ? fw : null)
-              || (Array.isArray(propsFromArgs2) ? propsFromArgs2 : null)
-              || [[], [], []];
+            const fwForRender2 = (Array.isArray(fw) ? fw : null) ||
+              (Array.isArray(propsFromArgs2) ? propsFromArgs2 : null) || [[], [], []];
             renderCtx.$fw = fwForRender2;
             const container = document.createDocumentFragment();
             renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
@@ -9561,8 +9537,7 @@ const $_MANAGERS = {
           // GXT formulas can fire multiple times per sync (e.g., when tracked cells
           // are re-bound during the first evaluation). Skip duplicate updates.
           // Read the sync-cycle counter via the bridge.
-          const currentSyncCycle =
-            getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
+          const currentSyncCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
           if (cached.__gxtUpdatedInSyncCycle === currentSyncCycle && currentSyncCycle > 0) {
             // Already updated — return a lightweight destructor that only marks
             // pendingDestroy for the next handle() call. Do NOT push to the
@@ -9691,8 +9666,7 @@ const $_MANAGERS = {
                 // Skip if this is the sync cycle immediately after install —
                 // that is just GXT's run-loop settling, not a real change.
                 // Read the sync-cycle counter via the bridge.
-                const syncCycleNow =
-                  getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
+                const syncCycleNow = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
                 if (!anyArgChanged && syncCycleNow - (cached.__gxtInstallCycle || 0) > 1) {
                   shouldUpdate = true;
                 }
@@ -10142,8 +10116,7 @@ const $_MANAGERS = {
       return () => {
         cached.pendingDestroy = true;
         // Read the sync-cycle counter via the bridge.
-        cached.__gxtDestructorCycle =
-          getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
+        cached.__gxtDestructorCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
         _pendingModifierDestroys.push({
           cached,
           destroyable: null,
@@ -10700,10 +10673,7 @@ function handleCustomManagedComponent(
       // Component Manager - Angle Invocation.
       const newCapturedArgs = { named: namedArgs, positional: positionalArgs };
       const _updateHookExplicitlyFalse = asyncCaps && asyncCaps.updateHook === false;
-      if (
-        !_updateHookExplicitlyFalse &&
-        typeof actualManager.updateComponent === 'function'
-      ) {
+      if (!_updateHookExplicitlyFalse && typeof actualManager.updateComponent === 'function') {
         actualManager.updateComponent(instance, newCapturedArgs);
       }
 
@@ -12994,8 +12964,7 @@ function renderClassicComponent(
               const baseClass = wrapperEl.className;
               _gxtEffect(() => {
                 const resolved = value();
-                const extra =
-                  resolved != null && resolved !== false ? String(resolved) : '';
+                const extra = resolved != null && resolved !== false ? String(resolved) : '';
                 wrapperEl.className = baseClass
                   ? extra
                     ? baseClass + ' ' + extra

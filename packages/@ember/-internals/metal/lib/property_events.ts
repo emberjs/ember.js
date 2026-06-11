@@ -12,7 +12,10 @@ import { DEBUG } from '@glimmer/env';
 // `_gxtWithInTriggerReRender` so the CP.get re-entrance guard still observes
 // the flag for the body's duration regardless. See `withInTriggerReRender` doc
 // in gxt-bridge.ts.
-import { getGxtRenderer, installCompilePipelinePart } from '@ember/-internals/gxt-backend/gxt-bridge';
+import {
+  getGxtRenderer,
+  installCompilePipelinePart,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
 import {
   flushSyncObservers,
   resumeObserverDeactivation,

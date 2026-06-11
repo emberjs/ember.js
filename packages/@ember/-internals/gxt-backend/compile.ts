@@ -1047,8 +1047,7 @@ installEmberWrappers();
   const g = globalThis as any;
   const _unwrap = (v: any): any => {
     if (typeof v === 'function' && !v.prototype) v = v();
-    if (v && typeof v === 'object' && !Array.isArray(v) && '__isCell' in v)
-      return (v as any).value;
+    if (v && typeof v === 'object' && !Array.isArray(v) && '__isCell' in v) return (v as any).value;
     return v;
   };
   const _toBool = (v: any): boolean => {
@@ -3001,10 +3000,7 @@ function _drainCascadeQueue(): void {
     }
   }
   if (i >= _MAX_DRAIN) {
-    console.warn(
-      '[gxt] Phase 2b drain hit MAX_DRAIN cap',
-      _deferredCascadeQueue.length
-    );
+    console.warn('[gxt] Phase 2b drain hit MAX_DRAIN cap', _deferredCascadeQueue.length);
   }
 }
 
@@ -3976,8 +3972,7 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
     //
     // The hook itself contains the re-entrancy guard (toggled in root.ts),
     // so nested `set()` calls inside the rerender body don't re-trigger.
-    const _isControllerKey =
-      obj && typeof obj === 'object' && (obj as any).isController === true;
+    const _isControllerKey = obj && typeof obj === 'object' && (obj as any).isController === true;
     let _isQpKey = false;
     if (_isControllerKey && keyName !== 'model' && typeof keyName === 'string') {
       // Detect QP-tracked property: scan controller.queryParams (array form,
@@ -4067,10 +4062,7 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
                 try {
                   _ctrlHook(candidate);
                 } catch (e) {
-                  console.warn(
-                    '[gxt] controller-set outlet rerender (interior) hook failed',
-                    e
-                  );
+                  console.warn('[gxt] controller-set outlet rerender (interior) hook failed', e);
                 }
               }
             }
@@ -4155,10 +4147,7 @@ function _isCustomManagedComponent(obj: object): boolean {
 //
 // `_getOrCreateGxtComponentContexts` is always non-null (lazy-init), so callers
 // do NOT need a truthy guard on the returned map.
-function _walkRenderContexts(
-  obj: object,
-  fn: (ctx: object, isProto: boolean) => void
-): void {
+function _walkRenderContexts(obj: object, fn: (ctx: object, isProto: boolean) => void): void {
   const ctxsMap = _getOrCreateGxtComponentContexts();
   if (!ctxsMap) return;
   // Check both the object itself and its prototype as keys.
@@ -5690,8 +5679,7 @@ function _afterRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
         // descendants.
         const entries = _wrapperIfCondLookup.get(wrapperId);
         if (entries && entries.size > 0) {
-          const liveEl: any =
-            typeof document !== 'undefined' && document.getElementById(wrapperId);
+          const liveEl: any = typeof document !== 'undefined' && document.getElementById(wrapperId);
           let anyExpanded = false;
           for (const e of entries) {
             const ph = e.placeholder;
@@ -5776,9 +5764,7 @@ function _afterRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
 // collection proxy (trackedArray / trackedSet) returns its internal GXT-cell-
 // backed `collection` tag when read with this key. `Symbol.for` guarantees the
 // SAME symbol identity across modules without importing validator.ts here.
-const _GXT_COLLECTION_TAG: unique symbol = Symbol.for(
-  '@ember/reactive:gxt-collection-tag'
-);
+const _GXT_COLLECTION_TAG: unique symbol = Symbol.for('@ember/reactive:gxt-collection-tag');
 
 function _gxtSubscribeBackingArray(raw: any): void {
   if (!raw || typeof raw !== 'object') return;
@@ -5838,13 +5824,7 @@ function _gxtSubscribeBackingArray(raw: any): void {
   // (`arrangedContent` itself returns a fresh throwaway slice each read, so
   // subscribing to ITS `[]` cell is useless — must reach `wrappedItems`.)
   _read(raw);
-  for (const propName of [
-    'content',
-    '_array',
-    'wrappedItems',
-    '_content',
-    'arrangedContent',
-  ]) {
+  for (const propName of ['content', '_array', 'wrappedItems', '_content', 'arrangedContent']) {
     let val: any;
     try {
       val = raw[propName];
@@ -6160,10 +6140,7 @@ function _wrapNestedEachValue(value: any): any {
   // Skip wrapping self-reactive wrapper instances (e.g. reactive Cell
   // primitives) whose reads entangle their own native reactivity — the nested
   // per-prop cell would never be the dirtied source.
-  if (
-    (globalThis as any).__gxtR6SkipSelfReactive === true &&
-    _isSelfReactiveWrapper(value)
-  ) {
+  if ((globalThis as any).__gxtR6SkipSelfReactive === true && _isSelfReactiveWrapper(value)) {
     return value;
   }
   // Don't double-wrap our own proxies (item-body or nested).
@@ -6255,11 +6232,7 @@ function _gxtDrainPendingEachRebinds(): void {
   oldRawItem: any,
   newRawItem: any
 ): void {
-  if (
-    oldRawItem === newRawItem ||
-    !oldRawItem ||
-    typeof oldRawItem !== 'object'
-  ) {
+  if (oldRawItem === newRawItem || !oldRawItem || typeof oldRawItem !== 'object') {
     return;
   }
   // Fetch the holder directly by raw item. A holder exists iff a body-proxy was
@@ -6307,10 +6280,7 @@ const _keySetSeen = new WeakMap<object, Set<string>>();
 // Exposed so the canonical `gxtEntriesOfEmber` (ember-gxt-wrappers.ts, which
 // OVERRIDES the inline `gxtEntriesOf` below) can record the key-set + subscribe
 // the active source formula.
-(globalThis as any).__gxtRecordEachInKeySet = function (
-  resolved: object,
-  keys: string[]
-): void {
+(globalThis as any).__gxtRecordEachInKeySet = function (resolved: object, keys: string[]): void {
   _gxtRecordKeySet(resolved, keys);
 };
 // Exposed so `gxtEntriesOfEmber` (ember-gxt-wrappers.ts) can subscribe the
@@ -6446,11 +6416,7 @@ function patchGlobalEachSync() {
     // the rev cell. So: rebindPossible = key is non-null, non-identity,
     // non-index.
     const _keyIsIdentity =
-      key === null ||
-      key === undefined ||
-      key === '' ||
-      key === '@identity' ||
-      key === '@index';
+      key === null || key === undefined || key === '' || key === '@identity' || key === '@index';
     const _rebindPossible = !_keyIsIdentity;
     // Capture the parent Ember component instance at the time $_eachSync is
     // called from the template body. `ctx` is the GXT render context (which
@@ -6768,10 +6734,7 @@ function patchGlobalEachSync() {
         // (flushAfterInsertQueue) has fired the NEW content's
         // didInsertElement/didRender — matching classic Ember's
         // new-insert-before-async-destroy.
-        if (
-          _oldRowsToFinalize &&
-          _oldRowsToFinalize.length > 0
-        ) {
+        if (_oldRowsToFinalize && _oldRowsToFinalize.length > 0) {
           _pendingInverseOldRowFinalize.push({
             rows: _oldRowsToFinalize,
             cycle: _finalizeCycle,
@@ -7197,9 +7160,7 @@ function _gxtSyncDomNow(): void {
           // via cell tracking. Skip the force-rerender morph (Phase 2b) only when
           // cell-based listeners exist. CurriedComponent listeners use manual DOM
           // swap and need the morph for other property changes to propagate.
-          if (
-            getGxtRenderer()?.compilePipeline.hasStringDynamicComponentListeners?.()
-          ) {
+          if (getGxtRenderer()?.compilePipeline.hasStringDynamicComponentListeners?.()) {
             _gxtSetHadPendingSync(false);
           }
         }
@@ -9749,7 +9710,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       // template on in-place array mutation (life-cycle-test `that thing about
       // destroying`). The wrapper sets Symbol.for('gxt-block-wrapper') on itself
       // (glimmer-next dom.ts) before its body renders, so this guard sees it.
-      !((ctx as any)[BLOCK_WRAPPER_SYMBOL])
+      !(ctx as any)[BLOCK_WRAPPER_SYMBOL]
     ) {
       const gxtRootCtx = _gxtRootContext;
       const rootId = gxtRootCtx && gxtRootCtx[COMPONENT_ID_PROPERTY as any];
@@ -9768,9 +9729,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // Runs AFTER the ctx component-id stamp above (load-bearing for the GXT
     // tree walker) but BEFORE every Ember-semantic scan. Delegates straight to
     // GXT's native originalTag, which already applies props/attrs/events itself.
-    if (
-      _gxtTagFastPathEligible(tag, tagProps)
-    ) {
+    if (_gxtTagFastPathEligible(tag, tagProps)) {
       return originalTag(tag, tagProps, ctx, children);
     }
 
@@ -12763,7 +12722,6 @@ let _dynVarCounter = 0;
 // inverses for free. The former `transformEachInBlocks` + `splitElse` string
 // scanners lived here.
 
-
 let _functionCodeCache: Map<string, Function> | null = null;
 // Global counter for log site IDs — ensures uniqueness across compilations.
 // Without this, every compiled template gets __logSite:0, __logSite:1, etc.
@@ -12882,12 +12840,7 @@ function gxtBlockAtArgTransform(env: GxtAstEnv) {
     visitor: {
       BlockStatement(node: any): unknown {
         const path = node.path;
-        if (
-          path &&
-          path.type === 'PathExpression' &&
-          path.head &&
-          path.head.type === 'AtHead'
-        ) {
+        if (path && path.type === 'PathExpression' && path.head && path.head.type === 'AtHead') {
           const componentPath = b.path('component');
           const argRef = b.path(path.head.name);
           return b.block(
@@ -13543,12 +13496,7 @@ function gxtBlockParamsTransform(env: GxtAstEnv) {
 // by the browser tokenizer, so a `<EmberHtmlRaw …>` child would serialize as
 // literal markup. Mirrors the `rawtextTags` list in the former
 // `transformTripleMustaches` string scanner.
-const _GXT_RAWTEXT_TAGS: ReadonlySet<string> = new Set([
-  'title',
-  'script',
-  'style',
-  'textarea',
-]);
+const _GXT_RAWTEXT_TAGS: ReadonlySet<string> = new Set(['title', 'script', 'style', 'textarea']);
 
 /**
  * Build the `@value` expression node a triple-mustache lowers to. Mirrors the
@@ -15226,7 +15174,9 @@ export function precompileTemplate(
       // (the cache var lives in the same outer Function() scope), so the rewrite
       // is precise and never matches a foreign `__gxtUnboundEval(` reference.
       if (hasUnbound) {
-        modifiedCode = modifiedCode.split('globalThis.__gxtUnboundEval(__ubCache').join('__gxtUnboundEval(__ubCache');
+        modifiedCode = modifiedCode
+          .split('globalThis.__gxtUnboundEval(__ubCache')
+          .join('__gxtUnboundEval(__ubCache');
       }
 
       // Rewrite emitted `globalThis.__gxtAssertNotResolvedHelperAsNamedArg(` →
@@ -15250,9 +15200,7 @@ export function precompileTemplate(
       // templates without quoted attribute interpolation pay zero overhead.
       const hasQuotedAttr = modifiedCode.includes('globalThis.__gxtQuotedAttr(');
       if (hasQuotedAttr) {
-        modifiedCode = modifiedCode
-          .split('globalThis.__gxtQuotedAttr(')
-          .join('__gxtQuotedAttr(');
+        modifiedCode = modifiedCode.split('globalThis.__gxtQuotedAttr(').join('__gxtQuotedAttr(');
       }
 
       // Inlined `__gxtUnboundEval` definition + per-Function-body `__ubSlots`
@@ -15394,11 +15342,12 @@ export function precompileTemplate(
         // setter so the emitted template-fn can signal
         // `{{#in-element insertBefore=...}}` mode to the `$_inElement` shim
         // without globalThis; no-op when `_inElementInsertBefore` is the default.
-        cachedFn = Function('__ubGT', '__ubST', '__ieSet', templateFnCode)(
-          _gxtGetTracker,
-          _gxtSetTracker,
-          _gxtIeSet
-        );
+        cachedFn = Function(
+          '__ubGT',
+          '__ubST',
+          '__ieSet',
+          templateFnCode
+        )(_gxtGetTracker, _gxtSetTracker, _gxtIeSet);
         _functionCodeCache.set(templateFnCode, cachedFn);
       }
       compilationResult.templateFn = cachedFn;

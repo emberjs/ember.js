@@ -95,8 +95,9 @@ export interface ExplicitTemplateOnlyOptions extends BaseTemplateOptions {
  * }
  * ```
  */
-export interface ExplicitClassOptions<C extends ComponentClass>
-  extends BaseClassTemplateOptions<C> {
+export interface ExplicitClassOptions<
+  C extends ComponentClass,
+> extends BaseClassTemplateOptions<C> {
   scope(instance?: InstanceType<C>): Record<string, unknown>;
 }
 
@@ -321,7 +322,10 @@ function _extractScopeFromEval(
     if (_HBS_SYNTAX_WORDS.has(name)) {
       let k = matchIdx - 1;
       while (k >= 0 && (templateString[k] === ' ' || templateString[k] === '\t')) k--;
-      if (templateString[k] === '<' || (templateString[k] === '/' && templateString[k - 1] === '<')) {
+      if (
+        templateString[k] === '<' ||
+        (templateString[k] === '/' && templateString[k - 1] === '<')
+      ) {
         isHtmlTagPos = true;
       }
     }

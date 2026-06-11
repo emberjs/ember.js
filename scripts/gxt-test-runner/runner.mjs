@@ -84,7 +84,10 @@ function attachPageDiagnostics(page) {
   page.on('requestfailed', (req) => {
     try {
       const f = req.failure();
-      ringPush(pageFailedRequests, `${req.method()} ${req.url()} — ${(f && f.errorText) || 'failed'}`);
+      ringPush(
+        pageFailedRequests,
+        `${req.method()} ${req.url()} — ${(f && f.errorText) || 'failed'}`
+      );
     } catch {}
   });
   page.on('response', (res) => {
@@ -131,7 +134,9 @@ async function dumpDiagnostics(page, label) {
     }
   }
   if (pageBadResponses.length) {
-    w(`[runner] HTTP >=400 responses (${pageBadResponses.length}; these name the broken modules):\n`);
+    w(
+      `[runner] HTTP >=400 responses (${pageBadResponses.length}; these name the broken modules):\n`
+    );
     for (const l of pageBadResponses.slice(-40)) w(`    ${l}\n`);
   }
   if (pageFailedRequests.length) {
@@ -440,7 +445,9 @@ async function disposeSession() {
     try {
       for (const p of ctx.pages()) await p.close({ runBeforeUnload: false }).catch(() => {});
     } catch {}
-    try { await ctx.close().catch(() => {}); } catch {}
+    try {
+      await ctx.close().catch(() => {});
+    } catch {}
   }
 }
 
@@ -451,8 +458,12 @@ async function clearPageStorage(page) {
   try {
     await Promise.race([
       page.evaluate(() => {
-        try { sessionStorage.clear(); } catch {}
-        try { localStorage.clear(); } catch {}
+        try {
+          sessionStorage.clear();
+        } catch {}
+        try {
+          localStorage.clear();
+        } catch {}
       }),
       new Promise((_, rej) => setTimeout(() => rej(new Error('storage-clear-timeout')), 2000)),
     ]);
@@ -543,152 +554,152 @@ async function discoverModules(browser, url) {
 // covers every module run in the shared single-page session.
 async function installCollectorInitScript(ctx, opts) {
   await ctx.addInitScript(
-      ({ testTimeout, retries, gcInterval }) => {
-        // Morph retirement: the former runtime __GXT_SPIKE_SKIP_MORPH force-set
-        // is gone — fine-grained is the build-time default (__GXT_SKIP_MORPH__).
-        // eslint-disable-next-line no-undef
-        window.__gxtCollector = {
-          done: false,
-          runEnd: null,
-          testResults: new Map(), // name -> array of pass/fail outcomes (for retry tracking)
-          assertions: [], // last assertions in flight (cleared per test)
-          failingTests: [], // final failing tests (after retry resolution)
-          currentTestAssertions: [],
-          // Per-test timeout tracking — caller polls these to detect a stuck test.
-          currentTestName: null,
-          currentTestStartedAt: 0,
-          lastProgressAt: Date.now(),
-          testsCompleted: 0,
-        };
-        const install = () => {
-          if (typeof QUnit === 'undefined') {
-            setTimeout(install, 10);
-            return;
-          }
-          try {
-            QUnit.config.testTimeout = testTimeout;
-          } catch {}
-          try {
-            QUnit.config.autostart = QUnit.config.autostart !== false;
-          } catch {}
+    ({ testTimeout, retries, gcInterval }) => {
+      // Morph retirement: the former runtime __GXT_SPIKE_SKIP_MORPH force-set
+      // is gone — fine-grained is the build-time default (__GXT_SKIP_MORPH__).
+      // eslint-disable-next-line no-undef
+      window.__gxtCollector = {
+        done: false,
+        runEnd: null,
+        testResults: new Map(), // name -> array of pass/fail outcomes (for retry tracking)
+        assertions: [], // last assertions in flight (cleared per test)
+        failingTests: [], // final failing tests (after retry resolution)
+        currentTestAssertions: [],
+        // Per-test timeout tracking — caller polls these to detect a stuck test.
+        currentTestName: null,
+        currentTestStartedAt: 0,
+        lastProgressAt: Date.now(),
+        testsCompleted: 0,
+      };
+      const install = () => {
+        if (typeof QUnit === 'undefined') {
+          setTimeout(install, 10);
+          return;
+        }
+        try {
+          QUnit.config.testTimeout = testTimeout;
+        } catch {}
+        try {
+          QUnit.config.autostart = QUnit.config.autostart !== false;
+        } catch {}
 
-          QUnit.log((details) => {
-            // Any assertion is forward progress — keep the watchdog quiet.
-            window.__gxtCollector.lastProgressAt = Date.now();
-            if (!details.result) {
-              window.__gxtCollector.currentTestAssertions.push({
-                message: String(details.message || ''),
-                actual: safeStringify(details.actual),
-                expected: safeStringify(details.expected),
-                source: String(details.source || '').slice(0, 800),
-              });
-            }
-          });
-
-          QUnit.testStart((d) => {
-            window.__gxtCollector.currentTestAssertions = [];
-            window.__gxtCollector.currentTestName = (d && (d.module + ' :: ' + d.name)) || null;
-            window.__gxtCollector.currentTestStartedAt = Date.now();
-            window.__gxtCollector.lastProgressAt = Date.now();
-            // Periodic GC: every N tests trigger window.gc() (exposed via
-            // --js-flags=--expose-gc) to release GXT pipeline pressure that
-            // builds up cumulatively. Best-effort; missing gc() = harmless.
-            const idx = window.__gxtCollector.testsCompleted;
-            if (gcInterval > 0 && idx > 0 && idx % gcInterval === 0) {
-              try {
-                if (typeof window.gc === 'function') {
-                  window.gc();
-                } else {
-                  // DEBUG-warn once — gc() unavailable means --expose-gc flag
-                  // didn't take. Test still runs; just no relief valve.
-                  if (!window.__gxtGcWarned) {
-                    window.__gxtGcWarned = true;
-                    console.debug('[gxt-runner] window.gc() unavailable; --expose-gc not active');
-                  }
-                }
-              } catch (e) {
-                if (!window.__gxtGcWarned) {
-                  window.__gxtGcWarned = true;
-                  console.debug('[gxt-runner] window.gc() threw: ' + (e && e.message));
-                }
-              }
-            }
-          });
-
-          QUnit.testDone((d) => {
-            const key = d.module + ' :: ' + d.name;
-            const outcomes = window.__gxtCollector.testResults.get(key) || {
-              module: d.module,
-              name: d.name,
-              outcomes: [],
-              lastAssertions: [],
-            };
-            outcomes.outcomes.push(d.failed > 0 ? 'fail' : 'pass');
-            if (d.failed > 0) {
-              outcomes.lastAssertions = window.__gxtCollector.currentTestAssertions.slice(0, 5);
-            }
-            window.__gxtCollector.testResults.set(key, outcomes);
-            window.__gxtCollector.testsCompleted += 1;
-            window.__gxtCollector.lastProgressAt = Date.now();
-            window.__gxtCollector.currentTestName = null;
-          });
-
-          const finalize = (runEnd) => {
-            // Resolve retries: a test that had any fails is still failing
-            // if the *final* outcome is fail OR if outcomes are mixed.
-            const failing = [];
-            for (const [, rec] of window.__gxtCollector.testResults) {
-              const outs = rec.outcomes;
-              const anyFail = outs.includes('fail');
-              const allPass = outs.every((o) => o === 'pass');
-              const allFail = outs.every((o) => o === 'fail');
-              if (!anyFail) continue; // clean pass
-              let status;
-              if (allFail) status = 'fail';
-              else if (allPass)
-                status = 'pass'; // impossible branch
-              else status = 'quarantined'; // mixed
-              failing.push({
-                module: rec.module,
-                name: rec.name,
-                outcomes: outs.slice(),
-                status,
-                assertions: rec.lastAssertions,
-              });
-            }
-            window.__gxtCollector.failingTests = failing;
-            window.__gxtCollector.runEnd = runEnd || null;
-            window.__gxtCollector.done = true;
-          };
-
-          if (typeof QUnit.on === 'function') {
-            QUnit.on('runEnd', (runEnd) => {
-              try {
-                finalize(runEnd);
-              } catch (e) {
-                console.error(e);
-              }
+        QUnit.log((details) => {
+          // Any assertion is forward progress — keep the watchdog quiet.
+          window.__gxtCollector.lastProgressAt = Date.now();
+          if (!details.result) {
+            window.__gxtCollector.currentTestAssertions.push({
+              message: String(details.message || ''),
+              actual: safeStringify(details.actual),
+              expected: safeStringify(details.expected),
+              source: String(details.source || '').slice(0, 800),
             });
           }
-          // Belt-and-suspenders: also listen on QUnit.done for older APIs.
-          QUnit.done((summary) => {
+        });
+
+        QUnit.testStart((d) => {
+          window.__gxtCollector.currentTestAssertions = [];
+          window.__gxtCollector.currentTestName = (d && d.module + ' :: ' + d.name) || null;
+          window.__gxtCollector.currentTestStartedAt = Date.now();
+          window.__gxtCollector.lastProgressAt = Date.now();
+          // Periodic GC: every N tests trigger window.gc() (exposed via
+          // --js-flags=--expose-gc) to release GXT pipeline pressure that
+          // builds up cumulatively. Best-effort; missing gc() = harmless.
+          const idx = window.__gxtCollector.testsCompleted;
+          if (gcInterval > 0 && idx > 0 && idx % gcInterval === 0) {
             try {
-              if (!window.__gxtCollector.done) finalize(summary);
+              if (typeof window.gc === 'function') {
+                window.gc();
+              } else {
+                // DEBUG-warn once — gc() unavailable means --expose-gc flag
+                // didn't take. Test still runs; just no relief valve.
+                if (!window.__gxtGcWarned) {
+                  window.__gxtGcWarned = true;
+                  console.debug('[gxt-runner] window.gc() unavailable; --expose-gc not active');
+                }
+              }
+            } catch (e) {
+              if (!window.__gxtGcWarned) {
+                window.__gxtGcWarned = true;
+                console.debug('[gxt-runner] window.gc() threw: ' + (e && e.message));
+              }
+            }
+          }
+        });
+
+        QUnit.testDone((d) => {
+          const key = d.module + ' :: ' + d.name;
+          const outcomes = window.__gxtCollector.testResults.get(key) || {
+            module: d.module,
+            name: d.name,
+            outcomes: [],
+            lastAssertions: [],
+          };
+          outcomes.outcomes.push(d.failed > 0 ? 'fail' : 'pass');
+          if (d.failed > 0) {
+            outcomes.lastAssertions = window.__gxtCollector.currentTestAssertions.slice(0, 5);
+          }
+          window.__gxtCollector.testResults.set(key, outcomes);
+          window.__gxtCollector.testsCompleted += 1;
+          window.__gxtCollector.lastProgressAt = Date.now();
+          window.__gxtCollector.currentTestName = null;
+        });
+
+        const finalize = (runEnd) => {
+          // Resolve retries: a test that had any fails is still failing
+          // if the *final* outcome is fail OR if outcomes are mixed.
+          const failing = [];
+          for (const [, rec] of window.__gxtCollector.testResults) {
+            const outs = rec.outcomes;
+            const anyFail = outs.includes('fail');
+            const allPass = outs.every((o) => o === 'pass');
+            const allFail = outs.every((o) => o === 'fail');
+            if (!anyFail) continue; // clean pass
+            let status;
+            if (allFail) status = 'fail';
+            else if (allPass)
+              status = 'pass'; // impossible branch
+            else status = 'quarantined'; // mixed
+            failing.push({
+              module: rec.module,
+              name: rec.name,
+              outcomes: outs.slice(),
+              status,
+              assertions: rec.lastAssertions,
+            });
+          }
+          window.__gxtCollector.failingTests = failing;
+          window.__gxtCollector.runEnd = runEnd || null;
+          window.__gxtCollector.done = true;
+        };
+
+        if (typeof QUnit.on === 'function') {
+          QUnit.on('runEnd', (runEnd) => {
+            try {
+              finalize(runEnd);
             } catch (e) {
               console.error(e);
             }
           });
-        };
-        function safeStringify(v) {
-          try {
-            return typeof v === 'string' ? v.slice(0, 400) : JSON.stringify(v)?.slice(0, 400);
-          } catch {
-            return String(v).slice(0, 400);
-          }
         }
-        install();
-      },
-      { testTimeout: opts.testTimeout, retries: opts.retries, gcInterval: opts.gcInterval || 50 }
+        // Belt-and-suspenders: also listen on QUnit.done for older APIs.
+        QUnit.done((summary) => {
+          try {
+            if (!window.__gxtCollector.done) finalize(summary);
+          } catch (e) {
+            console.error(e);
+          }
+        });
+      };
+      function safeStringify(v) {
+        try {
+          return typeof v === 'string' ? v.slice(0, 400) : JSON.stringify(v)?.slice(0, 400);
+        } catch {
+          return String(v).slice(0, 400);
+        }
+      }
+      install();
+    },
+    { testTimeout: opts.testTimeout, retries: opts.retries, gcInterval: opts.gcInterval || 50 }
   );
 }
 
@@ -1023,7 +1034,9 @@ async function main() {
       // the GC-pause artifact above, not a real hang. runModule already
       // disposed the session on timeout, so one retry runs on a fresh page.
       if (r.status === 'timeout' && (r.partialTotal || 0) === 0) {
-        process.stdout.write(`[ ${String(i + 1).padStart(3)}/${modules.length}] retrying after cold timeout: ${name}\n`);
+        process.stdout.write(
+          `[ ${String(i + 1).padStart(3)}/${modules.length}] retrying after cold timeout: ${name}\n`
+        );
         r = await runModule(browser, args.url, name, args);
         modulesSinceRecycle = 1;
       }

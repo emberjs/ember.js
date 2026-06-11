@@ -1,7 +1,15 @@
 import { cell, formula } from '@lifeart/gxt';
 import { reference } from '@lifeart/gxt/glimmer-compatibility';
 import { getProp, setProp } from '@glimmer/global-context';
-import { track, validateTag, valueForTag, consumeTag, createCache, createTag, dirtyTag } from './validator';
+import {
+  track,
+  validateTag,
+  valueForTag,
+  consumeTag,
+  createCache,
+  createTag,
+  dirtyTag,
+} from './validator';
 
 // The canonical REFERENCE symbol used by Glimmer VM's CheckReference.
 // Under GXT mode, `@glimmer/reference` is aliased to THIS module (see

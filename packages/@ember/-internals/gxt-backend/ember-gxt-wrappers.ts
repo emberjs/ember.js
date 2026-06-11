@@ -691,11 +691,7 @@ function createEmberMaybeHelper(original: Function) {
     // with a captured-args object so the helper can produce its reference
     // (e.g. the `ElementComponentDefinition`). The returned reference is
     // unwrapped via `valueForRef` when present.
-    if (
-      nameOrFn &&
-      typeof nameOrFn === 'object' &&
-      g.INTERNAL_HELPER_MANAGERS
-    ) {
+    if (nameOrFn && typeof nameOrFn === 'object' && g.INTERNAL_HELPER_MANAGERS) {
       const helperFnOrManager = g.INTERNAL_HELPER_MANAGERS.get(nameOrFn);
       if (typeof helperFnOrManager === 'function') {
         // Build CapturedArguments — positional refs + named refs.
@@ -1000,7 +996,11 @@ function createEmberMaybeHelper(original: Function) {
                 // bridge, the effect re-fires; the cached branch's dedup key
                 // (which folds in the recompute value) then forces a fresh
                 // getValue() + helperCell.update.
-                if (_gxtRecomputeTag && typeof _gxtRecomputeTag === 'object' && 'value' in _gxtRecomputeTag) {
+                if (
+                  _gxtRecomputeTag &&
+                  typeof _gxtRecomputeTag === 'object' &&
+                  'value' in _gxtRecomputeTag
+                ) {
                   // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                   _gxtRecomputeTag.value;
                 }
@@ -1008,7 +1008,9 @@ function createEmberMaybeHelper(original: Function) {
                 let argsSer: string | null = null;
                 try {
                   const _rv =
-                    _gxtRecomputeTag && typeof _gxtRecomputeTag === 'object' && 'value' in _gxtRecomputeTag
+                    _gxtRecomputeTag &&
+                    typeof _gxtRecomputeTag === 'object' &&
+                    'value' in _gxtRecomputeTag
                       ? _gxtRecomputeTag.value
                       : 0;
                   argsSer = JSON.stringify({ p: positional, n: named, r: _rv });
@@ -1458,9 +1460,7 @@ function createEmberTag(original: Function) {
     const ctx = gxtCtx;
     // FIX 1 fast-path (see _emberTagFastPathEligible). Skip the dead scans for
     // plain-HTML elements; forward straight to `original`.
-    if (
-      _emberTagFastPathEligible(tag, tagProps)
-    ) {
+    if (_emberTagFastPathEligible(tag, tagProps)) {
       return original(tag, tagProps, ctx, children);
     }
     const resolvedTag = typeof tag === 'function' ? tag() : tag;
@@ -2216,9 +2216,7 @@ function createEmberDc(original: Function) {
       // `addDynamicComponentListener` method, which returns an off-fn for
       // symmetric cleanup (called from `_nullCleanup` below).
       const _offNullListener =
-        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(
-          _nullListener
-        );
+        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(_nullListener);
 
       const _nullCleanup = () => {
         _nullDestroyed = true;
@@ -2377,9 +2375,7 @@ function createEmberDc(original: Function) {
       // state behind the bridge's `addDynamicComponentListener` method, which
       // returns an off-fn for symmetric cleanup.
       const _offDcListener =
-        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(
-          _dcChangeListener
-        );
+        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(_dcChangeListener);
 
       // Cleanup destructor
       const _cleanupDcListener = () => {
@@ -2653,11 +2649,10 @@ function createEmberDc(original: Function) {
       // `__gxtSyncDomNow` / the arg-cell notifyPropertyChange dispatch in
       // `_gxtSyncAllWrappersBody`; the returned off-fn handles both the Set
       // delete and the counter decrement in lockstep.
-      const _offDcListener =
-        getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(
-          _dcChangeListener,
-          { stringPath: true }
-        );
+      const _offDcListener = getGxtRenderer()?.compilePipeline.addDynamicComponentListener?.(
+        _dcChangeListener,
+        { stringPath: true }
+      );
 
       // Cleanup destructor
       const _cleanupDcListener = () => {
@@ -2847,20 +2842,14 @@ function createEmberModifierHelper(original: Function) {
         // application context. Without this carve-out the curriedModifier
         // returns `undefined` whenever `owner` is missing — silently dropping
         // the user's handler.
-        const builtinClass =
-          g.$_MANAGERS?.modifier?._builtinModifiers?.[resolved];
+        const builtinClass = g.$_MANAGERS?.modifier?._builtinModifiers?.[resolved];
         if (builtinClass) {
           // Reuse $_MANAGERS.modifier.handle: it knows how to dispatch a
           // built-in modifier class against the resolved manager (e.g. the
           // Glimmer-VM OnModifierManager that attaches the listener and
           // tracks adds/removes counters). Pass a thunk for hashArgs to
           // match the contract handle() expects.
-          return g.$_MANAGERS.modifier.handle(
-            resolved,
-            node,
-            allParams,
-            () => mergedHash,
-          );
+          return g.$_MANAGERS.modifier.handle(resolved, node, allParams, () => mergedHash);
         }
 
         // Otherwise look up the modifier from the owner registry.

@@ -107,9 +107,10 @@ export function hasDestructors<ComponentInstance>(
   * `update()` - invoked when the arguments passed to a component change
   * `getContext()` - returns the object that should be
 */
-export class CustomComponentManager<O extends Owner, ComponentInstance>
-  implements InternalComponentManager<CustomComponentState<ComponentInstance>>
-{
+export class CustomComponentManager<
+  O extends Owner,
+  ComponentInstance,
+> implements InternalComponentManager<CustomComponentState<ComponentInstance>> {
   private componentManagerDelegates = new WeakMap<O, ComponentManager<ComponentInstance>>();
 
   constructor(private factory: ManagerFactory<O, ComponentManager<ComponentInstance>>) {}

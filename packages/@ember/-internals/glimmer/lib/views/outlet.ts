@@ -163,8 +163,7 @@ export default class OutletView {
       // .__gxtRootOutletRerender` `undefined` semantics which the
       // `typeof === 'function'` guard treated as falsy. See
       // `getRootOutletRerender` doc in gxt-bridge.ts.
-      const rootRenderFn =
-        getGxtRenderer()?.compilePipeline.getRootOutletRerender?.() ?? null;
+      const rootRenderFn = getGxtRenderer()?.compilePipeline.getRootOutletRerender?.() ?? null;
       if (typeof rootRenderFn === 'function') {
         // Snapshot active outlets BEFORE the root re-render. The root re-render
         // may create new <ember-outlet> elements (via innerHTML='' + renderOutletState).

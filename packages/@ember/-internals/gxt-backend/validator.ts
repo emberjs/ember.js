@@ -1660,9 +1660,7 @@ function _scheduleCollectionFlush(): void {
 // bundle and the glimmer-next bundle without a cross-package import. Shared by
 // any reactive collection wanting fine-grained each re-render on structural
 // mutation.
-export const GXT_COLLECTION_TAG: unique symbol = Symbol.for(
-  '@ember/reactive:gxt-collection-tag'
-);
+export const GXT_COLLECTION_TAG: unique symbol = Symbol.for('@ember/reactive:gxt-collection-tag');
 
 const ARRAY_GETTER_METHODS = new Set<string | symbol>([
   Symbol.iterator,

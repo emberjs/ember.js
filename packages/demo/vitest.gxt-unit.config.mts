@@ -52,13 +52,25 @@ const componentGxt = resolve(repoRoot, 'packages/@glimmer/component-gxt');
 export default defineConfig({
   resolve: {
     alias: [
-      { find: /^@glimmer\/component-gxt\/reactive$/, replacement: resolve(componentGxt, 'src/reactive.ts') },
+      {
+        find: /^@glimmer\/component-gxt\/reactive$/,
+        replacement: resolve(componentGxt, 'src/reactive.ts'),
+      },
       { find: /^@glimmer\/component-gxt$/, replacement: resolve(componentGxt, 'src/index.ts') },
-      { find: /^@ember\/-internals\/gxt-backend\/validator$/, replacement: resolve(gxtBackend, 'validator.ts') },
-      { find: /^@ember\/-internals\/gxt-backend\/glimmer-tracking$/, replacement: resolve(gxtBackend, 'glimmer-tracking.ts') },
+      {
+        find: /^@ember\/-internals\/gxt-backend\/validator$/,
+        replacement: resolve(gxtBackend, 'validator.ts'),
+      },
+      {
+        find: /^@ember\/-internals\/gxt-backend\/glimmer-tracking$/,
+        replacement: resolve(gxtBackend, 'glimmer-tracking.ts'),
+      },
       // Classic copy (stands in for the npm @glimmer/component's reactive
       // runtime); deliberately NOT the gxt-backend shim.
-      { find: /^@glimmer\/validator$/, replacement: resolve(repoRoot, 'packages/@glimmer/validator/index.ts') },
+      {
+        find: /^@glimmer\/validator$/,
+        replacement: resolve(repoRoot, 'packages/@glimmer/validator/index.ts'),
+      },
     ],
   },
   test: {

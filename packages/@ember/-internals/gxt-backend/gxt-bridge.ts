@@ -448,10 +448,7 @@ export interface GxtCompilePipelineCapabilities {
    * (compile.ts's `__gxtSyncDomNow` morph-skip logic; manager.ts's
    * notifyPropertyChange dispatch when string-path listeners are present).
    */
-  addDynamicComponentListener(
-    fn: () => boolean,
-    options?: { stringPath?: boolean }
-  ): () => void;
+  addDynamicComponentListener(fn: () => boolean, options?: { stringPath?: boolean }): () => void;
 
   /**
    * Clear all registered dynamic-component change listeners and reset the
@@ -1846,10 +1843,7 @@ export interface GxtCompilePipelineCapabilities {
    * above, so renders still observe the user-set value; dependent CPs will
    * lazily recompute on next read).
    */
-  recomputeDependents?(
-    obj: object,
-    changedKey: string
-  ): Array<{ key: string; value: unknown }>;
+  recomputeDependents?(obj: object, changedKey: string): Array<{ key: string; value: unknown }>;
 
   /**
    * Notify Ember's property-change system that `obj[keyName]` has changed.
@@ -1870,12 +1864,7 @@ export interface GxtCompilePipelineCapabilities {
    *      (the same sibling-import shape as `array_events.ts` /
    *      `property_set.ts` / `set_properties.ts`), bypassing the bridge.
    */
-  notifyPropertyChange?(
-    obj: object,
-    keyName: string,
-    _meta?: unknown,
-    value?: unknown
-  ): void;
+  notifyPropertyChange?(obj: object, keyName: string, _meta?: unknown, value?: unknown): void;
 
   /**
    * Reset GXT state between tests. Destroys all tracked component instances
@@ -2674,9 +2663,7 @@ export function setGxtRenderer(renderer: GxtRenderer): void {
  * methods. If `setGxtRenderer` has NOT yet fired (compile.ts loaded first),
  * the part is buffered and flushed when `setGxtRenderer` runs.
  */
-export function installCompilePipelinePart(
-  part: Partial<GxtCompilePipelineCapabilities>
-): void {
+export function installCompilePipelinePart(part: Partial<GxtCompilePipelineCapabilities>): void {
   if (_renderer === null) {
     _pendingCompilePipelineParts.push(part);
     return;
@@ -2722,9 +2709,7 @@ export function installRenderPassPart(part: Partial<GxtRenderPassCapabilities>):
  * and supports both intra-gxt-backend and external-to-gxt-backend writers. See
  * `GxtRootComponentCapabilities` for the namespace docs.
  */
-export function installRootComponentPart(
-  part: Partial<GxtRootComponentCapabilities>
-): void {
+export function installRootComponentPart(part: Partial<GxtRootComponentCapabilities>): void {
   if (_renderer === null) {
     _pendingRootComponentParts.push(part);
     return;
@@ -2740,9 +2725,7 @@ export function installRootComponentPart(
  * cross-entry import paths can flip the order, so the same pending-queue
  * pattern is used.
  */
-export function installBacktrackingPart(
-  part: Partial<GxtBacktrackingCapabilities>
-): void {
+export function installBacktrackingPart(part: Partial<GxtBacktrackingCapabilities>): void {
   if (_renderer === null) {
     _pendingBacktrackingParts.push(part);
     return;
@@ -2758,9 +2741,7 @@ export function installBacktrackingPart(
  * manager.ts has already published `rebuildViewTreeFromDom` — but cross-entry
  * import paths can flip the order, so the same pending-queue pattern is used.
  */
-export function installViewUtilsPart(
-  part: Partial<GxtViewUtilsCapabilities>
-): void {
+export function installViewUtilsPart(part: Partial<GxtViewUtilsCapabilities>): void {
   if (_renderer === null) {
     _pendingViewUtilsParts.push(part);
     return;

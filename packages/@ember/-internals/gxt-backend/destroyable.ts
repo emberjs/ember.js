@@ -117,8 +117,7 @@ function iterate<T extends object>(collection: OneOrMany<T>, fn: (item: T) => vo
 function remove<T extends object>(collection: OneOrMany<T>, item: T, message: string | false) {
   if (DEBUG) {
     let collectionIsItem = collection === item;
-    let collectionContainsItem =
-      _isBrandedArray(collection) && collection.indexOf(item) !== -1;
+    let collectionContainsItem = _isBrandedArray(collection) && collection.indexOf(item) !== -1;
 
     if (!collectionIsItem && !collectionContainsItem) {
       throw new Error(String(message));

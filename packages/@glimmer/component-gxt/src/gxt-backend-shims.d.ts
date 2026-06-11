@@ -21,11 +21,7 @@ declare module '@ember/-internals/gxt-backend/validator' {
 
 declare module '@ember/-internals/gxt-backend/glimmer-tracking' {
   export function tracked(target: object, key: string, desc?: PropertyDescriptor): unknown;
-  export function cached(
-    target: object,
-    key: string,
-    desc: PropertyDescriptor
-  ): PropertyDescriptor;
+  export function cached(target: object, key: string, desc: PropertyDescriptor): PropertyDescriptor;
   export function createCache<T>(fn: () => T): { value: T };
   export function getValue<T>(cache: { value: T }): T;
 }

@@ -39,12 +39,7 @@ function writePkg(pkg) {
 
 // --- RFC §6 Option-2 import-identity guard ------------------------------- //
 
-const DEP_FIELDS = [
-  'dependencies',
-  'devDependencies',
-  'peerDependencies',
-  'optionalDependencies',
-];
+const DEP_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
 
 // Match `@glimmer/component` but NOT the `@glimmer/component-gxt` sibling.
 // (`(?!-gxt)` rejects the `-gxt` suffix; the trailing class rejects other
@@ -54,7 +49,18 @@ const IMPORT_RE =
 
 // Source extensions worth scanning for a "cheap grep". `.hbs` can carry
 // `{{component}}` invocations but never a JS import, so we skip it.
-const SCAN_EXTS = new Set(['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts', '.gjs', '.gts', '.jsx', '.tsx']);
+const SCAN_EXTS = new Set([
+  '.js',
+  '.mjs',
+  '.cjs',
+  '.ts',
+  '.mts',
+  '.cts',
+  '.gjs',
+  '.gts',
+  '.jsx',
+  '.tsx',
+]);
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'tmp', 'build', '.cache']);
 
 function scanDeps(pkg) {
@@ -136,7 +142,9 @@ function printRefusal(depHits, importScan) {
     console.error('');
   }
   if (importScan && importScan.ok && importScan.hits.length) {
-    console.error(`Reachable imports (${importScan.hits.length} in ${importScan.scanned} files scanned):`);
+    console.error(
+      `Reachable imports (${importScan.hits.length} in ${importScan.scanned} files scanned):`
+    );
     for (const h of importScan.hits.slice(0, 10)) {
       console.error(`  - ${h.file}:${h.line}  ${h.text}`);
     }
@@ -146,12 +154,12 @@ function printRefusal(depHits, importScan) {
     console.error('');
   }
   console.error('Fix: swap the dependency to the GXT-backed sibling, which re-exports the');
-  console.error('same public API against GXT\'s reactive core so symbol identity does not');
+  console.error("same public API against GXT's reactive core so symbol identity does not");
   console.error('fork:');
   console.error('');
   console.error('  - package.json:  "@glimmer/component"  ->  "@glimmer/component-gxt"');
-  console.error('  - source code:   import Component from \'@glimmer/component\';');
-  console.error('                   -> import Component from \'@glimmer/component-gxt\';');
+  console.error("  - source code:   import Component from '@glimmer/component';");
+  console.error("                   -> import Component from '@glimmer/component-gxt';");
   console.error('');
   console.error('HONEST STATUS: `@glimmer/component-gxt` is in-repo fallback machinery and');
   console.error('is NOT published yet; there is also no consumable `ember-source-gxt`');
@@ -182,8 +190,11 @@ if (command === 'enable') {
   pkg['ember-addon'].backend = 'gxt';
   writePkg(pkg);
   console.log('ok: GXT backend enabled in package.json');
-  console.log('    import-identity guard: no direct `@glimmer/component` dependency' +
-    (srcDir ? ` or import (${importScan.scanned} files scanned)` : '') + ' found.');
+  console.log(
+    '    import-identity guard: no direct `@glimmer/component` dependency' +
+      (srcDir ? ` or import (${importScan.scanned} files scanned)` : '') +
+      ' found.'
+  );
   console.log('    run `pnpm install` (or npm/yarn) to pick up the change.');
   console.log('    WARNING: this is preview software. See rfcs/text/0000-gxt-dual-backend.md.');
 } else if (command === 'disable') {
@@ -207,7 +218,9 @@ if (command === 'enable') {
   const depHits = scanDeps(pkg);
   const importScan = srcDir ? scanImports(srcDir) : null;
   if (importScan && !importScan.ok) {
-    console.log(`Import-identity guard: srcDir "${srcDir}" is not a directory (skipped import scan)`);
+    console.log(
+      `Import-identity guard: srcDir "${srcDir}" is not a directory (skipped import scan)`
+    );
   }
   const importHits = importScan && importScan.ok ? importScan.hits.length : 0;
   const clean = depHits.length === 0 && importHits === 0;

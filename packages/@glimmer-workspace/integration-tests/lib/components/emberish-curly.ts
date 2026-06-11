@@ -39,8 +39,7 @@ import type { TestComponentConstructor } from './types';
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Nullable<Attrs>; newAttrs: Attrs };
 
-export interface EmberishCurlyComponentFactory
-  extends TestComponentConstructor<EmberishCurlyComponent> {
+export interface EmberishCurlyComponentFactory extends TestComponentConstructor<EmberishCurlyComponent> {
   fromDynamicScope?: string[];
   positionalParams: string | string[];
   create(options: { attrs: Attrs; targetObject: any }): EmberishCurlyComponent;

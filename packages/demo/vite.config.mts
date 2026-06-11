@@ -21,9 +21,8 @@ import { fileURLToPath, URL } from 'node:url';
 (globalThis as any).requestAnimationFrame ??= (cb: any) => setTimeout(cb, 0);
 
 const { compiler } = await import('@lifeart/gxt/compiler');
-const { default: esbuildDecoratorsPlugin } = await import(
-  '../@ember/-internals/gxt-backend/esbuild-decorators-plugin.mjs'
-);
+const { default: esbuildDecoratorsPlugin } =
+  await import('../@ember/-internals/gxt-backend/esbuild-decorators-plugin.mjs');
 
 const projectRoot = import.meta.url;
 
