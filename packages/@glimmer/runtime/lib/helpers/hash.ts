@@ -7,7 +7,7 @@ import { internalHelper } from './internal-helper';
 
 /**
    Use the `{{hash}}` helper to create a hash to pass as an option to your
-   components. This is specially useful for contextual components where you can
+   components. This is especially useful for contextual components where you can
    just yield a hash:
 
    ```handlebars

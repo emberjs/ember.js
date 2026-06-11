@@ -20,10 +20,15 @@ const normalizeTextValue = (value: unknown): string => {
 
   Example:
 
-  ```handlebars
-  {{some-component name=(concat firstName " " lastName)}}
 
-  {{! would pass name="<first name value> <last name value>" to the component}}
+  ```gjs
+  import { concat } from '@ember/helper';
+
+  <template>
+  {{yield (concat firstName " " lastName)}}
+
+  {{! would yield name="<first name value> <last name value>" to the component}}
+  </template>
   ```
 
   or for angle bracket invocation, you actually don't need concat at all.
