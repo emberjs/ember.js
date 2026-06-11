@@ -6,30 +6,32 @@
   The `{{component}}` helper lets you add instances of `Component` to a
   template. See [Component](/ember/release/classes/Component) for
   additional information on how a `Component` functions.
+    
+  The `component` helper is built-in and does not need to be imported. 
+    
   `{{component}}`'s primary use is for cases where you want to dynamically
   change which type of component is rendered as the state of your application
   changes. This helper has three modes: inline, block, and nested.
 
   ### Inline Form
 
-  Given the following template:
+  Given the following component:
 
-  ```app/application.hbs
-  {{component this.infographicComponentName}}
-  ```
-
-  And the following application code:
-
-  ```app/controllers/application.js
-  import Controller from '@ember/controller';
+  ```app/templates/application.gjs
+  import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
+  import { component } from '@ember/helper';
 
-  export default class ApplicationController extends Controller {
+  export default class Application extends Component {
     @tracked isMarketOpen = 'live-updating-chart'
 
     get infographicComponentName() {
       return this.isMarketOpen ? 'live-updating-chart' : 'market-close-summary';
     }
+
+    <template>
+      {{component this.infographicComponentName}}
+    </template>
   }
   ```
 
@@ -40,52 +42,44 @@
   Note: You should not use this helper when you are consistently rendering the same
   component. In that case, use standard component syntax, for example:
 
-  ```app/templates/application.hbs
+  ```hbs
   <LiveUpdatingChart />
-  ```
-
-  or
-
-  ```app/templates/application.hbs
-  {{live-updating-chart}}
   ```
 
   ### Block Form
 
   Using the block form of this helper is similar to using the block form
-  of a component. Given the following application template:
+  of a component. Given the following application component:
 
-  ```app/templates/application.hbs
-  {{#component this.infographicComponentName}}
-    Last update: {{this.lastUpdateTimestamp}}
-  {{/component}}
-  ```
-
-  The following controller code:
-
-  ```app/controllers/application.js
-  import Controller from '@ember/controller';
-  import { computed } from '@ember/object';
+  ```app/templates/application.gjs
+  import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
-  export default class ApplicationController extends Controller {
+  export default class Application extends Component {
     @tracked isMarketOpen = 'live-updating-chart'
 
     get lastUpdateTimestamp() {
       return new Date();
     }
-
+    
     get infographicComponentName() {
       return this.isMarketOpen ? 'live-updating-chart' : 'market-close-summary';
     }
+
+    <template>
+      {{#component this.infographicComponentName}}
+        Last update: {{this.lastUpdateTimestamp}}
+      {{/component}}
+    </template>
   }
   ```
 
   And the following component template:
 
-  ```app/templates/components/live-updating-chart.hbs
-  {{! chart }}
-  {{yield}}
+  ```app/components/live-updating-chart.gjs
+  <template>
+    {{yield}}
+  </template>
   ```
 
   The `Last Update: {{this.lastUpdateTimestamp}}` will be rendered in place of the `{{yield}}`.
@@ -94,28 +88,23 @@
 
   The `component` helper can be used to package a component path with initial attrs.
   The included attrs can then be merged during the final invocation.
-  For example, given a `person-form` component with the following template:
+  For example, given a `PersonForm` component:
 
-  ```app/templates/components/person-form.hbs
-  {{yield (hash
-    nameInput=(component "my-input-component" value=@model.name placeholder="First Name")
-  )}}
+  ```app/components/person-form.gjs
+  <template>
+    {{yield (hash
+      nameInput=(component "my-input-component" value=@model.name placeholder="First Name")
+    )}}
+  </template>
   ```
 
   When yielding the component via the `hash` helper, the component is invoked directly.
   See the following snippet:
 
-  ```
+  ```hbs
   <PersonForm as |form|>
     <form.nameInput @placeholder="Username" />
   </PersonForm>
-  ```
-
-  or
-  ```
-  {{#person-form as |form|}}
-    {{form.nameInput placeholder="Username"}}
-  {{/person-form}}
   ```
 
   Which outputs an input whose value is already bound to `model.name` and `placeholder`
@@ -128,16 +117,10 @@
   {{yield (component "my-input-component" value=@model.name placeholder="Name")}}
   ```
 
-  ```
+  ```hbs
   <FullName as |field|>
     {{component field placeholder="Full name"}}
   </FullName>
-  ```
-  or
-  ```
-  {{#full-name as |field|}}
-    {{component field placeholder="Full name"}}
-  {{/full-name}}
   ```
 
   @method component
