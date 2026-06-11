@@ -60,6 +60,7 @@ import {
 
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
+import { CURLY_MANAGER_BRAND } from './curly-brand';
 
 const COMPONENT_ARGS_MAP = new WeakMap<object, CapturedArguments['named']>();
 
@@ -139,6 +140,8 @@ export default class CurlyComponentManager
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket>
 {
+  readonly [CURLY_MANAGER_BRAND] = true;
+
   protected templateFor(component: Component): CompilableProgram | null {
     let { layout, layoutName } = component;
     let owner = getOwner(component);
@@ -559,8 +562,6 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: false,
 };
 
-export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
+export const CURLY_COMPONENT_MANAGER = /*@__PURE__*/ new CurlyComponentManager();
 
-export function isCurlyManager(manager: object): boolean {
-  return manager === CURLY_COMPONENT_MANAGER;
-}
+export { isCurlyManager } from './curly-brand';

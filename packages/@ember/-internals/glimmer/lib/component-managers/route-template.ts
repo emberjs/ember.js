@@ -46,7 +46,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: false,
 };
 
-const CAPABILITIES_MASK = capabilityFlagsFrom(CAPABILITIES);
+const CAPABILITIES_MASK = /*@__PURE__*/ capabilityFlagsFrom(CAPABILITIES);
 
 class RouteTemplateManager
   implements
@@ -108,7 +108,7 @@ class RouteTemplateManager
   }
 }
 
-const ROUTE_TEMPLATE_MANAGER = new RouteTemplateManager();
+const ROUTE_TEMPLATE_MANAGER = /*@__PURE__*/ new RouteTemplateManager();
 
 /**
  * This "upgrades" a route template into a invocable component. Conceptually
