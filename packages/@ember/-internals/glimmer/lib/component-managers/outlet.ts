@@ -43,6 +43,13 @@ export interface OutletDefinitionState {
   name: string;
   template: object;
   controller: unknown;
+  // Set on the manager-driven path. The outlet helper curries `@Component`
+  // (the invokable), `@routeInfo`, `@model`, and `@controller` onto this
+  // wrapper.
+  wrapper?: object;
+  invokable?: object;
+  bucket?: object;
+  routeInfo?: object;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
@@ -171,10 +178,9 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = new OutletComponentManager();
 
-const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
-  '<@Component @controller={{@controller}} @model={{@model}} />',
-  { strictMode: true }
-);
+const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component />', {
+  strictMode: true,
+});
 
 export class OutletComponent implements ComponentDefinition<
   OutletDefinitionState,

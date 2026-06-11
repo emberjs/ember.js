@@ -863,26 +863,13 @@ export class Renderer extends BaseRenderer {
     // we can refactor this to do something more direct/less convoluted
     // and with less setup, but get it working first
     let outlet = createRootOutlet(view);
-    let { name, /* controller, */ template } = view.state;
+    let { name, template } = view.state;
 
     let named = dict<Reference>();
-
     named['Component'] = createConstRef(
       makeRouteTemplate(view.owner, name, template as Template),
       '@Component'
     );
-
-    // TODO: is this guaranteed to be undefined? It seems to be the
-    // case in the `OutletView` class. Investigate how much that class
-    // exists as an internal implementation detail only, or if it was
-    // used outside of core. As far as I can tell, test-helpers uses
-    // it but only for `setOutletState`.
-    // named['controller'] = createConstRef(controller, '@controller');
-    // Update: at least according to the debug render tree tests, we
-    // appear to always expect this to be undefined. Not a definitive
-    // source by any means, but is useful evidence
-    named['controller'] = UNDEFINED_REFERENCE;
-    named['model'] = UNDEFINED_REFERENCE;
 
     let args = createCapturedArgs(named, EMPTY_POSITIONAL);
 

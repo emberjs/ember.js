@@ -21,14 +21,14 @@ import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
 import { isTesting } from '@ember/debug/lib/testing';
-import { assert, info } from '@ember/debug';
+import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
-import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
-import type { RenderState } from '@ember/-internals/glimmer/lib/utils/outlet';
-import type { TemplateFactory } from '@glimmer/interfaces';
+import { setRouteManager } from '@ember/-internals/routing/route-managers/registry';
+import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
+import type { RouteManager, RouteStateBucket } from '@ember/-internals/routing/route-managers/api';
+import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
 import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
 import type { QueryParam, default as EmberRouter } from '@ember/routing/router';
@@ -63,9 +63,6 @@ type RouteTransitionState = TransitionState<Route> & {
 
 type MaybeParameters<T> = T extends AnyFn ? Parameters<T> : unknown[];
 type MaybeReturnType<T> = T extends AnyFn ? ReturnType<T> : unknown;
-
-const RENDER = Symbol('render');
-const RENDER_STATE = Symbol('render-state');
 
 /**
 @module @ember/routing/route
@@ -530,6 +527,26 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   declare fullRouteName: string;
 
   /**
+    The route manager that created this route and drives its lifecycle. Set
+    by the manager's `createRoute` method.
+
+    @property manager
+    @type RouteManager
+    @private
+  */
+  declare manager: RouteManager<RouteStateBucket>;
+
+  /**
+    The opaque bucket the manager returned from `createRoute`. The router
+    passes this back to every other manager hook for this route.
+
+    @property bucket
+    @type RouteStateBucket
+    @private
+  */
+  declare bucket: RouteStateBucket;
+
+  /**
     Sets the name for this route, including a fully resolved name for routes
     inside engines.
 
@@ -797,7 +814,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @method enter
   */
   enter(transition: Transition) {
-    this[RENDER_STATE] = undefined;
     this.activate(transition);
     this.trigger('activate', transition);
   }
@@ -913,26 +929,37 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   }
 
   /**
+    Resolve and assign this route's controller. Used by the route
+    manager during `willEnter` so the controller is available when the
+    route template renders, before `setup` runs
+
+    @method _initController
+    @private
+   */
+  _initController(): Controller {
+    if (this.controller) {
+      return this.controller;
+    }
+    let controllerName = this.controllerName || this.routeName;
+    let definedController = this.controllerFor(controllerName, true);
+    let controller = definedController ?? this.generateController(controllerName);
+    let queryParams = get(this, '_qp') as Route<Model>['_qp'];
+    addQueryParamsObservers(controller, queryParams.propertyNames);
+    this.controller = controller;
+    return controller;
+  }
+
+  /**
     This hook is the entry point for router.js
 
     @private
     @method setup
   */
   setup(context: Model | undefined, transition: Transition) {
-    let controllerName = this.controllerName || this.routeName;
-    let definedController = this.controllerFor(controllerName, true);
-    let controller = definedController ?? this.generateController(controllerName);
+    let controller = this._initController();
 
     // SAFETY: Since `_qp` is protected we can't infer the type
     let queryParams = get(this, '_qp') as Route<Model>['_qp'];
-
-    // Assign the route's controller so that it can more easily be
-    // referenced in action handlers. Side effects. Side effects everywhere.
-    if (!this.controller) {
-      let propNames = queryParams.propertyNames;
-      addQueryParamsObservers(controller, propNames);
-      this.controller = controller;
-    }
 
     let states = queryParams.states;
 
@@ -963,7 +990,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     this.setupController(controller, context, transition);
 
     if (this._environment.options.shouldRender) {
-      this[RENDER]();
+      once(this._router, '_setOutlets');
     }
 
     // Setup can cause changes to QPs which need to be propogated immediately in
@@ -1464,18 +1491,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     return route?.currentModel;
   }
 
-  [RENDER_STATE]: RenderState | undefined = undefined;
-
-  /**
-    `this[RENDER]` is used to set up the rendering option for the outlet state.
-    @method this[RENDER]
-    @private
-   */
-  [RENDER]() {
-    this[RENDER_STATE] = buildRenderState(this);
-    once(this._router, '_setOutlets');
-  }
-
   willDestroy() {
     this.teardownViews();
   }
@@ -1486,8 +1501,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @method teardownViews
   */
   teardownViews() {
-    if (this[RENDER_STATE]) {
-      this[RENDER_STATE] = undefined;
+    if (this._router) {
       once(this._router, '_setOutlets');
     }
   }
@@ -1790,97 +1804,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   >;
 }
 
-export function getRenderState(route: Route): RenderState | undefined {
-  return route[RENDER_STATE];
-}
-
-function buildRenderState(route: Route): RenderState {
-  let owner = getOwner(route);
-  assert('Route is unexpectedly missing an owner', owner);
-
-  let name = route.routeName;
-
-  let controller = owner.lookup(`controller:${route.controllerName || name}`);
-  assert('Expected an instance of controller', controller instanceof Controller);
-
-  let model = route.currentModel;
-
-  let templateFactoryOrComponent = owner.lookup(`template:${route.templateName || name}`) as
-    | TemplateFactory
-    | object // This is meant to be a component
-    | undefined;
-
-  // Now we support either a component or a template to be returned by this
-  // resolver call, but if it's a `TemplateFactory`, we need to instantiate
-  // it into a `Template`, since that's what `RenderState` wants. We can't
-  // easily change it, it's intimate API used by @ember/test-helpers and the
-  // like. We could compatibly allow `Template` | `TemplateFactory`, and that's
-  // what it used to do but we _just_ went through deprecations to get that
-  // removed. It's also not ideal since once you mix the two types, they are
-  // not exactly easy to tell apart.
-  //
-  // It may also be tempting to just normalize `Template` into `RouteTemplate`
-  // here, and we could. However, this is not the only entrypoint where this
-  // `RenderState` is made – @ember/test-helpers punches through an impressive
-  // amount of private API to set it directly, and this feature would also be
-  // useful for them. So, even if we had normalized here, we'd still have to
-  // check and do that again during render anyway.
-  let template: object;
-
-  if (templateFactoryOrComponent) {
-    if (hasInternalComponentManager(templateFactoryOrComponent)) {
-      template = templateFactoryOrComponent;
-    } else {
-      if (DEBUG && typeof templateFactoryOrComponent !== 'function') {
-        let label: string;
-
-        try {
-          label = `\`${String(templateFactoryOrComponent)}\``;
-        } catch {
-          label = 'an unknown object';
-        }
-
-        assert(
-          `Failed to render the ${name} route, expected ` +
-            `\`template:${route.templateName || name}\` to resolve into ` +
-            `a component or a \`TemplateFactory\`, got: ${label}. ` +
-            `Most likely an improperly defined class or an invalid module export.`
-        );
-      }
-
-      template = (templateFactoryOrComponent as TemplateFactory)(owner);
-    }
-  } else {
-    // default `{{outlet}}`
-    template = route._topLevelViewTemplate(owner);
-  }
-
-  let render: RenderState = {
-    owner,
-    name,
-    controller,
-    model,
-    template,
-  };
-
-  if (DEBUG) {
-    let LOG_VIEW_LOOKUPS = get(route._router, 'namespace.LOG_VIEW_LOOKUPS');
-    // This is covered by tests and the existing code was deliberately
-    // targeting the value prior to normalization, but is this message actually
-    // accurate? It seems like we will always default the `{{outlet}}` template
-    // so I'm not sure about "Nothing will be rendered?" (who consumes these
-    // logs anyway? as lookups happen more infrequently now I doubt this is all
-    // that useful)
-    if (LOG_VIEW_LOOKUPS && !templateFactoryOrComponent) {
-      info(`Could not find "${name}" template. Nothing will be rendered`, {
-        fullName: `template:${name}`,
-      });
-    }
-  }
-
-  return render;
-}
-
 export function getFullQueryParams(router: EmberRouter, state: RouteTransitionState) {
   if (state.fullQueryParams) {
     return state.fullQueryParams;
@@ -1920,6 +1843,7 @@ function getQueryParamsFor(route: Route, state: RouteTransitionState): Record<st
   // Copy over all the query params for this route/controller into params hash.
   // SAFETY: Since `_qp` is protected we can't infer the type
   let qps = (get(route, '_qp') as Route['_qp']).qps;
+
   for (let qp of qps) {
     // Put deserialized qp on params hash.
     let qpValueWasPassedIn = qp.prop in fullQueryParams;
@@ -2103,24 +2027,15 @@ Route.reopen({
     @private
    */
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    queryParamsDidChange<T>(this: Route<T>, changed: {}, _totalPresent: unknown, removed: {}) {
-      // SAFETY: Since `_qp` is protected we can't infer the type
-      let qpMap = (get(this, '_qp') as Route<T>['_qp']).map;
-
-      let totalChanged = Object.keys(changed).concat(Object.keys(removed));
-      for (let change of totalChanged) {
-        let qp = qpMap[change];
-        if (qp) {
-          let options = this._optionsForQueryParam(qp);
-          assert('options exists', options && typeof options === 'object');
-          if ((get(options, 'refreshModel') as boolean) && this._router.currentState) {
-            this.refresh();
-            break;
-          }
-        }
-      }
-
-      return true;
+    queryParamsDidChange<T>(this: Route<T>, changed: {}, totalPresent: unknown, removed: {}) {
+      // Logic lives on the route manager so the router talks to the manager
+      // boundary rather than the classic Route directly.
+      let manager = this.manager;
+      assert(
+        'Expected a classic-interop route manager to handle queryParamsDidChange',
+        hasClassicInterop(manager)
+      );
+      return manager.queryParamsDidChange(this.bucket, changed, totalPresent, removed);
     },
 
     finalizeQueryParamChange<T>(
@@ -2130,107 +2045,18 @@ Route.reopen({
       finalParams: {}[],
       transition: Transition
     ) {
-      if (this.fullRouteName !== 'application') {
-        return true;
-      }
-
-      // Transition object is absent for intermediate transitions.
-      if (!transition) {
-        return;
-      }
-
-      let routeInfos = transition[STATE_SYMBOL]!.routeInfos;
-      let router = this._router;
-      let qpMeta = router._queryParamsFor(routeInfos);
-      let changes = router._qpUpdates;
-      let qpUpdated = false;
-      let replaceUrl;
-
-      stashParamNames(router, routeInfos);
-
-      for (let qp of qpMeta.qps) {
-        let route = qp.route;
-        let controller = route.controller;
-        let presentKey = qp.urlKey in params && qp.urlKey;
-
-        // Do a reverse lookup to see if the changed query
-        // param URL key corresponds to a QP property on
-        // this controller.
-        let value;
-        let svalue: string | null | undefined;
-        if (changes.has(qp.urlKey)) {
-          // Value updated in/before setupController
-          value = get(controller, qp.prop);
-          svalue = route.serializeQueryParam(value, qp.urlKey, qp.type);
-        } else {
-          if (presentKey) {
-            svalue = params[presentKey];
-
-            if (svalue !== undefined) {
-              value = route.deserializeQueryParam(svalue, qp.urlKey, qp.type);
-            }
-          } else {
-            // No QP provided; use default value.
-            svalue = qp.serializedDefaultValue;
-            value = copyDefaultValue(qp.defaultValue);
-          }
-        }
-
-        // SAFETY: Since `_qp` is protected we can't infer the type
-        controller._qpDelegate = (get(route, '_qp') as Route<T>['_qp']).states.inactive;
-
-        let thisQueryParamChanged = svalue !== qp.serializedValue;
-        if (thisQueryParamChanged) {
-          if (transition.queryParamsOnly && replaceUrl !== false) {
-            let options = route._optionsForQueryParam(qp);
-            let replaceConfigValue = get(options, 'replace');
-            if (replaceConfigValue) {
-              replaceUrl = true;
-            } else if (replaceConfigValue === false) {
-              // Explicit pushState wins over any other replaceStates.
-              replaceUrl = false;
-            }
-          }
-
-          set(controller, qp.prop, value);
-
-          qpUpdated = true;
-        }
-
-        // Stash current serialized value of controller.
-        qp.serializedValue = svalue;
-
-        let thisQueryParamHasDefaultValue = qp.serializedDefaultValue === svalue;
-        if (!thisQueryParamHasDefaultValue) {
-          finalParams.push({
-            value: svalue,
-            visible: true,
-            key: presentKey || qp.urlKey,
-          });
-        }
-      }
-
-      // Some QPs have been updated, and those changes need to be propogated
-      // immediately. Eventually, we should work on making this async somehow.
-      if (qpUpdated === true) {
-        flushAsyncObservers(false);
-      }
-
-      if (replaceUrl) {
-        transition.method('replace');
-      }
-
-      qpMeta.qps.forEach((qp: QueryParam) => {
-        // SAFETY: Since `_qp` is protected we can't infer the type
-        let routeQpMeta = get(qp.route, '_qp') as Route<T>['_qp'];
-        let finalizedController = qp.route.controller;
-        finalizedController['_qpDelegate'] = get(routeQpMeta, 'states.active');
-      });
-
-      router._qpUpdates.clear();
-      return;
+      // Logic lives on the route manager so the router talks to the manager
+      // boundary rather than the classic Route directly.
+      let manager = this.manager;
+      assert(
+        'Expected a classic-interop route manager to handle finalizeQueryParamChange',
+        hasClassicInterop(manager)
+      );
+      return manager.finalizeQueryParamChange(this.bucket, params, finalParams, transition);
     },
   },
 });
+
+setRouteManager((owner) => new ClassicRouteManager(owner), Route);
 
 export default Route;

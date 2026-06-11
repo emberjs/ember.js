@@ -9,6 +9,8 @@ import { STATE_SYMBOL } from 'router_js';
 import type { ExtendedInternalRouteInfo } from '@ember/routing/route';
 import type Route from '@ember/routing/route';
 import type EmberRouter from '@ember/routing/router';
+import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
+import type { Route as IRoute } from 'router_js';
 
 const ALL_PERIODS_REGEX = /\./g;
 
@@ -104,7 +106,16 @@ export function stashParamNames(
     routeInfo['_names'] = names;
 
     let route = routeInfo.route!;
-    route._stashNames(routeInfo, dynamicParent!);
+    // Dispatch through the route manager so the router talks to the manager
+    // boundary rather than calling the classic Route directly.
+    let manager = route.manager;
+    if (hasClassicInterop(manager)) {
+      manager.stashNames(
+        route.bucket,
+        routeInfo as unknown as InternalRouteInfo<IRoute>,
+        dynamicParent! as unknown as InternalRouteInfo<IRoute>
+      );
+    }
   }
 
   routeInfos['_namesStashed'] = true;

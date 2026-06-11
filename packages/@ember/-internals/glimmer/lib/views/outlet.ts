@@ -71,7 +71,9 @@ export default class OutletView {
         name: TOP_LEVEL_NAME,
         controller: undefined,
         model: undefined,
-        template,
+        wrapper: undefined,
+        invokable: undefined,
+        bucket: undefined,
       },
     };
 

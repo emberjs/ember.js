@@ -7,8 +7,7 @@ import type { ModelFor, Route, RouteInfo, RouteInfoWithAttributes } from './rout
 import type InternalRouteInfo from './route-info';
 import { toReadOnlyRouteInfo } from './route-info';
 import type { OpaqueTransition, PublicTransition as Transition } from './transition';
-import InternalTransition, { logAbort, QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from './transition';
-import { throwIfAborted, isTransitionAborted } from './transition-aborted-error';
+import InternalTransition, { QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from './transition';
 import type { TransitionIntent } from './transition-intent';
 import NamedTransitionIntent from './transition-intent/named-transition-intent';
 import URLTransitionIntent from './transition-intent/url-transition-intent';
@@ -63,6 +62,32 @@ export default abstract class Router<R extends Route> {
   abstract routeWillChange(transition: Transition): void;
   abstract routeDidChange(transition: Transition): void;
   abstract transitionDidError(error: TransitionError, transition: Transition): Transition | Error;
+
+  // Called once all `getInvokable` calls for the transition have resolved.
+  // Manager-driven routers (EmberRouter) override this to dispatch via the
+  // RouteManager API: run exit/enter hooks, update the URL, await `enter`
+  // promises, then fire didTransition/didEnter/didExit.
+  onTransitionSettled(_transition: InternalTransition<R>, _newState: TransitionState<R>): unknown {
+    return undefined;
+  }
+
+  // Called once per route in parent-to-child order as each route
+  // resolves. EmberRouter uses this to incrementally update
+  // currentRouteInfos and schedule rendering so the outlet tree is built
+  // up before the whole transition settles.
+  onRouteInvokableReady(
+    _routeInfo: InternalRouteInfo<R>,
+    _transition: InternalTransition<R>,
+    _routeIndex: number
+  ): void {}
+
+  // Called when `intermediateTransitionTo` fires (e.g. a classic loading
+  // substate). EmberRouter splices the intermediate route into
+  // currentRouteInfos without disturbing already-rendering ancestor routes.
+  onIntermediateTransition(
+    _newState: TransitionState<R>,
+    _transition: InternalTransition<R>
+  ): void {}
 
   /**
     The main entry point into the router. The API is essentially
@@ -227,7 +252,7 @@ export default abstract class Router<R extends Route> {
       let transition = new InternalTransition(this, undefined, newState);
       transition.isIntermediate = true;
       this.toReadOnlyInfos(transition, newState);
-      this.setupContexts(newState, transition);
+      this.onIntermediateTransition(newState, transition);
 
       this.routeWillChange(transition);
       return this.activeTransition!;
@@ -260,7 +285,7 @@ export default abstract class Router<R extends Route> {
     // after the transition has been finalized.
     newTransition.promise = newTransition.promise!.then(
       (result: TransitionState<R>) => {
-        return this.finalizeTransition(newTransition, result);
+        return this.onTransitionSettled(newTransition, result);
       },
       null,
       promiseLabel('Settle transition promise when transition is finalized')
@@ -336,159 +361,6 @@ export default abstract class Router<R extends Route> {
   /**
   @private
 
-  Updates the URL (if necessary) and calls `setupContexts`
-  to update the router's array of `currentRouteInfos`.
- */
-  private finalizeTransition(
-    transition: InternalTransition<R>,
-    newState: TransitionState<R>
-  ): R | Promise<any> {
-    try {
-      log(
-        transition.router,
-        transition.sequence,
-        'Resolved all models on destination route; finalizing transition.'
-      );
-
-      let routeInfos = newState.routeInfos;
-
-      // Run all the necessary enter/setup/exit hooks
-      this.setupContexts(newState, transition);
-
-      // Check if a redirect occurred in enter/setup
-      if (transition.isAborted) {
-        // TODO: cleaner way? distinguish b/w targetRouteInfos?
-        this.state!.routeInfos = this.currentRouteInfos!;
-        return Promise.reject(logAbort(transition));
-      }
-
-      this._updateURL(transition, newState);
-
-      transition.isActive = false;
-      this.activeTransition = undefined;
-
-      this.triggerEvent(this.currentRouteInfos!, true, 'didTransition', []);
-      this.didTransition(this.currentRouteInfos!);
-      this.toInfos(transition, newState.routeInfos, true);
-      this.routeDidChange(transition);
-
-      log(this, transition.sequence, 'TRANSITION COMPLETE.');
-
-      // Resolve with the final route.
-      return routeInfos[routeInfos.length - 1]!.route!;
-    } catch (e) {
-      if (!isTransitionAborted(e)) {
-        let infos = transition[STATE_SYMBOL]!.routeInfos;
-        transition.trigger(true, 'error', e, transition, infos[infos.length - 1]!.route);
-        transition.abort();
-      }
-
-      throw e;
-    }
-  }
-
-  /**
-  @private
-
-  Takes an Array of `RouteInfo`s, figures out which ones are
-  exiting, entering, or changing contexts, and calls the
-  proper route hooks.
-
-  For example, consider the following tree of routes. Each route is
-  followed by the URL segment it handles.
-
-  ```
-  |~index ("/")
-  | |~posts ("/posts")
-  | | |-showPost ("/:id")
-  | | |-newPost ("/new")
-  | | |-editPost ("/edit")
-  | |~about ("/about/:id")
-  ```
-
-  Consider the following transitions:
-
-  1. A URL transition to `/posts/1`.
-     1. Triggers the `*model` callbacks on the
-        `index`, `posts`, and `showPost` routes
-     2. Triggers the `enter` callback on the same
-     3. Triggers the `setup` callback on the same
-  2. A direct transition to `newPost`
-     1. Triggers the `exit` callback on `showPost`
-     2. Triggers the `enter` callback on `newPost`
-     3. Triggers the `setup` callback on `newPost`
-  3. A direct transition to `about` with a specified
-     context object
-     1. Triggers the `exit` callback on `newPost`
-        and `posts`
-     2. Triggers the `serialize` callback on `about`
-     3. Triggers the `enter` callback on `about`
-     4. Triggers the `setup` callback on `about`
-
-  @param {Router} transition
-  @param {TransitionState} newState
-*/
-  private setupContexts(newState: TransitionState<R>, transition?: InternalTransition<R>) {
-    let partition = this.partitionRoutes(this.state!, newState);
-    let i, l, route;
-
-    for (i = 0, l = partition.exited.length; i < l; i++) {
-      route = partition.exited[i]!.route;
-      delete route!.context;
-
-      if (route !== undefined) {
-        if (route._internalReset !== undefined) {
-          route._internalReset(true, transition);
-        }
-
-        if (route.exit !== undefined) {
-          route.exit(transition);
-        }
-      }
-    }
-
-    let oldState = (this.oldState = this.state);
-    this.state = newState;
-    let currentRouteInfos = (this.currentRouteInfos = partition.unchanged.slice());
-
-    try {
-      for (i = 0, l = partition.reset.length; i < l; i++) {
-        route = partition.reset[i]!.route;
-        if (route !== undefined) {
-          if (route._internalReset !== undefined) {
-            route._internalReset(false, transition);
-          }
-        }
-      }
-
-      for (i = 0, l = partition.updatedContext.length; i < l; i++) {
-        this.routeEnteredOrUpdated(
-          currentRouteInfos,
-          partition.updatedContext[i]!,
-          false,
-          transition!
-        );
-      }
-
-      for (i = 0, l = partition.entered.length; i < l; i++) {
-        this.routeEnteredOrUpdated(currentRouteInfos, partition.entered[i]!, true, transition!);
-      }
-    } catch (e) {
-      this.state = oldState;
-      this.currentRouteInfos = oldState!.routeInfos;
-      throw e;
-    }
-
-    this.state.queryParams = this.finalizeQueryParamChange(
-      currentRouteInfos,
-      newState.queryParams,
-      transition!
-    );
-  }
-
-  /**
-  @private
-
   Fires queryParamsDidChange event
 */
   private fireQueryParamDidChange(newState: TransitionState<R>, queryParamChangelist: ChangeList) {
@@ -505,56 +377,6 @@ export default abstract class Router<R extends Route> {
       ]);
       this._changedQueryParams = undefined;
     }
-  }
-
-  /**
-  @private
-
-  Helper method used by setupContexts. Handles errors or redirects
-  that may happen in enter/setup.
-*/
-  private routeEnteredOrUpdated(
-    currentRouteInfos: InternalRouteInfo<R>[],
-    routeInfo: InternalRouteInfo<R>,
-    enter: boolean,
-    transition?: InternalTransition<R>
-  ) {
-    let route = routeInfo.route,
-      context = routeInfo.context;
-
-    function _routeEnteredOrUpdated(route: R) {
-      if (enter) {
-        if (route.enter !== undefined) {
-          route.enter(transition!);
-        }
-      }
-
-      throwIfAborted(transition);
-
-      route.context = context as Awaited<typeof context>;
-
-      if (route.contextDidChange !== undefined) {
-        route.contextDidChange();
-      }
-
-      if (route.setup !== undefined) {
-        route.setup(context!, transition!);
-      }
-
-      throwIfAborted(transition);
-
-      currentRouteInfos.push(routeInfo);
-      return route;
-    }
-
-    // If the route doesn't exist, it means we haven't resolved the route promise yet
-    if (route === undefined) {
-      routeInfo.routePromise = routeInfo.routePromise.then(_routeEnteredOrUpdated);
-    } else {
-      _routeEnteredOrUpdated(route);
-    }
-
-    return true;
   }
 
   /**
@@ -598,7 +420,9 @@ export default abstract class Router<R extends Route> {
 
   @return {Partition}
 */
-  private partitionRoutes(oldState: TransitionState<R>, newState: TransitionState<R>) {
+  // Exposed so manager-driven routers (e.g. EmberRouter) can compute
+  // partitions when orchestrating their own lifecycle.
+  partitionRoutes(oldState: TransitionState<R>, newState: TransitionState<R>) {
     let oldRouteInfos = oldState.routeInfos;
     let newRouteInfos = newState.routeInfos;
 
@@ -646,7 +470,9 @@ export default abstract class Router<R extends Route> {
     return routes;
   }
 
-  private _updateURL(transition: OpaqueTransition, state: TransitionState<R>) {
+  // Exposed so manager-driven routers can update the URL after awaiting
+  // their async lifecycle.
+  _updateURL(transition: OpaqueTransition, state: TransitionState<R>) {
     let urlMethod: string | null = transition.urlMethod;
 
     if (!urlMethod) {
@@ -709,7 +535,9 @@ export default abstract class Router<R extends Route> {
     }
   }
 
-  private finalizeQueryParamChange(
+  // Exposed so manager-driven routers can finalize QPs as part of their
+  // own transition settlement.
+  finalizeQueryParamChange(
     resolvedHandlers: InternalRouteInfo<R>[],
     newQueryParams: Dict<unknown>,
     transition: OpaqueTransition
@@ -827,8 +655,9 @@ export default abstract class Router<R extends Route> {
       forEach<InternalRouteInfo<R>>(this.state.routeInfos.slice().reverse(), function (routeInfo) {
         let route = routeInfo.route;
         if (route !== undefined) {
-          if (route.exit !== undefined) {
-            route.exit();
+          let manager = route.manager;
+          if (manager !== undefined && route.bucket !== undefined) {
+            manager.exit(route.bucket);
           }
         }
         return true;
