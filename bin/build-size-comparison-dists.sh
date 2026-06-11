@@ -5,3 +5,4 @@
 pnpm build
 
 ( cd smoke-tests/v2-app-hello-world-template && pnpm vite build )
+( cd smoke-tests/v2-app-template && pnpm vite build )

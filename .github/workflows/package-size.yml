@@ -26,6 +26,7 @@ jobs:
           paths: |
             dist/dev
             dist/prod
+            smoke-tests/v2-app-template/dist
             smoke-tests/v2-app-hello-world-template/dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
