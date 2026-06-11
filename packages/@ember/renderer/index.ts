@@ -61,7 +61,7 @@
   @public
 */
 
-export { renderSettled } from '@ember/-internals/glimmer/lib/renderer';
+export { renderSettled } from '@ember/-internals/glimmer/lib/base-renderer';
 
 /**
  * Render a component into a DOM element.
@@ -79,4 +79,4 @@ export { renderSettled } from '@ember/-internals/glimmer/lib/renderer';
  * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive as long as it is an object or object-like
  * @public
  */
-export { renderComponent } from '@ember/-internals/glimmer/lib/renderer';
+export { renderComponent } from '@ember/-internals/glimmer/lib/base-renderer';

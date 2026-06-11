@@ -15,6 +15,7 @@ import type { Nullable } from '@ember/-internals/utility-types';
 import { getComponentTemplate } from '@glimmer/manager/lib/public/template';
 import {
   getInternalComponentManager,
+  getInternalHelperManager,
   setInternalHelperManager,
 } from '@glimmer/manager/lib/internal/api';
 import { array } from '@glimmer/runtime/lib/helpers/array';
@@ -27,8 +28,8 @@ import {
   templateOnlyComponent,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime/lib/component/template-only';
-import { isCurlyManager } from './component-managers/curly';
-import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
+import { isCurlyManager } from './component-managers/curly-brand';
+import { isClassicHelper } from './helper-brand';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -39,9 +40,6 @@ import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as uniqueId } from './helpers/unique-id';
-
-import { mountHelper } from './syntax/mount';
-import { outletHelper } from './syntax/outlet';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -96,8 +94,6 @@ const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   '-normalize-class': normalizeClassHelper,
   '-resolve': resolve,
   '-track-array': trackArray,
-  '-mount': mountHelper,
-  '-outlet': outletHelper,
   '-in-el-null': inElementNullCheckHelper,
 };
 
@@ -109,21 +105,16 @@ const BUILTIN_HELPERS: Record<string, object> = {
   get,
   hash,
   'unique-id': uniqueId,
-};
-
-if (DEBUG) {
-  BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
-} else {
-  // Bug: this may be a quirk of our test setup?
   // In prod builds, this is a no-op helper and is unused in practice. We shouldn't need
   // to add it at all, but the current test build doesn't produce a "prod compiler", so
   // we ended up running the debug-build for the template compliler in prod tests. Once
-  // that is fixed, this can be removed. For now, this allows the test to work and does
-  // not really harm anything, since it's just a no-op pass-through helper and the bytes
-  // has to be included anyway. In the future, perhaps we can avoid the latter by using
-  // `import(...)`?
-  BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
-}
+  // that is fixed, this can be conditionally included only in DEBUG. For now, this
+  // allows the test to work and does not really harm anything, since it's just a no-op
+  // pass-through helper. Keeping it inside the object literal (rather than a top-level
+  // conditional assignment) keeps this module free of top-level side effects so that
+  // consumers that never resolve anything dynamically can tree-shake the whole table.
+  '-disallow-dynamic-resolution': disallowDynamicResolution,
+};
 
 // With the implementation of RFC #1006(https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper), the `action` modifer was removed. It was the
 // only built-in keyword modifier, so this object is currently empty.
@@ -171,15 +162,21 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
       // than the raw value (`factoryFor(...).class`). This is because injections are already
       // bound in the factoryFor result, including type-based injections
 
+      // The classic helper manager is registered on the classic `Helper` base
+      // class; deriving it from the definition (rather than importing it from
+      // the module that defines `Helper`) keeps this module from pulling in
+      // the classic object model when no classic helpers are in use.
+      let manager = getInternalHelperManager(definition);
+
       if (DEBUG) {
         // In DEBUG we need to only set the associated value once, otherwise
         // we'll trigger an assertion
         if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
           CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
-          setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
+          setInternalHelperManager(manager, factory);
         }
       } else {
-        setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
+        setInternalHelperManager(manager, factory);
       }
 
       return factory;
@@ -189,6 +186,12 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
   }
 
   lookupBuiltInHelper(name: string): HelperDefinitionState | null {
+    assert(
+      `The \`{{${name.slice(1)}}}\` keyword requires the router, which is not available here. ` +
+        `It is only supported in templates rendered by an Ember application (e.g. not via \`renderComponent\`).`,
+      name !== '-outlet' && name !== '-mount'
+    );
+
     return BUILTIN_KEYWORD_HELPERS[name] ?? null;
   }
 
