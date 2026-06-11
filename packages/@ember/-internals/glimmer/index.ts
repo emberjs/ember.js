@@ -1,6 +1,23 @@
 /**
   [Glimmer](https://github.com/tildeio/glimmer) is a templating engine used by Ember.js that is compatible with a subset of the [Handlebars](http://handlebarsjs.com/) syntax.
 
+  Ember ships with two types of JavaScript classes for components:
+
+  1. Glimmer components, imported from `@glimmer/component`, which are the
+  default component's for Ember Octane (3.15) and more recent editions.
+  2. Classic components, imported from `@ember/component`, which were the
+  default for older editions of Ember (pre 3.15) but are still supported.
+
+  Below is the documentation for Classic components. If you are looking for the
+  API documentation for Template-only or Glimmer components, it is [available
+  here](/ember/release/modules/@glimmer%2Fcomponent).
+
+  Note: Prior to Ember 6.8, by default, components were authored in paired `.hbs` and `.js`
+  files. This is still supported, but the default authoring format is now `.gjs` or "template tag".
+  The documentation for `@ember/component` still refers to the older authoring format. To read about
+  the new authoring format, see the
+  [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
+    
   ### Showing a property
 
   Templates manage the flow of an application's UI, and display state (through
@@ -98,10 +115,12 @@
   When designing components `{{yield}}` is used to denote where, inside the component's
   template, an optional block passed to the component should render:
 
-  ```app/templates/application.hbs
+  ```app/templates/application.gjs
+  <template>
   <LabeledTextfield @value={{@model.name}}>
     First name:
   </LabeledTextfield>
+    
   ```
 
   ```app/components/labeled-textfield.hbs
