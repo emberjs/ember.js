@@ -1,12 +1,16 @@
 /**
  * Canonical GXT wiring table — single source of truth for the build-time
  * `@glimmer/* | @ember/* | ember-template-compiler` → gxt-backend shim
- * redirects, plus the "is the GXT backend enabled" boolean. It is consumed by
- * BOTH build pipelines so the two maps can no longer drift apart:
+ * redirects, the externalized/dropped package lists, plus the "is the GXT
+ * backend enabled" boolean. It is consumed by BOTH build pipelines AND the
+ * packaging script so the lists can no longer drift apart:
  *
  *   - rollup.config.mjs   (EMBER_RENDER_BACKEND=gxt) → an exact-key object map
- *                                                       merged into resolvePackages
+ *                                                       merged into resolvePackages,
+ *                                                       plus externals + entry drops
  *   - vite.config.mjs     (GXT_MODE=true)            → a resolve.alias[] array
+ *   - scripts/build-gxt-package.mjs                  → leak checks + addon-main
+ *                                                       patching off GXT_DROPPED_ENTRIES
  *
  * The rebase onto upstream main proved the sync-fragility this module removes:
  * upstream's vendored `@glimmer/*` migration introduced deep-path imports
@@ -47,6 +51,43 @@ export const GXT_SHIM_ALIASES = [
   { find: '@glimmer/destroyable', shim: 'destroyable' },
   { find: '@glimmer/reference', shim: 'reference', subpathTolerant: true },
 ];
+
+/**
+ * Packages that the shims import and that the GXT rollup build should treat
+ * as external rather than trying to bundle. These are resolved at runtime by
+ * the host (vite dev / the published gxt package). Only applied when the
+ * rollup build runs with EMBER_RENDER_BACKEND=gxt, so the classic build is
+ * unaffected.
+ */
+export const GXT_EXTERNAL_PACKAGES = new Set([
+  '@lifeart/gxt',
+  '@lifeart/gxt/glimmer-compatibility',
+  '@lifeart/gxt/runtime-compiler',
+  '@lifeart/gxt/compiler',
+]);
+
+/**
+ * The Glimmer VM packages dropped from the rollup top-level entry map in GXT
+ * mode. They remain resolvable via exposedDependencies() (so stray imports
+ * still succeed), but are no longer emitted as their own
+ * dist/packages/@glimmer/* chunks; anything not reachable from the remaining
+ * entry points gets tree-shaken. build-gxt-package.mjs uses the SAME list for
+ * its leak checks (a dropped package present in the assembled dist means a
+ * stale classic build leaked through — the §1.3 hazard) and for patching the
+ * addon-main implicit-modules list, so the two sides cannot drift.
+ */
+export const GXT_DROPPED_ENTRIES = new Set([
+  '@glimmer/runtime',
+  '@glimmer/opcode-compiler',
+  '@glimmer/program',
+  '@glimmer/wire-format',
+  '@glimmer/encoder',
+  '@glimmer/vm',
+  '@glimmer/util',
+  '@glimmer/global-context',
+  '@glimmer/node',
+  '@glimmer/owner',
+]);
 
 /**
  * Anchored regex that also matches deep-path imports of `find`, e.g.

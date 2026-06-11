@@ -6,7 +6,12 @@ import glob from 'glob';
 import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
-import { GXT_SHIM_DIR, GXT_SHIM_ALIASES } from './scripts/gxt-alias-map.mjs';
+import {
+  GXT_SHIM_DIR,
+  GXT_SHIM_ALIASES,
+  GXT_EXTERNAL_PACKAGES,
+  GXT_DROPPED_ENTRIES,
+} from './scripts/gxt-alias-map.mjs';
 
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
@@ -49,33 +54,12 @@ if (process.env.BUNDLE_VISUALIZER === '1') {
   visualizerPlugin = visualizer;
 }
 
-// Packages that the shims import and that rollup should treat as external
-// rather than trying to bundle. These are resolved at runtime by the host
-// (vite dev / the published gxt package). They are only applied when
-// USE_GXT_BACKEND is true so the classic build is unaffected.
-const GXT_EXTERNAL_PACKAGES = new Set([
-  '@lifeart/gxt',
-  '@lifeart/gxt/glimmer-compatibility',
-  '@lifeart/gxt/runtime-compiler',
-  '@lifeart/gxt/compiler',
-]);
-
-// Packages dropped from the top-level entry map in GXT mode. They remain
-// resolvable via exposedDependencies() (so stray imports still succeed),
-// but are no longer emitted as their own dist/packages/@glimmer/* chunks.
-// Anything not reachable from the remaining entry points gets tree-shaken.
-const GXT_DROPPED_ENTRIES = new Set([
-  '@glimmer/runtime',
-  '@glimmer/opcode-compiler',
-  '@glimmer/program',
-  '@glimmer/wire-format',
-  '@glimmer/encoder',
-  '@glimmer/vm',
-  '@glimmer/util',
-  '@glimmer/global-context',
-  '@glimmer/node',
-  '@glimmer/owner',
-]);
+// GXT_EXTERNAL_PACKAGES (externalized shim deps) and GXT_DROPPED_ENTRIES
+// (VM packages dropped from the entry map) are imported from
+// scripts/gxt-alias-map.mjs — the canonical GXT build contract — so this
+// config and scripts/build-gxt-package.mjs can never disagree on the lists.
+// Both are only applied when USE_GXT_BACKEND is true; the classic build is
+// unaffected.
 
 let configs = [
   esmConfig(),

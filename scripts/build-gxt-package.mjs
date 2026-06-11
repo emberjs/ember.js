@@ -45,6 +45,7 @@ import {
 import { dirname, resolve, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { GXT_DROPPED_ENTRIES } from './gxt-alias-map.mjs';
 
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -53,21 +54,12 @@ const distDir = join(repoRoot, 'dist');
 const outDir = join(repoRoot, 'dist-gxt-package');
 const rootPkgPath = join(repoRoot, 'package.json');
 
-// The 10 Glimmer VM packages the GXT build drops from the entry map
-// (rollup.config.mjs GXT_DROPPED_ENTRIES). Their presence in the assembled
-// dist would mean a stale classic build leaked through (the §1.3 hazard).
-const DROPPED_VM_PACKAGES = [
-  '@glimmer/runtime',
-  '@glimmer/opcode-compiler',
-  '@glimmer/program',
-  '@glimmer/wire-format',
-  '@glimmer/encoder',
-  '@glimmer/vm',
-  '@glimmer/util',
-  '@glimmer/global-context',
-  '@glimmer/node',
-  '@glimmer/owner',
-];
+// The Glimmer VM packages the GXT build drops from the entry map — sourced
+// from the canonical build contract (scripts/gxt-alias-map.mjs) so this leak
+// check can never drift from what rollup.config.mjs actually drops. Their
+// presence in the assembled dist would mean a stale classic build leaked
+// through (the §1.3 hazard).
+const DROPPED_VM_PACKAGES = [...GXT_DROPPED_ENTRIES];
 
 // Symbols that only the real classic Glimmer VM re-exports. If any of these is
 // an exported binding in the assembled dist, a VM copy leaked in.
