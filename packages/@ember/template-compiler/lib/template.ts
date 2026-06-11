@@ -233,7 +233,6 @@ export function template<C extends ComponentClass>(
   templateString: string,
   options: ExplicitClassOptions<C> | ImplicitClassOptions<C> | BaseClassTemplateOptions<C>
 ): C;
-/* @__NO_SIDE_EFFECTS__ */
 export function template(
   templateString: string,
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
