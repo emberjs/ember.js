@@ -8,7 +8,12 @@ import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 // packages/@ember/-internals/gxt-backend/validator.ts. Both shapes expose the
 // same named exports, so a namespace import yields a `validator` object with
 // the same surface as @lifeart/gxt/glimmer-compatibility's `validator`.
+// BARREL specifiers are load-bearing: the rollup GXT alias map redirects the
+// exact '@glimmer/validator' key to the gxt-backend shim; deep lib/* paths
+// would resolve to the real VM source in GXT builds (scripts/gxt-alias-map.mjs).
+// eslint-disable-next-line ember-local/no-barrel-imports
 import * as validator from '@glimmer/validator';
+// eslint-disable-next-line ember-local/no-barrel-imports
 import {
   dirtyTagFor,
   consumeTag as compatConsumeTag,

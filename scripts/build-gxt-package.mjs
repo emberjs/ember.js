@@ -38,16 +38,19 @@ import {
   readFileSync,
   writeFileSync,
   existsSync,
+  // CI runs this script on Node 22+ (stable cpSync); the engines floor is lower.
+  // eslint-disable-next-line n/no-unsupported-features/node-builtins
   cpSync,
   readdirSync,
-  statSync,
 } from 'node:fs';
 import { dirname, resolve, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { GXT_DROPPED_ENTRIES } from './gxt-alias-map.mjs';
 
+// eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
+// eslint-disable-next-line no-redeclare
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 const distDir = join(repoRoot, 'dist');
@@ -113,7 +116,9 @@ if (REUSE_DIST && existsSync(join(distDir, 'dev', 'packages'))) {
   log('GXT_PKG_REUSE_DIST=1: reusing existing dist/, skipping rollup rebuild');
   rmSync(outDir, { recursive: true, force: true });
   gxtRenamedModules = deriveRenamedModulesFromDist();
-  log(`derived GXT renamed-modules from existing dist (${Object.keys(gxtRenamedModules).length} entries)`);
+  log(
+    `derived GXT renamed-modules from existing dist (${Object.keys(gxtRenamedModules).length} entries)`
+  );
 } else {
   // ---- 1. clean ---------------------------------------------------------- //
   log('cleaning dist/ and dist-gxt-package/ (the §1.3 stale-VM trap fix)');
@@ -208,12 +213,16 @@ try {
   });
   await bundle.close();
   if (sawBare.size > 0) {
-    log(`note: template-compiler CJS bundle externalized bare specifiers: ${[...sawBare].join(', ')}`);
+    log(
+      `note: template-compiler CJS bundle externalized bare specifiers: ${[...sawBare].join(', ')}`
+    );
   }
   // Prove it require()s and exposes precompile (CJS, not ESM).
   const compiler = require(templateCompilerOut);
   if (typeof compiler.precompile !== 'function') {
-    throw new Error('built dist/ember-template-compiler.js does not export a precompile() function');
+    throw new Error(
+      'built dist/ember-template-compiler.js does not export a precompile() function'
+    );
   }
   templateCompilerBuilt = true;
   log('built + verified CJS dist/ember-template-compiler.js (exports precompile)');
@@ -221,7 +230,9 @@ try {
   // S-item descope path (per task brief): keep the rest of the package green and
   // document the gap rather than yak-shave. The addon-main still gets an
   // absolutePaths.templateCompiler; it just points at a fail-loud stub.
-  log(`WARNING: CJS template-compiler build failed, falling back to documented stub: ${err.message}`);
+  log(
+    `WARNING: CJS template-compiler build failed, falling back to documented stub: ${err.message}`
+  );
   writeFileSync(
     templateCompilerOut,
     [
@@ -229,24 +240,24 @@ try {
       '// DOCUMENTED STUB (design §5.5 S-item, descoped per the packaging brief).',
       '//',
       '// Purpose: this file exists so the GXT addon-main can expose a DEFINED,',
-      "// require.resolve-able `absolutePaths.templateCompiler`, which is the exact",
+      '// require.resolve-able `absolutePaths.templateCompiler`, which is the exact',
       '// thing ember-cli-htmlbars@7 reads via',
       "//   findAddonByName('ember-source').absolutePaths.templateCompiler",
       '// — fixing the `TypeError: Cannot read properties of undefined',
       "// (reading 'templateCompiler')` crash from design §1.6.",
       '//',
       '// Why it is a stub and not the real classic wire-format compiler: the GXT',
-      "// Rollup build chunk-merges the ESM-only `@lifeart/gxt` (reached via",
+      '// Rollup build chunk-merges the ESM-only `@lifeart/gxt` (reached via',
       "// `@ember/-internals/metal`'s `@lifeart/gxt/glimmer-compatibility` import)",
       "// into the template-compiler's shared-chunk graph, so a self-contained CJS",
       '// `require()` of the emitted ESM entry is impossible without a dedicated',
       '// classic (non-GXT) Rollup pass — a >2-layer yak-shave descoped per the brief.',
       '//',
-      '// In GXT mode, real template compilation is the @lifeart/gxt Vite plugin\'s',
+      "// In GXT mode, real template compilation is the @lifeart/gxt Vite plugin's",
       '// job (the open L-item), NOT this entry. If a classic wire-format precompile',
       '// is actually invoked here, we fail loud (no silent swallowing).',
       'function notBuilt() {',
-      "  throw new Error(",
+      '  throw new Error(',
       "    'ember-source-gxt: dist/ember-template-compiler.js is a stub (design §5.5 S-item). ' +",
       "    'The classic wire-format compiler was not extractable from the GXT build; ' +",
       "    'GXT template compilation is handled by the @lifeart/gxt Vite plugin (L-item).'",
@@ -451,7 +462,9 @@ function selfVerify() {
     fail('self-verify: @glimmer/validator/index.js missing from assembled dist');
   }
   if (!readFileSync(validatorDev, 'utf8').includes('@lifeart/gxt/glimmer-compatibility')) {
-    fail('self-verify: @glimmer/validator is not the GXT shim (no @lifeart/gxt/glimmer-compatibility import)');
+    fail(
+      'self-verify: @glimmer/validator is not the GXT shim (no @lifeart/gxt/glimmer-compatibility import)'
+    );
   }
   log('  ok: @glimmer/validator is the GXT shim');
 
@@ -460,7 +473,9 @@ function selfVerify() {
     for (const vm of DROPPED_VM_PACKAGES) {
       const leaked = join(pkgDist, mode, 'packages', ...vm.split('/'), 'index.js');
       if (existsSync(leaked)) {
-        fail(`self-verify: STALE VM package leaked into assembled dist: ${relative(outDir, leaked)}`);
+        fail(
+          `self-verify: STALE VM package leaked into assembled dist: ${relative(outDir, leaked)}`
+        );
       }
     }
   }
@@ -582,10 +597,14 @@ function selfVerify() {
     }
   }
   if (droppedVmImports.size > 0) {
-    fail(`self-verify: dist still IMPORTS dropped VM packages:\n  ${[...droppedVmImports].join('\n  ')}`);
+    fail(
+      `self-verify: dist still IMPORTS dropped VM packages:\n  ${[...droppedVmImports].join('\n  ')}`
+    );
   }
   if (offenders.size > 0) {
-    fail(`self-verify: unexpected/undeclared bare specifiers in dist:\n  ${[...offenders].join('\n  ')}`);
+    fail(
+      `self-verify: unexpected/undeclared bare specifiers in dist:\n  ${[...offenders].join('\n  ')}`
+    );
   }
   log('  ok: every bare specifier is @lifeart/gxt(/*), a builtin, a self-ref, or a declared dep');
   log('  ok: no dist file imports any dropped @glimmer VM package');
@@ -601,7 +620,9 @@ function selfVerify() {
   for (const sub of usedGxtSubpaths) {
     const key = sub === '' ? '.' : sub;
     if (!(key in gxtExports)) {
-      fail(`self-verify: dist imports @lifeart/gxt subpath "${key}" which is not an export of the pinned @lifeart/gxt`);
+      fail(
+        `self-verify: dist imports @lifeart/gxt subpath "${key}" which is not an export of the pinned @lifeart/gxt`
+      );
     }
   }
   log(`  ok: all used @lifeart/gxt subpaths are real exports (${[...usedGxtSubpaths].join(', ')})`);

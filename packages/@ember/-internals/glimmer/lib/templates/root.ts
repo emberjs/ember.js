@@ -1,3 +1,7 @@
+// BARREL specifier is load-bearing: the rollup GXT alias map redirects the
+// exact '@glimmer/manager' key to the gxt-backend shim; a deep lib/* path
+// would resolve to the real VM source in GXT builds (scripts/gxt-alias-map.mjs).
+// eslint-disable-next-line ember-local/no-barrel-imports
 import { getComponentTemplate } from '@glimmer/manager';
 // Bridge reader for `registerObjectValueOwner`.
 import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
@@ -1206,8 +1210,7 @@ export default function createRootTemplate(_owner: any) {
       // happy-path of cell-only updates and is a 1-test tradeoff against
       // the 4 model-swap correctness tests fixed by this fallback.
       const modelGenuinelyChanged =
-        lastPropagatedModel !== undefined &&
-        newModel !== lastPropagatedModel;
+        lastPropagatedModel !== undefined && newModel !== lastPropagatedModel;
       // Also detect interior model mutations: same object reference, but the
       // shape has changed (e.g., `set(model, 'color', 'blue')` mutated the
       // existing model in-place). The cell value is still the same reference

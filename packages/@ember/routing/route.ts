@@ -2,7 +2,7 @@ import { privatize as P } from '@ember/-internals/container/lib/registry';
 import { addObserver, flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty } from '@ember/-internals/metal/lib/decorator';
-import { meta as metaFor } from '@ember/-internals/meta';
+import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 // Slice-120 (Cluster B): cross-file reader for `compilePipeline.getComponentContextsMap?.()`.
@@ -1984,8 +1984,8 @@ function buildRenderState(route: Route): RenderState {
         __GXT_MODE__ &&
         typeof templateFactoryOrComponent === 'function' &&
         !('asLayout' in templateFactoryOrComponent) &&
-        !(templateFactoryOrComponent as Record<string, unknown>)['__gxtCompiled'] &&
-        !(templateFactoryOrComponent as Record<string, unknown>)['__gxtFactory'];
+        !(templateFactoryOrComponent as unknown as Record<string, unknown>)['__gxtCompiled'] &&
+        !(templateFactoryOrComponent as unknown as Record<string, unknown>)['__gxtFactory'];
       if (isRawGxtFn) {
         template = templateFactoryOrComponent as object;
       } else {

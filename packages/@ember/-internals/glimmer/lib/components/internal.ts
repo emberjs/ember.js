@@ -13,14 +13,21 @@ import type {
   VMArguments,
   WithCreateInstance,
 } from '@glimmer/interfaces';
+// The @glimmer/manager|reference|validator BARREL specifiers are load-bearing
+// for the GXT dual backend: the rollup GXT alias map (scripts/gxt-alias-map.mjs)
+// redirects the exact barrel key to the gxt-backend shim, while deep lib/*
+// paths would resolve to the real vendored VM source and fork the runtime in
+// GXT builds. Do not convert the runtime imports below to deep imports.
+// eslint-disable-next-line ember-local/no-barrel-imports
 import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference/lib/reference';
 // GXT dual-backend note: in classic mode `@glimmer/reference` resolves to the
 // vendored package; in EMBER_RENDER_BACKEND=gxt mode rollup aliases it to
 // packages/@ember/-internals/gxt-backend/reference.ts. A namespace import
 // yields a `reference` object with `createConstRef` in both modes.
+// eslint-disable-next-line ember-local/no-barrel-imports
 import * as reference from '@glimmer/reference';
-// import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
+// eslint-disable-next-line ember-local/no-barrel-imports
 import { untrack } from '@glimmer/validator';
 
 const { createConstRef } = reference;

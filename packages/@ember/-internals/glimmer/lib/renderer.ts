@@ -116,23 +116,29 @@ import type {
 } from '@glimmer/interfaces';
 
 import type { Nullable } from '@ember/-internals/utility-types';
-import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import type { Reference } from '@glimmer/reference';
+import { artifacts } from '@glimmer/program/lib/helpers';
+import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
+import type { Reference } from '@glimmer/reference/lib/reference';
+// The @glimmer/reference and @glimmer/validator BARREL specifiers below are
+// load-bearing for the GXT dual backend: the rollup GXT alias map
+// (scripts/gxt-alias-map.mjs) redirects the exact barrel key to the gxt-backend
+// shim, while deep lib/* paths would resolve to the real vendored VM source and
+// fork the reactive runtime in GXT builds. Do not convert them to deep imports.
+// eslint-disable-next-line ember-local/no-barrel-imports
 import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
-import type { CurriedValue } from '@glimmer/runtime';
-import {
-  clientBuilder,
-  createCapturedArgs,
-  curry as glimmerCurry,
-  EMPTY_POSITIONAL,
-  inTransaction,
-  renderComponent as glimmerRenderComponent,
-  renderMain,
-  runtimeOptions,
-} from '@glimmer/runtime';
-import { dict } from '@glimmer/util';
+import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
+import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
+import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { curry as glimmerCurry } from '@glimmer/runtime/lib/curried-value';
+import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
+import { renderComponent as glimmerRenderComponent, renderMain } from '@glimmer/runtime/lib/render';
+import { dict } from '@glimmer/util/lib/collections';
 import { unwrapTemplate, isGxtTemplate } from './component-managers/unwrap-template';
+// Namespace import MUST stay on the barrel: touchClassicBridge /
+// registerClassicReactor exist only in the GXT-aliased validator shim.
+// eslint-disable-next-line ember-local/no-barrel-imports
 import * as _glimmerValidator from '@glimmer/validator';
+// eslint-disable-next-line ember-local/no-barrel-imports
 import { CURRENT_TAG, validateTag, valueForTag, type Tag } from '@glimmer/validator';
 // touchClassicBridge / registerClassicReactor exist only in the GXT-aliased
 // validator; fall back to no-ops in classic builds so these imports never
@@ -145,10 +151,9 @@ const registerClassicReactor: (cb: () => void, source?: string) => () => void =
   typeof (_glimmerValidator as any).registerClassicReactor === 'function'
     ? (_glimmerValidator as any).registerClassicReactor
     : (_: () => void, _src?: string) => () => {};
-import { tagForObject } from '@ember/-internals/metal';
+import { tagForObject } from '@ember/-internals/metal/lib/tags';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
-import RSVP from 'rsvp';
-import Component from './component';
+import type Component from './component';
 import { hasDOM } from '../../browser-environment';
 import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
@@ -1044,11 +1049,7 @@ if (!__GXT_MODE__) {
     // both flags read together in this `pending && !runTaskActive`
     // gate). See `getRunTaskActive` doc in gxt-bridge.ts.
     const _cpBB = getGxtRenderer()?.compilePipeline;
-    if (
-      nextInstance == null &&
-      _cpBB?.getPendingSync?.() &&
-      !_cpBB?.getRunTaskActive?.()
-    ) {
+    if (nextInstance == null && _cpBB?.getPendingSync?.() && !_cpBB?.getRunTaskActive?.()) {
       // Slice-125 (Cluster B): `__gxtSyncDomNow` canonical function migrated
       // to module-local `_gxtSyncDomNow` in `compile.ts`. Cross-package
       // reader routes through the bridge method on the same compilePipeline

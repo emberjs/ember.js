@@ -444,10 +444,7 @@
   @public
  */
 
-import {
-  templateFactory as _templateFactory,
-  templateCacheCounters,
-} from '@glimmer/opcode-compiler';
+import _templateFactory, { templateCacheCounters } from '@glimmer/opcode-compiler/lib/template';
 export { templateCacheCounters };
 
 // (Cluster B slice 6) Bridge reader for `compileTemplate` and
