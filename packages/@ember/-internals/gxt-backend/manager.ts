@@ -115,6 +115,7 @@ import * as __lifeartGxtNamespace from '@lifeart/gxt';
 (globalThis as any).__lifeartGxt = __lifeartGxtNamespace;
 import {
   destroy as _destroyDestroyable,
+  destroySyncNow as _destroySyncNow,
   registerDestructor as _registerDestructor,
   isDestroying as _isDestroying,
 } from './destroyable';
@@ -202,8 +203,13 @@ export function peekInstanceCapture(): any {
   return _lastCreatedEmberInstance;
 }
 // Exposed as `destruction.destroyDestroyable` through the gxt-bridge at the
-// bottom of this module.
-const _gxtBridgeDestroyDestroyable = _destroyDestroyable;
+// bottom of this module. SYNCHRONOUS variant: the slot's sole consumer is the
+// pending-modifier-destroys drain (compile.ts PHASE 2d), which only fires for
+// modifiers whose element is already out of the DOM — classic Ember removes
+// the listener synchronously with the element there, and the deferred
+// destroy()'s scheduleDestroy flush can land after the caller's runloop turn
+// in cumulative runs (see destroySyncNow's doc in destroyable.ts).
+const _gxtBridgeDestroyDestroyable = _destroySyncNow;
 
 // PROPERTY_DID_CHANGE symbol — imported lazily to avoid circular dependency
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
