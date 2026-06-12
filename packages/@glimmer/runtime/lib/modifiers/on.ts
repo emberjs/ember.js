@@ -17,7 +17,7 @@ import {
 import buildUntouchableThis from '@glimmer/debug-util/lib/untouchable-this';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager/lib/internal/api';
-import { valueForRef } from '@glimmer/reference/lib/reference';
+import { parentRefFor, valueForRef } from '@glimmer/reference/lib/reference';
 import { createUpdatableTag } from '@glimmer/validator/lib/validators';
 
 import { reifyNamed } from '../vm/arguments';
@@ -183,24 +183,32 @@ export class OnModifierState {
     if (shouldUpdate) {
       let callback = userProvidedCallback;
 
-      if (DEBUG) {
+      // When the callback was a property read (`this.foo`, `item.greet`, ...),
+      // invoke it with the same `this` JavaScript would use for `obj.foo()`.
+      // The parent is read lazily per-event so a swapped parent object is
+      // never invoked with a stale `this`.
+      let parentRef = arg1 ? parentRefFor(arg1) : null;
+
+      if (parentRef !== null) {
+        callback = (event) => userProvidedCallback.call(valueForRef(parentRef), event);
+      } else if (DEBUG) {
         callback = userProvidedCallback.bind(untouchableContext);
+      }
 
-        if (passive) {
-          let _callback = callback;
+      if (DEBUG && passive) {
+        let _callback = callback;
 
-          callback = (event) => {
-            event.preventDefault = () => {
-              throw new Error(
-                `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${
-                  userProvidedCallback.name || `{anonymous function}`
-                }`
-              );
-            };
-
-            return _callback(event);
+        callback = (event) => {
+          event.preventDefault = () => {
+            throw new Error(
+              `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${
+                userProvidedCallback.name || `{anonymous function}`
+              }`
+            );
           };
-        }
+
+          return _callback(event);
+        };
       }
 
       this.listener = {
@@ -310,9 +318,8 @@ function addEventListener(
 
   ### Function Context
 
-  In the example above, we used an arrow function to ensure that `likePost` is
-  properly bound to the `items-list`, but let's explore what happens if we
-  left out the arrow function:
+  In the example above, we used an arrow function to ensure that `saveLike` is
+  properly bound to the component, but a regular method works as well:
 
   ```app/components/like-post.gjs
   import Component from '@glimmer/component';
@@ -324,10 +331,10 @@ function addEventListener(
   }
   ```
 
-  In this example, when the button is clicked `saveLike` will be invoked,
-  it will **not** have access to the component instance. In other
-  words, it will have no `this` context, so please make sure your functions
-  are bound (via an arrow function or other means) before passing into `on`!
+  When the callback passed to `on` is a path like `this.saveLike`, it is
+  invoked with the object it was read from as its `this` — the same `this`
+  JavaScript would use for `this.saveLike()`. Functions that are already
+  bound (arrow functions, `.bind()`ed functions) are unaffected.
 
   @method on
   @public

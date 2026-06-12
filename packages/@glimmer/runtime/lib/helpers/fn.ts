@@ -6,6 +6,7 @@ import buildUntouchableThis from '@glimmer/debug-util/lib/untouchable-this';
 import {
   createComputeRef,
   isInvokableRef,
+  parentRefFor,
   updateRef,
   valueForRef,
 } from '@glimmer/reference/lib/reference';
@@ -60,8 +61,8 @@ const context = buildUntouchableThis('`fn` helper');
     string `'foo'` as its second argument.
 
   In the example above, we used an arrow function to ensure that
-  `handleSelected` is properly bound to the `items-list`, but let's explore what
-  happens if we left out the arrow function:
+  `handleSelected` is properly bound to the `items-list`, but a regular method
+  works as well:
 
   ```app/components/items-list.gjs
   import Component from '@glimmer/component';
@@ -73,10 +74,10 @@ const context = buildUntouchableThis('`fn` helper');
   }
   ```
 
-  In this example, when `handleSelected` is invoked inside the `display-item`
-  component, it will **not** have access to the component instance. In other
-  words, it will have no `this` context, so please make sure your functions
-  are bound (via an arrow function or other means) before passing into `fn`!
+  When the function passed to `fn` is a path like `this.handleSelected`, it is
+  invoked with the object it was read from as its `this` — the same `this`
+  JavaScript would use for `this.handleSelected(item)`. Functions that are
+  already bound (arrow functions, `.bind()`ed functions) are unaffected.
 
   See also [partial application](https://en.wikipedia.org/wiki/Partial_application).
 
@@ -99,8 +100,13 @@ export const fn = internalHelper(({ positional }: CapturedArguments) => {
           let value = args.length > 0 ? args[0] : invocationArgs[0];
           return void updateRef(callbackRef, value);
         } else {
+          // When the callback was a property read (`this.foo`, `item.greet`, ...),
+          // invoke it with the same `this` JavaScript would use for `obj.foo()`.
+          let parentRef = parentRefFor(callbackRef);
+          let self = parentRef !== null ? valueForRef(parentRef) : context;
+
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- @fixme
-          return (fn as AnyFn).call(context, ...args, ...invocationArgs);
+          return (fn as AnyFn).call(self, ...args, ...invocationArgs);
         }
       };
     },
