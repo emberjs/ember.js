@@ -31,12 +31,20 @@ import * as reference from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 
 const { createConstRef } = reference;
-function isConstRef(_ref: unknown) {
-  return true;
-}
-function valueForRef(ref: any) {
-  return ref.value;
-}
+// In GXT mode arg refs are cell-like (`.value` getter does the tracked read)
+// and the caller ref is not always branded const, so the permissive forms are
+// required. In classic mode they MUST be the real VM implementations: classic
+// ReferenceImpl has no `.value` property, so `ref.value` made every named-arg
+// read on InternalComponent (Input, Textarea, LinkTo) return undefined —
+// Input lost its @type/@value, LinkTo never resolved its route (stuck
+// "loading", href="#"). The bare __GXT_MODE__ flag is inlined per dist, so
+// each build carries only its own branch.
+const isConstRef: (ref: Reference) => boolean = __GXT_MODE__
+  ? (_ref: Reference) => true
+  : reference.isConstRef;
+const valueForRef: (ref: any) => unknown = __GXT_MODE__
+  ? (ref: any) => ref.value
+  : (reference.valueForRef as (ref: any) => unknown);
 function NOOP(): void {}
 
 export type EventListener = (event: Event) => void;
