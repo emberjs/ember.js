@@ -19,8 +19,33 @@ import toBool from './utils/to-bool';
 
 // Setup global context
 
+// GXT-mode only: revalidate notifications can arrive synchronously OUTSIDE
+// any runloop — the gxt-backend validator shim notifies on every dirtyTagFor
+// (classic @glimmer/validator never does), and a stray GXT formula
+// re-evaluation (e.g. a leaked helper/input formula writing back through a
+// tracked setter) can therefore fire this at arbitrary points in a caller's
+// synchronous code. A synchronous `ensureInstance()` there opens an autorun
+// loop that stays open for the rest of that synchronous continuation, and a
+// later `join()` (e.g. Application#reset's handleReset) silently joins it,
+// deferring its scheduled work past the caller's next statements. Deferring
+// the `ensureInstance()` by one (coalesced) microtask preserves the flush —
+// which was always asynchronous — without leaving a synchronously-observable
+// open loop. Inside an active runloop the call stays synchronous (it is a
+// no-op there). Classic builds keep the unconditional synchronous call.
+let _revalidateScheduled = false;
+
 setGlobalContext({
   scheduleRevalidate() {
+    if (__GXT_MODE__ && _backburner.currentInstance === null) {
+      if (!_revalidateScheduled) {
+        _revalidateScheduled = true;
+        queueMicrotask(() => {
+          _revalidateScheduled = false;
+          _backburner.ensureInstance();
+        });
+      }
+      return;
+    }
     _backburner.ensureInstance();
   },
 
