@@ -76,7 +76,9 @@ const reopen = Mixin.prototype.reopen;
 const wasApplied = new WeakSet();
 const prototypeMixinMap = new WeakMap();
 
-const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
+// Used by debug builds AND production GXT builds to enable the proxy trap
+// (see the DEBUG || __GXT_MODE__ rationale at the constructor's trap below).
+const initCalled = DEBUG || __GXT_MODE__ ? new WeakSet() : undefined;
 
 // Slice-15 (Cluster B): the pre-slice-15 `ensureTriggerReRenderWrapped`
 // wrap-by-reassignment is DELETED. Its only body — toggling
@@ -192,8 +194,8 @@ function initialize(obj: CoreObject, properties?: unknown) {
     }
   }
 
-  // using DEBUG here to avoid the extraneous variable when not needed
-  if (DEBUG) {
+  // avoid the extraneous variable when not needed (debug + prod-GXT only)
+  if (DEBUG || __GXT_MODE__) {
     initCalled!.add(obj);
   }
   obj.init(properties);
@@ -287,7 +289,17 @@ class CoreObject {
     (this.constructor as typeof CoreObject).proto();
 
     let self;
-    if (DEBUG && hasUnknownProperty(this)) {
+    // GXT note: the native-Proxy wrapper below is LOAD-BEARING in GXT mode,
+    // not just a debug aid. GXT's runtime-compiled templates read proxy
+    // member chains as plain property access (`ctx.proxy.name`); the wrapper
+    // is what delegates those reads through `unknownProperty` during a
+    // render/sync/trigger pass (the `_isInternalPath` branch in the trap).
+    // Debug-only it would vanish from production GXT builds and every
+    // ObjectProxy path read renders empty (the prod-variant "Dynamic content
+    // proxy" cluster). Keep it in prod when __GXT_MODE__ is inlined true;
+    // classic prod stays upstream (no wrapper). The assert below is a no-op
+    // in production, so the prod-GXT trap only ever delegates.
+    if ((DEBUG || __GXT_MODE__) && hasUnknownProperty(this)) {
       // Slice-15: the pre-slice-15 `ensureTriggerReRenderWrapped()` call was
       // deleted (its wrap body is folded into compile.ts's canonical trigger).
       let messageFor = (obj: unknown, property: unknown) => {
@@ -408,8 +420,8 @@ class CoreObject {
 
     m.setInitializing();
 
-    // only return when in debug builds and `self` is the proxy created above
-    if (DEBUG && self !== this) {
+    // only return when `self` is the proxy created above (debug + prod-GXT)
+    if ((DEBUG || __GXT_MODE__) && self !== this) {
       return self;
     }
   }
