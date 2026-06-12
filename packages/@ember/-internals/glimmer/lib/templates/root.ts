@@ -11,6 +11,7 @@ import {
   getGxtRenderer,
   setCurrentOutletState,
   setAmbientOwner,
+  setControllerOutletRerender,
 } from '@ember/-internals/gxt-backend/gxt-bridge';
 // Lazy accessor for @lifeart/gxt symbols. The gxt-backend module (only loaded
 // in __GXT_MODE__) stashes the namespace on globalThis.__lifeartGxt at its
@@ -66,10 +67,7 @@ let _gxtInControllerRerender = false;
 // been torn down, etc.). The re-entrancy guard prevents infinite
 // recursion when the rerender's own internal `set()` cascades fire this
 // hook a second time on the same controller.
-(globalThis as any).__gxtControllerOutletRerender = function (
-  controller: object,
-  keyName?: string
-): void {
+setControllerOutletRerender(function (controller: object, keyName?: string): void {
   if (_gxtInControllerRerender) return;
   if (!controller || typeof controller !== 'object') return;
   const outletRef = _gxtControllerToOutletRefMap.get(controller);
@@ -111,7 +109,7 @@ let _gxtInControllerRerender = false;
   } finally {
     _gxtInControllerRerender = false;
   }
-};
+});
 
 function ensureGxtContext() {
   const lib = _gxtLib();

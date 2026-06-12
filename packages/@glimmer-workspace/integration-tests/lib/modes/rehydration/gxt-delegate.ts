@@ -63,6 +63,11 @@ import type { ASTPluginBuilder } from '@glimmer/syntax';
 
 import { castToSimple } from '@glimmer/debug-util';
 
+// Rehydration-mode flag + in-element render target route through the
+// compilePipeline bridge (the retired `__gxtRehydrationMode` /
+// `__gxtInElementRenderTarget` globals).
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+
 import type { ComponentKind } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
@@ -637,7 +642,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // HTML boolean attribute values on dynamic bindings are emitted as the
     // literal string "true" (matching classic Glimmer-VM's SSR builder)
     // instead of the bare-attribute form.
-    (globalThis as unknown as { __gxtRehydrationMode?: boolean }).__gxtRehydrationMode = true;
+    getGxtRenderer()?.compilePipeline.setRehydrationMode?.(true);
     // Resolve `{{component this.componentName ...}}`-style dynamic
     // component invocations emitted by the RehydratingComponents
     // `Dynamic` test type. We look up `this.<name>` in the context; if
@@ -719,11 +724,9 @@ export class GxtRehydrationDelegate implements RenderDelegate {
     // the heuristic incorrectly fires when the external remote is
     // temporarily empty during the fresh client re-render, landing the
     // `{{#in-element}}` body in `target` instead of the remote.
-    const g = globalThis as unknown as {
-      __gxtInElementRenderTarget?: unknown;
-    };
-    const prevTarget = g.__gxtInElementRenderTarget;
-    g.__gxtInElementRenderTarget = target;
+    const _pipeline = getGxtRenderer()?.compilePipeline;
+    const prevTarget = _pipeline?.getInElementRenderTarget?.();
+    _pipeline?.setInElementRenderTarget?.(target);
     try {
       tmpl.render(renderContext, target as unknown as Element);
     } catch (e) {
@@ -732,7 +735,7 @@ export class GxtRehydrationDelegate implements RenderDelegate {
       const textNode = doc.createTextNode(msg);
       (target as unknown as Element).appendChild(textNode as unknown as Node);
     } finally {
-      g.__gxtInElementRenderTarget = prevTarget;
+      _pipeline?.setInElementRenderTarget?.(prevTarget);
     }
     // Place any delegate-handled in-element bodies AFTER the outer
     // template's render has finished so their placeholders already exist

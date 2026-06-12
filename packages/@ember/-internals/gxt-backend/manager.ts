@@ -396,7 +396,7 @@ export function createCurriedComponent(
   // When called by GXT (e.g., from let block resolution or {{object.comp args}}),
   // render the component. If called with an args object, merge it with curried args.
   const curried = function curriedComponentFn(...runtimeArgs: any[]) {
-    const managers = (globalThis as any).$_MANAGERS;
+    const managers = $_MANAGERS;
     if (managers?.component?.canHandle?.(curried)) {
       // Check if runtime args include named args (from GXT calling curried({key: value}))
       let invocationArgs: any = {};
@@ -470,9 +470,6 @@ export class CurriedComponent {
 (globalThis as any).__EmberCurriedComponent = {
   // Use a duck-type check instead of instanceof
   __isCurriedComponentClass: true,
-};
-(globalThis as any).__isEmberCurriedComponent = function (value: any) {
-  return value && value.__isCurriedComponent === true;
 };
 (globalThis as any).__createCurriedComponent = createCurriedComponent;
 // `captureRenderError` is exposed via `compilePipeline.captureRenderError`
@@ -4214,7 +4211,7 @@ function _gxtSyncAllWrappersBody(): void {
           // template gates on hook-derived state (e.g. `didUpdate` →
           // `this.set('isEven', …)` → `{{#if this.isEven}}`) goes stale. Unwrap
           // the proxy to its raw source and re-check membership.
-          const rawFromProxy = (globalThis as any).__gxtEachItemRawFor?.(newValue);
+          const rawFromProxy = getGxtRenderer()?.compilePipeline.eachItemRawFor?.(newValue);
           if (rawFromProxy && _dirtiedNestedObjectsForHooks.has(rawFromProxy)) {
             hasNestedArgMutation = true;
           }
@@ -12258,10 +12255,13 @@ function _refreshManagedSlotArgs(slot: _ManagedSlot, args: any, fw: any): void {
 let _managedComponentGeneration = 0;
 const _managedComponentLastGeneration = new WeakMap<object, number>();
 
-// Call this at the start of each render/sync pass to advance the generation.
-(globalThis as any).__resetManagedComponentCounters = function () {
+// Called at the start of each render/sync pass to advance the generation
+// (internal-test-helpers' run loop calls it through the
+// `compilePipeline.resetManagedComponentCounters` bridge member — the
+// retired `__resetManagedComponentCounters` slot).
+function _resetManagedComponentCounters(): void {
   _managedComponentGeneration++;
-};
+}
 
 function handleManagedComponent(
   komp: any,
@@ -14632,14 +14632,19 @@ function _createUpdatableTagForModifier(): any {
       }
     });
   }
-  // Also set on globalThis in BOTH modes: runtime-compiled template code
-  // reads `globalThis.$_MANAGERS` inside compiled Function bodies, and
-  // ember-gxt-wrappers reads `g.$_MANAGERS` (§2e symbol injection retires
-  // both).
-  (globalThis as any).$_MANAGERS = $_MANAGERS;
 }
 
 export { $_MANAGERS };
+
+// Cross-file/-package readers of the manager table and the generation bump
+// (wrappers' curried/compFactory paths, internal-test-helpers' modifier
+// teardown probe and run loop) reach them through the compilePipeline —
+// the retired `globalThis.$_MANAGERS` copy (emitted template code never
+// read it) and `__resetManagedComponentCounters` slots.
+installCompilePipelinePart({
+  getManagers: () => $_MANAGERS,
+  resetManagedComponentCounters: _resetManagedComponentCounters,
+});
 
 // =============================================================================
 // gxt-bridge wiring
@@ -14666,6 +14671,7 @@ import {
   setAmbientOwner,
   getDcComponentGetter,
   setEmberAssertDirect,
+  installCompilePipelinePart,
 } from './gxt-bridge';
 setGxtRenderer({
   // See `gxtLib` doc in gxt-bridge.ts (retired `globalThis.__lifeartGxt`).

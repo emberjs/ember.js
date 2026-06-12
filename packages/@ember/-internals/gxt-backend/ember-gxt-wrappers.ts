@@ -488,7 +488,7 @@ function createEmberMaybeHelper(original: Function) {
       }
 
       // Render it through the component manager
-      const managers = g.$_MANAGERS;
+      const managers = getGxtRenderer()?.compilePipeline.getManagers?.();
       if (managers?.component?.canHandle?.(merged)) {
         const handleResult = managers.component.handle(merged, {}, null, null);
         if (typeof handleResult === 'function') {
@@ -1306,7 +1306,7 @@ function createEmberMaybeHelper(original: Function) {
         const compFactory = owner.factoryFor(`component:${name}`);
         if (compFactory) {
           _trackComponentDefinition(compFactory.class || name);
-          const $_MANAGERS = g.$_MANAGERS;
+          const $_MANAGERS = getGxtRenderer()?.compilePipeline.getManagers?.();
           if ($_MANAGERS?.component?.handle) {
             const componentArgs: Record<string, any> = {};
             if (hash && typeof hash === 'object') {
@@ -3065,7 +3065,7 @@ function _patchGxtEntriesOf(): void {
       // Subscribe the source formula to the proxy's `content` cell so a
       // whole-content ref-swap (`set(proxy,'content',obj)`) re-iterates.
       {
-        const sub = (globalThis as any).__gxtSubscribeCell;
+        const sub = getGxtRenderer()?.compilePipeline.subscribeCell;
         if (typeof sub === 'function') sub(resolved, 'content');
       }
       const content = (resolved as any).content;
@@ -3104,7 +3104,7 @@ function _patchGxtEntriesOf(): void {
     // same output). Regular `{{#each}}` over arrays does NOT route through
     // gxtEntriesOf, so it is unaffected.
     {
-      const rec = (globalThis as any).__gxtRecordEachInKeySet;
+      const rec = getGxtRenderer()?.compilePipeline.recordEachInKeySet;
       if (typeof rec === 'function') rec(resolved, keys);
     }
     return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));

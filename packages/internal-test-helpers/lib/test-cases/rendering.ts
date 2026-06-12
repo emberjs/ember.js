@@ -116,7 +116,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       // Only destroy each modifier class once (the LAST instance) to match
       // Glimmer VM's behavior of one destroy per active modifier.
       try {
-        const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+        const modMgr = getGxtRenderer()?.compilePipeline.getManagers?.()?.modifier;
         if (modMgr?._updatedInstances?.size > 0) {
           // Only destroy the LAST instance (most recently installed modifier).
           // Multiple instances may exist due to GXT formula double-fires creating

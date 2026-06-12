@@ -119,7 +119,7 @@ export abstract class AbstractStrictTestCase {
         }
         // Also destroy any custom modifiers that are still active (their
         // formula destructors might not have fired during cleanup).
-        const modMgr = (globalThis as any).$_MANAGERS?.modifier;
+        const modMgr = getGxtRenderer()?.compilePipeline.getManagers?.()?.modifier;
         if (modMgr?._destroyedInstances) {
           // Already tracked — skip
         } else if (modMgr?._updatedInstances) {

@@ -997,6 +997,7 @@ import {
   getAmbientOwner,
   setAmbientOwner,
   setDcComponentGetter,
+  getControllerOutletRerender,
 } from './gxt-bridge';
 
 // `peekInstanceCapture` exposes the last-created Ember instance, used by the
@@ -2009,7 +2010,7 @@ function _afterFlushAfterInsertQueue(): void {
     // targeting an EXTERNAL element and must render there directly —
     // even if the external element is currently empty and we're inside
     // an active render pass.
-    const explicitRenderTarget = (globalThis as any).__gxtInElementRenderTarget;
+    const explicitRenderTarget = _gxtInElementRenderTarget;
     const isExternalTarget =
       explicitRenderTarget !== undefined &&
       explicitRenderTarget !== null &&
@@ -4053,7 +4054,7 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
       }
     }
     if (_isControllerKey && (keyName === 'model' || _isQpKey)) {
-      const _ctrlHook = (globalThis as any).__gxtControllerOutletRerender;
+      const _ctrlHook = getControllerOutletRerender();
       if (typeof _ctrlHook === 'function') {
         try {
           // Pass the changed key so the outlet-rerender hook can, in
@@ -4081,7 +4082,7 @@ const _gxtTriggerReRender = function (obj: object, keyName: string, value?: unkn
       try {
         const owners = _objectValueCellMap.get(obj);
         if (owners) {
-          const _ctrlHook = (globalThis as any).__gxtControllerOutletRerender;
+          const _ctrlHook = getControllerOutletRerender();
           if (typeof _ctrlHook === 'function') {
             const seen = new Set<object>();
             for (const { obj: ownerObj, key: ownerKey } of owners) {
@@ -6304,7 +6305,7 @@ if (_gxtRegisterHostHooks) {
 // component's `item` arg (a proxy) corresponds to a RAW object recorded in
 // `_dirtiedNestedObjectsForHooks` on an in-place `set(item, …)` — so it can
 // dispatch the component's `didUpdate`. Returns undefined for non-proxies.
-(globalThis as any).__gxtEachItemRawFor = function (maybeProxy: any): any {
+const _gxtEachItemRawFor = function (maybeProxy: any): any {
   if (maybeProxy && typeof maybeProxy === 'object' && _eachItemProxyToRaw.has(maybeProxy)) {
     return _eachItemProxyToRaw.get(maybeProxy);
   }
@@ -6330,7 +6331,7 @@ const _keySetSeen = new WeakMap<object, Set<string>>();
 // Exposed so the canonical `gxtEntriesOfEmber` (ember-gxt-wrappers.ts, which
 // OVERRIDES the inline `gxtEntriesOf` below) can record the key-set + subscribe
 // the active source formula.
-(globalThis as any).__gxtRecordEachInKeySet = function (resolved: object, keys: string[]): void {
+const _gxtRecordEachInKeySetFn = function (resolved: object, keys: string[]): void {
   _gxtRecordKeySet(resolved, keys);
 };
 // Exposed so `gxtEntriesOfEmber` (ember-gxt-wrappers.ts) can subscribe the
@@ -6340,7 +6341,7 @@ const _keySetSeen = new WeakMap<object, Set<string>>();
 // (`set(proxy,'content',newObj)`) dirties `cellFor(proxy,'content')` but the
 // source formula never subscribed to it → stale iteration. Reading the cell's
 // `.value` here (inside the formula's tracker frame) registers the dep.
-(globalThis as any).__gxtSubscribeCell = function (obj: any, key: string): void {
+const _gxtSubscribeCellFn = function (obj: any, key: string): void {
   if (!obj || typeof obj !== 'object') return;
   try {
     const c = cellFor(obj, key, /* skipDefine */ true);
@@ -8809,13 +8810,19 @@ const _gxtGetFwFn = () => _gxtCurrentFw;
 // .__gxtScope_<hash>` keys. Same late-binding semantics: each compile
 // overwrites its storeKey entry, and compiled bodies read through the
 // injected `__gxtGetScope` accessor parameter PER INVOCATION.
+// Rehydration-mode flag + explicit in-element render target — written by the
+// rehydration test delegate through the compilePipeline setters (the retired
+// `__gxtRehydrationMode` / `__gxtInElementRenderTarget` globals).
+let _gxtRehydrationMode = false;
+let _gxtInElementRenderTarget: unknown;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _gxtScopeStore = new Map<string, any>();
 const _gxtGetScopeFn = (key: string) => _gxtScopeStore.get(key);
 
 // Helper function to get a block param by index
 // This is called by compiled templates that use {{($_blockParam N)}}
-(globalThis as any).$_blockParam = function (index: number) {
+const _gxtBlockParam = function (index: number) {
   const currentParams = blockParamsStack[blockParamsStack.length - 1];
   const rawValue = currentParams ? currentParams[index] : undefined;
   // Unwrap reactive value to get current value
@@ -8909,12 +8916,12 @@ if (_gxtRegisterHostHooks) {
     isFunctionalHelper: (fn: unknown) => _functionalHelpers.has(fn),
     markFunctionalHelper: (fn: unknown) => void _functionalHelpers.add(fn),
   });
-  _functionalHelpers.add((globalThis as any).$_blockParam);
+  _functionalHelpers.add(_gxtBlockParam);
 } else {
   if (typeof (globalThis as any).EmberFunctionalHelpers === 'undefined') {
     (globalThis as any).EmberFunctionalHelpers = new Set();
   }
-  (globalThis as any).EmberFunctionalHelpers.add((globalThis as any).$_blockParam);
+  (globalThis as any).EmberFunctionalHelpers.add(_gxtBlockParam);
 }
 
 // Stack to track the current slots context during rendering
@@ -12520,7 +12527,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // bindings under rehydration mode.
           const isLiteralTrueBoolean = value === true;
           const isBoolAttr = typeof key === 'string' && _HTML_BOOLEAN_ATTRS.has(key.toLowerCase());
-          const inRehydration = (globalThis as any).__gxtRehydrationMode === true;
+          const inRehydration = _gxtRehydrationMode === true;
           const isDynamicBinding = typeof value === 'function';
           let serialized: string;
           if (isLiteralTrueBoolean && isBoolAttr) {
@@ -15489,6 +15496,7 @@ export function precompileTemplate(
           '__gxtGetSlots',
           '__gxtGetFw',
           '__gxtGetScope',
+          '$_blockParam',
           ..._GXT_SYMBOL_PARAM_NAMES,
           templateFnCode
         )(
@@ -15501,6 +15509,7 @@ export function precompileTemplate(
           _gxtGetSlotsFn,
           _gxtGetFwFn,
           _gxtGetScopeFn,
+          _gxtBlockParam,
           ..._GXT_SYMBOL_PARAM_NAMES.map((n) => (globalThis as any)[n])
         );
         _functionCodeCache.set(templateFnCode, cachedFn);
@@ -17102,8 +17111,11 @@ export default function templateCompilation() {
 // the bridge entry above so an out-of-package SSR driver (or a harness probe) that
 // cannot import `@ember/-internals/gxt-backend/compile` can reach the per-root
 // runner via globalThis — exactly as `gxt-delegate.ts` reads `__gxtCompileTemplate`.
-// ADDITIVE: nothing in the browser path invokes it; merely assigning the global
-// changes no behavior.
+
+// Deliberate external surface (see the `withRootContext` pipeline-member doc):
+// an out-of-package FastBoot/SSR driver that cannot import `@ember/-internals`
+// reaches the per-request root-context runner through this global, mirroring
+// `__gxtCompileTemplate`.
 (globalThis as any).__gxtWithRootContext = _gxtWithRootContext;
 
 // @internal — exported for unit testing only
@@ -17240,6 +17252,16 @@ installCompilePipelinePart({
     currentSlotParams = params;
   },
   getBuiltinHelpers: () => _emberBuiltinHelpers,
+  subscribeCell: _gxtSubscribeCellFn,
+  recordEachInKeySet: _gxtRecordEachInKeySetFn,
+  eachItemRawFor: _gxtEachItemRawFor,
+  setRehydrationMode: (value) => {
+    _gxtRehydrationMode = value;
+  },
+  getInElementRenderTarget: () => _gxtInElementRenderTarget,
+  setInElementRenderTarget: (target) => {
+    _gxtInElementRenderTarget = target;
+  },
   // Paired get/set for the "run task active" flag, written by the test helpers
   // and read together with the pending-sync flag in the `_backburner` end gate
   // (renderer.ts) and the runloop `onEnd` hook.
@@ -17348,7 +17370,8 @@ installCompilePipelinePart({
   // FastBoot/SSR driver wraps each request in `withRootContext(freshCtx, () => …)`.
   // Also dual-published on `globalThis.__gxtWithRootContext` (mirroring
   // `__gxtCompileTemplate`) so an out-of-package SSR driver that cannot import
-  // `@ember/-internals` can still reach it.
+  // `@ember/-internals` can still reach it — a DELIBERATE external surface,
+  // kept alongside the debug toggles in the globalThis-retirement audit.
   withRootContext: _gxtWithRootContext,
   // Get-only accessor (with internal lazy-init) for the canonical
   // `_gxtComponentContexts` WeakMap. Cross-file lazy-init writers/readers

@@ -1066,6 +1066,34 @@ export interface GxtCompilePipelineCapabilities {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getBuiltinHelpers?(): Record<string, any>;
+  /**
+   * Reactive-subscription / each-in / each-item channels owned by compile.ts
+   * (the retired `__gxtSubscribeCell` / `__gxtRecordEachInKeySet` /
+   * `__gxtEachItemRawFor` slots) — consumed by wrappers' gxtEntriesOfEmber
+   * and manager's nested-arg-mutation check.
+   */
+  subscribeCell?(obj: object, key: string): void;
+  recordEachInKeySet?(resolved: object, keys: string[]): void;
+  eachItemRawFor?(maybeProxy: unknown): unknown;
+  /**
+   * Rehydration-mode flag + explicit in-element render target (compile.ts
+   * module-locals; the retired `__gxtRehydrationMode` /
+   * `__gxtInElementRenderTarget` slots) — written by the rehydration test
+   * delegate around its renders.
+   */
+  setRehydrationMode?(value: boolean): void;
+  getInElementRenderTarget?(): unknown;
+  setInElementRenderTarget?(target: unknown): void;
+  /**
+   * Manager-owned: the $_MANAGERS table by reference (the retired
+   * `globalThis.$_MANAGERS` copy — emitted code never read it; wrappers and
+   * the test-teardown modifier probe do) and the managed-component
+   * generation bump (the retired `__resetManagedComponentCounters` slot,
+   * called by internal-test-helpers' run loop).
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getManagers?(): { component: any; modifier: any; helper: any };
+  resetManagedComponentCounters?(): void;
 
   /**
    * Read the `__gxtRunTaskActive` boolean flag. Returns `true` if a
@@ -2957,6 +2985,26 @@ export function getEmberAssertDirect(): ((msg: string, test: unknown) => void) |
 
 export function setEmberAssertDirect(fn: ((msg: string, test: unknown) => void) | null): void {
   _emberAssertDirect = fn;
+}
+
+// ---------------------------------------------------------------------------
+// Controller→outlet rerender hook — installed by glimmer's templates/root.ts
+// (the writer owns the outlet-ref maps), consumed by compile.ts's SyncCore
+// controller-key fan-out. The retired `globalThis.__gxtControllerOutletRerender`
+// slot.
+// ---------------------------------------------------------------------------
+let _controllerOutletRerender: ((controller: object, keyName?: string) => void) | null = null;
+
+export function getControllerOutletRerender():
+  | ((controller: object, keyName?: string) => void)
+  | null {
+  return _controllerOutletRerender;
+}
+
+export function setControllerOutletRerender(
+  fn: ((controller: object, keyName?: string) => void) | null
+): void {
+  _controllerOutletRerender = fn;
 }
 
 export function getGxtRenderer(): GxtRenderer | null {

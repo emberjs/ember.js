@@ -75,8 +75,7 @@ export function runAppend(view: any): void {
   // module-local `_gxtSyncDomNow` in `compile.ts`. Cross-package reader
   // routes through the bridge method. See `syncDomNow` doc in
   // gxt-bridge.ts.
-  const resetMC2 = (globalThis as any).__resetManagedComponentCounters;
-  if (typeof resetMC2 === 'function') resetMC2();
+  getGxtRenderer()?.compilePipeline.resetManagedComponentCounters?.();
   getGxtRenderer()?.compilePipeline.syncDomNow?.();
   // After sync, clear any pending sync flags that were set during the sync
   // itself (e.g., from syncAll triggering property changes). This prevents
@@ -177,8 +176,7 @@ export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   // module-local `_gxtSyncDomNow` in `compile.ts`. Cross-package reader
   // routes through the bridge method. See `syncDomNow` doc in
   // gxt-bridge.ts.
-  const resetMC = (globalThis as any).__resetManagedComponentCounters;
-  if (typeof resetMC === 'function') resetMC();
+  getGxtRenderer()?.compilePipeline.resetManagedComponentCounters?.();
   getGxtRenderer()?.compilePipeline.syncDomNow?.();
   // After the sync, clear any pending flags to prevent the setInterval(16ms)
   // fallback from firing another sync that could produce incorrect DOM.
