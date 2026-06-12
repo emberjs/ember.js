@@ -280,18 +280,30 @@ mkdirSync(outDir, { recursive: true });
 cpSync(distDir, join(outDir, 'dist'), { recursive: true });
 
 // 7b. flat copies
+// docs/data.json exists only after `pnpm docs` (ember-cli-yuidoc), which CI
+// never runs before this script — stub it there so the published layout
+// (package.json `files` lists it) stays intact without the docs build.
 const copySpecs = [
   ['blueprints', 'blueprints'],
-  ['docs/data.json', 'docs/data.json'],
+  ['docs/data.json', 'docs/data.json', { optional: true }],
   ['types/stable', 'types/stable'],
   ['scripts/ember-cli-gxt.mjs', 'scripts/ember-cli-gxt.mjs'],
 ];
-for (const [from, to] of copySpecs) {
+for (const [from, to, opts] of copySpecs) {
   const src = join(repoRoot, from);
-  if (!existsSync(src)) {
-    fail(`expected source ${from} is missing`);
-  }
   const dest = join(outDir, to);
+  if (!existsSync(src)) {
+    if (!opts?.optional) {
+      fail(`expected source ${from} is missing`);
+    }
+    log(`WARNING: optional source ${from} is missing (docs not built) — writing a stub`);
+    mkdirSync(dirname(dest), { recursive: true });
+    writeFileSync(
+      dest,
+      JSON.stringify({ stub: 'docs were not built in this environment (`pnpm docs`)' }) + '\n'
+    );
+    continue;
+  }
   mkdirSync(dirname(dest), { recursive: true });
   cpSync(src, dest, { recursive: true });
 }
