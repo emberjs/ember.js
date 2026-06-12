@@ -840,6 +840,22 @@ import {
   withRenderRoot as _gxtWithRenderRoot,
   createRenderRootState as _gxtCreateRenderRootState,
 } from '@lifeart/gxt';
+// §2d host-hooks adoption (docs-internal-gxt-globalthis-wiring.md), capability
+// detected: dists shipping the formal `registerHostHooks()` API get the hooks
+// registered module-locally on the gxt side; older dists keep the legacy
+// `globalThis.__gxt*` slot writes. Namespace import so the missing export on a
+// pre-API dist binds as `undefined` instead of a build error (the
+// `__lifeartGxtForOptional` pattern in manager.ts).
+import * as __gxtForHostHooks from '@lifeart/gxt';
+const _gxtRegisterHostHooks: ((hooks: Record<string, unknown>) => void) | undefined = (
+  __gxtForHostHooks as any
+).registerHostHooks;
+// Module-local seam for Ember truthiness: the canonical `emberToBool` is
+// defined inside the wrapper-installer scope below; this ref lets other
+// compile.ts scopes (the {{#if}}-helper cleanup paths) reach it without the
+// legacy `__gxtToBool` global round-trip, which hook-capable dists no longer
+// populate.
+let _emberToBoolRef: ((predicate: unknown) => boolean) | null = null;
 
 // Use direct imports for cellFor/effect/syncDom — the manualChunks consolidation
 // ensures all GXT internals share a single module instance (gxt.core.es.js).
@@ -2843,8 +2859,14 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   }
 
   // Register Ember truthiness for GXT's $_if (block control flow)
-  // GXT's IfCondition.setupCondition checks __gxtToBool before its own !!v
-  g.__gxtToBool = emberToBool;
+  // GXT's IfCondition.setupCondition checks the toBool host hook (legacy slot
+  // `__gxtToBool`) before its own !!v
+  _emberToBoolRef = emberToBool;
+  if (_gxtRegisterHostHooks) {
+    _gxtRegisterHostHooks({ toBool: emberToBool });
+  } else {
+    g.__gxtToBool = emberToBool;
+  }
 
   // Replace $__if on globalThis with Ember-aware version.
   // Use a persistent property trap so GXT's setupGlobalScope cannot overwrite.
@@ -2885,12 +2907,13 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
 }
 
 // GXT external schedule hook: GXT's cell.update() calls scheduleRevalidate()
-// which checks globalThis.__gxtExternalSchedule before using queueMicrotask.
+// which consults the scheduleRevalidate host hook (legacy slot
+// `__gxtExternalSchedule`) before using queueMicrotask.
 // We set it to a no-op so GXT doesn't auto-schedule DOM sync — instead we
 // control when gxtSyncDom() is called (after runTask, or via setTimeout fallback).
 // The canonical pending-sync state is the module-local `_gxtPendingSyncFlag`
 // boolean (defaults to `false` at module init).
-(globalThis as any).__gxtExternalSchedule = function () {
+const _gxtExternalScheduleHook = function () {
   _gxtSetPendingSync(true);
   // Note: this is from cell/effect scheduling, NOT from a property change.
   // The property-change flag is set separately by _notifyPropertiesChanged via
@@ -2899,6 +2922,11 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   // writers (templates/root.ts outlet rerender + routing/router.ts transition
   // LinkTo path).
 };
+if (_gxtRegisterHostHooks) {
+  _gxtRegisterHostHooks({ scheduleRevalidate: _gxtExternalScheduleHook });
+} else {
+  (globalThis as any).__gxtExternalSchedule = _gxtExternalScheduleHook;
+}
 
 // Reverse mapping: array/object -> Set<{ obj, key }> for dirty propagation.
 // When cellFor installs a cell and the value is an array, register a mapping.
@@ -5117,8 +5145,7 @@ function patchGlobalIf() {
       !(ifCondition as any).__emberHelperCleanupInstalled
     ) {
       (ifCondition as any).__emberHelperCleanupInstalled = true;
-      const _g = globalThis as any;
-      const emberToBool = _g.__gxtToBool || Boolean;
+      const emberToBool = _emberToBoolRef || Boolean;
       const origSS = ifCondition.syncState.bind(ifCondition);
       let prevBool: boolean | null = null;
       const destroyScope = (scope: Set<any>) => {
@@ -5402,7 +5429,7 @@ function patchGlobalIf() {
 
       // Register manual watcher for property change notification
       if (typeof ifCondition.syncState === 'function') {
-        const emberToBool = g.__gxtToBool || Boolean;
+        const emberToBool = _emberToBoolRef || Boolean;
         const origSyncState = ifCondition.syncState.bind(ifCondition);
         let prevBoolState: boolean | null = null;
         const destroyHelpersIn = (scope: Set<any>) => {
@@ -6232,10 +6259,7 @@ function _gxtDrainPendingEachRebinds(): void {
 // the next pass so the body re-reads the new object's values IN PLACE —
 // preserving DOM identity (no row recreate). No-op when no holder-backed proxy
 // was created for `oldRawItem`.
-(globalThis as any).__gxtRebindEachItem = function gxtRebindEachItem(
-  oldRawItem: any,
-  newRawItem: any
-): void {
+const _gxtRebindEachItemHook = function gxtRebindEachItem(oldRawItem: any, newRawItem: any): void {
   if (oldRawItem === newRawItem || !oldRawItem || typeof oldRawItem !== 'object') {
     return;
   }
@@ -6250,6 +6274,11 @@ function _gxtDrainPendingEachRebinds(): void {
   _gxtSetPendingSync(true);
   _gxtSetPendingSyncFromPropertyChange(true);
 };
+if (_gxtRegisterHostHooks) {
+  _gxtRegisterHostHooks({ rebindEachItem: _gxtRebindEachItemHook });
+} else {
+  (globalThis as any).__gxtRebindEachItem = _gxtRebindEachItemHook;
+}
 
 // Gated bridge: resolve an each-item body-PROXY back to its RAW source object.
 // `wrapEachItemForTracking` (above) is module-local, so `_eachItemProxyToRaw`
@@ -8820,11 +8849,23 @@ try {
   }
 }
 
-// Also expose through EmberFunctionalHelpers for GXT's helper resolution
-if (typeof (globalThis as any).EmberFunctionalHelpers === 'undefined') {
-  (globalThis as any).EmberFunctionalHelpers = new Set();
+// Also expose through the functional-helper brand for GXT's helper resolution.
+// Hook mode keeps the brand Set module-local (the gxt runtime calls the
+// registered pair); legacy mode keeps the historical `EmberFunctionalHelpers`
+// global Set (which the pre-API gxt dist consults directly).
+if (_gxtRegisterHostHooks) {
+  const _functionalHelpers = new Set<unknown>();
+  _gxtRegisterHostHooks({
+    isFunctionalHelper: (fn: unknown) => _functionalHelpers.has(fn),
+    markFunctionalHelper: (fn: unknown) => void _functionalHelpers.add(fn),
+  });
+  _functionalHelpers.add((globalThis as any).$_blockParam);
+} else {
+  if (typeof (globalThis as any).EmberFunctionalHelpers === 'undefined') {
+    (globalThis as any).EmberFunctionalHelpers = new Set();
+  }
+  (globalThis as any).EmberFunctionalHelpers.add((globalThis as any).$_blockParam);
 }
-(globalThis as any).EmberFunctionalHelpers.add((globalThis as any).$_blockParam);
 
 // Stack to track the current slots context during rendering
 // Components push their $slots here when rendering, so has-block can check it
@@ -17038,10 +17079,14 @@ import {
 // making `set(nullObject,'message',...)` reach the cell via the SyncCore reverse
 // lookup. The compilePipeline bridge method is not visible to glimmer-next core,
 // so a globalThis hook is the seam.
-try {
-  (globalThis as any).__gxtRegisterObjectValueOwner = registerObjectValueOwner;
-} catch {
-  /* ignore */
+if (_gxtRegisterHostHooks) {
+  _gxtRegisterHostHooks({ registerObjectValueOwner });
+} else {
+  try {
+    (globalThis as any).__gxtRegisterObjectValueOwner = registerObjectValueOwner;
+  } catch {
+    /* ignore */
+  }
 }
 installCompilePipelinePart({
   compileTemplate: compileTemplate,

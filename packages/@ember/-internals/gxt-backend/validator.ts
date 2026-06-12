@@ -883,12 +883,12 @@ export function dirtyTagFor(obj: any, key: any) {
   // when the bridge isn't installed yet (the optional chain short-circuits),
   // which the `!` coerces to FALSE so the schedule call runs — the same
   // behavior as when the flag is unset.
-  const gSched = globalThis as any;
   if (!getGxtRenderer()?.compilePipeline.isDirtyInRcSetSuppressed?.()) {
-    const schedule = gSched.__gxtExternalSchedule;
-    if (typeof schedule === 'function') {
-      schedule();
-    }
+    // Mark GXT sync pending. Formerly called the `__gxtExternalSchedule`
+    // global slot — hook-capable dists no longer publish it (§2d host hooks);
+    // the `setPendingSync` pipeline member is the seam in both modes and its
+    // body is exactly what the slot did.
+    getGxtRenderer()?.compilePipeline.setPendingSync?.(true);
 
     // Notify the scheduler (typically _backburner.ensureInstance()) so that the
     // backburner run loop drains and flushAsyncObservers fires. Without this,

@@ -350,10 +350,9 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
       // doc in `@ember/-internals/gxt-backend/gxt-bridge`.
       _cp?.triggerReRender?.(this, key);
       // Schedule a pending sync so runTask → __gxtSyncDomNow picks it up
-      const schedule = (globalThis as any).__gxtExternalSchedule;
-      if (typeof schedule === 'function') {
-        schedule();
-      }
+      // (formerly the `__gxtExternalSchedule` global slot — see §2d host
+      // hooks; the pipeline member is the seam in both modes).
+      _cp?.setPendingSync?.(true);
     }
   }
 

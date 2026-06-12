@@ -112,6 +112,14 @@ const _gxtSetComponentRenderErrorReporter:
 // runtimes that lack it.
 const _gxtFlushCellOpcodes: ((cell: unknown) => void) | undefined = (__lifeartGxtForOptional as any)
   .flushCellOpcodes;
+// §2d host-hooks adoption (docs-internal-gxt-globalthis-wiring.md): dists
+// shipping the formal `registerHostHooks()` API get hooks registered
+// module-locally on the gxt side; older dists keep the legacy
+// `globalThis.__gxt*` slot writes. compile.ts holds its own detection const
+// for its writer sites.
+const _gxtRegisterHostHooks: ((hooks: Record<string, unknown>) => void) | undefined = (
+  __lifeartGxtForOptional as any
+).registerHostHooks;
 // Namespace import + globalThis stash so glimmer/lib/renderer.ts and
 // glimmer/lib/views/outlet.ts can pull GXT symbols without statically
 // importing @lifeart/gxt themselves. Classic-Ember consumers (e.g.,
@@ -687,7 +695,12 @@ queueMicrotask(() => {
 // Global Registries
 // =============================================================================
 
-globalThis.EmberFunctionalHelpers = globalThis.EmberFunctionalHelpers || new Set();
+if (!_gxtRegisterHostHooks) {
+  // Legacy dists consult the `EmberFunctionalHelpers` global Set directly; on
+  // hook-capable dists compile.ts registers the brand pair over a module-local
+  // Set instead and this global is never read.
+  globalThis.EmberFunctionalHelpers = globalThis.EmberFunctionalHelpers || new Set();
+}
 // The five manager/template registries are module-local WeakMaps (retired
 // `COMPONENT_TEMPLATES` / `COMPONENT_MANAGERS` /
 // `INTERNAL_MANAGERS` / `INTERNAL_HELPER_MANAGERS` /
@@ -7698,24 +7711,33 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
 // registered markers fixes this.
 const _gxtListMarkers = new WeakSet<Comment>();
 {
-  const _g = globalThis as any;
-  if (typeof _g.__gxtRegisterListMarker !== 'function') {
-    _g.__gxtRegisterListMarker = (m: Comment) => {
-      try {
-        _gxtListMarkers.add(m);
-      } catch {
-        /* non-comment / frozen — skip */
-      }
-    };
-  }
-  if (typeof _g.__gxtUnregisterListMarker !== 'function') {
-    _g.__gxtUnregisterListMarker = (m: Comment) => {
-      try {
-        _gxtListMarkers.delete(m);
-      } catch {
-        /* ignore */
-      }
-    };
+  const _registerMarker = (m: Comment) => {
+    try {
+      _gxtListMarkers.add(m);
+    } catch {
+      /* non-comment / frozen — skip */
+    }
+  };
+  const _unregisterMarker = (m: Comment) => {
+    try {
+      _gxtListMarkers.delete(m);
+    } catch {
+      /* ignore */
+    }
+  };
+  if (_gxtRegisterHostHooks) {
+    _gxtRegisterHostHooks({
+      registerListMarker: _registerMarker,
+      unregisterListMarker: _unregisterMarker,
+    });
+  } else {
+    const _g = globalThis as any;
+    if (typeof _g.__gxtRegisterListMarker !== 'function') {
+      _g.__gxtRegisterListMarker = _registerMarker;
+    }
+    if (typeof _g.__gxtUnregisterListMarker !== 'function') {
+      _g.__gxtUnregisterListMarker = _unregisterMarker;
+    }
   }
 }
 

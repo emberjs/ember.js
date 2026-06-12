@@ -45,11 +45,10 @@ export function tracked(target: object, key: string, desc?: PropertyDescriptor):
     setter(this, value);
     // Dirty the property tag so createCache invalidates
     dirtyTagFor(this, key);
-    // Mark GXT sync as pending so run() flushes DOM updates
-    const schedule = (globalThis as any).__gxtExternalSchedule;
-    if (typeof schedule === 'function') {
-      schedule();
-    }
+    // Mark GXT sync as pending so run() flushes DOM updates (formerly the
+    // `__gxtExternalSchedule` global slot — see §2d host hooks; the pipeline
+    // member is the seam in both modes).
+    getGxtRenderer()?.compilePipeline.setPendingSync?.(true);
     // Notify GXT for cross-object reactivity
     //
     // Slice-22 (Cluster B): migrated `!g.__gxtCurrentlyRendering` raw-globalThis
