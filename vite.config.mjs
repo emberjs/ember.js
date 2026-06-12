@@ -166,6 +166,18 @@ export default defineConfig(({ mode }) => {
             WITH_CONTEXT_API: 'true',
             TRY_CATCH_ERROR_HANDLING: 'false',
             IS_DEV_MODE: mode === 'development' ? 'true' : 'false',
+            // The remaining gxt compiler-plugin flags (defaults the GXT-mode
+            // pipeline inlines). Any flag left out survives as a bare
+            // identifier in the bundled gxt dist chunks and throws
+            // ReferenceError when its code path runs — e.g. the Firefox CI
+            // classic build crashed on SUPPORT_SHADOW_DOM in the
+            // ember-outlet custom element path.
+            SUPPORT_SHADOW_DOM: 'true',
+            REACTIVE_MODIFIERS: 'true',
+            RUN_EVENT_DESTRUCTORS_FOR_SCOPED_NODES: 'false',
+            ASYNC_COMPILE_TRANSFORMS: 'true',
+            WITH_DYNAMIC_EVAL: 'false',
+            WITH_TYPE_CHECKER_HINTS: 'false',
           },
         }),
     build,
