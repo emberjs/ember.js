@@ -14033,11 +14033,22 @@ export function managerHasCapability(
 
 export function hasInternalComponentManager(component: any): boolean {
   if (component === null || component === undefined) return false;
-  // Walk the prototype chain to find managers set on prototypes or class hierarchy
+  // Walk the prototype chain to find managers set on prototypes or class
+  // hierarchy. Check BOTH registries — internal managers
+  // (setInternalComponentManager) and custom component managers
+  // (setComponentManager) — mirroring getInternalComponentManager's two-phase
+  // walk and upstream @glimmer/manager's single-registry semantics. Checking
+  // only INTERNAL_MANAGERS made the VM's dynamicContentType classify a
+  // custom-managed component class as a HELPER (the shim treats any function
+  // as a default helper), and the helper path then CALLED the class —
+  // "Class constructor cannot be invoked without 'new'" on the
+  // dynamic-append re-render path that upstream #21470's AssertSame opcode
+  // introduced (the resolve path never tripped it because
+  // getInternalComponentManager already consulted both maps).
   let pointer = component;
   for (let depth = 0; depth < 20; depth++) {
     if (pointer === null || pointer === undefined) break;
-    if (INTERNAL_MANAGERS.has(pointer)) return true;
+    if (INTERNAL_MANAGERS.has(pointer) || COMPONENT_MANAGERS.has(pointer)) return true;
     try {
       const next = Object.getPrototypeOf(pointer);
       if (next === pointer || next === null) break;
