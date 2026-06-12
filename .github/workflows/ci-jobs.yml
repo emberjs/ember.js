@@ -185,6 +185,9 @@ jobs:
       - name: build gxt package
         if: contains(matrix.name, 'emberSourceGxt')
         run: node scripts/build-gxt-package.mjs
+      - name: install playwright chromium (gxt boot smoke)
+        if: contains(matrix.name, 'emberSourceGxt')
+        run: npx playwright install --with-deps chromium
       - name: test
         working-directory: smoke-tests/scenarios
         run: |
@@ -211,6 +214,9 @@ jobs:
       - name: build gxt package
         if: contains(matrix.name, 'emberSourceGxt')
         run: node scripts/build-gxt-package.mjs
+      - name: install playwright chromium (gxt boot smoke)
+        if: contains(matrix.name, 'emberSourceGxt')
+        run: npx playwright install --with-deps chromium
       - name: test
         env:
           OVERRIDE_DEPRECATION_VERSION: "15.0.0"
