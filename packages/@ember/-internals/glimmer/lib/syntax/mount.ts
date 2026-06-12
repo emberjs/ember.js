@@ -36,14 +36,17 @@ import { internalHelper } from '../helpers/internal-helper';
 
   Or an inline `hash`, and you can even pass components:
 
-  ```hbs
-  <div>
-    <h1>Application template!</h1>
-    {{mount 'admin' model=(hash
-        title='Secret Admin'
-        signInButton=(component 'sign-in-button')
-    )}}
-  </div>
+  ```gjs
+  import SignInButton from '../components/sign-in-button';
+  <template>
+    <div>
+      <h1>Application template!</h1>
+      {{mount 'admin' model=(hash
+          title='Secret Admin'
+          signInButton=SignInButton
+      )}}
+    </div>
+  </template>
   ```
 
   @method mount

@@ -3,124 +3,85 @@
 */
 
 /**
-  The `{{component}}` helper lets you add instances of `Component` to a
-  template. See [Component](/ember/release/classes/Component) for
+  The `component` helper is used to package a Component with initial arguments.
+  The included arguments can then be merged during the final invocation.
+
+  See [Component](/ember/release/modules/@glimmer%2Fcomponent/) for
   additional information on how a `Component` functions.
+
+  This is similar to the concept of Partial Application.
+    
+  For example, given a `FullName` component:
+  
+  ```app/components/full-name.gjs
+  import MyInputComponent from './my-input-component';
+  
+  <template>
+    {{yield (component MyInputComponent value=@model.name placeholder="Username")}}
+  </template>
+  ```
+  
+  The yielded component can be invoked by the calling component.
+  See the following snippet:
+  
+  ```app/components/person-form.gjs
+  import FullName from './full-name';
+    
+  <template>
+    <FullName @model={{@model}} as |Field|>
+      <Field />
+    </FullName>
+  </template>
+  ```
+  
+  Which will output an input whose value is already bound to `@model.name` and `placeholder`
+  is "Username".
+    
+  Any arguments passed at the invocation site of the component will override those applied via
+  the `component` helper. For example, if the invocation site of the component is:
+
+  ```app/components/person-form.gjs
+  import FullName from './full-name';
+
+  <template>
+    <FullName @model={{@model}} as |Field|>
+      <Field @placeholder="Your name" />
+    </FullName>
+  </template>
+  ```
+
+  The output will be an input whose value is bound to `@model.name` and `placeholder`
+  is "Your name".
     
   The `component` helper is built-in and does not need to be imported. 
     
-  `{{component}}`'s primary use is for cases where you want to dynamically
-  change which type of component is rendered as the state of your application
-  changes. This helper has three modes: inline, block, and nested.
+  Prior to Strict Mode aka "Template Tag" or gjs, the component helper was also used to invoke
+  components dynamically. This is no longer necessary, and they can be directly invoked, as above.
 
-  ### Inline Form
-
-  Given the following component:
+  ### Dynamic Component Invocation
 
   ```app/templates/application.gjs
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
   import { component } from '@ember/helper';
+  import LiveUpdatingChart from '../components/live-updating-chart';
+  import MarketCloseSummary from '../components/market-close-summary';
 
   export default class Application extends Component {
-    @tracked isMarketOpen = 'live-updating-chart'
+    @tracked isMarketOpen = false;
 
-    get infographicComponentName() {
-      return this.isMarketOpen ? 'live-updating-chart' : 'market-close-summary';
+    get infographicComponent() {
+      return this.isMarketOpen ? LiveUpdatingChart : MarketCloseSummary;
     }
 
     <template>
+      {{!-- The component can be invoked directly --}}
+      <this.infographicComponent />
+    
+      {{!-- The component helper here is no longer necessary --}}
       {{component this.infographicComponentName}}
     </template>
   }
-  ```
-
-  The `live-updating-chart` component will be appended when `isMarketOpen` is
-  `true`, and the `market-close-summary` component will be appended when
-  `isMarketOpen` is `false`. If the value changes while the app is running,
-  the component will be automatically swapped out accordingly.
-  Note: You should not use this helper when you are consistently rendering the same
-  component. In that case, use standard component syntax, for example:
-
-  ```hbs
-  <LiveUpdatingChart />
-  ```
-
-  ### Block Form
-
-  Using the block form of this helper is similar to using the block form
-  of a component. Given the following application component:
-
-  ```app/templates/application.gjs
-  import Component from '@glimmer/component';
-  import { tracked } from '@glimmer/tracking';
-
-  export default class Application extends Component {
-    @tracked isMarketOpen = 'live-updating-chart'
-
-    get lastUpdateTimestamp() {
-      return new Date();
-    }
-    
-    get infographicComponentName() {
-      return this.isMarketOpen ? 'live-updating-chart' : 'market-close-summary';
-    }
-
-    <template>
-      {{#component this.infographicComponentName}}
-        Last update: {{this.lastUpdateTimestamp}}
-      {{/component}}
-    </template>
-  }
-  ```
-
-  And the following component template:
-
-  ```app/components/live-updating-chart.gjs
-  <template>
-    {{yield}}
-  </template>
-  ```
-
-  The `Last Update: {{this.lastUpdateTimestamp}}` will be rendered in place of the `{{yield}}`.
-
-  ### Nested Usage
-
-  The `component` helper can be used to package a component path with initial attrs.
-  The included attrs can then be merged during the final invocation.
-  For example, given a `PersonForm` component:
-
-  ```app/components/person-form.gjs
-  <template>
-    {{yield (hash
-      nameInput=(component "my-input-component" value=@model.name placeholder="First Name")
-    )}}
-  </template>
-  ```
-
-  When yielding the component via the `hash` helper, the component is invoked directly.
-  See the following snippet:
-
-  ```hbs
-  <PersonForm as |form|>
-    <form.nameInput @placeholder="Username" />
-  </PersonForm>
-  ```
-
-  Which outputs an input whose value is already bound to `model.name` and `placeholder`
-  is "Username".
-
-  When yielding the component without the `hash` helper use the `component` helper.
-  For example, below is a `full-name` component template:
-
-  ```handlebars
-  {{yield (component "my-input-component" value=@model.name placeholder="Name")}}
-  ```
-
-  ```hbs
-  <FullName as |field|>
-    {{component field placeholder="Full name"}}
-  </FullName>
   ```
 
   @method component
