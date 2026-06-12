@@ -11,6 +11,7 @@
 // Use direct path to avoid circular alias (since @lifeart/gxt is aliased to gxt-with-runtime-hbs.ts)
 // @ts-ignore - direct path import
 import * as gxtModule from '@lifeart/gxt';
+import { DEBUG } from '@glimmer/env';
 
 // Typed bridge for destruction hooks. Populated by manager.ts at its module
 // init. Allows the $_dc_ember wrapper to destroy a component instance without
@@ -906,8 +907,10 @@ function createEmberMaybeHelper(original: Function) {
                 // when classic-Ember (gxt-backend not loaded) the bridge is
                 // null and these no-op.
                 const _bt = getGxtRenderer()?.backtracking;
+                // DEBUG-gated: upstream manager getDebugName bodies call the
+                // debug-only @glimmer/util getDebugName and throw in production.
                 const debugName =
-                  typeof delegate.getDebugName === 'function'
+                  DEBUG && typeof delegate.getDebugName === 'function'
                     ? delegate.getDebugName(factoryClass)
                     : undefined;
                 if (_bt) _bt.beginFrame(debugName);
@@ -1104,8 +1107,9 @@ function createEmberMaybeHelper(original: Function) {
                 cached.reactiveArgs.positional = positional;
                 cached.reactiveArgs.named = named;
                 const _bt3 = getGxtRenderer()?.backtracking;
+                // DEBUG-gated — see the createHelper-path note above.
                 const cachedDebugName =
-                  typeof cached.delegate?.getDebugName === 'function'
+                  DEBUG && typeof cached.delegate?.getDebugName === 'function'
                     ? cached.delegate.getDebugName(factoryClass)
                     : undefined;
                 if (_bt3) _bt3.beginFrame(cachedDebugName);

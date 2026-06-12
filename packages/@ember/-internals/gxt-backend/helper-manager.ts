@@ -6,6 +6,7 @@
 // a factory and provides getDelegateFor(owner) which returns the actual
 // HelperManager delegate for a given owner.
 
+import { DEBUG } from '@glimmer/env';
 import { createCache } from './validator';
 import {
   createComputeRef,
@@ -122,7 +123,11 @@ function _callGetValueWithBacktracking(
   const g = globalThis as any;
   const bt = getGxtRenderer()?.backtracking;
   let debugName = 'Helper';
-  if (typeof delegate.getDebugName === 'function') {
+  // Manager getDebugName is DEBUG-only API: upstream implementations (e.g.
+  // ClassicHelperManager) call @glimmer/util's debug-only getDebugName in
+  // their bodies, which is undefined in production builds — the method
+  // EXISTS but throws when invoked. Never call it outside DEBUG.
+  if (DEBUG && typeof delegate.getDebugName === 'function') {
     const definition = self._getDefinitionForBucket(bucket);
     try {
       debugName = delegate.getDebugName(definition || bucket) || 'Helper';
@@ -371,8 +376,11 @@ export class CustomHelperManager {
       const args = Object.isFrozen(rawArgs) ? rawArgs : argsProxyForCustom(rawArgs);
 
       const bucket = manager.createHelper(helper, args);
+      // DEBUG-gated: upstream manager getDebugName bodies call the
+      // debug-only @glimmer/util getDebugName and throw in production.
       const debugName =
-        (typeof manager.getDebugName === 'function' && manager.getDebugName(helper)) || 'Helper';
+        (DEBUG && typeof manager.getDebugName === 'function' && manager.getDebugName(helper)) ||
+        'Helper';
 
       let ref: any;
       if (manager.capabilities?.hasValue) {
@@ -465,9 +473,11 @@ export class CustomHelperManager {
   getValue(bucket: any, definition?: any) {
     const owner = (globalThis as any).owner;
     const manager = this.getDelegateFor(owner);
-    // Wrap in backtracking frame so read-then-write is detected with debug name
+    // Wrap in backtracking frame so read-then-write is detected with debug
+    // name. DEBUG-gated: upstream manager getDebugName bodies call the
+    // debug-only @glimmer/util getDebugName and throw in production.
     const debugName =
-      definition && manager?.getDebugName ? manager.getDebugName(definition) : 'Helper';
+      DEBUG && definition && manager?.getDebugName ? manager.getDebugName(definition) : 'Helper';
     const bt = getGxtRenderer()?.backtracking;
     if (bt) {
       bt.beginFrame(debugName);
@@ -506,6 +516,7 @@ export class CustomHelperManager {
   }
 
   getDebugName(helper: any) {
+    if (!DEBUG) return 'Helper';
     const owner = (globalThis as any).owner;
     try {
       const manager = this.getDelegateFor(owner);
