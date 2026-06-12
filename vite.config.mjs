@@ -44,18 +44,35 @@ export default defineConfig(({ mode }) => {
   // for why rollup's USE_GXT_BACKEND must NOT symmetrically honor GXT_MODE.
   const useGxt = isGxtEnabled();
 
-  // preserveModules + preserveEntrySignatures previously emitted per-source
-  // chunks for the GXT smoke runner. That harness uses Vite's dev server
-  // (`pnpm vite --port 5180`) which serves modules natively, so the build-time
-  // preserveModules setting was no longer load-bearing — but it WAS load-
-  // breaking for the testem-based Basic Test job, which loads the static
-  // dist/ output: ~1000 script tags blew past testem's 120s
-  // `browser_start_timeout` waiting for them all to fetch+parse before
-  // testem.js could connect. Drop the special case so all builds emit a
-  // bundled output suitable for testem.
-  const build = {
-    minify: mode === 'production',
-  };
+  // GXT builds: single-chunk output. preserveModules' ~1000 module files blew
+  // past testem's 120s `browser_start_timeout` on the GXT Basic Test job
+  // (fetch+parse before testem.js could connect), so the GXT pipeline bundles.
+  //
+  // Classic builds: keep upstream's `preserveModules: true` (one emitted file
+  // per source module). This is correctness-relevant, not just layout: the
+  // suite contains direct-eval implicit-scope tests (RFC931 `template(...,
+  // { eval() { return eval(arguments[0]); } })` and the jit keyword suites)
+  // whose `eval('helper')`/`eval('element')` must throw ReferenceError so the
+  // compiler falls back to the keyword/builtin. A merged chunk hoists every
+  // module's top-level bindings into ONE shared scope, so the eval resolves
+  // arbitrary same-named internals (e.g. -in-element-null-check's `let
+  // helper`) and the keyword path silently breaks — dist-only, invisible on
+  // the dev server. Upstream CI runs testem against the preserveModules
+  // output, which bounds the module-count load time for the classic set.
+  const build = useGxt
+    ? {
+        minify: mode === 'production',
+      }
+    : {
+        rollupOptions: {
+          preserveEntrySignatures: 'strict',
+          input: ['index.html'],
+          output: {
+            preserveModules: true,
+          },
+        },
+        minify: mode === 'production',
+      };
 
   return {
     plugins: [
