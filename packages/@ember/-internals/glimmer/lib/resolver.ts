@@ -13,10 +13,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { getComponentTemplate } from '@glimmer/manager/lib/public/template';
-import {
-  getInternalComponentManager,
-  setInternalHelperManager,
-} from '@glimmer/manager/lib/internal/api';
+import { getInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { array } from '@glimmer/runtime/lib/helpers/array';
 import { concat } from '@glimmer/runtime/lib/helpers/concat';
 import { fn } from '@glimmer/runtime/lib/helpers/fn';
@@ -27,8 +24,7 @@ import {
   templateOnlyComponent,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime/lib/component/template-only';
-import { isCurlyManager } from './component-managers/curly';
-import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
+import { isCurlyManager } from './component-managers/curly-brand';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -39,9 +35,6 @@ import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as uniqueId } from './helpers/unique-id';
-
-import { mountHelper } from './syntax/mount';
-import { outletHelper } from './syntax/outlet';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -96,8 +89,6 @@ const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   '-normalize-class': normalizeClassHelper,
   '-resolve': resolve,
   '-track-array': trackArray,
-  '-mount': mountHelper,
-  '-outlet': outletHelper,
   '-in-el-null': inElementNullCheckHelper,
 };
 
@@ -110,6 +101,16 @@ const BUILTIN_HELPERS: Record<string, object> = {
   hash,
   'unique-id': uniqueId,
 };
+
+// Keyword helpers that come with extra weight (e.g. `-outlet` and `-mount`,
+// which pull in the outlet/mount component managers and the routing layer)
+// register themselves here from their own modules. This keeps them out of the
+// bundle for apps that never load those modules (e.g. apps that only use
+// `renderComponent`).
+export function registerBuiltInKeywordHelper(name: string, definition: object): void {
+  BUILTIN_KEYWORD_HELPERS[name] = definition;
+  BUILTIN_HELPERS[name] = definition;
+}
 
 if (DEBUG) {
   BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
@@ -134,7 +135,16 @@ const BUILTIN_MODIFIERS: Record<string, object> = {
   on,
 };
 
-const CLASSIC_HELPER_MANAGER_ASSOCIATED = new WeakSet();
+// Classic (class-based) helper support is registered lazily by the classic
+// Helper module (`./helper`). Apps that never load classic helpers don't pay
+// for the classic helper manager in their bundles.
+type ClassicHelperResolver = (definition: object, factory: object) => HelperDefinitionState | null;
+
+let resolveClassicHelper: ClassicHelperResolver | null = null;
+
+export function registerClassicHelperResolver(resolver: ClassicHelperResolver): void {
+  resolveClassicHelper = resolver;
+}
 
 export default class ResolverImpl implements ClassicResolver<InternalOwner> {
   private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
@@ -166,23 +176,12 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
       return null;
     }
 
-    if (typeof definition === 'function' && isClassicHelper(definition)) {
-      // For classic class based helpers, we need to pass the factoryFor result itself rather
-      // than the raw value (`factoryFor(...).class`). This is because injections are already
-      // bound in the factoryFor result, including type-based injections
+    if (typeof definition === 'function' && resolveClassicHelper !== null) {
+      let classicDefinition = resolveClassicHelper(definition, factory);
 
-      if (DEBUG) {
-        // In DEBUG we need to only set the associated value once, otherwise
-        // we'll trigger an assertion
-        if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
-          CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
-          setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
-        }
-      } else {
-        setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
+      if (classicDefinition !== null) {
+        return classicDefinition;
       }
-
-      return factory;
     }
 
     return definition;

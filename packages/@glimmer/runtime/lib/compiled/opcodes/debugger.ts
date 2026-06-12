@@ -72,3 +72,9 @@ APPEND_OPCODES.add(VM_DEBUGGER_OP, (vm, { op1: _debugInfo }) => {
   let inspector = new ScopeInspector(vm.scope(), debuggerInfo);
   callback(valueForRef(vm.getSelf()), (path) => valueForRef(inspector.get(path)));
 });
+
+// This module registers opcode handlers with APPEND_OPCODES when it is
+// evaluated. The marker below is consumed by ../../bootstrap so that bundlers
+// see a used export and include this module, rather than treating it as a
+// droppable side-effect-only import (e.g. under `sideEffects: false`).
+export const debuggerOpcodesRegistered = true;
