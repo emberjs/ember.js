@@ -48,6 +48,8 @@ import { internalHelper } from '../helpers/internal-helper';
     </div>
   </template>
   ```
+ 
+ `mount` is built-in and does not need to be imported.
 
   @method mount
   @param {String} name Name of the engine to mount.

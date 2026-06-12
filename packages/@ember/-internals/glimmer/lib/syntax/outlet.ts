@@ -50,6 +50,8 @@ import type { OutletState } from '../utils/outlet';
   information on how your `route` interacts with the `{{outlet}}` helper.
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
+  `outlet` is built-in and does not need to be imported. 
+ 
   @method outlet
   @for Ember.Templates.helpers
   @public
