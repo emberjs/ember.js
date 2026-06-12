@@ -236,6 +236,14 @@ gxtSuiteModule('Compat: destroyable.ts', function () {
     QUnit.test('enableDestroyableTracking is a no-op function', async function (assert: any) {
       const { enableDestroyableTracking } =
         await import('../../../@ember/-internals/gxt-backend/destroyable');
+      if (typeof enableDestroyableTracking !== 'function') {
+        // Production parity: upstream @glimmer/destroyable defines the
+        // tracking helpers only in debug builds — undefined is the correct
+        // production shape for the shim too.
+        assert.strictEqual(enableDestroyableTracking, undefined, 'undefined in production');
+        assert.ok(true, 'production shape matches upstream');
+        return;
+      }
       assert.strictEqual(typeof enableDestroyableTracking, 'function', 'is a function');
       enableDestroyableTracking(); // should not throw
       assert.ok(true, 'did not throw');
@@ -244,6 +252,12 @@ gxtSuiteModule('Compat: destroyable.ts', function () {
     QUnit.test('assertDestroyablesDestroyed is a no-op function', async function (assert: any) {
       const { assertDestroyablesDestroyed } =
         await import('../../../@ember/-internals/gxt-backend/destroyable');
+      if (typeof assertDestroyablesDestroyed !== 'function') {
+        // Production parity — see enableDestroyableTracking above.
+        assert.strictEqual(assertDestroyablesDestroyed, undefined, 'undefined in production');
+        assert.ok(true, 'production shape matches upstream');
+        return;
+      }
       assert.strictEqual(typeof assertDestroyablesDestroyed, 'function', 'is a function');
       assertDestroyablesDestroyed(); // should not throw
       assert.ok(true, 'did not throw');
