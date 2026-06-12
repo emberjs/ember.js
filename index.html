@@ -19,7 +19,10 @@
 
       // In GXT mode, use synchronous observers to match standard Ember behavior.
       // Tests expect observers to fire synchronously during notifyPropertyChange.
-      EmberENV._DEFAULT_ASYNC_OBSERVERS = false;
+      // Classic keeps upstream's async default (`true`) — flipping it changes
+      // observer/CP timing and fails the classic observer suites. The bare
+      // flag is inlined per build by replaceGxtModeFlag.
+      EmberENV._DEFAULT_ASYNC_OBSERVERS = !__GXT_MODE__;
 
       // Handle testing feature flags
       if (QUnit.urlParams.ENABLE_OPTIONAL_FEATURES) {
