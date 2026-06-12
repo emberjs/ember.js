@@ -7642,7 +7642,6 @@ function _gxtCleanupActiveComponents(): void {
   blockParamsStack.length = 0;
   // Reset current slot params
   currentSlotParams = null;
-  (globalThis as any).__currentSlotParams = null;
   // Reset slots context stack
   slotsContextStack.length = 0;
   // NOTE: Do NOT clear templateCache between tests. Each clear forces
@@ -7722,9 +7721,9 @@ function _gxtCleanupActiveComponents(): void {
   _gxtSetHadPendingSync(false);
   _gxtSetHadNestedObjectChange(false);
   _gxtSetSyncing(false);
-  // Reset global rendering state
-  (globalThis as any).$slots = undefined;
-  (globalThis as any).$fw = undefined;
+  // Reset module-local rendering state
+  _gxtCurrentSlots = undefined;
+  _gxtCurrentFw = undefined;
 }
 
 // Set GXT mode flag
@@ -8765,20 +8764,41 @@ function _ensureOnExtAlias(): void {
 // Global block params stack for yielded values
 // When a slot is rendered with block params, they're pushed here
 // The $_blockParam helper reads from the top of the stack
+// Cross-file readers (ember-gxt-wrappers' slot-render frames, manager.ts's
+// has-block frames) reach these by REFERENCE through the compilePipeline
+// bridge accessors (getBlockParamsStack / getContextBlockParams /
+// getSlotsContextStack) — the retired `globalThis.__blockParamsStack` /
+// `__contextBlockParams` / `__slotsContextStack` slots.
 const blockParamsStack: any[][] = [];
-(globalThis as any).__blockParamsStack = blockParamsStack;
 
 // Per-context block params storage for persistence across re-renders
 // WeakMap allows garbage collection when context is no longer referenced
 const contextBlockParams = new WeakMap<object, any[]>();
-(globalThis as any).__contextBlockParams = contextBlockParams;
 
 // Current slot params - persists until next slot is called
 // This is used for re-renders where the stack has been popped
 // Key insight: for simple non-nested slot cases, keeping the "last" params
 // allows re-renders to access them even after the slot function returns
 let currentSlotParams: any[] | null = null;
-(globalThis as any).__currentSlotParams = null;
+
+// The current render's `$slots` / `$fw` — formerly the `globalThis.$slots` /
+// `globalThis.$fw` slots written around every template render. Compiled
+// template Function() bodies read them through the injected `__gxtGetSlots` /
+// `__gxtGetFw` accessor parameters.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _gxtCurrentSlots: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _gxtCurrentFw: any;
+const _gxtGetSlotsFn = () => _gxtCurrentSlots;
+const _gxtGetFwFn = () => _gxtCurrentFw;
+
+// Per-template scope-value store — formerly per-template `globalThis
+// .__gxtScope_<hash>` keys. Same late-binding semantics: each compile
+// overwrites its storeKey entry, and compiled bodies read through the
+// injected `__gxtGetScope` accessor parameter PER INVOCATION.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _gxtScopeStore = new Map<string, any>();
+const _gxtGetScopeFn = (key: string) => _gxtScopeStore.get(key);
 
 // Helper function to get a block param by index
 // This is called by compiled templates that use {{($_blockParam N)}}
@@ -8836,13 +8856,13 @@ for (let i = 0; i < 10; i++) {
         rawValue = persistentParams[i];
       } else {
         // Check the global stack (during initial slot execution)
-        const stack = (globalThis as any).__blockParamsStack;
+        const stack = blockParamsStack;
         const stackParams = stack && stack[stack.length - 1];
         if (stackParams && stackParams[i] !== undefined) {
           rawValue = stackParams[i];
         } else {
           // Fall back to current slot params (for re-renders after slot returned)
-          const current = (globalThis as any).__currentSlotParams;
+          const current = currentSlotParams;
           if (current && current[i] !== undefined) {
             rawValue = current[i];
           }
@@ -8887,7 +8907,6 @@ if (_gxtRegisterHostHooks) {
 // Stack to track the current slots context during rendering
 // Components push their $slots here when rendering, so has-block can check it
 const slotsContextStack: any[] = [];
-(globalThis as any).__slotsContextStack = slotsContextStack;
 
 // has-block / has-block-params helpers — returns true if the named block exists.
 //
@@ -11014,10 +11033,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 });
 
                 // Store on slotCtx for context-based lookup
-                const contextParams = (globalThis as any).__contextBlockParams as WeakMap<
-                  object,
-                  any[]
-                >;
+                const contextParams = contextBlockParams as WeakMap<object, any[]>;
                 if (contextParams && slotCtx && typeof slotCtx === 'object') {
                   contextParams.set(slotCtx, [...unwrappedParams]);
                 }
@@ -11025,9 +11041,9 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                 // Also store as current slot params for re-renders
                 // This persists until the next slot call, allowing reactivity
                 // to access block params even after the slot function returns
-                (globalThis as any).__currentSlotParams = unwrappedParams;
+                currentSlotParams = unwrappedParams;
 
-                const stack = (globalThis as any).__blockParamsStack;
+                const stack = blockParamsStack;
                 stack.push(unwrappedParams);
 
                 try {
@@ -11133,10 +11149,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               const rawParams = [...params];
 
               // Store on slotCtx for context-based lookup
-              const contextParams = (globalThis as any).__contextBlockParams as WeakMap<
-                object,
-                any[]
-              >;
+              const contextParams = contextBlockParams as WeakMap<object, any[]>;
               if (contextParams && slotCtx && typeof slotCtx === 'object') {
                 contextParams.set(slotCtx, rawParams);
               }
@@ -11144,11 +11157,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               // Also store as current slot params for re-renders
               // This persists until the next slot call, allowing reactivity
               // to access block params even after the slot function returns
-              (globalThis as any).__currentSlotParams = rawParams;
+              currentSlotParams = rawParams;
 
               // Push block params onto the global stack
               // The $_blockParam helper reads from this stack
-              const stack = (globalThis as any).__blockParamsStack;
+              const stack = blockParamsStack;
               stack.push(rawParams);
 
               try {
@@ -11397,7 +11410,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // If block params are on the stack, we must return the thunk deferred
           // so that GXT's rendering pipeline calls it within the slot scope.
           // Otherwise, execute immediately so GXT receives a DOM node directly.
-          const bpStack = (globalThis as any).__blockParamsStack;
+          const bpStack = blockParamsStack;
           const hasBP = bpStack && bpStack.length > 0 && bpStack[bpStack.length - 1]?.length > 0;
           if (hasBP) {
             return renderComponent;
@@ -14938,6 +14951,10 @@ export function precompileTemplate(
     try {
       const needsArgsAlias = modifiedCode.includes('$a.');
       const needsSlots = modifiedCode.includes('$slots');
+      // Broad-substring on purpose (a false positive just emits an unused
+      // const): with the globalThis.$fw slot retired, a missed reference
+      // shape would silently read undefined.
+      const needsFw = modifiedCode.includes('$fw');
       const g = globalThis as any;
       // Inject Ember keyword helpers as local variables so GXT-compiled code
       // that references them as bare identifiers (e.g. inside {{#let}}) works.
@@ -15064,7 +15081,7 @@ export function precompileTemplate(
           h = Math.imul(h, 0x01000193);
         }
         scopeStoreKey = `__gxtScope_${(h >>> 0).toString(36)}`;
-        g[scopeStoreKey] = scopeVals;
+        _gxtScopeStore.set(scopeStoreKey, scopeVals);
         for (const key of scopeKeys) {
           // Use valid JS identifier (convert hyphens, etc.)
           let jsKey = hyphenToUnderscore(key);
@@ -15143,12 +15160,12 @@ export function precompileTemplate(
             }
           }
           scopeAliases.set(key, jsKey);
-          // Use `__gxtGT` (captured `globalThis` reference set up in the
-          // outer factory) on the RHS so that scope keys whose names collide
-          // with `globalThis` itself (strict-mode allowed globals like
-          // `globalThis`, `Math`, `JSON`) don't TDZ-trap on the about-to-be-
-          // declared `const ${jsKey}`.
-          scopeInjections.push(`const ${jsKey} = __gxtGT["${scopeStoreKey}"]["${key}"];`);
+          // Read through the injected `__gxtGetScope` accessor parameter so
+          // scope keys whose names collide with `globalThis` itself
+          // (strict-mode allowed globals like `globalThis`, `Math`, `JSON`)
+          // don't TDZ-trap on the about-to-be-declared `const ${jsKey}` —
+          // and the per-template `__gxtScope_<hash>` globalThis keys die.
+          scopeInjections.push(`const ${jsKey} = __gxtGetScope("${scopeStoreKey}")["${key}"];`);
         }
       }
 
@@ -15410,7 +15427,6 @@ export function precompileTemplate(
         : '';
       const templateFnCode = `
         "use strict";
-        var __gxtGT = globalThis;
         ${hasUnbound ? 'var __ubCache = Object.create(null);' : ''}
         ${unboundEvalInjection}
         ${namedArgHelperGuardInjection}
@@ -15419,7 +15435,8 @@ export function precompileTemplate(
         ${strictMaybeHelperInjection}
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
-          ${needsSlots ? 'const $slots = globalThis.$slots || {};' : ''}
+          ${needsSlots ? 'const $slots = __gxtGetSlots() || {};' : ''}
+          ${needsFw ? 'const $fw = __gxtGetFw();' : ''}
           ${hasUnbound ? '__gxtUnboundResetSlots();' : ''}
 
           ${scopeInjections.join('\n          ')}
@@ -15456,6 +15473,9 @@ export function precompileTemplate(
           '__gxtBuiltinHelpers',
           '__gxtGetTemplateThis',
           '__gxtAmbientOwner',
+          '__gxtGetSlots',
+          '__gxtGetFw',
+          '__gxtGetScope',
           ..._GXT_SYMBOL_PARAM_NAMES,
           templateFnCode
         )(
@@ -15465,6 +15485,9 @@ export function precompileTemplate(
           (globalThis as any).__EMBER_BUILTIN_HELPERS__,
           _gxtGetTemplateThisFn,
           getAmbientOwner,
+          _gxtGetSlotsFn,
+          _gxtGetFwFn,
+          _gxtGetScopeFn,
           ..._GXT_SYMBOL_PARAM_NAMES.map((n) => (globalThis as any)[n])
         );
         _functionCodeCache.set(templateFnCode, cachedFn);
@@ -16484,8 +16507,8 @@ export function precompileTemplate(
         // Set up $slots and $fw as globals for the template function to access
         // The GXT runtime compiler generates code that references these directly
         const g = globalThis as any;
-        const prevSlots = g.$slots;
-        const prevFw = g.$fw;
+        const prevSlots = _gxtCurrentSlots;
+        const prevFw = _gxtCurrentFw;
 
         // Push this template's literal in-element ids onto the global
         // fallback stack and bump the render-pass depth counter so
@@ -16560,8 +16583,8 @@ export function precompileTemplate(
             /* ignore */
           }
 
-          g.$slots = context.$slots || context[_SLOTS_SYM] || {};
-          g.$fw = context.$fw || [[], [], []];
+          _gxtCurrentSlots = context.$slots || context[_SLOTS_SYM] || {};
+          _gxtCurrentFw = context.$fw || [[], [], []];
 
           // Ensure the ambient owner is set before the template renders.
           // During top-level component rendering (via runAppend), the owner may
@@ -16671,7 +16694,7 @@ export function precompileTemplate(
           // `<:inverse>` aliases `<:else>`. Delegate via the shared helpers
           // (_lookupSlot / _resolveHasBlockArgs defined above) so the logic
           // stays in one place.
-          const currentSlots = g.$slots;
+          const currentSlots = _gxtCurrentSlots;
           renderContext.$_hasBlock = function (arg1?: any, arg2?: any) {
             const slots = arg1 && typeof arg1 === 'object' ? arg1 : currentSlots;
             const name = ((arg1 && typeof arg1 === 'object' ? arg2 : arg1) as string) || 'default';
@@ -16712,7 +16735,7 @@ export function precompileTemplate(
           }
 
           // Push slots onto the global stack for nested has-block checks
-          const slotsStack = (globalThis as any).__slotsContextStack;
+          const slotsStack = slotsContextStack;
           slotsStack.push(currentSlots);
 
           // Install cells on the render context for user-defined properties BEFORE
@@ -16961,8 +16984,8 @@ export function precompileTemplate(
           }
 
           // Restore previous global values
-          g.$slots = prevSlots;
-          g.$fw = prevFw;
+          _gxtCurrentSlots = prevSlots;
+          _gxtCurrentFw = prevFw;
           _gxtSetIsRendering(false);
           // Trim any un-consumed fallback ids pushed by this template
           // render (e.g. because no nested in-element hit the null-dest
@@ -16974,8 +16997,8 @@ export function precompileTemplate(
           return { nodes, ctx: context };
         } catch (err) {
           // Restore globals even on error
-          g.$slots = prevSlots;
-          g.$fw = prevFw;
+          _gxtCurrentSlots = prevSlots;
+          _gxtCurrentFw = prevFw;
           _gxtSetIsRendering(false);
           if (_inElemStack.length > _inElemStackStart) {
             _inElemStack.length = _inElemStackStart;
@@ -17197,6 +17220,12 @@ installCompilePipelinePart({
   // route through the bridge.
   getPendingSync: _gxtGetPendingSync,
   setPendingSync: _gxtSetPendingSync,
+  getBlockParamsStack: () => blockParamsStack,
+  getContextBlockParams: () => contextBlockParams,
+  getSlotsContextStack: () => slotsContextStack,
+  setCurrentSlotParams: (params) => {
+    currentSlotParams = params;
+  },
   // Paired get/set for the "run task active" flag, written by the test helpers
   // and read together with the pending-sync flag in the `_backburner` end gate
   // (renderer.ts) and the runloop `onEnd` hook.

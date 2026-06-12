@@ -7815,8 +7815,10 @@ function renderTemplateWithParentView(
     pushParentView(instance);
   }
 
-  // Push slots onto the global stack for has-block checks
-  const slotsStack = (globalThis as any).__slotsContextStack;
+  // Push slots onto the shared stack (compile.ts module-local, by reference
+  // through the bridge — the retired `__slotsContextStack` global) for
+  // has-block checks
+  const slotsStack = getGxtRenderer()?.compilePipeline.getSlotsContextStack?.();
   const slots = renderContext.$slots || renderContext[$SLOTS_SYMBOL] || {};
   if (slotsStack) {
     slotsStack.push(slots);

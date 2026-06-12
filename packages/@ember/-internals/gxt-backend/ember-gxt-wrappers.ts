@@ -1761,13 +1761,18 @@ function createEmberTag(original: Function) {
                 return param;
               });
 
-              const contextParams = g.__contextBlockParams as WeakMap<object, any[]>;
+              // Block-params structures live module-locally in compile.ts;
+              // reached by reference through the compilePipeline bridge (the
+              // retired `__contextBlockParams` / `__currentSlotParams` /
+              // `__blockParamsStack` globals).
+              const _slotPipeline = getGxtRenderer()?.compilePipeline;
+              const contextParams = _slotPipeline?.getContextBlockParams?.();
               if (contextParams && slotCtx && typeof slotCtx === 'object') {
                 contextParams.set(slotCtx, [...unwrappedParams]);
               }
-              g.__currentSlotParams = unwrappedParams;
+              _slotPipeline?.setCurrentSlotParams?.(unwrappedParams);
 
-              const stack = g.__blockParamsStack;
+              const stack = _slotPipeline?.getBlockParamsStack?.() as any[][];
               stack.push(unwrappedParams);
               try {
                 // Return raw children as-is. GXT's rendering pipeline

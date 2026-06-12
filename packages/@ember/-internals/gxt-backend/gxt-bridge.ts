@@ -1037,6 +1037,29 @@ export interface GxtCompilePipelineCapabilities {
   setPendingSync?(value: boolean): void;
 
   /**
+   * The yielded-block-params / slots-context structures — module-locals in
+   * gxt-backend/compile.ts (the retired `globalThis.__blockParamsStack` /
+   * `__contextBlockParams` / `__slotsContextStack` slots). Returned by
+   * REFERENCE: callers push/pop/read the shared structures exactly as the
+   * globals allowed (wrappers' slot-render block-params frames, manager's
+   * has-block slots frames).
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getBlockParamsStack?(): any[][];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getContextBlockParams?(): WeakMap<object, any[]>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getSlotsContextStack?(): any[];
+  /**
+   * Write the "current slot params" latch (compile.ts module-local; the
+   * retired `globalThis.__currentSlotParams` slot) — the last-rendered
+   * slot's block params, kept so re-renders can read them after the
+   * block-params stack frame popped.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setCurrentSlotParams?(params: any[] | null): void;
+
+  /**
    * Read the `__gxtRunTaskActive` boolean flag. Returns `true` if a
    * `runTask` or `runAppend` body is currently executing — i.e., the
    * test helper has opened its body via `setRunTaskActive(true)` and has
