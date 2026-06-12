@@ -18,6 +18,12 @@ export { debug } from './lib/debug';
 export { dirtyTagFor, tagFor, type TagMeta, tagMetaFor } from './lib/meta';
 export { trackedData } from './lib/tracked-data';
 export {
+  type Reactive,
+  type ReadOnlyReactive,
+  TrackedValue,
+  trackedValue,
+} from './lib/tracked-value';
+export {
   beginTrackFrame,
   beginUntrackFrame,
   type Cache,
