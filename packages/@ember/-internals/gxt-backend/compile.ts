@@ -782,6 +782,7 @@ import {
   compileTemplate as gxtCompileTemplate,
   setupGlobalScope,
   isGlobalScopeReady,
+  GXT_RUNTIME_SYMBOLS,
   // Public AST-transform hook type. `transforms: AstTransform[]` runs
   // `@glimmer/syntax`-style visitors on the parsed template AST after
   // preprocess, before glimmer-next codegen. See the dialect AST transforms
@@ -856,6 +857,14 @@ const _gxtRegisterHostHooks: ((hooks: Record<string, unknown>) => void) | undefi
 // legacy `__gxtToBool` global round-trip, which hook-capable dists no longer
 // populate.
 let _emberToBoolRef: ((predicate: unknown) => boolean) | null = null;
+// §2e symbol-table parameter injection: runtime-compiled template Function()
+// bodies reference `$_tag` / `$_maybeHelper` / … as free identifiers. They are
+// now bound as Function PARAMETERS (snapshot of the ember-wrapped globals at
+// compile time — module init runs setupGlobalScope + installEmberWrappers
+// before any compile, so the snapshot is deterministic) instead of resolving
+// through globalThis on every render. Build-time-compiled (.gjs) template
+// bodies still resolve via globalThis, so the global publication itself stays.
+const _GXT_SYMBOL_PARAM_NAMES = Object.keys(GXT_RUNTIME_SYMBOLS);
 
 // Use direct imports for cellFor/effect/syncDom — the manualChunks consolidation
 // ensures all GXT internals share a single module instance (gxt.core.es.js).
@@ -3110,6 +3119,14 @@ function _gxtAddAfterTriggerReRender(fn: _TriggerReRenderHook): () => void {
 // read no cell, so the effect would subscribe to nothing). Set/cleared around
 // `templateFn.call(renderContext)`.
 let _gxtCurrentTemplateThis: any = null;
+// Accessor bound into compiled template Function() bodies (the {{unbound}}
+// live/deferred detection) and registered as the `getCurrentTemplateThis`
+// host hook so hook-capable gxt dists read the module-local instead of the
+// `__gxtCurrentTemplateThis` global (whose writes are legacy-gated below).
+const _gxtGetTemplateThisFn = () => _gxtCurrentTemplateThis;
+if (_gxtRegisterHostHooks) {
+  _gxtRegisterHostHooks({ getCurrentTemplateThis: _gxtGetTemplateThisFn });
+}
 
 let _gxtInTriggerReRenderFlag = false;
 function _gxtWithInTriggerReRender<T>(fn: () => T): T {
@@ -8738,11 +8755,11 @@ function _ensureOnExtAlias(): void {
 // (not published on globalThis); the post-processor rewrites the bare named-arg
 // helper pattern `["@name", $_maybeHelper("ident", [], this)]` into
 // `["@name", (__gxtAssertNotResolvedHelperAsNamedArg("ident", this),
-// $_maybeHelper("ident", [], this))]`. The body closes only over
-// `globalThis.__EMBER_BUILTIN_HELPERS__`, `Symbol.for('OWNER')`, and
-// `globalThis.owner` — all reachable inside the Function() body. The inline
-// injection is gated on `hasNamedArgHelperGuard` so templates without the guard
-// pattern pay zero overhead. See the `templateFnCode` builder (search for
+// $_maybeHelper("ident", [], this))]`. The body reads only the injected
+// `__gxtBuiltinHelpers` / `__gxtAmbientOwner` Function parameters and
+// `Symbol.for('OWNER')` — no globalThis surface. The inline injection is
+// gated on `hasNamedArgHelperGuard` so templates without the guard pattern
+// pay zero overhead. See the `templateFnCode` builder (search for
 // `__gxtAssertNotResolvedHelperAsNamedArg`) for the inlined definition.
 
 // Global block params stack for yielded values
@@ -15200,14 +15217,10 @@ export function precompileTemplate(
               (compilationResult as any).__uidCount = uidCallCount;
             } else {
               // unique_id referenced but not called — inject as plain function
-              helperInjections.push(
-                `const unique_id = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];`
-              );
+              helperInjections.push(`const unique_id = __gxtBuiltinHelpers["unique-id"];`);
             }
           } else if (containsWord(modifiedCode, jsName)) {
-            helperInjections.push(
-              `const ${jsName} = globalThis.__EMBER_BUILTIN_HELPERS__["${name}"];`
-            );
+            helperInjections.push(`const ${jsName} = __gxtBuiltinHelpers["${name}"];`);
           }
         }
       }
@@ -15219,7 +15232,7 @@ export function precompileTemplate(
       const uidCount = (compilationResult as any).__uidCount || 0;
       const uidOuterScope =
         uidCount > 0
-          ? `var _uid_fn = globalThis.__EMBER_BUILTIN_HELPERS__["unique-id"];` +
+          ? `var _uid_fn = __gxtBuiltinHelpers["unique-id"];` +
             `var _uid = []; for (var _uid_i = 0; _uid_i < ${uidCount}; _uid_i++) _uid.push(_uid_fn());`
           : '';
 
@@ -15237,11 +15250,11 @@ export function precompileTemplate(
       // Function() body is cached, so the inlined block costs one compilation
       // per unique template body.
       const strictMaybeHelperInjection = __strictModeFlag
-        ? `var $_maybeHelper_orig = globalThis.$_maybeHelper;` +
+        ? `var $_maybeHelper_orig = $_maybeHelper;` +
           `var $_maybeHelper_allowed = ${_GXT_STRICT_ALLOWED_NAMES_JS_LITERAL};` +
           `var $_maybeHelper = function (n, a, h, c) {` +
           `if (typeof n === 'string' && !$_maybeHelper_allowed[n]) {` +
-          `var bh = globalThis.__EMBER_BUILTIN_HELPERS__;` +
+          `var bh = __gxtBuiltinHelpers;` +
           `if (!(bh && bh[n])) {` +
           `throw new Error('Attempted to resolve \`' + n + '\`, which was expected to be a component or helper, but that value was not in scope: ' + n);` +
           `}` +
@@ -15315,7 +15328,7 @@ export function precompileTemplate(
           `var __ubLastLive = true;` +
           `function __gxtUnboundEval(cacheObj, id, valueFn) {` +
           `var __ubFG = true;` +
-          `if (__ubFG && !globalThis.__gxtCurrentTemplateThis) {` +
+          `if (__ubFG && !__gxtGetTemplateThis()) {` +
           // Deferred (non-live) pass: replay the frozen live-pass values.
           `if (__ubLastLive) { __ubReplay = Object.create(null); __ubLastLive = false; }` +
           `var rSlot = __ubReplay[id] || 0;` +
@@ -15348,16 +15361,17 @@ export function precompileTemplate(
         : '';
 
       // Inlined `__gxtAssertNotResolvedHelperAsNamedArg` definition declared at
-      // the OUTER Function() scope. Closes over
-      // `globalThis.__EMBER_BUILTIN_HELPERS__`, `Symbol.for('OWNER')`, and
-      // `globalThis.owner`. Gated on `hasNamedArgHelperGuard` so templates
-      // without the bare-named-arg-helper pattern pay zero overhead.
+      // the OUTER Function() scope. Reads the builtin-helper table and the
+      // ambient owner through the injected `__gxtBuiltinHelpers` /
+      // `__gxtAmbientOwner` Function parameters (formerly
+      // `globalThis.__EMBER_BUILTIN_HELPERS__` / `globalThis.owner` — the
+      // owner mirror's last reader). Gated on `hasNamedArgHelperGuard` so
+      // templates without the bare-named-arg-helper pattern pay zero overhead.
       const namedArgHelperGuardInjection = hasNamedArgHelperGuard
         ? `function __gxtAssertNotResolvedHelperAsNamedArg(name, ctx) {` +
-          `var g = globalThis;` +
-          `var BUILTIN = g.__EMBER_BUILTIN_HELPERS__;` +
+          `var BUILTIN = __gxtBuiltinHelpers;` +
           `if (BUILTIN && BUILTIN[name]) return;` +
-          `var owner = (ctx && (ctx.owner || (ctx[Symbol.for('OWNER')] || null))) || g.owner;` +
+          `var owner = (ctx && (ctx.owner || (ctx[Symbol.for('OWNER')] || null))) || __gxtAmbientOwner();` +
           `if (!owner || typeof owner.factoryFor !== 'function') return;` +
           `var factory = owner.factoryFor('helper:' + name);` +
           `if (!factory) return;` +
@@ -15427,12 +15441,32 @@ export function precompileTemplate(
         // setter so the emitted template-fn can signal
         // `{{#in-element insertBefore=...}}` mode to the `$_inElement` shim
         // without globalThis; no-op when `_inElementInsertBefore` is the default.
+        // §2e parameter injection: after the three private hooks come the
+        // ember emitted-code hooks (`__gxtBuiltinHelpers` table,
+        // `__gxtGetTemplateThis` live-render accessor, `__gxtAmbientOwner`
+        // bridge accessor) and the full GXT symbol table — a compile-time
+        // snapshot of the ember-wrapped globals, so the compiled body's bare
+        // `$_tag` / `$_maybeHelper` / … bind as parameters instead of
+        // resolving through globalThis on every render. Unlisted identifiers
+        // still fall through to globalThis (the injection is additive).
         cachedFn = Function(
           '__ubGT',
           '__ubST',
           '__ieSet',
+          '__gxtBuiltinHelpers',
+          '__gxtGetTemplateThis',
+          '__gxtAmbientOwner',
+          ..._GXT_SYMBOL_PARAM_NAMES,
           templateFnCode
-        )(_gxtGetTracker, _gxtSetTracker, _gxtIeSet);
+        )(
+          _gxtGetTracker,
+          _gxtSetTracker,
+          _gxtIeSet,
+          (globalThis as any).__EMBER_BUILTIN_HELPERS__,
+          _gxtGetTemplateThisFn,
+          getAmbientOwner,
+          ..._GXT_SYMBOL_PARAM_NAMES.map((n) => (globalThis as any)[n])
+        );
         _functionCodeCache.set(templateFnCode, cachedFn);
       }
       compilationResult.templateFn = cachedFn;
@@ -16787,7 +16821,10 @@ export function precompileTemplate(
           // Expose the current template `this` to glimmer-next so its
           // const-binding recovery (resolveRenderable / attribute binding) can
           // materialize a leaf cell for an initially-undefined `this.<path>`.
-          {
+          // Hook-capable dists read it via the `getCurrentTemplateThis` host
+          // hook (registered over the module-local above); only legacy dists
+          // still consult the `__gxtCurrentTemplateThis` global.
+          if (!_gxtRegisterHostHooks) {
             (globalThis as any).__gxtCurrentTemplateThis = renderContext;
           }
           try {
@@ -16806,7 +16843,9 @@ export function precompileTemplate(
             // throw broke every later "does not update when unbound" test.
             gxtSetIsRendering(false);
             _gxtCurrentTemplateThis = _prevTemplateThis;
-            (globalThis as any).__gxtCurrentTemplateThis = _prevTemplateThis;
+            if (!_gxtRegisterHostHooks) {
+              (globalThis as any).__gxtCurrentTemplateThis = _prevTemplateThis;
+            }
             throw e;
           } finally {
             // NOTE: `_gxtCurrentTemplateThis` is intentionally NOT reset here
@@ -16864,7 +16903,7 @@ export function precompileTemplate(
           } finally {
             gxtSetIsRendering(false);
             _gxtCurrentTemplateThis = _prevTemplateThis;
-            {
+            if (!_gxtRegisterHostHooks) {
               (globalThis as any).__gxtCurrentTemplateThis = _prevTemplateThis;
             }
           }

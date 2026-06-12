@@ -2870,13 +2870,13 @@ export function getActiveOutletElements(): Set<any> {
 // resolution) — historically the `globalThis.owner` slot, read and written
 // from both sides of the bridge (~100 sites, all routed through these
 // accessors by the §2a owner threading, docs-internal-gxt-globalthis-wiring.md).
-// The state lives here as a module-local; setAmbientOwner additionally
-// mirrors it onto `globalThis.owner` ONE-WAY because runtime-compiled
-// template code still reads it (the inlined named-arg-helper guard reads
-// `g.owner` inside its Function body — compiled code can't import this
-// module; the mirror is retired when the §2e symbol-injection API lands).
-// Nothing may write `globalThis.owner` directly: a direct write would go
-// stale immediately since every ember-side reader consults the module-local.
+// The state is fully module-local: the former one-way mirror onto
+// `globalThis.owner` was retired when its last reader — the inlined
+// named-arg-helper guard inside runtime-compiled template Function bodies —
+// switched to the injected `__gxtAmbientOwner` parameter (bound to
+// getAmbientOwner at Function creation; see compile.ts's templateFnCode
+// builder). Writing `globalThis.owner` does nothing now: every reader
+// consults the module-local.
 // ---------------------------------------------------------------------------
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2889,9 +2889,6 @@ export function getAmbientOwner(): any {
 
 export function setAmbientOwner(owner: unknown): void {
   _ambientOwner = owner;
-  // One-way mirror for emitted template code (see block comment above).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (globalThis as any).owner = owner;
 }
 
 export function getGxtRenderer(): GxtRenderer | null {
