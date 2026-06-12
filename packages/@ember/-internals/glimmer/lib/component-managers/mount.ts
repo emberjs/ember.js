@@ -166,7 +166,7 @@ class MountManager
   }
 }
 
-const MOUNT_MANAGER = new MountManager();
+const MOUNT_MANAGER = /*@__PURE__*/ new MountManager();
 
 export class MountDefinition implements ComponentDefinition {
   // handle is not used by this custom definition

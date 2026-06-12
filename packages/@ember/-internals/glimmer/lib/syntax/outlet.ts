@@ -49,7 +49,7 @@ import type { OutletState } from '../utils/outlet';
   @for Ember.Templates.helpers
   @public
 */
-export const outletHelper = internalHelper(
+export const outletHelper = /*@__PURE__*/ internalHelper(
   (_args: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
