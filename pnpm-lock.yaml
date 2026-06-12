@@ -3193,6 +3193,12 @@ importers:
 
   smoke-tests/v2-app-gxt-template:
     devDependencies:
+      '@lifeart/gxt':
+        specifier: 0.0.65
+        version: 0.0.65
+      decorator-transforms:
+        specifier: ^2.3.1
+        version: 2.3.2(@babel/core@7.29.7)
       ember-source:
         specifier: workspace:*
         version: link:../..

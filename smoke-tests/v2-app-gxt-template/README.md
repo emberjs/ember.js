@@ -11,9 +11,9 @@ runtime vehicle for the consumable-package work (see
 | | v2-app-template (classic) | this template (GXT) |
 | --- | --- | --- |
 | ember-source | classic build | `dist-gxt-package/` (`node scripts/build-gxt-package.mjs`) |
-| build pipeline | `@embroider/vite` `classicEmberSupport()` + `ember()` | a ~40-line `ember-source-resolver` vite plugin (see `vite.config.mjs`) |
-| template compilation | build-time wire-format (`babel-plugin-ember-template-compilation`) | **runtime**, through the GXT `@ember/template-compilation` shim |
-| babel | template + decorator transforms | none (app code is deliberately decorator-free) |
+| build pipeline | `@embroider/vite` `classicEmberSupport()` + `ember()` | `@lifeart/gxt/compiler` + a ~40-line `ember-source-resolver` vite plugin (see `vite.config.mjs`) |
+| template compilation | build-time wire-format (`babel-plugin-ember-template-compilation`) | **both**: `.gjs`/`.gts` `<template>` compiled at BUILD time by the GXT compiler (`app/components/counter.gjs`), route templates compiled at RUNTIME through the GXT `@ember/template-compilation` shim (`app/templates/application.js`) |
+| babel | template + decorator transforms | only what the GXT compiler runs internally over `.gjs` (`decorator-transforms`); plain app modules need none |
 
 The Embroider template pipeline and GXT's compiler are mutually exclusive
 (RFC §5.5), so this template demonstrates the supported non-Embroider path:
@@ -37,6 +37,11 @@ npx vite build && npx vite preview   # production build
 
 The app renders an application route template with a counter; the `+1`
 button exercises `{{on "click"}}` → classic `set()` → GXT cell reactivity.
+`<Counter />` is a BUILD-TIME-compiled `.gjs` component resolved by name
+from the owner registry (the strict resolver's `./components/*.gjs` glob);
+its `@count`/`@increment` args prove reactivity flows across the
+runtime↔build-time boundary in both directions.
 
 CI coverage: `smoke-tests/scenarios/gxt-boot-test.ts` (build + headless boot
-+ click reactivity), matrix name `emberSourceGxt-gxt-boot`.
++ click reactivity over both pipelines), matrix name
+`emberSourceGxt-gxt-boot`.

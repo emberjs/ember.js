@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { createRequire } from 'node:module';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { compiler } from '@lifeart/gxt/compiler';
 
 // The GXT template intentionally does NOT use `@embroider/vite`'s
 // `classicEmberSupport()` / `ember()` pipeline: Embroider compiles templates
@@ -56,31 +57,21 @@ function emberSourceResolver() {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [emberSourceResolver()],
-  // The @lifeart/gxt dist chunks reference build-time flag identifiers
-  // (WITH_CONTEXT_API, IS_DEV_MODE, …) that the GXT compiler Vite plugin
-  // normally inlines. This template does not need that plugin (templates
-  // compile at runtime), so define the canonical flag set here — any flag
-  // left out survives as a bare identifier and throws ReferenceError when
-  // its code path runs. Mirrors the classic-mode define block in the ember
-  // repo's own vite.config.mjs.
-  define: {
-    IS_GLIMMER_COMPAT_MODE: 'true',
-    WITH_EMBER_INTEGRATION: 'true',
-    WITH_HELPER_MANAGER: 'true',
-    WITH_MODIFIER_MANAGER: 'true',
-    WITH_CONTEXT_API: 'true',
-    TRY_CATCH_ERROR_HANDLING: 'false',
-    IS_DEV_MODE: mode === 'development' ? 'true' : 'false',
-    SUPPORT_SHADOW_DOM: 'true',
-    REACTIVE_MODIFIERS: 'true',
-    RUN_EVENT_DESTRUCTORS_FOR_SCOPED_NODES: 'false',
-    ASYNC_COMPILE_TRANSFORMS: 'true',
-    WITH_DYNAMIC_EVAL: 'false',
-    WITH_TYPE_CHECKER_HINTS: 'false',
-  },
-  // The prebuilt dist modules are plain ESM; nothing in this app uses
-  // decorators or template tags, so no babel pass is needed.
+  plugins: [
+    // Build-time GXT template compilation for .gjs/.gts (<template> tags).
+    // The plugin also `define`s the GXT build-flag identifiers
+    // (WITH_CONTEXT_API, IS_DEV_MODE, …) that the prebuilt @lifeart/gxt dist
+    // chunks reference, so no manual define block is needed.
+    compiler(mode, {
+      flags: {
+        WITH_EMBER_INTEGRATION: true,
+        WITH_HELPER_MANAGER: true,
+        WITH_MODIFIER_MANAGER: true,
+        TRY_CATCH_ERROR_HANDLING: false,
+      },
+    }),
+    emberSourceResolver(),
+  ],
   optimizeDeps: {
     // The ember-source dist is a large preserveModules graph reached through
     // a custom resolver; let it be served as-is instead of prebundled.

@@ -8,5 +8,6 @@ import { precompileTemplate } from '@ember/template-compilation';
 export default precompileTemplate(
   `<h1 data-test-title>Hello from Ember on GXT</h1>
   <p data-test-count>Count: {{this.count}}</p>
-  <button type="button" data-test-increment {{on "click" this.increment}}>+1</button>`
+  <button type="button" data-test-increment {{on "click" this.increment}}>+1</button>
+  <Counter @count={{this.count}} @increment={{this.increment}} />`
 );

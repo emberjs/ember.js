@@ -97,6 +97,12 @@ gxtBootAppScenarios
             'initial reactive state rendered'
           );
 
+          assert.equal(
+            await page.textContent('[data-test-bt-count]'),
+            'BT Count: 0',
+            'the BUILD-TIME-compiled .gjs component (owner-registry resolved) rendered'
+          );
+
           for (let i = 0; i < 3; i++) {
             await page.click('[data-test-increment]');
           }
@@ -111,6 +117,24 @@ gxtBootAppScenarios
             await page.textContent('[data-test-count]'),
             'Count: 3',
             '{{on "click"}} -> set() -> DOM update round trip works'
+          );
+          assert.equal(
+            await page.textContent('[data-test-bt-count]'),
+            'BT Count: 3',
+            'reactivity flows into the build-time-compiled component via @args'
+          );
+
+          // And back out: the .gjs component's own {{on}} drives the same state.
+          await page.click('[data-test-bt-increment]');
+          await page.waitForFunction(
+            () => document.querySelector('[data-test-count]')?.textContent === 'Count: 4',
+            undefined,
+            { timeout: 10_000 }
+          );
+          assert.equal(
+            await page.textContent('[data-test-bt-count]'),
+            'BT Count: 4',
+            'the build-time component\'s {{on "click" @increment}} round trip works'
           );
           assert.deepEqual(pageErrors, [], 'no uncaught page errors during boot + interaction');
         } finally {
