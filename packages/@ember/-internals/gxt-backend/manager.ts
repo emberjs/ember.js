@@ -63,13 +63,20 @@ function constructStyleDeprecationMessage(affectedStyle: string): string {
   );
 }
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
+// Spec-level symbols may come from the `@glimmer/validator` barrel (present in
+// BOTH the real validator and the GXT shim — the classic build resolves the
+// real package since the GXT alias only exists under GXT_MODE).
+import { createUpdatableTag as _gxtCreateUpdatableTag } from '@glimmer/validator';
+// Bridge-only symbols exist ONLY on the shim — import them relatively so the
+// classic build (which bundles gxt-backend runtime-gated) can still bind.
+// Under GXT_MODE `@glimmer/validator` aliases to this same file, so this is
+// the identical module instance either way.
 import {
   beginBacktrackingFrame,
   endBacktrackingFrame,
   touchClassicBridge as _gxtTouchClassicBridge,
   registerClassicReactor as _gxtRegisterClassicReactor,
-  createUpdatableTag as _gxtCreateUpdatableTag,
-} from '@glimmer/validator';
+} from './validator';
 import {
   createConstRef as _createConstRef,
   valueForRef as _valueForRefForManager,
