@@ -108,7 +108,9 @@
   One detail to keep in mind is that both branches of the `if` helper will be evaluated,
   so if you have `{{if condition "foo" (expensive-operation "bar")`,
   `expensive-operation` will always calculate.
-
+ 
+  `if` is built-in and does not need to be imported.
+ 
   @method if
   @for Ember.Templates.helpers
   @public
@@ -216,7 +218,9 @@
   ```html
   Please login.
   ```
-
+ 
+  `unless` is built-in and does not need to be imported.
+ 
   @method unless
   @for Ember.Templates.helpers
   @public
