@@ -7,7 +7,7 @@ import { getComponentTemplate } from '@glimmer/manager';
 // GXT-aliased shim in GXT mode, where the call site below is dead-branched).
 import { precompileTemplate } from '@ember/template-compilation';
 // Bridge reader for `registerObjectValueOwner`.
-import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+import { getGxtRenderer, setCurrentOutletState } from '@ember/-internals/gxt-backend/gxt-bridge';
 // Lazy accessor for @lifeart/gxt symbols. The gxt-backend module (only loaded
 // in __GXT_MODE__) stashes the namespace on globalThis.__lifeartGxt at its
 // own load time. Avoiding a static `import * as _gxt from '@lifeart/gxt'`
@@ -16,7 +16,7 @@ import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 // are only invoked from the factory.render path, which itself is gated on
 // __gxtCompiled-templated rendering.
 function _gxtLib(): any {
-  return (globalThis as any).__lifeartGxt;
+  return getGxtRenderer()?.gxtLib;
 }
 
 // Ensure GXT context is initialized for the document
@@ -997,7 +997,7 @@ function createRootTemplate(_owner: any) {
       }
 
       // Set global outlet state for nested <ember-outlet> elements
-      (globalThis as any).__currentOutletState = outletState;
+      setCurrentOutletState(outletState);
 
       // Begin render pass for backtracking detection (detects mutations
       // to already-consumed values during rendering, e.g., component init

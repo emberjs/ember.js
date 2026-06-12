@@ -21,6 +21,7 @@ if (typeof QUnit !== 'undefined') {
 
 // Import Ember integration tests
 import './ember-tests';
+import { setCurrentOutletState } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 // Import compat layer unit tests
 import './validator-test';
@@ -717,8 +718,8 @@ gxtSuiteModule('Outlet Integration', function (hooks: any) {
 
   hooks.afterEach(function () {
     fixture.innerHTML = '';
-    // Clean up global outlet state
-    (globalThis as any).__currentOutletState = undefined;
+    // Clean up bridge outlet state
+    setCurrentOutletState(undefined);
   });
 
   QUnit.test('{{outlet}} transforms to <ember-outlet />', function (assert: any) {
@@ -756,8 +757,8 @@ gxtSuiteModule('Outlet Integration', function (hooks: any) {
       },
     };
 
-    // Set global outlet state
-    (globalThis as any).__currentOutletState = outletState;
+    // Set bridge outlet state
+    setCurrentOutletState(outletState);
 
     // Create the custom element
     const outlet = document.createElement('ember-outlet');

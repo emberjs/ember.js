@@ -2579,6 +2579,19 @@ export interface GxtRenderer {
   readonly viewUtils: GxtViewUtilsCapabilities;
   readonly format: GxtFormatCapabilities;
   readonly compilePipeline: GxtCompilePipelineCapabilities;
+
+  /**
+   * The `@lifeart/gxt` namespace, contributed by gxt-backend/manager.ts (the
+   * only module that statically imports it). The typed replacement for the
+   * retired `globalThis.__lifeartGxt` stash: glimmer-package call sites
+   * (renderer.ts's destroyElementSync/ensureGxtContext, root.ts's factory
+   * render path, views/outlet's reactive outlet slot) are only reached on
+   * GXT-gated paths, and routing the namespace through the bridge keeps the
+   * ~50KB GXT runtime out of classic bundles exactly as the stash did —
+   * without the mutable global.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly gxtLib: any;
   readonly renderPass: GxtRenderPassCapabilities;
   readonly runtime: GxtRuntimeCapabilities;
   readonly rootComponent: GxtRootComponentCapabilities;
@@ -2792,6 +2805,41 @@ export function installViewUtilsPart(part: Partial<GxtViewUtilsCapabilities>): v
  * classic-Ember build) — callers must guard with `if (renderer)`. Under
  * `__GXT_MODE__ = false`, the entire calling branch DCEs away.
  */
+// ---------------------------------------------------------------------------
+// Outlet bridge state. The canonical "current outlet state" pointer and the
+// live <ember-outlet> element registry were historically the
+// `globalThis.__currentOutletState` / `__activeOutletElements` slots, written
+// and read from BOTH sides of the bridge (glimmer's outlet/root templates and
+// OutletView on one side; gxt-backend's <ember-outlet> custom element,
+// manager.ts and compile.ts on the other). The bridge is the one module both
+// sides already import, so the state lives here as plain module-locals with
+// typed accessors. Classic builds load this module too (it is inert: nothing
+// writes in classic mode).
+// ---------------------------------------------------------------------------
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _currentOutletState: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _activeOutletElements = new Set<any>();
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getCurrentOutletState(): any {
+  return _currentOutletState;
+}
+
+export function setCurrentOutletState(state: unknown): void {
+  _currentOutletState = state;
+}
+
+/**
+ * The live registry of connected `<ember-outlet>` elements. Returned by
+ * reference — callers add/delete/iterate the shared Set (matching the
+ * historical globalThis semantics).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getActiveOutletElements(): Set<any> {
+  return _activeOutletElements;
+}
+
 export function getGxtRenderer(): GxtRenderer | null {
   // Classic builds can still EVALUATE gxt-backend module init — the vite test
   // page statically imports the compat layer and the classic rollup graph

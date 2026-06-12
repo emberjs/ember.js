@@ -1,6 +1,11 @@
 import { Component, createRoot, setParentContext, getParentContext } from '@lifeart/gxt';
 // (Cluster B slice 6) Bridge reader for `registerObjectValueOwner`.
-import { getGxtRenderer } from './gxt-bridge';
+import {
+  getGxtRenderer,
+  getCurrentOutletState,
+  setCurrentOutletState,
+  getActiveOutletElements,
+} from './gxt-bridge';
 
 /**
  * EmberOutletElement - Custom HTML element for Ember's {{outlet}} helper.
@@ -21,27 +26,21 @@ class EmberOutletElement extends HTMLElement {
 
   connectedCallback() {
     // Get outlet state from the global context
-    this._outletState = (globalThis as any).__currentOutletState;
+    this._outletState = getCurrentOutletState();
 
     if ((globalThis as any).__DEBUG_GXT_RENDER) {
       console.log('[ember-outlet] connectedCallback, outletState:', this._outletState ? 'exists' : 'null');
     }
 
     // Register this outlet element for state change notifications
-    if (!(globalThis as any).__activeOutletElements) {
-      (globalThis as any).__activeOutletElements = new Set();
-    }
-    (globalThis as any).__activeOutletElements.add(this);
+    getActiveOutletElements().add(this);
 
     this.renderOutlet();
   }
 
   disconnectedCallback() {
     // Unregister from active outlets
-    const activeOutlets = (globalThis as any).__activeOutletElements;
-    if (activeOutlets) {
-      activeOutlets.delete(this);
-    }
+    getActiveOutletElements().delete(this);
     this._rendered = false;
     this._lastTemplate = null;
     this._lastContext = null;
@@ -148,8 +147,8 @@ class EmberOutletElement extends HTMLElement {
     }
 
     // Update the global outlet state for nested outlets
-    const previousOutletState = (globalThis as any).__currentOutletState;
-    (globalThis as any).__currentOutletState = nestedOutlet;
+    const previousOutletState = getCurrentOutletState();
+    setCurrentOutletState(nestedOutlet);
 
     // Set globalThis.owner to the route's owner (may be an engine instance)
     // so that $_tag_ember can resolve components from the correct registry
@@ -254,7 +253,7 @@ class EmberOutletElement extends HTMLElement {
       }
     } finally {
       // Restore previous outlet state and owner
-      (globalThis as any).__currentOutletState = previousOutletState;
+      setCurrentOutletState(previousOutletState);
       (globalThis as any).owner = previousOwner;
     }
   }

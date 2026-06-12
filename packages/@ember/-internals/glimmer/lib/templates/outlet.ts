@@ -11,7 +11,12 @@
 // no-op; in GXT mode manager.ts installs the capabilities at module init.
 // The bridge module is a leaf with no side effects, so the import is safe to
 // pull from a non-gxt-backend package even under classic rollup.
-import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+import {
+  getGxtRenderer,
+  getCurrentOutletState,
+  setCurrentOutletState,
+  getActiveOutletElements,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
 // Classic-build template compiler (build-time macro in classic pipelines; the
 // GXT-aliased shim in GXT mode, where the call site below is dead-branched).
 import { precompileTemplate } from '@ember/template-compilation';
@@ -54,8 +59,9 @@ const EmberOutletElement: any =
             return;
           }
 
-          // Get outlet state from the global context
-          this._outletState = (globalThis as any).__currentOutletState;
+          // Get outlet state from the bridge (see outlet bridge state in
+          // gxt-bridge.ts — the retired __currentOutletState slot)
+          this._outletState = getCurrentOutletState();
 
           if ((globalThis as any).__DEBUG_GXT_RENDER) {
             console.log(
@@ -67,10 +73,7 @@ const EmberOutletElement: any =
           this.renderOutlet();
 
           // Register this outlet element for re-rendering when state changes
-          const outlets = (globalThis as any).__activeOutletElements;
-          if (outlets) {
-            outlets.add(this);
-          }
+          getActiveOutletElements().add(this);
         }
 
         disconnectedCallback() {
@@ -78,10 +81,7 @@ const EmberOutletElement: any =
           this._lastRenderedTemplate = null;
 
           // Unregister from active outlets
-          const outlets = (globalThis as any).__activeOutletElements;
-          if (outlets) {
-            outlets.delete(this);
-          }
+          getActiveOutletElements().delete(this);
         }
 
         // Called when outlet state changes to re-render with new content
@@ -239,8 +239,8 @@ const EmberOutletElement: any =
           }
 
           // Update the global outlet state for nested outlets
-          const previousOutletState = (globalThis as any).__currentOutletState;
-          (globalThis as any).__currentOutletState = nestedOutlet;
+          const previousOutletState = getCurrentOutletState();
+          setCurrentOutletState(nestedOutlet);
 
           // If this outlet element is an immediate child of a classic-component
           // wrapper (`{{#x-toggle id="root-9"}}{{outlet}}{{/x-toggle}}`), push
@@ -311,7 +311,7 @@ const EmberOutletElement: any =
             if (ownerSwapped) {
               (globalThis as any).owner = previousGlobalOwner;
             }
-            (globalThis as any).__currentOutletState = previousOutletState;
+            setCurrentOutletState(previousOutletState);
             if (_parentViewPushed) {
               try {
                 // (Cluster B slice 3) — typed bridge call. Was __gxtPopParentView.
@@ -324,8 +324,6 @@ const EmberOutletElement: any =
         }
       };
 
-// Global set of active outlet elements for re-rendering on state change
-(globalThis as any).__activeOutletElements = new Set<any>();
 
 // Register the custom element (only once)
 if (typeof customElements !== 'undefined' && !customElements.get('ember-outlet')) {

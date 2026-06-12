@@ -13,7 +13,11 @@ import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import type { SimpleElement } from '@simple-dom/interface';
 // (Cluster B slice 113) Bridge reader for the root-outlet rerender dispatcher.
-import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+import {
+  getGxtRenderer,
+  setCurrentOutletState,
+  getActiveOutletElements,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';
 import type { OutletState } from '../utils/outlet';
@@ -88,7 +92,7 @@ export default class OutletView {
       // dereference it directly). cellFor is read lazily from the gxt-backend's
       // globalThis.__lifeartGxt stash so classic-mode bundles (benchmark-app)
       // don't statically import @lifeart/gxt.
-      (globalThis as any).__lifeartGxt.cellFor(outletState.outlets, 'main');
+      getGxtRenderer()?.gxtLib.cellFor(outletState.outlets, 'main');
       this.ref = outletState as unknown as Reference<OutletState | undefined>;
     } else {
       // Classic mode: restore upstream's createComputeRef + tag pattern so that
@@ -150,8 +154,8 @@ export default class OutletView {
     // chain.
     (this.ref as any).outlets['main'] = state;
 
-    // Update the global outlet state so <ember-outlet> elements can access it
-    (globalThis as any).__currentOutletState = this.ref;
+    // Update the bridge outlet state so <ember-outlet> elements can access it
+    setCurrentOutletState(this.ref);
 
     // In GXT mode, trigger re-render of the root outlet content first.
     // The root render function handles the top-level route (the one that
@@ -169,20 +173,18 @@ export default class OutletView {
         // may create new <ember-outlet> elements (via innerHTML='' + renderOutletState).
         // We only want to notify PRE-EXISTING outlets about the state change —
         // newly created outlets already render via connectedCallback.
-        const preExistingOutlets = (globalThis as any).__activeOutletElements
-          ? new Set((globalThis as any).__activeOutletElements)
-          : null;
+        const preExistingOutlets = new Set(getActiveOutletElements());
 
         rootRenderFn(this.ref);
 
         // After the root re-render, notify pre-existing outlet elements about
         // nested state changes (e.g., engine-internal route transitions where
         // the outlet element stays in the DOM but nested content changes).
-        if (preExistingOutlets) {
-          const currentOutlets = (globalThis as any).__activeOutletElements;
+        {
+          const currentOutlets = getActiveOutletElements();
           for (const outlet of preExistingOutlets as Iterable<any>) {
             // Only notify outlets that survived the root re-render (still in DOM)
-            if (currentOutlets?.has(outlet) && typeof outlet.updateOutletState === 'function') {
+            if (currentOutlets.has(outlet) && typeof outlet.updateOutletState === 'function') {
               outlet.updateOutletState(this.ref);
             }
           }
@@ -192,9 +194,8 @@ export default class OutletView {
     }
 
     // Fallback: Notify active outlet elements about the state change
-    const activeOutlets = (globalThis as any).__activeOutletElements;
-    if (activeOutlets) {
-      for (const outlet of activeOutlets) {
+    {
+      for (const outlet of getActiveOutletElements()) {
         if (typeof outlet.updateOutletState === 'function') {
           outlet.updateOutletState(this.ref);
         }

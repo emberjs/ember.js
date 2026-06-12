@@ -122,7 +122,9 @@ const _gxtFlushCellOpcodes: ((cell: unknown) => void) | undefined = (__lifeartGx
 // symbols. Eliminates ~50KB experiment-bundle bloat and any @lifeart/gxt
 // module-load side effects from the classic-mode hot path.
 import * as __lifeartGxtNamespace from '@lifeart/gxt';
-(globalThis as any).__lifeartGxt = __lifeartGxtNamespace;
+// The namespace is contributed to the typed bridge as `gxtLib` (see the
+// setGxtRenderer install at file EOF) — the replacement for the retired
+// `globalThis.__lifeartGxt` stash.
 import {
   destroy as _destroyDestroyable,
   destroySyncNow as _destroySyncNow,
@@ -3326,7 +3328,7 @@ export function checkBacktracking(targetObj: any, key: string): void {
 
   // If rendering inside an outlet context, build the outlet hierarchy.
   // This matches Glimmer VM's render tree which includes outlet entries.
-  const outletState = (globalThis as any).__currentOutletState;
+  const outletState = getCurrentOutletState();
   // The `?? false` fallback covers the bridge-not-yet-installed edge.
   const inOutletRender = getGxtRenderer()?.compilePipeline.isInOutletRender?.() ?? false;
   if (outletState && inOutletRender) {
@@ -3362,7 +3364,7 @@ export function checkBacktracking(targetObj: any, key: string): void {
 
   // Build indented tree
   const isInOutlet =
-    !!(globalThis as any).__currentOutletState &&
+    !!getCurrentOutletState() &&
     renderTreeParts.some((p) => p.startsWith('{{outlet}}'));
   // In outlet context, base indent is 6 (matching Glimmer VM's outlet nesting).
   // In component context, base indent is 4 (matching Glimmer VM's component nesting).
@@ -14570,8 +14572,10 @@ export { $_MANAGERS };
 // queueMicrotask deferral is needed (and would in fact break compile.ts's
 // own top-level reads).
 
-import { setGxtRenderer, getGxtRenderer } from './gxt-bridge';
+import { setGxtRenderer, getGxtRenderer, getCurrentOutletState } from './gxt-bridge';
 setGxtRenderer({
+  // See `gxtLib` doc in gxt-bridge.ts (retired `globalThis.__lifeartGxt`).
+  gxtLib: __lifeartGxtNamespace,
   destruction: {
     destroyDestroyable: _gxtBridgeDestroyDestroyable,
     destroyCustomManagedInstances: _gxtDestroyCustomManagedInstances,

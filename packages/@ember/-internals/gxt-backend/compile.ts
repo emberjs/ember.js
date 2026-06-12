@@ -966,7 +966,7 @@ import { installEmberWrappers } from './ember-gxt-wrappers';
 
 // Typed capabilities bridge for destruction hooks. Populated by manager.ts at
 // its module init time.
-import { getGxtRenderer } from './gxt-bridge';
+import { getGxtRenderer, getCurrentOutletState } from './gxt-bridge';
 
 // `peekInstanceCapture` exposes the last-created Ember instance, used by the
 // $_tag component thunk's template-only-detection snapshots. The writer
@@ -8231,7 +8231,7 @@ installRuntimePart({
   // a key (compile-time assert rejects others) and lets descendants read
   // the routing outlet state.
   gxtGetOutletState: () => {
-    return (globalThis as any).__currentOutletState;
+    return getCurrentOutletState();
   },
   // gxtEntriesOf: Converts an object to [{k, v}, ...] for {{#each-in}}
   // Returns objects with .k and .v properties (not arrays) since GXT

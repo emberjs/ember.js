@@ -45,7 +45,7 @@ import {
 // runtime out of the classic bundle and prevents any @lifeart/gxt module-load
 // side effects from running in classic-mode contexts.
 function _gxtLib(): any {
-  return (globalThis as any).__lifeartGxt;
+  return getGxtRenderer()?.gxtLib;
 }
 
 // Cached GXT DOM API for destroyElementSync
