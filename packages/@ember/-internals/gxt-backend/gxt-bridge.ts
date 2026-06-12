@@ -2864,6 +2864,31 @@ export function getActiveOutletElements(): Set<any> {
   return _activeOutletElements;
 }
 
+// ---------------------------------------------------------------------------
+// Ambient owner. The "current owner" that render paths set/restore around
+// every ownership boundary (root render, engine mount, component/helper
+// resolution) — historically the `globalThis.owner` slot, read and written
+// from both sides of the bridge (~100 sites). Phase A of the §2a owner
+// threading (docs-internal-gxt-globalthis-wiring.md): every ember-side site
+// goes through these accessors while the storage stays on `globalThis.owner`,
+// so the sweep is semantically inert. Phase B flips the storage to a module
+// local with a one-way mirror write onto `globalThis.owner`, whose only
+// remaining consumer is runtime-compiled template code (the inlined
+// named-arg-helper guard reads `g.owner` inside the Function body — retired
+// when the §2e symbol-injection API lands).
+// ---------------------------------------------------------------------------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getAmbientOwner(): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (globalThis as any).owner;
+}
+
+export function setAmbientOwner(owner: unknown): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).owner = owner;
+}
+
 export function getGxtRenderer(): GxtRenderer | null {
   // Classic builds can still EVALUATE gxt-backend module init — the vite test
   // page statically imports the compat layer and the classic rollup graph

@@ -439,10 +439,10 @@ export function createCurriedComponent(
   curried.__curriedArgs = curriedArgs;
   curried.__curriedPositionals = curriedPositionals;
   // Capture the current owner so it can be used as fallback during re-evaluation
-  // when globalThis.owner may be null (e.g., dash-prefixed contextual components).
+  // when the ambient owner may be null (e.g., dash-prefixed contextual components).
   curried.__owner =
     (nameOrComponent && nameOrComponent.__isCurriedComponent && nameOrComponent.__owner) ||
-    (globalThis as any).owner;
+    getAmbientOwner();
 
   return curried;
 }
@@ -872,9 +872,9 @@ function _gxtRebuildViewTreeFromDom(explicitRegistry?: any): void {
   _rebuildInProgress = true;
   _gxtSuppressDirtyTagForDuringRebuild = true;
   try {
-    const owner = (globalThis as any).owner;
+    const owner = getAmbientOwner();
     // Collect registries from all live pool instances (they know their owner),
-    // plus the current globalThis.owner and any explicit registry passed in.
+    // plus the current ambient owner and any explicit registry passed in.
     const registries = new Set<any>();
     if (explicitRegistry) registries.add(explicitRegistry);
     for (const pool of _allPoolArrays) {
@@ -1544,7 +1544,7 @@ function registerInViewRegistry(instance: any): void {
   if (!isInteractiveModeChecked()) return;
   try {
     const instanceOwner = _glimmerGetOwner(instance);
-    const gOwner = instanceOwner || (globalThis as any).owner;
+    const gOwner = instanceOwner || getAmbientOwner();
     if (!gOwner) return;
     const viewRegistry = gOwner.lookup?.('-view-registry:main');
     if (!viewRegistry) return;
@@ -3545,7 +3545,7 @@ let _isInteractiveCached: boolean | undefined;
 function isInteractiveMode(): boolean {
   if (_isInteractiveCached !== undefined) return _isInteractiveCached;
   try {
-    const owner = (globalThis as any).owner;
+    const owner = getAmbientOwner();
     if (owner) {
       const env = owner.lookup?.('-environment:main');
       if (env && typeof env.isInteractive === 'boolean') {
@@ -3564,7 +3564,7 @@ function isInteractiveMode(): boolean {
 // The global owner is reassigned per-test, so we reset at each lookup if the owner changed.
 let _lastOwnerForInteractive: any = undefined;
 function isInteractiveModeChecked(): boolean {
-  const owner = (globalThis as any).owner;
+  const owner = getAmbientOwner();
   if (owner !== _lastOwnerForInteractive) {
     _lastOwnerForInteractive = owner;
     _isInteractiveCached = undefined;
@@ -4856,7 +4856,7 @@ function _gxtSnapshotLiveInstances(): void {
 // didDestroyElement, willDestroy.
 // Exposed via the gxt-bridge as `destruction.destroyUnclaimedPoolEntries`.
 function _gxtDestroyUnclaimedPoolEntries(): void {
-  const gOwner = (globalThis as any).owner;
+  const gOwner = getAmbientOwner();
   let viewRegistry: any;
   try {
     viewRegistry = gOwner?.lookup?.('-view-registry:main');
@@ -5427,7 +5427,7 @@ function _gxtDestroyTrackedInstances(): void {
 
   // Phase 2: transition to destroying, clear element, unregister from view registry,
   // then fire didDestroyElement
-  const gOwner = (globalThis as any).owner;
+  const gOwner = getAmbientOwner();
   let viewRegistry: any;
   try {
     viewRegistry = gOwner?.lookup?.('-view-registry:main');
@@ -5516,7 +5516,7 @@ function _gxtDestroyTrackedInstances(): void {
 function _gxtDestroyEmberComponentInstance(instance: any): void {
   if (!instance || instance.isDestroyed || instance.isDestroying) return;
 
-  const gOwner = (globalThis as any).owner;
+  const gOwner = getAmbientOwner();
   let viewRegistry: any;
   try {
     viewRegistry = gOwner?.lookup?.('-view-registry:main');
@@ -5632,7 +5632,7 @@ function _gxtFinalizeInverseOldRows(rows: ReadonlyArray<any>, cycle: number): vo
   if (!rows || rows.length === 0) return;
   let viewRegistry: any;
   try {
-    viewRegistry = (globalThis as any).owner?.lookup?.('-view-registry:main');
+    viewRegistry = getAmbientOwner()?.lookup?.('-view-registry:main');
   } catch {
     /* ignore */
   }
@@ -5738,7 +5738,7 @@ function _gxtDestroyInstancesInNodes(removedNodeList: ReadonlyArray<Node>): void
   let gOwner: any = null;
   let viewReg: any = null;
   try {
-    gOwner = (globalThis as any).owner;
+    gOwner = getAmbientOwner();
   } catch {
     /* */
   }
@@ -8232,11 +8232,11 @@ function _resolveEmberHelper(
 // $_MANAGERS Implementation
 // =============================================================================
 
-// Cache the last known owner so reactive re-evaluations (when globalThis.owner
+// Cache the last known owner so reactive re-evaluations (when the ambient owner
 // may be null) can still resolve components and helpers.
 let _cachedManagerOwner: any = null;
 function getOwnerWithFallback(): any {
-  const current = (globalThis as any).owner;
+  const current = getAmbientOwner();
   if (current && !current.isDestroyed && !current.isDestroying) {
     _cachedManagerOwner = current;
     return current;
@@ -8251,7 +8251,7 @@ function getOwnerWithFallback(): any {
 }
 
 // Expose getOwnerWithFallback on globalThis so compile.ts can use the shared
-// owner cache during reactive re-evaluations when globalThis.owner is null.
+// owner cache during reactive re-evaluations when the ambient owner is null.
 (globalThis as any).__getOwnerWithFallback = getOwnerWithFallback;
 
 const $_MANAGERS = {
@@ -8491,15 +8491,15 @@ const $_MANAGERS = {
         }
         // Resolve the underlying component
         const resolvedKomp = komp.__name;
-        // Temporarily ensure globalThis.owner is set for the recursive call,
+        // Temporarily ensure the ambient owner is set for the recursive call,
         // so dash-prefixed components (e.g., "-inner-component") can be resolved.
-        // Use the curried component's captured owner if the current globalThis.owner
+        // Use the curried component's captured owner if the current ambient owner
         // is null or destroyed — this handles reactive re-evaluations correctly.
-        const prevOwner = (globalThis as any).owner;
+        const prevOwner = getAmbientOwner();
         const resolveOwner =
           prevOwner && !prevOwner.isDestroyed && !prevOwner.isDestroying ? prevOwner : owner;
         if (resolveOwner && resolveOwner !== prevOwner) {
-          (globalThis as any).owner = resolveOwner;
+          setAmbientOwner(resolveOwner);
         }
         // Propagate the per-render dc-capture callback through the recursive
         // handle() call so renderClassicComponent / renderGlimmerComponent can
@@ -8518,7 +8518,7 @@ const $_MANAGERS = {
           return result;
         } finally {
           if (resolveOwner !== prevOwner) {
-            (globalThis as any).owner = prevOwner;
+            setAmbientOwner(prevOwner);
           }
         }
       }
@@ -8550,10 +8550,10 @@ const $_MANAGERS = {
             }
           }
         }
-        // Temporarily ensure globalThis.owner is set for the recursive call
-        const prevOwner2 = (globalThis as any).owner;
+        // Temporarily ensure the ambient owner is set for the recursive call
+        const prevOwner2 = getAmbientOwner();
         if (!prevOwner2 && owner) {
-          (globalThis as any).owner = owner;
+          setAmbientOwner(owner);
         }
         // Propagate the per-render dc-capture callback through the recursive
         // handle() call (see CurriedComponent branch above for rationale).
@@ -8571,7 +8571,7 @@ const $_MANAGERS = {
           return result;
         } finally {
           if (!prevOwner2 && owner) {
-            (globalThis as any).owner = prevOwner2;
+            setAmbientOwner(prevOwner2);
           }
         }
       }
@@ -8702,17 +8702,17 @@ const $_MANAGERS = {
               // because GXT expects component results to be renderable.
               const maybeHelper = (globalThis as any).$_maybeHelper;
               if (typeof maybeHelper === 'function') {
-                // Temporarily ensure globalThis.owner is set so $_maybeHelper can resolve
-                const prevOwnerH = (globalThis as any).owner;
+                // Temporarily ensure the ambient owner is set so $_maybeHelper can resolve
+                const prevOwnerH = getAmbientOwner();
                 if (!prevOwnerH && owner) {
-                  (globalThis as any).owner = owner;
+                  setAmbientOwner(owner);
                 }
                 let helperResult: any;
                 try {
                   helperResult = maybeHelper(helperName, positional, named, ctx);
                 } finally {
                   if (!prevOwnerH && owner) {
-                    (globalThis as any).owner = prevOwnerH;
+                    setAmbientOwner(prevOwnerH);
                   }
                 }
                 // Return a getter so GXT renders the value as text
@@ -9329,7 +9329,7 @@ const $_MANAGERS = {
         // Check built-in keyword modifiers
         if ((this as any)._builtinModifiers[modifier]) return true;
 
-        const owner = (globalThis as any).owner;
+        const owner = getAmbientOwner();
         if (owner && !owner.isDestroyed && !owner.isDestroying) {
           const factory = owner.factoryFor?.(`modifier:${modifier}`);
           if (factory) return true;
@@ -9401,7 +9401,7 @@ const $_MANAGERS = {
         return undefined;
       }
 
-      const owner = (globalThis as any).owner;
+      const owner = getAmbientOwner();
       const self = this as any;
       // Built-in modifiers like `on` (registered in `_builtinModifiers`
       // via `setInternalModifierManager`) do not require an Ember owner —
@@ -14618,7 +14618,13 @@ export { $_MANAGERS };
 // queueMicrotask deferral is needed (and would in fact break compile.ts's
 // own top-level reads).
 
-import { setGxtRenderer, getGxtRenderer, getCurrentOutletState } from './gxt-bridge';
+import {
+  setGxtRenderer,
+  getGxtRenderer,
+  getCurrentOutletState,
+  getAmbientOwner,
+  setAmbientOwner,
+} from './gxt-bridge';
 setGxtRenderer({
   // See `gxtLib` doc in gxt-bridge.ts (retired `globalThis.__lifeartGxt`).
   gxtLib: __lifeartGxtNamespace,

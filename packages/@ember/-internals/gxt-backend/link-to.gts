@@ -5,6 +5,7 @@
  * It renders an anchor tag that triggers route transitions.
  */
 import { Component } from '@lifeart/gxt';
+import { getAmbientOwner } from './gxt-bridge';
 
 export class LinkTo extends Component {
   get route() {
@@ -60,7 +61,7 @@ export class LinkTo extends Component {
     }
 
     // If there's a real router, use it
-    const owner = (globalThis as any).owner;
+    const owner = getAmbientOwner();
     if (owner) {
       const router = owner.lookup('service:router') || owner.lookup('router:main');
       if (router && typeof router.transitionTo === 'function') {

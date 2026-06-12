@@ -16,7 +16,7 @@ import {
   valueForRef,
 } from './reference';
 import { associateDestroyableChild } from './destroyable';
-import { getGxtRenderer } from './gxt-bridge';
+import { getGxtRenderer, getAmbientOwner } from './gxt-bridge';
 
 // Shared WeakSet to track capabilities created via helperCapabilities()
 export const FROM_CAPABILITIES = new WeakSet();
@@ -494,13 +494,13 @@ export class CustomHelperManager {
 
   createHelper(definition: any, args: any) {
     // This delegates to getDelegateFor, primarily used by invokeHelper path
-    const owner = (globalThis as any).owner;
+    const owner = getAmbientOwner();
     const manager = this.getDelegateFor(owner);
     return manager.createHelper(definition, args);
   }
 
   getValue(bucket: any, definition?: any) {
-    const owner = (globalThis as any).owner;
+    const owner = getAmbientOwner();
     const manager = this.getDelegateFor(owner);
     // Wrap in backtracking frame so read-then-write is detected with debug
     // name. DEBUG-gated: upstream manager getDebugName bodies call the
@@ -521,7 +521,7 @@ export class CustomHelperManager {
   }
 
   getDestroyable(bucket: any) {
-    const owner = (globalThis as any).owner;
+    const owner = getAmbientOwner();
     const manager = this.getDelegateFor(owner);
     return manager?.getDestroyable?.(bucket) || null;
   }
@@ -529,7 +529,7 @@ export class CustomHelperManager {
   get capabilities() {
     // Return the capabilities of the delegate
     // Try to get a delegate to check capabilities
-    const owner = (globalThis as any).owner;
+    const owner = getAmbientOwner();
     try {
       const manager = this.getDelegateFor(owner);
       return (
@@ -546,7 +546,7 @@ export class CustomHelperManager {
 
   getDebugName(helper: any) {
     if (!DEBUG) return 'Helper';
-    const owner = (globalThis as any).owner;
+    const owner = getAmbientOwner();
     try {
       const manager = this.getDelegateFor(owner);
       return manager?.getDebugName?.(helper) || 'Helper';

@@ -14,7 +14,11 @@ import { _resetRenderers } from '@ember/-internals/glimmer';
 // `_gxtPendingSyncFromPropertyChangeFlag` in
 // `@ember/-internals/gxt-backend/compile.ts`). See
 // `setPendingSyncFromPropertyChange` doc in gxt-bridge.ts.
-import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+import {
+  getGxtRenderer,
+  getAmbientOwner,
+  setAmbientOwner,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -136,9 +140,9 @@ export abstract class AbstractStrictTestCase {
         /* ignore */
       }
 
-      // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
-      if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {
-        (globalThis as any).owner = null;
+      // Clear a stale ambient owner so subsequent tests don't see a destroyed owner
+      if (getAmbientOwner()?.isDestroyed || getAmbientOwner()?.isDestroying) {
+        setAmbientOwner(null);
       }
     } finally {
       _resetRenderers();

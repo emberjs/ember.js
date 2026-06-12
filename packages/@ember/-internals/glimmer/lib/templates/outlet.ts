@@ -16,6 +16,8 @@ import {
   getCurrentOutletState,
   setCurrentOutletState,
   getActiveOutletElements,
+  getAmbientOwner,
+  setAmbientOwner,
 } from '@ember/-internals/gxt-backend/gxt-bridge';
 // Classic-build template compiler (build-time macro in classic pipelines; the
 // GXT-aliased shim in GXT mode, where the call site below is dead-branched).
@@ -181,7 +183,7 @@ const EmberOutletElement: any =
           // Build context from controller via prototype chain.
           const nestedContext: any = controller ? Object.create(controller) : {};
           nestedContext.model = model;
-          nestedContext.owner = owner || (globalThis as any).owner;
+          nestedContext.owner = owner || getAmbientOwner();
           nestedContext.outletState = nestedOutlet;
           nestedContext.args = { model, controller, outletState: nestedOutlet };
 
@@ -283,7 +285,7 @@ const EmberOutletElement: any =
           }
 
           // Engine support: when the nested outlet's render owner is an engine
-          // instance (different from the application owner), swap globalThis.owner
+          // instance (different from the application owner), swap the ambient owner
           // for the duration of tpl.render so that $_maybeHelper / $_tag / component
           // resolution find the engine's registry (e.g. engine-scoped helpers,
           // components registered only on the engine). Without this swap a shared
@@ -291,10 +293,10 @@ const EmberOutletElement: any =
           // bare identifiers (`{{ambiguous-curlies}}`) against the application owner
           // even while rendering inside the engine's outlet, leaking application
           // refinements into the engine's render output.
-          const previousGlobalOwner = (globalThis as any).owner;
+          const previousGlobalOwner = getAmbientOwner();
           const ownerSwapped = owner && owner !== previousGlobalOwner;
           if (ownerSwapped) {
-            (globalThis as any).owner = owner;
+            setAmbientOwner(owner);
           }
           try {
             if (typeof tpl?.render === 'function') {
@@ -309,7 +311,7 @@ const EmberOutletElement: any =
             }
           } finally {
             if (ownerSwapped) {
-              (globalThis as any).owner = previousGlobalOwner;
+              setAmbientOwner(previousGlobalOwner);
             }
             setCurrentOutletState(previousOutletState);
             if (_parentViewPushed) {

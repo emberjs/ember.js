@@ -5,6 +5,8 @@ import {
   getCurrentOutletState,
   setCurrentOutletState,
   getActiveOutletElements,
+  getAmbientOwner,
+  setAmbientOwner,
 } from './gxt-bridge';
 
 /**
@@ -134,15 +136,15 @@ class EmberOutletElement extends HTMLElement {
     // so set(controller, key, val) updates propagate.
     const nestedContext: any = controller ? Object.create(controller) : {};
     nestedContext.model = model;
-    nestedContext.owner = owner || (globalThis as any).owner;
+    nestedContext.owner = owner || getAmbientOwner();
     nestedContext.outletState = nestedOutlet;
     nestedContext.args = argsObj;
     nestedContext[$ARGS_KEY] = argsObj;
     nestedContext[$SLOTS_KEY] = {};
     nestedContext.$fw = [[], [], []];
-    // Mark as engine context when owner differs from globalThis.owner
+    // Mark as engine context when owner differs from the ambient owner
     // so $_tag_ember can swap the owner for component resolution.
-    if (owner && owner !== (globalThis as any).owner) {
+    if (owner && owner !== getAmbientOwner()) {
       nestedContext.__gxtIsEngineCtx = true;
     }
 
@@ -150,11 +152,11 @@ class EmberOutletElement extends HTMLElement {
     const previousOutletState = getCurrentOutletState();
     setCurrentOutletState(nestedOutlet);
 
-    // Set globalThis.owner to the route's owner (may be an engine instance)
+    // Set the ambient owner to the route's owner (may be an engine instance)
     // so that $_tag_ember can resolve components from the correct registry
-    const previousOwner = (globalThis as any).owner;
+    const previousOwner = getAmbientOwner();
     if (owner) {
-      (globalThis as any).owner = owner;
+      setAmbientOwner(owner);
     }
 
     try {
@@ -254,7 +256,7 @@ class EmberOutletElement extends HTMLElement {
     } finally {
       // Restore previous outlet state and owner
       setCurrentOutletState(previousOutletState);
-      (globalThis as any).owner = previousOwner;
+      setAmbientOwner(previousOwner);
     }
   }
 }
@@ -307,7 +309,7 @@ class EmberMountElement extends HTMLElement {
 
     // Intentionally no debug logging in production
 
-    const owner = (globalThis as any).owner;
+    const owner = getAmbientOwner();
     if (!owner) return;
 
     // Use a shared cache to prevent duplicate engine instances when the
@@ -416,8 +418,8 @@ class EmberMountElement extends HTMLElement {
       renderContext.$fw = [[], [], []];
 
       // Swap owner to engine for component/helper resolution
-      const previousOwner = (globalThis as any).owner;
-      (globalThis as any).owner = engineInstance;
+      const previousOwner = getAmbientOwner();
+      setAmbientOwner(engineInstance);
 
       // Set up GXT rendering context
       // Slice-119 (Cluster B): canonical state lives in compile.ts as the
@@ -447,7 +449,7 @@ class EmberMountElement extends HTMLElement {
         if (savedParent) {
           setParentContext(savedParent);
         }
-        (globalThis as any).owner = previousOwner;
+        setAmbientOwner(previousOwner);
       }
     } catch (e: any) {
       // Route render errors to the render-error queue so `visit()` rejects —

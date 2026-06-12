@@ -966,7 +966,12 @@ import { installEmberWrappers } from './ember-gxt-wrappers';
 
 // Typed capabilities bridge for destruction hooks. Populated by manager.ts at
 // its module init time.
-import { getGxtRenderer, getCurrentOutletState } from './gxt-bridge';
+import {
+  getGxtRenderer,
+  getCurrentOutletState,
+  getAmbientOwner,
+  setAmbientOwner,
+} from './gxt-bridge';
 
 // `peekInstanceCapture` exposes the last-created Ember instance, used by the
 // $_tag component thunk's template-only-detection snapshots. The writer
@@ -1206,14 +1211,14 @@ if (false as boolean) {
     }
 
     // Capture owner for re-renders
-    const capturedOwner = g.owner;
+    const capturedOwner = getAmbientOwner();
 
     const renderCurried = (curried: any): Node | null => {
       if (!curried) return null;
       // Restore owner for component resolution
-      const prevOwner = g.owner;
-      if (capturedOwner && !g.owner) {
-        g.owner = capturedOwner;
+      const prevOwner = getAmbientOwner();
+      if (capturedOwner && !getAmbientOwner()) {
+        setAmbientOwner(capturedOwner);
       }
       try {
         const handleResult = managers.component.handle(curried, {}, null, null);
@@ -1226,8 +1231,8 @@ if (false as boolean) {
         if (handleResult != null) return document.createTextNode(String(handleResult));
         return null;
       } finally {
-        if (capturedOwner && prevOwner !== g.owner) {
-          g.owner = prevOwner;
+        if (capturedOwner && prevOwner !== getAmbientOwner()) {
+          setAmbientOwner(prevOwner);
         }
       }
     };
@@ -2575,7 +2580,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   if (g.$_componentHelper) {
     const unwrapArg = (v: any) => (typeof v === 'function' && !v.prototype ? v() : v);
     // Cache the last known owner so re-evaluations during reactive updates
-    // (when globalThis.owner may be null) can still resolve components.
+    // (when the ambient owner may be null) can still resolve components.
     let _cachedOwner: any = null;
     // Track which component names we've resolved per owner. Used to detect
     // stale-formula re-evaluations: if a component lookup fails in the current
@@ -2620,10 +2625,10 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
         return emptyMarker;
       }
 
-      // Track the owner — prefer globalThis.owner, fall back to cached.
+      // Track the owner — prefer the ambient owner, fall back to cached.
       // Also use the shared getOwnerWithFallback from manager.ts which has
       // a more robust cache that survives across reactive re-evaluations.
-      const currentOwner = g.owner;
+      const currentOwner = getAmbientOwner();
       if (currentOwner && !currentOwner.isDestroyed && !currentOwner.isDestroying) {
         _cachedOwner = currentOwner;
       }
@@ -2690,12 +2695,12 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       // Validate that a string component name can be resolved.
       // This throws eagerly during template evaluation (matching Ember's behavior
       // of asserting during render for non-existent components).
-      // IMPORTANT: Only validate with the CURRENT globalThis.owner (not cached fallback)
+      // IMPORTANT: Only validate with the CURRENT ambient owner (not cached fallback)
       // because cached owners may be from a different test and won't have the
       // component registered. Skipping validation during reactive re-evaluations
-      // (when g.owner is null) is safe — the manager will handle resolution.
+      // (when the ambient owner is null) is safe — the manager will handle resolution.
       if (typeof first === 'string' && first.length > 0) {
-        const validationOwner = g.owner;
+        const validationOwner = getAmbientOwner();
         if (validationOwner && !validationOwner.isDestroyed && !validationOwner.isDestroying) {
           const factory = validationOwner.factoryFor?.(`component:${first}`);
           const template = validationOwner.lookup?.(`template:components/${first}`);
@@ -2743,17 +2748,17 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
         }
       }
 
-      // Temporarily set globalThis.owner for createCurriedComponent to capture
-      const prevOwner = g.owner;
+      // Temporarily set the ambient owner for createCurriedComponent to capture
+      const prevOwner = getAmbientOwner();
       if (!prevOwner && owner) {
-        g.owner = owner;
+        setAmbientOwner(owner);
       }
       try {
         // Create a curried component
         return createCurried(first, namedArgs, positionals);
       } finally {
         if (!prevOwner && owner) {
-          g.owner = prevOwner;
+          setAmbientOwner(prevOwner);
         }
       }
     };
@@ -5653,7 +5658,7 @@ function _afterRebuildViewTreeFromDom(explicitRegistry?: unknown): void {
       const registries: any[] = [];
       if (explicitRegistry) registries.push(explicitRegistry);
       try {
-        const go: any = (globalThis as any).owner;
+        const go: any = getAmbientOwner();
         const reg2 = go && go.lookup && go.lookup('-view-registry:main');
         if (reg2 && !registries.includes(reg2)) registries.push(reg2);
       } catch {
@@ -8403,7 +8408,7 @@ installRuntimePart({
 
     // Helper invocation function: resolves and invokes a helper by name with given args
     const invokeByName = (name: string, positional: any[]) => {
-      const owner = g.owner;
+      const owner = getAmbientOwner();
       if (!owner || owner.isDestroyed || owner.isDestroying) return undefined;
       const factory = owner.factoryFor?.(`helper:${name}`);
       if (factory) {
@@ -8434,7 +8439,7 @@ installRuntimePart({
         }
       }
       if (mgr && typeof mgr.getDelegateFor === 'function') {
-        const delegate = mgr.getDelegateFor(g.owner);
+        const delegate = mgr.getDelegateFor(getAmbientOwner());
         if (
           delegate &&
           typeof delegate.createHelper === 'function' &&
@@ -10294,7 +10299,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
     // Access managers dynamically - they may be set up after this module loads
     const managers = g.$_MANAGERS;
 
-    // Engine support: ctx.owner may be the engine instance while g.owner is the app.
+    // Engine support: ctx.owner may be the engine instance while the ambient owner is the app.
     // Swap only during component-related resolution (mightBeComponent section).
     let _eoSwap = false;
     let _eoPrev: any;
@@ -10306,11 +10311,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         typeof _eoCtx.factoryFor === 'function' &&
         !_eoCtx.isDestroyed &&
         !_eoCtx.isDestroying &&
-        _eoCtx !== g.owner
+        _eoCtx !== getAmbientOwner()
       );
       if (_eoSwap) {
-        _eoPrev = g.owner;
-        g.owner = _eoCtx;
+        _eoPrev = getAmbientOwner();
+        setAmbientOwner(_eoCtx);
       }
     }
 
@@ -10334,9 +10339,10 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // handled as helpers, not components.
         // A destroyed owner cannot resolve anything (its container throws on
         // factoryFor/lookup) — treat it as absent, like manager.ts canHandle does.
-        // globalThis.owner can linger from a torn-down app when ownerless renders
+        // The ambient owner can linger from a torn-down app when ownerless renders
         // (e.g. the rehydration test delegate) encounter hyphenated tags.
-        const owner = g.owner && !g.owner.isDestroyed && !g.owner.isDestroying ? g.owner : null;
+        const _ambient = getAmbientOwner();
+        const owner = _ambient && !_ambient.isDestroyed && !_ambient.isDestroying ? _ambient : null;
         if (owner) {
           const helperFactory = owner.factoryFor?.(`helper:${kebabName}`);
           const helperLookup = !helperFactory ? owner.lookup?.(`helper:${kebabName}`) : null;
@@ -11578,7 +11584,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       }
     } finally {
       if (_eoSwap) {
-        g.owner = _eoPrev;
+        setAmbientOwner(_eoPrev);
       }
     } // Engine owner swap restore
 
@@ -15512,11 +15518,11 @@ export function precompileTemplate(
           const _curriedManagers = (globalThis as any).$_MANAGERS;
           if (_curriedManagers?.component?.canHandle?.(_curriedItem)) {
             // Capture owner at template evaluation time for reactive updates
-            const _curriedOwner = (globalThis as any).owner;
+            const _curriedOwner = getAmbientOwner();
             const _renderCurried = (curried: any): Node | null => {
               if (!curried) return null;
-              if (_curriedOwner && !(globalThis as any).owner) {
-                (globalThis as any).owner = _curriedOwner;
+              if (_curriedOwner && !getAmbientOwner()) {
+                setAmbientOwner(_curriedOwner);
               }
               const handleResult = _curriedManagers.component.handle(curried, {}, null, null);
               if (typeof handleResult === 'function') {
@@ -15731,15 +15737,15 @@ export function precompileTemplate(
           const managers = (globalThis as any).$_MANAGERS;
           if (managers?.component?.canHandle?.(finalResult)) {
             // Capture owner at template evaluation time for reactive updates
-            const capturedOwner = (globalThis as any).owner;
+            const capturedOwner = getAmbientOwner();
             const renderCurriedComponent = (curried: any): Node | null => {
               if (!curried) return null;
               // Empty curried component marker — renders nothing but preserves
               // the reactive rendering infrastructure for future transitions.
               if (curried.__isEmpty) return null;
               // Restore owner for component resolution during reactive re-evaluation
-              if (capturedOwner && !(globalThis as any).owner) {
-                (globalThis as any).owner = capturedOwner;
+              if (capturedOwner && !getAmbientOwner()) {
+                setAmbientOwner(capturedOwner);
               }
               const handleResult = managers.component.handle(curried, {}, null, null);
               if (typeof handleResult === 'function') {
@@ -16482,14 +16488,14 @@ export function precompileTemplate(
           g.$slots = context.$slots || context[_SLOTS_SYM] || {};
           g.$fw = context.$fw || [[], [], []];
 
-          // Ensure globalThis.owner is set before the template renders.
+          // Ensure the ambient owner is set before the template renders.
           // During top-level component rendering (via runAppend), the owner may
           // not be set on globalThis yet. Extract it from the component context.
-          if (!(globalThis as any).owner && context) {
+          if (!getAmbientOwner() && context) {
             const ctxOwner =
               context.owner || context._owner || (context.__gxtRawTarget || context)?.owner;
             if (ctxOwner && typeof ctxOwner === 'object' && typeof ctxOwner.lookup === 'function') {
-              (globalThis as any).owner = ctxOwner;
+              setAmbientOwner(ctxOwner);
             }
           }
 
@@ -16500,7 +16506,7 @@ export function precompileTemplate(
           // Check for built-in helper overrides. If the owner has registered a
           // helper with a built-in name, assert before rendering.
           {
-            const _owner = (globalThis as any).owner;
+            const _owner = getAmbientOwner();
             if (_owner && !_owner.isDestroyed) {
               const BUILTIN_HELPER_NAMES = [
                 'array',

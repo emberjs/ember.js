@@ -8,7 +8,11 @@ import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
 // `setPendingSyncFromPropertyChange` doc in gxt-bridge.ts. Establishes
 // the test-helper-bridge-writer pattern for flag 1 (`__gxtPendingSync`)
 // in slice 37.
-import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
+import {
+  getGxtRenderer,
+  getAmbientOwner,
+  setAmbientOwner,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
 import { EventDispatcher } from '@ember/-internals/views';
 import Component from '@ember/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
@@ -148,9 +152,9 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
         /* ignore */
       }
 
-      // Clear stale globalThis.owner so subsequent tests don't see a destroyed owner
-      if ((globalThis as any).owner?.isDestroyed || (globalThis as any).owner?.isDestroying) {
-        (globalThis as any).owner = null;
+      // Clear a stale ambient owner so subsequent tests don't see a destroyed owner
+      if (getAmbientOwner()?.isDestroyed || getAmbientOwner()?.isDestroying) {
+        setAmbientOwner(null);
       }
     } finally {
       _resetRenderers();

@@ -23,6 +23,8 @@ import {
   installCompilePipelinePart,
   installRootComponentPart,
   installViewUtilsPart,
+  getAmbientOwner,
+  setAmbientOwner,
 } from '@ember/-internals/gxt-backend/gxt-bridge';
 
 // Expose setViewElement on globalThis for GXT manager to use (avoids circular dep)
@@ -442,8 +444,8 @@ class ClassicRootState {
       _gxtRenderDepth = depth + 1;
       try {
         this.gxtRenderIncomplete = false;
-        // Set globalThis.owner for GXT manager system to access
-        (globalThis as any).owner = owner;
+        // Set the ambient owner for GXT manager system to access
+        setAmbientOwner(owner);
 
         // Check if this is a gxt template BEFORE unwrapping.
         // Gate on __GXT_MODE__: the root outlet template is always tagged
@@ -1868,9 +1870,9 @@ function _renderComponentGxt(
     }
   }
 
-  // Set globalThis.owner so the manager system can resolve services
-  const prevOwner = (globalThis as any).owner;
-  (globalThis as any).owner = owner;
+  // Set the ambient owner so the manager system can resolve services
+  const prevOwner = getAmbientOwner();
+  setAmbientOwner(owner);
 
   // Ensure GXT context is initialized
   ensureGxtContext();
@@ -2289,8 +2291,8 @@ function _renderComponentGxt(
         // the reactor so the first reattachment triggers a fresh render.
       }
       _rendering = true;
-      const prevOwnerLocal = (globalThis as any).owner;
-      (globalThis as any).owner = owner;
+      const prevOwnerLocal = getAmbientOwner();
+      setAmbientOwner(owner);
       // Slice-115 (Cluster B): routed through `compilePipeline.
       // {set,get}SkipTextEffects` bridge methods (state-home compile.ts).
       // Pre-slice-115 read/wrote `(globalThis as any).__gxtSkipTextEffects`.
@@ -2314,7 +2316,7 @@ function _renderComponentGxt(
       } finally {
         // Slice-115 (Cluster B): routed through bridge — see entry comment.
         _pipelineLocal?.setSkipTextEffects?.(prevSkip);
-        (globalThis as any).owner = prevOwnerLocal;
+        setAmbientOwner(prevOwnerLocal);
         _rendering = false;
       }
     };
@@ -2432,7 +2434,7 @@ function _renderComponentGxt(
     }
     flushRenderErrors();
   } finally {
-    (globalThis as any).owner = prevOwner;
+    setAmbientOwner(prevOwner);
   }
 
   const result: RenderResult = { destroy: doDestroy };

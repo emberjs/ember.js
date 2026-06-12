@@ -1965,7 +1965,7 @@ function buildRenderState(route: Route): RenderState {
       //
       // The faithful GXT render path is the gxt-backend root-template
       // (`@ember/-internals/glimmer/lib/templates/root.ts`) →
-      // `renderTemplateWithContext`, which establishes `globalThis.owner`, the
+      // `renderTemplateWithContext`, which establishes the ambient owner, the
       // GXT root context, the `$_GET_ARGS` args/`$fw`/`$SLOTS` symbols, and the
       // `__gxtComponentContexts` registration BEFORE invoking the raw fn (its
       // PRIORITY-2 branch calls `tpl.call(ctx, owner)`). Storing the raw fn

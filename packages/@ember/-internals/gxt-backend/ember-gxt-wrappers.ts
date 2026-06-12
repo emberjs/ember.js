@@ -16,7 +16,12 @@ import { DEBUG } from '@glimmer/env';
 // Typed bridge for destruction hooks. Populated by manager.ts at its module
 // init. Allows the $_dc_ember wrapper to destroy a component instance without
 // going through `(globalThis as any).__gxtDestroyEmberComponentInstance`.
-import { getGxtRenderer, installCompilePipelinePart } from './gxt-bridge';
+import {
+  getGxtRenderer,
+  installCompilePipelinePart,
+  getAmbientOwner,
+  setAmbientOwner,
+} from './gxt-bridge';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 
 const g = globalThis as any;
@@ -405,7 +410,7 @@ installCompilePipelinePart({
 
 function createEmberMaybeHelper(original: Function) {
   // Cache the last known owner so that re-evaluations during reactive updates
-  // (when globalThis.owner may be null) can still resolve helpers.
+  // (when the ambient owner may be null) can still resolve helpers.
   let _cachedHelperOwner: any = null;
 
   const wrapped = function $_maybeHelper_ember(
@@ -505,7 +510,7 @@ function createEmberMaybeHelper(original: Function) {
         const named = unwrapHash(hash);
 
         if (typeof helperMgr.getDelegateFor === 'function') {
-          const delegate = helperMgr.getDelegateFor(g.owner);
+          const delegate = helperMgr.getDelegateFor(getAmbientOwner());
           // Validate that capabilities were created via helperCapabilities()
           const _FROM_CAPS = g.FROM_CAPABILITIES;
           if (
@@ -577,7 +582,7 @@ function createEmberMaybeHelper(original: Function) {
           const helperFn = helperMgr.getHelper(nameOrFn);
           if (typeof helperFn === 'function') {
             const capturedArgs = { positional, named };
-            return helperFn(capturedArgs, g.owner);
+            return helperFn(capturedArgs, getAmbientOwner());
           }
         }
       }
@@ -728,7 +733,7 @@ function createEmberMaybeHelper(original: Function) {
         const captured = { positional: positionalRefs, named, length: positionalRefs.length };
         let ref: any;
         try {
-          ref = helperFnOrManager(captured, g.owner);
+          ref = helperFnOrManager(captured, getAmbientOwner());
         } catch (e) {
           // Surface the error rather than swallow — matches the no-silent-
           // swallow rule. Lets assert.throws() in DEBUG capture invalid-
@@ -846,8 +851,8 @@ function createEmberMaybeHelper(original: Function) {
       return helper();
     }
 
-    // Try Ember container lookup — prefer globalThis.owner, fall back to cached
-    const currentOwner = g.owner;
+    // Try Ember container lookup — prefer the ambient owner, fall back to cached
+    const currentOwner = getAmbientOwner();
     if (currentOwner && !currentOwner.isDestroyed && !currentOwner.isDestroying) {
       _cachedHelperOwner = currentOwner;
     }
@@ -1646,7 +1651,7 @@ function createEmberTag(original: Function) {
       // in getter functions which GXT's parent $_tag doesn't handle as children.
       // $_maybeHelper returns raw values (strings, etc.) which work as children.
       {
-        const _owner = g.owner;
+        const _owner = getAmbientOwner();
         if (_owner && !_owner.isDestroyed && !_owner.isDestroying) {
           try {
             const _helperFactory = _owner.factoryFor?.(`helper:${kebabName}`);
@@ -1821,7 +1826,7 @@ function createEmberTag(original: Function) {
         // By checking helper-only upfront, we use $_maybeHelper directly,
         // which returns a raw value that GXT can render as text.
         {
-          const _owner = g.owner;
+          const _owner = getAmbientOwner();
           if (_owner && !_owner.isDestroyed && !_owner.isDestroying) {
             const _helperFactory = _owner.factoryFor?.(`helper:${kebabName}`);
             const _componentFactory = _owner.factoryFor?.(`component:${kebabName}`);
@@ -1847,7 +1852,7 @@ function createEmberTag(original: Function) {
         .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
         .toLowerCase();
       if (kebab.includes('-')) {
-        const owner = g.owner;
+        const owner = getAmbientOwner();
         if (owner) {
           const helperFactory = owner.factoryFor(`helper:${kebab}`);
           if (helperFactory) {
@@ -2150,7 +2155,7 @@ function createEmberDc(original: Function) {
       const nullPlaceholder = document.createComment('dc-null');
       let _nullDestroyed = false;
       let _nullLastKey = '__empty__';
-      const _dcCapturedOwner = g.owner;
+      const _dcCapturedOwner = getAmbientOwner();
       // Track nodes inserted by _nullSwap so they can be removed on teardown
       let _insertedNodes: Node[] = [];
 
@@ -2184,9 +2189,9 @@ function createEmberDc(original: Function) {
 
         // Render the new component
         if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
-          const prevOwner = g.owner;
-          if (!g.owner && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
-            g.owner = _dcCapturedOwner;
+          const prevOwner = getAmbientOwner();
+          if (!getAmbientOwner() && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
+            setAmbientOwner(_dcCapturedOwner);
           }
           const prevDcGetter = g.__dcComponentGetter;
           g.__dcComponentGetter = componentGetter;
@@ -2202,8 +2207,8 @@ function createEmberDc(original: Function) {
             /* ignore */
           } finally {
             g.__dcComponentGetter = prevDcGetter;
-            if (!prevOwner && g.owner === _dcCapturedOwner) {
-              g.owner = prevOwner;
+            if (!prevOwner && getAmbientOwner() === _dcCapturedOwner) {
+              setAmbientOwner(prevOwner);
             }
           }
 
@@ -2280,7 +2285,7 @@ function createEmberDc(original: Function) {
 
       let _lastIdentityKey = getIdentityKey(componentValue);
       let _dcDestroyed = false;
-      const _dcCapturedOwner = g.owner;
+      const _dcCapturedOwner = getAmbientOwner();
 
       // Collect initial rendered nodes for later removal during swaps.
       let currentNodes: Node[] = [];
@@ -2334,9 +2339,9 @@ function createEmberDc(original: Function) {
 
         // Render the new component
         if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
-          const prevOwner = g.owner;
-          if (!g.owner && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
-            g.owner = _dcCapturedOwner;
+          const prevOwner = getAmbientOwner();
+          if (!getAmbientOwner() && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
+            setAmbientOwner(_dcCapturedOwner);
           }
           const prevDcGetter = g.__dcComponentGetter;
           g.__dcComponentGetter = componentGetter;
@@ -2352,8 +2357,8 @@ function createEmberDc(original: Function) {
             // Component not found or render error — leave empty
           } finally {
             g.__dcComponentGetter = prevDcGetter;
-            if (!prevOwner && g.owner === _dcCapturedOwner) {
-              g.owner = prevOwner;
+            if (!prevOwner && getAmbientOwner() === _dcCapturedOwner) {
+              setAmbientOwner(prevOwner);
             }
           }
 
@@ -2501,7 +2506,7 @@ function createEmberDc(original: Function) {
 
       let _lastIdentityKey = getIdentityKey(componentValue);
       let _dcDestroyed = false;
-      const _dcCapturedOwner = g.owner;
+      const _dcCapturedOwner = getAmbientOwner();
 
       // Collect initial rendered nodes for later removal during swaps.
       let currentNodes: Node[] = [];
@@ -2568,9 +2573,9 @@ function createEmberDc(original: Function) {
 
         // Render the new component
         if (newVal && (newVal.__isCurriedComponent || typeof newVal === 'string')) {
-          const prevOwner = g.owner;
-          if (!g.owner && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
-            g.owner = _dcCapturedOwner;
+          const prevOwner = getAmbientOwner();
+          if (!getAmbientOwner() && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
+            setAmbientOwner(_dcCapturedOwner);
           }
           const prevDcGetter = g.__dcComponentGetter;
           g.__dcComponentGetter = componentGetter;
@@ -2599,8 +2604,8 @@ function createEmberDc(original: Function) {
             } catch {
               /* configurable: true above ensures delete succeeds for our own writes */
             }
-            if (!prevOwner && g.owner === _dcCapturedOwner) {
-              g.owner = prevOwner;
+            if (!prevOwner && getAmbientOwner() === _dcCapturedOwner) {
+              setAmbientOwner(prevOwner);
             }
           }
 
@@ -2837,7 +2842,7 @@ function createEmberModifierHelper(original: Function) {
 
     // String — resolve modifier by name from the owner registry
     if (typeof resolved === 'string') {
-      const owner = g.owner;
+      const owner = getAmbientOwner();
 
       // Create a curried modifier function that, when invoked in modifier position
       // (by $_maybeModifier), merges the curried args with invocation args and
@@ -2867,7 +2872,7 @@ function createEmberModifierHelper(original: Function) {
         }
 
         // Otherwise look up the modifier from the owner registry.
-        const modOwner = g.owner || owner;
+        const modOwner = getAmbientOwner() || owner;
         if (!modOwner) return undefined;
         const factory = modOwner.factoryFor?.(`modifier:${resolved}`);
         if (!factory) return undefined;

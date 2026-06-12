@@ -7,7 +7,11 @@ import { getComponentTemplate } from '@glimmer/manager';
 // GXT-aliased shim in GXT mode, where the call site below is dead-branched).
 import { precompileTemplate } from '@ember/template-compilation';
 // Bridge reader for `registerObjectValueOwner`.
-import { getGxtRenderer, setCurrentOutletState } from '@ember/-internals/gxt-backend/gxt-bridge';
+import {
+  getGxtRenderer,
+  setCurrentOutletState,
+  setAmbientOwner,
+} from '@ember/-internals/gxt-backend/gxt-bridge';
 // Lazy accessor for @lifeart/gxt symbols. The gxt-backend module (only loaded
 // in __GXT_MODE__) stashes the namespace on globalThis.__lifeartGxt at its
 // own load time. Avoiding a static `import * as _gxt from '@lifeart/gxt'`
@@ -189,10 +193,10 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
     return;
   }
 
-  // CRITICAL: Set globalThis.owner before any template rendering
+  // CRITICAL: Set the ambient owner before any template rendering
   // This ensures $_tag_ember can resolve Ember components via the registry
   if (owner) {
-    (globalThis as any).owner = owner;
+    setAmbientOwner(owner);
   }
 
   // CRITICAL: Ensure GXT context is set up before any rendering
