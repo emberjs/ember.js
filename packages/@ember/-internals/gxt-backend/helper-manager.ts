@@ -7,7 +7,7 @@
 // HelperManager delegate for a given owner.
 
 import { DEBUG } from '@glimmer/env';
-import { createCache } from './validator';
+import { createCache, consumeTag, tagFor } from './validator';
 import {
   createComputeRef,
   createConstRef,
@@ -210,7 +210,7 @@ export class CustomHelperManager {
         );
         // Capture for flushRenderErrors so assert.throws() can see it
         // even if GXT swallows synchronous render-time exceptions.
-        const captureFn = (globalThis as any).__captureRenderError;
+        const captureFn = getGxtRenderer()?.compilePipeline.captureRenderError;
         if (typeof captureFn === 'function') {
           captureFn(err);
         }
@@ -278,10 +278,12 @@ export class CustomHelperManager {
           _namedDesc !== undefined &&
           'value' in _namedDesc
         ) {
-          const g = globalThis as any;
-          const _consumeTag = g.__classicConsumeTag;
-          const _tagFor = g.__classicTagFor;
-          const _dirtyTagFor = g.__classicDirtyTagFor;
+          // Direct imports for the pure hooks; the rebuild-guarded dirty
+          // variant comes from the typed bridge (see classicDirtyTagFor in
+          // gxt-bridge.ts).
+          const _consumeTag = consumeTag;
+          const _tagFor = tagFor;
+          const _dirtyTagFor = getGxtRenderer()?.compilePipeline.classicDirtyTagFor;
           if (_consumeTag && _tagFor && _dirtyTagFor) {
             const argsTag = {};
             let _positional = args.positional;

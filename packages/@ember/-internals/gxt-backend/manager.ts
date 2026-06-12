@@ -76,6 +76,9 @@ import {
   endBacktrackingFrame,
   touchClassicBridge as _gxtTouchClassicBridge,
   registerClassicReactor as _gxtRegisterClassicReactor,
+  consumeTag as _classicConsumeTagHook,
+  tagFor as _classicTagForHook,
+  dirtyTagFor as _validatorDirtyTagFor,
 } from './validator';
 import {
   createConstRef as _createConstRef,
@@ -432,7 +435,9 @@ export class CurriedComponent {
   return value && value.__isCurriedComponent === true;
 };
 (globalThis as any).__createCurriedComponent = createCurriedComponent;
-(globalThis as any).__captureRenderError = captureRenderError;
+// `captureRenderError` is exposed via `compilePipeline.captureRenderError`
+// (the typed replacement for the retired `globalThis.__captureRenderError`
+// slot); see the setGxtRenderer install at file EOF.
 
 // Wire opcode-layer errors into the existing _renderErrors queue. GXT's
 // handleOpcodeError splices a failing opcode out of its op array; wiring the
@@ -784,27 +789,21 @@ let _rebuildInProgress = false;
 // `finally`; read inside the `__classicDirtyTagFor` rebuild guard below.
 let _gxtSuppressDirtyTagForDuringRebuild = false;
 
-// Wrap __classicDirtyTagFor once so it can no-op during a view-tree rebuild.
-// validator.ts installs the original as globalThis.__classicDirtyTagFor; we
-// intercept here. Idempotent — re-running this module won't double-wrap.
+// The rebuild-guarded variant of validator.ts's dirtyTagFor: no-ops during
+// __gxtRebuildViewTreeFromDom (via the `_gxtSuppressDirtyTagForDuringRebuild`
+// flag above). For arg write-backs we do NOT suppress here — we let
+// dirtyTagFor mark the tag dirty and bump the global revision (needed for
+// within-sync template re-reads), and the rescheduling-only suppression
+// lives in validator.ts, keyed off __gxtSuppressDirtyInRcSet.
 //
-// Only hard-suppress during __gxtRebuildViewTreeFromDom (via the
-// `_gxtSuppressDirtyTagForDuringRebuild` flag above). For arg write-backs we
-// do NOT suppress here — we let dirtyTagFor mark the tag dirty and bump the
-// global revision (needed for within-sync template re-reads), and the
-// rescheduling-only suppression lives in validator.ts, keyed off
-// __gxtSuppressDirtyInRcSet.
-(function installClassicDirtyTagForRebuildGuard() {
-  const g = globalThis as any;
-  const orig = g.__classicDirtyTagFor;
-  if (typeof orig !== 'function' || orig.__gxtRebuildGuarded) return;
-  const wrapped = function classicDirtyTagForGuarded(obj: any, key: any) {
-    if (_gxtSuppressDirtyTagForDuringRebuild) return;
-    return orig(obj, key);
-  };
-  (wrapped as any).__gxtRebuildGuarded = true;
-  g.__classicDirtyTagFor = wrapped;
-})();
+// All intra-file dirty sites call this directly; cross-package callers
+// (helper-manager's recompute bridge, @ember/routing's router-property
+// dirty) route through `compilePipeline.classicDirtyTagFor` — the typed
+// replacement for the retired `globalThis.__classicDirtyTagFor` slot.
+function classicDirtyTagForGuarded(obj: any, key: any) {
+  if (_gxtSuppressDirtyTagForDuringRebuild) return;
+  return _validatorDirtyTagFor(obj, key);
+}
 
 // Exported on the typed gxt-bridge's `viewUtils.rebuildViewTreeFromDom` slot
 // via the `setGxtRenderer` call at file EOF; the DEBUG-only gate is preserved
@@ -1968,7 +1967,7 @@ function createComponentInstance(
           }
           if (effectPrimed && v !== lastEffectValue) {
             try {
-              const dirty = (globalThis as any).__classicDirtyTagFor;
+              const dirty = classicDirtyTagForGuarded;
               if (dirty) dirty(instance, key);
             } catch {
               /* noop */
@@ -1988,8 +1987,8 @@ function createComponentInstance(
           // arg from inside a createCache callback bypasses the tag tracker
           // entirely because the arg getter reads the parent's cell directly.
           try {
-            const consume = (globalThis as any).__classicConsumeTag;
-            const tagFn = (globalThis as any).__classicTagFor;
+            const consume = _classicConsumeTagHook;
+            const tagFn = _classicTagForHook;
             if (consume && tagFn) consume(tagFn(instance, key));
           } catch {
             /* noop */
@@ -2041,7 +2040,7 @@ function createComponentInstance(
           // Dirty the classic tag so any createCache (invokeHelper) or
           // observer watching `key` on this instance is invalidated.
           try {
-            const dirty = (globalThis as any).__classicDirtyTagFor;
+            const dirty = classicDirtyTagForGuarded;
             if (dirty) dirty(instance, key);
           } catch {
             /* noop */
@@ -2702,8 +2701,8 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
                 // Route through classic @glimmer/validator tag system so
                 // createCache / invokeHelper consumers track this property.
                 try {
-                  const consume = (globalThis as any).__classicConsumeTag;
-                  const tagFn = (globalThis as any).__classicTagFor;
+                  const consume = _classicConsumeTagHook;
+                  const tagFn = _classicTagForHook;
                   if (consume && tagFn) consume(tagFn(instance, key));
                 } catch {
                   /* noop */
@@ -2743,7 +2742,7 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
                   }
                 }
                 try {
-                  const dirty = (globalThis as any).__classicDirtyTagFor;
+                  const dirty = classicDirtyTagForGuarded;
                   if (dirty) dirty(instance, key);
                 } catch {
                   /* noop */
@@ -2768,7 +2767,7 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
               }
               if (effectPrimed2 && v !== lastEffectValue2) {
                 try {
-                  const dirty = (globalThis as any).__classicDirtyTagFor;
+                  const dirty = classicDirtyTagForGuarded;
                   if (dirty) dirty(instance, key);
                 } catch {
                   /* noop */
@@ -2810,7 +2809,8 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
               // path no longer runs synchronously, so the cell must be hot by
               // this point.
               try {
-                const _gxtCellFor = (globalThis as any).__gxtCellFor;
+                // (uses the module-scope `_gxtCellFor` import — single gxt instance is
+                // enforced by the dedup plugins / rollup subpath collapse)
                 if (typeof _gxtCellFor === 'function') {
                   // skipDefine=true: don't install a cell-backed property
                   // descriptor; the cascade body (when it runs) creates the
@@ -2880,7 +2880,8 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
             // (undefined) value is visible to any synchronous reader. See the
             // arg-pass site above for full rationale.
             try {
-              const _gxtCellFor = (globalThis as any).__gxtCellFor;
+              // (uses the module-scope `_gxtCellFor` import — single gxt instance is
+                // enforced by the dedup plugins / rollup subpath collapse)
               if (typeof _gxtCellFor === 'function') {
                 // skipDefine=true: see Site A — don't install descriptor.
                 const _cell = _gxtCellFor(instance, key, /* skipDefine */ true);
@@ -4182,7 +4183,8 @@ function _gxtSyncAllWrappersBody(): void {
                   // by `cellFor(instance, key)` is a distinct slot (one per
                   // (instance, key) pair) and must be updated separately.
                   try {
-                    const _gxtCellFor = (globalThis as any).__gxtCellFor;
+                    // (uses the module-scope `_gxtCellFor` import — single gxt instance is
+                // enforced by the dedup plugins / rollup subpath collapse)
                     if (typeof _gxtCellFor === 'function') {
                       // skipDefine=true: don't replace the tracked descriptor.
                       // See the arg-pass site above for rationale.
@@ -4303,7 +4305,8 @@ function _gxtSyncAllWrappersBody(): void {
                   // before the (deferred) cascade body runs. See the arg-pass
                   // site above.
                   try {
-                    const _gxtCellFor = (globalThis as any).__gxtCellFor;
+                    // (uses the module-scope `_gxtCellFor` import — single gxt instance is
+                // enforced by the dedup plugins / rollup subpath collapse)
                     if (typeof _gxtCellFor === 'function') {
                       // skipDefine=true: don't replace the tracked descriptor.
                       // See the arg-pass site above for rationale.
@@ -7011,8 +7014,8 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
               }
               const rcHasCompGet: any = function () {
                 try {
-                  const consume = (globalThis as any).__classicConsumeTag;
-                  const tagFn = (globalThis as any).__classicTagFor;
+                  const consume = _classicConsumeTagHook;
+                  const tagFn = _classicTagForHook;
                   if (consume && tagFn) consume(tagFn(renderContext, key));
                 } catch {
                   /* noop */
@@ -7057,7 +7060,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
                     }
                   }
                   try {
-                    const dirty = (globalThis as any).__classicDirtyTagFor;
+                    const dirty = classicDirtyTagForGuarded;
                     if (dirty) dirty(renderContext, key);
                   } catch {
                     /* noop */
@@ -7085,7 +7088,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
                 }
                 if (effectPrimed4 && v !== lastEffectValue4) {
                   try {
-                    const dirty = (globalThis as any).__classicDirtyTagFor;
+                    const dirty = classicDirtyTagForGuarded;
                     if (dirty) dirty(renderContext, key);
                   } catch {
                     /* noop */
@@ -7144,8 +7147,8 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
                 /* ignore */
               }
               try {
-                const consume = (globalThis as any).__classicConsumeTag;
-                const tagFn = (globalThis as any).__classicTagFor;
+                const consume = _classicConsumeTagHook;
+                const tagFn = _classicTagForHook;
                 if (consume && tagFn) consume(tagFn(renderContext, key));
               } catch {
                 /* noop */
@@ -7171,7 +7174,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
                 }
               }
               try {
-                const dirty = (globalThis as any).__classicDirtyTagFor;
+                const dirty = classicDirtyTagForGuarded;
                 if (dirty) dirty(renderContext, key);
               } catch {
                 /* noop */
@@ -7206,7 +7209,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
                 }
                 if (effectPrimed3 && v !== lastEffectValue3) {
                   try {
-                    const dirty = (globalThis as any).__classicDirtyTagFor;
+                    const dirty = classicDirtyTagForGuarded;
                     if (dirty) dirty(renderContext, key);
                   } catch {
                     /* noop */
@@ -14612,6 +14615,17 @@ setGxtRenderer({
     clearInstancePools: _gxtClearInstancePools,
     // `clearRenderErrors` is read cross-package by `internal-test-helpers/`.
     clearRenderErrors,
+    // Typed replacements for the retired globalThis slots
+    // `__captureRenderError`, `__classicConsumeTag`, `__classicTagFor`,
+    // `__classicDirtyTagFor` and the ember-side READS of `__gxtCellFor`
+    // (that global itself stays — the GXT runtime publishes it for
+    // runtime-compiled template Function bodies). See the interface docs in
+    // gxt-bridge.ts and docs-internal-gxt-globalthis-wiring.md §2c.
+    captureRenderError,
+    classicConsumeTag: _classicConsumeTagHook,
+    classicTagFor: _classicTagForHook,
+    classicDirtyTagFor: classicDirtyTagForGuarded,
+    cellFor: _gxtCellFor,
     // Dynamic-component listener bridge methods. `addDynamicComponentListener`
     // returns an off-fn for symmetric cleanup; the `stringPath: true` variant
     // bumps a counter consulted by `hasStringDynamicComponentListeners()` for

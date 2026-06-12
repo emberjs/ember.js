@@ -356,7 +356,7 @@ function _ensureTriggerReRenderPatched() {
   if (_triggerReRenderHostHookInstalled) return;
   const cp = getGxtRenderer()?.compilePipeline;
   if (!cp || typeof cp.addAfterTriggerReRender !== 'function') return;
-  const _cellFor = (globalThis as any).__gxtCellFor;
+  const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
   if (!_cellFor) return;
   _triggerReRenderHostHookInstalled = true;
   cp.addAfterTriggerReRender(function (obj: object, keyName: string) {
@@ -548,7 +548,7 @@ class ClassicRootState {
               // Install cell-backed getter/setters on the component for ALL
               // data properties. Use skipDefine=false so GXT's native formula
               // tracking (in $_if, $_each, etc.) picks up cell.value reads.
-              const _cellFor = (globalThis as any).__gxtCellFor;
+              const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
               // (Cluster B slice 6) Bridge reader for registerArrayOwner.
               const _registerArrayOwner = getGxtRenderer()?.compilePipeline.registerArrayOwner;
               _ensureTriggerReRenderPatched();
@@ -1260,7 +1260,7 @@ function _gxtForceEmberRerender(): void {
           // force pass mid-loop and wedge subsequent flushes. The flag stays
           // set, so the next classic mutation retries again (classic prod
           // semantics: renders keep being attempted after an error).
-          const capture = (globalThis as any).__captureRenderError;
+          const capture = getGxtRenderer()?.compilePipeline.captureRenderError;
           if (typeof capture === 'function') capture(err);
         } else {
           throw err;

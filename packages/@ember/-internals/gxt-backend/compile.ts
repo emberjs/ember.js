@@ -10375,7 +10375,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
               const err = new Error(
                 `Attempted to resolve \`${kebabName}\`, which was expected to be a component, but nothing was found.`
               );
-              const capture = (globalThis as any).__captureRenderError;
+              const capture = getGxtRenderer()?.compilePipeline.captureRenderError;
               if (typeof capture === 'function') {
                 capture(err);
                 return document.createComment('helper-as-block-error');

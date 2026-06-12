@@ -521,7 +521,7 @@ function createEmberMaybeHelper(original: Function) {
                 `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
             );
             // Capture for flushRenderErrors so assert.throws() can see it
-            const captureFn = g.__captureRenderError;
+            const captureFn = getGxtRenderer()?.compilePipeline.captureRenderError;
             if (typeof captureFn === 'function') captureFn(err);
             throw err;
           }
@@ -888,7 +888,7 @@ function createEmberMaybeHelper(original: Function) {
                   `Received: \`${JSON.stringify(delegate.capabilities)}\` for manager \`${delegate.constructor?.name || 'unknown'}\``
               );
               // Capture for flushRenderErrors so assert.throws() can see it
-              const captureFn = g.__captureRenderError;
+              const captureFn = getGxtRenderer()?.compilePipeline.captureRenderError;
               if (typeof captureFn === 'function') captureFn(err);
               throw err;
             }
@@ -2427,7 +2427,7 @@ function createEmberDc(original: Function) {
           `Attempted to resolve \`${componentValue}\`, which was expected to be a component, but nothing was found. ` +
             `Could not find component named "${componentValue}" (no component or template with that name was found)`
         );
-        const captureErr = g.__captureRenderError;
+        const captureErr = getGxtRenderer()?.compilePipeline.captureRenderError;
         if (typeof captureErr === 'function') {
           captureErr(err);
         }
@@ -2730,7 +2730,7 @@ function createEmberDc(original: Function) {
         const err = new Error(
           `Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was \`<${debugName}>\` or \`{{${debugName}}}\`, and the incorrect definition is the value at the path \`${debugName}\`, which was: ${valLabel}`
         );
-        const captureFn = g.__captureRenderError;
+        const captureFn = getGxtRenderer()?.compilePipeline.captureRenderError;
         if (typeof captureFn === 'function') captureFn(err);
         throw err;
       }
@@ -2822,7 +2822,7 @@ function createEmberModifierHelper(original: Function) {
       if (assertFn) {
         assertFn(msg, false);
       } else {
-        const capture = g.__captureRenderError;
+        const capture = getGxtRenderer()?.compilePipeline.captureRenderError;
         const err = new Error(`Assertion Failed: ${msg}`);
         if (typeof capture === 'function') {
           capture(err);

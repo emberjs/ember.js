@@ -194,7 +194,7 @@ const EmberOutletElement: any =
           //
           // Fix: install GXT cells on nestedContext with the ACTUAL current values from controller.
           if (controller) {
-            const _cellFor = (globalThis as any).__gxtCellFor;
+            const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
             if (_cellFor) {
               try {
                 const skipKeys = new Set([

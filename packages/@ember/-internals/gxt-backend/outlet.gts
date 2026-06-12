@@ -62,7 +62,7 @@ class EmberOutletElement extends HTMLElement {
     if (this._rendered && this._lastTemplate && newTemplate === this._lastTemplate && this._lastContext) {
       // Same template — update model/controller in-place via GXT cells
       const { model, controller } = nestedOutlet.render;
-      const _cellFor = (globalThis as any).__gxtCellFor;
+      const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
       if (_cellFor) {
         try {
           // Update model on the render context
@@ -181,7 +181,7 @@ class EmberOutletElement extends HTMLElement {
       // re-renders because the formula never tracked cell(context, 'model').
       // Use the global cellFor to ensure we use the SAME module instance as
       // compile.ts (which handles __gxtTriggerReRender).
-      const _cellFor = (globalThis as any).__gxtCellFor;
+      const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
       // (Cluster B slice 6) Bridge reader for registerObjectValueOwner.
       const registerOwner = getGxtRenderer()?.compilePipeline.registerObjectValueOwner;
       if (_cellFor) {
@@ -456,7 +456,7 @@ class EmberMountElement extends HTMLElement {
       // validateArguments during the engine template render. Swallowing it
       // here would let the visit promise resolve and break
       // `assert.rejectsAssertion`-style tests.
-      const capture = (globalThis as any).__captureRenderError;
+      const capture = getGxtRenderer()?.compilePipeline.captureRenderError;
       if (typeof capture === 'function') {
         capture(e);
       } else if ((globalThis as any).__DEBUG_GXT_RENDER) {

@@ -432,6 +432,44 @@ export interface GxtCompilePipelineCapabilities {
   clearRenderErrors(): void;
 
   /**
+   * Queue a render error into the manager.ts-local `_renderErrors` queue
+   * (drained-and-thrown by `flushRenderErrors()` on the next runTask).
+   * The typed replacement for the retired `globalThis.__captureRenderError`
+   * slot — cross-package writers (glimmer renderer recovery-retry,
+   * gxt-backend engine mount, the $_dc/wrapper error paths) route through
+   * here so render errors keep their established propagation semantics
+   * without a mutable global.
+   */
+  captureRenderError(err: unknown): void;
+
+  /**
+   * Classic-validator reactivity hooks, replacing the retired
+   * `globalThis.__classicConsumeTag` / `__classicTagFor` /
+   * `__classicDirtyTagFor` slots. `classicDirtyTagFor` is the REBUILD-GUARDED
+   * variant (no-ops while `__gxtRebuildViewTreeFromDom` runs — see
+   * `classicDirtyTagForGuarded` in manager.ts); intra-package callers in
+   * manager.ts use the module-locals directly, cross-package callers
+   * (helper-manager recompute bridge, @ember/routing's router-property
+   * dirty) route through these.
+   */
+  classicConsumeTag(tag: unknown): void;
+  classicTagFor(obj: object, key: string | symbol): unknown;
+  classicDirtyTagFor(obj: object, key: string | symbol): void;
+
+  /**
+   * GXT's `cellFor(obj, key)` — the per-property reactive cell accessor.
+   * Replaces the ember-side READS of `globalThis.__gxtCellFor` (metal's
+   * tracked bridge, the glimmer renderer/outlet/root templates). The
+   * globalThis slot itself remains: the GXT runtime publishes it via
+   * `setupGlobalScope()` for runtime-compiled template Function bodies —
+   * that emitted-code surface is the §2e item in
+   * docs-internal-gxt-globalthis-wiring.md and retires with the upstream
+   * symbol-injection API, not with this bridge method.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  cellFor(obj: object, key: string | symbol, debug?: boolean): any;
+
+  /**
    * Register a dynamic-component change listener that fires AFTER every
    * sync-all pass (in `_gxtSyncAllWrappers`'s after-body). Listeners are
    * notified when dynamic-component swaps need to perform manual DOM updates

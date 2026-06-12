@@ -507,9 +507,12 @@ export function isInBacktrackingFrame() {
 
 // Expose classic tag primitives for gxt-backend/manager.ts so component-arg
 // own-property getters can participate in createCache/invokeHelper tag tracking.
-(globalThis as any).__classicConsumeTag = (tag: any) => consumeTag(tag);
-(globalThis as any).__classicTagFor = (obj: any, key: any) => tagFor(obj, key);
-(globalThis as any).__classicDirtyTagFor = (obj: any, key: any) => dirtyTagFor(obj, key);
+// The classic-reactivity hooks formerly published as
+// `globalThis.__classicConsumeTag` / `__classicTagFor` /
+// `__classicDirtyTagFor` are now reached via direct imports (intra-package)
+// and the typed `compilePipeline.classicConsumeTag/classicTagFor/
+// classicDirtyTagFor` bridge methods (cross-package) — see manager.ts's
+// setGxtRenderer install and docs-internal-gxt-globalthis-wiring.md §2c.
 
 export function trackedData<T, K extends string | symbol>(
   key: K,

@@ -575,7 +575,7 @@ function createRootTemplate(_owner: any) {
         // Recover the original keys from the class's `PrototypeMixin` chain
         // and pre-install cells for any missing keys. This mirrors the cell
         // install that CASE 2 (OutletView rendering) performs for controllers.
-        const _cellFor = (globalThis as any).__gxtCellFor;
+        const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
         if (_cellFor) {
           const skipKeys = new Set([
             'args',
@@ -885,7 +885,7 @@ function createRootTemplate(_owner: any) {
       // Install GXT cells on the render context so property reads inside formulas
       // are tracked. Without this, set(model, 'color', 'blue') won't trigger
       // re-renders because the formula never tracked cell(context, 'model').
-      const _cellFor = (globalThis as any).__gxtCellFor;
+      const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
       // Bridge reader for registerObjectValueOwner.
       const _registerOwner = getGxtRenderer()?.compilePipeline.registerObjectValueOwner;
       if (_cellFor) {
@@ -1273,7 +1273,7 @@ function createRootTemplate(_owner: any) {
         !nestedOutletChanged &&
         !routeTemplateChanged
       ) {
-        const _cellFor = (globalThis as any).__gxtCellFor;
+        const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
         if (_cellFor) {
           try {
             // Detect phantom rerender: when the outletState's model is the SAME

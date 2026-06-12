@@ -224,7 +224,7 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // this cell as a dependency. The setter's cellFor.update() call ensures
     // the cell is dirtied when the property changes.
     if (__GXT_MODE__) {
-      const _cellFor = (globalThis as any).__gxtCellFor;
+      const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
       if (typeof _cellFor === 'function') {
         try {
           // Use skipDefine=true to avoid replacing the tracked getter/setter.
@@ -275,7 +275,7 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // created by gxtEffect in the compat layer. Using cellFor ensures the
     // cell that GXT effects track is also dirtied.
     if (__GXT_MODE__) {
-      const _cellFor = (globalThis as any).__gxtCellFor;
+      const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
       if (typeof _cellFor === 'function') {
         try {
           const cell = _cellFor(this, key, /* skipDefine */ true);
