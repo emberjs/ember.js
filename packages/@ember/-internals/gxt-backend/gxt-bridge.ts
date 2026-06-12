@@ -2868,23 +2868,28 @@ export function getActiveOutletElements(): Set<any> {
 // Ambient owner. The "current owner" that render paths set/restore around
 // every ownership boundary (root render, engine mount, component/helper
 // resolution) — historically the `globalThis.owner` slot, read and written
-// from both sides of the bridge (~100 sites). Phase A of the §2a owner
-// threading (docs-internal-gxt-globalthis-wiring.md): every ember-side site
-// goes through these accessors while the storage stays on `globalThis.owner`,
-// so the sweep is semantically inert. Phase B flips the storage to a module
-// local with a one-way mirror write onto `globalThis.owner`, whose only
-// remaining consumer is runtime-compiled template code (the inlined
-// named-arg-helper guard reads `g.owner` inside the Function body — retired
-// when the §2e symbol-injection API lands).
+// from both sides of the bridge (~100 sites, all routed through these
+// accessors by the §2a owner threading, docs-internal-gxt-globalthis-wiring.md).
+// The state lives here as a module-local; setAmbientOwner additionally
+// mirrors it onto `globalThis.owner` ONE-WAY because runtime-compiled
+// template code still reads it (the inlined named-arg-helper guard reads
+// `g.owner` inside its Function body — compiled code can't import this
+// module; the mirror is retired when the §2e symbol-injection API lands).
+// Nothing may write `globalThis.owner` directly: a direct write would go
+// stale immediately since every ember-side reader consults the module-local.
 // ---------------------------------------------------------------------------
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _ambientOwner: any;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getAmbientOwner(): any {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (globalThis as any).owner;
+  return _ambientOwner;
 }
 
 export function setAmbientOwner(owner: unknown): void {
+  _ambientOwner = owner;
+  // One-way mirror for emitted template code (see block comment above).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (globalThis as any).owner = owner;
 }
