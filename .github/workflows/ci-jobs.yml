@@ -182,6 +182,9 @@ jobs:
           use_lockfile: "false"
       - name: build
         run: pnpm build
+      - name: build gxt package
+        if: contains(matrix.name, 'emberSourceGxt')
+        run: node scripts/build-gxt-package.mjs
       - name: test
         working-directory: smoke-tests/scenarios
         run: |
@@ -205,6 +208,9 @@ jobs:
           use_lockfile: "false"
       - name: build
         run: pnpm build
+      - name: build gxt package
+        if: contains(matrix.name, 'emberSourceGxt')
+        run: node scripts/build-gxt-package.mjs
       - name: test
         env:
           OVERRIDE_DEPRECATION_VERSION: "15.0.0"
