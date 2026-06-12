@@ -4,7 +4,7 @@
 
 /**
    Use the `{{hash}}` helper to create a hash to pass as an option to your
-   components. This is specially useful for contextual components where you can
+   components. This is especially useful for contextual components where you can
    just yield a hash:
 
    ```handlebars
@@ -32,6 +32,8 @@
      return Object.prototype.toString.apply(obj);
    }
    ```
+ 
+   The `hash` helper is a built-in keyword and does not need to be imported as of v7.1.0.
 
    @method hash
    @for @ember/helper

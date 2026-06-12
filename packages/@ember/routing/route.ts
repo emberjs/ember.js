@@ -1117,7 +1117,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
 
     Note that for routes with dynamic segments, this hook is not always
     executed. If the route is entered through a transition (e.g. when
-    using the `link-to` Handlebars helper or the `transitionTo` method
+    using the `link-to` helper or the `transitionTo` method
     of routes), and a model context is already provided this hook
     is not called.
 

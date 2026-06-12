@@ -1810,6 +1810,10 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 /**
   Creates an `NativeArray` from an Array-like object.
   Does not modify the original object's contents.
+    
+  This exists primarily for historic reasons and should not be used
+  in new code. Prefer native [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
+  or [trackedArray](/ember/release/functions/@ember%2Freactive%2Fcollections/trackedArray).
 
   Example
 

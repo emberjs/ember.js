@@ -82,7 +82,7 @@ function addTokens(
 }
 
 /**
- * Parses and traverses a given handlebars html template to extract all template locals
+ * Parses and traverses a given template to extract all template locals
  * referenced that could possible come from the parent scope. Can exclude known keywords
  * optionally.
  */

@@ -32,21 +32,9 @@
       <MyPost @title={{title}} @content={{content}} @options={{options}} />
     {{/let}}
   ```
- or
-  ```handlebars
-    {{#let
-        (concat post.title ' | The Ember.js Blog')
-        post.content
-        (hash
-          theme="high-contrast"
-          enableComments=true
-        )
-        as |title content options|
-    }}
-      {{my-post title=title content=content options=options}}
-    {{/let}}
-  ```
 
+ `let` is built-in and does not need to be imported.
+ 
   @method let
   @for Ember.Templates.helpers
   @public

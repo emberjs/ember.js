@@ -12,13 +12,15 @@
   to a component invoked within the loop. Here's how you could use the `fn`
   helper to pass both the function and its arguments together:
 
-    ```app/templates/components/items-listing.hbs
-  {{#each @items as |item|}}
-    <DisplayItem @item=item @select={{fn this.handleSelected item}} />
-  {{/each}}
+  ```app/components/items-listing.gjs
+  <template>
+    {{#each @items as |item|}}
+      <DisplayItem @item=item @select={{fn this.handleSelected item}} />
+    {{/each}}
+  </template>
   ```
 
-  ```app/components/items-list.js
+  ```app/components/items-list.gjs
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
@@ -30,7 +32,7 @@
   }
   ```
 
-  In this case the `display-item` component will receive a normal function
+  In this case the `DisplayItem` component will receive a normal function
   that it can invoke. When it invokes the function, the `handleSelected`
   function will receive the `item` and any arguments passed, thanks to the
   `fn` helper.
@@ -47,7 +49,7 @@
   properly bound to the `items-list`, but let's explore what happens if we
   left out `@action`:
 
-  ```app/components/items-list.js
+  ```app/components/items-list.gjs
   import Component from '@glimmer/component';
 
   export default class ItemsList extends Component {
@@ -63,6 +65,8 @@
   are bound (via `@action` or other means) before passing into `fn`!
 
   See also [partial application](https://en.wikipedia.org/wiki/Partial_application).
+ 
+  `fn` is built-in and does not need to be imported.
 
   @method fn
   @for @ember/helper

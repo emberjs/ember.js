@@ -58,20 +58,32 @@ declare const SIGNATURE: unique symbol;
   Ember Helpers are functions that can compute values, and are used in templates.
   For example, this code calls a helper named `format-currency`:
 
-  ```app/templates/application.hbs
-  <Cost @cents={{230}} />
+  ```app/templates/application.gjs
+  import Cost from '../components/cost';
+    
+  <template>
+    <Cost @cents={{230}} />
+  </template>
   ```
 
-  ```app/components/cost.hbs
-  <div>{{format-currency @cents currency="$"}}</div>
+  ```app/components/cost.gjs
+  import formatCurrency from '../helpers/format-currency';
+    
+  <template>
+    <div>{{formatCurrency @cents currency="$"}}</div>
+  </template>
   ```
 
   Additionally a helper can be called as a nested helper.
   In this example, we show the formatted currency value if the `showMoney`
   named argument is truthy.
 
-  ```handlebars
-  {{if @showMoney (format-currency @cents currency="$")}}
+  ```gjs
+  import formatCurrency from '../helpers/format-currency';
+
+  <template>
+    {{if @showMoney (formatCurrency @cents currency="$")}}
+  </template>
   ```
 
   Helpers defined using a class must provide a `compute` function. For example:
