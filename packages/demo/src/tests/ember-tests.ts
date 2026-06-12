@@ -8,6 +8,12 @@
 // Import test infrastructure
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
+// GXT-only suites: skip registration entirely under the classic VM backend
+// (these verify gxt-backend rendering integration; the machinery is
+// intentionally inert there). __GXT_MODE__ is inlined per build.
+declare const __GXT_MODE__: boolean;
+const gxtModuleFor: typeof moduleFor = __GXT_MODE__ ? moduleFor : ((() => {}) as any);
+
 // Import full Ember curly-components tests
 import '../../../@ember/-internals/glimmer/tests/integration/components/curly-components-test';
 // Import custom helper tests
@@ -68,7 +74,7 @@ class RegisterableRenderingTestCase extends RenderingTestCase {
 }
 
 // Basic angle-bracket invocation tests
-moduleFor(
+gxtModuleFor(
   'GXT Integration - AngleBracket Invocation',
   class extends RegisterableRenderingTestCase {
     '@test it can resolve <XBlah /> to x-blah'() {
@@ -234,7 +240,7 @@ moduleFor(
 );
 
 // Component with args tests
-moduleFor(
+gxtModuleFor(
   'GXT Integration - Component Args',
   class extends RegisterableRenderingTestCase {
     '@test it can pass args to component'() {
@@ -270,7 +276,7 @@ moduleFor(
 );
 
 // Nested components tests
-moduleFor(
+gxtModuleFor(
   'GXT Integration - Nested Components',
   class extends RegisterableRenderingTestCase {
     '@test it can render nested components'() {

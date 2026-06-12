@@ -47,8 +47,14 @@ import {
 
 // Setup QUnit
 declare const QUnit: any;
+// GXT-only suite: under the classic VM backend these exercise gxt-backend
+// machinery that is intentionally inert there (the bridge registry reads
+// null) — register the whole file as skipped in classic builds. The bare
+// __GXT_MODE__ flag is inlined per build by replaceGxtModeFlag.
+declare const __GXT_MODE__: boolean;
+const gxtSuiteModule: any = __GXT_MODE__ ? QUnit.module : QUnit.module.skip;
 
-QUnit.module('GXT Integration', function (hooks: any) {
+gxtSuiteModule('GXT Integration', function (hooks: any) {
   let fixture: HTMLElement;
 
   hooks.beforeEach(function () {
@@ -143,7 +149,7 @@ QUnit.module('GXT Integration', function (hooks: any) {
   });
 });
 
-QUnit.module('Component Rendering', function (hooks: any) {
+gxtSuiteModule('Component Rendering', function (hooks: any) {
   let fixture: HTMLElement;
 
   hooks.beforeEach(function () {
@@ -224,7 +230,7 @@ QUnit.module('Component Rendering', function (hooks: any) {
   });
 });
 
-QUnit.module('Observer Integration', function (hooks: any) {
+gxtSuiteModule('Observer Integration', function (hooks: any) {
   QUnit.test('addObserver function exists', function (assert: any) {
     assert.ok(typeof addObserver === 'function', 'addObserver is a function');
     assert.ok(typeof removeObserver === 'function', 'removeObserver is a function');
@@ -334,7 +340,7 @@ QUnit.module('Observer Integration', function (hooks: any) {
   });
 });
 
-QUnit.module('Destroyable Integration', function (hooks: any) {
+gxtSuiteModule('Destroyable Integration', function (hooks: any) {
   QUnit.test('destroyable functions exist', function (assert: any) {
     assert.ok(typeof registerDestructor === 'function', 'registerDestructor is a function');
     assert.ok(typeof destroy === 'function', 'destroy is a function');
@@ -412,7 +418,7 @@ QUnit.module('Destroyable Integration', function (hooks: any) {
   });
 });
 
-QUnit.module('Tracked Properties', function (hooks: any) {
+gxtSuiteModule('Tracked Properties', function (hooks: any) {
   QUnit.test('@tracked decorator works', function (assert: any) {
     class Counter {
       @tracked count = 0;
@@ -465,7 +471,7 @@ QUnit.module('Tracked Properties', function (hooks: any) {
   });
 });
 
-QUnit.module('Computed Properties', function (hooks: any) {
+gxtSuiteModule('Computed Properties', function (hooks: any) {
   QUnit.test('computed property getter works', function (assert: any) {
     const Person = EmberObject.extend({
       firstName: 'John',
@@ -548,7 +554,7 @@ QUnit.module('Computed Properties', function (hooks: any) {
   });
 });
 
-QUnit.module('Runloop Scheduling', function (hooks: any) {
+gxtSuiteModule('Runloop Scheduling', function (hooks: any) {
   QUnit.test('schedule runs callback in specified queue', function (assert: any) {
     const done = assert.async();
     let callbackRan = false;
@@ -585,7 +591,7 @@ QUnit.module('Runloop Scheduling', function (hooks: any) {
   });
 });
 
-QUnit.module('Reference System', function (hooks: any) {
+gxtSuiteModule('Reference System', function (hooks: any) {
   QUnit.test('createConstRef creates reference with correct value', async function (assert: any) {
     const { createConstRef, valueForRef } =
       await import('../../../@ember/-internals/gxt-backend/reference');
@@ -622,7 +628,7 @@ QUnit.module('Reference System', function (hooks: any) {
   });
 });
 
-QUnit.module('Validator System', function (hooks: any) {
+gxtSuiteModule('Validator System', function (hooks: any) {
   QUnit.test('tagFor creates tag for object property', async function (assert: any) {
     const { tagFor, dirtyTagFor, validateTag, valueForTag } =
       await import('../../../@ember/-internals/gxt-backend/validator');
@@ -701,7 +707,7 @@ QUnit.test('simple sanity check', function (assert: any) {
   assert.ok(true, 'sanity check passed');
 });
 
-QUnit.module('Outlet Integration', function (hooks: any) {
+gxtSuiteModule('Outlet Integration', function (hooks: any) {
   let fixture: HTMLElement;
 
   hooks.beforeEach(function () {
