@@ -25,9 +25,9 @@ Object.defineProperty(globalThis, '__emberAssertFn', {
 // Direct assert function — a wrapper that always calls the current (possibly stubbed)
 // assert. Unlike __emberAssertFn which returns the function for later call, this
 // wrapper is called immediately and uses the ESM live binding of `assert`.
-(globalThis as any).__emberAssertDirect = function (msg: string, test: unknown) {
+setEmberAssertDirect(function (msg: string, test: unknown) {
   assert(msg, test);
-};
+});
 // Import directly from utils to avoid pulling in the full @ember/-internals/views
 // barrel export (which triggers circular dependency issues with CoreView/Mixin)
 import {
@@ -8172,7 +8172,7 @@ function _resolveEmberHelper(
   if (!owner || owner.isDestroyed || owner.isDestroying) return null;
 
   // First check built-in keyword helpers
-  const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
+  const BUILTIN_HELPERS = getGxtRenderer()?.compilePipeline.getBuiltinHelpers?.();
   if (BUILTIN_HELPERS && BUILTIN_HELPERS[name]) {
     const builtinHelper = BUILTIN_HELPERS[name];
     if (typeof builtinHelper === 'function') {
@@ -8262,7 +8262,7 @@ function _resolveEmberHelper(
 // Cache the last known owner so reactive re-evaluations (when the ambient owner
 // may be null) can still resolve components and helpers.
 let _cachedManagerOwner: any = null;
-function getOwnerWithFallback(): any {
+export function getOwnerWithFallback(): any {
   const current = getAmbientOwner();
   if (current && !current.isDestroyed && !current.isDestroying) {
     _cachedManagerOwner = current;
@@ -8277,9 +8277,9 @@ function getOwnerWithFallback(): any {
   return current || _cachedManagerOwner;
 }
 
-// Expose getOwnerWithFallback on globalThis so compile.ts can use the shared
-// owner cache during reactive re-evaluations when the ambient owner is null.
-(globalThis as any).__getOwnerWithFallback = getOwnerWithFallback;
+// compile.ts imports getOwnerWithFallback directly (the retired
+// `globalThis.__getOwnerWithFallback` slot) to use the shared owner cache
+// during reactive re-evaluations when the ambient owner is null.
 
 const $_MANAGERS = {
   component: {
@@ -8370,7 +8370,7 @@ const $_MANAGERS = {
 
         // If we have a live componentGetter (from $_dc_ember), use it to create
         // getters that read from the LATEST curried component's args.
-        const dcGetter = (globalThis as any).__dcComponentGetter;
+        const dcGetter = getDcComponentGetter();
 
         // Copy curried named args as lazy getters.
         // Read from cArgs[key] to see in-place updates.
@@ -8916,7 +8916,7 @@ const $_MANAGERS = {
             /* ignore destroyed owner errors */
           }
           // Also check built-in helpers
-          const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
+          const BUILTIN_HELPERS = getGxtRenderer()?.compilePipeline.getBuiltinHelpers?.();
           if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) return true;
         }
       }
@@ -9268,7 +9268,7 @@ const $_MANAGERS = {
         // functions (they check typeof arg === 'function' and call it). Eagerly
         // unwrapping the args via unwrapVal would lose reactivity and break
         // cases where the getter reads from a GXT formula (e.g., each-loop index).
-        const BUILTIN_HELPERS = (globalThis as any).__EMBER_BUILTIN_HELPERS__;
+        const BUILTIN_HELPERS = getGxtRenderer()?.compilePipeline.getBuiltinHelpers?.();
         if (BUILTIN_HELPERS && BUILTIN_HELPERS[helper]) {
           const builtinFn = BUILTIN_HELPERS[helper];
           // Call built-in directly with the raw params (which may be getter fns)
@@ -14664,6 +14664,8 @@ import {
   getCurrentOutletState,
   getAmbientOwner,
   setAmbientOwner,
+  getDcComponentGetter,
+  setEmberAssertDirect,
 } from './gxt-bridge';
 setGxtRenderer({
   // See `gxtLib` doc in gxt-bridge.ts (retired `globalThis.__lifeartGxt`).

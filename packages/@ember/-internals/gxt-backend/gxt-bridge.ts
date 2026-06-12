@@ -1058,6 +1058,14 @@ export interface GxtCompilePipelineCapabilities {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setCurrentSlotParams?(params: any[] | null): void;
+  /**
+   * The Ember-dialect builtin-helper table (compile.ts module-local; the
+   * retired `globalThis.__EMBER_BUILTIN_HELPERS__` slot). Returned by
+   * REFERENCE — wrappers' helper resolution reads it and its entries-of
+   * patch installs `gxtEntriesOf` onto it.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getBuiltinHelpers?(): Record<string, any>;
 
   /**
    * Read the `__gxtRunTaskActive` boolean flag. Returns `true` if a
@@ -2912,6 +2920,43 @@ export function getAmbientOwner(): any {
 
 export function setAmbientOwner(owner: unknown): void {
   _ambientOwner = owner;
+}
+
+// ---------------------------------------------------------------------------
+// Dynamic-component getter channel — the live `componentGetter` that
+// ember-gxt-wrappers' $_dc swap frames save/set/restore around recursive
+// handle() calls, manager.ts's args-merge reads to build latest-args getters,
+// and compile.ts's test-teardown resets. The retired
+// `globalThis.__dcComponentGetter` slot.
+// ---------------------------------------------------------------------------
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _dcComponentGetter: any = null;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getDcComponentGetter(): any {
+  return _dcComponentGetter;
+}
+
+export function setDcComponentGetter(getter: unknown): void {
+  _dcComponentGetter = getter;
+}
+
+// ---------------------------------------------------------------------------
+// Ember assert channel — a live wrapper over @ember/debug's `assert` (which
+// setDebugFunction / expectAssertion swap), published by manager.ts at init.
+// validator.ts's backtracking asserts call it so expectAssertion() can catch
+// them; helper-manager.ts temporarily wraps it around manager.getValue to
+// normalize render-tree formatting. The retired
+// `globalThis.__emberAssertDirect` slot.
+// ---------------------------------------------------------------------------
+let _emberAssertDirect: ((msg: string, test: unknown) => void) | null = null;
+
+export function getEmberAssertDirect(): ((msg: string, test: unknown) => void) | null {
+  return _emberAssertDirect;
+}
+
+export function setEmberAssertDirect(fn: ((msg: string, test: unknown) => void) | null): void {
+  _emberAssertDirect = fn;
 }
 
 export function getGxtRenderer(): GxtRenderer | null {

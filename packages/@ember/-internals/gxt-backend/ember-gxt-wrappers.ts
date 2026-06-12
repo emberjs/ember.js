@@ -21,6 +21,8 @@ import {
   installCompilePipelinePart,
   getAmbientOwner,
   setAmbientOwner,
+  getDcComponentGetter,
+  setDcComponentGetter,
 } from './gxt-bridge';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 
@@ -753,7 +755,7 @@ function createEmberMaybeHelper(original: Function) {
     const name = nameOrFn;
 
     // Ember's built-in keyword helpers (readonly, mut, unbound, hash, etc.)
-    const BUILTIN_HELPERS = g.__EMBER_BUILTIN_HELPERS__;
+    const BUILTIN_HELPERS = getGxtRenderer()?.compilePipeline.getBuiltinHelpers?.();
     if (BUILTIN_HELPERS && BUILTIN_HELPERS[name]) {
       const helper = BUILTIN_HELPERS[name];
       // For 'hash' helper, pass the named args (hash) as the first argument
@@ -2198,8 +2200,8 @@ function createEmberDc(original: Function) {
           if (!getAmbientOwner() && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
             setAmbientOwner(_dcCapturedOwner);
           }
-          const prevDcGetter = g.__dcComponentGetter;
-          g.__dcComponentGetter = componentGetter;
+          const prevDcGetter = getDcComponentGetter();
+          setDcComponentGetter(componentGetter);
           let newResult: any = null;
           try {
             if (newVal.__isCurriedComponent) {
@@ -2211,7 +2213,7 @@ function createEmberDc(original: Function) {
           } catch {
             /* ignore */
           } finally {
-            g.__dcComponentGetter = prevDcGetter;
+            setDcComponentGetter(prevDcGetter);
             if (!prevOwner && getAmbientOwner() === _dcCapturedOwner) {
               setAmbientOwner(prevOwner);
             }
@@ -2270,13 +2272,13 @@ function createEmberDc(original: Function) {
       // --- Initial one-shot render ---
       let initialResult: any = null;
       if (componentValue && componentValue.__isCurriedComponent) {
-        const prev = g.__dcComponentGetter;
-        g.__dcComponentGetter = componentGetter;
+        const prev = getDcComponentGetter();
+        setDcComponentGetter(componentGetter);
         try {
           const hasCurriedPositionals = (componentValue.__curriedPositionals || []).length > 0;
           initialResult = renderComponent(componentValue, gxtArgs, ctx, !hasCurriedPositionals);
         } finally {
-          g.__dcComponentGetter = prev;
+          setDcComponentGetter(prev);
         }
       }
 
@@ -2348,8 +2350,8 @@ function createEmberDc(original: Function) {
           if (!getAmbientOwner() && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
             setAmbientOwner(_dcCapturedOwner);
           }
-          const prevDcGetter = g.__dcComponentGetter;
-          g.__dcComponentGetter = componentGetter;
+          const prevDcGetter = getDcComponentGetter();
+          setDcComponentGetter(componentGetter);
           let newResult: any = null;
           try {
             if (newVal.__isCurriedComponent) {
@@ -2361,7 +2363,7 @@ function createEmberDc(original: Function) {
           } catch {
             // Component not found or render error — leave empty
           } finally {
-            g.__dcComponentGetter = prevDcGetter;
+            setDcComponentGetter(prevDcGetter);
             if (!prevOwner && getAmbientOwner() === _dcCapturedOwner) {
               setAmbientOwner(prevOwner);
             }
@@ -2477,8 +2479,8 @@ function createEmberDc(original: Function) {
       // --- Initial one-shot render ---
       let initialResult: any = null;
       {
-        const _prevDcGetter = g.__dcComponentGetter;
-        g.__dcComponentGetter = componentGetter;
+        const _prevDcGetter = getDcComponentGetter();
+        setDcComponentGetter(componentGetter);
         // Stash the capture callback on the per-render args object. renderComponent
         // copies it onto mergedArgs (non-enumerably) and the recursive handle()
         // paths propagate it forward, so the consumer (renderClassicComponent /
@@ -2492,7 +2494,7 @@ function createEmberDc(original: Function) {
         try {
           initialResult = renderComponent(componentValue, gxtArgs, ctx, true);
         } finally {
-          g.__dcComponentGetter = _prevDcGetter;
+          setDcComponentGetter(_prevDcGetter);
           try {
             delete (gxtArgs as any).__gxtDcCapture;
           } catch {
@@ -2582,8 +2584,8 @@ function createEmberDc(original: Function) {
           if (!getAmbientOwner() && _dcCapturedOwner && !_dcCapturedOwner.isDestroyed) {
             setAmbientOwner(_dcCapturedOwner);
           }
-          const prevDcGetter = g.__dcComponentGetter;
-          g.__dcComponentGetter = componentGetter;
+          const prevDcGetter = getDcComponentGetter();
+          setDcComponentGetter(componentGetter);
           // Re-stash the capture callback on gxtArgs for the swap render (see
           // initial-render block above for the per-render lifetime contract).
           Object.defineProperty(gxtArgs, '__gxtDcCapture', {
@@ -2603,7 +2605,7 @@ function createEmberDc(original: Function) {
           } catch {
             // Component not found or render error — leave empty
           } finally {
-            g.__dcComponentGetter = prevDcGetter;
+            setDcComponentGetter(prevDcGetter);
             try {
               delete (gxtArgs as any).__gxtDcCapture;
             } catch {
@@ -3028,7 +3030,7 @@ export function installEmberWrappers() {
 // at scheduling, 1 reset-false writer inside the microtask) are intra-file.
 let _entriesOfPatchScheduled = false;
 function _patchGxtEntriesOf(): void {
-  const BUILTIN = g.__EMBER_BUILTIN_HELPERS__;
+  const BUILTIN = getGxtRenderer()?.compilePipeline.getBuiltinHelpers?.();
   if (!BUILTIN) {
     // Helpers object not yet registered by compile.ts — retry via microtask
     if (!_entriesOfPatchScheduled) {

@@ -12,7 +12,7 @@ import * as _glimmerGlobalContext from '@glimmer/global-context';
 import { cell as _gxtNativeCell, syncDom as _gxtSyncDom } from '@lifeart/gxt';
 // Routes the track() reentrancy-guard save-restore through the typed bridge
 // helper. See `withTriggerSuppressed` doc in gxt-bridge.ts.
-import { getGxtRenderer } from './gxt-bridge';
+import { getGxtRenderer, getEmberAssertDirect } from './gxt-bridge';
 
 // Create cell-like functionality using storage primitives
 const createCell = (initialValue: any, name?: string) => {
@@ -591,7 +591,7 @@ export function trackedData<T, K extends string | symbol>(
           // Use the Ember assert function directly. The __emberAssertDirect
           // is a live reference to the assert from @ember/debug, which
           // is updated when expectAssertion stubs it via setDebugFunction.
-          const assertDirect = (globalThis as any).__emberAssertDirect;
+          const assertDirect = getEmberAssertDirect();
           if (typeof assertDirect === 'function') {
             assertDirect(msg, false);
           }
@@ -603,7 +603,7 @@ export function trackedData<T, K extends string | symbol>(
         if (_debugTransactionConsumed !== null && _debugTransactionConsumed.has(cellForKey)) {
           const label = _debugTransactionLabelForTag?.get(cellForKey);
           const msg = `You attempted to update \`${label}\`, but it had already been used previously in the same computation`;
-          const assertDirect = (globalThis as any).__emberAssertDirect;
+          const assertDirect = getEmberAssertDirect();
           if (typeof assertDirect === 'function') {
             assertDirect(msg, false);
           } else {

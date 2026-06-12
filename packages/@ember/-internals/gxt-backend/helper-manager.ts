@@ -16,7 +16,12 @@ import {
   valueForRef,
 } from './reference';
 import { associateDestroyableChild } from './destroyable';
-import { getGxtRenderer, getAmbientOwner } from './gxt-bridge';
+import {
+  getGxtRenderer,
+  getAmbientOwner,
+  getEmberAssertDirect,
+  setEmberAssertDirect,
+} from './gxt-bridge';
 
 // Shared WeakSet to track capabilities created via helperCapabilities()
 export const FROM_CAPABILITIES = new WeakSet();
@@ -140,19 +145,19 @@ function _callGetValueWithBacktracking(
   }
   // Intercept __emberAssertDirect to fix render tree format
   // (validator.ts uses "  - top-level" but Ember tests expect "  -top-level")
-  const origAssert = g.__emberAssertDirect;
+  const origAssert = getEmberAssertDirect();
   if (typeof origAssert === 'function') {
-    g.__emberAssertDirect = function (msg: string, test: any) {
+    setEmberAssertDirect(function (msg: string, test: any) {
       if (typeof msg === 'string') {
         msg = msg.replace(/  - top-level\n/g, '  -top-level\n');
       }
       return origAssert(msg, test);
-    };
+    });
   }
   try {
     return origGetValue.call(delegate, bucket);
   } finally {
-    g.__emberAssertDirect = origAssert;
+    setEmberAssertDirect(origAssert);
     if (bt) {
       bt.endFrame();
     }
@@ -423,19 +428,19 @@ export class CustomHelperManager {
             if (bt) {
               bt.beginFrame(debugName);
             }
-            const origAssert = g.__emberAssertDirect;
+            const origAssert = getEmberAssertDirect();
             if (typeof origAssert === 'function') {
-              g.__emberAssertDirect = function (msg: string, test: any) {
+              setEmberAssertDirect(function (msg: string, test: any) {
                 if (typeof msg === 'string') {
                   msg = msg.replace(/  - top-level\n/g, '  -top-level\n');
                 }
                 return origAssert(msg, test);
-              };
+              });
             }
             try {
               return manager.getValue(bucket);
             } finally {
-              g.__emberAssertDirect = origAssert;
+              setEmberAssertDirect(origAssert);
               if (bt) bt.endFrame();
             }
           },

@@ -996,12 +996,13 @@ import {
   getCurrentOutletState,
   getAmbientOwner,
   setAmbientOwner,
+  setDcComponentGetter,
 } from './gxt-bridge';
 
 // `peekInstanceCapture` exposes the last-created Ember instance, used by the
 // $_tag component thunk's template-only-detection snapshots. The writer
 // (`setInstanceCapture` in `./manager`) stores into a module-local.
-import { peekInstanceCapture } from './manager';
+import { peekInstanceCapture, getOwnerWithFallback } from './manager';
 
 const _SLOTS_SYM = Symbol.for('gxt-slots');
 
@@ -2555,7 +2556,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
     const origHash = g.$__hash;
     g.$__hash = function $__hash_ember(inputObj: Record<string, any>) {
       // Snapshot the current outer render context at construction time.
-      const ctxAtConstruction = g.__lastRenderContext;
+      const ctxAtConstruction = _gxtLastRenderContext;
       // Wrap each function-valued getter so that while it runs we expose the
       // outer context via g.__hashGetterCtx. $_componentHelper_ember reads
       // this to recover the OUTER scope when the hash getter fires inside a
@@ -2572,12 +2573,12 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
             !(val as any).__emberHashGetterWrapped
           ) {
             const wrappedGetter = function (this: any) {
-              const prev = g.__hashGetterCtx;
-              g.__hashGetterCtx = ctxAtConstruction;
+              const prev = _gxtHashGetterCtx;
+              _gxtHashGetterCtx = ctxAtConstruction;
               try {
                 return val.call(this);
               } finally {
-                g.__hashGetterCtx = prev;
+                _gxtHashGetterCtx = prev;
               }
             };
             wrappedGetter.toString = () => val.toString();
@@ -2660,8 +2661,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       if (_cachedOwner && (_cachedOwner.isDestroyed || _cachedOwner.isDestroying)) {
         _cachedOwner = null;
       }
-      const sharedOwner =
-        typeof g.__getOwnerWithFallback === 'function' ? g.__getOwnerWithFallback() : null;
+      const sharedOwner = getOwnerWithFallback();
       const owner = currentOwner || _cachedOwner || sharedOwner;
 
       // Capture the parent render context for two-way binding via mut.
@@ -2671,7 +2671,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       // (where `model` lives), not the my-comp inner render context. Without
       // this, mut can't walk the path back to set this.model.x when the inner
       // component's click handler calls (mut this.val).
-      const parentRenderCtx = (g.__hashGetterCtx as any) || (g as any).__lastRenderContext;
+      const parentRenderCtx = _gxtHashGetterCtx || _gxtLastRenderContext;
 
       // Collect named args from hash (keep getters for reactivity).
       // Also eagerly evaluate each getter to establish GXT cell tracking
@@ -7705,7 +7705,7 @@ function _gxtCleanupActiveComponents(): void {
   // makes _gxtSyncDomNow incorrectly clear the had-pending-sync flag in Phase 1,
   // which then causes __gxtForceEmberRerender to skip the morph for tests that
   // need it (e.g. classic Component.extend properties changed via set()).
-  (globalThis as any).__dcComponentGetter = null;
+  setDcComponentGetter(null);
   getGxtRenderer()?.compilePipeline.clearDynamicComponentListeners?.();
   // Clear component contexts to prevent stale render contexts accumulating.
   // Resets the binding to a fresh WeakMap; cross-file readers re-fetch through
@@ -7966,7 +7966,11 @@ installRuntimePart({
 
 // Register built-in keyword helpers for GXT integration
 // These are simplified implementations for GXT since it doesn't have Glimmer VM's reference system
-(globalThis as any).__EMBER_BUILTIN_HELPERS__ = {
+// Module-local (the retired `globalThis.__EMBER_BUILTIN_HELPERS__` slot);
+// cross-file readers (ember-gxt-wrappers' helper resolution + entries-of
+// patch) reach it by reference through `compilePipeline.getBuiltinHelpers`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _emberBuiltinHelpers: Record<string, any> = {
   // readonly: Returns a readonly cell marker object.
   // The component manager detects __isReadonly and provides an immutable attr
   // (no .update()) while still allowing the value to flow downward.
@@ -8785,6 +8789,15 @@ let currentSlotParams: any[] | null = null;
 // `globalThis.$fw` slots written around every template render. Compiled
 // template Function() bodies read them through the injected `__gxtGetSlots` /
 // `__gxtGetFw` accessor parameters.
+// The most recent template render context and the hash-getter construction
+// context (set while a hash-constructed getter runs) — the retired
+// `globalThis.__lastRenderContext` / `__hashGetterCtx` slots; used by the
+// $_componentHelper mut-parent-context capture.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _gxtLastRenderContext: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _gxtHashGetterCtx: any;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _gxtCurrentSlots: any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15025,7 +15038,7 @@ export function precompileTemplate(
           get: 'get',
           fn: 'fn',
         };
-        const gxtBuiltins = g.__EMBER_BUILTIN_HELPERS__;
+        const gxtBuiltins = _emberBuiltinHelpers;
         const internalHelperManagers = getGxtRenderer()?.registries.internalHelperManagers as
           | WeakMap<object, any>
           | undefined;
@@ -15063,7 +15076,7 @@ export function precompileTemplate(
         ) {
           // Only the canonical Glimmer-VM `on` is replaced; user-shadowed
           // `on` modifiers fall through unchanged.
-          scopeVals['on'] = g.__EMBER_BUILTIN_HELPERS__?.['on'] || scopeVals['on'];
+          scopeVals['on'] = _emberBuiltinHelpers['on'] || scopeVals['on'];
         }
         // Deterministic key based on sorted scope key names AND the
         // template source so that distinct templates that happen to share
@@ -15169,7 +15182,7 @@ export function precompileTemplate(
         }
       }
 
-      const BUILTINS = g.__EMBER_BUILTIN_HELPERS__;
+      const BUILTINS = _emberBuiltinHelpers;
       if (BUILTINS) {
         // Check which helpers are referenced as bare identifiers in the compiled code
         const helperNames = [
@@ -15482,7 +15495,7 @@ export function precompileTemplate(
           _gxtGetTracker,
           _gxtSetTracker,
           _gxtIeSet,
-          (globalThis as any).__EMBER_BUILTIN_HELPERS__,
+          _emberBuiltinHelpers,
           _gxtGetTemplateThisFn,
           getAmbientOwner,
           _gxtGetSlotsFn,
@@ -16636,7 +16649,7 @@ export function precompileTemplate(
           }
 
           // Register render context for cross-cell dirtying
-          (globalThis as any).__lastRenderContext = context;
+          _gxtLastRenderContext = context;
           if (context && typeof context === 'object') {
             const proto = Object.getPrototypeOf(context);
             if (proto && proto !== Object.prototype) {
@@ -17226,6 +17239,7 @@ installCompilePipelinePart({
   setCurrentSlotParams: (params) => {
     currentSlotParams = params;
   },
+  getBuiltinHelpers: () => _emberBuiltinHelpers,
   // Paired get/set for the "run task active" flag, written by the test helpers
   // and read together with the pending-sync flag in the `_backburner` end gate
   // (renderer.ts) and the runloop `onEnd` hook.
