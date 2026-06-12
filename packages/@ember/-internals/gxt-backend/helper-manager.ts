@@ -247,10 +247,37 @@ export class CustomHelperManager {
 
     // Intercept createHelper to record bucket→definition mapping and
     // make args reactive for createCache tracking (template path only).
-    // Skip reactive wrapping for frozen args (SimpleArgsProxy from invokeHelper).
+    //
+    // Skip reactive wrapping for invokeHelper's SimpleArgsProxy: its
+    // positional/named are LAZY PROTOTYPE ACCESSORS over an internal args
+    // cache (the lazy read is the API contract — class-field initializers
+    // call invokeHelper before the owner's constructor body runs). The
+    // snapshot-and-redefine below would eagerly evaluate computeArgs and
+    // freeze the stale result in place. `Object.isFrozen` only catches the
+    // DEBUG shape (upstream freezes the proxy in debug builds only) — in
+    // production the proxy is unfrozen, so ALSO require positional/named to
+    // be OWN DATA properties, which is the VM captured-args shape this wrap
+    // is meant for (prod-variant invokeHelper cluster, 9 tests).
     if (typeof origCreateHelper === 'function') {
       wrapped.createHelper = function (definition: any, args: any) {
-        if (args && typeof args === 'object' && !args.__reactiveHelper && !Object.isFrozen(args)) {
+        const _posDesc =
+          args && typeof args === 'object'
+            ? Object.getOwnPropertyDescriptor(args, 'positional')
+            : undefined;
+        const _namedDesc =
+          args && typeof args === 'object'
+            ? Object.getOwnPropertyDescriptor(args, 'named')
+            : undefined;
+        if (
+          args &&
+          typeof args === 'object' &&
+          !args.__reactiveHelper &&
+          !Object.isFrozen(args) &&
+          _posDesc !== undefined &&
+          'value' in _posDesc &&
+          _namedDesc !== undefined &&
+          'value' in _namedDesc
+        ) {
           const g = globalThis as any;
           const _consumeTag = g.__classicConsumeTag;
           const _tagFor = g.__classicTagFor;
