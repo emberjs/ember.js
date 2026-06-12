@@ -1481,36 +1481,27 @@ function _gxtSetIsRendering(on: boolean): void {
 // the bridge as `compilePipeline.withRendering`. Used by the cross-package
 // renderComponent wraps in `glimmer/lib/renderer.ts`.
 //
-// Conditional-restore semantics:
-//   - ALWAYS increment depth on entry (`_gxtSetIsRendering(true)`).
-//   - On exit (in `finally`), ONLY decrement when we entered with depth
-//     == 0 (the call frame is the outermost render). When nested inside
-//     another render pass (entered with depth > 0), the decrement is
-//     SKIPPED, leaving the counter inflated by 1 for the rest of the
-//     enclosing frame.
+// Balanced semantics: increment on entry, decrement on exit. The in-element
+// deferred-render drain is already gated on the depth-1→0 TRANSITION inside
+// `_gxtSetIsRendering(false)`, so a nested renderComponent exit (2→1) never
+// drains mid-parent-render — only the outermost frame's exit does.
 //
-// Why this exact semantics — and why it can't be a balanced "always increment,
-// always decrement" wrap: the depth-1→0 transition in
-// `_gxtSetIsRendering(false)` runs the in-element deferred-render drain. With a
-// balanced wrap, EVERY nested renderComponent call would trigger a drain on its
-// own exit, causing the parent fragment's queued in-element renders to fire
-// while the parent is still mid-render — replaying a queued in-element render
-// before the parent commits and producing duplicated DOM output (it breaks the
-// `Strict Mode - renderComponent` "multiple calls render into the same element
-// as siblings" cases). The conditional restore lets depth drift up by N (the
-// number of nested renderComponent calls), so when the OUTER frame's decrement
-// runs, depth goes N+1 → N — not 1→0, so no extra drain. The drain only fires
-// when the outer frame had no nested renderComponent calls (depth was 1,
-// decrement to 0 → drain).
+// History: this used to be a conditional restore that SKIPPED the decrement
+// for nested calls (entered with depth > 0) to keep nested exits from
+// draining. But the outer frame only ever decrements its own increment, so
+// each nested call inflated the counter PERMANENTLY — after the first
+// "modifier calls renderComponent" test the realm was stuck at depth 1
+// forever, keeping isRendering() true for every later test: the DEBUG
+// ObjectProxy trap stopped asserting (it treats render passes as internal
+// access) and app.reset() re-boot broke. The depth-gated drain makes the
+// skip unnecessary — balanced accounting preserves the drain timing the
+// conditional restore was protecting.
 function _gxtWithRendering<T>(fn: () => T): T {
-  const wasRendering = _gxtIsRendering();
   _gxtSetIsRendering(true);
   try {
     return fn();
   } finally {
-    if (!wasRendering) {
-      _gxtSetIsRendering(false);
-    }
+    _gxtSetIsRendering(false);
   }
 }
 
