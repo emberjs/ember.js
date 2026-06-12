@@ -621,6 +621,36 @@ function selfVerify() {
   log('  ok: every bare specifier is @lifeart/gxt(/*), a builtin, a self-ref, or a declared dep');
   log('  ok: no dist file imports any dropped @glimmer VM package');
 
+  // The §1.3 guard, third half: nothing may still INLINE the Glimmer VM
+  // opcode core (an import-free chunk inclusion would pass the import scan
+  // above). GXT_DIST_VM_STUBS severs the known pull chains (the classic
+  // render fallback, the SSR builders, the bare-index UpdatingVM patch, and
+  // vm/arguments' relative -debug-strip edge); this marker scan fails loud
+  // if a new edge regresses any of them. `APPEND_OPCODES` is the VM's
+  // append-opcode registration table — present iff the opcode core bundled.
+  {
+    const vmMarkers = ['APPEND_OPCODES', 'new AppendOpcodes()'];
+    const markerOffenders = new Set();
+    for (const dist of ['dist/dev/packages', 'dist/prod/packages']) {
+      const distDir = join(outDir, dist);
+      if (!existsSync(distDir)) continue;
+      for (const f of walkFiles(distDir, (file) => file.endsWith('.js'))) {
+        const code = readFileSync(f, 'utf8');
+        for (const marker of vmMarkers) {
+          if (code.includes(marker)) {
+            markerOffenders.add(`${marker}  (in ${relative(outDir, f)})`);
+          }
+        }
+      }
+    }
+    if (markerOffenders.size > 0) {
+      fail(
+        `self-verify: Glimmer VM opcode core leaked into the GXT dist:\n  ${[...markerOffenders].join('\n  ')}`
+      );
+    }
+    log('  ok: no Glimmer VM opcode core in the dist (APPEND_OPCODES marker scan)');
+  }
+
   // (e) @lifeart/gxt actually exports the subpaths the dist imports. (Read the
   // package.json by path — @lifeart/gxt's exports map does not expose
   // ./package.json, so require.resolve would ERR_PACKAGE_PATH_NOT_EXPORTED.)

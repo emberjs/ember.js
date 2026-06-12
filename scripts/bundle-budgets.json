@@ -17,19 +17,19 @@
     ]
   },
   "gxt": {
-    "_comment": "GXT delta vs classic prod is ~+558KB raw (+28%), attributed (rollup-plugin-visualizer sweep, BUNDLE_VISUALIZER=1) almost entirely to the gxt-backend compat layer: manager.ts ~461KB, validator.ts ~82KB, reference.ts ~23KB, helper-manager.ts ~19KB, destroyable.ts ~11KB. @lifeart/gxt itself is externalized (not inlined). @glimmer/runtime+syntax+compiler are byte-identical in both builds (template compiler + retained VM); gxt drops ~69KB of @glimmer/{validator,manager,reference,destroyable} by shimming them. The remaining delta is genuine runtime bridge logic, not a tree-shaking failure. REFRESH 2026-06-12: +~790KB raw both modes \u2014 the @ember/template-compilation / ember-template-compiler ENTRIES now ship the real GXT runtime-compile pipeline (compile.ts) instead of the dead classic stubs (the esmInputs entry-clobber fix; consumers previously got 'precompileTemplate is meant to be used at compile time' at runtime). The dist is a per-module ESM tree, so apps that never import the runtime compiler do not pay for it; the whole-tree concat measured here is the worst case. Captured from the entry-fix build with 5% headroom.",
+    "_comment": "GXT delta vs classic prod is ~+558KB raw (+28%), attributed (rollup-plugin-visualizer sweep, BUNDLE_VISUALIZER=1) almost entirely to the gxt-backend compat layer: manager.ts ~461KB, validator.ts ~82KB, reference.ts ~23KB, helper-manager.ts ~19KB, destroyable.ts ~11KB. @lifeart/gxt itself is externalized (not inlined). @glimmer/runtime+syntax+compiler are byte-identical in both builds (template compiler + retained VM); gxt drops ~69KB of @glimmer/{validator,manager,reference,destroyable} by shimming them. The remaining delta is genuine runtime bridge logic, not a tree-shaking failure. REFRESH 2026-06-12: +~790KB raw both modes \u2014 the @ember/template-compilation / ember-template-compiler ENTRIES now ship the real GXT runtime-compile pipeline (compile.ts) instead of the dead classic stubs (the esmInputs entry-clobber fix; consumers previously got 'precompileTemplate is meant to be used at compile time' at runtime). The dist is a per-module ESM tree, so apps that never import the runtime compiler do not pay for it; the whole-tree concat measured here is the worst case. Captured from the entry-fix build with 5% headroom. RE-TIGHTENED 2026-06-12 (VM purge): GXT_DIST_VM_STUBS removed the inlined Glimmer VM opcode core (-143KB raw / -33KB gz vs the runtime-compiler-entry refresh); budgets recaptured at the new floor so a VM-code regression also trips the size gate (belt to the APPEND_OPCODES marker scan's suspenders in build-gxt-package).",
     "entries": [
       {
         "path": "dist/prod",
-        "maxRaw": 3619090,
-        "maxGz": 976315,
-        "maxBr": 734267
+        "maxRaw": 3474402,
+        "maxGz": 944451,
+        "maxBr": 711378
       },
       {
         "path": "dist/dev",
-        "maxRaw": 3795852,
-        "maxGz": 1017308,
-        "maxBr": 762986
+        "maxRaw": 3642576,
+        "maxGz": 983533,
+        "maxBr": 738579
       }
     ]
   }

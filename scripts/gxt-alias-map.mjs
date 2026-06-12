@@ -76,6 +76,43 @@ export const GXT_EXTERNAL_PACKAGES = new Set([
  * stale classic build leaked through — the §1.3 hazard) and for patching the
  * addon-main implicit-modules list, so the two sides cannot drift.
  */
+/**
+ * Classic-VM modules stubbed out of the GXT ROLLUP DIST (and only there —
+ * the vite test pipeline keeps the real VM for the [integration] jit suite).
+ * These ids resolve to gxt-backend/glimmer-runtime-stubs.ts, whose unused
+ * exports tree-shake per importer. They are the module-level importers of the
+ * VM opcode/append core that survived GXT_DROPPED_ENTRIES because the
+ * ember-side classic fallback branches import them at top level; under the
+ * inlined `__GXT_MODE__ = true` those branches are unreachable. See the stub
+ * file header for the keep-real rationale per neighbour module.
+ */
+export const GXT_DIST_VM_STUBS = {
+  shim: 'glimmer-runtime-stubs',
+  ids: new Set([
+    // The bare index: only reached by ember-gxt-wrappers' dynamic
+    // `import('@glimmer/runtime')` (the UpdatingVM.execute revalidation
+    // patch for the in-repo jit test harness). The stub exports
+    // `UpdatingVM: undefined`, which that site's `if (UVM && ...)` guard
+    // treats as a no-op — correct for the dist, where no VM runs.
+    '@glimmer/runtime',
+    '@glimmer/runtime/lib/render',
+    // The dev-time stack-check catalogue: its checker VALUES import the
+    // opcode REGISTRAR modules (ComponentElementOperations instanceof
+    // checks), so one `CheckReference` import from the kept vm/arguments
+    // module dragged the whole APPEND_OPCODES registration cascade (~80KB)
+    // into the dist. The stub ships permissive checkers.
+    '@glimmer/runtime/lib/compiled/opcodes/-debug-strip',
+    '@glimmer/runtime/lib/vm/element-builder',
+    '@glimmer/runtime/lib/vm/rehydrate-builder',
+    '@glimmer/runtime/lib/dom/api',
+    '@glimmer/runtime/lib/dom/helper',
+    // SSR builders re-exported by glimmer/lib/dom.ts — FastBoot/SSR is
+    // explicitly out of scope for the GXT preview (RFC §7).
+    '@glimmer/node/lib/node-dom-helper',
+    '@glimmer/node/lib/serialize-builder',
+  ]),
+};
+
 export const GXT_DROPPED_ENTRIES = new Set([
   '@glimmer/runtime',
   '@glimmer/opcode-compiler',

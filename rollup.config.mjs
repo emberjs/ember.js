@@ -11,6 +11,7 @@ import {
   GXT_SHIM_ALIASES,
   GXT_EXTERNAL_PACKAGES,
   GXT_DROPPED_ENTRIES,
+  GXT_DIST_VM_STUBS,
   gxtSubpathRegExp,
 } from './scripts/gxt-alias-map.mjs';
 
@@ -545,6 +546,18 @@ export function resolvePackages(deps, params) {
         return;
       }
 
+      // GXT: RELATIVE intra-runtime edges into stubbed VM modules (bare-id
+      // matching below can't see them). The only such edge today is the kept
+      // vm/arguments module's '../compiled/opcodes/-debug-strip' import — see
+      // GXT_DIST_VM_STUBS in scripts/gxt-alias-map.mjs.
+      if (
+        USE_GXT_BACKEND &&
+        source.startsWith('.') &&
+        source.endsWith('/compiled/opcodes/-debug-strip')
+      ) {
+        return resolve(projectRoot, GXT_SHIM_DIR, `${GXT_DIST_VM_STUBS.shim}.ts`);
+      }
+
       // Rewrite relative imports of the pre-bundled @lifeart/gxt dist files
       // to their bare specifier forms so rollup marks them as external.
       // Several gxt-backend shims use literal relative paths like
@@ -600,6 +613,15 @@ export function resolvePackages(deps, params) {
 
         if (isExternal?.(source)) {
           return { external: true, id: source };
+        }
+
+        // GXT: classic-VM pipeline modules stubbed out of the GXT dist —
+        // checked BEFORE the deps map because exposedDependencies()
+        // deliberately keeps dropped packages resolvable there (so stray
+        // imports succeed); the stub must win for these ids. See
+        // GXT_DIST_VM_STUBS in scripts/gxt-alias-map.mjs.
+        if (USE_GXT_BACKEND && GXT_DIST_VM_STUBS.ids.has(source)) {
+          return resolve(projectRoot, GXT_SHIM_DIR, `${GXT_DIST_VM_STUBS.shim}.ts`);
         }
 
         if (deps[source]) {
