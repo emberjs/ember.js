@@ -65,6 +65,8 @@
   are bound (via `@action` or other means) before passing into `fn`!
 
   See also [partial application](https://en.wikipedia.org/wiki/Partial_application).
+ 
+  `fn` is built-in and does not need to be imported.
 
   @method fn
   @for @ember/helper

@@ -80,6 +80,8 @@ const context = buildUntouchableThis('`fn` helper');
 
   See also [partial application](https://en.wikipedia.org/wiki/Partial_application).
 
+  `fn` is built-in and does not require any additional imports.
+ 
   @method fn
   @public
 */
