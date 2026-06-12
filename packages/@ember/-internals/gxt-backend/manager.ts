@@ -10150,6 +10150,13 @@ const $_MANAGERS = {
 /**
  * Handle a string-based component name (e.g., 'foo-bar').
  */
+// Synthesized one-tag wrapper templates for build-time-compiled components
+// resolved by NAME from the owner registry (see the branch in
+// handleStringComponent). Keyed by component name + arg-key signature; the
+// compiled factory closes over the component function via scopeValues, which
+// is stable for a given registry entry.
+const _gxtBuildTimeComponentTplCache = new Map<string, any>();
+
 function handleStringComponent(
   name: string,
   args: any,
@@ -10163,6 +10170,62 @@ function handleStringComponent(
   }
 
   const { factory, template, manager } = resolved;
+
+  // Build-time-compiled GXT components (.gjs/.gts <template> output)
+  // registered in the owner registry. The @lifeart/gxt compiler emits a BARE
+  // render function (body starts with `$_GET_ARGS(this, arguments)`) with no
+  // Ember factory surface at all — no `create`/`extend`, an empty prototype,
+  // and no manager/template association — so the classic instantiation path
+  // below would throw container's "Failed to create an instance" assert.
+  // Detect that shape and invoke it GXT-NATIVELY by synthesizing a one-tag
+  // runtime template that references the function LEXICALLY (scopeValues) —
+  // the exact `$_c(<lexical>)` path build-time-compiled callers use, so all
+  // root/tree/args wiring is inherited from the proven runtime pipeline.
+  // (Block/slot forwarding for registry-resolved build-time components is a
+  // documented follow-up; lexical invocation supports blocks today.)
+  const _btClass = factory?.class;
+  if (
+    !manager &&
+    !template &&
+    typeof _btClass === 'function' &&
+    typeof (_btClass as any).create !== 'function' &&
+    typeof (_btClass as any).extend !== 'function' &&
+    (!_btClass.prototype || Object.getOwnPropertyNames(_btClass.prototype).length <= 1) &&
+    !globalThis.COMPONENT_TEMPLATES?.has(_btClass) &&
+    !globalThis.INTERNAL_MANAGERS?.has(_btClass) &&
+    !globalThis.COMPONENT_MANAGERS?.has(_btClass)
+  ) {
+    const compileFn = getGxtRenderer()?.compilePipeline.compileTemplate;
+    if (typeof compileFn === 'function') {
+      const argKeys = Object.keys(args || {}).filter(
+        (k) => !k.startsWith('__') && !k.startsWith('$') && k !== 'args'
+      );
+      const cacheKey = `${name}|${argKeys.join(',')}`;
+      let tplFactory = _gxtBuildTimeComponentTplCache.get(cacheKey);
+      if (!tplFactory) {
+        const src = `<GxtBuildTimeComponent ${argKeys
+          .map((k) => `@${k}={{this.__gxtBtArgs.${k}}}`)
+          .join(' ')} />`;
+        tplFactory = compileFn(src, {
+          strictMode: true,
+          scopeValues: { GxtBuildTimeComponent: _btClass },
+          moduleName: `gxt-build-time:${name}`,
+        });
+        _gxtBuildTimeComponentTplCache.set(cacheKey, tplFactory);
+      }
+      return () => {
+        const resolvedTpl =
+          typeof tplFactory === 'function' && !(tplFactory as any).render
+            ? (tplFactory as any)(owner)
+            : tplFactory;
+        if (!resolvedTpl?.render) return null;
+        const renderCtx: any = { __gxtBtArgs: args, owner };
+        const container = document.createDocumentFragment();
+        renderTemplateWithParentView(resolvedTpl, renderCtx, container, null);
+        return container;
+      };
+    }
+  }
 
   // If this component has an internal manager (e.g., Input, Textarea),
   // delegate to handleManagedComponent which properly creates the instance
