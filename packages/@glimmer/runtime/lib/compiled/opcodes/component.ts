@@ -970,3 +970,9 @@ class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
     vm.env.debugRenderTree?.didRender(this.bucket, this.bounds);
   }
 }
+
+// This module registers opcode handlers with APPEND_OPCODES when it is
+// evaluated. The marker below is consumed by ../../bootstrap so that bundlers
+// see a used export and include this module, rather than treating it as a
+// droppable side-effect-only import (e.g. under `sideEffects: false`).
+export const componentOpcodesRegistered = true;

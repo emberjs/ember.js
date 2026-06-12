@@ -19,9 +19,14 @@ import type { VM } from './append';
 // Loading the VM is what creates the demand for opcode handlers — its
 // `evaluateSyscall` calls `APPEND_OPCODES.evaluate(...)`. Pull bootstrap in
 // here (rather than at the package barrel) so consumers using deep imports
-// still get every opcode handler registered before the VM runs.
-import '../bootstrap';
+// still get every opcode handler registered before the VM runs. The marker
+// must be a used value (not a bare import) so tree-shaking keeps it.
+import { opcodesBootstrapped } from '../bootstrap';
 import { APPEND_OPCODES } from '../opcodes';
+
+if (!opcodesBootstrapped) {
+  throw new Error('BUG: VM opcode handlers were not registered');
+}
 
 export type LowLevelRegisters = [$pc: number, $ra: number, $sp: number, $fp: number];
 

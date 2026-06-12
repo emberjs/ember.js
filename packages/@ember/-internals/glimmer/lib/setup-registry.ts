@@ -6,10 +6,13 @@ import Input from './components/input';
 import LinkTo from './components/link-to';
 import Textarea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
-import { Renderer } from './renderer';
+import { Renderer } from './classic-renderer';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
+import { registerBuiltInKeywordHelper } from './resolver';
+import { mountHelper } from './syntax/mount';
+import { outletHelper } from './syntax/outlet';
 
 export function setupApplicationRegistry(registry: Registry): void {
   // because we are using injections we can't use instantiate false
@@ -40,6 +43,13 @@ export function setupApplicationRegistry(registry: Registry): void {
 }
 
 export function setupEngineRegistry(registry: Registry): void {
+  // The `{{outlet}}` and `{{mount}}` keywords are only registered with the
+  // resolver when the classic (routing-based) app pipeline is set up. Apps
+  // that render exclusively through `renderComponent` never load the outlet
+  // and mount component managers.
+  registerBuiltInKeywordHelper('-outlet', outletHelper);
+  registerBuiltInKeywordHelper('-mount', mountHelper);
+
   registry.optionsForType('template', { instantiate: false });
 
   registry.register('view:-outlet', OutletView);

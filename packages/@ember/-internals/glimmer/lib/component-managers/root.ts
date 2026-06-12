@@ -14,7 +14,7 @@ import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
 import { CONSTANT_TAG } from '@glimmer/validator/lib/validators';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import type Component from '../component';
-import type { DynamicScope } from '../renderer';
+import type { DynamicScope } from '../classic-renderer';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   DIRTY_TAG,

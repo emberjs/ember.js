@@ -9,8 +9,13 @@ import { FrameworkObject } from '@ember/object/-internals';
 import getDebugName from '@ember/-internals/utils/lib/get-debug-name';
 import { assert } from '@ember/debug';
 import { join } from '@ember/runloop';
-import type { Arguments, HelperManager } from '@glimmer/interfaces';
-import { getInternalHelperManager } from '@glimmer/manager/lib/internal/api';
+import type { Arguments, HelperDefinitionState, HelperManager } from '@glimmer/interfaces';
+import { DEBUG } from '@glimmer/env';
+import {
+  getInternalHelperManager,
+  setInternalHelperManager,
+} from '@glimmer/manager/lib/internal/api';
+import { registerClassicHelperResolver } from './resolver';
 import { helperCapabilities } from '@glimmer/manager/lib/public/helper';
 import { setHelperManager } from '@glimmer/manager/lib/public/api';
 import type { DirtyableTag } from '@glimmer/interfaces';
@@ -262,6 +267,34 @@ setHelperManager((owner: InternalOwner | undefined): ClassicHelperManager => {
 }, Helper);
 
 export const CLASSIC_HELPER_MANAGER = getInternalHelperManager(Helper);
+
+const CLASSIC_HELPER_MANAGER_ASSOCIATED = new WeakSet();
+
+// Inform the resolver how to handle classic class-based helpers. This lives
+// here (rather than in the resolver) so that apps which never load classic
+// helpers don't include the classic helper manager in their bundles.
+registerClassicHelperResolver((definition, factory) => {
+  if (!isClassicHelper(definition)) {
+    return null;
+  }
+
+  // For classic class based helpers, we need to pass the factoryFor result itself rather
+  // than the raw value (`factoryFor(...).class`). This is because injections are already
+  // bound in the factoryFor result, including type-based injections
+
+  if (DEBUG) {
+    // In DEBUG we need to only set the associated value once, otherwise
+    // we'll trigger an assertion
+    if (!CLASSIC_HELPER_MANAGER_ASSOCIATED.has(factory)) {
+      CLASSIC_HELPER_MANAGER_ASSOCIATED.add(factory);
+      setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
+    }
+  } else {
+    setInternalHelperManager(CLASSIC_HELPER_MANAGER, factory);
+  }
+
+  return factory as HelperDefinitionState;
+});
 
 ///////////
 

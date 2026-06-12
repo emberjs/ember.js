@@ -48,7 +48,7 @@ import {
 } from '@glimmer/validator/lib/tracking';
 import { validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type Component from '../component';
-import type { DynamicScope } from '../renderer';
+import type { DynamicScope } from '../classic-renderer';
 import type RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
 import {
@@ -58,8 +58,10 @@ import {
   parseAttributeBinding,
 } from '../utils/bindings';
 
+import { BOUNDS } from '../utils/bounds';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
+import { markAsCurlyManager } from './curly-brand';
 
 const COMPONENT_ARGS_MAP = new WeakMap<object, CapturedArguments['named']>();
 
@@ -71,7 +73,6 @@ export function getComponentCapturedArgs(
 
 export const DIRTY_TAG = Symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
-export const BOUNDS = Symbol('BOUNDS');
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 
@@ -560,7 +561,4 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
 };
 
 export const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
-
-export function isCurlyManager(manager: object): boolean {
-  return manager === CURLY_COMPONENT_MANAGER;
-}
+markAsCurlyManager(CURLY_COMPONENT_MANAGER);
