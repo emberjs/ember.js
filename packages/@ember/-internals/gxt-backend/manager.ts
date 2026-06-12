@@ -120,6 +120,9 @@ const _gxtFlushCellOpcodes: ((cell: unknown) => void) | undefined = (__lifeartGx
 const _gxtRegisterHostHooks: ((hooks: Record<string, unknown>) => void) | undefined = (
   __lifeartGxtForOptional as any
 ).registerHostHooks;
+const _gxtRegisterHostManagers: ((managers: Record<string, unknown>) => void) | undefined = (
+  __lifeartGxtForOptional as any
+).registerHostManagers;
 // Namespace import + globalThis stash so glimmer/lib/renderer.ts and
 // glimmer/lib/views/outlet.ts can pull GXT symbols without statically
 // importing @lifeart/gxt themselves. Classic-Ember consumers (e.g.,
@@ -14574,51 +14577,64 @@ function _createUpdatableTagForModifier(): any {
 // Export $_MANAGERS for GXT Integration
 // =============================================================================
 
-// Install our handlers onto GXT's original $_MANAGERS object (referenced by GXT's
-// internal module-scope variable). We must MUTATE the original object rather than
-// replacing it, because GXT's $_maybeModifier, $_maybeHelper, etc. close over the
-// original object reference.
-// Import the GXT-original $_MANAGERS using the same direct path that compile.ts uses.
-// This gives us a reference to the exact same object that GXT's internal functions close over.
+// Install our handlers onto GXT's $_MANAGERS table. Hook-capable dists expose
+// `registerHostManagers()` (§2f, docs-internal-gxt-globalthis-wiring.md) — a
+// function living in the same module instance the runtime call sites close
+// over, so the registration reaches the canonical table directly (no
+// object-identity hunting, no deferred retry). Legacy dists keep the original
+// contract: find the GXT-original object reference and MUTATE it in place
+// (replacing it wouldn't work — GXT's $_maybeModifier/$_maybeHelper close
+// over the original reference).
 {
-  // @ts-ignore - direct path import
-  let gxtOrigManagers: any = null;
-  try {
-    // Read the GXT module via the `runtime.getGxtModule()` bridge. The writer
-    // is `gxt-with-runtime-hbs.ts` (contributed via `installRuntimePart`).
-    // Optional chains guard against that entry not being in the import graph.
-    const gxtMod = getGxtRenderer()?.runtime.getGxtModule?.() as any;
-    if (gxtMod?.$_MANAGERS) {
-      gxtOrigManagers = gxtMod.$_MANAGERS;
-    }
-  } catch {
-    /* ignore */
-  }
-  if (gxtOrigManagers && gxtOrigManagers !== $_MANAGERS) {
-    gxtOrigManagers.component = $_MANAGERS.component;
-    gxtOrigManagers.helper = $_MANAGERS.helper;
-    gxtOrigManagers.modifier = $_MANAGERS.modifier;
-  }
-  // Also set on globalThis
-  (globalThis as any).$_MANAGERS = $_MANAGERS;
-  // Deferred retry: contributors to `runtime` (compile.ts and/or
-  // gxt-with-runtime-hbs.ts) may install AFTER this module's synchronous init
-  // runs. Both publish the same GXT-original `$_MANAGERS` reference via
-  // `runtime.getOriginalManagers()`; the microtask gives them a turn to
-  // register before we look up the reference and mutate the original object in
-  // place.
-  queueMicrotask(() => {
+  if (_gxtRegisterHostManagers) {
+    _gxtRegisterHostManagers({
+      component: $_MANAGERS.component,
+      helper: $_MANAGERS.helper,
+      modifier: $_MANAGERS.modifier,
+    });
+  } else {
+    // @ts-ignore - direct path import
+    let gxtOrigManagers: any = null;
     try {
-      const gxtMgrs = getGxtRenderer()?.runtime.getOriginalManagers?.() as any;
-      if (gxtMgrs && gxtMgrs !== $_MANAGERS) {
-        gxtMgrs.component = $_MANAGERS.component;
-        gxtMgrs.helper = $_MANAGERS.helper;
-        gxtMgrs.modifier = $_MANAGERS.modifier;
+      // Read the GXT module via the `runtime.getGxtModule()` bridge. The writer
+      // is `gxt-with-runtime-hbs.ts` (contributed via `installRuntimePart`).
+      // Optional chains guard against that entry not being in the import graph.
+      const gxtMod = getGxtRenderer()?.runtime.getGxtModule?.() as any;
+      if (gxtMod?.$_MANAGERS) {
+        gxtOrigManagers = gxtMod.$_MANAGERS;
       }
     } catch {
-      /* ignore — bridge may be uninstalled in non-GXT-mode builds */
+      /* ignore */
     }
-  });
+    if (gxtOrigManagers && gxtOrigManagers !== $_MANAGERS) {
+      gxtOrigManagers.component = $_MANAGERS.component;
+      gxtOrigManagers.helper = $_MANAGERS.helper;
+      gxtOrigManagers.modifier = $_MANAGERS.modifier;
+    }
+    // Deferred retry: contributors to `runtime` (compile.ts and/or
+    // gxt-with-runtime-hbs.ts) may install AFTER this module's synchronous init
+    // runs. Both publish the same GXT-original `$_MANAGERS` reference via
+    // `runtime.getOriginalManagers()`; the microtask gives them a turn to
+    // register before we look up the reference and mutate the original object in
+    // place.
+    queueMicrotask(() => {
+      try {
+        const gxtMgrs = getGxtRenderer()?.runtime.getOriginalManagers?.() as any;
+        if (gxtMgrs && gxtMgrs !== $_MANAGERS) {
+          gxtMgrs.component = $_MANAGERS.component;
+          gxtMgrs.helper = $_MANAGERS.helper;
+          gxtMgrs.modifier = $_MANAGERS.modifier;
+        }
+      } catch {
+        /* ignore — bridge may be uninstalled in non-GXT-mode builds */
+      }
+    });
+  }
+  // Also set on globalThis in BOTH modes: runtime-compiled template code
+  // reads `globalThis.$_MANAGERS` inside compiled Function bodies, and
+  // ember-gxt-wrappers reads `g.$_MANAGERS` (§2e symbol injection retires
+  // both).
+  (globalThis as any).$_MANAGERS = $_MANAGERS;
 }
 
 export { $_MANAGERS };
