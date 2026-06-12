@@ -113,6 +113,8 @@ function getElementDefinition(tagName: string): ElementComponentDefinition {
   Passing `null`, `undefined`, or non-string values will throw an assertion error.
 
   Changing the tag name will tear down and recreate the element and its contents.
+ 
+  The `element` helper is built-in and does not need to be imported.
 
   @method element
   @for Ember.Templates.helpers

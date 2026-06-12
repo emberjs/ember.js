@@ -10,20 +10,20 @@
   For example, if you'd like to run a function on your component when a `<button>`
   in the components template is clicked you might do something like:
 
-  ```app/components/like-post.hbs
-  <button {{on 'click' this.saveLike}}>Like this post!</button>
-  ```
-
-  ```app/components/like-post.js
+  ```app/components/like-post.gjs
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
-  export default class LikePostComponent extends Component {
+  export default class LikePost extends Component {
     @action
     saveLike() {
       // someone likes your post!
       // better send a request off to your server...
     }
+    
+    <template>
+      <button {{on 'click' this.saveLike}}>Like this post!</button>
+    </template>
   }
   ```
 
@@ -58,7 +58,7 @@
   For example, in our example case above if you'd like to pass in the post that
   was being liked when the button is clicked you could do something like:
 
-  ```app/components/like-post.hbs
+  ```hbs
   <button {{on 'click' (fn this.saveLike @post)}}>Like this post!</button>
   ```
 
@@ -68,13 +68,13 @@
   ### Function Context
 
   In the example above, we used `@action` to ensure that `likePost` is
-  properly bound to the `items-list`, but let's explore what happens if we
+  properly bound to the `LikePost` Component, but let's explore what happens if we
   left out `@action`:
 
-  ```app/components/like-post.js
+  ```app/components/like-post.gjs
   import Component from '@glimmer/component';
 
-  export default class LikePostComponent extends Component {
+  export default class LikePost extends Component {
     saveLike() {
       // ...snip...
     }

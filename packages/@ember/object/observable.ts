@@ -322,6 +322,10 @@ interface Observable {
     only a sender and key value as parameters or, if you aren't interested in
     any of these values, to write an observer that has no parameters at all.
 
+    While observers are still supported, there are [plans to deprecate them](https://github.com/emberjs/rfcs/pull/1115)
+    See the [in-progress deprecation guide](https://github.com/ember-learn/deprecation-app/pull/1407)
+    for guidance on how to avoid using observers.
+
     @method addObserver
     @param {String} key The key to observe
     @param {Object} target The target object to invoke

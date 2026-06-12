@@ -21,15 +21,14 @@ import { internalHelper } from '../helpers/internal-helper';
 
   For example, the following template mounts the `ember-chat` engine:
 
-  ```handlebars
-  {{! application.hbs }}
+  ```app/templates/application.gjs
   {{mount "ember-chat"}}
   ```
 
   Additionally, you can also pass in a `model` argument that will be
   set as the engines model. This can be an existing object:
 
-  ```
+  ```hbs
   <div>
     {{mount 'admin' model=userSettings}}
   </div>
@@ -37,15 +36,20 @@ import { internalHelper } from '../helpers/internal-helper';
 
   Or an inline `hash`, and you can even pass components:
 
+  ```gjs
+  import SignInButton from '../components/sign-in-button';
+  <template>
+    <div>
+      <h1>Application template!</h1>
+      {{mount 'admin' model=(hash
+          title='Secret Admin'
+          signInButton=SignInButton
+      )}}
+    </div>
+  </template>
   ```
-  <div>
-    <h1>Application template!</h1>
-    {{mount 'admin' model=(hash
-        title='Secret Admin'
-        signInButton=(component 'sign-in-button')
-    )}}
-  </div>
-  ```
+ 
+ `mount` is built-in and does not need to be imported.
 
   @method mount
   @param {String} name Name of the engine to mount.

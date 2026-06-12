@@ -1,6 +1,23 @@
 /**
   [Glimmer](https://github.com/tildeio/glimmer) is a templating engine used by Ember.js that is compatible with a subset of the [Handlebars](http://handlebarsjs.com/) syntax.
 
+  Ember ships with two types of JavaScript classes for components:
+
+  1. Glimmer components, imported from `@glimmer/component`, which are the
+  default component's for Ember Octane (3.15) and more recent editions.
+  2. Classic components, imported from `@ember/component`, which were the
+  default for older editions of Ember (pre 3.15) but are still supported.
+
+  Below is the documentation for Classic components. If you are looking for the
+  API documentation for Template-only or Glimmer components, it is [available
+  here](/ember/release/modules/@glimmer%2Fcomponent).
+
+  Note: Prior to Ember 6.8, by default, components were authored in paired .hbs and .js
+  files. This is still supported, but the default authoring format is now `.gjs` or "template tag".
+  The documentation for `@ember/component` still refers to the older authoring format. To read about
+  the new authoring format, see the
+  [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
+    
   ### Showing a property
 
   Templates manage the flow of an application's UI, and display state (through
@@ -98,16 +115,24 @@
   When designing components `{{yield}}` is used to denote where, inside the component's
   template, an optional block passed to the component should render:
 
-  ```app/templates/application.hbs
-  <LabeledTextfield @value={{@model.name}}>
-    First name:
-  </LabeledTextfield>
+  ```app/templates/application.gjs
+  import LabeledTextField from '../components/labeled-textfield';
+    
+  <template>
+    <LabeledTextField @value={{@model.name}}>
+      First name:
+    </LabeledTextField>
+  </template>
   ```
 
-  ```app/components/labeled-textfield.hbs
-  <label>
-    {{yield}} <Input @value={{@value}} />
-  </label>
+  ```app/components/labeled-textfield.gjs
+  import { Input } from '@ember/component';
+    
+  <template>
+    <label>
+      {{yield}} <Input @value={{@value}} />
+    </label>
+  </template>
   ```
 
   Result:
@@ -120,19 +145,34 @@
 
   Additionally you can `yield` properties into the context for use by the consumer:
 
-  ```app/templates/application.hbs
-  <LabeledTextfield @value={{@model.validation}} @validator={{this.firstNameValidator}} as |validationError|>
-    {{#if validationError}}
-      <p class="error">{{validationError}}</p>
-    {{/if}}
-    First name:
-  </LabeledTextfield>
+  ```app/templates/application.gjs
+  import Component from '@glimmer/component';
+  import LabeledTextField from '../components/labeled-textfield';
+    
+  export default class Application extends Component {
+    firstNameValidator = (value) => {
+      // validates
+    }
+    
+    <template>
+      <LabeledTextField @value={{@model.validation}} @validator={{this.firstNameValidator}} as |validationError|>
+        {{#if validationError}}
+          <p class="error">{{validationError}}</p>
+        {{/if}}
+        First name:
+      </LabeledTextField>
+    </template>
+  }
   ```
 
-  ```app/components/labeled-textfield.hbs
-  <label>
-    {{yield this.validationError}} <Input @value={{@value}} />
-  </label>
+  ```app/components/labeled-textfield.gjs
+  import { Input } from '@ember/component';
+    
+  <template>
+    <label>
+      {{yield this.validationError}} <Input @value={{@value}} />
+    </label>
+  </template>
   ```
 
   Result:
@@ -146,17 +186,23 @@
 
   `yield` can also be used with the `hash` helper:
 
-  ```app/templates/application.hbs
-  <DateRanges @value={{@model.date}} as |range|>
-    Start date: {{range.start}}
-    End date: {{range.end}}
-  </DateRanges>
+  ```app/templates/application.gjs
+  import DateRanges from '../components/date-ranges';
+    
+  <template>
+    <DateRanges @value={{@model.date}} as |range|>
+      Start date: {{range.start}}
+      End date: {{range.end}}
+    </DateRanges>
+  </template>
   ```
 
-  ```app/components/date-ranges.hbs
-  <div>
-    {{yield (hash start=@value.start end=@value.end)}}
-  </div>
+  ```app/components/date-ranges.gjs
+  <template>
+    <div>
+      {{yield (hash start=@value.start end=@value.end)}}
+    </div>
+  </template>
   ```
 
   Result:
@@ -169,19 +215,25 @@
   ```
 
   Multiple values can be yielded as block params:
-
-  ```app/templates/application.hbs
-  <Banner @value={{@model}} as |title subtitle body|>
-    <h1>{{title}}</h1>
-    <h2>{{subtitle}}</h2>
-    {{body}}
-  </Banner>
+    
+  ```app/templates/application.gjs
+  import Banner from '../components/banner';
+    
+  <template>
+    <Banner @value={{@model}} as |title subtitle body|>
+      <h1>{{title}}</h1>
+      <h2>{{subtitle}}</h2>
+      {{body}}
+    </Banner>
+  </template>
   ```
 
-  ```app/components/banner.hbs
-  <div>
-    {{yield "Hello title" "hello subtitle" "body text"}}
-  </div>
+  ```app/components/banner.gjs
+  <template>
+    <div>
+      {{yield "Hello title" "hello subtitle" "body text"}}
+    </div>
+  </template>
   ```
 
   Result:
@@ -198,15 +250,19 @@
 
   Multiple components can be yielded with the `hash` and `component` helper:
 
-  ```app/templates/application.hbs
-  <Banner @value={{@model}} as |banner|>
-    <banner.Title>Banner title</banner.Title>
-    <banner.Subtitle>Banner subtitle</banner.Subtitle>
-    <banner.Body>A load of body text</banner.Body>
-  </Banner>
+  ```app/templates/application.gjs
+  import Banner from '../components/banner';
+
+  <template>
+    <Banner @value={{@model}} as |banner|>
+      <banner.Title>Banner title</banner.Title>
+      <banner.Subtitle>Banner subtitle</banner.Subtitle>
+      <banner.Body>A load of body text</banner.Body>
+    </Banner>
+  </template>
   ```
 
-  ```app/components/banner.js
+  ```app/components/banner.gjs
   import Title from './banner/title';
   import Subtitle from './banner/subtitle';
   import Body from './banner/body';
@@ -215,17 +271,17 @@
     Title = Title;
     Subtitle = Subtitle;
     Body = Body;
+    
+    <template>
+      <div>
+        {{yield (hash
+          Title=this.Title
+          Subtitle=this.Subtitle
+          Body=(component this.Body defaultArg="some value")
+        )}}
+      </div>
+    </template>
   }
-  ```
-
-  ```app/components/banner.hbs
-  <div>
-    {{yield (hash
-      Title=this.Title
-      Subtitle=this.Subtitle
-      Body=(component this.Body defaultArg="some value")
-    )}}
-  </div>
   ```
 
   Result:
@@ -240,12 +296,16 @@
 
   A benefit of using this pattern is that the user of the component can change the order the components are displayed.
 
-  ```app/templates/application.hbs
-  <Banner @value={{@model}} as |banner|>
-    <banner.Subtitle>Banner subtitle</banner.Subtitle>
-    <banner.Title>Banner title</banner.Title>
-    <banner.Body>A load of body text</banner.Body>
-  </Banner>
+  ```app/templates/application.gjs
+  import Banner from '../components/banner';
+
+  <template>
+    <Banner @value={{@model}} as |banner|>
+      <banner.Subtitle>Banner subtitle</banner.Subtitle>
+      <banner.Title>Banner title</banner.Title>
+      <banner.Body>A load of body text</banner.Body>
+    </Banner>
+  </template>
   ```
 
   Result:
@@ -261,27 +321,33 @@
   Another benefit to using `yield` with the `hash` and `component` helper
   is you can pass attributes and arguments to these components:
 
-  ```app/templates/application.hbs
-  <Banner @value={{@model}} as |banner|>
-    <banner.Subtitle class="mb-1">Banner subtitle</banner.Subtitle>
-    <banner.Title @variant="loud">Banner title</banner.Title>
-    <banner.Body>A load of body text</banner.Body>
-  </Banner>
+  ```app/templates/application.gjs
+  import Banner from '../components/banner';
+
+  <template>
+    <Banner @value={{@model}} as |banner|>
+      <banner.Subtitle class="mb-1">Banner subtitle</banner.Subtitle>
+      <banner.Title @variant="loud">Banner title</banner.Title>
+      <banner.Body>A load of body text</banner.Body>
+    </Banner>
+  </template>
   ```
 
-  ```app/components/banner/subtitle.hbs
+  ```app/components/banner/subtitle.gjs
   {{!-- note the use of ..attributes --}}
   <h2 ...attributes>
     {{yield}}
   </h2>
   ```
 
-  ```app/components/banner/title.hbs
-  {{#if (eq @variant "loud")}}
+  ```app/components/banner/title.gjs
+  <template>
+    {{#if (eq @variant "loud")}}
       <h1 class="loud">{{yield}}</h1>
-  {{else}}
+    {{else}}
       <h1 class="quiet">{{yield}}</h1>
-  {{/if}}
+    {{/if}}
+  </template>
   ```
 
   Result:
@@ -307,36 +373,28 @@
   This component is invoked with a block:
 
   ```handlebars
-  {{#my-component}}
+  <MyComponent>
     Hi Jen!
-  {{/my-component}}
+  </MyComponent>
   ```
 
   This component is invoked without a block:
 
   ```handlebars
-  {{my-component}}
-  ```
-
-  Using angle bracket invocation, this looks like:
-
-  ```html
-  <MyComponent>Hi Jen!</MyComponent> {{! with a block}}
-  ```
-
-  ```html
-  <MyComponent/> {{! without a block}}
+  <MyComponent />
   ```
 
   This is useful when you want to create a component that can optionally take a block
   and then render a default template when it is not invoked with a block.
 
-  ```app/templates/components/my-component.hbs
-  {{#if (has-block)}}
-    Welcome {{yield}}, we are happy you're here!
-  {{else}}
-    Hey you! You're great!
-  {{/if}}
+  ```app/components/my-component.gjs
+  <template>
+    {{#if (has-block)}}
+      Welcome {{yield}}, we are happy you're here!
+    {{else}}
+      Hey you! You're great!
+    {{/if}}
+  </template>
   ```
 
   @method has-block
@@ -350,26 +408,10 @@
   `{{(has-block-params)}}` indicates if the component was invoked with block params.
 
   This component is invoked with block params:
-
+    
   ```handlebars
-  {{#my-component as |favoriteFlavor|}}
-    Hi Jen!
-  {{/my-component}}
-  ```
-
-  This component is invoked without block params:
-
-  ```handlebars
-  {{#my-component}}
-    Hi Jenn!
-  {{/my-component}}
-  ```
-
-  With angle bracket syntax, block params look like this:
-
-    ```handlebars
   <MyComponent as |favoriteFlavor|>
-    Hi Jen!
+  Hi Jen!
   </MyComponent>
   ```
 
@@ -377,21 +419,23 @@
 
   ```handlebars
   <MyComponent>
-    Hi Jen!
+  Hi Jen!
   </MyComponent>
   ```
 
   This is useful when you want to create a component that can render itself
   differently when it is not invoked with block params.
 
-  ```app/templates/components/my-component.hbs
-  {{#if (has-block-params)}}
-    Welcome {{yield this.favoriteFlavor}}, we're happy you're here and hope you
-    enjoy your favorite ice cream flavor.
-  {{else}}
-    Welcome {{yield}}, we're happy you're here, but we're unsure what
-    flavor ice cream you would enjoy.
-  {{/if}}
+  ```app/components/my-component.gjs
+  <template>
+    {{#if (has-block-params)}}
+      Welcome {{yield this.favoriteFlavor}}, we're happy you're here and hope you
+      enjoy your favorite ice cream flavor.
+    {{else}}
+      Welcome {{yield}}, we're happy you're here, but we're unsure what
+      flavor ice cream you would enjoy.
+    {{/if}}
+  </template>
   ```
 
   @method has-block-params

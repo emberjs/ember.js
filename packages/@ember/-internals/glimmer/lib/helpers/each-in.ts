@@ -11,7 +11,7 @@ import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { internalHelper } from './internal-helper';
 
 /**
-  The `{{#each}}` helper loops over elements in a collection. It is an extension
+  The `{{#each}}` keyword loops over elements in a collection. It is an extension
   of the base Handlebars `{{#each}}` helper.
 
   The default behavior of `{{#each}}` is to yield its inner block once for every
@@ -55,6 +55,8 @@ import { internalHelper } from './internal-helper';
     {{/each}}
   </ul>
   ```
+    
+  `#each` is a keyword and does not need to be imported. 
 
   ### Specifying Keys
 
@@ -122,11 +124,11 @@ import { internalHelper } from './internal-helper';
  */
 
 /**
-  The `{{each-in}}` helper loops over properties on an object.
+  The `{{#each-in}}` keyword loops over properties on an object.
 
   For example, given this component definition:
 
-  ```app/components/developer-details.js
+  ```app/components/developer-details.gjs
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
@@ -135,21 +137,19 @@ import { internalHelper } from './internal-helper';
       "name": "Shelly Sails",
       "age": 42
     };
+    
+    <template>
+      <ul>
+        {{#each-in this.developer as |key value|}}
+          <li>{{key}}: {{value}}</li>
+        {{/each-in}}
+      </ul>
+    </template>
   }
   ```
 
   This template would display all properties on the `developer`
-  object in a list:
-
-  ```app/components/developer-details.hbs
-  <ul>
-    {{#each-in this.developer as |key value|}}
-      <li>{{key}}: {{value}}</li>
-    {{/each-in}}
-  </ul>
-  ```
-
-  Outputting their name and age:
+  object in a list, outputting their name and age:
 
   ```html
   <ul>
@@ -157,6 +157,8 @@ import { internalHelper } from './internal-helper';
     <li>age: 42</li>
   </ul>
   ```
+ 
+  `#each-in` is a keyword and does not need to be imported.
 
   @method each-in
   @for Ember.Templates.helpers

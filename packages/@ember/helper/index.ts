@@ -348,18 +348,12 @@ export const invokeHelper = glimmerInvokeHelper;
  * as an argument to your components.
  *
  * ```
- * import { hash } from '@ember/helper';
- *
  * <template>
  *   {{#each-in (hash givenName='Jen' familyName='Weber') as |key value|}}
  *     <p>{{key}}: {{value}}</p>
  *   {{/each-in}}
  * </template>
  * ```
- *
- * **NOTE:** this example uses the experimental `<template>` feature, which is
- * the only place you need to import `hash` to use it (it is a built-in when
- * writing standalone `.hbs` files).
  */
 export const hash = glimmerHash as HashHelper;
 export interface HashHelper extends Opaque<'helper:hash'> {}
@@ -369,7 +363,6 @@ export interface HashHelper extends Opaque<'helper:hash'> {}
  * as an argument to your components.
  *
  * ```js
- * import { array } from '@ember/helper';
  *
  * <template>
  *   <ul>
@@ -378,10 +371,6 @@ export interface HashHelper extends Opaque<'helper:hash'> {}
  *   {{/each}}
  *   </ul>
  * </template>
- *
- * **NOTE:** this example uses the experimental `<template>` feature, which is
- * the only place you need to import `array` to use it (it is a built-in when
- * writing standalone `.hbs` files).
  * ```
  */
 export const array = glimmerArray as ArrayHelper;
@@ -404,10 +393,6 @@ export interface ArrayHelper extends Opaque<'helper:array'> {}
  *
  * This will display the result of `@foo.item1` when `index` is `1`, and
  * `this.foo.item2` when `index` is `2`, etc.
- *
- * **NOTE:** this example uses the experimental `<template>` feature, which is
- * the only place you need to import `concat` to use it (it is a built-in when
- * writing standalone `.hbs` files).
  */
 export const concat = glimmerConcat as ConcatHelper;
 export interface ConcatHelper extends Opaque<'helper:concat'> {}
@@ -449,10 +434,6 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  *
  * This will display the result of `@foo.item1` when `index` is `1`, and
  * `this.foo.item2` when `index` is `2`, etc.
- *
- * **NOTE:** this example uses the experimental `<template>` feature, which is
- * the only place you need to import `concat` to use it (it is a built-in when
- * writing standalone `.hbs` files).
  */
 export const get = glimmerGet as GetHelper;
 export interface GetHelper extends Opaque<'helper:get'> {}

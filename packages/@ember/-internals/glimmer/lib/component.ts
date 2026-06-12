@@ -237,6 +237,12 @@ declare const SIGNATURE: unique symbol;
   API documentation for Template-only or Glimmer components, it is [available
   here](/ember/release/modules/@glimmer%2Fcomponent).
 
+  Note: Prior to Ember 6.8, by default, components were authored in paired `.hbs` and `.js`
+  files. This is still supported, but the default authoring format is now `.gjs` or "template tag".
+  The documentation for `@ember/component` still refers to the older authoring format. To read about
+  the new authoring format, see the 
+  [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
+    
   ## Defining a Classic Component
 
   If you want to customize the component in order to handle events, transform
@@ -263,7 +269,7 @@ declare const SIGNATURE: unique symbol;
 
   And then use it in the component's template:
 
-  ```app/templates/components/person-profile.hbs
+  ```app/components/person-profile.hbs
   <h1>{{this.displayName}}</h1>
   {{yield}}
   ```
@@ -651,7 +657,7 @@ declare const SIGNATURE: unique symbol;
   The `layout` property should be set to the default export of a template
   module, which is the name of a template file without the `.hbs` extension.
 
-  ```app/templates/components/person-profile.hbs
+  ```app/components/person-profile.hbs
   <h1>Person's Title</h1>
   <div class='details'>{{yield}}</div>
   ```

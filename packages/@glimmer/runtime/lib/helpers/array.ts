@@ -18,7 +18,7 @@ import { internalHelper } from './internal-helper';
    ```
     or
    ```handlebars
-   {{my-component people=(array
+   {{yield people=(array
      'Tom Dale'
      'Yehuda Katz'
      this.myOtherPerson)
