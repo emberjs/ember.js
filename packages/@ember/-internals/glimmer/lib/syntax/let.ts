@@ -33,6 +33,8 @@
     {{/let}}
   ```
 
+ `let` is built-in and does not need to be imported.
+ 
   @method let
   @for Ember.Templates.helpers
   @public

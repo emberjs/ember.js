@@ -39,6 +39,8 @@
      {{/in-element}}
      ```
 
+ `in-element` is built-in and does not need to be imported.
+ 
  @method in-element
  @for Ember.Templates.helpers
  @public
