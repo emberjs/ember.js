@@ -10,6 +10,8 @@ import { internalHelper } from './internal-helper';
   The `mut` helper is a shortcut for updating for args.
     
   However, defining update functions on your backing class is preferable to using `mut`.
+    
+  More directly: Don't use `mut`. 
 
   The `mut` helper, when used with `fn`, will return a function that
   sets the value passed to `mut` to its first argument. As an example, we can create a
