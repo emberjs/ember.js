@@ -2,9 +2,10 @@ import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { consumeTag, untrack } from '@glimmer/validator/lib/tracking';
 import { dirtyTagFor, tagFor } from '@glimmer/validator/lib/meta';
 import { trackedData } from '@glimmer/validator/lib/tracked-data';
+import { trackedValue, type TrackedValue } from '@glimmer/validator/lib/tracked-value';
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
@@ -73,73 +74,121 @@ import { SELF_TAG } from './tags';
 
   @param dependencies Optional dependents to be tracked.
 */
-export function tracked(propertyDesc: {
-  value: any;
-  initializer: () => any;
-}): ExtendedMethodDecorator;
+interface TrackedFieldOptions {
+  value?: any;
+  initializer?: () => any;
+  // Method syntax (rather than a function-typed property) is load-bearing:
+  // it keeps parameter checking bivariant so that a typed `equals` callback
+  // still selects this overload rather than falling through to the
+  // standalone-value overload.
+  equals?(a: any, b: any): boolean;
+  description?: string;
+}
+
+export function tracked(propertyDesc: TrackedFieldOptions): ExtendedMethodDecorator;
 export function tracked(target: object, key: string): void;
 export function tracked(
   target: object,
   key: string,
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
-export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorPropertyDescriptor {
+export function tracked<Value>(
+  initialValue: Value,
+  options?: { equals?: (a: Value, b: Value) => boolean; description?: string }
+): TrackedValue<Value>;
+export function tracked(
+  ...args: any[]
+): ExtendedMethodDecorator | DecoratorPropertyDescriptor | TrackedValue<any> {
   assert(
     `@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()`,
     !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && args[4] === true)
   );
 
-  if (!isElementDescriptor(args)) {
-    let propertyDesc = args[0];
-
-    assert(
-      `tracked() may only receive an options object containing 'value' or 'initializer', received ${propertyDesc}`,
-      args.length === 0 || (typeof propertyDesc === 'object' && propertyDesc !== null)
-    );
-
-    if (DEBUG && propertyDesc) {
-      let keys = Object.keys(propertyDesc);
-
-      assert(
-        `The options object passed to tracked() may only contain a 'value' or 'initializer' property, not both. Received: [${keys}]`,
-        keys.length <= 1 &&
-          (keys[0] === undefined || keys[0] === 'value' || keys[0] === 'initializer')
-      );
-
-      assert(
-        `The initializer passed to tracked must be a function. Received ${propertyDesc.initializer}`,
-        !('initializer' in propertyDesc) || typeof propertyDesc.initializer === 'function'
-      );
-    }
-
-    let initializer = propertyDesc ? propertyDesc.initializer : undefined;
-    let value = propertyDesc ? propertyDesc.value : undefined;
-
-    let decorator = function (
-      target: object,
-      key: string,
-      _desc?: DecoratorPropertyDescriptor,
-      _meta?: any,
-      isClassicDecorator?: boolean
-    ): DecoratorPropertyDescriptor {
-      assert(
-        `You attempted to set a default value for ${key} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
-        isClassicDecorator
-      );
-
-      let fieldDesc = {
-        initializer: initializer || (() => value),
-      };
-
-      return descriptorForField([target, key, fieldDesc]);
-    };
-
-    setClassicDecorator(decorator);
-
-    return decorator;
+  if (isElementDescriptor(args)) {
+    return descriptorForField(args);
   }
 
-  return descriptorForField(args);
+  if (args.length === 0 || (args.length === 1 && isDecoratorOptions(args[0]))) {
+    return makeTrackedDecorator(args[0]);
+  }
+
+  let [initialValue, options] = args;
+
+  assert(
+    `tracked() may only receive an options object containing 'equals' or 'description' as its second argument, received ${options}`,
+    options === undefined || (typeof options === 'object' && options !== null)
+  );
+
+  return trackedValue(initialValue, options);
+}
+
+const DECORATOR_OPTION_KEYS = ['value', 'initializer', 'equals', 'description'];
+
+function isDecoratorOptions(value: unknown): value is TrackedFieldOptions {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  let proto = Object.getPrototypeOf(value);
+
+  if (proto !== Object.prototype && proto !== null) {
+    return false;
+  }
+
+  return Object.keys(value).every((key) => DECORATOR_OPTION_KEYS.includes(key));
+}
+
+function makeTrackedDecorator(propertyDesc?: TrackedFieldOptions): ExtendedMethodDecorator {
+  if (DEBUG && propertyDesc) {
+    assert(
+      `The options object passed to tracked() may only contain a 'value' or an 'initializer' property, not both. Received: [${Object.keys(
+        propertyDesc
+      )}]`,
+      !('value' in propertyDesc && 'initializer' in propertyDesc)
+    );
+
+    assert(
+      `The initializer passed to tracked must be a function. Received ${propertyDesc.initializer}`,
+      !('initializer' in propertyDesc) || typeof propertyDesc.initializer === 'function'
+    );
+
+    assert(
+      `The 'equals' option passed to tracked must be a function. Received ${propertyDesc.equals}`,
+      !('equals' in propertyDesc) || typeof propertyDesc.equals === 'function'
+    );
+
+    assert(
+      `The 'description' option passed to tracked must be a string. Received ${propertyDesc.description}`,
+      !('description' in propertyDesc) || typeof propertyDesc.description === 'string'
+    );
+  }
+
+  let initializer = propertyDesc ? propertyDesc.initializer : undefined;
+  let value = propertyDesc ? propertyDesc.value : undefined;
+  let hasInitialValue =
+    propertyDesc !== undefined && ('value' in propertyDesc || 'initializer' in propertyDesc);
+  let options = { equals: propertyDesc?.equals, description: propertyDesc?.description };
+
+  let decorator = function (
+    target: object,
+    key: string,
+    desc?: DecoratorPropertyDescriptor,
+    _meta?: any,
+    isClassicDecorator?: boolean
+  ): DecoratorPropertyDescriptor {
+    assert(
+      `You attempted to set a default value for ${key} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
+      isClassicDecorator || !hasInitialValue
+    );
+
+    let fieldDesc = isClassicDecorator ? { initializer: initializer || (() => value) } : desc;
+
+    return descriptorForField([target, key, fieldDesc], options);
+  };
+
+  setClassicDecorator(decorator);
+
+  return decorator;
 }
 
 if (DEBUG) {
@@ -148,13 +197,17 @@ if (DEBUG) {
   setClassicDecorator(tracked);
 }
 
-function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPropertyDescriptor {
+function descriptorForField(
+  [target, key, desc]: ElementDescriptor,
+  options?: { equals?: (a: any, b: any) => boolean; description?: string }
+): DecoratorPropertyDescriptor {
   assert(
     `You attempted to use @tracked on ${key}, but that element is not a class field. @tracked is only usable on class fields. Native getters and setters will autotrack add any tracked fields they encounter, so there is no need mark getters and setters with @tracked.`,
     !desc || (!desc.value && !desc.get && !desc.set)
   );
 
   let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
+  let equals = options?.equals;
 
   function get(this: object): unknown {
     let value = getter(this);
@@ -169,6 +222,16 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
   }
 
   function set(this: object, newValue: unknown): void {
+    if (
+      equals !== undefined &&
+      equals(
+        untrack(() => getter(this)),
+        newValue
+      )
+    ) {
+      return;
+    }
+
     setter(this, newValue);
     dirtyTagFor(this, SELF_TAG);
   }

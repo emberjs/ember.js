@@ -149,6 +149,67 @@
   });
   ```
 
+  Calling `tracked` with an initial value creates a standalone reactive
+  value, usable outside of classes:
+
+  ```js
+  import { tracked } from '@glimmer/tracking';
+
+  const count = tracked(0);
+
+  count.value;                // read the value, entangling with any tracking context
+  count.value = 1;            // write the value, notifying consumers
+  count.get();                // function shorthand for reading
+  count.set(2);               // function shorthand for writing
+  count.update((n) => n + 1); // write based on the current value, without entangling
+  count.freeze();             // prevent all future writes
+  ```
+
+  Reading `value` in a template (or in a getter used by a template) will
+  rerender just like a `@tracked` property:
+
+  ```gjs
+  import { tracked } from '@glimmer/tracking';
+  import { on } from '@ember/modifier';
+
+  const count = tracked(0);
+  const increment = () => count.value++;
+
+  <template>
+    Count is: {{count.value}}
+
+    <button {{on "click" increment}}>add one</button>
+  </template>
+  ```
+
+  This form accepts an options object containing an `equals` function, which
+  decides whether a written value should notify consumers (it defaults to
+  `Object.is`), and a `description` used for debugging:
+
+  ```js
+  const count = tracked(0, { equals: (a, b) => a === b });
+
+  count.value = 0; // does not notify consumers, the value did not change
+  ```
+
+  The `@tracked` decorator accepts the same options. By default, setting a
+  `@tracked` property always notifies consumers, even when setting the
+  property to the same value; passing `equals` opts in to equality-based
+  notification instead:
+
+  ```js
+  import { tracked } from '@glimmer/tracking';
+
+  class Counter {
+    @tracked({ equals: (a, b) => a === b }) count = 0;
+
+    noop = () => {
+      // does not notify consumers, the value did not change
+      this.count = this.count;
+    };
+  }
+  ```
+
   @method tracked
   @static
   @for @glimmer/tracking
