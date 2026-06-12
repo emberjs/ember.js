@@ -443,9 +443,10 @@ QUnit.module('Tracked Properties', function (hooks: any) {
     const person = Person.create();
     let observerCalled = false;
 
-    addObserver(person, 'firstName', null, () => {
+    const observer = () => {
       observerCalled = true;
-    });
+    };
+    addObserver(person, 'firstName', null, observer);
 
     run(() => {
       person.firstName = 'Jane';
@@ -454,6 +455,11 @@ QUnit.module('Tracked Properties', function (hooks: any) {
 
     setTimeout(() => {
       assert.ok(observerCalled, 'observer was called when tracked property changed');
+      // Clean up like the other observer tests in this file — a leaked
+      // entry stays in the global SYNC_OBSERVERS map and trips the next
+      // module that runs setupObserversCheck.
+      removeObserver(person, 'firstName', null, observer);
+      run(() => person.destroy());
       done();
     }, 50);
   });
