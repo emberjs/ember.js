@@ -14575,6 +14575,12 @@ setGxtRenderer({
 // first and compile.ts is pulled in lazily later), the deferred microtask below
 // re-attempts the registration once compile.ts has finished its module init.
 (function _gxtInstallTriggerReRenderHostHooks() {
+  // Classic builds: the bridge reader is hard-gated to null (getGxtRenderer's
+  // __GXT_MODE__ guard), so the retry below would re-queue itself forever and
+  // starve the event loop before the page ever loads. Bail out entirely.
+  if (!__GXT_MODE__) {
+    return;
+  }
   const cp = getGxtRenderer()?.compilePipeline;
   if (cp && typeof cp.addBeforeTriggerReRender === 'function') {
     cp.addBeforeTriggerReRender(_gxtRecordDirtiedNestedObject);
@@ -14593,6 +14599,12 @@ setGxtRenderer({
 // hasn't been merged into the bridge yet, retry via `queueMicrotask` until
 // `setRootOutletRerenderWrap` becomes callable.
 (function _gxtInstallRootOutletRerenderInstrumentation() {
+  // Same classic bail-out as _gxtInstallTriggerReRenderHostHooks above —
+  // the bridge reader stays null in classic builds and the microtask retry
+  // would spin forever.
+  if (!__GXT_MODE__) {
+    return;
+  }
   const cp = getGxtRenderer()?.compilePipeline;
   const wrap = (fn: any): any => {
     if (typeof fn !== 'function') return fn;

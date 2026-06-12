@@ -3229,6 +3229,11 @@ Promise.resolve().then(async () => {
 // (compile.ts hasn't finished module init), the microtask reschedules the
 // registration.
 (function _gxtInstallTrackedSetDetectorHostHook() {
+  // Classic builds: the bridge reader is hard-gated to null, so the retry
+  // below would re-queue itself forever and starve the event loop. Bail out.
+  if (!__GXT_MODE__) {
+    return;
+  }
   const cp = getGxtRenderer()?.compilePipeline;
   if (cp && typeof cp.addBeforeTriggerReRender === 'function') {
     cp.addBeforeTriggerReRender(function (_obj: object, _keyName: string) {

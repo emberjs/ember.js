@@ -2755,5 +2755,17 @@ export function installViewUtilsPart(part: Partial<GxtViewUtilsCapabilities>): v
  * `__GXT_MODE__ = false`, the entire calling branch DCEs away.
  */
 export function getGxtRenderer(): GxtRenderer | null {
+  // Classic builds can still EVALUATE gxt-backend module init — the vite test
+  // page statically imports the compat layer and the classic rollup graph
+  // reaches manager.ts, whose top-level setGxtRenderer publishes the registry
+  // regardless of backend. Every consumer treats "classic mode" as "reader
+  // sees null"; enforce that here with the inlined build flag so all
+  // optional-chained call sites no-op in classic bundles independent of graph
+  // reachability. (Without this, classic notifyPropertyChange drove GXT's
+  // triggerReRender on every property change — extra lifecycle hooks, eager
+  // CP getter evaluation, lost {{#each}} updates.)
+  if (!__GXT_MODE__) {
+    return null;
+  }
   return _renderer;
 }
