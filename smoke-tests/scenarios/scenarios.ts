@@ -105,6 +105,20 @@ export const gxtAppScenarios = Scenarios.fromProject(() =>
   emberSourceGxt,
 });
 
+// The GXT app template (smoke-tests/v2-app-gxt-template) is the Tier-2
+// runtime vehicle: a minimal app shaped the way a CONSUMER of the assembled
+// `ember-source-gxt` package builds — no Embroider template pipeline, the
+// ember-source-resolver vite plugin, and route templates compiled at runtime
+// through the GXT `@ember/template-compilation` shim. The scenario links the
+// assembled package in, exactly like gxtAppScenarios.
+export const gxtBootAppScenarios = Scenarios.fromProject(() =>
+  Project.fromDir(dirname(require.resolve('../v2-app-gxt-template/package.json')), {
+    linkDevDeps: true,
+  })
+).expand({
+  emberSourceGxt,
+});
+
 function node(project: Project) {
   project.linkDevDependency('ember-source', {
     baseDir: dirname(require.resolve('../app-template/package.json')),

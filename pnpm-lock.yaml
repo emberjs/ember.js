@@ -165,7 +165,7 @@ importers:
         version: 4.0.0
       ember-cli-dependency-checker:
         specifier: ^3.3.1
-        version: 3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
+        version: 3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19))
       ember-cli-yuidoc:
         specifier: ^0.9.1
         version: 0.9.1
@@ -3006,7 +3006,7 @@ importers:
         version: 3.0.0
       ember-cli-dependency-checker:
         specifier: ^3.3.3
-        version: 3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
+        version: 3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19))
       ember-cli-deprecation-workflow:
         specifier: ^3.4.0
         version: 3.4.0(ember-source@)
@@ -3190,6 +3190,18 @@ importers:
       webpack:
         specifier: ^5.91.0
         version: 5.107.2(@swc/core@1.15.40)
+
+  smoke-tests/v2-app-gxt-template:
+    devDependencies:
+      ember-source:
+        specifier: workspace:*
+        version: link:../..
+      ember-strict-application-resolver:
+        specifier: ^0.1.1
+        version: 0.1.1(@babel/core@7.29.7)
+      vite:
+        specifier: ^7.3.1
+        version: 7.3.5(@types/node@22.19.19)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
 
   smoke-tests/v2-app-hello-world-template:
     devDependencies:
@@ -18427,7 +18439,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-dependency-checker@3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)):
+  ember-cli-dependency-checker@3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)):
     dependencies:
       chalk: 2.4.2
       ember-cli: 7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)
