@@ -1210,10 +1210,30 @@ export function updateTagRevision(tag: any): number {
 }
 
 // Reset tracking state (used in testing)
-let trackingStack: any[] = [];
-
+// Mirrors classic @glimmer/validator's resetTracking ("This function is only
+// for handling errors and resetting to a valid state"): a render that throws
+// mid-frame (e.g. the classic VM's beginCacheGroup with no matching
+// commitCacheGroup on the unwind path) strands open frames. The test harness
+// calls this at every testStart; without a real implementation the stranded
+// frames keep isTracking() true for the rest of the realm and poison every
+// later frame-semantics check in cumulative runs.
 export function resetTracking() {
-  trackingStack = [];
+  _manualTrackFrameStack.length = 0;
+  _trackingTagStack = null;
+  _localUntrackDepth = 0;
+  _cacheTagTracker.length = 0;
+  _cacheEvalStack.length = 0;
+  _debugTransactionConsumed = null;
+  _debugTransactionLabelForTag = null;
+  // Drain GXT's own frame stack too — the stranded gxtBeginTrackFrame calls
+  // live in the dist's internal stack, observable only via gxtIsTracking().
+  for (let i = 0; i < 1024 && gxtIsTracking(); i++) {
+    try {
+      gxtEndTrackFrame();
+    } catch {
+      break;
+    }
+  }
 }
 
 // Special revision values
