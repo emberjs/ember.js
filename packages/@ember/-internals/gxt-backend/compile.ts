@@ -775,6 +775,7 @@ function _constructStyleDeprecationMessage(affectedStyle: string): string {
   );
 }
 
+import { buildUntouchableThis } from '@glimmer/debug-util';
 // Import the GXT runtime compiler
 // @ts-ignore - direct path to avoid GXT Babel plugin
 import {
@@ -2264,6 +2265,13 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
 // mut cells (calling mutCell() returns the current value instead of the setter).
 // Also marks the returned function with __isFnHelper so the compat layer can
 // distinguish fn-helper results from GXT reactive getters (both are arrow fns).
+//
+// The callback must run with stock fn's `this` contract: an access-asserting
+// proxy in DEBUG and literal `null` in production (strict-mode callers observe
+// `this === null`, asserted by the prod-only "{{fn}}: there is no `this`
+// context within the callback" test). buildUntouchableThis encodes exactly
+// that mode split.
+const _fnHelperThis = buildUntouchableThis('`fn` helper');
 {
   const g = globalThis as any;
   const originalFn = g.$__fn;
@@ -2354,7 +2362,7 @@ if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
         if (typeof resolvedFn !== 'function') {
           return resolvedFn;
         }
-        return resolvedFn(...resolvedPartials, ...callArgs);
+        return resolvedFn.call(_fnHelperThis, ...resolvedPartials, ...callArgs);
       };
       result.__isFnHelper = true;
       return result;
@@ -10516,10 +10524,37 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
             // on creation (first evaluation), so we let it set the initial value.
             const textNode = document.createTextNode('');
             try {
-              gxtEffect(() => {
+              const disposeEffect = gxtEffect(() => {
                 const v = helperGetter();
                 textNode.textContent = v == null ? '' : String(v);
               });
+              // The effect is created without an owner (gxtEffect's second
+              // argument), so nothing ever disposes it — it merely goes
+              // quiescent when its deps stop changing. Inside an {{#if}}
+              // branch that is a live bug: after the branch collapses (the
+              // helper instance destroyed, caches evicted), any later dep
+              // bump — including the destroy cascade itself — re-fires the
+              // stale effect, which re-creates the helper (extra init/compute
+              // in the class-based lifecycle test, eager evaluation in the
+              // "evaluation should be lazy" trio). Register the disposer with
+              // the enclosing branch scope so destroyScope tears the effect
+              // down with the branch.
+              const ifScopeTag = _gxtCurrentHelperScope;
+              if (
+                ifScopeTag &&
+                typeof ifScopeTag.add === 'function' &&
+                typeof disposeEffect === 'function'
+              ) {
+                try {
+                  ifScopeTag.add({
+                    destroy: disposeEffect,
+                    isDestroyed: false,
+                    isDestroying: false,
+                  });
+                } catch {
+                  /* ignore */
+                }
+              }
             } catch (e) {
               if (_isAssertionLike(e)) throw e; /* effect setup may fail */
             }

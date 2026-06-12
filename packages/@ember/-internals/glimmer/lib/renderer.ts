@@ -394,6 +394,15 @@ class ClassicRootState {
   public isGxt: boolean = false; // Track if this root uses GXT templates
   public isOutletView: boolean = false; // Track if this root is an OutletView
   public gxtNeedsRerender: boolean = false; // Flag for GXT re-render scheduling
+  // True while the most recent render() attempt threw before completing.
+  // Such a root never wired its reactivity (gxtComponentTag stays unset), so
+  // the tag-based dirty selection in _gxtForceEmberRerender cannot see it;
+  // the flag makes the next force pass retry the full root render. Classic
+  // production recovers after an initial-render error this way ("it
+  // rerenders after error in production"); in DEBUG errorLoopTransaction has
+  // already nooped the render fn, so the retry is a warn-noop and dev keeps
+  // its "does not rerender after error" behavior.
+  public gxtRenderIncomplete: boolean = false;
   public gxtComponentTag: Tag | null = null; // Track component's dirty tag for GXT reactivity
   public gxtLastTagValue: number = 0; // Last known tag value for comparison
 
@@ -432,6 +441,7 @@ class ClassicRootState {
       }
       _gxtRenderDepth = depth + 1;
       try {
+        this.gxtRenderIncomplete = false;
         // Set globalThis.owner for GXT manager system to access
         (globalThis as any).owner = owner;
 
@@ -849,6 +859,10 @@ class ClassicRootState {
             });
           });
         }
+      } catch (e) {
+        // See gxtRenderIncomplete doc on the field declaration.
+        this.gxtRenderIncomplete = true;
+        throw e;
       } finally {
         // Slice 47 (Cluster B): restore the captured pre-entry depth so
         // the counter unwinds cleanly across nested renders. NOT a
@@ -1138,6 +1152,11 @@ function _gxtForceEmberRerender(): void {
     const dirtyRootsFromSync = _gxtDirtyRootsAtSync;
     const dirtyRoots: any[] = [];
     const allGxtRoots: any[] = [];
+    // Roots whose previous render() threw mid-way (gxtRenderIncomplete) —
+    // they never wired gxtComponentTag, so the tag comparison below cannot
+    // select them. They are retried unconditionally; see the field doc on
+    // ClassicRootState.
+    const incompleteRoots: any[] = [];
     for (const renderer of renderers) {
       const state = (renderer as any).state as RendererState;
       if (!state) continue;
@@ -1153,6 +1172,8 @@ function _gxtForceEmberRerender(): void {
           if (currentTagValue !== classicRoot.gxtLastTagValue) {
             dirtyRoots.push(classicRoot);
           }
+        } else if (classicRoot.gxtRenderIncomplete === true && !classicRoot.destroyed) {
+          incompleteRoots.push(classicRoot);
         }
       }
     }
@@ -1173,12 +1194,21 @@ function _gxtForceEmberRerender(): void {
     //     while avoiding spurious full re-renders when a @tracked mutation on
     //     a CHILD component doesn't change any root's tag (child is reactive
     //     via its own cell-tracked getters).
-    const rootsToRender =
+    const selectedRoots =
       effectiveDirtyRoots.length > 0
         ? effectiveDirtyRoots
         : hadPendingSync && hadNestedObjectChange
           ? allGxtRoots
           : [];
+    // Incomplete roots retry regardless of the tag-based selection (a copy —
+    // selectedRoots may alias one of the arrays built above). Gate on
+    // hadPendingSync: only an actual classic mutation justifies a retry —
+    // without the gate the 16ms interval flush would re-run a still-throwing
+    // root every tick and the rethrown error would wedge the suite.
+    const rootsToRender =
+      incompleteRoots.length > 0 && hadPendingSync
+        ? [...new Set([...selectedRoots, ...incompleteRoots])]
+        : selectedRoots;
     for (const classicRoot of rootsToRender) {
       // Tag is dirty — force re-render. Increment the render pass ID
       // so the instance pool resets claimed flags and REUSES existing
@@ -1224,7 +1254,17 @@ function _gxtForceEmberRerender(): void {
       if (classicRoot.__gxtDeferredError) {
         const err = classicRoot.__gxtDeferredError;
         classicRoot.__gxtDeferredError = null;
-        throw err;
+        if (classicRoot.gxtRenderIncomplete === true) {
+          // A recovery retry that threw again: queue the error for the test
+          // harness instead of rethrowing — a throw here would abort the
+          // force pass mid-loop and wedge subsequent flushes. The flag stays
+          // set, so the next classic mutation retries again (classic prod
+          // semantics: renders keep being attempted after an error).
+          const capture = (globalThis as any).__captureRenderError;
+          if (typeof capture === 'function') capture(err);
+        } else {
+          throw err;
+        }
       }
     }
   } finally {

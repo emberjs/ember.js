@@ -327,6 +327,29 @@ class EmberMountElement extends HTMLElement {
       // Check if we already have an engine instance for this name
       let engineInstance = engineCache.get(engineName);
       if (!engineInstance || engineInstance.isDestroyed || engineInstance.isDestroying) {
+        // Prefer upstream's engine machinery: buildChildEngineInstance sets
+        // the engine parent and _bootSync runs cloneParentDependencies, which
+        // injects the parent's `router:main`, `-environment:main`,
+        // `service:-routing`, … into the child registry. Without those a
+        // routeless engine's <LinkTo> cannot resolve `router:main` and
+        // crashes with `undefined.setupRouter()` in production builds, where
+        // the DEBUG routeless-engine assert (which fires first in dev and
+        // masks the gap) is stripped.
+        if (typeof owner.buildChildEngineInstance === 'function') {
+          try {
+            engineInstance = owner.buildChildEngineInstance(engineName);
+            engineInstance._bootSync?.();
+          } catch {
+            // Not registered with the parent (or boot failed) — fall back to
+            // the legacy hand-rolled construction below.
+            engineInstance = null;
+          }
+        }
+        if (engineInstance) {
+          engineCache.set(engineName, engineInstance);
+        }
+      }
+      if (!engineInstance || engineInstance.isDestroyed || engineInstance.isDestroying) {
         // Look up the engine class from the application
         const engineFactory = owner.factoryFor?.(`engine:${engineName}`);
         if (!engineFactory) {
@@ -428,7 +451,15 @@ class EmberMountElement extends HTMLElement {
         (globalThis as any).owner = previousOwner;
       }
     } catch (e: any) {
-      if ((globalThis as any).__DEBUG_GXT_RENDER) {
+      // Route render errors to the render-error queue so `visit()` rejects —
+      // e.g. the DEBUG routeless-engine assert thrown by <LinkTo>'s
+      // validateArguments during the engine template render. Swallowing it
+      // here would let the visit promise resolve and break
+      // `assert.rejectsAssertion`-style tests.
+      const capture = (globalThis as any).__captureRenderError;
+      if (typeof capture === 'function') {
+        capture(e);
+      } else if ((globalThis as any).__DEBUG_GXT_RENDER) {
         console.warn(`[ember-mount] Engine render failed:`, e?.message);
       }
     }

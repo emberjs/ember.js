@@ -31,6 +31,7 @@ export interface EmberPrecompileOptions {
 import { compileTemplate } from './compile';
 import { templateCacheCounters } from '@glimmer/opcode-compiler';
 import { assert as _emberDebugAssert } from '@ember/debug';
+import { ENV } from '@ember/-internals/environment';
 
 // GXT's `IS_GLIMMER_COMPAT_MODE` BlockStatement handler emits a raw
 // element tag (`<input>`, `<textarea>`) whenever the path name has no
@@ -331,8 +332,13 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
   // Glimmer's debug-render-tree re-reads that top-level template during the
   // render transaction, producing one hit per factory. Emulate that once on
   // first invocation so `ember-glimmer runtime resolver cache`'s assertions
-  // line up in DEBUG mode.
-  const _isTopLevel = compileOptions?.moduleName === '-top-level';
+  // line up in DEBUG mode. The re-read only happens when the debug render
+  // tree is actually enabled (ENV._DEBUG_RENDER_TREE — true under the dev
+  // test harness, false in production builds), so the emulated hit must be
+  // gated the same way; read lazily at invocation time because tests
+  // force-enable the flag in their setup.
+  const _isTopLevelMarker = compileOptions?.moduleName === '-top-level';
+  const _isTopLevel = () => _isTopLevelMarker && ENV._DEBUG_RENDER_TREE === true;
   // Per-(owner,renderPass) marker so repeated calls within the same render
   // transaction count as cache hits (matching classic Glimmer templateFactory
   // semantics) but calls across render transactions (e.g. runTask toggle
@@ -360,7 +366,7 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
         return cached;
       }
       templateCacheCounters.cacheMiss++;
-      if (_isTopLevel) templateCacheCounters.cacheHit++;
+      if (_isTopLevel()) templateCacheCounters.cacheHit++;
       const fresh = inner(owner);
       ownerTemplates.set(owner, fresh);
       ownerSeenInPass.set(owner, currentPass);
@@ -377,7 +383,7 @@ function _instrumentFactory(factory: any, compileOptions?: any): any {
     ownerlessSeen = true;
     ownerlessSeenInPass = currentPass;
     templateCacheCounters.cacheMiss++;
-    if (_isTopLevel) templateCacheCounters.cacheHit++;
+    if (_isTopLevel()) templateCacheCounters.cacheHit++;
     ownerlessTemplate = inner(owner);
     return ownerlessTemplate;
   };

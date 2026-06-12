@@ -136,6 +136,19 @@ export function valueForRef(ref: any): any {
   if (ref && ref[COMPUTED_MARKER] === true && !('cell' in ref)) {
     return ref.value;
   }
+  // Raw gxt Cell refs (branded by brandRef — e.g. captured VM args) must
+  // register with the classic tracking frames (track() /
+  // beginTrackFrame–endTrackFrame) when read. In DEBUG builds this happens
+  // implicitly: the VM wraps captured args in createDebugAliasRef, whose
+  // compute chain reads through getProp → metal get → consumeTag(tagFor(…)).
+  // Production builds strip the debug-alias wrapping, so without an explicit
+  // consumeTag here the cell read is invisible to classic consumers — the
+  // env commit's modifier-install track() frame and the updating-opcode
+  // frames degrade to CONSTANT and rerender updates never propagate
+  // (modifier didUpdate, dynamic-component arg/attr updates).
+  if (ref !== null && typeof ref === 'object' && typeof ref._revision === 'number') {
+    consumeTag(ref);
+  }
   return _valueForRef(ref);
 }
 

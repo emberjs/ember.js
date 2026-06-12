@@ -248,14 +248,17 @@ installCompilePipelinePart({
           | Map<string, { instance: any }>
           | undefined;
         if (!tagCache || tagCache.size === 0) return;
-        for (const [, entry] of tagCache) {
+        // forEach, NOT for…of — gxt's reactive Map.prototype patch would
+        // otherwise register this bookkeeping Map with the ambient tracking
+        // frame (see the dirtyTagFor cache loop in validator.ts).
+        tagCache.forEach((entry) => {
           const inst = entry?.instance;
           if (inst) {
             // Clearing the dedup key forces compile.ts's helperGetter to
             // re-run compute() instead of returning the stale cached result.
             inst.__gxtLastArgsSerialized = null;
           }
-        }
+        });
       } catch {
         /* noop — defensive */
       }
@@ -381,13 +384,16 @@ function _trackComponentDefinition(nameOrFactory: string | object | null | undef
 // '__gxtRecomputeTagRef')` — the optional-chain guards classic-Ember builds
 // where the bridge was never installed.
 function _gxtNotifyHelperPropertyChange(_obj: unknown, _key: string): void {
-  for (const [, cached] of classHelperInstanceCache as Map<string, any>) {
+  // forEach, NOT for…of — gxt's reactive Map.prototype patch would otherwise
+  // register this bookkeeping Map with the ambient tracking frame (see the
+  // dirtyTagFor cache loop in validator.ts).
+  (classHelperInstanceCache as Map<string, any>).forEach((cached) => {
     if (cached && cached.__managerBucket) {
       // Invalidate the args serialization so the next $_maybeHelper call
       // doesn't short-circuit with the cached result
       cached.lastArgsSer = null;
     }
-  }
+  });
 }
 // Register the typed-bridge method on the `compilePipeline` namespace so the
 // cross-file reader in `manager.ts` can route through the bridge. The call

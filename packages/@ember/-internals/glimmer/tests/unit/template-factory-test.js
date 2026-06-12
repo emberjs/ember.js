@@ -77,7 +77,12 @@ moduleFor(
       this.expectCacheChanges(
         __GXT_MODE__
           ? {
-              templateCacheHits: 1,
+              // The single GXT hit is the debug-render-tree re-read of the
+              // top-level template — present only when the render tree is
+              // enabled (dev test harness), absent in production builds.
+              // (`diff` below drops zero deltas, so omit the key entirely
+              // when no hit is expected.)
+              ...(ENV._DEBUG_RENDER_TREE ? { templateCacheHits: 1 } : {}),
               templateCacheMisses: 1,
             }
           : {

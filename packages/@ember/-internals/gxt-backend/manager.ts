@@ -13969,6 +13969,19 @@ function _customComponentArgsProxyFor(vmArgs: any): any {
       configurable: true,
       get() {
         const ref = namedSource[key];
+        // REFERENCE-branded refs (including raw gxt Cells, which is what the
+        // VM's captured args hold in production builds — DEBUG wraps them in
+        // createDebugAliasRef compute refs) resolve through valueForRef so
+        // the read both unwraps the value and registers with any active
+        // classic tracking frame. Without this, `instance.args.foo` returns
+        // the Cell object itself in production.
+        if (_isGlimmerRef(ref)) {
+          try {
+            return _valueForRefForManager(ref);
+          } catch {
+            return undefined;
+          }
+        }
         if (ref && typeof ref === 'object' && 'compute' in ref) {
           try {
             return (ref as any).compute();
@@ -13990,6 +14003,13 @@ function _customComponentArgsProxyFor(vmArgs: any): any {
   }
 
   const positionalArr: any[] = positionalSource.map((ref: any) => {
+    if (_isGlimmerRef(ref)) {
+      try {
+        return _valueForRefForManager(ref);
+      } catch {
+        return undefined;
+      }
+    }
     if (ref && typeof ref === 'object' && 'compute' in ref) {
       try {
         return ref.compute();

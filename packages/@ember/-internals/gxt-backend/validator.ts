@@ -1,4 +1,5 @@
 // Import from glimmer-compatibility to avoid gxt compiler conflicts
+import { DEBUG } from '@glimmer/env';
 import { validator, caching, storage } from '@lifeart/gxt/glimmer-compatibility';
 // Global context module — imported as a namespace so the live
 // `scheduleRevalidate` binding (which testOverrideGlobalContext reassigns
@@ -334,7 +335,16 @@ export function createCache<T>(fn: () => T): { value: T; destroy?: () => void; t
       if (_initialized && _consumedTags.length > 0) {
         const gxtTracking = gxtIsTracking();
         const cacheTrackingActive = _cacheTagTracker.length > 0;
-        if (gxtTracking || cacheTrackingActive) {
+        // Also forward into the shim's OWN classic frames (track() /
+        // beginTrackFrame). gxtIsTracking() is NOT a proxy for those: in the
+        // production gxt dist the tracking introspection is stubbed out and
+        // gxtIsTracking() reports false even while a classic track() frame is
+        // open (the dev dist reports true, which masked this gap). Without
+        // this, a cache read inside e.g. the env-commit's modifier-install
+        // track() forwards nothing, the frame degrades to CONSTANT_TAG, and
+        // rerender updates never reach the modifier/component.
+        const classicTrackingActive = _trackingTagStack !== null && _trackingTagStack.length > 0;
+        if (gxtTracking || cacheTrackingActive || classicTrackingActive) {
           for (let i = 0; i < _consumedTags.length; i++) {
             const tag = _consumedTags[i];
             if (tag == null) continue;
@@ -939,10 +949,20 @@ export function dirtyTagFor(obj: any, key: any) {
       | Map<string, any>
       | undefined;
     if (helperCache && helperCache.size > 0) {
-      for (const [, cached] of helperCache) {
-        if (!cached || cached.__managerBucket !== true) continue;
+      // forEach, NOT for…of: the gxt runtime patches Map.prototype's
+      // Symbol.iterator/entries/keys/values for Map reactivity, so a for…of
+      // here — which can run INSIDE a render formula frame (any set() during
+      // render lands in dirtyTagFor) — lazily creates a reactivity cell for
+      // this bookkeeping Map. Every later cache.set() inside a helper effect
+      // then subscribes that effect to the cache, and any subsequent cache
+      // mutation re-fires ALL such effects — including stale ones from
+      // already-collapsed {{#if}} branches ("evaluation should be lazy",
+      // "class-based helper lifecycle" prod failures). Native forEach is not
+      // patched and keeps this infrastructure Map invisible to tracking.
+      helperCache.forEach((cached) => {
+        if (!cached || cached.__managerBucket !== true) return;
         cached.lastArgsSer = '__classic_tag_dirty__' + globalRevisionCounter;
-      }
+      });
     }
   } catch {
     /* noop */
@@ -1073,7 +1093,12 @@ function currentTagRevision(tag: any, visited = new Set<any>(), stack?: Set<any>
   // throw — matching classic @glimmer/validator behavior. Real callers never
   // form tag cycles, so this only fires in tests.
   if (stack && stack.has(tag)) {
-    if (ALLOW_CYCLES.get(tag) === true) {
+    // The cycle ASSERT is a DEBUG-only behavior, matching classic
+    // @glimmer/validator: metal only populates ALLOW_CYCLES under DEBUG
+    // (computed.ts), and stock validateTag only runs its cycle check in DEV
+    // builds. In production the walk must simply terminate — "computeds can
+    // have cycles" is supported behavior there.
+    if (!DEBUG || ALLOW_CYCLES.get(tag) === true) {
       return 0;
     }
     throw new Error('Cycles in tags are not allowed');
