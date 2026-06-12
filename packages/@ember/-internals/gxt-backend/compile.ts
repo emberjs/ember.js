@@ -8405,7 +8405,7 @@ installRuntimePart({
     // Helper invocation function: resolves and invokes a helper by name with given args
     const invokeByName = (name: string, positional: any[]) => {
       const owner = g.owner;
-      if (!owner) return undefined;
+      if (!owner || owner.isDestroyed || owner.isDestroying) return undefined;
       const factory = owner.factoryFor?.(`helper:${name}`);
       if (factory) {
         const instance = factory.create();
@@ -10325,7 +10325,11 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
         // Check for HELPER first — inline curlies like {{to-js "foo"}} get transformed
         // to <ToJs @__pos0__="foo" /> by transformCurlyBlockComponents. These should be
         // handled as helpers, not components.
-        const owner = g.owner;
+        // A destroyed owner cannot resolve anything (its container throws on
+        // factoryFor/lookup) — treat it as absent, like manager.ts canHandle does.
+        // globalThis.owner can linger from a torn-down app when ownerless renders
+        // (e.g. the rehydration test delegate) encounter hyphenated tags.
+        const owner = g.owner && !g.owner.isDestroyed && !g.owner.isDestroying ? g.owner : null;
         if (owner) {
           const helperFactory = owner.factoryFor?.(`helper:${kebabName}`);
           const helperLookup = !helperFactory ? owner.lookup?.(`helper:${kebabName}`) : null;
