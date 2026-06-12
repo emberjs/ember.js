@@ -72,6 +72,16 @@ export default defineConfig(({ mode }) => ({
     }),
     emberSourceResolver(),
   ],
+  resolve: {
+    // The GXT reactive graph is a per-module-instance singleton: if the app's
+    // own @lifeart/gxt copy and the one nested under ember-source-gxt resolve
+    // to two different files (an npm nested-install layout can do this), the
+    // build ships two runtimes whose cells/trackers silently fork. Force every
+    // importer onto the app-level copy. ember-source-gxt pins the exact same
+    // version, and the gxt-backend boot guard throws loudly if two instances
+    // ever load anyway.
+    dedupe: ['@lifeart/gxt'],
+  },
   optimizeDeps: {
     // The ember-source dist is a large preserveModules graph reached through
     // a custom resolver; let it be served as-is instead of prebundled.

@@ -125,6 +125,33 @@ import * as __lifeartGxtNamespace from '@lifeart/gxt';
 // The namespace is contributed to the typed bridge as `gxtLib` (see the
 // setGxtRenderer install at file EOF) — the replacement for the retired
 // `globalThis.__lifeartGxt` stash.
+//
+// Single-instance guard: the GXT reactive graph (cells, trackers, opcode
+// queues) is module-instance state, so TWO copies of @lifeart/gxt in one
+// page silently fork reactivity — registrations land in one copy's
+// registries while the renderer consults the other (the `{{on}}` split-brain
+// bug was exactly this class, at the @glimmer/manager layer). Duplicate
+// copies come from dependency-layout mistakes: an app bundling its own
+// @lifeart/gxt at a different version than ember-source-gxt's pin, an npm
+// nested install resolving the two import sites to different files, or a
+// bundler config missing `resolve.dedupe`. Fail LOUDLY at load instead.
+// The sentinel is a deliberate `Symbol.for` global CONSTANT (process-wide
+// registry key), not mutable program state.
+{
+  const sentinel = Symbol.for('lifeart.gxt.instance');
+  const g = globalThis as Record<symbol, unknown>;
+  const existing = g[sentinel];
+  if (existing !== undefined && existing !== __lifeartGxtNamespace) {
+    throw new Error(
+      'Two copies of @lifeart/gxt loaded in the same page. The GXT reactive ' +
+        'graph is a per-module singleton, so duplicate copies fork reactivity ' +
+        'silently. Ensure the app resolves a SINGLE @lifeart/gxt: match the ' +
+        "exact version pinned by ember-source-gxt and add `resolve.dedupe: ['@lifeart/gxt']` " +
+        'to the Vite config (see smoke-tests/v2-app-gxt-template/vite.config.mjs).'
+    );
+  }
+  g[sentinel] = __lifeartGxtNamespace;
+}
 import {
   destroy as _destroyDestroyable,
   destroySyncNow as _destroySyncNow,
