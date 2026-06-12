@@ -156,8 +156,12 @@ function gxtConsumableTests(scenarios: Scenarios) {
         // Assertion 4 — the addon-main exposes a defined, resolvable
         // absolutePaths.templateCompiler (the §5.5 S-item).
         test('4: addon-main exposes a resolvable absolutePaths.templateCompiler', function (assert) {
-          const addonMainPath = join(emberSourceDir, 'lib', 'index.js');
-          assert.true(existsSync(addonMainPath), 'addon-main lib/index.js exists');
+          // Upstream migrated the addon-main to lib/index.cjs (root package.json
+          // is type:module); resolve it from the assembled package.json `main`
+          // so this test tracks the real entry instead of a hardcoded filename.
+          const pkg = JSON.parse(readFileSync(join(emberSourceDir, 'package.json'), 'utf8'));
+          const addonMainPath = join(emberSourceDir, pkg.main);
+          assert.true(existsSync(addonMainPath), `addon-main ${pkg.main} exists`);
 
           // eslint-disable-next-line @typescript-eslint/no-var-requires
           const addonMain = createRequire(addonMainPath)(addonMainPath);
@@ -176,7 +180,8 @@ function gxtConsumableTests(scenarios: Scenarios) {
         // "vite build reaches the classicEmberSupport prebuild"; full build =
         // Tier-2.)
         test('5: ember-cli-htmlbars absolutePaths path no longer TypeErrors', function (assert) {
-          const addonMainPath = join(emberSourceDir, 'lib', 'index.js');
+          const pkg = JSON.parse(readFileSync(join(emberSourceDir, 'package.json'), 'utf8'));
+          const addonMainPath = join(emberSourceDir, pkg.main);
           // eslint-disable-next-line @typescript-eslint/no-var-requires
           const ember = createRequire(addonMainPath)(addonMainPath); // = findAddonByName('ember-source')
           let templateCompilerPath: string | undefined;
