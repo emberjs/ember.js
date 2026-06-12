@@ -17,7 +17,7 @@
   </template>
   ```
 
-  For angle bracket invocation of components, you actually don't need concat at all.
+  For invocation of components, you don't need concat at all.
 
   ```handlebars
   <SomeComponent @name="{{firstName}} {{lastName}}" />
