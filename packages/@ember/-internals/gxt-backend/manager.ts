@@ -13730,6 +13730,13 @@ export function setInternalModifierManager(manager: any, modifier: any, _skipGua
       if (name) {
         if ($_MANAGERS?.modifier?._builtinModifiers) {
           $_MANAGERS.modifier._builtinModifiers[name] = modifier;
+          // See the matching `on-ext` aliasing in
+          // _flushPendingBuiltinModifiers below — the alias must also be
+          // installed on this direct path, which is the one a consuming
+          // app's import order typically takes.
+          if (name === 'on') {
+            $_MANAGERS.modifier._builtinModifiers['on-ext'] ??= modifier;
+          }
         } else {
           _pendingBuiltinModifiers.push({ name, modifier });
         }
@@ -13746,6 +13753,17 @@ export function _flushPendingBuiltinModifiers() {
   if ($_MANAGERS?.modifier?._builtinModifiers && _pendingBuiltinModifiers.length > 0) {
     for (const { name, modifier } of _pendingBuiltinModifiers) {
       $_MANAGERS.modifier._builtinModifiers[name] = modifier;
+      // Templates reference `{{on}}` through the `on-ext` alias (the
+      // gxtOnModifierTransform rewrite in compile.ts). compile.ts installs
+      // the alias opportunistically at precompileTemplate time, but in a
+      // consuming app the template modules can be evaluated BEFORE the `on`
+      // modifier's registration module runs (import order is the app's, not
+      // the test harness's) — leaving `on-ext` unresolvable and `{{on}}`
+      // silently inert. Install the alias at the registration site too, so
+      // whichever side runs last completes the pair.
+      if (name === 'on') {
+        $_MANAGERS.modifier._builtinModifiers['on-ext'] ??= modifier;
+      }
     }
     _pendingBuiltinModifiers.length = 0;
   }

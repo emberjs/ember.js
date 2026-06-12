@@ -11,6 +11,7 @@ import {
   GXT_SHIM_ALIASES,
   GXT_EXTERNAL_PACKAGES,
   GXT_DROPPED_ENTRIES,
+  gxtSubpathRegExp,
 } from './scripts/gxt-alias-map.mjs';
 
 // eslint-disable-next-line no-redeclare
@@ -94,7 +95,7 @@ function esmProdConfig() {
 }
 
 function esmInputs() {
-  return {
+  const inputs = {
     ...renameEntrypoints(entryExposedDependencies(), (name) => join('packages', name, 'index')),
     ...renameEntrypoints(packages(), (name) => join('packages', name)),
     // the actual authored "./packages/ember-template-compiler/index.ts" is
@@ -106,6 +107,33 @@ function esmInputs() {
     // "minimal.ts" version, which has a lot less in it.
     'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
   };
+  if (USE_GXT_BACKEND) {
+    // entryExposedDependencies() routes the GXT_SHIM_ALIASES specifiers to
+    // the gxt-backend shims, but the spreads after it clobber some of those
+    // ENTRY keys back to classic sources: the packages() glob re-adds every
+    // in-repo module it doesn't ignore (it ignores @glimmer/**, so the
+    // reactivity shims survive, but @ember/template-compilation and
+    // @ember/-internals/deprecations do not), and the hardcoded minimal.ts
+    // line above does the same for ember-template-compiler. Inter-module
+    // RESOLUTION still got the shims, so consumers of the classic entry files
+    // simply hit dead classic stubs — e.g. the published
+    // `@ember/template-compilation` threw "precompileTemplate ... is meant to
+    // be used at compile time" instead of running GXT's runtime compile.
+    // Re-apply the shim overrides last so the published entry FILES match
+    // what the rest of the dist graph already resolves.
+    const compatRoot = resolve(packageCache.appRoot, GXT_SHIM_DIR);
+    for (const { find, shim } of GXT_SHIM_ALIASES) {
+      const indexKey = join('packages', find, 'index');
+      const bareKey = join('packages', find);
+      const target = resolve(compatRoot, `${shim}.ts`);
+      if (inputs[bareKey] !== undefined && inputs[indexKey] === undefined) {
+        inputs[bareKey] = target;
+      } else {
+        inputs[indexKey] = target;
+      }
+    }
+  }
+  return inputs;
 }
 
 function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false }) {
@@ -576,6 +604,26 @@ export function resolvePackages(deps, params) {
 
         if (deps[source]) {
           return deps[source];
+        }
+
+        // GXT: collapse DEEP-PATH imports of the subpath-tolerant shim
+        // specifiers onto the shim file, mirroring the vite pipeline's
+        // `gxtSubpathRegExp` aliases. Without this, a vendored module like
+        // `@glimmer/runtime/lib/modifiers/on.ts` importing
+        // `@glimmer/manager/lib/internal/api` falls through to the
+        // candidateStem lookup below and bundles the CLASSIC manager next to
+        // the shim — a split-brain registry where `{{on}}`'s
+        // setInternalModifierManager registration lands in a manager copy the
+        // GXT renderer never consults (observed as `{{on}}` silently not
+        // attaching listeners in apps consuming the assembled
+        // ember-source-gxt package).
+        if (USE_GXT_BACKEND) {
+          for (const alias of GXT_SHIM_ALIASES) {
+            if (!alias.subpathTolerant || source === alias.find) continue;
+            if (gxtSubpathRegExp(alias.find).test(source)) {
+              return resolve(projectRoot, GXT_SHIM_DIR, `${alias.shim}.ts`);
+            }
+          }
         }
 
         let candidateStem = resolve(projectRoot, 'packages', source);
