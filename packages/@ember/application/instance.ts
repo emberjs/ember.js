@@ -107,15 +107,18 @@ class ApplicationInstance extends EngineInstance {
       this.rootElement = this.application.rootElement;
     }
 
-    // When rehydrating, the rootElement already contains serialized DOM from
-    // a prior render (typically FastBoot). GXT's render pipeline appends
-    // freshly-rendered content alongside whatever is already there, which
-    // would duplicate the output. For the rehydrate path, we clear the
-    // existing content so the new render fully replaces it. This is a
-    // non-semantic-preserving approximation of Glimmer's rehydration builder
+    // GXT mode only: when rehydrating, the rootElement already contains
+    // serialized DOM from a prior render (typically FastBoot). GXT's render
+    // pipeline appends freshly-rendered content alongside whatever is already
+    // there, which would duplicate the output. For the rehydrate path, we
+    // clear the existing content so the new render fully replaces it. This is
+    // a non-semantic-preserving approximation of Glimmer's rehydration builder
     // (which reuses existing nodes), but it produces the same observable
-    // DOM shape when templates haven't changed.
-    if (options._renderMode === 'rehydrate' && this.rootElement) {
+    // DOM shape when templates haven't changed. Classic builds MUST NOT clear:
+    // the real rehydration builder consumes the serialized nodes in place —
+    // clearing them makes it rehydrate an empty block (visit_test
+    // `_renderMode: rehydration` regressed to empty innerHTML).
+    if (__GXT_MODE__ && options._renderMode === 'rehydrate' && this.rootElement) {
       let el = this.rootElement as Element | SimpleElement;
       // Only clear DOM elements (not string selectors — those are resolved by
       // the renderer later).
@@ -285,10 +288,13 @@ class ApplicationInstance extends EngineInstance {
           let renderMode = (bootOptions as any)._renderMode;
 
           if (
+            __GXT_MODE__ &&
             this.rootElement &&
             typeof this.rootElement !== 'string' &&
             (this.rootElement as any).ownerDocument
           ) {
+            // GXT-only post-render DOM compensation; classic's serialize /
+            // rehydrate builders produce the markers and node reuse natively.
             let el = this.rootElement as Element;
 
             // For `_renderMode: 'rehydrate'`, GXT's render pipeline is not
