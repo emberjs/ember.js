@@ -1,4 +1,4 @@
-import { dirname, parse, resolve, join } from 'node:path';
+import { dirname, parse, resolve, join, relative, isAbsolute } from 'node:path';
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -6,6 +6,7 @@ import glob from 'glob';
 import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
+import { hasNoSideEffects } from './bin/side-effect-detection/index.mjs';
 
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
@@ -96,6 +97,8 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
   if (includePackageMeta) {
     plugins.push(packageMeta());
   }
+
+  plugins.push(updateSideEffects());
 
   return {
     onLog: handleRollupWarnings,
@@ -546,6 +549,56 @@ function packageMeta() {
       }
       pkg['ember-addon']['renamed-modules'] = renamedModules;
       writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+    },
+  };
+}
+
+let cleanedSideEffects = false;
+function updateSideEffects() {
+  let manifestPath = resolve(projectRoot, 'package.json');
+
+  return {
+    name: 'update-side-effects-in-package-json',
+    async buildStart() {
+      // we only want to clean once,
+      // but add sideEffects for each sub-config that uses this plugin
+      if (cleanedSideEffects) return;
+      let manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+
+      delete manifest.sideEffects;
+
+      writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+      cleanedSideEffects = true;
+    },
+    async writeBundle(options) {
+      let outputDir = isAbsolute(options.dir) ? relative(projectRoot, options.dir) : options.dir;
+      let files = glob.sync(`${outputDir}/packages/**/*.js`, {
+        cwd: projectRoot,
+        nodir: true,
+      });
+
+      let withSideEffects = [];
+      let batchSize = 50;
+
+      for (let i = 0; i < files.length; i += batchSize) {
+        let batch = files.slice(i, i + batchSize);
+        let pure = await Promise.all(
+          batch.map((file) => hasNoSideEffects(resolve(projectRoot, file)))
+        );
+
+        batch.forEach((file, index) => {
+          if (!pure[index]) {
+            withSideEffects.push('./' + file);
+          }
+        });
+      }
+
+      let manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+      let fromOtherBuilds = manifest.sideEffects ?? [];
+
+      manifest.sideEffects = fromOtherBuilds.concat(withSideEffects).toSorted();
+
+      writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
     },
   };
 }

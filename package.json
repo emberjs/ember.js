@@ -366,5 +366,29 @@
       ]
     }
   },
-  "packageManager": "pnpm@10.33.2"
+  "packageManager": "pnpm@10.33.2",
+  "sideEffects": [
+    "./dist/dev/packages/@ember/-internals/runtime/lib/ext/rsvp.js",
+    "./dist/dev/packages/@ember/debug/index.js",
+    "./dist/dev/packages/@ember/routing/index.js",
+    "./dist/dev/packages/@glimmer/validator/index.js",
+    "./dist/dev/packages/ember-testing/index.js",
+    "./dist/dev/packages/rsvp/index.js",
+    "./dist/dev/packages/shared-chunks/compiler-QUSl_urU.js",
+    "./dist/dev/packages/shared-chunks/env-g-kaAFLN.js",
+    "./dist/dev/packages/shared-chunks/index-3f7ULWdy.js",
+    "./dist/dev/packages/shared-chunks/render-DpEi03h2.js",
+    "./dist/dev/packages/shared-chunks/rsvp.es-DR7yS7qg.js",
+    "./dist/dev/packages/shared-chunks/textarea-BpB7ZI6A.js",
+    "./dist/prod/packages/@ember/-internals/runtime/lib/ext/rsvp.js",
+    "./dist/prod/packages/@glimmer/validator/index.js",
+    "./dist/prod/packages/ember-testing/index.js",
+    "./dist/prod/packages/rsvp/index.js",
+    "./dist/prod/packages/shared-chunks/compiler-lBSssiWp.js",
+    "./dist/prod/packages/shared-chunks/env-DXxsTFkM.js",
+    "./dist/prod/packages/shared-chunks/index-CkFzcVLw.js",
+    "./dist/prod/packages/shared-chunks/render-B_2ftFTy.js",
+    "./dist/prod/packages/shared-chunks/rsvp.es-DR7yS7qg.js",
+    "./dist/prod/packages/shared-chunks/textarea-DIQlBiue.js"
+  ]
 }
