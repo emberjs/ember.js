@@ -22,6 +22,7 @@ export {
   isInvokableRef,
   isUpdatableRef,
   NULL_REFERENCE,
+  parentRefFor,
   REFERENCE,
   type Reference,
   type ReferenceEnvironment,
