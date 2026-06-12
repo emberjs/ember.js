@@ -1,5 +1,5 @@
 {
-  "_comment": "Bundle-size budgets for the dual-backend (classic / EMBER_RENDER_BACKEND=gxt) rollup build. Each entry's `path` is the DIRECTORY rollup emits for that build mode: dist/prod (production, debug macros stripped) and dist/dev (debug). The gate (scripts/bundle-size-check.mjs) concatenates every *.js under the directory (sorted) and measures raw/gzip/brotli on the concatenation — the single-bundle-equivalent size of the whole backend output. Numbers below were captured from HEAD with a 5% headroom baked in; the check fails on anything more than 5% over (effective ceiling ~10.25% over HEAD). Refresh with: rm -rf dist && [EMBER_RENDER_BACKEND=gxt] npx rollup --config && node scripts/bundle-size-check.mjs <backend>. HISTORY: pre-2026-06 budgets tracked the legacy single-file AMD bundles (dist/ember.prod.js etc.) which the rollup ESM build no longer produces, so the gate was inert (every entry MISSING). Phase 2.6 (commit c8eb53d95e) externalized @lifeart/gxt + DEBUG-gated __gxtRebuildViewTreeFromDom, dropping the inlined gxt dist + its @glimmer/syntax/@handlebars/parser deps from ember.prod (~600KB raw). The 2026-06 bundle-audit follow-up repointed the gate at the real dist/prod + dist/dev trees and recaptured numbers.",
+  "_comment": "Bundle-size budgets for the dual-backend (classic / EMBER_RENDER_BACKEND=gxt) rollup build. Each entry's `path` is the DIRECTORY rollup emits for that build mode: dist/prod (production, debug macros stripped) and dist/dev (debug). The gate (scripts/bundle-size-check.mjs) concatenates every *.js under the directory (sorted) and measures raw/gzip/brotli on the concatenation \u2014 the single-bundle-equivalent size of the whole backend output. Numbers below were captured from HEAD with a 5% headroom baked in; the check fails on anything more than 5% over (effective ceiling ~10.25% over HEAD). Refresh with: rm -rf dist && [EMBER_RENDER_BACKEND=gxt] npx rollup --config && node scripts/bundle-size-check.mjs <backend>. HISTORY: pre-2026-06 budgets tracked the legacy single-file AMD bundles (dist/ember.prod.js etc.) which the rollup ESM build no longer produces, so the gate was inert (every entry MISSING). Phase 2.6 (commit c8eb53d95e) externalized @lifeart/gxt + DEBUG-gated __gxtRebuildViewTreeFromDom, dropping the inlined gxt dist + its @glimmer/syntax/@handlebars/parser deps from ember.prod (~600KB raw). The 2026-06 bundle-audit follow-up repointed the gate at the real dist/prod + dist/dev trees and recaptured numbers.",
   "classic": {
     "entries": [
       {
@@ -17,19 +17,19 @@
     ]
   },
   "gxt": {
-    "_comment": "GXT delta vs classic prod is ~+558KB raw (+28%), attributed (rollup-plugin-visualizer sweep, BUNDLE_VISUALIZER=1) almost entirely to the gxt-backend compat layer: manager.ts ~461KB, validator.ts ~82KB, reference.ts ~23KB, helper-manager.ts ~19KB, destroyable.ts ~11KB. @lifeart/gxt itself is externalized (not inlined). @glimmer/runtime+syntax+compiler are byte-identical in both builds (template compiler + retained VM); gxt drops ~69KB of @glimmer/{validator,manager,reference,destroyable} by shimming them. The remaining delta is genuine runtime bridge logic, not a tree-shaking failure.",
+    "_comment": "GXT delta vs classic prod is ~+558KB raw (+28%), attributed (rollup-plugin-visualizer sweep, BUNDLE_VISUALIZER=1) almost entirely to the gxt-backend compat layer: manager.ts ~461KB, validator.ts ~82KB, reference.ts ~23KB, helper-manager.ts ~19KB, destroyable.ts ~11KB. @lifeart/gxt itself is externalized (not inlined). @glimmer/runtime+syntax+compiler are byte-identical in both builds (template compiler + retained VM); gxt drops ~69KB of @glimmer/{validator,manager,reference,destroyable} by shimming them. The remaining delta is genuine runtime bridge logic, not a tree-shaking failure. REFRESH 2026-06-12: +~790KB raw both modes \u2014 the @ember/template-compilation / ember-template-compiler ENTRIES now ship the real GXT runtime-compile pipeline (compile.ts) instead of the dead classic stubs (the esmInputs entry-clobber fix; consumers previously got 'precompileTemplate is meant to be used at compile time' at runtime). The dist is a per-module ESM tree, so apps that never import the runtime compiler do not pay for it; the whole-tree concat measured here is the worst case. Captured from the entry-fix build with 5% headroom.",
     "entries": [
       {
         "path": "dist/prod",
-        "maxRaw": 2658682,
-        "maxGz": 690799,
-        "maxBr": 534492
+        "maxRaw": 3619090,
+        "maxGz": 976315,
+        "maxBr": 734267
       },
       {
         "path": "dist/dev",
-        "maxRaw": 2838647,
-        "maxGz": 731492,
-        "maxBr": 563467
+        "maxRaw": 3795852,
+        "maxGz": 1017308,
+        "maxBr": 762986
       }
     ]
   }
