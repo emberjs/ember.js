@@ -324,7 +324,6 @@ const EmberOutletElement: any =
         }
       };
 
-
 // Register the custom element (only once)
 if (typeof customElements !== 'undefined' && !customElements.get('ember-outlet')) {
   customElements.define('ember-outlet', EmberOutletElement);

@@ -1774,7 +1774,7 @@ function _renderComponentGxt(
   owner: object,
   args?: Record<string, unknown>
 ): RenderResult {
-  const globalTemplates = (globalThis as any).COMPONENT_TEMPLATES;
+  const globalTemplates = getGxtRenderer()?.registries.componentTemplates;
 
   // Get the target element
   const targetElement =
@@ -2097,7 +2097,7 @@ function _renderComponentGxt(
       !isClass ||
       (component as any).__templateOnly === true ||
       (component as any).constructor?.name === 'TemplateOnlyComponentDefinition' ||
-      (globalThis as any).INTERNAL_MANAGERS?.has?.(component);
+      getGxtRenderer()?.registries.internalManagers.has(component) === true;
 
     let instance: any = null;
 
@@ -2107,11 +2107,12 @@ function _renderComponentGxt(
 
       // Check for custom component manager (from setComponentManager)
       let customManager: any = null;
-      let managerFactory: any = (globalThis as any).COMPONENT_MANAGERS?.get(ComponentClass);
+      const _componentManagers = getGxtRenderer()?.registries.componentManagers;
+      let managerFactory: any = _componentManagers?.get(ComponentClass);
       if (!managerFactory) {
         let proto = Object.getPrototypeOf(ComponentClass);
         while (proto && proto !== Object.prototype && proto !== Function.prototype) {
-          managerFactory = (globalThis as any).COMPONENT_MANAGERS?.get(proto);
+          managerFactory = _componentManagers?.get(proto);
           if (managerFactory) break;
           proto = Object.getPrototypeOf(proto);
         }

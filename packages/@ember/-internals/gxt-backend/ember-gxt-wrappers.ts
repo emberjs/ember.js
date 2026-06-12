@@ -129,7 +129,7 @@ let helperManagerLookupCache = new WeakMap<object, any>();
  * setHelperManager / setInternalHelperManager.
  */
 function findHelperManager(obj: any): any {
-  const managers = g.INTERNAL_HELPER_MANAGERS;
+  const managers = getGxtRenderer()?.registries.internalHelperManagers;
   if (!managers) return null;
   // WeakMap keys must be objects (or registered symbols). obj is typically a
   // function or class instance here; guard primitives just in case.
@@ -698,8 +698,12 @@ function createEmberMaybeHelper(original: Function) {
     // with a captured-args object so the helper can produce its reference
     // (e.g. the `ElementComponentDefinition`). The returned reference is
     // unwrapped via `valueForRef` when present.
-    if (nameOrFn && typeof nameOrFn === 'object' && g.INTERNAL_HELPER_MANAGERS) {
-      const helperFnOrManager = g.INTERNAL_HELPER_MANAGERS.get(nameOrFn);
+    if (
+      nameOrFn &&
+      typeof nameOrFn === 'object' &&
+      getGxtRenderer()?.registries.internalHelperManagers
+    ) {
+      const helperFnOrManager = getGxtRenderer()?.registries.internalHelperManagers.get(nameOrFn);
       if (typeof helperFnOrManager === 'function') {
         // Build CapturedArguments — positional refs + named refs.
         // Each ref must expose at least `value`/getter semantics. We use
@@ -2707,13 +2711,13 @@ function createEmberDc(original: Function) {
       const hasHelperMgr = !!findHelperManager(componentValue);
       const hasModifierMgr =
         typeof componentValue === 'function' &&
-        g.INTERNAL_MODIFIER_MANAGERS &&
+        getGxtRenderer()?.registries.internalModifierManagers &&
         (() => {
           let p: any = componentValue;
           const v = new Set();
           while (p && !v.has(p)) {
             v.add(p);
-            if (g.INTERNAL_MODIFIER_MANAGERS.has(p)) return true;
+            if (getGxtRenderer()?.registries.internalModifierManagers.has(p)) return true;
             try {
               p = Object.getPrototypeOf(p);
             } catch {
@@ -2807,7 +2811,7 @@ function createEmberModifierHelper(original: Function) {
       typeof rawFirst === 'function' &&
       !rawFirst.prototype &&
       !rawFirst.__isCurriedModifier &&
-      !g.INTERNAL_MODIFIER_MANAGERS?.has(rawFirst)
+      !getGxtRenderer()?.registries.internalModifierManagers?.has(rawFirst)
         ? rawFirst()
         : rawFirst;
     const boundParams = params.slice(1);
@@ -2875,7 +2879,7 @@ function createEmberModifierHelper(original: Function) {
         const visited = new Set();
         while (pointer && !visited.has(pointer)) {
           visited.add(pointer);
-          const mgr = g.INTERNAL_MODIFIER_MANAGERS?.get(pointer);
+          const mgr = getGxtRenderer()?.registries.internalModifierManagers?.get(pointer);
           if (mgr) {
             managerFactory = mgr;
             break;
@@ -2907,9 +2911,9 @@ function createEmberModifierHelper(original: Function) {
       (curriedModifier as any).__modifierName = resolved;
 
       // Register with INTERNAL_MODIFIER_MANAGERS so canHandle() finds it
-      if (g.INTERNAL_MODIFIER_MANAGERS) {
+      if (getGxtRenderer()?.registries.internalModifierManagers) {
         // Use a simple pass-through manager for curried modifiers
-        g.INTERNAL_MODIFIER_MANAGERS.set(curriedModifier, {
+        getGxtRenderer()?.registries.internalModifierManagers.set(curriedModifier, {
           createModifier: () => ({}),
           installModifier: () => {},
           updateModifier: () => {},
@@ -2924,12 +2928,12 @@ function createEmberModifierHelper(original: Function) {
     if (resolved != null && typeof resolved !== 'string') {
       // Check if it has a modifier manager
       let hasModifierManager = false;
-      if (g.INTERNAL_MODIFIER_MANAGERS) {
+      if (getGxtRenderer()?.registries.internalModifierManagers) {
         let ptr = resolved;
         const visited = new Set();
         while (ptr && !visited.has(ptr)) {
           visited.add(ptr);
-          if (g.INTERNAL_MODIFIER_MANAGERS.has(ptr)) {
+          if (getGxtRenderer()?.registries.internalModifierManagers.has(ptr)) {
             hasModifierManager = true;
             break;
           }
@@ -2957,8 +2961,8 @@ function createEmberModifierHelper(original: Function) {
 
         // Mark and register so canHandle() works
         (curriedManagedModifier as any).__isCurriedModifier = true;
-        if (g.INTERNAL_MODIFIER_MANAGERS) {
-          g.INTERNAL_MODIFIER_MANAGERS.set(curriedManagedModifier, {
+        if (getGxtRenderer()?.registries.internalModifierManagers) {
+          getGxtRenderer()?.registries.internalModifierManagers.set(curriedManagedModifier, {
             createModifier: () => ({}),
             installModifier: () => {},
             updateModifier: () => {},

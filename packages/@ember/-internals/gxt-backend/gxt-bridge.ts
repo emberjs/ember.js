@@ -2592,6 +2592,30 @@ export interface GxtRenderer {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly gxtLib: any;
+
+  /**
+   * The manager/template registries — module-local WeakMaps in
+   * gxt-backend/manager.ts (the retired `globalThis.COMPONENT_TEMPLATES` /
+   * `COMPONENT_MANAGERS` / `INTERNAL_MANAGERS` slots et al). Exposed by
+   * REFERENCE for the few cross-package readers (glimmer renderer's
+   * component-manager probe, root.ts's template lookup, compile.ts's
+   * component-manager check); all gxt-backend-internal access uses the
+   * module locals directly. Classic builds never install the renderer, so
+   * readers' optional chains see `undefined` exactly as the missing globals
+   * did.
+   */
+  readonly registries: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly componentTemplates: WeakMap<object, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly componentManagers: WeakMap<object, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly internalManagers: WeakMap<object, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly internalHelperManagers: WeakMap<object, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly internalModifierManagers: WeakMap<object, any>;
+  };
   readonly renderPass: GxtRenderPassCapabilities;
   readonly runtime: GxtRuntimeCapabilities;
   readonly rootComponent: GxtRootComponentCapabilities;

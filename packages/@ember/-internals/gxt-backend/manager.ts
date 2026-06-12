@@ -688,11 +688,38 @@ queueMicrotask(() => {
 // =============================================================================
 
 globalThis.EmberFunctionalHelpers = globalThis.EmberFunctionalHelpers || new Set();
-globalThis.COMPONENT_TEMPLATES = globalThis.COMPONENT_TEMPLATES || new WeakMap();
-globalThis.COMPONENT_MANAGERS = globalThis.COMPONENT_MANAGERS || new WeakMap();
-globalThis.INTERNAL_MANAGERS = globalThis.INTERNAL_MANAGERS || new WeakMap();
-globalThis.INTERNAL_HELPER_MANAGERS = globalThis.INTERNAL_HELPER_MANAGERS || new WeakMap();
-globalThis.INTERNAL_MODIFIER_MANAGERS = globalThis.INTERNAL_MODIFIER_MANAGERS || new WeakMap();
+// The five manager/template registries are module-local WeakMaps (retired
+// `COMPONENT_TEMPLATES` / `COMPONENT_MANAGERS` /
+// `INTERNAL_MANAGERS` / `INTERNAL_HELPER_MANAGERS` /
+// `INTERNAL_MODIFIER_MANAGERS` slots). The `globalThis.X || new WeakMap()`
+// pattern existed to TOLERATE a second copy of this module sharing state —
+// which only masked the dual-copy hazard (a second copy still forks every
+// OTHER module-local). The single-copy guard below replaces tolerance with a
+// loud failure, and cross-package readers (glimmer renderer/root, compile.ts)
+// reach the maps through the typed `registries` bridge namespace.
+// (`EmberFunctionalHelpers` above intentionally stays a global: the GXT
+// runtime dist itself consults it — a §2d host hook in
+// docs-internal-gxt-globalthis-wiring.md, retired by the upstream
+// registerHostHooks API, not here.)
+{
+  const sentinel = Symbol.for('ember.gxt-backend.instance');
+  const g = globalThis as Record<symbol, unknown>;
+  if (g[sentinel] !== undefined) {
+    throw new Error(
+      'Two copies of the ember-source GXT backend loaded in the same page. ' +
+        'The manager/template registries are module-instance state, so a ' +
+        'duplicate copy forks component/helper/modifier resolution silently. ' +
+        'Ensure a SINGLE ember-source resolves (check bundler aliases and ' +
+        'node_modules layout).'
+    );
+  }
+  g[sentinel] = true;
+}
+const COMPONENT_TEMPLATES = new WeakMap<object, any>();
+const COMPONENT_MANAGERS = new WeakMap<object, any>();
+const INTERNAL_MANAGERS = new WeakMap<object, any>();
+const INTERNAL_HELPER_MANAGERS = new WeakMap<object, any>();
+const INTERNAL_MODIFIER_MANAGERS = new WeakMap<object, any>();
 
 // Per-instance memo cache for GXT `cached()` wrappers around pure Ember
 // getters. Survives across createRenderContext() re-invocations so repeated
@@ -2910,7 +2937,7 @@ function updateInstanceWithNewArgs(instance: any, args: any): boolean {
             // arg-pass site above for full rationale.
             try {
               // (uses the module-scope `_gxtCellFor` import — single gxt instance is
-                // enforced by the dedup plugins / rollup subpath collapse)
+              // enforced by the dedup plugins / rollup subpath collapse)
               if (typeof _gxtCellFor === 'function') {
                 // skipDefine=true: see Site A — don't install descriptor.
                 const _cell = _gxtCellFor(instance, key, /* skipDefine */ true);
@@ -3391,8 +3418,7 @@ export function checkBacktracking(targetObj: any, key: string): void {
 
   // Build indented tree
   const isInOutlet =
-    !!getCurrentOutletState() &&
-    renderTreeParts.some((p) => p.startsWith('{{outlet}}'));
+    !!getCurrentOutletState() && renderTreeParts.some((p) => p.startsWith('{{outlet}}'));
   // In outlet context, base indent is 6 (matching Glimmer VM's outlet nesting).
   // In component context, base indent is 4 (matching Glimmer VM's component nesting).
   const baseIndent = isInOutlet ? 3 : 2; // multiplied by 2 below
@@ -4213,7 +4239,7 @@ function _gxtSyncAllWrappersBody(): void {
                   // (instance, key) pair) and must be updated separately.
                   try {
                     // (uses the module-scope `_gxtCellFor` import — single gxt instance is
-                // enforced by the dedup plugins / rollup subpath collapse)
+                    // enforced by the dedup plugins / rollup subpath collapse)
                     if (typeof _gxtCellFor === 'function') {
                       // skipDefine=true: don't replace the tracked descriptor.
                       // See the arg-pass site above for rationale.
@@ -4335,7 +4361,7 @@ function _gxtSyncAllWrappersBody(): void {
                   // site above.
                   try {
                     // (uses the module-scope `_gxtCellFor` import — single gxt instance is
-                // enforced by the dedup plugins / rollup subpath collapse)
+                    // enforced by the dedup plugins / rollup subpath collapse)
                     if (typeof _gxtCellFor === 'function') {
                       // skipDefine=true: don't replace the tracked descriptor.
                       // See the arg-pass site above for rationale.
@@ -8065,14 +8091,14 @@ function resolveComponent(
     let manager = null;
     if (factory?.class) {
       // Check internal managers ONLY on the exact class (Input, Textarea)
-      manager = globalThis.INTERNAL_MANAGERS.get(factory.class);
+      manager = INTERNAL_MANAGERS.get(factory.class);
 
       // If not found, walk prototype chain for COMPONENT_MANAGERS only
       // (handles subclasses of setComponentManager targets like GlimmerishComponent)
       if (!manager) {
         let pointer: any = factory.class;
         while (pointer) {
-          manager = globalThis.COMPONENT_MANAGERS.get(pointer);
+          manager = COMPONENT_MANAGERS.get(pointer);
           if (manager) break;
           try {
             pointer = Object.getPrototypeOf(pointer);
@@ -8272,10 +8298,10 @@ const $_MANAGERS = {
       }
 
       // Handle component classes/factories
-      if (globalThis.INTERNAL_MANAGERS.has(komp)) {
+      if (INTERNAL_MANAGERS.has(komp)) {
         return true;
       }
-      if (globalThis.COMPONENT_MANAGERS.has(komp)) {
+      if (COMPONENT_MANAGERS.has(komp)) {
         return true;
       }
       // Walk prototype chain for INTERNAL_MANAGERS (e.g., TemplateOnlyComponentDefinition
@@ -8283,18 +8309,15 @@ const $_MANAGERS = {
       if (komp !== null && komp !== undefined && typeof komp === 'object') {
         let proto = Object.getPrototypeOf(komp);
         while (proto && proto !== Object.prototype) {
-          if (globalThis.INTERNAL_MANAGERS.has(proto)) return true;
-          if (globalThis.COMPONENT_MANAGERS.has(proto)) return true;
+          if (INTERNAL_MANAGERS.has(proto)) return true;
+          if (COMPONENT_MANAGERS.has(proto)) return true;
           proto = Object.getPrototypeOf(proto);
         }
       }
       // Also check for component templates set directly on the object.
       // Unwrap Proxy if needed — GXT's cell tracking wraps objects in Proxies,
       // but setComponentTemplate stores templates keyed by the original object.
-      if (
-        globalThis.COMPONENT_TEMPLATES?.has(komp) ||
-        globalThis.COMPONENT_TEMPLATES?.has(_proxyToRaw.get(komp) || komp)
-      ) {
+      if (COMPONENT_TEMPLATES.has(komp) || COMPONENT_TEMPLATES.has(_proxyToRaw.get(komp) || komp)) {
         return true;
       }
       if (komp?.create && typeof komp.create === 'function') {
@@ -8732,13 +8755,11 @@ const $_MANAGERS = {
       }
 
       // Handle component with internal/custom manager (walk prototype chain)
-      let manager =
-        globalThis.INTERNAL_MANAGERS.get(komp) || globalThis.COMPONENT_MANAGERS.get(komp);
+      let manager = INTERNAL_MANAGERS.get(komp) || COMPONENT_MANAGERS.get(komp);
       if (!manager && komp !== null && komp !== undefined && typeof komp === 'object') {
         let proto = Object.getPrototypeOf(komp);
         while (proto && proto !== Object.prototype) {
-          manager =
-            globalThis.INTERNAL_MANAGERS.get(proto) || globalThis.COMPONENT_MANAGERS.get(proto);
+          manager = INTERNAL_MANAGERS.get(proto) || COMPONENT_MANAGERS.get(proto);
           if (manager) break;
           proto = Object.getPrototypeOf(proto);
         }
@@ -8749,8 +8770,7 @@ const $_MANAGERS = {
         // going through handleManagedComponent (which requires manager.create).
         if (typeof manager.create !== 'function') {
           const tpl =
-            globalThis.COMPONENT_TEMPLATES?.get(komp) ||
-            globalThis.COMPONENT_TEMPLATES?.get(_proxyToRaw.get(komp) || komp);
+            COMPONENT_TEMPLATES.get(komp) || COMPONENT_TEMPLATES.get(_proxyToRaw.get(komp) || komp);
           if (tpl) {
             let resolvedTpl = tpl;
             if (typeof resolvedTpl === 'function' && !resolvedTpl.render) {
@@ -8800,14 +8820,13 @@ const $_MANAGERS = {
         return handleManagedComponent(komp, args, fw, ctx, manager, owner);
       }
 
-      // Fallback: if the component has a template in globalThis.COMPONENT_TEMPLATES but
-      // no manager was found in globalThis.INTERNAL_MANAGERS, it may be a template-only
+      // Fallback: if the component has a template in COMPONENT_TEMPLATES but
+      // no manager was found in INTERNAL_MANAGERS, it may be a template-only
       // component whose manager was set via the original (pre-bundled) @glimmer/manager
       // module, which has a separate private WeakMap. Render the template directly.
       {
         const fallbackTpl =
-          globalThis.COMPONENT_TEMPLATES?.get(komp) ||
-          globalThis.COMPONENT_TEMPLATES?.get(_proxyToRaw.get(komp) || komp);
+          COMPONENT_TEMPLATES.get(komp) || COMPONENT_TEMPLATES.get(_proxyToRaw.get(komp) || komp);
         if (fallbackTpl) {
           let resolvedTpl = fallbackTpl;
           if (typeof resolvedTpl === 'function' && !resolvedTpl.render) {
@@ -8889,7 +8908,7 @@ const $_MANAGERS = {
       if (helper != null && typeof helper === 'object') {
         let pointer = helper;
         while (pointer != null && pointer !== Object.prototype && pointer !== Function.prototype) {
-          if ((globalThis as any).INTERNAL_HELPER_MANAGERS?.has(pointer)) return true;
+          if (INTERNAL_HELPER_MANAGERS.has(pointer)) return true;
           try {
             pointer = Object.getPrototypeOf(pointer);
           } catch {
@@ -9342,7 +9361,7 @@ const $_MANAGERS = {
         const visited = new Set();
         while (pointer && !visited.has(pointer)) {
           visited.add(pointer);
-          if (globalThis.INTERNAL_MODIFIER_MANAGERS.has(pointer)) return true;
+          if (INTERNAL_MODIFIER_MANAGERS.has(pointer)) return true;
           try {
             pointer = Object.getPrototypeOf(pointer);
           } catch {
@@ -9397,7 +9416,7 @@ const $_MANAGERS = {
         typeof modifier === 'string' && !!self._builtinModifiers?.[modifier];
       // Modifier definitions registered directly via `setModifierManager(factory, obj)`
       // (strict-mode shadowed `on` modifiers, RFC 757 modifiers in test contexts,
-      // etc.) carry their factory on `globalThis.INTERNAL_MODIFIER_MANAGERS`. They
+      // etc.) carry their factory on `INTERNAL_MODIFIER_MANAGERS`. They
       // don't need an Ember owner either — the factory itself is invoked with
       // the (possibly absent) owner below and is responsible for handling that
       // case. Without this carve-out, `keyword modifier: on :: can be shadowed`
@@ -9412,7 +9431,7 @@ const $_MANAGERS = {
           const seen = new Set();
           while (p && !seen.has(p)) {
             seen.add(p);
-            if (globalThis.INTERNAL_MODIFIER_MANAGERS.has(p)) return true;
+            if (INTERNAL_MODIFIER_MANAGERS.has(p)) return true;
             try {
               p = Object.getPrototypeOf(p);
             } catch {
@@ -9805,7 +9824,7 @@ const $_MANAGERS = {
       const visited = new Set();
       while (pointer && !visited.has(pointer)) {
         visited.add(pointer);
-        const mgr = globalThis.INTERNAL_MODIFIER_MANAGERS.get(pointer);
+        const mgr = INTERNAL_MODIFIER_MANAGERS.get(pointer);
         if (mgr) {
           managerFactory = mgr;
           break;
@@ -10223,9 +10242,9 @@ function handleStringComponent(
     typeof (_btClass as any).create !== 'function' &&
     typeof (_btClass as any).extend !== 'function' &&
     (!_btClass.prototype || Object.getOwnPropertyNames(_btClass.prototype).length <= 1) &&
-    !globalThis.COMPONENT_TEMPLATES?.has(_btClass) &&
-    !globalThis.INTERNAL_MANAGERS?.has(_btClass) &&
-    !globalThis.COMPONENT_MANAGERS?.has(_btClass)
+    !COMPONENT_TEMPLATES.has(_btClass) &&
+    !INTERNAL_MANAGERS.has(_btClass) &&
+    !COMPONENT_MANAGERS.has(_btClass)
   ) {
     const compileFn = getGxtRenderer()?.compilePipeline.compileTemplate;
     if (typeof compileFn === 'function') {
@@ -10495,7 +10514,7 @@ function handleStringComponent(
         (factory.class.constructor?.name === 'TemplateOnlyComponentDefinition' ||
           factory.class.__templateOnly === true ||
           factory.class.moduleName === '@glimmer/component/template-only' ||
-          (globalThis.INTERNAL_MANAGERS?.has?.(factory.class) && !factory.class.prototype?.init));
+          (INTERNAL_MANAGERS.has?.(factory.class) && !factory.class.prototype?.init));
 
       // Re-evaluate at invocation time: if the closure was created with a null
       // parent but the stack has since been populated, prefer the live value.
@@ -13415,7 +13434,7 @@ function assertManagerTarget(target: any, kind: string): void {
 }
 
 function assertNoExistingComponentManager(handle: any): void {
-  if (globalThis.INTERNAL_MANAGERS.has(handle) || globalThis.COMPONENT_MANAGERS.has(handle)) {
+  if (INTERNAL_MANAGERS.has(handle) || COMPONENT_MANAGERS.has(handle)) {
     throw new Error(
       `Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type with a given value. Value was ${String(handle)}`
     );
@@ -13423,7 +13442,7 @@ function assertNoExistingComponentManager(handle: any): void {
 }
 
 function assertNoExistingHelperManager(helper: any): void {
-  if (globalThis.INTERNAL_HELPER_MANAGERS.has(helper)) {
+  if (INTERNAL_HELPER_MANAGERS.has(helper)) {
     throw new Error(
       `Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type with a given value. Value was ${String(helper)}`
     );
@@ -13431,7 +13450,7 @@ function assertNoExistingHelperManager(helper: any): void {
 }
 
 function assertNoExistingModifierManager(modifier: any): void {
-  if (globalThis.INTERNAL_MODIFIER_MANAGERS.has(modifier)) {
+  if (INTERNAL_MODIFIER_MANAGERS.has(modifier)) {
     throw new Error(
       `Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type with a given value. Value was ${String(modifier)}`
     );
@@ -13441,7 +13460,7 @@ function assertNoExistingModifierManager(modifier: any): void {
 export function setInternalComponentManager(manager: any, handle: any) {
   assertManagerTarget(handle, 'component');
   assertNoExistingComponentManager(handle);
-  globalThis.INTERNAL_MANAGERS.set(handle, manager);
+  INTERNAL_MANAGERS.set(handle, manager);
   return handle;
 }
 
@@ -13455,7 +13474,7 @@ export function getInternalHelperManager(helper: any, isOptional?: boolean) {
   // Walk the full prototype chain
   let pointer = helper;
   while (pointer !== null && pointer !== undefined) {
-    const manager = globalThis.INTERNAL_HELPER_MANAGERS.get(pointer);
+    const manager = INTERNAL_HELPER_MANAGERS.get(pointer);
     if (manager !== undefined) {
       return manager;
     }
@@ -13576,7 +13595,7 @@ export function getInternalComponentManager(handle: any, isOptional?: boolean) {
   // (setInternalComponentManager path), which are returned as-is.
   let pointer = handle;
   while (pointer !== null && pointer !== undefined) {
-    const manager = globalThis.INTERNAL_MANAGERS.get(pointer);
+    const manager = INTERNAL_MANAGERS.get(pointer);
     if (manager !== undefined) return manager;
     try {
       pointer = Object.getPrototypeOf(pointer);
@@ -13591,7 +13610,7 @@ export function getInternalComponentManager(handle: any, isOptional?: boolean) {
   // — it reads COMPONENT_MANAGERS directly via resolveComponent().
   pointer = handle;
   while (pointer !== null && pointer !== undefined) {
-    const factory = globalThis.COMPONENT_MANAGERS.get(pointer);
+    const factory = COMPONENT_MANAGERS.get(pointer);
     if (factory !== undefined) {
       let wrapper = _COMPONENT_MANAGER_WRAPPERS.get(pointer);
       if (wrapper === undefined) {
@@ -13640,20 +13659,20 @@ function _managerDebugToString(value: any): string {
 
 export function getComponentTemplate(comp: any): any {
   // Direct lookup first
-  const direct = globalThis.COMPONENT_TEMPLATES.get(comp);
+  const direct = COMPONENT_TEMPLATES.get(comp);
   if (direct !== undefined) return direct;
   // Unwrap Proxy if needed — GXT's cell tracking wraps objects in Proxies,
   // but setComponentTemplate stores templates keyed by the original object.
   const unwrapped = _proxyToRaw.get(comp);
   if (unwrapped) {
-    const fromRaw = globalThis.COMPONENT_TEMPLATES.get(unwrapped);
+    const fromRaw = COMPONENT_TEMPLATES.get(unwrapped);
     if (fromRaw !== undefined) return fromRaw;
   }
   // Walk prototype chain for inheritance support
   if (comp && typeof comp === 'function') {
     let proto = Object.getPrototypeOf(comp);
     while (proto && proto !== Function.prototype && proto !== Object.prototype) {
-      const tpl = globalThis.COMPONENT_TEMPLATES.get(proto);
+      const tpl = COMPONENT_TEMPLATES.get(proto);
       if (tpl !== undefined) return tpl;
       proto = Object.getPrototypeOf(proto);
     }
@@ -13669,13 +13688,13 @@ export function setComponentTemplate(tpl: any, comp: any) {
   ) {
     throw new Error(`Cannot call \`setComponentTemplate\` on \`${String(comp)}\``);
   }
-  if (globalThis.COMPONENT_TEMPLATES.has(comp)) {
+  if (COMPONENT_TEMPLATES.has(comp)) {
     const name = comp.name || comp.toString?.() || String(comp);
     throw new Error(
       `Cannot call \`setComponentTemplate\` multiple times on the same class (\`${name}\`)`
     );
   }
-  globalThis.COMPONENT_TEMPLATES.set(comp, tpl);
+  COMPONENT_TEMPLATES.set(comp, tpl);
   return comp;
 }
 
@@ -13816,7 +13835,7 @@ export function setInternalModifierManager(manager: any, modifier: any, _skipGua
       /* ignore */
     }
   }
-  globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, manager);
+  INTERNAL_MODIFIER_MANAGERS.set(modifier, manager);
   // Register internal modifier managers as built-in keyword modifiers
   // so that string-based resolution (e.g., {{on "click" ...}}) works.
   if (manager && typeof manager.getDebugName === 'function') {
@@ -13867,18 +13886,18 @@ export function _flushPendingBuiltinModifiers() {
 export function setComponentManager(manager: any, component: any) {
   assertManagerTarget(component, 'component');
   assertNoExistingComponentManager(component);
-  globalThis.COMPONENT_MANAGERS.set(component, manager);
+  COMPONENT_MANAGERS.set(component, manager);
   return component;
 }
 
 export function getComponentManager(component: any) {
-  return globalThis.COMPONENT_MANAGERS.get(component);
+  return COMPONENT_MANAGERS.get(component);
 }
 
 export function setModifierManager(factory: any, modifier: any) {
   assertManagerTarget(modifier, 'modifier');
   assertNoExistingModifierManager(modifier);
-  globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, factory);
+  INTERNAL_MODIFIER_MANAGERS.set(modifier, factory);
   return modifier;
 }
 
@@ -13897,7 +13916,7 @@ export function setInternalHelperManager(manager: any, helper: any, _skipGuards?
     assertManagerTarget(helper, 'helper');
     assertNoExistingHelperManager(helper);
   }
-  globalThis.INTERNAL_HELPER_MANAGERS.set(helper, manager);
+  INTERNAL_HELPER_MANAGERS.set(helper, manager);
   return helper;
 }
 
@@ -13908,7 +13927,7 @@ export function hasInternalHelperManager(helper: any) {
   // Walk the prototype chain
   let pointer = helper;
   while (pointer !== null && pointer !== undefined) {
-    if (globalThis.INTERNAL_HELPER_MANAGERS.has(pointer)) {
+    if (INTERNAL_HELPER_MANAGERS.has(pointer)) {
       return true;
     }
     try {
@@ -13937,7 +13956,7 @@ export function getInternalModifierManager(modifier: any, isOptional?: boolean) 
   // Without this, `class Bar extends Foo` — where Foo was associated via
   // setModifierManager — yields "no modifier manager associated" when Bar is
   // invoked as a modifier (because Bar itself isn't in the WeakMap).
-  let stored = globalThis.INTERNAL_MODIFIER_MANAGERS.get(modifier);
+  let stored = INTERNAL_MODIFIER_MANAGERS.get(modifier);
   if (stored === undefined) {
     let pointer: any = modifier;
     for (let depth = 0; depth < 20; depth++) {
@@ -13947,7 +13966,7 @@ export function getInternalModifierManager(modifier: any, isOptional?: boolean) 
         break;
       }
       if (pointer === null || pointer === undefined) break;
-      const candidate = globalThis.INTERNAL_MODIFIER_MANAGERS.get(pointer);
+      const candidate = INTERNAL_MODIFIER_MANAGERS.get(pointer);
       if (candidate !== undefined) {
         stored = candidate;
         break;
@@ -13991,7 +14010,7 @@ export function hasInternalComponentManager(component: any): boolean {
   let pointer = component;
   for (let depth = 0; depth < 20; depth++) {
     if (pointer === null || pointer === undefined) break;
-    if (globalThis.INTERNAL_MANAGERS.has(pointer)) return true;
+    if (INTERNAL_MANAGERS.has(pointer)) return true;
     try {
       const next = Object.getPrototypeOf(pointer);
       if (next === pointer || next === null) break;
@@ -14603,6 +14622,14 @@ import { setGxtRenderer, getGxtRenderer, getCurrentOutletState } from './gxt-bri
 setGxtRenderer({
   // See `gxtLib` doc in gxt-bridge.ts (retired `globalThis.__lifeartGxt`).
   gxtLib: __lifeartGxtNamespace,
+  // See `registries` doc in gxt-bridge.ts (retired globalThis registries).
+  registries: {
+    componentTemplates: COMPONENT_TEMPLATES,
+    componentManagers: COMPONENT_MANAGERS,
+    internalManagers: INTERNAL_MANAGERS,
+    internalHelperManagers: INTERNAL_HELPER_MANAGERS,
+    internalModifierManagers: INTERNAL_MODIFIER_MANAGERS,
+  },
   destruction: {
     destroyDestroyable: _gxtBridgeDestroyDestroyable,
     destroyCustomManagedInstances: _gxtDestroyCustomManagedInstances,

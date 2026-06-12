@@ -431,8 +431,8 @@ function getTemplateForComponent(component: any, owner: any): any {
     // Not set via setComponentTemplate
   }
 
-  // Try globalThis.COMPONENT_TEMPLATES
-  const globalTemplates = (globalThis as any).COMPONENT_TEMPLATES;
+  // Try the bridge component-template registry
+  const globalTemplates = getGxtRenderer()?.registries.componentTemplates;
   if (globalTemplates) {
     const tpl = globalTemplates.get(component.constructor) || globalTemplates.get(component);
     if (tpl) {

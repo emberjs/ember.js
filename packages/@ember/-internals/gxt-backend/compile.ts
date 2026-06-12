@@ -4120,7 +4120,7 @@ function _isCustomManagedComponent(obj: object): boolean {
   if (typeof isRoot === 'function' && isRoot(obj)) {
     return true;
   }
-  const compMgrs = (globalThis as any).COMPONENT_MANAGERS;
+  const compMgrs = getGxtRenderer()?.registries.componentManagers;
   if (compMgrs && typeof compMgrs.has === 'function') {
     let proto: any = Object.getPrototypeOf(obj);
     let depth = 0;
@@ -8420,7 +8420,7 @@ installRuntimePart({
 
     // Invoke a helper through its manager (for defineSimpleHelper results)
     const invokeManaged = (helperFn: any, positional: any[]) => {
-      const managers = g.INTERNAL_HELPER_MANAGERS;
+      const managers = getGxtRenderer()?.registries.internalHelperManagers;
       if (!managers) return helperFn(...positional);
       let mgr: any = null;
       let ptr = helperFn;
@@ -8490,7 +8490,7 @@ installRuntimePart({
 
     // Function with helper manager (from defineSimpleHelper/setHelperManager)
     if (resolved && typeof resolved === 'function') {
-      const managers = g.INTERNAL_HELPER_MANAGERS;
+      const managers = getGxtRenderer()?.registries.internalHelperManagers;
       let hasManager = false;
       if (managers) {
         let ptr = resolved;
@@ -9154,7 +9154,11 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     // that have GXT templates in COMPONENT_TEMPLATES. These come from strict mode
     // scope values (e.g., defComponent('<Foo/>', { scope: { Foo } })) where Foo
     // is a template-only component object or a class with setComponentTemplate.
-    if (comp && typeof comp === 'object' && g.COMPONENT_TEMPLATES?.has(comp)) {
+    if (
+      comp &&
+      typeof comp === 'object' &&
+      getGxtRenderer()?.registries.componentTemplates?.has(comp)
+    ) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
         const $PROPS = Symbol.for('gxt-props');
@@ -9291,7 +9295,11 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     }
 
     // Handle class-based component definitions with templates (e.g., GlimmerishComponent subclasses)
-    if (comp && typeof comp === 'function' && g.COMPONENT_TEMPLATES?.has(comp)) {
+    if (
+      comp &&
+      typeof comp === 'function' &&
+      getGxtRenderer()?.registries.componentTemplates?.has(comp)
+    ) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
         const $PROPS = Symbol.for('gxt-props');
@@ -14937,7 +14945,7 @@ export function precompileTemplate(
           fn: 'fn',
         };
         const gxtBuiltins = g.__EMBER_BUILTIN_HELPERS__;
-        const internalHelperManagers = g.INTERNAL_HELPER_MANAGERS as
+        const internalHelperManagers = getGxtRenderer()?.registries.internalHelperManagers as
           | WeakMap<object, any>
           | undefined;
         for (const key of Object.keys(scopeVals)) {
