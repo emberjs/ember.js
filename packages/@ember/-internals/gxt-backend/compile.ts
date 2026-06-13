@@ -1087,6 +1087,46 @@ function protectGlobal(name: string, value: unknown): void {
   }
 }
 
+/**
+ * Build the Ember named-args object from a GXT `$_args`-shaped `args` value:
+ * copy every own descriptor whose key is not `args`/`$`-prefixed, merge the
+ * nested `args.args` bag, and alias the gxt-slots symbol bag as `$slots`.
+ *
+ * Extracted from the two byte-identical inline copies in `$_c_ember` (the
+ * `{{#@inner}}` string-component branch and the resolved-curried branch). The
+ * OTHER namedArgs builders in this file are intentionally NOT routed through
+ * here — they handle different input shapes (GXT tagProps arrays, curried-helper
+ * unwrapping, fwProps/class building) and are not behavior-identical.
+ */
+function buildNamedArgs(args: any): any {
+  const namedArgs: any = {};
+  if (args) {
+    for (const key of Object.keys(args)) {
+      if (key === 'args' || key.startsWith('$')) continue;
+      const desc = Object.getOwnPropertyDescriptor(args, key);
+      if (desc) {
+        Object.defineProperty(namedArgs, key, desc);
+      }
+    }
+    const argsObj = args['args'];
+    if (argsObj && typeof argsObj === 'object') {
+      for (const key of Object.keys(argsObj)) {
+        if (!key.startsWith('$')) {
+          const desc = Object.getOwnPropertyDescriptor(argsObj, key);
+          if (desc) {
+            Object.defineProperty(namedArgs, key, desc);
+          }
+        }
+      }
+    }
+    const gxtSlots = args?.[_SLOTS_SYM] || args?.args?.[_SLOTS_SYM];
+    if (gxtSlots && typeof gxtSlots === 'object') {
+      _setInternalProp(namedArgs, '$slots', gxtSlots);
+    }
+  }
+  return namedArgs;
+}
+
 // Set by glimmer-next on its native block wrappers ($_ucw / $_inElement). When
 // present on a ctx, the $_tag root-id re-stamp below must be skipped — the
 // wrapper is already a real TREE-registered node and re-stamping its
@@ -8823,32 +8863,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         if (componentValue && componentValue.__isCurriedComponent) {
           const managers = g.$_MANAGERS;
           if (managers?.component?.canHandle?.(componentValue)) {
-            const $SLOTS = _SLOTS_SYM;
-            const namedArgs: any = {};
-            if (args) {
-              for (const key of Object.keys(args)) {
-                if (key === 'args' || key.startsWith('$')) continue;
-                const desc = Object.getOwnPropertyDescriptor(args, key);
-                if (desc) {
-                  Object.defineProperty(namedArgs, key, desc);
-                }
-              }
-              const argsObj = args['args'];
-              if (argsObj && typeof argsObj === 'object') {
-                for (const key of Object.keys(argsObj)) {
-                  if (!key.startsWith('$')) {
-                    const desc = Object.getOwnPropertyDescriptor(argsObj, key);
-                    if (desc) {
-                      Object.defineProperty(namedArgs, key, desc);
-                    }
-                  }
-                }
-              }
-              const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
-              if (gxtSlots && typeof gxtSlots === 'object') {
-                _setInternalProp(namedArgs, '$slots', gxtSlots);
-              }
-            }
+            const namedArgs = buildNamedArgs(args);
             const handleResult = managers.component.handle(componentValue, namedArgs, null, ctx);
             if (typeof handleResult === 'function') {
               return handleResult();
@@ -9268,33 +9283,8 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         const managers = g.$_MANAGERS;
         if (managers?.component?.canHandle?.(resolved)) {
           const $PROPS = _PROPS_SYM;
-          const $SLOTS = _SLOTS_SYM;
-          const namedArgs: any = {};
+          const namedArgs = buildNamedArgs(args);
           let fw = args?.[$PROPS] || null;
-          if (args) {
-            for (const key of Object.keys(args)) {
-              if (key === 'args' || key.startsWith('$')) continue;
-              const desc = Object.getOwnPropertyDescriptor(args, key);
-              if (desc) {
-                Object.defineProperty(namedArgs, key, desc);
-              }
-            }
-            const argsObj = args['args'];
-            if (argsObj && typeof argsObj === 'object') {
-              for (const key of Object.keys(argsObj)) {
-                if (!key.startsWith('$')) {
-                  const desc = Object.getOwnPropertyDescriptor(argsObj, key);
-                  if (desc) {
-                    Object.defineProperty(namedArgs, key, desc);
-                  }
-                }
-              }
-            }
-            const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
-            if (gxtSlots && typeof gxtSlots === 'object') {
-              _setInternalProp(namedArgs, '$slots', gxtSlots);
-            }
-          }
           const handleResult = managers.component.handle(resolved, namedArgs, fw, ctx);
           if (typeof handleResult === 'function') {
             return handleResult();
