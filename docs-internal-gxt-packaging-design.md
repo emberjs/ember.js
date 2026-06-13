@@ -1,7 +1,7 @@
 # Consumable `ember-source-gxt` — Packaging Design
 
 Design owner: packaging design expert (originally a read-only investigation pass)
-Repo: `/Users/lifeart/Repos/ember.js`  · Branch `gxt-rebase-main`
+Repo: `/Users/lifeart/Repos/ember.js` · Branch `gxt-rebase-main`
 Status: **MVP implemented.** This was the design for the M-item from RFC §5.5
 (blocker matrix row 1); the recommended mechanism (b) has since landed —
 `scripts/build-gxt-package.mjs` assembles the git-ignored `dist-gxt-package/`,
@@ -58,7 +58,7 @@ it without claiming to close it.
 ### 1.1 Classic `ember-source` package shape (root `package.json`, `lib/index.js`)
 
 - `exports`: `"./*"` → `{ development: ./dist/dev/packages/*, production: ./dist/prod/packages/*,
-  default: ./dist/prod/packages/* }`, plus `"./types"` and `"./package.json"`.
+default: ./dist/prod/packages/* }`, plus `"./types"` and `"./package.json"`.
 - `main`: `lib/index.js` — the addon-main, which wraps `@embroider/addon-shim`'s
   `addonV1Shim(...)`. The `autoImportCompat.customizeMeta` hook injects a **hardcoded**
   `implicit-modules` list (classic `@glimmer/*` paths incl. `@glimmer/runtime`, `vm`,
@@ -87,7 +87,7 @@ Ran `EMBER_RENDER_BACKEND=gxt npx rollup --config` (exit 0). It emits the **same
 - The emitted `dist/.../@glimmer/validator/index.js` is the **shim**:
   `import '@lifeart/gxt/glimmer-compatibility'; export { … } from '../../shared-chunks/validator-*.js'; import '@lifeart/gxt';`.
 - `GXT_DROPPED_ENTRIES` removes `@glimmer/{runtime,opcode-compiler,program,wire-format,encoder,
-  vm,util,global-context,node,owner}` from the **entry map** (they are not emitted as their own
+vm,util,global-context,node,owner}` from the **entry map** (they are not emitted as their own
   exposed package entries).
 - The **only** bare specifiers the GXT dist imports are `@lifeart/gxt` and
   `@lifeart/gxt/glimmer-compatibility` — both are real exports of `@lifeart/gxt@0.0.67`
@@ -133,7 +133,7 @@ set, not the classic set — and the assembly must not leave the root `package.j
 `ember-template-compiler/minimal.ts` as a **direct Rollup input** (`esmInputs()`), which bypasses
 the `exposedDependencies()` alias. So even in GXT mode it imports `@glimmer/compiler`
 (`../shared-chunks/compiler-*.js`, `_preprocess`/`precompile`) and emits **Glimmer wire-format**.
-The GXT shim (`gxt-backend/ember-template-compiler.ts`) is only substituted for *internal* bare
+The GXT shim (`gxt-backend/ember-template-compiler.ts`) is only substituted for _internal_ bare
 `ember-template-compiler` imports. **Implication:** the published GXT package's standalone
 template-compiler is NOT GXT-aware — it is the runtime precompile API that produces wire-format.
 This is consistent with (and is part of) the L-item: real GXT template compilation is the Vite
@@ -160,14 +160,14 @@ package must close it (effort S).
 - `smoke-tests/v2-app-template/package.json` declares `"ember-source": "workspace:*"` and uses
   `@embroider/vite`'s `classicEmberSupport()` + `ember()` in `vite.config.mjs`.
 - `smoke-tests/scenarios/scenarios.ts`: `v2AppScenarios = Scenarios.fromProject(() =>
-  Project.fromDir(<v2-app-template>, { linkDevDeps: true })).expand({ embroiderVite })`.
+Project.fromDir(<v2-app-template>, { linkDevDeps: true })).expand({ embroiderVite })`.
   `linkDevDeps: true` links every devDependency (incl. `ember-source` → the repo) into the
   prepared app.
 - `scenario-tester` (via `fixturify-project@7`) exposes
   `project.linkDevDependency(name, LinkParams)` where
   `LinkParams = { baseDir, resolveName?, requestedRange? } | { target, requestedRange? } |
-  { project }`. **`{ target: <abs dir of a real package> }` links that on-disk package under
-  `name`** — i.e. you can link the assembled GXT package dir *as* `ember-source` with zero
+{ project }`. **`{ target: <abs dir of a real package> }` links that on-disk package under
+  `name`** — i.e. you can link the assembled GXT package dir _as_ `ember-source` with zero
   app-code change.
 - `@lifeart/gxt@0.0.67` is installed in the repo root `node_modules` (pnpm), so an assembled
   package placed inside the repo resolves `@lifeart/gxt` by walking up to the repo root.
@@ -215,7 +215,7 @@ Consumed by scenarios/apps via `link:`/`file:` or scenario-tester `{ target: <di
 #### Why NOT (a) — one package, switch via `exports` conditions or env
 
 - **`exports` conditions cannot read env vars.** A custom condition (e.g. `"gxt"`) would force
-  *every* consumer to configure their resolver (`conditions: ['gxt']` in Vite/webpack/node) —
+  _every_ consumer to configure their resolver (`conditions: ['gxt']` in Vite/webpack/node) —
   unacceptable ergonomics and silently wrong if forgotten.
 - Would ship **both** dists (≈ double the already-+28%-raw payload).
 - `renamed-modules`, `implicit-modules`, the `@lifeart/gxt` dependency, and `absolutePaths`
@@ -228,7 +228,7 @@ Consumed by scenarios/apps via `link:`/`file:` or scenario-tester `{ target: <di
 Publishing two npm packages from the same working tree by re-running the build with a name
 override is essentially (b) without the intermediate directory, but it loses the clean-room
 guarantee and makes the two artifacts race over the shared `dist/` and the `package.json`
-`renamed-modules` mutation. (c)'s only real content — *how CI publishes* — is folded into (b)
+`renamed-modules` mutation. (c)'s only real content — _how CI publishes_ — is folded into (b)
 as the publish step (§4 below). Recommend (b); treat the publish flow as (b)'s tail.
 
 ---
@@ -242,21 +242,22 @@ assembly (§4), shown abbreviated here.
 
 ```jsonc
 {
-  "name": "ember-source-gxt",                       // CHANGED
-  "version": "7.1.0-alpha.1",                        // lockstep with ember-source (§10)
+  "name": "ember-source-gxt", // CHANGED
+  "version": "7.1.0-alpha.1", // lockstep with ember-source (§10)
   "description": "Ember built on the GXT rendering backend (preview, outside SemVer).", // CHANGED
   "keywords": ["ember-addon"],
-  "exports": {                                       // identical shape to ember-source
+  "exports": {
+    // identical shape to ember-source
     "./*": {
       "development": "./dist/dev/packages/*",
       "production": "./dist/prod/packages/*",
-      "default": "./dist/prod/packages/*"
+      "default": "./dist/prod/packages/*",
     },
     "./types": { "types": "./types/stable/index.d.ts" },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
   },
   "license": "MIT",
-  "main": "lib/index.js",                            // GXT-patched addon-main (§3.1)
+  "main": "lib/index.js", // GXT-patched addon-main (§3.1)
   "bin": { "ember-cli-gxt": "./scripts/ember-cli-gxt.mjs" },
   "files": [
     "build-metadata.json",
@@ -264,14 +265,14 @@ assembly (§4), shown abbreviated here.
     "dist",
     "docs/data.json",
     "lib",
-    "scripts/ember-cli-gxt.mjs",                     // NEW: bin target must be packed
-    "types/stable"
+    "scripts/ember-cli-gxt.mjs", // NEW: bin target must be packed
+    "types/stable",
   ],
   "repository": { "type": "git", "url": "git+https://github.com/emberjs/ember.js.git" },
 
   "dependencies": {
     // ── identical to ember-source's dependencies, with one hard requirement: ──
-    "@lifeart/gxt": "0.0.67",                        // EXACT pin, lockstep (RFC §10). NEVER a range, NEVER peer.
+    "@lifeart/gxt": "0.0.67", // EXACT pin, lockstep (RFC §10). NEVER a range, NEVER peer.
     "@embroider/addon-shim": "^1.10.2",
     "@babel/core": "^7.24.4",
     "@simple-dom/interface": "^1.4.0",
@@ -289,7 +290,7 @@ assembly (§4), shown abbreviated here.
     "route-recognizer": "^0.3.4",
     "semver": "^7.5.2",
     "silent-error": "^1.1.1",
-    "simple-html-tokenizer": "^0.5.11"               // KEEP: the classic template-compiler entry (§1.5) still uses it
+    "simple-html-tokenizer": "^0.5.11", // KEEP: the classic template-compiler entry (§1.5) still uses it
   },
 
   // KEEP the peer for the MVP; the installer guard in scripts/ember-cli-gxt.mjs blocks
@@ -304,33 +305,33 @@ assembly (§4), shown abbreviated here.
     "after": "ember-cli-legacy-blueprints",
     "type": "addon",
     "version": 2,
-    "backend": "gxt",                                // NEW: self-identification (harmless; read by ember-cli-gxt status)
+    "backend": "gxt", // NEW: self-identification (harmless; read by ember-cli-gxt status)
     "renamed-modules": {
       // … all @ember/* identical to classic …
       // @glimmer/* = GXT set:  DROP runtime/opcode-compiler/program/wire-format/encoder/
       //                        vm/util/global-context/node/owner ;
       //                        ADD  @glimmer/application, @glimmer/utils
-      "@glimmer/application/index.js": "ember-source/@glimmer/application/index.js",   // NEW
+      "@glimmer/application/index.js": "ember-source/@glimmer/application/index.js", // NEW
       "@glimmer/destroyable/index.js": "ember-source/@glimmer/destroyable/index.js",
       "@glimmer/env/index.js": "ember-source/@glimmer/env/index.js",
       "@glimmer/manager/index.js": "ember-source/@glimmer/manager/index.js",
       "@glimmer/reference/index.js": "ember-source/@glimmer/reference/index.js",
       "@glimmer/tracking/index.js": "ember-source/@glimmer/tracking/index.js",
       "@glimmer/tracking/primitives/cache/index.js": "ember-source/@glimmer/tracking/primitives/cache/index.js",
-      "@glimmer/utils/index.js": "ember-source/@glimmer/utils/index.js",               // NEW
-      "@glimmer/validator/index.js": "ember-source/@glimmer/validator/index.js"
+      "@glimmer/utils/index.js": "ember-source/@glimmer/utils/index.js", // NEW
+      "@glimmer/validator/index.js": "ember-source/@glimmer/validator/index.js",
       // … (the @glimmer/runtime, vm, wire-format, … lines are ABSENT) …
-    }
+    },
   },
 
-  "typesVersions": { "*": { "types": ["types/stable"], "types/preview": ["types/preview"] } }
+  "typesVersions": { "*": { "types": ["types/stable"], "types/preview": ["types/preview"] } },
 }
 ```
 
 > Note on the `ember-source/...` prefix inside `renamed-modules`: the `packageMeta()` plugin
 > hardcodes `'ember-source/' + name`. For `ember-source-gxt` this prefix is the **virtual module
 > namespace** ember-auto-import uses; keeping it as `ember-source/...` is the safe choice
-> *unless* the addon is meant to coexist with classic `ember-source` in the same graph (it must
+> _unless_ the addon is meant to coexist with classic `ember-source` in the same graph (it must
 > not — they conflict). The assembly should keep `ember-source/` (matches the addon's own
 > `renamed-modules` self-reference convention). Verify against `@embroider/addon-shim`'s
 > expectations during implementation (open question; default to `ember-source/`).
@@ -349,7 +350,7 @@ Reuse the classic `lib/index.js` (`addonV1Shim`) with two GXT-specific additions
      `broccoli/glimmer-template-compiler.mjs` (which already re-exports `precompile` from
      `ember-template-compiler/minimal.ts`) and point `absolutePaths.templateCompiler` at it.
      Note this is the **classic wire-format** compiler (§1.5) — correct for the classic
-     prebuild's needs, and it is what unblocks the harness for *both* backends.
+     prebuild's needs, and it is what unblocks the harness for _both_ backends.
    - **Minimal:** point at the ESM `dist/prod/packages/ember-template-compiler/index.js`
      **iff** the consuming `ember-cli-htmlbars` version can `require` an ESM file (it generally
      cannot under CJS) — so prefer the CJS bundle.
@@ -430,8 +431,9 @@ function emberSourceGxt(project: Project) {
   });
 }
 export const v2AppScenarios = Scenarios.fromProject(() =>
-  Project.fromDir(dirname(require.resolve('../v2-app-template/package.json')),
-    { linkDevDeps: true })
+  Project.fromDir(dirname(require.resolve('../v2-app-template/package.json')), {
+    linkDevDeps: true,
+  })
 ).expand({ embroiderVite, emberSourceGxt }); // emberSourceGxt = GXT variant
 ```
 
@@ -483,16 +485,16 @@ template toolchain, FastBoot, Inspector, engines.
 
 ## 6. Step-by-step implementation plan (execute verbatim)
 
-| # | Step | Effort | Notes |
-|---|------|--------|-------|
-| 1 | Add `dist-gxt-package/` to `.gitignore`. | S (mins) | trivial |
-| 2 | Write `scripts/build-gxt-package.mjs` per §4 (clean → GXT build → capture GXT `renamed-modules` → assemble dir → restore root `package.json` → self-verify). | M (1–2 d) | The `package.json` snapshot/restore around the `packageMeta()` mutation (§1.4) is the subtle part. The §1.3 `rm -rf dist` and the no-stale-`@glimmer/runtime` assertion are non-negotiable. |
-| 3 | Build the CJS `dist/ember-template-compiler.js` from `broccoli/glimmer-template-compiler.mjs`; wire `absolutePaths.templateCompiler` into the GXT `lib/index.js` (§3.1). | S–M (0.5–1 d) | Closes the S-item. Verify an actual `ember-cli-htmlbars@7` `require()` of the emitted CJS file succeeds (CJS, not ESM). |
-| 4 | Regenerate the GXT addon-main `implicit-modules` from the built dist (§3.1 item 1). | S (0.5 d) | Mechanical; reuse the drop/add delta from `renamed-modules`. |
-| 5 | Add the `emberSourceGxt` scenario variant (§5) and a `gxt-consumable-test.ts` implementing Tier-1 assertions 1–5. | M (1–2 d) | Mirror `basic-test.ts` structure. Run via `scenario-tester` + qunit. |
-| 6 | (Optional/stretch) Tier-2 runtime smoke via the in-repo GXT Vite pipeline pointed at `dist-gxt-package`. | M (1–2 d) | Reuse the existing GXT Playwright harness (memory: `project_gxt_benchmark_vehicle`). |
-| 7 | Write `dist-gxt-package`'s README "supported / unsupported" matrix (§5) and update RFC §5.5 row-1 status from M-BROKEN → "MVP packaging landed; L-item still open". | S (0.5 d) | Honesty requirement. |
-| 8 | CI: add a `build:gxt-package` job mirroring `gxt-dual-build.yml`; run the contract tests (RFC §10) first; upload the `npm pack` tarball artifact. | M (1–2 d) | Publish remains gated behind RFC §9 exit criteria; this only builds+packs. |
+| #   | Step                                                                                                                                                                     | Effort        | Notes                                                                                                                                                                                       |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Add `dist-gxt-package/` to `.gitignore`.                                                                                                                                 | S (mins)      | trivial                                                                                                                                                                                     |
+| 2   | Write `scripts/build-gxt-package.mjs` per §4 (clean → GXT build → capture GXT `renamed-modules` → assemble dir → restore root `package.json` → self-verify).             | M (1–2 d)     | The `package.json` snapshot/restore around the `packageMeta()` mutation (§1.4) is the subtle part. The §1.3 `rm -rf dist` and the no-stale-`@glimmer/runtime` assertion are non-negotiable. |
+| 3   | Build the CJS `dist/ember-template-compiler.js` from `broccoli/glimmer-template-compiler.mjs`; wire `absolutePaths.templateCompiler` into the GXT `lib/index.js` (§3.1). | S–M (0.5–1 d) | Closes the S-item. Verify an actual `ember-cli-htmlbars@7` `require()` of the emitted CJS file succeeds (CJS, not ESM).                                                                     |
+| 4   | Regenerate the GXT addon-main `implicit-modules` from the built dist (§3.1 item 1).                                                                                      | S (0.5 d)     | Mechanical; reuse the drop/add delta from `renamed-modules`.                                                                                                                                |
+| 5   | Add the `emberSourceGxt` scenario variant (§5) and a `gxt-consumable-test.ts` implementing Tier-1 assertions 1–5.                                                        | M (1–2 d)     | Mirror `basic-test.ts` structure. Run via `scenario-tester` + qunit.                                                                                                                        |
+| 6   | (Optional/stretch) Tier-2 runtime smoke via the in-repo GXT Vite pipeline pointed at `dist-gxt-package`.                                                                 | M (1–2 d)     | Reuse the existing GXT Playwright harness (memory: `project_gxt_benchmark_vehicle`).                                                                                                        |
+| 7   | Write `dist-gxt-package`'s README "supported / unsupported" matrix (§5) and update RFC §5.5 row-1 status from M-BROKEN → "MVP packaging landed; L-item still open".      | S (0.5 d)     | Honesty requirement.                                                                                                                                                                        |
+| 8   | CI: add a `build:gxt-package` job mirroring `gxt-dual-build.yml`; run the contract tests (RFC §10) first; upload the `npm pack` tarball artifact.                        | M (1–2 d)     | Publish remains gated behind RFC §9 exit criteria; this only builds+packs.                                                                                                                  |
 
 **Total MVP (steps 1–5,7): ~M (≈4–6 engineering-days).** Steps 6 and 8 are follow-ons.
 
@@ -501,23 +503,23 @@ template toolchain, FastBoot, Inspector, engines.
 - Run the assembly; diff the assembled `package.json` against §3 (zero unexpected deltas).
 - Run the Tier-1 scenario test end-to-end (real `prepare()` + install, not a unit stub).
 - Confirm the root `package.json` is unmodified after the assembly (`git diff --quiet
-  package.json`).
+package.json`).
 - Confirm no `@glimmer/runtime` VM file in the assembled package.
 
 ---
 
 ## 7. Risk register
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| **Stale classic VM leaks into the GXT package** (§1.3) → forked `Tag`/`createTag` symbols, subtle reactivity corruption. | High if not handled | Critical | `rm -rf dist` before build (step 2) + the no-stale-`@glimmer/runtime` self-verify assertion (§4.8). This is the single most important guard. |
-| **Assembly leaves root `package.json` mutated** (§1.4 `packageMeta()`). | High if not handled | Med (dirty tree, bad commits) | Snapshot + restore in the script; CI `git diff --quiet package.json` gate. |
-| **`absolutePaths` CJS-vs-ESM mismatch** — `ember-cli-htmlbars` `require()`s the compiler; an ESM target fails under CJS. | Med | Med | Emit a CJS/UMD `dist/ember-template-compiler.js`; test an actual `require()` in step 3. |
-| **`@lifeart/gxt` version drift** between the package pin and what's installed (root is pinned to `0.0.67`; the pin has moved across the 0.0.6x line during development). | Med | Med | Single source of truth: the assembly copies the *exact* installed/declared version; lockstep release policy (RFC §10); contract tests first in CI. |
-| **`renamed-modules` `ember-source/` prefix** may be wrong for a distinctly-named addon coexisting with classic. | Low (they must not coexist) | Med | Default to `ember-source/`; verify against `@embroider/addon-shim` resolution during step 2; document "do not install alongside classic ember-source." |
-| **L-item mistaken for a packaging bug** — reviewers see the v2 `vite build` fail at template-compile and think the package is broken. | Med | Low (process) | Tier-1 assertion is scoped to "prebuild stage passes"; README + RFC explicitly mark the compile stage unsupported (steps 5,7). |
-| **`@glimmer/component` fork** if a consumer imports it directly alongside the GXT package (RFC §6). | Med | High (if hit) | Keep the existing `ember-cli-gxt enable` installer guard; document the `@glimmer/component-gxt` swap as the §6 follow-up (out of this MVP). |
-| **`types/stable` declarations point at `@glimmer/validator` types, not the shim** (RFC §5.4). | Med | Low for MVP runtime | Copy `types/stable` as-is for MVP (runtime-only acceptance); flag declaration accuracy as a separate §5.4 item. |
+| Risk                                                                                                                                                                     | Likelihood                  | Impact                        | Mitigation                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Stale classic VM leaks into the GXT package** (§1.3) → forked `Tag`/`createTag` symbols, subtle reactivity corruption.                                                 | High if not handled         | Critical                      | `rm -rf dist` before build (step 2) + the no-stale-`@glimmer/runtime` self-verify assertion (§4.8). This is the single most important guard.           |
+| **Assembly leaves root `package.json` mutated** (§1.4 `packageMeta()`).                                                                                                  | High if not handled         | Med (dirty tree, bad commits) | Snapshot + restore in the script; CI `git diff --quiet package.json` gate.                                                                             |
+| **`absolutePaths` CJS-vs-ESM mismatch** — `ember-cli-htmlbars` `require()`s the compiler; an ESM target fails under CJS.                                                 | Med                         | Med                           | Emit a CJS/UMD `dist/ember-template-compiler.js`; test an actual `require()` in step 3.                                                                |
+| **`@lifeart/gxt` version drift** between the package pin and what's installed (root is pinned to `0.0.67`; the pin has moved across the 0.0.6x line during development). | Med                         | Med                           | Single source of truth: the assembly copies the _exact_ installed/declared version; lockstep release policy (RFC §10); contract tests first in CI.     |
+| **`renamed-modules` `ember-source/` prefix** may be wrong for a distinctly-named addon coexisting with classic.                                                          | Low (they must not coexist) | Med                           | Default to `ember-source/`; verify against `@embroider/addon-shim` resolution during step 2; document "do not install alongside classic ember-source." |
+| **L-item mistaken for a packaging bug** — reviewers see the v2 `vite build` fail at template-compile and think the package is broken.                                    | Med                         | Low (process)                 | Tier-1 assertion is scoped to "prebuild stage passes"; README + RFC explicitly mark the compile stage unsupported (steps 5,7).                         |
+| **`@glimmer/component` fork** if a consumer imports it directly alongside the GXT package (RFC §6).                                                                      | Med                         | High (if hit)                 | Keep the existing `ember-cli-gxt enable` installer guard; document the `@glimmer/component-gxt` swap as the §6 follow-up (out of this MVP).            |
+| **`types/stable` declarations point at `@glimmer/validator` types, not the shim** (RFC §5.4).                                                                            | Med                         | Low for MVP runtime           | Copy `types/stable` as-is for MVP (runtime-only acceptance); flag declaration accuracy as a separate §5.4 item.                                        |
 
 ---
 
