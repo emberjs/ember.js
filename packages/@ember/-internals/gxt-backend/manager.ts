@@ -673,13 +673,22 @@ function _installHelperRecomputeBridge(instance: any): void {
 // drain at the end of the synchronous module-init phase, well before any
 // render fires a push. The hook install is idempotent (the bridge call sets a
 // closure-local `let` in compile.ts; calling it twice is benign).
-queueMicrotask(() => {
-  try {
-    getGxtRenderer()?.compilePipeline.setHelperInstancePushHook?.(_installHelperRecomputeBridge);
-  } catch {
-    /* ignore — best-effort */
-  }
-});
+//
+// CLASSIC-ONLY (gated): the recompute bridge exists solely to power classic
+// `@ember/component/helper` (Ember.Helper subclasses with `this.recompute()` /
+// the Glimmer RECOMPUTE_TAG). Native GXT helpers are functions / helper-manager
+// based and never recompute() this way. Gating the registration behind
+// __GXT_CLASSIC_COMPONENTS__ makes `_installHelperRecomputeBridge` unreferenced
+// in a native build, so rollup tree-shakes the whole ~136-line function away.
+if (__GXT_CLASSIC_COMPONENTS__) {
+  queueMicrotask(() => {
+    try {
+      getGxtRenderer()?.compilePipeline.setHelperInstancePushHook?.(_installHelperRecomputeBridge);
+    } catch {
+      /* ignore — best-effort */
+    }
+  });
+}
 
 // =============================================================================
 // Global Registries
