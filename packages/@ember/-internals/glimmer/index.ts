@@ -510,7 +510,7 @@ import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 function template(spec: unknown): ReturnType<typeof _templateFactory> {
   if (spec && typeof spec === 'object') {
     const anySpec = spec as Record<string, unknown>;
-    if (anySpec['__gxtTemplate'] === true) {
+    if (__GXT_MODE__ && anySpec['__gxtTemplate'] === true) {
       const cp = getGxtRenderer()?.compilePipeline;
       const gxtCompile = cp?.compileTemplate;
       const instrument = cp?.instrumentFactory;

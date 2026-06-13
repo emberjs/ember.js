@@ -151,53 +151,58 @@ export default class OutletView {
 
     // GXT mode: directly mutate the raw OutletState (this.ref IS that state in
     // GXT mode — see constructor) and drive re-render through GXT's outlet
-    // chain.
-    (this.ref as any).outlets['main'] = state;
+    // chain. Wrapped in `if (__GXT_MODE__)` so the GXT-only bridge calls below
+    // (setCurrentOutletState / getActiveOutletElements / getGxtRenderer)
+    // tree-shake out of the classic bundle (this block is unreachable in
+    // classic anyway thanks to the early return above).
+    if (__GXT_MODE__) {
+      (this.ref as any).outlets['main'] = state;
 
-    // Update the bridge outlet state so <ember-outlet> elements can access it
-    setCurrentOutletState(this.ref);
+      // Update the bridge outlet state so <ember-outlet> elements can access it
+      setCurrentOutletState(this.ref);
 
-    // In GXT mode, trigger re-render of the root outlet content first.
-    // The root render function handles the top-level route (the one that
-    // root.ts renders directly, skipping the -outlet template).
-    {
-      // Slice-113 (Cluster B): routed through
-      // `compilePipeline.getRootOutletRerender?.() ?? null` — the `?? null`
-      // fallback matches the pre-slice-113 `(globalThis as any)
-      // .__gxtRootOutletRerender` `undefined` semantics which the
-      // `typeof === 'function'` guard treated as falsy. See
-      // `getRootOutletRerender` doc in gxt-bridge.ts.
-      const rootRenderFn = getGxtRenderer()?.compilePipeline.getRootOutletRerender?.() ?? null;
-      if (typeof rootRenderFn === 'function') {
-        // Snapshot active outlets BEFORE the root re-render. The root re-render
-        // may create new <ember-outlet> elements (via innerHTML='' + renderOutletState).
-        // We only want to notify PRE-EXISTING outlets about the state change —
-        // newly created outlets already render via connectedCallback.
-        const preExistingOutlets = new Set(getActiveOutletElements());
+      // In GXT mode, trigger re-render of the root outlet content first.
+      // The root render function handles the top-level route (the one that
+      // root.ts renders directly, skipping the -outlet template).
+      {
+        // Slice-113 (Cluster B): routed through
+        // `compilePipeline.getRootOutletRerender?.() ?? null` — the `?? null`
+        // fallback matches the pre-slice-113 `(globalThis as any)
+        // .__gxtRootOutletRerender` `undefined` semantics which the
+        // `typeof === 'function'` guard treated as falsy. See
+        // `getRootOutletRerender` doc in gxt-bridge.ts.
+        const rootRenderFn = getGxtRenderer()?.compilePipeline.getRootOutletRerender?.() ?? null;
+        if (typeof rootRenderFn === 'function') {
+          // Snapshot active outlets BEFORE the root re-render. The root re-render
+          // may create new <ember-outlet> elements (via innerHTML='' + renderOutletState).
+          // We only want to notify PRE-EXISTING outlets about the state change —
+          // newly created outlets already render via connectedCallback.
+          const preExistingOutlets = new Set(getActiveOutletElements());
 
-        rootRenderFn(this.ref);
+          rootRenderFn(this.ref);
 
-        // After the root re-render, notify pre-existing outlet elements about
-        // nested state changes (e.g., engine-internal route transitions where
-        // the outlet element stays in the DOM but nested content changes).
-        {
-          const currentOutlets = getActiveOutletElements();
-          for (const outlet of preExistingOutlets as Iterable<any>) {
-            // Only notify outlets that survived the root re-render (still in DOM)
-            if (currentOutlets.has(outlet) && typeof outlet.updateOutletState === 'function') {
-              outlet.updateOutletState(this.ref);
+          // After the root re-render, notify pre-existing outlet elements about
+          // nested state changes (e.g., engine-internal route transitions where
+          // the outlet element stays in the DOM but nested content changes).
+          {
+            const currentOutlets = getActiveOutletElements();
+            for (const outlet of preExistingOutlets as Iterable<any>) {
+              // Only notify outlets that survived the root re-render (still in DOM)
+              if (currentOutlets.has(outlet) && typeof outlet.updateOutletState === 'function') {
+                outlet.updateOutletState(this.ref);
+              }
             }
           }
+          return;
         }
-        return;
       }
-    }
 
-    // Fallback: Notify active outlet elements about the state change
-    {
-      for (const outlet of getActiveOutletElements()) {
-        if (typeof outlet.updateOutletState === 'function') {
-          outlet.updateOutletState(this.ref);
+      // Fallback: Notify active outlet elements about the state change
+      {
+        for (const outlet of getActiveOutletElements()) {
+          if (typeof outlet.updateOutletState === 'function') {
+            outlet.updateOutletState(this.ref);
+          }
         }
       }
     }

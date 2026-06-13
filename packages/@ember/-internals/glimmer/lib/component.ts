@@ -1053,7 +1053,9 @@ class Component<S = unknown>
     // semantics). The pre-slice-109 globalThis reader
     // `const forceRerender = (globalThis as any).__gxtForceRerender;`
     // is retired. See `forceRerender` doc in gxt-bridge.ts.
-    getGxtRenderer()?.compilePipeline.forceRerender?.(this);
+    if (__GXT_MODE__) {
+      getGxtRenderer()?.compilePipeline.forceRerender?.(this);
+    }
     this._superRerender();
   }
 

@@ -47,22 +47,32 @@ import {
 // runtime out of the classic bundle and prevents any @lifeart/gxt module-load
 // side effects from running in classic-mode contexts.
 function _gxtLib(): any {
-  return getGxtRenderer()?.gxtLib;
+  // GXT-only. Body gated on the literal `__GXT_MODE__` so the `getGxtRenderer`
+  // reference (and thus the whole gxt-bridge module) tree-shakes out of the
+  // unminified classic dist — rollup folds `if (false)` to nothing but does NOT
+  // drop the unreferenced declaration of this cyclic helper cluster.
+  if (__GXT_MODE__) {
+    return getGxtRenderer()?.gxtLib;
+  }
 }
 
 // Cached GXT DOM API for destroyElementSync
 let gxtDomApi: any = null;
 
 function getGxtDomApi() {
-  if (!gxtDomApi) {
-    gxtDomApi = new (_gxtLib().HTMLBrowserDOMApi)(document);
+  if (__GXT_MODE__) {
+    if (!gxtDomApi) {
+      gxtDomApi = new (_gxtLib().HTMLBrowserDOMApi)(document);
+    }
+    return gxtDomApi;
   }
-  return gxtDomApi;
 }
 
 // Wrapper that provides the GXT DOM API
 function destroyElementSync(component: any, skipDom = false) {
-  _gxtLib().destroyElementSync(component, skipDom, getGxtDomApi());
+  if (__GXT_MODE__) {
+    _gxtLib().destroyElementSync(component, skipDom, getGxtDomApi());
+  }
 }
 
 // Cached GXT root context for the document
@@ -70,27 +80,29 @@ let gxtRootContext: any = null;
 
 // Ensure GXT context is initialized before any GXT rendering
 function ensureGxtContext() {
-  const lib = _gxtLib();
-  if (!gxtRootContext) {
-    gxtRootContext = lib.createRoot(document);
-    // CRITICAL: Provide the rendering context with DOM API
-    // This sets fastRenderingContext which is checked first by initDOM
-    const domApi = getGxtDomApi();
-    lib.provideContext(gxtRootContext, lib.RENDERING_CONTEXT, domApi);
-    // Publish to compile.ts's canonical state so it can reuse the same root
-    // context instead of creating new roots that pollute the shared context
-    // chain. Slice-119 (Cluster B): canonical state lives in compile.ts as
-    // the module-local `_gxtRootContext`; routed through
-    // `compilePipeline.setRootContext` (pre-slice-119 this was a direct
-    // `(globalThis as any).__gxtRootContext = gxtRootContext` write).
-    getGxtRenderer()?.compilePipeline.setRootContext?.(gxtRootContext);
+  if (__GXT_MODE__) {
+    const lib = _gxtLib();
+    if (!gxtRootContext) {
+      gxtRootContext = lib.createRoot(document);
+      // CRITICAL: Provide the rendering context with DOM API
+      // This sets fastRenderingContext which is checked first by initDOM
+      const domApi = getGxtDomApi();
+      lib.provideContext(gxtRootContext, lib.RENDERING_CONTEXT, domApi);
+      // Publish to compile.ts's canonical state so it can reuse the same root
+      // context instead of creating new roots that pollute the shared context
+      // chain. Slice-119 (Cluster B): canonical state lives in compile.ts as
+      // the module-local `_gxtRootContext`; routed through
+      // `compilePipeline.setRootContext` (pre-slice-119 this was a direct
+      // `(globalThis as any).__gxtRootContext = gxtRootContext` write).
+      getGxtRenderer()?.compilePipeline.setRootContext?.(gxtRootContext);
+    }
+    // Always ensure context is set before rendering
+    const currentContext = lib.getParentContext();
+    if (!currentContext) {
+      lib.setParentContext(gxtRootContext);
+    }
+    return gxtRootContext;
   }
-  // Always ensure context is set before rendering
-  const currentContext = lib.getParentContext();
-  if (!currentContext) {
-    lib.setParentContext(gxtRootContext);
-  }
-  return gxtRootContext;
 }
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
@@ -355,29 +367,31 @@ function _registerArrayProxyOwner(proxy: any, ownerObj: object, ownerKey: string
 // hook through the bridge if it's available.
 let _triggerReRenderHostHookInstalled = false;
 function _ensureTriggerReRenderPatched() {
-  if (_triggerReRenderHostHookInstalled) return;
-  const cp = getGxtRenderer()?.compilePipeline;
-  if (!cp || typeof cp.addAfterTriggerReRender !== 'function') return;
-  const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
-  if (!_cellFor) return;
-  _triggerReRenderHostHookInstalled = true;
-  cp.addAfterTriggerReRender(function (obj: object, keyName: string) {
-    // If this is a '[]' or 'length' notification on a native array that is
-    // the content of an ArrayProxy, dirty the component cell with the proxy.
-    if ((keyName === '[]' || keyName === 'length') && Array.isArray(obj)) {
-      const owners = _proxyContentOwners.get(obj);
-      if (owners) {
-        for (const { proxy, obj: ownerObj, key: ownerKey } of owners) {
-          try {
-            const c = _cellFor(ownerObj, ownerKey, /* skipDefine */ true);
-            if (c) c.update(proxy); // Update with proxy, not content array
-          } catch {
-            /* ignore */
+  if (__GXT_MODE__) {
+    if (_triggerReRenderHostHookInstalled) return;
+    const cp = getGxtRenderer()?.compilePipeline;
+    if (!cp || typeof cp.addAfterTriggerReRender !== 'function') return;
+    const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
+    if (!_cellFor) return;
+    _triggerReRenderHostHookInstalled = true;
+    cp.addAfterTriggerReRender(function (obj: object, keyName: string) {
+      // If this is a '[]' or 'length' notification on a native array that is
+      // the content of an ArrayProxy, dirty the component cell with the proxy.
+      if ((keyName === '[]' || keyName === 'length') && Array.isArray(obj)) {
+        const owners = _proxyContentOwners.get(obj);
+        if (owners) {
+          for (const { proxy, obj: ownerObj, key: ownerKey } of owners) {
+            try {
+              const c = _cellFor(ownerObj, ownerKey, /* skipDefine */ true);
+              if (c) c.update(proxy); // Update with proxy, not content array
+            } catch {
+              /* ignore */
+            }
           }
         }
       }
-    }
-  });
+    });
+  }
 }
 
 class ClassicRootState {
@@ -444,8 +458,12 @@ class ClassicRootState {
       _gxtRenderDepth = depth + 1;
       try {
         this.gxtRenderIncomplete = false;
-        // Set the ambient owner for GXT manager system to access
-        setAmbientOwner(owner);
+        // Set the ambient owner for GXT manager system to access (GXT-only —
+        // classic Glimmer threads the owner through dynamicScope, so the bridge
+        // write is dead in the classic bundle).
+        if (__GXT_MODE__) {
+          setAmbientOwner(owner);
+        }
 
         // Check if this is a gxt template BEFORE unwrapping.
         // Gate on __GXT_MODE__: the root outlet template is always tagged
@@ -460,7 +478,7 @@ class ClassicRootState {
 
         let layout = unwrapTemplate(template).asLayout();
 
-        if (templateIsGxt) {
+        if (__GXT_MODE__ && templateIsGxt) {
           // Mark this root as using GXT templates (for forced re-render)
           this.isGxt = true;
 
@@ -1303,9 +1321,11 @@ function _gxtForceEmberRerender(): void {
 // `manager.ts:602` route through
 // `getGxtRenderer()?.compilePipeline.forceEmberRerender?.()`. See
 // `forceEmberRerender` doc in gxt-bridge.ts. Net -1 globalThis slot.
-installCompilePipelinePart({
-  forceEmberRerender: _gxtForceEmberRerender,
-});
+if (__GXT_MODE__) {
+  installCompilePipelinePart({
+    forceEmberRerender: _gxtForceEmberRerender,
+  });
+}
 
 // Check if the given object is a GXT root-component's `root` (i.e., a
 // component that owns a top-level renderer state). Used by compile.ts's
@@ -1372,10 +1392,12 @@ function _gxtUpdateRootTagValues(): void {
 // `@ember/-internals/gxt-backend/compile.ts`). The install is direction-
 // agnostic — see gxt-bridge.ts `GxtRootComponentCapabilities` for the design
 // note on "reverse-flow".
-installRootComponentPart({
-  isRootComponent: _gxtIsRootComponent,
-  updateRootTagValues: _gxtUpdateRootTagValues,
-});
+if (__GXT_MODE__) {
+  installRootComponentPart({
+    isRootComponent: _gxtIsRootComponent,
+    updateRootTagValues: _gxtUpdateRootTagValues,
+  });
+}
 
 // Slice-124 (Cluster B): canonical state for the `__emberRenderPassId`
 // counter. Pre-slice-124 this was the globalThis slot
@@ -1399,10 +1421,12 @@ function _getEmberRenderPassId(): number {
 function _incrementEmberRenderPassId(): void {
   _emberRenderPassId = _emberRenderPassId + 1;
 }
-installViewUtilsPart({
-  getRenderPassId: _getEmberRenderPassId,
-  incrementRenderPassId: _incrementEmberRenderPassId,
-});
+if (__GXT_MODE__) {
+  installViewUtilsPart({
+    getRenderPassId: _getEmberRenderPassId,
+    incrementRenderPassId: _incrementEmberRenderPassId,
+  });
+}
 
 // (Cluster B slice 9 orphan cleanup) The pre-slice `(globalThis as any)
 // .__gxtCheckAllTagsCurrent` writer had ZERO live readers in source — the

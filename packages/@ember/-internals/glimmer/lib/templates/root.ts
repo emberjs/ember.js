@@ -67,49 +67,51 @@ let _gxtInControllerRerender = false;
 // been torn down, etc.). The re-entrancy guard prevents infinite
 // recursion when the rerender's own internal `set()` cascades fire this
 // hook a second time on the same controller.
-setControllerOutletRerender(function (controller: object, keyName?: string): void {
-  if (_gxtInControllerRerender) return;
-  if (!controller || typeof controller !== 'object') return;
-  const outletRef = _gxtControllerToOutletRefMap.get(controller);
-  if (!outletRef) return;
-  const rerender = _gxtRootOutletRerenderMap.get(outletRef);
-  if (typeof rerender !== 'function') return;
-  // Take the cell-only fast path for ALL controller-property writes rather
-  // than a full (innerHTML='' + renderOutletState) re-render. The fast path
-  // covers each write kind:
-  //
-  // - route-MODEL identity swap (`set(controller,'model',newModel)` from
-  //   `setupController` on a dynamic-segment transition): the cell-only fast
-  //   path re-evaluates `{{@model.…}}` bindings (leaf-owner re-registration)
-  //   WITHOUT destroying the route template's components. A full re-render
-  //   would re-instantiate those components and fire `didInsertElement` again,
-  //   breaking the "view should have inserted only once" invariant (Route -
-  //   template rendering :: model-change).
-  // - QP-tracked / other controller properties: `set(controller, qpKey,
-  //   value)`'s cell was ALREADY updated by SyncCore's
-  //   `__gxtComponentContexts` fan-out before this hook fires. The cell-only
-  //   fast path then sets outletState + `syncDomNow()`, which flushes the
-  //   subscribed text-binding effects so `{{this.qp}}` updates in-place. The
-  //   changed key is forwarded so the fast path can refresh that key's
-  //   renderContext cell directly.
-  // - interior model mutation (`set(model, 'color', 'blue')`, keyName
-  //   undefined): handled by the cell-only path's `modelInteriorChanged`
-  //   detection + leaf-owner re-registration.
-  const _cellOnly = true;
-  _gxtInControllerRerender = true;
-  try {
-    // Cell-only fast path; the changed key is forwarded so its renderContext
-    // cell is refreshed before syncDomNow().
-    rerender(outletRef, /* forceFull */ !_cellOnly, keyName);
-  } catch (e) {
-    // Surface via warn rather than swallowing. Rerender failures shouldn't
-    // break the set() that triggered them; the next legitimate
-    // setOutletState will retry.
-    console.warn('[gxt] controller-outlet-rerender failed', e);
-  } finally {
-    _gxtInControllerRerender = false;
-  }
-});
+if (__GXT_MODE__) {
+  setControllerOutletRerender(function (controller: object, keyName?: string): void {
+    if (_gxtInControllerRerender) return;
+    if (!controller || typeof controller !== 'object') return;
+    const outletRef = _gxtControllerToOutletRefMap.get(controller);
+    if (!outletRef) return;
+    const rerender = _gxtRootOutletRerenderMap.get(outletRef);
+    if (typeof rerender !== 'function') return;
+    // Take the cell-only fast path for ALL controller-property writes rather
+    // than a full (innerHTML='' + renderOutletState) re-render. The fast path
+    // covers each write kind:
+    //
+    // - route-MODEL identity swap (`set(controller,'model',newModel)` from
+    //   `setupController` on a dynamic-segment transition): the cell-only fast
+    //   path re-evaluates `{{@model.…}}` bindings (leaf-owner re-registration)
+    //   WITHOUT destroying the route template's components. A full re-render
+    //   would re-instantiate those components and fire `didInsertElement` again,
+    //   breaking the "view should have inserted only once" invariant (Route -
+    //   template rendering :: model-change).
+    // - QP-tracked / other controller properties: `set(controller, qpKey,
+    //   value)`'s cell was ALREADY updated by SyncCore's
+    //   `__gxtComponentContexts` fan-out before this hook fires. The cell-only
+    //   fast path then sets outletState + `syncDomNow()`, which flushes the
+    //   subscribed text-binding effects so `{{this.qp}}` updates in-place. The
+    //   changed key is forwarded so the fast path can refresh that key's
+    //   renderContext cell directly.
+    // - interior model mutation (`set(model, 'color', 'blue')`, keyName
+    //   undefined): handled by the cell-only path's `modelInteriorChanged`
+    //   detection + leaf-owner re-registration.
+    const _cellOnly = true;
+    _gxtInControllerRerender = true;
+    try {
+      // Cell-only fast path; the changed key is forwarded so its renderContext
+      // cell is refreshed before syncDomNow().
+      rerender(outletRef, /* forceFull */ !_cellOnly, keyName);
+    } catch (e) {
+      // Surface via warn rather than swallowing. Rerender failures shouldn't
+      // break the set() that triggered them; the next legitimate
+      // setOutletState will retry.
+      console.warn('[gxt] controller-outlet-rerender failed', e);
+    } finally {
+      _gxtInControllerRerender = false;
+    }
+  });
+}
 
 function ensureGxtContext() {
   const lib = _gxtLib();

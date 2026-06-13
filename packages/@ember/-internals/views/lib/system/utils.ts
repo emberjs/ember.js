@@ -49,10 +49,12 @@ export function getRootViews(owner: InternalOwner): View[] {
   // dispatches the `afterRebuildViewTreeFromDom` host hook contributed by
   // compile.ts after the main rebuild body — replacing the pre-slice-11
   // `_wrapGxtRebuildViewTree` wrap-by-reassignment.
-  try {
-    getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
-  } catch {
-    /* ignore */
+  if (__GXT_MODE__) {
+    try {
+      getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
+    } catch {
+      /* ignore */
+    }
   }
 
   let rootViews: View[] = [];
@@ -138,10 +140,12 @@ export function getChildViews(view: View): View[] {
   // the rebuild which registry the caller will read.
   // Slice-11 (Cluster B) — typed bridge call via `viewUtils.rebuildViewTreeFromDom`.
   // Was `(globalThis as any).__gxtRebuildViewTreeFromDom`.
-  try {
-    getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
-  } catch {
-    /* ignore */
+  if (__GXT_MODE__) {
+    try {
+      getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
+    } catch {
+      /* ignore */
+    }
   }
 
   return collectChildViews(view, registry);
