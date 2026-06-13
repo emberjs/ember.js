@@ -3,6 +3,7 @@
 // would resolve to the real VM source in GXT builds (scripts/gxt-alias-map.mjs).
 // eslint-disable-next-line ember-local/no-barrel-imports
 import { getComponentTemplate } from '@glimmer/manager';
+import { DEBUG } from '@glimmer/env';
 // Classic-build template compiler (build-time macro in classic pipelines; the
 // GXT-aliased shim in GXT mode, where the call site below is dead-branched).
 import { precompileTemplate } from '@ember/template-compilation';
@@ -408,8 +409,12 @@ function renderTemplateWithContext(tpl: any, target: Element, ctx: any, owner: a
   }
 }
 
-// Debug flag for template lookup
-const DEBUG_TEMPLATE_LOOKUP = (globalThis as any).__DEBUG_GXT_RENDER || false;
+// Debug flag for template lookup. `DEBUG &&` makes the whole expression fold to
+// a literal `false` in production rollup builds (DEBUG is the inlined build-time
+// macro), so rollup propagates the const and dead-strips every
+// `if (DEBUG_TEMPLATE_LOOKUP) …` diagnostic block out of the GXT prod dist.
+// In dev the runtime `__DEBUG_GXT_RENDER` toggle still works.
+const DEBUG_TEMPLATE_LOOKUP = DEBUG && ((globalThis as any).__DEBUG_GXT_RENDER || false);
 
 // Helper to get component's template
 function getTemplateForComponent(component: any, owner: any): any {

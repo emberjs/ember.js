@@ -533,7 +533,7 @@ class ClassicRootState {
             let renderContext;
 
             // Debug: log what root looks like
-            if ((globalThis as any).__DEBUG_GXT_RENDER) {
+            if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
               console.log('[ClassicRootState] root type:', root?.constructor?.name || typeof root);
               console.log(
                 '[ClassicRootState] root instanceof OutletView:',
@@ -665,7 +665,7 @@ class ClassicRootState {
                     /* ignore */
                   }
                 }
-                if (cellCount > 0 && (globalThis as any).__DEBUG_GXT_RENDER) {
+                if (DEBUG && cellCount > 0 && (globalThis as any).__DEBUG_GXT_RENDER) {
                   console.log('[RENDERER-CELL] Installed', cellCount, 'cells');
                 }
               }
@@ -2857,7 +2857,7 @@ export class Renderer extends BaseRenderer {
 
   appendOutletView(view: OutletView, target: SimpleElement): void {
     // Debug: log that appendOutletView was called
-    if ((globalThis as any).__DEBUG_GXT_RENDER) {
+    if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
       console.log('[Renderer.appendOutletView] called');
     }
 
@@ -2910,7 +2910,7 @@ export class Renderer extends BaseRenderer {
 
   appendTo(view: ClassicComponent, target: SimpleElement): void {
     // Debug: log that appendTo was called
-    if ((globalThis as any).__DEBUG_GXT_RENDER) {
+    if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
       console.log(
         '[Renderer.appendTo] called with view type:',
         view?.constructor?.name || typeof view

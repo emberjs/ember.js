@@ -22,6 +22,7 @@ import {
 // Classic-build template compiler (build-time macro in classic pipelines; the
 // GXT-aliased shim in GXT mode, where the call site below is dead-branched).
 import { precompileTemplate } from '@ember/template-compilation';
+import { DEBUG } from '@glimmer/env';
 import { outletHelper } from '../syntax/outlet';
 
 // SSR/Node-safety: a module-scope `class ... extends HTMLElement` evaluates
@@ -72,7 +73,7 @@ if (__GXT_MODE__) {
             // gxt-bridge.ts — the retired __currentOutletState slot)
             this._outletState = getCurrentOutletState();
 
-            if ((globalThis as any).__DEBUG_GXT_RENDER) {
+            if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
               console.log(
                 '[ember-outlet] connectedCallback, outletState:',
                 this._outletState ? 'exists' : 'null'
@@ -122,7 +123,7 @@ if (__GXT_MODE__) {
             const leafOutlet = nestedOutlet?.outlets?.main;
             const newTemplate = leafOutlet?.render?.template ?? nestedOutlet?.render?.template;
 
-            if ((globalThis as any).__DEBUG_GXT_RENDER) {
+            if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
               console.log(
                 '[ember-outlet] updateOutletState: newTemplate=',
                 newTemplate?.moduleName || typeof newTemplate,
@@ -161,7 +162,7 @@ if (__GXT_MODE__) {
 
             const outletState = this._outletState;
             if (!outletState) {
-              if ((globalThis as any).__DEBUG_GXT_RENDER) {
+              if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
                 console.log('[ember-outlet] No outlet state available');
               }
               return;
@@ -170,7 +171,7 @@ if (__GXT_MODE__) {
             // Get the nested outlet (outlets.main)
             const nestedOutlet = outletState?.outlets?.main;
             if (!nestedOutlet?.render?.template) {
-              if ((globalThis as any).__DEBUG_GXT_RENDER) {
+              if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
                 console.log('[ember-outlet] No nested template to render');
               }
               return;
@@ -183,7 +184,7 @@ if (__GXT_MODE__) {
             // Track which template we rendered so we can detect changes
             this._lastRenderedTemplate = tpl;
 
-            if ((globalThis as any).__DEBUG_GXT_RENDER) {
+            if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
               console.log(
                 '[ember-outlet] Rendering nested template:',
                 tpl?.moduleName || typeof tpl
@@ -374,7 +375,7 @@ function createOutletTemplate(_owner: any) {
     // The outlet state comes from the context - root.ts passes outletState directly
     const outletState = context?.outletState || context?.state || context;
 
-    if ((globalThis as any).__DEBUG_GXT_RENDER) {
+    if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
       console.log('[outlet.ts] render called');
       console.log(
         '[outlet.ts] context keys:',
@@ -389,7 +390,7 @@ function createOutletTemplate(_owner: any) {
     const nestedOutlet = outletState?.outlets?.main;
     const nestedTemplate = nestedOutlet?.render?.template;
 
-    if ((globalThis as any).__DEBUG_GXT_RENDER) {
+    if (DEBUG && (globalThis as any).__DEBUG_GXT_RENDER) {
       console.log('[outlet.ts] nestedOutlet:', nestedOutlet ? 'exists' : 'null');
       console.log(
         '[outlet.ts] nestedTemplate:',
