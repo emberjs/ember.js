@@ -1910,6 +1910,19 @@ function createComponentInstance(
     instance.__mutArgSources = args.__mutArgSources;
   }
 
+  // CLASSIC-ONLY (gated): installing reactive `instance.<arg>` getters/setters
+  // is classic curly semantics — `{{this.foo}}` / `this.get('foo')` read an arg
+  // as a top-level instance property, wired into the classic @glimmer/validator
+  // tag system (createCache / invokeHelper) and the @computed-with-setter
+  // pass-through. Glimmer components read `this.args.<arg>` (never `this.<arg>`),
+  // and in a native build createComponentInstance only ever builds Glimmer
+  // instances, so this whole block — the `_findCpWithSetter` helper and the
+  // reactive-getter loop — is gated and DCE-stripped when
+  // __GXT_CLASSIC_COMPONENTS__ === false. NOTE: the shared instance metadata
+  // assigned above (__argGetters / __gxtReadonlyKeys / __gxtRawArgGetters …) is
+  // deliberately OUTSIDE this gate — createRenderContext consumes it to build
+  // the args proxy / arg cells on the Glimmer path.
+  if (__GXT_CLASSIC_COMPONENTS__) {
   // Helper: detect a classic Ember @computed descriptor (with an independent
   // setter) on the prototype chain for this instance+key. When present, the
   // shadow descriptor we install on the instance must still invoke the CP's
@@ -2111,6 +2124,7 @@ function createComponentInstance(
     } catch {
       /* some properties may not be configurable */
     }
+  }
   }
 
   // Install two-way binding via PROPERTY_DID_CHANGE override.
