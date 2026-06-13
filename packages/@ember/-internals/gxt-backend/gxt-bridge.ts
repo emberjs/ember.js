@@ -3007,6 +3007,42 @@ export function setControllerOutletRerender(
   _controllerOutletRerender = fn;
 }
 
+// ---------------------------------------------------------------------------
+// Curried-component factory channel — the retired
+// `globalThis.__createCurriedComponent` slot. manager.ts registers the
+// factory; ember-gxt-wrappers registers a WRAPPER (the resolver-cache
+// counting shim that used to be a defineProperty set-guard trap on the
+// global). Composition is memoized and order-independent: whichever side
+// registers last invalidates the memo, and readers (compile.ts's
+// $_componentHelper, wrappers' merge path) compose at first use.
+// ---------------------------------------------------------------------------
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type CurriedFactory = (nameOrComp: any, args: any, positionals: any[]) => any;
+let _createCurriedComponentImpl: CurriedFactory | null = null;
+let _createCurriedComponentWrapper: ((inner: CurriedFactory) => CurriedFactory) | null = null;
+let _createCurriedComponentComposed: CurriedFactory | null = null;
+
+export function setCreateCurriedComponent(fn: CurriedFactory): void {
+  _createCurriedComponentImpl = fn;
+  _createCurriedComponentComposed = null;
+}
+
+export function setCreateCurriedComponentWrapper(
+  wrap: (inner: CurriedFactory) => CurriedFactory
+): void {
+  _createCurriedComponentWrapper = wrap;
+  _createCurriedComponentComposed = null;
+}
+
+export function getCreateCurriedComponent(): CurriedFactory | null {
+  if (_createCurriedComponentComposed === null && _createCurriedComponentImpl !== null) {
+    _createCurriedComponentComposed = _createCurriedComponentWrapper
+      ? _createCurriedComponentWrapper(_createCurriedComponentImpl)
+      : _createCurriedComponentImpl;
+  }
+  return _createCurriedComponentComposed;
+}
+
 export function getGxtRenderer(): GxtRenderer | null {
   // Classic builds can still EVALUATE gxt-backend module init — the vite test
   // page statically imports the compat layer and the classic rollup graph

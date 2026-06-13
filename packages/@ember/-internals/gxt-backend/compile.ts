@@ -998,6 +998,7 @@ import {
   setAmbientOwner,
   setDcComponentGetter,
   getControllerOutletRerender,
+  getCreateCurriedComponent,
 } from './gxt-bridge';
 
 // `peekInstanceCapture` exposes the last-created Ember instance, used by the
@@ -2625,7 +2626,7 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
       params: any[],
       hash: Record<string, any>
     ) {
-      const createCurried = g.__createCurriedComponent;
+      const createCurried = getCreateCurriedComponent();
       if (!createCurried) {
         // Fallback: no createCurriedComponent available yet, return the original behavior
         return params[0];

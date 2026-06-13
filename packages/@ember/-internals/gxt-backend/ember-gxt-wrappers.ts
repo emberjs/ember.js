@@ -23,6 +23,8 @@ import {
   setAmbientOwner,
   getDcComponentGetter,
   setDcComponentGetter,
+  getCreateCurriedComponent,
+  setCreateCurriedComponentWrapper,
 } from './gxt-bridge';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 
@@ -338,46 +340,23 @@ function _trackComponentDefinition(nameOrFactory: string | object | null | undef
 (g as any).__gxtTrackHelperDefinition = _trackHelperDefinition;
 (g as any).__gxtTrackComponentDefinition = _trackComponentDefinition;
 
-// Install a self-healing proxy on `globalThis.__createCurriedComponent` so
-// that named component curries — produced by `(component "x")` /
+// Register the resolver-cache counting wrapper for the curried-component
+// factory: named component curries — produced by `(component "x")` /
 // `{{component "x"}}` / CurriedComponent invocations — count once per unique
-// name in the resolver-cache counters. The setter intercepts assignments
-// from manager.ts (which installs the original factory on module load) and
-// wraps them; later reads always see the tracking wrapper.
-{
-  let _innerCreateCurried: any = (g as any).__createCurriedComponent;
-  if (!(g as any).__gxtCountedCurryHookInstalled) {
-    const trackingWrapper = function (nameOrComp: any, args: any, positionals: any[]) {
-      if (typeof nameOrComp === 'string') {
-        _trackComponentDefinition(nameOrComp);
-      } else if (nameOrComp && typeof (nameOrComp as any).__name === 'string') {
-        _trackComponentDefinition((nameOrComp as any).__name);
-      }
-      if (typeof _innerCreateCurried === 'function') {
-        return _innerCreateCurried(nameOrComp, args, positionals);
-      }
-      return nameOrComp;
-    };
-    (trackingWrapper as any).__gxtCountedCurry = true;
-    try {
-      Object.defineProperty(g, '__createCurriedComponent', {
-        configurable: true,
-        get() {
-          return trackingWrapper;
-        },
-        set(v: any) {
-          if (v && (v as any).__gxtCountedCurry) return;
-          _innerCreateCurried = v;
-        },
-      });
-      (g as any).__gxtCountedCurryHookInstalled = true;
-    } catch {
-      // Fallback: direct overwrite if defineProperty fails (e.g. the slot is
-      // non-configurable under some test harnesses).
-      (g as any).__createCurriedComponent = trackingWrapper;
+// name in the resolver-cache counters. Replaces the defineProperty set-guard
+// trap on the retired `globalThis.__createCurriedComponent` slot: the bridge
+// composes this wrapper over whatever factory manager.ts registers,
+// regardless of module-init order.
+setCreateCurriedComponentWrapper((inner) => {
+  return function trackingWrapper(nameOrComp: any, args: any, positionals: any[]) {
+    if (typeof nameOrComp === 'string') {
+      _trackComponentDefinition(nameOrComp);
+    } else if (nameOrComp && typeof (nameOrComp as any).__name === 'string') {
+      _trackComponentDefinition((nameOrComp as any).__name);
     }
-  }
-}
+    return inner(nameOrComp, args, positionals);
+  };
+});
 
 // When a property changes on a component, invalidate managed helper caches
 // so the next render pass picks up the changes. We DON'T re-compute values
@@ -473,7 +452,7 @@ function createEmberMaybeHelper(original: Function) {
       const positionals = Array.isArray(args) ? args : [];
 
       // Create a new curried component with merged args
-      const createCurried = g.__createCurriedComponent;
+      const createCurried = getCreateCurriedComponent();
       if (!createCurried) return nameOrFn;
       const merged = createCurried(nameOrFn, namedArgs, positionals);
 

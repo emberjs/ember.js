@@ -471,7 +471,10 @@ export class CurriedComponent {
   // Use a duck-type check instead of instanceof
   __isCurriedComponentClass: true,
 };
-(globalThis as any).__createCurriedComponent = createCurriedComponent;
+// Registered on the bridge (the retired `globalThis.__createCurriedComponent`
+// slot); ember-gxt-wrappers contributes the resolver-cache counting wrapper
+// via setCreateCurriedComponentWrapper, composed lazily at first use.
+setCreateCurriedComponent(createCurriedComponent);
 // `captureRenderError` is exposed via `compilePipeline.captureRenderError`
 // (the typed replacement for the retired `globalThis.__captureRenderError`
 // slot); see the setGxtRenderer install at file EOF.
@@ -14683,6 +14686,7 @@ import {
   getDcComponentGetter,
   setEmberAssertDirect,
   installCompilePipelinePart,
+  setCreateCurriedComponent,
 } from './gxt-bridge';
 setGxtRenderer({
   // See `gxtLib` doc in gxt-bridge.ts (retired `globalThis.__lifeartGxt`).
