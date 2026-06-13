@@ -315,6 +315,7 @@ module.exports = {
     'lt',
     'lte',
     'makeArray',
+    'makeContext',
     'makeToString',
     'map',
     'mapBy',

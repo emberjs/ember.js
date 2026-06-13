@@ -387,6 +387,14 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
   let instance = check(vm.fetchValue($s0), CheckComponentInstance);
   let { definition, manager, capabilities } = instance;
 
+  // RFC #1154 -- push this component's render-tree scope before the user-land
+  // constructor runs, so that provide/consume (makeContext) inside the
+  // constructor see the new scope (and its parent chain). Always-on. Mirroring
+  // debugRenderTree would be too late: the user constructor runs in
+  // manager.create() below.
+  vm.env.renderScope.create(instance);
+  vm.updateWith(new RenderScopeUpdateOpcode(instance));
+
   if (!managerHasCapability(manager, capabilities, InternalComponentCapabilities.createInstance)) {
     // TODO: Closure and Main components are always invoked dynamically, so this
     // opcode may run even if this capability is not enabled. In the future we
@@ -889,6 +897,12 @@ APPEND_OPCODES.add(VM_DID_RENDER_LAYOUT_OP, (vm, { op1: register }) => {
   let { manager, state, capabilities } = instance;
   let bounds = vm.tree().popBlock();
 
+  // RFC #1154 -- pop the render scope stack to match the create() done in
+  // VM_CREATE_COMPONENT_OP. This must happen unconditionally and outside
+  // the debugRenderTree branch below.
+  vm.env.renderScope.exit();
+  vm.updateWith(new RenderScopeExitOpcode());
+
   if (vm.env.debugRenderTree !== undefined) {
     if (hasCustomDebugRenderTreeLifecycle(manager)) {
       let nodes = manager.getDebugCustomRenderTree(instance.definition.state, state, EMPTY_ARGS);
@@ -968,5 +982,23 @@ class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
 
   evaluate(vm: UpdatingVM) {
     vm.env.debugRenderTree?.didRender(this.bucket, this.bounds);
+  }
+}
+
+// RFC #1154 -- render-tree scope lifecycle during updating frames. We have to
+// push the render node back onto the scope stack at the start of its update
+// and pop it back off at the end, so that any descendants which call
+// `consume()` during their own update see the correct parent chain.
+class RenderScopeUpdateOpcode implements UpdatingOpcode {
+  constructor(private bucket: object) {}
+
+  evaluate(vm: UpdatingVM) {
+    vm.env.renderScope.enter(this.bucket);
+  }
+}
+
+class RenderScopeExitOpcode implements UpdatingOpcode {
+  evaluate(vm: UpdatingVM) {
+    vm.env.renderScope.exit();
   }
 }
