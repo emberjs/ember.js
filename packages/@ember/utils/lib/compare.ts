@@ -1,6 +1,5 @@
 import type { TypeName } from './type-of';
 import typeOf from './type-of';
-import Comparable from '@ember/-internals/runtime/lib/mixins/comparable';
 import { assert } from '@ember/debug';
 
 const TYPE_ORDER: Record<TypeName, number> = {
@@ -163,10 +162,30 @@ export default function compare<T>(v: T, w: T): Compare {
   }
 }
 
+interface Comparable {
+  compare: (a: unknown, b: unknown) => -1 | 0 | 1;
+}
+
 interface ComparableConstructor {
-  constructor: Comparable;
+  constructor: {
+    compare: (a: unknown, b: unknown) => -1 | 0 | 1;
+  };
 }
 
 function isComparable(value: unknown): value is Comparable & ComparableConstructor {
-  return Comparable.detect(value);
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  let maybeComparable = value as {
+    compare?: unknown;
+    constructor?: {
+      compare?: unknown;
+    };
+  };
+
+  return (
+    typeof maybeComparable.constructor?.compare === 'function' ||
+    typeof maybeComparable.compare === 'function'
+  );
 }
