@@ -4,6 +4,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import type { Dict } from '@glimmer/interfaces';
 
 import type { Nullable } from '@ember/-internals/utility-types';
@@ -52,8 +53,17 @@ export function getRootViews(owner: InternalOwner): View[] {
   if (__GXT_MODE__) {
     try {
       getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
-    } catch {
-      /* ignore */
+    } catch (e) {
+      // A throw here means the GXT view-tree rebuild crashed, so the
+      // `-view-registry:main` we read below reflects a STALE parent/child
+      // graph. Surface the broken wiring (DEBUG-gated console.warn so it is
+      // visible to a developer without tripping QUnit's `warn()`/deprecation
+      // assertion helpers) instead of silently masking it. Behavior is
+      // preserved: we still fall through and read the registry as before.
+      if (DEBUG) {
+        // eslint-disable-next-line no-console
+        console.warn('[gxt] viewUtils.rebuildViewTreeFromDom failed; view registry may be stale', e);
+      }
     }
   }
 
@@ -143,8 +153,17 @@ export function getChildViews(view: View): View[] {
   if (__GXT_MODE__) {
     try {
       getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
-    } catch {
-      /* ignore */
+    } catch (e) {
+      // A throw here means the GXT view-tree rebuild crashed, so the
+      // `-view-registry:main` we read below reflects a STALE parent/child
+      // graph. Surface the broken wiring (DEBUG-gated console.warn so it is
+      // visible to a developer without tripping QUnit's `warn()`/deprecation
+      // assertion helpers) instead of silently masking it. Behavior is
+      // preserved: we still fall through and read the registry as before.
+      if (DEBUG) {
+        // eslint-disable-next-line no-console
+        console.warn('[gxt] viewUtils.rebuildViewTreeFromDom failed; view registry may be stale', e);
+      }
     }
   }
 

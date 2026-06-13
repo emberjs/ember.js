@@ -145,8 +145,17 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
           }
         }
       }
-    } catch {
-      /* best-effort; never block transition */
+    } catch (e) {
+      // Best-effort: a throw here must NEVER block the transition (the
+      // contract this catch protects). But a failure means the GXT
+      // post-transition tag-dirty / DOM sync wiring broke, which would
+      // otherwise silently leave LinkTo href/isActive stale — surface it
+      // (DEBUG-gated console.warn, which does not trip QUnit's
+      // `warn()`/deprecation assertion helpers) instead of masking it.
+      if (DEBUG) {
+        // eslint-disable-next-line no-console
+        console.warn('[gxt] post-transition tag-dirty/sync failed', e);
+      }
     }
   }
 

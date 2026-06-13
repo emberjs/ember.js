@@ -957,8 +957,17 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
             });
           }
         }
-      } catch {
-        /* best-effort — do not break refresh on sync errors */
+      } catch (e) {
+        // Best-effort: a throw here must not break `refresh()`. But a failure
+        // means the GXT query-param render-context → controller sync wiring
+        // broke (e.g. `getComponentContextsMap()` returned an unexpected shape),
+        // which would otherwise silently leave the controller's QP values out
+        // of sync. Surface it (DEBUG-gated console.warn, which does not trip
+        // QUnit's `warn()`/deprecation assertion helpers) instead of masking it.
+        if (DEBUG) {
+          // eslint-disable-next-line no-console
+          console.warn('[gxt] query-param controller sync failed during refresh', e);
+        }
       }
     }
     return this._router._routerMicrolib.refresh(this);
