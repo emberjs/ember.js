@@ -8,7 +8,7 @@ import Cache from '@ember/-internals/utils/lib/cache';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 
-const STRING_DASHERIZE_CACHE = new Cache<string, string>(1000, (key) =>
+const STRING_DASHERIZE_CACHE = /* @__PURE__ */ new Cache<string, string>(1000, (key) =>
   decamelize(key).replace(STRING_DASHERIZE_REGEXP, '-')
 );
 
@@ -16,7 +16,7 @@ const STRING_CLASSIFY_REGEXP_1 = /^(-|_)+(.)?/;
 const STRING_CLASSIFY_REGEXP_2 = /(.)(-|_|\.|\s)+(.)?/g;
 const STRING_CLASSIFY_REGEXP_3 = /(^|\/|\.)([a-z])/g;
 
-const CLASSIFY_CACHE = new Cache<string, string>(1000, (str) => {
+const CLASSIFY_CACHE = /* @__PURE__ */ new Cache<string, string>(1000, (str) => {
   let replace1 = (_match: string, _separator: string, chr: string) =>
     chr ? `_${chr.toUpperCase()}` : '';
   let replace2 = (_match: string, initialChar: string, _separator: string, chr: string) =>
@@ -35,7 +35,7 @@ const CLASSIFY_CACHE = new Cache<string, string>(1000, (str) => {
 
 const STRING_DECAMELIZE_REGEXP = /([a-z\d])([A-Z])/g;
 
-const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
+const DECAMELIZE_CACHE = /* @__PURE__ */ new Cache<string, string>(1000, (str) =>
   str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase()
 );
 

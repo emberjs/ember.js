@@ -142,7 +142,7 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter extends EmberObject.extend(Evented) implements Evented {
+class EmberRouter extends /* @__PURE__ */ EmberObject.extend(Evented) implements Evented {
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.

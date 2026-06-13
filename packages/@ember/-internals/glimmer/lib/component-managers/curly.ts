@@ -73,7 +73,7 @@ export const DIRTY_TAG = Symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
 export const BOUNDS = Symbol('BOUNDS');
 
-const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
+const EMBER_VIEW_REF = /* @__PURE__ */ createPrimitiveRef('ember-view');
 
 function aliasIdToElementId(args: VMArguments, props: any) {
   if (args.named.has('id')) {

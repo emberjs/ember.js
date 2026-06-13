@@ -1139,7 +1139,7 @@ interface EmberArray<T> extends Enumerable {
   */
   without(value: T): NativeArray<T>;
 }
-const EmberArray = Mixin.create(Enumerable, {
+const EmberArray = /* @__PURE__ */ Mixin.create(Enumerable, {
   init() {
     this._super(...arguments);
     setEmberArray(this);
@@ -1687,7 +1687,7 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   */
   addObjects(objects: T[]): this;
 }
-const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
+const MutableArray = /* @__PURE__ */ Mixin.create(EmberArray, MutableEnumerable, {
   clear() {
     let len = this.length;
     if (len === 0) {
@@ -2023,7 +2023,7 @@ interface MutableArrayWithoutNative<T> extends Omit<
 */
 interface NativeArray<T> extends Array<T>, Observable, MutableArrayWithoutNative<T> {}
 
-let NativeArray = Mixin.create(MutableArray, Observable, {
+let NativeArray = /* @__PURE__ */ Mixin.create(MutableArray, Observable, {
   objectAt(idx: number) {
     return this[idx];
   },

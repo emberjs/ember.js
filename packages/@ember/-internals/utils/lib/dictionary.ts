@@ -3,6 +3,7 @@
 // appears worthwhile in some usecases. Please note, these deletes do increase
 // the cost of creation dramatically over a plain Object.create. And as this
 // only makes sense for long-lived dictionaries that aren't instantiated often.
+/* @__NO_SIDE_EFFECTS__ */
 export default function makeDictionary<T>(parent: { [key: string]: T } | null): {
   [key: string]: T;
 } {

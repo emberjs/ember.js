@@ -47,6 +47,7 @@ it('[dev] has expected tree-shakable entrypoints', async () => {
       "ember-source/@ember/-internals/string/index.js",
       "ember-source/@ember/-internals/utility-types/index.js",
       "ember-source/@ember/-internals/views/lib/compat/attrs.js",
+      "ember-source/@ember/-internals/views/lib/compat/fallback-view-registry.js",
       "ember-source/@ember/array/-internals.js",
       "ember-source/@ember/array/lib/make-array.js",
       "ember-source/@ember/array/make.js",
@@ -121,7 +122,6 @@ it('[dev] has expected tree-shakable entrypoints', async () => {
       "ember-source/@ember/-internals/runtime/lib/mixins/target_action_support.js",
       "ember-source/@ember/-internals/utils/index.js",
       "ember-source/@ember/-internals/views/index.js",
-      "ember-source/@ember/-internals/views/lib/compat/fallback-view-registry.js",
       "ember-source/@ember/-internals/views/lib/mixins/action_support.js",
       "ember-source/@ember/-internals/views/lib/system/event_dispatcher.js",
       "ember-source/@ember/-internals/views/lib/system/utils.js",
@@ -234,6 +234,7 @@ it('[prod] has expected tree-shakable entrypoints', async () => {
   expect(result.shaken).toMatchInlineSnapshot(`
     [
       "ember-source/@ember/-internals/browser-environment/index.js",
+      "ember-source/@ember/-internals/container/index.js",
       "ember-source/@ember/-internals/error-handling/index.js",
       "ember-source/@ember/-internals/meta/index.js",
       "ember-source/@ember/-internals/meta/lib/meta.js",
@@ -241,6 +242,8 @@ it('[prod] has expected tree-shakable entrypoints', async () => {
       "ember-source/@ember/-internals/string/index.js",
       "ember-source/@ember/-internals/utility-types/index.js",
       "ember-source/@ember/-internals/views/lib/compat/attrs.js",
+      "ember-source/@ember/-internals/views/lib/compat/fallback-view-registry.js",
+      "ember-source/@ember/-internals/views/lib/system/utils.js",
       "ember-source/@ember/array/-internals.js",
       "ember-source/@ember/array/lib/make-array.js",
       "ember-source/@ember/array/make.js",
@@ -310,7 +313,6 @@ it('[prod] has expected tree-shakable entrypoints', async () => {
   `);
   expect(result.notShaken).toMatchInlineSnapshot(`
     [
-      "ember-source/@ember/-internals/container/index.js",
       "ember-source/@ember/-internals/deprecations/index.js",
       "ember-source/@ember/-internals/environment/index.js",
       "ember-source/@ember/-internals/glimmer/index.js",
@@ -326,10 +328,8 @@ it('[prod] has expected tree-shakable entrypoints', async () => {
       "ember-source/@ember/-internals/runtime/lib/mixins/target_action_support.js",
       "ember-source/@ember/-internals/utils/index.js",
       "ember-source/@ember/-internals/views/index.js",
-      "ember-source/@ember/-internals/views/lib/compat/fallback-view-registry.js",
       "ember-source/@ember/-internals/views/lib/mixins/action_support.js",
       "ember-source/@ember/-internals/views/lib/system/event_dispatcher.js",
-      "ember-source/@ember/-internals/views/lib/system/utils.js",
       "ember-source/@ember/-internals/views/lib/views/core_view.js",
       "ember-source/@ember/-internals/views/lib/views/states.js",
       "ember-source/@ember/application/index.js",

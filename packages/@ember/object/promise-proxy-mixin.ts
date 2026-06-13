@@ -211,7 +211,7 @@ interface PromiseProxyMixin<T> {
   */
   finally: this['promise']['finally'];
 }
-const PromiseProxyMixin = Mixin.create({
+const PromiseProxyMixin = /* @__PURE__ */ Mixin.create({
   reason: null,
 
   isPending: computed('isSettled', function () {

@@ -16,7 +16,7 @@ interface Adapter extends EmberObject {
   asyncEnd(): void;
   exception(error: unknown): never;
 }
-const Adapter = EmberObject.extend({
+const Adapter = /* @__PURE__ */ EmberObject.extend({
   /**
     This callback will be called whenever an async operation is about to start.
 

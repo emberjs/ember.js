@@ -62,7 +62,7 @@ interface RouterService extends Evented {
     callback: (transition: Transition) => void
   ): this;
 }
-class RouterService extends Service.extend(Evented) {
+class RouterService extends /* @__PURE__ */ Service.extend(Evented) {
   [ROUTER]?: EmberRouter;
 
   get _router(): EmberRouter {

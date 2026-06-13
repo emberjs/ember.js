@@ -7,7 +7,7 @@ import Cache from '@ember/-internals/utils/lib/cache';
 const SIMPLE_DASHERIZE_REGEXP = /[A-Z]|::/g;
 const ALPHA = /[A-Za-z0-9]/;
 
-export default new Cache<string, string>(1000, (key) =>
+export default /* @__PURE__ */ new Cache<string, string>(1000, (key) =>
   key.replace(SIMPLE_DASHERIZE_REGEXP, (char, index) => {
     if (char === '::') {
       return '/';

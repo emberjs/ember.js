@@ -53,7 +53,9 @@ export interface EngineInstanceOptions {
 // type checking, we have broken part of our public API contract. Medium-term,
 // the goal here is to `EngineInstance` simple be `Owner`.
 interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
-class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
+class EngineInstance
+  extends /* @__PURE__ */ EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin)
+{
   /**
    @private
    @method setupRegistry

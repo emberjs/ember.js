@@ -37,6 +37,7 @@
   @private
   @return {String} interned version of the provided string
 */
+/* @__NO_SIDE_EFFECTS__ */
 export default function intern<S extends string>(str: S): S {
   let obj: Record<S, number> = Object.create(null);
   obj[str] = 1;
