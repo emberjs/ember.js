@@ -34,6 +34,19 @@ export const GXT_SHIM_DIR = 'packages/@ember/-internals/gxt-backend';
  * deep `@glimmer/*` imports there resolve to the real vendored in-repo source,
  * and nothing reachable from the GXT rollup entry graph imports them.
  *
+ * `entryShim`: marks a package whose `@glimmer/<pkg>` shim is SPLIT into a lean
+ * runtime module (`shim`) and a full-surface package-entry facade (`entryShim`,
+ * which re-exports `shim` PLUS a `<pkg>-vm-compat` test-only module). The split
+ * keeps the test-only VM-emulation OUT of the precompiled-app closure: in the
+ * rollup GXT build the app's own bare/`…/lib/*` `@glimmer/<pkg>` imports resolve
+ * to the lean `shim` (which the app's shared chunk pulls), while the published
+ * `@glimmer/<pkg>` package ENTRY is emitted from `entryShim` (its own chunk,
+ * NOT in the app closure). The vite test tree, by contrast, aliases the whole
+ * `@glimmer/<pkg>` (bare + subpaths) to `entryShim` so the suites still see the
+ * complete surface. The `<pkg>/lib/collections/*` and `<pkg>/lib/iterable` deep
+ * paths used by `@ember/reactive/collections` and the (purged) VM opcode core
+ * route to the `-vm-compat` module via GXT_SUBPATH_REDIRECTS below.
+ *
  * ORDER IS SIGNIFICANT for the vite alias array (first match wins, and Vite
  * string aliases match on a `find + '/'` prefix): keep
  * `@glimmer/tracking/primitives/cache` ahead of `@glimmer/tracking`.
@@ -47,9 +60,38 @@ export const GXT_SHIM_ALIASES = [
   { find: '@glimmer/manager', shim: 'manager', subpathTolerant: true },
   { find: '@glimmer/tracking/primitives/cache', shim: 'glimmer-tracking' },
   { find: '@glimmer/tracking', shim: 'glimmer-tracking' },
-  { find: '@glimmer/validator', shim: 'validator', subpathTolerant: true },
+  {
+    find: '@glimmer/validator',
+    shim: 'validator',
+    entryShim: 'validator-entry',
+    subpathTolerant: true,
+  },
   { find: '@glimmer/destroyable', shim: 'destroyable' },
-  { find: '@glimmer/reference', shim: 'reference', subpathTolerant: true },
+  {
+    find: '@glimmer/reference',
+    shim: 'reference',
+    entryShim: 'reference-entry',
+    subpathTolerant: true,
+  },
+];
+
+/**
+ * DEEP-PATH-only redirects layered ON TOP of GXT_SHIM_ALIASES. They route a
+ * subtree of an already-shimmed package onto a DIFFERENT shim file — used to
+ * send the test-only `@glimmer/<pkg>/lib/{collections,iterable}` deep paths to
+ * the `-vm-compat` module instead of the lean runtime shim, so the standalone
+ * `@ember/reactive/collections` entry (and any value-importer) still resolves
+ * the moved exports while the bare specifier stays lean.
+ *
+ * Consumed ONLY by the resolver collapse in rollup.config.mjs::resolvePackages
+ * and the vite resolve.alias array — NEVER by the entry-emission / exposed-
+ * dependency maps (these are not real package entrypoints, so they must not
+ * spawn `packages/.../index` entry chunks). They are checked BEFORE the
+ * GXT_SHIM_ALIASES subpath collapse so the more-specific subtree wins.
+ */
+export const GXT_SUBPATH_REDIRECTS = [
+  { find: '@glimmer/validator/lib/collections', shim: 'validator-vm-compat' },
+  { find: '@glimmer/reference/lib/iterable', shim: 'reference-vm-compat' },
 ];
 
 /**

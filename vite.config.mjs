@@ -16,6 +16,7 @@ import {
 import {
   GXT_SHIM_DIR,
   GXT_SHIM_ALIASES,
+  GXT_SUBPATH_REDIRECTS,
   gxtSubpathRegExp,
   isGxtEnabled,
 } from './scripts/gxt-alias-map.mjs';
@@ -226,9 +227,22 @@ export default defineConfig(({ mode }) => {
             // collapse onto the single shim file. A bare string `find` would
             // prefix-rewrite the subpath onto a nonexistent shim PATH; the shims
             // are complete package replacements that re-export the full surface.
-            ...GXT_SHIM_ALIASES.map(({ find, shim, subpathTolerant }) => ({
-              find: subpathTolerant ? gxtSubpathRegExp(find) : find,
+            // Deep-path redirects (the test-only `…/lib/{collections,iterable}`
+            // subtrees → the `-vm-compat` module) MUST precede the package
+            // aliases below so the more-specific subtree wins (Vite alias array
+            // is first-match-wins). These mirror rollup's GXT_SUBPATH_REDIRECTS.
+            ...GXT_SUBPATH_REDIRECTS.map(({ find, shim }) => ({
+              find: gxtSubpathRegExp(find),
               replacement: fileURLToPath(new URL(`./${GXT_SHIM_DIR}/${shim}`, owerrideRoot)),
+            })),
+            ...GXT_SHIM_ALIASES.map(({ find, shim, entryShim, subpathTolerant }) => ({
+              find: subpathTolerant ? gxtSubpathRegExp(find) : find,
+              // The vite test tree resolves the FULL classic surface: a split
+              // package (`entryShim` set) aliases to its full-surface entry
+              // facade (runtime shim + `-vm-compat`); others to the single shim.
+              replacement: fileURLToPath(
+                new URL(`./${GXT_SHIM_DIR}/${entryShim ?? shim}`, owerrideRoot)
+              ),
             })),
             // Alias internal-test-helpers compile to use gxt compilation
             // (vite test harness only — not part of the shared shim table).

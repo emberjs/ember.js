@@ -322,14 +322,14 @@ gxtSuiteModule('Compat: validator.ts', function () {
   // ---------------------------------------------------------- trackedArray()
   QUnit.module('trackedArray()', function () {
     QUnit.test('returns a proxy that behaves like an array', async function (assert: any) {
-      const { trackedArray } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { trackedArray } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const arr = trackedArray([1, 2, 3]);
       assert.strictEqual(arr.length, 3, 'correct length');
       assert.strictEqual(arr[0], 1, 'index access works');
     });
 
     QUnit.test('push/pop mutate the array', async function (assert: any) {
-      const { trackedArray } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { trackedArray } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const arr = trackedArray<number>([]);
       arr.push(10);
       assert.strictEqual(arr.length, 1, 'length after push');
@@ -340,14 +340,14 @@ gxtSuiteModule('Compat: validator.ts', function () {
     });
 
     QUnit.test('index assignment works', async function (assert: any) {
-      const { trackedArray } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { trackedArray } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const arr = trackedArray([1, 2, 3]);
       arr[1] = 20;
       assert.strictEqual(arr[1], 20, 'index assignment reflected');
     });
 
     QUnit.test('defaults to empty array when no argument', async function (assert: any) {
-      const { trackedArray } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { trackedArray } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const arr = trackedArray();
       assert.strictEqual(arr.length, 0, 'empty by default');
     });
@@ -356,7 +356,7 @@ gxtSuiteModule('Compat: validator.ts', function () {
   // --------------------------------------------------------- trackedObject()
   QUnit.module('trackedObject()', function () {
     QUnit.test('returns a proxy that reads/writes properties', async function (assert: any) {
-      const { trackedObject } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { trackedObject } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const obj = trackedObject({ name: 'Alice', age: 30 });
       assert.strictEqual(obj.name, 'Alice', 'reads initial value');
       obj.name = 'Bob';
@@ -364,14 +364,14 @@ gxtSuiteModule('Compat: validator.ts', function () {
     });
 
     QUnit.test('new properties can be added', async function (assert: any) {
-      const { trackedObject } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { trackedObject } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const obj = trackedObject<Record<string, any>>({});
       obj.foo = 'bar';
       assert.strictEqual(obj.foo, 'bar', 'dynamically added property');
     });
 
     QUnit.test('defaults to empty object when argument is falsy', async function (assert: any) {
-      const { trackedObject } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { trackedObject } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const obj = trackedObject(undefined as any);
       assert.ok(obj, 'returns an object');
       obj.x = 1;
@@ -462,7 +462,7 @@ gxtSuiteModule('Compat: validator.ts', function () {
     });
 
     QUnit.test('VOLATILE_TAG has a value that changes', async function (assert: any) {
-      const { VOLATILE_TAG } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { VOLATILE_TAG } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       assert.ok(VOLATILE_TAG, 'VOLATILE_TAG exists');
       assert.strictEqual(typeof VOLATILE_TAG.value, 'number', 'has numeric value');
     });
@@ -489,7 +489,7 @@ gxtSuiteModule('Compat: validator.ts', function () {
   // ------------------------------------------- trackedMap / trackedSet
   QUnit.module('trackedMap()', function () {
     QUnit.test('wraps a Map with reactive operations', async function (assert: any) {
-      const { trackedMap } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { trackedMap } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const m = trackedMap<string, number>();
       m.set('a', 1);
       assert.strictEqual(m.get('a'), 1, 'set/get works');
@@ -501,7 +501,7 @@ gxtSuiteModule('Compat: validator.ts', function () {
 
   QUnit.module('trackedSet()', function () {
     QUnit.test('wraps a Set with reactive operations', async function (assert: any) {
-      const { trackedSet } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { trackedSet } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const s = trackedSet<number>();
       s.add(1);
       s.add(2);
@@ -515,7 +515,7 @@ gxtSuiteModule('Compat: validator.ts', function () {
   // ----------------------------------------- bump() and frame helpers
   QUnit.module('bump()', function () {
     QUnit.test('increments internal revision', async function (assert: any) {
-      const { bump } = await import('../../../@ember/-internals/gxt-backend/validator');
+      const { bump } = await import('../../../@ember/-internals/gxt-backend/validator-vm-compat');
       const r1 = bump();
       const r2 = bump();
       assert.ok(r2 > r1, 'revision increases');

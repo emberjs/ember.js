@@ -9,6 +9,7 @@ import sharedBabelConfig from './babel.config.mjs';
 import {
   GXT_SHIM_DIR,
   GXT_SHIM_ALIASES,
+  GXT_SUBPATH_REDIRECTS,
   GXT_EXTERNAL_PACKAGES,
   GXT_DROPPED_ENTRIES,
   GXT_DIST_VM_STUBS,
@@ -141,10 +142,16 @@ function esmInputs() {
     // Re-apply the shim overrides last so the published entry FILES match
     // what the rest of the dist graph already resolves.
     const compatRoot = resolve(packageCache.appRoot, GXT_SHIM_DIR);
-    for (const { find, shim } of GXT_SHIM_ALIASES) {
+    for (const { find, shim, entryShim } of GXT_SHIM_ALIASES) {
       const indexKey = join('packages', find, 'index');
       const bareKey = join('packages', find);
-      const target = resolve(compatRoot, `${shim}.ts`);
+      // The PUBLISHED package entry roots the full-surface facade (`entryShim`,
+      // which re-exports the runtime shim PLUS the `-vm-compat` test-only
+      // module) when the package is split; otherwise the single `shim`. The
+      // app's OWN intra-graph `@glimmer/<pkg>` imports still resolve to the
+      // lean runtime `shim` via exposedDependencies()/resolvePackages, so the
+      // test-only surface only ever lands in this separate entry chunk.
+      const target = resolve(compatRoot, `${entryShim ?? shim}.ts`);
       if (inputs[bareKey] !== undefined && inputs[indexKey] === undefined) {
         inputs[bareKey] = target;
       } else {
@@ -676,6 +683,21 @@ export function resolvePackages(deps, params) {
         // GXT_DIST_VM_STUBS in scripts/gxt-alias-map.mjs.
         if (USE_GXT_BACKEND && GXT_DIST_VM_STUBS.ids.has(source)) {
           return resolve(projectRoot, GXT_SHIM_DIR, `${GXT_DIST_VM_STUBS.shim}.ts`);
+        }
+
+        // GXT: deep-path redirects layered on top of the package shims — the
+        // test-only `@glimmer/<pkg>/lib/{collections,iterable}` subtrees route
+        // to the `-vm-compat` module (where those exports were moved out of the
+        // lean runtime shim). Checked BEFORE `deps[source]` and the
+        // subpathTolerant collapse so the more-specific subtree wins. The only
+        // live rollup importer is the standalone `@ember/reactive/collections`
+        // entry; the bare specifier stays on the lean runtime shim.
+        if (USE_GXT_BACKEND) {
+          for (const r of GXT_SUBPATH_REDIRECTS) {
+            if (gxtSubpathRegExp(r.find).test(source)) {
+              return resolve(projectRoot, GXT_SHIM_DIR, `${r.shim}.ts`);
+            }
+          }
         }
 
         if (deps[source]) {
