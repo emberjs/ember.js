@@ -2122,8 +2122,17 @@ function createComponentInstance(
   // when set() is called, find the parent and set the same property there.
   // The argGetter itself captures the parent scope, so we can detect the parent
   // by tracking which object the getter reads from.
-  const argKeySet = new Set(Object.keys(argGetters));
-  if (argKeySet.size > 0 && instance) {
+  //
+  // CLASSIC-ONLY (gated). Glimmer components have immutable args — there is no
+  // `this.set('arg', …)` upstream two-way propagation and no PROPERTY_DID_CHANGE
+  // arg-binding contract. This entire detection + PROPERTY_DID_CHANGE override
+  // block is classic `@ember/component` machinery, so it is wrapped in the
+  // build-time flag and DCE-stripped in a native build
+  // (__GXT_CLASSIC_COMPONENTS__ === false). In a compat build the flag folds to
+  // `if (true)` and terser unwraps it, leaving behavior byte-identical.
+  if (__GXT_CLASSIC_COMPONENTS__) {
+    const argKeySet = new Set(Object.keys(argGetters));
+    if (argKeySet.size > 0 && instance) {
     // Detect two-way binding sources by calling each arg getter with tracking enabled
     const twoWayBindings: Record<string, { sourceCtx: any; sourceKey: string }> = {};
     for (const key of argKeySet) {
@@ -2493,6 +2502,7 @@ function createComponentInstance(
         }
       }
     };
+    }
   }
 
   // Register with parent's childViews
