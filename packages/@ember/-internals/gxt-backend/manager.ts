@@ -1417,8 +1417,11 @@ function getCachedOrCreateInstance(
     poolEntry.claimed = true;
     const hasChanges = updateInstanceWithNewArgs(poolEntry.instance, args);
 
-    // Sync wrapper element attributes/classes when args change
-    if (hasChanges) {
+    // CLASSIC-ONLY (gated): syncing classNameBindings / attributeBindings onto a
+    // wrapper DOM element is classic curly machinery. Glimmer components are
+    // tagless (no Ember wrapper element), so this no-ops for them; gated for
+    // native DCE. `hasChanges` stays ungated — the arg update it drives is shared.
+    if (__GXT_CLASSIC_COMPONENTS__ && hasChanges) {
       const wrapper = getViewElement(poolEntry.instance) || poolEntry.instance._element;
       if (wrapper instanceof HTMLElement) {
         syncWrapperElement(poolEntry.instance, wrapper, componentClass, args);
@@ -4708,14 +4711,19 @@ function _gxtSyncAllWrappersBody(): void {
     }
   }
 
-  // Phase 2: Sync wrapper element attributes/classes
-  for (const entry of trackedWrapperInstances) {
-    const { instance, wrapper, componentDef } = entry;
-    if (!wrapper?.isConnected) {
-      trackedWrapperInstances.delete(entry);
-      continue;
+  // Phase 2: Sync wrapper element attributes/classes.
+  // CLASSIC-ONLY (gated): wrapper class/attr sync is classic curly only; in a
+  // native build trackedWrapperInstances is never populated with Glimmer
+  // wrappers and this loop is DCE-stripped.
+  if (__GXT_CLASSIC_COMPONENTS__) {
+    for (const entry of trackedWrapperInstances) {
+      const { instance, wrapper, componentDef } = entry;
+      if (!wrapper?.isConnected) {
+        trackedWrapperInstances.delete(entry);
+        continue;
+      }
+      syncWrapperElement(instance, wrapper, componentDef, undefined);
     }
-    syncWrapperElement(instance, wrapper, componentDef, undefined);
   }
 
   // Clear dirtied-nested-objects snapshot for the next sync cycle.
@@ -14819,7 +14827,13 @@ setGxtRenderer({
     shouldWarnStyle: _gxtBridgeShouldWarnStyle,
   },
   compilePipeline: {
-    syncWrapper: _gxtSyncWrapper,
+    // CLASSIC-ONLY (gated): _gxtSyncWrapper updates classic wrapper
+    // classNameBindings/attributeBindings on property change. Glimmer is
+    // tagless, so compile.ts's `syncWrapper?.(…)` callers no-op when this is
+    // undefined. Folding to undefined in a native build leaves _gxtSyncWrapper
+    // unreferenced (def + this slot were its only refs) so rollup tree-shakes
+    // it — and with it the last reference to the 141-line syncWrapperElement.
+    syncWrapper: __GXT_CLASSIC_COMPONENTS__ ? _gxtSyncWrapper : undefined,
     snapshotLiveInstances: _gxtSnapshotLiveInstances,
     syncAllWrappers: _gxtSyncAllWrappers,
     clearInstancePools: _gxtClearInstancePools,
