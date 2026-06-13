@@ -146,6 +146,25 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
     canaryFeatures(),
   ];
 
+  // Production builds (`dist/prod`, debug macros stripped) drop JSDoc/line
+  // comments. Comments carry zero runtime behavior and every consuming app's
+  // minifier discards them anyway, so shipping them only inflates the published
+  // dist (and the bundle-size gate that measures it). This matters most for the
+  // GXT backend: the gxt-backend compat layer (manager.ts, compile.ts) is
+  // heavily annotated with design-rationale prose — over half of the raw
+  // `manager` chunk was comment bytes — which brotli compresses far worse than
+  // code, so stripping them is the single largest safe size win. We KEEP the
+  // `@__PURE__` / `@__NO_SIDE_EFFECTS__` / `@license` / `@preserve` annotations
+  // so a downstream minifier still gets its dead-code-elimination hints and any
+  // legal banners survive. Dev builds (`dist/dev`) keep every comment for
+  // debuggability. The `shouldPrintComment` predicate receives the comment body
+  // WITHOUT its `/* */` or `//` delimiters; `@rollup/plugin-babel` forwards it
+  // straight to babel's code generator.
+  if (debugMacrosMode === false) {
+    babelConfig.shouldPrintComment = (value) =>
+      /@__PURE__|#__PURE__|@__NO_SIDE_EFFECTS__|@license|@preserve/.test(value);
+  }
+
   let plugins = [
     babel({
       babelHelpers: 'bundled',
