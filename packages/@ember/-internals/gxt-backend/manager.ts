@@ -6450,7 +6450,16 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
         });
       }
 
-      // Build Ember-style attrs entry
+      // Build Ember-style attrs entry.
+      // CLASSIC-ONLY (gated): `this.attrs.<arg>` (and its {value, update()}
+      // mutable-binding overlay) is a classic @ember/component contract. Glimmer
+      // components read `this.args.<arg>` (the attrsProxy built above), never
+      // `this.attrs`. In a native build createRenderContext is only ever reached
+      // through renderGlimmerComponent (the classic render path is DCE-stripped),
+      // so this entire emberAttrs construction is gated out: emberAttrs stays
+      // empty and `renderContext.attrs` falls back to attrsProxy (unused by
+      // Glimmer). Compat folds `if (true)` and is byte-identical.
+      if (__GXT_CLASSIC_COMPONENTS__) {
       if (_mutCellKeys.has(key)) {
         // For mut cells: attrs[key] IS the mutCell (has .value and .update())
         // Use a getter so we always get the current mut cell
@@ -6568,6 +6577,7 @@ function createRenderContext(instance: any, args: any, fw: any, owner: any): any
             }
           },
         };
+      }
       }
     }
   }
