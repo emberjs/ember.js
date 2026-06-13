@@ -2889,15 +2889,10 @@ export function installViewUtilsPart(part: Partial<GxtViewUtilsCapabilities>): v
  * `__GXT_MODE__ = false`, the entire calling branch DCEs away.
  */
 // ---------------------------------------------------------------------------
-// Outlet bridge state. The canonical "current outlet state" pointer and the
-// live <ember-outlet> element registry were historically the
-// `globalThis.__currentOutletState` / `__activeOutletElements` slots, written
-// and read from BOTH sides of the bridge (glimmer's outlet/root templates and
-// OutletView on one side; gxt-backend's <ember-outlet> custom element,
-// manager.ts and compile.ts on the other). The bridge is the one module both
-// sides already import, so the state lives here as plain module-locals with
-// typed accessors. Classic builds load this module too (it is inert: nothing
-// writes in classic mode).
+// Outlet bridge state: the "current outlet state" pointer and the live
+// <ember-outlet> element registry, shared by both sides of the bridge
+// (glimmer outlet/root templates + OutletView; gxt-backend's <ember-outlet>,
+// manager.ts, compile.ts). Module-locals here; inert in classic builds.
 // ---------------------------------------------------------------------------
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _currentOutletState: any;
@@ -2924,18 +2919,11 @@ export function getActiveOutletElements(): Set<any> {
 }
 
 // ---------------------------------------------------------------------------
-// Ambient owner. The "current owner" that render paths set/restore around
-// every ownership boundary (root render, engine mount, component/helper
-// resolution) — historically the `globalThis.owner` slot, read and written
-// from both sides of the bridge (~100 sites, all routed through these
-// accessors by the §2a owner threading, docs-internal-gxt-globalthis-wiring.md).
-// The state is fully module-local: the former one-way mirror onto
-// `globalThis.owner` was retired when its last reader — the inlined
-// named-arg-helper guard inside runtime-compiled template Function bodies —
-// switched to the injected `__gxtAmbientOwner` parameter (bound to
-// getAmbientOwner at Function creation; see compile.ts's templateFnCode
-// builder). Writing `globalThis.owner` does nothing now: every reader
-// consults the module-local.
+// Ambient owner: the "current owner" set/restored around every ownership
+// boundary (root render, engine mount, component/helper resolution), read and
+// written from both sides via these accessors (§2a owner threading, ~100
+// sites). Module-local; runtime-compiled template bodies read it via the
+// injected `__gxtAmbientOwner` Function parameter (bound to getAmbientOwner).
 // ---------------------------------------------------------------------------
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2951,11 +2939,10 @@ export function setAmbientOwner(owner: unknown): void {
 }
 
 // ---------------------------------------------------------------------------
-// Dynamic-component getter channel — the live `componentGetter` that
+// Dynamic-component getter channel: the live `componentGetter` that
 // ember-gxt-wrappers' $_dc swap frames save/set/restore around recursive
-// handle() calls, manager.ts's args-merge reads to build latest-args getters,
-// and compile.ts's test-teardown resets. The retired
-// `globalThis.__dcComponentGetter` slot.
+// handle() calls, manager.ts reads to build latest-args getters, and
+// compile.ts resets on test teardown.
 // ---------------------------------------------------------------------------
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _dcComponentGetter: any = null;
@@ -2970,12 +2957,11 @@ export function setDcComponentGetter(getter: unknown): void {
 }
 
 // ---------------------------------------------------------------------------
-// Ember assert channel — a live wrapper over @ember/debug's `assert` (which
-// setDebugFunction / expectAssertion swap), published by manager.ts at init.
-// validator.ts's backtracking asserts call it so expectAssertion() can catch
-// them; helper-manager.ts temporarily wraps it around manager.getValue to
-// normalize render-tree formatting. The retired
-// `globalThis.__emberAssertDirect` slot.
+// Ember assert channel: a live wrapper over @ember/debug's `assert` (swapped
+// by setDebugFunction/expectAssertion), published by manager.ts at init.
+// validator.ts backtracking asserts call it so expectAssertion() can catch
+// them; helper-manager.ts wraps it around manager.getValue to normalize
+// render-tree formatting.
 // ---------------------------------------------------------------------------
 let _emberAssertDirect: ((msg: string, test: unknown) => void) | null = null;
 
@@ -2988,10 +2974,9 @@ export function setEmberAssertDirect(fn: ((msg: string, test: unknown) => void) 
 }
 
 // ---------------------------------------------------------------------------
-// Controller→outlet rerender hook — installed by glimmer's templates/root.ts
-// (the writer owns the outlet-ref maps), consumed by compile.ts's SyncCore
-// controller-key fan-out. The retired `globalThis.__gxtControllerOutletRerender`
-// slot.
+// Controller→outlet rerender hook: installed by glimmer's templates/root.ts
+// (owns the outlet-ref maps), consumed by compile.ts's SyncCore
+// controller-key fan-out.
 // ---------------------------------------------------------------------------
 let _controllerOutletRerender: ((controller: object, keyName?: string) => void) | null = null;
 
@@ -3008,13 +2993,12 @@ export function setControllerOutletRerender(
 }
 
 // ---------------------------------------------------------------------------
-// Curried-component factory channel — the retired
-// `globalThis.__createCurriedComponent` slot. manager.ts registers the
-// factory; ember-gxt-wrappers registers a WRAPPER (the resolver-cache
-// counting shim that used to be a defineProperty set-guard trap on the
-// global). Composition is memoized and order-independent: whichever side
-// registers last invalidates the memo, and readers (compile.ts's
-// $_componentHelper, wrappers' merge path) compose at first use.
+// Curried-component factory channel: manager.ts registers the factory;
+// ember-gxt-wrappers registers a WRAPPER (the resolver-cache counting shim).
+// Composition (getCreateCurriedComponent) is memoized and order-independent:
+// whichever side registers last invalidates the memo (readers — compile.ts's
+// $_componentHelper, wrappers' merge path — compose at first use). Keep the
+// memo reset in both setters.
 // ---------------------------------------------------------------------------
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CurriedFactory = (nameOrComp: any, args: any, positionals: any[]) => any;

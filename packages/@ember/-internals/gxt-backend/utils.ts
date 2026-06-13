@@ -181,3 +181,29 @@ export function parseInElementInsertBefore(template: string): {
   result += template.slice(searchFrom);
   return { result, insertBefore };
 }
+
+// Inline the style warning message to avoid importing @ember/-internals/views
+// (which can cause circular dependency issues during module initialization).
+export function constructStyleDeprecationMessage(affectedStyle: string): string {
+  return (
+    'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
+    'please ensure that values being bound are properly escaped. For more information, ' +
+    'including how to disable this warning, see ' +
+    'https://deprecations.emberjs.com/v1.x/#toc_binding-style-attributes. ' +
+    'Style affected: "' +
+    affectedStyle +
+    '"'
+  );
+}
+
+// Helper to detect assertion-related throws that must escape catch blocks.
+// The expectAssertion test helper throws a non-Error sentinel (BREAK = {})
+// when a stubbed assert fires. Also re-throws actual Assertion Failed errors.
+export function isAssertionLike(e: unknown): boolean {
+  if (e instanceof Error) {
+    return e.message?.includes('Assertion Failed') === true;
+  }
+  // Non-Error, non-null/undefined objects may be the BREAK sentinel from expectAssertion.
+  if (e !== null && e !== undefined && typeof e === 'object') return true;
+  return false;
+}

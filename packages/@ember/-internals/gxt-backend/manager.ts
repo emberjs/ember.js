@@ -12,7 +12,15 @@
 
 import { DEBUG } from '@glimmer/env';
 import { assert, getDebugFunction } from '@ember/debug';
-import { pascalToKebab, isAllDigits, hasUpperCase, dasherize, doubleColonToSlash } from './utils';
+import {
+  pascalToKebab,
+  isAllDigits,
+  hasUpperCase,
+  dasherize,
+  doubleColonToSlash,
+  constructStyleDeprecationMessage,
+  isAssertionLike as _isAssertionLike,
+} from './utils';
 // Expose the Ember assert function on globalThis so the validator compat can use it
 // for backtracking detection. The assert function is stub-able via setDebugFunction
 // which is what expectAssertion() hooks into.
@@ -41,27 +49,6 @@ import {
 } from '@ember/-internals/views/lib/system/utils';
 import { getOwner as _glimmerGetOwner } from '@glimmer/owner';
 
-// Helper to detect assertion-related throws that must escape catch blocks.
-function _isAssertionLike(e: unknown): boolean {
-  if (e instanceof Error) {
-    return e.message?.includes('Assertion Failed') === true;
-  }
-  if (e !== null && e !== undefined && typeof e === 'object') return true;
-  return false;
-}
-
-// Inline the style warning message to avoid potential import issues
-function constructStyleDeprecationMessage(affectedStyle: string): string {
-  return (
-    'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
-    'please ensure that values being bound are properly escaped. For more information, ' +
-    'including how to disable this warning, see ' +
-    'https://deprecations.emberjs.com/v1.x/#toc_binding-style-attributes. ' +
-    'Style affected: "' +
-    affectedStyle +
-    '"'
-  );
-}
 import { CustomHelperManager, FunctionHelperManager, FROM_CAPABILITIES } from './helper-manager';
 // Spec-level symbols may come from the `@glimmer/validator` barrel (present in
 // BOTH the real validator and the GXT shim — the classic build resolves the

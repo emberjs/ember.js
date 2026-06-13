@@ -10,24 +10,18 @@
 import { assert as emberAssert } from '@ember/debug';
 import { deprecate as emberDeprecate } from '@ember/debug';
 import { getDebugFunction } from '@ember/debug';
-import { pascalToKebab, isAllDigits, parseInElementInsertBefore } from './utils';
+import {
+  pascalToKebab,
+  isAllDigits,
+  parseInElementInsertBefore,
+  constructStyleDeprecationMessage as _constructStyleDeprecationMessage,
+  isAssertionLike as _isAssertionLike,
+} from './utils';
 import {
   initChildViews as _emberInitChildViews,
   getElementView as _emberGetElementView,
   collectChildViews as _emberCollectChildViews,
 } from '@ember/-internals/views/lib/system/utils';
-
-// Helper to detect assertion-related throws that must escape catch blocks.
-// The expectAssertion test helper throws a non-Error sentinel (BREAK = {})
-// when a stubbed assert fires. Also re-throws actual Assertion Failed errors.
-function _isAssertionLike(e: unknown): boolean {
-  if (e instanceof Error) {
-    return e.message?.includes('Assertion Failed') === true;
-  }
-  // Non-Error, non-null/undefined objects may be the BREAK sentinel from expectAssertion.
-  if (e !== null && e !== undefined && typeof e === 'object') return true;
-  return false;
-}
 
 // Utility functions (regex-free)
 
@@ -760,20 +754,6 @@ function hasDynamicModifier(str: string): boolean {
 // `_shouldWarnStyle` + `_styleWarnedElements` are defined in manager.ts (next
 // to their two reader sites) and surfaced via `gxt-bridge`'s `format`
 // capability. See gxt-bridge.ts `GxtFormatCapabilities`.
-
-// Inline the style warning message to avoid importing @ember/-internals/views
-// (which can cause circular dependency issues during module initialization)
-function _constructStyleDeprecationMessage(affectedStyle: string): string {
-  return (
-    'Binding style attributes may introduce cross-site scripting vulnerabilities; ' +
-    'please ensure that values being bound are properly escaped. For more information, ' +
-    'including how to disable this warning, see ' +
-    'https://deprecations.emberjs.com/v1.x/#toc_binding-style-attributes. ' +
-    'Style affected: "' +
-    affectedStyle +
-    '"'
-  );
-}
 
 import { buildUntouchableThis } from '@glimmer/debug-util';
 // Import the GXT runtime compiler
@@ -12793,31 +12773,6 @@ if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
   if ((__origDc as any).__emberWrapped) (g.$_dc as any).__emberWrapped = true;
 }
 
-// NOTE: transformCapitalizedComponents has been moved to the GXT AST compiler
-// (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
-
-// NOTE: transformTripleMustaches has been migrated to the `gxtTripleMustacheTransform`
-// AST visitor (see `buildGxtDialectTransforms`). Triple-mustache `{{{expr}}}` →
-// `<EmberHtmlRaw @value={{expr}} />` is detected on the parsed AST (a
-// `MustacheStatement` with `escaped === false`), NOT rewritten in template source.
-
-// NOTE: transformAngleBracketPositionalParams has been removed.
-// Positional params transform (<Component "Foo" 4 /> → @__pos0__="Foo" @__pos1__={{4}} ...)
-// is now handled in the GXT AST compiler (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
-
-// NOTE: transformComponentHelper, transformCurlyArgsToAngleBracket, and
-// transformLetBlockParamInvocations have been moved to the GXT AST compiler
-// (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
-
-// NOTE: isInsideHtmlAttributeValue and isElementModifier have been moved to the GXT AST compiler
-// (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
-
-// NOTE: transformCurlyBlockComponents (inline form) has been moved to the GXT AST compiler
-// (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
-
-// NOTE: wrapAllTopLevelChildren and wrapTopLevelChildren removed — children lazy
-// wrapping is now handled in the GXT serializer (element.ts) at compile time.
-
 // Template cache for performance
 const templateCache = new Map<string, any>();
 /**
@@ -14377,10 +14332,6 @@ export function precompileTemplate(
   // strips). Handlebars comments `{{! }}` / `{{!-- --}}` parse as
   // `MustacheCommentStatement` and are left to be stripped. No source rewrite needed.
 
-  // onclick={{expr}} → {{on "click" expr}} transform is now handled at the AST level
-  // in the GXT compiler (visitors/element.ts rewriteOnEventAttributes),
-  // gated behind IS_GLIMMER_COMPAT_MODE.
-
   // {{on "evt" handler once=X capture=Y passive=Z}} — the `gxtOnModifierTransform`
   // AST visitor (wired below) renames the modifier to the `on-ext` alias so
   // GXT's `on`-only short-circuit does not drop the hash pairs. `on-ext`
@@ -14423,10 +14374,6 @@ export function precompileTemplate(
       );
     }
   }
-
-  // NOTE: `this.attrs.X` → `@X` rewriting is now handled in the GXT AST compiler
-  // (visitors/utils.ts resolvePath and visitors/index.ts visitPathExpression),
-  // gated behind IS_GLIMMER_COMPAT_MODE.
 
   // Transform {{#in-element dest insertBefore=EXPR}} to extract the insertBefore
   // parameter. GXT's native $_inElement only takes (elementRef, roots, ctx) but
@@ -14473,27 +14420,9 @@ export function precompileTemplate(
     _inElementInsertBefore = parsed.insertBefore;
   }
 
-  // {{mount "engine-name"}} is now handled at the AST level in the GXT compiler
-  // (mustache.ts createMountElement). No runtime regex transform needed.
-
-  // Empty true-branch in {{#if cond}}{{else}}content{{/if}} is now handled
-  // at the AST level in the GXT compiler (block.ts visitBlock allows empty
-  // main body when an inverse/else branch exists). No runtime regex needed.
-
-  // Bare {{this}} → {{this.__gxtSelfString__}} is now handled at the AST level
-  // in the GXT compiler (mustache.ts visitMustache). No runtime regex transform needed.
-
-  // {{#each-in}} is now handled at the AST level in the GXT compiler
-  // (block.ts visitEachInBlock). No runtime regex transform needed.
+  // Residual each-in state placeholder (the {{#each-in}} lowering itself now runs
+  // in the `gxtEachInTransform` AST visitor wired below).
   let _eachInSources: Array<{ propName: string; sourceExpr: string }> = [];
-
-  // (mut (get obj key)) -> (__mutGet obj key) is now handled at the AST level
-  // in the GXT compiler (visitors/index.ts visitSubExpression and
-  // visitors/mustache.ts visitHelperMustache). No runtime regex transform needed.
-
-  // (mut this.prop) / (mut @arg) path annotation is now handled at the AST level
-  // in the GXT compiler (visitors/index.ts visitSubExpression), gated behind
-  // IS_GLIMMER_COMPAT_MODE. No runtime regex transform needed.
 
   // Check for dynamic (helper ...) usage — disallowed in Ember.
   // {{helper this.xxx}} or (helper @xxx) pass dynamic strings which is not allowed.
@@ -14520,71 +14449,17 @@ export function precompileTemplate(
     }
   }
 
-  // {{(modifier "name" args...)}} in element modifier position is now handled at the
-  // AST level in the GXT compiler (visitors/element.ts processEvents), gated behind
-  // IS_GLIMMER_COMPAT_MODE. No runtime regex transform needed.
-  // Pattern 2 (@attr={{modifier refExpr "arg"}}) is left as-is for the modifier helper
-  // in ember-gxt-wrappers.ts to handle at runtime.
-
-  // Foo::Bar namespaced component transform is now handled as a pre-processor
-  // in the GXT compiler (compile.ts transformNamespacedComponents),
-  // gated behind IS_GLIMMER_COMPAT_MODE.
-
-  // PascalCase → kebab-case transform for component names is now handled by the
-  // GXT compiler's customizeComponentName callback (passed in the compile options below).
-  // Triple-mustache {{{expr}}} transform is now handled at compile time
-  // in the GXT AST compiler (mustache visitor, escaped === false check).
-
-  // NOTE: {{component}} helper transform ({{#component "name"}} → <Name />, etc.)
-  // is now handled as a pre-processor in the GXT compiler (plugins/compiler/compile.ts),
-  // gated behind IS_GLIMMER_COMPAT_MODE.
-
-  // NOTE: transformLetBlockParamInvocations has been moved to the GXT AST compiler
-  // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
-
-  // {{input ...}} / {{textarea ...}} → <Input /> / <Textarea /> is now handled at the AST level
-  // in the GXT compiler (mustache.ts createInputTextareaElement). No runtime regex transform needed.
-
-  // Hyphenated built-in helper name renaming (e.g., unique-id → unique_id) is now
-  // handled by the GXT compiler's scope tracker in IS_GLIMMER_COMPAT_MODE.
-  // The compiler normalizes hyphenated names to underscored JS identifiers during
-  // path resolution, so the template text no longer needs pre-processing.
-
-  // NOTE: transformCurlyBlockComponents (inline form) has been moved to the GXT AST compiler
-  // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
-  // Block form was already handled by the GXT block visitor.
-
   // {{#@argName args}}content{{/@argName}} block invocations are now lowered to
   // {{#component @argName args}}content{{/component}} by the
   // `gxtBlockAtArgTransform` AST visitor wired into the GXT compiler's
   // `transforms` hook below (see `buildGxtDialectTransforms`). No
   // template-source string rewrite needed.
 
-  // NOTE: Empty component @__hasBlock__ marker transform has been moved to the GXT AST compiler
-  // (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
-
-  // NOTE: Positional params transform (<Component "Foo" 4 /> → @__pos0__="Foo" @__pos1__={{4}} ...)
-  // has been moved to the GXT AST compiler (plugins/compiler/compile.ts), gated behind IS_GLIMMER_COMPAT_MODE.
-
-  // NOTE: Reserved-word attribute value transforms (e.g. class=class → class=this.class)
-  // are now handled in the GXT AST compiler's resolvePath (visitors/utils.ts).
-  // The Glimmer parser produces a PathExpression for the value and resolvePath
-  // prefixes JS reserved words with `this.` when IS_GLIMMER_COMPAT_MODE is set.
-
   // Block params transform (`<Foo as |x|>{{x}}</Foo>` → `<Foo @__hasBlockParams__="default">{{this.$_bp0}}</Foo>`)
   // is now handled by the `gxtBlockParamsTransform` AST visitor wired into the GXT
   // compiler's `transforms` hook below (see `buildGxtDialectTransforms`). The
   // visitor is shadow-aware (the former `transformBlockParamsInTemplate` string
   // scanner was not). No template-source string rewrite needed.
-
-  // has-block and has-block-params transforms (including attribute-position wrapping)
-  // are now handled at the AST level in the GXT compiler (visitors/index.ts
-  // visitSubExpression + visitors/element.ts visitAttributeValue), gated behind
-  // IS_GLIMMER_COMPAT_MODE. No runtime regex transform needed.
-
-  // ...attributes local override tracking (__splatLocal__ marker) is now handled at the
-  // AST level in the GXT compiler (visitors/element.ts rewriteSplatLocalOverrides),
-  // gated behind IS_GLIMMER_COMPAT_MODE.
 
   // Build bindings set from scopeValues so the GXT compiler knows which names
   // are in scope and should NOT be transformed to built-in symbols (e.g. the
@@ -14790,13 +14665,6 @@ export function precompileTemplate(
       modifiedCode = buf;
     }
 
-    // NOTE: arg-headed dynamic-component tags (`<@model.componentName/>` and
-    // `{{component @model.componentName ...}}`) are now normalized to `$a.`
-    // directly by the GXT serializer's `buildComponentCall` `@`-tag handling
-    // (glimmer-next lifeart/glimmer-next#219), so the former
-    // `_rewriteBareAtArgsToArgsAlias` post-codegen string scrub is no longer
-    // needed. The serializer emits `$_dc(() => $a.model.componentName, ...)`.
-
     // Post-process: When GXT emits $_maybeHelper("name", ...) with a string for a
     // name that is in scope bindings, replace the string with a variable reference.
     // The GXT compiler sometimes emits string-based lookups even for known bindings
@@ -14920,53 +14788,8 @@ export function precompileTemplate(
       }
     );
 
-    // NOTE: inline `(unbound X)` in a sub-expression context (e.g.
-    // `{{yield (unbound this.x)}}`) is now wrapped in the caching
-    // `globalThis.__gxtUnboundEval(__ubCache, "__ubN", () => unbound(...))`
-    // shape directly by the GXT serializer's legacy string path
-    // (`serializeHelperCall`, now at parity with the JSExpression builder —
-    // glimmer-next lifeart/glimmer-next#219), matching the top-level
-    // `{{unbound X}}` form. The former `_rewriteInlineUnbound` post-codegen
-    // scrub is no longer needed.
-
     // Detect unbound usage by checking for __ubCache in the compiled code
     const hasUnbound = modifiedCode.includes('__ubCache');
-    // NOTE: The Let_XXX_scopeN()() double-call fix has been removed — the root cause
-    // was fixed in GXT's applyVariableReplacements() in block.ts, and GXT no longer
-    // generates Let_ naming patterns.
-    // NOTE: $_if condition tagging (__gxtGetCellOrFormula) is now handled in the GXT
-    // serializer (control.ts emits the wrapped call directly in IS_GLIMMER_COMPAT_MODE)
-    // NOTE: $__fn first-arg getter wrapping is now handled in the GXT serializer
-    // (value.ts wraps this.X paths in getters directly in IS_GLIMMER_COMPAT_MODE)
-    // NOTE: Block param children wrapping ($_bp) is now handled in the GXT serializer
-    // (element.ts wraps children containing component calls in arrow functions in IS_GLIMMER_COMPAT_MODE)
-
-    // Scope resolution for helpers (string→ref, built-in shadowing, getter
-    // unwrapping for hash/array/fn) is now handled at compile time by the GXT
-    // compiler's buildHelper/buildScopeOverriddenBuiltIn in value.ts.
-    // The compiler receives scopeBindings via the `bindings` option and:
-    //   1. Emits $_maybeHelper(ref, ...) with direct variable references for
-    //      scope-bound names (no string-based resolution needed)
-    //   2. Emits getter-unwrapping IIFE wrappers for hash/array/fn when a
-    //      scope binding shadows the GXT built-in
-    //   3. Let-block shadowing fix is no longer needed because the built-in
-    //      symbol replacement (step 2) no longer happens as a regex
-
-    // NOTE: $_componentHelper hash getter wrapping is now handled in the GXT serializer
-    // (value.ts wraps hash values in getters directly in IS_GLIMMER_COMPAT_MODE),
-    // INCLUDING the former EXCEPTION case where `(component "x" key=this.path)`
-    // appears inside a `(hash ...)` passed to `{{yield}}` (e.g.
-    // `{{yield (hash foo=(component "nested" p=this.x))}}`). That case previously
-    // routed through the legacy string serializer (`serializeHelperCall`), which
-    // emitted DIRECT hash values (`$_componentHelper(["nested"], { p: this.x })`)
-    // instead of getters — a frozen snapshot for Ember's CurriedComponent manager
-    // (`typeof value === 'function' ? value() : value`). That string path is now
-    // at parity with the JSExpression builder and getter-wraps named args
-    // (`{ p: () => this.x }`) directly (glimmer-next lifeart/glimmer-next#219), so
-    // the former `_wrapComponentHelperHashGetters` post-codegen scrub is gone.
-
-    // NOTE: Component children lazy wrapping ($_tag children) is now handled in the GXT
-    // serializer (element.ts wraps component children in arrow functions in IS_GLIMMER_COMPAT_MODE)
 
     compilationResult.code = modifiedCode;
     try {
