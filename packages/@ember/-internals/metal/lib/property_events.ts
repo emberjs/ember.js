@@ -139,7 +139,7 @@ function notifyPropertyChange(
     // Skip during initialization — reading properties at this stage can trigger
     // computed-property getters whose cache revision hasn't been set yet (e.g. PromiseProxy).
     // Still fire for prototype meta objects so GXT stays in sync.
-    if (meta === null || !meta.isInitializing()) {
+    if (__GXT_MODE__ && (meta === null || !meta.isInitializing())) {
       // The re-render trigger is the `compilePipeline.triggerReRender(obj,
       // keyName)` bridge method. It is optional (load-order independence —
       // classic builds never publish it); when not installed
@@ -407,7 +407,9 @@ function _gxtRecomputeDependents(
   }
   return results;
 }
-installCompilePipelinePart({ recomputeDependents: _gxtRecomputeDependents });
+if (__GXT_MODE__) {
+  installCompilePipelinePart({ recomputeDependents: _gxtRecomputeDependents });
+}
 
 // `notifyPropertyChange` is exposed as a typed
 // `compilePipeline.notifyPropertyChange(obj, keyName, _meta, value)` bridge
@@ -417,6 +419,8 @@ installCompilePipelinePart({ recomputeDependents: _gxtRecomputeDependents });
 // directly import from `@ember/-internals/metal/lib/property_events` because
 // the dependency direction is metal→gxt-backend via `gxt-bridge`, and a reverse
 // direct edge would loop. See `notifyPropertyChange` doc in gxt-bridge.ts.
-installCompilePipelinePart({ notifyPropertyChange });
+if (__GXT_MODE__) {
+  installCompilePipelinePart({ notifyPropertyChange });
+}
 
 export { notifyPropertyChange, beginPropertyChanges, endPropertyChanges, changeProperties };

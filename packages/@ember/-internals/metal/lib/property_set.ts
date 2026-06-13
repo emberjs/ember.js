@@ -79,7 +79,7 @@ export function set<T>(obj: object, keyName: string | number, value: T, tolerant
   // Slice-10 (Cluster B): migrated from `globalThis.__gxtCheckBacktracking` to
   // the typed bridge. Method is optional in the interface (load-order
   // independence — classic builds never publish it), so the call is guarded.
-  if (DEBUG) {
+  if (__GXT_MODE__ && DEBUG) {
     getGxtRenderer()?.backtracking.checkBacktracking?.(obj, keyName);
   }
 

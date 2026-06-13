@@ -265,7 +265,7 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // Slice-10 (Cluster B): migrated from `globalThis.__gxtCheckBacktracking`
     // to the typed bridge. Method is optional in the interface (load-order
     // independence — classic builds never publish it), so the call is guarded.
-    if (DEBUG) {
+    if (__GXT_MODE__ && DEBUG) {
       getGxtRenderer()?.backtracking.checkBacktracking?.(this, key);
     }
     setter(this, newValue);
@@ -335,24 +335,26 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     // (`g.__gxtCurrentlyRendering` was `undefined` pre-install → falsy →
     // proceed). See `isCurrentlyRendering` doc in
     // `@ember/-internals/gxt-backend/gxt-bridge`.
-    const _cp = getGxtRenderer()?.compilePipeline;
-    const _isCR = _cp?.isCurrentlyRendering;
-    if (!(typeof _isCR === 'function' ? _isCR() : false)) {
-      // Slice-25 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
-      // raw-globalThis read to `compilePipeline.triggerReRender(this, key)`
-      // bridge method. The bridge method is optional (load-order independence
-      // — classic builds never publish it); when not installed
-      // (`_cp?.triggerReRender === undefined`) the call is skipped, matching
-      // the pre-slice-25 `typeof === 'function'` guard. Suppression
-      // semantics (the `withTriggerSuppressed(fn)` frame) are preserved by
-      // the module-local `_gxtTriggerSuppressedFlag` short-circuit at the
-      // entry of `_gxtTriggerReRender` in compile.ts. See `triggerReRender`
-      // doc in `@ember/-internals/gxt-backend/gxt-bridge`.
-      _cp?.triggerReRender?.(this, key);
-      // Schedule a pending sync so runTask → __gxtSyncDomNow picks it up
-      // (formerly the `__gxtExternalSchedule` global slot — see §2d host
-      // hooks; the pipeline member is the seam in both modes).
-      _cp?.setPendingSync?.(true);
+    if (__GXT_MODE__) {
+      const _cp = getGxtRenderer()?.compilePipeline;
+      const _isCR = _cp?.isCurrentlyRendering;
+      if (!(typeof _isCR === 'function' ? _isCR() : false)) {
+        // Slice-25 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
+        // raw-globalThis read to `compilePipeline.triggerReRender(this, key)`
+        // bridge method. The bridge method is optional (load-order independence
+        // — classic builds never publish it); when not installed
+        // (`_cp?.triggerReRender === undefined`) the call is skipped, matching
+        // the pre-slice-25 `typeof === 'function'` guard. Suppression
+        // semantics (the `withTriggerSuppressed(fn)` frame) are preserved by
+        // the module-local `_gxtTriggerSuppressedFlag` short-circuit at the
+        // entry of `_gxtTriggerReRender` in compile.ts. See `triggerReRender`
+        // doc in `@ember/-internals/gxt-backend/gxt-bridge`.
+        _cp?.triggerReRender?.(this, key);
+        // Schedule a pending sync so runTask → __gxtSyncDomNow picks it up
+        // (formerly the `__gxtExternalSchedule` global slot — see §2d host
+        // hooks; the pipeline member is the seam in both modes).
+        _cp?.setPendingSync?.(true);
+      }
     }
   }
 

@@ -386,13 +386,22 @@ class CoreObject {
           // slice-20 deferral. With this change, ALL THREE GXT state-flag
           // reads in the proxy-trap predicate go through the bridge
           // exclusively — no globalThis fallbacks remain.
-          const _pipeline = getGxtRenderer()?.compilePipeline;
-          const _isRen = _pipeline?.isRendering;
-          const _isSyn = _pipeline?.isSyncing;
-          const _isInTrig = _pipeline?.isInTriggerReRender;
-          const _renderingNow = typeof _isRen === 'function' ? _isRen() : false;
-          const _syncingNow = typeof _isSyn === 'function' ? _isSyn() : false;
-          const _inTriggerNow = typeof _isInTrig === 'function' ? _isInTrig() : false;
+          let _renderingNow = false;
+          let _syncingNow = false;
+          let _inTriggerNow = false;
+          // The three GXT render-state flags are GXT-only; classic (where
+          // getGxtRenderer() is null) always saw `false`. Gate on the literal
+          // `__GXT_MODE__` so the bridge read tree-shakes out of the classic
+          // bundle (this proxy trap is otherwise DEBUG-reachable).
+          if (__GXT_MODE__) {
+            const _pipeline = getGxtRenderer()?.compilePipeline;
+            const _isRen = _pipeline?.isRendering;
+            const _isSyn = _pipeline?.isSyncing;
+            const _isInTrig = _pipeline?.isInTriggerReRender;
+            _renderingNow = typeof _isRen === 'function' ? _isRen() : false;
+            _syncingNow = typeof _isSyn === 'function' ? _isSyn() : false;
+            _inTriggerNow = typeof _isInTrig === 'function' ? _isInTrig() : false;
+          }
           const _isInternalPath =
             _renderingNow ||
             _syncingNow ||
