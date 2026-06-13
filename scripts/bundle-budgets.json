@@ -1,18 +1,19 @@
 {
   "_comment": "Bundle-size budgets for the dual-backend (classic / EMBER_RENDER_BACKEND=gxt) rollup build. Each entry's `path` is the DIRECTORY rollup emits for that build mode: dist/prod (production, debug macros stripped) and dist/dev (debug). The gate (scripts/bundle-size-check.mjs) concatenates every *.js under the directory (sorted) and measures raw/gzip/brotli on the concatenation \u2014 the single-bundle-equivalent size of the whole backend output. Numbers below were captured from HEAD with a 5% headroom baked in; the check fails on anything more than 5% over (effective ceiling ~10.25% over HEAD). Refresh with: rm -rf dist && [EMBER_RENDER_BACKEND=gxt] npx rollup --config && node scripts/bundle-size-check.mjs <backend>. HISTORY: pre-2026-06 budgets tracked the legacy single-file AMD bundles (dist/ember.prod.js etc.) which the rollup ESM build no longer produces, so the gate was inert (every entry MISSING). Phase 2.6 (commit c8eb53d95e) externalized @lifeart/gxt + DEBUG-gated __gxtRebuildViewTreeFromDom, dropping the inlined gxt dist + its @glimmer/syntax/@handlebars/parser deps from ember.prod (~600KB raw). The 2026-06 bundle-audit follow-up repointed the gate at the real dist/prod + dist/dev trees and recaptured numbers.",
   "classic": {
+    "_comment": "RE-BASELINED 2026-06-13 (GXT build-time-gating): the dual-backend PR had leaked GXT integration code (the gxt-bridge accessors + render machinery) into the SHARED classic modules behind RUNTIME guards (getGxtRenderer()?.x) that rollup could not DCE, inflating the classic dist ~+19.7 kB brotli. That code is now wrapped in build-time `if (__GXT_MODE__)` blocks (folded to `false` + DCE'd in the classic rollup) and gxt-bridge.ts is marked side-effect-free in rollup.config.mjs so it tree-shakes out entirely. Numbers below recaptured at the new (lower) floor with the standard 5% headroom baked in; brotli prod 398784 -> 379120, dev 430690 -> 411044. The companion presence guard in bundle-size-check.mjs (assertNoGxtResidue) fails if any LIVE gxt-bridge call site reappears, backstopping a regression that a size budget alone can't catch.",
     "entries": [
       {
         "path": "dist/prod",
-        "maxRaw": 2072602,
-        "maxGz": 517138,
-        "maxBr": 398784
+        "maxRaw": 2448998,
+        "maxGz": 604758,
+        "maxBr": 379120
       },
       {
         "path": "dist/dev",
-        "maxRaw": 2276545,
-        "maxGz": 562073,
-        "maxBr": 430690
+        "maxRaw": 2666892,
+        "maxGz": 656349,
+        "maxBr": 411044
       }
     ]
   },

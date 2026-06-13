@@ -70,6 +70,59 @@ if (!budget) {
 
 const TOLERANCE = 1.05; // 5 percent headroom
 
+// GXT-residue guard for the classic backend. Every GXT-only call site in the
+// shared glimmer/metal/runloop/routing modules is wrapped in a build-time
+// `if (__GXT_MODE__)` block (or a `__GXT_MODE__ ? … : …` branch) that the
+// classic rollup folds to `false` and DCEs. A new GXT-only site added WITHOUT a
+// build-time gate re-inflates the classic bundle (the +19.7 kB brotli
+// regression this guard backstops) and reappears here as a LIVE gxt-bridge call
+// site. Size budgets can't catch it once re-baselined at the fixed floor, so
+// assert the live bridge call/publish patterns are absent.
+//
+// We match CALL/PUBLISH shapes — `getGxtRenderer()?.`, `getGxtRenderer().`, and
+// the bridge `install*Part(` / `set*( ` publishers — rather than the bare
+// `getGxtRenderer` identifier. ember-source ships UNMINIFIED ESM under dist/,
+// so two kinds of inert residue legitimately survive and must NOT trip the
+// guard: (1) doc-comments in retained shared modules that mention the bridge by
+// name, and (2) a tiny dead `function getGxtRenderer(){…}` / `setAmbientOwner`
+// accessor stub that rollup keeps merely because reachable modules still carry
+// the (now-unused) `import { … } from '…/gxt-bridge'` statement. Both are
+// stripped by consuming apps' minifiers and carry no live behavior; only a real
+// ungated CALL re-introduces the regression, which the patterns below catch.
+const CLASSIC_LIVE_GXT_PATTERNS = [
+  /getGxtRenderer\(\)\s*\??\./, // getGxtRenderer()?.x or getGxtRenderer().x — a live read
+  /\binstallCompilePipelinePart\s*\(/,
+  /\binstallRootComponentPart\s*\(/,
+  /\binstallViewUtilsPart\s*\(/,
+  /\binstallRuntimePart\s*\(/,
+  /\binstallRenderPassPart\s*\(/,
+  /\binstallBacktrackingPart\s*\(/,
+  /\bsetGxtRenderer\s*\(/,
+  /\bsetControllerOutletRerender\s*\(/,
+];
+
+// Strip `//…` line comments and `/* … */` block comments so doc-prose that
+// merely names the bridge can't false-positive. Deliberately simple (no full
+// JS tokenizer): the dist is generated code, and the live patterns we match are
+// distinctive enough that the rare `//` inside a string literal is harmless.
+function stripComments(text) {
+  return text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+}
+
+function assertNoGxtResidue(buf, label) {
+  const code = stripComments(buf.toString('utf-8'));
+  const hits = CLASSIC_LIVE_GXT_PATTERNS.filter((re) => re.test(code)).map((re) => re.source);
+  if (hits.length > 0) {
+    console.error(
+      `  FAIL: classic ${label} contains LIVE gxt-bridge code [${hits.join(', ')}] — ` +
+        `a GXT-only site is missing its build-time \`if (__GXT_MODE__)\` gate ` +
+        `(see scripts/bundle-budgets.json _comment and the dual-build workflow).`
+    );
+    return false;
+  }
+  return true;
+}
+
 function fmt(n) {
   return n.toLocaleString('en-US');
 }
@@ -112,6 +165,13 @@ for (const entry of budget.entries) {
   if (overs.length > 0) {
     console.error(`  FAIL: exceeds 5% tolerance (${overs.join(', ')})`);
     failed = true;
+  }
+
+  // Classic dist must stay free of LIVE gxt-bridge code (see the guard above).
+  if (backend === 'classic') {
+    if (!assertNoGxtResidue(buf, entry.path)) {
+      failed = true;
+    }
   }
 }
 
