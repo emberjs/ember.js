@@ -39,6 +39,6 @@
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
     "router_js": "workspace:*",
-    "@lifeart/gxt": "0.0.65"
+    "@lifeart/gxt": "0.0.67"
   }
 }

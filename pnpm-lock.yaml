@@ -31,8 +31,8 @@ importers:
         specifier: ^1.10.2
         version: 1.10.2
       '@lifeart/gxt':
-        specifier: 0.0.65
-        version: 0.0.65
+        specifier: 0.0.67
+        version: 0.0.67
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -392,8 +392,8 @@ importers:
         specifier: workspace:*
         version: link:../../@glimmer/vm
       '@lifeart/gxt':
-        specifier: 0.0.65
-        version: 0.0.65
+        specifier: 0.0.67
+        version: 0.0.67
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -925,8 +925,8 @@ importers:
         specifier: workspace:*
         version: link:../../@glimmer/validator
       '@lifeart/gxt':
-        specifier: 0.0.65
-        version: 0.0.65
+        specifier: 0.0.67
+        version: 0.0.67
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1043,8 +1043,8 @@ importers:
         specifier: workspace:*
         version: link:../../@glimmer/validator
       '@lifeart/gxt':
-        specifier: 0.0.65
-        version: 0.0.65
+        specifier: 0.0.67
+        version: 0.0.67
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -2493,8 +2493,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0
       '@lifeart/gxt':
-        specifier: 0.0.65
-        version: 0.0.65
+        specifier: 0.0.67
+        version: 0.0.67
       autoprefixer:
         specifier: ^10.4.19
         version: 10.5.0(postcss@8.5.15)
@@ -3197,8 +3197,8 @@ importers:
   smoke-tests/v2-app-gxt-template:
     devDependencies:
       '@lifeart/gxt':
-        specifier: 0.0.65
-        version: 0.0.65
+        specifier: 0.0.67
+        version: 0.0.67
       decorator-transforms:
         specifier: ^2.3.1
         version: 2.3.2(@babel/core@7.29.7)
@@ -4961,8 +4961,8 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@lifeart/gxt@0.0.65':
-    resolution: {integrity: sha512-3oK83j1A6dO6ej1yopNtD5IN5x7vaJPiv32As3CE0S/4qNVRUph0RM6eQfZQE8mkWVzJUJWB97BjlsNtZh5xqg==}
+  '@lifeart/gxt@0.0.67':
+    resolution: {integrity: sha512-/wA6krLQid6ur07nuEY3E+pZq3CIu/d+SP4jvbPJcgxevvkWJ5XSNSk9EuOPIF12ZDTb8//YNXaBvYcEWrMhAw==}
 
   '@lint-todo/utils@13.1.1':
     resolution: {integrity: sha512-F5z53uvRIF4dYfFfJP3a2Cqg+4P1dgJchJsFnsZE0eZp0LK8X7g2J0CsJHRgns+skpXOlM7n5vFGwkWCWj8qJg==}
@@ -15037,7 +15037,7 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@lifeart/gxt@0.0.65':
+  '@lifeart/gxt@0.0.67':
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
       '@babel/preset-typescript': 7.29.7(@babel/core@7.29.7)

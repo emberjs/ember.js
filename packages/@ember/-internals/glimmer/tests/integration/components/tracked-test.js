@@ -684,18 +684,15 @@ moduleFor(
 
       // GXT parity note: the rendered output and invalidation BOUNDARIES are
       // identical on both backends (the click step above asserts the inner
-      // update does NOT leak upstream, unbranched). But GXT's fine-grained
-      // binding re-evaluates a consumed getter once more per upstream
-      // invalidation: the second read is the load-bearing render-time
-      // dependency re-tracking pass (re-entangling the getter's deps in the
-      // fresh tracking frame), not a redundant value recompute — collapsing
-      // it regresses dynamic-component reactivity. So the getter-evaluation
-      // COUNT (not the result) differs by exactly one here.
-      assert.equal(
-        outerRenderCount,
-        __GXT_MODE__ ? 3 : 2,
-        'outer component updates based on context'
-      );
+      // update does NOT leak upstream, unbranched), and the outer getter now
+      // re-evaluates the SAME number of times as classic. Earlier GXT builds
+      // counted one extra here — a render-time dependency re-tracking read.
+      // @lifeart/gxt 0.0.67's reactivity (the #226 flushCellOpcodes tracker
+      // handling) collapses that redundant read with no observable effect:
+      // the full suite — Glimmerish / dynamic-component / reactivity — is
+      // green at this count in both dev and production gxt builds (the prod
+      // build, with IS_DEV_MODE introspection stripped, always counted 2).
+      assert.equal(outerRenderCount, 2, 'outer component updates based on context');
       assert.equal(innerRenderCount, 3, 'inner component updates based on outer component');
     }
 
