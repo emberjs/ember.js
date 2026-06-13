@@ -182,6 +182,19 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
         if (id.includes('packages/@glimmer/env')) return false;
         if (id.includes('packages/@glimmer/local-debug-flags')) return false;
         if (!debugMacrosMode && id.includes('packages/@ember/debug')) return false;
+        // The GXT bridge is a pure registry (typed accessors over module-local
+        // state — no required top-level side effect). Shared classic modules
+        // (glimmer/metal/runloop/routing) keep a static `import { … } from
+        // '…/gxt-bridge'` at file scope, and every USE of those bindings is
+        // wrapped in a build-time `if (__GXT_MODE__)` block that the classic
+        // rollup folds to dead code. With the default `moduleSideEffects: true`,
+        // rollup would still retain the whole bridge module (and emit its
+        // ~5.6 kB of exported accessors) just because the import edge is
+        // reachable. Marking it side-effect-free lets rollup drop the bridge
+        // entirely once all its exports are unused — which is the case in the
+        // classic dist after the `__GXT_MODE__` gating. In GXT builds the
+        // bridge's exports ARE used, so it is retained normally.
+        if (id.includes('gxt-backend/gxt-bridge')) return false;
 
         /**
          * our own side-effects are not for us to decide when to remove
