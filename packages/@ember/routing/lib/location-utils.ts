@@ -47,3 +47,14 @@ export function getFullPath(location: Location): string {
 export function replacePath(location: Location, path: string): void {
   location.replace(location.origin + path);
 }
+
+const REGEXP_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/g;
+
+/**
+  @private
+
+  Escapes RegExp special characters so a value can be matched literally.
+*/
+export function escapeRegExp(string: string): string {
+  return string.replace(REGEXP_SPECIAL_CHARS, '\\$&');
+}
