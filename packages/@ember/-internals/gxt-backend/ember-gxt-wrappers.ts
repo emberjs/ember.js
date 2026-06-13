@@ -1395,6 +1395,28 @@ function createEmberMaybeHelper(original: Function) {
  * - Dynamic components (<@foo />, <this.foo />)
  * - Named blocks (<:header>, <:default>)
  * - EmberHtmlRaw (triple mustaches {{{expr}}})
+ *
+ * DELETION CANDIDATE (~900-1300 lines) — the component-resolution branches.
+ * `$_tag_ember` is double-wrapped: this (inner) layer is also wrapped by
+ * compile.ts's `$_tag_ember` (the `__compileWrapped` pass). Branch-entry
+ * instrumentation proved the inner component branches (mightBeComponent /
+ * `<@foo/>` / `<this.foo/>` / named-block / helper-fallback) are DEAD for the
+ * runtime-compiled (.hbs, loose-mode by-name) path — the OUTER compile.ts
+ * layer handles those and returns early. The inner layer is only reached
+ * DIRECTLY (bypassing the outer) as the `$_tag` symbol that BUILD-TIME
+ * .gts/.gjs templates import (re-exported via gxt-with-runtime-hbs). In strict
+ * mode (.gts/.gjs) every component is a DIRECT lexical reference, so the
+ * compiler emits `$_c(ComponentValue, …)` / `$_dc(…)` — never
+ * `$_tag('Name', …)` as a string — which means these by-name registry
+ * branches never fire there either. If that holds, the component branches
+ * here are removable; the file-element coercion bits are not.
+ *
+ * OPEN QUESTION before deleting: how does Embroider transform .gts/.gjs? If
+ * its build path can still route a component through `$_tag('Name', …)` as a
+ * string (rather than a lexical `$_c`), these branches are load-bearing for
+ * that path. Verify the Embroider-compiled output for a representative
+ * component-invoking .gts (`<FooBar/>`, `<this.x/>`, `{{component this.y}}`)
+ * lands on `$_c`/`$_dc`, not `$_tag('…')`, before removing them.
  */
 // Fast-path eligibility for the ember-gxt-wrappers $_tag wrapper. Mirrors
 // compile.ts's predicate. A plain lowercase-HTML element with no Ember-special
