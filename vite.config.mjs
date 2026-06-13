@@ -86,6 +86,11 @@ export default defineConfig(({ mode }) => {
       // so source files using the bare identifier work in both bundlers. See
       // types/gxt-ambient.d.ts for the TS declaration.
       replaceGxtModeFlag(useGxt),
+      // Inline the build-time `__GXT_CLASSIC_COMPONENTS__` flag (default true).
+      // Mirrors the rollup `replaceGxtClassicComponentsFlag` plugin so the test
+      // harness keeps full classic-component support unless a native run sets
+      // GXT_NATIVE=1 / EMBER_GXT_CLASSIC=0. See types/gxt-ambient.d.ts.
+      replaceGxtClassicComponentsFlag(),
       // Deduplicate GXT internal modules so they share one reactive core.
       // Vite's dev server already follows symlinks for /@fs/ serving, but
       // this plugin ensures consistency in environments where that doesn't work.
@@ -371,6 +376,27 @@ function replaceGxtModeFlag(useGxt) {
       if (cleanId.includes('/node_modules/')) return null;
       if (!code.includes('__GXT_MODE__')) return null;
       const replaced = code.replace(GXT_MODE_RE, literal);
+      if (replaced === code) return null;
+      return { code: replaced, map: null };
+    },
+  };
+}
+
+// Mirror of rollup's `replaceGxtClassicComponentsFlag`. Default true; flipped
+// false by GXT_NATIVE=1 / EMBER_GXT_CLASSIC=0 to exercise the native (no
+// classic-component emulation) path under the vite test harness.
+function replaceGxtClassicComponentsFlag() {
+  const classic = !(process.env.GXT_NATIVE === '1' || process.env.EMBER_GXT_CLASSIC === '0');
+  const literal = classic ? 'true' : 'false';
+  const RE = /\b__GXT_CLASSIC_COMPONENTS__\b/g;
+  return {
+    name: 'replace-gxt-classic-components-flag',
+    enforce: 'pre',
+    transform(code, id) {
+      const cleanId = id.split('?')[0].split('#')[0];
+      if (cleanId.includes('/node_modules/')) return null;
+      if (!code.includes('__GXT_CLASSIC_COMPONENTS__')) return null;
+      const replaced = code.replace(RE, literal);
       if (replaced === code) return null;
       return { code: replaced, map: null };
     },

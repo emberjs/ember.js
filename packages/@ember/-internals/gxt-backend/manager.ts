@@ -8757,6 +8757,14 @@ const $_MANAGERS = {
         }
         const kebabKomp = pascalToKebab(komp);
         if (kebabKomp.includes('-')) {
+          // PHASE A gate: the dash-name custom-element fallback is classic-only.
+          // In a native build (__GXT_CLASSIC_COMPONENTS__ === false) the
+          // `renderCustomElement` subtree is DCE'd, so hard-error instead.
+          if (!__GXT_CLASSIC_COMPONENTS__) {
+            throw new Error(
+              `[gxt] custom-element <${kebabKomp}> requires the classic-components build (this is a native GXT build; the @ember/component emulation was DCE-stripped)`
+            );
+          }
           return renderCustomElement(kebabKomp, args, fw, ctx);
         }
 
@@ -8880,6 +8888,15 @@ const $_MANAGERS = {
 
       // Handle classic factory-based component
       if (komp?.create && typeof komp.create === 'function') {
+        // PHASE B gate (classic-curly entry). Native builds DCE
+        // `handleClassicComponent` + `renderClassicComponent` + the
+        // wrapper/binding builders. Glimmer/template-only components never
+        // reach this branch (they resolve via the manager/template paths above).
+        if (!__GXT_CLASSIC_COMPONENTS__) {
+          throw new Error(
+            '[gxt] classic @ember/component requires the classic-components build (this is a native GXT build; the @ember/component emulation was DCE-stripped)'
+          );
+        }
         return handleClassicComponent(komp, args, fw, ctx, owner);
       }
 
@@ -10299,6 +10316,16 @@ function handleStringComponent(
     // Check if this is a custom component manager (from setComponentManager)
     // These are factory functions, not internal manager objects
     if (typeof manager === 'function') {
+      // PHASE A gate: RFC-213 custom component managers are classic-only.
+      // Native builds DCE `handleCustomManagedComponent` + the eager-validate
+      // block below (everything after this throw is unreachable when the flag
+      // is false). When the flag is true this folds to `if (false) throw` and
+      // the original code is byte-unchanged.
+      if (!__GXT_CLASSIC_COMPONENTS__) {
+        throw new Error(
+          '[gxt] custom component managers (setComponentManager) require the classic-components build (this is a native GXT build; the @ember/component emulation was DCE-stripped)'
+        );
+      }
       // Eagerly validate capabilities so the error propagates to assert.throws()
       // via the captureRenderError / flushRenderErrors mechanism.
       const eagerManager = manager(owner);
@@ -10643,6 +10670,14 @@ function handleStringComponent(
 
       let result;
       if (isClassic) {
+        // PHASE B gate (classic-curly render path, by-name resolution). The
+        // Glimmer branch below is the bucket-A path that MUST survive a native
+        // build; only the classic `renderClassicComponent` subtree is DCE'd.
+        if (!__GXT_CLASSIC_COMPONENTS__) {
+          throw new Error(
+            '[gxt] classic @ember/component requires the classic-components build (this is a native GXT build; the @ember/component emulation was DCE-stripped)'
+          );
+        }
         result = renderClassicComponent(
           instance,
           resolvedTemplate,
@@ -12386,6 +12421,13 @@ function handleManagedComponent(
     // resolves reactive props (href, class, etc.) via args.named refs that
     // _refreshManagedSlotArgs also repoints on each HIT.
     if (componentType === 'LinkTo') {
+      // PHASE A gate: classic <LinkTo> rendering. Native builds DCE
+      // `renderLinkToElement`; the native wedge is link-to.gts.
+      if (!__GXT_CLASSIC_COMPONENTS__) {
+        throw new Error(
+          '[gxt] <LinkTo> requires the classic-components build (this is a native GXT build; the @ember/component emulation was DCE-stripped)'
+        );
+      }
       return renderLinkToElement(instance, slotRef.latestArgs, slotRef.latestFw);
     }
 

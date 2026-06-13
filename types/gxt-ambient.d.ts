@@ -12,6 +12,15 @@
 // so the substitution can const-fold and DCE drops the dead branch.
 declare const __GXT_MODE__: boolean;
 
+// Build-time constant that toggles the CLASSIC @ember/component emulation in
+// the gxt-backend manager. Default TRUE (the compat build keeps full classic
+// curly + custom-manager + LinkTo + custom-element support, byte-unchanged).
+// A NATIVE/Polaris GXT build flips it FALSE (trigger: GXT_NATIVE=1 or
+// EMBER_GXT_CLASSIC=0; see rollup.config.mjs / vite.config.mjs) so terser/DCE
+// strips the classic component subtree out of `manager.ts`. Read as the bare
+// identifier so the substitution const-folds and the dead branch is dropped.
+declare const __GXT_CLASSIC_COMPONENTS__: boolean;
+
 declare module '@lifeart/gxt' {
   const value: any;
   export = value;
