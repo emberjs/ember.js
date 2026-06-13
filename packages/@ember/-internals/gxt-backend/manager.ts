@@ -1821,6 +1821,16 @@ function createComponentInstance(
   // `trigger` here centralizes the gate. We wrap both because CoreView#init
   // captures `trigger` from `_trigger` at init time, creating independent
   // instance-local references — wrapping only one leaves the other live.
+  //
+  // CLASSIC-ONLY (gated): the next three blocks are all classic
+  // @ember/component instance setup — (1) suppressing classic interactive-only
+  // view lifecycle hooks (willInsertElement/didInsertElement/…) in
+  // non-interactive mode, (2) restoring classic x-toggle `isExpanded` view-tree
+  // state across force-rerenders, and (3) the tag-less classNameBindings /
+  // attributeBindings / elementId misuse asserts. Glimmer components have none
+  // of these (no Evented `trigger`, no elementId, no classNameBindings), so the
+  // blocks no-op at runtime for them and are DCE-stripped in a native build.
+  if (__GXT_CLASSIC_COMPONENTS__) {
   try {
     if (!isInteractiveModeChecked()) {
       const buildGate = (orig: Function) => {
@@ -1896,6 +1906,7 @@ function createComponentInstance(
       'You cannot use `elementId` on a tag-less component',
       !argElementId && !instanceElementId
     );
+  }
   }
 
   // Ensure arg tracking is on the instance
