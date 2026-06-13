@@ -44,18 +44,24 @@ const testDependencies = [
 // When unset (or "classic"), exposedDependencies() returns the exact same
 // result — the classic build is unchanged.
 const RENDER_BACKEND = process.env.EMBER_RENDER_BACKEND || 'classic';
-const USE_GXT_BACKEND = RENDER_BACKEND === 'gxt';
+// `gxt-native` is the GXT backend with classic @ember/component emulation gated
+// OFF — it is a sub-mode of GXT, so a single var selects it (no second flag
+// needed). Both `gxt` (compat) and `gxt-native` turn the GXT backend on.
+const USE_GXT_BACKEND = RENDER_BACKEND === 'gxt' || RENDER_BACKEND === 'gxt-native';
 
 // Build-time toggle for the CLASSIC @ember/component emulation inside the
 // gxt-backend manager. Default TRUE: the compat GXT build (and the classic
 // build, which never imports manager.ts) is byte-unchanged. A NATIVE/Polaris
-// GXT build sets GXT_NATIVE=1 (or EMBER_GXT_CLASSIC=0) to flip it FALSE, so the
+// GXT build (`EMBER_RENDER_BACKEND=gxt-native`) flips it FALSE, so the
 // `if (__GXT_CLASSIC_COMPONENTS__)` / `if (!__GXT_CLASSIC_COMPONENTS__)` guards
 // in manager.ts const-fold and terser/DCE strips the classic curly +
 // custom-manager + LinkTo + custom-element subtrees. Mirrors the __GXT_MODE__
-// flag mechanism (replaceGxtClassicComponentsFlag below).
+// flag mechanism (replaceGxtClassicComponentsFlag below). The legacy
+// GXT_NATIVE=1 / EMBER_GXT_CLASSIC=0 vars still work as aliases.
 const GXT_CLASSIC_COMPONENTS = !(
-  process.env.GXT_NATIVE === '1' || process.env.EMBER_GXT_CLASSIC === '0'
+  RENDER_BACKEND === 'gxt-native' ||
+  process.env.GXT_NATIVE === '1' ||
+  process.env.EMBER_GXT_CLASSIC === '0'
 );
 
 // Bundle visualizer (gated by BUNDLE_VISUALIZER=1). Loaded here

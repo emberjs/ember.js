@@ -154,5 +154,9 @@ export function gxtSubpathRegExp(find) {
  * in CI, so honoring both there is purely additive.
  */
 export function isGxtEnabled(env = process.env) {
-  return env.GXT_MODE === 'true' || env.EMBER_RENDER_BACKEND === 'gxt';
+  return (
+    env.GXT_MODE === 'true' ||
+    env.EMBER_RENDER_BACKEND === 'gxt' ||
+    env.EMBER_RENDER_BACKEND === 'gxt-native'
+  );
 }

@@ -383,10 +383,15 @@ function replaceGxtModeFlag(useGxt) {
 }
 
 // Mirror of rollup's `replaceGxtClassicComponentsFlag`. Default true; flipped
-// false by GXT_NATIVE=1 / EMBER_GXT_CLASSIC=0 to exercise the native (no
+// false by `EMBER_RENDER_BACKEND=gxt-native` (single canonical var) — or the
+// legacy GXT_NATIVE=1 / EMBER_GXT_CLASSIC=0 aliases — to exercise the native (no
 // classic-component emulation) path under the vite test harness.
 function replaceGxtClassicComponentsFlag() {
-  const classic = !(process.env.GXT_NATIVE === '1' || process.env.EMBER_GXT_CLASSIC === '0');
+  const classic = !(
+    process.env.EMBER_RENDER_BACKEND === 'gxt-native' ||
+    process.env.GXT_NATIVE === '1' ||
+    process.env.EMBER_GXT_CLASSIC === '0'
+  );
   const literal = classic ? 'true' : 'false';
   const RE = /\b__GXT_CLASSIC_COMPONENTS__\b/g;
   return {
