@@ -195,6 +195,11 @@ export interface View {
 // Use glimmerCurry imported from @glimmer/runtime
 const curry = glimmerCurry;
 
+// VM-free stand-in for @glimmer/runtime's `EMPTY_POSITIONAL` (a frozen empty
+// reference array), used on the GXT outlet-append path so the renderer chunk
+// does not import `@glimmer/runtime/lib/vm/arguments` under __GXT_MODE__.
+const EMPTY_POSITIONAL_GXT: readonly Reference[] = Object.freeze([]);
+
 export class DynamicScope implements GlimmerDynamicScope {
   constructor(
     public view: View | null,
@@ -282,25 +287,39 @@ class ComponentRootState {
     options: { into: Cursor; args?: Record<string, unknown> }
   ) {
     this.#render = errorLoopTransaction(() => {
-      let iterator = glimmerRenderComponent(
-        state.context,
-        state.builder(state.env, options.into),
-        state.owner,
-        definition,
-        options?.args
-      );
+      // ComponentRootState drives the public `renderComponent` API through the
+      // Glimmer VM. In GXT mode `renderComponent` escape-hatches to
+      // `_renderComponentGxt` BEFORE constructing a ComponentRootState (see the
+      // `if (__GXT_MODE__) return _renderComponentGxt(...)` guard there), so this
+      // class is classic-only. The `!__GXT_MODE__` gate makes the VM bindings
+      // (`glimmerRenderComponent`, `state.context`, `state.builder`/`state.env`)
+      // statically dead in the GXT dist so the VM render loop tree-shakes out.
+      if (!__GXT_MODE__) {
+        let iterator = glimmerRenderComponent(
+          state.context,
+          state.builder(state.env, options.into),
+          state.owner,
+          definition,
+          options?.args
+        );
 
-      let result = (this.#result = iterator.sync());
+        let result = (this.#result = iterator.sync());
 
-      associateDestroyableChild(this, this.#result);
+        associateDestroyableChild(this, this.#result);
 
-      this.#render = errorLoopTransaction(() => {
-        if (isDestroying(result) || isDestroyed(result)) return;
+        this.#render = errorLoopTransaction(() => {
+          if (isDestroying(result) || isDestroyed(result)) return;
 
-        return result.rerender({
-          alwaysRevalidate: false,
+          return result.rerender({
+            alwaysRevalidate: false,
+          });
         });
-      });
+      } else {
+        throw new Error(
+          '[gxt] ComponentRootState reached in GXT mode; the GXT backend renders ' +
+            'via _renderComponentGxt and ships no Glimmer VM render loop — no fallback.'
+        );
+      }
     });
   }
 
@@ -854,9 +873,12 @@ class ClassicRootState {
 
           // Deferred lifecycle errors are stored on __gxtDeferredError and
           // re-thrown by renderRoots (outside errorLoopTransaction).
-        } else {
+        } else if (!__GXT_MODE__) {
           // Use standard glimmer rendering (resolves the lazy VM context —
-          // correct here: this branch actually runs the Glimmer VM)
+          // correct here: this branch actually runs the Glimmer VM). This
+          // branch is statically dead in the GXT dist: every Ember template is
+          // gxt-compiled, so under __GXT_MODE__ a non-GXT template lands in the
+          // hard-error `else` below instead of the (purged) VM render loop.
           const context = getContext();
           let iterator = renderMain(
             context,
@@ -878,6 +900,11 @@ class ClassicRootState {
               alwaysRevalidate: false,
             });
           });
+        } else {
+          // GXT mode reached the non-GXT-template branch. The GXT build ships no
+          // Glimmer VM render/opcode machinery, so there is deliberately no VM
+          // fallback — surface a clear error rather than silently mis-rendering.
+          throw new Error('[gxt] non-GXT template encountered in GXT mode; no VM fallback');
         }
       } catch (e) {
         // See gxtRenderIncomplete doc on the field declaration.
@@ -899,7 +926,7 @@ class ClassicRootState {
   }
 
   destroy() {
-    let { result, env } = this;
+    let { result } = this;
 
     this.destroyed = true;
 
@@ -908,28 +935,29 @@ class ClassicRootState {
     this.render = undefined as any;
 
     if (result !== undefined) {
-      /*
-       Handles these scenarios:
-
-       * When roots are removed during standard rendering process, a transaction exists already
-         `.begin()` / `.commit()` are not needed.
-       * When roots are being destroyed manually (`component.append(); component.destroy() case), no
-         transaction exists already.
-       * When roots are being destroyed during `Renderer#destroy`, no transaction exists
-
-       */
-
-      inTransaction(env, () => {
-        // GXT's destroyElementSync walks GXT-specific bookkeeping; no-op for a
-        // Glimmer VM RenderResult that was produced by the classic renderMain
-        // path, but still incurs traversal cost and may interact poorly with
-        // foreign objects. Gate on __GXT_MODE__ to keep classic-Ember teardown
-        // identical to upstream.
-        if (__GXT_MODE__) {
-          destroyElementSync(result!);
-        }
+      if (__GXT_MODE__) {
+        // GXT teardown: `result` is the minimal gxt result object. Destruction
+        // is owned by GXT's own destroyable system, so there is no Glimmer VM
+        // transaction to open — and crucially we must NOT read `this.env`,
+        // which would force the (purged) VM evaluation context into existence
+        // (a 4MB ProgramHeapImpl). See `createContext` (GXT thrower).
+        destroyElementSync(result!);
         destroy(result!);
-      });
+      } else {
+        /*
+         Handles these scenarios:
+
+         * When roots are removed during standard rendering process, a transaction exists already
+           `.begin()` / `.commit()` are not needed.
+         * When roots are being destroyed manually (`component.append(); component.destroy() case), no
+           transaction exists already.
+         * When roots are being destroyed during `Renderer#destroy`, no transaction exists
+
+         */
+        inTransaction(this.env, () => {
+          destroy(result!);
+        });
+      }
     }
   }
 }
@@ -2630,6 +2658,19 @@ export function renderComponent(
 const RENDER_CACHE = new WeakMap<IntoTarget, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
 
+// Default element builder for the classic VM render loop. Under __GXT_MODE__
+// the Glimmer VM element-builder is never invoked (renderMain /
+// glimmerRenderComponent are gated off and the GXT render path never touches a
+// VM builder), so resolving the literal `clientBuilder` here would needlessly
+// retain the VM element-builder module. Gate it behind `!__GXT_MODE__` so the
+// `clientBuilder` reference is statically dead in the GXT dist; the GXT branch
+// is a thrower (fail loud, no VM fallback) that is never reached at runtime.
+const defaultClientBuilder: IBuilder = __GXT_MODE__
+  ? (((): never => {
+      throw new Error('[gxt] Glimmer VM element builder requested in GXT mode; no VM fallback.');
+    }) as unknown as IBuilder)
+  : clientBuilder;
+
 class BaseRenderer {
   static strict(
     owner: object,
@@ -2641,7 +2682,7 @@ class BaseRenderer {
       { hasDOM: hasDOM, ...options },
       document as SimpleDocument,
       new ResolverImpl(),
-      clientBuilder
+      defaultClientBuilder
     );
   }
 
@@ -2658,20 +2699,44 @@ class BaseRenderer {
     // see the `createContext` doc on `RendererData` for why (per-test program
     // heap allocations exhausted the cumulative GXT testem realm; non-VM
     // paths like `remove()`/`rerender()` must stay allocation-free).
-    const createContext = (): EvaluationContext => {
-      let sharedArtifacts = artifacts();
+    //
+    // Under __GXT_MODE__ the entire Glimmer VM evaluation context (artifacts /
+    // ProgramHeapImpl / runtimeOptions / EvaluationContextImpl / RuntimeOpImpl)
+    // is dead: the GXT backend never executes opcodes. Defining the real thunk
+    // only in the classic branch makes every one of those VM bindings
+    // statically unreferenced in the GXT dist, so the ~166KB opcode-eval core
+    // tree-shakes out. Every GXT-reachable force-site (ClassicRootState.destroy
+    // teardown, `_context`, `debugRenderTree`) is gated NOT to call this; the
+    // GXT thrower below fails loud if a classic-only path ever forces it,
+    // honoring the "no VM fallback in GXT mode" contract.
+    let createContext: () => EvaluationContext;
+    if (__GXT_MODE__) {
+      createContext = (() => {
+        throw new Error(
+          '[gxt] Glimmer VM evaluation context requested in GXT mode; the VM ' +
+            'render/opcode pipeline is not part of the GXT build (no fallback).'
+        );
+      }) as () => EvaluationContext;
+    } else {
+      createContext = (): EvaluationContext => {
+        let sharedArtifacts = artifacts();
 
-      /**
-       * SAFETY: are there consequences for being looser with *this* owner?
-       *         the public API for `owner` is kinda `Partial<InternalOwner>`
-       *         aka: implement only what you need.
-       *         But for actual ember apps, you *need* to implement everything
-       *         an app needs (which will actually change and become less over time)
-       */
-      let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
-      let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
-      return new EvaluationContextImpl(sharedArtifacts, (heap) => new RuntimeOpImpl(heap), options);
-    };
+        /**
+         * SAFETY: are there consequences for being looser with *this* owner?
+         *         the public API for `owner` is kinda `Partial<InternalOwner>`
+         *         aka: implement only what you need.
+         *         But for actual ember apps, you *need* to implement everything
+         *         an app needs (which will actually change and become less over time)
+         */
+        let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
+        let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
+        return new EvaluationContextImpl(
+          sharedArtifacts,
+          (heap) => new RuntimeOpImpl(heap),
+          options
+        );
+      };
+    }
 
     this.state = RendererState.create(
       {
@@ -2692,6 +2757,18 @@ class BaseRenderer {
   }
 
   get debugRenderTree(): DebugRenderTree {
+    if (__GXT_MODE__) {
+      // The classic debugRenderTree lives on the Glimmer VM environment, which
+      // is not built under the GXT backend. Reading `this.state.env` here would
+      // force the (purged) VM evaluation context. GXT exposes its own render
+      // tree via the gxt-backend debug-render-tree shim (captureRenderTree), so
+      // fail loud rather than spin up a 4MB VM heap with no opcodes to run.
+      throw new Error(
+        '[gxt] the classic Glimmer VM debugRenderTree is unavailable in GXT mode; ' +
+          'use the GXT debug-render-tree shim (captureRenderTree) instead — no VM fallback.'
+      );
+    }
+
     let { debugRenderTree } = this.state.env;
 
     assert(
@@ -2741,7 +2818,7 @@ export class Renderer extends BaseRenderer {
       { hasDOM: hasDOM, ...options },
       document as SimpleDocument,
       new ResolverImpl(),
-      clientBuilder
+      defaultClientBuilder
     );
   }
 
@@ -2768,7 +2845,7 @@ export class Renderer extends BaseRenderer {
     env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
-    builder = clientBuilder,
+    builder = defaultClientBuilder,
     resolver = new ResolverImpl()
   ) {
     super(owner, env, document, resolver, builder);
@@ -2810,7 +2887,19 @@ export class Renderer extends BaseRenderer {
     named['controller'] = UNDEFINED_REFERENCE;
     named['model'] = UNDEFINED_REFERENCE;
 
-    let args = createCapturedArgs(named, EMPTY_POSITIONAL);
+    // appendOutletView IS on the GXT root-outlet append path, so use a
+    // VM-free inline equivalent of `createCapturedArgs(named, EMPTY_POSITIONAL)`
+    // — which is just `{ named, positional }` (see @glimmer/runtime vm/arguments)
+    // — under __GXT_MODE__. This drops renderer.ts's last `@glimmer/runtime/
+    // lib/vm/arguments` reference so the renderer chunk no longer pulls the VM
+    // arguments module. (The arguments module itself stays in the GXT dist: it
+    // is genuinely shared by the live GXT helpers {{fn}}/{{concat}}/(hash)/
+    // (array)/{{on}} — see the report.)
+    let args = __GXT_MODE__
+      ? ({ named, positional: EMPTY_POSITIONAL_GXT } as unknown as ReturnType<
+          typeof createCapturedArgs
+        >)
+      : createCapturedArgs(named, EMPTY_POSITIONAL);
 
     this._appendDefinition(
       view,
@@ -2911,12 +3000,13 @@ export class Renderer extends BaseRenderer {
   }
 
   get _context() {
-    const ctx = this.state.context;
-    // In GXT mode the Glimmer VM is bypassed, so the ProgramConstants'
-    // component/helper/template counters never advance. The runtime-resolver
-    // cache test (`ember-glimmer runtime resolver cache`) reads these to
-    // verify caching behaviour. Mirror the counters onto the live context
-    // from the GXT-side tracker so the assertions see the same changes.
+    // In GXT mode the Glimmer VM is bypassed, so there is no real
+    // EvaluationContext — `this.state.context` would force the (purged) VM
+    // evaluation context (createContext throws). The runtime-resolver cache
+    // test (`ember-glimmer runtime resolver cache`) only reads
+    // `_context.constants.{component,helper,modifier}DefinitionCount`; serve a
+    // synthetic constants bag straight from the GXT-side resolver-cache tracker
+    // so the assertions see the live counts WITHOUT spinning up the VM.
     //
     // Slice-78 (Cluster B): routes through the typed-bridge getter
     // `compilePipeline.getResolverCacheCounters?.()` rather than the
@@ -2924,23 +3014,19 @@ export class Renderer extends BaseRenderer {
     // The bridge returns the live module-local reference declared in
     // `gxt-backend/ember-gxt-wrappers.ts:249` (see the slice-78 docblock
     // there). Optional-chain short-circuits to `undefined` if the bridge
-    // is not yet installed (load-order edge — classic-Ember build) or if
-    // the `__GXT_MODE__` gate is true but the gxt-backend hasn't loaded
-    // yet; both edges preserve the pre-slice-78 truthy-guard semantics.
+    // is not yet installed (load-order edge); the `|| 0` preserves the
+    // pre-slice-78 truthy-guard semantics.
     if (__GXT_MODE__) {
       const counters = getGxtRenderer()?.compilePipeline.getResolverCacheCounters?.();
-      if (counters && ctx && (ctx as any).constants) {
-        const constants = (ctx as any).constants as {
-          componentDefinitionCount: number;
-          helperDefinitionCount: number;
-          modifierDefinitionCount: number;
-        };
-        constants.componentDefinitionCount = counters.componentDefinitionCount || 0;
-        constants.helperDefinitionCount = counters.helperDefinitionCount || 0;
-        constants.modifierDefinitionCount = counters.modifierDefinitionCount || 0;
-      }
+      return {
+        constants: {
+          componentDefinitionCount: counters?.componentDefinitionCount || 0,
+          helperDefinitionCount: counters?.helperDefinitionCount || 0,
+          modifierDefinitionCount: counters?.modifierDefinitionCount || 0,
+        },
+      } as unknown as EvaluationContext;
     }
-    return ctx;
+    return this.state.context;
   }
 
   register(view: any): void {
