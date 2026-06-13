@@ -986,6 +986,106 @@ import {
 import { peekInstanceCapture, getOwnerWithFallback } from './manager';
 
 const _SLOTS_SYM = Symbol.for('gxt-slots');
+const _PROPS_SYM = Symbol.for('gxt-props');
+const _ARGS_SYM = Symbol.for('gxt-args');
+
+// JS reserved words cannot be used as JS variable names, so scope-binding
+// injection (strict-mode templates with scopeValues) prefixes any binding
+// whose normalized name collides with one of these. Hoisted module const;
+// previously inlined verbatim at the two scope-injection sites.
+const JS_RESERVED_WORDS = new Set([
+  'break',
+  'case',
+  'catch',
+  'continue',
+  'debugger',
+  'default',
+  'delete',
+  'do',
+  'else',
+  'finally',
+  'for',
+  'function',
+  'if',
+  'in',
+  'instanceof',
+  'new',
+  'return',
+  'switch',
+  'this',
+  'throw',
+  'try',
+  'typeof',
+  'var',
+  'void',
+  'while',
+  'with',
+  'class',
+  'const',
+  'enum',
+  'export',
+  'extends',
+  'import',
+  'super',
+  'implements',
+  'interface',
+  'let',
+  'package',
+  'private',
+  'protected',
+  'public',
+  'static',
+  'yield',
+  'await',
+]);
+
+// Built-in helpers that cannot be overridden by an owner-registered helper of
+// the same name. Hoisted module const; previously inlined identically at the
+// two override-assert sites ($_maybeHelper override check + owner.factoryFor).
+const BUILTIN_HELPER_NAMES: readonly string[] = [
+  'array',
+  'hash',
+  'concat',
+  'fn',
+  'get',
+  'mut',
+  'readonly',
+  'unique-id',
+  'unbound',
+  '__mutGet',
+];
+
+/**
+ * Install `value` at `globalThis[name]` behind a getter that ignores writes, so
+ * a later `setupGlobalScope()` pass (GXT iterates its symbol table and writes
+ * each symbol to globalThis) cannot clobber the Ember-patched version. The
+ * descriptor is `configurable: true, enumerable: true`; on a defineProperty
+ * failure it falls back to a direct assignment (installs `value` either way).
+ *
+ * Hoisted from four byte-identical inline traps ($_if, $_eachSync,
+ * $_maybeModifier, $_helperHelper). The other protect traps in this file
+ * intentionally differ and are NOT routed through this helper: `$_inElement`
+ * uses `configurable: false`, `$_c` is deliberately non-enumerable (its
+ * setupGlobalScope comment depends on it), and `$__log`/`$__if` use
+ * side-effecting setters that re-restore the Ember version on write.
+ */
+function protectGlobal(name: string, value: unknown): void {
+  const _g = globalThis as any;
+  try {
+    Object.defineProperty(_g, name, {
+      get() {
+        return value;
+      },
+      set(_v: any) {
+        /* protect from setupGlobalScope overwrite */
+      },
+      configurable: true,
+      enumerable: true,
+    });
+  } catch {
+    _g[name] = value;
+  }
+}
 
 // Set by glimmer-next on its native block wrappers ($_ucw / $_inElement). When
 // present on a ctx, the $_tag root-id re-stamp below must be skipped — the
@@ -1015,7 +1115,7 @@ function _setInternalProp(obj: any, key: string, value: any): void {
     configurable: true,
   });
   if (key === '$slots') {
-    const sym = Symbol.for('gxt-slots');
+    const sym = _SLOTS_SYM;
     try {
       Object.defineProperty(obj, sym, {
         value,
@@ -5376,21 +5476,7 @@ function patchGlobalIf() {
   g.$_if.__emberPatched = true;
 
   // Protect $_if from being overwritten by setupGlobalScope()
-  const _patchedIf = g.$_if;
-  try {
-    Object.defineProperty(g, '$_if', {
-      get() {
-        return _patchedIf;
-      },
-      set(_v: any) {
-        /* keep patched version */
-      },
-      configurable: true,
-      enumerable: true,
-    });
-  } catch {
-    /* ignore */
-  }
+  protectGlobal('$_if', g.$_if);
 
   return true;
 }
@@ -6651,21 +6737,7 @@ function patchGlobalEachSync() {
   g.$_eachSync.__emberPatched = true;
 
   // Protect from setupGlobalScope overwrite
-  const _patchedEach = g.$_eachSync;
-  try {
-    Object.defineProperty(g, '$_eachSync', {
-      get() {
-        return _patchedEach;
-      },
-      set(_v: any) {
-        /* keep patched version */
-      },
-      configurable: true,
-      enumerable: true,
-    });
-  } catch {
-    /* ignore */
-  }
+  protectGlobal('$_eachSync', g.$_eachSync);
   return true;
 }
 patchGlobalEachSync();
@@ -7627,20 +7699,7 @@ installRuntimePart({
       // Fall back to GXT's original
       return origMaybeModifier(modifier, element, props, hashArgs);
     };
-    try {
-      Object.defineProperty(globalThis, '$_maybeModifier', {
-        get() {
-          return emberMaybeModifier;
-        },
-        set(_v: any) {
-          /* protect from setupGlobalScope overwrite */
-        },
-        configurable: true,
-        enumerable: true,
-      });
-    } catch {
-      (globalThis as any).$_maybeModifier = emberMaybeModifier;
-    }
+    protectGlobal('$_maybeModifier', emberMaybeModifier);
   }
 }
 
@@ -7666,20 +7725,7 @@ installRuntimePart({
     }
     return undefined;
   };
-  try {
-    Object.defineProperty(globalThis, '$_helperHelper', {
-      get() {
-        return emberHelperHelper;
-      },
-      set(_v: any) {
-        /* protect from setupGlobalScope overwrite */
-      },
-      configurable: true,
-      enumerable: true,
-    });
-  } catch {
-    _g.$_helperHelper = emberHelperHelper;
-  }
+  protectGlobal('$_helperHelper', emberHelperHelper);
 }
 
 // Register built-in keyword helpers for GXT integration
@@ -8730,7 +8776,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     // with the appropriate namespace flag set for $_tag to use.
     if (comp === _gxtSVGProvider || comp === _gxtHTMLProvider || comp === _gxtMathMLProvider) {
       const ns = comp === _gxtSVGProvider ? 'svg' : comp === _gxtMathMLProvider ? 'mathml' : null;
-      const $SLOTS = Symbol.for('gxt-slots');
+      const $SLOTS = _SLOTS_SYM;
       const slots = args?.[$SLOTS] || args?.args?.[$SLOTS];
       const defaultSlot = slots?.default;
       if (typeof defaultSlot === 'function') {
@@ -8757,7 +8803,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       // This occurs with {{#@inner}}content{{/@inner}} where @inner holds a curried component.
       if (comp.startsWith('@') && ctx) {
         const argName = comp.slice(1);
-        const $ARGS_KEY = Symbol.for('gxt-args');
+        const $ARGS_KEY = _ARGS_SYM;
         const ctxArgs = ctx[$ARGS_KEY] || ctx['args'] || ctx?.args || {};
         let componentValue = ctxArgs[argName];
         // Resolve getter functions
@@ -8777,7 +8823,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         if (componentValue && componentValue.__isCurriedComponent) {
           const managers = g.$_MANAGERS;
           if (managers?.component?.canHandle?.(componentValue)) {
-            const $SLOTS = Symbol.for('gxt-slots');
+            const $SLOTS = _SLOTS_SYM;
             const namedArgs: any = {};
             if (args) {
               for (const key of Object.keys(args)) {
@@ -8813,7 +8859,7 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       }
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
-        const $PROPS = Symbol.for('gxt-props');
+        const $PROPS = _PROPS_SYM;
         const fw = args?.[$PROPS] || null;
         const handleResult = managers.component.handle(comp, args, fw, ctx);
         if (typeof handleResult === 'function') {
@@ -8827,8 +8873,8 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       // Build args from the GXT args object
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
-        const $PROPS = Symbol.for('gxt-props');
-        const $SLOTS = Symbol.for('gxt-slots');
+        const $PROPS = _PROPS_SYM;
+        const $SLOTS = _SLOTS_SYM;
         let fw = args?.[$PROPS] || null;
 
         // Extract named args from the GXT args object
@@ -8905,8 +8951,8 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     if (typeof comp === 'function' && comp.__stringComponentName) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
-        const $PROPS = Symbol.for('gxt-props');
-        const $SLOTS = Symbol.for('gxt-slots');
+        const $PROPS = _PROPS_SYM;
+        const $SLOTS = _SLOTS_SYM;
         const namedArgs: any = {};
         let fw = null;
         if (args) {
@@ -8980,8 +9026,8 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     ) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
-        const $PROPS = Symbol.for('gxt-props');
-        const $SLOTS = Symbol.for('gxt-slots');
+        const $PROPS = _PROPS_SYM;
+        const $SLOTS = _SLOTS_SYM;
         const fw = args?.[$PROPS] || null;
         const namedArgs: any = {};
         if (args) {
@@ -9121,8 +9167,8 @@ if (g.$_c && !g.$_c.__emberWrapped) {
     ) {
       const managers = g.$_MANAGERS;
       if (managers?.component?.canHandle?.(comp)) {
-        const $PROPS = Symbol.for('gxt-props');
-        const $SLOTS = Symbol.for('gxt-slots');
+        const $PROPS = _PROPS_SYM;
+        const $SLOTS = _SLOTS_SYM;
         const fw = args?.[$PROPS] || null;
         const namedArgs: any = {};
         const unwrapCurriedHelper2 = (v: any): any => {
@@ -9221,8 +9267,8 @@ if (g.$_c && !g.$_c.__emberWrapped) {
       if (resolved && resolved.__isCurriedComponent) {
         const managers = g.$_MANAGERS;
         if (managers?.component?.canHandle?.(resolved)) {
-          const $PROPS = Symbol.for('gxt-props');
-          const $SLOTS = Symbol.for('gxt-slots');
+          const $PROPS = _PROPS_SYM;
+          const $SLOTS = _SLOTS_SYM;
           const namedArgs: any = {};
           let fw = args?.[$PROPS] || null;
           if (args) {
@@ -9302,8 +9348,8 @@ if (g.$_c && !g.$_c.__emberWrapped) {
         (elDef as any).__isElementHelperDefinition === true
       ) {
         const tagName = (elDef as any).tagName;
-        const $SLOTS = Symbol.for('gxt-slots');
-        const $PROPS = Symbol.for('gxt-props');
+        const $SLOTS = _SLOTS_SYM;
+        const $PROPS = _PROPS_SYM;
         const fw = args?.[$PROPS] || null;
         const gxtSlots = args?.[$SLOTS] || args?.args?.[$SLOTS];
         const defaultSlot =
@@ -9446,8 +9492,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
       const managers = g.$_MANAGERS;
       if (resolvedTag.__isCurriedComponent || resolvedTag.__stringComponentName) {
         if (managers?.component?.canHandle?.(resolvedTag)) {
-          const $PROPS = Symbol.for('gxt-props');
-          const $SLOTS = Symbol.for('gxt-slots');
+          const $PROPS = _PROPS_SYM;
+          const $SLOTS = _SLOTS_SYM;
           // Build fw from tagProps (GXT format [props, attrs, events, parentFw?])
           const fwProps: [string, any][] = [];
           const fwAttrs: [string, any][] = [];
@@ -10164,18 +10210,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Check if the user is trying to override a built-in helper.
           // Built-in helpers (array, hash, concat, fn, etc.) cannot be overridden.
           if (helperFactory || helperLookup) {
-            const BUILTIN_HELPERS = [
-              'array',
-              'hash',
-              'concat',
-              'fn',
-              'get',
-              'mut',
-              'readonly',
-              'unique-id',
-              'unbound',
-              '__mutGet',
-            ];
+            const BUILTIN_HELPERS = BUILTIN_HELPER_NAMES;
             if (BUILTIN_HELPERS.includes(kebabName)) {
               emberAssert(
                 `You attempted to overwrite the built-in helper "${kebabName}" which is not allowed. Please rename the helper.`,
@@ -10976,7 +11011,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
           // Pass slots via args so manager.ts can access them.
           // Set on both string key and Symbol key to survive GXT's slot processing.
           _setInternalProp(args, '$slots', slots);
-          args[Symbol.for('gxt-slots')] = slots;
+          args[_SLOTS_SYM] = slots;
 
           // Store raw (unevaluated) children for components that need reactive
           // slot rendering (e.g., LinkTo). The slot function eagerly resolves
@@ -12347,7 +12382,7 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 // the class/attrs.
 if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
   const __origDc = g.$_dc;
-  const $PROPS_SYM = Symbol.for('gxt-props');
+  const $PROPS_SYM = _PROPS_SYM;
 
   g.$_dc = function $_dc_splatfix(componentGetter: any, gxtArgs: any, ctx: any): any {
     const tagProps = gxtArgs && typeof gxtArgs === 'object' ? gxtArgs[$PROPS_SYM] : null;
@@ -12449,7 +12484,7 @@ if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
             }
           }
         }
-        const $SLOTS = Symbol.for('gxt-slots');
+        const $SLOTS = _SLOTS_SYM;
         const slots = gxtArgs[$SLOTS];
         if (slots && typeof slots === 'object') {
           _setInternalProp(mergedArgs, '$slots', slots);
@@ -14408,51 +14443,7 @@ export function precompileTemplate(
     // creates `const get = globalThis[scopeKey]["get"]`, but the compiled code
     // references the string "get" — this fix bridges that gap.
     if (options?.scopeValues && Object.keys(options.scopeValues).length > 0) {
-      const _jsReserved = new Set([
-        'break',
-        'case',
-        'catch',
-        'continue',
-        'debugger',
-        'default',
-        'delete',
-        'do',
-        'else',
-        'finally',
-        'for',
-        'function',
-        'if',
-        'in',
-        'instanceof',
-        'new',
-        'return',
-        'switch',
-        'this',
-        'throw',
-        'try',
-        'typeof',
-        'var',
-        'void',
-        'while',
-        'with',
-        'class',
-        'const',
-        'enum',
-        'export',
-        'extends',
-        'import',
-        'super',
-        'implements',
-        'interface',
-        'let',
-        'package',
-        'private',
-        'protected',
-        'public',
-        'static',
-        'yield',
-        'await',
-      ]);
+      const _jsReserved = JS_RESERVED_WORDS;
       const scopeKeySet = new Set(Object.keys(options.scopeValues));
       for (const key of scopeKeySet) {
         let jsKey = hyphenToUnderscore(key);
@@ -14546,51 +14537,6 @@ export function precompileTemplate(
 
       // Inject scope values as local variables (for strict mode templates with scope)
       // JS reserved words cannot be used as variable names, so we prefix them
-      const JS_RESERVED_WORDS = new Set([
-        'break',
-        'case',
-        'catch',
-        'continue',
-        'debugger',
-        'default',
-        'delete',
-        'do',
-        'else',
-        'finally',
-        'for',
-        'function',
-        'if',
-        'in',
-        'instanceof',
-        'new',
-        'return',
-        'switch',
-        'this',
-        'throw',
-        'try',
-        'typeof',
-        'var',
-        'void',
-        'while',
-        'with',
-        'class',
-        'const',
-        'enum',
-        'export',
-        'extends',
-        'import',
-        'super',
-        'implements',
-        'interface',
-        'let',
-        'package',
-        'private',
-        'protected',
-        'public',
-        'static',
-        'yield',
-        'await',
-      ]);
       let scopeStoreKey = '';
       const scopeAliases = new Map<string, string>(); // original key -> JS alias
       if (scopeVals && scopeKeys.size > 0) {
@@ -16188,18 +16134,6 @@ export function precompileTemplate(
           {
             const _owner = getAmbientOwner();
             if (_owner && !_owner.isDestroyed) {
-              const BUILTIN_HELPER_NAMES = [
-                'array',
-                'hash',
-                'concat',
-                'fn',
-                'get',
-                'mut',
-                'readonly',
-                'unique-id',
-                'unbound',
-                '__mutGet',
-              ];
               for (const builtinName of BUILTIN_HELPER_NAMES) {
                 let hasOverride = false;
                 try {
