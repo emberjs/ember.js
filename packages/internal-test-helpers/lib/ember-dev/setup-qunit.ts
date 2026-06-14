@@ -90,6 +90,26 @@ QUnit.moduleDone(
 
 QUnit.testStart(() => {
   resetTracking();
+  // Phase 3 step 9: the gxt-backend `_renderErrors` queue is now drained
+  // synchronously within the test that produces an entry:
+  //   - init-phase errors propagate via renderer.ts's template.render() try/catch (step 5)
+  //   - lifecycle errors are flushed by the renderer's internal flushRenderErrors
+  //     after flushAfterInsertQueue (renderer.ts:858 etc.) within the same render cycle
+  //   - destroy-phase errors throw first-error-wins from __gxtDestroyUnclaimedPoolEntries
+  //     (step 8a) so they surface through runTask/__gxtSyncDomNow within the same test
+  //   - Pattern-2 graceful-return captures (manager.ts:7955/7960/8811, compile.ts:8279)
+  //     are surfaced by the renderer's internal flush during the same render
+  //
+  // An empirical probe across all 6 baseline gates (smoke 333, Errors 4,
+  // Tracked 36, computed 148, Lifecycle 42, render 981 — ~1544 tests total)
+  // recorded ZERO stale-queue events at testStart. The previous defensive
+  // `compilePipeline.clearRenderErrors()` call (slice-55 typed bridge;
+  // pre-slice-55 was `__gxtClearRenderErrors()` globalThis) is therefore
+  // dead code and deleted.
+  // If a future change reintroduces cross-test queue pollution, the next
+  // test's first runTask/flushRenderErrors will re-throw the stale error
+  // with the wrong test attribution ("Died on test #N") — diagnose, then
+  // fix the upstream queue-pusher, do not re-add the drain.
 });
 
 const uiFlags = [

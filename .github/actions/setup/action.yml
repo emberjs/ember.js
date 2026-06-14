@@ -16,6 +16,11 @@ inputs:
     required: false
     default: "false" # We don't want to use the cache. It causes false passes of CI when updating actions and workflows.
 
+  install-playwright:
+    description: "Install the Playwright chromium browser (used by the GXT browser-test workflows). Default off so the many non-browser jobs are unaffected."
+    required: false
+    default: "false"
+
 runs:
   using: "composite"
   steps:
@@ -43,4 +48,9 @@ runs:
     - run: pnpm install ${INSTALL_OPTIONS}
       env:
         INSTALL_OPTIONS: ${{ fromJSON('{"false":"--no-lockfile", "true":"--frozen-lockfile"}')[inputs.use_lockfile] }}
+      shell: bash
+
+    - name: Install Playwright browsers
+      if: ${{ inputs.install-playwright == 'true' }}
+      run: pnpm exec playwright install --with-deps chromium
       shell: bash

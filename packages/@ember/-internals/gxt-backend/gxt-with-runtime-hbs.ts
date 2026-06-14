@@ -1,0 +1,236 @@
+/**
+ * GXT wrapper that provides Ember-compatible runtime hbs support
+ *
+ * This module re-exports everything from @lifeart/gxt but replaces:
+ * - hbs: with the runtime-compatible version
+ * - $_MANAGERS: with Ember's component/helper/modifier manager
+ * - $_maybeHelper: with Ember-aware wrapper
+ * - $_tag: with Ember-aware wrapper
+ *
+ * NOTE: explicit named re-exports are used instead of `export *` to avoid
+ * Vite's dep optimization issues. Vite rewrites chunk imports within
+ * gxt.index.es.js to use its pre-bundled version, which tree-shakes
+ * exports that aren't directly imported by app code.
+ */
+
+// Set the WITH_EMBER_INTEGRATION global flag BEFORE importing GXT modules.
+// GXT's $_maybeModifier, $_maybeHelper, etc. check this flag to decide whether
+// to delegate to the Ember manager system. Without this, string-based modifier/
+// helper resolution (e.g., {{replace}}, {{on}}) doesn't work.
+(globalThis as any).WITH_EMBER_INTEGRATION = true;
+
+// Use direct path to avoid circular alias (since @lifeart/gxt is aliased to this file)
+// @ts-ignore - direct path import for GXT
+export {
+  // From vm chunk
+  COMPONENT_ID_PROPERTY,
+  RENDERED_NODES_PROPERTY,
+  RENDERING_CONTEXT_PROPERTY,
+  cell,
+  cellFor,
+  configureGXT,
+  effect,
+  formula,
+  isRendering,
+  registerDestructor,
+  setIsRendering,
+  setTracker,
+  getTracker,
+  syncDom,
+  takeRenderingControl,
+  tracked,
+
+  // From component-class chunk
+  Component,
+
+  // From dom chunk
+  $PROPS_SYMBOL,
+  $SLOTS_SYMBOL,
+  $_GET_ARGS,
+  $_GET_FW,
+  $_GET_SCOPES,
+  $_GET_SLOTS,
+  $_HTMLProvider,
+  // $_MANAGERS - overridden below
+  $_MathMLProvider,
+  $_SVGProvider,
+  $_TO_VALUE,
+  $_api,
+  $_args,
+  $_c,
+  $_component,
+  $_componentHelper,
+  // $_dc - overridden below
+  $_each,
+  $_eachSync,
+  $_edp,
+  $_emptySlot,
+  $_fin,
+  $_hasBlock,
+  $_hasBlockParams,
+  $_helper,
+  // $_helperHelper - overridden below
+  $_if,
+  $_inElement,
+  // $_maybeHelper - overridden below
+  $_maybeModifier,
+  $_modifierHelper,
+  $_slot,
+  // $_tag - overridden below
+  $_ucw,
+  $_unwrapArgs,
+  $_unwrapHelperArg,
+  HTMLBrowserDOMApi,
+  RENDERING_CONTEXT,
+  ROOT_CONTEXT,
+  Root,
+  cleanupFastContext,
+  createRoot,
+  destroyElementSync,
+  getContext,
+  getNodeCounter,
+  getParentContext,
+  incrementNodeCounter,
+  initDOM,
+  popParentContext,
+  provideContext,
+  pushParentContext,
+  renderComponent,
+  resetNodeCounter,
+  resolveRenderable,
+  runDestructors,
+  setParentContext,
+  targetFor,
+
+  // From and chunk
+  $__and,
+  $__array,
+  $__debugger,
+  $__eq,
+  $__fn as $__fn_original,
+  $__hash,
+  $__if,
+  $__log,
+  $__not,
+  $__or,
+
+  // From suspense chunk
+  SUSPENSE_CONTEXT,
+  followPromise,
+
+  // From index (local)
+  scope,
+
+  // Additional exports used by compiled templates
+  $args,
+  $fwProp,
+  $template,
+} from '@lifeart/gxt';
+
+// Override $__fn to mark results with __isFnHelper so getArgValue doesn't unwrap them.
+// GXT's original $__fn returns plain arrow functions that look like getters to the
+// Ember compat layer. Marking them prevents accidental invocation during
+// component arg processing.
+function $__fn_ember(fn: any, ...partialArgs: any[]): any {
+  // Check if first arg is a mut cell
+  if (fn && fn.__isMutCell) {
+    const result = (...callArgs: any[]) => {
+      const resolvedArgs = partialArgs.map((a: any) =>
+        typeof a === 'function' && !a.prototype && a.length === 0 && !a.__isMutCell ? a() : a
+      );
+      return fn(...resolvedArgs, ...callArgs);
+    };
+    (result as any).__isFnHelper = true;
+    return result;
+  }
+  // Check if first arg is a getter wrapping a mut cell
+  if (typeof fn === 'function' && !fn.__isMutCell && fn.length === 0 && !fn.prototype) {
+    try {
+      const fnResult = fn();
+      if (fnResult && fnResult.__isMutCell) {
+        const result = (...callArgs: any[]) => {
+          const resolvedArgs = partialArgs.map((a: any) =>
+            typeof a === 'function' && !a.prototype && a.length === 0 && !a.__isMutCell ? a() : a
+          );
+          const currentMut = fn();
+          return currentMut(...resolvedArgs, ...callArgs);
+        };
+        (result as any).__isFnHelper = true;
+        return result;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  // Default: delegate to original $__fn but mark result
+  const result = $__fn_original(fn, ...partialArgs);
+  if (typeof result === 'function') {
+    (result as any).__isFnHelper = true;
+  }
+  return result;
+}
+export { $__fn_ember as $__fn };
+
+// Override hbs with runtime-compatible version
+export { hbs } from './runtime-hbs';
+
+// Override $_MANAGERS with Ember's component/helper/modifier manager
+export { $_MANAGERS } from './manager';
+
+// Override $_maybeHelper, $_tag, and $_dc with Ember-aware wrappers
+export { $_maybeHelper, $_tag, $_dc } from './ember-gxt-wrappers';
+
+// Override $_helperHelper to route through Ember's helper manager.
+// GXT compiles `{{helper "name"}}` and `{{helper (helper "name") "extra"}}` as
+// `$_helperHelper(positional, named)` calls. Ember semantics require that the
+// FIRST positional element be the helper definition (a string name, a helper
+// function, or a previously-curried helper reference), and the rest be
+// positional arguments to feed the helper.
+//
+// Behaviour:
+//   - Called in subexpression position (e.g. inner `(helper "name")`):
+//     returns a curried helper reference (an __emberCurriedHelper function
+//     produced by manager.ts's `helper.handle`).
+//   - Called in content/attribute position: the enclosing `$_maybeHelper`
+//     already invokes the resulting curried helper to get its value, so the
+//     curried-helper return propagates correctly through the usual pipeline.
+function $_helperHelper_ember(positional: any[], named: any): any {
+  const unwrapVal = (v: any) =>
+    typeof v === 'function' && !v.prototype && v.length === 0 ? v() : v;
+  const head =
+    Array.isArray(positional) && positional.length > 0 ? unwrapVal(positional[0]) : undefined;
+  const rest = Array.isArray(positional) && positional.length > 1 ? positional.slice(1) : [];
+  const managers = (globalThis as any).$_MANAGERS;
+  if (managers?.helper?.handle) {
+    return managers.helper.handle(head, rest, named || {});
+  }
+  // Fallback: return undefined.
+  return undefined;
+}
+export { $_helperHelper_ember as $_helperHelper };
+
+// Default export with overrides
+// @ts-ignore - direct path import (avoid circular alias: @lifeart/gxt → this file)
+import * as gxtModule from '@lifeart/gxt';
+// Publish the GXT module reference via the typed gxt-bridge
+// (`runtime.getGxtModule`) so manager.ts can obtain the GXT-internal
+// `$_MANAGERS` reference without a globalThis read. The install API merges the
+// part immediately if manager.ts has already installed the renderer; otherwise
+// it's queued and flushed on `setGxtRenderer`.
+//
+// The GXT-original `$_MANAGERS` reference is also published via
+// `runtime.getOriginalManagers` on the same install call. Both writers
+// (this file AND compile.ts) contribute the same object via
+// `installRuntimePart`; last-writer-wins is benign because both reference
+// the same `@lifeart/gxt` module instance (via rollup manualChunks
+// consolidation).
+import { installRuntimePart } from './gxt-bridge';
+installRuntimePart({
+  getGxtModule: () => gxtModule,
+  getOriginalManagers: () => gxtModule.$_MANAGERS,
+});
+import { hbs } from './runtime-hbs';
+export default {
+  ...gxtModule,
+  hbs,
+};

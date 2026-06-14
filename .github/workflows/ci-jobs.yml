@@ -87,8 +87,11 @@ jobs:
         run: pnpm vite build --mode=development
         env:
           NODE_ENV: development
+          GXT_MODE: 'true'
       - name: test
         run: pnpm test
+        env:
+          GXT_MODE: 'true'
 
   variant-tests:
     name: ${{ matrix.name }}
@@ -123,12 +126,14 @@ jobs:
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
         env:
           NODE_ENV: ${{ matrix.BUILD || 'development' }}
+          GXT_MODE: 'true'
       - name: test
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
           RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
+          GXT_MODE: 'true'
 
         run: pnpm test
 
@@ -177,6 +182,12 @@ jobs:
           use_lockfile: "false"
       - name: build
         run: pnpm build
+      - name: build gxt package
+        if: contains(matrix.name, 'emberSourceGxt')
+        run: node scripts/build-gxt-package.mjs
+      - name: install playwright chromium (gxt boot smoke)
+        if: contains(matrix.name, 'emberSourceGxt')
+        run: npx playwright install --with-deps chromium
       - name: test
         working-directory: smoke-tests/scenarios
         run: |
@@ -200,6 +211,12 @@ jobs:
           use_lockfile: "false"
       - name: build
         run: pnpm build
+      - name: build gxt package
+        if: contains(matrix.name, 'emberSourceGxt')
+        run: node scripts/build-gxt-package.mjs
+      - name: install playwright chromium (gxt boot smoke)
+        if: contains(matrix.name, 'emberSourceGxt')
+        run: npx playwright install --with-deps chromium
       - name: test
         env:
           OVERRIDE_DEPRECATION_VERSION: "15.0.0"

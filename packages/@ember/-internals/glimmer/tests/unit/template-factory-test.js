@@ -67,12 +67,29 @@ moduleFor(
 
       this.render('{{x-precompiled name="precompiled"}} {{x-compiled name="compiled"}}');
 
+      // GXT parity note: precompile===compile identity (the property under
+      // test) holds on both backends — both factories parse and render
+      // identically, asserted unbranched below. Only the cache-traffic
+      // deltas differ: GXT renders component layouts through its own
+      // compile pipeline, so repeated factory(owner) lookups (classic: one
+      // per component render, plus debugRenderTree re-fetches) collapse to
+      // a single classic-cache hit alongside `this.render`'s 1 miss.
       this.expectCacheChanges(
-        {
-          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 5 : 2,
-          // from this.render
-          templateCacheMisses: 1,
-        },
+        __GXT_MODE__
+          ? {
+              // The single GXT hit is the debug-render-tree re-read of the
+              // top-level template — present only when the render tree is
+              // enabled (dev test harness), absent in production builds.
+              // (`diff` below drops zero deltas, so omit the key entirely
+              // when no hit is expected.)
+              ...(ENV._DEBUG_RENDER_TREE ? { templateCacheHits: 1 } : {}),
+              templateCacheMisses: 1,
+            }
+          : {
+              templateCacheHits: ENV._DEBUG_RENDER_TREE ? 5 : 2,
+              // from this.render
+              templateCacheMisses: 1,
+            },
         'hits 2'
       );
       this.assertText('Hello precompiled Hello compiled');

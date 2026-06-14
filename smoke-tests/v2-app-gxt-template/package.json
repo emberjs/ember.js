@@ -1,0 +1,30 @@
+{
+  "name": "v2-app-gxt-template",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Minimal Ember app template consuming the GXT-backend ember-source build (ember-source-gxt) through the non-Embroider GXT Vite pipeline",
+  "repository": "",
+  "license": "MIT",
+  "author": "",
+  "exports": {
+    "./*": "./app/*"
+  },
+  "scripts": {
+    "build": "vite build",
+    "start": "vite",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "ember-source": "workspace:*",
+    "ember-strict-application-resolver": "^0.1.1",
+    "vite": "^7.3.1",
+    "@lifeart/gxt": "0.0.67",
+    "decorator-transforms": "^2.3.1"
+  },
+  "engines": {
+    "node": ">= 20"
+  },
+  "ember": {
+    "edition": "octane"
+  }
+}

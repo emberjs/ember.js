@@ -32,6 +32,17 @@ export default [
       'packages/@handlebars/parser/lib/parser.js',
       'packages/@handlebars/parser/src/**',
       'tracerbench-testing/',
+      'packages/@ember/-internals/gxt-backend/**',
+      // Excluded from the root tsconfig project (like gxt-backend/demo), so
+      // the typed-lint parserOptions.project cannot parse it; it has its own
+      // vitest suite (packages/demo vitest.gxt-unit.config.mts).
+      'packages/@glimmer/component-gxt/**',
+      'packages/demo/**',
+      'scripts/gxt-test-runner/**',
+      'scripts/debug-artifacts/**',
+      // Assembled ember-source-gxt package output (git-ignored build artifact;
+      // scripts/build-gxt-package.mjs) — lint the sources, not the dist.
+      'dist-gxt-package/',
     ],
   },
   pluginJs.configs.recommended,
@@ -161,6 +172,10 @@ export default [
         DOMRect: true,
         DOMRectList: true,
         globalThis: true,
+        // Build-time constant: inlined to true/false by the vite/rollup GXT
+        // wiring (see scripts/gxt-alias-map.mjs consumers); declared ambiently
+        // for TS in types/gxt-ambient.d.ts.
+        __GXT_MODE__: true,
       },
 
       ecmaVersion: 2017,
@@ -232,6 +247,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
+      '**/vite.config.mjs',
+      'scripts/**/*.mjs',
       'tests/node-blueprints/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
@@ -254,6 +271,8 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
+      '**/vite.config.mjs',
+      'scripts/**/*.mjs',
       'tests/node-blueprints/**/*.js',
       'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
@@ -275,6 +294,28 @@ export default [
       'no-throw-literal': 'error',
       'disable-features/disable-async-await': 'off',
       'disable-features/disable-generator-functions': 'off',
+    },
+  },
+  {
+    files: ['**/vite.config.mjs', 'scripts/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
+      'n/no-process-exit': 'off',
+      'n/hashbang': 'off',
+      'n/no-unpublished-bin': 'off',
+    },
+  },
+  {
+    // GXT integration scaffolding in core glimmer files: debug logging gated
+    // behind DEBUG_TEMPLATE_LOOKUP / similar runtime flags.
+    files: [
+      'packages/@ember/-internals/glimmer/lib/templates/**/*.ts',
+      'packages/@ember/-internals/glimmer/lib/renderer.ts',
+      'packages/@ember/-internals/glimmer/lib/component-managers/unwrap-template.ts',
+    ],
+    rules: {
+      'no-console': 'off',
+      'no-implicit-coercion': 'off',
     },
   },
   {

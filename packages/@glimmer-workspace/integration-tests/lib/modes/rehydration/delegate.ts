@@ -43,6 +43,16 @@ import { renderTemplate } from '../jit/render';
 import { TestJitRuntimeResolver } from '../jit/resolver';
 import { debugRehydrateTree } from './builder';
 
+// Phase 4 of the GXT dual-backend integration plan ships a parallel
+// `GxtRehydrationDelegate` that drives GXT's own render path (see
+// ./gxt-delegate). It is exported here for opt-in use but is NOT the
+// default — empirically, the classic JIT-based delegate is more
+// robust for text/attribute tests under GXT_MODE today and should
+// keep its status as the default. New tests or CI configurations
+// that want to exercise the GXT rehydration surface can import
+// `GxtRehydrationDelegate` directly from this module.
+export { GxtRehydrationDelegate } from './gxt-delegate';
+
 export interface RehydrationStats {
   clearedNodes: SimpleNode[];
 }

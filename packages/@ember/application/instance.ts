@@ -107,6 +107,31 @@ class ApplicationInstance extends EngineInstance {
       this.rootElement = this.application.rootElement;
     }
 
+    // GXT mode only: when rehydrating, the rootElement already contains
+    // serialized DOM from a prior render (typically FastBoot). GXT's render
+    // pipeline appends freshly-rendered content alongside whatever is already
+    // there, which would duplicate the output. For the rehydrate path, we
+    // clear the existing content so the new render fully replaces it. This is
+    // a non-semantic-preserving approximation of Glimmer's rehydration builder
+    // (which reuses existing nodes), but it produces the same observable
+    // DOM shape when templates haven't changed. Classic builds MUST NOT clear:
+    // the real rehydration builder consumes the serialized nodes in place —
+    // clearing them makes it rehydrate an empty block (visit_test
+    // `_renderMode: rehydration` regressed to empty innerHTML).
+    if (__GXT_MODE__ && options._renderMode === 'rehydrate' && this.rootElement) {
+      let el = this.rootElement as Element | SimpleElement;
+      // Only clear DOM elements (not string selectors — those are resolved by
+      // the renderer later).
+      if (typeof el !== 'string' && (el as Element).firstChild) {
+        let node: Node | null = (el as Element).firstChild;
+        while (node) {
+          let next: Node | null = node.nextSibling;
+          (el as Element).removeChild(node);
+          node = next;
+        }
+      }
+    }
+
     if (options.location) {
       set(this.router, 'location', options.location);
     }
@@ -259,7 +284,63 @@ class ApplicationInstance extends EngineInstance {
         return this;
       } else {
         // Ensure that the visit promise resolves when all rendering has completed
-        return renderSettled().then(() => this);
+        return renderSettled().then(() => {
+          let renderMode = (bootOptions as any)._renderMode;
+
+          if (
+            __GXT_MODE__ &&
+            this.rootElement &&
+            typeof this.rootElement !== 'string' &&
+            (this.rootElement as any).ownerDocument
+          ) {
+            // GXT-only post-render DOM compensation; classic's serialize /
+            // rehydrate builders produce the markers and node reuse natively.
+            let el = this.rootElement as Element;
+
+            // For `_renderMode: 'rehydrate'`, GXT's render pipeline is not
+            // a proper rehydration builder: the global outlet re-render may
+            // fire multiple times during boot, producing duplicate DOM under
+            // the same rootElement. Deduplicate top-level children that have
+            // identical outerHTML, keeping only the first. This keeps the
+            // observable DOM shape consistent with what Glimmer's rehydrate
+            // builder would produce when the serialized content matches.
+            if (renderMode === 'rehydrate') {
+              let seen = new Set<string>();
+              let node: Node | null = el.firstChild;
+              while (node) {
+                let next: Node | null = node.nextSibling;
+                if (node.nodeType === 1 /* ELEMENT_NODE */) {
+                  let key = (node as Element).outerHTML;
+                  if (seen.has(key)) {
+                    el.removeChild(node);
+                  } else {
+                    seen.add(key);
+                  }
+                }
+                node = next;
+              }
+            }
+
+            // For `_renderMode: 'serialize'`, Glimmer's serialize builder
+            // wraps its output with `%+b:0%` / `%-b:0%` comment markers so
+            // a subsequent rehydrate pass can locate the block. GXT doesn't
+            // use that builder, so we add the leading marker after render
+            // for compatibility with code that inspects the marker (e.g.,
+            // FastBoot SSR, `isSerializationFirstNode`).
+            if (renderMode === 'serialize') {
+              let existing = el.firstChild;
+              let alreadyMarked =
+                existing &&
+                existing.nodeType === 8 /* COMMENT_NODE */ &&
+                existing.nodeValue === '%+b:0%';
+              if (!alreadyMarked) {
+                let marker = (el as any).ownerDocument.createComment('%+b:0%');
+                el.insertBefore(marker, el.firstChild);
+              }
+            }
+          }
+          return this;
+        });
       }
     };
 

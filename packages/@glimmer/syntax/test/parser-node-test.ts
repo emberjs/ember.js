@@ -16,7 +16,7 @@ test('a simple piece of content', () => {
 
 test('self-closed element', () => {
   let t = '<g />';
-  astEqual(t, b.template([element('g/')]));
+  astEqual(t, b.template([buildElement('g/')]));
 });
 
 test('various html element paths', () => {
@@ -37,7 +37,7 @@ test('various html element paths', () => {
 
 test('elements can have empty attributes', () => {
   let t = '<img id="">';
-  astEqual(t, b.template([element('img', ['attrs', ['id', '']])]));
+  astEqual(t, b.template([buildElement('img', ['attrs', ['id', '']])]));
 });
 
 test('disallowed quote in element space is rejected', (assert) => {
@@ -62,17 +62,17 @@ test('disallowed equals sign in element space is rejected', (assert) => {
 
 test('svg content', () => {
   let t = '<svg></svg>';
-  astEqual(t, b.template([element('svg')]));
+  astEqual(t, b.template([buildElement('svg')]));
 });
 
 test('html content with html content inline', () => {
   let t = '<div><p></p></div>';
-  astEqual(t, b.template([element('div', ['body', element('p')])]));
+  astEqual(t, b.template([buildElement('div', ['body', buildElement('p')])]));
 });
 
 test('html content with svg content inline', () => {
   let t = '<div><svg></svg></div>';
-  astEqual(t, b.template([element('div', ['body', element('svg')])]));
+  astEqual(t, b.template([buildElement('div', ['body', buildElement('svg')])]));
 });
 
 let integrationPoints = ['foreignObject', 'desc'];
@@ -81,7 +81,12 @@ function buildIntegrationPointTest(integrationPoint: string) {
     let t = '<svg><' + integrationPoint + '><div></div></' + integrationPoint + '></svg>';
     astEqual(
       t,
-      b.template([element('svg', ['body', element(integrationPoint, ['body', element('div')])])])
+      b.template([
+        buildElement('svg', [
+          'body',
+          buildElement(integrationPoint, ['body', buildElement('div')]),
+        ]),
+      ])
     );
   };
 }
@@ -97,7 +102,9 @@ test('svg title with html content', () => {
   let t = '<svg><title><div></div></title></svg>';
   astEqual(
     t,
-    b.template([element('svg', ['body', element('title', ['body', b.text('<div></div>')])])])
+    b.template([
+      buildElement('svg', ['body', buildElement('title', ['body', b.text('<div></div>')])]),
+    ])
   );
 });
 
@@ -105,7 +112,7 @@ test('a piece of content with HTML', () => {
   let t = 'some <div>content</div> done';
   astEqual(
     t,
-    b.template([b.text('some '), element('div', ['body', b.text('content')]), b.text(' done')])
+    b.template([b.text('some '), buildElement('div', ['body', b.text('content')]), b.text(' done')])
   );
 });
 
@@ -115,7 +122,7 @@ test('a piece of Handlebars with HTML', () => {
     t,
     b.template([
       b.text('some '),
-      element('div', ['body', b.mustache(b.path('content'))]),
+      buildElement('div', ['body', b.mustache(b.path('content'))]),
       b.text(' done'),
     ])
   );
@@ -157,7 +164,7 @@ test('Handlebars embedded in an attribute (quoted)', () => {
     t,
     b.template([
       b.text('some '),
-      element(
+      buildElement(
         'div',
         ['attrs', ['class', b.concat([b.mustache('foo')])]],
         ['body', b.text('content')]
@@ -173,7 +180,11 @@ test('Handlebars embedded in an attribute (unquoted)', () => {
     t,
     b.template([
       b.text('some '),
-      element('div', ['attrs', ['class', b.mustache(b.path('foo'))]], ['body', b.text('content')]),
+      buildElement(
+        'div',
+        ['attrs', ['class', b.mustache(b.path('foo'))]],
+        ['body', b.text('content')]
+      ),
       b.text(' done'),
     ])
   );
@@ -182,7 +193,7 @@ test('Handlebars embedded in an attribute (unquoted)', () => {
 test('Handlebars embedded in an attribute of a self-closing tag (unqouted)', () => {
   let t = '<input value={{foo}}/>';
 
-  let el = element('input/', ['attrs', ['value', b.mustache(b.path('foo'))]]);
+  let el = buildElement('input/', ['attrs', ['value', b.mustache(b.path('foo'))]]);
   astEqual(t, b.template([el]));
 });
 
@@ -192,7 +203,7 @@ test('Handlebars embedded in an attribute (sexprs)', () => {
     t,
     b.template([
       b.text('some '),
-      element(
+      buildElement(
         'div',
         [
           'attrs',
@@ -214,7 +225,7 @@ test('Handlebars embedded in an attribute with other content surrounding it', ()
     t,
     b.template([
       b.text('some '),
-      element(
+      buildElement(
         'a',
         ['attrs', ['href', b.concat([b.text('http://'), b.mustache('link'), b.text('/')])]],
         ['body', b.text('content')]
@@ -236,7 +247,7 @@ test('A more complete embedding example', () => {
       b.text(' '),
       b.mustache(b.path('some'), [b.string('content')]),
       b.text(' '),
-      element(
+      buildElement(
         'div',
         [
           'attrs',
@@ -270,7 +281,7 @@ test('Simple embedded block helpers', () => {
         b.path('if'),
         [b.path('foo')],
         b.hash(),
-        b.blockItself([element('div', ['body', b.mustache(b.path('content'))])])
+        b.blockItself([buildElement('div', ['body', b.mustache(b.path('content'))])])
       ),
     ])
   );
@@ -282,16 +293,16 @@ test('Involved block helper', () => {
   astEqual(
     t,
     b.template([
-      element('p', ['body', b.text('hi')]),
+      buildElement('p', ['body', b.text('hi')]),
       b.text(' content '),
       b.block(
         b.path('testing'),
         [b.path('shouldRender')],
         b.hash(),
-        b.blockItself([element('p', ['body', b.text('Appears!')])])
+        b.blockItself([buildElement('p', ['body', b.text('Appears!')])])
       ),
       b.text(' more '),
-      element('em', ['body', b.text('content')]),
+      buildElement('em', ['body', b.text('content')]),
       b.text(' here'),
     ])
   );
@@ -399,7 +410,7 @@ test('element with block params', () => {
   astEqual(
     t,
     b.template([
-      element(
+      buildElement(
         'Foo',
         ['as', b.var('bar'), b.var('bat'), b.var('baz')],
         ['body', b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')]
@@ -414,7 +425,7 @@ test('element with block params edge case: extra spaces', () => {
   astEqual(
     t,
     b.template([
-      element(
+      buildElement(
         'Foo',
         ['as', b.var('bar'), b.var('bat'), b.var('baz')],
         ['body', b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')]
@@ -433,7 +444,7 @@ a
   astEqual(
     t,
     b.template([
-      element(
+      buildElement(
         'Foo',
         ['as', b.var('bar'), b.var('bat'), b.var('b'), b.var('a'), b.var('z')],
         ['body', b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')]
@@ -448,7 +459,7 @@ test('element with block params edge case: block-params like attribute names', (
   astEqual(
     t,
     b.template([
-      element(
+      buildElement(
         'Foo',
         ['attrs', ['as', 'a'], ['async', 'b']],
         ['as', b.var('bar'), b.var('bat'), b.var('baz')],
@@ -464,7 +475,7 @@ test('element with block params edge case: block-params like attribute values', 
   astEqual(
     t,
     b.template([
-      element(
+      buildElement(
         'Foo',
         ['attrs', ['foo', 'as |a b c|']],
         ['as', b.var('bar'), b.var('bat'), b.var('baz')],
@@ -480,7 +491,7 @@ test('element with block params edge case: block-params like content', () => {
   astEqual(
     t,
     b.template([
-      element(
+      buildElement(
         'Foo',
         ['as', b.var('bar'), b.var('bat'), b.var('baz')],
         ['body', b.text('as |a b c|')]
@@ -494,7 +505,7 @@ test('Element modifiers', () => {
   astEqual(
     t,
     b.template([
-      element(
+      buildElement(
         'p',
         ['attrs', ['class', 'bar']],
         ['modifiers', ['action', [b.string('boom')]]],
@@ -506,27 +517,27 @@ test('Element modifiers', () => {
 
 test('Tokenizer: MustacheStatement encountered in beforeAttributeName state', () => {
   let t = '<input {{bar}}>';
-  astEqual(t, b.template([element('input', ['modifiers', 'bar'])]));
+  astEqual(t, b.template([buildElement('input', ['modifiers', 'bar'])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in attributeName state', () => {
   let t = '<input foo{{bar}}>';
-  astEqual(t, b.template([element('input', ['attrs', ['foo', '']], ['modifiers', ['bar']])]));
+  astEqual(t, b.template([buildElement('input', ['attrs', ['foo', '']], ['modifiers', ['bar']])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in afterAttributeName state', () => {
   let t = '<input foo {{bar}}>';
-  astEqual(t, b.template([element('input', ['attrs', ['foo', '']], ['modifiers', 'bar'])]));
+  astEqual(t, b.template([buildElement('input', ['attrs', ['foo', '']], ['modifiers', 'bar'])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in afterAttributeValue state', () => {
   let t = '<input foo=1 {{bar}}>';
-  astEqual(t, b.template([element('input', ['attrs', ['foo', '1']], ['modifiers', ['bar']])]));
+  astEqual(t, b.template([buildElement('input', ['attrs', ['foo', '1']], ['modifiers', ['bar']])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in afterAttributeValueQuoted state', () => {
   let t = "<input foo='1'{{bar}}>";
-  astEqual(t, b.template([element('input', ['attrs', ['foo', '1']], ['modifiers', 'bar'])]));
+  astEqual(t, b.template([buildElement('input', ['attrs', ['foo', '1']], ['modifiers', 'bar'])]));
 });
 
 test('Stripping - mustaches', () => {
@@ -672,7 +683,7 @@ test('Stripping - removes unnecessary text nodes', () => {
         b.path('each'),
         [],
         b.hash(),
-        b.blockItself([element('li', ['body', b.text(' foo ')])]),
+        b.blockItself([buildElement('li', ['body', b.text(' foo ')])]),
         null,
         undefined,
         { open: false, close: true },
@@ -693,7 +704,7 @@ test('Whitespace control - linebreaks after blocks removed by default', () => {
         b.path('each'),
         [],
         b.hash(),
-        b.blockItself([b.text('  '), element('li', ['body', b.text(' foo ')]), b.text('\n')]),
+        b.blockItself([b.text('  '), buildElement('li', ['body', b.text(' foo ')]), b.text('\n')]),
         null
       ),
     ])
@@ -710,7 +721,11 @@ test('Whitespace control - preserve all whitespace if config is set', () => {
         b.path('each'),
         [],
         b.hash(),
-        b.blockItself([b.text('\n  '), element('li', ['body', b.text(' foo ')]), b.text('\n')]),
+        b.blockItself([
+          b.text('\n  '),
+          buildElement('li', ['body', b.text(' foo ')]),
+          b.text('\n'),
+        ]),
         null
       ),
     ]),
@@ -805,7 +820,7 @@ test('a Handlebars comment in proper element space', () => {
     t,
     b.template([
       b.text('before '),
-      element(
+      buildElement(
         'div',
         ['attrs', ['data-foo', b.text('bar')]],
         ['comments', b.mustacheComment(' some comment '), b.mustacheComment(' other comment ')]
@@ -820,7 +835,7 @@ test('a Handlebars comment after a valueless attribute', () => {
   astEqual(
     t,
     b.template([
-      element('input', ['attrs', ['foo', '']], ['comments', b.mustacheComment(' comment ')]),
+      buildElement('input', ['attrs', ['foo', '']], ['comments', b.mustacheComment(' comment ')]),
     ])
   );
 });
@@ -962,7 +977,7 @@ test('disallowed mustaches in the tagName space', (assert) => {
 
 test('mustache immediately followed by self closing tag does not error', () => {
   let ast = parse('<FooBar data-foo={{blah}}/>');
-  let el = element('FooBar/', ['attrs', ['data-foo', b.mustache('blah')]]);
+  let el = buildElement('FooBar/', ['attrs', ['data-foo', b.mustache('blah')]]);
   astEqual(ast, b.template([el]));
 });
 
@@ -981,12 +996,12 @@ test('named blocks', () => {
     </Tab>
   `);
 
-  let el = element('Tab', [
+  let el = buildElement('Tab', [
     'body',
-    element(':header', ['body', b.text(`It's a header!`)]),
-    element(
+    buildElement(':header', ['body', b.text(`It's a header!`)]),
+    buildElement(
       ':body',
-      ['body', element('div', ['body', b.mustache('contents')])],
+      ['body', buildElement('div', ['body', b.mustache('contents')])],
       ['as', b.var('contents')]
     ),
   ]);
@@ -1126,7 +1141,12 @@ export type BuildElementParams = Parameters<typeof b.element>;
 export type TagDescriptor = BuildElementParams[0];
 export type BuildElementOptions = NonNullable<BuildElementParams[1]>;
 
-export function element(tag: TagDescriptor, ...options: ElementParts[]): ASTv1.ElementNode {
+// Named `buildElement` (not `element`): the single-chunk test bundle hoists
+// module bindings into a shared scope, and the jit `element` keyword test
+// resolves implicit scope via direct `eval('element')` — it must NOT see
+// this binding in ANY module of the chunk (same class as the `array`
+// collision fixed in 6a7505d965). Importers must keep the renamed form too.
+export function buildElement(tag: TagDescriptor, ...options: ElementParts[]): ASTv1.ElementNode {
   return b.element(tag, normalizeElementParts(...options));
 }
 

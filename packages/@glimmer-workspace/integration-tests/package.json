@@ -14,6 +14,7 @@
   },
   "scripts": {},
   "dependencies": {
+    "@ember/-internals": "workspace:*",
     "@glimmer-workspace/test-utils": "workspace:*",
     "@glimmer/compiler": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
