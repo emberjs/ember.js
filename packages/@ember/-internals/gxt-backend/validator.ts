@@ -514,6 +514,74 @@ export function isInBacktrackingFrame() {
 // classicDirtyTagFor` bridge methods (cross-package) — see manager.ts's
 // setGxtRenderer install and docs-internal-gxt-globalthis-wiring.md §2c.
 
+// ── Tracked backtracking bookkeeping (reusable across cell backings) ─────────
+// The DEV "You attempted to update `X` ... already used in the same
+// computation" assertion is driven by two frames: `_backtrackingFrame`
+// (render/helper computation, set by begin/endBacktrackingFrame) and
+// `_debugTransactionConsumed` (an explicit `track()` frame). The READ side
+// records the consuming cell into both; the WRITE side checks them and asserts.
+//
+// These were inlined in `trackedData`'s getter/setter (the classic storage-cell
+// backing). They are extracted here so the Ember `@tracked` single-cell path
+// (which backs a tracked property with the SAME `cellFor`/`tagFor` cell instead
+// of a separate trackedData storage cell) can record/assert on its own cell and
+// keep the backtracking contract intact. The cell argument is opaque identity —
+// any stable per-property object works.
+export function recordTrackedCellRead(cell: any, key: string | symbol, obj: object): void {
+  // Record this read in the backtracking frame
+  if (_backtrackingFrame !== null) {
+    _backtrackingFrame.set(cell, { key, obj });
+  }
+  // Debug tracking transaction: record the cell as consumed so a subsequent
+  // setter call in the same transaction can detect the backtracking update.
+  if (_debugTransactionConsumed !== null) {
+    _debugTransactionConsumed.add(cell);
+    _debugTransactionLabelForTag?.set(
+      cell,
+      `${String(key)}\` on \`${(obj as any)?.constructor?.name || 'Object'}`
+    );
+  }
+}
+
+export function assertTrackedCellBacktrack(cell: any, key: string | symbol, obj: object): void {
+  // Backtracking detection: if this cell was read in the current render/helper
+  // frame, writing it is backtracking.
+  if (_backtrackingFrame !== null && _backtrackingFrame.has(cell)) {
+    const info = _backtrackingFrame.get(cell)!;
+    // Try to get a useful name: class name, toString, or fallback
+    const rawObj = (info.obj ?? obj) as any;
+    const objName =
+      rawObj?.constructor?.name && rawObj.constructor.name !== 'Object'
+        ? rawObj.constructor.name
+        : rawObj?.toString?.() !== '[object Object]'
+          ? rawObj?.toString?.()
+          : '<unknown>';
+    // Clear the frame before calling assert to prevent recursion
+    _backtrackingFrame = null;
+    const renderTree = _backtrackingDebugName
+      ? `(result of a \`${_backtrackingDebugName}\` helper)`
+      : '(unknown)';
+    const msg = `You attempted to update \`${String(info.key)}\` on \`${objName}\`, but it had already been used previously in the same computation. Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.\n\n\`${String(info.key)}\` was first used:\n\n- While rendering:\n  - top-level\n    ${renderTree}\n\nStack trace for the update:`;
+    const assertDirect = getEmberAssertDirect();
+    if (typeof assertDirect === 'function') {
+      assertDirect(msg, false);
+    }
+  }
+  // Debug tracking transaction: if this cell was read earlier in the current
+  // runInTrackingTransaction frame or track() frame, surface the Ember-style
+  // assertion matching classic @glimmer/validator behavior.
+  if (_debugTransactionConsumed !== null && _debugTransactionConsumed.has(cell)) {
+    const label = _debugTransactionLabelForTag?.get(cell);
+    const msg = `You attempted to update \`${label}\`, but it had already been used previously in the same computation`;
+    const assertDirect = getEmberAssertDirect();
+    if (typeof assertDirect === 'function') {
+      assertDirect(msg, false);
+    } else {
+      throw new Error(`Assertion Failed: ${msg}`);
+    }
+  }
+}
+
 export function trackedData<T, K extends string | symbol>(
   key: K,
   initializer?: () => T
@@ -534,20 +602,9 @@ export function trackedData<T, K extends string | symbol>(
         objStorage.set(key, cellForKey);
       }
 
-      // Record this read in the backtracking frame
-      if (_backtrackingFrame !== null) {
-        _backtrackingFrame.set(cellForKey, { key, obj });
-      }
-      // Debug tracking transaction: record the cell as consumed so a
-      // subsequent setter call in the same transaction can detect the
-      // backtracking update.
-      if (_debugTransactionConsumed !== null) {
-        _debugTransactionConsumed.add(cellForKey);
-        _debugTransactionLabelForTag?.set(
-          cellForKey,
-          `${String(key)}\` on \`${(obj as any)?.constructor?.name || 'Object'}`
-        );
-      }
+      // Record this read for backtracking detection (render/helper frame +
+      // track() debug transaction). See `recordTrackedCellRead` above.
+      recordTrackedCellRead(cellForKey, key, obj);
 
       // Register this cell's tag with the active track() / createCache frame
       // so `track(() => getter(obj))` captures the dependency. Without this,
@@ -570,46 +627,10 @@ export function trackedData<T, K extends string | symbol>(
         cellForKey = createCell(value, `tracked:${String(key)}`);
         objStorage.set(key, cellForKey);
       } else {
-        // Backtracking detection: if this cell was read in the current frame,
-        // setting it is backtracking
-        if (_backtrackingFrame !== null && _backtrackingFrame.has(cellForKey)) {
-          const info = _backtrackingFrame.get(cellForKey)!;
-          // Try to get a useful name: class name, toString, or fallback
-          const rawObj = info.obj as any;
-          const objName =
-            rawObj?.constructor?.name && rawObj.constructor.name !== 'Object'
-              ? rawObj.constructor.name
-              : rawObj?.toString?.() !== '[object Object]'
-                ? rawObj?.toString?.()
-                : '<unknown>';
-          // Clear the frame before calling assert to prevent recursion
-          _backtrackingFrame = null;
-          const renderTree = _backtrackingDebugName
-            ? `(result of a \`${_backtrackingDebugName}\` helper)`
-            : '(unknown)';
-          const msg = `You attempted to update \`${String(info.key)}\` on \`${objName}\`, but it had already been used previously in the same computation. Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.\n\n\`${String(info.key)}\` was first used:\n\n- While rendering:\n  - top-level\n    ${renderTree}\n\nStack trace for the update:`;
-          // Use the Ember assert function directly. The __emberAssertDirect
-          // is a live reference to the assert from @ember/debug, which
-          // is updated when expectAssertion stubs it via setDebugFunction.
-          const assertDirect = getEmberAssertDirect();
-          if (typeof assertDirect === 'function') {
-            assertDirect(msg, false);
-          }
-        }
-        // Debug tracking transaction: if this cell was read earlier in
-        // the current runInTrackingTransaction frame or track() frame,
-        // surface the Ember-style assertion matching classic @glimmer/validator
-        // behavior. Uses __emberAssertDirect so expectAssertion() can catch it.
-        if (_debugTransactionConsumed !== null && _debugTransactionConsumed.has(cellForKey)) {
-          const label = _debugTransactionLabelForTag?.get(cellForKey);
-          const msg = `You attempted to update \`${label}\`, but it had already been used previously in the same computation`;
-          const assertDirect = getEmberAssertDirect();
-          if (typeof assertDirect === 'function') {
-            assertDirect(msg, false);
-          } else {
-            throw new Error(`Assertion Failed: ${msg}`);
-          }
-        }
+        // Backtracking detection (render/helper frame + track() debug
+        // transaction). See `assertTrackedCellBacktrack` above. Uses
+        // __emberAssertDirect so expectAssertion() can catch it.
+        assertTrackedCellBacktrack(cellForKey, key, obj);
         cellForKey.value = value;
       }
       // Also bump the global revision counter so track() tags that

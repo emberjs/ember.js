@@ -15,7 +15,6 @@ import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import * as validator from '@glimmer/validator';
 // eslint-disable-next-line ember-local/no-barrel-imports
 import {
-  dirtyTagFor,
   consumeTag as compatConsumeTag,
   tagFor as compatTagFor,
   trackedData as compatTrackedData,
@@ -37,7 +36,6 @@ import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './de
 // `compilePipeline.notifyPropertyChange`. See `notifyPropertyChange` doc
 // in gxt-bridge.ts.
 import { notifyPropertyChange } from './property_events';
-import { SELF_TAG } from './tags';
 
 const {
   consumeTag: _nativeConsumeTag,
@@ -52,6 +50,18 @@ const trackedData = compatTrackedData;
 // Use compat versions that integrate with createCache tracking
 const consumeTag = compatConsumeTag;
 const tagFor = compatTagFor;
+
+// GXT-only backtracking bookkeeping on the single tracked cell. These live on
+// the gxt-backend validator shim (classic `@glimmer/validator` does not export
+// them, so they are `undefined` there); only ever invoked under `__GXT_MODE__`.
+// Accessed via the namespace import to avoid a classic-build link error on a
+// missing named export.
+const _gxtRecordTrackedRead = (validator as { recordTrackedCellRead?: unknown })
+  .recordTrackedCellRead as ((cell: unknown, key: string | symbol, obj: object) => void) | undefined;
+const _gxtAssertTrackedBacktrack = (validator as { assertTrackedCellBacktrack?: unknown })
+  .assertTrackedCellBacktrack as
+  | ((cell: unknown, key: string | symbol, obj: object) => void)
+  | undefined;
 
 /**
   @decorator
@@ -190,6 +200,124 @@ if (DEBUG) {
   setClassicDecorator(tracked);
 }
 
+// ── GXT @tracked single-cell convergence ───────────────────────────────────
+// Phase 1 of the reactivity convergence: a `@tracked` property is backed by
+// EXACTLY ONE gxt cell — `cellFor(obj, key)` — which is the same per-property
+// cell `tagFor(obj, key)` resolves to (in @lifeart/gxt both share one
+// `WeakMap<obj, Map<key, Cell>>` store). The accessor reads/writes that cell;
+// Ember's createCache/computed/observer tracking entangles the SAME cell via
+// `consumeTag(tagFor(obj, key))`. This retires the former double-backing where
+// the value lived in a separate `trackedData` storage cell that was hand-synced
+// into the native cell on every get/set.
+//
+// RE-ENTRANCY GUARD (load-bearing): gxt's `cellFor` creates the cell with
+// `new Cell(obj[key])` and `tagFor` creates a lazy formula `() => obj[key]`.
+// For a `@tracked` property `obj[key]` IS this very accessor, so the first
+// touch re-enters the getter before the cell exists → infinite recursion
+// (verified empirically — a naive `cellFor(...).value` read stack-overflows on
+// the first read/write). The guard makes that re-entrant `obj[key]` read return
+// the memoized initializer value, which seeds the storage cell and resolves the
+// lazy formula; after that the cell is self-sufficient. The separate
+// `trackedData` storage existed precisely to supply this recursion-safe seed;
+// the guard replaces it for the GXT `@tracked` path while classic mode keeps
+// the real `@glimmer/validator` `trackedData`.
+let _gxtSeedObj: object | null = null;
+let _gxtSeedKey: string | symbol | null = null;
+let _gxtSeedInit: (() => unknown) | null = null;
+let _gxtSeedComputed = false;
+let _gxtSeedValue: unknown;
+
+function _gxtTrackedCellGet(
+  obj: object,
+  key: string | symbol,
+  initializer: () => unknown,
+  classicGetter: (obj: object) => unknown
+): unknown {
+  // Re-entrant read from gxt cell creation / lazy-formula resolution — return
+  // the memoized seed instead of recursing back through this accessor.
+  if (_gxtSeedObj === obj && _gxtSeedKey === key) {
+    if (!_gxtSeedComputed) {
+      _gxtSeedValue = (_gxtSeedInit ?? initializer).call(obj);
+      _gxtSeedComputed = true;
+    }
+    return _gxtSeedValue;
+  }
+  const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
+  if (typeof _cellFor !== 'function') {
+    // Bridge not installed yet (metal module-init window, before compile.ts has
+    // run its install) — fall back to the classic storage so no read is lost.
+    return classicGetter(obj);
+  }
+  const pObj = _gxtSeedObj;
+  const pKey = _gxtSeedKey;
+  const pInit = _gxtSeedInit;
+  const pComputed = _gxtSeedComputed;
+  const pValue = _gxtSeedValue;
+  _gxtSeedObj = obj;
+  _gxtSeedKey = key;
+  _gxtSeedInit = initializer;
+  _gxtSeedComputed = false;
+  try {
+    // skipDefine=true: get-or-create the cell WITHOUT replacing the @tracked
+    // get/set descriptor. The guard above is active for both the construction-
+    // time `new Cell(obj[key])` read and the `cell.value` resolution read.
+    const cell = _cellFor(obj, key, /* skipDefine */ true) as { value: unknown } | undefined;
+    // Entangle Ember's createCache/computed on the SAME cell: tagFor(obj,key)
+    // returns this very cell (shared per-property store inside @lifeart/gxt).
+    const tag = tagFor(obj, key);
+    consumeTag(tag);
+    // Record the read for DEV backtracking detection on the SAME cell (the
+    // setter asserts against it). Replaces the trackedData getter's recording.
+    if (DEBUG) _gxtRecordTrackedRead?.(tag, key, obj);
+    return cell ? cell.value : undefined;
+  } finally {
+    _gxtSeedObj = pObj;
+    _gxtSeedKey = pKey;
+    _gxtSeedInit = pInit;
+    _gxtSeedComputed = pComputed;
+    _gxtSeedValue = pValue;
+  }
+}
+
+function _gxtTrackedCellSet(
+  obj: object,
+  key: string | symbol,
+  newValue: unknown,
+  initializer: () => unknown
+): boolean {
+  const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
+  if (typeof _cellFor !== 'function') return false;
+  const apply = () => {
+    const cell = _cellFor(obj, key, /* skipDefine */ true) as { update: (v: unknown) => void } | undefined;
+    if (cell) cell.update(newValue);
+  };
+  if (_gxtSeedObj === obj && _gxtSeedKey === key) {
+    apply();
+    return true;
+  }
+  const pObj = _gxtSeedObj;
+  const pKey = _gxtSeedKey;
+  const pInit = _gxtSeedInit;
+  const pComputed = _gxtSeedComputed;
+  const pValue = _gxtSeedValue;
+  _gxtSeedObj = obj;
+  _gxtSeedKey = key;
+  _gxtSeedInit = initializer;
+  _gxtSeedComputed = false;
+  try {
+    // Guard active so the construction-time `new Cell(obj[key])` read (when the
+    // cell doesn't exist yet) returns the seed instead of recursing.
+    apply();
+  } finally {
+    _gxtSeedObj = pObj;
+    _gxtSeedKey = pKey;
+    _gxtSeedInit = pInit;
+    _gxtSeedComputed = pComputed;
+    _gxtSeedValue = pValue;
+  }
+  return true;
+}
+
 function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPropertyDescriptor {
   assert(
     `You attempted to use @tracked on ${key}, but that element is not a class field. @tracked is only usable on class fields. Native getters and setters will autotrack add any tracked fields they encounter, so there is no need mark getters and setters with @tracked.`,
@@ -203,53 +331,13 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
   let { getter, setter } = trackedData<any, any>(key, initializer);
 
   function get(this: object): unknown {
-    let value = getter(this);
-
-    // Consume the property tag so that createCache tracking captures this
-    // dependency. Without this, GXT cell reads from trackedData.getter are
-    // invisible to our compat createCache's tag-based invalidation system.
-    // Classic mode: the upstream getter() above already consumes the per-key
-    // tag via Glimmer's standard tracking — duplicating here adds noise to the
-    // autotrack frame on every @tracked read (a hot path for {{#each}} over
-    // large arrays). Gate to GXT mode only.
-    if (__GXT_MODE__) {
-      consumeTag(tagFor(this, key as string));
-    }
-
-    // In GXT mode, synchronize the cellFor cell for this property.
-    // trackedData from @lifeart/gxt/glimmer-compatibility and cellFor from
-    // @lifeart/gxt may use different internal cell instances in Vite dev mode
-    // (module duplication). GXT's $_tag formulas only track cellFor cells.
-    // By reading from cellFor here, we ensure the formula's tracker captures
-    // this cell as a dependency. The setter's cellFor.update() call ensures
-    // the cell is dirtied when the property changes.
-    if (__GXT_MODE__) {
-      const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
-      if (typeof _cellFor === 'function') {
-        try {
-          // Use skipDefine=true to avoid replacing the tracked getter/setter.
-          // This creates the cell in cellFor's storage without installing
-          // a getter/setter on the property.
-          const cell = _cellFor(this, key, /* skipDefine */ true);
-          if (cell) {
-            // Silently sync the cell value without triggering dirty marking.
-            // We set _value directly to avoid adding to tagsToRevalidate
-            // during render, which would cause infinite re-render loops.
-            if (cell._value !== value) {
-              cell._value = value;
-            }
-            // Read cell.value to add this cell to the current GXT tracker.
-            // This is the key step: the formula's tracker now knows about
-            // this cell, so when the setter's cellFor.update() dirties it,
-            // syncDom will re-evaluate the formula.
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            cell.value;
-          }
-        } catch {
-          /* ignore */
-        }
-      }
-    }
+    // GXT mode: read THE single gxt cell (cellFor === tagFor per-property cell).
+    // The read entangles GXT render formulas; `_gxtTrackedCellGet` also consumes
+    // `tagFor(obj,key)` (the same cell) so Ember's createCache/computed tracking
+    // captures the dependency. Classic mode: read the real @glimmer/validator
+    // `trackedData` storage (its getter already consumes the per-key tag via
+    // Glimmer's standard autotracking, so no extra consumeTag here).
+    let value = __GXT_MODE__ ? _gxtTrackedCellGet(this, key, initializer, getter) : getter(this);
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
@@ -261,100 +349,46 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
   }
 
   function set(this: object, newValue: unknown): void {
-    // GXT backtracking detection for @tracked properties.
-    // Slice-10 (Cluster B): migrated from `globalThis.__gxtCheckBacktracking`
-    // to the typed bridge. Method is optional in the interface (load-order
-    // independence — classic builds never publish it), so the call is guarded.
+    // GXT backtracking detection for @tracked properties (render-pass based:
+    // "modified X after it was rendered"). Slice-10 (Cluster B): typed bridge,
+    // optional method, guarded.
     if (__GXT_MODE__ && DEBUG) {
       getGxtRenderer()?.backtracking.checkBacktracking?.(this, key);
+      // track()/render-frame backtracking ("updated X after using it in the
+      // same computation") on the SAME single cell the getter recorded its read
+      // into. Replaces the assertion formerly inside trackedData.setter.
+      _gxtAssertTrackedBacktrack?.(tagFor(this, key), key, this);
     }
-    setter(this, newValue);
-    // Directly update the GXT cell for this property using cellFor.
-    // trackedData.setter (above) updates the cell via GXT's native validator,
-    // but the cell may not be in the same tracking system as the formulas
-    // created by gxtEffect in the compat layer. Using cellFor ensures the
-    // cell that GXT effects track is also dirtied.
+
     if (__GXT_MODE__) {
-      const _cellFor = getGxtRenderer()?.compilePipeline.cellFor;
-      if (typeof _cellFor === 'function') {
-        try {
-          const cell = _cellFor(this, key, /* skipDefine */ true);
-          if (cell) cell.update(newValue);
-        } catch {
-          /* ignore */
-        }
+      // Write THE single gxt cell (cellFor === tagFor per-property cell). This
+      // is the only value store for the GXT @tracked path — the former
+      // trackedData dual-write is gone.
+      const wrote = _gxtTrackedCellSet(this, key, newValue, initializer);
+      if (!wrote) {
+        // Bridge not installed yet (metal module-init window) — keep the value
+        // in the classic storage so it isn't lost before the cell exists.
+        setter(this, newValue);
       }
-    }
-    // Both of these are GXT-specific amplifications of the dirty signal:
-    // - SELF_TAG dirty broadens invalidation (upstream does NOT dirty SELF_TAG
-    //   on @tracked set; setter() above already dirties the per-key tag).
-    // - The duplicate key dirty ensures chain-tag identity matches across the
-    //   GXT compat-validator and native validator in dual-module setups.
-    // Both are no-ops or worse in classic mode and break upstream's narrow-
-    // invalidation contract — gate them so classic builds match upstream.
-    if (__GXT_MODE__) {
-      dirtyTagFor(this, SELF_TAG);
-      // Also dirty the property-specific tag so observers watching 'key' or
-      // 'key.[]' detect the change via getChainTagsForKey.
-      dirtyTagFor(this, key);
-    }
-    // In GXT mode, notify the Ember property system so that sync observers
-    // and tag dirtying work correctly for QP tracking.
-    //
-    // Slice-123 (Cluster B): retired the pre-slice-123 raw-globalThis hop
-    // `const _notifyPropChange = (globalThis as any).__emberNotifyPropertyChange;`
-    // + `typeof === 'function'` guard in favour of a direct sibling import
-    // of `notifyPropertyChange` from `./property_events`. The
-    // `notifyPropertyChange` symbol is always defined here (the import
-    // graph guarantees property_events.ts evaluates before tracked.ts in
-    // both classic and GXT modes — observer.ts → property_events.ts →
-    // tracked.ts via the property_set.ts edge). See the slice-123 import
-    // docblock at the top of this file.
-    if (__GXT_MODE__) {
-      // Cluster A Phase 1.7b: forward `newValue` (the setter parameter — the
-      // name `value` is taken by the getter's local at L201; the setter
-      // parameter is `newValue` per L258) as the 4th arg so
-      // _gxtTriggerReRender can perform an immediate
-      // `cellFor(this, key, true)?.update(newValue)` at the enqueue site,
-      // skipping the body's `obj[keyName]` getter read. Combined with the
-      // set() patch at property_set.ts:118 this covers ~85% of GXT-mode
-      // write traffic.
+      // Public notification — the SINGLE coherence path. notifyPropertyChange:
+      //   • markObjectAsDirty → dirtyTagFor(obj,key) + dirtyTagFor(obj,SELF_TAG)
+      //     → marks the SHARED cell's tag dirty so createCache/computed/observers
+      //     watching `key`/`[]`/SELF_TAG invalidate;
+      //   • fires sync + (schedules) async observers;
+      //   • recomputes dependent computed properties;
+      //   • triggers the GXT re-render (with `newValue` forwarded).
+      // This one call SUBSUMES the former GXT-only amplifications that existed
+      // ONLY to keep the two now-unified cell systems coherent: the explicit
+      // `dirtyTagFor(SELF_TAG)` + `dirtyTagFor(key)` double-dirty and the
+      // standalone `triggerReRender`/`setPendingSync` block (both of which
+      // markObjectAsDirty + notifyPropertyChange's own triggerReRender already
+      // perform). The cell's own `.update()` above handles GXT render
+      // entanglement; notifyPropertyChange handles the classic-tag + observer
+      // side. Forward `newValue` as the 4th arg so the enqueue site can call
+      // `cellFor(this,key,true).update(newValue)` without re-reading the getter.
       notifyPropertyChange(this, key, null, newValue);
-    }
-    // Notify GXT for cross-object reactivity — when a tracked property changes
-    // on a non-component object (e.g., a Counter or Person class), dirty all
-    // component cells that hold a reference to this object. This ensures that
-    // GXT formulas like {{this.counter.countAlias}} re-evaluate.
-    // Skip during rendering to avoid breaking the initial render.
-    //
-    // Slice-22 (Cluster B): migrated `!g.__gxtCurrentlyRendering` raw-globalThis
-    // read to `compilePipeline.isCurrentlyRendering()` bridge predicate. The
-    // bridge method is optional (load-order independence — classic builds never
-    // publish it); when not installed (`isCR === undefined`) we treat the flag
-    // as `false` ("not rendering"), matching the pre-slice-22 truthiness check
-    // (`g.__gxtCurrentlyRendering` was `undefined` pre-install → falsy →
-    // proceed). See `isCurrentlyRendering` doc in
-    // `@ember/-internals/gxt-backend/gxt-bridge`.
-    if (__GXT_MODE__) {
-      const _cp = getGxtRenderer()?.compilePipeline;
-      const _isCR = _cp?.isCurrentlyRendering;
-      if (!(typeof _isCR === 'function' ? _isCR() : false)) {
-        // Slice-25 (Cluster B): migrated `(globalThis as any).__gxtTriggerReRender`
-        // raw-globalThis read to `compilePipeline.triggerReRender(this, key)`
-        // bridge method. The bridge method is optional (load-order independence
-        // — classic builds never publish it); when not installed
-        // (`_cp?.triggerReRender === undefined`) the call is skipped, matching
-        // the pre-slice-25 `typeof === 'function'` guard. Suppression
-        // semantics (the `withTriggerSuppressed(fn)` frame) are preserved by
-        // the module-local `_gxtTriggerSuppressedFlag` short-circuit at the
-        // entry of `_gxtTriggerReRender` in compile.ts. See `triggerReRender`
-        // doc in `@ember/-internals/gxt-backend/gxt-bridge`.
-        _cp?.triggerReRender?.(this, key);
-        // Schedule a pending sync so runTask → __gxtSyncDomNow picks it up
-        // (formerly the `__gxtExternalSchedule` global slot — see §2d host
-        // hooks; the pipeline member is the seam in both modes).
-        _cp?.setPendingSync?.(true);
-      }
+    } else {
+      setter(this, newValue);
     }
   }
 
