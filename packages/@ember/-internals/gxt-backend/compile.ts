@@ -5727,20 +5727,13 @@ function _gxtSubscribeBackingArray(raw: any): void {
   }
 }
 
-function normalizeEachCollection(raw: any): any[] {
-  if (raw == null || raw === false || raw === '' || raw === 0) return [];
-  if (Array.isArray(raw)) return raw;
-  if (typeof raw === 'object') {
-    if (typeof raw.toArray === 'function') return raw.toArray();
-    if (typeof raw[Symbol.iterator] === 'function') return Array.from(raw);
-    if (typeof raw.forEach === 'function' && typeof raw.length === 'number') {
-      const arr: any[] = [];
-      raw.forEach((item: any) => arr.push(item));
-      return arr;
-    }
-  }
-  return [];
-}
+// NOTE: `normalizeEachCollection` was deleted (each/if delegation plan, Step 1).
+// gxt's native `$_eachSync` → `normalizeIterableValue` (list.ts) already covers
+// every shape this did — plain arrays, Symbol.iterator iterables, ArrayProxy via
+// `.content`, forEach-delegates, and strings-as-falsy. The wrappers below now
+// forward the RAW value to `origEachSync` and let gxt normalize it. The KVO
+// subscriptions (`_registerIterableUnderlyingArray` / `_gxtSubscribeBackingArray`)
+// and the watch-target/id copies are kept — those are the genuine Ember bridge.
 
 // Each-body item tracking.
 //
@@ -6748,13 +6741,13 @@ function patchGlobalEachSync() {
           {
             _gxtSubscribeBackingArray(raw);
           }
-          return normalizeEachCollection(raw);
+          return raw;
         });
         return origEachSync(wrappedCell, fn, key, ctx, inverseFn, hasIndex);
       }
       // Fallback: pass function directly (legacy behavior)
       const wrappedGetter: any = function () {
-        return normalizeEachCollection(origGetter());
+        return origGetter();
       };
       if (origGetter.__gxtWatchTarget) wrappedGetter.__gxtWatchTarget = origGetter.__gxtWatchTarget;
       if (origGetter.__gxtWatchKey) wrappedGetter.__gxtWatchKey = origGetter.__gxtWatchKey;
@@ -6764,7 +6757,7 @@ function patchGlobalEachSync() {
       const wrappedCell = Object.create(origCell);
       Object.defineProperty(wrappedCell, 'value', {
         get() {
-          return normalizeEachCollection(origCell.value);
+          return origCell.value;
         },
         enumerable: true,
         configurable: true,
@@ -6772,7 +6765,7 @@ function patchGlobalEachSync() {
       if (origCell.id !== undefined) wrappedCell.id = origCell.id;
       return origEachSync(wrappedCell, fn, key, ctx, inverseFn, hasIndex);
     }
-    return origEachSync(normalizeEachCollection(items), fn, key, ctx, inverseFn, hasIndex);
+    return origEachSync(items, fn, key, ctx, inverseFn, hasIndex);
   };
   g.$_eachSync.__emberPatched = true;
 
