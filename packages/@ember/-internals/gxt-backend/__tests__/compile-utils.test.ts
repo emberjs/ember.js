@@ -222,43 +222,10 @@ describe('extractThisPath', () => {
   });
 });
 
-// ============================================================
-// hasTextAreaTag
-// ============================================================
-describe('hasTextAreaTag', () => {
-  it('returns true for <TextArea>', () => {
-    expect(t.hasTextAreaTag('<TextArea>')).toBe(true);
-  });
-
-  it('returns true for <TextArea />', () => {
-    expect(t.hasTextAreaTag('<TextArea />')).toBe(true);
-  });
-
-  it('returns true for <TextArea with attributes', () => {
-    expect(t.hasTextAreaTag('<TextArea class="foo">')).toBe(true);
-  });
-
-  it('returns false for <Textarea (lowercase a)', () => {
-    // 'TextArea' is exact match — 'Textarea' won't match '<TextArea'
-    expect(t.hasTextAreaTag('<Textarea>')).toBe(false);
-  });
-
-  it('returns false when no TextArea tag', () => {
-    expect(t.hasTextAreaTag('<div>hello</div>')).toBe(false);
-  });
-
-  it('returns false for TextArea not preceded by <', () => {
-    expect(t.hasTextAreaTag('TextArea')).toBe(false);
-  });
-
-  it('returns false for empty string', () => {
-    expect(t.hasTextAreaTag('')).toBe(false);
-  });
-
-  it('returns false for <TextAreaExtra (text continues)', () => {
-    expect(t.hasTextAreaTag('<TextAreaExtra>')).toBe(false);
-  });
-});
+// NOTE: `hasTextAreaTag` was removed from compile.ts — the `<TextArea>` typo
+// check is now the `gxtTextAreaTypoAssert` AST visitor (ElementNode.tag ===
+// 'TextArea'). Its unit suite was removed with it; the assert is exercised by
+// the browser-harness "Components test: <Textarea>" module.
 
 // ============================================================
 // hasBlockParamRef
@@ -367,46 +334,11 @@ describe('findDottedTags', () => {
   });
 });
 
-// ============================================================
-// findDottedMustaches
-// ============================================================
-describe('findDottedMustaches', () => {
-  it('finds {{foo.bar}}', () => {
-    const results = t.findDottedMustaches('{{foo.bar}}');
-    expect(results).toEqual([{ head: 'foo', tail: 'bar' }]);
-  });
-
-  it('finds multiple dotted mustaches', () => {
-    const results = t.findDottedMustaches('{{a.b}} and {{c.d}}');
-    expect(results).toEqual([
-      { head: 'a', tail: 'b' },
-      { head: 'c', tail: 'd' },
-    ]);
-  });
-
-  it('requires lowercase head start', () => {
-    // {{Foo.bar}} should not match — head must start lowercase
-    const results = t.findDottedMustaches('{{Foo.bar}}');
-    expect(results).toEqual([]);
-  });
-
-  it('handles multi-segment tail', () => {
-    const results = t.findDottedMustaches('{{foo.bar.baz}}');
-    expect(results).toEqual([{ head: 'foo', tail: 'bar.baz' }]);
-  });
-
-  it('returns empty for no dotted mustaches', () => {
-    expect(t.findDottedMustaches('{{simple}}')).toEqual([]);
-  });
-
-  it('returns empty for empty string', () => {
-    expect(t.findDottedMustaches('')).toEqual([]);
-  });
-
-  it('requires closing }}', () => {
-    expect(t.findDottedMustaches('{{foo.bar')).toEqual([]);
-  });
-});
+// NOTE: `findDottedMustaches` was removed from compile.ts — the `{{foo.bar}}`
+// (free lowercase head, not in scope) assert is now the `gxtDottedMustacheAssert`
+// AST visitor (the throw fires post-compile from precompileTemplate). Its unit
+// suite was removed with it; the assert is exercised by the browser harness
+// (e.g. "Helpers test: custom helpers" → `{{hello.world}}`).
 
 // ============================================================
 // hasAttrsInBlockParams
@@ -486,60 +418,10 @@ describe('findThisAttrsPatterns', () => {
 // (this suite only runs in the full browser harness — see the DOCUMENTED
 // SKIP in packages/demo/vitest.gxt-unit.config.mts).
 
-// ============================================================
-// hasDynamicHelper
-// ============================================================
-describe('hasDynamicHelper', () => {
-  it('returns true for {{helper this.myHelper}}', () => {
-    expect(t.hasDynamicHelper('{{helper this.myHelper}}')).toBe(true);
-  });
-
-  it('returns true for {{helper @myHelper}}', () => {
-    expect(t.hasDynamicHelper('{{helper @myHelper}}')).toBe(true);
-  });
-
-  it('returns false for {{helper "string-name"}}', () => {
-    expect(t.hasDynamicHelper('{{helper "string-name"}}')).toBe(false);
-  });
-
-  it('returns false when no helper keyword', () => {
-    expect(t.hasDynamicHelper('{{this.myHelper}}')).toBe(false);
-  });
-
-  it('returns false for empty string', () => {
-    expect(t.hasDynamicHelper('')).toBe(false);
-  });
-
-  it('returns true for this. path with dots', () => {
-    expect(t.hasDynamicHelper('{{helper this.foo.bar}}')).toBe(true);
-  });
-});
-
-// ============================================================
-// hasDynamicModifier
-// ============================================================
-describe('hasDynamicModifier', () => {
-  it('returns true for (modifier this.myMod)', () => {
-    expect(t.hasDynamicModifier('(modifier this.myMod)')).toBe(true);
-  });
-
-  it('returns true for (modifier @myMod)', () => {
-    expect(t.hasDynamicModifier('(modifier @myMod)')).toBe(true);
-  });
-
-  it('returns false for (modifier "string-name")', () => {
-    expect(t.hasDynamicModifier('(modifier "string-name")')).toBe(false);
-  });
-
-  it('returns false when no modifier keyword', () => {
-    expect(t.hasDynamicModifier('(helper this.foo)')).toBe(false);
-  });
-
-  it('returns false for empty string', () => {
-    expect(t.hasDynamicModifier('')).toBe(false);
-  });
-
-  it('returns true for this. path with dots', () => {
-    expect(t.hasDynamicModifier('(modifier this.foo.bar)')).toBe(true);
-  });
-});
+// NOTE: `hasDynamicHelper` / `hasDynamicModifier` were removed from compile.ts —
+// the dynamic `(helper)` / `(modifier)` keyword asserts (`{{helper this.x}}` /
+// `(modifier this.x)`) are now the `gxtDynamicHelperAssert` /
+// `gxtDynamicModifierAssert` AST visitors (asserts fire post-compile from
+// precompileTemplate). Their unit suites were removed with them; the asserts are
+// exercised by the browser harness ("Helpers test: custom helpers" and the
+// dynamic-modifiers integration module).

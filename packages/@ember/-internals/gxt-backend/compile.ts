@@ -220,20 +220,10 @@ function doubleDashToSlash(str: string): string {
   return str.split('--').join('/');
 }
 
-/** Check if template contains <TextArea followed by whitespace, / or > (typo check) without regex */
-function hasTextAreaTag(str: string): boolean {
-  let idx = 0;
-  while (idx < str.length) {
-    const found = str.indexOf('<TextArea', idx);
-    if (found === -1) return false;
-    const nextIdx = found + 9; // '<TextArea'.length
-    if (nextIdx >= str.length) return false;
-    const c = str[nextIdx]!;
-    if (c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '/' || c === '>') return true;
-    idx = found + 1;
-  }
-  return false;
-}
+// The `<TextArea>` typo check is now the `gxtTextAreaTypoAssert` AST visitor
+// (ElementNode.tag === 'TextArea'; assert fires post-compile from
+// precompileTemplate) — see `buildGxtDialectTransforms`. The former
+// `hasTextAreaTag` source scanner was deleted here.
 
 /** Check if a string contains a $_bp<digit> reference (block param) without regex */
 function hasBlockParamRef(str: string): boolean {
@@ -582,64 +572,10 @@ function findThisAttrsPatterns(str: string): Array<{ propName: string; index: nu
   return results;
 }
 
-/**
- * Find all {{identifier.path}} dotted mustache expressions.
- * Returns array of { head, tail, full } objects.
- * Replaces regex /\{\{([a-z][a-zA-Z0-9]*)\.([a-zA-Z][a-zA-Z0-9.]*)\}\}/g
- */
-function findDottedMustaches(str: string): Array<{ head: string; tail: string }> {
-  const results: Array<{ head: string; tail: string }> = [];
-  let idx = 0;
-  while (idx < str.length) {
-    const found = str.indexOf('{{', idx);
-    if (found === -1) break;
-    let pos = found + 2;
-    // Head must start with lowercase letter
-    if (pos >= str.length || str[pos]! < 'a' || str[pos]! > 'z') {
-      idx = found + 2;
-      continue;
-    }
-    const headStart = pos;
-    while (
-      pos < str.length &&
-      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
-        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-        (str[pos]! >= '0' && str[pos]! <= '9'))
-    )
-      pos++;
-    const head = str.slice(headStart, pos);
-    // Must be followed by '.'
-    if (pos >= str.length || str[pos] !== '.') {
-      idx = found + 2;
-      continue;
-    }
-    pos++; // skip dot
-    // Tail must start with [a-zA-Z]
-    if (
-      pos >= str.length ||
-      !((str[pos]! >= 'a' && str[pos]! <= 'z') || (str[pos]! >= 'A' && str[pos]! <= 'Z'))
-    ) {
-      idx = found + 2;
-      continue;
-    }
-    const tailStart = pos;
-    while (
-      pos < str.length &&
-      ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
-        (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-        (str[pos]! >= '0' && str[pos]! <= '9') ||
-        str[pos] === '.')
-    )
-      pos++;
-    const tail = str.slice(tailStart, pos);
-    // Must be followed by '}}'
-    if (pos + 1 < str.length && str[pos] === '}' && str[pos + 1] === '}') {
-      results.push({ head, tail });
-    }
-    idx = pos;
-  }
-  return results;
-}
+// Dotted mustache expressions `{{foo.bar}}` (free lowercase head) are now
+// DETECTED by the `gxtDottedMustacheAssert` AST visitor (the throw fires
+// post-compile from precompileTemplate) — see `buildGxtDialectTransforms`. The
+// former `findDottedMustaches` source scanner was deleted here.
 
 /**
  * Check if 'as |...|' block contains the word 'attrs'.
@@ -677,79 +613,11 @@ function hasAttrsInBlockParams(str: string): boolean {
 // node vitest gate can unit-test it without compile.ts's full module graph.
 // Imported at the top of this file; still re-exported via __test_internals.
 
-/**
- * Check if a template contains a dynamic helper pattern like {{helper this.xxx}} or {{helper @xxx}}.
- * Replaces regex /\{\{helper\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\s*\}\}/
- */
-function hasDynamicHelper(str: string): boolean {
-  const marker = '{{helper ';
-  let idx = str.indexOf(marker);
-  while (idx !== -1) {
-    let pos = idx + marker.length;
-    // Skip whitespace
-    while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
-    // Check for this. or @
-    if (pos < str.length && (str.slice(pos, pos + 5) === 'this.' || str[pos] === '@')) {
-      // Read identifier chars
-      const start = pos;
-      while (
-        pos < str.length &&
-        ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
-          (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-          (str[pos]! >= '0' && str[pos]! <= '9') ||
-          str[pos] === '_' ||
-          str[pos] === '.' ||
-          str[pos] === '@')
-      )
-        pos++;
-      if (pos > start) {
-        // Skip optional whitespace then check for }}
-        while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
-        if (pos + 1 < str.length && str[pos] === '}' && str[pos + 1] === '}') {
-          return true;
-        }
-      }
-    }
-    idx = str.indexOf(marker, idx + 1);
-  }
-  return false;
-}
-
-/**
- * Check if a template contains a dynamic modifier pattern like (modifier this.xxx) or (modifier @xxx).
- * Replaces regex /\(modifier\s+(this\.[a-zA-Z0-9_.]+|@[a-zA-Z0-9_.]+)\s*\)/
- */
-function hasDynamicModifier(str: string): boolean {
-  const marker = '(modifier ';
-  let idx = str.indexOf(marker);
-  while (idx !== -1) {
-    let pos = idx + marker.length;
-    // Skip whitespace
-    while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
-    // Check for this. or @
-    if (pos < str.length && (str.slice(pos, pos + 5) === 'this.' || str[pos] === '@')) {
-      const start = pos;
-      while (
-        pos < str.length &&
-        ((str[pos]! >= 'a' && str[pos]! <= 'z') ||
-          (str[pos]! >= 'A' && str[pos]! <= 'Z') ||
-          (str[pos]! >= '0' && str[pos]! <= '9') ||
-          str[pos] === '_' ||
-          str[pos] === '.' ||
-          str[pos] === '@')
-      )
-        pos++;
-      if (pos > start) {
-        while (pos < str.length && (str[pos] === ' ' || str[pos] === '\t')) pos++;
-        if (pos < str.length && str[pos] === ')') {
-          return true;
-        }
-      }
-    }
-    idx = str.indexOf(marker, idx + 1);
-  }
-  return false;
-}
+// Dynamic `(helper)` / `(modifier)` keyword usage (`{{helper this.x}}` /
+// `(modifier this.x)`) is now DETECTED by the `gxtDynamicHelperAssert` /
+// `gxtDynamicModifierAssert` AST visitors (the assert fires post-compile from
+// precompileTemplate) — see `buildGxtDialectTransforms`. The former
+// `hasDynamicHelper` / `hasDynamicModifier` source scanners were deleted here.
 
 // `_shouldWarnStyle` + `_styleWarnedElements` are defined in manager.ts (next
 // to their two reader sites) and surfaced via `gxt-bridge`'s `format`
@@ -13681,15 +13549,232 @@ function assertGxtAstEnvShape(env: GxtAstEnv): void {
   }
 }
 
+/**
+ * True when `node` is the "dynamic string" argument shape the `(helper)` /
+ * `(modifier)` keyword string scanners (`hasDynamicHelper` / `hasDynamicModifier`)
+ * flagged: a `this.<seg>` path (≥1 tail segment, i.e. NOT bare `this`) or an
+ * `@<...>` arg path. Mirrors the scanners' `this.` / `@` branch exactly.
+ */
+function _isDynamicKeywordArg(node: any): boolean {
+  if (!node || node.type !== 'PathExpression' || !node.head) return false;
+  if (node.head.type === 'AtHead') return true;
+  if (node.head.type === 'ThisHead') return Array.isArray(node.tail) && node.tail.length >= 1;
+  return false;
+}
+
+/**
+ * Ember-dialect assert findings, populated by the read-only assert VISITORS
+ * during the GXT compile traverse and acted on by `precompileTemplate` AFTER the
+ * compile call. The visitors must NOT assert/throw inline: the GXT compiler
+ * swallows any exception raised inside a transform into its `errors[]` array,
+ * and `precompileTemplate` does not re-throw those — so an inline throw would be
+ * silently dropped (it would never reach `assert.throws` / abort compilation).
+ * Detecting in the visitor (AST-exact, replacing the former source scanners) but
+ * firing the assert/throw from `precompileTemplate` preserves the original
+ * control flow (propagating throw, real compile abort) exactly.
+ */
+interface GxtAssertFindings {
+  textArea: boolean;
+  dynamicHelper: boolean;
+  dynamicModifier: boolean;
+  // First offending `{{head.tail}}` (matches the former scanner, which threw on
+  // the first match in document order).
+  dottedMustache: { head: string; tail: string } | null;
+}
+
+/**
+ * `<TextArea ... />` typo detector (the user meant `<Textarea />`). Read-only
+ * visitor replacing the `hasTextAreaTag` source scanner. `ElementNode.tag` is
+ * the exact parsed tag name, so `<TextAreaExtra>` / `<Textarea>` / a bare
+ * `TextArea` text node never false-trigger (the cases the scanner's char-
+ * boundary checks hand-rolled). Records into `findings`; `precompileTemplate`
+ * fires the `getDebugFunction('assert')` assert.
+ */
+function gxtTextAreaTypoAssert(findings: GxtAssertFindings) {
+  return function (_env: GxtAstEnv) {
+    return {
+      name: 'ember-gxt-assert-textarea',
+      visitor: {
+        ElementNode(node: any): void {
+          if (node.tag === 'TextArea') findings.textArea = true;
+        },
+      },
+    };
+  };
+}
+
+// Head / tail-segment character classes the former `findDottedMustaches` source
+// scanner enforced: head was `[a-z][a-zA-Z0-9]*` (NO `_`/`-`), the tail started
+// with a letter and each segment was alphanumeric. The `gxtDottedMustacheAssert`
+// visitor re-checks these against the parsed path so it fires on EXACTLY the
+// `{{foo.bar}}` shapes the scanner matched (not the broader set glimmer admits
+// as a path, e.g. `{{foo_bar.x}}` / `{{foo.0}}`, which the scanner skipped).
+const _DOTTED_MUSTACHE_HEAD_RE = /^[a-z][a-zA-Z0-9]*$/;
+const _DOTTED_MUSTACHE_TAIL_SEG_RE = /^[a-zA-Z0-9]+$/;
+
+/**
+ * `{{foo.bar}}` where `foo` is a free (lowercase-headed) variable not brought
+ * into scope by a block param or a strict-mode binding. Read-only visitor
+ * replacing the `findDottedMustaches` source scanner. Matches the scanner's
+ * shape: a bare `MustacheStatement` (no params, no hash) whose path head is a
+ * `[a-z][a-zA-Z0-9]*` `VarHead` with ≥1 alphanumeric, letter-initial tail
+ * segment. `this.x` (`ThisHead`) and PascalCase heads are skipped, as the
+ * scanner skipped them; the head/tail char-class guards keep parity with the
+ * scanner on the `_`/`-`/leading-digit shapes it never matched. The block-param
+ * / scope-binding sets are computed once by the caller (see `findBlockParamNames`)
+ * and threaded in, matching the former call site. Records the FIRST offender
+ * into `findings`; `precompileTemplate` throws the `not in scope` error.
+ */
+function gxtDottedMustacheAssert(
+  findings: GxtAssertFindings,
+  scopeValueNames: Set<string> | null,
+  blockParamNames: Set<string>
+) {
+  return function (_env: GxtAstEnv) {
+    return {
+      name: 'ember-gxt-assert-dotted-mustache',
+      visitor: {
+        MustacheStatement(node: any): void {
+          if (findings.dottedMustache) return; // first offender only (scanner threw on first)
+          const path = node.path;
+          if (
+            !path ||
+            path.type !== 'PathExpression' ||
+            !path.head ||
+            path.head.type !== 'VarHead' ||
+            !Array.isArray(path.tail) ||
+            path.tail.length === 0 ||
+            node.params.length !== 0 ||
+            node.hash.pairs.length !== 0
+          )
+            return;
+          const head = String(path.head.name);
+          if (!_DOTTED_MUSTACHE_HEAD_RE.test(head)) return; // scanner head was [a-z][a-zA-Z0-9]*
+          const tailSegs = path.tail as string[];
+          // Scanner required the tail to start with a letter and every segment to
+          // be alphanumeric (its tail char-class was [a-zA-Z][a-zA-Z0-9.]*).
+          const first = tailSegs[0] || '';
+          const fc = first.charCodeAt(0);
+          if (!((fc >= 65 && fc <= 90) || (fc >= 97 && fc <= 122))) return;
+          for (const seg of tailSegs) {
+            if (!_DOTTED_MUSTACHE_TAIL_SEG_RE.test(seg)) return;
+          }
+          if (blockParamNames.has(head)) return;
+          if (scopeValueNames && scopeValueNames.has(head)) return;
+          findings.dottedMustache = { head, tail: tailSegs.join('.') };
+        },
+      },
+    };
+  };
+}
+
+/**
+ * `{{helper this.x}}` / `{{helper @x}}` (a single dynamic-string positional arg,
+ * no hash). Read-only visitor replacing the `hasDynamicHelper` source scanner,
+ * which matched ONLY the top-level mustache form `{{helper …}}` with a single
+ * `this.`/`@` arg immediately before the closing `}}`. Records into `findings`;
+ * `precompileTemplate` fires the assert.
+ */
+function gxtDynamicHelperAssert(findings: GxtAssertFindings) {
+  return function (_env: GxtAstEnv) {
+    return {
+      name: 'ember-gxt-assert-dynamic-helper',
+      visitor: {
+        MustacheStatement(node: any): void {
+          const path = node.path;
+          if (
+            path &&
+            path.type === 'PathExpression' &&
+            path.head &&
+            path.head.type === 'VarHead' &&
+            path.head.name === 'helper' &&
+            path.tail.length === 0 &&
+            node.params.length === 1 &&
+            node.hash.pairs.length === 0 &&
+            _isDynamicKeywordArg(node.params[0])
+          ) {
+            findings.dynamicHelper = true;
+          }
+        },
+      },
+    };
+  };
+}
+
+/**
+ * `(modifier this.x)` / `(modifier @x)` (a single dynamic-string positional arg,
+ * no hash). Read-only visitor replacing the `hasDynamicModifier` source scanner,
+ * which matched ONLY the subexpression form `(modifier …)` with a single
+ * `this.`/`@` arg immediately before the closing `)`. Records into `findings`;
+ * `precompileTemplate` fires the assert.
+ */
+function gxtDynamicModifierAssert(findings: GxtAssertFindings) {
+  return function (_env: GxtAstEnv) {
+    return {
+      name: 'ember-gxt-assert-dynamic-modifier',
+      visitor: {
+        SubExpression(node: any): void {
+          const path = node.path;
+          if (
+            path &&
+            path.type === 'PathExpression' &&
+            path.head &&
+            path.head.type === 'VarHead' &&
+            path.head.name === 'modifier' &&
+            path.tail.length === 0 &&
+            node.params.length === 1 &&
+            node.hash.pairs.length === 0 &&
+            _isDynamicKeywordArg(node.params[0])
+          ) {
+            findings.dynamicModifier = true;
+          }
+        },
+      },
+    };
+  };
+}
+
 function buildGxtDialectTransforms(
   includeOnExt: boolean,
-  scopeValues?: Record<string, unknown>
+  scopeValues?: Record<string, unknown>,
+  blockParamNames?: Set<string>,
+  assertFindings?: GxtAssertFindings
 ): readonly GxtAstTransform[] {
+  // Read-only Ember-dialect ASSERT-DETECTION visitors, PREPENDED so they run on
+  // the parsed AST in raw, pre-rewrite form — exactly the source text the former
+  // string scanners ran on — and in their original relative priority order
+  // (textarea → dotted-mustache → dynamic-helper → dynamic-modifier). They only
+  // RECORD into `assertFindings`; `precompileTemplate` fires the asserts/throws
+  // AFTER the compile call (the GXT compiler swallows transform-internal throws
+  // into errors[], which precompileTemplate does not re-throw — see
+  // GxtAssertFindings). These visitors never touch `env.syntax.builders`, so
+  // running before the tbody env-shape guard is safe; the guard still fires on
+  // the first builder-using transform (tbody) below.
+  //
+  // NOTE: `findDottedTags` (the `<foo.bar>` tag-not-in-scope assert) and the
+  // `{{attrs.x}}` / `{{this.attrs.x}}` location-bearing asserts are intentionally
+  // NOT ported — `findDottedTags`'s tested "requires whitespace after the tail"
+  // quirk and the attrs asserts' source-offset `(L:C)` location string can't be
+  // reproduced from the normalized AST without re-inspecting source, so they stay
+  // pre-compile string asserts in `precompileTemplate`.
+  const scopeValueNames = scopeValues ? new Set(Object.keys(scopeValues)) : null;
+  const bpNames = blockParamNames || new Set<string>();
+  const findings: GxtAssertFindings = assertFindings || {
+    textArea: false,
+    dynamicHelper: false,
+    dynamicModifier: false,
+    dottedMustache: null,
+  };
   const transforms: GxtAstTransform[] = [
+    gxtTextAreaTypoAssert(findings) as unknown as GxtAstTransform,
+    gxtDottedMustacheAssert(findings, scopeValueNames, bpNames) as unknown as GxtAstTransform,
+    gxtDynamicHelperAssert(findings) as unknown as GxtAstTransform,
+    gxtDynamicModifierAssert(findings) as unknown as GxtAstTransform,
     // The tbody builder is wrapped with the once-per-process env-shape guard
-    // (see assertGxtAstEnvShape). It must stay FIRST in the array regardless
-    // (the tbody↔triple order is load-bearing, see the doc comment above), so
-    // wrapping it guards every later visitor too.
+    // (see assertGxtAstEnvShape). It is the FIRST builder-using transform (the
+    // assert-detection visitors above are read-only and touch no builders), and
+    // the tbody↔triple order is load-bearing (see the doc comment above), so
+    // wrapping it guards every later builder-using visitor too.
     ((env: GxtAstEnv) => {
       assertGxtAstEnvShape(env);
       return gxtTableTbodyTransform(env);
@@ -14017,13 +14102,11 @@ export function precompileTemplate(
     }
   }
 
-  // Check for <TextArea /> typo — should be <Textarea />.
-  // Use getDebugFunction('assert') so expectAssertion's stub is called.
-  if (hasTextAreaTag(templateString)) {
-    const _assert = getDebugFunction('assert');
-    if (_assert)
-      _assert('Could not find component `<TextArea />` (did you mean `<Textarea />`?)', false);
-  }
+  // The `<TextArea />` typo is now DETECTED by the `gxtTextAreaTypoAssert` AST
+  // visitor wired into the GXT compiler's `transforms` hook below (see
+  // `buildGxtDialectTransforms`); the assert itself fires from this function
+  // just after the compile call (`_gxtDialectFindings.textArea`). The former
+  // `hasTextAreaTag` source scanner is gone. No template-source scan needed.
 
   // Transform the template
   let transformedTemplate = templateString;
@@ -14112,22 +14195,14 @@ export function precompileTemplate(
     }
   }
 
-  // Check for dotted-path mustache expressions like {{foo.bar}} where foo is not in scope.
-  // In Ember, these are errors because foo is a free variable path that can't be resolved.
-  // Collect block param names first so we don't flag those. Strict-mode
-  // bindings (from scope() / scopeValues) also bring the head into scope.
-  {
-    const blockParamNames = findBlockParamNames(transformedTemplate);
-    const scopeValueNames = options?.scopeValues ? new Set(Object.keys(options.scopeValues)) : null;
-    for (const { head, tail } of findDottedMustaches(transformedTemplate)) {
-      if (head === 'this') continue;
-      if (blockParamNames.has(head)) continue;
-      if (scopeValueNames && scopeValueNames.has(head)) continue;
-      throw new Error(
-        `You attempted to render a path (\`{{${head}.${tail}}}\`), but ${head} was not in scope`
-      );
-    }
-  }
+  // Dotted-path mustache expressions like `{{foo.bar}}` where `foo` is a free
+  // variable not in scope are now DETECTED by the `gxtDottedMustacheAssert` AST
+  // visitor wired into the GXT compiler's `transforms` hook below (see
+  // `buildGxtDialectTransforms`); the throw fires from this function just after
+  // the compile call (`_gxtDialectFindings.dottedMustache`). The block-param +
+  // strict-mode-binding sets it consults are computed once
+  // (`_gxtDialectBlockParamNames`) just before the compile call and threaded in.
+  // The former `findDottedMustaches` source scanner is gone.
 
   // Transform {{#in-element dest insertBefore=EXPR}} to extract the insertBefore
   // parameter. GXT's native $_inElement only takes (elementRef, roots, ctx) but
@@ -14178,30 +14253,13 @@ export function precompileTemplate(
   // in the `gxtEachInTransform` AST visitor wired below).
   let _eachInSources: Array<{ propName: string; sourceExpr: string }> = [];
 
-  // Check for dynamic (helper ...) usage — disallowed in Ember.
-  // {{helper this.xxx}} or (helper @xxx) pass dynamic strings which is not allowed.
-  // Only {{helper "static-name"}} is valid. But {{helper this.helperRef}} where
-  // the ref is a helper function (not a string) IS allowed — we can't distinguish
-  // at compile time, so we only flag obvious dynamic-string patterns.
-  {
-    // Match {{helper this.xxx}} — this is the only pattern in the test suite that
-    // represents "dynamic string resolution". Template-local refs like this.val
-    // where val is a defineSimpleHelper result use a different template structure
-    // (they're inside component templates where this.val is set as a class property).
-    if (hasDynamicHelper(transformedTemplate)) {
-      emberAssert('Passing a dynamic string to the `(helper)` keyword is disallowed.', false);
-    }
-  }
-
-  // Check for dynamic (modifier ...) usage — disallowed in Ember.
-  // (modifier this.xxx) passes a dynamic string which is not allowed.
-  // Only (modifier "static-name") or (modifier this.modifierRef) (where ref is a
-  // modifier function, not a string) are valid.
-  {
-    if (hasDynamicModifier(transformedTemplate)) {
-      emberAssert('Passing a dynamic string to the `(modifier)` keyword is disallowed.', false);
-    }
-  }
+  // Dynamic `(helper)` / `(modifier)` usage — `{{helper this.xxx}}` /
+  // `(modifier this.xxx)` etc. — is disallowed in Ember and is now DETECTED by
+  // the `gxtDynamicHelperAssert` / `gxtDynamicModifierAssert` AST visitors wired
+  // into the GXT compiler's `transforms` hook below (see
+  // `buildGxtDialectTransforms`); the asserts fire from this function just after
+  // the compile call (`_gxtDialectFindings.dynamicHelper` / `.dynamicModifier`).
+  // The former `hasDynamicHelper` / `hasDynamicModifier` source scanners are gone.
 
   // {{#@argName args}}content{{/@argName}} block invocations are now lowered to
   // {{#component @argName args}}content{{/component}} by the
@@ -14275,6 +14333,25 @@ export function precompileTemplate(
   // The $_tag_ember wrapper handles @-prefixed args properly for string component
   // tags, extracting them as named args for the component manager.
 
+  // Block-param names for the `gxtDottedMustacheAssert` visitor (it must not flag
+  // a `{{foo.bar}}` whose `foo` is brought into scope by an `as |foo|` block
+  // param). Computed once on the post-transform source and threaded into the
+  // dialect transforms, matching the former pre-compile `findDottedMustaches`
+  // call site (which used `findBlockParamNames(transformedTemplate)`).
+  const _gxtDialectBlockParamNames = findBlockParamNames(transformedTemplate);
+
+  // Ember-dialect assert findings, populated by the read-only assert-detection
+  // visitors during the compile traverse and acted on immediately after the
+  // compile call below (see GxtAssertFindings for why the throw cannot live in
+  // the visitor itself). Replaces the former pre-compile `hasTextAreaTag` /
+  // `findDottedMustaches` / `hasDynamicHelper` / `hasDynamicModifier` scans.
+  const _gxtDialectFindings: GxtAssertFindings = {
+    textArea: false,
+    dynamicHelper: false,
+    dynamicModifier: false,
+    dottedMustache: null,
+  };
+
   // Compile using GXT runtime compiler
   const compilationResult = gxtCompileTemplate(transformedTemplate, {
     moduleName: options?.moduleName || 'gxt-runtime-template',
@@ -14287,7 +14364,12 @@ export function precompileTemplate(
     // glimmer-next build that exposes `CompileOptions.transforms` (PR #217 /
     // next publish); the currently published 0.0.63 ignores this field — see
     // the file-footer landing note.
-    transforms: buildGxtDialectTransforms(_includeOnExtTransform, options?.scopeValues),
+    transforms: buildGxtDialectTransforms(
+      _includeOnExtTransform,
+      options?.scopeValues,
+      _gxtDialectBlockParamNames,
+      _gxtDialectFindings
+    ),
     flags: {
       IS_GLIMMER_COMPAT_MODE: true,
       WITH_EMBER_INTEGRATION: true,
@@ -14312,6 +14394,32 @@ export function precompileTemplate(
       return pascalToKebab(name);
     },
   });
+
+  // Fire the AST-detected Ember-dialect asserts now (the detection ran inside the
+  // transforms above; the throw/assert MUST happen here — a throw raised inside a
+  // transform is swallowed into compilationResult.errors by the GXT compiler and
+  // never re-thrown, so it would silently fail to abort. See GxtAssertFindings).
+  // Order mirrors the former pre-compile asserts: textarea → dotted-mustache →
+  // dynamic-helper → dynamic-modifier (the kept pre-compile string asserts —
+  // dotted-tags / attrs / this-attrs — already ran higher-priority, above).
+  if (_gxtDialectFindings.textArea) {
+    // Use getDebugFunction('assert') so expectAssertion's stub is the one called.
+    const _assert = getDebugFunction('assert');
+    if (_assert)
+      _assert('Could not find component `<TextArea />` (did you mean `<Textarea />`?)', false);
+  }
+  if (_gxtDialectFindings.dottedMustache) {
+    const { head, tail } = _gxtDialectFindings.dottedMustache;
+    throw new Error(
+      `You attempted to render a path (\`{{${head}.${tail}}}\`), but ${head} was not in scope`
+    );
+  }
+  if (_gxtDialectFindings.dynamicHelper) {
+    emberAssert('Passing a dynamic string to the `(helper)` keyword is disallowed.', false);
+  }
+  if (_gxtDialectFindings.dynamicModifier) {
+    emberAssert('Passing a dynamic string to the `(modifier)` keyword is disallowed.', false);
+  }
 
   if (compilationResult.errors && compilationResult.errors.length > 0) {
     console.warn('[gxt-compile] Compilation errors:', compilationResult.errors);
@@ -16604,17 +16712,13 @@ export const __test_internals = {
   replaceWord,
   generateUUID,
   extractThisPath,
-  hasTextAreaTag,
   hasBlockParamRef,
   findBlockParamNames,
   findDottedTags,
-  findDottedMustaches,
   hasAttrsInBlockParams,
   findAttrsPatterns,
   findThisAttrsPatterns,
   parseInElementInsertBefore,
-  hasDynamicHelper,
-  hasDynamicModifier,
 };
 
 // Contribute compile.ts-owned function references to the bridge's
