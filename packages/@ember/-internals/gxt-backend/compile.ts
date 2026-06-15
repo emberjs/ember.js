@@ -5695,49 +5695,108 @@ function _eachProxySkipProp(prop: string): boolean {
 // Single shared handler for the body proxy. Resolves `holder` from the proxy
 // target via `_eachItemHolderByTarget`. Every read goes through holder.raw, the
 // per-holder revision cell, and the per-prop cell.
+// Cycle-breaking state for the each-item body proxy (see the `get`/`defineProperty`
+// traps below). gxt's reactive-property machinery can install an accessor
+// (`Object.defineProperty(raw, prop, { get: () => cell.value })`) on the raw item
+// whose backing formula reads `proxy[prop]` — i.e. back THROUGH this proxy. The
+// first resolution of that cell then recurses without bound:
+//   raw[prop] accessor → cell.value → proxy[prop] → raw[prop] accessor → …
+// (observed for `{{#link-to … model=person}}` inside `{{#each}}`, where the same
+// `person.id` binding is both read via `id={{person.id}}` and serialized by
+// link-to, so cellFor reuses the body-reading formula AS the property accessor).
+//
+// `_eachItemShadowedValue` snapshots the original DATA value at the moment the
+// accessor shadows it (captured in the `defineProperty` trap), and
+// `_eachItemReadInflight` detects the re-entrant read of the same (raw, prop) so
+// the `get` trap can return that snapshot instead of recursing.
+const _eachItemShadowedValue = new WeakMap<object, Map<string, any>>();
+const _eachItemReadInflight = new WeakMap<object, Set<string>>();
+// Shared body of the each-item `get` trap: read `raw[prop]`, entangle the
+// per-prop (and, for rebind-capable rows, the per-holder revision) cell, and wrap
+// nested objects for sub-path tracking. Hoisted so the `get` trap can call it from
+// both the fast path and the re-entrancy-guarded path.
+function _eachItemReadProp(raw: any, prop: string, holder: _EachItemHolder | undefined): any {
+  const value = Reflect.get(raw, prop, raw);
+  if (typeof value === 'function') return value;
+  try {
+    // Subscribe to the per-holder revision cell so a REBIND (holder.raw swap)
+    // re-fires this read even though the new object has different per-prop cells.
+    // Only ENTANGLE it when the owning list can ever rebind this row (explicit
+    // `key=`); for `@identity`-keyed lists the rev cell is never bumped, so it
+    // would be pure dead weight.
+    if (holder && holder.rebindPossible) {
+      const revCell = cellFor(holder, '__gxtRev', /* skipDefine */ true);
+      if (revCell) (revCell as any).value;
+    }
+    const cell = cellFor(raw, prop, /* skipDefine */ true);
+    if (cell) {
+      if ((cell as any)._value !== value) {
+        (cell as any)._value = value;
+      }
+      (cell as any).value;
+    }
+  } catch {
+    /* ignore */
+  }
+  return _wrapNestedEachValue(value);
+}
 const _eachItemProxyHandler: ProxyHandler<any> = {
   get(target, prop, _receiver) {
     const holder = _eachItemHolderByTarget.get(target);
     const raw = holder ? holder.raw : target;
     if (typeof prop !== 'string') return Reflect.get(raw, prop, raw);
     if (_eachProxySkipProp(prop)) return Reflect.get(raw, prop, raw);
-    const value = Reflect.get(raw, prop, raw);
-    if (typeof value === 'function') return value;
-    try {
-      // Subscribe to the per-holder revision cell so a REBIND (holder.raw swap)
-      // re-fires this read even though the new object has different per-prop
-      // cells. Keyed to the stable `holder`. This subscription is unconditional:
-      // the re-fire depends on the body having subscribed to the revision cell
-      // at render time, and there's no force-rerender primitive reachable here to
-      // safely re-subscribe bodies rendered before the first rebind.
-      //
-      // Only ENTANGLE the revision cell when the owning list
-      // can ever rebind this row (explicit `key=`). For `@identity`-keyed lists
-      // (`holder.rebindPossible === false`) `__gxtRebindEachItem` is provably
-      // never called, so the rev cell would be created + subscribed by every
-      // body formula yet NEVER bumped — pure dead weight. Skipping it for the
-      // common identity-keyed each (`{{#each this.data}}`) avoids that cost,
-      // with rebind fully preserved for explicit-key lists.
-      if (holder && holder.rebindPossible) {
-        const revCell = cellFor(holder, '__gxtRev', /* skipDefine */ true);
-        if (revCell) (revCell as any).value;
+    // Cycle break: only props that gxt has shadowed with a reactive accessor
+    // (recorded in `_eachItemShadowedValue` by the `defineProperty` trap) can
+    // recurse back through this proxy. For those, guard against a re-entrant read
+    // of the same (raw, prop): on re-entry the backing formula is mid-resolution
+    // and `raw[prop]` would loop forever, so return the value captured when the
+    // accessor shadowed the original data property. Plain (un-shadowed) reads take
+    // the untouched fast path below.
+    const shadow = _eachItemShadowedValue.get(raw);
+    if (shadow !== undefined && shadow.has(prop)) {
+      let inflight = _eachItemReadInflight.get(raw);
+      if (inflight !== undefined && inflight.has(prop)) {
+        return shadow.get(prop);
       }
-      const cell = cellFor(raw, prop, /* skipDefine */ true);
-      if (cell) {
-        if ((cell as any)._value !== value) {
-          (cell as any)._value = value;
-        }
-        (cell as any).value;
+      if (inflight === undefined) {
+        inflight = new Set();
+        _eachItemReadInflight.set(raw, inflight);
       }
-    } catch {
-      /* ignore */
+      inflight.add(prop);
+      try {
+        return _eachItemReadProp(raw, prop, holder);
+      } finally {
+        inflight.delete(prop);
+      }
     }
-    return _wrapNestedEachValue(value);
+    return _eachItemReadProp(raw, prop, holder);
   },
   set(target, prop, value) {
     const holder = _eachItemHolderByTarget.get(target);
     const raw = holder ? holder.raw : target;
     return Reflect.set(raw, prop, value, raw);
+  },
+  defineProperty(target, prop, descriptor) {
+    const holder = _eachItemHolderByTarget.get(target);
+    const raw = holder ? holder.raw : target;
+    // gxt installs reactive accessors (`{ get: () => cell.value }`) on the raw
+    // item via this proxy. When such an accessor REPLACES an existing own data
+    // property, snapshot the data value first: the cell it wraps can read back
+    // through this proxy, so the `get` trap needs the pre-shadow value to break
+    // the resulting read cycle (see `_eachItemShadowedValue`).
+    if (typeof prop === 'string' && descriptor && (descriptor.get || descriptor.set)) {
+      const existing = Object.getOwnPropertyDescriptor(raw, prop);
+      if (existing && 'value' in existing) {
+        let shadow = _eachItemShadowedValue.get(raw);
+        if (shadow === undefined) {
+          shadow = new Map();
+          _eachItemShadowedValue.set(raw, shadow);
+        }
+        shadow.set(prop, existing.value);
+      }
+    }
+    return Reflect.defineProperty(raw, prop, descriptor);
   },
   has(target, prop) {
     const holder = _eachItemHolderByTarget.get(target);
