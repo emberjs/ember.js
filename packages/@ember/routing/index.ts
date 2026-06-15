@@ -12,5 +12,11 @@ export type {
   NavigationState,
   NavigationActions,
   AsyncNavigationState,
+  WillEnterState,
+  EnterState,
+  DidEnterState,
+  WillExitState,
+  ExitState,
+  DidExitState,
   CreateRouteArgs,
 } from '@ember/-internals/routing/route-managers/api';
