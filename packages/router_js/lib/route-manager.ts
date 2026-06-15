@@ -31,7 +31,6 @@ import type { PublicTransition as Transition } from './transition';
 export interface RouteStateBucket {
   route: object | undefined;
   invokable: object | undefined;
-  wrapper: object | undefined;
 }
 
 // -- Capabilities -------------------------------------------------------------
