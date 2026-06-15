@@ -227,6 +227,31 @@ let _gxtSeedInit: (() => unknown) | null = null;
 let _gxtSeedComputed = false;
 let _gxtSeedValue: unknown;
 
+// Pre-install-window write migration. A `@tracked` write that lands BEFORE the
+// gxt `cellFor` bridge is installed (the metal module-init window) has no cell
+// to write yet, so it is stashed in the classic `trackedData` storage and the
+// (obj, key) is flagged here. On the cell's first post-install creation we
+// migrate that stashed value into the cell (see `_gxtTrackedCellGet`). This is
+// deliberately scoped to ONLY flagged props: normal `@tracked` props never read
+// classic storage, so the single-cell convergence (no double-backing) holds.
+const _gxtPendingWindowWrites = new WeakMap<object, Set<string | symbol>>();
+function _gxtFlagPendingWindowWrite(obj: object, key: string | symbol): void {
+  let set = _gxtPendingWindowWrites.get(obj);
+  if (set === undefined) {
+    set = new Set();
+    _gxtPendingWindowWrites.set(obj, set);
+  }
+  set.add(key);
+}
+function _gxtTakePendingWindowWrite(obj: object, key: string | symbol): boolean {
+  const set = _gxtPendingWindowWrites.get(obj);
+  if (set !== undefined && set.has(key)) {
+    set.delete(key);
+    return true;
+  }
+  return false;
+}
+
 function _gxtTrackedCellGet(
   obj: object,
   key: string | symbol,
@@ -237,7 +262,13 @@ function _gxtTrackedCellGet(
   // the memoized seed instead of recursing back through this accessor.
   if (_gxtSeedObj === obj && _gxtSeedKey === key) {
     if (!_gxtSeedComputed) {
-      _gxtSeedValue = (_gxtSeedInit ?? initializer).call(obj);
+      // Seed the cell being created. If a value was written during the
+      // pre-install window, migrate it from classic storage; otherwise use the
+      // initializer default (NO classic-storage read for normal props — that
+      // would re-introduce the double-backing this convergence removed).
+      _gxtSeedValue = _gxtTakePendingWindowWrite(obj, key)
+        ? classicGetter(obj)
+        : (_gxtSeedInit ?? initializer).call(obj);
       _gxtSeedComputed = true;
     }
     return _gxtSeedValue;
@@ -289,6 +320,14 @@ function _gxtTrackedCellSet(
   if (typeof _cellFor !== 'function') return false;
   const apply = () => {
     const cell = _cellFor(obj, key, /* skipDefine */ true) as { update: (v: unknown) => void } | undefined;
+    // The single-cell scheme relies on the gxt cell exposing a synchronous
+    // `update()` (true for gxt 0.0.67, where tagFor's lazy MergedCell extends
+    // Cell). Assert it in DEBUG so a future gxt contract change fails loudly
+    // here rather than silently no-op'ing a @tracked write.
+    assert(
+      `@tracked single-cell: gxt cellFor("${String(key)}") returned a cell without update(); the gxt cell contract changed`,
+      !cell || typeof cell.update === 'function'
+    );
     if (cell) cell.update(newValue);
   };
   if (_gxtSeedObj === obj && _gxtSeedKey === key) {
@@ -366,9 +405,13 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
       // trackedData dual-write is gone.
       const wrote = _gxtTrackedCellSet(this, key, newValue, initializer);
       if (!wrote) {
-        // Bridge not installed yet (metal module-init window) — keep the value
-        // in the classic storage so it isn't lost before the cell exists.
+        // Bridge not installed yet (metal module-init window, before the gxt
+        // renderer is set). Stash in the classic storage so a pre-install READ
+        // still sees it, and flag (this, key) so the cell's first post-install
+        // creation migrates this value in instead of seeding the initializer
+        // default (which would silently drop this write). Framework-init-only.
         setter(this, newValue);
+        _gxtFlagPendingWindowWrite(this, key);
       }
       // Public notification — the SINGLE coherence path. notifyPropertyChange:
       //   • markObjectAsDirty → dirtyTagFor(obj,key) + dirtyTagFor(obj,SELF_TAG)
