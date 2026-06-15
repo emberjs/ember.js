@@ -5595,13 +5595,32 @@ function _gxtSubscribeBackingArray(raw: any): void {
   }
 }
 
-// NOTE: `normalizeEachCollection` was deleted (each/if delegation plan, Step 1).
-// gxt's native `$_eachSync` → `normalizeIterableValue` (list.ts) already covers
-// every shape this did — plain arrays, Symbol.iterator iterables, ArrayProxy via
-// `.content`, forEach-delegates, and strings-as-falsy. The wrappers below now
-// forward the RAW value to `origEachSync` and let gxt normalize it. The KVO
-// subscriptions (`_registerIterableUnderlyingArray` / `_gxtSubscribeBackingArray`)
-// and the watch-target/id copies are kept — those are the genuine Ember bridge.
+// `normalizeEachCollection` materializes a non-Array iterable into a real Array.
+// Background: the each/if delegation plan Step 1 deleted this and let gxt's native
+// `$_eachSync` → `normalizeIterableValue` (list.ts) own normalization — which it
+// does for ITERATION across every shape (plain arrays, Symbol.iterator iterables,
+// ArrayProxy via `.content`, forEach-delegates, strings-as-falsy). BUT gxt's
+// `as |item index|` index path calls `.indexOf(item)` on the raw cell value, which
+// is absent/wrong on a Set / Symbol.iterator object / forEach array-like — so the
+// index block param came back undefined for those shapes. The wrappers below now
+// re-materialize to an Array ONLY on the `hasIndex` path (this helper short-circuits
+// real Arrays, so the no-index and Array cases stay free, preserving the Step 1
+// delegation win). The KVO subscriptions (`_registerIterableUnderlyingArray` /
+// `_gxtSubscribeBackingArray`) and watch-target/id copies are the genuine bridge.
+function normalizeEachCollection(raw: any): any[] {
+  if (raw == null || raw === false || raw === '' || raw === 0) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'object') {
+    if (typeof raw.toArray === 'function') return raw.toArray();
+    if (typeof raw[Symbol.iterator] === 'function') return Array.from(raw);
+    if (typeof raw.forEach === 'function' && typeof raw.length === 'number') {
+      const arr: any[] = [];
+      raw.forEach((item: any) => arr.push(item));
+      return arr;
+    }
+  }
+  return [];
+}
 
 // Each-body item tracking.
 //
@@ -6609,13 +6628,16 @@ function patchGlobalEachSync() {
           {
             _gxtSubscribeBackingArray(raw);
           }
-          return raw;
+          // `as |item index|`: gxt's index path calls `.indexOf(item)` on this
+          // cell value, so materialize non-Array iterables here (Arrays no-op).
+          return hasIndex ? normalizeEachCollection(raw) : raw;
         });
         return origEachSync(wrappedCell, fn, key, ctx, inverseFn, hasIndex);
       }
       // Fallback: pass function directly (legacy behavior)
       const wrappedGetter: any = function () {
-        return origGetter();
+        const raw = origGetter();
+        return hasIndex ? normalizeEachCollection(raw) : raw;
       };
       if (origGetter.__gxtWatchTarget) wrappedGetter.__gxtWatchTarget = origGetter.__gxtWatchTarget;
       if (origGetter.__gxtWatchKey) wrappedGetter.__gxtWatchKey = origGetter.__gxtWatchKey;
@@ -6625,7 +6647,8 @@ function patchGlobalEachSync() {
       const wrappedCell = Object.create(origCell);
       Object.defineProperty(wrappedCell, 'value', {
         get() {
-          return origCell.value;
+          const raw = origCell.value;
+          return hasIndex ? normalizeEachCollection(raw) : raw;
         },
         enumerable: true,
         configurable: true,
@@ -6633,7 +6656,14 @@ function patchGlobalEachSync() {
       if (origCell.id !== undefined) wrappedCell.id = origCell.id;
       return origEachSync(wrappedCell, fn, key, ctx, inverseFn, hasIndex);
     }
-    return origEachSync(items, fn, key, ctx, inverseFn, hasIndex);
+    return origEachSync(
+      hasIndex ? normalizeEachCollection(items) : items,
+      fn,
+      key,
+      ctx,
+      inverseFn,
+      hasIndex
+    );
   };
   g.$_eachSync.__emberPatched = true;
 
