@@ -1,6 +1,6 @@
 /**
  *
- * These snapshot tests or so tat we can keep track of how "tree-shakable" ember-source is.
+ * These snapshot tests are so that we can keep track of how "tree-shakable" ember-source is.
  * Ideally, over time, more and more moves to the "shaken" snapshot,
  * and out of the "notShaken" snapshot
  *
@@ -44,6 +44,8 @@ it('[dev] has expected tree-shakable entrypoints', async () => {
       "ember-source/@ember/-internals/browser-environment/index.js",
       "ember-source/@ember/-internals/error-handling/index.js",
       "ember-source/@ember/-internals/owner/index.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/bucket.js",
+      "ember-source/@ember/-internals/routing/route-managers/registry.js",
       "ember-source/@ember/-internals/string/index.js",
       "ember-source/@ember/-internals/utility-types/index.js",
       "ember-source/@ember/-internals/views/lib/compat/attrs.js",
@@ -111,6 +113,12 @@ it('[dev] has expected tree-shakable entrypoints', async () => {
       "ember-source/@ember/-internals/meta/lib/meta.js",
       "ember-source/@ember/-internals/metal/index.js",
       "ember-source/@ember/-internals/routing/index.js",
+      "ember-source/@ember/-internals/routing/route-managers/api.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/manager.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/query-params.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/substates.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/wrapper.js",
+      "ember-source/@ember/-internals/routing/route-managers/index.js",
       "ember-source/@ember/-internals/runtime/index.js",
       "ember-source/@ember/-internals/runtime/lib/ext/rsvp.js",
       "ember-source/@ember/-internals/runtime/lib/mixins/-proxy.js",
@@ -237,6 +245,8 @@ it('[prod] has expected tree-shakable entrypoints', async () => {
       "ember-source/@ember/-internals/meta/index.js",
       "ember-source/@ember/-internals/meta/lib/meta.js",
       "ember-source/@ember/-internals/owner/index.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/bucket.js",
+      "ember-source/@ember/-internals/routing/route-managers/registry.js",
       "ember-source/@ember/-internals/string/index.js",
       "ember-source/@ember/-internals/utility-types/index.js",
       "ember-source/@ember/-internals/views/lib/compat/attrs.js",
@@ -315,6 +325,12 @@ it('[prod] has expected tree-shakable entrypoints', async () => {
       "ember-source/@ember/-internals/glimmer/index.js",
       "ember-source/@ember/-internals/metal/index.js",
       "ember-source/@ember/-internals/routing/index.js",
+      "ember-source/@ember/-internals/routing/route-managers/api.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/manager.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/query-params.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/substates.js",
+      "ember-source/@ember/-internals/routing/route-managers/classic/wrapper.js",
+      "ember-source/@ember/-internals/routing/route-managers/index.js",
       "ember-source/@ember/-internals/runtime/index.js",
       "ember-source/@ember/-internals/runtime/lib/ext/rsvp.js",
       "ember-source/@ember/-internals/runtime/lib/mixins/-proxy.js",
