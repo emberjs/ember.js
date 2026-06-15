@@ -197,7 +197,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 
   getRouteWrapper(bucket: ClassicRouteBucket): object {
     if (bucket.wrapper === undefined) {
-      bucket.wrapper = new ClassicRouteWrapperDefinition(bucket.route.routeName);
+      bucket.wrapper = new ClassicRouteWrapperDefinition();
     }
     return bucket.wrapper;
   }

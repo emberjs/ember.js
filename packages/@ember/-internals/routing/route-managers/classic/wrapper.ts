@@ -75,9 +75,7 @@ class ClassicRouteWrapperManager
   }
 }
 
-export class ClassicRouteWrapperDefinition {
-  constructor(public name: string) {}
-}
+export class ClassicRouteWrapperDefinition {}
 
 setInternalComponentManager(
   new ClassicRouteWrapperManager(),
