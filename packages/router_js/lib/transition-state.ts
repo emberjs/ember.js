@@ -5,7 +5,7 @@ import type InternalRouteInfo from './route-info';
 import type Transition from './transition';
 import { forEach, promiseLabel } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
-import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
+import { hasClassicInterop } from './route-manager';
 
 interface IParams {
   [key: string]: unknown;

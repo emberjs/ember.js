@@ -44,6 +44,7 @@ import { Promise as RSVPPromise } from 'rsvp';
 import { DEBUG } from '@glimmer/env';
 import {
   type default as Route,
+  type QueryParam,
   type QueryParamMeta,
   defaultSerialize,
   getFullQueryParams,
@@ -119,22 +120,10 @@ if (DEBUG) {
   };
 }
 
-export interface QueryParam {
-  prop: string;
-  urlKey: string;
-  type: string;
-  route: Route;
-  parts?: string[];
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  values: {} | null;
-  scopedPropertyName: string;
-  scope: string;
-  defaultValue: unknown;
-  undecoratedDefaultValue: unknown;
-  serializedValue: string | null | undefined;
-  serializedDefaultValue: string | null | undefined;
-  controllerName: string;
-}
+// `QueryParam` now lives in `@ember/routing/route`. It was historically
+// exported from `@ember/routing/router`, so re-export it here to preserve that
+// published deep-import path.
+export type { QueryParam };
 
 function K(this: Router<Route>) {
   return this;
@@ -1497,7 +1486,9 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     if (!hasClassicInterop(manager)) {
       return undefined;
     }
-    return manager.qp(route.bucket);
+    // The manager contract types `qp()` as `unknown`. Having
+    // confirmed classic interop, narrow it to the concrete type.
+    return manager.qp(route.bucket) as QueryParamMeta;
   }
 
   /**

@@ -1,4 +1,4 @@
-import type { Route, Transition } from '../index';
+import type { Route, RouteStateBucket, Transition } from '../index';
 import Router from '../index';
 import type { Dict } from '../lib/core';
 import type { IModel } from '../lib/route-info';
@@ -9,7 +9,6 @@ import type { TransitionError } from '../lib/transition-state';
 import type { UnrecognizedURLError } from '../lib/unrecognized-url-error';
 import { isTransitionAborted, throwIfAborted } from '../lib/transition-aborted-error';
 import { Promise } from 'rsvp';
-import type { RouteStateBucket } from '@ember/-internals/routing';
 
 // A useful function to allow you to ignore transition errors in a testing context
 export async function ignoreTransitionError(transition: Transition) {

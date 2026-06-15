@@ -31,7 +31,7 @@ import type { RouteManager, RouteStateBucket } from '@ember/-internals/routing/r
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
 import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
-import type { QueryParam, default as EmberRouter } from '@ember/routing/router';
+import type { default as EmberRouter } from '@ember/routing/router';
 import { default as generateController } from './lib/generate_controller';
 import type { ExpandedControllerQueryParam, NamedRouteArgs } from './lib/utils';
 import {
@@ -43,6 +43,23 @@ import {
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<R> {
   _names?: unknown[];
+}
+
+export interface QueryParam {
+  prop: string;
+  urlKey: string;
+  type: string;
+  route: Route;
+  parts?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  values: {} | null;
+  scopedPropertyName: string;
+  scope: string;
+  defaultValue: unknown;
+  undecoratedDefaultValue: unknown;
+  serializedValue: string | null | undefined;
+  serializedDefaultValue: string | null | undefined;
+  controllerName: string;
 }
 
 export type QueryParamMeta = {

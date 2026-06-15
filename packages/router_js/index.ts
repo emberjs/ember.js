@@ -23,3 +23,23 @@ export {
   isTransitionAborted,
   type TransitionAbortedError,
 } from './lib/transition-aborted-error';
+
+export { routeCapabilities, hasClassicInterop } from './lib/route-manager';
+export type {
+  RouteManager,
+  RouteManagerWithClassicInterop,
+  RouteStateBucket,
+  RouteCapabilities,
+  RouteCapabilitiesVersions,
+  NavigationState,
+  NavigationActions,
+  AsyncNavigationState,
+  ClassicInteropArgs,
+  WillEnterState,
+  EnterState,
+  DidEnterState,
+  WillExitState,
+  ExitState,
+  DidExitState,
+  CreateRouteArgs,
+} from './lib/route-manager';

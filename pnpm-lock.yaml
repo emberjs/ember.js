@@ -2760,9 +2760,6 @@ importers:
         specifier: workspace:*
         version: link:../@glimmer/env
     devDependencies:
-      '@ember/-internals':
-        specifier: workspace:*
-        version: link:../@ember/-internals
       '@types/qunit':
         specifier: ^2.9.6
         version: 2.19.14
