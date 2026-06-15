@@ -1347,7 +1347,6 @@ function _afterFlushAfterInsertQueue(): void {
   // Track which elements are in append mode (insertBefore=null)
   const _inElementAppendModeElements = new WeakSet<Element>();
 
-  const _origInElement = (globalThis as any).$_inElement;
   (globalThis as any).$_inElement = function _emberInElement(
     elementRef: any,
     roots: (ctx: any) => any[],
@@ -14278,10 +14277,6 @@ export function precompileTemplate(
     transformedTemplate = parsed.result;
     _inElementInsertBefore = parsed.insertBefore;
   }
-
-  // Residual each-in state placeholder (the {{#each-in}} lowering itself now runs
-  // in the `gxtEachInTransform` AST visitor wired below).
-  let _eachInSources: Array<{ propName: string; sourceExpr: string }> = [];
 
   // Dynamic `(helper)` / `(modifier)` usage — `{{helper this.xxx}}` /
   // `(modifier this.xxx)` etc. — is disallowed in Ember and is now DETECTED by
