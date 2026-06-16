@@ -6564,27 +6564,19 @@ function _gxtFireRowPreDestroy(rowCtx: object): void {
   _gxtEachRowCtxSet.delete(rowCtx);
   _gxtRowCtxInstances.delete(rowCtx);
   if (insts === undefined || insts.size === 0) return;
-  const _bridgeViewUtils = getGxtRenderer()?.viewUtils;
-  const getViewElement = _bridgeViewUtils
-    ? (inst: any) => _bridgeViewUtils.getViewElement(inst)
-    : (inst: any) => inst && inst.element;
   for (const inst of insts) {
     if (!inst || inst.isDestroyed || inst.isDestroying) continue;
     // Only instances that actually reached the live DOM get element lifecycle
-    // hooks. `__gxtEverInserted` filters truly-never-inserted transients; the
-    // `connected` check below is the operative gate that fires WDE ONLY for
-    // interactive, still-attached rows — non-interactive rows have an element
-    // that is NOT connected (InertRenderer), so they are skipped here and left
-    // to the existing path unchanged (which correctly fires no element hooks).
+    // hooks; `__gxtEverInserted` filters truly-never-inserted transients. We do
+    // NOT gate on element connectivity: `trigger` self-gates interactivity (it
+    // is a no-op for non-interactive components, whose element hooks are not
+    // wired as listeners), and TAGLESS interactive rows have no `HTMLElement`
+    // wrapper yet still must fire willDestroyElement. The destructor runs
+    // PRE-DOM-removal (teardownAllRowCtxs before clearChildren; destroyRowCtx
+    // before destroyElementSync(row)), so the row is still connected here —
+    // matching what the old `wrappedInverseFn` reattach+fire used to do, now
+    // owned entirely by this path.
     if (!(inst as any).__gxtEverInserted) continue;
-    let el: any = null;
-    try {
-      el = getViewElement(inst);
-    } catch {
-      /* viewUtils may be unavailable */
-    }
-    const connected = el instanceof HTMLElement && el.isConnected;
-    if (!connected) continue; // non-interactive / disconnected → existing path handles it (no stamp ⇒ unguarded)
     try {
       (inst as any).__gxtWDEFiredCycle = _gxtGetSyncCycleId();
       if (inst._transitionTo && inst._state !== 'inDOM') {
@@ -6798,22 +6790,24 @@ function patchGlobalEachSync() {
     // have parentView=null, breaking the lifecycle tests.
     //
     // Additionally, when the forward branch items all disappear (items array
-    // goes from non-empty → empty), classic Ember lifecycle expects
-    // `willDestroyElement` + `willClearRender` to fire on the OLD items
-    // BEFORE the inverse-branch components are constructed. GXT's native
-    // reactivity has already torn down the old item DOM by the time our
-    // wrapped inverseFn runs, so temporarily re-attach each old element to
-    // a fixture container and fire the hooks — mirroring the mechanism in
-    // __gxtDestroyUnclaimedPoolEntries' Phase 1. Guard with
-    // `__gxtInverseDestroyFiredCycle` so Phase 1 and Phase 2b don't double-fire,
-    // and mark each instance with `__gxtWDEFiredCycle` so Phase 2c's
-    // `__gxtDestroyUnclaimedPoolEntries` skips re-firing the pre-destroy hooks.
+    // goes from non-empty → empty), classic Ember lifecycle expects the OLD
+    // items' SYNC `willDestroyElement`/`willClearRender` (fired BEFORE the
+    // inverse content is constructed) followed by their ASYNC
+    // `didDestroyElement`/`willDestroy` (fired AFTER the new content's
+    // didInsertElement). The SYNC half is now owned by the each-row pre-destroy
+    // delegation (Step 3 / E-c: `onRowContextCreated` → `_gxtFireRowPreDestroy`,
+    // which fires while the row is still connected — pre-`clearChildren`). This
+    // wrapper retains only the ASYNC half: it collects the old rows (guarded by
+    // `__gxtInverseDestroyFiredCycle` against double-collection) and defers their
+    // didDestroyElement/willDestroy into `_pendingInverseOldRowFinalize`, marking
+    // each `__gxtDeferAsyncDestroyCycle` so the Phase 2c sweep skips them.
     if (typeof inverseFn === 'function') {
       const origInverseFn = inverseFn;
       inverseFn = function wrappedInverseFn(ctx0: any) {
         // Lifecycle teardown ORDERING: the old each-rows whose
-        // willDestroyElement/willClearRender fired below need their async
-        // teardown (didDestroyElement + willDestroy) fired AFTER the inverse
+        // willDestroyElement/willClearRender were fired by the per-row
+        // pre-destroy delegation need their async teardown (didDestroyElement +
+        // willDestroy) fired AFTER the inverse
         // branch's new content has rendered AND its didInsertElement/didRender
         // callbacks have flushed — classic Ember fires new-insert before
         // async-destroy. We collect the ordered old rows here (in BOTH the
@@ -6863,11 +6857,11 @@ function patchGlobalEachSync() {
                     pv = pv.parentView;
                   }
                   if (!underParent) continue;
-                  // Do NOT exclude rows already fired this cycle by the each-row
-                  // pre-destroy delegation (Step 3 / E-c): they must still enter
-                  // `_oldRowsToFinalize` for the async didDestroy/willDestroy
-                  // finalize. The reattach + sync-fire loops below skip them
-                  // individually via `__gxtWDEFiredCycle`.
+                  // NOTE: rows already fired this cycle by the each-row pre-destroy
+                  // delegation (Step 3 / E-c) are intentionally NOT excluded here —
+                  // `ordered` drives only the ASYNC didDestroy/willDestroy finalize
+                  // now (the sync willDestroyElement/willClearRender is owned by the
+                  // per-row destructor), and every row still needs that finalize.
                   candidates.push(inst);
                 }
               }
@@ -6891,87 +6885,21 @@ function patchGlobalEachSync() {
                 for (const root of directChildren) visit(root);
                 for (const c of candidates) if (!visited.has(c)) ordered.push(c);
 
-                const _bridgeViewUtils = getGxtRenderer()?.viewUtils;
-                const getViewElement = _bridgeViewUtils
-                  ? (inst: any) => _bridgeViewUtils.getViewElement(inst)
-                  : (inst: any) => inst && inst.element;
-                const tempContainer = document.getElementById('qunit-fixture') || document.body;
-                const reattached: Array<{ element: Element }> = [];
-                _gxtSetDestroyReattachInProgress(true);
-                try {
-                  for (const inst of ordered) {
-                    // Delegated rows (Step 3 / E-c) already fired their sync
-                    // pre-destroy hooks while still connected — don't reattach.
-                    if ((inst as any).__gxtWDEFiredCycle === currentCycle) continue;
-                    try {
-                      const el = getViewElement(inst);
-                      if (el instanceof HTMLElement && !el.isConnected) {
-                        tempContainer.appendChild(el);
-                        reattached.push({ element: el });
-                      }
-                    } catch {
-                      /* ignore */
-                    }
-                  }
-                } finally {
-                  _gxtSetDestroyReattachInProgress(false);
-                }
-                for (const inst of ordered) {
-                  // Delegated rows (Step 3 / E-c) already fired willDestroyElement
-                  // / willClearRender pre-DOM-removal (connected) and installed the
-                  // trigger gate; skip the reattach-time sync-fire for them.
-                  if ((inst as any).__gxtWDEFiredCycle === currentCycle) continue;
-                  try {
-                    (inst as any).__gxtWDEFiredCycle = currentCycle;
-                    if (inst._transitionTo && inst._state !== 'inDOM') {
-                      try {
-                        inst._transitionTo('inDOM');
-                      } catch {
-                        /* ignore */
-                      }
-                    }
-                    if (typeof inst.trigger === 'function') {
-                      inst.trigger('willDestroyElement');
-                      inst.trigger('willClearRender');
-                    }
-                    // Install a per-instance trigger gate so that a subsequent
-                    // call from __gxtDestroyUnclaimedPoolEntries' Phase 1
-                    // (which fires willDestroyElement/willClearRender again
-                    // for instances whose element is disconnected) becomes a
-                    // no-op. Keep other hook names (didDestroyElement,
-                    // willDestroy) flowing through so Phase 2/3 still emit
-                    // their hooks in the stock sequence.
-                    if (!(inst as any).__gxtPreDestroyGateInstalled) {
-                      (inst as any).__gxtPreDestroyGateInstalled = true;
-                      const origTrigger = inst.trigger;
-                      Object.defineProperty(inst, 'trigger', {
-                        value: function (this: any, name: string, ...rest: any[]) {
-                          if (
-                            (name === 'willDestroyElement' || name === 'willClearRender') &&
-                            this.__gxtWDEFiredCycle === _gxtGetSyncCycleId()
-                          ) {
-                            return undefined;
-                          }
-                          return origTrigger.call(this, name, ...rest);
-                        },
-                        writable: true,
-                        configurable: true,
-                        enumerable: false,
-                      });
-                    }
-                  } catch {
-                    /* user override may throw */
-                  }
-                }
-                // Detach reattached nodes so origInverseFn renders into a
-                // parent without leftover old items
-                for (const { element } of reattached) {
-                  try {
-                    if (element.parentNode) element.parentNode.removeChild(element);
-                  } catch {
-                    /* ignore */
-                  }
-                }
+                // each/if delegation Step 3 (E-c) follow-on: the old reattach-to-
+                // fixture + synchronous willDestroyElement/willClearRender firing
+                // for these rows used to live here. It is now owned by the per-row
+                // `onRowContextCreated` destructor (`_gxtFireRowPreDestroy`), which
+                // fires the sync hooks PRE-DOM-removal on the still-connected
+                // element (during `fastCleanup`→`teardownAllRowCtxs` before
+                // `clearChildren`, or per-row `destroyItem`→`destroyRowCtx` before
+                // `destroyElementSync(row)`) — so no reattach is needed. Interactive
+                // each→else rows are always connected at destructor time (hence
+                // delegated); non-interactive rows fire no element hooks anyway.
+                // We still collect `ordered` below to drive the ASYNC finalize
+                // (didDestroyElement → willDestroy), which the delegation does NOT
+                // own and which must stay deferred until after the new inverse
+                // content's didInsertElement (Phase 3b).
+                //
                 // Remember the ordered old rows so we can DEFER their async
                 // teardown (didDestroyElement + willDestroy) until AFTER the new
                 // inverse content + its after-insert callbacks (Phase 3b) have
