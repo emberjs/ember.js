@@ -832,6 +832,11 @@ function _resetGxtComponentContexts(): void {
 // Ensure the validator compat module is loaded (registers backtracking detection
 // functions on globalThis that ember-gxt-wrappers.ts needs at runtime).
 import '@glimmer/validator';
+// `dirtyTagFor` invalidates the Ember property tag a classic `@computed`
+// chain-key consumes (`tagForProperty`). The `(hash)`/`(array)` CP propagation
+// in `_notifyPropertiesChanged` calls it to bump `tagFor(hashObject, member)`
+// so a stable-identity memoized hash arg's `@computed('hash.member')` recomputes.
+import { dirtyTagFor as _gxtDirtyTagFor } from '@glimmer/validator';
 
 // Install shared Ember wrappers for $_maybeHelper and $_tag on globalThis
 import { installEmberWrappers } from './ember-gxt-wrappers';
@@ -2266,28 +2271,178 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
   }
 }
 
-// Wrap $__hash so that getter values capture the parent render context at
-// HASH-CONSTRUCTION TIME, not at getter-invocation time. Without this, a
-// contextual component embedded in a nested-component hash (e.g.
-// `{{my-comp (hash comp=(component "foo" this.model.x))}}`) captures the
-// INNER component's render context when its lazy getter eventually fires
-// during the inner render — which means the mut helper can't find
-// `this.model.x` to propagate writes back to the outer test context.
-// By stamping the outer ctx onto each getter up-front, $_componentHelper_ember
-// below can prefer it over globalThis.__lastRenderContext for __mutParentCtx.
+// Extract EVERY `this.<path>` substring from a getter's source (e.g.
+// `() => this.model?.firstName` → ["model?.firstName"], `() =>
+// $__array(this.model?.x, this.y)` → ["model?.x", "y"]). Used by the
+// `$__hash`/`$__array` member-getter wrapper to find the classic/plain-object
+// paths a member reads so their `cellFor` cells can be entangled. Single-path
+// `extractThisPath` only finds the first; a `(hash)`/`(array)` member can read
+// several sources.
+function _gxtExtractAllThisPaths(src: string): string[] {
+  const paths: string[] = [];
+  const marker = 'this.';
+  let from = 0;
+  for (;;) {
+    const idx = src.indexOf(marker, from);
+    if (idx === -1) break;
+    let end = idx + marker.length;
+    while (end < src.length) {
+      const c = src[end]!;
+      if (
+        (c >= 'a' && c <= 'z') ||
+        (c >= 'A' && c <= 'Z') ||
+        (c >= '0' && c <= '9') ||
+        c === '_' ||
+        c === '$' ||
+        c === '?' ||
+        c === '.'
+      ) {
+        end++;
+      } else {
+        break;
+      }
+    }
+    if (end > idx + marker.length) paths.push(src.slice(idx + marker.length, end));
+    from = end;
+  }
+  return paths;
+}
+
+// Walk a `this.<path>` on `ctx` through `cellFor` so each segment's source cell
+// entangles into the ambient tracker. Reading `cellFor(obj,key).value` records
+// the cell and installs a cell-backed accessor on `obj[key]`, so a later
+// `set(obj,'key',v)` (Ember `set` → `notifyPropertyChange` → dirty
+// `cellFor(obj,'key')`) re-runs any consumer that captured it. Best-effort and
+// read-only on values (only intermediate accessor install is a side effect,
+// matching the empty-capture materialization already used in `itemToNode`).
+function _gxtWalkThisPathCells(path: string, ctx: any): void {
+  if (!ctx || typeof ctx !== 'object') return;
+  let cur: any = ctx;
+  const segs = path.split('.');
+  for (let i = 0; i < segs.length; i++) {
+    let seg = segs[i]!;
+    // Strip optional-chaining markers (`this.model?.firstName`).
+    while (seg.length > 0 && seg.charCodeAt(seg.length - 1) === 63 /* '?' */) {
+      seg = seg.slice(0, -1);
+    }
+    if (!seg) continue;
+    if (!cur || typeof cur !== 'object') break;
+    try {
+      const cell = cellFor(cur, seg, /* skipDefine */ false);
+      cur = cell ? cell.value : cur[seg];
+    } catch {
+      try {
+        cur = cur[seg];
+      } catch {
+        break;
+      }
+    }
+  }
+}
+
+// Register every object on a `{{hash}}`/`{{array}}` member getter's
+// `this.<path>` as a VALUE-OWNER of `(hashObj, hashKey)` (see
+// `registerObjectValueOwner` / `_objectValueCellMap`). This is the dependency
+// link the `untrack`ed read path can't establish: an Ember `@computed('hash.x')`
+// runs its getter under `untrack` (metal/computed.ts), so reading `this.hash.x`
+// there can't entangle the source cell — the computed relies purely on its
+// chain-tag `tagFor(hashObj,'x')` bumping. With this link a `set(source,'x',…)`
+// (→ `notifyPropertyChange(source,'x')`) reaches `(hashObj,'x')` in the
+// `_objectValueCellMap` reverse-lookup, where the `(hash)`/`(array)` CP
+// propagation block calls `dirtyTagFor(hashObj,'x')` (invalidating the computed's
+// chain-tag) and recomputes the consuming component's CPs. Harmless for the
+// other consumer shapes: they subscribe to the source cell directly, not to
+// this one.
+function _gxtLinkHashMemberSources(getter: any, ctx: any, hashObj: any, hashKey: string): void {
+  if (!ctx || typeof ctx !== 'object') return;
+  let paths = getter.__gxtHashPaths as string[] | undefined;
+  if (paths === undefined) {
+    paths = _gxtExtractAllThisPaths(String(getter));
+    try {
+      getter.__gxtHashPaths = paths;
+    } catch {
+      /* getter frozen — re-parse next time */
+    }
+  }
+  for (let p = 0; p < paths.length; p++) {
+    let cur: any = ctx;
+    const segs = paths[p]!.split('.');
+    for (let i = 0; i < segs.length; i++) {
+      let seg = segs[i]!;
+      while (seg.length > 0 && seg.charCodeAt(seg.length - 1) === 63 /* '?' */) {
+        seg = seg.slice(0, -1);
+      }
+      if (!seg) continue;
+      if (!cur || typeof cur !== 'object') break;
+      registerObjectValueOwner(cur, hashObj, hashKey);
+      try {
+        const c = cellFor(cur, seg, /* skipDefine */ true);
+        cur = c ? c.value : cur[seg];
+      } catch {
+        try {
+          cur = cur[seg];
+        } catch {
+          break;
+        }
+      }
+    }
+  }
+}
+
+// Walk all of a `{{hash}}`/`{{array}}` member getter's `this.<path>` reads
+// through `cellFor` on `ctx`, caching the parsed path list on the getter.
+function _gxtWalkHashGetterPaths(getter: any, ctx: any): void {
+  let paths = getter.__gxtHashPaths as string[] | undefined;
+  if (paths === undefined) {
+    paths = _gxtExtractAllThisPaths(String(getter));
+    try {
+      getter.__gxtHashPaths = paths;
+    } catch {
+      /* getter frozen — re-parse next time */
+    }
+  }
+  for (let i = 0; i < paths.length; i++) {
+    _gxtWalkThisPathCells(paths[i]!, ctx);
+  }
+}
+
+// Wrap $__hash so member getters do TWO things beyond plain `$__hash`:
+//
+// (1) Parent-context capture for `mut` (the original reason this wrapper
+//     exists): while a getter runs, expose the HASH-CONSTRUCTION render
+//     context via `_gxtHashGetterCtx` so `$_componentHelper_ember` recovers the
+//     OUTER scope for a contextual component embedded in a nested-component
+//     hash (`{{my-comp (hash comp=(component "foo" this.model.x))}}`).
+//
+// (2) Classic/plain-object dependency entanglement (the `(hash)`/`(array)`
+//     stale-value fix): a `(hash)` member getter such as
+//     `() => this.model.firstName` (or a hash-nested `() => $__array(this.x)`)
+//     reads PLAIN object properties — no gxt Cell is touched, so a consumer
+//     that reads the member (e.g. a yielded `{{values.firstName}}` across a
+//     component boundary) subscribes to nothing and never re-pulls when
+//     `set(model,'firstName',…)` runs. gxt's `cachedHelper` memoizes the hash
+//     identity (correctly — that fixed the over-invalidation), which means the
+//     consumer is the ONLY thing that could re-pull, and it doesn't. So on each
+//     member read we walk the member's `this.<path>` through `cellFor` on the
+//     construction context, entangling the leaf + intermediate cells into the
+//     ambient tracker (the consumer's capture/effect frame). `set` then dirties
+//     a captured cell and the consumer re-runs with the live value, while gxt's
+//     identity memoization is left intact.
 {
   const g = globalThis as any;
   if (g.$__hash && !g.$__hash.__emberHashWrapped) {
     const origHash = g.$__hash;
     g.$__hash = function $__hash_ember(inputObj: Record<string, any>) {
-      // Snapshot the current outer render context at construction time.
-      const ctxAtConstruction = _gxtLastRenderContext;
-      // Wrap each function-valued getter so that while it runs we expose the
-      // outer context via g.__hashGetterCtx. $_componentHelper_ember reads
-      // this to recover the OUTER scope when the hash getter fires inside a
-      // nested component's render. Without this, mut cannot locate
-      // `this.model.x` on the outer test context when an inner click fires.
-      if (ctxAtConstruction && inputObj && typeof inputObj === 'object') {
+      // The render context the hash is being constructed in. The producer
+      // template's `this` is the active template-this here (verified: a yielded
+      // `(hash firstName=this.model.firstName)` is built while the producer
+      // component is the current template-this), which is exactly the `this`
+      // the member getters close over. Prefer it for the path walk; fall back
+      // to the last render context.
+      const pathCtx = _gxtCurrentTemplateThis || _gxtLastRenderContext;
+      // The outer render context for `mut` parent-scope recovery (unchanged).
+      const mutCtx = _gxtLastRenderContext;
+      if ((pathCtx || mutCtx) && inputObj && typeof inputObj === 'object') {
         const wrappedObj: Record<string, any> = {};
         for (const key of Object.keys(inputObj)) {
           const val = inputObj[key];
@@ -2299,27 +2454,123 @@ function _curriedComponentChanged(info: any, curried: any): boolean {
           ) {
             const wrappedGetter = function (this: any) {
               const prev = _gxtHashGetterCtx;
-              _gxtHashGetterCtx = ctxAtConstruction;
+              if (mutCtx) _gxtHashGetterCtx = mutCtx;
               try {
-                return val.call(this);
+                const out = val.call(this);
+                // Read-time entanglement: walk this member's `this.<path>`
+                // through `cellFor` so a consumer reading the member directly
+                // under its OWN tracker frame (the same-context `{{#let}}` case)
+                // subscribes to the source cells.
+                if (pathCtx && _gxtGetTracker() !== null) {
+                  _gxtWalkHashGetterPaths(val, pathCtx);
+                }
+                return out;
               } finally {
                 _gxtHashGetterCtx = prev;
               }
             };
             wrappedGetter.toString = () => val.toString();
             (wrappedGetter as any).__origHashGetter = val;
-            (wrappedGetter as any).__hashConstructionCtx = ctxAtConstruction;
+            (wrappedGetter as any).__hashConstructionCtx = mutCtx;
             (wrappedGetter as any).__emberHashGetterWrapped = true;
             wrappedObj[key] = wrappedGetter;
           } else {
             wrappedObj[key] = val;
           }
         }
-        return origHash.call(this, wrappedObj);
+        const result = origHash.call(this, wrappedObj);
+        // Mark the produced object so `$__cellFor_ember` knows to read members
+        // through their (live, source-entangling) getters instead of snapshotting
+        // a `cellFor(hashObject,key)` cell. Stamp the construction context so the
+        // marker survives `cellFor` defining a cell-backed accessor over it.
+        try {
+          Object.defineProperty(result, '__emberHashObject', {
+            value: pathCtx || true,
+            enumerable: false,
+            configurable: true,
+          });
+        } catch {
+          /* frozen — $__cellFor_ember falls back to the snapshot path */
+        }
+        // Link each member's source objects to `(result, key)` so an Ember
+        // `@computed('hash.key')` (whose getter runs under `untrack`) re-fires
+        // when the source changes — its chain-tag watches `tagFor(result,key)`.
+        if (pathCtx) {
+          for (const key of Object.keys(inputObj)) {
+            const val = inputObj[key];
+            if (typeof val === 'function' && !val.prototype && !val.__isCurriedComponent) {
+              _gxtLinkHashMemberSources(val, pathCtx, result, key);
+            }
+          }
+        }
+        return result;
       }
       return origHash.call(this, inputObj);
     };
     g.$__hash.__emberHashWrapped = true;
+  }
+}
+
+// Wrap $__cellFor for the cross-component `(hash)`/`(array)` reactivity fix.
+//
+// The compiler lowers a yielded-then-read hash member (`{{values.firstName}}`
+// where `values` is a `{{yield (hash firstName=this.model.firstName)}}` block
+// param) to `$__cellFor(values, "firstName")`. gxt's `$__cellFor` returns
+// `cellFor(hashObject, "firstName").value` — a cell keyed on the HASH OBJECT
+// that snapshots the member value ONCE at creation (the accessor it would
+// install over the member is rejected because `$__hash`'s getter is
+// non-configurable, so the cell never updates) and is entirely decoupled from
+// the real source `this.model.firstName`. So `set(model,'firstName',…)` dirties
+// `cellFor(model,'firstName')`, never the snapshot, and the consumer stays
+// stale.
+//
+// For an Ember hash object we instead read the member THROUGH its live getter
+// (`hashObject[key]`), which runs `$__hash_ember`'s wrapped member getter: it
+// returns the current value AND walks the member's `this.<path>` through
+// `cellFor` on the construction context, entangling the source cells into the
+// ambient tracker — the consumer's own capture/effect frame at read time. The
+// consumer then subscribes to `cellFor(model,'firstName')` and re-pulls the live
+// value when `set` dirties it. Non-hash objects keep gxt's `cellFor(obj,key)`
+// path unchanged (that one IS the right reactive cell for a real object).
+// Mark every `$__cached` getter so the helper-arg unwrappers can fully resolve
+// it. A `(hash)`/`(array)` value passed as a component arg compiles to
+// `data: $__cached(() => $__hash({...}))`; reading `this.args.data` /
+// `@data` yields the cached GETTER, so a functional-helper arg
+// `[() => $a.data]` unwraps ONE level to the cached getter (gxt's `F`/Ember's
+// `unwrapArgs` only unwrap once) and the helper receives the un-invoked getter
+// instead of the hash/array value. Tagging the getter lets `unwrapArgs` /
+// `unwrapHash` (ember-gxt-wrappers.ts) unwrap the extra cached level.
+{
+  const g = globalThis as any;
+  if (g.$__cached && !g.$__cached.__emberCachedWrapped) {
+    const origCached = g.$__cached;
+    g.$__cached = function $__cached_ember(factory: any) {
+      const getter = origCached.call(this, factory);
+      try {
+        (getter as any).__isCachedHelper = true;
+      } catch {
+        /* non-extensible — unwrappers fall back to one-level unwrap */
+      }
+      return getter;
+    };
+    g.$__cached.__emberCachedWrapped = true;
+  }
+}
+{
+  const g = globalThis as any;
+  if (g.$__cellFor && !g.$__cellFor.__emberCellForWrapped) {
+    const origCellFor = g.$__cellFor;
+    g.$__cellFor = function $__cellFor_ember(target: any, key: any) {
+      if (target != null) {
+        const t = typeof target;
+        if ((t === 'object' || t === 'function') && (target as any).__emberHashObject) {
+          // Read through the live, source-entangling member getter.
+          return target[key];
+        }
+      }
+      return origCellFor.call(this, target, key);
+    };
+    g.$__cellFor.__emberCellForWrapped = true;
   }
 }
 
@@ -4126,6 +4377,49 @@ function _gxtTriggerReRenderSyncCore(
           }
         } catch {
           /* ignore — nested-args CP propagation is best-effort */
+        }
+        // `(hash)`/`(array)` computed propagation: when the dirtied owner cell
+        // holds an Ember hash object, a member of it just changed (the hash's
+        // source `cellFor` was linked to the hash member by
+        // `_gxtLinkHashMemberSources`). gxt's `(hash)` identity is memoized
+        // (stable across renders), so the hash arg's reference never changes and
+        // a consuming component's `@computed('hash.firstName')` would otherwise
+        // never re-fire. Recompute the CPs of every component that holds this
+        // hash object as an arg (registered as a value-owner in
+        // createRenderContext) keyed on the arg name (`hash`), so
+        // `@computed('hash.<member>')` refreshes and its cell — which the
+        // template tracks — updates.
+        try {
+          if ((ownerObj as any).__emberHashObject) {
+            // Invalidate the Ember property tag the consumer's `@computed`
+            // chain-key watches (`tagForProperty(hashObject, member)`); the
+            // `cellFor(...).update` above bumps gxt's cell but not this tag, so
+            // without it `CP.get` would serve the cached (stale) value.
+            try {
+              _gxtDirtyTagFor(ownerObj, ownerKey);
+            } catch {
+              /* best-effort */
+            }
+            const hashConsumers = _objectValueCellMap.get(ownerObj);
+            if (hashConsumers) {
+              for (const { obj: comp, key: argKey } of hashConsumers) {
+                if (!_isOwnerAlive(comp)) continue;
+                const deps = getGxtRenderer()?.compilePipeline.recomputeDependents?.(comp, argKey);
+                if (deps) {
+                  for (const { key: depKey, value: depVal } of deps) {
+                    try {
+                      const dcell = cellFor(comp, depKey, /* skipDefine */ true);
+                      if (dcell) dcell.update(depVal);
+                    } catch {
+                      /* ignore */
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch {
+          /* ignore — (hash) CP propagation is best-effort */
         }
       }
     }

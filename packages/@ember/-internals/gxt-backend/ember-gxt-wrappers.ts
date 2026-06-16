@@ -85,11 +85,25 @@ function isGxtGetter(v: any): boolean {
     !v.__isHelperResult
   );
 }
+// A `(hash)`/`(array)` value passed as a component arg is `$__cached(() =>
+// $__hash/$__array(...))`; reading the arg getter yields the CACHED getter (one
+// extra wrapper). The first unwrap lands on it, so resolve that extra
+// cached-helper level too — otherwise a functional helper receives the
+// un-invoked cached getter instead of the hash/array value. Bounded so a stray
+// self-returning function can't loop.
+function resolveGxtArg(a: any): any {
+  let v = isGxtGetter(a) ? a() : a;
+  let guard = 0;
+  while (typeof v === 'function' && (v as any).__isCachedHelper && guard++ < 8) {
+    v = v();
+  }
+  return v;
+}
 function unwrapArgs(args: any[]): any[] {
   if (!Array.isArray(args)) return Object.freeze([]) as any[];
   // Only unwrap GXT getters (arrow fns with no prototype).
   // Regular functions (like closures from (fn ...)) should be passed as-is.
-  const result = args.map((a) => (isGxtGetter(a) ? a() : a));
+  const result = args.map(resolveGxtArg);
   Object.freeze(result);
   return result;
 }
@@ -114,7 +128,14 @@ function unwrapHash(hash: Record<string, any>): Record<string, any> {
     if (GXT_INTERNAL_KEYS.has(key) || key.startsWith('$_')) continue;
     const val = hash[key];
     // Don't call CurriedComponent functions - they should be preserved as-is
-    result[key] = typeof val === 'function' && !val.__isCurriedComponent ? val() : val;
+    let resolved = typeof val === 'function' && !val.__isCurriedComponent ? val() : val;
+    // Resolve the extra `$__cached` level for a `(hash)`/`(array)` named arg
+    // (see resolveGxtArg).
+    let guard = 0;
+    while (typeof resolved === 'function' && (resolved as any).__isCachedHelper && guard++ < 8) {
+      resolved = resolved();
+    }
+    result[key] = resolved;
   }
   Object.freeze(result);
   return result;

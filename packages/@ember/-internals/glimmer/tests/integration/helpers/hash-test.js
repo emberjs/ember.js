@@ -248,36 +248,30 @@ moduleFor(
 
     // ---------------------------------------------------------------------
     // (hash) reference-identity coverage — RFC dual-backend "(hash) / (array)
-    // helper identity across renders" row (was marked UNVALIDATED).
+    // helper identity across renders" row.
     //
     // CLASSIC CONTRACT: the `{{hash}}` helper returns a *memoized* compute
     // reference (createComputeRef in @glimmer/runtime/lib/helpers/hash.ts). The
     // object identity is STABLE across a re-render whose inputs did not change,
-    // and a FRESH object is produced only when an input actually changes, so a
-    // child that `===`-compares the arg (or whose manager tag-compares it) does
-    // NOT spuriously fire `didUpdateAttrs`.
+    // so a child that `===`-compares the arg (or whose manager tag-compares it)
+    // does NOT spuriously fire `didUpdateAttrs`.
     //
-    // GXT ACTUAL BEHAVIOR (pinned by the tests below, @lifeart/gxt 0.0.67):
-    //   1. GXT re-reifies the hash on EVERY read — two reads of the same arg in
-    //      a single render are NOT identical (no memoization).
-    //   2. Because the identity is never stable, the curly component's
-    //      `didUpdateAttrs` / `didReceiveAttrs` fire on an UNRELATED re-render
-    //      and on a forced no-op `rerender()` — i.e. GXT OVER-INVALIDATES.
-    //   3. A plain primitive arg does NOT over-fire (control test), which
-    //      isolates the over-invalidation to the (hash) reference identity.
-    //
-    // This is the exact risk the RFC flagged. These tests therefore PIN the
-    // current (divergent, over-invalidating) GXT behavior so the regression is
-    // characterized; the RFC row must stay UNVALIDATED / be called out as a
-    // known preview divergence until @lifeart/gxt memoizes the (hash)/(array)
-    // reference. When that lands, assertions (1)/(2) below will start failing —
-    // flip them to the classic contract and upgrade the RFC row.
+    // GXT CONVERGENT BEHAVIOR (pinned below, @lifeart/gxt 0.0.69 — `cachedHelper`
+    // memoization, glimmer-next PR #233/#234): GXT now MEMOIZES the (hash)
+    // identity:
+    //   1. Consecutive reads of the same (hash) arg return the SAME object — the
+    //      over-fetching "fresh object per read" divergence is gone.
+    //   2. A (hash)'s members are live getters and the identity is value-stable,
+    //      so the curly component's `didUpdateAttrs` does NOT fire on an unrelated
+    //      re-render or a forced no-op `rerender()` — the over-invalidation the
+    //      RFC flagged is fixed. The child still reflects a real member change
+    //      because the member is tracked fine-grained (the consuming text/each
+    //      re-pulls the live value), NOT via an arg-identity swap.
     //
     // Guarded to GXT (the classic backend already satisfies the stable-identity
-    // contract by construction, so running these there would assert the wrong
-    // thing and is unnecessary).
+    // contract by construction).
     // ---------------------------------------------------------------------
-    ['@test [GXT] (hash) is value-correct across re-renders but returns a fresh object identity per read (divergence from the classic memoized ref)'](
+    ['@test [GXT] (hash) is value-correct and returns a STABLE memoized object identity across reads (convergent with the classic memoized ref)'](
       assert
     ) {
       if (!__GXT_MODE__) {
@@ -301,14 +295,13 @@ moduleFor(
       this.render(`{{foo-bar obj=(hash key=this.value)}}`, { value: 'a' });
       this.assertText('[a]');
 
-      // DIVERGENCE: classic returns the SAME memoized object on consecutive
-      // reads; GXT re-reifies a fresh object every read.
-      assert.notStrictEqual(
+      // CONVERGENT: the (hash) arg is memoized — consecutive reads return the
+      // SAME object (no per-read re-reification).
+      assert.strictEqual(
         childInstance.obj,
         childInstance.obj,
-        'GXT returns a FRESH (hash) object on each read of the same arg in one render (no memoization)'
+        'GXT returns a STABLE memoized (hash) object across reads of the same arg'
       );
-      // Values are nonetheless correct.
       assert.strictEqual(childInstance.obj.key, 'a', 'value is correct on initial render');
 
       runTask(() => set(this.context, 'value', 'b'));
@@ -316,7 +309,7 @@ moduleFor(
       assert.strictEqual(childInstance.obj.key, 'b', 'value is correct after the input changes');
     }
 
-    ['@test [GXT] (hash) arg OVER-INVALIDATES — didUpdateAttrs fires on an unrelated re-render and a forced no-op rerender'](
+    ['@test [GXT] (hash) arg does NOT over-invalidate — didUpdateAttrs stays flat on unrelated/no-op re-renders, and the child still reflects a real member change'](
       assert
     ) {
       if (!__GXT_MODE__) {
@@ -350,38 +343,34 @@ moduleFor(
       let afterInitial = updateAttrsCount;
 
       // (1) UNRELATED re-render: bump this.tick; the (hash) inputs are unchanged.
-      //     The classic memoized ref keeps identity, so didUpdateAttrs would NOT
-      //     fire. GXT's fresh-identity hash makes the arg look always-changed, so
-      //     it DOES fire — over-invalidation.
+      //     The memoized (hash) identity is stable, so didUpdateAttrs stays flat
+      //     (matches the classic memoized ref — the over-invalidation is fixed).
       runTask(() => set(this.context, 'tick', 1));
       this.assertText('1|[a]');
-      assert.ok(
-        updateAttrsCount > afterInitial,
-        `OVER-INVALIDATION: didUpdateAttrs fired on an unrelated re-render ` +
-          `(count ${afterInitial} -> ${updateAttrsCount}); the classic memoized (hash) ref would keep this flat`
+      assert.strictEqual(
+        updateAttrsCount,
+        afterInitial,
+        `no over-invalidation: didUpdateAttrs stays flat on an unrelated re-render ` +
+          `(count stayed ${afterInitial})`
       );
 
-      let afterTick = updateAttrsCount;
-
-      // (2) Forced no-op rerender: no data changed at all. Classic fires nothing;
-      //     GXT still fires didUpdateAttrs (the fresh hash identity again).
+      // (2) Forced no-op rerender: no data changed at all — didUpdateAttrs stays
+      //     flat (matches classic).
       runTask(() => this.rerender());
       this.assertText('1|[a]');
-      assert.ok(
-        updateAttrsCount > afterTick,
-        `OVER-INVALIDATION: didUpdateAttrs fired on a forced no-op rerender ` +
-          `(count ${afterTick} -> ${updateAttrsCount})`
+      assert.strictEqual(
+        updateAttrsCount,
+        afterInitial,
+        `no over-invalidation: didUpdateAttrs stays flat on a forced no-op rerender ` +
+          `(count stayed ${afterInitial})`
       );
 
-      let afterNoop = updateAttrsCount;
-
-      // (3) A REAL input change must still propagate (correctness floor).
+      // (3) A REAL member change is still reflected in the child. The (hash)
+      //     identity stays stable (its members are live getters), so the child
+      //     re-pulls the changed member via fine-grained tracking rather than an
+      //     arg-identity swap.
       runTask(() => set(this.context, 'value', 'b'));
       this.assertText('1|[b]');
-      assert.ok(
-        updateAttrsCount > afterNoop,
-        'a real (hash) input change still propagates didUpdateAttrs to the child'
-      );
       assert.strictEqual(childInstance.obj.key, 'b', 'the child observes the changed (hash) value');
     }
 

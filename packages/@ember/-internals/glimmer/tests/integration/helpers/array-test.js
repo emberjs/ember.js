@@ -330,29 +330,24 @@ moduleFor(
 
     // ---------------------------------------------------------------------
     // (array) reference-identity coverage — RFC dual-backend "(hash) / (array)
-    // helper identity across renders" row (was marked UNVALIDATED).
-    //
-    // The "should return an entirely new array when any argument change" test
-    // above already pins the FRESH-on-change half. These tests cover the
-    // uncovered inverse — identity across a re-render whose inputs did NOT
-    // change — and the downstream over-invalidation the RFC flagged.
+    // helper identity across renders" row.
     //
     // CLASSIC CONTRACT: `{{array}}` is a memoized compute reference
     // (createComputeRef in @glimmer/runtime/lib/helpers/array.ts): stable
     // identity across an unchanged re-render, fresh only on a real input change.
     //
-    // GXT ACTUAL BEHAVIOR (pinned below, @lifeart/gxt 0.0.67): GXT re-reifies
-    // the array on every read (fresh identity per read), so the curly
-    // component's `didUpdateAttrs` fires on an UNRELATED re-render and on a
-    // forced no-op `rerender()` — OVER-INVALIDATION. The primitive-arg control
-    // in hash-test.js shows this is tied to the (array) reference identity, not
-    // generic re-rendering. The RFC row must stay UNVALIDATED / be called out
-    // as a known preview divergence until @lifeart/gxt memoizes the reference;
-    // when that lands these assertions flip to the classic contract.
+    // GXT CONVERGENT BEHAVIOR (pinned below, @lifeart/gxt 0.0.69 — `cachedHelper`
+    // memoization, glimmer-next PR #233/#234): GXT now memoizes the (array)
+    // identity to match the classic contract — stable across reads and unrelated
+    // re-renders, and a FRESH identity only when an element actually changes.
+    // Unlike (hash) (whose members are live getters, so its identity is
+    // value-stable), (array) eagerly snapshots its elements, so a real element
+    // change turns over the identity and DOES fire `didUpdateAttrs` — exactly
+    // the classic contract.
     //
     // Guarded to GXT (classic satisfies the stable-identity contract already).
     // ---------------------------------------------------------------------
-    ['@test [GXT] (array) is value-correct across re-renders but returns a fresh array identity per read (divergence from the classic memoized ref)'](
+    ['@test [GXT] (array) is value-correct and returns a STABLE memoized array identity across reads, fresh only on a real change (convergent with the classic memoized ref)'](
       assert
     ) {
       if (!__GXT_MODE__) {
@@ -379,18 +374,15 @@ moduleFor(
       this.render(`{{foo-bar people=(array "Tom" this.personTwo)}}`, { personTwo: 'Chad' });
       this.assertText('[Tom][Chad]');
 
-      // DIVERGENCE: classic returns the SAME memoized array on consecutive
-      // reads; GXT re-reifies a fresh array every read.
-      assert.notStrictEqual(
+      // CONVERGENT: the (array) arg is memoized — consecutive reads return the
+      // SAME array (no per-read re-reification).
+      assert.strictEqual(
         childInstance.people,
         childInstance.people,
-        'GXT returns a FRESH (array) on each read of the same arg in one render (no memoization)'
+        'GXT returns a STABLE memoized (array) across reads of the same arg'
       );
-      assert.deepEqual(
-        childInstance.people,
-        ['Tom', 'Chad'],
-        'value is correct on initial render'
-      );
+      let firstArray = childInstance.people;
+      assert.deepEqual(childInstance.people, ['Tom', 'Chad'], 'value is correct on initial render');
 
       runTask(() => set(this.context, 'personTwo', 'Godfrey'));
       this.assertText('[Tom][Godfrey]');
@@ -399,9 +391,15 @@ moduleFor(
         ['Tom', 'Godfrey'],
         'value is correct after the input changes'
       );
+      // A real element change produces a FRESH identity (classic contract).
+      assert.notStrictEqual(
+        childInstance.people,
+        firstArray,
+        'a real (array) element change turns over the array identity'
+      );
     }
 
-    ['@test [GXT] (array) arg OVER-INVALIDATES — didUpdateAttrs fires on an unrelated re-render and a forced no-op rerender'](
+    ['@test [GXT] (array) arg does NOT over-invalidate — didUpdateAttrs stays flat on unrelated/no-op re-renders and fires only on a real change'](
       assert
     ) {
       if (!__GXT_MODE__) {
@@ -438,35 +436,37 @@ moduleFor(
       let afterInitial = updateAttrsCount;
 
       // (1) UNRELATED re-render: bump this.tick; the (array) inputs are
-      //     unchanged. Classic keeps identity (no fire); GXT's fresh-identity
-      //     array makes the arg look always-changed, so it fires.
+      //     unchanged. The memoized (array) identity is stable, so didUpdateAttrs
+      //     stays flat (matches classic — the over-invalidation is fixed).
       runTask(() => set(this.context, 'tick', 1));
       this.assertText('1|[Tom][Chad]');
-      assert.ok(
-        updateAttrsCount > afterInitial,
-        `OVER-INVALIDATION: didUpdateAttrs fired on an unrelated re-render ` +
-          `(count ${afterInitial} -> ${updateAttrsCount}); the classic memoized (array) ref would keep this flat`
+      assert.strictEqual(
+        updateAttrsCount,
+        afterInitial,
+        `no over-invalidation: didUpdateAttrs stays flat on an unrelated re-render ` +
+          `(count stayed ${afterInitial})`
       );
 
-      let afterTick = updateAttrsCount;
-
-      // (2) Forced no-op rerender: nothing changed. Classic fires nothing.
+      // (2) Forced no-op rerender: nothing changed — didUpdateAttrs stays flat.
       runTask(() => this.rerender());
       this.assertText('1|[Tom][Chad]');
-      assert.ok(
-        updateAttrsCount > afterTick,
-        `OVER-INVALIDATION: didUpdateAttrs fired on a forced no-op rerender ` +
-          `(count ${afterTick} -> ${updateAttrsCount})`
+      assert.strictEqual(
+        updateAttrsCount,
+        afterInitial,
+        `no over-invalidation: didUpdateAttrs stays flat on a forced no-op rerender ` +
+          `(count stayed ${afterInitial})`
       );
 
       let afterNoop = updateAttrsCount;
 
-      // (3) A REAL input change must still propagate (correctness floor).
+      // (3) A REAL element change turns over the (array) identity, so it DOES
+      //     propagate didUpdateAttrs to the child (classic contract).
       runTask(() => set(this.context, 'personTwo', 'Godfrey'));
       this.assertText('1|[Tom][Godfrey]');
       assert.ok(
         updateAttrsCount > afterNoop,
-        'a real (array) input change still propagates didUpdateAttrs to the child'
+        `a real (array) element change propagates didUpdateAttrs to the child ` +
+          `(count ${afterNoop} -> ${updateAttrsCount})`
       );
       assert.deepEqual(
         childInstance.people,
