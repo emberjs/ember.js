@@ -570,6 +570,19 @@ export interface GxtCompilePipelineCapabilities {
   registerObjectValueOwner?(value: unknown, ownerObj: object, ownerKey: string): void;
 
   /**
+   * Associate a freshly-created Ember component instance with the `{{#each}}`
+   * row whose body is currently rendering, so the row's `onRowContextCreated`
+   * pre-destroy destructor can fire its willDestroyElement / willClearRender
+   * pre-DOM-removal (each/if delegation Step 3 / E-c). No-op when not rendering
+   * inside an each row. Contributed by compile.ts (closure over
+   * `_gxtCurrentRowCtx` / `_gxtRowCtxInstances`).
+   *
+   * Called from manager.ts's `renderComponent` right after the instance is
+   * added to `_allLiveInstances`.
+   */
+  captureRowInstance?(instance: unknown): void;
+
+  /**
    * Dispatch a re-render trigger for `(obj, keyName)`. Called from every
    * `notifyPropertyChange` (metal/property_events.ts:89) and from many direct
    * call sites in manager.ts / compile.ts / glimmer-tracking.ts /

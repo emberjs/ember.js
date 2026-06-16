@@ -5803,10 +5803,20 @@ function _gxtDestroyInstancesInNodes(removedNodeList: ReadonlyArray<Node>): void
     /* */
   }
 
+  // each/if delegation Step 3 (E-c): rows whose synchronous willDestroyElement /
+  // willClearRender were already fired pre-DOM-removal by the each-row pre-destroy
+  // destructor (stamped `__gxtWDEFiredCycle` this cycle) must NOT be reattached /
+  // re-fired here. The per-instance trigger gate already neutralizes the re-fire,
+  // but skipping avoids a pointless fixture reattach of an already-cleared row.
+  // Non-delegated components (route/morph removal) are never stamped, so this is
+  // a no-op for them.
+  const __curCycle = getGxtRenderer()?.compilePipeline.getSyncCycleId?.() ?? 0;
+
   // Re-attach elements temporarily so willDestroyElement sees them connected
   const tempCont = document.getElementById('qunit-fixture') || document.body;
   const reattachedList: Array<{ i: any; e: HTMLElement }> = [];
   for (const inst of instToDestroy) {
+    if ((inst as any).__gxtWDEFiredCycle === __curCycle) continue;
     try {
       const e = getViewElement(inst);
       if (e instanceof HTMLElement && !e.isConnected) {
@@ -5819,6 +5829,7 @@ function _gxtDestroyInstancesInNodes(removedNodeList: ReadonlyArray<Node>): void
   }
 
   for (const inst of instToDestroy) {
+    if ((inst as any).__gxtWDEFiredCycle === __curCycle) continue;
     try {
       if (inst._transitionTo && inst._state !== 'inDOM') {
         try {
@@ -13177,6 +13188,13 @@ function renderClassicComponent(
     // Track this instance for destroy detection during force-rerender
     if (instance) {
       _allLiveInstances.add(instance);
+      // each/if delegation Step 3 (E-c): associate this instance with the
+      // `{{#each}}` row whose body is currently rendering (no-op when not inside
+      // an each row) so the row's pre-destroy destructor can fire its
+      // willDestroyElement / willClearRender while the element is still
+      // connected. Runs synchronously inside the row body fn (`wrappedEachFn`),
+      // which has set `_gxtCurrentRowCtx` for the duration of this render.
+      getGxtRenderer()?.compilePipeline.captureRowInstance?.(instance);
       // Track this instance as rendered in the current pass.
       // Use a flag directly on the instance to survive any timing issues
       // with set/passId tracking.

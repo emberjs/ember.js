@@ -6506,6 +6506,126 @@ function _gxtDrainPendingInverseOldRowFinalize(): void {
   }
 }
 
+// ─── each/if delegation Step 3 (E-c): each-row pre-destroy via gxt host hooks ──
+// gxt 0.0.69 fires `onRowContextCreated(rowCtx)` per `{{#each}}` row (rowCtx is a
+// plain object) and per `{{#if}}`/`{{#unless}}` branch (an IfCondition class
+// instance), and a `registerDestructor(rowCtx, fn)` runs PRE-DOM-REMOVAL on a
+// still-connected element (list.ts `destroyItem` → `destroyRowCtx` precedes
+// `destroyElementSync(row)`; the bulk `teardownAllRowCtxs` runs the rowCtx
+// destructors before `clearChildren`). We use this to fire each-row
+// `willDestroyElement` / `willClearRender` at the Ember-correct moment WITHOUT
+// the reattach-to-fixture dance.
+//
+// `onRowContextCreated(rowCtx)` fires BEFORE the row body renders (no Ember
+// instance exists yet). Ember's own each-body wrapper `wrappedEachFn(item,
+// index, ctx0)` receives that SAME rowCtx as `ctx0` (gxt threads the row's
+// `bodyCtx` through `buildRow`), and synchronously renders the row's entire
+// subtree (direct + nested components) inside that call. So we bracket the
+// body-fn invocation with `_gxtCurrentRowCtx = ctx0` (save/restore → nest-safe
+// for `{{#each}}` inside `{{#each}}`) and associate each Ember instance created
+// in that window (`_gxtCaptureRowInstance`, called from manager.ts's
+// `renderComponent` right after `_allLiveInstances.add`) with its row.
+//
+// (The gxt render-scope hooks `onEnterRenderScope`/`onLeaveRenderScope` were the
+// first design, but rowCtx is NEVER pushed onto gxt's parentContext stack —
+// verified empirically — so the body-fn window is the correct seam.)
+
+// Ctxs flagged (in `onRowContextCreated`) as `{{#each}}` rows. IfCondition
+// branch ctxs are deliberately NOT added (the if-branch delegation I-a is a
+// follow-on). Used to validate `_gxtCurrentRowCtx` is a real each-row.
+const _gxtEachRowCtxSet = new WeakSet<object>();
+// rowCtx → the Ember component instances rendered under it (Set insertion order =
+// creation order = parent-first). Read by `_gxtFireRowPreDestroy` at teardown.
+const _gxtRowCtxInstances = new WeakMap<object, Set<any>>();
+// The rowCtx whose body is currently rendering (set by `wrappedEachFn`). Null
+// outside an each-row body render. Save/restore at each nesting level.
+let _gxtCurrentRowCtx: object | null = null;
+
+// Associate a freshly-created Ember instance with the `{{#each}}` row whose body
+// is currently rendering. No-op when not inside an each-row body.
+function _gxtCaptureRowInstance(instance: any): void {
+  if (!instance) return;
+  const ctx = _gxtCurrentRowCtx;
+  if (ctx === null || !_gxtEachRowCtxSet.has(ctx)) return;
+  let set = _gxtRowCtxInstances.get(ctx);
+  if (set === undefined) {
+    set = new Set();
+    _gxtRowCtxInstances.set(ctx, set);
+  }
+  set.add(instance);
+  (instance as any).__gxtOwnerRowCtx = ctx;
+}
+
+// Pre-DOM-removal destructor registered on each `{{#each}}` rowCtx. Fires the
+// row's Ember instances' synchronous willDestroyElement / willClearRender while
+// their elements are still connected.
+function _gxtFireRowPreDestroy(rowCtx: object): void {
+  const insts = _gxtRowCtxInstances.get(rowCtx);
+  _gxtEachRowCtxSet.delete(rowCtx);
+  _gxtRowCtxInstances.delete(rowCtx);
+  if (insts === undefined || insts.size === 0) return;
+  const _bridgeViewUtils = getGxtRenderer()?.viewUtils;
+  const getViewElement = _bridgeViewUtils
+    ? (inst: any) => _bridgeViewUtils.getViewElement(inst)
+    : (inst: any) => inst && inst.element;
+  for (const inst of insts) {
+    if (!inst || inst.isDestroyed || inst.isDestroying) continue;
+    // Only instances that actually reached the live DOM get element lifecycle
+    // hooks. `__gxtEverInserted` filters truly-never-inserted transients; the
+    // `connected` check below is the operative gate that fires WDE ONLY for
+    // interactive, still-attached rows — non-interactive rows have an element
+    // that is NOT connected (InertRenderer), so they are skipped here and left
+    // to the existing path unchanged (which correctly fires no element hooks).
+    if (!(inst as any).__gxtEverInserted) continue;
+    let el: any = null;
+    try {
+      el = getViewElement(inst);
+    } catch {
+      /* viewUtils may be unavailable */
+    }
+    const connected = el instanceof HTMLElement && el.isConnected;
+    if (!connected) continue; // non-interactive / disconnected → existing path handles it (no stamp ⇒ unguarded)
+    try {
+      (inst as any).__gxtWDEFiredCycle = _gxtGetSyncCycleId();
+      if (inst._transitionTo && inst._state !== 'inDOM') {
+        try {
+          inst._transitionTo('inDOM');
+        } catch {
+          /* ignore */
+        }
+      }
+      if (typeof inst.trigger === 'function') {
+        inst.trigger('willDestroyElement');
+        inst.trigger('willClearRender');
+      }
+      // Per-instance trigger gate so the legacy reattach paths' subsequent
+      // willDestroyElement/willClearRender re-fire (same sync cycle) is a no-op.
+      // Other hooks (didDestroyElement, willDestroy) keep flowing. Mirrors the
+      // gate installed in `wrappedInverseFn`.
+      if (!(inst as any).__gxtPreDestroyGateInstalled) {
+        (inst as any).__gxtPreDestroyGateInstalled = true;
+        const origTrigger = inst.trigger;
+        Object.defineProperty(inst, 'trigger', {
+          value: function (this: any, name: string, ...rest: any[]) {
+            if (
+              (name === 'willDestroyElement' || name === 'willClearRender') &&
+              this.__gxtWDEFiredCycle === _gxtGetSyncCycleId()
+            ) {
+              return undefined;
+            }
+            return origTrigger.call(this, name, ...rest);
+          },
+          writable: true,
+          configurable: true,
+          enumerable: false,
+        });
+      }
+    } catch {
+      /* user override may throw */
+    }
+  }
+}
+
 function patchGlobalEachSync() {
   const g = globalThis as any;
   if (!g.$_eachSync || g.$_eachSync.__emberPatched) return false;
@@ -6644,21 +6764,33 @@ function patchGlobalEachSync() {
       // `cellFor(rawItem, <prop>)` and the GXT formula becomes reactive
       // (otherwise it's isConst → torn down → text never updates).
       const bodyItem = wrapEachItemForTracking(item, _rebindPossible);
-      return withParent(() => {
-        // If index is a plain number (not a cell), wrap it in a cell-like object
-        if (typeof index === 'number') {
-          const cellLike: any = { id: index };
-          Object.defineProperty(cellLike, 'value', {
-            get() {
-              return index;
-            },
-            enumerable: true,
-            configurable: true,
-          });
-          return origFn(bodyItem, cellLike, ctx0);
-        }
-        return origFn(bodyItem, index, ctx0);
-      });
+      // each/if delegation Step 3 (E-c): `ctx0` IS the row's gxt rowCtx (the
+      // `bodyCtx` gxt threads through `buildRow`), the same object
+      // `onRowContextCreated` saw. Mark it current for the duration of the row's
+      // synchronous body render so every Ember instance created here (direct +
+      // nested) is associated with this row's pre-destroy destructor. Save/restore
+      // keeps nested `{{#each}}` correct.
+      const _prevRowCtx = _gxtCurrentRowCtx;
+      _gxtCurrentRowCtx = ctx0 || null;
+      try {
+        return withParent(() => {
+          // If index is a plain number (not a cell), wrap it in a cell-like object
+          if (typeof index === 'number') {
+            const cellLike: any = { id: index };
+            Object.defineProperty(cellLike, 'value', {
+              get() {
+                return index;
+              },
+              enumerable: true,
+              configurable: true,
+            });
+            return origFn(bodyItem, cellLike, ctx0);
+          }
+          return origFn(bodyItem, index, ctx0);
+        });
+      } finally {
+        _gxtCurrentRowCtx = _prevRowCtx;
+      }
     };
     // Wrap inverseFn so components created in the {{else}} branch (rendered
     // when items becomes empty on update) see the captured parent — at that
@@ -6731,7 +6863,11 @@ function patchGlobalEachSync() {
                     pv = pv.parentView;
                   }
                   if (!underParent) continue;
-                  if ((inst as any).__gxtWDEFiredCycle === currentCycle) continue;
+                  // Do NOT exclude rows already fired this cycle by the each-row
+                  // pre-destroy delegation (Step 3 / E-c): they must still enter
+                  // `_oldRowsToFinalize` for the async didDestroy/willDestroy
+                  // finalize. The reattach + sync-fire loops below skip them
+                  // individually via `__gxtWDEFiredCycle`.
                   candidates.push(inst);
                 }
               }
@@ -6764,6 +6900,9 @@ function patchGlobalEachSync() {
                 _gxtSetDestroyReattachInProgress(true);
                 try {
                   for (const inst of ordered) {
+                    // Delegated rows (Step 3 / E-c) already fired their sync
+                    // pre-destroy hooks while still connected — don't reattach.
+                    if ((inst as any).__gxtWDEFiredCycle === currentCycle) continue;
                     try {
                       const el = getViewElement(inst);
                       if (el instanceof HTMLElement && !el.isConnected) {
@@ -6778,6 +6917,10 @@ function patchGlobalEachSync() {
                   _gxtSetDestroyReattachInProgress(false);
                 }
                 for (const inst of ordered) {
+                  // Delegated rows (Step 3 / E-c) already fired willDestroyElement
+                  // / willClearRender pre-DOM-removal (connected) and installed the
+                  // trigger gate; skip the reattach-time sync-fire for them.
+                  if ((inst as any).__gxtWDEFiredCycle === currentCycle) continue;
                   try {
                     (inst as any).__gxtWDEFiredCycle = currentCycle;
                     if (inst._transitionTo && inst._state !== 'inDOM') {
@@ -17126,7 +17269,26 @@ import {
 // lookup. The compilePipeline bridge method is not visible to glimmer-next core,
 // so a globalThis hook is the seam.
 if (_gxtRegisterHostHooks) {
-  _gxtRegisterHostHooks({ registerObjectValueOwner });
+  _gxtRegisterHostHooks({
+    registerObjectValueOwner,
+    // each/if delegation Step 3 (E-c). This hook is new in gxt 0.0.69 and has no
+    // legacy `globalThis.__gxt*` fallback — on a pre-API dist the row delegation
+    // simply doesn't engage and the existing reattach paths handle teardown
+    // unchanged. `registerHostHooks` merges per-key, so this does not clobber the
+    // `registerObjectValueOwner` above (or any later registration).
+    //
+    // Flag each `{{#each}}` rowCtx (a plain object) as an association anchor and
+    // register its pre-destroy destructor. Skip `{{#if}}`/`{{#unless}}` branch
+    // ctxs (IfCondition class instances) by the prototype discriminator — the
+    // if-branch helper delegation (I-a) is a separate follow-on.
+    onRowContextCreated: (ctx: object) => {
+      const isEachRow = Object.getPrototypeOf(ctx) === Object.prototype;
+      if (!isEachRow) return; // IfCondition branch — if-branch delegation (I-a) is a follow-on
+      _gxtEachRowCtxSet.add(ctx);
+      _gxtRowCtxInstances.set(ctx, new Set());
+      _gxtRegisterDestructor(ctx, () => _gxtFireRowPreDestroy(ctx));
+    },
+  });
 } else {
   try {
     (globalThis as any).__gxtRegisterObjectValueOwner = registerObjectValueOwner;
@@ -17139,6 +17301,9 @@ installCompilePipelinePart({
   resetIntervalBudget: _gxtResetIntervalBudget,
   registerArrayOwner: registerArrayOwner,
   registerObjectValueOwner: registerObjectValueOwner,
+  // each/if delegation Step 3 (E-c): associate a new instance with the
+  // currently-rendering `{{#each}}` row (closure over `_gxtCurrentRowCtx`).
+  captureRowInstance: _gxtCaptureRowInstance,
   // Canonical `triggerReRender` + the two chain-aware host-hook registration
   // methods (`addBeforeTriggerReRender` / `addAfterTriggerReRender`). The
   // globalThis writer is also retained for dual exposure so the save-restore
