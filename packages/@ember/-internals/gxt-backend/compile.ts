@@ -5325,6 +5325,26 @@ function patchGlobalIf() {
         }
         return origSS(v);
       };
+      // each/if delegation Step 3 (I-a, ember-side half): destroy this {{#if}}'s
+      // branch class-helpers PROMPTLY when the IfCondition itself is torn down
+      // (whole `{{#if}}` removed with no final swap). `destroyScope` only fires
+      // on a branch SWAP; without this, those helpers' `.destroy()` is deferred
+      // to the test-teardown sweep / app teardown. gxt fires `registerDestructor`
+      // callbacks on the IfCondition synchronously when it is destroyed
+      // (if.ts: `registerDestructor(this, destroyBranchSync)` pairs with our
+      // hook). `destroyScope` is idempotent (clears the Set + guards
+      // `isDestroyed`), so a prior swap or sweep makes this a no-op. The
+      // swap-time delegation needs a gxt per-branch-render hook (BLOCKED).
+      if (_gxtRegisterDestructor) {
+        try {
+          _gxtRegisterDestructor(ifCondition as unknown as object, () => {
+            destroyScope(trueBranchHelpers);
+            destroyScope(falseBranchHelpers);
+          });
+        } catch {
+          /* ignore — best-effort prompt teardown */
+        }
+      }
     }
 
     if (watchTarget && watchKey && ifCondition) {
@@ -5597,6 +5617,20 @@ function patchGlobalIf() {
             }
           }
         };
+        // each/if delegation Step 3 (I-a, ember-side half) — KVO-watch path
+        // counterpart of the native-tag registration above. Destroy branch
+        // class-helpers promptly when the IfCondition is torn down (no final
+        // swap). `destroyHelpersIn` is idempotent (clears + guards isDestroyed).
+        if (_gxtRegisterDestructor) {
+          try {
+            _gxtRegisterDestructor(ifCondition as unknown as object, () => {
+              destroyHelpersIn(trueBranchHelpers);
+              destroyHelpersIn(falseBranchHelpers);
+            });
+          } catch {
+            /* ignore — best-effort prompt teardown */
+          }
+        }
         const _ifWatchCb: IfWatcherCb = (notifiedTarget: object) => {
           try {
             const currentValue = conditionOrCell();
