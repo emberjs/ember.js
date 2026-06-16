@@ -114,6 +114,7 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
         return true;
       },
     },
+    preserveModules: true,
     output: {
       format: 'es',
       dir: outputDir,
