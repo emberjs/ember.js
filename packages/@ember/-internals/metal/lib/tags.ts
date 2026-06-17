@@ -36,6 +36,33 @@ export function tagForProperty(
   let tag = tagFor(obj, propertyKey, meta);
 
   if (DEBUG && addMandatorySetter) {
+    // In GXT mode, mandatory setter interacts poorly with the backend's
+    // component rendering pipeline: the backend re-assigns reserved props
+    // (args, attrs, element) during render, and direct property writes from
+    // classic component instances (isComponent=true) flow through paths that
+    // bypass setWithMandatorySetter. Skip for those cases to avoid false
+    // positives while preserving the DEBUG checks for plain objects/observers
+    // on non-component EmberObjects (e.g. EmberObject.create, controllers).
+    //
+    // Cluster E pilot: `__GXT_MODE__` here is a build-time constant (vite
+    // `define` for the test build, rollup `replaceGxtModeFlag` for the
+    // classic dist). After minification the branch DCE's in classic mode.
+    if (__GXT_MODE__) {
+      if (
+        propertyKey === 'args' ||
+        propertyKey === 'attrs' ||
+        propertyKey === 'element' ||
+        propertyKey === 'elementId' ||
+        propertyKey === 'parentView' ||
+        propertyKey === 'childViews' ||
+        propertyKey === '_view'
+      ) {
+        return tag;
+      }
+      if ((obj as any).isComponent) {
+        return tag;
+      }
+    }
     setupMandatorySetter!(tag, obj, propertyKey);
   }
 
@@ -63,3 +90,26 @@ export function markObjectAsDirty(obj: object, propertyKey: string): void {
   dirtyTagFor(obj, propertyKey);
   dirtyTagFor(obj, SELF_TAG);
 }
+
+// Cluster B slice 103 — RETIRED orphan globalThis writer.
+// Previously this module published `(globalThis as any).__gxtMarkObjectAsDirty =
+// markObjectAsDirty;` as a side-effectful side-channel for GXT integration.
+// The slot had ZERO consumers across the entire codebase:
+//   - 0 readers in `packages/` (verified via repo-wide grep of
+//     `__gxtMarkObjectAsDirty`; the sole reference at
+//     `gxt-backend/compile.ts:4439` is a comment mentioning the function name
+//     in an English sentence describing deferred tag-dirty bookkeeping, not a
+//     globalThis read);
+//   - 0 readers in the bundled `@lifeart/gxt` runtime
+//     (`node_modules/@lifeart/gxt/dist/`), unlike the GXT-CONTRACT slots
+//     `__gxtToBool` / `__gxtFormula` / `__gxtGetCellOrFormula` which are
+//     genuinely consumed by GXT's `setupCondition` / formula path;
+//   - 0 readers in repo-root HTML harnesses (`index.html`,
+//     `packages/demo/tests.html`).
+// `markObjectAsDirty` itself is still imported and used in-package via the
+// proper ESM export (`@ember/-internals/metal` re-exports it at
+// `index.ts:72`; `metal/lib/property_events.ts:23` imports and invokes it
+// inside `notifyPropertyChange`), so the function remains live.
+// Orphan-writer cleanup pattern (precedents: slice 101
+// `__gxtResetIntervalBudget`, slice 86 `__gxtDebugCompiledCodes`, slice 77
+// `__gxtCurriedRenderInfos` / `__gxtCondSeenIds`).

@@ -3,13 +3,6 @@ import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/interfaces';
-import { consumeTag, untrack } from '@glimmer/validator/lib/tracking';
-import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
-import {
-  UPDATE_TAG as updateTag,
-  validateTag,
-  valueForTag,
-} from '@glimmer/validator/lib/validators';
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
 import type { ExtendedMethodDecorator } from './decorator';
 import {
@@ -21,6 +14,20 @@ import {
 import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
+
+// BARREL specifier is load-bearing: the rollup GXT alias map redirects the
+// exact '@glimmer/validator' key to the gxt-backend shim; a deep lib/* path
+// would resolve to the real VM source in GXT builds (scripts/gxt-alias-map.mjs).
+// eslint-disable-next-line ember-local/no-barrel-imports
+import {
+  consumeTag,
+  tagFor,
+  tagMetaFor,
+  updateTag,
+  validateTag,
+  valueForTag,
+  untrack,
+} from '@glimmer/validator';
 
 export type AliasDecorator = ExtendedMethodDecorator & PropertyDecorator & AliasDecoratorImpl;
 
@@ -75,7 +82,7 @@ class AliasedProperty extends ComputedDescriptor {
   get(obj: object, keyName: string): any {
     let ret: any;
 
-    let meta = metaFor(obj);
+    let m = metaFor(obj);
     let tagMeta = tagMetaFor(obj);
     let propertyTag = tagFor(obj, keyName, tagMeta) as UpdatableTag;
 
@@ -85,12 +92,12 @@ class AliasedProperty extends ComputedDescriptor {
       ret = get(obj, this.altKey);
     });
 
-    let lastRevision = meta.revisionFor(keyName);
+    let lastRevision = m.revisionFor(keyName);
 
     if (lastRevision === undefined || !validateTag(propertyTag, lastRevision)) {
-      updateTag(propertyTag, getChainTagsForKey(obj, this.altKey, tagMeta, meta));
-      meta.setRevisionFor(keyName, valueForTag(propertyTag));
-      finishLazyChains(meta, keyName, ret);
+      updateTag(propertyTag, getChainTagsForKey(obj, this.altKey, tagMeta, m));
+      m.setRevisionFor(keyName, valueForTag(propertyTag));
+      finishLazyChains(m, keyName, ret);
     }
 
     consumeTag(propertyTag);

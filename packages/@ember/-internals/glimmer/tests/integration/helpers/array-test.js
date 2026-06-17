@@ -327,5 +327,152 @@ moduleFor(
 
       this.assertText('thing');
     }
+
+    // ---------------------------------------------------------------------
+    // (array) reference-identity coverage — RFC dual-backend "(hash) / (array)
+    // helper identity across renders" row.
+    //
+    // CLASSIC CONTRACT: `{{array}}` is a memoized compute reference
+    // (createComputeRef in @glimmer/runtime/lib/helpers/array.ts): stable
+    // identity across an unchanged re-render, fresh only on a real input change.
+    //
+    // GXT CONVERGENT BEHAVIOR (pinned below, @lifeart/gxt 0.0.69 — `cachedHelper`
+    // memoization, glimmer-next PR #233/#234): GXT now memoizes the (array)
+    // identity to match the classic contract — stable across reads and unrelated
+    // re-renders, and a FRESH identity only when an element actually changes.
+    // Unlike (hash) (whose members are live getters, so its identity is
+    // value-stable), (array) eagerly snapshots its elements, so a real element
+    // change turns over the identity and DOES fire `didUpdateAttrs` — exactly
+    // the classic contract.
+    //
+    // Guarded to GXT (classic satisfies the stable-identity contract already).
+    // ---------------------------------------------------------------------
+    ['@test [GXT] (array) is value-correct and returns a STABLE memoized array identity across reads, fresh only on a real change (convergent with the classic memoized ref)'](
+      assert
+    ) {
+      if (!__GXT_MODE__) {
+        assert.expect(0);
+        return;
+      }
+
+      let childInstance;
+      let FooBarComponent = class extends Component {
+        init() {
+          super.init(...arguments);
+          childInstance = this;
+        }
+      };
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.people as |p|}}[{{p}}]{{/each}}'),
+          FooBarComponent
+        )
+      );
+
+      this.render(`{{foo-bar people=(array "Tom" this.personTwo)}}`, { personTwo: 'Chad' });
+      this.assertText('[Tom][Chad]');
+
+      // CONVERGENT: the (array) arg is memoized — consecutive reads return the
+      // SAME array (no per-read re-reification).
+      assert.strictEqual(
+        childInstance.people,
+        childInstance.people,
+        'GXT returns a STABLE memoized (array) across reads of the same arg'
+      );
+      let firstArray = childInstance.people;
+      assert.deepEqual(childInstance.people, ['Tom', 'Chad'], 'value is correct on initial render');
+
+      runTask(() => set(this.context, 'personTwo', 'Godfrey'));
+      this.assertText('[Tom][Godfrey]');
+      assert.deepEqual(
+        childInstance.people,
+        ['Tom', 'Godfrey'],
+        'value is correct after the input changes'
+      );
+      // A real element change produces a FRESH identity (classic contract).
+      assert.notStrictEqual(
+        childInstance.people,
+        firstArray,
+        'a real (array) element change turns over the array identity'
+      );
+    }
+
+    ['@test [GXT] (array) arg does NOT over-invalidate — didUpdateAttrs stays flat on unrelated/no-op re-renders and fires only on a real change'](
+      assert
+    ) {
+      if (!__GXT_MODE__) {
+        assert.expect(0);
+        return;
+      }
+
+      let childInstance;
+      let updateAttrsCount = 0;
+      let FooBarComponent = class extends Component {
+        init() {
+          super.init(...arguments);
+          childInstance = this;
+        }
+        didUpdateAttrs() {
+          updateAttrsCount++;
+        }
+      };
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.people as |p|}}[{{p}}]{{/each}}'),
+          FooBarComponent
+        )
+      );
+
+      this.render(`{{this.tick}}|{{foo-bar people=(array "Tom" this.personTwo)}}`, {
+        tick: 0,
+        personTwo: 'Chad',
+      });
+      this.assertText('0|[Tom][Chad]');
+
+      let afterInitial = updateAttrsCount;
+
+      // (1) UNRELATED re-render: bump this.tick; the (array) inputs are
+      //     unchanged. The memoized (array) identity is stable, so didUpdateAttrs
+      //     stays flat (matches classic — the over-invalidation is fixed).
+      runTask(() => set(this.context, 'tick', 1));
+      this.assertText('1|[Tom][Chad]');
+      assert.strictEqual(
+        updateAttrsCount,
+        afterInitial,
+        `no over-invalidation: didUpdateAttrs stays flat on an unrelated re-render ` +
+          `(count stayed ${afterInitial})`
+      );
+
+      // (2) Forced no-op rerender: nothing changed — didUpdateAttrs stays flat.
+      runTask(() => this.rerender());
+      this.assertText('1|[Tom][Chad]');
+      assert.strictEqual(
+        updateAttrsCount,
+        afterInitial,
+        `no over-invalidation: didUpdateAttrs stays flat on a forced no-op rerender ` +
+          `(count stayed ${afterInitial})`
+      );
+
+      let afterNoop = updateAttrsCount;
+
+      // (3) A REAL element change turns over the (array) identity, so it DOES
+      //     propagate didUpdateAttrs to the child (classic contract).
+      runTask(() => set(this.context, 'personTwo', 'Godfrey'));
+      this.assertText('1|[Tom][Godfrey]');
+      assert.ok(
+        updateAttrsCount > afterNoop,
+        `a real (array) element change propagates didUpdateAttrs to the child ` +
+          `(count ${afterNoop} -> ${updateAttrsCount})`
+      );
+      assert.deepEqual(
+        childInstance.people,
+        ['Tom', 'Godfrey'],
+        'the child observes the changed (array) value'
+      );
+    }
   }
 );

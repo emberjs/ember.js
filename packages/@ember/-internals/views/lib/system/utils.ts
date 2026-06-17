@@ -1,8 +1,10 @@
 import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import { getGxtRenderer } from '@ember/-internals/gxt-backend/gxt-bridge';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import type { Dict } from '@glimmer/interfaces';
 
 import type { Nullable } from '@ember/-internals/utility-types';
@@ -41,6 +43,29 @@ export function constructStyleDeprecationMessage(affectedStyle: string): string 
 */
 export function getRootViews(owner: InternalOwner): View[] {
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
+
+  // GXT compat: rebuild view-tree parent/child relationships from live DOM.
+  // Slice-11 (Cluster B) — typed bridge call via `viewUtils.rebuildViewTreeFromDom`.
+  // Was `(globalThis as any).__gxtRebuildViewTreeFromDom`. The bridge slot
+  // dispatches the `afterRebuildViewTreeFromDom` host hook contributed by
+  // compile.ts after the main rebuild body — replacing the pre-slice-11
+  // `_wrapGxtRebuildViewTree` wrap-by-reassignment.
+  if (__GXT_MODE__) {
+    try {
+      getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
+    } catch (e) {
+      // A throw here means the GXT view-tree rebuild crashed, so the
+      // `-view-registry:main` we read below reflects a STALE parent/child
+      // graph. Surface the broken wiring (DEBUG-gated console.warn so it is
+      // visible to a developer without tripping QUnit's `warn()`/deprecation
+      // assertion helpers) instead of silently masking it. Behavior is
+      // preserved: we still fall through and read the registry as before.
+      if (DEBUG) {
+        // eslint-disable-next-line no-console
+        console.warn('[gxt] viewUtils.rebuildViewTreeFromDom failed; view registry may be stale', e);
+      }
+    }
+  }
 
   let rootViews: View[] = [];
 
@@ -117,10 +142,35 @@ export function getChildViews(view: View): View[] {
   let owner = getOwner(view);
   assert('View is unexpectedly missing an owner', owner);
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
+
+  // GXT compat: rebuild view-tree parent/child relationships from live DOM
+  // ancestry before reading the registry. The force-rerender path can leave
+  // parentView=null or CHILD_VIEW_IDS stale when a component is created while
+  // the render-time parent-view stack was empty. Passing the registry tells
+  // the rebuild which registry the caller will read.
+  // Slice-11 (Cluster B) — typed bridge call via `viewUtils.rebuildViewTreeFromDom`.
+  // Was `(globalThis as any).__gxtRebuildViewTreeFromDom`.
+  if (__GXT_MODE__) {
+    try {
+      getGxtRenderer()?.viewUtils.rebuildViewTreeFromDom?.(registry);
+    } catch (e) {
+      // A throw here means the GXT view-tree rebuild crashed, so the
+      // `-view-registry:main` we read below reflects a STALE parent/child
+      // graph. Surface the broken wiring (DEBUG-gated console.warn so it is
+      // visible to a developer without tripping QUnit's `warn()`/deprecation
+      // assertion helpers) instead of silently masking it. Behavior is
+      // preserved: we still fall through and read the registry as before.
+      if (DEBUG) {
+        // eslint-disable-next-line no-console
+        console.warn('[gxt] viewUtils.rebuildViewTreeFromDom failed; view registry may be stale', e);
+      }
+    }
+  }
+
   return collectChildViews(view, registry);
 }
 
-function initChildViews(view: View): Set<string> {
+export function initChildViews(view: View): Set<string> {
   let childViews: Set<string> = new Set();
   CHILD_VIEW_IDS.set(view, childViews);
   return childViews;
@@ -135,7 +185,7 @@ export function addChildView(parent: View, child: View): void {
   childViews.add(getViewId(child));
 }
 
-function collectChildViews(view: View, registry: Dict<View>): View[] {
+export function collectChildViews(view: View, registry: Dict<View>): View[] {
   let views: View[] = [];
   let childViews = CHILD_VIEW_IDS.get(view);
 

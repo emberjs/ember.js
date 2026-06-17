@@ -244,5 +244,171 @@ moduleFor(
 
       this.assertText('Godfrey Chan');
     }
+
+
+    // ---------------------------------------------------------------------
+    // (hash) reference-identity coverage — RFC dual-backend "(hash) / (array)
+    // helper identity across renders" row.
+    //
+    // CLASSIC CONTRACT: the `{{hash}}` helper returns a *memoized* compute
+    // reference (createComputeRef in @glimmer/runtime/lib/helpers/hash.ts). The
+    // object identity is STABLE across a re-render whose inputs did not change,
+    // so a child that `===`-compares the arg (or whose manager tag-compares it)
+    // does NOT spuriously fire `didUpdateAttrs`.
+    //
+    // GXT CONVERGENT BEHAVIOR (pinned below, @lifeart/gxt 0.0.69 — `cachedHelper`
+    // memoization, glimmer-next PR #233/#234): GXT now MEMOIZES the (hash)
+    // identity:
+    //   1. Consecutive reads of the same (hash) arg return the SAME object — the
+    //      over-fetching "fresh object per read" divergence is gone.
+    //   2. A (hash)'s members are live getters and the identity is value-stable,
+    //      so the curly component's `didUpdateAttrs` does NOT fire on an unrelated
+    //      re-render or a forced no-op `rerender()` — the over-invalidation the
+    //      RFC flagged is fixed. The child still reflects a real member change
+    //      because the member is tracked fine-grained (the consuming text/each
+    //      re-pulls the live value), NOT via an arg-identity swap.
+    //
+    // Guarded to GXT (the classic backend already satisfies the stable-identity
+    // contract by construction).
+    // ---------------------------------------------------------------------
+    ['@test [GXT] (hash) is value-correct and returns a STABLE memoized object identity across reads (convergent with the classic memoized ref)'](
+      assert
+    ) {
+      if (!__GXT_MODE__) {
+        assert.expect(0);
+        return;
+      }
+
+      let childInstance;
+      let FooBarComponent = class extends Component {
+        init() {
+          super.init(...arguments);
+          childInstance = this;
+        }
+      };
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('[{{this.obj.key}}]'), FooBarComponent)
+      );
+
+      this.render(`{{foo-bar obj=(hash key=this.value)}}`, { value: 'a' });
+      this.assertText('[a]');
+
+      // CONVERGENT: the (hash) arg is memoized — consecutive reads return the
+      // SAME object (no per-read re-reification).
+      assert.strictEqual(
+        childInstance.obj,
+        childInstance.obj,
+        'GXT returns a STABLE memoized (hash) object across reads of the same arg'
+      );
+      assert.strictEqual(childInstance.obj.key, 'a', 'value is correct on initial render');
+
+      runTask(() => set(this.context, 'value', 'b'));
+      this.assertText('[b]');
+      assert.strictEqual(childInstance.obj.key, 'b', 'value is correct after the input changes');
+    }
+
+    ['@test [GXT] (hash) arg does NOT over-invalidate — didUpdateAttrs stays flat on unrelated/no-op re-renders, and the child still reflects a real member change'](
+      assert
+    ) {
+      if (!__GXT_MODE__) {
+        assert.expect(0);
+        return;
+      }
+
+      let childInstance;
+      let updateAttrsCount = 0;
+      let FooBarComponent = class extends Component {
+        init() {
+          super.init(...arguments);
+          childInstance = this;
+        }
+        didUpdateAttrs() {
+          updateAttrsCount++;
+        }
+      };
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('[{{this.obj.key}}]'), FooBarComponent)
+      );
+
+      this.render(`{{this.tick}}|{{foo-bar obj=(hash key=this.value)}}`, {
+        tick: 0,
+        value: 'a',
+      });
+      this.assertText('0|[a]');
+
+      let afterInitial = updateAttrsCount;
+
+      // (1) UNRELATED re-render: bump this.tick; the (hash) inputs are unchanged.
+      //     The memoized (hash) identity is stable, so didUpdateAttrs stays flat
+      //     (matches the classic memoized ref — the over-invalidation is fixed).
+      runTask(() => set(this.context, 'tick', 1));
+      this.assertText('1|[a]');
+      assert.strictEqual(
+        updateAttrsCount,
+        afterInitial,
+        `no over-invalidation: didUpdateAttrs stays flat on an unrelated re-render ` +
+          `(count stayed ${afterInitial})`
+      );
+
+      // (2) Forced no-op rerender: no data changed at all — didUpdateAttrs stays
+      //     flat (matches classic).
+      runTask(() => this.rerender());
+      this.assertText('1|[a]');
+      assert.strictEqual(
+        updateAttrsCount,
+        afterInitial,
+        `no over-invalidation: didUpdateAttrs stays flat on a forced no-op rerender ` +
+          `(count stayed ${afterInitial})`
+      );
+
+      // (3) A REAL member change is still reflected in the child. The (hash)
+      //     identity stays stable (its members are live getters), so the child
+      //     re-pulls the changed member via fine-grained tracking rather than an
+      //     arg-identity swap.
+      runTask(() => set(this.context, 'value', 'b'));
+      this.assertText('1|[b]');
+      assert.strictEqual(childInstance.obj.key, 'b', 'the child observes the changed (hash) value');
+    }
+
+    ['@test [GXT][control] a plain primitive arg does NOT over-fire didUpdateAttrs on an unrelated re-render (isolates the over-invalidation to the (hash) reference)'](
+      assert
+    ) {
+      if (!__GXT_MODE__) {
+        assert.expect(0);
+        return;
+      }
+
+      let updateAttrsCount = 0;
+      let FooBarComponent = class extends Component {
+        didUpdateAttrs() {
+          updateAttrsCount++;
+        }
+      };
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('[{{this.value}}]'), FooBarComponent)
+      );
+
+      this.render(`{{this.tick}}|{{foo-bar value=this.value}}`, { tick: 0, value: 'a' });
+      this.assertText('0|[a]');
+
+      let afterInitial = updateAttrsCount;
+
+      // Same unrelated-re-render trigger as the (hash) test, but the arg is a
+      // primitive whose value did not change. didUpdateAttrs must stay flat.
+      runTask(() => set(this.context, 'tick', 1));
+      this.assertText('1|[a]');
+      assert.strictEqual(
+        updateAttrsCount,
+        afterInitial,
+        `a primitive arg does NOT over-fire didUpdateAttrs on an unrelated re-render ` +
+          `(stayed at ${afterInitial}) — so the (hash) over-invalidation is tied to the unstable reference identity, not generic re-rendering`
+      );
+    }
   }
 );

@@ -1,0 +1,37 @@
+{
+  "_comment": "Bundle-size budgets for the dual-backend (classic / EMBER_RENDER_BACKEND=gxt) rollup build. Each entry's `path` is the DIRECTORY rollup emits for that build mode: dist/prod (production, debug macros stripped) and dist/dev (debug). The gate (scripts/bundle-size-check.mjs) concatenates every *.js under the directory (sorted) and measures raw/gzip/brotli on the concatenation — the single-bundle-equivalent size of the whole backend output. Numbers below are the current measured floor + 5% headroom; the check fails on anything more than 5% over (effective ceiling ~10.25% over the floor). Refresh with: rm -rf dist && [EMBER_RENDER_BACKEND=gxt] npx rollup --config && node scripts/bundle-size-check.mjs <backend>. NOTE: the whole-tree concat is the WORST CASE — it includes both template-compiler entries (GXT compile.ts + the legacy wire-format compiler) which a precompiled app never loads; see the per-backend app-relevant numbers below.",
+  "classic": {
+    "_comment": "RE-BASELINED 2026-06-13c: recaptured at the current floor + 5% headroom (the prior dist/dev budget was stale/loose — real 2,111,383 vs old budget 2,666,892). prod still strips JSDoc/line comments via babel `shouldPrintComment` (rollup.config.mjs), keeping only @__PURE__/@__NO_SIDE_EFFECTS__/@license/@preserve. GXT integration code is build-time-gated out of the classic bundle (`if (__GXT_MODE__)` folded to false + DCE'd; gxt-bridge.ts side-effect-free). The presence guard in bundle-size-check.mjs (assertNoGxtResidue) fails if any LIVE gxt-bridge call site reappears.",
+    "entries": [
+      {
+        "path": "dist/prod",
+        "maxRaw": 1231957,
+        "maxGz": 268858,
+        "maxBr": 207535
+      },
+      {
+        "path": "dist/dev",
+        "maxRaw": 2216952,
+        "maxGz": 551324,
+        "maxBr": 410088
+      }
+    ]
+  },
+  "gxt": {
+    "_comment": "RE-BASELINED 2026-06-13c: recaptured after (a) purging the dead Glimmer VM opcode-eval core (EvaluationContextImpl/RuntimeOpImpl/artifacts, reachable only via renderer.ts createContext; gated behind !__GXT_MODE__, no VM fallback in GXT) — prod -27KB raw / -4.7KB brotli; and (b) build-time-gating the __DEBUG_GXT_RENDER render diagnostics out of prod (DEBUG && …) — a further -6.6KB raw / -1.0KB brotli. prod also strips comments (see classic _comment). WHOLE-TREE vs APP-RELEVANT: the dist is a per-module ESM tree, so an app pays only for what it imports. The whole-tree concat measured here is the WORST CASE — it includes BOTH template-compiler entries (the GXT compile.ts pipeline AND the legacy wire-format compiler), NEITHER of which a precompiled app loads (verified: neither is reachable from @ember/application's import graph). A representative precompiled-app closure (@ember/application + routing + component + glimmer renderer) is ~884KB raw / ~154KB brotli (gxt) vs ~741KB raw / ~128KB brotli (classic): +~20% brotli app-relevant (down from +25% pre-purge), NOT the +41% the whole-tree shows. The VM opcode-eval is now ABSENT from the gxt app closure while classic still ships it. The residual gxt delta is the genuine manager.ts compat layer (262KB — a from-scratch reimplementation of Ember's component-manager semantics on GXT primitives: 250 functions, comments already stripped, no dead/compile-only fat), NOT a tree-shaking failure. Reducing it further requires GXT to REPLACE Ember's component/helper/manager layer rather than render on top of it (architectural), or the deferred $_tag wrapper-branch deletion. PRIOR: @lifeart/gxt is externalized; gxt shims @glimmer/{validator,manager,reference,destroyable}; @glimmer/runtime/vm/arguments STAYS (genuinely used by the GXT fn/concat/array/hash/on helpers).",
+    "entries": [
+      {
+        "path": "dist/prod",
+        "maxRaw": 1729387,
+        "maxGz": 375519,
+        "maxBr": 293457
+      },
+      {
+        "path": "dist/dev",
+        "maxRaw": 3625210,
+        "maxGz": 980673,
+        "maxBr": 736243
+      }
+    ]
+  }
+}
