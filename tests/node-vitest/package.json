@@ -13,5 +13,8 @@
     "enhanced-resolve": "^5.21.0",
     "vite": "^8.0.10",
     "vitest": "^4.1.5"
+  },
+  "devDependencies": {
+    "rollup": "^4.61.0"
   }
 }
