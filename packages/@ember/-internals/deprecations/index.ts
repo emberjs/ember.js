@@ -116,7 +116,7 @@ export const DEPRECATIONS = {
     for: 'ember-source',
     id: 'deprecate-comparable-mixin',
     since: { available: '7.2.0', enabled: '7.2.0' },
-    until: '8.0.0',
+    until: '7.5.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-comparable-mixin',
   }),
 };
