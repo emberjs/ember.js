@@ -112,6 +112,13 @@ export const DEPRECATIONS = {
     until: '7.0.0',
     url: 'https://deprecations.emberjs.com/id/importing-inject-from-ember-service',
   }),
+  DEPRECATE_COMPARABLE_MIXIN: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-comparable-mixin',
+    since: { available: '7.2.0', enabled: '7.2.0' },
+    until: '7.5.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-comparable-mixin',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

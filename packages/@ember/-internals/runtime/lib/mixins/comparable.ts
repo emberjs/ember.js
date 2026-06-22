@@ -1,4 +1,5 @@
 import Mixin from '@ember/object/mixin';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 /**
 @module ember
@@ -37,6 +38,14 @@ const Comparable = Mixin.create({
     @return {Number} the result of the comparison
     @private
   */
+  init() {
+    this._super(...arguments);
+    deprecateUntil(
+      'The `Comparable` mixin is deprecated. Implement a `compare` method directly on your class instead.',
+      DEPRECATIONS.DEPRECATE_COMPARABLE_MIXIN
+    );
+  },
+
   compare: null,
 });
 
