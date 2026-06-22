@@ -1,5 +1,13 @@
 # Ember Changelog
 
+## v7.2.0-beta.1 (June 22, 2026)
+
+- [#21303](https://github.com/emberjs/ember.js/pull/21303) [FEATURE] Build in a default Strict Resolver, an opt-in replacement for `ember-resolver` per [RFC #1132](https://rfcs.emberjs.com/id/1132-default-strict-resolver).
+- [#21371](https://github.com/emberjs/ember.js/pull/21371) Set type=module on the `ember-source` package. Requires `ember-cli` to be at least `v7.0.1`.
+- [#21458](https://github.com/emberjs/ember.js/pull/21458) [BUGFIX] Sanitization improvements for uppercase source, svg hrefs with `javascript:`, `<iframe>` src with `data:` urls, and `<object>` data attributes with `data:` and `javascript:` urls.
+- [#21470](https://github.com/emberjs/ember.js/pull/21470) [BUGFIX] Re-render dynamic components in append position when the definition changes
+- [#21427](https://github.com/emberjs/ember.js/pull/21427) [INTERNAL] Convert cjs blueprint index.js files to 'cjs masquerading as esm' (in…
+
 ## v7.1.0 (June 22, 2026)
 
 - [#21068](https://github.com/emberjs/ember.js/pull/21068) [FEATURE] Build in the `{{on}}` modifier as a keyword in strict-mode templates per [RFC# 997](https://rfcs.emberjs.com/id/0997-make-on-built-in).
