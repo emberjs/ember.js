@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v7.1.0-beta.1 (May 12, 2026)
+## v7.1.0 (June 22, 2026)
 
 - [#21068](https://github.com/emberjs/ember.js/pull/21068) [FEATURE] Build in the `{{on}}` modifier as a keyword in strict-mode templates per [RFC# 997](https://rfcs.emberjs.com/id/0997-make-on-built-in).
 - [#21299](https://github.com/emberjs/ember.js/pull/21299) [FEATURE] Build in the `{{fn}}` helper as a keyword in strict-mode templates per [RFC #998](https://rfcs.emberjs.com/id/0998-make-fn-built-in).
@@ -15,6 +15,7 @@
 - [#21350](https://github.com/emberjs/ember.js/pull/21350) [INTERNAL] Remove barrel file imports from internal code for better tree-shaking
 - [#21402](https://github.com/emberjs/ember.js/pull/21402) [INTERNAL] Do not use any caches on release and lock publishing of `ember-source` to `npm` to require approval from select persons.
 - [#21379](https://github.com/emberjs/ember.js/pull/21379) [CLEANUP] Remove old Component Lookup
+- [#21468](https://github.com/emberjs/ember.js/pull/21468) [DOC] Update API docs to use template tag where appropriate
 
 ## v7.0.0 (May 11, 2026)
 
