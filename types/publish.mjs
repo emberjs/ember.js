@@ -32,7 +32,7 @@
   @packageDocumentation
  */
 
-import glob from 'glob';
+import { globSync } from 'glob';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -115,7 +115,7 @@ async function main() {
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
   // the modules, as generated directly from the tsconfig above. These must
   // *all* appear in the final set of `/// <reference ...>`s we emit.
-  let allModules = glob.sync('**/*.d.ts', {
+  let allModules = globSync('**/*.d.ts', {
     ignore: 'index.d.ts', // ignore the root file itself if it somehow exists
     cwd: TYPES_DIR,
   });
@@ -191,11 +191,10 @@ function copyRemappedLocationModules() {
   @returns {Promise<Array<string>>} The modules copied over by hand.
 */
 async function copyHandwrittenDefinitions(inputDir) {
-  let definitionModules = glob
-    .sync('**/*.d.ts', {
-      cwd: inputDir,
-      ignore: ['**/node_modules/**', '**/@types/js-reporters/**'],
-    })
+  let definitionModules = globSync('**/*.d.ts', {
+    cwd: inputDir,
+    ignore: ['**/node_modules/**', '**/@types/js-reporters/**'],
+  })
     .filter((moduleName) => !REMAPPED_LOCATION_MODULES.some(({ input }) => input === moduleName));
 
   await doOrDie(() =>
