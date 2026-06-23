@@ -200,8 +200,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       glob:
-        specifier: ^8.0.3
-        version: 8.1.0
+        specifier: ^13.0.0
+        version: 13.0.6
       globals:
         specifier: ^17.0.0
         version: 17.7.0
@@ -14955,7 +14955,7 @@ snapshots:
 
   '@types/glob@9.0.0':
     dependencies:
-      glob: 8.1.0
+      glob: 13.0.6
 
   '@types/json-schema@7.0.15': {}
 
