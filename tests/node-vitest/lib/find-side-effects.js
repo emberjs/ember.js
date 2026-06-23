@@ -17,7 +17,7 @@ import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { resolve, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
-import glob from 'glob';
+import { globSync } from 'glob';
 import { doesHaveSideEffects } from './has-side-effects.js';
 import config from '../../../rollup.config.mjs';
 
@@ -65,7 +65,7 @@ function sourceName(rel) {
 }
 
 async function sideEffectfulModules(outDir) {
-  let files = glob.sync('**/*.js', { cwd: outDir, nodir: true, absolute: true });
+  let files = globSync('**/*.js', { cwd: outDir, nodir: true, absolute: true });
   let flagged = new Set();
   let batchSize = 60;
   for (let i = 0; i < files.length; i += batchSize) {
