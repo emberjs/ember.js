@@ -92,7 +92,7 @@
     "@embroider/vite": "^1.7.2",
     "@eslint/js": "^9.21.0",
     "@glimmer/component": "workspace:*",
-    "@octokit/rest": "^20.1.2",
+    "@octokit/rest": "^22.0.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@simple-dom/document": "^1.4.0",
     "@swc-node/register": "^1.6.8",
