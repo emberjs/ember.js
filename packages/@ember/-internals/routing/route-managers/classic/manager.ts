@@ -74,6 +74,25 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     return bucket;
   }
 
+  getRenderState(bucket: ClassicRouteBucket) {
+    const route = bucket.route;
+    let wrapper = this.getRouteWrapper(bucket);
+    let invokable = buildClassicInvokable(bucket);
+
+    let owner = getOwner(route);
+    assert('Route is unexpectedly missing an owner', owner);
+
+    return {
+      owner,
+      name: route.routeName,
+      controller: route.controller,
+      model: route.currentModel,
+      wrapper,
+      invokable,
+      bucket,
+    };
+  }
+
   getRouteName(bucket: ClassicRouteBucket): string {
     // Local route name is the last dot-separated segment (e.g. `show` from
     // `posts.show`).

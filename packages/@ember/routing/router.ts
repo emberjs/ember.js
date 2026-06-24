@@ -3,12 +3,11 @@ import type {
   BootEnvironment,
   default as OutletView,
 } from '@ember/-internals/glimmer/lib/views/outlet';
-import type { OutletState, RenderState } from '@ember/-internals/glimmer/lib/utils/outlet';
+import type { OutletState } from '@ember/-internals/glimmer/lib/utils/outlet';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import type { FactoryManager } from '@ember/-internals/owner';
-import { getOwner as getInternalOwner } from '@ember/-internals/owner';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
@@ -911,41 +910,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       let route = routeInfo.route!;
       let manager = route.manager;
       let bucket = route.bucket;
-
-      // Skip routes that have not been registered through a manager. This
-      // should not happen for any Route subclass (the classic manager is
-      // registered against Route itself), but guards against
-      // partially-initialised state during teardown.
-      if (manager === undefined || bucket === undefined) {
-        break;
-      }
-
-      // Trigger the manager to populate the invokable. A route manager
-      // populates the bucket synchronously inside getInvokable before the
-      // returned promise resolves, so reading bucket.invokable on the next
-      // line is safe.
-      manager.getInvokable(bucket);
-
-      let wrapper = manager.getRouteWrapper(bucket);
-      let invokable = bucket.invokable;
-
-      if (invokable === undefined) {
-        break;
-      }
-
-      let owner = getInternalOwner(route);
-      assert('Route is unexpectedly missing an owner', owner);
-
-      let render: RenderState = {
-        owner,
-        name: route.routeName,
-        controller: route.controller,
-        model: route.currentModel,
-        wrapper,
-        invokable,
-        bucket,
-        routeInfo,
-      };
+      let render = manager.getRenderState(bucket);
+      render.routeInfo = routeInfo;
 
       let state: OutletState = {
         render,
