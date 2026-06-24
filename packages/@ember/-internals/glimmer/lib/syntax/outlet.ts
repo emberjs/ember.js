@@ -98,7 +98,7 @@ export const outletHelper = internalHelper(
           let modelRef = childRefFromParts(outletRef, ['render', 'model']);
           let model = valueForRef(modelRef);
 
-          wrapperArgs['model'] = createComputeRef(() => {
+          wrapperArgs['context'] = createComputeRef(() => {
             if (lastState === state) {
               let currentOutlet = valueForRef(outletRef);
               if (currentOutlet?.render?.controller === controller) {
@@ -109,7 +109,7 @@ export const outletHelper = internalHelper(
           });
 
           if (DEBUG) {
-            wrapperArgs['model'] = createDebugAliasRef!('@model', wrapperArgs['model']);
+            wrapperArgs['context'] = createDebugAliasRef!('@context', wrapperArgs['context']);
           }
 
           if (state.wrapper !== undefined && state.invokable !== undefined) {
