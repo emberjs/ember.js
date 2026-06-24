@@ -8,7 +8,7 @@ import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { DEBUG } from '@glimmer/env';
 import { assert, info } from '@ember/debug';
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import type { Factory, default as Owner } from '@ember/-internals/owner';
+import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
 import { Promise as RSVPPromise } from 'rsvp';
@@ -61,11 +61,10 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     this.#owner = owner;
   }
 
-  createRoute(factory: object, args: CreateRouteArgs): ClassicRouteBucket {
-    const RouteClass = factory as Factory<Route>;
+  createRoute(_factory: object, args: CreateRouteArgs): ClassicRouteBucket {
     const props = {};
     setOwner(props, this.#owner);
-    const route = RouteClass.create(props);
+    const route = this.#owner.lookup(`route:${args.name}`) as Route;
     route._setRouteName(args.name);
 
     const bucket = new ClassicRouteBucket(route);
@@ -204,7 +203,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 
   getInvokable(
     bucket: ClassicRouteBucket,
-    enterPromise: Promise<unknown>
+    enterPromise?: Promise<unknown>
   ): Promise<object | undefined> {
     // Build the invokable synchronously, then gate its resolution on the
     // enter promise so onRouteInvokableReady does not fire (and the real

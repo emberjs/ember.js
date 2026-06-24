@@ -12,7 +12,6 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { DebugRegistry } from './registry';
 import type Registry from './registry';
-import type EmberRouter from '@ember/routing/router';
 
 interface LeakTracking {
   hasContainers(): boolean;
@@ -287,21 +286,21 @@ function lookup(
   // the route instances. This is necessary to support route managers
   // instantiating the route classes and managing the instances.
   // !! This essentially deprecates looking up routes through the container.
-  const [type, name] = fullName.split(':') as [string, string];
-  if (type === 'route') {
-    assert('Expected container to have an owner when looking up a route', container.owner);
+  // const [type, name] = fullName.split(':') as [string, string];
+  // if (type === 'route') {
+  //   assert('Expected container to have an owner when looking up a route', container.owner);
 
-    const router = container.owner.lookup('router:main') as EmberRouter;
-    // When a route is looked up through the container, the fullName has
-    // been normalized by the resolver to use slashes. getRoute expects
-    // dot notation, so we need to convert it back here.
-    const routeName = name.replace(/\//g, '.');
+  //   const router = container.owner.lookup('router:main') as EmberRouter;
+  //   // When a route is looked up through the container, the fullName has
+  //   // been normalized by the resolver to use slashes. getRoute expects
+  //   // dot notation, so we need to convert it back here.
+  //   const routeName = name.replace(/\//g, '.');
 
-    // We pass an owner from the container so engines can have their own route instances.
-    // If we didn't do this, all engines would share the same route instances from the parent
-    // container's owner.
-    return router.getRoute(routeName, container.owner);
-  }
+  //   // We pass an owner from the container so engines can have their own route instances.
+  //   // If we didn't do this, all engines would share the same route instances from the parent
+  //   // container's owner.
+  //   return router.getRoute(routeName, container.owner);
+  // }
 
   if (
     options.singleton === true ||
