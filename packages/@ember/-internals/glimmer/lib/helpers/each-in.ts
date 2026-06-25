@@ -60,30 +60,25 @@ import { internalHelper } from './internal-helper';
 
   ### Specifying Keys
 
-  In order to improve rendering speed, Ember will try to reuse the DOM elements
-  where possible. Specifically, if the same item is present in the array both
-  before and after the change, its DOM output will be reused.
+  By default, Ember tracks each item in the array by its own object identity. When
+  the array changes, Ember reuses the DOM for items it has seen before and only
+  creates or removes DOM for items that were actually added or removed.
 
-  The `key` option is used to tell Ember how to determine if the items in the
-  array being iterated over with `{{#each}}` has changed between renders. By
-  default the item's object identity is used.
-
-  This is usually sufficient, so in most cases, the `key` option is simply not
-  needed. However, in some rare cases, the objects' identities may change even
-  though they represent the same underlying data.
-
-  For example:
+  Usually this is all you need. But sometimes an object's identity changes even
+  though it still represents the same underlying data. A common cause is mapping
+  over an array, which produces a brand-new object for every item on each render:
 
   ```javascript
-  people.map(person => {
+  people.map((person) => {
     return { ...person, type: 'developer' };
   });
   ```
 
-  In this case, each time the `people` array is `map`-ed over, it will produce
-  an new array with completely different objects between renders. In these cases,
-  you can help Ember determine how these objects related to each other with the
-  `key` option:
+  Because every object is new, Ember can no longer match the items to the previous
+  render by identity, so it recreates the DOM for the entire list.
+
+  The `key` option tells Ember which property to use to match items across renders
+  instead of identity:
 
   ```handlebars
   <ul>
@@ -93,15 +88,47 @@ import { internalHelper } from './internal-helper';
   </ul>
   ```
 
-  By doing so, Ember will use the value of the property specified (`person.name`
-  in the example) to find a "match" from the previous render. That is, if Ember
-  has previously seen an object from the `@developers` array with a matching
-  name, its DOM elements will be re-used.
+  Now, if Ember has previously rendered an item whose `name` matches one in the new
+  array, it reuses that item's DOM elements instead of recreating them.
 
   There are two special values for `key`:
 
     * `@index` - The index of the item in the array.
-    * `@identity` - The item in the array itself.
+    * `@identity` - The item in the array itself. This is the default.
+
+  #### What `key` does (and does not) do
+
+  `key` controls whether the **DOM elements** are reused. It does **not** prevent the
+  block from re-rendering. When a matched item is a different object than before (as
+  with `map` above), Ember still re-evaluates the block so any updated data is
+  reflected — `{{person.name}}` is re-read, and any helpers or modifiers inside the
+  block run again.
+
+  What you gain by reusing the DOM elements is the preservation of state that lives on
+  those elements but is not driven by your template, for example:
+
+    * text a user has typed into an unbound `<input>`, including cursor position and selection
+    * which element currently has focus
+    * scroll position
+    * the playback state of `<audio>` and `<video>` elements
+
+  Without a stable `key`, replacing the array with freshly-mapped objects would destroy
+  and recreate these elements, discarding that state. With `key`, the elements survive
+  and keep their state across the update.
+
+  ```handlebars
+  <ul>
+    {{#each @sounds key="id" as |sound|}}
+      <li>
+        {{sound.name}}
+        <audio src={{sound.url}} controls />
+      </li>
+    {{/each}}
+  </ul>
+  ```
+
+  Here, updating `@sounds` (even if it produces new objects) won't interrupt audio that
+  is currently playing, because the `<audio>` elements are reused rather than recreated.
 
   ### {{else}} condition
 
