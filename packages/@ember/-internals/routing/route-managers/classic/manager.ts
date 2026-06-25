@@ -135,7 +135,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     // transition was initiated with a model object or URL params.
     const route = bucket.route;
     const transition = state.transition as TransitionLike;
-    const routeInfo = state.to as unknown as InternalRouteInfo<Route>;
+    const routeInfo = state.internalRouteInfo;
 
     return RSVPPromise.resolve()
       .then(() => {

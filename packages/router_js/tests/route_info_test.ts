@@ -7,7 +7,7 @@ import {
   UnresolvedRouteInfoByObject,
   UnresolvedRouteInfoByParam,
 } from '../lib/route-info';
-import InternalTransition from '../lib/transition';
+import InternalTransition, { STATE_SYMBOL } from '../lib/transition';
 import URLTransitionIntent from '../lib/transition-intent/url-transition-intent';
 import { resolve } from 'rsvp';
 import { createHandler, createHandlerInfo, TestRouter } from './test_helpers';
@@ -233,4 +233,98 @@ QUnit.test('RouteInfo.find returns matched', function (assert) {
     return routInfo.name === 'child';
   });
   assert.equal(childInfo!.name, 'child');
+});
+
+QUnit.module('RouteInfo - non-gating manager');
+
+// Builds a handler whose manager mimics a manager that does not gate
+// getInvokable on enterPromise, so a route becomes resolved and renders
+// (e.g. a loading substate) before its `enter` settles with the context.
+// The `enter` hook is supplied per test.
+function createNonGatingHandler(
+  name: string,
+  enter: (bucket: any, args: any) => Promise<unknown>
+): Route {
+  let manager = {
+    capabilities: { classicInterop: false },
+    willEnter() {},
+    enter,
+    // Resolves immediately, without awaiting enterPromise. This is the
+    // behaviour that makes the context unavailable at becomeResolved time.
+    getInvokable() {
+      return resolve(undefined);
+    },
+  };
+
+  let handler = createHandler(name);
+  handler.manager = manager as never;
+  handler.bucket = { route: handler, invokable: undefined } as never;
+  return handler;
+}
+
+QUnit.test(
+  'resolved routeInfo.context syncs with the enter result when getInvokable does not gate on enterPromise',
+  async function (assert) {
+    assert.expect(3);
+
+    let router = new TestRouter();
+    let model = { id: 'real-model' };
+
+    let resolveEnter!: (value: unknown) => void;
+    let enterPromise = new Promise<unknown>((res) => {
+      resolveEnter = res;
+    });
+
+    let handler = createNonGatingHandler('async-parent', () => enterPromise);
+    let routeInfo = new UnresolvedRouteInfoByParam(router, 'async-parent', [], {}, handler);
+
+    let transition = { isAborted: false } as unknown as InternalTransition<Route>;
+
+    let resolved = await routeInfo.resolve(transition);
+
+    // becomeResolved ran before `enter` settled, so the snapshot is empty.
+    assert.equal(resolved.context, undefined, 'context is undefined until enter settles');
+
+    resolveEnter(model);
+    await enterPromise;
+    await resolve();
+
+    assert.equal(resolved.context, model, 'resolved context syncs once enter settles');
+    assert.equal(
+      transition.resolvedModels!['async-parent'],
+      model,
+      'transition.resolvedModels is kept in sync for modelFor'
+    );
+  }
+);
+
+QUnit.test('getAncestorContext resolves with the ancestor enter result', async function (assert) {
+  assert.expect(1);
+
+  let router = new TestRouter();
+  let ancestorModel = { id: 'ancestor-model' };
+
+  // The ancestor's enter resolved with the model, but its `context` property
+  // was never populated.
+  let ancestorInfo = {
+    name: 'parent',
+    enterPromise: resolve(ancestorModel),
+    context: undefined,
+  };
+
+  let captured: ((routeInfo: any) => Promise<unknown>) | undefined;
+  let handler = createNonGatingHandler('parent.child', (_bucket, args) => {
+    captured = args.getAncestorContext;
+    return resolve(undefined);
+  });
+  let childInfo = new UnresolvedRouteInfoByParam(router, 'parent.child', [], {}, handler);
+
+  let transition = { isAborted: false } as unknown as InternalTransition<Route>;
+  // Seed the transition state so getAncestorContext can find the ancestor.
+  transition[STATE_SYMBOL] = { routeInfos: [ancestorInfo] } as never;
+
+  await childInfo.resolve(transition);
+
+  let result = await captured!({ name: 'parent' });
+  assert.equal(result, ancestorModel, 'getAncestorContext resolves with the ancestor enter result');
 });

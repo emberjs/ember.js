@@ -77,6 +77,7 @@ interface RouteCapabilities {
 interface NavigationArgs {
   transition: any;
   to: any;
+  internalRouteInfo?: any;
   cancel: () => void;
   signal?: AbortSignal;
   getAncestorContext: (routeInfo: any) => Promise<unknown>;
@@ -148,7 +149,9 @@ class TestRouteManager implements RouteManagerLike {
 
   enter(bucket: TestRouteBucket, args: NavigationArgs): Promise<unknown> {
     const transition = args.transition;
-    const routeInfo = args.to;
+    // `to` is the public RouteInfo, which has no getModel. Classic-interop
+    // managers dispatch internal operations through internalRouteInfo.
+    const routeInfo = args.internalRouteInfo ?? args.to;
     // routeInfo.route is the authoritative reference for this transition.
     // Tests sometimes attach a handler to the routeInfo via prototype
     // assignment that differs from the one the bucket was created with.

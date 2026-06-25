@@ -130,6 +130,7 @@ export interface AsyncNavigationState {
  */
 export interface ClassicInteropArgs {
   transition: Transition;
+  internalRouteInfo: InternalRouteInfo<Route>;
 }
 
 // -- Hook argument shapes -----------------------------------------------------

@@ -279,9 +279,16 @@ export default class InternalRouteInfo<R extends Route> {
         const manager = route.manager!;
         const bucket = route.bucket!;
 
+        const publicTo =
+          (ROUTE_INFOS.get(this as unknown as RouteInfosKey) as RouteInfo | undefined) ??
+          (this as unknown as RouteInfo);
+
         const navigationArgs: WillEnterState & EnterState = {
+          // transition and internalRouteInfo are used by ClassicRouteManager
+          // they are typed by ClassicInteropArgs
           transition,
-          to: this as unknown as RouteInfo,
+          internalRouteInfo: this,
+          to: publicTo,
           cancel: () => transition.abort(),
           signal: transition.signal,
           getAncestorContext: (ancestor: RouteInfo) => {
@@ -289,7 +296,7 @@ export default class InternalRouteInfo<R extends Route> {
             const matched = allRouteInfos.find((ri) => ri?.name === ancestor.name);
             if (!matched) return Promise.resolve(undefined);
             const ancestorEnter = matched.enterPromise ?? Promise.resolve(undefined);
-            return Promise.resolve(ancestorEnter).then(() => matched.context);
+            return Promise.resolve(ancestorEnter);
           },
         };
 
@@ -353,6 +360,22 @@ export default class InternalRouteInfo<R extends Route> {
     // Carry per-navigation render state forward so it is not lost when the
     // unresolved info is replaced by the resolved one.
     resolved.enterPromise = this.enterPromise;
+
+    if (this.enterPromise !== undefined) {
+      this.enterPromise.then(
+        (enteredContext) => {
+          if (transition && transition.isAborted) return;
+          resolved.context = enteredContext as ModelFor<R> | undefined;
+          if (transition) {
+            transition.resolvedModels = transition.resolvedModels || {};
+            transition.resolvedModels[resolved.name] = enteredContext as ModelFor<R> | undefined;
+          }
+        },
+        () => {
+          // enter rejected; transition-level error handling reports it.
+        }
+      );
+    }
 
     if (cached !== undefined) {
       // SAFETY: This is potentially a bit risker, but for what we're doing, it should be ok.
