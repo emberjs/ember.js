@@ -13,7 +13,7 @@ Issues related to `@glimmer/component` package are labeled [`pkg:@glimmer/compon
 
 # AI-Assisted Contributions
 
-We welcome the thoughtful use of AI tools when contributing to Ember.js, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):
+We welcome the thoughtful use of AI tools when contributing to Ember.js, but ask all contributors to follow two core principles:
 
 1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.
 2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.
