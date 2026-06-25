@@ -22,10 +22,6 @@ export type IModel = {} & {
 
 export type ModelFor<T> = T extends BaseRoute<infer V> ? V : never;
 
-export function isBaseRoute<T>(route: unknown): route is BaseRoute<T> {
-  return (typeof route === 'object' && route !== null && '_internalName' in route) as boolean;
-}
-
 export interface BaseRoute<T = unknown> {
   context: T | undefined;
   manager: RouteManager;
@@ -34,7 +30,7 @@ export interface BaseRoute<T = unknown> {
   // this is used to identify the route in router_js machinery, and is not the same as the
   // routeName property on classic ember routes. It is totally internal to router_js, and
   // not to be confused with the routeName property on classic ember routes
-  _internalName: string;
+  _internalName?: string;
 
   // I think this could potentially be deleted
   // it's not mentioned in any ember docs that I can find, and is only

@@ -279,7 +279,7 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
 type RenderStateLike = {
   owner: any;
   name: string;
-  controller: object | null;
+  controller: unknown;
   model: unknown;
   routeInfo?: InternalRouteInfo<BaseRoute<unknown>>;
   bucket: RouteStateBucket | undefined;

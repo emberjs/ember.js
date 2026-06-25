@@ -60,7 +60,7 @@ import type {
   TransitionError,
   TransitionState,
 } from 'router_js';
-import Router, { isBaseRoute, logAbort, STATE_SYMBOL } from 'router_js';
+import Router, { logAbort, STATE_SYMBOL } from 'router_js';
 import type { Timer } from 'backburner.js';
 import EngineInstance from '@ember/engine/instance';
 import type { QueryParams } from 'route-recognizer';
@@ -431,8 +431,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         // delegates.
         const route = router.getRoute(name);
         assert(`Expected to find route '${name}'`, route !== undefined);
-        assert('Expected route to be a BaseRoute', isBaseRoute(route));
-        return route;
+        return route as BaseRoute;
       }
 
       getSerializer(name: string) {
