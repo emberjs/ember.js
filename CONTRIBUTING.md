@@ -11,6 +11,26 @@ Ember uses [StandardIssueLabels](https://github.com/wagenet/StandardIssueLabels)
 
 Issues related to `@glimmer/component` package are labeled [`pkg:@glimmer/component`](https://github.com/emberjs/ember.js/issues?q=sort%3Aupdated-desc+is%3Aopen+label%3Apkg%3A%40glimmer%2Fcomponent).
 
+# AI-assisted contributions
+
+If you want to use AI to help you contribute, we would be delighted. But we have [two rules](https://roe.dev/blog/using-ai-in-open-source).
+
+## 1. Never let an LLM _speak_ for you
+
+If we read a comment or an email or an issue summary or a PR from you, we want to know that we're hearing your words. We don't care about grammar or spelling; we won't think worse of you for that. We care more about real connection.
+
+> A note: AI-generated summaries of PRs are often _terrible_ and LLMs often optimise for long-winded, dense (and inaccurate!) text that is the opposite of what we would consider well-written. Simplicity is an art. The goal is not to sound impressive, but to communicate clearly.
+
+## 2. Never let an LLM _think_ for you
+
+Go ahead, drop the codebase in an LLM or get it to write the function or test you need. But the final step (and goal) before contributing that to an open source project should always be _understanding_ what it's written.
+
+Use computer aids to point you in the right direction, but always take personal responsibility. Saying, "I'm not sure if this is helpful, but ChatGPT says ..." is always a cop out. We don't want to see quotes from an LLM in a PR or issue; we want to know what _you_ think.
+
+If this seems difficult, or feels like it might put you off contribution, please do let us know.
+
+And equally, if you have any ideas for using LLMs to empower contributors or maintainers in open source, we would love to hear them.
+
 # Issues
 
 Think you've found a bug or have a new feature to suggest? Let us know!
