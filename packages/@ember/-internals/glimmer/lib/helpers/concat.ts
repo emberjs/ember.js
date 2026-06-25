@@ -7,13 +7,17 @@
 
   Example:
 
-  ```handlebars
-  {{some-component name=(concat firstName " " lastName)}}
+  ```gjs
+  import { concat } from '@ember/helper';
+    
+  <template>
+    {{yield (concat firstName " " lastName)}}
 
-  {{! would pass name="<first name value> <last name value>" to the component}}
+    {{! would yield name="<first name value> <last name value>" to the component}}
+  </template>
   ```
 
-  or for angle bracket invocation, you actually don't need concat at all.
+  For invocation of components, you don't need concat at all.
 
   ```handlebars
   <SomeComponent @name="{{firstName}} {{lastName}}" />

@@ -50,10 +50,14 @@ function isQueryParams(value: unknown): value is QueryParams {
   supplied model to the route as its `model` context of the route. The block for `LinkTo`
   becomes the contents of the rendered element:
 
-  ```handlebars
-  <LinkTo @route='photoGallery'>
-    Great Hamster Photos
-  </LinkTo>
+  ```gjs
+  import { LinkTo } from '@ember/routing';
+    
+  <template>
+    <LinkTo @route='photoGallery'>
+      Great Hamster Photos
+    </LinkTo>
+  </template>
   ```
 
   This will result in:

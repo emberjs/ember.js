@@ -15,7 +15,7 @@
    ```
     or
    ```handlebars
-   {{my-component people=(array
+   {{yield people=(array
      'Tom Dale'
      'Yehuda Katz'
      this.myOtherPerson)
@@ -29,6 +29,8 @@
    ```
 
    Where the 3rd item in the array is bound to updates of the `myOtherPerson` property.
+ 
+   The `array` helper is built-in keyword and does not need to be imported as of v7.1.0.
 
    @method array
    @for @ember/helper

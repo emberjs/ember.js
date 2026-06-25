@@ -28,23 +28,30 @@ import type { OutletState } from '../utils/outlet';
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
   your template. An important use of the `{{outlet}}` helper is in your
-  application's `application.hbs` file:
+  application's `application.gjs` file:
 
-  ```app/templates/application.hbs
-  <MyHeader />
-
-  <div class="my-dynamic-content">
-    <!-- this content will change based on the current route, which depends on the current URL -->
-    {{outlet}}
-  </div>
-
-  <MyFooter />
+  ```app/templates/application.gjs
+  import MyHeader from '../components/my-header';
+  import MyFooter from '../components/my-footer';
+    
+  <template>
+    <MyHeader />
+  
+    <div class="my-dynamic-content">
+      <!-- this content will change based on the current route, which depends on the current URL -->
+      {{outlet}}
+    </div>
+  
+    <MyFooter />
+  </template>
   ```
 
   See the [routing guide](https://guides.emberjs.com/release/routing/rendering-a-template/) for more
   information on how your `route` interacts with the `{{outlet}}` helper.
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
+  `outlet` is built-in and does not need to be imported. 
+ 
   @method outlet
   @for Ember.Templates.helpers
   @public

@@ -233,7 +233,6 @@ export default [
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
       'tests/node-blueprints/**/*.js',
-      'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
       'bin/**/*.mjs',
@@ -255,7 +254,6 @@ export default [
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
       'tests/node-blueprints/**/*.js',
-      'tests/node-vitest/**/*.js',
       'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
       '**/ember-cli-build.*',
@@ -513,6 +511,22 @@ export default [
     rules: {
       // This package is not published, so we don't care about the extraneous check
       'n/no-extraneous-require': 'off',
+    },
+  },
+  {
+    ...nodePlugin.configs['flat/recommended'],
+    files: ['tests/node-vitest/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      ecmaVersion: 2026,
+      sourceType: 'module',
+    },
+    rules: {
+      'no-throw-literal': 'error',
+      'disable-features/disable-async-await': 'off',
+      'disable-features/disable-generator-functions': 'off',
     },
   },
 ];

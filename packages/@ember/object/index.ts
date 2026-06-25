@@ -49,8 +49,8 @@ export default EmberObject;
   Decorator that turns the target function into an Action which can be accessed
   directly by reference.
 
-  ```js
-  import Component from '@ember/component';
+  ```gjs
+  import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
   import { action } from '@ember/object';
 
@@ -61,24 +61,24 @@ export default EmberObject;
     toggleShowing() {
       this.isShowing = !this.isShowing;
     }
+    
+    <template>
+      <button {{on "click" this.toggleShowing}}>Show tooltip</button>
+    
+      {{#if isShowing}}
+        <div class="tooltip">
+          I'm a tooltip!
+        </div>
+      {{/if}}
+    </template>
   }
-  ```
-  ```hbs
-  <!-- template.hbs -->
-  <button {{on "click" this.toggleShowing}}>Show tooltip</button>
-
-  {{#if isShowing}}
-    <div class="tooltip">
-      I'm a tooltip!
-    </div>
-  {{/if}}
   ```
 
   It also binds the function directly to the instance, so it can be used in any
   context and will correctly refer to the class it came from:
 
-  ```js
-  import Component from '@ember/component';
+  ```gjs
+  import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
   import { action } from '@ember/object';
 
@@ -97,6 +97,10 @@ export default EmberObject;
     toggleShowing() {
       this.isShowing = !this.isShowing;
     }
+    
+    <template>
+      {{!-- ...--}}
+    </template>
   }
   ```
 
@@ -248,9 +252,10 @@ type ObserverDefinition<T extends AnyFn> = {
   });
   ```
 
-  Also available as `Function.prototype.observes` if prototype extensions are
-  enabled.
-
+  While observers are still supported, there are [plans to deprecate them](https://github.com/emberjs/rfcs/pull/1115)
+  See the [in-progress deprecation guide](https://github.com/ember-learn/deprecation-app/pull/1407) 
+  for guidance on how to avoid using observers.
+ 
   @method observer
   @for @ember/object
   @param {String} propertyNames*

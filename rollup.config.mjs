@@ -2,7 +2,7 @@ import { dirname, parse, resolve, join } from 'node:path';
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import glob from 'glob';
+import { globSync } from 'glob';
 import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
@@ -199,7 +199,7 @@ function renameEntrypoints(entrypoints, fn) {
 
 function packages() {
   // Start by treating every module as an entrypoint
-  let entryFiles = glob.sync('**/*.{ts,js}', {
+  let entryFiles = globSync('**/*.{ts,js}', {
     ignore: [
       // d.ts is not .ts
       '**/*.d.ts',
@@ -240,7 +240,7 @@ function packages() {
   // add only the entrypoints of the rolledUpPackages
   entryFiles = [
     ...entryFiles,
-    ...glob.sync(`{${rolledUpPackages().join(',')}}/index.{js,ts}`, { cwd: 'packages' }),
+    ...globSync(`{${rolledUpPackages().join(',')}}/index.{js,ts}`, { cwd: 'packages' }),
   ];
 
   return Object.fromEntries(

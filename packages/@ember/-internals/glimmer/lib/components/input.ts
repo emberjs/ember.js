@@ -67,8 +67,12 @@ if (hasDOM) {
 /**
   The `Input` component lets you create an HTML `<input>` element.
 
-  ```handlebars
-  <Input @value="987" />
+  ```gjs
+  import { Input } from '@ember/component';
+    
+  <template>
+    <Input @value="987" />
+  </template>
   ```
 
   creates an `<input>` element with `type="text"` and value set to 987.

@@ -6,6 +6,7 @@ import type {
   WireFormat,
 } from '@glimmer/interfaces';
 import {
+  VM_ASSERT_SAME_OP,
   VM_CLOSE_ELEMENT_OP,
   VM_COMMENT_OP,
   VM_COMPONENT_ATTR_OP,
@@ -218,6 +219,7 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
         },
         (when) => {
           when(ContentType.Component, () => {
+            op(VM_ASSERT_SAME_OP);
             op(VM_RESOLVE_CURRIED_COMPONENT_OP);
             op(VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP);
             InvokeNonStaticComponent(op, {

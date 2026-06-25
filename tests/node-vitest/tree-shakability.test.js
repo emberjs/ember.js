@@ -1,45 +1,24 @@
 /**
+ * These snapshot tests track how "tree-shakable" ember-source is. Ideally, over
+ * time, fewer and fewer files appear in these lists.
  *
- * These snapshot tests are so that we can keep track of how "tree-shakable" ember-source is.
- * Ideally, over time, more and more moves to the "shaken" snapshot,
- * and out of the "notShaken" snapshot
- *
+ * Rather than inspecting the published (chunked) build, we re-run our own rollup
+ * config with `preserveModules: true` so that every source module maps to a
+ * single output file with an unmangled name. The side-effect probe (see
+ * ./lib/detect.js) then attributes each surviving side-effect to the specific
+ * source file that caused it, instead of to a shared chunk.
  */
-import { it, expect } from 'vitest';
-import { getRenamedModules } from './helpers.js';
+import { beforeAll, it, expect } from 'vitest';
+import { findSideEffectfulModules } from './lib/build.js';
 
-import { check } from 'agadoo';
-import resolve from 'enhanced-resolve';
+let modules;
 
-const devResolve = resolve.create.sync({ conditionNames: ['development'] });
-const prodResolve = resolve.create.sync({ conditionNames: ['production'] });
-const cwd = process.cwd();
+beforeAll(() => {
+  modules = findSideEffectfulModules();
+}, 120_000);
 
-async function findShakenFiles(entries, resolver) {
-  let shaken = new Set();
-  let notShaken = new Set();
-
-  await Promise.all(
-    entries.map(async (entry) => {
-      let file = resolver(cwd, entry);
-      let result = await check(file);
-
-      if (result.shaken) {
-        shaken.add(entry);
-      } else {
-        notShaken.add(entry);
-      }
-    })
-  );
-
-  return { shaken: [...shaken].sort(), notShaken: [...notShaken].sort() };
-}
-
-it('[dev] has expected tree-shakable entrypoints', async () => {
-  let entries = getRenamedModules();
-  let result = await findShakenFiles(entries, devResolve);
-
-  expect(result.shaken).toMatchInlineSnapshot(`
+it('[dev] source modules with side effects', () => {
+  expect(modules.dev).toMatchInlineSnapshot(`
     [
       "ember-source/@ember/-internals/browser-environment/index.js",
       "ember-source/@ember/-internals/error-handling/index.js",
@@ -429,6 +408,51 @@ it('[prod] has expected tree-shakable entrypoints', async () => {
       "ember-source/ember-testing/lib/public-api.js",
       "ember-source/router_js/index.js",
       "ember-source/rsvp/index.js",
+      "@ember/-internals/environment/lib/env.js",
+      "@ember/-internals/glimmer/lib/components/input.js",
+      "@ember/-internals/glimmer/lib/components/link-to.js",
+      "@ember/-internals/glimmer/lib/environment.js",
+      "@ember/-internals/glimmer/lib/renderer.js",
+      "@ember/-internals/runtime/lib/ext/rsvp.js",
+      "@ember/debug/index.js",
+      "@glimmer/runtime/lib/compiled/opcodes/component.js",
+      "@glimmer/runtime/lib/compiled/opcodes/content.js",
+      "@glimmer/runtime/lib/compiled/opcodes/debugger.js",
+      "@glimmer/runtime/lib/compiled/opcodes/dom.js",
+      "@glimmer/runtime/lib/compiled/opcodes/expressions.js",
+      "@glimmer/runtime/lib/compiled/opcodes/lists.js",
+      "@glimmer/runtime/lib/compiled/opcodes/vm.js",
+      "@glimmer/validator/index.js",
+      "@handlebars/parser/lib/parse.js",
+      "@handlebars/parser/lib/printer.js",
+      "@handlebars/parser/lib/whitespace-control.js",
+      "ember-testing/index.js",
+      "rsvp/index.js",
     ]
   `);
-}, 20_000);
+});
+
+it('[prod] source modules with side effects', () => {
+  expect(modules.prod).toMatchInlineSnapshot(`
+    [
+      "@ember/-internals/environment/lib/env.js",
+      "@ember/-internals/glimmer/lib/components/input.js",
+      "@ember/-internals/glimmer/lib/environment.js",
+      "@ember/-internals/glimmer/lib/renderer.js",
+      "@ember/-internals/runtime/lib/ext/rsvp.js",
+      "@glimmer/runtime/lib/compiled/opcodes/component.js",
+      "@glimmer/runtime/lib/compiled/opcodes/content.js",
+      "@glimmer/runtime/lib/compiled/opcodes/debugger.js",
+      "@glimmer/runtime/lib/compiled/opcodes/dom.js",
+      "@glimmer/runtime/lib/compiled/opcodes/expressions.js",
+      "@glimmer/runtime/lib/compiled/opcodes/lists.js",
+      "@glimmer/runtime/lib/compiled/opcodes/vm.js",
+      "@glimmer/validator/index.js",
+      "@handlebars/parser/lib/parse.js",
+      "@handlebars/parser/lib/printer.js",
+      "@handlebars/parser/lib/whitespace-control.js",
+      "ember-testing/index.js",
+      "rsvp/index.js",
+    ]
+  `);
+});

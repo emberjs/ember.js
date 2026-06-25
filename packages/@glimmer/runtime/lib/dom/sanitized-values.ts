@@ -4,29 +4,44 @@ import { isSafeString, normalizeStringValue } from '../dom/normalize';
 
 const badProtocols = ['javascript:', 'vbscript:'];
 
-const badTags = ['A', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM'];
-
+const badTags = ['A', 'AREA', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM', 'BUTTON', 'INPUT'];
 const badTagsForDataURI = ['EMBED'];
+const badTagsForDataProtocol = ['IFRAME', 'OBJECT'];
 
-const badAttributes = ['href', 'src', 'background', 'action'];
-
+const badAttributes = ['href', 'src', 'background', 'action', 'formaction', 'xlink:href'];
 const badAttributesForDataURI = ['src'];
+const badAttributesForDataProtocol = ['src', 'data'];
 
 function has(array: Array<string>, item: string): boolean {
   return array.indexOf(item) !== -1;
 }
 
 function checkURI(tagName: Nullable<string>, attribute: string): boolean {
-  return (tagName === null || has(badTags, tagName)) && has(badAttributes, attribute);
+  // SVG tagNames are case-preserved, so the SVG `<a>` element comes through as
+  // lowercase `a` and never matches the uppercase `badTags` entries unless we
+  // normalize first.
+  return (tagName === null || has(badTags, tagName.toUpperCase())) && has(badAttributes, attribute);
 }
 
 function checkDataURI(tagName: Nullable<string>, attribute: string): boolean {
   if (tagName === null) return false;
-  return has(badTagsForDataURI, tagName) && has(badAttributesForDataURI, attribute);
+  return has(badTagsForDataURI, tagName.toUpperCase()) && has(badAttributesForDataURI, attribute);
 }
 
-export function requiresSanitization(tagName: string, attribute: string): boolean {
-  return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
+function checkDataProtocol(tagName: Nullable<string>, attribute: string): boolean {
+  if (tagName === null) return false;
+  return (
+    has(badTagsForDataProtocol, tagName.toUpperCase()) &&
+    has(badAttributesForDataProtocol, attribute)
+  );
+}
+
+export function requiresSanitization(tagName: Nullable<string>, attribute: string): boolean {
+  return (
+    checkURI(tagName, attribute) ||
+    checkDataURI(tagName, attribute) ||
+    checkDataProtocol(tagName, attribute)
+  );
 }
 
 interface NodeUrlParseResult {
@@ -63,7 +78,11 @@ function findProtocolForURL() {
       let protocol = null;
 
       if (typeof url === 'string') {
-        protocol = nodeURL.parse(url).protocol;
+        // browsers strip ASCII tab/newline/CR from urls before navigating, so
+        // `java\nscript:` runs as `javascript:`. `url.parse` keeps them and reports
+        // a null protocol, slipping past the badProtocols check. Strip them here to
+        // match the WHATWG `URL` parser used on the non-fastboot path.
+        protocol = nodeURL.parse(url.replace(/[\t\n\r]/gu, '')).protocol;
       }
 
       return protocol === null ? ':' : protocol;
@@ -108,13 +127,20 @@ export function sanitizeAttributeValue(
     return value.toHTML();
   }
 
-  const tagName = element.tagName.toUpperCase();
+  const tagName = element.tagName;
 
   let str = normalizeStringValue(value);
 
   if (checkURI(tagName, attribute)) {
     let protocol = protocolForUrl(str);
     if (has(badProtocols, protocol)) {
+      return `unsafe:${str}`;
+    }
+  }
+
+  if (checkDataProtocol(tagName, attribute)) {
+    let protocol = protocolForUrl(str);
+    if (protocol === 'data:' || has(badProtocols, protocol)) {
       return `unsafe:${str}`;
     }
   }
