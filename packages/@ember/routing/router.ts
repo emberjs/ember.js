@@ -365,57 +365,53 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       this.#routeBuckets.set(routeOwner, ownerBuckets);
     }
 
+    const fullRouteName = `route:${routeName}` as const;
     let bucket = ownerBuckets.get(routeName);
-    if (bucket === undefined) {
-      const fullRouteName = `route:${routeName}` as const;
-      let factoryManager = routeOwner.factoryFor(fullRouteName);
+    let factoryManager = routeOwner.factoryFor(fullRouteName);
+    if (!factoryManager) {
+      // Auto-generate a default route if none is registered.
+      // SAFETY: configured in commonSetupRegistry in @ember/application/lib.
+      let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
+      routeOwner.register(fullRouteName, class extends DefaultRoute {});
+      factoryManager = routeOwner.factoryFor(fullRouteName);
 
-      if (!factoryManager) {
-        // Auto-generate a default route if none is registered.
-        // SAFETY: configured in commonSetupRegistry in @ember/application/lib.
-        let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
-        routeOwner.register(fullRouteName, class extends DefaultRoute {});
-        factoryManager = routeOwner.factoryFor(fullRouteName);
-
-        if (DEBUG) {
-          if (this.namespace.LOG_ACTIVE_GENERATION) {
-            info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
-          }
+      if (DEBUG) {
+        if (this.namespace.LOG_ACTIVE_GENERATION) {
+          info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
         }
       }
+    }
 
-      assert('BUG: Missing factory for route', factoryManager);
-      const RouteClass = factoryManager.class as object;
+    assert('BUG: Missing factory for route', factoryManager);
+    const RouteClass = factoryManager.class as object;
 
-      if (routeOwner !== getOwner(this) && !hasDefaultSerialize((RouteClass as any).prototype)) {
-        throw new Error('Defining a custom serialize method on an Engine route is not supported.');
-      }
+    if (routeOwner !== getOwner(this) && !hasDefaultSerialize((RouteClass as any).prototype)) {
+      throw new Error('Defining a custom serialize method on an Engine route is not supported.');
+    }
 
-      const managerFactory = getRouteManager(RouteClass);
-      assert(
-        `No route manager is registered for route '${routeName}'. ` +
-          `Use \`setRouteManager\` to associate a manager with the route class.`,
-        managerFactory !== undefined
-      );
+    const managerFactory = getRouteManager(RouteClass);
+    assert(
+      `No route manager is registered for route '${routeName}'. ` +
+        `Use \`setRouteManager\` to associate a manager with the route class.`,
+      managerFactory !== undefined
+    );
 
-      let ownerManagers = this.#routeManagerInstances.get(routeOwner);
-      if (!ownerManagers) {
-        ownerManagers = new WeakMap();
-        this.#routeManagerInstances.set(routeOwner, ownerManagers);
-      }
-      let manager = ownerManagers.get(managerFactory);
-      if (manager === undefined) {
-        manager = managerFactory(routeOwner);
-        ownerManagers.set(managerFactory, manager);
-      }
-
+    let ownerManagers = this.#routeManagerInstances.get(routeOwner);
+    if (!ownerManagers) {
+      ownerManagers = new WeakMap();
+      this.#routeManagerInstances.set(routeOwner, ownerManagers);
+    }
+    let manager = ownerManagers.get(managerFactory);
+    if (manager === undefined) {
+      manager = managerFactory(routeOwner);
+      ownerManagers.set(managerFactory, manager);
+    }
+    if (bucket === undefined) {
       bucket = manager.createRoute(RouteClass, { name: routeName });
       ownerBuckets.set(routeName, bucket);
     }
 
-    const route = bucket.route;
-    assert('Expected route bucket to expose a `route` instance', route !== undefined);
-    return route;
+    return manager.getRoute(bucket) as Route;
   }
 
   _initRouterJs(): void {
