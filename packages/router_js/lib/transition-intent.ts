@@ -1,10 +1,10 @@
-import type { Route } from './route-info';
+import type { BaseRoute } from './route-info';
 import type Router from './router';
 import type TransitionState from './transition-state';
 
 export type OpaqueIntent = TransitionIntent<any>;
 
-export abstract class TransitionIntent<R extends Route> {
+export abstract class TransitionIntent<R extends BaseRoute> {
   data: object;
   router: Router<R>;
   constructor(router: Router<R>, data: object = {}) {

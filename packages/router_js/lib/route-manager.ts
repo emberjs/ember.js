@@ -11,7 +11,7 @@
   `@ember/routing`.
 */
 
-import type { RouteInfo, Route } from './route-info';
+import type { RouteInfo, BaseRoute } from './route-info';
 import type { default as InternalRouteInfo } from './route-info';
 import type { PublicTransition as Transition } from './transition';
 
@@ -130,7 +130,7 @@ export interface AsyncNavigationState {
  */
 export interface ClassicInteropArgs {
   transition: Transition;
-  internalRouteInfo: InternalRouteInfo<Route>;
+  internalRouteInfo: InternalRouteInfo<BaseRoute>;
 }
 
 // -- Hook argument shapes -----------------------------------------------------
@@ -281,7 +281,7 @@ type RenderStateLike = {
   name: string;
   controller: object | null;
   model: unknown;
-  routeInfo?: InternalRouteInfo<Route<unknown>>;
+  routeInfo?: InternalRouteInfo<BaseRoute<unknown>>;
   bucket: RouteStateBucket | undefined;
   invokable: object | undefined;
   wrapper: object | undefined;
@@ -318,8 +318,8 @@ export interface RouteManagerWithClassicInterop<
    */
   stashNames(
     bucket: Bucket,
-    routeInfo: InternalRouteInfo<Route>,
-    dynamicParent: InternalRouteInfo<Route>
+    routeInfo: InternalRouteInfo<BaseRoute>,
+    dynamicParent: InternalRouteInfo<BaseRoute>
   ): void;
 
   /**
@@ -350,7 +350,7 @@ export interface RouteManagerWithClassicInterop<
    */
   serializeContext(
     bucket: Bucket,
-    routeInfo: InternalRouteInfo<Route>,
+    routeInfo: InternalRouteInfo<BaseRoute>,
     value: unknown
   ): Record<string, unknown> | undefined;
 

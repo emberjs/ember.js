@@ -1,6 +1,6 @@
 /* eslint-disable qunit/no-conditional-assertions, qunit/no-assert-logical-expression, qunit/no-early-return, no-console, no-throw-literal */
 import type { MatchCallback } from 'route-recognizer';
-import type { Route, Transition } from '../index';
+import type { ClassicRoute, Transition } from '../index';
 import type Router from '../index';
 import type { Dict, Maybe } from '../lib/core';
 import type {
@@ -25,9 +25,9 @@ import {
   ignoreTransitionError,
 } from './test_helpers';
 
-let router: Router<Route>;
+let router: Router<ClassicRoute>;
 let url: string | undefined;
-let routes: Dict<Route>;
+let routes: Dict<ClassicRoute>;
 
 function isPresent(maybe: Maybe<PublicRouteInfo>): maybe is PublicRouteInfo {
   return maybe !== undefined && maybe !== null;
@@ -104,7 +104,7 @@ scenarios.forEach(function (scenario) {
         this.updateURL(name);
       }
       triggerEvent(
-        handlerInfos: RouteInfo<Route>[],
+        handlerInfos: RouteInfo<ClassicRoute>[],
         ignoreFailure: boolean,
         name: string,
         args: any[]
@@ -157,7 +157,7 @@ scenarios.forEach(function (scenario) {
     });
   });
 
-  function routePath(infos: RouteInfo<Route>[]) {
+  function routePath(infos: RouteInfo<ClassicRoute>[]) {
     let path = [];
 
     for (let i = 0, l = infos.length; i < l; i++) {
@@ -2313,7 +2313,7 @@ scenarios.forEach(function (scenario) {
         },
 
         setup: function (posts: Dict<unknown>, transition: Transition) {
-          assert.notOk(isExiting(this as unknown as Route, transition.routeInfos));
+          assert.notOk(isExiting(this as unknown as ClassicRoute, transition.routeInfos));
           assert.equal(
             posts,
             allPosts,
@@ -2323,7 +2323,7 @@ scenarios.forEach(function (scenario) {
         },
 
         exit: function (transition: Transition) {
-          assert.ok(isExiting(this as unknown as Route, transition.routeInfos));
+          assert.ok(isExiting(this as unknown as ClassicRoute, transition.routeInfos));
         },
       }),
 
@@ -2749,7 +2749,7 @@ scenarios.forEach(function (scenario) {
       }),
     };
     router.triggerEvent = function (
-      handlerInfos: RouteInfo<Route>[],
+      handlerInfos: RouteInfo<ClassicRoute>[],
       ignoreFailure: boolean,
       name: string,
       args: any[]
@@ -4445,7 +4445,7 @@ scenarios.forEach(function (scenario) {
 
     router
       .handleURL('/index')
-      .then(function (route: Route) {
+      .then(function (route: ClassicRoute) {
         assert.ok((route as any)['borfIndex'], 'resolved to index handler');
         return router.transitionTo('about');
       }, shouldNotHappen(assert))
@@ -4830,7 +4830,7 @@ scenarios.forEach(function (scenario) {
       router
         .transitionTo('/index')
         .followRedirects()
-        .then(function (handler: Route) {
+        .then(function (handler: ClassicRoute) {
           assert.equal(
             handler,
             routes['index'],
@@ -4839,14 +4839,14 @@ scenarios.forEach(function (scenario) {
 
           return router.transitionTo('about').followRedirects();
         })
-        .then(function (handler: Route) {
+        .then(function (handler: ClassicRoute) {
           assert.equal(
             handler,
             routes['faq'],
             'followRedirects promise resolved with redirected faq handler'
           );
 
-          (routes['about'] as Route).beforeModel = function (transition: Transition) {
+          (routes['about'] as ClassicRoute).beforeModel = function (transition: Transition) {
             transition.abort();
             return undefined;
           };
@@ -4882,7 +4882,7 @@ scenarios.forEach(function (scenario) {
       router
         .transitionTo('/index')
         .followRedirects()
-        .then(function (handler: Route) {
+        .then(function (handler: ClassicRoute) {
           assert.equal(
             handler,
             routes['about'],
@@ -5183,7 +5183,9 @@ scenarios.forEach(function (scenario) {
       router.getRoute = function (name) {
         count++;
 
-        return Promise.resolve(scenario.getRoute.call(null, name)).then(function (handler: Route) {
+        return Promise.resolve(scenario.getRoute.call(null, name)).then(function (
+          handler: ClassicRoute
+        ) {
           assert.equal(count, handlerCount);
           return handler;
         });
@@ -5728,7 +5730,7 @@ scenarios.forEach(function (scenario) {
       assert.expect(11);
 
       let counter = 1,
-        willResolves: Route[],
+        willResolves: ClassicRoute[],
         appModel = {},
         fooModel = {};
 
@@ -5747,7 +5749,7 @@ scenarios.forEach(function (scenario) {
             assert.equal(obj, appModel, 'application#setup is passed the return value from model');
           },
           events: {
-            willResolveModel: function (_transition: Transition, handler: Route) {
+            willResolveModel: function (_transition: Transition, handler: ClassicRoute) {
               assert.equal(
                 willResolves.shift(),
                 handler,

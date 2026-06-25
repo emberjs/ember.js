@@ -3,7 +3,7 @@ import type { MatchCallback, Params, QueryParams } from 'route-recognizer';
 import RouteRecognizer from 'route-recognizer';
 import { Promise } from 'rsvp';
 import type { Dict, Maybe, Option } from './core';
-import type { ModelFor, Route, RouteInfo, RouteInfoWithAttributes } from './route-info';
+import type { ModelFor, BaseRoute, RouteInfo, RouteInfoWithAttributes } from './route-info';
 import type InternalRouteInfo from './route-info';
 import { toReadOnlyRouteInfo } from './route-info';
 import type { OpaqueTransition, PublicTransition as Transition } from './transition';
@@ -25,7 +25,7 @@ export interface ParsedHandler {
   names: string[];
 }
 
-export default abstract class Router<R extends Route> {
+export default abstract class Router<R extends BaseRoute> {
   private _lastQueryParams = {};
   log?: (message: string) => void;
   state?: TransitionState<R> = undefined;
@@ -149,7 +149,7 @@ export default abstract class Router<R extends Route> {
       this.routeWillChange(newTransition);
 
       newTransition.promise = newTransition.promise!.then(
-        (result: TransitionState<R> | Route | Error | undefined) => {
+        (result: TransitionState<R> | BaseRoute | Error | undefined) => {
           if (!newTransition.isAborted) {
             this._updateURL(newTransition, oldState);
             this.didTransition(this.currentRouteInfos!);
@@ -860,7 +860,7 @@ export default abstract class Router<R extends Route> {
   }
 }
 
-function routeInfosEqual<R1 extends Route, R2 extends Route>(
+function routeInfosEqual<R1 extends BaseRoute, R2 extends BaseRoute>(
   routeInfos: InternalRouteInfo<R1>[],
   otherRouteInfos: InternalRouteInfo<R2>[]
 ) {
@@ -877,7 +877,7 @@ function routeInfosEqual<R1 extends Route, R2 extends Route>(
   return true;
 }
 
-function routeInfosSameExceptQueryParams<R1 extends Route, R2 extends Route>(
+function routeInfosSameExceptQueryParams<R1 extends BaseRoute, R2 extends BaseRoute>(
   routeInfos: InternalRouteInfo<R1>[],
   otherRouteInfos: InternalRouteInfo<R2>[]
 ) {
@@ -926,7 +926,7 @@ function paramsEqual(params: Dict<unknown> | undefined, otherParams: Dict<unknow
   return true;
 }
 
-export interface RoutePartition<R extends Route> {
+export interface RoutePartition<R extends BaseRoute> {
   updatedContext: InternalRouteInfo<R>[];
   exited: InternalRouteInfo<R>[];
   entered: InternalRouteInfo<R>[];

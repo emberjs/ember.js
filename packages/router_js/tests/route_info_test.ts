@@ -1,6 +1,6 @@
 import type { Transition } from '../index';
 import type { Dict } from '../lib/core';
-import type { IModel, Route } from '../lib/route-info';
+import type { IModel, ClassicRoute } from '../lib/route-info';
 import {
   ResolvedRouteInfo,
   toReadOnlyRouteInfo,
@@ -165,9 +165,9 @@ QUnit.test('UnresolvedRouteInfoByObject does NOT get its model hook called', fun
 
   assert.expect(1);
 
-  class TestRouteInfo extends UnresolvedRouteInfoByObject<Route<Dorkleton>> {
-    __routeHandler?: Route<Dorkleton>;
-    get route(): Route<Dorkleton> {
+  class TestRouteInfo extends UnresolvedRouteInfoByObject<ClassicRoute<Dorkleton>> {
+    __routeHandler?: ClassicRoute<Dorkleton>;
+    get route(): ClassicRoute<Dorkleton> {
       if (this.__routeHandler) {
         return this.__routeHandler;
       }
@@ -244,7 +244,7 @@ QUnit.module('RouteInfo - non-gating manager');
 function createNonGatingHandler(
   name: string,
   enter: (bucket: any, args: any) => Promise<unknown>
-): Route {
+): ClassicRoute {
   let manager = {
     capabilities: { classicInterop: false },
     willEnter() {},
@@ -278,7 +278,7 @@ QUnit.test(
     let handler = createNonGatingHandler('async-parent', () => enterPromise);
     let routeInfo = new UnresolvedRouteInfoByParam(router, 'async-parent', [], {}, handler);
 
-    let transition = { isAborted: false } as unknown as InternalTransition<Route>;
+    let transition = { isAborted: false } as unknown as InternalTransition<ClassicRoute>;
 
     let resolved = await routeInfo.resolve(transition);
 
@@ -319,7 +319,7 @@ QUnit.test('getAncestorContext resolves with the ancestor enter result', async f
   });
   let childInfo = new UnresolvedRouteInfoByParam(router, 'parent.child', [], {}, handler);
 
-  let transition = { isAborted: false } as unknown as InternalTransition<Route>;
+  let transition = { isAborted: false } as unknown as InternalTransition<ClassicRoute>;
   // Seed the transition state so getAncestorContext can find the ancestor.
   transition[STATE_SYMBOL] = { routeInfos: [ancestorInfo] } as never;
 

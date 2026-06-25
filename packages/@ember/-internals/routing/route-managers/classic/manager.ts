@@ -13,7 +13,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
 import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
-import type { InternalRouteInfo, Route as IRoute, RouteInfo, Transition } from 'router_js';
+import type { InternalRouteInfo, BaseRoute as IRoute, RouteInfo, Transition } from 'router_js';
 import { throwIfAborted } from 'router_js';
 import type Route from '@ember/routing/route';
 import type {

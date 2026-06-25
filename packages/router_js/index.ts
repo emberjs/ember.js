@@ -12,7 +12,9 @@ export type { PublicTransition as Transition } from './lib/transition';
 export { default as TransitionState, TransitionError } from './lib/transition-state';
 export {
   default as InternalRouteInfo,
-  type Route,
+  isBaseRoute,
+  type BaseRoute,
+  type ClassicRoute,
   type RouteInfo,
   type RouteInfoWithAttributes,
   type ModelFor,

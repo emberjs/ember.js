@@ -1,7 +1,7 @@
 import type { Transition } from '../index';
 import type { Dict } from '../lib/core';
 import {
-  type Route,
+  type BaseRoute,
   UnresolvedRouteInfoByObject,
   UnresolvedRouteInfoByParam,
 } from '../lib/route-info';
@@ -42,7 +42,7 @@ QUnit.test("#resolve delegates to handleInfo objects' resolve()", function (asse
     }),
   ];
 
-  state.resolve({} as Transition).then(function (result: TransitionState<Route>) {
+  state.resolve({} as Transition).then(function (result: TransitionState<BaseRoute>) {
     assert.deepEqual(result.routeInfos, resolvedHandlerInfos);
   });
 });
@@ -99,7 +99,7 @@ QUnit.test('Integration w/ HandlerInfos', function (assert) {
 
   state
     .resolve(transition as Transition)
-    .then(function (result: TransitionState<Route>) {
+    .then(function (result: TransitionState<BaseRoute>) {
       let models = [];
       for (let i = 0; i < result.routeInfos.length; i++) {
         models.push(result.routeInfos[i]!.context);

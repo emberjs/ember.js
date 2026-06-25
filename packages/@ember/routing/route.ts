@@ -29,7 +29,13 @@ import { setRouteManager } from '@ember/-internals/routing/route-managers/regist
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import type { RouteManager, RouteStateBucket } from '@ember/-internals/routing/route-managers/api';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
-import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
+import type {
+  BaseRoute,
+  InternalRouteInfo,
+  BaseRoute as IRoute,
+  Transition,
+  TransitionState,
+} from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
 import type { default as EmberRouter } from '@ember/routing/router';
 import { default as generateController } from './lib/generate_controller';
@@ -73,7 +79,7 @@ export type QueryParamMeta = {
   };
 };
 
-type RouteTransitionState = TransitionState<Route> & {
+type RouteTransitionState = TransitionState<BaseRoute> & {
   fullQueryParams?: Record<string, unknown>;
   queryParamsFor?: Record<string, Record<string, unknown>>;
 };

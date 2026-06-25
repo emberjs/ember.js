@@ -1,13 +1,13 @@
 /* eslint-disable qunit/no-conditional-assertions */
 import type { MatchCallback } from 'route-recognizer';
-import type { Route, Transition } from '../index';
+import type { BaseRoute, ClassicRoute, Transition } from '../index';
 import type Router from '../index';
 import type { Dict, Maybe } from '../lib/core';
 import type RouteInfo from '../lib/route-info';
 import { Promise } from 'rsvp';
 import { createHandler, TestRouter, trigger, ignoreTransitionError } from './test_helpers';
 
-let router: Router<Route>, handlers: Dict<Route>, expectedUrl: Maybe<string>;
+let router: Router<BaseRoute>, handlers: Dict<BaseRoute>, expectedUrl: Maybe<string>;
 let scenarios = [
   {
     name: 'Sync Get Handler',
@@ -46,7 +46,7 @@ scenarios.forEach(function (scenario) {
       didTransition() {}
       willTransition() {}
       triggerEvent(
-        handlerInfos: RouteInfo<Route>[],
+        handlerInfos: RouteInfo<ClassicRoute>[],
         ignoreFailure: boolean,
         name: string,
         args: any[]
@@ -319,7 +319,7 @@ scenarios.forEach(function (scenario) {
             if (count === 0) {
               assert.ok(false, "shouldn't fire on first trans");
             } else {
-              router.refresh(this as Route);
+              router.refresh(this as ClassicRoute);
             }
           },
           finalizeQueryParamChange: consumeAllFinalQueryParams,
@@ -492,7 +492,7 @@ scenarios.forEach(function (scenario) {
         },
         events: {
           queryParamsDidChange: function () {
-            router.refresh(this as Route);
+            router.refresh(this as ClassicRoute);
           },
         },
       });
@@ -531,7 +531,7 @@ scenarios.forEach(function (scenario) {
         queryParamsDidChange: function () {
           assert.ok(true, 'index#queryParamsDidChange');
           redirect = causeRedirect;
-          router.refresh(this as Route);
+          router.refresh(this as ClassicRoute);
         },
         finalizeQueryParamChange: function (params: Dict<unknown>, finalParams: Dict<unknown>[]) {
           (finalParams as any).foo = params['foo']; // TODO wat

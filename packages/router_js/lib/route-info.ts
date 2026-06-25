@@ -3,9 +3,14 @@ import { Promise } from 'rsvp';
 import type { Dict, Option } from './core';
 import type { SerializerFunc } from './router';
 import type Router from './router';
-import type { PublicTransition as Transition } from './transition';
 import type InternalTransition from './transition';
-import { isTransition, PARAMS_SYMBOL, QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from './transition';
+import {
+  isTransition,
+  PARAMS_SYMBOL,
+  type PublicTransition as Transition,
+  QUERY_PARAMS_SYMBOL,
+  STATE_SYMBOL,
+} from './transition';
 import { isParam, isPromise, merge } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
 import type { EnterState, RouteManager, RouteStateBucket, WillEnterState } from './route-manager';
@@ -15,14 +20,31 @@ export type IModel = {} & {
   id?: string | number;
 };
 
-export type ModelFor<T> = T extends Route<infer V> ? V : never;
-export interface Route<T = unknown> {
-  inaccessibleByURL?: boolean;
-  routeName: string;
-  _internalName: string;
+export type ModelFor<T> = T extends BaseRoute<infer V> ? V : never;
+
+export function isBaseRoute<T>(route: unknown): route is BaseRoute<T> {
+  return (typeof route === 'object' && route !== null && '_internalName' in route) as boolean;
+}
+
+export interface BaseRoute<T = unknown> {
   context: T | undefined;
-  manager?: RouteManager;
-  bucket?: RouteStateBucket;
+  manager: RouteManager;
+  bucket: RouteStateBucket;
+
+  // this is used to identify the route in router_js machinery, and is not the same as the
+  // routeName property on classic ember routes. It is totally internal to router_js, and
+  // not to be confused with the routeName property on classic ember routes
+  _internalName: string;
+
+  // I think this could potentially be deleted
+  // it's not mentioned in any ember docs that I can find, and is only
+  // used in a couple of places in router_js
+  inaccessibleByURL?: boolean;
+}
+
+// used by old router_js tests that expect to be working with the classic ember routes
+export interface ClassicRoute<T = unknown> extends BaseRoute<T> {
+  routeName: string;
   events?: Dict<(...args: unknown[]) => unknown>;
   model?(params: Dict<unknown>, transition: Transition): PromiseLike<T> | undefined | T;
   deserialize?(params: Dict<unknown>, transition: Transition): T | PromiseLike<T> | undefined;
@@ -57,11 +79,11 @@ export interface RouteInfoWithAttributes extends RouteInfo {
   attributes: any;
 }
 
-type RouteInfosKey = InternalRouteInfo<Route>;
+type RouteInfosKey = InternalRouteInfo<BaseRoute>;
 
 let ROUTE_INFOS = new WeakMap<RouteInfosKey, RouteInfo | RouteInfoWithAttributes>();
 
-export function toReadOnlyRouteInfo<R extends Route>(
+export function toReadOnlyRouteInfo<R extends BaseRoute>(
   routeInfos: InternalRouteInfo<R>[],
   queryParams: Dict<unknown> = {},
   options: {
@@ -195,7 +217,7 @@ function createRouteInfoWithAttributes(
   return Object.assign(routeInfo, attributes);
 }
 
-function buildRouteInfoMetadata(route?: Route) {
+function buildRouteInfoMetadata(route?: BaseRoute) {
   if (route === undefined || route === null) {
     return null;
   }
@@ -208,7 +230,7 @@ function buildRouteInfoMetadata(route?: Route) {
   return null;
 }
 
-function attachMetadata(route: Route, routeInfo: RouteInfo) {
+function attachMetadata(route: BaseRoute, routeInfo: RouteInfo) {
   let metadata = {
     get metadata() {
       return buildRouteInfoMetadata(route);
@@ -222,7 +244,7 @@ function attachMetadata(route: Route, routeInfo: RouteInfo) {
   return Object.assign(routeInfo, metadata);
 }
 
-export default class InternalRouteInfo<R extends Route> {
+export default class InternalRouteInfo<R extends BaseRoute> {
   private _routePromise?: Promise<R> = undefined;
   private _route?: Option<R> = null;
   protected router: Router<R>;
@@ -347,7 +369,7 @@ export default class InternalRouteInfo<R extends Route> {
     }
 
     // SAFETY: Since this is just for lookup, it should be safe
-    let cached = ROUTE_INFOS.get(this as unknown as InternalRouteInfo<Route>);
+    let cached = ROUTE_INFOS.get(this as unknown as InternalRouteInfo<BaseRoute>);
     let resolved = new ResolvedRouteInfo<R>(
       this.router,
       this.name,
@@ -379,7 +401,7 @@ export default class InternalRouteInfo<R extends Route> {
 
     if (cached !== undefined) {
       // SAFETY: This is potentially a bit risker, but for what we're doing, it should be ok.
-      ROUTE_INFOS.set(resolved as unknown as InternalRouteInfo<Route>, cached);
+      ROUTE_INFOS.set(resolved as unknown as InternalRouteInfo<BaseRoute>, cached);
     }
 
     return resolved;
@@ -477,7 +499,7 @@ export default class InternalRouteInfo<R extends Route> {
   }
 }
 
-export class ResolvedRouteInfo<R extends Route> extends InternalRouteInfo<R> {
+export class ResolvedRouteInfo<R extends BaseRoute> extends InternalRouteInfo<R> {
   isResolved: boolean;
   context: ModelFor<R> | undefined;
   constructor(
@@ -503,7 +525,7 @@ export class ResolvedRouteInfo<R extends Route> extends InternalRouteInfo<R> {
   }
 }
 
-export class UnresolvedRouteInfoByParam<R extends Route> extends InternalRouteInfo<R> {
+export class UnresolvedRouteInfoByParam<R extends BaseRoute> extends InternalRouteInfo<R> {
   params: Dict<unknown> = {};
   constructor(
     router: Router<R>,
@@ -546,7 +568,7 @@ export class UnresolvedRouteInfoByParam<R extends Route> extends InternalRouteIn
   }
 }
 
-export class UnresolvedRouteInfoByObject<R extends Route> extends InternalRouteInfo<R> {
+export class UnresolvedRouteInfoByObject<R extends BaseRoute> extends InternalRouteInfo<R> {
   serializer?: SerializerFunc<ModelFor<R>>;
   constructor(
     router: Router<R>,

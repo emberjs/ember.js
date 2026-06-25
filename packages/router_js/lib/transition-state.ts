@@ -1,6 +1,6 @@
 import { Promise } from 'rsvp';
 import type { Dict } from './core';
-import type { ResolvedRouteInfo, Route, RouteInfo } from './route-info';
+import type { BaseRoute, ResolvedRouteInfo, RouteInfo } from './route-info';
 import type InternalRouteInfo from './route-info';
 import type Transition from './transition';
 import { forEach, promiseLabel } from './utils';
@@ -11,7 +11,7 @@ interface IParams {
   [key: string]: unknown;
 }
 
-function handleError<R extends Route>(
+function handleError<R extends BaseRoute>(
   currentState: TransitionState<R>,
   transition: Transition<R>,
   error: Error
@@ -32,7 +32,7 @@ function handleError<R extends Route>(
   );
 }
 
-function resolveOneRouteInfo<R extends Route>(
+function resolveOneRouteInfo<R extends BaseRoute>(
   currentState: TransitionState<R>,
   transition: Transition<R>
 ): void | Promise<void> {
@@ -51,7 +51,7 @@ function resolveOneRouteInfo<R extends Route>(
   return routeInfo.resolve(transition).then(callback, null, currentState.promiseLabel('Proceed'));
 }
 
-function proceed<R extends Route>(
+function proceed<R extends BaseRoute>(
   currentState: TransitionState<R>,
   transition: Transition<R>,
   resolvedRouteInfo: ResolvedRouteInfo<R>
@@ -61,9 +61,6 @@ function proceed<R extends Route>(
   // Swap the previously unresolved routeInfo with
   // the resolved routeInfo
   currentState.routeInfos[transition.resolveIndex++] = resolvedRouteInfo;
-
-  // a couple of tests have no router instance
-  transition.router?.onRouteInvokableReady(resolvedRouteInfo, transition, routeIndex);
 
   if (!wasAlreadyResolved) {
     // Call the redirect hook. The reason we call it here
@@ -84,6 +81,11 @@ function proceed<R extends Route>(
     }
   }
 
+  // a couple of tests have no router instance
+  // so we use optional chaining here to avoid
+  // throwing an error in those tests
+  transition.router?.onRouteInvokableReady(resolvedRouteInfo, transition, routeIndex);
+
   // Proceed after ensuring that the redirect hook
   // didn't abort this transition by transitioning elsewhere.
   throwIfAborted(transition);
@@ -91,7 +93,7 @@ function proceed<R extends Route>(
   return resolveOneRouteInfo(currentState, transition);
 }
 
-export default class TransitionState<R extends Route> {
+export default class TransitionState<R extends BaseRoute> {
   routeInfos: InternalRouteInfo<R>[] = [];
   queryParams: Dict<unknown> = {};
   params: IParams = {};
@@ -133,7 +135,7 @@ export default class TransitionState<R extends Route> {
 export class TransitionError {
   constructor(
     public error: Error,
-    public route: Route,
+    public route: BaseRoute,
     public wasAborted: boolean,
     public state: TransitionState<any>
   ) {}
