@@ -6,7 +6,9 @@ import { type InternalOwner, getOwner } from '@ember/-internals/owner';
 import type { BootOptions } from '@ember/engine/instance';
 import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
+import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createComputeRef, updateRef } from '@glimmer/reference/lib/reference';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
@@ -15,6 +17,7 @@ import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';
 import type { OutletState } from '../utils/outlet';
+import { makeRouteTemplate } from '../component-managers/route-template';
 
 export interface BootEnvironment {
   hasDOM: boolean;
@@ -24,6 +27,15 @@ export interface BootEnvironment {
 }
 
 const TOP_LEVEL_NAME = '-top-level';
+
+function isTemplate(value: unknown): value is Template {
+  if (value === null || typeof value !== 'object') {
+    return false;
+  }
+
+  let template = value as Partial<Template>;
+  return template.result === 'ok' || template.result === 'error';
+}
 
 export default class OutletView {
   static extend(injections: any): typeof OutletView {
@@ -116,8 +128,56 @@ export default class OutletView {
     /**/
   }
 
+  // Legacy `setOutletState` callers (the rendering test-helpers and
+  // liquid-fire-style addons) provide a raw `template` with no `invokable`.
+  // The outlet helper only knows how to render an invokable, so we upgrade any
+  // raw template into a route template here. Walk the whole outlet chain so
+  // nested legacy states are normalized too. We skip renders that already have
+  // an invokable (the manager-driven router path), which keeps the invokable
+  // identity stable when the same render object is set again.
+  upgradeTemplateToInvokable(state: OutletState): OutletState {
+    let current: OutletState | undefined = state;
+
+    while (current !== undefined) {
+      let render = current.render;
+
+      if (render !== undefined && render.invokable === undefined && render.template) {
+        render.invokable = this.invokableForTemplate(render.name, render.template);
+      }
+
+      current = current.outlets.main;
+    }
+
+    return state;
+  }
+
+  // Turn a legacy raw `template` into something the outlet can render. A
+  // caller may also hand us a pre-built component definition instead of a
+  // template (an intimate API older addons may rely on), in which case we
+  // use it directly rather than trying to wrap it.
+  private invokableForTemplate(name: string, template: object): object {
+    if (hasInternalComponentManager(template)) {
+      return template;
+    }
+
+    if (DEBUG && !isTemplate(template)) {
+      let label: string;
+      try {
+        label = `\`${String(template)}\``;
+      } catch {
+        label = 'an unknown object';
+      }
+
+      assert(
+        `Failed to render the \`${name}\` route: expected a component or Template object, but got ${label}.`
+      );
+    }
+
+    return makeRouteTemplate(this.owner, name, template as Template);
+  }
+
   setOutletState(state: OutletState): void {
-    updateRef(this.ref, state);
+    updateRef(this.ref, this.upgradeTemplateToInvokable(state));
   }
 
   destroy(): void {
