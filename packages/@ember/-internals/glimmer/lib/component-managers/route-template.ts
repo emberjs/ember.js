@@ -1,5 +1,4 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import { _instrumentStart } from '@ember/instrumentation';
 import type {
   CapturedArguments,
   CompilableProgram,
@@ -14,10 +13,9 @@ import type {
   WithCustomDebugRenderTree,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { DEBUG } from '@glimmer/env';
 import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { createDebugAliasRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { curry, type CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { unwrapTemplate } from './unwrap-template';
 
@@ -58,13 +56,8 @@ class RouteTemplateManager
     _definition: RouteTemplateDefinitionState,
     args: VMArguments
   ): RouteTemplateInstanceState {
-    let self = args.named.get('controller');
-
-    if (DEBUG) {
-      self = createDebugAliasRef!('this', self);
-    }
-
-    let controller = valueForRef(self);
+    let controller = valueForRef(args.named.get('controller'));
+    let self = createConstRef(controller, 'this');
 
     return { self, controller };
   }

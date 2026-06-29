@@ -43,9 +43,6 @@ export interface OutletDefinitionState {
   name: string;
   template: object;
   controller: unknown;
-  // Set on the manager-driven path. The outlet helper curries `@Component`
-  // (the invokable), `@routeInfo`, `@model`, and `@controller` onto this
-  // wrapper.
   wrapper?: object;
   invokable?: object;
   bucket?: object;

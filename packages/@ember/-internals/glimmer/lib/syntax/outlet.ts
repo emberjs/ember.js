@@ -89,12 +89,11 @@ export const outletHelper = internalHelper(
         return null;
       }
 
-      let wrapperArgs = dict<Reference>();
-
       let modelRef = childRefFromParts(outletRef, ['render', 'model']);
       let model = valueForRef(modelRef);
 
-      wrapperArgs['context'] = createComputeRef(() => {
+      let args = dict<Reference>();
+      args['context'] = createComputeRef(() => {
         if (lastState === state) {
           model = valueForRef(modelRef);
         }
@@ -102,25 +101,28 @@ export const outletHelper = internalHelper(
       });
 
       if (DEBUG) {
-        wrapperArgs['context'] = createDebugAliasRef!('@context', wrapperArgs['context']);
+        args['context'] = createDebugAliasRef!('@context', args['context']);
       }
 
-      wrapperArgs['Component'] = createConstRef(state.invokable, '@Component');
-      wrapperArgs['bucket'] = createConstRef(state.bucket, '@bucket');
-      // plan to remove routeInfo, currently needed by pioneer route
-      wrapperArgs['routeInfo'] = createConstRef(state.routeInfo, '@routeInfo');
+      args['Component'] = createConstRef(state.invokable, '@Component');
+      args['bucket'] = createConstRef(state.bucket, '@bucket');
 
-      // Only curry @controller when the route has one.
-      const controller = outletState?.render?.controller;
-      if (controller !== undefined) {
-        wrapperArgs['controller'] = createConstRef(controller, '@controller');
+      // plan to remove routeInfo, currently needed by pioneer route
+      args['routeInfo'] = createConstRef(state.routeInfo, '@routeInfo');
+
+      // Manager-driven routes derive `@controller` from the bucket inside the
+      // wrapper template. Legacy `setOutletState` callers have no wrapper or
+      // bucket, so when the args are curried straight onto the invokable
+      // below we supply `@controller` here, which the route template reads as
+      // its `self`.
+      if (state.wrapper === undefined && state.controller !== undefined) {
+        args['controller'] = createConstRef(state.controller, '@controller');
       }
 
       // Manager-driven routes provide a stable `wrapper` whose template renders
-      // the invokable as `<@Component/>` and forwards `@context`/`@controller`
-      // into it. Legacy `setOutletState` callers have no wrapper, so we curry
-      // the args straight onto the invokable (a route template, which reads
-      // `@controller` as its `self`).
+      // the invokable as `<@Component/>`. Legacy `setOutletState` callers have
+      // no wrapper, so we curry the args straight onto the invokable (a route
+      // template, which reads `@controller` as its `self`).
       let target = state.wrapper ?? state.invokable;
       assert(
         'Expected outlet state to have a wrapper or invokable to render',
@@ -136,7 +138,7 @@ export const outletHelper = internalHelper(
           0 as CurriedComponent,
           target,
           outletOwner,
-          createCapturedArgs(wrapperArgs, EMPTY_POSITIONAL),
+          createCapturedArgs(args, EMPTY_POSITIONAL),
           false
         ),
         '@Component'

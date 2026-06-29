@@ -159,5 +159,26 @@ moduleFor(
 
       this.assertStableRerender();
     }
+
+    ['@test renders the controller as the template `this` (legacy setOutletState)']() {
+      this.registerTemplate('application', 'Hello {{this.message}}!');
+      let outletState = {
+        render: {
+          owner: this.owner,
+          name: 'application',
+          controller: { message: 'world' },
+          template: this.owner.lookup('template:application')(this.owner),
+        },
+        outlets: Object.create(null),
+      };
+
+      runTask(() => this.component.setOutletState(outletState));
+
+      runAppend(this.component);
+
+      this.assertText('Hello world!');
+
+      this.assertStableRerender();
+    }
   }
 );

@@ -24,7 +24,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 // Shared template used by every wrapper instance. Renders the invokable
 // curried in as `@Component` and forwards `@model` / `@controller` onto it.
 const CLASSIC_WRAPPER_TEMPLATE = precompileTemplate(
-  `<@Component @model={{@context}} @controller={{@controller}} />`,
+  `<@Component @model={{@context}} @controller={{@bucket.controller}} />`,
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/classic/wrapper.hbs',
     strictMode: true,
