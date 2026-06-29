@@ -411,7 +411,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       ownerBuckets.set(routeName, bucket);
     }
 
-    return manager.getRoute(bucket) as Route;
+    return manager.getRoute(bucket);
   }
 
   _initRouterJs(): void {

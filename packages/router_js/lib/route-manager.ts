@@ -211,7 +211,7 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   /**
     Returns a route associated with a bucket
    */
-  getRoute(bucket: Bucket): object;
+  getRoute(bucket: Bucket): unknown;
 
   /**
     Returns the destroyable (if any) associated with the bucket. Used by the
