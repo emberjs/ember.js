@@ -1,8 +1,7 @@
 import type Controller from '@ember/controller';
 import type Route from '@ember/routing/route';
-import type { RouteStateBucket } from '../api';
 
-export class ClassicRouteBucket implements RouteStateBucket {
+export class ClassicRouteBucket {
   // Cached invokable returned from getInvokable.
   invokable: object | undefined = undefined;
 

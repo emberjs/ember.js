@@ -28,10 +28,7 @@ import type { PublicTransition as Transition } from './transition';
   matching `RouteInfo`, keeping the bucket free to back multiple concurrent
   renders.
  */
-export interface RouteStateBucket {
-  route: object | undefined;
-  invokable: object | undefined;
-}
+export type RouteStateBucket = object;
 
 // -- Capabilities -------------------------------------------------------------
 
