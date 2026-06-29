@@ -74,6 +74,11 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     return bucket;
   }
 
+  getRoute(bucket: ClassicRouteBucket) {
+    assert('Expected route bucket to expose a `route` instance', bucket.route);
+    return bucket.route;
+  }
+
   getRenderState(bucket: ClassicRouteBucket) {
     const route = bucket.route;
     let wrapper = this.getRouteWrapper(bucket);

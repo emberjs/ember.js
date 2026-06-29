@@ -209,6 +209,11 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   createRoute(factory: object, args: CreateRouteArgs): Bucket;
 
   /**
+    Returns a route associated with a bucket
+   */
+  getRoute(bucket: Bucket): object;
+
+  /**
     Returns the destroyable (if any) associated with the bucket. Used by the
     router to wire the route into Ember's destruction system.
    */
