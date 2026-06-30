@@ -10,7 +10,7 @@ import { DEBUG } from '@glimmer/env';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { createComputeRef, updateRef } from '@glimmer/reference/lib/reference';
+import { createComputeRef, createConstRef, updateRef } from '@glimmer/reference/lib/reference';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import type { SimpleElement } from '@simple-dom/interface';
@@ -142,7 +142,11 @@ export default class OutletView {
       let render = current.render;
 
       if (render !== undefined && render.invokable === undefined && render.template) {
-        render.invokable = this.invokableForTemplate(render.name, render.template);
+        render.invokable = this.invokableForTemplate(
+          render.name,
+          render.template,
+          render.controller
+        );
       }
 
       current = current.outlets.main;
@@ -155,7 +159,7 @@ export default class OutletView {
   // caller may also hand us a pre-built component definition instead of a
   // template (an intimate API older addons may rely on), in which case we
   // use it directly rather than trying to wrap it.
-  private invokableForTemplate(name: string, template: object): object {
+  private invokableForTemplate(name: string, template: object, controller: unknown): object {
     if (hasInternalComponentManager(template)) {
       return template;
     }
@@ -173,7 +177,11 @@ export default class OutletView {
       );
     }
 
-    return makeRouteTemplate(this.owner, name, template as Template);
+    // The route template renders with the controller as its `self` (`this`).
+    // This path is for legacy `setOutletState` callers that provide a raw `template`
+    // We know they use controllers, so we can safely reach for the controller here.
+    let self = createConstRef(controller, 'this');
+    return makeRouteTemplate(this.owner, name, template as Template, self);
   }
 
   setOutletState(state: OutletState): void {

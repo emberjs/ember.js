@@ -11,6 +11,7 @@ import { getOwner, setOwner } from '@ember/-internals/owner';
 import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
+import { createConstRef } from '@glimmer/reference/lib/reference';
 import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
 import type { InternalRouteInfo, BaseRoute as IRoute, RouteInfo, Transition } from 'router_js';
@@ -356,6 +357,11 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
     | object
     | undefined;
 
+  // The route template renders with the controller as its `self` (`this`).
+  // This is the routing layer deciding what `self` is; the route template
+  // manager itself is controller-agnostic.
+  const self = createConstRef(bucket.controller, 'this');
+
   let invokable: object;
 
   if (templateFactoryOrComponent) {
@@ -379,7 +385,7 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
       }
 
       const template = (templateFactoryOrComponent as TemplateFactory)(owner);
-      invokable = makeRouteTemplate(owner, name, template as Template);
+      invokable = makeRouteTemplate(owner, name, template as Template, self);
     }
   } else {
     if (DEBUG) {
@@ -391,7 +397,7 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
       }
     }
     const template = route._topLevelViewTemplate(owner);
-    invokable = makeRouteTemplate(owner, name, template as Template);
+    invokable = makeRouteTemplate(owner, name, template as Template, self);
   }
   return invokable;
 }

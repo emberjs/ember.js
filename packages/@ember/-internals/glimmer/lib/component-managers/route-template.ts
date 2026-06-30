@@ -15,17 +15,17 @@ import type {
 import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
 import { curry, type CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { unwrapTemplate } from './unwrap-template';
 
 interface RouteTemplateInstanceState {
   self: Reference;
-  controller: unknown;
 }
 
 export interface RouteTemplateDefinitionState {
   name: string;
+  self: Reference;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
@@ -53,13 +53,10 @@ class RouteTemplateManager
 {
   create(
     _owner: InternalOwner,
-    _definition: RouteTemplateDefinitionState,
-    args: VMArguments
+    definition: RouteTemplateDefinitionState,
+    _args: VMArguments
   ): RouteTemplateInstanceState {
-    let controller = valueForRef(args.named.get('controller'));
-    let self = createConstRef(controller, 'this');
-
-    return { self, controller };
+    return { self: definition.self };
   }
 
   getSelf({ self }: RouteTemplateInstanceState): Reference {
@@ -81,7 +78,7 @@ class RouteTemplateManager
         type: 'route-template',
         name,
         args,
-        instance: state.controller,
+        instance: valueForRef(state.self),
       },
     ];
   }
@@ -104,7 +101,7 @@ class RouteTemplateManager
 const ROUTE_TEMPLATE_MANAGER = new RouteTemplateManager();
 
 /**
- * This "upgrades" a route template into a invocable component. Conceptually
+ * This "upgrades" a route template into a invokable component. Conceptually
  * it can be 1:1 for each unique `Template`, but it's also cheap to construct,
  * so unless the stability is desirable for other reasons, it's probably not
  * worth caching this.
@@ -122,13 +119,13 @@ export class RouteTemplate implements ComponentDefinition<
   public capabilities = CAPABILITIES_MASK;
   public compilable: CompilableProgram;
 
-  constructor(name: string, template: Template) {
+  constructor(name: string, template: Template, self: Reference) {
     let unwrapped = unwrapTemplate(template);
     // TODO This actually seems inaccurate – it ultimately came from the
     // outlet's name. Also, setting this overrides `getDebugName()` in that
     // message. Is that desirable?
     this.resolvedName = name;
-    this.state = { name };
+    this.state = { name, self };
     this.compilable = unwrapped.asLayout();
   }
 }
@@ -143,8 +140,9 @@ export class RouteTemplate implements ComponentDefinition<
 export function makeRouteTemplate(
   owner: InternalOwner,
   name: string,
-  template: Template
+  template: Template,
+  self: Reference = UNDEFINED_REFERENCE
 ): CurriedValue {
-  let routeTemplate = new RouteTemplate(name, template);
+  let routeTemplate = new RouteTemplate(name, template, self);
   return curry(0 as CurriedComponent, routeTemplate, owner, null, true);
 }
