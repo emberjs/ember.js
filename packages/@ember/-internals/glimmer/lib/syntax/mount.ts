@@ -58,7 +58,7 @@ import { internalHelper } from '../helpers/internal-helper';
   @for Ember.Templates.helpers
   @public
 */
-export const mountHelper = internalHelper(
+export const mountHelper = /*@__PURE__*/ internalHelper(
   (args: CapturedArguments, owner?: InternalOwner): Reference<CurriedValue | null> => {
     assert('{{mount}} must be used within a component that has an owner', owner);
     let nameRef = args.positional[0] as Reference<Nullable<string>>;

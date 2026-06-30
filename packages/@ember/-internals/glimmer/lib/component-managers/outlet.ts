@@ -61,7 +61,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: false,
 };
 
-const CAPABILITIES_MASK = capabilityFlagsFrom(CAPABILITIES);
+const CAPABILITIES_MASK = /*@__PURE__*/ capabilityFlagsFrom(CAPABILITIES);
 
 class OutletComponentManager
   implements
@@ -169,7 +169,7 @@ class OutletComponentManager
   }
 }
 
-const OUTLET_MANAGER = new OutletComponentManager();
+const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
 const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
   '<@Component @controller={{@controller}} @model={{@model}} />',

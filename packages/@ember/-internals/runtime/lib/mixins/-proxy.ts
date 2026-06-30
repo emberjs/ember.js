@@ -90,7 +90,7 @@ interface ProxyMixin<T = unknown> {
   setUnknownProperty<V>(key: string, value: V): V;
 }
 
-const ProxyMixin = Mixin.create({
+const ProxyMixin = /*@__PURE__*/ Mixin.create({
   /**
     The object whose properties will be forwarded.
 
