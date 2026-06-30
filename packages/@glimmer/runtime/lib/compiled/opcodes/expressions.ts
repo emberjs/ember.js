@@ -41,7 +41,10 @@ import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import assert from '@glimmer/debug-util/lib/assert';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { debugAssert, toBool } from '@glimmer/global-context';
-import { getInternalHelperManager } from '@glimmer/manager/lib/internal/api';
+import {
+  functionHelperRefForPath,
+  getInternalHelperManager,
+} from '@glimmer/manager/lib/internal/api';
 import {
   childRefFor,
   createComputeRef,
@@ -125,11 +128,17 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
 
       associateDestroyableChild(helperInstanceRef, helperRef);
     } else if (isIndexable(definition)) {
-      let helper = resolveHelper(definition, ref);
-      helperRef = helper(args, initialOwner);
+      let functionHelperRef = functionHelperRefForPath(definition, ref, args);
 
-      if (_hasDestroyableChildren(helperRef)) {
-        associateDestroyableChild(helperInstanceRef, helperRef);
+      if (functionHelperRef !== null) {
+        helperRef = functionHelperRef;
+      } else {
+        let helper = resolveHelper(definition, ref);
+        helperRef = helper(args, initialOwner);
+
+        if (_hasDestroyableChildren(helperRef)) {
+          associateDestroyableChild(helperInstanceRef, helperRef);
+        }
       }
     } else {
       helperRef = UNDEFINED_REFERENCE;

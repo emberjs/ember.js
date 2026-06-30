@@ -42,6 +42,12 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
 
   public children: Nullable<Map<string | Reference, Reference>> = null;
 
+  /**
+   * The reference this one was created from via a property read (`parent.path`),
+   * if any. See {@linkcode parentRefFor}.
+   */
+  public parent: Nullable<Reference> = null;
+
   public compute: Nullable<() => T> = null;
   public update: Nullable<(val: T) => void> = null;
 
@@ -238,9 +244,25 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     }
   }
 
+  if (child !== UNDEFINED_REFERENCE) {
+    child.parent = parentRef;
+  }
+
   children.set(path, child);
 
   return child;
+}
+
+/**
+ * Returns the reference for the object a property was read from, when the
+ * given reference was created by a property read (e.g. the `obj` in `obj.someFn`).
+ *
+ * This allows a function value invoked directly from a template (e.g.
+ * `{{(this.obj.someFn)}}`) to be called with the same `this` JavaScript would
+ * use for `obj.someFn()`, rather than requiring the function to be pre-bound.
+ */
+export function parentRefFor(ref: Reference): Nullable<Reference> {
+  return ref.parent;
 }
 
 export function childRefFromParts(root: Reference, parts: string[]): Reference {
@@ -261,6 +283,8 @@ if (DEBUG) {
     const ref = createComputeRef(() => valueForRef(inner), update);
 
     ref[REFERENCE] = inner[REFERENCE];
+
+    ref.parent = inner.parent;
 
     ref.debugLabel = debugLabel;
 

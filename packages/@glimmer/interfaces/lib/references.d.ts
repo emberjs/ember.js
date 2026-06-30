@@ -26,4 +26,5 @@ export interface Reference<T = unknown> {
   debugLabel?: string | false | undefined;
   compute: Nullable<() => T>;
   children: null | Map<string | Reference, Reference>;
+  parent: Nullable<Reference>;
 }

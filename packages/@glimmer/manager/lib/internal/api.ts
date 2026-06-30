@@ -1,15 +1,20 @@
 import { DEBUG } from '@glimmer/env';
 import type {
+  CapturedArguments,
   Helper,
+  HelperDefinitionState,
   InternalComponentManager,
   InternalModifierManager,
   Owner,
 } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference/lib/reference';
 import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { debugAssert } from '@glimmer/global-context';
+import { createComputeRef, parentRefFor, valueForRef } from '@glimmer/reference/lib/reference';
 
+import { argsProxyFor } from '../util/args-proxy';
 import { CustomHelperManager } from '../public/helper';
-import { FunctionHelperManager } from './defaults';
+import { FunctionHelperManager, invokeFunctionHelper } from './defaults';
 
 type InternalManager =
   | InternalComponentManager
@@ -232,6 +237,61 @@ export function hasInternalHelperManager(definition: object): boolean {
 export function hasInternalModifierManager(definition: object): boolean {
   return (
     hasDefaultModifierManager(definition) || getManager(MODIFIER_MANAGERS, definition) !== undefined
+  );
+}
+
+/**
+ * Whether a value has a helper manager explicitly associated with it, as
+ * opposed to a plain function (which falls back to the default function helper
+ * manager). Used to decide whether a function invoked from a path expression
+ * may be safely re-bound to the object it was read from.
+ */
+export function hasCustomHelperManager(definition: object): boolean {
+  return getManager(HELPER_MANAGERS, definition) !== undefined;
+}
+
+/**
+ * When a plain function is invoked from a path expression (`{{(this.obj.method)}}`,
+ * `{{item.greet}}`), it should be called with the object it was read from as `this`,
+ * matching the JavaScript semantics of `obj.method()`. Returns a reference that
+ * invokes the function with that `this`, or `null` when no such binding applies (in
+ * which case the value should be resolved as an ordinary helper).
+ *
+ * The `this` is applied at the call itself (see `invokeFunctionHelper`), never by
+ * producing a `.bind()`ed copy, because functions are passed around as references
+ * constantly (e.g. to the `{{on}}` modifier or the `(fn)` helper) and we must not
+ * change a function's identity before it is invoked. Functions with an explicitly-
+ * associated helper manager are left to the normal helper path.
+ *
+ * The parent's value is read eagerly here; this runs inside the dynamic-helper
+ * compute, so replacing the base object re-runs it and rebinds `this` on the next
+ * revision.
+ */
+export function functionHelperRefForPath(
+  definition: HelperDefinitionState,
+  ref: Reference,
+  capturedArgs: CapturedArguments
+): Reference | null {
+  if (typeof definition !== 'function' || hasCustomHelperManager(definition)) {
+    return null;
+  }
+
+  let parentRef = parentRefFor(ref);
+
+  if (parentRef === null) {
+    return null;
+  }
+
+  let self = valueForRef(parentRef);
+
+  if (!((typeof self === 'object' && self !== null) || typeof self === 'function')) {
+    return null;
+  }
+
+  let args = argsProxyFor(capturedArgs, 'helper');
+
+  return createComputeRef(() =>
+    invokeFunctionHelper(definition as (this: unknown, ...args: unknown[]) => unknown, args, self)
   );
 }
 
