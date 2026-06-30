@@ -171,7 +171,7 @@ moduleFor(
         <template>
           <ul>
             {{#each this.items as |item|}}
-              <li>{{item.greet}}</li>
+              <li>{{(item.greet)}}</li>
             {{/each}}
           </ul>
         </template>

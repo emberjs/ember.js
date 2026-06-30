@@ -46,7 +46,6 @@ import {
   childRefFor,
   createComputeRef,
   FALSE_REFERENCE,
-  parentRefFor,
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
   valueForRef,
@@ -95,8 +94,14 @@ APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
 
 APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
   let stack = vm.stack;
+  // The compiler pushes the syntactic receiver for member-calls (`this.obj` in
+  // `(this.obj.method)`), or `undefined` when the call has no syntactic receiver
+  // (`(@cb)`). A plain function helper is invoked with it as `this`.
+  let receiver = check(stack.pop(), CheckReference);
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments).capture();
+
+  args.context = receiver;
 
   let helperRef: Initializable<Reference>;
   let initialOwner = vm.getOwner();
@@ -126,15 +131,6 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
 
       associateDestroyableChild(helperInstanceRef, helperRef);
     } else if (isIndexable(definition)) {
-      // Make the object this value was read from a path off of available as
-      // `args.context`, so a plain function helper can be invoked with it as `this`
-      // (read lazily; helpers that ignore it don't entangle the reference).
-      let parentRef = parentRefFor(ref);
-
-      if (parentRef !== null) {
-        args.context = parentRef;
-      }
-
       let helper = resolveHelper(definition, ref);
       helperRef = helper(args, initialOwner);
 

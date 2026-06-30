@@ -16,6 +16,7 @@ import {
 } from '@glimmer/constants/lib/syscall-ops';
 import { VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants/lib/vm-ops';
 import { $fp, $v0 } from '@glimmer/vm/lib/registers';
+import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 
@@ -83,15 +84,50 @@ export function Call(
  * @param positional An optional list of expressions to compile
  * @param named An optional list of named arguments (name + expression) to compile
  */
+/**
+ * The syntactic receiver of a call, i.e. the object a member-call's `this` should be:
+ * `this.obj.method` → `this.obj`. Returns `null` when the callee has no syntactic
+ * receiver (a bare variable/argument like `@cb`), so that passing a function as an
+ * argument and then invoking it is unbound — matching JS `const f = obj.m; f()`.
+ *
+ * This is deliberately a *syntactic* question about the call site, independent of how
+ * the callee reference happens to have been derived.
+ */
+export function receiverExpressionFor(
+  expression: WireFormat.Expression
+): Nullable<WireFormat.Expression> {
+  if (!Array.isArray(expression)) return null;
+
+  let [opcode, symbol, path] = expression as [number, number, (readonly string[])?];
+
+  if (opcode !== SexpOpcodes.GetSymbol && opcode !== SexpOpcodes.GetLexicalSymbol) {
+    return null;
+  }
+
+  if (!Array.isArray(path) || path.length === 0) {
+    return null;
+  }
+
+  return [opcode, symbol, path.slice(0, -1)] as unknown as WireFormat.Expression;
+}
+
 export function CallDynamic(
   op: PushExpressionOp,
   positional: WireFormat.Core.Params,
   named: WireFormat.Core.Hash,
+  receiver: Nullable<WireFormat.Expression>,
   append?: () => void
 ): void {
   op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
   op(VM_DUP_OP, $fp, 1);
+  // Push the syntactic receiver so the callee is invoked with it as `this`
+  // (`undefined` when there is none, e.g. `(@cb)`).
+  if (receiver) {
+    expr(op, receiver);
+  } else {
+    PushPrimitiveReference(op, undefined);
+  }
   op(VM_DYNAMIC_HELPER_OP);
   if (append) {
     op(VM_FETCH_OP, $v0);

@@ -69,6 +69,7 @@ import {
   CallDynamic,
   DynamicScope,
   PushPrimitiveReference,
+  receiverExpressionFor,
 } from '../opcode-builder/helpers/vm';
 import { HighLevelBuilderOpcodes, HighLevelResolutionOpcodes } from '../opcode-builder/opcodes';
 import { debugSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
@@ -233,7 +234,7 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
           });
 
           when(ContentType.Helper, () => {
-            CallDynamic(op, positional, named, () => {
+            CallDynamic(op, positional, named, receiverExpressionFor(expression), () => {
               op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-non-dynamic-append'));
             });
           });
