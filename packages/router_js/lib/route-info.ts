@@ -379,7 +379,18 @@ export default class InternalRouteInfo<R extends BaseRoute> {
     // unresolved info is replaced by the resolved one.
     resolved.enterPromise = this.enterPromise;
 
-    if (this.enterPromise !== undefined) {
+    // Back-fill the model onto `resolved` once `enter` settles, but only for
+    // managers that render before their model resolves. A manager whose
+    // `getInvokable` gates on `enter` (e.g. the classic manager) reaches here
+    // with `resolvedContext` already set, so `resolved` was built with its final
+    // `context` and there is nothing to wait for. A manager whose `getInvokable`
+    // resolves *before* `enter` (e.g. a manager which renders
+    // immediately and shows a loading state) reaches here while `enterPromise`
+    // is still pending and `resolvedContext` is undefined; the resolve()-level
+    // `.then` only updates the now-replaced unresolved info, so this is the
+    // subscription that writes the model onto the live `resolved` info (and the
+    // transition's resolved models) when it finally arrives.
+    if (resolvedContext === undefined && this.enterPromise !== undefined) {
       this.enterPromise.then(
         (enteredContext) => {
           if (transition && transition.isAborted) return;
