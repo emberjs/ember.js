@@ -372,12 +372,9 @@ export default class InternalRouteInfo<R extends BaseRoute> {
       this.paramNames,
       params,
       this.route!,
-      context
+      context,
+      this.enterPromise
     );
-
-    // Carry per-navigation render state forward so it is not lost when the
-    // unresolved info is replaced by the resolved one.
-    resolved.enterPromise = this.enterPromise;
 
     // Back-fill the model onto `resolved` once `enter` settles, but only for
     // managers that render before their model resolves. A manager whose
@@ -515,12 +512,14 @@ export class ResolvedRouteInfo<R extends BaseRoute> extends InternalRouteInfo<R>
     paramNames: string[],
     params: Dict<unknown> | undefined,
     route: R,
-    context?: ModelFor<R>
+    context?: ModelFor<R>,
+    enterPromise?: globalThis.Promise<unknown>
   ) {
     super(router, name, paramNames, route);
     this.params = params;
     this.isResolved = true;
     this.context = context;
+    this.enterPromise = enterPromise;
   }
 
   resolve(transition: InternalTransition<R>): Promise<this> {
