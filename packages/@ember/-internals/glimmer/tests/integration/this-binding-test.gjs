@@ -35,7 +35,7 @@ moduleFor(
       class Inner {
         constructor() {
           innerInstance = this;
-          assert.step('captured:inner}');
+          assert.step('captured:inner');
         }
 
         method() {
