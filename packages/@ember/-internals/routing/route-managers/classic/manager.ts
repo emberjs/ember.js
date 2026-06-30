@@ -3,7 +3,7 @@
   behaviour behind the `RouteManager` API.
 */
 
-import type { Destroyable, Template, TemplateFactory } from '@glimmer/interfaces';
+import type { CurriedComponent, Destroyable, Template, TemplateFactory } from '@glimmer/interfaces';
 import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { DEBUG } from '@glimmer/env';
 import { assert, info } from '@ember/debug';
@@ -11,7 +11,11 @@ import { getOwner, setOwner } from '@ember/-internals/owner';
 import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
+import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef } from '@glimmer/reference/lib/reference';
+import { curry } from '@glimmer/runtime/lib/curried-value';
+import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { dict } from '@glimmer/util/lib/collections';
 import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
 import type { InternalRouteInfo, BaseRoute as IRoute, RouteInfo, Transition } from 'router_js';
@@ -82,8 +86,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 
   getRenderState(bucket: ClassicRouteBucket) {
     const route = bucket.route;
-    let wrapper = this.getRouteWrapper(bucket);
-    let invokable = buildClassicInvokable(bucket);
 
     let owner = getOwner(route);
     assert('Route is unexpectedly missing an owner', owner);
@@ -93,8 +95,8 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
       name: route.routeName,
       controller: route.controller,
       model: route.currentModel,
-      wrapper,
-      invokable,
+      wrapper: this.getRouteWrapper(bucket),
+      invokable: buildClassicInvokable(bucket),
       bucket,
     };
   }
@@ -221,7 +223,25 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 
   getRouteWrapper(bucket: ClassicRouteBucket): object {
     if (bucket.wrapper === undefined) {
-      bucket.wrapper = new ClassicRouteWrapperDefinition();
+      let owner = getOwner(bucket.route);
+      assert('Route is unexpectedly missing an owner', owner);
+
+      // Curry the route's static args onto the wrapper here: `@Component` (the
+      // invokable the wrapper renders) and `@bucket` (which exposes the
+      // controller to the wrapper template). Both are stable for the bucket's
+      // lifetime, so the curried wrapper is cached and reused, giving the outlet
+      // a stable identity. The outlet supplies only the live `@context` (model).
+      let args = dict<Reference>();
+      args['Component'] = createConstRef(buildClassicInvokable(bucket), '@Component');
+      args['bucket'] = createConstRef(bucket, '@bucket');
+
+      bucket.wrapper = curry(
+        0 as CurriedComponent,
+        new ClassicRouteWrapperDefinition(),
+        owner,
+        createCapturedArgs(args, EMPTY_POSITIONAL),
+        false
+      );
     }
     return bucket.wrapper;
   }

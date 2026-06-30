@@ -89,40 +89,9 @@ export const outletHelper = internalHelper(
         return null;
       }
 
-      let modelRef = childRefFromParts(outletRef, ['render', 'model']);
-      let model = valueForRef(modelRef);
-
-      let args = dict<Reference>();
-      args['context'] = createComputeRef(() => {
-        if (lastState === state) {
-          model = valueForRef(modelRef);
-        }
-        return model;
-      });
-
-      if (DEBUG) {
-        args['context'] = createDebugAliasRef!('@context', args['context']);
-      }
-
-      args['Component'] = createConstRef(state.invokable, '@Component');
-      args['bucket'] = createConstRef(state.bucket, '@bucket');
-
-      // plan to remove routeInfo, currently needed by pioneer route
-      args['routeInfo'] = createConstRef(state.routeInfo, '@routeInfo');
-
-      // Manager-driven routes derive `@controller` from the bucket inside the
-      // wrapper template. Legacy `setOutletState` callers have no wrapper or
-      // bucket, so when the args are curried straight onto the invokable
-      // below we supply `@controller` here, which the route template reads as
-      // its `self`.
-      if (state.wrapper === undefined && state.controller !== undefined) {
-        args['controller'] = createConstRef(state.controller, '@controller');
-      }
-
-      // Manager-driven routes provide a stable `wrapper` whose template renders
-      // the invokable as `<@Component/>`. Legacy `setOutletState` callers have
-      // no wrapper, so we curry the args straight onto the invokable (a route
-      // template, which reads `@controller` as its `self`).
+      // Manager-driven routes provide a `wrapper` that already has its static
+      // args applied; legacy `setOutletState` callers provide only a self-baked
+      // `invokable`. Either way we apply `@context` and render the result.
       let target = state.wrapper ?? state.invokable;
       assert(
         'Expected outlet state to have a wrapper or invokable to render',
@@ -132,13 +101,31 @@ export const outletHelper = internalHelper(
       // If we are crossing an engine mount point, this is how the owner
       // gets switched.
       let outletOwner = outletState?.render?.owner ?? owner;
+
+      let modelRef = childRefFromParts(outletRef, ['render', 'model']);
+      let model = valueForRef(modelRef);
+
+      let context: Reference = createComputeRef(() => {
+        if (lastState === state) {
+          model = valueForRef(modelRef);
+        }
+        return model;
+      });
+
+      if (DEBUG) {
+        context = createDebugAliasRef!('@context', context);
+      }
+
+      let contextArg = dict<Reference>();
+      contextArg['context'] = context;
+
       let named = dict<Reference>();
       named['Component'] = createConstRef(
         curry(
           0 as CurriedComponent,
           target,
           outletOwner,
-          createCapturedArgs(args, EMPTY_POSITIONAL),
+          createCapturedArgs(contextArg, EMPTY_POSITIONAL),
           false
         ),
         '@Component'
@@ -178,7 +165,6 @@ function stateFor(
     wrapper: render.wrapper,
     invokable: render.invokable,
     bucket: render.bucket,
-    routeInfo: render.routeInfo,
   };
 }
 
@@ -190,9 +176,14 @@ function isStable(
     return false;
   }
 
+  // Manager-driven routes: the curried wrapper is cached on the bucket, so it
+  // is a stable identity (same per route, distinct per route change). Model
+  // changes keep the same wrapper and re-render in place.
   if (state.wrapper !== undefined || lastState.wrapper !== undefined) {
     return state.wrapper === lastState.wrapper;
   }
 
-  return state.template === lastState.template && state.controller === lastState.controller;
+  // Legacy `setOutletState` callers have no wrapper; key on the upgraded
+  // invokable and controller.
+  return state.invokable === lastState.invokable && state.controller === lastState.controller;
 }
