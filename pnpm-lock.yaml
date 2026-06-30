@@ -115,6 +115,12 @@ importers:
       '@simple-dom/document':
         specifier: ^1.4.0
         version: 1.4.0
+      '@simple-dom/serializer':
+        specifier: ^1.4.0
+        version: 1.4.0
+      '@simple-dom/void-map':
+        specifier: ^1.4.0
+        version: 1.4.0
       '@swc-node/register':
         specifier: ^1.6.8
         version: 1.11.1(@swc/core@1.15.40)(@swc/types@0.1.26)(typescript@5.9.3)

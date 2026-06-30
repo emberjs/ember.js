@@ -53,6 +53,7 @@ export {
   ComponentRootState,
   errorLoopTransaction,
   renderComponent,
+  renderToString,
   renderSettled,
   _resetRenderers,
 } from './base-renderer';

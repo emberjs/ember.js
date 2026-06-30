@@ -80,3 +80,37 @@ export { renderSettled } from '@ember/-internals/glimmer/lib/base-renderer';
  * @public
  */
 export { renderComponent } from '@ember/-internals/glimmer/lib/base-renderer';
+
+/**
+ * Render a component to an HTML string, without needing a live DOM.
+ *
+ * This is the server-side-rendering (SSR) counterpart to `renderComponent`:
+ * the same rendering pipeline, pointed at an in-memory
+ * [SimpleDOM](https://github.com/ember-fastboot/simple-dom) document instead
+ * of a live one, with the result serialized to a string — so it works in
+ * Node.js (or any environment without a global `document`).
+ *
+ * ```js
+ * import { renderToString } from '@ember/renderer';
+ *
+ * let html = renderToString(MyComponent, { args: { name: 'Zoey' } });
+ * // => "<h1>Hello, Zoey!</h1>"
+ * ```
+ *
+ * Rendering is a synchronous, one-shot operation with no reactivity, and is
+ * non-interactive by default (modifiers do not run). Pass
+ * `env: { rehydratable: true }` to include glimmer's rehydration markers in
+ * the output so a subsequent client render can rehydrate the markup.
+ *
+ * @method renderToString
+ * @static
+ * @for @ember/renderer
+ * @param {Object} component The component to render.
+ * @param {Object} [options]
+ * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
+ * @param {Object} [options.args] Optionally pass args in to the component.
+ * @param {Object} [options.env] Optional renderer configuration (`isInteractive`, `rehydratable`).
+ * @returns {String} the serialized HTML for the rendered component
+ * @public
+ */
+export { renderToString } from '@ember/-internals/glimmer/lib/base-renderer';
