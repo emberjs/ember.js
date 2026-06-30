@@ -23,9 +23,18 @@ import type {
 import { artifacts } from '@glimmer/program/lib/helpers';
 import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
+import { serializeBuilder } from '@glimmer/node/lib/serialize-builder';
+import NodeDOMTreeConstruction from '@glimmer/node/lib/node-dom-helper';
+import { DOMChangesImpl } from '@glimmer/runtime/lib/dom/helper';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
-import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
+import {
+  renderComponent as glimmerRenderComponent,
+  renderSync as glimmerRenderSync,
+} from '@glimmer/runtime/lib/render';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import createHTMLDocument from '@simple-dom/document';
+import Serializer from '@simple-dom/serializer';
+import voidMap from '@simple-dom/void-map';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
@@ -579,6 +588,131 @@ export function renderComponent(
 
 const RENDER_CACHE = new WeakMap<IntoTarget, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
+
+/**
+ * Render a component to an HTML string, without needing a live DOM.
+ *
+ * This is the server-side-rendering (SSR) / `renderToString` counterpart to
+ * {@link renderComponent}. Instead of rendering into a DOM `Element`, it builds
+ * the component tree against an in-memory [SimpleDOM](https://github.com/ember-fastboot/simple-dom)
+ * document and serializes the result to a string. That makes it usable in
+ * Node.js (or any environment without a global `document`), which is exactly
+ * what a server needs in order to produce HTML for the initial page load.
+ *
+ * ```js
+ * import { renderToString } from '@ember/renderer';
+ *
+ * let html = renderToString(MyComponent, { args: { name: 'Zoey' } });
+ * // => "<h1>Hello, Zoey!</h1>"
+ * ```
+ *
+ * Because there is no live document to update, rendering is a synchronous,
+ * one-shot operation: there is no re-rendering and no reactivity. Rendering is
+ * non-interactive by default (modifiers do not run), matching the constraints
+ * of a server environment. Pass `env: { rehydratable: true }` to include
+ * Glimmer's rehydration markers in the output so a subsequent client render can
+ * re-use (rehydrate) the server-rendered markup rather than throwing it away.
+ *
+ * @method renderToString
+ * @static
+ * @for @ember/renderer
+ * @param {Object} component The component to render.
+ * @param {Object} [options]
+ * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
+ * @param {Object} [options.args] Optionally pass args in to the component.
+ * @param {Object} [options.env] Optional renderer configuration. `isInteractive` (default `false`) controls whether modifiers run; `rehydratable` (default `false`) controls whether rehydration markers are emitted.
+ * @returns {String} the serialized HTML for the rendered component
+ * @public
+ */
+export function renderToString(
+  /**
+   * The component definition to render. Any component that has had its manager
+   * registered is valid, same as {@link renderComponent}.
+   */
+  component: object,
+  {
+    owner = {},
+    args,
+    env,
+  }: {
+    /**
+     * Optional owner. Defaults to `{}`, can be any object, but will need to
+     * implement the [Owner](https://api.emberjs.com/ember/release/classes/Owner)
+     * API for components within this render tree to access services.
+     */
+    owner?: object;
+    /**
+     * These args get passed to the rendered component.
+     */
+    args?: Record<string, unknown>;
+    /**
+     * Optionally configure the rendering environment.
+     */
+    env?: {
+      /**
+       * When true, modifiers will run. Defaults to `false`, since server
+       * rendering is typically non-interactive.
+       */
+      isInteractive?: boolean;
+      /**
+       * When true, the emitted HTML includes Glimmer's rehydration markers so
+       * the output can be re-used (rehydrated) by a subsequent client-side
+       * render. Defaults to `false`, which produces clean HTML with no
+       * framework-specific comments.
+       */
+      rehydratable?: boolean;
+      /**
+       * All other options are forwarded to the underlying renderer (private API).
+       */
+      [rendererOption: string]: unknown;
+    };
+  } = {}
+): string {
+  let document = createHTMLDocument();
+  // A throwaway wrapper we render into and then serialize the children of, so
+  // the returned string is just the component's markup with no wrapper element.
+  let element = document.createElement('div');
+
+  let isInteractive = env?.isInteractive ?? false;
+  let rehydratable = Boolean(env?.rehydratable);
+
+  // SSR has no live document to mutate, so we build against a fresh SimpleDOM
+  // document. `NodeDOMTreeConstruction` knows how to append raw HTML (e.g.
+  // `{{{html}}}`) into a SimpleDOM tree, and `DOMChangesImpl` satisfies the
+  // tree builder's requirement for update operations, even though we never
+  // re-render.
+  let appendOperations = new NodeDOMTreeConstruction(document);
+  let updateOperations = new DOMChangesImpl(document);
+
+  let sharedArtifacts = artifacts();
+  let delegate = new EmberEnvironmentDelegate(owner as InternalOwner, isInteractive);
+  let options = runtimeOptions(
+    { appendOperations, updateOperations },
+    delegate,
+    sharedArtifacts,
+    new ResolverImpl()
+  );
+  let context = new EvaluationContextImpl(
+    sharedArtifacts,
+    (heap) => new RuntimeOpImpl(heap),
+    options
+  );
+
+  // `serializeBuilder` emits rehydration markers; `clientBuilder` emits clean
+  // markup.
+  let builder = rehydratable ? serializeBuilder : clientBuilder;
+  let tree = builder(context.env, { element, nextSibling: null });
+
+  let iterator = glimmerRenderComponent(context, tree, owner, component, args ?? {});
+  let result = glimmerRenderSync(context.env, iterator);
+
+  let html = new Serializer(voidMap).serializeChildren(element);
+
+  // One-shot render: tear down synchronously so any component destructors run.
+  _backburner.run(() => destroy(result));
+
+  return html;
+}
 
 export class BaseRenderer {
   static strict(
