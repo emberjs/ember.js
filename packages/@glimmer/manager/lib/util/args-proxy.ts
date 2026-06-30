@@ -140,7 +140,7 @@ export const argsProxyFor = (
   capturedArgs: CapturedArguments,
   type: 'component' | 'helper' | 'modifier'
 ): Arguments => {
-  const { named, positional } = capturedArgs;
+  const { named, positional, context } = capturedArgs;
 
   let getNamedTag = (_obj: object, key: string) => tagForNamedArg(named, key);
   let getPositionalTag = (_obj: object, key: string) => tagForPositionalArg(positional, key);
@@ -184,5 +184,10 @@ export const argsProxyFor = (
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     named: namedProxy,
     positional: positionalProxy,
+    // Read lazily: only helpers that actually use `this` (e.g. the default
+    // function helper manager) entangle the context reference.
+    get context() {
+      return context === undefined ? undefined : valueForRef(context);
+    },
   };
 };

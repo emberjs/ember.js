@@ -1,9 +1,4 @@
-import type {
-  Arguments as HelperArguments,
-  CapturedArguments as Arguments,
-  HelperCapabilities,
-  HelperManagerWithValue,
-} from '@glimmer/interfaces';
+import type { Arguments, HelperCapabilities, HelperManagerWithValue } from '@glimmer/interfaces';
 
 import { buildCapabilities } from '../util/capabilities';
 
@@ -27,7 +22,16 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
   }
 
   getValue({ fn, args }: State): unknown {
-    return invokeFunctionHelper(fn, args);
+    // A plain function read off a path is invoked with the object it was read from
+    // as `this` (provided lazily via `args.context`), matching the JavaScript
+    // semantics of `obj.method()`. `this` is applied at the call itself, never by
+    // producing a `.bind()`ed copy, so the function keeps its identity everywhere it
+    // is passed around as a reference.
+    if (Object.keys(args.named).length > 0) {
+      return fn.apply(args.context, [...args.positional, args.named]);
+    }
+
+    return fn.apply(args.context, [...args.positional]);
   }
 
   getDebugName(fn: AnyFunction): string {
@@ -37,21 +41,4 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
 
     return '(anonymous helper function)';
   }
-}
-
-/**
- * Call a plain function as a helper. `thisArg` is applied at the call itself
- * (not by producing a `.bind()`ed copy of `fn`), so the original function
- * keeps its identity everywhere it is passed around as a reference.
- */
-export function invokeFunctionHelper(
-  fn: AnyFunction,
-  args: HelperArguments,
-  thisArg?: unknown
-): unknown {
-  if (Object.keys(args.named).length > 0) {
-    return fn.apply(thisArg, [...args.positional, args.named]);
-  }
-
-  return fn.apply(thisArg, [...args.positional]);
 }

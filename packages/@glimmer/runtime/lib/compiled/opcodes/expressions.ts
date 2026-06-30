@@ -41,14 +41,12 @@ import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import assert from '@glimmer/debug-util/lib/assert';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { debugAssert, toBool } from '@glimmer/global-context';
-import {
-  functionHelperRefForPath,
-  getInternalHelperManager,
-} from '@glimmer/manager/lib/internal/api';
+import { getInternalHelperManager } from '@glimmer/manager/lib/internal/api';
 import {
   childRefFor,
   createComputeRef,
   FALSE_REFERENCE,
+  parentRefFor,
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
   valueForRef,
@@ -128,17 +126,20 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
 
       associateDestroyableChild(helperInstanceRef, helperRef);
     } else if (isIndexable(definition)) {
-      let functionHelperRef = functionHelperRefForPath(definition, ref, args);
+      // Make the object this value was read from a path off of available as
+      // `args.context`, so a plain function helper can be invoked with it as `this`
+      // (read lazily; helpers that ignore it don't entangle the reference).
+      let parentRef = parentRefFor(ref);
 
-      if (functionHelperRef !== null) {
-        helperRef = functionHelperRef;
-      } else {
-        let helper = resolveHelper(definition, ref);
-        helperRef = helper(args, initialOwner);
+      if (parentRef !== null) {
+        args.context = parentRef;
+      }
 
-        if (_hasDestroyableChildren(helperRef)) {
-          associateDestroyableChild(helperInstanceRef, helperRef);
-        }
+      let helper = resolveHelper(definition, ref);
+      helperRef = helper(args, initialOwner);
+
+      if (_hasDestroyableChildren(helperRef)) {
+        associateDestroyableChild(helperInstanceRef, helperRef);
       }
     } else {
       helperRef = UNDEFINED_REFERENCE;
