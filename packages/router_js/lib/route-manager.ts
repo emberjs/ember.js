@@ -276,6 +276,8 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   getInvokable(bucket: Bucket, enterPromise?: Promise<unknown>): Promise<object | undefined>;
 
   getRenderState(bucket: Bucket): RenderStateLike;
+
+  getRoute(bucket: Bucket): unknown;
 }
 
 type RenderStateLike = {
