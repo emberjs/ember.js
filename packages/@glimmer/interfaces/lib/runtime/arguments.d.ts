@@ -18,10 +18,10 @@ export interface CapturedArguments {
   named: CapturedNamedArguments;
   /**
    * The reference the helper value was read from a path off of, if any (e.g. the
-   * `this.obj` in `{{(this.obj.method)}}`). Resolved lazily as `Arguments.context`
+   * `this.obj` in `{{(this.obj.method)}}`). Resolved lazily as `Arguments.receiver`
    * so that helpers which never read it do not entangle this reference.
    */
-  context?: Reference;
+  receiver?: Reference;
   [CAPTURED_ARGS]: true;
 }
 
@@ -70,7 +70,7 @@ export interface Arguments {
    * plain function (matching JS `obj.method()` semantics). Read lazily, so helpers
    * that ignore it do not entangle the underlying reference.
    */
-  context?: unknown;
+  receiver?: unknown;
 }
 
 export interface ArgumentsDebug {

@@ -140,7 +140,7 @@ export const argsProxyFor = (
   capturedArgs: CapturedArguments,
   type: 'component' | 'helper' | 'modifier'
 ): Arguments => {
-  const { named, positional, context } = capturedArgs;
+  const { named, positional, receiver } = capturedArgs;
 
   let getNamedTag = (_obj: object, key: string) => tagForNamedArg(named, key);
   let getPositionalTag = (_obj: object, key: string) => tagForPositionalArg(positional, key);
@@ -185,9 +185,9 @@ export const argsProxyFor = (
     named: namedProxy,
     positional: positionalProxy,
     // Read lazily: only helpers that actually use `this` (e.g. the default
-    // function helper manager) entangle the context reference.
-    get context() {
-      return context === undefined ? undefined : valueForRef(context);
+    // function helper manager) entangle the receiver reference.
+    get receiver() {
+      return receiver === undefined ? undefined : valueForRef(receiver);
     },
   };
 };

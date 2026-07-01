@@ -101,7 +101,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments).capture();
 
-  args.context = receiver;
+  args.receiver = receiver;
 
   let helperRef: Initializable<Reference>;
   let initialOwner = vm.getOwner();

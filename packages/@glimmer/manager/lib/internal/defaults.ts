@@ -23,15 +23,15 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
 
   getValue({ fn, args }: State): unknown {
     // A plain function read off a path is invoked with the object it was read from
-    // as `this` (provided lazily via `args.context`), matching the JavaScript
+    // as `this` (provided lazily via `args.receiver`), matching the JavaScript
     // semantics of `obj.method()`. `this` is applied at the call itself, never by
     // producing a `.bind()`ed copy, so the function keeps its identity everywhere it
     // is passed around as a reference.
     if (Object.keys(args.named).length > 0) {
-      return fn.apply(args.context, [...args.positional, args.named]);
+      return fn.apply(args.receiver, [...args.positional, args.named]);
     }
 
-    return fn.apply(args.context, [...args.positional]);
+    return fn.apply(args.receiver, [...args.positional]);
   }
 
   getDebugName(fn: AnyFunction): string {

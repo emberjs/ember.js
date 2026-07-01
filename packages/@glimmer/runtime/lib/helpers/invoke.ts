@@ -18,7 +18,7 @@ function getArgs(proxy: SimpleArgsProxy): Partial<Arguments> {
 
 class SimpleArgsProxy {
   argsCache?: Cache<Partial<Arguments>>;
-  readonly context: object;
+  readonly receiver: object;
 
   constructor(
     context: object,
@@ -26,7 +26,7 @@ class SimpleArgsProxy {
   ) {
     let argsCache = createCache(() => computeArgs(context));
 
-    this.context = context;
+    this.receiver = context;
 
     if (DEBUG) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
