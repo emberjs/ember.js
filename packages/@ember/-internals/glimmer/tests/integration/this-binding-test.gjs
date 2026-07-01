@@ -279,11 +279,17 @@ moduleFor(
       );
     }
 
-    ['@test a plain method passed through (fn) is not this-bound'](assert) {
+    ['@test using "fn" un unbound functions is not allowed'](assert) {
+      assert.expect(4);
+
       class Inner {
         method() {
-          assert.verifySteps(`calledWith:${this}`);
-        }
+          // If we didn't throw the error, this could be allowed
+          assert.step('attempted');
+          assert.throws(() => {
+            assert.step('error');
+            String(this)}, 'not bound to a valid')
+      }
       }
 
       class Demo extends Component {
@@ -296,8 +302,7 @@ moduleFor(
       }
 
       this.render(`<this.Demo />`, { Demo });
-
-      assert.verifySteps('calledWith:null');
+      assert.verifySteps(['attempted', 'error'])
     }
   }
 );
