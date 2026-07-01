@@ -233,27 +233,27 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
-            'make-context-test.gjs': `
+            'create-context-test.gjs': `
               import { module, test } from 'qunit';
               import { render, rerender } from '@ember/test-helpers';
               import { setupRenderingTest } from 'ember-qunit';
-              import { makeContext } from '@ember/helper';
+              import { createContext } from '@ember/helper';
               import { tracked } from '@glimmer/tracking';
 
-              module('Integration | makeContext (RFC #1154)', function (hooks) {
+              module('Integration | createContext (RFC #1200)', function (hooks) {
                 setupRenderingTest(hooks);
 
                 test('provide a value via @value and consume it', async function (assert) {
                   class Theme {
                     color = 'dark';
                   }
-                  const theme = makeContext();
+                  const theme = createContext();
                   const value = new Theme();
 
                   await render(
                     <template>
                       <theme.Provide @value={{value}}>
-                        {{#let (theme.consume) as |t|}}
+                        {{#let theme.value as |t|}}
                           <div data-test="color">{{t.color}}</div>
                         {{/let}}
                       </theme.Provide>
@@ -264,14 +264,14 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
 
                 test('consumer reads the nearest provider', async function (assert) {
-                  const ctx = makeContext();
+                  const ctx = createContext();
 
                   await render(
                     <template>
                       <ctx.Provide @value="outer">
-                        {{#let (ctx.consume) as |v|}}<div data-test="outer">{{v}}</div>{{/let}}
+                        {{#let ctx.value as |v|}}<div data-test="outer">{{v}}</div>{{/let}}
                         <ctx.Provide @value="inner">
-                          {{#let (ctx.consume) as |v|}}<div data-test="inner">{{v}}</div>{{/let}}
+                          {{#let ctx.value as |v|}}<div data-test="inner">{{v}}</div>{{/let}}
                         </ctx.Provide>
                       </ctx.Provide>
                     </template>
@@ -286,12 +286,12 @@ function basicTest(scenarios: Scenarios, appName: string) {
                     @tracked count = 1;
                   }
                   const state = new State();
-                  const ctx = makeContext();
+                  const ctx = createContext();
 
                   await render(
                     <template>
                       <ctx.Provide @value={{state.count}}>
-                        {{#let (ctx.consume) as |v|}}<div data-test="count">{{v}}</div>{{/let}}
+                        {{#let ctx.value as |v|}}<div data-test="count">{{v}}</div>{{/let}}
                       </ctx.Provide>
                     </template>
                   );

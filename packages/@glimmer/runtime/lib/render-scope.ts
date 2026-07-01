@@ -1,7 +1,7 @@
 import type { Nullable } from '@glimmer/interfaces';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
-// makeContext (RFC #1154) is the only consumer. A `read` returns the
+// createContext (RFC #1200) is the only consumer. A `read` returns the
 // currently-provided value for a context key, evaluated lazily so that
 // auto-tracking inside it makes consumers reactive to the provided `@value`.
 type ContextRead = () => unknown;
@@ -78,15 +78,15 @@ export class RenderScopeTracker {
 }
 
 // The renderer points this at the active tracker for the duration of a render,
-// so the helpers below work from anywhere in a tick (e.g. a `consume()` that has
-// no handle to the VM). Cleared between renders.
+// so the helpers below work from anywhere in a tick (e.g. a context `value`
+// read that has no handle to the VM). Cleared between renders.
 let CURRENT: RenderScopeTracker | undefined;
 
 export function setCurrentRenderScopeTracker(tracker: RenderScopeTracker | undefined): void {
   CURRENT = tracker;
 }
 
-/** Provide `key`'s value at the current render node (makeContext's `<Provide>`). */
+/** Provide `key`'s value at the current render node (createContext's `<Provide>`). */
 export function provideRenderContext(key: object, read: ContextRead): void {
   if (CURRENT === undefined) {
     throw new Error('A context can only be provided while rendering.');

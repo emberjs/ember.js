@@ -9,7 +9,7 @@ import {
   type GetHelper,
   hash,
   type HashHelper,
-  makeContext,
+  createContext,
   type Context,
   uniqueId,
   type UniqueIdHelper,
@@ -23,14 +23,15 @@ expectTypeOf(get).toEqualTypeOf<GetHelper>();
 expectTypeOf(hash).toEqualTypeOf<HashHelper>();
 expectTypeOf(uniqueId).toEqualTypeOf<UniqueIdHelper>();
 
-// makeContext takes a type parameter, not a value -- the value is supplied
+// createContext takes a type parameter, not a value -- the value is supplied
 // at render time via `<Provide @value>`.
 class Theme {
   color = 'dark';
 }
-const theme = makeContext<Theme>();
+const theme = createContext<Theme>();
 expectTypeOf(theme).toEqualTypeOf<Context<Theme>>();
-expectTypeOf(theme.consume()).toEqualTypeOf<Theme>();
+// `value` is a getter, not a function
+expectTypeOf(theme.value).toEqualTypeOf<Theme>();
 
-// @ts-expect-error makeContext no longer accepts a class (or any value) argument
-makeContext(Theme);
+// @ts-expect-error createContext does not accept a class (or any value) argument
+createContext(Theme);

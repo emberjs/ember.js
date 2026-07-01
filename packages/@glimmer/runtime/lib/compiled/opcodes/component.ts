@@ -388,7 +388,7 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
   let { definition, manager, capabilities } = instance;
 
   // RFC #1154 -- push this component's render-tree scope before the user-land
-  // constructor runs, so that provide/consume (makeContext) inside the
+  // constructor runs, so that provide/consume (createContext) inside the
   // constructor see the new scope (and its parent chain). Always-on. Mirroring
   // debugRenderTree would be too late: the user constructor runs in
   // manager.create() below.
@@ -987,8 +987,8 @@ class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
 
 // RFC #1154 -- render-tree scope lifecycle during updating frames. We have to
 // push the render node back onto the scope stack at the start of its update
-// and pop it back off at the end, so that any descendants which call
-// `consume()` during their own update see the correct parent chain.
+// and pop it back off at the end, so that any descendants which read a
+// context `value` during their own update see the correct parent chain.
 class RenderScopeUpdateOpcode implements UpdatingOpcode {
   constructor(private bucket: object) {}
 

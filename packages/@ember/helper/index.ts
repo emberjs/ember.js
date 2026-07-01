@@ -716,36 +716,33 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  * Creates a render-tree-scoped context (provide/consume) for sharing values
  * with descendant components without prop drilling.
  *
- * See [RFC #1154](https://github.com/emberjs/rfcs/pull/1154) and the original
+ * See [RFC #1200](https://github.com/emberjs/rfcs/pull/1200) and the original
  * [Context RFC #975](https://github.com/emberjs/rfcs/pull/975).
  *
- * `makeContext` takes no value of its own — it only establishes the *type*
+ * `createContext` takes no value of its own — it only establishes the *type*
  * of the value (via a type parameter) and returns an object with:
  *
  * - `Provide`: a component that exposes its `@value` argument to every
  *    descendant in the block.
- * - `consume()`: a function (also usable as a template helper) that returns
- *    the nearest enclosing provided value. **Throws** if there is no
- *    matching provider higher in the render tree, or if called outside of
- *    rendering.
+ * - `value`: a getter (also usable as a template path) that returns the
+ *    nearest enclosing provided value. **Throws** if there is no matching
+ *    provider higher in the render tree, or if read outside of rendering.
  *
  * ```gjs
- * import { makeContext } from '@ember/helper';
+ * import { createContext } from '@ember/helper';
  *
  * class Theme {
  *   color = 'dark';
  * }
  *
- * const theme = makeContext<Theme>();
+ * const theme = createContext<Theme>();
  *
  * <template>
  *   <theme.Provide @value={{this.theme}}>
- *     {{#let (theme.consume) as |t|}}
- *       {{t.color}}
- *     {{/let}}
+ *     {{theme.value.color}}
  *   </theme.Provide>
  *
- *   {{ (theme.consume) }} {{! throws -- no provider }}
+ *   {{theme.value}} {{! throws -- no provider }}
  * </template>
  * ```
  *
@@ -753,12 +750,12 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  * consumers re-render; mutating `@tracked` fields on a stable provided
  * object likewise invalidates consumers.
  *
- * @method makeContext
+ * @method createContext
  * @static
  * @for @ember/helper
- * @returns {Object} `{ Provide, consume }`
+ * @returns {Object} `{ Provide, value }`
  * @public
  */
-export { makeContext } from '@ember/-internals/glimmer/lib/make-context';
+export { createContext } from '@ember/-internals/glimmer/lib/create-context';
 
-export type { Context } from '@ember/-internals/glimmer/lib/make-context';
+export type { Context } from '@ember/-internals/glimmer/lib/create-context';
