@@ -908,7 +908,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       let manager = route.manager;
       let bucket = route.bucket;
       let render = manager.getRenderState(bucket);
-      render.routeInfo = routeInfo;
 
       let state: OutletState = {
         render,

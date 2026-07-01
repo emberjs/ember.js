@@ -41,11 +41,6 @@ export interface RenderState {
   bucket: RouteStateBucket | undefined;
 
   /**
-   * The `RouteInfo` for this render
-   */
-  routeInfo?: object | undefined;
-
-  /**
    * Legacy template used by `setOutletState` callers (older test-helpers,
    * liquid-fire-style addons).
    */
