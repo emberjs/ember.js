@@ -3,11 +3,11 @@
   behaviour behind the `RouteManager` API.
 */
 
-import type { CurriedComponent, Destroyable, Template, TemplateFactory } from '@glimmer/interfaces';
+import type { CurriedComponent, Template, TemplateFactory } from '@glimmer/interfaces';
 import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { DEBUG } from '@glimmer/env';
 import { assert, info } from '@ember/debug';
-import { getOwner, setOwner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
@@ -67,8 +67,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   createRoute(_factory: object, args: CreateRouteArgs): ClassicRouteBucket {
-    const props = {};
-    setOwner(props, this.#owner);
     const route = this.#owner.lookup(`route:${args.name}`) as Route;
     route._setRouteName(args.name);
 
@@ -84,6 +82,12 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     return bucket.route;
   }
 
+  getDestroyable(_bucket: ClassicRouteBucket): object | null {
+    // Classic routes are container-managed (`owner.lookup('route:…')`), so
+    // the owner already destroys them at teardown.
+    return null;
+  }
+
   getRenderState(bucket: ClassicRouteBucket) {
     const route = bucket.route;
 
@@ -97,24 +101,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
       model: route.currentModel,
       wrapper: this.getRouteWrapper(bucket),
       invokable: buildClassicInvokable(bucket),
-      bucket,
     };
-  }
-
-  getRouteName(bucket: ClassicRouteBucket): string {
-    // Local route name is the last dot-separated segment (e.g. `show` from
-    // `posts.show`).
-    let fullName = bucket.route.fullRouteName;
-    let lastDot = fullName.lastIndexOf('.');
-    return lastDot === -1 ? fullName : fullName.slice(lastDot + 1);
-  }
-
-  getFullRouteName(bucket: ClassicRouteBucket): string {
-    return bucket.route.fullRouteName;
-  }
-
-  getDestroyable(bucket: ClassicRouteBucket): Destroyable | null {
-    return bucket.route;
   }
 
   willEnter(bucket: ClassicRouteBucket, state: WillEnterState): void {

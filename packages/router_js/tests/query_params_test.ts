@@ -1,9 +1,10 @@
 /* eslint-disable qunit/no-conditional-assertions */
 import type { MatchCallback } from 'route-recognizer';
-import type { BaseRoute, ClassicRoute, Transition } from '../index';
+import type { BaseRoute, Transition } from '../index';
 import type Router from '../index';
 import type { Dict, Maybe } from '../lib/core';
 import type RouteInfo from '../lib/route-info';
+import type { ClassicRoute } from '../lib/route-info';
 import { Promise } from 'rsvp';
 import { createHandler, TestRouter, trigger, ignoreTransitionError } from './test_helpers';
 

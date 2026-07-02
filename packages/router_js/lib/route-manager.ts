@@ -211,8 +211,11 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   getRoute(bucket: Bucket): unknown;
 
   /**
-    Returns the destroyable (if any) associated with the bucket. Used by the
-    router to wire the route into Ember's destruction system.
+    Returns the destroyable (if any) associated with the bucket. When a
+    manager creates route state that is not otherwise owner-managed, the
+    framework associates the returned destroyable with the owner so it is
+    destroyed at teardown. Return `null` when the state is already managed
+    elsewhere (e.g. container-owned), to avoid double management.
    */
   getDestroyable(bucket: Bucket): object | null;
 
@@ -276,8 +279,6 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   getInvokable(bucket: Bucket, enterPromise?: Promise<unknown>): Promise<object | undefined>;
 
   getRenderState(bucket: Bucket): RenderStateLike;
-
-  getRoute(bucket: Bucket): unknown;
 }
 
 type RenderStateLike = {
@@ -285,8 +286,6 @@ type RenderStateLike = {
   name: string;
   controller: unknown;
   model: unknown;
-  routeInfo?: InternalRouteInfo<BaseRoute<unknown>>;
-  bucket: RouteStateBucket | undefined;
   invokable: object | undefined;
   wrapper: object | undefined;
 };
@@ -300,12 +299,6 @@ type RenderStateLike = {
 export interface RouteManagerWithClassicInterop<
   Bucket extends RouteStateBucket = RouteStateBucket,
 > extends RouteManager<Bucket> {
-  /** Returns the local route name (e.g. `show`). */
-  getRouteName(bucket: Bucket): string;
-
-  /** Returns the fully-qualified route name (e.g. `posts.show`). */
-  getFullRouteName(bucket: Bucket): string;
-
   /**
     Returns the query-param meta for the route. Backs the classic protected
     `_qp` getter; the router reads it to assemble the query-param state for a

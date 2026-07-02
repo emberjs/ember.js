@@ -1,7 +1,7 @@
-import type { ClassicRoute, RouteStateBucket, Transition } from '../index';
+import type { RouteStateBucket, Transition } from '../index';
 import Router from '../index';
 import type { Dict } from '../lib/core';
-import type { IModel } from '../lib/route-info';
+import type { ClassicRoute, IModel } from '../lib/route-info';
 import RouteInfo, { UnresolvedRouteInfoByParam } from '../lib/route-info';
 import type { PublicTransition } from '../lib/transition';
 import { logAbort } from '../lib/transition';
@@ -86,7 +86,6 @@ interface NavigationArgs {
 interface RouteManagerLike {
   capabilities: RouteCapabilities;
   createRoute(definition: any, args: { name: string }): TestRouteBucket;
-  getDestroyable(bucket: TestRouteBucket): unknown;
   willEnter(bucket: TestRouteBucket, args: NavigationArgs): void;
   enter(bucket: TestRouteBucket, args: NavigationArgs): Promise<unknown>;
   didEnter(bucket: TestRouteBucket, args: NavigationArgs & { enter?: boolean }): void;
@@ -139,10 +138,6 @@ class TestRouteManager implements RouteManagerLike {
     handler.bucket = bucket as unknown as RouteStateBucket;
     handler.manager = this as unknown as ClassicRoute['manager'];
     return bucket;
-  }
-
-  getDestroyable(bucket: TestRouteBucket): unknown {
-    return bucket.route;
   }
 
   willEnter(_bucket: TestRouteBucket, _args: NavigationArgs): void {}

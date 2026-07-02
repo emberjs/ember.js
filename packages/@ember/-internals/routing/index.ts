@@ -4,30 +4,3 @@ export {
   generateControllerFactory,
   DSL as RouterDSL,
 } from '@ember/routing/-internals';
-
-export {
-  routeCapabilities,
-  setRouteManager,
-  getRouteManager,
-  hasClassicInterop,
-} from './route-managers';
-
-export type {
-  RouteManager,
-  RouteManagerFactory,
-  RouteManagerWithClassicInterop,
-  RouteStateBucket,
-  RouteCapabilities,
-  RouteCapabilitiesVersions,
-  NavigationState,
-  NavigationActions,
-  AsyncNavigationState,
-  ClassicInteropArgs,
-  WillEnterState,
-  EnterState,
-  DidEnterState,
-  WillExitState,
-  ExitState,
-  DidExitState,
-  CreateRouteArgs,
-} from './route-managers';

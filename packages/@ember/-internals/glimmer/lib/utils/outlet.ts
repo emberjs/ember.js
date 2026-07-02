@@ -1,5 +1,4 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { RouteStateBucket } from '@ember/-internals/routing/route-managers/api';
 import type { Template } from '@glimmer/interfaces';
 
 export interface RenderState {
@@ -34,11 +33,6 @@ export interface RenderState {
    * The per-render invokable returned by `RouteManager.getInvokable`
    */
   invokable: object | undefined;
-
-  /**
-   * The opaque bucket the manager returned from `createRoute`
-   */
-  bucket: RouteStateBucket | undefined;
 
   /**
    * Legacy template used by `setOutletState` callers (older test-helpers,

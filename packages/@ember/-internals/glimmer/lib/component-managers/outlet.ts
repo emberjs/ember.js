@@ -45,8 +45,6 @@ export interface OutletDefinitionState {
   controller: unknown;
   wrapper?: object;
   invokable?: object;
-  bucket?: object;
-  routeInfo?: object;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {

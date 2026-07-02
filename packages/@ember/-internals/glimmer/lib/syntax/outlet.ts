@@ -164,7 +164,6 @@ function stateFor(
     controller: render.controller,
     wrapper: render.wrapper,
     invokable: render.invokable,
-    bucket: render.bucket,
   };
 }
 

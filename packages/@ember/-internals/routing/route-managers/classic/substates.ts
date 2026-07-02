@@ -86,7 +86,7 @@ export function findRouteStateName(route: Route, state: string) {
   @param {String} fullName
   @return {Boolean}
 */
-export function routeHasBeenDefined(
+function routeHasBeenDefined(
   owner: Owner,
   router: any,
   localName: string,
@@ -119,34 +119,6 @@ export function enterLoadingSubstate(
   if (substateName) {
     bucket.route._router.intermediateTransitionTo(substateName);
   }
-}
-
-/**
-  Look up the `error` substate (if any) for the route in `bucket` and
-  trigger an intermediate transition into it. Returns `true` if a substate
-  was entered (and the error should be considered handled), `false`
-  otherwise.
-
-  Unlike `enterLoadingSubstate`, this passes the `error` along to the
-  intermediate transition so the error route's `model` hook receives it.
-
-  @private
-  @param {ClassicRouteBucket} bucket
-  @param {Transition} transition
-  @param {unknown} error the error that triggered this substate transition
- */
-export function enterErrorSubstate(
-  bucket: ClassicRouteBucket,
-  transition: ActiveTransition,
-  error: unknown
-): boolean {
-  const substateName = findSubstateName(bucket.route, transition, 'error');
-  if (!substateName) {
-    return false;
-  }
-
-  bucket.route._router.intermediateTransitionTo(substateName, error);
-  return true;
 }
 
 /**

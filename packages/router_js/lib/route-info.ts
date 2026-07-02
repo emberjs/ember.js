@@ -270,19 +270,6 @@ export default class InternalRouteInfo<R extends BaseRoute> {
   }
 
   resolve(transition: InternalTransition<R>): Promise<ResolvedRouteInfo<R>> {
-    if (this.isResolved) {
-      // Fast path for re-entered routes. When `NamedTransitionIntent` reuses
-      // an existing routeInfo as `oldHandlerInfo` on a subsequent transition,
-      // its `isResolved` is already true (set on a prior transition). Skip
-      // the full manager dispatch (no `willEnter`, no `enter`) and just
-      // stash the already-resolved context on the new transition so
-      // downstream consumers (e.g. `modelFor`) see it.
-      if (transition && transition.resolvedModels) {
-        transition.resolvedModels[this.name] = this.context as ModelFor<R> | undefined;
-      }
-      return Promise.resolve(this as unknown as ResolvedRouteInfo<R>);
-    }
-
     return Promise.resolve(this.routePromise)
       .then((route: R) => {
         throwIfAborted(transition);

@@ -5,8 +5,10 @@ import {
   moduleFor,
   ApplicationTestCase,
   ModuleBasedTestResolver,
+  runDestroy,
   runTask,
 } from 'internal-test-helpers';
+import { registerDestructor } from '@ember/destroyable';
 import { precompileTemplate } from '@ember/template-compilation';
 import { getOwner } from '@ember/owner';
 import { defer, reject, resolve } from 'rsvp';
@@ -24,11 +26,6 @@ class RecordingRouteManager extends ClassicRouteManager {
     let bucket = super.createRoute(factory, args);
     this.log.push(['createRoute', bucket.route.routeName]);
     return bucket;
-  }
-
-  getDestroyable(bucket) {
-    this.log.push(['getDestroyable', bucket.route.routeName]);
-    return super.getDestroyable(bucket);
   }
 
   getRouteWrapper(bucket) {
@@ -136,6 +133,57 @@ moduleFor(
       );
 
       assert.strictEqual(this.element.textContent, 'app:index', 'route templates rendered');
+    }
+  }
+);
+
+moduleFor(
+  'Route manager - getDestroyable wiring',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      let TestRoute = class extends Route {};
+      let test = this;
+      this.destroyedBuckets = [];
+
+      // Simulates a manager whose per-route state is not container-managed:
+      // it returns the bucket as its destroyable, so the router is
+      // responsible for tying it to the owner's lifetime.
+      class DestroyableRouteManager extends ClassicRouteManager {
+        createRoute(factory, args) {
+          let bucket = super.createRoute(factory, args);
+          registerDestructor(bucket, () => test.destroyedBuckets.push(args.name));
+          return bucket;
+        }
+
+        getDestroyable(bucket) {
+          return bucket;
+        }
+      }
+
+      setRouteManager((owner) => new DestroyableRouteManager(owner), TestRoute);
+
+      this.add('route:application', class extends TestRoute {});
+      this.add('route:index', class extends TestRoute {});
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      this.add('template:index', precompileTemplate('index'));
+    }
+
+    async ['@test destroyables returned from getDestroyable are destroyed with the owner'](
+      assert
+    ) {
+      await this.visit('/');
+
+      assert.deepEqual(this.destroyedBuckets, [], 'no buckets destroyed while the app is live');
+
+      runDestroy(this.applicationInstance);
+
+      assert.deepEqual(
+        this.destroyedBuckets.sort(),
+        ['application', 'index'],
+        'bucket destructors ran at owner teardown'
+      );
     }
   }
 );

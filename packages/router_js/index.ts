@@ -13,17 +13,12 @@ export { default as TransitionState, TransitionError } from './lib/transition-st
 export {
   default as InternalRouteInfo,
   type BaseRoute,
-  type ClassicRoute,
   type RouteInfo,
   type RouteInfoWithAttributes,
   type ModelFor,
 } from './lib/route-info';
 
-export {
-  throwIfAborted,
-  isTransitionAborted,
-  type TransitionAbortedError,
-} from './lib/transition-aborted-error';
+export { throwIfAborted } from './lib/transition-aborted-error';
 
 export { routeCapabilities, hasClassicInterop } from './lib/route-manager';
 export type {

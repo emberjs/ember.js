@@ -85,7 +85,6 @@ export default class OutletView {
         model: undefined,
         wrapper: undefined,
         invokable: undefined,
-        bucket: undefined,
       },
     };
 

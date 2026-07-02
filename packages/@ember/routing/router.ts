@@ -38,7 +38,8 @@ import { A as emberA } from '@ember/array';
 import typeOf from '@ember/utils/lib/type-of';
 import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
-import { cancel, once, run } from '@ember/runloop';
+import { once, run } from '@ember/runloop';
+import { associateDestroyableChild } from '@glimmer/destroyable';
 import { Promise as RSVPPromise } from 'rsvp';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -61,7 +62,6 @@ import type {
   TransitionState,
 } from 'router_js';
 import Router, { logAbort, STATE_SYMBOL } from 'router_js';
-import type { Timer } from 'backburner.js';
 import EngineInstance from '@ember/engine/instance';
 import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
@@ -74,8 +74,6 @@ import type ApplicationInstance from '@ember/application/instance';
 
 function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>[]) {
   updatePaths(this);
-
-  this._cancelSlowTransitionTimer();
 
   this.notifyPropertyChange('url');
   this.set('currentState', this.targetState);
@@ -202,8 +200,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   // a factory share one manager within a given owner.
   #routeBuckets = new WeakMap<Owner, Map<string, RouteStateBucket>>();
   #routeManagerInstances = new WeakMap<Owner, WeakMap<object, RouteManager>>();
-
-  _slowTransitionTimer: Timer | null = null;
 
   private namespace: any;
 
@@ -409,6 +405,11 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     if (bucket === undefined) {
       bucket = manager.createRoute(RouteClass, { name: routeName });
       ownerBuckets.set(routeName, bucket);
+
+      let destroyable = manager.getDestroyable(bucket);
+      if (destroyable !== null) {
+        associateDestroyableChild(routeOwner, destroyable);
+      }
     }
 
     return manager.getRoute(bucket);
@@ -1635,29 +1636,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
   currentState: null | RouterState = null;
   targetState: null | RouterState = null;
-
-  _handleSlowTransition(transition: Transition, originRoute: Route) {
-    if (!this._routerMicrolib.activeTransition) {
-      // Don't fire an event if we've since moved on from
-      // the transition that put us in a loading state.
-      return;
-    }
-    let targetState = new RouterState(
-      this,
-      this._routerMicrolib,
-      this._routerMicrolib.activeTransition[STATE_SYMBOL]!
-    );
-    this.set('targetState', targetState);
-
-    transition.trigger(true, 'loading', transition, originRoute);
-  }
-
-  _cancelSlowTransitionTimer() {
-    if (this._slowTransitionTimer) {
-      cancel(this._slowTransitionTimer);
-    }
-    this._slowTransitionTimer = null;
-  }
 
   // These three helper functions are used to ensure errors aren't
   // re-raised if they're handled in a route's error action.

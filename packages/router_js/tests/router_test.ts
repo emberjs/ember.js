@@ -1,9 +1,10 @@
 /* eslint-disable qunit/no-conditional-assertions, qunit/no-assert-logical-expression, qunit/no-early-return, no-console, no-throw-literal */
 import type { MatchCallback } from 'route-recognizer';
-import type { ClassicRoute, Transition } from '../index';
+import type { Transition } from '../index';
 import type Router from '../index';
 import type { Dict, Maybe } from '../lib/core';
 import type {
+  ClassicRoute,
   IModel,
   RouteInfo as PublicRouteInfo,
   RouteInfoWithAttributes,
