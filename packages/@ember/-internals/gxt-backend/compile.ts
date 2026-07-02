@@ -1984,53 +1984,57 @@ const _HTML_BOOLEAN_ATTRS = new Set([
   'reversed',
   'selected',
 ]);
-if (_GXT_HTMLBrowserDOMApi && _GXT_HTMLBrowserDOMApi.prototype) {
-  const origAttr = _GXT_HTMLBrowserDOMApi.prototype.attr;
-  const _patchedAttr = function (element: any, name: string, value: any) {
-    // Style warning is now emitted from _styleEmptyGuard in the $_tag_ember wrapper
-    // (earlier in the rendering pipeline) to avoid double warnings.
-    if (value === undefined || value === false) {
-      element.removeAttribute(name);
-    } else if (
-      value === true &&
-      typeof name === 'string' &&
-      _HTML_BOOLEAN_ATTRS.has(name.toLowerCase())
-    ) {
-      // HTML boolean attribute — write bare (empty string value) so the
-      // serialized innerHTML reads `<option selected>` instead of
-      // `<option selected="true">`. Non-boolean attrs with `true` still go
-      // through the normal path (becoming the literal string "true"), which
-      // preserves current behavior for attributes that legitimately carry
-      // stringified booleans (e.g. `aria-pressed="true"`).
-      origAttr.call(this, element, name, '');
-    } else if (
-      typeof value === 'symbol' ||
-      (value !== null && typeof value === 'object' && typeof (value as any).toString !== 'function')
-    ) {
-      // Symbol values throw on implicit string coercion inside setAttribute.
-      // Objects with no toString method (e.g. Object.create(null)) likewise
-      // throw "Cannot convert object to primitive value". Normalize these
-      // explicitly to match Glimmer's normalizeStringValue semantics:
-      //   Symbol(debug) -> "Symbol(debug)"
-      //   Object.create(null) -> ""
-      origAttr.call(this, element, name, _normalizeStringValue(value));
-    } else if (typeof value === 'string') {
-      // Skip SafeString objects (they have toHTML) — but strings are
-      // always unsafe and need URL sanitization on href/src/action/background.
-      origAttr.call(this, element, name, _sanitizeUrlAttribute(element, name, value));
-    } else {
-      origAttr.call(this, element, name, value);
-    }
-  };
-  (_patchedAttr as any).__patched = true;
-  _GXT_HTMLBrowserDOMApi.prototype.attr = _patchedAttr;
-
-  // Patch prop() — style warning is now emitted from _styleEmptyGuard in the
-  // $_tag_ember wrapper (earlier in the pipeline) to avoid double warnings.
-  const origProp = _GXT_HTMLBrowserDOMApi.prototype.prop;
-  _GXT_HTMLBrowserDOMApi.prototype.prop = function (element: any, name: string, value: any) {
-    return origProp.call(this, element, name, value);
-  };
+// Ember attribute WRITE-TIME semantics, registered as gxt's `normalizeAttrValue`
+// host hook (gxt >=0.0.71, glimmer-next #240) instead of the former
+// HTMLBrowserDOMApi.prototype.attr monkey-patch. The hook fires inside gxt's
+// $attr/$prop choke points — the initial write AND every reactive re-apply —
+// across ALL namespace apis (HTML/SVG/MathML; the old patch covered HTML only),
+// and exists only in WITH_EMBER_INTEGRATION builds (standalone gxt folds the
+// seam away). On the attr side, returning `undefined` removes the attribute.
+// (The style warning is emitted from _styleEmptyGuard in the $_tag_ember
+// wrapper — earlier in the pipeline — to avoid double warnings. The prop side
+// needs no ember normalization: the old prop patch was a passthrough.)
+if (_gxtRegisterHostHooks) {
+  _gxtRegisterHostHooks({
+    normalizeAttrValue: (name: string, value: any, element: any, isProp: boolean) => {
+      if (isProp) return value;
+      if (value === undefined || value === false) {
+        // Ember removes the attribute entirely for undefined/false bound values.
+        return undefined; // gxt remove sentinel
+      }
+      if (
+        value === true &&
+        typeof name === 'string' &&
+        _HTML_BOOLEAN_ATTRS.has(name.toLowerCase())
+      ) {
+        // HTML boolean attribute — write bare (empty string value) so the
+        // serialized innerHTML reads `<option selected>` instead of
+        // `<option selected="true">`. Non-boolean attrs with `true` still go
+        // through the normal path (becoming the literal string "true"), which
+        // preserves current behavior for attributes that legitimately carry
+        // stringified booleans (e.g. `aria-pressed="true"`).
+        return '';
+      }
+      if (
+        typeof value === 'symbol' ||
+        (value !== null && typeof value === 'object' && typeof (value as any).toString !== 'function')
+      ) {
+        // Symbol values throw on implicit string coercion inside setAttribute.
+        // Objects with no toString method (e.g. Object.create(null)) likewise
+        // throw "Cannot convert object to primitive value". Normalize these
+        // explicitly to match Glimmer's normalizeStringValue semantics:
+        //   Symbol(debug) -> "Symbol(debug)"
+        //   Object.create(null) -> ""
+        return _normalizeStringValue(value);
+      }
+      if (typeof value === 'string') {
+        // Strings are always unsafe and need URL sanitization on
+        // href/src/action/background (SafeStrings have toHTML and are objects).
+        return _sanitizeUrlAttribute(element, name, value);
+      }
+      return value;
+    },
+  });
 }
 
 // Override GXT's $__fn to support mut cells.
@@ -13732,19 +13736,20 @@ export function precompileTemplate(
 
     compilationResult.code = modifiedCode;
     try {
-      // Match BOTH access shapes: `$a.foo` and the bracket form `$a["foo-bar"]`
-      // (emitted for hyphenated/`@`-prefixed arg names). The old `includes('$a.')`
-      // false-negatived on bracket access → `$a` left undeclared → ReferenceError
-      // at render (same bug class gxt fixed compiler-side in glimmer-next #237).
-      // gxt 0.0.70's CompileResult carries ground-truth `usedArgsAlias/usedSlots/
-      // usedFw` flags, but `compileTemplate` (the runtime-compiler entry we call)
-      // does not surface them yet — switch to `flag || scan` once it does.
-      const needsArgsAlias = /\$a[.[]/.test(modifiedCode);
-      const needsSlots = modifiedCode.includes('$slots');
-      // Broad-substring on purpose (a false positive just emits an unused
-      // const): with the globalThis.$fw slot retired, a missed reference
-      // shape would silently read undefined.
-      const needsFw = modifiedCode.includes('$fw');
+      // Preamble injection is driven by the compiler's ground-truth emission
+      // flags (gxt >=0.0.71 surfaces `usedArgsAlias`/`usedSlots`/`usedFw` on
+      // compileTemplate's return — glimmer-next #237/#239), UNIONed with a
+      // scan of the post-processed code: our own regex rewrites above can
+      // INTRODUCE `$a`/`$slots`/`$fw` references the compiler never emitted,
+      // so the flag alone would under-inject. The scan matches BOTH access
+      // shapes (`$a.foo` and the bracket form `$a["foo-bar"]`); a false
+      // positive just emits an unused const.
+      const needsArgsAlias =
+        (compilationResult as any).usedArgsAlias === true || /\$a[.[]/.test(modifiedCode);
+      const needsSlots =
+        (compilationResult as any).usedSlots === true || modifiedCode.includes('$slots');
+      const needsFw =
+        (compilationResult as any).usedFw === true || modifiedCode.includes('$fw');
       const g = globalThis as any;
       // Inject Ember keyword helpers as local variables so GXT-compiled code
       // that references them as bare identifiers (e.g. inside {{#let}}) works.
