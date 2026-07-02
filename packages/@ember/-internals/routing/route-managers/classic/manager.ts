@@ -178,7 +178,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   didEnter(bucket: ClassicRouteBucket, state: ClassicDidEnterState): void {
     // Cancel a pending loading substate if `enter` resolved first.
     if (bucket.loadingSubstateTimer) {
-      cancel(bucket.loadingSubstateTimer as Parameters<typeof cancel>[0]);
+      cancel(bucket.loadingSubstateTimer);
       bucket.loadingSubstateTimer = null;
     }
 

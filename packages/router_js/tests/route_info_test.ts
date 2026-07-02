@@ -355,3 +355,48 @@ QUnit.test(
     );
   }
 );
+
+QUnit.test('getAncestorContext only matches true ancestors', async function (assert) {
+  assert.expect(2);
+
+  let router = new TestRouter();
+  let ancestorModel = { id: 'ancestor-model' };
+
+  let ancestorInfo = {
+    name: 'parent',
+    enterPromise: resolve(ancestorModel),
+    context: undefined,
+  };
+  // A pending descendant: handing out its enter promise would deadlock a
+  // manager that awaited it.
+  let descendantInfo = {
+    name: 'parent.child.grand',
+    enterPromise: new Promise(() => {}),
+    context: undefined,
+  };
+
+  let captured: ((routeInfo: any) => Promise<unknown>) | undefined;
+  let handler = createNonGatingHandler('parent.child', (_bucket, args) => {
+    captured = args.getAncestorContext;
+    return resolve(undefined);
+  });
+  let childInfo = new UnresolvedRouteInfoByParam(router, 'parent.child', [], {}, handler);
+
+  let transition = { isAborted: false } as unknown as InternalTransition<ClassicRoute>;
+  // Seed the transition state with the child itself in place, so the walk
+  // can distinguish ancestors from descendants.
+  transition[STATE_SYMBOL] = { routeInfos: [ancestorInfo, childInfo, descendantInfo] } as never;
+
+  await childInfo.resolve(transition);
+
+  assert.equal(
+    await captured!({ name: 'parent' }),
+    ancestorModel,
+    'an ancestor request resolves with its entered context'
+  );
+  assert.equal(
+    await captured!({ name: 'parent.child.grand' }),
+    undefined,
+    'a descendant request resolves with undefined rather than its pending enter promise'
+  );
+});

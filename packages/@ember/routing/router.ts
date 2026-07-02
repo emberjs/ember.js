@@ -11,7 +11,8 @@ import type { FactoryManager } from '@ember/-internals/owner';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
-import type { RouteManager, RouteStateBucket } from '@ember/-internals/routing/route-managers/api';
+import type { RouteManager } from '@ember/-internals/routing/route-managers/api';
+import type { ManagedRoute } from 'router_js';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
 import { default as BucketCache } from './lib/cache';
 import { default as DSL, type DSLCallback } from './lib/dsl';
@@ -187,12 +188,13 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _engineInfoByRoute = Object.create(null);
   _routerService: RouterService;
 
-  // Per-owner caches for the manager-driven route lookup path. Buckets are
-  // keyed by owner first so that engine routes (which can reuse local names)
-  // stay isolated. Manager instances are similarly keyed first by owner,
-  // then by the factory function that produced them, so that routes sharing
-  // a factory share one manager within a given owner.
-  #routeBuckets = new WeakMap<Owner, Map<string, RouteStateBucket>>();
+  // Per-owner caches for the manager-driven route lookup path. Managed
+  // routes ({manager, bucket} pairs) are keyed by owner first so that engine
+  // routes (which can reuse local names) stay isolated; a cache hit skips
+  // factory resolution entirely. Manager instances are similarly keyed first
+  // by owner, then by the factory function that produced them, so that
+  // routes sharing a factory share one manager within a given owner.
+  #managedRoutes = new WeakMap<Owner, Map<string, ManagedRoute>>();
   #routeManagerInstances = new WeakMap<Owner, WeakMap<object, RouteManager>>();
 
   private namespace: any;
@@ -317,96 +319,97 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   /**
     Returns the `Route` instance for `name`, creating it through the route
     manager registered against the route class on first access. Subsequent
-    calls return the same instance.
+    calls return the same instance without re-running factory resolution.
 
-    When `engineOwner` is provided, the name is the local route name within
-    that engine container. Otherwise this resolves engine routes by their
-    fully-qualified name via `_engineInfoByRoute`.
+    Engine routes are resolved by their fully-qualified name via
+    `_engineInfoByRoute`.
 
     @private
    */
-  getRoute(name: string, engineOwner?: Owner): unknown {
+  getRoute(name: string): unknown {
+    // Guard against a stringified `undefined` route name: without this, the
+    // auto-generation path below would happily register and hand back a junk
+    // `route:undefined`.
     if (name === 'undefined') {
       return undefined;
     }
 
     assert('Name should not start with "route:"', !name.startsWith('route:'));
 
-    let routeOwner: Owner;
+    let mainOwner = getOwner(this);
+    assert('Router is unexpectedly missing an owner', mainOwner);
+
+    let routeOwner: Owner = mainOwner;
     let routeName = name;
 
-    if (engineOwner) {
-      routeOwner = engineOwner;
-    } else {
-      let mainOwner = getOwner(this);
-      assert('Router is unexpectedly missing an owner', mainOwner);
-      routeOwner = mainOwner;
-
-      const engineInfo = this._engineInfoByRoute[routeName];
-      if (engineInfo) {
-        routeOwner = this._getEngineInstance(engineInfo);
-        routeName = engineInfo.localFullName;
-      }
+    const engineInfo = this._engineInfoByRoute[routeName];
+    if (engineInfo) {
+      routeOwner = this._getEngineInstance(engineInfo);
+      routeName = engineInfo.localFullName;
     }
 
-    let ownerBuckets = this.#routeBuckets.get(routeOwner);
-    if (!ownerBuckets) {
-      ownerBuckets = new Map();
-      this.#routeBuckets.set(routeOwner, ownerBuckets);
+    let ownerManagedRoutes = this.#managedRoutes.get(routeOwner);
+    if (!ownerManagedRoutes) {
+      ownerManagedRoutes = new Map();
+      this.#managedRoutes.set(routeOwner, ownerManagedRoutes);
     }
 
-    const fullRouteName = `route:${routeName}` as const;
-    let bucket = ownerBuckets.get(routeName);
-    let factoryManager = routeOwner.factoryFor(fullRouteName);
-    if (!factoryManager) {
-      // Auto-generate a default route if none is registered.
-      // SAFETY: configured in commonSetupRegistry in @ember/application/lib.
-      let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
-      routeOwner.register(fullRouteName, class extends DefaultRoute {});
-      factoryManager = routeOwner.factoryFor(fullRouteName);
+    let managed = ownerManagedRoutes.get(routeName);
 
-      if (DEBUG) {
-        if (this.namespace.LOG_ACTIVE_GENERATION) {
-          info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
+    if (managed === undefined) {
+      const fullRouteName = `route:${routeName}` as const;
+      let factoryManager = routeOwner.factoryFor(fullRouteName);
+      if (!factoryManager) {
+        // Auto-generate a default route if none is registered.
+        // SAFETY: configured in commonSetupRegistry in @ember/application/lib.
+        let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
+        routeOwner.register(fullRouteName, class extends DefaultRoute {});
+        factoryManager = routeOwner.factoryFor(fullRouteName);
+
+        if (DEBUG) {
+          if (this.namespace.LOG_ACTIVE_GENERATION) {
+            info(`generated -> ${fullRouteName}`, { fullName: fullRouteName });
+          }
         }
       }
-    }
 
-    assert('BUG: Missing factory for route', factoryManager);
-    const RouteClass = factoryManager.class as object;
+      assert('BUG: Missing factory for route', factoryManager);
+      const RouteClass = factoryManager.class as object;
 
-    if (routeOwner !== getOwner(this) && !hasDefaultSerialize((RouteClass as any).prototype)) {
-      throw new Error('Defining a custom serialize method on an Engine route is not supported.');
-    }
+      if (routeOwner !== mainOwner && !hasDefaultSerialize((RouteClass as any).prototype)) {
+        throw new Error('Defining a custom serialize method on an Engine route is not supported.');
+      }
 
-    const managerFactory = getRouteManager(RouteClass);
-    assert(
-      `No route manager is registered for route '${routeName}'. ` +
-        `Use \`setRouteManager\` to associate a manager with the route class.`,
-      managerFactory !== undefined
-    );
+      const managerFactory = getRouteManager(RouteClass);
+      assert(
+        `No route manager is registered for route '${routeName}'. ` +
+          `Use \`setRouteManager\` to associate a manager with the route class.`,
+        managerFactory !== undefined
+      );
 
-    let ownerManagers = this.#routeManagerInstances.get(routeOwner);
-    if (!ownerManagers) {
-      ownerManagers = new WeakMap();
-      this.#routeManagerInstances.set(routeOwner, ownerManagers);
-    }
-    let manager = ownerManagers.get(managerFactory);
-    if (manager === undefined) {
-      manager = managerFactory(routeOwner);
-      ownerManagers.set(managerFactory, manager);
-    }
-    if (bucket === undefined) {
-      bucket = manager.createRoute(RouteClass, { name: routeName });
-      ownerBuckets.set(routeName, bucket);
+      let ownerManagers = this.#routeManagerInstances.get(routeOwner);
+      if (!ownerManagers) {
+        ownerManagers = new WeakMap();
+        this.#routeManagerInstances.set(routeOwner, ownerManagers);
+      }
+      let manager = ownerManagers.get(managerFactory);
+      if (manager === undefined) {
+        manager = managerFactory(routeOwner);
+        ownerManagers.set(managerFactory, manager);
+      }
 
-      let destroyable = manager.getDestroyable(bucket);
+      const bucket = manager.createRoute(RouteClass, { name: routeName });
+
+      const destroyable = manager.getDestroyable(bucket);
       if (destroyable !== null) {
         associateDestroyableChild(routeOwner, destroyable);
       }
+
+      managed = { manager, bucket };
+      ownerManagedRoutes.set(routeName, managed);
     }
 
-    const route = manager.getRoute(bucket);
+    const route = managed.manager.getRoute(managed.bucket);
 
     // Register the route → {manager, bucket} association that router_js
     // dispatches lifecycle hooks through. Owned by the router so managers
@@ -414,7 +417,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     // every call (cheap WeakMap set) because a manager may instantiate its
     // route lazily rather than at `createRoute` time.
     if (typeof route === 'object' && route !== null) {
-      associateManagedRoute(route, manager, bucket);
+      associateManagedRoute(route, managed.manager, managed.bucket);
     }
 
     return route;

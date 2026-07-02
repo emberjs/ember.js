@@ -30,6 +30,7 @@ export type {
   RouteManager,
   RouteManagerWithClassicInterop,
   RouteStateBucket,
+  ManagedRoute,
   RouteCapabilities,
   RouteCapabilitiesVersions,
   NavigationState,

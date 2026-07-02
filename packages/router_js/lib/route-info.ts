@@ -293,11 +293,16 @@ export default class InternalRouteInfo<R extends BaseRoute> {
           cancel: () => transition.abort(),
           signal: transition.signal,
           getAncestorContext: (ancestor: RouteInfo) => {
-            const allRouteInfos = transition[STATE_SYMBOL]?.routeInfos ?? [];
-            const matched = allRouteInfos.find((ri) => ri?.name === ancestor.name);
-            if (!matched) return Promise.resolve(undefined);
-            const ancestorEnter = matched.enterPromise ?? Promise.resolve(undefined);
-            return Promise.resolve(ancestorEnter);
+            const routeInfos = transition[STATE_SYMBOL]?.routeInfos ?? [];
+            // Only true ancestors count: searching the whole hierarchy would
+            // hand a route its own (or a descendant's) pending enter promise —
+            // an easy deadlock for a manager that awaits it. When this info
+            // isn't in the transition state (hand-built test transitions),
+            // fall back to searching the full list.
+            const selfIndex = routeInfos.indexOf(this);
+            const ancestors = selfIndex === -1 ? routeInfos : routeInfos.slice(0, selfIndex);
+            const matched = ancestors.find((ri) => ri?.name === ancestor.name);
+            return matched?.enterPromise ?? Promise.resolve(undefined);
           },
         };
 
