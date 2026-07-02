@@ -711,3 +711,51 @@ export const not = glimmerNot as unknown as NotHelper;
 export interface NotHelper extends Opaque<'helper:not'> {}
 
 /* eslint-enable @typescript-eslint/no-empty-object-type */
+
+/**
+ * Creates a render-tree-scoped context (provide/consume) for sharing values
+ * with descendant components without prop drilling.
+ *
+ * See [RFC #1200](https://github.com/emberjs/rfcs/pull/1200) and the original
+ * [Context RFC #975](https://github.com/emberjs/rfcs/pull/975).
+ *
+ * `createContext` takes no value of its own — it only establishes the *type*
+ * of the value (via a type parameter) and returns an object with:
+ *
+ * - `Provide`: a component that exposes its `@value` argument to every
+ *    descendant in the block.
+ * - `value`: a getter (also usable as a template path) that returns the
+ *    nearest enclosing provided value. **Throws** if there is no matching
+ *    provider higher in the render tree, or if read outside of rendering.
+ *
+ * ```gjs
+ * import { createContext } from '@ember/helper';
+ *
+ * class Theme {
+ *   color = 'dark';
+ * }
+ *
+ * const theme = createContext<Theme>();
+ *
+ * <template>
+ *   <theme.Provide @value={{this.theme}}>
+ *     {{theme.value.color}}
+ *   </theme.Provide>
+ *
+ *   {{theme.value}} {{! throws -- no provider }}
+ * </template>
+ * ```
+ *
+ * Reactivity: the `@value` binding is reactive. When the argument updates,
+ * consumers re-render; mutating `@tracked` fields on a stable provided
+ * object likewise invalidates consumers.
+ *
+ * @method createContext
+ * @static
+ * @for @ember/helper
+ * @returns {Object} `{ Provide, value }`
+ * @public
+ */
+export { createContext } from '@ember/-internals/glimmer/lib/create-context';
+
+export type { Context } from '@ember/-internals/glimmer/lib/create-context';
