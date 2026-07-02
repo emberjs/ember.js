@@ -22,6 +22,7 @@ import {
   getElementView as _emberGetElementView,
   collectChildViews as _emberCollectChildViews,
 } from '@ember/-internals/views/lib/system/utils';
+import { DEBUG } from '@glimmer/env';
 
 // Utility functions (regex-free)
 
@@ -1838,24 +1839,29 @@ let _gxtLastSafeStringResult: string | undefined;
 // patch distinguish between a plain string (warn) and a SafeString-derived string
 // (no warn). We track the last SafeString result so the prop patch can compare.
 // Deferred to avoid circular deps — patches after modules are loaded.
-setTimeout(() => {
-  try {
-    // Use dynamic import to avoid circular dependency during static init
-    import('@ember/-internals/glimmer/lib/utils/string')
-      .then((mod) => {
-        const SafeString = mod.SafeString;
-        if (SafeString?.prototype?.toString) {
-          const origToString = SafeString.prototype.toString;
-          SafeString.prototype.toString = function () {
-            const result = origToString.call(this);
-            _gxtLastSafeStringResult = result;
-            return result;
-          };
-        }
-      })
-      .catch(() => {});
-  } catch {}
-}, 0);
+// DEBUG-only: the sole consumer is the style-XSS warn decision in
+// __gxtAttrInterpolate (a getDebugFunction('warn') channel, stripped in prod) —
+// gate the whole prototype patch out of production bundles.
+if (DEBUG) {
+  setTimeout(() => {
+    try {
+      // Use dynamic import to avoid circular dependency during static init
+      import('@ember/-internals/glimmer/lib/utils/string')
+        .then((mod) => {
+          const SafeString = mod.SafeString;
+          if (SafeString?.prototype?.toString) {
+            const origToString = SafeString.prototype.toString;
+            SafeString.prototype.toString = function () {
+              const result = origToString.call(this);
+              _gxtLastSafeStringResult = result;
+              return result;
+            };
+          }
+        })
+        .catch(() => {});
+    } catch {}
+  }, 0);
+}
 
 // Patch GXT's HTMLBrowserDOMApi.attr() to handle undefined values.
 // GXT's native implementation: attr(t,e,n){t.setAttribute(e,null===n?"":n)}
@@ -1906,7 +1912,12 @@ function _sanitizeUrlAttribute(element: any, name: string, strValue: string): st
 // Element.prototype hook guarantees sanitization regardless of which chunk
 // provides the DOM API. The override is gated on tag/attr/protocol so it
 // never touches unrelated setAttribute calls.
+// DEBUG-only: the duplicate-chunk hazard is a dev-server artifact — a
+// production build bundles a single dom chunk, so the primary
+// HTMLBrowserDOMApi.attr patch below fully owns sanitization there. Gating
+// drops a global Element.prototype override from shipped bundles.
 if (
+  DEBUG &&
   typeof Element !== 'undefined' &&
   Element.prototype &&
   (Element.prototype as any).setAttribute &&
@@ -7928,6 +7939,10 @@ function _gxtCleanupActiveComponents(): void {
 // on exact content strings are unaffected.
 let _qunitWhitespacePatched = false;
 (function patchQUnitForGxtWhitespace() {
+  // DEBUG-only: QUnit exists only under the test harness — the early return
+  // lets the production build drop the entire patch body (DEBUG is
+  // define-replaced, the body becomes unreachable, terser removes it).
+  if (!DEBUG) return;
   const g: any = globalThis as any;
   if (_qunitWhitespacePatched) return;
   const applyPatch = () => {
@@ -8726,17 +8741,9 @@ const _emberBuiltinHelpers: Record<string, any> = {
 
     return undefined;
   },
-  // mount: Engine mounting — handled by <ember-mount> custom element.
-  // This stub exists for any remaining {{mount}} calls that weren't transformed.
-  mount: (engineName: string) => {
-    // Create the custom element dynamically
-    const el = document.createElement('ember-mount');
-    el.setAttribute(
-      'data-engine',
-      typeof engineName === 'function' ? (engineName as any)() : engineName
-    );
-    return el;
-  },
+  // mount: no table entry — the gxt compiler rewrites every `{{mount}}`
+  // statement to an `<ember-mount>` custom element at compile time
+  // (glimmer-next visitors/mustache.ts), so no runtime call can reach here.
   // unique-id: Returns a unique identifier string that always starts with a letter
   // (valid CSS selector / HTML ID). Uses the same algorithm as Ember's uniqueId().
   'unique-id': () => {
