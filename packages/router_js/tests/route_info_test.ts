@@ -328,3 +328,30 @@ QUnit.test('getAncestorContext resolves with the ancestor enter result', async f
   let result = await captured!({ name: 'parent' });
   assert.equal(result, ancestorModel, 'getAncestorContext resolves with the ancestor enter result');
 });
+
+QUnit.test(
+  'resolving a by-param route info does not give it an own `context`',
+  async function (assert) {
+    assert.expect(3);
+
+    let router = new TestRouter();
+    let model = { id: 'the-model' };
+    let handler = createNonGatingHandler('thing', () => resolve(model));
+    let routeInfo = new UnresolvedRouteInfoByParam(router, 'thing', [], {}, handler);
+
+    assert.false('context' in routeInfo, 'a fresh by-param route info has no own context');
+
+    let transition = { isAborted: false } as unknown as InternalTransition<ClassicRoute>;
+    let resolved = await routeInfo.resolve(transition);
+    await resolve();
+
+    assert.equal(resolved.context, model, 'the resolved info still receives the entered context');
+    // `shouldSupersede` treats `'context' in routeInfo` as meaningful when
+    // route infos are reused across transitions; the enter-promise plumbing
+    // must not fabricate an own context the info never had (main parity).
+    assert.false(
+      'context' in routeInfo,
+      'resolution does not write a context onto the unresolved info'
+    );
+  }
+);

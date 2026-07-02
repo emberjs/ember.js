@@ -7,7 +7,9 @@ import type { ModelFor, BaseRoute, RouteInfo, RouteInfoWithAttributes } from './
 import type InternalRouteInfo from './route-info';
 import { toReadOnlyRouteInfo } from './route-info';
 import type { OpaqueTransition, PublicTransition as Transition } from './transition';
-import InternalTransition, { QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from './transition';
+import InternalTransition, { logAbort, QUERY_PARAMS_SYMBOL, STATE_SYMBOL } from './transition';
+import type { DidEnterState, DidExitState, ExitState, WillExitState } from './route-manager';
+import { hasClassicInterop } from './route-manager';
 import type { TransitionIntent } from './transition-intent';
 import NamedTransitionIntent from './transition-intent/named-transition-intent';
 import URLTransitionIntent from './transition-intent/url-transition-intent';
@@ -63,31 +65,280 @@ export default abstract class Router<R extends BaseRoute> {
   abstract routeDidChange(transition: Transition): void;
   abstract transitionDidError(error: TransitionError, transition: Transition): Transition | Error;
 
-  // Called once all `getInvokable` calls for the transition have resolved.
-  // Manager-driven routers (EmberRouter) override this to dispatch via the
-  // RouteManager API: run exit/enter hooks, update the URL, await `enter`
-  // promises, then fire didTransition/didEnter/didExit.
-  onTransitionSettled(_transition: InternalTransition<R>, _newState: TransitionState<R>): unknown {
-    return undefined;
+  // -- Manager-driven transition lifecycle -------------------------------------
+  //
+  // The three `on*` methods below drive the RouteManager lifecycle for every
+  // router. Host routers (EmberRouter's microlib, the test router) customize
+  // behaviour through the small protected hooks rather than re-implementing
+  // the orchestration.
+
+  /**
+    Whether the host application is tearing down. A destroyed router skips
+    the post-settle lifecycle (didEnter/didExit, URL update, events).
+   */
+  protected isRouterDestroyed(): boolean {
+    return false;
   }
 
-  // Called once per route in parent-to-child order as each route
-  // resolves. EmberRouter uses this to incrementally update
-  // currentRouteInfos and schedule rendering so the outlet tree is built
-  // up before the whole transition settles.
-  onRouteInvokableReady(
-    _routeInfo: InternalRouteInfo<R>,
-    _transition: InternalTransition<R>,
-    _routeIndex: number
-  ): void {}
+  /**
+    Host hook to schedule a render-tree update whenever `currentRouteInfos`
+    changes. EmberRouter schedules `_setOutlets`; the default is a no-op for
+    hosts that don't render.
+   */
+  protected scheduleOutletUpdate(): void {}
 
-  // Called when `intermediateTransitionTo` fires (e.g. a classic loading
-  // substate). EmberRouter splices the intermediate route into
-  // currentRouteInfos without disturbing already-rendering ancestor routes.
-  onIntermediateTransition(
-    _newState: TransitionState<R>,
-    _transition: InternalTransition<R>
-  ): void {}
+  /**
+    Handles an error thrown synchronously by a `didEnter` hook (classic
+    `activate`/`setupController`). The default routes it through
+    `transitionDidError` — so it reaches error actions/substates the same way
+    `enter` rejections do — and throws the resulting reason so the transition
+    promise rejects.
+   */
+  protected handleDidEnterError(
+    error: unknown,
+    activeTransition: InternalTransition<R>,
+    newState: TransitionState<R>,
+    _preTransitionState: TransitionState<R> | undefined
+  ): never {
+    const errorRoute = newState.routeInfos[newState.routeInfos.length - 1]?.route;
+    const reason = this.transitionDidError(
+      { error, route: errorRoute, wasAborted: false } as unknown as TransitionError,
+      activeTransition
+    );
+    throw reason;
+  }
+
+  // Called once per route in parent-to-child order as each route's
+  // `getInvokable` resolves. Writes the route into `currentRouteInfos` at its
+  // slot and schedules a render so the outlet tree builds up incrementally
+  // instead of waiting for the whole transition to settle.
+  onRouteInvokableReady(
+    routeInfo: InternalRouteInfo<R>,
+    _transition: InternalTransition<R>,
+    routeIndex: number
+  ): void {
+    const currentRouteInfos = this.currentRouteInfos ?? [];
+    currentRouteInfos[routeIndex] = routeInfo;
+    this.currentRouteInfos = currentRouteInfos;
+    this.scheduleOutletUpdate();
+  }
+
+  // Called when `intermediateTransitionTo` fires (a classic loading or error
+  // substate). Splices the substate into `currentRouteInfos` without
+  // disturbing already-rendering ancestor routes and fires `didEnter` so
+  // classic activate/setup runs. Substates are classic machinery, so the
+  // didEnter only goes to classic-interop managers.
+  onIntermediateTransition(newState: TransitionState<R>, transition: InternalTransition<R>): void {
+    const partition = this.partitionRoutes(this.state!, newState);
+    this.currentRouteInfos = [...partition.unchanged, ...partition.entered];
+
+    this.oldState = this.state;
+    this.state = newState;
+
+    const navFrom = (transition.from ?? undefined) as RouteInfo | undefined;
+    const navTo = transition.to as RouteInfo;
+
+    const fireDidEnter = (routeInfo: InternalRouteInfo<R>) => {
+      const { manager, bucket } = routeInfo;
+      if (manager === undefined || bucket === undefined || !hasClassicInterop(manager)) {
+        return;
+      }
+      manager.didEnter(bucket, {
+        from: navFrom,
+        to: navTo,
+        transition,
+        internalRouteInfo: routeInfo,
+        enter: true,
+      });
+    };
+
+    for (const routeInfo of partition.entered) {
+      if (routeInfo.route !== undefined) {
+        fireDidEnter(routeInfo);
+      } else {
+        // Async route (e.g. across an engine boundary): fire once it resolves.
+        void routeInfo.routePromise.then(() => fireDidEnter(routeInfo));
+      }
+    }
+
+    this.scheduleOutletUpdate();
+  }
+
+  // Called once every route in the transition has resolved. Runs the rest of
+  // the lifecycle through the RouteManager API:
+  //
+  //   1. `willExit` + `exit` on routes leaving the hierarchy
+  //   2. classic-interop `willExit(isExiting=false)` on updated routes
+  //   3. awaits every entering/updating route's `enterPromise`
+  //   4. `didEnter` on entered routes (and, interop-only, updated routes)
+  //   5. `didExit` on exited routes
+  //   6. query-param finalisation, URL update, didTransition events
+  //
+  // Resolves the transition's promise with the leaf route, preserving the
+  // classic `finalizeTransition` contract.
+  onTransitionSettled(
+    activeTransition: InternalTransition<R>,
+    newState: TransitionState<R>
+  ): Promise<unknown> {
+    const partition = this.partitionRoutes(this.state!, newState);
+    const preTransitionState = this.state;
+
+    this.oldState = this.state;
+    this.state = newState;
+
+    const navFrom = (activeTransition.from ?? undefined) as RouteInfo | undefined;
+    const navTo = activeTransition.to as RouteInfo;
+    const cancel = () => activeTransition.abort();
+
+    // Leaving the hierarchy: willExit + exit, leaf-first.
+    for (const exitingRouteInfo of partition.exited) {
+      const { manager, bucket } = exitingRouteInfo;
+      if (manager !== undefined && bucket !== undefined) {
+        const willExitState: WillExitState = { from: navFrom, to: navTo, cancel };
+        const exitState: ExitState = { from: navFrom, to: navTo };
+        if (hasClassicInterop(manager)) {
+          Object.assign(willExitState, {
+            transition: activeTransition,
+            internalRouteInfo: exitingRouteInfo,
+            isExiting: true,
+          });
+          Object.assign(exitState, { transition: activeTransition });
+        }
+        manager.willExit(bucket, willExitState);
+        manager.exit(bucket, exitState);
+      }
+    }
+
+    // Filter exited routes out of currentRouteInfos. Truncating to
+    // `unchanged.length` would lose entering routes that
+    // `onRouteInvokableReady` already wrote at higher indices.
+    const exitedRouteObjects = new Set(partition.exited.map((ri) => ri.route));
+    if (this.currentRouteInfos) {
+      this.currentRouteInfos = this.currentRouteInfos.filter(
+        (cri) => !exitedRouteObjects.has(cri.route)
+      );
+    }
+
+    // "Context updated while staying mounted" is the classic update path; the
+    // RFC treats updates as a manager-internal concern, so only interop
+    // managers receive this willExit.
+    for (const resetRouteInfo of partition.reset) {
+      const { manager, bucket } = resetRouteInfo;
+      if (manager !== undefined && bucket !== undefined && hasClassicInterop(manager)) {
+        manager.willExit(bucket, {
+          from: navFrom,
+          to: navTo,
+          cancel,
+          transition: activeTransition,
+          internalRouteInfo: resetRouteInfo,
+          isExiting: false,
+        });
+      }
+    }
+
+    // Await all entering/updating routes' enter promises. Swallow rejections
+    // here: a rejected enterPromise has already been routed through
+    // `transitionDidError`; rethrowing would fire the global unhandled
+    // rejection handler on subsequent transitions.
+    const enteringRouteInfos = [...partition.entered, ...partition.updatedContext];
+    const enterPromises = enteringRouteInfos.map((routeInfo) => {
+      const p = routeInfo.enterPromise ?? Promise.resolve(undefined);
+      return p.catch(() => undefined);
+    });
+
+    return Promise.all(enterPromises).then(() => {
+      if (this.isRouterDestroyed()) {
+        return;
+      }
+      if (activeTransition.isAborted) {
+        return;
+      }
+
+      try {
+        for (const enteredRouteInfo of partition.entered) {
+          const { manager, bucket } = enteredRouteInfo;
+          if (manager !== undefined && bucket !== undefined) {
+            const didEnterState: DidEnterState = { from: navFrom, to: navTo };
+            if (hasClassicInterop(manager)) {
+              Object.assign(didEnterState, {
+                transition: activeTransition,
+                internalRouteInfo: enteredRouteInfo,
+                enter: true,
+              });
+            }
+            manager.didEnter(bucket, didEnterState);
+          }
+        }
+
+        // The `enter: false` didEnter is the classic update path (see the
+        // reset loop above); only interop managers receive it.
+        for (const updatedRouteInfo of partition.updatedContext) {
+          const { manager, bucket } = updatedRouteInfo;
+          if (manager !== undefined && bucket !== undefined && hasClassicInterop(manager)) {
+            manager.didEnter(bucket, {
+              from: navFrom,
+              to: navTo,
+              transition: activeTransition,
+              internalRouteInfo: updatedRouteInfo,
+              enter: false,
+            });
+          }
+        }
+      } catch (error) {
+        return this.handleDidEnterError(error, activeTransition, newState, preTransitionState);
+      }
+
+      // A didEnter hook may have redirected (classic `transitionTo` inside
+      // `setupController`); reject with the abort so the transition promise
+      // settles the way classic callers expect.
+      if (activeTransition.isAborted) {
+        throw logAbort(activeTransition);
+      }
+
+      for (const exitedRouteInfo of partition.exited) {
+        const { manager, bucket } = exitedRouteInfo;
+        if (manager !== undefined && bucket !== undefined) {
+          const didExitState: DidExitState = { from: navFrom, to: navTo };
+          if (hasClassicInterop(manager)) {
+            Object.assign(didExitState, {
+              transition: activeTransition,
+              internalRouteInfo: exitedRouteInfo,
+            });
+          }
+          manager.didExit(bucket, didExitState);
+        }
+      }
+
+      // Snap currentRouteInfos to the authoritative settled list.
+      this.currentRouteInfos = newState.routeInfos.slice();
+
+      this.state!.queryParams = this.finalizeQueryParamChange(
+        this.currentRouteInfos,
+        newState.queryParams,
+        activeTransition
+      );
+
+      this._updateURL(activeTransition, newState);
+
+      activeTransition.isActive = false;
+      // Only clear `activeTransition` if it's still us; a newer transition
+      // may already have replaced it.
+      if (this.activeTransition === activeTransition) {
+        this.activeTransition = undefined;
+      }
+
+      this.scheduleOutletUpdate();
+
+      this.triggerEvent(this.currentRouteInfos, true, 'didTransition', []);
+      this.didTransition(this.currentRouteInfos);
+      this.toInfos(activeTransition, newState.routeInfos, true);
+      this.routeDidChange(activeTransition);
+
+      // Resolve the transition's promise with the leaf route, preserving the
+      // classic finalizeTransition contract.
+      return newState.routeInfos[newState.routeInfos.length - 1]?.route;
+    });
+  }
 
   /**
     The main entry point into the router. The API is essentially

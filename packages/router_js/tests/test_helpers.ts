@@ -313,8 +313,6 @@ export function createHandler<T extends IModel>(
   return handler;
 }
 
-type InternalRouteInfoLike = RouteInfo<ClassicRoute>;
-
 export class TestRouter<R extends ClassicRoute = ClassicRoute> extends Router<R> {
   didTransition(_routeInfos?: RouteInfo<R>[]) {}
   willTransition() {}
@@ -344,172 +342,24 @@ export class TestRouter<R extends ClassicRoute = ClassicRoute> extends Router<R>
     return () => {};
   }
 
-  // As each route's getInvokable resolves, write the resolved routeInfo into
-  // currentRouteInfos at its slot. Mirrors EmberRouter.onRouteInvokableReady.
-  onRouteInvokableReady(
-    routeInfo: InternalRouteInfoLike,
-    _transition: any,
-    routeIndex: number
-  ): void {
-    const current = (this.currentRouteInfos as any[]) ?? [];
-    current[routeIndex] = routeInfo;
-    (this as any).currentRouteInfos = current;
-  }
-
-  // Intermediate transition (loading/error substate). Splice the entered
-  // routes into currentRouteInfos and synchronously fire didEnter so
-  // enter/setup run for the substate, then defer async ones via routePromise.
-  onIntermediateTransition(newState: any, transition: any): void {
-    const partition = this.partitionRoutes(this.state!, newState);
-    const currentRouteInfos = [...partition.unchanged, ...partition.entered];
-    (this as any).currentRouteInfos = currentRouteInfos;
-
-    this.oldState = this.state;
-    this.state = newState;
-
-    const fireDidEnter = (routeInfo: any) => {
-      const { manager, bucket } = routeInfo;
-      if (!manager || !bucket) return;
-      manager.didEnter(bucket, { transition, internalRouteInfo: routeInfo, enter: true });
-    };
-
-    for (const routeInfo of partition.entered) {
-      if ((routeInfo as any).route) {
-        fireDidEnter(routeInfo);
-      } else {
-        // Async route: wait for the route to resolve before firing didEnter.
-        (routeInfo as any).routePromise.then(() => {
-          fireDidEnter(routeInfo);
-        });
-      }
-    }
-  }
-
-  // Orchestrator for the normal transition flow. Fires the lifecycle in
-  // manager-driven order: willExit/exit, await enterPromises, didEnter,
-  // didExit, finalize QPs, update URL, didTransition events. Mirrors
-  // EmberRouter.onTransitionSettled in shape, dispatching via the manager
-  // contract.
-  onTransitionSettled(activeTransition: any, newState: any): Promise<unknown> {
-    const partition = this.partitionRoutes(this.state!, newState);
-
-    // Snapshot pre-transition state so we can revert on a didEnter throw.
-    // The next transition then sees these routes as unentered and re-fires
-    // their enter hooks.
-    const preTransitionState = this.state;
-    this.oldState = this.state;
-    this.state = newState;
-
-    // Leaving the hierarchy: willExit + exit, leaf-first.
-    for (const exitingRouteInfo of partition.exited) {
-      const { manager, bucket } = exitingRouteInfo as any;
-      if (manager && bucket) {
-        manager.willExit(bucket, { transition: activeTransition, isExiting: true });
-        manager.exit(bucket, { transition: activeTransition });
-      }
-    }
-
-    // Filter exited routes out of currentRouteInfos. Truncating to
-    // unchanged.length would lose entering routes that
-    // onRouteInvokableReady wrote at higher indices.
-    const exitedRouteObjects = new Set(partition.exited.map((ri: any) => ri.route));
-    if (this.currentRouteInfos) {
-      this.currentRouteInfos = this.currentRouteInfos.filter(
-        (cri: any) => !exitedRouteObjects.has(cri.route)
-      ) as any;
-    }
-
-    // Context-changed but staying mounted: willExit with isExiting=false.
-    for (const resetRouteInfo of partition.reset) {
-      const { manager, bucket } = resetRouteInfo as any;
-      if (manager && bucket) {
-        manager.willExit(bucket, { transition: activeTransition, isExiting: false });
-      }
-    }
-
-    // Await all entering/updating routes' enter promises before didEnter.
-    // Swallow rejections; the transition's outer promise still handles them.
-    const enteringRouteInfos = [...partition.entered, ...partition.updatedContext];
-    const enterPromises = enteringRouteInfos.map((routeInfo: any) => {
-      const p = routeInfo.enterPromise ?? Promise.resolve(undefined);
-      return p.catch ? p.catch(() => undefined) : p;
-    });
-
-    return Promise.all(enterPromises as any).then(() => {
-      if (activeTransition.isAborted) return;
-
-      try {
-        for (const enteredRouteInfo of partition.entered) {
-          const { manager, bucket } = enteredRouteInfo as any;
-          if (!manager || !bucket) continue;
-          manager.didEnter(bucket, {
-            transition: activeTransition,
-            internalRouteInfo: enteredRouteInfo,
-            enter: true,
-          });
-        }
-
-        for (const updatedRouteInfo of partition.updatedContext) {
-          const { manager, bucket } = updatedRouteInfo as any;
-          if (!manager || !bucket) continue;
-          manager.didEnter(bucket, {
-            transition: activeTransition,
-            internalRouteInfo: updatedRouteInfo,
-            enter: false,
-          });
-        }
-      } catch (error) {
-        // Roll back to pre-transition state so the next transition sees
-        // these routes as unentered. Copy routeInfos (don't alias) so later
-        // mutations don't corrupt the baseline used by partitionRoutes.
-        this.state = preTransitionState;
-        this.currentRouteInfos = preTransitionState
-          ? (preTransitionState.routeInfos.slice() as any)
-          : undefined;
-        const errorRoute = (newState.routeInfos[newState.routeInfos.length - 1] as any)?.route;
-        const reason = this.transitionDidError(
-          { error, route: errorRoute, wasAborted: false } as TransitionError,
-          activeTransition
-        );
-        throw reason;
-      }
-
-      // If a hook redirected, the transition is aborted; reject so the
-      // outer transition promise sees the abort.
-      if (activeTransition.isAborted) {
-        throw logAbort(activeTransition);
-      }
-
-      for (const exitedRouteInfo of partition.exited) {
-        const { manager, bucket } = exitedRouteInfo as any;
-        if (manager && bucket) {
-          manager.didExit(bucket, { transition: activeTransition });
-        }
-      }
-
-      // Snap currentRouteInfos to the authoritative settled list.
-      this.currentRouteInfos = newState.routeInfos.slice();
-
-      this.state!.queryParams = this.finalizeQueryParamChange(
-        this.currentRouteInfos!,
-        newState.queryParams,
-        activeTransition
-      );
-
-      this._updateURL(activeTransition, newState);
-
-      activeTransition.isActive = false;
-      this.activeTransition = undefined;
-
-      this.triggerEvent(this.currentRouteInfos!, true, 'didTransition', []);
-      this.didTransition(this.currentRouteInfos!);
-      this.toInfos(activeTransition, newState.routeInfos, true);
-      this.routeDidChange(activeTransition);
-
-      // Resolve the transition's promise with the leaf route, matching
-      // the original finalizeTransition contract that tests rely on.
-      return (newState.routeInfos[newState.routeInfos.length - 1] as any)?.route;
-    });
+  // The manager-driven lifecycle (onTransitionSettled and friends) is
+  // inherited from the base Router. The tests want one extra behaviour: when
+  // a didEnter hook throws, roll back to the pre-transition state so the
+  // next transition sees these routes as unentered and re-fires their enter
+  // hooks.
+  protected override handleDidEnterError(
+    error: unknown,
+    activeTransition: any,
+    newState: any,
+    preTransitionState: any
+  ): never {
+    this.state = preTransitionState;
+    // Copy routeInfos (don't alias) so later mutations don't corrupt the
+    // baseline used by partitionRoutes.
+    this.currentRouteInfos = preTransitionState
+      ? (preTransitionState.routeInfos.slice() as any)
+      : undefined;
+    return super.handleDidEnterError(error, activeTransition, newState, preTransitionState);
   }
 }
 

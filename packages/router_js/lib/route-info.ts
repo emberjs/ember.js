@@ -312,12 +312,16 @@ export default class InternalRouteInfo<R extends BaseRoute> {
         const enterPromise = manager.enter(bucket, navigationArgs);
         this.enterPromise = enterPromise;
 
-        // Pipe the resolved model onto routeInfo.context so the outlet's @model
-        // ref can pick it up.
+        // Capture the entered context locally rather than writing it onto
+        // this route info: `shouldSupersede` treats an own `context` as
+        // meaningful when infos are reused across transitions, so the info
+        // must not gain one it never had. `becomeResolved` receives the
+        // value explicitly below.
+        let enteredContext: ModelFor<R> | undefined;
         enterPromise.then(
           (resolvedContext) => {
             if (transition.isAborted) return;
-            this.context = resolvedContext as ModelFor<R> | undefined;
+            enteredContext = resolvedContext as ModelFor<R> | undefined;
           },
           () => {
             // Swallow rejections; transition-level error handling reports them.
@@ -328,7 +332,7 @@ export default class InternalRouteInfo<R extends BaseRoute> {
         // classic manager does, so getInvokable rejects when enter rejects
         return manager.getInvokable(bucket, enterPromise).then(() => {
           throwIfAborted(transition);
-          const resolvedContext = this.context as ModelFor<R> | undefined;
+          const resolvedContext = enteredContext ?? (this.context as ModelFor<R> | undefined);
           return this.becomeResolved(transition, resolvedContext);
         });
       });

@@ -168,7 +168,10 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
         if (isTransitionObject(result)) {
           result = undefined;
         }
-        return RSVPPromise.resolve(result).then(() => resolvedModel);
+        // Re-read the stash rather than closing over `resolvedModel`: classic
+        // router.js lets afterModel swap the model out by writing into
+        // `transition.resolvedModels`.
+        return RSVPPromise.resolve(result).then(() => transition.resolvedModels![routeInfo.name]);
       });
   }
 
