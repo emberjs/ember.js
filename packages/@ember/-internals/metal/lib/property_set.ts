@@ -114,6 +114,15 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
   let newRoot = getPath(root, parts, true);
 
   if (newRoot !== null && newRoot !== undefined) {
+    if (keyName === '__proto__' || keyName === 'constructor' || keyName === 'prototype') {
+      // `getPath` screens these keys while walking the intermediate segments, but
+      // the final segment is popped off before that walk, so guard it here too.
+      // Otherwise `set(obj, 'a.__proto__', ...)` reassigns `obj.a`'s prototype.
+      if (tolerant) {
+        return;
+      }
+      throw new Error(`Property set failed: '${keyName}' is a prohibited path segment.`);
+    }
     return set(newRoot, keyName, value);
   } else if (!tolerant) {
     throw new Error(`Property set failed: object in path "${parts.join('.')}" could not be found.`);
