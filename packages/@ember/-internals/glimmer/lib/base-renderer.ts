@@ -90,12 +90,17 @@ export class ComponentRootState implements RendererRoot {
   constructor(
     state: RendererState,
     definition: object,
-    options: { into: Cursor; args?: Record<string, unknown> }
+    options: { into: Cursor; args?: Record<string, unknown>; builder?: IBuilder }
   ) {
     this.#render = errorLoopTransaction(() => {
+      // The tree builder is a property of an individual render (this root),
+      // not of the renderer: the same renderer can rehydrate one root and
+      // build another from scratch.
+      let builder = options.builder ?? state.builder;
+
       let iterator = glimmerRenderComponent(
         state.context,
-        state.builder(state.env, options.into),
+        builder(state.env, options.into),
         state.owner,
         definition,
         options?.args
@@ -524,10 +529,6 @@ export function renderComponent(
       ...env,
       isInteractive: env?.isInteractive ?? true,
       hasDOM: env && 'hasDOM' in env ? Boolean(env?.['hasDOM']) : true,
-      // `rehydrationBuilder` adopts server-rendered markup already in the
-      // target (emitted by `renderToString` with `rehydratable: true`)
-      // instead of building fresh DOM.
-      builder: env?.rehydrate ? rehydrationBuilder : clientBuilder,
     });
     RENDERER_CACHE.set(owner, renderer);
   }
@@ -575,7 +576,14 @@ export function renderComponent(
     renderTarget = { element: parentElement, nextSibling: firstNode };
   }
 
-  let innerResult = renderer.render(component, { into: renderTarget, args }).result;
+  let innerResult = renderer.render(component, {
+    into: renderTarget,
+    args,
+    // A rehydrating render adopts server-rendered markup already in the
+    // target (emitted by `renderToString` with `rehydratable: true`) instead
+    // of building fresh DOM.
+    builder: env?.rehydrate ? rehydrationBuilder : undefined,
+  }).result;
 
   if (innerResult) {
     associateDestroyableChild(owner, innerResult);
@@ -713,14 +721,17 @@ export async function renderToString(
   let renderer = BaseRenderer.strict(owner, document, {
     isInteractive: true,
     hasDOM: true,
-    // `serializeBuilder` emits glimmer's rehydration markers alongside the
-    // markup so a later client render can adopt it; `clientBuilder` emits
-    // clean markup.
-    builder: env?.rehydratable ? serializeBuilder : clientBuilder,
   });
 
   try {
-    renderer.render(component, { into: element, args });
+    renderer.render(component, {
+      into: element,
+      args,
+      // `serializeBuilder` emits glimmer's rehydration markers alongside the
+      // markup so a later client render can adopt it; the default builder
+      // emits clean markup.
+      builder: env?.rehydratable ? serializeBuilder : undefined,
+    });
 
     // The initial render is synchronous, but rendering isn't *done* until
     // every follow-on invalidation has settled: modifiers run during SSR and
@@ -740,16 +751,14 @@ export class BaseRenderer {
   static strict(
     owner: object,
     document: SimpleDocument | Document,
-    options: { isInteractive: boolean; hasDOM?: boolean; builder?: IBuilder }
+    options: { isInteractive: boolean; hasDOM?: boolean }
   ) {
-    let { builder, ...envOptions } = options;
-
     return new BaseRenderer(
       owner,
-      { hasDOM: hasDOM, ...envOptions },
+      { hasDOM: hasDOM, ...options },
       document as SimpleDocument,
       new ResolverImpl(),
-      builder ?? clientBuilder
+      clientBuilder
     );
   }
 
@@ -810,11 +819,12 @@ export class BaseRenderer {
 
   render(
     component: object,
-    options: { into: IntoTarget; args?: Record<string, unknown> }
+    options: { into: IntoTarget; args?: Record<string, unknown>; builder?: IBuilder }
   ): RendererRoot {
     const root = new ComponentRootState(this.state, component, {
       args: options.args,
       into: intoTarget(options.into),
+      builder: options.builder,
     });
     return this.state.renderRoot(root, this);
   }

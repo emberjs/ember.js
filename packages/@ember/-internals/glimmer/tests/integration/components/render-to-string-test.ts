@@ -170,6 +170,50 @@ moduleFor(
       run(() => result.destroy());
     }
 
+    async ['@test rehydration works even when the owner has already rendered normally']() {
+      // The tree builder is per render call, not per (cached-per-owner)
+      // renderer: a prior normal render must not lock the owner out of
+      // rehydrating later.
+      let Plain = template('<p>plain</p>');
+      let Hello = template('<h1>Hello, {{@name}}!</h1>');
+
+      let fixture = document.querySelector('#qunit-fixture') as HTMLElement;
+      let plainTarget = fixture.appendChild(document.createElement('div'));
+
+      // First: a normal client render, which caches this owner's renderer.
+      let first = renderComponent(Plain, { owner: this.owner, into: plainTarget });
+      this.assert.strictEqual(plainTarget.textContent, 'plain');
+
+      // Then: server output rehydrated with the same owner.
+      let html = await renderToString(Hello, {
+        owner: this.owner,
+        args: { name: 'Zoey' },
+        env: { rehydratable: true },
+      });
+      let target = fixture.appendChild(document.createElement('div'));
+      target.innerHTML = html;
+      let serverNode = target.querySelector('h1');
+
+      let result = renderComponent(Hello, {
+        owner: this.owner,
+        into: target,
+        args: { name: 'Zoey' },
+        env: { rehydrate: true },
+      });
+
+      this.assert.strictEqual(target.textContent, 'Hello, Zoey!');
+      this.assert.strictEqual(
+        target.querySelector('h1'),
+        serverNode,
+        'the server-rendered element was adopted despite a prior normal render with this owner'
+      );
+
+      run(() => {
+        result.destroy();
+        first.destroy();
+      });
+    }
+
     async ['@test rehydration adopts nested component markup']() {
       let Inner = template('<span>inner</span>');
       let Outer = template('<div class="outer"><Inner /></div>', {
