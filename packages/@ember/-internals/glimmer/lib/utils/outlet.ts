@@ -34,6 +34,12 @@ export interface RenderState {
   invokable: object | undefined;
 
   /**
+   * The manager's bucket for the route; the outlet curries it onto the
+   * wrapper as `@bucket`.
+   */
+  bucket?: object;
+
+  /**
    * Legacy template used by `setOutletState` callers (older test-helpers,
    * liquid-fire-style addons). Usually a `Template`, but a pre-built
    * component definition is also accepted (see `OutletView`).

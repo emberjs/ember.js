@@ -6,10 +6,6 @@ export class ClassicRouteBucket {
   // Cached invokable, written by buildClassicInvokable on first build.
   invokable: object | undefined = undefined;
 
-  // Cached wrapper definition returned from getRouteWrapper. Stable across
-  // re-renders for outlet identity stability.
-  wrapper: object | undefined = undefined;
-
   // The route's controller, read through as a getter so there is a single
   // source of truth. An eagerly-copied field would go stale for substate
   // routes: they enter via intermediate transitions that skip `willEnter`,

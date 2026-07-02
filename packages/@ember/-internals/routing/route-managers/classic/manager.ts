@@ -3,7 +3,7 @@
   behaviour behind the `RouteManager` API.
 */
 
-import type { CurriedComponent, Template, TemplateFactory } from '@glimmer/interfaces';
+import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { DEBUG } from '@glimmer/env';
 import { assert, info } from '@ember/debug';
@@ -11,11 +11,7 @@ import { getOwner } from '@ember/-internals/owner';
 import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
-import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef } from '@glimmer/reference/lib/reference';
-import { curry } from '@glimmer/runtime/lib/curried-value';
-import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
-import { dict } from '@glimmer/util/lib/collections';
 import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
 import type { InternalRouteInfo, BaseRoute as IRoute, RouteInfo, Transition } from 'router_js';
@@ -45,7 +41,7 @@ import {
   enterLoadingSubstate as enterClassicLoadingSubstate,
   fireLoadingEvent,
 } from './substates';
-import { ClassicRouteWrapperDefinition } from './wrapper';
+import { CLASSIC_ROUTE_WRAPPER } from './wrapper';
 
 type TransitionLike = Transition & {
   isAborted?: boolean;
@@ -100,8 +96,9 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
       name: route.routeName,
       controller: route.controller,
       model: route.currentModel,
-      wrapper: this.getRouteWrapper(bucket),
+      wrapper: this.getRouteWrapper(),
       invokable: buildClassicInvokable(bucket),
+      bucket,
     };
   }
 
@@ -218,29 +215,11 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     // No-op for classic routes.
   }
 
-  getRouteWrapper(bucket: ClassicRouteBucket): object {
-    if (bucket.wrapper === undefined) {
-      let owner = getOwner(bucket.route);
-      assert('Route is unexpectedly missing an owner', owner);
-
-      // Curry the route's static args onto the wrapper here: `@Component` (the
-      // invokable the wrapper renders) and `@bucket` (which exposes the
-      // controller to the wrapper template). Both are stable for the bucket's
-      // lifetime, so the curried wrapper is cached and reused, giving the outlet
-      // a stable identity. The outlet supplies only the live `@context` (model).
-      let args = dict<Reference>();
-      args['Component'] = createConstRef(buildClassicInvokable(bucket), '@Component');
-      args['bucket'] = createConstRef(bucket, '@bucket');
-
-      bucket.wrapper = curry(
-        0 as CurriedComponent,
-        new ClassicRouteWrapperDefinition(),
-        owner,
-        createCapturedArgs(args, EMPTY_POSITIONAL),
-        false
-      );
-    }
-    return bucket.wrapper;
+  getRouteWrapper(): object {
+    // Module-stable, per the RFC: the outlet supplies `@Component` (the
+    // invokable), `@context`, and `@bucket` at render time, and keys its
+    // stability check on the per-bucket invokable.
+    return CLASSIC_ROUTE_WRAPPER;
   }
 
   getInvokable(

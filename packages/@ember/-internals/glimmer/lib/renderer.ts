@@ -857,6 +857,15 @@ export class Renderer extends BaseRenderer {
   // renderer HOOKS
 
   appendOutletView(view: OutletView, target: SimpleElement): void {
+    // The append is scheduled into the `render` queue, so a teardown that
+    // starts in the same run loop (e.g. a deferred incremental outlet pass
+    // racing test cleanup) can destroy this renderer before the queue
+    // flushes. Rendering into a destroying renderer would assert deep in
+    // the destroyable graph; skip instead.
+    if (isDestroying(this) || isDestroyed(this)) {
+      return;
+    }
+
     // TODO: This bypasses the {{outlet}} syntax so logically duplicates
     // some of the set up code. Since this is all internal (or is it?),
     // we can refactor this to do something more direct/less convoluted

@@ -81,11 +81,23 @@ export default abstract class Router<R extends BaseRoute> {
   }
 
   /**
-    Host hook to schedule a render-tree update whenever `currentRouteInfos`
-    changes. EmberRouter schedules `_setOutlets`; the default is a no-op for
-    hosts that don't render.
+    Host hook: schedule a render-tree update because `currentRouteInfos`
+    changed. EmberRouter renders by scheduling `_setOutlets`; the default is
+    a no-op for hosts that don't render.
+
+    Called with `immediate: true` when the update must render right away for
+    correctness — the transition settled, or a loading/error substate was
+    entered.
+
+    Called with `immediate: false` for the incremental updates fired as each
+    route in an in-flight transition becomes ready. These are an optimization
+    (render parent routes while a child's model is still loading), and a host
+    is free to delay or batch them. Batching matters: each readiness event
+    arrives in its own run loop, so rendering one pass per event walks the
+    outlet tree once per route — 12 renders for a single 9-route transition,
+    measured, where 2 suffice.
    */
-  protected scheduleOutletUpdate(): void {}
+  protected scheduleOutletUpdate(_immediate = false): void {}
 
   /**
     Handles an error thrown synchronously by a `didEnter` hook (classic
@@ -120,7 +132,7 @@ export default abstract class Router<R extends BaseRoute> {
     const currentRouteInfos = this.currentRouteInfos ?? [];
     currentRouteInfos[routeIndex] = routeInfo;
     this.currentRouteInfos = currentRouteInfos;
-    this.scheduleOutletUpdate();
+    this.scheduleOutletUpdate(false);
   }
 
   // Called when `intermediateTransitionTo` fires (a classic loading or error
@@ -161,7 +173,7 @@ export default abstract class Router<R extends BaseRoute> {
       }
     }
 
-    this.scheduleOutletUpdate();
+    this.scheduleOutletUpdate(true);
   }
 
   // Called once every route in the transition has resolved. Runs the rest of
@@ -327,7 +339,7 @@ export default abstract class Router<R extends BaseRoute> {
         this.activeTransition = undefined;
       }
 
-      this.scheduleOutletUpdate();
+      this.scheduleOutletUpdate(true);
 
       this.triggerEvent(this.currentRouteInfos, true, 'didTransition', []);
       this.didTransition(this.currentRouteInfos);

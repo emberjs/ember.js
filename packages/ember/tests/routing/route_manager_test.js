@@ -28,9 +28,9 @@ class RecordingRouteManager extends ClassicRouteManager {
     return bucket;
   }
 
-  getRouteWrapper(bucket) {
-    this.log.push(['getRouteWrapper', bucket.route.routeName]);
-    return super.getRouteWrapper(bucket);
+  getRouteWrapper() {
+    this.log.push(['getRouteWrapper']);
+    return super.getRouteWrapper();
   }
 
   getInvokable(bucket, enterPromise) {
@@ -183,6 +183,77 @@ moduleFor(
         this.destroyedBuckets.sort(),
         ['application', 'index'],
         'bucket destructors ran at owner teardown'
+      );
+    }
+  }
+);
+
+moduleFor(
+  'Route manager - wrapper-less rendering',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      let TestRoute = class extends Route {};
+
+      // A manager that opts out of the wrapper: the outlet then invokes the
+      // route's invokable directly, passing the live model as `@context`,
+      // and keys teardown on invokable identity.
+      class WrapperlessRouteManager extends ClassicRouteManager {
+        getRenderState(bucket) {
+          return { ...super.getRenderState(bucket), wrapper: undefined };
+        }
+      }
+
+      setRouteManager((owner) => new WrapperlessRouteManager(owner), TestRoute);
+
+      this.add('route:application', class extends TestRoute {});
+      this.add(
+        'route:index',
+        class extends TestRoute {
+          model() {
+            return { msg: 'INDEX-CTX' };
+          }
+        }
+      );
+      this.add(
+        'route:other',
+        class extends TestRoute {
+          model() {
+            return { msg: 'OTHER-CTX' };
+          }
+        }
+      );
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      // Wrapper-less invokables receive the live model as `@context`.
+      this.add('template:index', precompileTemplate('index:{{@context.msg}}'));
+      this.add('template:other', precompileTemplate('other:{{@context.msg}}'));
+
+      this.router.map(function () {
+        this.route('other');
+      });
+    }
+
+    async ['@test a manager without a wrapper renders and tears down per route'](assert) {
+      await this.visit('/');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:index:INDEX-CTX',
+        'wrapper-less route rendered with @context'
+      );
+
+      await this.visit('/other');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:other:OTHER-CTX',
+        'route change tore down and rendered the next invokable'
+      );
+
+      await this.visit('/');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:index:INDEX-CTX',
+        'round-trip renders correctly'
       );
     }
   }

@@ -35,7 +35,7 @@ import { A as emberA } from '@ember/array';
 import typeOf from '@ember/utils/lib/type-of';
 import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
-import { once, run } from '@ember/runloop';
+import { cancel, later, once, run } from '@ember/runloop';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -561,8 +561,49 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         return router.isDestroying || router.isDestroyed;
       }
 
-      protected override scheduleOutletUpdate(): void {
-        once(router as any, '_setOutlets');
+      #pendingOutletFlush: ReturnType<typeof later> | null = null;
+
+      protected override scheduleOutletUpdate(immediate = false): void {
+        if (immediate) {
+          if (this.#pendingOutletFlush !== null) {
+            cancel(this.#pendingOutletFlush);
+            this.#pendingOutletFlush = null;
+          }
+          once(router as any, '_setOutlets');
+          return;
+        }
+
+        // Incremental (mid-transition) passes are coalesced onto the next
+        // timer tick: an instant-resolving transition never yields the event
+        // loop, so its per-route readiness folds into the settle-time render
+        // (12 passes down to 2, measured on a 9-deep transition); a genuinely
+        // pending model yields, the timer fires, and parents still render
+        // progressively above the pending child.
+        //
+        // `once` would not coalesce here: each route's readiness arrives via
+        // a native promise callback, which backburner wraps in its own
+        // autorun, and `once` only dedupes within a single run loop — one
+        // pass per resolving route, the exact behavior this replaces. A
+        // timer lives outside any one run loop, so the pending-handle guard
+        // below dedupes across all of them. `later` (not setTimeout) so the
+        // pass is cancelable and visible to test waiters.
+        if (this.#pendingOutletFlush !== null) {
+          return;
+        }
+        this.#pendingOutletFlush = later(() => {
+          this.#pendingOutletFlush = null;
+          if (router.isDestroying || router.isDestroyed) {
+            return;
+          }
+          router._setOutlets();
+        }, 0);
+      }
+
+      cancelPendingOutletUpdate(): void {
+        if (this.#pendingOutletFlush !== null) {
+          cancel(this.#pendingOutletFlush);
+          this.#pendingOutletFlush = null;
+        }
       }
     }
 
@@ -915,6 +956,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   }
 
   willDestroy() {
+    // A deferred incremental outlet pass must not fire into a tearing-down
+    // renderer.
+    (this._routerMicrolib as { cancelPendingOutletUpdate?(): void })?.cancelPendingOutletUpdate?.();
+
     if (this._toplevelView) {
       this._toplevelView.destroy();
       this._toplevelView = null;

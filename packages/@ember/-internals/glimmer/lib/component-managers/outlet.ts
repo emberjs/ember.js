@@ -51,6 +51,7 @@ export interface OutletDefinitionState {
   controller?: unknown;
   wrapper?: object;
   invokable?: object;
+  bucket?: object;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {

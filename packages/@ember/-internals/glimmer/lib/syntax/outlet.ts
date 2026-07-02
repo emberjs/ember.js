@@ -89,15 +89,6 @@ export const outletHelper = internalHelper(
         return null;
       }
 
-      // Manager-driven routes provide a `wrapper` that already has its static
-      // args applied; legacy `setOutletState` callers provide only a self-baked
-      // `invokable`. Either way we apply `@context` and render the result.
-      let target = state.wrapper ?? state.invokable;
-      assert(
-        'Expected outlet state to have a wrapper or invokable to render',
-        target !== undefined
-      );
-
       // If we are crossing an engine mount point, this is how the owner
       // gets switched.
       let outletOwner = outletState?.render?.owner ?? owner;
@@ -116,11 +107,42 @@ export const outletHelper = internalHelper(
         context = createDebugAliasRef!('@context', context);
       }
 
-      // A single curry: the outlet component's template forwards `@context`
-      // onto `@Component` (`<@Component @context={{@context}} />`), so the
-      // target receives the live context without an inner curried layer.
+      // stateFor guarantees an invokable is present.
+      assert('Expected outlet state to have an invokable to render', state.invokable !== undefined);
+
       let named = dict<Reference>();
-      named['Component'] = createConstRef(target, '@Component');
+
+      if (state.wrapper !== undefined) {
+        // Manager render with a wrapper: attach the RFC's static args —
+        // `@Component` (the per-bucket invokable) and `@bucket` — to the
+        // module-stable wrapper with `curry()`, and let the outlet's layout
+        // pass the live `@context`. The same args could instead be written
+        // into the outlet's layout as `<@Component @Component=... @bucket=...>`,
+        // but that shape makes the wrapper show up as an opaque `@Component`
+        // frame in the debug render tree and backtracking-assertion
+        // messages; a curried value keeps it invisible there, matching how
+        // these traces have always looked.
+        let wrapperArgs = dict<Reference>();
+        wrapperArgs['Component'] = createConstRef(state.invokable, '@Component');
+        wrapperArgs['bucket'] = createConstRef(state.bucket, '@bucket');
+
+        named['Component'] = createConstRef(
+          curry(
+            0 as CurriedComponent,
+            state.wrapper,
+            outletOwner,
+            createCapturedArgs(wrapperArgs, EMPTY_POSITIONAL),
+            false
+          ),
+          '@Component'
+        );
+      } else {
+        // Wrapper-less render (a manager that opted out, or a legacy
+        // `setOutletState` caller): invoke the invokable directly with the
+        // live `@context`.
+        named['Component'] = createConstRef(state.invokable, '@Component');
+      }
+
       named['context'] = context;
 
       outlet = curry(
@@ -155,6 +177,7 @@ function stateFor(
     controller: render.controller,
     wrapper: render.wrapper,
     invokable: render.invokable,
+    bucket: render.bucket,
   };
 }
 
@@ -166,11 +189,13 @@ function isStable(
     return false;
   }
 
-  // Manager-driven routes: the curried wrapper is cached on the bucket, so it
-  // is a stable identity (same per route, distinct per route change). Model
-  // changes keep the same wrapper and re-render in place.
+  // Manager-driven routes with a wrapper: the wrapper is module-stable, so
+  // route identity is carried by the per-bucket invokable. `controller` is
+  // deliberately excluded here: it can legitimately appear after the first
+  // render (setupController runs in didEnter) and must not tear the route
+  // down.
   if (state.wrapper !== undefined || lastState.wrapper !== undefined) {
-    return state.wrapper === lastState.wrapper;
+    return state.wrapper === lastState.wrapper && state.invokable === lastState.invokable;
   }
 
   // Legacy `setOutletState` callers have no wrapper; key on the upgraded

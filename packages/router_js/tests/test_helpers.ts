@@ -92,7 +92,7 @@ interface RouteManagerLike {
   willExit(bucket: TestRouteBucket, args: NavigationArgs & { isExiting?: boolean }): void;
   exit(bucket: TestRouteBucket, args?: NavigationArgs): void;
   didExit(bucket: TestRouteBucket, args: NavigationArgs): void;
-  getRouteWrapper(bucket: TestRouteBucket): object;
+  getRouteWrapper(): object;
   getInvokable(
     bucket: TestRouteBucket,
     enterPromise: Promise<unknown>
@@ -281,7 +281,7 @@ class TestRouteManager implements RouteManagerLike {
 
   // Tests never actually render, so the wrapper identity is unused; we just
   // need a stable reference to satisfy the manager contract.
-  getRouteWrapper(_bucket: TestRouteBucket): object {
+  getRouteWrapper(): object {
     return TEST_WRAPPER_SENTINEL;
   }
 

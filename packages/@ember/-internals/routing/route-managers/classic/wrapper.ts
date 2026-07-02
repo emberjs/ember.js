@@ -1,12 +1,10 @@
 /**
   The wrapper component returned by `ClassicRouteManager.getRouteWrapper`.
-  The outlet helper curries `@Component` (the per-render invokable), `@model`,
-  and `@controller` onto an instance of this definition; the wrapper template
-  forwards `@model` and `@controller` onto the invokable.
-
-  A fresh definition is created per bucket so two routes sharing a `Route`
-  class still produce distinct wrapper identities for the outlet's stability
-  check.
+  Module-stable — one instance serves every route. The outlet invokes it
+  with `@Component` (the per-bucket invokable), `@context` (the live model),
+  and `@bucket`; the template forwards model and controller onto the
+  invokable. Route identity for the outlet's stability check is carried by
+  the invokable, not the wrapper.
 */
 
 import type {
@@ -21,8 +19,8 @@ import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { NULL_REFERENCE } from '@glimmer/reference/lib/reference';
 import { precompileTemplate } from '@ember/template-compilation';
 
-// Shared template used by every wrapper instance. Renders the invokable
-// curried in as `@Component` and forwards `@model` / `@controller` onto it.
+// Renders the invokable passed in as `@Component` and forwards
+// `@model` / `@controller` onto it.
 const CLASSIC_WRAPPER_TEMPLATE = precompileTemplate(
   `<@Component @model={{@context}} @controller={{@bucket.controller}} />`,
   {
@@ -82,3 +80,6 @@ setInternalComponentManager(
   ClassicRouteWrapperDefinition.prototype
 );
 setComponentTemplate(CLASSIC_WRAPPER_TEMPLATE, ClassicRouteWrapperDefinition.prototype);
+
+// The one wrapper instance shared by every classic route.
+export const CLASSIC_ROUTE_WRAPPER = new ClassicRouteWrapperDefinition();
