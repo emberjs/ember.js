@@ -21,10 +21,10 @@ it('[dev] source modules with side effects', () => {
   expect(modules.dev).toMatchInlineSnapshot(`
     [
       "@ember/-internals/environment/lib/env.js",
+      "@ember/-internals/glimmer/lib/base-renderer.js",
       "@ember/-internals/glimmer/lib/components/input.js",
       "@ember/-internals/glimmer/lib/components/link-to.js",
       "@ember/-internals/glimmer/lib/environment.js",
-      "@ember/-internals/glimmer/lib/renderer.js",
       "@ember/-internals/runtime/lib/ext/rsvp.js",
       "@ember/debug/index.js",
       "@ember/routing/route.js",
@@ -49,9 +49,9 @@ it('[prod] source modules with side effects', () => {
   expect(modules.prod).toMatchInlineSnapshot(`
     [
       "@ember/-internals/environment/lib/env.js",
+      "@ember/-internals/glimmer/lib/base-renderer.js",
       "@ember/-internals/glimmer/lib/components/input.js",
       "@ember/-internals/glimmer/lib/environment.js",
-      "@ember/-internals/glimmer/lib/renderer.js",
       "@ember/-internals/runtime/lib/ext/rsvp.js",
       "@ember/routing/route.js",
       "@glimmer/runtime/lib/compiled/opcodes/component.js",

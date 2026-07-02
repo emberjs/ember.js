@@ -70,7 +70,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: false,
 };
 
-const CAPABILITIES_MASK = capabilityFlagsFrom(CAPABILITIES);
+const CAPABILITIES_MASK = /*@__PURE__*/ capabilityFlagsFrom(CAPABILITIES);
 
 class OutletComponentManager
   implements
@@ -178,7 +178,7 @@ class OutletComponentManager
   }
 }
 
-const OUTLET_MANAGER = new OutletComponentManager();
+const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
 // The one outlet layout. `@Component` is always a value that already
 // carries everything it needs — the outlet helper curries the args (the
