@@ -102,8 +102,13 @@ export default class OutletView {
     this.state = {
       ref,
       name: TOP_LEVEL_NAME,
-      template,
-      controller: undefined,
+      // The root template renders with no `self`; all template→invokable
+      // upgrading (root and legacy alike) lives in this module. The template
+      // is only absent when unit tests construct a bare OutletView — those
+      // never render, so the missing invokable is caught by the renderer's
+      // assertion if one ever tries.
+      invokable:
+        template !== undefined ? makeRouteTemplate(owner, TOP_LEVEL_NAME, template) : undefined,
     };
   }
 
@@ -130,11 +135,12 @@ export default class OutletView {
   // Legacy `setOutletState` callers (the rendering test-helpers and
   // liquid-fire-style addons) provide a raw `template` with no `invokable`.
   // The outlet helper only knows how to render an invokable, so we upgrade any
-  // raw template into a route template here. Walk the whole outlet chain so
-  // nested legacy states are normalized too. We skip renders that already have
-  // an invokable (the manager-driven router path), which keeps the invokable
-  // identity stable when the same render object is set again.
-  upgradeTemplateToInvokable(state: OutletState): OutletState {
+  // raw template into a route template here, mutating the renders in place.
+  // Walk the whole outlet chain so nested legacy states are normalized too.
+  // We skip renders that already have an invokable (the manager-driven router
+  // path), which keeps the invokable identity stable when the same render
+  // object is set again.
+  private upgradeLegacyTemplates(state: OutletState): void {
     let current: OutletState | undefined = state;
 
     while (current !== undefined) {
@@ -150,8 +156,6 @@ export default class OutletView {
 
       current = current.outlets.main;
     }
-
-    return state;
   }
 
   // Turn a legacy raw `template` into something the outlet can render. A
@@ -184,7 +188,8 @@ export default class OutletView {
   }
 
   setOutletState(state: OutletState): void {
-    updateRef(this.ref, this.upgradeTemplateToInvokable(state));
+    this.upgradeLegacyTemplates(state);
+    updateRef(this.ref, state);
   }
 
   destroy(): void {

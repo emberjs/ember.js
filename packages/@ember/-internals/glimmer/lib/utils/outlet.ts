@@ -1,5 +1,4 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { Template } from '@glimmer/interfaces';
 
 export interface RenderState {
   /**
@@ -36,9 +35,10 @@ export interface RenderState {
 
   /**
    * Legacy template used by `setOutletState` callers (older test-helpers,
-   * liquid-fire-style addons).
+   * liquid-fire-style addons). Usually a `Template`, but a pre-built
+   * component definition is also accepted (see `OutletView`).
    */
-  template?: Template | object | undefined;
+  template?: object;
 }
 
 export interface OutletState {

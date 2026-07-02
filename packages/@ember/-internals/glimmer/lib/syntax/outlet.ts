@@ -116,20 +116,12 @@ export const outletHelper = internalHelper(
         context = createDebugAliasRef!('@context', context);
       }
 
-      let contextArg = dict<Reference>();
-      contextArg['context'] = context;
-
+      // A single curry: the outlet component's template forwards `@context`
+      // onto `@Component` (`<@Component @context={{@context}} />`), so the
+      // target receives the live context without an inner curried layer.
       let named = dict<Reference>();
-      named['Component'] = createConstRef(
-        curry(
-          0 as CurriedComponent,
-          target,
-          outletOwner,
-          createCapturedArgs(contextArg, EMPTY_POSITIONAL),
-          false
-        ),
-        '@Component'
-      );
+      named['Component'] = createConstRef(target, '@Component');
+      named['context'] = context;
 
       outlet = curry(
         0 as CurriedComponent,
@@ -160,7 +152,6 @@ function stateFor(
   return {
     ref,
     name: render.name,
-    template: render.invokable,
     controller: render.controller,
     wrapper: render.wrapper,
     invokable: render.invokable,

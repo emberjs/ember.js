@@ -41,8 +41,14 @@ interface OutletInstanceState {
 export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
-  template: object;
-  controller: unknown;
+
+  /**
+   * What this outlet renders. The root `OutletView` provides the upgraded
+   * root template as `invokable`; per-outlet states built by the `{{outlet}}`
+   * helper carry the manager's `wrapper` (when present) plus `invokable` and
+   * `controller`, which the helper's stability check keys on.
+   */
+  controller?: unknown;
   wrapper?: object;
   invokable?: object;
 }
@@ -173,7 +179,16 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = new OutletComponentManager();
 
-const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component />', {
+// The `{{outlet}}` helper's layout: forwards the live `@context` (model) onto
+// the render target so the helper only needs a single curry.
+const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component @context={{@context}} />', {
+  strictMode: true,
+});
+
+// The root outlet's layout: the root invokable takes no args, and forwarding
+// an (always-undefined) `@context` here would leak a stray named arg into
+// the debug render tree for every directly-invoked route template.
+const ROOT_OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component />', {
   strictMode: true,
 });
 
@@ -191,12 +206,13 @@ export class OutletComponent implements ComponentDefinition<
 
   constructor(
     owner: InternalOwner,
-    public state: OutletDefinitionState
+    public state: OutletDefinitionState,
+    template: ReturnType<typeof precompileTemplate> = OUTLET_COMPONENT_TEMPLATE
   ) {
-    this.compilable = unwrapTemplate(OUTLET_COMPONENT_TEMPLATE(owner)).asLayout();
+    this.compilable = unwrapTemplate(template(owner)).asLayout();
   }
 }
 
 export function createRootOutlet(outletView: OutletView): OutletComponent {
-  return new OutletComponent(outletView.owner, outletView.state);
+  return new OutletComponent(outletView.owner, outletView.state, ROOT_OUTLET_COMPONENT_TEMPLATE);
 }

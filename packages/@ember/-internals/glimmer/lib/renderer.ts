@@ -54,7 +54,6 @@ import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
-import { makeRouteTemplate } from './component-managers/route-template';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
@@ -863,13 +862,11 @@ export class Renderer extends BaseRenderer {
     // we can refactor this to do something more direct/less convoluted
     // and with less setup, but get it working first
     let outlet = createRootOutlet(view);
-    let { name, template } = view.state;
+    let { invokable } = view.state;
+    assert('[BUG] OutletView state is unexpectedly missing its root invokable', invokable);
 
     let named = dict<Reference>();
-    named['Component'] = createConstRef(
-      makeRouteTemplate(view.owner, name, template as Template),
-      '@Component'
-    );
+    named['Component'] = createConstRef(invokable, '@Component');
 
     let args = createCapturedArgs(named, EMPTY_POSITIONAL);
 
