@@ -15,7 +15,14 @@ const packageCache = PackageCache.shared('ember-source', projectRoot);
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.cjs');
 const canaryFeatures = require('./broccoli/canary-features.cjs');
 
-const testDependencies = ['qunit', 'vite', 'js-reporters', 'expect-type'];
+const testDependencies = [
+  'qunit',
+  'vite',
+  'js-reporters',
+  '@simple-dom/serializer',
+  '@simple-dom/void-map',
+  'expect-type',
+];
 
 let configs = [
   esmConfig(),
@@ -292,10 +299,7 @@ export function hiddenDependencies() {
     ).path,
     rsvp: resolve(findFromProject('rsvp').root, 'dist/es6/rsvp.es.js'),
     '@handlebars/parser': resolve(packageCache.appRoot, 'packages/@handlebars/parser/lib/index.js'),
-    // `@simple-dom/serializer` (and its void-map) power `renderToString` from
-    // `@ember/renderer`, which serializes a server-rendered SimpleDOM tree to a
-    // string. They are inlined rather than exposed to consumers.
-    ...walkGlimmerDeps(['@glimmer/compiler', '@simple-dom/serializer', '@simple-dom/void-map']),
+    ...walkGlimmerDeps(['@glimmer/compiler']),
     'decorator-transforms/runtime': resolve(
       findFromProject('decorator-transforms').root,
       'dist/runtime.js'

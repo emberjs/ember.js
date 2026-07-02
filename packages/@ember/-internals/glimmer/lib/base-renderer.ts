@@ -30,9 +30,6 @@ import { DOMChangesImpl } from '@glimmer/runtime/lib/dom/helper';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
-import createHTMLDocument from '@simple-dom/document';
-import Serializer from '@simple-dom/serializer';
-import voidMap from '@simple-dom/void-map';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
@@ -442,12 +439,14 @@ function intoTarget(into: IntoTarget): Cursor {
 }
 
 /**
- * `Element` only exists in a real DOM environment; SSR targets (SimpleDOM
- * elements) are never instances of it. Referencing the bare `Element` global
- * from Node.js would throw a ReferenceError, so guard on its existence.
+ * Whether the render target's existing contents can be cleared via
+ * `innerHTML`. Detected by capability rather than `instanceof Element`: the
+ * `Element` global doesn't exist in Node, and a cross-realm element (e.g.
+ * happy-dom's) isn't an instance of the host realm's `Element` anyway.
+ * Cursors and SimpleDOM elements don't have `innerHTML` and are skipped.
  */
-function isDOMElement(target: IntoTarget): target is Element {
-  return typeof Element !== 'undefined' && target instanceof Element;
+function supportsInnerHTML(target: IntoTarget): target is IntoTarget & { innerHTML: string } {
+  return 'innerHTML' in target;
 }
 
 /**
@@ -560,7 +559,7 @@ export function renderComponent(
    * When rehydrating, the existing contents *are* the server-rendered markup
    * that the render below will adopt, so they must not be cleared.
    */
-  if (!existing && isDOMElement(into) && !env?.rehydrate) {
+  if (!existing && supportsInnerHTML(into) && !env?.rehydrate) {
     into.innerHTML = '';
   }
 
@@ -611,30 +610,45 @@ const RENDER_CACHE = new WeakMap<IntoTarget, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
 
 /**
- * Render a component to an HTML string, without needing a live DOM.
+ * Render a component to an HTML string.
  *
  * This is the server-side-rendering (SSR) counterpart to
- * {@link renderComponent}: the same rendering pipeline, pointed at an
- * in-memory [SimpleDOM](https://github.com/ember-fastboot/simple-dom) document
- * instead of a live one, with the result serialized to a string. That makes it
- * usable from Node.js (or any environment without a global `document`), which
- * is exactly what a server needs in order to produce HTML for the initial page
- * load.
+ * {@link renderComponent}: the same rendering pipeline, rendered into a
+ * detached element and serialized to a string once rendering has settled.
  *
  * ```js
  * import { renderToString } from '@ember/renderer';
  *
- * let html = renderToString(MyComponent, { args: { name: 'Zoey' } });
+ * let html = await renderToString(MyComponent, { args: { name: 'Zoey' } });
  * // => "<h1>Hello, Zoey!</h1>"
  * ```
  *
- * Rendering is a synchronous, one-shot operation: the component tree is
- * rendered, serialized, and torn down (running any component destructors)
- * before this function returns, so no reactivity or re-rendering occurs.
- * Rendering is non-interactive by default (modifiers do not run), matching the
- * constraints of a server environment. Pass `env: { rehydratable: true }` to
- * include glimmer's rehydration markers in the output so a subsequent
- * client-side render can re-use (rehydrate) the server-rendered markup rather
+ * Server rendering is a *real* render, not a degraded one:
+ *
+ * - Rendering is always interactive: modifiers run against real elements,
+ *   exactly as they would in the browser.
+ * - The returned promise resolves once rendering has settled: if a modifier
+ *   (or anything else during render) updates tracked state, the resulting
+ *   re-render completes before the output is serialized.
+ * - The component tree is torn down (running destructors) before the promise
+ *   resolves.
+ *
+ * This requires a DOM implementation. In the browser the global `document` is
+ * used automatically; in Node.js provide one via `env.document` — for example
+ * [happy-dom](https://github.com/capricorn86/happy-dom):
+ *
+ * ```js
+ * import { Window } from 'happy-dom';
+ * import { renderToString } from '@ember/renderer';
+ *
+ * let html = await renderToString(MyComponent, {
+ *   env: { document: new Window().document },
+ * });
+ * ```
+ *
+ * Pass `env: { rehydratable: true }` to include glimmer's rehydration markers
+ * in the output so a subsequent client-side render (`renderComponent` with
+ * `env: { rehydrate: true }`) can re-use the server-rendered markup rather
  * than throwing it away.
  *
  * @method renderToString
@@ -643,12 +657,12 @@ const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
  * @param {Object} component The component to render.
  * @param {Object} [options]
  * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
- * @param {Object} [options.args] Optionally pass args in to the component.
- * @param {Object} [options.env] Optional renderer configuration. `isInteractive` (default `false`) controls whether modifiers run; `rehydratable` (default `false`) controls whether rehydration markers are emitted.
- * @returns {String} the serialized HTML for the rendered component
+ * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive; rendering settles before serialization.
+ * @param {Object} [options.env] Optional renderer configuration. `document` provides the DOM implementation to render with (defaults to the global `document`); `rehydratable` (default `false`) controls whether rehydration markers are emitted.
+ * @returns {Promise<String>} the serialized HTML for the rendered component
  * @public
  */
-export function renderToString(
+export async function renderToString(
   /**
    * The component definition to render. Any component that has had its manager
    * registered is valid, same as {@link renderComponent}.
@@ -667,6 +681,8 @@ export function renderToString(
     owner?: object;
     /**
      * These args get passed to the rendered component.
+     *
+     * If your args are reactive, rendering settles before serialization.
      */
     args?: Record<string, unknown>;
     /**
@@ -674,10 +690,11 @@ export function renderToString(
      */
     env?: {
       /**
-       * When true, modifiers will run. Defaults to `false`, since server
-       * rendering is typically non-interactive.
+       * The DOM implementation to render with. Defaults to the global
+       * `document`. In environments without one (Node.js), pass a
+       * DOM-compatible document such as happy-dom's `new Window().document`.
        */
-      isInteractive?: boolean;
+      document?: SimpleDocument | Document;
       /**
        * When true, the emitted HTML includes glimmer's rehydration markers so
        * the output can be re-used (rehydrated) by a subsequent client-side
@@ -691,42 +708,73 @@ export function renderToString(
       [rendererOption: string]: unknown;
     };
   } = {}
-): string {
-  let document = createHTMLDocument();
+): Promise<string> {
+  let document = env?.document ?? globalThis.document;
+
+  assert(
+    'renderToString requires a document. In environments without a global `document` (like Node.js), provide one via `env.document` — for example a happy-dom `new Window().document`.',
+    document !== undefined && document !== null
+  );
+
+  // Server rendering is a *real* render — modifiers run against real elements
+  // and the output is serialized via `innerHTML` — so it needs a full DOM
+  // implementation (browser, happy-dom, jsdom), not SimpleDOM. To render into
+  // SimpleDOM (no modifiers, manual serialization), use `renderComponent` with
+  // `env: { document }` instead.
+  assert(
+    'renderToString requires a full DOM-compatible document (the browser document, or happy-dom in Node.js), not a SimpleDOM document. To render into SimpleDOM, use `renderComponent` with `env: { document }` and serialize the result yourself.',
+    !isSimpleDocument(document)
+  );
+
   // Render into a detached wrapper element and serialize its *children*, so
   // the returned string is only the component's own markup.
-  let element = document.createElement('div');
+  let element = (document as Document).createElement('div');
 
   // Build a dedicated renderer rather than going through the per-owner
   // renderer cache used by `renderComponent`: SSR output must target the
-  // in-memory document created above, even if this owner has previously
-  // rendered into a live DOM.
+  // document chosen above, even if this owner has previously rendered into
+  // the live DOM.
+  //
+  // `isInteractive` and `hasDOM` are deliberately not options here: a server
+  // render is a real, interactive render against a real (in-memory) DOM.
   let renderer = BaseRenderer.strict(owner, document, {
     ...env,
-    isInteractive: env?.isInteractive ?? false,
-    hasDOM: false,
+    isInteractive: true,
+    hasDOM: true,
     rehydratable: Boolean(env?.rehydratable),
   });
 
   try {
     renderer.render(component, { into: element, args });
 
-    return new Serializer(voidMap).serializeChildren(element);
+    // The initial render is synchronous, but rendering isn't *done* until
+    // every follow-on invalidation has settled: modifiers run during SSR and
+    // may update tracked state that the template consumed. Wait for that
+    // reactivity to flush before serializing.
+    await renderSettled();
+
+    return element.innerHTML;
   } finally {
-    // One-shot render: tear the whole renderer down synchronously so component
-    // destructors run and nothing stays registered with the run loop.
+    // One-shot render: tear the whole renderer down so component destructors
+    // run and nothing stays registered with the run loop.
     _backburner.run(() => renderer.destroy());
   }
 }
 
 /**
- * A real `Document` supports DOM APIs (like `insertAdjacentHTML`, used by
- * `{{{tripleStache}}}`) that an in-memory SimpleDOM document does not, so the
- * renderer picks its tree-construction strategy based on which one it is
- * handed. Anything that isn't a browser `Document` is treated as SimpleDOM.
+ * SimpleDOM documents expose `createRawHTMLSection`, the primitive that
+ * `NodeDOMTreeConstruction` uses to append raw HTML (`{{{tripleStache}}}`).
+ * Real DOM implementations — browser, happy-dom, jsdom — don't have it; they
+ * support `insertAdjacentHTML` instead, so they take the default tree
+ * construction path.
+ *
+ * This is detected by capability rather than `instanceof Document` on purpose:
+ * a cross-realm document (e.g. a happy-dom `new Window().document` in Node) is
+ * not an instance of the host realm's `Document` — and in Node there may be no
+ * `Document` global at all.
  */
-function isRealDocument(document: SimpleDocument | Document): document is Document {
-  return typeof Document !== 'undefined' && document instanceof Document;
+function isSimpleDocument(document: SimpleDocument | Document): document is SimpleDocument {
+  return typeof (document as SimpleDocument).createRawHTMLSection === 'function';
 }
 
 export class BaseRenderer {
@@ -777,16 +825,18 @@ export class BaseRenderer {
      *         an app needs (which will actually change and become less over time)
      */
     let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
-    // A SimpleDOM document (e.g. during SSR) needs SimpleDOM-aware tree
-    // construction: the default `DOMTreeConstruction` relies on real-DOM APIs
+    // A SimpleDOM document needs SimpleDOM-aware tree construction: the
+    // default `DOMTreeConstruction` relies on real-DOM APIs
     // (`insertAdjacentHTML`, SVG namespace handling) that SimpleDOM does not
     // implement. `NodeDOMTreeConstruction` appends raw HTML sections instead.
-    let environmentOptions = isRealDocument(document)
-      ? { document }
-      : {
+    // Real DOM implementations (browser, happy-dom, jsdom) take the default
+    // path.
+    let environmentOptions = isSimpleDocument(document)
+      ? {
           appendOperations: new NodeDOMTreeConstruction(document),
           updateOperations: new DOMChangesImpl(document),
-        };
+        }
+      : { document };
     let options = runtimeOptions(environmentOptions, env, sharedArtifacts, resolver);
     let context = new EvaluationContextImpl(
       sharedArtifacts,

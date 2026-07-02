@@ -82,25 +82,40 @@ export { renderSettled } from '@ember/-internals/glimmer/lib/base-renderer';
 export { renderComponent } from '@ember/-internals/glimmer/lib/base-renderer';
 
 /**
- * Render a component to an HTML string, without needing a live DOM.
+ * Render a component to an HTML string.
  *
  * This is the server-side-rendering (SSR) counterpart to `renderComponent`:
- * the same rendering pipeline, pointed at an in-memory
- * [SimpleDOM](https://github.com/ember-fastboot/simple-dom) document instead
- * of a live one, with the result serialized to a string — so it works in
- * Node.js (or any environment without a global `document`).
+ * the same rendering pipeline, rendered into a detached element and serialized
+ * to a string once rendering has settled.
  *
  * ```js
  * import { renderToString } from '@ember/renderer';
  *
- * let html = renderToString(MyComponent, { args: { name: 'Zoey' } });
+ * let html = await renderToString(MyComponent, { args: { name: 'Zoey' } });
  * // => "<h1>Hello, Zoey!</h1>"
  * ```
  *
- * Rendering is a synchronous, one-shot operation with no reactivity, and is
- * non-interactive by default (modifiers do not run). Pass
- * `env: { rehydratable: true }` to include glimmer's rehydration markers in
- * the output so a subsequent client render can rehydrate the markup.
+ * Server rendering is a *real* render, not a degraded one: modifiers run
+ * against real elements, and the returned promise resolves only after
+ * rendering has settled — any tracked-state updates made during render (e.g.
+ * by a modifier) are reflected in the output.
+ *
+ * This requires a DOM implementation. In the browser the global `document` is
+ * used automatically; in Node.js provide one via `env.document` — for example
+ * [happy-dom](https://github.com/capricorn86/happy-dom):
+ *
+ * ```js
+ * import { Window } from 'happy-dom';
+ * import { renderToString } from '@ember/renderer';
+ *
+ * let html = await renderToString(MyComponent, {
+ *   env: { document: new Window().document },
+ * });
+ * ```
+ *
+ * Pass `env: { rehydratable: true }` to include glimmer's rehydration markers
+ * in the output so a subsequent client render (`renderComponent` with
+ * `env: { rehydrate: true }`) can rehydrate the markup.
  *
  * @method renderToString
  * @static
@@ -108,9 +123,9 @@ export { renderComponent } from '@ember/-internals/glimmer/lib/base-renderer';
  * @param {Object} component The component to render.
  * @param {Object} [options]
  * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
- * @param {Object} [options.args] Optionally pass args in to the component.
- * @param {Object} [options.env] Optional renderer configuration (`isInteractive`, `rehydratable`).
- * @returns {String} the serialized HTML for the rendered component
+ * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive; rendering settles before serialization.
+ * @param {Object} [options.env] Optional renderer configuration (`document`, `rehydratable`).
+ * @returns {Promise<String>} the serialized HTML for the rendered component
  * @public
  */
 export { renderToString } from '@ember/-internals/glimmer/lib/base-renderer';

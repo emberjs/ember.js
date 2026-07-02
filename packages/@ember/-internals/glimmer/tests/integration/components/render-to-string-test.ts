@@ -1,10 +1,16 @@
-import { AbstractTestCase, buildOwner, moduleFor, runDestroy } from 'internal-test-helpers';
+import {
+  AbstractTestCase,
+  buildOwner,
+  defineSimpleModifier,
+  moduleFor,
+  runDestroy,
+} from 'internal-test-helpers';
 
 import { template } from '@ember/template-compiler';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
-import { on } from '@glimmer/runtime';
+import { tracked } from '@glimmer/tracking';
 import { run } from '@ember/runloop';
 import createHTMLDocument from '@simple-dom/document';
 import Serializer from '@simple-dom/serializer';
@@ -29,34 +35,34 @@ class RenderToStringTestCase extends AbstractTestCase {
 moduleFor(
   'Server-side rendering - renderToString',
   class extends RenderToStringTestCase {
-    ['@test it renders a template-only component to a string']() {
+    async ['@test it renders a template-only component to a string']() {
       let Hello = template('<h1>Hello, world!</h1>');
 
       this.assert.strictEqual(
-        renderToString(Hello, { owner: this.owner }),
+        await renderToString(Hello, { owner: this.owner }),
         '<h1>Hello, world!</h1>'
       );
     }
 
-    ['@test it renders args into the string']() {
+    async ['@test it renders args into the string']() {
       let Greeting = template('<p>Hello, {{@name}}!</p>');
 
       this.assert.strictEqual(
-        renderToString(Greeting, { owner: this.owner, args: { name: 'Zoey' } }),
+        await renderToString(Greeting, { owner: this.owner, args: { name: 'Zoey' } }),
         '<p>Hello, Zoey!</p>'
       );
     }
 
-    ['@test it renders `{{{tripleStache}}}` raw HTML without a live DOM']() {
+    async ['@test it renders `{{{tripleStache}}}` raw HTML']() {
       let Component = template('<div>{{{@html}}}</div>');
 
       this.assert.strictEqual(
-        renderToString(Component, { owner: this.owner, args: { html: '<b>bold</b>' } }),
+        await renderToString(Component, { owner: this.owner, args: { html: '<b>bold</b>' } }),
         '<div><b>bold</b></div>'
       );
     }
 
-    ['@test it renders a glimmer component with state']() {
+    async ['@test it renders a glimmer component with state']() {
       class State extends GlimmerishComponent {
         get shout() {
           return String((this.args as { message: unknown }).message).toUpperCase();
@@ -68,28 +74,62 @@ moduleFor(
       );
 
       this.assert.strictEqual(
-        renderToString(Component, { owner: this.owner, args: { message: 'hi' } }),
+        await renderToString(Component, { owner: this.owner, args: { message: 'hi' } }),
         '<span>HI</span>'
       );
     }
 
-    ['@test by default it is non-interactive, so modifiers do not run']() {
+    async ['@test modifiers run during server rendering']() {
+      // Server rendering is a real, interactive render — unlike FastBoot,
+      // modifiers are not skipped.
       let ran = false;
-      let noop = () => (ran = true);
-      let Component = template('<button {{on "click" noop}}>ok</button>', {
-        scope: () => ({ on, noop }),
+      let installed = defineSimpleModifier(() => (ran = true));
+      let Component = template('<button {{installed}}>ok</button>', {
+        scope: () => ({ installed }),
       });
 
-      let html = renderToString(Component, { owner: this.owner });
+      let html = await renderToString(Component, { owner: this.owner });
 
       this.assert.strictEqual(html, '<button>ok</button>');
-      this.assert.false(ran, 'the modifier did not install during non-interactive SSR');
+      this.assert.true(ran, 'the modifier installed during SSR');
     }
 
-    ['@test it can emit rehydration markers']() {
+    async ['@test modifier-driven DOM effects appear in the output']() {
+      let autofocus = defineSimpleModifier((element: Element) =>
+        element.setAttribute('data-focused', 'true')
+      );
+      let Component = template('<input {{autofocus}} />', {
+        scope: () => ({ autofocus }),
+      });
+
+      this.assert.strictEqual(
+        await renderToString(Component, { owner: this.owner }),
+        '<input data-focused="true">'
+      );
+    }
+
+    async ['@test rendering settles before serializing: tracked state updated by a modifier is reflected in the output']() {
+      // The FastBoot regression this API must not repeat: state changes made
+      // during render (here, by a modifier) must be rendered before the
+      // output is declared done.
+      class State {
+        @tracked message = 'loading';
+      }
+      let state = new State();
+      let load = defineSimpleModifier(() => (state.message = 'loaded'));
+      let Component = template('<div {{load}}>{{state.message}}</div>', {
+        scope: () => ({ load, state }),
+      });
+
+      let html = await renderToString(Component, { owner: this.owner });
+
+      this.assert.strictEqual(html, '<div>loaded</div>');
+    }
+
+    async ['@test it can emit rehydration markers']() {
       let Hello = template('<h1>Hello!</h1>');
 
-      let html = renderToString(Hello, { owner: this.owner, env: { rehydratable: true } });
+      let html = await renderToString(Hello, { owner: this.owner, env: { rehydratable: true } });
 
       this.assert.ok(
         html.includes('<!--%+b:0%-->'),
@@ -98,11 +138,11 @@ moduleFor(
       this.assert.ok(html.includes('<h1>Hello!</h1>'), 'the rendered content is still present');
     }
 
-    ['@test renderComponent can rehydrate server-rendered markup, reusing the DOM']() {
+    async ['@test renderComponent can rehydrate server-rendered markup, reusing the DOM']() {
       let Hello = template('<h1>Hello, {{@name}}!</h1>');
 
       // Server: render to a rehydratable string.
-      let html = renderToString(Hello, {
+      let html = await renderToString(Hello, {
         owner: this.owner,
         args: { name: 'Zoey' },
         env: { rehydratable: true },
@@ -133,13 +173,13 @@ moduleFor(
       run(() => result.destroy());
     }
 
-    ['@test rehydration adopts nested component markup']() {
+    async ['@test rehydration adopts nested component markup']() {
       let Inner = template('<span>inner</span>');
       let Outer = template('<div class="outer"><Inner /></div>', {
         scope: () => ({ Inner }),
       });
 
-      let html = renderToString(Outer, { owner: this.owner, env: { rehydratable: true } });
+      let html = await renderToString(Outer, { owner: this.owner, env: { rehydratable: true } });
 
       let element = document.querySelector('#qunit-fixture') as HTMLElement;
       element.innerHTML = html;
@@ -161,12 +201,15 @@ moduleFor(
       run(() => result.destroy());
     }
 
-    ['@test it does not require a real DOM element to render into']() {
-      // `renderToString` builds its own in-memory document, so it works even
-      // when nothing is passed for `into` (unlike `renderComponent`).
+    async ['@test it does not require an `into` target']() {
+      // `renderToString` renders into its own detached element, so unlike
+      // `renderComponent` there is no `into` option.
       let Component = setComponentTemplate(precompileTemplate('<em>ok</em>'), templateOnly());
 
-      this.assert.strictEqual(renderToString(Component, { owner: this.owner }), '<em>ok</em>');
+      this.assert.strictEqual(
+        await renderToString(Component, { owner: this.owner }),
+        '<em>ok</em>'
+      );
     }
 
     ['@test renderComponent itself can render into a SimpleDOM element']() {
