@@ -39,7 +39,12 @@ import {
   finalizeQueryParamChange as finalizeClassicQueryParamChange,
   queryParamsDidChange as classicQueryParamsDidChange,
 } from './query-params';
-import { enterLoadingSubstate } from './substates';
+import {
+  type ActiveTransition,
+  enterErrorSubstate as enterClassicErrorSubstate,
+  enterLoadingSubstate as enterClassicLoadingSubstate,
+  fireLoadingEvent,
+} from './substates';
 import { ClassicRouteWrapperDefinition } from './wrapper';
 
 type TransitionLike = Transition & {
@@ -101,20 +106,22 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {
-    if (!bucket.controller) {
-      // Create the controller if it doesn't exist so the outlet can curry
-      // @controller as soon as the route renders
-      bucket.controller = bucket.route._initController();
-    }
+    // Ensure the controller exists (idempotent) so the outlet can curry
+    // @controller as soon as the route renders.
+    bucket.route._initController();
 
     const transition = state.transition as Transition & { isActive: boolean };
     if (!transition.isActive) {
       return;
     }
+    // Schedule the classic `loading` event rather than entering the substate
+    // directly: the event bubbles through `actions.loading` handlers first,
+    // and only the router's default handler (dispatching back through
+    // `enterLoadingSubstate` below) enters the substate.
     bucket.loadingSubstateTimer = scheduleOnce(
       'routerTransitions',
       null,
-      enterLoadingSubstate,
+      fireLoadingEvent,
       bucket,
       transition
     );
@@ -127,6 +134,10 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     const route = bucket.route;
     const transition = state.transition as TransitionLike;
     const routeInfo = state.internalRouteInfo;
+
+    // Classic event, fired before beforeModel (matching the pre-manager
+    // router): observable via route `actions.willResolveModel` handlers.
+    transition.trigger?.(true, 'willResolveModel', transition, route);
 
     return RSVPPromise.resolve()
       .then(() => {
@@ -239,8 +250,8 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     // the wait, the deferred scheduleOnce in willEnter fires and enters
     // the loading substate.
 
-    bucket.invokable = buildClassicInvokable(bucket);
-    return (enterPromise || Promise.resolve()).then(() => bucket.invokable);
+    const invokable = buildClassicInvokable(bucket);
+    return (enterPromise || Promise.resolve()).then(() => invokable);
   }
 
   qp(bucket: ClassicRouteBucket): QueryParamMeta {
@@ -336,6 +347,32 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     bucket.route.redirect(context as never, transition);
   }
 
+  enterLoadingSubstate(
+    bucket: ClassicRouteBucket,
+    transition: Transition,
+    originRoute: unknown
+  ): void {
+    enterClassicLoadingSubstate(
+      bucket.route._router,
+      originRoute as Route | undefined,
+      transition as ActiveTransition
+    );
+  }
+
+  enterErrorSubstate(
+    bucket: ClassicRouteBucket,
+    transition: Transition,
+    error: Error,
+    originRoute: unknown
+  ): boolean {
+    return enterClassicErrorSubstate(
+      bucket.route._router,
+      originRoute as Route | undefined,
+      transition as ActiveTransition,
+      error
+    );
+  }
+
   getRouteInfoMetadata(bucket: ClassicRouteBucket): unknown {
     return bucket.route.buildRouteInfoMetadata();
   }
@@ -402,5 +439,8 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
     const template = route._topLevelViewTemplate(owner);
     invokable = makeRouteTemplate(owner, name, template as Template, self);
   }
-  return invokable;
+  // Cache here (rather than in getInvokable) so every caller shares one
+  // invokable — substate routes never go through getInvokable and would
+  // otherwise rebuild it on every _setOutlets pass.
+  return (bucket.invokable = invokable);
 }

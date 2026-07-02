@@ -18,9 +18,10 @@ import type { Transition } from 'router_js';
 import { STATE_SYMBOL } from 'router_js';
 import type { ClassicRouteBucket } from './bucket';
 
-// Local copy from @ember/routing/route.ts. Returns a fresh native array when
-// the value is an array so callers cannot mutate the shared default.
-function copyDefaultValue<T>(value: T): T {
+// Returns a fresh native array when the value is an array so callers cannot
+// mutate the shared default. Also used by `@ember/routing/route`'s QP meta
+// building.
+export function copyDefaultValue<T>(value: T): T {
   if (Array.isArray(value)) {
     // SAFETY: We lost the type data about the array if we don't cast.
     return emberA(value.slice()) as unknown as T;

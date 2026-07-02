@@ -12,7 +12,7 @@ import getProperties from '@ember/-internals/metal/lib/get_properties';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
-import { A as emberA } from '@ember/array';
+import { copyDefaultValue } from '@ember/-internals/routing/route-managers/classic/query-params';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import typeOf from '@ember/utils/lib/type-of';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
@@ -296,7 +296,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
 
   _router!: EmberRouter;
   declare _topLevelViewTemplate: any;
-  declare _environment: any;
 
   constructor(owner?: Owner) {
     super(owner);
@@ -307,7 +306,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
       this._router = router as EmberRouter;
       this._bucketCache = bucketCache as BucketCache;
       this._topLevelViewTemplate = owner.lookup('template:-outlet');
-      this._environment = owner.lookup('-environment:main');
     }
   }
 
@@ -788,17 +786,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   /**
     @private
 
-    @method exit
-  */
-  exit(transition?: Transition) {
-    this.deactivate(transition);
-    this.trigger('deactivate', transition);
-    this.teardownViews();
-  }
-
-  /**
-    @private
-
     @method _internalReset
     @since 3.6.0
   */
@@ -808,16 +795,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     controller['_qpDelegate'] = (get(this, '_qp') as Route<Model>['_qp']).states.inactive;
 
     this.resetController(controller, isExiting, transition);
-  }
-
-  /**
-    @private
-
-    @method enter
-  */
-  enter(transition: Transition) {
-    this.activate(transition);
-    this.trigger('activate', transition);
   }
 
   /**
@@ -991,9 +968,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
 
     this.setupController(controller, context, transition);
 
-    if (this._environment.options.shouldRender) {
-      once(this._router, '_setOutlets');
-    }
+    // `_setOutlets` itself is the single `shouldRender` gate (it returns
+    // early when the app was booted with `shouldRender: false`).
+    once(this._router, '_setOutlets');
 
     // Setup can cause changes to QPs which need to be propogated immediately in
     // some situations. Eventually, we should work on making these async somehow.
@@ -1855,15 +1832,6 @@ function getQueryParamsFor(route: Route, state: RouteTransitionState): Record<st
   }
 
   return params;
-}
-
-// FIXME: This should probably actually return a `NativeArray` if the passed in value is an Array.
-function copyDefaultValue<T>(value: T): T {
-  if (Array.isArray(value)) {
-    // SAFETY: We lost the type data about the array if we don't cast.
-    return emberA(value.slice()) as unknown as T;
-  }
-  return value;
 }
 
 /*

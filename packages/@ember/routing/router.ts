@@ -20,10 +20,6 @@ import type {
   WillExitState,
 } from '@ember/-internals/routing/route-managers/api';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
-import {
-  findRouteStateName,
-  findRouteSubstateName,
-} from '@ember/-internals/routing/route-managers/classic/substates';
 import { default as BucketCache } from './lib/cache';
 import { default as DSL, type DSLCallback } from './lib/dsl';
 import RouterState from './lib/router_state';
@@ -950,11 +946,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     // `shouldRender: false`. The full transition lifecycle still runs
     // (resolve, controllers, models) but no DOM is created. Used by
     // `application.visit()` in non-rendering scenarios such as fastboot
-    // prefetching or route-only unit tests.
-    let environmentOwner = getOwner(this);
-    let environment = environmentOwner?.lookup('-environment:main') as
-      | { options?: { shouldRender?: boolean } }
-      | undefined;
+    // prefetching or route-only unit tests. This is the single
+    // `shouldRender` gate for the render path. (`environment` is also
+    // reused by the toplevel-view creation below.)
+    let environment = getOwner(this)?.lookup('-environment:main') as BootEnvironment | undefined;
     if (environment?.options?.shouldRender === false) {
       return;
     }
@@ -1009,7 +1004,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       let application = owner.lookup('application:main') as Owner | undefined;
       assert('[BUG] unexpectedly missing `application:-main`', application !== undefined);
 
-      let environment = owner.lookup('-environment:main') as BootEnvironment | undefined;
       assert('[BUG] unexpectedly missing `-environment:main`', environment !== undefined);
 
       let template = owner.lookup('template:-outlet') as Template | undefined;
@@ -1828,36 +1822,28 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   @param {Function} callback
   @return {Void}
  */
-function forEachRouteAbove(
-  routeInfos: InternalRouteInfo<Route>[],
-  callback: (route: Route, routeInfo: InternalRouteInfo<Route>) => boolean
-) {
-  for (let i = routeInfos.length - 1; i >= 0; --i) {
-    let routeInfo = routeInfos[i];
-    assert('has routeInfo', routeInfo);
-
-    let route = routeInfo.route;
-
-    // routeInfo.handler being `undefined` generally means either:
-    //
-    // 1. an error occurred during creation of the route in question
-    // 2. the route is across an async boundary (e.g. within an engine)
-    //
-    // In both of these cases, we cannot invoke the callback on that specific
-    // route, because it just doesn't exist...
-    if (route === undefined) {
-      continue;
-    }
-
-    if (callback(route, routeInfo) !== true) {
-      return;
-    }
-  }
-}
-
 // These get invoked when an action bubbles above ApplicationRoute
 // and are not meant to be overridable.
 let defaultActionHandlers = {
+  // Attempt to find an appropriate loading route or substate to enter. Like
+  // `error` below, this only forwards through the classic-interop contract;
+  // the manager owns substate entry.
+  loading(this: EmberRouter, routeInfos: InternalRouteInfo<Route>[], transition: Transition) {
+    let originRoute = routeInfos[routeInfos.length - 1]?.route;
+
+    let dispatchRoute = originRoute;
+    for (let i = routeInfos.length - 2; dispatchRoute === undefined && i >= 0; i--) {
+      dispatchRoute = routeInfos[i]?.route;
+    }
+
+    if (dispatchRoute !== undefined) {
+      let managed = getManagedRoute(dispatchRoute);
+      if (managed !== undefined && hasClassicInterop(managed.manager)) {
+        managed.manager.enterLoadingSubstate(managed.bucket, transition, originRoute);
+      }
+    }
+  },
+
   // Attempt to find an appropriate error route or substate to enter.
   error(
     this: EmberRouter,
@@ -1865,33 +1851,26 @@ let defaultActionHandlers = {
     error: Error,
     transition: Transition
   ) {
-    let router = this;
+    // Error substates are classic machinery; the router only forwards the
+    // unhandled error through the classic-interop contract. The event's
+    // routeInfos are sliced to end at the route that errored, so its leaf
+    // is the origin of the substate walk. That route may never have been
+    // created (e.g. across an engine's async boundary) — dispatch then
+    // falls to the deepest created route, and the manager walks from the
+    // transition's leaf.
+    let originRoute = routeInfos[routeInfos.length - 1]?.route;
 
-    let routeInfoWithError = routeInfos[routeInfos.length - 1];
+    let dispatchRoute = originRoute;
+    for (let i = routeInfos.length - 2; dispatchRoute === undefined && i >= 0; i--) {
+      dispatchRoute = routeInfos[i]?.route;
+    }
 
-    forEachRouteAbove(routeInfos, (route, routeInfo) => {
-      // We don't check the leaf most routeInfo since that would
-      // technically be below where we're at in the route hierarchy.
-      if (routeInfo !== routeInfoWithError) {
-        // Check for the existence of an 'error' route.
-        let errorRouteName = findRouteStateName(route, 'error');
-        if (errorRouteName) {
-          router._markErrorAsHandled(error);
-          router.intermediateTransitionTo(errorRouteName, error);
-          return false;
-        }
+    if (dispatchRoute !== undefined) {
+      let managed = getManagedRoute(dispatchRoute);
+      if (managed !== undefined && hasClassicInterop(managed.manager)) {
+        managed.manager.enterErrorSubstate(managed.bucket, transition, error, originRoute);
       }
-
-      // Check for an 'error' substate route
-      let errorSubstateName = findRouteSubstateName(route, 'error');
-      if (errorSubstateName) {
-        router._markErrorAsHandled(error);
-        router.intermediateTransitionTo(errorSubstateName, error);
-        return false;
-      }
-
-      return true;
-    });
+    }
 
     logError(error, `Error while processing route: ${transition.targetName}`);
   },

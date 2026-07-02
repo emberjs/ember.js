@@ -469,6 +469,37 @@ export interface RouteManagerWithClassicInterop<
   redirect(bucket: Bucket, routeInfo: RouteInfo, context: unknown, transition: Transition): void;
 
   /**
+    Enters the classic `loading` substate for a slow transition: looks up
+    the nearest `*.loading`/`*_loading` route (stopping at the transition's
+    pivot) and intermediate-transitions into it. Called by the router's
+    default `loading` action handler once the loading event has bubbled
+    unhandled above the application route.
+
+    `originRoute` is the route whose model is slow, or `undefined` when that
+    route was never created; typed `unknown` because router_js never
+    inspects route shapes.
+   */
+  enterLoadingSubstate(bucket: Bucket, transition: Transition, originRoute: unknown): void;
+
+  /**
+    Enters the classic `error` substate for an error that bubbled unhandled
+    above the application route: looks up the nearest `*.error`/`*_error`
+    route and intermediate-transitions into it, passing the error as its
+    model. Returns `true` when a substate was entered and the error should
+    be treated as handled.
+
+    `originRoute` is the route whose `enter` failed, or `undefined` when
+    that route was never created (e.g. across an engine's async boundary);
+    typed `unknown` because router_js never inspects route shapes.
+   */
+  enterErrorSubstate(
+    bucket: Bucket,
+    transition: Transition,
+    error: Error,
+    originRoute: unknown
+  ): boolean;
+
+  /**
     Returns the route-provided `RouteInfo` metadata, backing the classic
     `Route.buildRouteInfoMetadata` hook.
    */
