@@ -1,4 +1,4 @@
-import { service } from '@ember/service';
+import Service, { service } from '@ember/service';
 import { Component } from '@ember/-internals/glimmer';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
@@ -438,6 +438,72 @@ moduleFor(
       return this.visit('/child?url_sort=a').then(() => {
         assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
       });
+    }
+
+    async ['@test RouterService#transitionTo supports query params from a service during beforeModel'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let router = this.router;
+      router.dslCallbacks.length = 0;
+      router.map(function () {
+        this.route('parent');
+
+        this.route('child', function () {});
+      });
+
+      this.add(
+        'controller:parent',
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = null;
+        }
+      );
+
+      this.add(
+        'service:parent',
+        class extends Service {
+          @service
+          router;
+
+          transitionToParent() {
+            return this.router.transitionTo('parent', {
+              queryParams: {
+                foo: 'bar',
+              },
+            });
+          }
+        }
+      );
+
+      this.add(
+        'route:child.index',
+        class extends Route {
+          @service
+          parent;
+
+          beforeModel() {
+            return this.parent.transitionToParent();
+          }
+        }
+      );
+
+      await this.visit('/child');
+
+      assert.equal(
+        this.routerService.get('currentRouteName'),
+        'parent',
+        'redirects to the target route'
+      );
+
+      let currentURL = this.routerService.get('currentURL');
+
+      assert.equal(currentURL, '/parent?foo=bar', 'uses the query param in the final URL');
+
+      let controller = this.controllerFor('parent');
+
+      assert.equal(controller.get('foo'), 'bar', 'sets the controller query param');
     }
   }
 );
