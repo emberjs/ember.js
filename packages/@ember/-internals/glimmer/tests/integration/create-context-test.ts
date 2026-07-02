@@ -751,6 +751,52 @@ moduleFor(
       assert.ok(secondSeen, 'second reader observed');
       assert.strictEqual(firstSeen, secondSeen, 'both consumers see the same instance');
     }
+
+    '@test a value read works across {{#in-element}}'(assert: QUnit['assert']) {
+      // {{#in-element}} moves where the DOM lands, not where the block sits
+      // in the render tree. Scoping follows the render tree, so a consumer
+      // portaled into an unrelated element still sees the provider that
+      // encloses it in the template -- even though, in the DOM, its output
+      // lands outside the provider's, in the sibling div above it.
+      const ctx = createContext<string>();
+
+      let observedInConstructor: string | undefined;
+      class Reader extends GlimmerishComponent {
+        constructor(owner: Owner, args: Record<string, unknown>) {
+          super(owner, args);
+          observedInConstructor = ctx.value;
+        }
+      }
+      setComponentTemplate(precompileTemplate(''), Reader);
+
+      const findPortal = defineSimpleHelper(() => document.querySelector('#portal-target'));
+
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          `<div id="portal-target"></div>
+           <ctx.Provide @value="through-the-portal">
+             {{#in-element (findPortal)}}
+               {{#let ctx.value as |v|}}<div id="content">{{v}}</div>{{/let}}
+               <Reader/>
+             {{/in-element}}
+           </ctx.Provide>`,
+          { strictMode: true, scope: () => ({ ctx, findPortal, Reader }) }
+        ),
+        templateOnly()
+      );
+
+      this.renderComponent(Root);
+      assert.strictEqual(
+        this.element.querySelector('#portal-target #content')?.textContent,
+        'through-the-portal',
+        'template path read inside the portal saw the outside provider'
+      );
+      assert.strictEqual(
+        observedInConstructor,
+        'through-the-portal',
+        'component constructor inside the portal saw the outside provider'
+      );
+    }
   }
 );
 
