@@ -414,6 +414,7 @@ module.exports = {
     'removeObserver',
     'renderComponent',
     'renderSettled',
+    'renderToString',
     'reopen',
     'reopenClass',
     'replace',
