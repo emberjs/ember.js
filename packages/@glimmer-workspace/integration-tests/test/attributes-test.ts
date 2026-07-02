@@ -625,6 +625,18 @@ export class AttributesTests extends RenderTest {
     this.assertHTML(`<object data="${allowedUrl}"></object>`);
     this.assertStableNodes();
   }
+
+  @test
+  'marks javascript: protocol as unsafe on a camelCased url attribute'() {
+    // `formAction` resolves to the DOM property, so the attribute name reaches
+    // the sanitizer camelCased rather than as the lowercase `formaction`.
+    this.render('<button formAction={{this.foo}}></button>', { foo: 'javascript:foo()' });
+    let button = this.element.firstChild as SimpleElement;
+    this.assert.strictEqual(this.readDOMAttr('formAction', button), 'unsafe:javascript:foo()');
+
+    this.rerender({ foo: 'http://foo.bar/derp' });
+    this.assert.strictEqual(this.readDOMAttr('formAction', button), 'http://foo.bar/derp');
+  }
 }
 
 jitSuite(AttributesTests);
