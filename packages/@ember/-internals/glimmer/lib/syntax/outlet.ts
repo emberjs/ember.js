@@ -110,40 +110,46 @@ export const outletHelper = internalHelper(
       // stateFor guarantees an invokable is present.
       assert('Expected outlet state to have an invokable to render', state.invokable !== undefined);
 
-      let named = dict<Reference>();
+      // Args are delivered by currying them onto the render target — the
+      // outlet's layout is arg-less. Currying (rather than writing the args
+      // into the layout) keeps the target from showing up as an opaque
+      // `@Component` frame in the debug render tree and
+      // backtracking-assertion messages. Curried refs stay live, so the
+      // `@context` compute ref keeps updating across renders of the mount.
+      let targetArgs = dict<Reference>();
+      let target;
 
       if (state.wrapper !== undefined) {
-        // Manager render with a wrapper: attach the RFC's static args —
-        // `@Component` (the per-bucket invokable) and `@bucket` — to the
-        // module-stable wrapper with `curry()`, and let the outlet's layout
-        // pass the live `@context`. The same args could instead be written
-        // into the outlet's layout as `<@Component @Component=... @bucket=...>`,
-        // but that shape makes the wrapper show up as an opaque `@Component`
-        // frame in the debug render tree and backtracking-assertion
-        // messages; a curried value keeps it invisible there, matching how
-        // these traces have always looked.
-        let wrapperArgs = dict<Reference>();
-        wrapperArgs['Component'] = createConstRef(state.invokable, '@Component');
-        wrapperArgs['bucket'] = createConstRef(state.bucket, '@bucket');
-
-        named['Component'] = createConstRef(
-          curry(
-            0 as CurriedComponent,
-            state.wrapper,
-            outletOwner,
-            createCapturedArgs(wrapperArgs, EMPTY_POSITIONAL),
-            false
-          ),
-          '@Component'
-        );
+        // Manager render with a wrapper: the RFC's wrapper args —
+        // `@Component` (the per-bucket invokable), `@bucket`, and the live
+        // `@context`.
+        targetArgs['Component'] = createConstRef(state.invokable, '@Component');
+        targetArgs['bucket'] = createConstRef(state.bucket, '@bucket');
+        target = state.wrapper;
       } else {
         // Wrapper-less render (a manager that opted out, or a legacy
-        // `setOutletState` caller): invoke the invokable directly with the
-        // live `@context`.
-        named['Component'] = createConstRef(state.invokable, '@Component');
+        // `setOutletState` caller): the invokable itself is the target and
+        // receives only the live `@context`. No `@bucket`: unlike the
+        // module-stable wrapper, the invokable is per-bucket and built by
+        // the manager, so anything bucket-shaped it needs the manager can
+        // attach itself — the live context ref is the one thing only the
+        // outlet can supply. (Legacy renders have no bucket at all.)
+        target = state.invokable;
       }
 
-      named['context'] = context;
+      targetArgs['context'] = context;
+
+      let named = dict<Reference>();
+      named['Component'] = createConstRef(
+        curry(
+          0 as CurriedComponent,
+          target,
+          outletOwner,
+          createCapturedArgs(targetArgs, EMPTY_POSITIONAL),
+          false
+        ),
+        '@Component'
+      );
 
       outlet = curry(
         0 as CurriedComponent,

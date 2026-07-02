@@ -180,16 +180,13 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = new OutletComponentManager();
 
-// The `{{outlet}}` helper's layout: forwards the live `@context` (model) onto
-// the render target so the helper only needs a single curry.
-const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component @context={{@context}} />', {
-  strictMode: true,
-});
-
-// The root outlet's layout: the root invokable takes no args, and forwarding
-// an (always-undefined) `@context` here would leak a stray named arg into
-// the debug render tree for every directly-invoked route template.
-const ROOT_OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component />', {
+// The one outlet layout. `@Component` is always a value that already
+// carries everything it needs — the outlet helper curries the args (the
+// invokable/bucket/live context for wrapped renders, the live context for
+// wrapper-less ones) onto the render target before handing it over, and the
+// root outlet's invokable takes no args at all. Keeping the layout arg-less
+// also keeps stray named args out of the debug render tree.
+const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component />', {
   strictMode: true,
 });
 
@@ -207,13 +204,12 @@ export class OutletComponent implements ComponentDefinition<
 
   constructor(
     owner: InternalOwner,
-    public state: OutletDefinitionState,
-    template: ReturnType<typeof precompileTemplate> = OUTLET_COMPONENT_TEMPLATE
+    public state: OutletDefinitionState
   ) {
-    this.compilable = unwrapTemplate(template(owner)).asLayout();
+    this.compilable = unwrapTemplate(OUTLET_COMPONENT_TEMPLATE(owner)).asLayout();
   }
 }
 
 export function createRootOutlet(outletView: OutletView): OutletComponent {
-  return new OutletComponent(outletView.owner, outletView.state, ROOT_OUTLET_COMPONENT_TEMPLATE);
+  return new OutletComponent(outletView.owner, outletView.state);
 }
