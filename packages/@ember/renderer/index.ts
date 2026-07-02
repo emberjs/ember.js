@@ -100,17 +100,18 @@ export { renderComponent } from '@ember/-internals/glimmer/lib/base-renderer';
  * rendering has settled — any tracked-state updates made during render (e.g.
  * by a modifier) are reflected in the output.
  *
- * This requires a DOM implementation. In the browser the global `document` is
- * used automatically; in Node.js provide one via `env.document` — for example
+ * This renders with the global `document`, same as the browser does — there is
+ * no `document` option. In environments without one (Node.js), register DOM
+ * building blocks globally first — for example with
  * [happy-dom](https://github.com/capricorn86/happy-dom):
  *
  * ```js
- * import { Window } from 'happy-dom';
+ * import { GlobalRegistrator } from '@happy-dom/global-registrator';
  * import { renderToString } from '@ember/renderer';
  *
- * let html = await renderToString(MyComponent, {
- *   env: { document: new Window().document },
- * });
+ * GlobalRegistrator.register();
+ *
+ * let html = await renderToString(MyComponent, { args: { name: 'Zoey' } });
  * ```
  *
  * Pass `env: { rehydratable: true }` to include glimmer's rehydration markers
@@ -124,7 +125,7 @@ export { renderComponent } from '@ember/-internals/glimmer/lib/base-renderer';
  * @param {Object} [options]
  * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
  * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive; rendering settles before serialization.
- * @param {Object} [options.env] Optional renderer configuration (`document`, `rehydratable`).
+ * @param {Object} [options.env] Optional renderer configuration (`rehydratable`).
  * @returns {Promise<String>} the serialized HTML for the rendered component
  * @public
  */

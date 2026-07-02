@@ -524,6 +524,10 @@ export function renderComponent(
       ...env,
       isInteractive: env?.isInteractive ?? true,
       hasDOM: env && 'hasDOM' in env ? Boolean(env?.['hasDOM']) : true,
+      // `rehydrationBuilder` adopts server-rendered markup already in the
+      // target (emitted by `renderToString` with `rehydratable: true`)
+      // instead of building fresh DOM.
+      builder: env?.rehydrate ? rehydrationBuilder : clientBuilder,
     });
     RENDERER_CACHE.set(owner, renderer);
   }
@@ -617,17 +621,18 @@ const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
  * - The component tree is torn down (running destructors) before the promise
  *   resolves.
  *
- * This requires a DOM implementation. In the browser the global `document` is
- * used automatically; in Node.js provide one via `env.document` — for example
+ * This renders with the global `document`, same as the browser does — there is
+ * no `document` option. In environments without one (Node.js), register DOM
+ * building blocks globally first — for example with
  * [happy-dom](https://github.com/capricorn86/happy-dom):
  *
  * ```js
- * import { Window } from 'happy-dom';
+ * import { GlobalRegistrator } from '@happy-dom/global-registrator';
  * import { renderToString } from '@ember/renderer';
  *
- * let html = await renderToString(MyComponent, {
- *   env: { document: new Window().document },
- * });
+ * GlobalRegistrator.register();
+ *
+ * let html = await renderToString(MyComponent, { args: { name: 'Zoey' } });
  * ```
  *
  * Pass `env: { rehydratable: true }` to include glimmer's rehydration markers
@@ -642,7 +647,7 @@ const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
  * @param {Object} [options]
  * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
  * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive; rendering settles before serialization.
- * @param {Object} [options.env] Optional renderer configuration. `document` provides the DOM implementation to render with (defaults to the global `document`); `rehydratable` (default `false`) controls whether rehydration markers are emitted.
+ * @param {Object} [options.env] Optional renderer configuration. `rehydratable` (default `false`) controls whether rehydration markers are emitted.
  * @returns {Promise<String>} the serialized HTML for the rendered component
  * @public
  */
@@ -674,32 +679,24 @@ export async function renderToString(
      */
     env?: {
       /**
-       * The DOM implementation to render with. Defaults to the global
-       * `document`. In environments without one (Node.js), pass a
-       * DOM-compatible document such as happy-dom's `new Window().document`.
-       */
-      document?: Document;
-      /**
        * When true, the emitted HTML includes glimmer's rehydration markers so
        * the output can be re-used (rehydrated) by a subsequent client-side
        * render. Defaults to `false`, which produces clean HTML with no
        * framework-specific comments.
        */
       rehydratable?: boolean;
-      /**
-       * All other options are forwarded to the underlying renderer (private API).
-       */
-      [rendererOption: string]: unknown;
     };
   } = {}
 ): Promise<string> {
-  let document = env?.document ?? globalThis.document;
+  let { document } = globalThis;
 
   // Server rendering is a *real* render — modifiers run against real elements
   // and the output is serialized via `innerHTML` — so a full DOM
-  // implementation (browser, happy-dom, jsdom) is required.
+  // implementation (browser, happy-dom, jsdom) is required. There is no
+  // `document` option: the environment defines the document, same as in the
+  // browser.
   assert(
-    'renderToString requires a document. In environments without a global `document` (like Node.js), provide DOM building blocks globally (e.g. via happy-dom) or pass a document via `env.document` — for example a happy-dom `new Window().document`.',
+    'renderToString requires a global `document`. In environments without one (like Node.js), register DOM building blocks globally first — for example with happy-dom via `GlobalRegistrator.register()`.',
     document !== undefined && document !== null
   );
 
@@ -708,17 +705,18 @@ export async function renderToString(
   let element = document.createElement('div');
 
   // Build a dedicated renderer rather than going through the per-owner
-  // renderer cache used by `renderComponent`: SSR output must target the
-  // document chosen above, even if this owner has previously rendered into
-  // the live DOM.
+  // renderer cache used by `renderComponent`, so a one-shot server render
+  // never interferes with an owner's live renderer.
   //
   // `isInteractive` and `hasDOM` are deliberately not options here: a server
-  // render is a real, interactive render against a real (in-memory) DOM.
+  // render is a real, interactive render against a real DOM.
   let renderer = BaseRenderer.strict(owner, document, {
-    ...env,
     isInteractive: true,
     hasDOM: true,
-    rehydratable: Boolean(env?.rehydratable),
+    // `serializeBuilder` emits glimmer's rehydration markers alongside the
+    // markup so a later client render can adopt it; `clientBuilder` emits
+    // clean markup.
+    builder: env?.rehydratable ? serializeBuilder : clientBuilder,
   });
 
   try {
@@ -742,28 +740,16 @@ export class BaseRenderer {
   static strict(
     owner: object,
     document: SimpleDocument | Document,
-    options: {
-      isInteractive: boolean;
-      hasDOM?: boolean;
-      rehydratable?: boolean;
-      rehydrate?: boolean;
-    }
+    options: { isInteractive: boolean; hasDOM?: boolean; builder?: IBuilder }
   ) {
-    let { rehydratable, rehydrate, ...envOptions } = options;
-
-    // `serializeBuilder` emits glimmer's rehydration markers alongside the
-    // markup (the server half of rehydration); `rehydrationBuilder` consumes
-    // those markers to adopt existing server-rendered DOM instead of building
-    // fresh nodes (the client half); `clientBuilder` builds clean markup from
-    // scratch.
-    let builder = rehydrate ? rehydrationBuilder : rehydratable ? serializeBuilder : clientBuilder;
+    let { builder, ...envOptions } = options;
 
     return new BaseRenderer(
       owner,
       { hasDOM: hasDOM, ...envOptions },
       document as SimpleDocument,
       new ResolverImpl(),
-      builder
+      builder ?? clientBuilder
     );
   }
 

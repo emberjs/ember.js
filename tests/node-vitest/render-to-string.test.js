@@ -1,16 +1,17 @@
+// @vitest-environment happy-dom
 /**
- * SSR smoke tests for `renderToString` from `@ember/renderer`, run in plain
- * Node.js (no DOM globals) against the *built* ember-source package, with
- * happy-dom providing the DOM implementation.
+ * SSR smoke tests for `renderToString` from `@ember/renderer`, run in Node.js
+ * against the *built* ember-source package, with happy-dom registered as the
+ * global DOM implementation (the `@vitest-environment happy-dom` pragma above
+ * — equivalent to happy-dom's `GlobalRegistrator.register()` on a server).
  *
  * These prove the server-rendering contract:
- * - rendering works without a global `document` (the document is provided)
+ * - rendering works in Node once DOM building blocks are registered
  * - modifiers run during SSR, against real (happy-dom) elements
  * - rendering settles before serialization: tracked-state updates made
  *   during render are reflected in the output
  */
 import { it, expect } from 'vitest';
-import { Window } from 'happy-dom';
 
 import { renderToString } from 'ember-source/@ember/renderer/index.js';
 import { template } from 'ember-source/@ember/template-compiler/runtime.js';
@@ -38,17 +39,10 @@ function modifier(fn) {
   return setModifierManager(() => MODIFIER_MANAGER, fn);
 }
 
-function freshDocument() {
-  return new Window().document;
-}
-
-it('renders a component to a string with happy-dom', async () => {
+it('renders a component to a string', async () => {
   let Hello = template('<h1>Hello, {{@name}}!</h1>');
 
-  let html = await renderToString(Hello, {
-    args: { name: 'Zoey' },
-    env: { document: freshDocument() },
-  });
+  let html = await renderToString(Hello, { args: { name: 'Zoey' } });
 
   expect(html).toBe('<h1>Hello, Zoey!</h1>');
 });
@@ -56,10 +50,7 @@ it('renders a component to a string with happy-dom', async () => {
 it('renders {{{tripleStache}}} raw HTML', async () => {
   let Component = template('<div>{{{@html}}}</div>');
 
-  let html = await renderToString(Component, {
-    args: { html: '<b>bold</b>' },
-    env: { document: freshDocument() },
-  });
+  let html = await renderToString(Component, { args: { html: '<b>bold</b>' } });
 
   expect(html).toBe('<div><b>bold</b></div>');
 });
@@ -74,7 +65,7 @@ it('runs modifiers during SSR, and their DOM effects appear in the output', asyn
     scope: () => ({ autofocus }),
   });
 
-  let html = await renderToString(Component, { env: { document: freshDocument() } });
+  let html = await renderToString(Component);
 
   expect(ran).toBe(true);
   expect(html).toBe('<input data-focused="true">');
@@ -89,7 +80,7 @@ it('settles before serializing: tracked state updated by a modifier is in the ou
     scope: () => ({ load, state }),
   });
 
-  let html = await renderToString(Component, { env: { document: freshDocument() } });
+  let html = await renderToString(Component);
 
   expect(html).toBe('<div>loaded</div>');
 });
@@ -97,9 +88,7 @@ it('settles before serializing: tracked state updated by a modifier is in the ou
 it('emits rehydration markers when asked', async () => {
   let Hello = template('<h1>Hello!</h1>');
 
-  let html = await renderToString(Hello, {
-    env: { document: freshDocument(), rehydratable: true },
-  });
+  let html = await renderToString(Hello, { env: { rehydratable: true } });
 
   expect(html).toContain('<!--%+b:0%-->');
   expect(html).toContain('<h1>Hello!</h1>');
