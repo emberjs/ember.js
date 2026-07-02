@@ -252,6 +252,5 @@ moduleFor(
         '<em>ok</em>'
       );
     }
-
   }
 );

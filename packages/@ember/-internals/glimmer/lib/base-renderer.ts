@@ -441,7 +441,6 @@ function intoTarget(into: IntoTarget): Cursor {
   }
 }
 
-
 /**
  * Render a component into a DOM element.
  *
