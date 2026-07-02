@@ -11161,14 +11161,14 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                       !child.__isCurriedComponent &&
                       !(child instanceof Node)
                     ) {
-                      const fnStr = child.toString();
-                      // Lazy-wrapped component children contain $_tag or $_c calls — evaluate them
-                      if (
-                        fnStr.includes('$_tag(') ||
-                        fnStr.includes('$_c(') ||
-                        fnStr.includes('$_dc(') ||
-                        fnStr.includes('$_eachSync(')
-                      ) {
+                      // Node-producing child thunks are MARKED by the gxt ≥0.0.70
+                      // compiler (`$_nt` sets `$_isNode` on every component-child DOM
+                      // producer, AST-driven — including `$_each*` children, whose
+                      // component rows match the wrap predicate recursively). Unmarked
+                      // functions are reactive text getters. This replaces the former
+                      // `.toString()` source sniff, which false-negatived under
+                      // minification.
+                      if ((child as any).$_isNode === true) {
                         try {
                           return child();
                         } catch {
@@ -11277,13 +11277,8 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
                     !child.__isCurriedComponent &&
                     !(child instanceof Node)
                   ) {
-                    const fnStr = child.toString();
-                    if (
-                      fnStr.includes('$_tag(') ||
-                      fnStr.includes('$_c(') ||
-                      fnStr.includes('$_dc(') ||
-                      fnStr.includes('$_eachSync(')
-                    ) {
+                    // gxt ≥0.0.70 `$_isNode` marker — see the sibling site above.
+                    if ((child as any).$_isNode === true) {
                       try {
                         return child();
                       } catch {
@@ -13730,7 +13725,14 @@ export function precompileTemplate(
 
     compilationResult.code = modifiedCode;
     try {
-      const needsArgsAlias = modifiedCode.includes('$a.');
+      // Match BOTH access shapes: `$a.foo` and the bracket form `$a["foo-bar"]`
+      // (emitted for hyphenated/`@`-prefixed arg names). The old `includes('$a.')`
+      // false-negatived on bracket access → `$a` left undeclared → ReferenceError
+      // at render (same bug class gxt fixed compiler-side in glimmer-next #237).
+      // gxt 0.0.70's CompileResult carries ground-truth `usedArgsAlias/usedSlots/
+      // usedFw` flags, but `compileTemplate` (the runtime-compiler entry we call)
+      // does not surface them yet — switch to `flag || scan` once it does.
+      const needsArgsAlias = /\$a[.[]/.test(modifiedCode);
       const needsSlots = modifiedCode.includes('$slots');
       // Broad-substring on purpose (a false positive just emits an unused
       // const): with the globalThis.$fw slot retired, a missed reference

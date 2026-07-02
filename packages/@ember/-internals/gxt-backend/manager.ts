@@ -10698,12 +10698,11 @@ function handleStringComponent(
                   container.appendChild(item);
                 }
               } else if (typeof item === 'function') {
-                const fnStr = (item as Function).toString();
-                const isNodeThunk =
-                  fnStr.includes('$_tag(') ||
-                  fnStr.includes('$_c(') ||
-                  fnStr.includes('$_dc(') ||
-                  fnStr.includes('$_eachSync(');
+                // Node-producing thunks carry the gxt ≥0.0.70 `$_isNode` marker
+                // (set by the compiler via `$_nt` on every component-child DOM
+                // producer, AST-driven). Unmarked functions are reactive text
+                // getters. Replaces the former `.toString()` source sniff.
+                const isNodeThunk = (item as any).$_isNode === true;
                 if (isNodeThunk) {
                   let evaluated: any;
                   try {
@@ -11121,17 +11120,9 @@ function handleCustomManagedComponent(
                 !(child as any).__isCurriedComponent &&
                 !(child instanceof Node)
               ) {
-                let isNodeThunk = false;
-                try {
-                  const fnStr = (child as Function).toString();
-                  isNodeThunk =
-                    fnStr.includes('$_tag(') ||
-                    fnStr.includes('$_c(') ||
-                    fnStr.includes('$_dc(') ||
-                    fnStr.includes('$_eachSync(');
-                } catch {
-                  isNodeThunk = false;
-                }
+                // gxt ≥0.0.70 `$_isNode` marker — replaces the former
+                // `.toString()` source sniff (see manager.ts sibling sites).
+                const isNodeThunk = (child as any).$_isNode === true;
                 if (!isNodeThunk) {
                   _yieldGetters.push(child as () => any);
                 }
@@ -12030,12 +12021,10 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
         // Use the same heuristic as compile.ts: thunks containing $_tag/$_c/
         // $_dc/$_eachSync return Nodes, everything else is a reactive text
         // getter that should be wrapped in gxtEffect for live updates.
-        const fnStr = (child as Function).toString();
-        const isNodeThunk =
-          fnStr.includes('$_tag(') ||
-          fnStr.includes('$_c(') ||
-          fnStr.includes('$_dc(') ||
-          fnStr.includes('$_eachSync(');
+        // gxt ≥0.0.70 `$_isNode` marker — replaces the former `.toString()`
+        // source sniff (thunks marked by the compiler return Nodes; everything
+        // else is a reactive text getter wrapped in gxtEffect below).
+        const isNodeThunk = (child as any).$_isNode === true;
         if (isNodeThunk) {
           let evaluated: any;
           try {
@@ -12083,12 +12072,9 @@ function renderLinkToElement(instance: any, args: any, fw: any): HTMLAnchorEleme
           // Stringifying the function directly would surface "() => this.title"
           // in the DOM; wrap in gxtEffect to render the evaluated value and
           // update on reactive changes.
-          const fnStr = (item as Function).toString();
-          const isNodeThunk =
-            fnStr.includes('$_tag(') ||
-            fnStr.includes('$_c(') ||
-            fnStr.includes('$_dc(') ||
-            fnStr.includes('$_eachSync(');
+          // gxt ≥0.0.70 `$_isNode` marker — replaces the former `.toString()`
+          // source sniff.
+          const isNodeThunk = (item as any).$_isNode === true;
           if (isNodeThunk) {
             let evaluated: any;
             try {
