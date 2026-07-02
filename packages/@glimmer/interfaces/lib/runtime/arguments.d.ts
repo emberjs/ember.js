@@ -16,6 +16,12 @@ export interface VMArguments {
 export interface CapturedArguments {
   positional: CapturedPositionalArguments;
   named: CapturedNamedArguments;
+  /**
+   * The reference the helper value was read from a path off of, if any (e.g. the
+   * `this.obj` in `{{(this.obj.method)}}`). Resolved lazily as `Arguments.receiver`
+   * so that helpers which never read it do not entangle this reference.
+   */
+  receiver?: Reference;
   [CAPTURED_ARGS]: true;
 }
 
@@ -59,6 +65,12 @@ export interface CapturedNamedArguments extends Record<string, Reference> {
 export interface Arguments {
   positional: readonly unknown[];
   named: Record<string, unknown>;
+  /**
+   * The object the helper value was read from, used as `this` when the helper is a
+   * plain function (matching JS `obj.method()` semantics). Read lazily, so helpers
+   * that ignore it do not entangle the underlying reference.
+   */
+  receiver?: unknown;
 }
 
 export interface ArgumentsDebug {
