@@ -86,6 +86,39 @@ moduleFor(
       }, /Property set failed: object in path "inner.constructor" could not be found./);
       assert.equal(Inner.ohNo, undefined, 'check for prototype pollution');
     }
+
+    ['@test ignores a dangerous property as the final path segment'](assert) {
+      class Inner {}
+      class Example {
+        inner = new Inner();
+      }
+      let example = new Example();
+
+      assert.throws(() => {
+        set(example, 'inner.__proto__', { ohNo: 'polluted' });
+      }, /Property set failed: '__proto__' is a prohibited path segment./);
+      assert.equal(example.inner.ohNo, undefined, 'check for prototype pollution');
+      assert.equal(Inner.prototype.ohNo, undefined, 'check for prototype pollution');
+
+      assert.throws(() => {
+        set(example, 'inner.constructor', 'polluted');
+      }, /Property set failed: 'constructor' is a prohibited path segment./);
+    }
+
+    ['@test ignores attempts to traverse or set through prototype'](assert) {
+      class Klass {}
+      let holder = { klass: Klass };
+
+      assert.throws(() => {
+        set(holder, 'klass.prototype.ohNo', 'polluted');
+      }, /Property set failed: object in path "klass.prototype" could not be found./);
+      assert.equal(new Klass().ohNo, undefined, 'check for prototype pollution');
+
+      assert.throws(() => {
+        set(holder, 'klass.prototype', { ohNo: 'polluted' });
+      }, /Property set failed: 'prototype' is a prohibited path segment./);
+      assert.equal(new Klass().ohNo, undefined, 'check for prototype pollution');
+    }
   }
 );
 
