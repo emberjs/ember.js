@@ -13063,6 +13063,64 @@ function _scopeNameAppearsAsReference(template: string, name: string): boolean {
   return re.test(template);
 }
 
+// ── P4 increment 0: native-templateFn dual path ─────────────────────────────
+// gxt's compileTemplate already builds a finished templateFn from the compiled
+// code (runtime-compiler.ts fnBody: `$_GET_ARGS(this, arguments)` + the
+// flag-driven $a/$slots/$fw preamble + `return CODE`) — the bridge historically
+// DISCARDED it and re-assembled its own Function around a regex-patched copy of
+// the code. A template can ride the native fn only when NONE of the bridge's
+// post-emission rewrites / wrapper injections would fire for it; this predicate
+// whitelists exactly that set (leaf presentational templates), everything else
+// keeps the legacy assembly. The native path is the strategic convergence step:
+// $_GET_ARGS puts the render context into gxt's component TREE (fresh id via
+// `??= cId()`, addToTree under the ambient gxtRoot parent), which is what
+// unlocks gxt-native destroy sequencing for ember components.
+const _gxtNativePathStats = { native: 0, legacy: 0 };
+(globalThis as any).__gxtPathStats = _gxtNativePathStats;
+// gxt's ADDED_TO_TREE_FLAG is a non-exported `Symbol('addedToTree')` (gxt
+// src/core/types.ts). The force-rerender stale-registration clear needs it;
+// hunt it once by description on an instance that has been through
+// $_GET_ARGS and cache the (module-global) symbol instance.
+let _gxtAddedToTreeSymCache: symbol | null = null;
+function _gxtFindAddedToTreeSym(obj: object): symbol | null {
+  if (_gxtAddedToTreeSymCache) return _gxtAddedToTreeSymCache;
+  const s = Object.getOwnPropertySymbols(obj).find((x) => x.description === 'addedToTree');
+  if (s) _gxtAddedToTreeSymCache = s;
+  return s ?? null;
+}
+// Identifiers whose presence in the COMPILED CODE means the legacy wrapper's
+// injections/rewrites are load-bearing for this template (keyword-helper
+// locals, each-in entries, outlet state, comment-registry lookups, unbound
+// cache, mut writers, unique-id counters).
+const _GXT_NATIVE_BLOCKERS_CODE =
+  /\$_each\(|\]\.join\(""\)|__logSite|__ubCache|\$_maybeHelper\("|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
+function _gxtNativeTemplateEligible(
+  cr: any,
+  options: { strictMode?: boolean; scope?: unknown; scopeValues?: unknown } | undefined,
+  templateSource: string
+): boolean {
+  if (!cr || typeof cr.templateFn !== 'function') return false;
+  if (cr.errors && cr.errors.length > 0) return false;
+  // Strict-mode / scoped templates need the scopeInjections/strict-guard
+  // wrapper until scopeValues are threaded into gxtCompileTemplate (increment 2).
+  if (options?.strictMode === true || options?.scope || options?.scopeValues) return false;
+  // {{yield}} / splattributes read slots+fw off ctx['args'][SYM]; ember stores
+  // them elsewhere — excluded until the increment-1 mirror lands.
+  if (cr.usedSlots === true || cr.usedFw === true || cr.usedRecycle === true) return false;
+  const code: string = cr.code || '';
+  if (_GXT_NATIVE_BLOCKERS_CODE.test(code)) return false;
+  // in-element / unbound / unique-id trigger source-level rewrites whose
+  // emissions are not all code-greppable — exclude on the source too.
+  if (
+    templateSource.includes('in-element') ||
+    templateSource.includes('unbound') ||
+    templateSource.includes('unique-id')
+  ) {
+    return false;
+  }
+  return true;
+}
+
 /**
  * Runtime precompileTemplate implementation using GXT runtime compiler
  * Returns a template factory function that takes an owner and returns a template.
@@ -13555,7 +13613,17 @@ export function precompileTemplate(
   // 1. Replace async $_each with synchronous $_eachSync
   // 2. Inject $slots reference (globalThis.$slots) for {{yield}} support
   // 3. Inject $a alias for @named args
-  if (compilationResult.code) {
+  // P4 increment 0: eligible templates keep gxt's OWN templateFn (built inside
+  // gxtCompileTemplate from the unmodified code) — the legacy assembly below is
+  // skipped entirely, none of its rewrites are needed for this template class.
+  const __gxtUseNativeTemplateFn =
+    !!compilationResult.code &&
+    _gxtNativeTemplateEligible(compilationResult, options, templateString);
+  if (__gxtUseNativeTemplateFn) {
+    (compilationResult as any).__gxtNativePath = true;
+    _gxtNativePathStats.native++;
+  } else if (compilationResult.code) {
+    _gxtNativePathStats.legacy++;
     let modifiedCode = compilationResult.code;
     // Force every {{#each}} block in classic Ember templates onto the
     // synchronous list path (`$_eachSync` / `SyncListComponent`).
@@ -15407,7 +15475,35 @@ export function precompileTemplate(
           // This must be set UNCONDITIONALLY (not guarded by "if not set"), because an
           // earlier classic-component render may have assigned a dangling custom id to
           // the same instance, leaving addToTree pointing into a void.
-          if (COMPONENT_ID_PROPERTY) {
+          //
+          // P4 NATIVE PATH EXCEPTION: a native-templateFn template calls
+          // $_GET_ARGS itself, which mints the context its OWN fresh id
+          // (`??= cId()`) and addToTree-registers it as a DISTINCT child of the
+          // ambient gxtRoot — the root-id stamp above would instead make
+          // $_GET_ARGS do `TREE.set(rootId, renderContext)` (overwriting the
+          // root's entry, self-parenting it, and recycling the root id on
+          // teardown). So for native templates: do NOT stamp; and on a
+          // force-rerender (same instance reused by the morph path with its
+          // previous registration manually discarded) clear the stale id +
+          // addedToTree flag so $_GET_ARGS re-registers cleanly.
+          const __gxtNativeTpl = (compilationResult as any).__gxtNativePath === true;
+          if (COMPONENT_ID_PROPERTY && __gxtNativeTpl) {
+            if (_gxtIsForceRerender()) {
+              try {
+                delete renderContext[COMPONENT_ID_PROPERTY as any];
+              } catch {
+                /* frozen context, ignore */
+              }
+              const _attSym = _gxtFindAddedToTreeSym(renderContext);
+              if (_attSym) {
+                try {
+                  delete (renderContext as any)[_attSym];
+                } catch {
+                  /* ignore */
+                }
+              }
+            }
+          } else if (COMPONENT_ID_PROPERTY) {
             const rootId = gxtRoot && (gxtRoot as any)[COMPONENT_ID_PROPERTY as any];
             if (rootId !== undefined && rootId !== null) {
               try {
