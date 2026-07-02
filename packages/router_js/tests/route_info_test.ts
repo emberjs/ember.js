@@ -8,6 +8,7 @@ import {
   UnresolvedRouteInfoByParam,
 } from '../lib/route-info';
 import InternalTransition, { STATE_SYMBOL } from '../lib/transition';
+import { associateManagedRoute } from '../lib/route-manager';
 import URLTransitionIntent from '../lib/transition-intent/url-transition-intent';
 import { resolve } from 'rsvp';
 import { createHandler, createHandlerInfo, TestRouter } from './test_helpers';
@@ -257,8 +258,7 @@ function createNonGatingHandler(
   };
 
   let handler = createHandler(name);
-  handler.manager = manager as never;
-  handler.bucket = { route: handler, invokable: undefined } as never;
+  associateManagedRoute(handler, manager as never, { route: handler, invokable: undefined });
   return handler;
 }
 

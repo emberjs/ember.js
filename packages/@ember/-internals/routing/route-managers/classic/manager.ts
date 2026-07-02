@@ -22,15 +22,15 @@ import type { InternalRouteInfo, BaseRoute as IRoute, RouteInfo, Transition } fr
 import { throwIfAborted } from 'router_js';
 import type Route from '@ember/routing/route';
 import type {
+  ClassicDidEnterState,
+  ClassicDidExitState,
+  ClassicEnterState,
+  ClassicExitState,
+  ClassicWillEnterState,
+  ClassicWillExitState,
   CreateRouteArgs,
-  DidEnterState,
-  DidExitState,
-  EnterState,
-  ExitState,
   RouteCapabilities,
   RouteManagerWithClassicInterop,
-  WillEnterState,
-  WillExitState,
 } from '../api';
 import { routeCapabilities } from '../api';
 import type { QueryParamMeta } from '@ember/routing/route';
@@ -70,11 +70,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     const route = this.#owner.lookup(`route:${args.name}`) as Route;
     route._setRouteName(args.name);
 
-    const bucket = new ClassicRouteBucket(route);
-    route.manager = this;
-    route.bucket = bucket;
-
-    return bucket;
+    return new ClassicRouteBucket(route);
   }
 
   getRoute(bucket: ClassicRouteBucket) {
@@ -104,7 +100,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     };
   }
 
-  willEnter(bucket: ClassicRouteBucket, state: WillEnterState): void {
+  willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {
     if (!bucket.controller) {
       // Create the controller if it doesn't exist so the outlet can curry
       // @controller as soon as the route renders
@@ -124,7 +120,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     );
   }
 
-  enter(bucket: ClassicRouteBucket, state: EnterState): Promise<unknown> {
+  enter(bucket: ClassicRouteBucket, state: ClassicEnterState): Promise<unknown> {
     // Classic model chain: beforeModel → getModel → afterModel. The routeInfo
     // (state.to) dispatches getModel polymorphically based on whether the
     // transition was initiated with a model object or URL params.
@@ -165,7 +161,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
       });
   }
 
-  didEnter(bucket: ClassicRouteBucket, state: DidEnterState): void {
+  didEnter(bucket: ClassicRouteBucket, state: ClassicDidEnterState): void {
     // Cancel a pending loading substate if `enter` resolved first.
     if (bucket.loadingSubstateTimer) {
       cancel(bucket.loadingSubstateTimer as Parameters<typeof cancel>[0]);
@@ -174,7 +170,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 
     const route = bucket.route;
     const transition = state.transition;
-    const context = (state.to as unknown as InternalRouteInfo<Route>).context;
+    const context = state.internalRouteInfo.context;
 
     if (state.enter) {
       route.activate(transition);
@@ -191,12 +187,12 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     }
   }
 
-  willExit(bucket: ClassicRouteBucket, state: WillExitState): void {
+  willExit(bucket: ClassicRouteBucket, state: ClassicWillExitState): void {
     // Classic _internalReset resets the QP delegate on the controller.
     bucket.route._internalReset(state.isExiting, state.transition);
   }
 
-  exit(bucket: ClassicRouteBucket, state: ExitState = {}): void {
+  exit(bucket: ClassicRouteBucket, state: ClassicExitState = {}): void {
     const route = bucket.route;
     delete route.context;
     route.deactivate(state.transition);
@@ -204,7 +200,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     route.teardownViews();
   }
 
-  didExit(_bucket: ClassicRouteBucket, _state: DidExitState): void {
+  didExit(_bucket: ClassicRouteBucket, _state: ClassicDidExitState): void {
     // No-op for classic routes.
   }
 

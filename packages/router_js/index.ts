@@ -20,7 +20,12 @@ export {
 
 export { throwIfAborted } from './lib/transition-aborted-error';
 
-export { routeCapabilities, hasClassicInterop } from './lib/route-manager';
+export {
+  routeCapabilities,
+  hasClassicInterop,
+  associateManagedRoute,
+  getManagedRoute,
+} from './lib/route-manager';
 export type {
   RouteManager,
   RouteManagerWithClassicInterop,
@@ -37,5 +42,11 @@ export type {
   WillExitState,
   ExitState,
   DidExitState,
+  ClassicWillEnterState,
+  ClassicEnterState,
+  ClassicDidEnterState,
+  ClassicWillExitState,
+  ClassicExitState,
+  ClassicDidExitState,
   CreateRouteArgs,
 } from './lib/route-manager';

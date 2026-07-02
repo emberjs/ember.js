@@ -11,7 +11,14 @@ import type { FactoryManager } from '@ember/-internals/owner';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
-import type { RouteManager, RouteStateBucket } from '@ember/-internals/routing/route-managers/api';
+import type {
+  DidEnterState,
+  DidExitState,
+  ExitState,
+  RouteManager,
+  RouteStateBucket,
+  WillExitState,
+} from '@ember/-internals/routing/route-managers/api';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
 import {
   findRouteStateName,
@@ -61,7 +68,7 @@ import type {
   TransitionError,
   TransitionState,
 } from 'router_js';
-import Router, { logAbort, STATE_SYMBOL } from 'router_js';
+import Router, { associateManagedRoute, getManagedRoute, logAbort, STATE_SYMBOL } from 'router_js';
 import EngineInstance from '@ember/engine/instance';
 import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
@@ -412,7 +419,18 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
     }
 
-    return manager.getRoute(bucket);
+    const route = manager.getRoute(bucket);
+
+    // Register the route → {manager, bucket} association that router_js
+    // dispatches lifecycle hooks through. Owned by the router so managers
+    // don't have to stamp anything onto their route objects. Registered on
+    // every call (cheap WeakMap set) because a manager may instantiate its
+    // route lazily rather than at `createRoute` time.
+    if (typeof route === 'object' && route !== null) {
+      associateManagedRoute(route, manager, bucket);
+    }
+
+    return route;
   }
 
   _initRouterJs(): void {
@@ -428,6 +446,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         // delegates.
         const route = router.getRoute(name);
         assert(`Expected to find route '${name}'`, route !== undefined);
+        // SAFETY: the manager contract types routes as `unknown`; this is the
+        // one boundary where they enter router_js's generic machinery. All
+        // manager/bucket dispatch goes through the routeInfo association, so
+        // nothing downstream depends on the route's actual shape.
         return route as BaseRoute;
       }
 
@@ -710,16 +732,22 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     microlib.state = newState;
 
     for (const routeInfo of partition.entered) {
-      const route = routeInfo.route;
-      if (!route?.manager) {
+      const { manager, bucket } = routeInfo;
+      if (manager === undefined || bucket === undefined) {
         continue;
       }
 
-      route.manager.didEnter(route.bucket, {
-        transition,
-        to: routeInfo,
-        enter: true,
-      } as never);
+      // Intermediate transitions (loading/error substates) are classic
+      // machinery; only classic-interop managers take part in them.
+      if (hasClassicInterop(manager)) {
+        manager.didEnter(bucket, {
+          from: (transition.from ?? undefined) as RouteInfo | undefined,
+          to: transition.to as RouteInfo,
+          transition,
+          internalRouteInfo: routeInfo,
+          enter: true,
+        });
+      }
     }
 
     once(this as any, '_setOutlets');
@@ -752,14 +780,27 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     microlib.oldState = microlib.state;
     microlib.state = newState;
 
+    // RFC NavigationState: transition-level from/to, populated by
+    // routeWillChange before any lifecycle hook runs.
+    const navFrom = (activeTransition.from ?? undefined) as RouteInfo | undefined;
+    const navTo = activeTransition.to as RouteInfo;
+    const cancel = () => activeTransition.abort();
+
     for (const exitingRouteInfo of partition.exited) {
-      const route = exitingRouteInfo.route;
-      if (route !== undefined) {
-        route.manager.willExit(route.bucket, {
-          transition: activeTransition,
-          isExiting: true,
-        } as never);
-        route.manager.exit(route.bucket, { transition: activeTransition } as never);
+      const { manager, bucket } = exitingRouteInfo;
+      if (manager !== undefined && bucket !== undefined) {
+        const willExitState: WillExitState = { from: navFrom, to: navTo, cancel };
+        const exitState: ExitState = { from: navFrom, to: navTo };
+        if (hasClassicInterop(manager)) {
+          Object.assign(willExitState, {
+            transition: activeTransition,
+            internalRouteInfo: exitingRouteInfo,
+            isExiting: true,
+          });
+          Object.assign(exitState, { transition: activeTransition });
+        }
+        manager.willExit(bucket, willExitState);
+        manager.exit(bucket, exitState);
       }
     }
 
@@ -773,13 +814,20 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       );
     }
 
+    // "Context updated while staying mounted" is the classic update path; the
+    // RFC treats updates as a manager-internal concern, so only interop
+    // managers receive this willExit.
     for (const resetRouteInfo of partition.reset) {
-      const route = resetRouteInfo.route;
-      if (route !== undefined && route.manager && route.bucket !== undefined) {
-        route.manager.willExit(route.bucket, {
+      const { manager, bucket } = resetRouteInfo;
+      if (manager !== undefined && bucket !== undefined && hasClassicInterop(manager)) {
+        manager.willExit(bucket, {
+          from: navFrom,
+          to: navTo,
+          cancel,
           transition: activeTransition,
+          internalRouteInfo: resetRouteInfo,
           isExiting: false,
-        } as never);
+        });
       }
     }
 
@@ -811,24 +859,32 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
       try {
         for (const enteredRouteInfo of partition.entered) {
-          const route = enteredRouteInfo.route;
-          if (route !== undefined) {
-            route.manager.didEnter(route.bucket, {
-              transition: activeTransition,
-              to: enteredRouteInfo,
-              enter: true,
-            } as never);
+          const { manager, bucket } = enteredRouteInfo;
+          if (manager !== undefined && bucket !== undefined) {
+            const didEnterState: DidEnterState = { from: navFrom, to: navTo };
+            if (hasClassicInterop(manager)) {
+              Object.assign(didEnterState, {
+                transition: activeTransition,
+                internalRouteInfo: enteredRouteInfo,
+                enter: true,
+              });
+            }
+            manager.didEnter(bucket, didEnterState);
           }
         }
 
+        // The `enter: false` didEnter is the classic update path (see the
+        // reset loop above); only interop managers receive it.
         for (const updatedRouteInfo of partition.updatedContext) {
-          const route = updatedRouteInfo.route;
-          if (route !== undefined) {
-            route.manager.didEnter(route.bucket, {
+          const { manager, bucket } = updatedRouteInfo;
+          if (manager !== undefined && bucket !== undefined && hasClassicInterop(manager)) {
+            manager.didEnter(bucket, {
+              from: navFrom,
+              to: navTo,
               transition: activeTransition,
-              to: updatedRouteInfo,
+              internalRouteInfo: updatedRouteInfo,
               enter: false,
-            } as never);
+            });
           }
         }
       } catch (error) {
@@ -849,9 +905,16 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
 
       for (const exitedRouteInfo of partition.exited) {
-        const route = exitedRouteInfo.route;
-        if (route !== undefined) {
-          route.manager.didExit(route.bucket, { transition: activeTransition } as never);
+        const { manager, bucket } = exitedRouteInfo;
+        if (manager !== undefined && bucket !== undefined) {
+          const didExitState: DidExitState = { from: navFrom, to: navTo };
+          if (hasClassicInterop(manager)) {
+            Object.assign(didExitState, {
+              transition: activeTransition,
+              internalRouteInfo: exitedRouteInfo,
+            });
+          }
+          manager.didExit(bucket, didExitState);
         }
       }
 
@@ -905,9 +968,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     let parent: OutletState | null = null;
 
     for (let routeInfo of routeInfos) {
-      let route = routeInfo.route!;
-      let manager = route.manager;
-      let bucket = route.bucket;
+      let { manager, bucket } = routeInfo;
+      assert('Expected active route to have a manager and bucket', manager && bucket);
       let render = manager.getRenderState(bucket);
 
       let state: OutletState = {
@@ -1223,14 +1285,13 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       (key: string, value: unknown, qp: QueryParam | undefined) => {
         if (qp) {
           delete queryParams[key];
-          let route = qp.route;
-          let manager = route.manager;
+          let managed = getManagedRoute(qp.route);
           assert(
             'Expected a classic-interop route manager to serialize a query param',
-            hasClassicInterop(manager)
+            managed !== undefined && hasClassicInterop(managed.manager)
           );
-          queryParams[qp.urlKey] = manager.serializeQueryParam(
-            route.bucket,
+          queryParams[qp.urlKey] = managed.manager.serializeQueryParam(
+            managed.bucket,
             value,
             qp.urlKey,
             qp.type
@@ -1284,14 +1345,13 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         // because all values will be treated as strings
         if (qp) {
           delete queryParams[key];
-          let route = qp.route;
-          let manager = route.manager;
+          let managed = getManagedRoute(qp.route);
           assert(
             'Expected a classic-interop route manager to deserialize a query param',
-            hasClassicInterop(manager)
+            managed !== undefined && hasClassicInterop(managed.manager)
           );
-          queryParams[qp.prop] = manager.deserializeQueryParam(
-            route.bucket,
+          queryParams[qp.prop] = managed.manager.deserializeQueryParam(
+            managed.bucket,
             value,
             qp.urlKey,
             qp.type
@@ -1441,17 +1501,13 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @return {Object}
   */
   _getQPMeta(routeInfo: InternalRouteInfo<BaseRoute>) {
-    let route = routeInfo.route;
-    if (!route) {
-      return route;
-    }
-    let manager = route.manager;
-    if (!hasClassicInterop(manager)) {
+    let { manager, bucket } = routeInfo;
+    if (manager === undefined || bucket === undefined || !hasClassicInterop(manager)) {
       return undefined;
     }
     // The manager contract types `qp()` as `unknown`. Having
     // confirmed classic interop, narrow it to the concrete type.
-    return manager.qp(route.bucket) as QueryParamMeta;
+    return manager.qp(bucket) as QueryParamMeta;
   }
 
   /**

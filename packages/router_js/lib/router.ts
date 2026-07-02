@@ -653,12 +653,9 @@ export default abstract class Router<R extends BaseRoute> {
   reset() {
     if (this.state) {
       forEach<InternalRouteInfo<R>>(this.state.routeInfos.slice().reverse(), function (routeInfo) {
-        let route = routeInfo.route;
-        if (route !== undefined) {
-          let manager = route.manager;
-          if (manager !== undefined && route.bucket !== undefined) {
-            manager.exit(route.bucket);
-          }
+        let { manager, bucket } = routeInfo;
+        if (manager !== undefined && bucket !== undefined) {
+          manager.exit(bucket);
         }
         return true;
       });

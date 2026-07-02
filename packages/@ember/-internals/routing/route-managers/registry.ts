@@ -54,6 +54,14 @@ export function setRouteManager<Def extends object>(
   Note that this only returns the factory, the router is responsible for
   invoking it (typically once per owner) and caching the resulting manager
   instance.
+
+  Not to be confused with `getManagedRoute` (router_js): this registry is
+  keyed by the route **class** and answers "which kind of manager handles
+  routes of this class?", while `getManagedRoute` is keyed by a route
+  **instance** and returns the live manager instance + bucket driving it.
+  `EmberRouter.getRoute` connects the two — it resolves the factory here,
+  instantiates the manager and bucket, then records the per-instance result
+  via `associateManagedRoute`.
  */
 export function getRouteManager(definition: object): RouteManagerFactory | undefined {
   let pointer: object | null = definition;

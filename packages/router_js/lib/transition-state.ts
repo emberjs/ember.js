@@ -67,17 +67,14 @@ function proceed<R extends BaseRoute>(
     // vs. afterModel is so that redirects into child
     // routes don't re-run the model hooks for this
     // already-resolved route.
-    let { route } = resolvedRouteInfo;
-    if (route !== undefined) {
-      let manager = route.manager;
-      if (manager !== undefined && hasClassicInterop(manager) && route.bucket !== undefined) {
-        manager.redirect(
-          route.bucket,
-          resolvedRouteInfo as unknown as RouteInfo,
-          resolvedRouteInfo.context,
-          transition
-        );
-      }
+    let { manager, bucket } = resolvedRouteInfo;
+    if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
+      manager.redirect(
+        bucket,
+        resolvedRouteInfo as unknown as RouteInfo,
+        resolvedRouteInfo.context,
+        transition
+      );
     }
   }
 

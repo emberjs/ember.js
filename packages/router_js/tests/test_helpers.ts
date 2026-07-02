@@ -1,5 +1,5 @@
-import type { RouteStateBucket, Transition } from '../index';
-import Router from '../index';
+import type { RouteManager, RouteStateBucket, Transition } from '../index';
+import Router, { associateManagedRoute } from '../index';
 import type { Dict } from '../lib/core';
 import type { ClassicRoute, IModel } from '../lib/route-info';
 import RouteInfo, { UnresolvedRouteInfoByParam } from '../lib/route-info';
@@ -135,8 +135,14 @@ class TestRouteManager implements RouteManagerLike {
 
   createRoute(handler: ClassicRoute, args: { name: string }): TestRouteBucket {
     const bucket = new TestRouteBucket(handler, args);
-    handler.bucket = bucket as unknown as RouteStateBucket;
-    handler.manager = this as unknown as ClassicRoute['manager'];
+    // Register the association the router_js dispatch path reads. The real
+    // framework router does this in EmberRouter.getRoute; the test manager
+    // has no framework router above it, so it registers directly.
+    associateManagedRoute(
+      handler,
+      this as unknown as RouteManager,
+      bucket as unknown as RouteStateBucket
+    );
     return bucket;
   }
 
@@ -182,7 +188,7 @@ class TestRouteManager implements RouteManagerLike {
 
   didEnter(bucket: TestRouteBucket, args: NavigationArgs & { enter?: boolean }): void {
     const transition = args.transition;
-    const routeInfo = args.to;
+    const routeInfo = args.internalRouteInfo;
     const route = routeInfo?.route ?? bucket.route;
     const context = routeInfo?.context;
 
@@ -361,19 +367,19 @@ export class TestRouter<R extends ClassicRoute = ClassicRoute> extends Router<R>
     this.oldState = this.state;
     this.state = newState;
 
-    const fireDidEnter = (routeInfo: any, route: any) => {
-      if (!route?.manager) return;
-      route.manager.didEnter(route.bucket, { transition, to: routeInfo, enter: true });
+    const fireDidEnter = (routeInfo: any) => {
+      const { manager, bucket } = routeInfo;
+      if (!manager || !bucket) return;
+      manager.didEnter(bucket, { transition, internalRouteInfo: routeInfo, enter: true });
     };
 
     for (const routeInfo of partition.entered) {
-      const route = (routeInfo as any).route;
-      if (route) {
-        fireDidEnter(routeInfo, route);
+      if ((routeInfo as any).route) {
+        fireDidEnter(routeInfo);
       } else {
         // Async route: wait for the route to resolve before firing didEnter.
-        (routeInfo as any).routePromise.then((resolved: any) => {
-          fireDidEnter(routeInfo, resolved);
+        (routeInfo as any).routePromise.then(() => {
+          fireDidEnter(routeInfo);
         });
       }
     }
@@ -396,10 +402,10 @@ export class TestRouter<R extends ClassicRoute = ClassicRoute> extends Router<R>
 
     // Leaving the hierarchy: willExit + exit, leaf-first.
     for (const exitingRouteInfo of partition.exited) {
-      const route = (exitingRouteInfo as any).route;
-      if (route?.manager) {
-        route.manager.willExit(route.bucket, { transition: activeTransition });
-        route.manager.exit(route.bucket, { transition: activeTransition });
+      const { manager, bucket } = exitingRouteInfo as any;
+      if (manager && bucket) {
+        manager.willExit(bucket, { transition: activeTransition, isExiting: true });
+        manager.exit(bucket, { transition: activeTransition });
       }
     }
 
@@ -415,12 +421,9 @@ export class TestRouter<R extends ClassicRoute = ClassicRoute> extends Router<R>
 
     // Context-changed but staying mounted: willExit with isExiting=false.
     for (const resetRouteInfo of partition.reset) {
-      const route = (resetRouteInfo as any).route;
-      if (route?.manager && route.bucket !== undefined) {
-        route.manager.willExit(route.bucket, {
-          transition: activeTransition,
-          isExiting: false,
-        });
+      const { manager, bucket } = resetRouteInfo as any;
+      if (manager && bucket) {
+        manager.willExit(bucket, { transition: activeTransition, isExiting: false });
       }
     }
 
@@ -437,21 +440,21 @@ export class TestRouter<R extends ClassicRoute = ClassicRoute> extends Router<R>
 
       try {
         for (const enteredRouteInfo of partition.entered) {
-          const route = (enteredRouteInfo as any).route;
-          if (!route) continue;
-          route.manager.didEnter(route.bucket, {
+          const { manager, bucket } = enteredRouteInfo as any;
+          if (!manager || !bucket) continue;
+          manager.didEnter(bucket, {
             transition: activeTransition,
-            to: enteredRouteInfo,
+            internalRouteInfo: enteredRouteInfo,
             enter: true,
           });
         }
 
         for (const updatedRouteInfo of partition.updatedContext) {
-          const route = (updatedRouteInfo as any).route;
-          if (!route) continue;
-          route.manager.didEnter(route.bucket, {
+          const { manager, bucket } = updatedRouteInfo as any;
+          if (!manager || !bucket) continue;
+          manager.didEnter(bucket, {
             transition: activeTransition,
-            to: updatedRouteInfo,
+            internalRouteInfo: updatedRouteInfo,
             enter: false,
           });
         }
@@ -478,9 +481,9 @@ export class TestRouter<R extends ClassicRoute = ClassicRoute> extends Router<R>
       }
 
       for (const exitedRouteInfo of partition.exited) {
-        const route = (exitedRouteInfo as any).route;
-        if (route?.manager) {
-          route.manager.didExit(route.bucket, { transition: activeTransition });
+        const { manager, bucket } = exitedRouteInfo as any;
+        if (manager && bucket) {
+          manager.didExit(bucket, { transition: activeTransition });
         }
       }
 

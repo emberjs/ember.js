@@ -13,8 +13,8 @@ import {
 } from './transition';
 import { isParam, isPromise, merge } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
-import type { EnterState, RouteManager, RouteStateBucket, WillEnterState } from './route-manager';
-import { hasClassicInterop } from './route-manager';
+import type { EnterState, RouteManager, RouteStateBucket } from './route-manager';
+import { getManagedRoute, hasClassicInterop } from './route-manager';
 
 export type IModel = {} & {
   id?: string | number;
@@ -24,8 +24,6 @@ export type ModelFor<T> = T extends BaseRoute<infer V> ? V : never;
 
 export interface BaseRoute<T = unknown> {
   context: T | undefined;
-  manager: RouteManager;
-  bucket: RouteStateBucket;
 
   // this is used to identify the route in router_js machinery, and is not the same as the
   // routeName property on classic ember routes. It is totally internal to router_js, and
@@ -90,12 +88,12 @@ export function toReadOnlyRouteInfo<R extends BaseRoute>(
   const LOCAL_ROUTE_INFOS = new WeakMap<RouteInfosKey, RouteInfo | RouteInfoWithAttributes>();
 
   return routeInfos.map((info, i) => {
-    let { name, params, paramNames, context, route } = info;
+    let { name, params, paramNames, context } = info;
     // SAFETY: This should be safe since it is just for use as a key
     let key = info as unknown as RouteInfosKey;
     if (ROUTE_INFOS.has(key) && options.includeAttributes) {
       let routeInfo = ROUTE_INFOS.get(key)!;
-      routeInfo = attachMetadata(route!, routeInfo);
+      routeInfo = attachMetadata(info, routeInfo);
       let routeInfoWithAttribute = createRouteInfoWithAttributes(routeInfo, context);
       LOCAL_ROUTE_INFOS.set(key, routeInfo);
       if (!options.localizeMapUpdates) {
@@ -141,7 +139,7 @@ export function toReadOnlyRouteInfo<R extends BaseRoute>(
       },
 
       get metadata() {
-        return buildRouteInfoMetadata(info.route);
+        return buildRouteInfoMetadata(info);
       },
 
       get parent() {
@@ -213,23 +211,19 @@ function createRouteInfoWithAttributes(
   return Object.assign(routeInfo, attributes);
 }
 
-function buildRouteInfoMetadata(route?: BaseRoute) {
-  if (route === undefined || route === null) {
-    return null;
-  }
-
-  let manager = route.manager;
-  if (manager !== undefined && hasClassicInterop(manager) && route.bucket !== undefined) {
-    return manager.getRouteInfoMetadata(route.bucket);
+function buildRouteInfoMetadata(info: InternalRouteInfo<BaseRoute>) {
+  let { manager, bucket } = info;
+  if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
+    return manager.getRouteInfoMetadata(bucket);
   }
 
   return null;
 }
 
-function attachMetadata(route: BaseRoute, routeInfo: RouteInfo) {
+function attachMetadata(info: InternalRouteInfo<BaseRoute>, routeInfo: RouteInfo) {
   let metadata = {
     get metadata() {
-      return buildRouteInfoMetadata(route);
+      return buildRouteInfoMetadata(info);
     },
   };
 
@@ -275,25 +269,27 @@ export default class InternalRouteInfo<R extends BaseRoute> {
         throwIfAborted(transition);
         return route;
       })
-      .then((route: R) => {
-        if (route.manager === undefined || route.bucket === undefined) {
+      .then(() => {
+        const { manager, bucket } = this;
+        if (manager === undefined || bucket === undefined) {
           throw new Error(
             `Route '${this.name}' has no RouteManager attached. Use \`setRouteManager\` to associate one with the route class.`
           );
         }
-        const manager = route.manager!;
-        const bucket = route.bucket!;
 
-        const publicTo =
+        // RFC NavigationState: transition-level from/to, populated by
+        // routeWillChange before any lifecycle hook runs. Hand-built
+        // transitions in unit tests may lack `to`; fall back to this route's
+        // own public info.
+        const to =
+          (transition.to as RouteInfo | undefined) ??
           (ROUTE_INFOS.get(this as unknown as RouteInfosKey) as RouteInfo | undefined) ??
           (this as unknown as RouteInfo);
+        const from = (transition.from ?? undefined) as RouteInfo | undefined;
 
-        const navigationArgs: WillEnterState & EnterState = {
-          // transition and internalRouteInfo are used by ClassicRouteManager
-          // they are typed by ClassicInteropArgs
-          transition,
-          internalRouteInfo: this,
-          to: publicTo,
+        const navigationArgs: EnterState = {
+          from,
+          to,
           cancel: () => transition.abort(),
           signal: transition.signal,
           getAncestorContext: (ancestor: RouteInfo) => {
@@ -304,6 +300,12 @@ export default class InternalRouteInfo<R extends BaseRoute> {
             return Promise.resolve(ancestorEnter);
           },
         };
+
+        // The raw transition and the internal route info are classic-interop
+        // concerns; only provide them when the manager opts in.
+        if (hasClassicInterop(manager)) {
+          Object.assign(navigationArgs, { transition, internalRouteInfo: this });
+        }
 
         manager.willEnter(bucket, navigationArgs);
 
@@ -427,6 +429,22 @@ export default class InternalRouteInfo<R extends BaseRoute> {
     return this.fetchRoute();
   }
 
+  /**
+    The manager driving this route's lifecycle, read from the association the
+    framework router registered via `associateManagedRoute` when it resolved
+    the route. `undefined` until the route has loaded.
+   */
+  get manager(): RouteManager | undefined {
+    let route = this.route;
+    return route === undefined ? undefined : getManagedRoute(route)?.manager;
+  }
+
+  /** The manager's bucket for this route. `undefined` until the route has loaded. */
+  get bucket(): RouteStateBucket | undefined {
+    let route = this.route;
+    return route === undefined ? undefined : getManagedRoute(route)?.bucket;
+  }
+
   set route(route: R | undefined) {
     this._route = route;
   }
@@ -541,13 +559,11 @@ export class UnresolvedRouteInfoByParam<R extends BaseRoute> extends InternalRou
       fullParams['queryParams'] = transition[QUERY_PARAMS_SYMBOL];
     }
 
-    let route = this.route!;
-
     let result: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
 
-    let manager = route.manager;
-    if (manager !== undefined && hasClassicInterop(manager) && route.bucket !== undefined) {
-      result = manager.getContext(route.bucket, fullParams, transition) as
+    let { manager, bucket } = this;
+    if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
+      result = manager.getContext(bucket, fullParams, transition) as
         | ModelFor<R>
         | PromiseLike<ModelFor<R>>
         | undefined;
@@ -609,9 +625,8 @@ export class UnresolvedRouteInfoByObject<R extends BaseRoute> extends InternalRo
     if (this.serializer) {
       // invoke this.serializer unbound (getSerializer returns a stateless function)
       return this.serializer.call(null, model, paramNames);
-    } else if (this.route !== undefined) {
-      let manager = this.route.manager;
-      let bucket = this.route.bucket;
+    } else {
+      let { manager, bucket } = this;
       if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
         return manager.serializeContext(bucket, this, model) as Dict<unknown> | undefined;
       }

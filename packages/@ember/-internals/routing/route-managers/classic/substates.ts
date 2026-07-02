@@ -15,7 +15,7 @@ import type Owner from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type Route from '@ember/routing/route';
 import type { InternalRouteInfo } from 'router_js';
-import { hasClassicInterop, STATE_SYMBOL } from 'router_js';
+import { getManagedRoute, hasClassicInterop, STATE_SYMBOL } from 'router_js';
 import type { ClassicRouteBucket } from './bucket';
 
 type ActiveTransition = {
@@ -37,7 +37,8 @@ export function findRouteSubstateName(route: Route, state: string) {
   let owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
 
-  if (!hasClassicInterop(route.manager)) {
+  let managed = getManagedRoute(route);
+  if (managed === undefined || !hasClassicInterop(managed.manager)) {
     return '';
   }
 
@@ -63,7 +64,8 @@ export function findRouteStateName(route: Route, state: string) {
   let owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
 
-  if (!hasClassicInterop(route.manager)) {
+  let managed = getManagedRoute(route);
+  if (managed === undefined || !hasClassicInterop(managed.manager)) {
     return '';
   }
 

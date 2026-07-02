@@ -27,7 +27,6 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { setRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
-import type { RouteManager, RouteStateBucket } from '@ember/-internals/routing/route-managers/api';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
 import type {
   BaseRoute,
@@ -36,7 +35,7 @@ import type {
   Transition,
   TransitionState,
 } from 'router_js';
-import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
+import { getManagedRoute, PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
 import type { default as EmberRouter } from '@ember/routing/router';
 import { default as generateController } from './lib/generate_controller';
 import type { ExpandedControllerQueryParam, NamedRouteArgs } from './lib/utils';
@@ -548,26 +547,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @public
   */
   declare fullRouteName: string;
-
-  /**
-    The route manager that created this route and drives its lifecycle. Set
-    by the manager's `createRoute` method.
-
-    @property manager
-    @type RouteManager
-    @private
-  */
-  declare manager: RouteManager<RouteStateBucket>;
-
-  /**
-    The opaque bucket the manager returned from `createRoute`. The router
-    passes this back to every other manager hook for this route.
-
-    @property bucket
-    @type RouteStateBucket
-    @private
-  */
-  declare bucket: RouteStateBucket;
 
   /**
     Sets the name for this route, including a fully resolved name for routes
@@ -2053,12 +2032,12 @@ Route.reopen({
     queryParamsDidChange<T>(this: Route<T>, changed: {}, totalPresent: unknown, removed: {}) {
       // Logic lives on the route manager so the router talks to the manager
       // boundary rather than the classic Route directly.
-      let manager = this.manager;
+      let managed = getManagedRoute(this);
       assert(
         'Expected a classic-interop route manager to handle queryParamsDidChange',
-        hasClassicInterop(manager)
+        managed !== undefined && hasClassicInterop(managed.manager)
       );
-      return manager.queryParamsDidChange(this.bucket, changed, totalPresent, removed);
+      return managed.manager.queryParamsDidChange(managed.bucket, changed, totalPresent, removed);
     },
 
     finalizeQueryParamChange<T>(
@@ -2070,12 +2049,12 @@ Route.reopen({
     ) {
       // Logic lives on the route manager so the router talks to the manager
       // boundary rather than the classic Route directly.
-      let manager = this.manager;
+      let managed = getManagedRoute(this);
       assert(
         'Expected a classic-interop route manager to handle finalizeQueryParamChange',
-        hasClassicInterop(manager)
+        managed !== undefined && hasClassicInterop(managed.manager)
       );
-      return manager.finalizeQueryParamChange(this.bucket, params, finalParams, transition);
+      return managed.manager.finalizeQueryParamChange(managed.bucket, params, finalParams, transition);
     },
   },
 });

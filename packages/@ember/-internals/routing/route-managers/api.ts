@@ -25,6 +25,12 @@ export type {
   WillExitState,
   ExitState,
   DidExitState,
+  ClassicWillEnterState,
+  ClassicEnterState,
+  ClassicDidEnterState,
+  ClassicWillExitState,
+  ClassicExitState,
+  ClassicDidExitState,
   CreateRouteArgs,
 } from 'router_js';
 

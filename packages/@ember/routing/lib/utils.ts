@@ -105,13 +105,12 @@ export function stashParamNames(
 
     routeInfo['_names'] = names;
 
-    let route = routeInfo.route!;
     // Dispatch through the route manager so the router talks to the manager
     // boundary rather than calling the classic Route directly.
-    let manager = route.manager;
-    if (hasClassicInterop(manager)) {
+    let { manager, bucket } = routeInfo;
+    if (manager !== undefined && bucket !== undefined && hasClassicInterop(manager)) {
       manager.stashNames(
-        route.bucket,
+        bucket,
         routeInfo as unknown as InternalRouteInfo<IRoute>,
         dynamicParent! as unknown as InternalRouteInfo<IRoute>
       );
