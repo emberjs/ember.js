@@ -41,7 +41,6 @@ import { RootComponentDefinition } from './component-managers/root';
 import RouterResolver from './router-resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
-import { makeRouteTemplate } from './component-managers/route-template';
 import type { IBuilder, RendererRoot } from './base-renderer';
 import { BaseRenderer, errorLoopTransaction } from './base-renderer';
 
@@ -218,31 +217,25 @@ export class Renderer extends BaseRenderer {
   // renderer HOOKS
 
   appendOutletView(view: OutletView, target: SimpleElement): void {
+    // The append is scheduled into the `render` queue, so a teardown that
+    // starts in the same run loop (e.g. a deferred incremental outlet pass
+    // racing test cleanup) can destroy this renderer before the queue
+    // flushes. Rendering into a destroying renderer would assert deep in
+    // the destroyable graph; skip instead.
+    if (isDestroying(this) || isDestroyed(this)) {
+      return;
+    }
+
     // TODO: This bypasses the {{outlet}} syntax so logically duplicates
     // some of the set up code. Since this is all internal (or is it?),
     // we can refactor this to do something more direct/less convoluted
     // and with less setup, but get it working first
     let outlet = createRootOutlet(view);
-    let { name, /* controller, */ template } = view.state;
+    let { invokable } = view.state;
+    assert('[BUG] OutletView state is unexpectedly missing its root invokable', invokable);
 
     let named = dict<Reference>();
-
-    named['Component'] = createConstRef(
-      makeRouteTemplate(view.owner, name, template as Template),
-      '@Component'
-    );
-
-    // TODO: is this guaranteed to be undefined? It seems to be the
-    // case in the `OutletView` class. Investigate how much that class
-    // exists as an internal implementation detail only, or if it was
-    // used outside of core. As far as I can tell, test-helpers uses
-    // it but only for `setOutletState`.
-    // named['controller'] = createConstRef(controller, '@controller');
-    // Update: at least according to the debug render tree tests, we
-    // appear to always expect this to be undefined. Not a definitive
-    // source by any means, but is useful evidence
-    named['controller'] = UNDEFINED_REFERENCE;
-    named['model'] = UNDEFINED_REFERENCE;
+    named['Component'] = createConstRef(invokable, '@Component');
 
     let args = createCapturedArgs(named, EMPTY_POSITIONAL);
 

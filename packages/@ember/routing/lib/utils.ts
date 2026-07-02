@@ -3,12 +3,14 @@ import { getOwner } from '@ember/-internals/owner';
 import type { ControllerQueryParam, ControllerQueryParamType } from '@ember/controller';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
-import type { InternalRouteInfo } from 'router_js';
+import type { BaseRoute, InternalRouteInfo } from 'router_js';
 import type Router from 'router_js';
 import { STATE_SYMBOL } from 'router_js';
 import type { ExtendedInternalRouteInfo } from '@ember/routing/route';
 import type Route from '@ember/routing/route';
 import type EmberRouter from '@ember/routing/router';
+import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
+import type { BaseRoute as IRoute } from 'router_js';
 
 const ALL_PERIODS_REGEX = /\./g;
 
@@ -65,7 +67,7 @@ export function extractRouteArgs(args: RouteArgs): ExtractedArgs {
   return { routeName, models, queryParams };
 }
 
-export function getActiveTargetName(router: Router<Route>): string {
+export function getActiveTargetName(router: Router<BaseRoute>): string {
   let routeInfos = router.activeTransition
     ? router.activeTransition[STATE_SYMBOL]!.routeInfos
     : router.state!.routeInfos;
@@ -103,8 +105,16 @@ export function stashParamNames(
 
     routeInfo['_names'] = names;
 
-    let route = routeInfo.route!;
-    route._stashNames(routeInfo, dynamicParent!);
+    // Dispatch through the route manager so the router talks to the manager
+    // boundary rather than calling the classic Route directly.
+    let { manager, bucket } = routeInfo;
+    if (manager !== undefined && bucket !== undefined && hasClassicInterop(manager)) {
+      manager.stashNames(
+        bucket,
+        routeInfo as unknown as InternalRouteInfo<IRoute>,
+        dynamicParent! as unknown as InternalRouteInfo<IRoute>
+      );
+    }
   }
 
   routeInfos['_namesStashed'] = true;

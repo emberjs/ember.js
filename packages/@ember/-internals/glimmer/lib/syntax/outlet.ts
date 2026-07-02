@@ -1,12 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type {
-  CapturedArguments,
-  CurriedComponent,
-  DynamicScope,
-  Template,
-} from '@glimmer/interfaces';
+import type { CapturedArguments, CurriedComponent, DynamicScope } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import {
   childRefFromParts,
@@ -19,9 +14,7 @@ import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
 import { curry } from '@glimmer/runtime/lib/curried-value';
 import { dict } from '@glimmer/util/lib/collections';
-import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { OutletComponent, type OutletDefinitionState } from '../component-managers/outlet';
-import { makeRouteTemplate } from '../component-managers/route-template';
 import { internalHelper } from '../helpers/internal-helper';
 import type { OutletState } from '../utils/outlet';
 
@@ -33,15 +26,15 @@ import type { OutletState } from '../utils/outlet';
   ```app/templates/application.gjs
   import MyHeader from '../components/my-header';
   import MyFooter from '../components/my-footer';
-    
+
   <template>
     <MyHeader />
-  
+
     <div class="my-dynamic-content">
       <!-- this content will change based on the current route, which depends on the current URL -->
       {{outlet}}
     </div>
-  
+
     <MyFooter />
   </template>
   ```
@@ -50,8 +43,8 @@ import type { OutletState } from '../utils/outlet';
   information on how your `route` interacts with the `{{outlet}}` helper.
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
-  `outlet` is built-in and does not need to be imported. 
- 
+  `outlet` is built-in and does not need to be imported.
+
   @method outlet
   @for Ember.Templates.helpers
   @public
@@ -86,109 +79,85 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
       // same route, but return a different one when the route changes. On the
       // other hand, changing the model only intentionally do not teardown the
       // component and instead re-render in-place.
-      if (!isStable(state, lastState)) {
-        lastState = state;
-
-        if (state !== null) {
-          // If we are crossing an engine mount point, this is how the owner
-          // gets switched.
-          let outletOwner = outletState?.render?.owner ?? owner;
-
-          let named = dict<Reference>();
-
-          // Here we either have a raw template that needs to be normalized,
-          // or a component that we can render as-is. `RouteTemplate` upgrades
-          // the template into a component so we can have a unified code path.
-          // We still store the original `template` value, because we rely on
-          // its identity for the stability check, and the `RouteTemplate`
-          // wrapper doesn't dedup for us.
-          let template = state.template;
-          let component: object;
-
-          if (hasInternalComponentManager(template)) {
-            component = template;
-          } else {
-            if (DEBUG) {
-              // We don't appear to have a standard way or a brand to check, but for the
-              // purpose of avoiding obvious user errors, this probably gets you close
-              // enough.
-              let isTemplate = (template: unknown): template is Template => {
-                if (template === null || typeof template !== 'object') {
-                  return false;
-                } else {
-                  let t = template as Partial<Template>;
-                  return t.result === 'ok' || t.result === 'error';
-                }
-              };
-
-              // We made it past the `TemplateFactory` instantiation before
-              // getting here, so either we got unlucky where the invalid type
-              // happens to be a function that didn't mind taking owner as an
-              // argument, or this was directly set by something like test
-              // helpers.
-              if (!isTemplate(template)) {
-                let label: string;
-
-                try {
-                  label = `\`${String(template)}\``;
-                } catch {
-                  label = 'an unknown object';
-                }
-
-                assert(
-                  `Failed to render the \`${state.name}\` route: expected ` +
-                    `a component or Template object, but got ${label}.`
-                );
-              }
-            }
-
-            component = makeRouteTemplate(outletOwner, state.name, template as Template);
-          }
-
-          // Component is stable for the lifetime of the outlet
-          named['Component'] = createConstRef(component, '@Component');
-
-          // Controller is stable for the lifetime of the outlet
-          named['controller'] = createConstRef(state.controller, '@controller');
-
-          // Create a ref for the model
-          let modelRef = childRefFromParts(outletRef, ['render', 'model']);
-
-          // Store the value of the model
-          let model = valueForRef(modelRef);
-
-          // Create a compute ref which we pass in as the `{{@model}}` reference
-          // for the outlet. This ref will update and return the value of the
-          // model _until_ the outlet itself changes. Once the outlet changes,
-          // dynamic scope also changes, and so the original model ref would not
-          // provide the correct updated value. So we stop updating and return
-          // the _last_ model value for that outlet.
-          named['model'] = createComputeRef(() => {
-            if (lastState === state) {
-              model = valueForRef(modelRef);
-            }
-
-            return model;
-          });
-
-          if (DEBUG) {
-            named['model'] = createDebugAliasRef!('@model', named['model']);
-          }
-
-          let args = createCapturedArgs(named, EMPTY_POSITIONAL);
-
-          // Package up everything
-          outlet = curry(
-            0 as CurriedComponent,
-            new OutletComponent(owner, state),
-            outletOwner,
-            args,
-            true
-          );
-        } else {
-          outlet = null;
-        }
+      if (isStable(state, lastState)) {
+        return outlet;
       }
+
+      lastState = state;
+
+      if (state === null) {
+        return null;
+      }
+
+      // If we are crossing an engine mount point, this is how the owner
+      // gets switched.
+      let outletOwner = outletState?.render?.owner ?? owner;
+
+      let modelRef = childRefFromParts(outletRef, ['render', 'model']);
+      let model = valueForRef(modelRef);
+
+      let context: Reference = createComputeRef(() => {
+        if (lastState === state) {
+          model = valueForRef(modelRef);
+        }
+        return model;
+      });
+
+      if (DEBUG) {
+        context = createDebugAliasRef!('@context', context);
+      }
+
+      // stateFor guarantees an invokable is present.
+      assert('Expected outlet state to have an invokable to render', state.invokable !== undefined);
+
+      // Args are delivered by currying them onto the render target — the
+      // outlet's layout is arg-less. Currying (rather than writing the args
+      // into the layout) keeps the target from showing up as an opaque
+      // `@Component` frame in the debug render tree and
+      // backtracking-assertion messages. Curried refs stay live, so the
+      // `@context` compute ref keeps updating across renders of the mount.
+      let targetArgs = dict<Reference>();
+      let target;
+
+      if (state.wrapper !== undefined) {
+        // Manager render with a wrapper: the RFC's wrapper args —
+        // `@Component` (the per-bucket invokable), `@bucket`, and the live
+        // `@context`.
+        targetArgs['Component'] = createConstRef(state.invokable, '@Component');
+        targetArgs['bucket'] = createConstRef(state.bucket, '@bucket');
+        target = state.wrapper;
+      } else {
+        // Wrapper-less render (a manager that opted out, or a legacy
+        // `setOutletState` caller): the invokable itself is the target and
+        // receives only the live `@context`. No `@bucket`: unlike the
+        // module-stable wrapper, the invokable is per-bucket and built by
+        // the manager, so anything bucket-shaped it needs the manager can
+        // attach itself — the live context ref is the one thing only the
+        // outlet can supply. (Legacy renders have no bucket at all.)
+        target = state.invokable;
+      }
+
+      targetArgs['context'] = context;
+
+      let named = dict<Reference>();
+      named['Component'] = createConstRef(
+        curry(
+          0 as CurriedComponent,
+          target,
+          outletOwner,
+          createCapturedArgs(targetArgs, EMPTY_POSITIONAL),
+          false
+        ),
+        '@Component'
+      );
+
+      outlet = curry(
+        0 as CurriedComponent,
+        new OutletComponent(owner, state),
+        outletOwner,
+        createCapturedArgs(named, EMPTY_POSITIONAL),
+        true
+      );
 
       return outlet;
     });
@@ -202,17 +171,19 @@ function stateFor(
   if (outlet === undefined) return null;
   let render = outlet.render;
   if (render === undefined) return null;
-  let template = render.template;
-  // The type doesn't actually allow for `null`, but if we make it past this
-  // point it is really important that we have _something_ to render. We could
-  // assert, but that is probably overly strict for very little to gain.
-  if (template === undefined || template === null) return null;
+
+  // There is nothing to render until we have an invokable. This is either the
+  // manager-driven invokable or a route template that `OutletView` upgraded
+  // from a legacy raw `template`.
+  if (render.invokable === undefined) return null;
 
   return {
     ref,
     name: render.name,
-    template,
     controller: render.controller,
+    wrapper: render.wrapper,
+    invokable: render.invokable,
+    bucket: render.bucket,
   };
 }
 
@@ -224,5 +195,16 @@ function isStable(
     return false;
   }
 
-  return state.template === lastState.template && state.controller === lastState.controller;
+  // Manager-driven routes with a wrapper: the wrapper is module-stable, so
+  // route identity is carried by the per-bucket invokable. `controller` is
+  // deliberately excluded here: it can legitimately appear after the first
+  // render (setupController runs in didEnter) and must not tear the route
+  // down.
+  if (state.wrapper !== undefined || lastState.wrapper !== undefined) {
+    return state.wrapper === lastState.wrapper && state.invokable === lastState.invokable;
+  }
+
+  // Legacy `setOutletState` callers have no wrapper; key on the upgraded
+  // invokable and controller.
+  return state.invokable === lastState.invokable && state.controller === lastState.controller;
 }

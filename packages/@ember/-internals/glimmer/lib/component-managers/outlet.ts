@@ -41,8 +41,17 @@ interface OutletInstanceState {
 export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
-  template: object;
-  controller: unknown;
+
+  /**
+   * What this outlet renders. The root `OutletView` provides the upgraded
+   * root template as `invokable`; per-outlet states built by the `{{outlet}}`
+   * helper carry the manager's `wrapper` (when present) plus `invokable` and
+   * `controller`, which the helper's stability check keys on.
+   */
+  controller?: unknown;
+  wrapper?: object;
+  invokable?: object;
+  bucket?: object;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
@@ -171,10 +180,15 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
-const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
-  '<@Component @controller={{@controller}} @model={{@model}} />',
-  { strictMode: true }
-);
+// The one outlet layout. `@Component` is always a value that already
+// carries everything it needs — the outlet helper curries the args (the
+// invokable/bucket/live context for wrapped renders, the live context for
+// wrapper-less ones) onto the render target before handing it over, and the
+// root outlet's invokable takes no args at all. Keeping the layout arg-less
+// also keeps stray named args out of the debug render tree.
+const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component />', {
+  strictMode: true,
+});
 
 export class OutletComponent implements ComponentDefinition<
   OutletDefinitionState,

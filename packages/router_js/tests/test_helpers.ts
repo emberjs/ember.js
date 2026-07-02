@@ -1,13 +1,14 @@
-import type { Route, Transition } from '../index';
-import Router from '../index';
+import type { RouteManager, RouteStateBucket, Transition } from '../index';
+import Router, { associateRouteManagement } from '../index';
 import type { Dict } from '../lib/core';
-import type { IModel } from '../lib/route-info';
+import type { ClassicRoute, IModel } from '../lib/route-info';
 import RouteInfo, { UnresolvedRouteInfoByParam } from '../lib/route-info';
 import type { PublicTransition } from '../lib/transition';
 import { logAbort } from '../lib/transition';
 import type { TransitionError } from '../lib/transition-state';
 import type { UnrecognizedURLError } from '../lib/unrecognized-url-error';
-import { isTransitionAborted } from '../lib/transition-aborted-error';
+import { isTransitionAborted, throwIfAborted } from '../lib/transition-aborted-error';
+import { Promise } from 'rsvp';
 
 // A useful function to allow you to ignore transition errors in a testing context
 export async function ignoreTransitionError(transition: Transition) {
@@ -24,11 +25,11 @@ function assertAbort(assert: Assert) {
   };
 }
 
-function transitionToWithAbort(assert: Assert, router: Router<Route>, path: string) {
+function transitionToWithAbort(assert: Assert, router: Router<ClassicRoute>, path: string) {
   return router.transitionTo(path).then(shouldNotHappen(assert), assertAbort(assert));
 }
 
-function replaceWith(router: Router<Route>, path: string) {
+function replaceWith(router: Router<ClassicRoute>, path: string) {
   return router.transitionTo.apply(router, [path]).method('replace');
 }
 
@@ -41,7 +42,7 @@ function shouldNotHappen(assert: Assert, _message?: string) {
   };
 }
 
-export function isExiting(route: Route | string, routeInfos: RouteInfo<Route>[]) {
+export function isExiting(route: ClassicRoute | string, routeInfos: RouteInfo<ClassicRoute>[]) {
   for (let i = 0, len = routeInfos.length; i < len; ++i) {
     let routeInfo = routeInfos[i];
     if (routeInfo!.name === route || routeInfo!.route === route) {
@@ -65,15 +66,255 @@ export {
   assertAbort,
 };
 
-export function createHandler<T extends IModel>(name: string, options?: Dict<unknown>): Route<T> {
-  return Object.assign(
-    { name, routeName: name, context: {}, names: [], handler: name, _internalName: name },
-    options
-  ) as unknown as Route<T>;
+// Minimal structural copies of the route manager types. The real interfaces
+// live in `@ember/-internals/routing/route-managers/api`; router_js stays
+// independent so we redeclare just the surface this manager satisfies.
+
+interface RouteCapabilities {
+  classicInterop: boolean;
 }
 
-export class TestRouter<R extends Route = Route> extends Router<R> {
-  didTransition() {}
+interface NavigationArgs {
+  transition: any;
+  to: any;
+  internalRouteInfo?: any;
+  cancel: () => void;
+  signal?: AbortSignal;
+  getAncestorContext: (routeInfo: any) => Promise<unknown>;
+}
+
+interface RouteManagerLike {
+  capabilities: RouteCapabilities;
+  createRoute(definition: any, args: { name: string }): TestRouteBucket;
+  willEnter(bucket: TestRouteBucket, args: NavigationArgs): void;
+  enter(bucket: TestRouteBucket, args: NavigationArgs): Promise<unknown>;
+  didEnter(bucket: TestRouteBucket, args: NavigationArgs & { enter?: boolean }): void;
+  willExit(bucket: TestRouteBucket, args: NavigationArgs & { isExiting?: boolean }): void;
+  exit(bucket: TestRouteBucket, args?: NavigationArgs): void;
+  didExit(bucket: TestRouteBucket, args: NavigationArgs): void;
+  getRouteWrapper(): object;
+  getInvokable(
+    bucket: TestRouteBucket,
+    enterPromise: Promise<unknown>
+  ): Promise<object | undefined>;
+  serializeContext(
+    bucket: TestRouteBucket,
+    routeInfo: any,
+    value: unknown
+  ): Dict<unknown> | undefined;
+  getContext(bucket: TestRouteBucket, params: Dict<unknown>, transition: any): unknown;
+  redirect(bucket: TestRouteBucket, routeInfo: any, context: unknown, transition: any): void;
+  getRouteInfoMetadata(bucket: TestRouteBucket): unknown;
+}
+
+// Stable per-route state. Per-render data (context, enterPromise) lives on
+// the routeInfo, not here.
+class TestRouteBucket {
+  route: ClassicRoute;
+  args: { name: string };
+  invokable: object | undefined = undefined;
+
+  constructor(route: ClassicRoute, args: { name: string }) {
+    this.route = route;
+    this.args = args;
+  }
+}
+
+const isTransitionLike = (value: unknown): boolean =>
+  typeof value === 'object' &&
+  value !== null &&
+  (value as { isTransition?: boolean }).isTransition === true;
+
+/**
+  Lightweight route manager used by `router_js`'s own tests. Routes in these
+  tests are plain object literals with `model`/`setup`/`enter`/`exit` hooks
+  (no EmberObject, no DI container) so the manager dispatches directly.
+ */
+class TestRouteManager implements RouteManagerLike {
+  capabilities: RouteCapabilities = { classicInterop: true };
+
+  createRoute(handler: ClassicRoute, args: { name: string }): TestRouteBucket {
+    const bucket = new TestRouteBucket(handler, args);
+    // Register the association the router_js dispatch path reads. The real
+    // framework router does this in EmberRouter.getRoute; the test manager
+    // has no framework router above it, so it registers directly.
+    associateRouteManagement(
+      handler,
+      this as unknown as RouteManager,
+      bucket as unknown as RouteStateBucket
+    );
+    return bucket;
+  }
+
+  willEnter(_bucket: TestRouteBucket, _args: NavigationArgs): void {}
+
+  enter(bucket: TestRouteBucket, args: NavigationArgs): Promise<unknown> {
+    const transition = args.transition;
+    // `to` is the public RouteInfo, which has no getModel. Classic-interop
+    // managers dispatch internal operations through internalRouteInfo.
+    const routeInfo = args.internalRouteInfo ?? args.to;
+    // routeInfo.route is the authoritative reference for this transition.
+    // Tests sometimes attach a handler to the routeInfo via prototype
+    // assignment that differs from the one the bucket was created with.
+    const route = routeInfo?.route ?? bucket.route;
+
+    if (transition && typeof transition.trigger === 'function') {
+      transition.trigger(true, 'willResolveModel', transition, route);
+    }
+
+    const name: string = routeInfo?.name ?? bucket.args.name;
+
+    const beforeModelResult = route?.beforeModel?.(transition);
+    return Promise.resolve(isTransitionLike(beforeModelResult) ? null : beforeModelResult)
+      .then(() => {
+        throwIfAborted(transition);
+        return routeInfo.getModel(transition);
+      })
+      .then((model: unknown) => {
+        throwIfAborted(transition);
+        // Stash the model BEFORE afterModel so afterModel can swap it out.
+        if (transition) {
+          transition.resolvedModels = transition.resolvedModels || {};
+          transition.resolvedModels[name] = model;
+        }
+        const afterModelResult = route?.afterModel?.(model as never, transition);
+        const safeAfterModel = isTransitionLike(afterModelResult) ? null : afterModelResult;
+        return Promise.resolve(safeAfterModel).then(() => {
+          // afterModel may have swapped the model; pick up the new value.
+          return transition?.resolvedModels?.[name] ?? model;
+        });
+      });
+  }
+
+  didEnter(bucket: TestRouteBucket, args: NavigationArgs & { enter?: boolean }): void {
+    const transition = args.transition;
+    const routeInfo = args.internalRouteInfo;
+    const route = routeInfo?.route ?? bucket.route;
+    const context = routeInfo?.context;
+
+    if (!route) return;
+
+    // Fire route.enter() on fresh entries (not context updates), mirroring
+    // the classic setupContexts gating.
+    if (args.enter !== false && route.enter) {
+      route.enter(transition);
+    }
+    // If enter triggered a redirect, the transition is now aborted; bail
+    // before calling setup so the outer loop stops too.
+    throwIfAborted(transition);
+    route.context = context as never;
+    if (route.setup) {
+      route.setup(context as never, transition);
+    }
+    throwIfAborted(transition);
+  }
+
+  willExit(_bucket: TestRouteBucket, _args: NavigationArgs & { isExiting?: boolean }): void {}
+
+  exit(bucket: TestRouteBucket, args?: NavigationArgs): void {
+    const route = bucket.route;
+    if (!route) return;
+    delete route.context;
+    if (route.exit) {
+      route.exit(args?.transition);
+    }
+  }
+
+  didExit(_bucket: TestRouteBucket, _args: NavigationArgs): void {}
+
+  // Classic-interop: serialize the model into the dynamic URL segments. The
+  // manager owns serialization, so this reproduces what route-info's default
+  // serialize would otherwise do once dispatch crosses the manager boundary:
+  // defer to the handler's own `serialize` when present, otherwise fall back
+  // to the single dynamic-segment default (the `_id` convention). Param-style
+  // models (string/number) are handled upstream before this is reached.
+  serializeContext(
+    bucket: TestRouteBucket,
+    routeInfo: any,
+    value: unknown
+  ): Dict<unknown> | undefined {
+    const route = bucket.route;
+    const paramNames: string[] = routeInfo?.paramNames ?? [];
+
+    if (route && typeof route.serialize === 'function') {
+      return route.serialize(value, paramNames);
+    }
+
+    if (paramNames.length !== 1) {
+      return undefined;
+    }
+
+    const object: Dict<unknown> = {};
+    const name = paramNames[0]!;
+    if (/_id$/.test(name)) {
+      object[name] = (value as IModel)?.id;
+    } else {
+      object[name] = value;
+    }
+    return object;
+  }
+
+  // Classic-interop: resolve the handler's context from URL params via its
+  // deserialize/model hook.
+  getContext(bucket: TestRouteBucket, params: Dict<unknown>, transition: any): unknown {
+    const route = bucket.route;
+    if (route.deserialize) {
+      return route.deserialize(params, transition);
+    }
+    if (route.model) {
+      return route.model(params, transition);
+    }
+    return undefined;
+  }
+
+  // Classic-interop: run the handler's redirect hook after its model resolves.
+  redirect(bucket: TestRouteBucket, _routeInfo: any, context: unknown, transition: any): void {
+    const route = bucket.route;
+    route.redirect?.(context, transition);
+  }
+
+  // Classic-interop: surface the handler's route-info metadata.
+  getRouteInfoMetadata(bucket: TestRouteBucket): unknown {
+    const route = bucket.route;
+    return route.buildRouteInfoMetadata ? route.buildRouteInfoMetadata() : null;
+  }
+
+  // Tests never actually render, so the wrapper identity is unused; we just
+  // need a stable reference to satisfy the manager contract.
+  getRouteWrapper(): object {
+    return TEST_WRAPPER_SENTINEL;
+  }
+
+  // Gate on enterPromise so resolution stays sequential, matching the
+  // classic expectation that a parent's model resolves before a child's
+  // model starts.
+  getInvokable(
+    _bucket: TestRouteBucket,
+    enterPromise: Promise<unknown>
+  ): Promise<object | undefined> {
+    return (enterPromise ?? Promise.resolve()).then(() => undefined);
+  }
+}
+
+const TEST_WRAPPER_SENTINEL = {};
+const SHARED_TEST_MANAGER = new TestRouteManager();
+
+export function createHandler<T extends IModel>(
+  name: string,
+  options?: Dict<unknown>
+): ClassicRoute<T> {
+  const handler = Object.assign(
+    { name, routeName: name, context: {}, names: [], handler: name, _internalName: name },
+    options
+  ) as unknown as ClassicRoute<T>;
+  // Attach the shared test manager + bucket so the resolve path has something
+  // to dispatch through.
+  SHARED_TEST_MANAGER.createRoute(handler as unknown as ClassicRoute, { name });
+  return handler;
+}
+
+export class TestRouter<R extends ClassicRoute = ClassicRoute> extends Router<R> {
+  didTransition(_routeInfos?: RouteInfo<R>[]) {}
   willTransition() {}
   updateURL(_url: string): void {}
   replaceURL(_url: string): void {}
@@ -83,7 +324,7 @@ export class TestRouter<R extends Route = Route> extends Router<R> {
     _name: string,
     _args: any[]
   ) {}
-  routeDidChange() {}
+  routeDidChange(_transition?: PublicTransition) {}
   routeWillChange() {}
   transitionDidError(error: TransitionError, transition: PublicTransition) {
     if (error.wasAborted || transition.isAborted) {
@@ -94,17 +335,40 @@ export class TestRouter<R extends Route = Route> extends Router<R> {
       return error.error;
     }
   }
-  getRoute(_name: string): any {
-    return {};
+  getRoute(name: string): any {
+    return createHandler(name);
   }
   getSerializer(_name: string): any {
     return () => {};
   }
+
+  // The manager-driven lifecycle (onTransitionSettled and friends) is
+  // inherited from the base Router. The tests want one extra behaviour: when
+  // a didEnter hook throws, roll back to the pre-transition state so the
+  // next transition sees these routes as unentered and re-fires their enter
+  // hooks.
+  protected override handleDidEnterError(
+    error: unknown,
+    activeTransition: any,
+    newState: any,
+    preTransitionState: any
+  ): never {
+    this.state = preTransitionState;
+    // Copy routeInfos (don't alias) so later mutations don't corrupt the
+    // baseline used by partitionRoutes.
+    this.currentRouteInfos = preTransitionState
+      ? (preTransitionState.routeInfos.slice() as any)
+      : undefined;
+    return super.handleDidEnterError(error, activeTransition, newState, preTransitionState);
+  }
 }
 
-export function createHandlerInfo(name: string, options: Dict<unknown> = {}): RouteInfo<Route> {
-  class Stub extends RouteInfo<Route> {
-    constructor(name: string, router: Router<Route>, handler?: Route) {
+export function createHandlerInfo(
+  name: string,
+  options: Dict<unknown> = {}
+): RouteInfo<ClassicRoute> {
+  class Stub extends RouteInfo<ClassicRoute> {
+    constructor(name: string, router: Router<ClassicRoute>, handler?: ClassicRoute) {
       super(router, name, [], handler);
     }
     getModel(_transition: Transition) {
@@ -115,7 +379,7 @@ export function createHandlerInfo(name: string, options: Dict<unknown> = {}): Ro
     }
   }
 
-  let handler = (options['handler'] as Route) || createHandler('foo');
+  let handler = (options['handler'] as ClassicRoute) || createHandler('foo');
   delete options['handler'];
 
   Object.assign(Stub.prototype, options);
@@ -124,7 +388,7 @@ export function createHandlerInfo(name: string, options: Dict<unknown> = {}): Ro
 }
 
 export function trigger(
-  handlerInfos: RouteInfo<Route>[],
+  handlerInfos: RouteInfo<ClassicRoute>[],
   ignoreFailure: boolean,
   name: string,
   ...args: any[]
