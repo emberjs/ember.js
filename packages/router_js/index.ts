@@ -23,14 +23,14 @@ export { throwIfAborted } from './lib/transition-aborted-error';
 export {
   routeCapabilities,
   hasClassicInterop,
-  associateManagedRoute,
-  getManagedRoute,
+  associateRouteManagement,
+  getRouteManagement,
 } from './lib/route-manager';
 export type {
   RouteManager,
   RouteManagerWithClassicInterop,
   RouteStateBucket,
-  ManagedRoute,
+  RouteManagement,
   RouteCapabilities,
   RouteCapabilitiesVersions,
   NavigationState,

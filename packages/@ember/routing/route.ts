@@ -35,7 +35,7 @@ import type {
   Transition,
   TransitionState,
 } from 'router_js';
-import { getManagedRoute, PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
+import { getRouteManagement, PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
 import type { default as EmberRouter } from '@ember/routing/router';
 import { default as generateController } from './lib/generate_controller';
 import type { ExpandedControllerQueryParam, NamedRouteArgs } from './lib/utils';
@@ -2000,7 +2000,7 @@ Route.reopen({
     queryParamsDidChange<T>(this: Route<T>, changed: {}, totalPresent: unknown, removed: {}) {
       // Logic lives on the route manager so the router talks to the manager
       // boundary rather than the classic Route directly.
-      let managed = getManagedRoute(this);
+      let managed = getRouteManagement(this);
       assert(
         'Expected a classic-interop route manager to handle queryParamsDidChange',
         managed !== undefined && hasClassicInterop(managed.manager)
@@ -2017,7 +2017,7 @@ Route.reopen({
     ) {
       // Logic lives on the route manager so the router talks to the manager
       // boundary rather than the classic Route directly.
-      let managed = getManagedRoute(this);
+      let managed = getRouteManagement(this);
       assert(
         'Expected a classic-interop route manager to handle finalizeQueryParamChange',
         managed !== undefined && hasClassicInterop(managed.manager)

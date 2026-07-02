@@ -1,5 +1,5 @@
 import type { RouteManager, RouteStateBucket, Transition } from '../index';
-import Router, { associateManagedRoute } from '../index';
+import Router, { associateRouteManagement } from '../index';
 import type { Dict } from '../lib/core';
 import type { ClassicRoute, IModel } from '../lib/route-info';
 import RouteInfo, { UnresolvedRouteInfoByParam } from '../lib/route-info';
@@ -138,7 +138,7 @@ class TestRouteManager implements RouteManagerLike {
     // Register the association the router_js dispatch path reads. The real
     // framework router does this in EmberRouter.getRoute; the test manager
     // has no framework router above it, so it registers directly.
-    associateManagedRoute(
+    associateRouteManagement(
       handler,
       this as unknown as RouteManager,
       bucket as unknown as RouteStateBucket

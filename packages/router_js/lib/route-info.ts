@@ -14,7 +14,7 @@ import {
 import { isParam, isPromise, merge } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
 import type { EnterState, RouteManager, RouteStateBucket } from './route-manager';
-import { getManagedRoute, hasClassicInterop } from './route-manager';
+import { getRouteManagement, hasClassicInterop } from './route-manager';
 
 export type IModel = {} & {
   id?: string | number;
@@ -440,18 +440,18 @@ export default class InternalRouteInfo<R extends BaseRoute> {
 
   /**
     The manager driving this route's lifecycle, read from the association the
-    framework router registered via `associateManagedRoute` when it resolved
+    framework router registered via `associateRouteManagement` when it resolved
     the route. `undefined` until the route has loaded.
    */
   get manager(): RouteManager | undefined {
     let route = this.route;
-    return route === undefined ? undefined : getManagedRoute(route)?.manager;
+    return route === undefined ? undefined : getRouteManagement(route)?.manager;
   }
 
   /** The manager's bucket for this route. `undefined` until the route has loaded. */
   get bucket(): RouteStateBucket | undefined {
     let route = this.route;
-    return route === undefined ? undefined : getManagedRoute(route)?.bucket;
+    return route === undefined ? undefined : getRouteManagement(route)?.bucket;
   }
 
   set route(route: R | undefined) {

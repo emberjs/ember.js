@@ -12,7 +12,7 @@ import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import type { RouteManager } from '@ember/-internals/routing/route-managers/api';
-import type { ManagedRoute } from 'router_js';
+import type { RouteManagement } from 'router_js';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
 import { default as BucketCache } from './lib/cache';
 import { default as DSL, type DSLCallback } from './lib/dsl';
@@ -56,7 +56,7 @@ import type {
   TransitionError,
   TransitionState,
 } from 'router_js';
-import Router, { associateManagedRoute, getManagedRoute, logAbort, STATE_SYMBOL } from 'router_js';
+import Router, { associateRouteManagement, getRouteManagement, logAbort, STATE_SYMBOL } from 'router_js';
 import EngineInstance from '@ember/engine/instance';
 import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
@@ -188,13 +188,13 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _engineInfoByRoute = Object.create(null);
   _routerService: RouterService;
 
-  // Per-owner caches for the manager-driven route lookup path. Managed
-  // routes ({manager, bucket} pairs) are keyed by owner first so that engine
-  // routes (which can reuse local names) stay isolated; a cache hit skips
-  // factory resolution entirely. Manager instances are similarly keyed first
+  // Per-owner caches for the manager-driven route lookup path. Route
+  // management ({manager, bucket} pairs) is keyed by owner first so that
+  // engine routes (which can reuse local names) stay isolated; a cache hit
+  // skips factory resolution entirely. Manager instances are similarly keyed first
   // by owner, then by the factory function that produced them, so that
   // routes sharing a factory share one manager within a given owner.
-  #managedRoutes = new WeakMap<Owner, Map<string, ManagedRoute>>();
+  #routeManagement = new WeakMap<Owner, Map<string, RouteManagement>>();
   #routeManagerInstances = new WeakMap<Owner, WeakMap<object, RouteManager>>();
 
   private namespace: any;
@@ -348,13 +348,13 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       routeName = engineInfo.localFullName;
     }
 
-    let ownerManagedRoutes = this.#managedRoutes.get(routeOwner);
-    if (!ownerManagedRoutes) {
-      ownerManagedRoutes = new Map();
-      this.#managedRoutes.set(routeOwner, ownerManagedRoutes);
+    let ownerRouteManagement = this.#routeManagement.get(routeOwner);
+    if (!ownerRouteManagement) {
+      ownerRouteManagement = new Map();
+      this.#routeManagement.set(routeOwner, ownerRouteManagement);
     }
 
-    let managed = ownerManagedRoutes.get(routeName);
+    let managed = ownerRouteManagement.get(routeName);
 
     if (managed === undefined) {
       const fullRouteName = `route:${routeName}` as const;
@@ -406,7 +406,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
 
       managed = { manager, bucket };
-      ownerManagedRoutes.set(routeName, managed);
+      ownerRouteManagement.set(routeName, managed);
     }
 
     const route = managed.manager.getRoute(managed.bucket);
@@ -417,7 +417,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     // every call (cheap WeakMap set) because a manager may instantiate its
     // route lazily rather than at `createRoute` time.
     if (typeof route === 'object' && route !== null) {
-      associateManagedRoute(route, managed.manager, managed.bucket);
+      associateRouteManagement(route, managed.manager, managed.bucket);
     }
 
     return route;
@@ -1063,7 +1063,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       (key: string, value: unknown, qp: QueryParam | undefined) => {
         if (qp) {
           delete queryParams[key];
-          let managed = getManagedRoute(qp.route);
+          let managed = getRouteManagement(qp.route);
           assert(
             'Expected a classic-interop route manager to serialize a query param',
             managed !== undefined && hasClassicInterop(managed.manager)
@@ -1123,7 +1123,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         // because all values will be treated as strings
         if (qp) {
           delete queryParams[key];
-          let managed = getManagedRoute(qp.route);
+          let managed = getRouteManagement(qp.route);
           assert(
             'Expected a classic-interop route manager to deserialize a query param',
             managed !== undefined && hasClassicInterop(managed.manager)
@@ -1621,7 +1621,7 @@ let defaultActionHandlers = {
     }
 
     if (dispatchRoute !== undefined) {
-      let managed = getManagedRoute(dispatchRoute);
+      let managed = getRouteManagement(dispatchRoute);
       if (managed !== undefined && hasClassicInterop(managed.manager)) {
         managed.manager.enterLoadingSubstate(managed.bucket, transition, originRoute);
       }
@@ -1650,7 +1650,7 @@ let defaultActionHandlers = {
     }
 
     if (dispatchRoute !== undefined) {
-      let managed = getManagedRoute(dispatchRoute);
+      let managed = getRouteManagement(dispatchRoute);
       if (managed !== undefined && hasClassicInterop(managed.manager)) {
         managed.manager.enterErrorSubstate(managed.bucket, transition, error, originRoute);
       }

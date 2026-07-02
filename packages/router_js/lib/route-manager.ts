@@ -79,11 +79,11 @@ export function routeCapabilities<Version extends keyof RouteCapabilitiesVersion
   };
 }
 
-// -- Managed-route association --------------------------------------------------
+// -- Route-management association --------------------------------------------------
 
-const MANAGED_ROUTES = new WeakMap<object, ManagedRoute>();
+const ROUTE_MANAGEMENT = new WeakMap<object, RouteManagement>();
 
-export interface ManagedRoute {
+export interface RouteManagement {
   manager: RouteManager;
   bucket: RouteStateBucket;
 }
@@ -102,16 +102,16 @@ export interface ManagedRoute {
   registry, kept here so router_js dispatch can reach it without access to
   owners or the registry.
  */
-export function associateManagedRoute(
+export function associateRouteManagement(
   route: object,
   manager: RouteManager,
   bucket: RouteStateBucket
 ): void {
-  MANAGED_ROUTES.set(route, { manager, bucket });
+  ROUTE_MANAGEMENT.set(route, { manager, bucket });
 }
 
-export function getManagedRoute(route: object): ManagedRoute | undefined {
-  return MANAGED_ROUTES.get(route);
+export function getRouteManagement(route: object): RouteManagement | undefined {
+  return ROUTE_MANAGEMENT.get(route);
 }
 
 // -- Navigation state ---------------------------------------------------------
