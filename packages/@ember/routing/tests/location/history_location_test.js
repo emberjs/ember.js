@@ -232,6 +232,22 @@ moduleFor(
       assert.equal(location.getURL(), '/bars/baz');
     }
 
+    ['@test HistoryLocation.getURL() treats regex special characters in rootURL literally'](
+      assert
+    ) {
+      HistoryTestLocation.reopen({
+        init() {
+          this._super(...arguments);
+          set(this, 'location', mockBrowserLocation('/appXv2/posts'));
+          set(this, 'rootURL', '/app.v2/');
+        },
+      });
+
+      createLocation();
+
+      assert.equal(location.getURL(), '/appXv2/posts');
+    }
+
     ['@test HistoryLocation.getURL() returns the current url, does not remove baseURL if its not at start of url'](
       assert
     ) {
