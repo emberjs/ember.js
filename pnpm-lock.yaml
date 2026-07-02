@@ -115,12 +115,6 @@ importers:
       '@simple-dom/document':
         specifier: ^1.4.0
         version: 1.4.0
-      '@simple-dom/serializer':
-        specifier: ^1.4.0
-        version: 1.4.0
-      '@simple-dom/void-map':
-        specifier: ^1.4.0
-        version: 1.4.0
       '@swc-node/register':
         specifier: ^1.6.8
         version: 1.11.1(@swc/core@1.15.40)(@swc/types@0.1.26)(typescript@5.9.3)
@@ -168,7 +162,7 @@ importers:
         version: 4.0.0
       ember-cli-dependency-checker:
         specifier: ^3.3.1
-        version: 3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19))
+        version: 3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
       ember-cli-yuidoc:
         specifier: ^0.9.1
         version: 0.9.1
@@ -2840,7 +2834,7 @@ importers:
         version: 3.0.0
       ember-cli-dependency-checker:
         specifier: ^3.3.3
-        version: 3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19))
+        version: 3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8))
       ember-cli-deprecation-workflow:
         specifier: ^3.4.0
         version: 3.4.0(ember-source@)
@@ -17167,7 +17161,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-cli-dependency-checker@3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)):
+  ember-cli-dependency-checker@3.3.3(ember-cli@7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)):
     dependencies:
       chalk: 2.4.2
       ember-cli: 7.0.1(@babel/core@7.29.7)(@types/node@22.19.19)(ejs@3.1.10)(handlebars@4.7.9)(underscore@1.13.8)

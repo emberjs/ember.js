@@ -12,9 +12,6 @@ import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
 import { tracked } from '@glimmer/tracking';
 import { run } from '@ember/runloop';
-import createHTMLDocument from '@simple-dom/document';
-import Serializer from '@simple-dom/serializer';
-import voidMap from '@simple-dom/void-map';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { renderComponent, renderToString } from '../../../lib/renderer';
 import type Owner from '@ember/owner';
@@ -212,27 +209,5 @@ moduleFor(
       );
     }
 
-    ['@test renderComponent itself can render into a SimpleDOM element']() {
-      // The underlying capability: handing `renderComponent` a SimpleDOM
-      // document + element uses SimpleDOM-aware tree construction, so the
-      // whole `renderComponent` pipeline works server-side.
-      let document = createHTMLDocument();
-      let element = document.createElement('div');
-      let Hello = template('<h2>{{@greeting}} {{{@html}}}</h2>');
-
-      let result = renderComponent(Hello, {
-        owner: this.owner,
-        into: element,
-        args: { greeting: 'hi', html: '<i>there</i>' },
-        env: { document, hasDOM: false, isInteractive: false },
-      });
-
-      this.assert.strictEqual(
-        new Serializer(voidMap).serializeChildren(element),
-        '<h2>hi <i>there</i></h2>'
-      );
-
-      run(() => result.destroy());
-    }
   }
 );

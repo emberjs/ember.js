@@ -25,8 +25,6 @@ import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { rehydrationBuilder } from '@glimmer/runtime/lib/vm/rehydrate-builder';
 import { serializeBuilder } from '@glimmer/node/lib/serialize-builder';
-import NodeDOMTreeConstruction from '@glimmer/node/lib/node-dom-helper';
-import { DOMChangesImpl } from '@glimmer/runtime/lib/dom/helper';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
@@ -438,16 +436,6 @@ function intoTarget(into: IntoTarget): Cursor {
   }
 }
 
-/**
- * Whether the render target's existing contents can be cleared via
- * `innerHTML`. Detected by capability rather than `instanceof Element`: the
- * `Element` global doesn't exist in Node, and a cross-realm element (e.g.
- * happy-dom's) isn't an instance of the host realm's `Element` anyway.
- * Cursors and SimpleDOM elements don't have `innerHTML` and are skipped.
- */
-function supportsInnerHTML(target: IntoTarget): target is IntoTarget & { innerHTML: string } {
-  return 'innerHTML' in target;
-}
 
 /**
  * Render a component into a DOM element.
@@ -559,7 +547,7 @@ export function renderComponent(
    * When rehydrating, the existing contents *are* the server-rendered markup
    * that the render below will adopt, so they must not be cleared.
    */
-  if (!existing && supportsInnerHTML(into) && !env?.rehydrate) {
+  if (!existing && into instanceof Element && !env?.rehydrate) {
     into.innerHTML = '';
   }
 
@@ -577,12 +565,8 @@ export function renderComponent(
    */
   let renderTarget: IntoTarget = into;
   if (existing?.glimmerResult) {
-    // A cursor carries its parent on `.element`; both DOM and SimpleDOM
-    // elements *are* the parent. (Mirrors `intoTarget` above — an
-    // `instanceof Element` check would throw in Node and would mis-handle
-    // SimpleDOM elements.)
     let parentElement =
-      'element' in into ? into.element : (into as unknown as SimpleElement);
+      into instanceof Element ? (into as unknown as SimpleElement) : (into as Cursor).element;
     let firstNode = existing.glimmerResult.firstNode();
     renderTarget = { element: parentElement, nextSibling: firstNode };
   }
@@ -694,7 +678,7 @@ export async function renderToString(
        * `document`. In environments without one (Node.js), pass a
        * DOM-compatible document such as happy-dom's `new Window().document`.
        */
-      document?: SimpleDocument | Document;
+      document?: Document;
       /**
        * When true, the emitted HTML includes glimmer's rehydration markers so
        * the output can be re-used (rehydrated) by a subsequent client-side
@@ -711,24 +695,17 @@ export async function renderToString(
 ): Promise<string> {
   let document = env?.document ?? globalThis.document;
 
-  assert(
-    'renderToString requires a document. In environments without a global `document` (like Node.js), provide one via `env.document` — for example a happy-dom `new Window().document`.',
-    document !== undefined && document !== null
-  );
-
   // Server rendering is a *real* render — modifiers run against real elements
-  // and the output is serialized via `innerHTML` — so it needs a full DOM
-  // implementation (browser, happy-dom, jsdom), not SimpleDOM. To render into
-  // SimpleDOM (no modifiers, manual serialization), use `renderComponent` with
-  // `env: { document }` instead.
+  // and the output is serialized via `innerHTML` — so a full DOM
+  // implementation (browser, happy-dom, jsdom) is required.
   assert(
-    'renderToString requires a full DOM-compatible document (the browser document, or happy-dom in Node.js), not a SimpleDOM document. To render into SimpleDOM, use `renderComponent` with `env: { document }` and serialize the result yourself.',
-    !isSimpleDocument(document)
+    'renderToString requires a document. In environments without a global `document` (like Node.js), provide DOM building blocks globally (e.g. via happy-dom) or pass a document via `env.document` — for example a happy-dom `new Window().document`.',
+    document !== undefined && document !== null
   );
 
   // Render into a detached wrapper element and serialize its *children*, so
   // the returned string is only the component's own markup.
-  let element = (document as Document).createElement('div');
+  let element = document.createElement('div');
 
   // Build a dedicated renderer rather than going through the per-owner
   // renderer cache used by `renderComponent`: SSR output must target the
@@ -759,22 +736,6 @@ export async function renderToString(
     // run and nothing stays registered with the run loop.
     _backburner.run(() => renderer.destroy());
   }
-}
-
-/**
- * SimpleDOM documents expose `createRawHTMLSection`, the primitive that
- * `NodeDOMTreeConstruction` uses to append raw HTML (`{{{tripleStache}}}`).
- * Real DOM implementations — browser, happy-dom, jsdom — don't have it; they
- * support `insertAdjacentHTML` instead, so they take the default tree
- * construction path.
- *
- * This is detected by capability rather than `instanceof Document` on purpose:
- * a cross-realm document (e.g. a happy-dom `new Window().document` in Node) is
- * not an instance of the host realm's `Document` — and in Node there may be no
- * `Document` global at all.
- */
-function isSimpleDocument(document: SimpleDocument | Document): document is SimpleDocument {
-  return typeof (document as SimpleDocument).createRawHTMLSection === 'function';
 }
 
 export class BaseRenderer {
@@ -825,19 +786,7 @@ export class BaseRenderer {
      *         an app needs (which will actually change and become less over time)
      */
     let env = new EmberEnvironmentDelegate(owner as InternalOwner, envOptions.isInteractive);
-    // A SimpleDOM document needs SimpleDOM-aware tree construction: the
-    // default `DOMTreeConstruction` relies on real-DOM APIs
-    // (`insertAdjacentHTML`, SVG namespace handling) that SimpleDOM does not
-    // implement. `NodeDOMTreeConstruction` appends raw HTML sections instead.
-    // Real DOM implementations (browser, happy-dom, jsdom) take the default
-    // path.
-    let environmentOptions = isSimpleDocument(document)
-      ? {
-          appendOperations: new NodeDOMTreeConstruction(document),
-          updateOperations: new DOMChangesImpl(document),
-        }
-      : { document };
-    let options = runtimeOptions(environmentOptions, env, sharedArtifacts, resolver);
+    let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
     let context = new EvaluationContextImpl(
       sharedArtifacts,
       (heap) => new RuntimeOpImpl(heap),
