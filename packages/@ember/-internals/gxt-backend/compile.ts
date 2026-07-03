@@ -63,30 +63,12 @@ function _normalizeStringValue(value: unknown): string {
 // of a bare `[...].join("")` — retiring the bracket-surgery post-processor and
 // the injected __gxtQuotedAttr/__qaNorm helpers that used to live here.
 
-// Module-local state for the `{{#in-element}}` insertBefore/appendMode
-// signalling channel. These flags communicate `insertBefore=null` (append
-// mode) and the asserting form `insertBefore=<non-null>` from compile-time
-// parsing (via `parseInElementInsertBefore`) to the `$_inElement` runtime
-// shim. Written by the emitted template-fn via the `__ieSet` Function()
-// parameter binding (alongside `__ubGT` / `__ubST`); read+consumed (read-then-
-// clear) by the `$_inElement` shim defined further down in this module.
-//
-// Ordering invariant: the emitted setter runs inside the per-template
-// `return function() { ...; __ieSet(...); return ${modifiedCode}; }` body,
-// GXT then synchronously evaluates `modifiedCode` to produce the DOM tree,
-// and the `$_inElement` shim is called by that tree's `{{#in-element}}` site
-// during the same synchronous render. So the order is always setter → read →
-// clear. A single template-fn invocation produces a single `$_inElement` call
-// per `{{#in-element}}`, and the shim reads-and-clears before any re-entry into
-// another template-fn for the block body, so there is no re-entrancy. There is
-// exactly one `_inElementInsertBefore` value per compiled template, so the
-// write/consume cycle is per-render.
-let _gxtIeInsertBeforeValue: unknown = undefined;
-let _gxtIeAppendMode = false;
-function _gxtIeSet(insertBefore: unknown, append: boolean): void {
-  _gxtIeInsertBeforeValue = insertBefore;
-  _gxtIeAppendMode = append;
-}
+// NOTE: the `{{#in-element}}` insertBefore/appendMode signalling channel
+// (`_gxtIeSet` module flags + the `__ieSet(...)` injection bound into every
+// legacy Function body + the `parseInElementInsertBefore` source pre-parse)
+// is retired: gxt >=0.0.76 emits the insertBefore semantics as a compile-time
+// 4th MODE argument to `$_inElement` under the EMBER_IN_ELEMENT flag
+// (glimmer-next #254) — the shim reads the mode directly.
 
 // Module-local pointer to the in-element deferred-render drain function.
 // Assigned inside the `_inElementDeferQueue` setup block (which also captures
@@ -1378,48 +1360,27 @@ function _afterFlushAfterInsertQueue(): void {
 
     // Resolve insertBefore
     // insertBefore=null means "append" (don't clear existing content)
-    // insertBefore=undefined means "replace" (clear existing content first)
+    // insertBefore=undefined/omitted means "replace" (clear existing first)
     //
-    // GXT's $_inElement doesn't support insertBefore natively, so we read the
-    // module-local flags `_gxtIeInsertBeforeValue` / `_gxtIeAppendMode` set by
-    // the template injection (see their declaration at module top).
+    // gxt >=0.0.76 (the EMBER_IN_ELEMENT compile flag, glimmer-next #254)
+    // emits the insertBefore semantics as a compile-time 4th MODE argument —
+    // 1 = CLEAR (default/undefined), 0 = APPEND (insertBefore=null), any
+    // other literal = the Ember dev assert. This replaced the out-of-band
+    // `__ieSet(...)` signalling channel (module-local flag pair written by an
+    // injection in every legacy Function body).
     let insertBefore: any = undefined; // undefined = replace (default)
-
-    // Check for non-null insertBefore value (Ember only allows null)
-    if (_gxtIeInsertBeforeValue !== undefined) {
-      const ibv = _gxtIeInsertBeforeValue;
-      _gxtIeInsertBeforeValue = undefined;
-      emberAssert(`Can only pass null to insertBefore in in-element, received: ${ibv}`, false);
-    }
-
-    if (_gxtIeAppendMode) {
-      insertBefore = null;
-      _gxtIeAppendMode = false; // consume the flag
+    if (insertBeforeRef === 0) {
+      insertBefore = null; // append mode
+    } else if (insertBeforeRef !== undefined && insertBeforeRef !== 1) {
+      emberAssert(
+        `Can only pass null to insertBefore in in-element, received: ${insertBeforeRef}`,
+        false
+      );
     }
 
     // Also check if this element was previously used in append mode
     if (appendRef && appendRef instanceof Element && _inElementAppendModeElements.has(appendRef)) {
       insertBefore = null;
-    }
-
-    if (insertBeforeRef !== undefined) {
-      if (typeof insertBeforeRef === 'function') {
-        let ibVal = insertBeforeRef();
-        if (typeof ibVal === 'function') ibVal = ibVal();
-        if (ibVal && typeof ibVal === 'object' && 'value' in ibVal) {
-          insertBefore = ibVal.value;
-        } else {
-          insertBefore = ibVal;
-        }
-      } else if (
-        insertBeforeRef &&
-        typeof insertBeforeRef === 'object' &&
-        'value' in insertBeforeRef
-      ) {
-        insertBefore = insertBeforeRef.value;
-      } else {
-        insertBefore = insertBeforeRef;
-      }
     }
 
     // Create a placeholder comment for the main render location
@@ -13025,16 +12986,13 @@ function _gxtFindAddedToTreeSym(obj: object): symbol | null {
 // ('unique-id' left this set with gxt 0.0.76: $_uid is first-class native.)
 const _GXT_LEGACY_MAYBE_HELPER_NAMES = new Set(['unbound', '__mutGet']);
 const _GXT_LEGACY_BINDING_NAMES = new Set([
-  // gxt's raw-embedded islands reference legacy-provided globals as
-  // `globalThis.X` — the report's root-reduction records the root
-  // (`globalThis`), which is itself a precise legacy signal: the only
-  // emitter of a bare `globalThis` identifier is the `{{unbound}}`
-  // yield/subexpr island (`globalThis.__gxtUnboundEval(...)`), whose
-  // `__ubCache`/eval locals only the legacy Function provides (gate-proven:
-  // "yielding unbound does not update" x2). Upstream refinement queued:
-  // record the member name for globalThis.* roots so this reads
-  // '__gxtUnboundEval' instead.
-  'globalThis',
+  // gxt's raw-embedded {{unbound}} islands reference the legacy-provided
+  // `globalThis.__gxtUnboundEval(...)` — since gxt 0.0.78 (#255) the report
+  // records the MEMBER name for globalThis.* roots (and the compound-island
+  // scan also surfaces the nested `unbound` callee, which the entry below
+  // already blocks). Kept as a belt for island shapes where the bare name
+  // isn't visible.
+  '__gxtUnboundEval',
   'gxtEntriesOf',
   'gxtGetOutletState',
   '__gxtCommentLookup',
@@ -13095,13 +13053,10 @@ function _gxtNativeTemplateEligible(
   const emittedSymbols: readonly string[] = cr.emittedSymbols || [];
   const maybeHelperNames: readonly string[] = cr.maybeHelperNames || [];
   const referencedBindings: readonly string[] = cr.referencedBindings || [];
-  // {{#in-element}}: the legacy wrapper's __ieSet insertBefore channel is
-  // load-bearing (until the EMBER_IN_ELEMENT mode-arg consumption lands).
-  // ({{log}} left this block with gxt 0.0.76 — site ids arrive globally
-  // unique, the legacy renumber is retired.)
-  if (emittedSymbols.includes('$_inElement')) {
-    return false;
-  }
+  // ({{#in-element}} left the block with the EMBER_IN_ELEMENT mode-arg
+  // consumption — the insertBefore semantics ride the emission, and the ember
+  // $_inElement shim is a GLOBAL override serving both paths. {{log}} left
+  // with gxt 0.0.76 — site ids arrive globally unique.)
   // Legacy-only rewrites keyed on specific unresolved-helper names
   // (unbound freeze/replay, unique-id stable counters, mut writer).
   for (const name of maybeHelperNames) {
@@ -13413,7 +13368,6 @@ export function precompileTemplate(
   //   null      → append mode (don't clear existing content)
   //   undefined → replace mode (default, clear existing content)
   //   other     → assert error (Ember only allows null)
-  let _inElementInsertBefore: string | null = null; // null = no insertBefore specified
   // Extracted literal string destination ids for `{{#in-element (... "id")}}`
   // in template order. Used by $_inElement as a fallback when the reactive
   // destination ref resolves to null during a render-order-timing situation
@@ -13444,9 +13398,10 @@ export function precompileTemplate(
         i = endTag + 2;
       }
     }
-    const parsed = parseInElementInsertBefore(transformedTemplate);
-    transformedTemplate = parsed.result;
-    _inElementInsertBefore = parsed.insertBefore;
+    // NOTE: the `parseInElementInsertBefore` strip-and-signal pre-parse is
+    // retired — with the EMBER_IN_ELEMENT compile flag (gxt >=0.0.76) the
+    // compiler reads the `insertBefore=` hash at the AST and emits the mode
+    // as $_inElement's 4th argument; the template must reach gxt UNSTRIPPED.
   }
 
   // Dynamic `(helper)` / `(modifier)` usage — `{{helper this.xxx}}` /
@@ -13610,6 +13565,10 @@ export function precompileTemplate(
       // first-class; the join bracket-surgery + __gxtQuotedAttr/__qaNorm
       // injection are deleted.
       EMBER_ATTR_CONCAT: true,
+      // gxt >=0.0.76 (#254): {{#in-element}} insertBefore semantics emit as
+      // $_inElement's 4th MODE arg (1=clear, 0=append, literal=dev-assert) —
+      // replaces the __ieSet signalling channel + the source pre-parse.
+      EMBER_IN_ELEMENT: true,
     },
     // Convert PascalCase component names to kebab-case for Ember registry lookup.
     // This replaces the regex-based transformCapitalizedComponents() pre-processing.
@@ -14153,7 +14112,6 @@ export function precompileTemplate(
           ${scopeInjections.join('\n          ')}
           ${helperInjections.join('\n          ')}
           ${eachInInjections.join('\n          ')}
-          ${_inElementInsertBefore === 'null' ? '__ieSet(undefined, true);' : _inElementInsertBefore !== null && _inElementInsertBefore !== 'undefined' ? `__ieSet(${JSON.stringify(_inElementInsertBefore)}, false);` : ''}
           return ${modifiedCode};
         };
       `;
@@ -14165,11 +14123,9 @@ export function precompileTemplate(
         // `__gxtUnboundEval` body (above) can suppress the GXT reactive tracker
         // during `valueFn()` evaluation; bound to the module-local
         // `_gxtGetTracker` / `_gxtSetTracker`. No-op when `hasUnbound` is false.
-        // The third param `__ieSet` is bound to the module-local `_gxtIeSet`
-        // setter so the emitted template-fn can signal
-        // `{{#in-element insertBefore=...}}` mode to the `$_inElement` shim
-        // without globalThis; no-op when `_inElementInsertBefore` is the default.
-        // §2e parameter injection: after the three private hooks come the
+        // (The former `__ieSet` in-element channel param is retired — the
+        // EMBER_IN_ELEMENT mode arg owns insertBefore since gxt 0.0.76.)
+        // §2e parameter injection: after the private hooks come the
         // ember emitted-code hooks (`__gxtBuiltinHelpers` table,
         // `__gxtGetTemplateThis` live-render accessor, `__gxtAmbientOwner`
         // bridge accessor) and the full GXT symbol table — a compile-time
@@ -14180,7 +14136,6 @@ export function precompileTemplate(
         cachedFn = Function(
           '__ubGT',
           '__ubST',
-          '__ieSet',
           '__gxtBuiltinHelpers',
           '__gxtGetTemplateThis',
           '__gxtAmbientOwner',
@@ -14193,7 +14148,6 @@ export function precompileTemplate(
         )(
           _gxtGetTracker,
           _gxtSetTracker,
-          _gxtIeSet,
           _emberBuiltinHelpers,
           _gxtGetTemplateThisFn,
           getAmbientOwner,
