@@ -13005,24 +13005,45 @@ function _gxtFindAddedToTreeSym(obj: object): symbol | null {
 // gathered while the compile flags were silently inert (the duplicate-
 // flags-key bug) and did not reproduce on the clean re-baseline; the
 // quoted-attr "deltas" were the corrupt 0.0.72 dist + a stale vite dep-cache.)
-const _GXT_NATIVE_BLOCKERS_CODE =
-  /__logSite|__ubCache|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
-// String-form `$_maybeHelper("name", …)` lookups are NATIVE-safe in general:
-// the ember-wrapped $_maybeHelper global resolves registry helpers identically
-// on both paths. Only two LEGACY-ONLY rewrites make specific shapes
-// legacy-bound:
-//  1. the named-arg resolved-helper DEBUG guard — `["@x", $_maybeHelper("n",
-//     [], this)]` gets wrapped with __gxtAssertNotResolvedHelperAsNamedArg on
-//     the legacy path (same trigger regex as the rewrite itself);
-//  2. scope-key string lookups — when gxt still emits `$_maybeHelper("KEY")`
-//     for a key the user provided in scopeValues, only the legacy rewrite
-//     re-points the string at the injected local.
-const _GXT_NAMED_ARG_GUARD_TRIGGER =
-  /\["@[A-Za-z_][A-Za-z0-9_-]*",\s*\$_maybeHelper\("[^"]+",\s*\[\],\s*this\)/;
+// Native-vs-legacy routing is driven ENTIRELY by gxt's ground-truth emission
+// report (gxt >=0.0.74, glimmer-next #250: CompileResult.emittedSymbols /
+// maybeHelperNames / maybeHelperInNamedArgPosition / referencedBindings,
+// collected by the serializer at emission time) — the former
+// regex-over-generated-JS blockers and template-source scans are deleted.
+//
+// Names that route a template to the legacy wrapper because a legacy-only
+// injection/rewrite is load-bearing for them:
+// - MAYBE-HELPER names: `unbound` (the __gxtUnboundEval freeze/replay
+//   rewrite), `unique-id` (the per-instance stable-id counter rewrite),
+//   `__mutGet` (mut writer plumbing).
+// - REFERENCED BINDINGS: the ember-injected locals the legacy Function
+//   provides (each-in entries, outlet state, comment registry, mut writer,
+//   unique-id impl) and the keyword-helper locals the legacy wrapper shadows
+//   with ember-spec implementations.
+const _GXT_LEGACY_MAYBE_HELPER_NAMES = new Set(['unbound', 'unique-id', '__mutGet']);
+// See the "LAST SCAFFOLDING REGEX" note in the predicate body.
+const _GXT_KEYWORD_CALL_SCAFFOLD =
+  /(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
+const _GXT_LEGACY_BINDING_NAMES = new Set([
+  'gxtEntriesOf',
+  'gxtGetOutletState',
+  '__gxtCommentLookup',
+  '__mutGet',
+  'unique_id',
+  'get',
+  'unbound',
+  'array',
+  'hash',
+  'concat',
+  'fn',
+  'mut',
+  'readonly',
+  'helper',
+  'modifier',
+]);
 function _gxtNativeTemplateEligible(
   cr: any,
-  options: { strictMode?: boolean; scope?: unknown; scopeValues?: unknown } | undefined,
-  templateSource: string
+  options: { strictMode?: boolean; scope?: unknown; scopeValues?: unknown } | undefined
 ): boolean {
   if (!cr || typeof cr.templateFn !== 'function') return false;
   if (cr.errors && cr.errors.length > 0) return false;
@@ -13061,28 +13082,42 @@ function _gxtNativeTemplateEligible(
   // the legacy __gxtGetSlots/__gxtGetFw params provided. Recycle stays
   // excluded (runtime-recycle registration is not wired on this path).
   if (cr.usedRecycle === true) return false;
-  const code: string = cr.code || '';
-  if (_GXT_NATIVE_BLOCKERS_CODE.test(code)) return false;
-  // $_maybeHelper(" narrowing — see the trigger-const doc above.
-  if (_GXT_NAMED_ARG_GUARD_TRIGGER.test(code)) return false;
-  if (options?.scopeValues && code.includes('$_maybeHelper(')) {
-    for (const key of Object.keys(options.scopeValues)) {
-      if (
-        code.includes(`$_maybeHelper("${key}"`) ||
-        code.includes(`$_maybeHelper('${key}'`)
-      ) {
-        return false;
-      }
-    }
-  }
-  // in-element / unbound / unique-id trigger source-level rewrites whose
-  // emissions are not all code-greppable — exclude on the source too.
-  if (
-    templateSource.includes('in-element') ||
-    templateSource.includes('unbound') ||
-    templateSource.includes('unique-id')
-  ) {
+  // ── Pure ground-truth checks on the emission report (no code/source scans) ──
+  const emittedSymbols: readonly string[] = cr.emittedSymbols || [];
+  const maybeHelperNames: readonly string[] = cr.maybeHelperNames || [];
+  const referencedBindings: readonly string[] = cr.referencedBindings || [];
+  // {{#in-element}}: the legacy wrapper's __ieSet insertBefore channel is
+  // load-bearing. {{log}}: the legacy __logSite global renumbering dedups
+  // log-site ids across compilations.
+  if (emittedSymbols.includes('$_inElement') || emittedSymbols.includes('$__log')) {
     return false;
+  }
+  // Legacy-only rewrites keyed on specific unresolved-helper names
+  // (unbound freeze/replay, unique-id stable counters, mut writer).
+  for (const name of maybeHelperNames) {
+    if (_GXT_LEGACY_MAYBE_HELPER_NAMES.has(name)) return false;
+  }
+  // Ember-injected locals / keyword-helper shadows only the legacy Function
+  // provides.
+  for (const binding of referencedBindings) {
+    if (_GXT_LEGACY_BINDING_NAMES.has(binding)) return false;
+  }
+  // ⚠ LAST SCAFFOLDING REGEX: gxt emits a bare keyword identifier (`get(`,
+  // `hash(`…) for subexpressions in some positions (e.g. `{{yield (get …)}}`)
+  // even when the name was NOT caller-provided — `referencedBindings` tracks
+  // caller bindings only, so the report misses these (smoke-caught: "get is
+  // not defined" on native). Dies when the report grows `emittedIdentifiers`
+  // (all serializer-emitted free identifiers) upstream.
+  if (_GXT_KEYWORD_CALL_SCAFFOLD.test(cr.code || '')) return false;
+  // The named-arg resolved-helper DEBUG guard is a legacy-only rewrite.
+  if (cr.maybeHelperInNamedArgPosition === true) return false;
+  // Scope-key string lookups: when gxt emitted `$_maybeHelper("KEY")` for a
+  // scopeValues-provided key, only the legacy rewrite re-points the string at
+  // the injected local.
+  if (options?.scopeValues && maybeHelperNames.length > 0) {
+    for (const key of Object.keys(options.scopeValues)) {
+      if (maybeHelperNames.includes(key)) return false;
+    }
   }
   return true;
 }
@@ -13628,7 +13663,7 @@ export function precompileTemplate(
   // skipped entirely, none of its rewrites are needed for this template class.
   const __gxtUseNativeTemplateFn =
     !!compilationResult.code &&
-    _gxtNativeTemplateEligible(compilationResult, options, templateString);
+    _gxtNativeTemplateEligible(compilationResult, options);
   if (__gxtUseNativeTemplateFn) {
     (compilationResult as any).__gxtNativePath = true;
     _gxtNativePathStats.native++;
