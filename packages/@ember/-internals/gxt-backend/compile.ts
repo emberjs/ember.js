@@ -12712,171 +12712,42 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 // contextual component" tests) regress without this wrapper's
 // renderCurriedWithFw path — the native dispatch misses that merge shape.
 // Keep the full wrapper until the upstream covers it (report on #245).
-// Wrap $_dc to properly forward splattributes (tagProps) to the component
-// manager when the dynamic component is a CurriedComponent. The base
-// ember-gxt-wrappers' $_dc_ember invokes renderComponent with fw=null, which
-// drops class/attrs on constructs like `<this.foo class="..." />`. This
-// wrapper reads tagProps from Symbol.for('gxt-props') on the $_args result
-// and forwards them as fw so the target element's `...attributes` receives
-// the class/attrs.
+// #245 CONSUMED: the ~160-line $_dc splat-forward wrapper (with its
+// `.toString().includes('$_bp')` source sniff) is deleted. Ember's own
+// `$_dc_ember.renderComponent` (ember-gxt-wrappers.ts) now derives the manager
+// fw from the invocation props tuple via gxt's exported
+// hasDynamicSplatProps/deriveManagerFwFromPropsTuple (0.0.72+) and passes it
+// to `managers.component.handle` — the root cause of the yielded-contextual
+// splattributes regressions was that it passed fw=null (gxt's native $_dc
+// split is bypassed for ember curried/string components by design).
+// ONE residual stays: a block-param component getter may THROW before its
+// params are bound (a slot that hasn't fired yet) — defer via a lazy component
+// thunk that re-invokes $_dc once the getter resolves.
 if (g.$_dc && !g.$_dc.__splatForwardWrapped) {
   const __origDc = g.$_dc;
-  const $PROPS_SYM = _PROPS_SYM;
 
-  g.$_dc = function $_dc_splatfix(componentGetter: any, gxtArgs: any, ctx: any): any {
-    const tagProps = gxtArgs && typeof gxtArgs === 'object' ? gxtArgs[$PROPS_SYM] : null;
-    const hasSplatProps =
-      Array.isArray(tagProps) &&
-      ((Array.isArray(tagProps[0]) && tagProps[0].length > 0) ||
-        (Array.isArray(tagProps[1]) &&
-          tagProps[1].some(
-            (e: any) => Array.isArray(e) && typeof e[0] === 'string' && !e[0].startsWith('@')
-          )));
-    if (!hasSplatProps) {
-      return __origDc.call(this, componentGetter, gxtArgs, ctx);
-    }
-    // Narrow the intervention to angle-bracket contextual component invocations
-    // that came from `<param.prop ...>` (transformed to `<this.$_bp0.prop ...>`
-    // by the `gxtBlockParamsTransform` AST visitor). The compiled getter body contains
-    // `this.$_bp` for block-param-based lookups. Leave other $_dc callers
-    // (e.g. `{{component this.foo}}` or curly contextual invocations) to the
-    // ember-gxt-wrappers path so we don't perturb their behavior.
-    if (typeof componentGetter !== 'function') {
-      return __origDc.call(this, componentGetter, gxtArgs, ctx);
-    }
-    let __getterSrc: string;
-    try {
-      __getterSrc = componentGetter.toString();
-    } catch {
-      __getterSrc = '';
-    }
-    if (!__getterSrc.includes('$_bp')) {
-      return __origDc.call(this, componentGetter, gxtArgs, ctx);
-    }
-
-    // Build fw + mergedArgs and invoke the manager directly with correct fw.
-    // This is the canonical path for curried components in a splat invocation.
-    const renderCurriedWithFw = (componentValue: any): any => {
-      const managers = (globalThis as any).$_MANAGERS;
-      if (!managers?.component?.canHandle?.(componentValue)) return null;
-
-      const fwProps: any[] = [];
-      const fwAttrs: any[] = [];
-      const events: any[] = [];
-      if (Array.isArray(tagProps![0])) {
-        for (const entry of tagProps![0]) {
-          if (!Array.isArray(entry)) continue;
-          const key = entry[0];
-          if (key === '' || key === 'class') {
-            const val = entry[1];
-            const wrapped =
-              typeof val === 'function'
-                ? () => {
-                    const v = val();
-                    return v == null || v === false ? '' : v;
-                  }
-                : val == null || val === false
-                  ? ''
-                  : val;
-            fwProps.push([key, wrapped]);
-          } else {
-            fwProps.push(entry);
+  g.$_dc = function $_dc_deferThrow(componentGetter: any, gxtArgs: any, ctx: any, fw?: any): any {
+    if (typeof componentGetter === 'function') {
+      let getterThrew = false;
+      try {
+        componentGetter();
+      } catch {
+        getterThrew = true;
+      }
+      if (getterThrew) {
+        const lazyThunk = () => {
+          try {
+            componentGetter();
+          } catch {
+            return undefined;
           }
-        }
+          return __origDc.call(undefined, componentGetter, gxtArgs, ctx, fw);
+        };
+        (lazyThunk as any).__isComponentThunk = true;
+        return lazyThunk;
       }
-      if (Array.isArray(tagProps![1])) {
-        for (const entry of tagProps![1]) {
-          if (!Array.isArray(entry)) continue;
-          const key = entry[0];
-          if (typeof key === 'string' && key.startsWith('@')) continue;
-          fwAttrs.push(entry);
-        }
-      }
-      if (Array.isArray(tagProps![2])) {
-        for (const entry of tagProps![2]) {
-          if (Array.isArray(entry)) events.push(entry);
-        }
-      }
-      const fw = [fwProps, fwAttrs, events];
-
-      const mergedArgs: any = {};
-      if (gxtArgs && typeof gxtArgs === 'object') {
-        for (const key of Object.keys(gxtArgs)) {
-          if (key === 'args' || key.startsWith('$')) continue;
-          if (key.startsWith('_') && key !== '__hasBlock__' && key !== '__hasBlockParams__')
-            continue;
-          const desc = Object.getOwnPropertyDescriptor(gxtArgs, key);
-          if (desc) Object.defineProperty(mergedArgs, key, { ...desc, configurable: true });
-        }
-        if (Array.isArray(tagProps![1])) {
-          for (const entry of tagProps![1]) {
-            if (!Array.isArray(entry)) continue;
-            const key = entry[0];
-            if (typeof key === 'string' && key.startsWith('@')) {
-              const argName = key.slice(1);
-              const val = entry[1];
-              Object.defineProperty(mergedArgs, argName, {
-                get: () => (typeof val === 'function' ? val() : val),
-                enumerable: true,
-                configurable: true,
-              });
-            }
-          }
-        }
-        const $SLOTS = _SLOTS_SYM;
-        const slots = gxtArgs[$SLOTS];
-        if (slots && typeof slots === 'object') {
-          _setInternalProp(mergedArgs, '$slots', slots);
-        }
-      }
-
-      const handleResult = managers.component.handle(componentValue, mergedArgs, fw, ctx);
-      if (typeof handleResult === 'function') return handleResult();
-      return handleResult;
-    };
-
-    // Try to resolve the component getter. The getter may throw if block
-    // params aren't bound yet (e.g. inside a slot that hasn't fired). In
-    // that case, defer rendering via a lazy thunk that re-resolves later.
-    let componentValue: any;
-    let getterThrew = false;
-    try {
-      componentValue = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-    } catch {
-      getterThrew = true;
     }
-
-    if (getterThrew) {
-      // Getter threw (block params not yet bound) — defer via a lazy thunk.
-      const lazyThunk = () => {
-        let val: any;
-        try {
-          val = typeof componentGetter === 'function' ? componentGetter() : componentGetter;
-        } catch {
-          return undefined;
-        }
-        if (val && val.__isCurriedComponent) {
-          const rendered = renderCurriedWithFw(val);
-          if (rendered != null) return rendered;
-        }
-        // Non-curried path (string, null) — fall back to ember-gxt-wrappers' $_dc.
-        return __origDc.call(undefined, componentGetter, gxtArgs, ctx);
-      };
-      (lazyThunk as any).__isComponentThunk = true;
-      return lazyThunk;
-    }
-
-    // Only intervene for curried components — string components/null path is
-    // already handled correctly by ember-gxt-wrappers' $_dc_ember.
-    if (!componentValue || !componentValue.__isCurriedComponent) {
-      return __origDc.call(this, componentGetter, gxtArgs, ctx);
-    }
-
-    const rendered = renderCurriedWithFw(componentValue);
-    if (rendered == null) {
-      return __origDc.call(this, componentGetter, gxtArgs, ctx);
-    }
-    return rendered;
+    return __origDc.call(this, componentGetter, gxtArgs, ctx, fw);
   };
   (g.$_dc as any).__splatForwardWrapped = true;
   // Preserve __emberWrapped flag so ember-gxt-wrappers doesn't re-wrap

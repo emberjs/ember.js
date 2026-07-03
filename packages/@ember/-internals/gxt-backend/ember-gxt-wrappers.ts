@@ -2081,6 +2081,28 @@ function createEmberDc(original: Function) {
     }
 
     const { mergedArgs } = extractArgsAndSlots(gxtArgs, allowPositionalParams);
+    // #245 consumption: derive fw (forwarded splat attrs) from the invocation's
+    // own props tuple `gxtArgs[$PROPS]` and re-home @-args onto mergedArgs, so a
+    // dynamic-tag invocation (`<x.foo class="…" @a=… {{on …}} />`) forwards
+    // class/attrs to the resolved component's `...attributes` the way a static
+    // invocation does. Replaces the ~160-line $_dc_splatfix wrapper.
+    let __fw: any = null;
+    const __tuple =
+      gxtArgs && typeof gxtArgs === 'object' ? (gxtArgs as any)[$PROPS] : null;
+    if (
+      typeof (gxtModule as any).hasDynamicSplatProps === 'function' &&
+      (gxtModule as any).hasDynamicSplatProps(__tuple)
+    ) {
+      const __derived = (gxtModule as any).deriveManagerFwFromPropsTuple(__tuple);
+      __fw = __derived.fw;
+      for (const [__name, __getter] of __derived.argEntries) {
+        Object.defineProperty(mergedArgs, __name, {
+          get: __getter,
+          enumerable: true,
+          configurable: true,
+        });
+      }
+    }
     // Propagate the per-render dc-capture callback (stashed by $_dc_ember) onto
     // mergedArgs so renderClassicComponent / renderGlimmerComponent can fire it
     // when the Ember instance is created. Stored as a non-enumerable own property
@@ -2094,7 +2116,7 @@ function createEmberDc(original: Function) {
         writable: true,
       });
     }
-    const handleResult = managers.component.handle(componentValue, mergedArgs, null, ctx);
+    const handleResult = managers.component.handle(componentValue, mergedArgs, __fw, ctx);
     if (typeof handleResult === 'function') {
       return handleResult();
     }
