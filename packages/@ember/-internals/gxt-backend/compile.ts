@@ -54,19 +54,14 @@ function _normalizeStringValue(value: unknown): string {
   }
 }
 
-// `__gxtQuotedAttr` renders quoted attribute values that contain a single
-// interpolation (e.g. `src='{{this.src}}'`). When every input is
-// null/undefined, Ember's semantics treat the attribute as absent — the helper
-// returns `null` so the `$_tag` wrapper's "remove attribute" branch activates.
-// For any other shape (multi-segment concat, non-null values), normalize each
-// part with `_normalizeStringValue` semantics and concatenate. The body is
-// inlined directly into the emitted `templateFnCode` Function() outer-factory
-// scope as a local `__gxtQuotedAttr` function — no closure surface needed
-// (every reference is intrinsic JS: `Array.isArray`, `String(...)`,
-// null/undefined checks). The emitted `globalThis.__gxtQuotedAttr(` shape
-// produced by the post-processor below is rewritten to the local
-// `__gxtQuotedAttr(` reference at the templateFnCode builder. See the
-// `templateFnCode` builder for the inlined definition.
+// Quoted attribute values with interpolation (e.g. `src='{{this.src}}'`)
+// follow Ember semantics — all-nullish parts mean the attribute is absent
+// (null return → the attr writer's remove branch activates), Symbols and
+// no-toString objects coerce safely. Since gxt 0.0.72 this is a first-class
+// emission: the EMBER_ATTR_CONCAT compile flag makes the serializer emit
+// `$_qStr([...])` (a gxt runtime helper with exactly these semantics) instead
+// of a bare `[...].join("")` — retiring the bracket-surgery post-processor and
+// the injected __gxtQuotedAttr/__qaNorm helpers that used to live here.
 
 // Module-local state for the `{{#in-element}}` insertBefore/appendMode
 // signalling channel. These flags communicate `insertBefore=null` (append
@@ -12710,6 +12705,13 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
   g.$_tag.__compileWrapped = true;
 }
 
+// NOTE(#245 consumption deferred): gxt >=0.0.72 derives manager fw from the
+// invocation props tuple natively, but the full-gate run of the minimal
+// wrapper showed the YIELDED CONTEXTUAL component splat-merge cases (3
+// AngleBracket "merges class attribute with ...attributes in yielded
+// contextual component" tests) regress without this wrapper's
+// renderCurriedWithFw path — the native dispatch misses that merge shape.
+// Keep the full wrapper until the upstream covers it (report on #245).
 // Wrap $_dc to properly forward splattributes (tagProps) to the component
 // manager when the dynamic component is a CurriedComponent. The base
 // ember-gxt-wrappers' $_dc_ember invokes renderComponent with fw=null, which
@@ -13126,8 +13128,22 @@ function _gxtFindAddedToTreeSym(obj: object): symbol | null {
 // injections/rewrites are load-bearing for this template (keyword-helper
 // locals, each-in entries, outlet state, comment-registry lookups, unbound
 // cache, mut writers, unique-id counters).
+// (P4 increment 3 routing notes:
+//  - `$_each*(` blocked: each-containing templates stay legacy until the
+//    each machinery (morph force-rerender interplay, inverse finalize pools)
+//    gets its own native-migration increment. ⚠ earlier evidence gathered on
+//    this was contaminated by the duplicate-flags-key bug — re-baseline the
+//    native-each experiment now that the flags actually apply.
+//  - `$_qStr(` blocked: quoted-attr templates stay legacy for now — the
+//    full gate showed 2 attribute-position deltas on the native path
+//    (symbol / custom-valueOf object rendering) vs the legacy $_tag
+//    wrapper's normalization; map hook-vs-wrapper coercion before admitting.
+//  - `].join("")` blocked while EMBER_ATTR_CONCAT is off (see the flags block:
+//    the 0.0.72 dist's terser-unsafe build corrupts $_qStr's String() coercion,
+//    so quoted attrs currently keep the join emission + the legacy surgery,
+//    which the native path does not run).)
 const _GXT_NATIVE_BLOCKERS_CODE =
-  /\$_each\(|\]\.join\(""\)|__logSite|__ubCache|\$_maybeHelper\("|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
+  /\$_each(?:Sync)?(?:Recycled)?\(|\$_qStr\(|\]\.join\(""\)|__logSite|__ubCache|\$_maybeHelper\("|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
 function _gxtNativeTemplateEligible(
   cr: any,
   options: { strictMode?: boolean; scope?: unknown; scopeValues?: unknown } | undefined,
@@ -13135,6 +13151,13 @@ function _gxtNativeTemplateEligible(
 ): boolean {
   if (!cr || typeof cr.templateFn !== 'function') return false;
   if (cr.errors && cr.errors.length > 0) return false;
+  // REHYDRATION stays legacy (the P4 design's SSR exclusion): the rehydration
+  // delegate sets the mode BEFORE compiling, so this is compile-time-visible.
+  // Gate-proven: when the `].join("")` blocker retirement let rehydration
+  // templates slip into the native population, all 26 null/undefined-attribute
+  // rehydration tests regressed (native $attr writes vs the legacy wrapper's
+  // claim-vs-write rehydration handling).
+  if (_gxtRehydrationMode) return false;
   // Increment 2: NON-STRICT scoped templates are eligible when their
   // scopeValues were threaded into gxtCompileTemplate as native Function
   // params (all keys plain identifiers — see _gxtScopeValuesNativeSafe) AND no
@@ -13595,6 +13618,30 @@ export function precompileTemplate(
   const compilationResult = gxtCompileTemplate(transformedTemplate, {
     moduleName: options?.moduleName || 'gxt-runtime-template',
     bindings: scopeBindings.size > 0 ? scopeBindings : undefined,
+    // P4 increment 3 (gxt >=0.0.72): first-class emission flags —
+    //   FORCE_SYNC_LIST: {{#each}} emits $_eachSync/$_eachSyncRecycled from
+    //     buildEach (classic Ember needs synchronous list DOM mutation).
+    //     NOTE the legacy `$_each(` -> `$_eachSync(` regex below is KEPT as a
+    //     belt for now: flag emission was verified byte-identical to the regex
+    //     output for every probed shape (the regex is a no-op and harmless),
+    //     but the migration debug session's bisects were confounded by HMR
+    //     staleness, so the belt stays until its removal is re-verified as its
+    //     own gated experiment — together with the native-path each blocker.
+    //     (gxt #246 additionally fixed templateToTypescript dropping the whole
+    //     flag set — a real gap, though on a path ember doesn't use.)
+    //   EMBER_ATTR_CONCAT: interpolated quoted attrs emit `$_qStr([...])`
+    //     with Ember string-coercion semantics incl. all-nullish -> null,
+    //     replacing the hand-rolled `].join("")` bracket-surgery rewrite (the
+    //     surgery + __gxtQuotedAttr injection are KEPT below as join-targeted
+    //     no-ops until their removal is gated separately).
+    // ⚠ The flag values themselves live in the `flags:` key FURTHER DOWN in
+    // this same object literal (after `transforms:`) — a second `flags:` key
+    // here would silently overwrite it (duplicate keys: later wins). That
+    // exact bug shipped the first landing of this increment: the flags never
+    // reached the compiler, every in-browser probe ran on flag-less emission,
+    // and the debug session chased phantom causes (the "HMR confounding"
+    // theory was wrong; the bisects faithfully showed the regex doing all the
+    // work because the flag was inert).
     // P4 increment 2: thread scopeValues as native Function params when all
     // keys are plain identifiers (gxt's scope-name validation throws
     // otherwise). The native templateFn then resolves scope references
@@ -13625,6 +13672,21 @@ export function precompileTemplate(
       WITH_MODIFIER_MANAGER: true,
       WITH_CONTEXT_API: true,
       TRY_CATCH_ERROR_HANDLING: false,
+      // P4 increment 3 (gxt >=0.0.72) — see the doc block on this call above.
+      // ⚠ These MUST live in THIS object: an earlier landing added a second
+      // `flags:` key higher up in the same literal, and the duplicate silently
+      // overwrote it (later key wins) — the flags never reached the compiler.
+      FORCE_SYNC_LIST: true,
+      // EMBER_ATTR_CONCAT is OFF until the gxt build fix ships: the published
+      // 0.0.72 lib is terser-minified with `compress.unsafe`, which rewrites
+      // `String(v)` -> `v+""` inside $_qStr's normalizer — ToPrimitive then
+      // prefers valueOf over toString and THROWS on Symbols (caught -> '').
+      // Gate-proven: 2 attribute-position tests (custom-valueOf object,
+      // symbol) regress on the $_qStr emission on BOTH paths. With the flag
+      // off, quoted attrs keep the `].join("")` emission handled by the kept
+      // legacy surgery + injected __gxtQuotedAttr/__qaNorm (whose String(v)
+      // lives in ember-emitted Function code, untouched by gxt's minifier).
+      EMBER_ATTR_CONCAT: false,
     },
     // Convert PascalCase component names to kebab-case for Ember registry lookup.
     // This replaces the regex-based transformCapitalizedComponents() pre-processing.
