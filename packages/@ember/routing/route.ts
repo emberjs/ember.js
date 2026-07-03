@@ -2022,7 +2022,12 @@ Route.reopen({
         'Expected a classic-interop route manager to handle finalizeQueryParamChange',
         managed !== undefined && hasClassicInterop(managed.manager)
       );
-      return managed.manager.finalizeQueryParamChange(managed.bucket, params, finalParams, transition);
+      return managed.manager.finalizeQueryParamChange(
+        managed.bucket,
+        params,
+        finalParams,
+        transition
+      );
     },
   },
 });

@@ -90,12 +90,7 @@ function findRouteStateName(route: Route, state: string) {
   @param {String} fullName
   @return {Boolean}
 */
-function routeHasBeenDefined(
-  owner: Owner,
-  router: any,
-  localName: string,
-  fullName: string
-) {
+function routeHasBeenDefined(owner: Owner, router: any, localName: string, fullName: string) {
   let routerHasRoute = router.hasRoute(fullName);
   let ownerHasRoute =
     owner.factoryFor(`template:${localName}`) || owner.factoryFor(`route:${localName}`);

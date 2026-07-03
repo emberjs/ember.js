@@ -170,9 +170,7 @@ moduleFor(
       this.add('template:index', precompileTemplate('index'));
     }
 
-    async ['@test destroyables returned from getDestroyable are destroyed with the owner'](
-      assert
-    ) {
+    async ['@test destroyables returned from getDestroyable are destroyed with the owner'](assert) {
       await this.visit('/');
 
       assert.deepEqual(this.destroyedBuckets, [], 'no buckets destroyed while the app is live');
