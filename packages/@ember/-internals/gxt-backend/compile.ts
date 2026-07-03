@@ -13006,7 +13006,19 @@ function _gxtFindAddedToTreeSym(obj: object): symbol | null {
 // flags-key bug) and did not reproduce on the clean re-baseline; the
 // quoted-attr "deltas" were the corrupt 0.0.72 dist + a stale vite dep-cache.)
 const _GXT_NATIVE_BLOCKERS_CODE =
-  /__logSite|__ubCache|\$_maybeHelper\("|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
+  /__logSite|__ubCache|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
+// String-form `$_maybeHelper("name", …)` lookups are NATIVE-safe in general:
+// the ember-wrapped $_maybeHelper global resolves registry helpers identically
+// on both paths. Only two LEGACY-ONLY rewrites make specific shapes
+// legacy-bound:
+//  1. the named-arg resolved-helper DEBUG guard — `["@x", $_maybeHelper("n",
+//     [], this)]` gets wrapped with __gxtAssertNotResolvedHelperAsNamedArg on
+//     the legacy path (same trigger regex as the rewrite itself);
+//  2. scope-key string lookups — when gxt still emits `$_maybeHelper("KEY")`
+//     for a key the user provided in scopeValues, only the legacy rewrite
+//     re-points the string at the injected local.
+const _GXT_NAMED_ARG_GUARD_TRIGGER =
+  /\["@[A-Za-z_][A-Za-z0-9_-]*",\s*\$_maybeHelper\("[^"]+",\s*\[\],\s*this\)/;
 function _gxtNativeTemplateEligible(
   cr: any,
   options: { strictMode?: boolean; scope?: unknown; scopeValues?: unknown } | undefined,
@@ -13051,6 +13063,18 @@ function _gxtNativeTemplateEligible(
   if (cr.usedRecycle === true) return false;
   const code: string = cr.code || '';
   if (_GXT_NATIVE_BLOCKERS_CODE.test(code)) return false;
+  // $_maybeHelper(" narrowing — see the trigger-const doc above.
+  if (_GXT_NAMED_ARG_GUARD_TRIGGER.test(code)) return false;
+  if (options?.scopeValues && code.includes('$_maybeHelper(')) {
+    for (const key of Object.keys(options.scopeValues)) {
+      if (
+        code.includes(`$_maybeHelper("${key}"`) ||
+        code.includes(`$_maybeHelper('${key}'`)
+      ) {
+        return false;
+      }
+    }
+  }
   // in-element / unbound / unique-id trigger source-level rewrites whose
   // emissions are not all code-greppable — exclude on the source too.
   if (
