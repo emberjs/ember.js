@@ -13021,10 +13021,17 @@ function _gxtFindAddedToTreeSym(obj: object): symbol | null {
 //   unique-id impl) and the keyword-helper locals the legacy wrapper shadows
 //   with ember-spec implementations.
 const _GXT_LEGACY_MAYBE_HELPER_NAMES = new Set(['unbound', 'unique-id', '__mutGet']);
-// See the "LAST SCAFFOLDING REGEX" note in the predicate body.
-const _GXT_KEYWORD_CALL_SCAFFOLD =
-  /(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
 const _GXT_LEGACY_BINDING_NAMES = new Set([
+  // gxt's raw-embedded islands reference legacy-provided globals as
+  // `globalThis.X` — the report's root-reduction records the root
+  // (`globalThis`), which is itself a precise legacy signal: the only
+  // emitter of a bare `globalThis` identifier is the `{{unbound}}`
+  // yield/subexpr island (`globalThis.__gxtUnboundEval(...)`), whose
+  // `__ubCache`/eval locals only the legacy Function provides (gate-proven:
+  // "yielding unbound does not update" x2). Upstream refinement queued:
+  // record the member name for globalThis.* roots so this reads
+  // '__gxtUnboundEval' instead.
+  'globalThis',
   'gxtEntriesOf',
   'gxtGetOutletState',
   '__gxtCommentLookup',
@@ -13102,13 +13109,15 @@ function _gxtNativeTemplateEligible(
   for (const binding of referencedBindings) {
     if (_GXT_LEGACY_BINDING_NAMES.has(binding)) return false;
   }
-  // ⚠ LAST SCAFFOLDING REGEX: gxt emits a bare keyword identifier (`get(`,
-  // `hash(`…) for subexpressions in some positions (e.g. `{{yield (get …)}}`)
-  // even when the name was NOT caller-provided — `referencedBindings` tracks
-  // caller bindings only, so the report misses these (smoke-caught: "get is
-  // not defined" on native). Dies when the report grows `emittedIdentifiers`
-  // (all serializer-emitted free identifiers) upstream.
-  if (_GXT_KEYWORD_CALL_SCAFFOLD.test(cr.code || '')) return false;
+  // Free identifiers the serializer emitted regardless of binding provenance
+  // (gxt >=0.0.75, #251) — covers bare keyword references like
+  // `{{yield (get …)}}` emitting `get(` for a name that was never a caller
+  // binding (referencedBindings is caller-provided-only). This replaced the
+  // last regex over generated code in the routing.
+  const emittedIdentifiers: readonly string[] = cr.emittedIdentifiers || [];
+  for (const id of emittedIdentifiers) {
+    if (_GXT_LEGACY_BINDING_NAMES.has(id)) return false;
+  }
   // The named-arg resolved-helper DEBUG guard is a legacy-only rewrite.
   if (cr.maybeHelperInNamedArgPosition === true) return false;
   // Scope-key string lookups: when gxt emitted `$_maybeHelper("KEY")` for a
