@@ -345,6 +345,13 @@ function _extractScopeFromEval(
     if (_GXT_KEYWORD_NAMES.has(name)) {
       continue;
     }
+    // JS literal keywords are NOT free variables — `{{if true "a" "b"}}`
+    // must not produce a scope entry `{ true: true }` (direct `eval('true')`
+    // happily returns the literal), which downstream becomes an invalid
+    // Function parameter name (`new Function('true', …)` → SyntaxError).
+    if (_JS_LITERAL_NAMES.has(name)) {
+      continue;
+    }
     try {
       const value = evalFn(name);
       if (value !== undefined) {
@@ -357,6 +364,11 @@ function _extractScopeFromEval(
 
   return Object.keys(scope).length > 0 ? scope : (undefined as any);
 }
+
+// JS literal keywords the free-variable extraction must never treat as scope
+// names (direct `eval('true')` returns the literal, so the try/catch filter
+// alone does not exclude them).
+const _JS_LITERAL_NAMES = new Set<string>(['true', 'false', 'null', 'undefined', 'this']);
 
 // GXT/Ember strict-mode keywords whose names are reserved for the curried
 // helper / modifier syntactic forms (`{{helper foo "x"}}`,

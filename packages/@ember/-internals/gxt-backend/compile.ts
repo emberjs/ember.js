@@ -13077,6 +13077,40 @@ function _scopeNameAppearsAsReference(template: string, name: string): boolean {
 // unlocks gxt-native destroy sequencing for ember components.
 const _gxtNativePathStats = { native: 0, legacy: 0 };
 (globalThis as any).__gxtPathStats = _gxtNativePathStats;
+// P4 increment 2: scopeValues are threaded into gxtCompileTemplate (gxt binds
+// them as real Function parameters) when EVERY key is a plain valid JS
+// identifier — matching gxt's emitted identifier references verbatim. Keys
+// needing the legacy normalization machinery (hyphens → underscore rewrite,
+// reserved-word `__scope_` prefixing, kebab-identifier code surgery) keep the
+// legacy path; a leading `$` is rejected too so user scope can never collide
+// with gxt's own `$a`/`$slots`/`$fw` preamble locals or `$_*` params. (gxt's
+// own scope-name validation THROWS on invalid identifiers — this guard is
+// what makes passing scopeValues safe for the shared compile call.)
+const _GXT_NATIVE_SCOPE_IDENT_RE = /^[a-zA-Z_][a-zA-Z0-9_$]*$/;
+// Names that pass the identifier regex but are NOT usable as Function
+// parameter names (literals + strict-mode-restricted). JS_RESERVED_WORDS
+// covers statement keywords; these are the residue (`new Function('true', …)`
+// is a SyntaxError — gate-proven via the eval-form's `{{if true …}}`).
+const _GXT_UNSAFE_PARAM_NAMES = new Set([
+  'true',
+  'false',
+  'null',
+  'undefined',
+  'this',
+  'arguments',
+  'eval',
+  'await',
+  'yield',
+]);
+function _gxtScopeValuesNativeSafe(sv: Record<string, unknown> | undefined): boolean {
+  if (!sv) return true;
+  for (const key of Object.keys(sv)) {
+    if (!_GXT_NATIVE_SCOPE_IDENT_RE.test(key)) return false;
+    if (JS_RESERVED_WORDS.has(key)) return false;
+    if (_GXT_UNSAFE_PARAM_NAMES.has(key)) return false;
+  }
+  return true;
+}
 // gxt's ADDED_TO_TREE_FLAG is a non-exported `Symbol('addedToTree')` (gxt
 // src/core/types.ts). The force-rerender stale-registration clear needs it;
 // hunt it once by description on an instance that has been through
@@ -13101,9 +13135,28 @@ function _gxtNativeTemplateEligible(
 ): boolean {
   if (!cr || typeof cr.templateFn !== 'function') return false;
   if (cr.errors && cr.errors.length > 0) return false;
-  // Strict-mode / scoped templates need the scopeInjections/strict-guard
-  // wrapper until scopeValues are threaded into gxtCompileTemplate (increment 2).
-  if (options?.strictMode === true || options?.scope || options?.scopeValues) return false;
+  // Increment 2: NON-STRICT scoped templates are eligible when their
+  // scopeValues were threaded into gxtCompileTemplate as native Function
+  // params (all keys plain identifiers — see _gxtScopeValuesNativeSafe) AND no
+  // key collides with the ember builtin-helper table (the legacy
+  // helperInjections deliberately SHADOW such keys with ember-spec callable
+  // implementations — e.g. a scope-passed `fn` from '@ember/helper' is an
+  // internal helper definition, not directly callable; gate-proven by the
+  // keyword-helper fn MustacheStatement test).
+  //
+  // STRICT MODE stays legacy for now: two gate-proven gaps — the
+  // builtin-shadowing above, and the implicit-eval (`template(src, {eval})`)
+  // component-module flow, which renders empty on the native path while the
+  // same emission renders correctly standalone (root cause in the
+  // component-module interplay, not the emission; revisit as its own
+  // increment).
+  if (options?.strictMode === true) return false;
+  if (options?.scopeValues) {
+    if (!_gxtScopeValuesNativeSafe(options.scopeValues)) return false;
+    for (const key of Object.keys(options.scopeValues)) {
+      if (Object.prototype.hasOwnProperty.call(_emberBuiltinHelpers, key)) return false;
+    }
+  }
   // {{yield}} / splattributes: allowed since increment 1 — the render seam
   // mirrors _gxtCurrentSlots/_gxtCurrentFw onto ctx['args'][$SLOTS/$PROPS]
   // so gxt's native $_GET_SLOTS/$_GET_FW preamble resolves the SAME objects
@@ -13542,6 +13595,15 @@ export function precompileTemplate(
   const compilationResult = gxtCompileTemplate(transformedTemplate, {
     moduleName: options?.moduleName || 'gxt-runtime-template',
     bindings: scopeBindings.size > 0 ? scopeBindings : undefined,
+    // P4 increment 2: thread scopeValues as native Function params when all
+    // keys are plain identifiers (gxt's scope-name validation throws
+    // otherwise). The native templateFn then resolves scope references
+    // directly; legacy-normalization cases pass undefined and keep riding the
+    // __gxtGetScope injections.
+    scopeValues:
+      options?.scopeValues && _gxtScopeValuesNativeSafe(options.scopeValues)
+        ? options.scopeValues
+        : undefined,
     // Ember dialect AST transforms (public `transforms` hook). These run on the
     // parsed AST after preprocess / before codegen and replace the former
     // string pre-rewrites for `{{outlet}}`, `{{#@arg}}` blocks, quoted-attribute
