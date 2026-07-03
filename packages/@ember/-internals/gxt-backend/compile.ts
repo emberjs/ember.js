@@ -695,6 +695,11 @@ import * as __gxtForHostHooks from '@lifeart/gxt';
 const _gxtRegisterHostHooks: ((hooks: Record<string, unknown>) => void) | undefined = (
   __gxtForHostHooks as any
 ).registerHostHooks;
+// Named-block factory marker predicate (gxt >=0.0.76, glimmer-next #253) —
+// optional-bound so older dists resolve `undefined` instead of a build error.
+const _gxtGetNamedBlockName: ((fn: unknown) => string | null) | undefined = (
+  __gxtForHostHooks as any
+).getNamedBlockName;
 // Module-local seam for Ember truthiness: the canonical `emberToBool` is
 // defined inside the wrapper-installer scope below; this ref lets other
 // compile.ts scopes (the {{#if}}-helper cleanup paths) reach it without the
@@ -11051,25 +11056,27 @@ if (g.$_tag && !g.$_tag.__compileWrapped) {
 
             for (let _ci = 0; _ci < effectiveChildren.length; _ci++) {
               let child = effectiveChildren[_ci];
-              // GXT compiles named block children as lazy functions:
-              //   () => $_tag(':header', ...) which returns a __isNamedBlock marker.
-              // Evaluate ONLY functions that look like named block factories to avoid
-              // side effects from eagerly evaluating component children.
+              // GXT compiles named block children as lazy functions producing
+              // a __isNamedBlock marker. gxt >=0.0.76 MARKS those factories
+              // via $_nbt (fn.$_namedBlock = name, glimmer-next #253) — read
+              // the marker instead of the old `$_tag(':` source sniff
+              // (minify-fragile, the $_isNode lesson). Evaluate ONLY marked
+              // factories to avoid side effects from eagerly evaluating plain
+              // component children.
               if (
                 typeof child === 'function' &&
                 !child.__isCurriedComponent &&
-                !(child instanceof Node)
+                !(child instanceof Node) &&
+                _gxtGetNamedBlockName !== undefined &&
+                _gxtGetNamedBlockName(child) !== null
               ) {
-                const fnStr = child.toString();
-                if (fnStr.includes("$_tag(':") || fnStr.includes('$_tag(":')) {
-                  try {
-                    const evaluated = child();
-                    if (evaluated && typeof evaluated === 'object' && evaluated.__isNamedBlock) {
-                      child = evaluated;
-                    }
-                  } catch {
-                    /* not a named block factory — keep as-is */
+                try {
+                  const evaluated = child();
+                  if (evaluated && typeof evaluated === 'object' && evaluated.__isNamedBlock) {
+                    child = evaluated;
                   }
+                } catch {
+                  /* not a named block factory — keep as-is */
                 }
               }
               // Check if it's a named block marker
@@ -12790,11 +12797,6 @@ const templateCache = new Map<string, any>();
 // scanners lived here.
 
 let _functionCodeCache: Map<string, Function> | null = null;
-// Global counter for log site IDs — ensures uniqueness across compilations.
-// Without this, every compiled template gets __logSite:0, __logSite:1, etc.
-// and the dedup logic in $__log_ember incorrectly skips log calls from
-// different templates that happen to share the same site ID.
-let _globalLogSiteCounter = 0;
 
 
 // HTML comments `<!-- ... -->` are now preserved by the `gxtHtmlCommentTransform`
@@ -13020,7 +13022,8 @@ function _gxtFindAddedToTreeSym(obj: object): symbol | null {
 //   provides (each-in entries, outlet state, comment registry, mut writer,
 //   unique-id impl) and the keyword-helper locals the legacy wrapper shadows
 //   with ember-spec implementations.
-const _GXT_LEGACY_MAYBE_HELPER_NAMES = new Set(['unbound', 'unique-id', '__mutGet']);
+// ('unique-id' left this set with gxt 0.0.76: $_uid is first-class native.)
+const _GXT_LEGACY_MAYBE_HELPER_NAMES = new Set(['unbound', '__mutGet']);
 const _GXT_LEGACY_BINDING_NAMES = new Set([
   // gxt's raw-embedded islands reference legacy-provided globals as
   // `globalThis.X` — the report's root-reduction records the root
@@ -13036,7 +13039,6 @@ const _GXT_LEGACY_BINDING_NAMES = new Set([
   'gxtGetOutletState',
   '__gxtCommentLookup',
   '__mutGet',
-  'unique_id',
   'get',
   'unbound',
   'array',
@@ -13094,9 +13096,10 @@ function _gxtNativeTemplateEligible(
   const maybeHelperNames: readonly string[] = cr.maybeHelperNames || [];
   const referencedBindings: readonly string[] = cr.referencedBindings || [];
   // {{#in-element}}: the legacy wrapper's __ieSet insertBefore channel is
-  // load-bearing. {{log}}: the legacy __logSite global renumbering dedups
-  // log-site ids across compilations.
-  if (emittedSymbols.includes('$_inElement') || emittedSymbols.includes('$__log')) {
+  // load-bearing (until the EMBER_IN_ELEMENT mode-arg consumption lands).
+  // ({{log}} left this block with gxt 0.0.76 — site ids arrive globally
+  // unique, the legacy renumber is retired.)
+  if (emittedSymbols.includes('$_inElement')) {
     return false;
   }
   // Legacy-only rewrites keyed on specific unresolved-helper names
@@ -13476,16 +13479,9 @@ export function precompileTemplate(
     }
   }
 
-  // Add unique_id to scope bindings if the template references unique-id or unique_id.
-  // The GXT compiler normalizes hyphenated names to underscores in IS_GLIMMER_COMPAT_MODE,
-  // so `{{unique-id}}` resolves to the `unique_id` scope binding.
-  // We inject the actual value later via helperInjections.
-  if (
-    containsWord(transformedTemplate, 'unique-id') ||
-    containsWord(transformedTemplate, 'unique_id')
-  ) {
-    scopeBindings.add('unique_id');
-  }
+  // NOTE: the `unique_id` scope-binding hack is retired — gxt >=0.0.76 emits
+  // `{{unique-id}}` as the first-class stable `$_uid(this, SITE)` helper
+  // (glimmer-next #252), resolved through the runtime symbol table.
 
   // Add gxtEntriesOf to scope bindings whenever the source contains an
   // `{{#each-in` block. The `gxtEachInTransform` AST visitor (wired below)
@@ -13690,14 +13686,9 @@ export function precompileTemplate(
     // identity. Async element destructors (the reason gxt defaults to async)
     // only matter for row animations, which precompileTemplate templates
     // never set up.
-    // NOTE: $__log site ID wrapping is now handled in the GXT serializer
-    // (value.ts emits comma expression with site ID directly in IS_GLIMMER_COMPAT_MODE)
-    // Post-process: replace per-compilation __logSite:N with globally unique IDs
-    // to prevent dedup collisions across different template compilations.
-    modifiedCode = modifiedCode.replace(
-      /__logSite:\d+/g,
-      () => `__logSite:${_globalLogSiteCounter++}`
-    );
+    // NOTE: __logSite ids arrive process-globally-unique since gxt 0.0.76
+    // (glimmer-next #252) — the per-compilation renumber that lived here is
+    // retired.
 
     // NOTE: Ember quoted-attr concat semantics ($_qStr — Symbol/no-toString
     // coercion + all-nullish -> null) are a first-class emission since gxt
@@ -13984,7 +13975,6 @@ export function precompileTemplate(
           'fn',
           'mut',
           'readonly',
-          'unique-id',
           'helper',
           'modifier',
           'gxtEntriesOf',
@@ -13999,62 +13989,18 @@ export function precompileTemplate(
           if (scopeKeys.has(name) || scopeKeys.has(jsName)) continue;
           // Check if the compiled code references this as a bare identifier
           // Match word boundary to avoid false positives (e.g. "getElement")
-          if (name === 'unique-id') {
-            // unique-id needs per-component-instance caching so that:
-            // 1. Each {{unique-id}} invocation returns a UNIQUE value
-            // 2. The SAME invocation returns the SAME value across re-renders
-            // 3. {{#let (unique-id) as |id|}} produces a stable id
-            //
-            // The compiled code may reference unique-id in two forms
-            // depending on the compile path:
-            //   a) bare call:    unique_id()                  (scope-bound)
-            //   b) maybeHelper:  $_maybeHelper("unique-id", [], this)
-            // Form (b) appears when GXT does not recognize the binding —
-            // e.g. inside `{{#let (unique-id) as |id|}}` where the let-init
-            // is not wrapped in the builtin resolution path. We normalize
-            // (b) into (a) so both share the _uid[N] caching mechanism that
-            // keeps ids stable across re-evaluations of the same call site.
-            const mhStr = '$_maybeHelper("unique-id", [], this)';
-            if (modifiedCode.includes(mhStr)) {
-              modifiedCode = modifiedCode.split(mhStr).join('unique_id()');
-            }
-            if (!containsWord(modifiedCode, jsName)) continue;
-            // GXT compiles #let block params as getters: let id = () => unique_id();
-            // Each access to `id` calls unique_id() again. To make ids stable,
-            // we count unique_id() call sites in the compiled code, pre-generate
-            // that many IDs (cached per component instance), and replace each
-            // unique_id() call with a lookup into the pre-generated array.
-            //
-            // Count unique_id() calls in modifiedCode
-            const uidCallCount = countWord(modifiedCode, 'unique_id()');
-            if (uidCallCount > 0) {
-              // Replace each unique_id() call with _uid[N] where N is the call index
-              let uidIdx = 0;
-              modifiedCode = replaceWord(modifiedCode, 'unique_id()', () => `_uid[${uidIdx++}]`);
-              // Mark that we need the _uid array in the outer scope.
-              // The array is generated ONCE when the template factory function
-              // is first evaluated, so IDs remain stable across re-renders.
-              (compilationResult as any).__uidCount = uidCallCount;
-            } else {
-              // unique_id referenced but not called — inject as plain function
-              helperInjections.push(`const unique_id = __gxtBuiltinHelpers["unique-id"];`);
-            }
-          } else if (containsWord(modifiedCode, jsName)) {
+          // NOTE: unique-id is a first-class stable emission since gxt 0.0.76
+          // (glimmer-next #252: `$_uid(this, SITE)` + a per-ctx WeakMap) — the
+          // positional `_uid[N]` rewrite chain that lived here is retired.
+          if (containsWord(modifiedCode, jsName)) {
             helperInjections.push(`const ${jsName} = __gxtBuiltinHelpers["${name}"];`);
           }
         }
       }
       // each-in entries getter injections (now handled at AST level in GXT compiler)
       const eachInInjections: string[] = [];
-      // Generate unique-id pre-computed array in outer scope if needed.
-      // This runs ONCE per template compilation (not per render), so IDs
-      // remain stable across re-renders of the same component instance.
-      const uidCount = (compilationResult as any).__uidCount || 0;
-      const uidOuterScope =
-        uidCount > 0
-          ? `var _uid_fn = __gxtBuiltinHelpers["unique-id"];` +
-            `var _uid = []; for (var _uid_i = 0; _uid_i < ${uidCount}; _uid_i++) _uid.push(_uid_fn());`
-          : '';
+      // (unique-id outer-scope array retired — $_uid owns stability since gxt
+      // 0.0.76.)
 
       // For strict-mode templates, shadow the global $_maybeHelper with a
       // resolver that throws "not in scope" for free identifiers instead of
@@ -14197,7 +14143,6 @@ export function precompileTemplate(
         ${hasUnbound ? 'var __ubCache = Object.create(null);' : ''}
         ${unboundEvalInjection}
         ${namedArgHelperGuardInjection}
-        ${uidOuterScope}
         ${strictMaybeHelperInjection}
         return function() {
           ${needsArgsAlias ? "const $a = this['args'];" : ''}
