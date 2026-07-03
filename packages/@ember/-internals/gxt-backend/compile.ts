@@ -13104,9 +13104,12 @@ function _gxtNativeTemplateEligible(
   // Strict-mode / scoped templates need the scopeInjections/strict-guard
   // wrapper until scopeValues are threaded into gxtCompileTemplate (increment 2).
   if (options?.strictMode === true || options?.scope || options?.scopeValues) return false;
-  // {{yield}} / splattributes read slots+fw off ctx['args'][SYM]; ember stores
-  // them elsewhere — excluded until the increment-1 mirror lands.
-  if (cr.usedSlots === true || cr.usedFw === true || cr.usedRecycle === true) return false;
+  // {{yield}} / splattributes: allowed since increment 1 — the render seam
+  // mirrors _gxtCurrentSlots/_gxtCurrentFw onto ctx['args'][$SLOTS/$PROPS]
+  // so gxt's native $_GET_SLOTS/$_GET_FW preamble resolves the SAME objects
+  // the legacy __gxtGetSlots/__gxtGetFw params provided. Recycle stays
+  // excluded (runtime-recycle registration is not wired on this path).
+  if (cr.usedRecycle === true) return false;
   const code: string = cr.code || '';
   if (_GXT_NATIVE_BLOCKERS_CODE.test(code)) return false;
   // in-element / unbound / unique-id trigger source-level rewrites whose
@@ -15522,6 +15525,34 @@ export function precompileTemplate(
           // access args via this['args'].foo (aliased as $a.foo)
           if (!renderContext['args']) {
             renderContext['args'] = context['args'] || context.args || {};
+          }
+
+          // P4 increment 1 (native path): gxt's own preamble resolves slots/fw
+          // via `$_GET_SLOTS/$_GET_FW(this, arguments)`, which (with no args
+          // passed at the call seam below) read `this['args'][$SLOTS_SYMBOL]` /
+          // `this['args'][$PROPS_SYMBOL]`. Ember historically stored slots on
+          // the context root (context.$slots / context[_SLOTS_SYM]) and fw on
+          // context.$fw — which is exactly why the ambient
+          // _gxtCurrentSlots/_gxtCurrentFw module stack (+ the injected
+          // __gxtGetSlots/__gxtGetFw wrapper params) exists on the legacy path.
+          // Mirror the SAME values onto this['args'] under the shared
+          // registered symbols so the native preamble sees identical objects.
+          // (renderContext['args'] is the attrsProxy — a plain object with
+          // per-key defineProperty getters — so symbol writes are transparent.)
+          if (__gxtNativeTpl) {
+            const __argsObj = renderContext['args'];
+            if (__argsObj && typeof __argsObj === 'object') {
+              try {
+                __argsObj[_SLOTS_SYM] = _gxtCurrentSlots;
+              } catch {
+                /* frozen args — legacy-only shape, ignore */
+              }
+              try {
+                __argsObj[_PROPS_SYM] = _gxtCurrentFw;
+              } catch {
+                /* ignore */
+              }
+            }
           }
 
           // Add has-block helpers to the render context.
