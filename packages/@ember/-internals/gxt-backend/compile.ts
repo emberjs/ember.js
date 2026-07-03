@@ -13143,7 +13143,7 @@ function _gxtFindAddedToTreeSym(obj: object): symbol | null {
 //    so quoted attrs currently keep the join emission + the legacy surgery,
 //    which the native path does not run).)
 const _GXT_NATIVE_BLOCKERS_CODE =
-  /\$_each(?:Sync)?(?:Recycled)?\(|\$_qStr\(|\]\.join\(""\)|__logSite|__ubCache|\$_maybeHelper\("|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
+  /\$_each(?:Sync)?(?:Recycled)?\(|__logSite|__ubCache|\$_maybeHelper\("|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
 function _gxtNativeTemplateEligible(
   cr: any,
   options: { strictMode?: boolean; scope?: unknown; scopeValues?: unknown } | undefined,
@@ -13677,16 +13677,12 @@ export function precompileTemplate(
       // `flags:` key higher up in the same literal, and the duplicate silently
       // overwrote it (later key wins) — the flags never reached the compiler.
       FORCE_SYNC_LIST: true,
-      // EMBER_ATTR_CONCAT is OFF until the gxt build fix ships: the published
-      // 0.0.72 lib is terser-minified with `compress.unsafe`, which rewrites
-      // `String(v)` -> `v+""` inside $_qStr's normalizer — ToPrimitive then
-      // prefers valueOf over toString and THROWS on Symbols (caught -> '').
-      // Gate-proven: 2 attribute-position tests (custom-valueOf object,
-      // symbol) regress on the $_qStr emission on BOTH paths. With the flag
-      // off, quoted attrs keep the `].join("")` emission handled by the kept
-      // legacy surgery + injected __gxtQuotedAttr/__qaNorm (whose String(v)
-      // lives in ember-emitted Function code, untouched by gxt's minifier).
-      EMBER_ATTR_CONCAT: false,
+      // EMBER_ATTR_CONCAT on since gxt 0.0.73: #247 fixed the lib build's
+      // terser-`unsafe` corrupting $_qStr's String() coercion (valueOf/Symbol),
+      // dist-verified here on bump. Quoted attrs now emit `$_qStr([...])`
+      // first-class; the join bracket-surgery + __gxtQuotedAttr/__qaNorm
+      // injection are deleted.
+      EMBER_ATTR_CONCAT: true,
     },
     // Convert PascalCase component names to kebab-case for Ember registry lookup.
     // This replaces the regex-based transformCapitalizedComponents() pre-processing.
@@ -13787,65 +13783,11 @@ export function precompileTemplate(
       () => `__logSite:${_globalLogSiteCounter++}`
     );
 
-    // Post-process: GXT emits quoted attribute values as `[...expressions].join("")`.
-    // This implicit string coercion throws TypeError for Symbol values and for
-    // Object.create(null). Rewrite to `globalThis.__gxtQuotedAttr([...])` which
-    // uses explicit String() conversion with Glimmer's normalizeStringValue
-    // semantics AND returns `null` when the attribute value is purely
-    // null/undefined — matching Ember's "missing attribute" behavior for
-    // `<img src='{{this.src}}'>` with `src=null`.
-    //
-    // The pattern is very specific: `].join("")` occurs at the end of the quoted
-    // attribute serialization in GXT's output. Any other `.join` call uses a
-    // non-empty separator, so this replacement is safe.
-    if (modifiedCode.indexOf('].join("")') !== -1) {
-      // Walk the code and wrap each matching `[...].join("")` with the
-      // __gxtQuotedAttr helper. We scan backward from each `].join("")`
-      // to find the matching `[` (handling nested brackets/strings) so we
-      // can prepend the wrapper call.
-      const target = '].join("")';
-      let buf = '';
-      let i = 0;
-      const n = modifiedCode.length;
-      while (i < n) {
-        const idx = modifiedCode.indexOf(target, i);
-        if (idx === -1) {
-          buf += modifiedCode.slice(i);
-          break;
-        }
-        // Find matching `[` for the `]` at position idx
-        let depth = 1;
-        let j = idx - 1;
-        while (j >= 0 && depth > 0) {
-          const ch = modifiedCode[j]!;
-          if (ch === ']') depth++;
-          else if (ch === '[') depth--;
-          else if (ch === '"' || ch === "'" || ch === '`') {
-            const quote = ch;
-            j--;
-            while (j >= 0 && modifiedCode[j] !== quote) {
-              if (modifiedCode[j - 1] === '\\') j--;
-              j--;
-            }
-          }
-          if (depth > 0) j--;
-        }
-        if (depth !== 0) {
-          // Couldn't find matching bracket — leave the literal as-is.
-          buf += modifiedCode.slice(i, idx + target.length);
-          i = idx + target.length;
-          continue;
-        }
-        const arrStart = j; // position of `[`
-        // Replace `[...].join("")` with `globalThis.__gxtQuotedAttr([...])`
-        buf += modifiedCode.slice(i, arrStart);
-        buf += 'globalThis.__gxtQuotedAttr(';
-        buf += modifiedCode.slice(arrStart, idx + 1); // includes `]`
-        buf += ')';
-        i = idx + target.length;
-      }
-      modifiedCode = buf;
-    }
+    // NOTE: Ember quoted-attr concat semantics ($_qStr — Symbol/no-toString
+    // coercion + all-nullish -> null) are a first-class emission since gxt
+    // 0.0.72 — EMBER_ATTR_CONCAT is passed in the compile flags above
+    // (formerly a hand-rolled `].join("")` bracket-surgery walk here that
+    // rewrote to an injected __gxtQuotedAttr helper).
 
     // Post-process: When GXT emits $_maybeHelper("name", ...) with a string for a
     // name that is in scope bindings, replace the string with a variable reference.
@@ -14253,16 +14195,6 @@ export function precompileTemplate(
           .join('__gxtAssertNotResolvedHelperAsNamedArg(');
       }
 
-      // Rewrite emitted `globalThis.__gxtQuotedAttr(` → local `__gxtQuotedAttr(`
-      // so the inline-emitted helper (declared at the outer Function() scope
-      // below) is used directly. The emitter is the `].join("")` post-processor
-      // above. The injection is gated on detection of the rewritten form so
-      // templates without quoted attribute interpolation pay zero overhead.
-      const hasQuotedAttr = modifiedCode.includes('globalThis.__gxtQuotedAttr(');
-      if (hasQuotedAttr) {
-        modifiedCode = modifiedCode.split('globalThis.__gxtQuotedAttr(').join('__gxtQuotedAttr(');
-      }
-
       // Inlined `__gxtUnboundEval` definition + per-Function-body `__ubSlots`
       // map declared at the OUTER Function() scope alongside `__ubCache`. Closes
       // over the `__ubGT` / `__ubST` Function() params (bound below to the
@@ -14341,41 +14273,14 @@ export function precompileTemplate(
           `}`
         : '';
 
-      // Inlined `__gxtQuotedAttr` definition declared at the OUTER Function()
-      // scope. The body re-implements `_normalizeStringValue` semantics inline
-      // as `__qaNorm` (Glimmer's normalizeStringValue: null/undefined → '',
-      // objects without toString → '', String(value) with a defensive try/catch
-      // for throwing toStrings) — no closure surface needed beyond intrinsic JS.
-      // Gated on `hasQuotedAttr` so templates without quoted-attribute
-      // interpolation pay zero overhead.
-      const quotedAttrInjection = hasQuotedAttr
-        ? `function __qaNorm(v) {` +
-          `if (v === null || v === undefined) return '';` +
-          `if (typeof v.toString !== 'function') return '';` +
-          `try { return String(v); } catch (e) { return ''; }` +
-          `}` +
-          `function __gxtQuotedAttr(parts) {` +
-          `if (!Array.isArray(parts)) return __qaNorm(parts);` +
-          `if (parts.length === 1) {` +
-          `var v0 = parts[0];` +
-          `if (v0 === null || v0 === undefined) return null;` +
-          `}` +
-          `var allNullish = true;` +
-          `var out = '';` +
-          `for (var i = 0; i < parts.length; i++) {` +
-          `var p = parts[i];` +
-          `if (p !== null && p !== undefined) { allNullish = false; }` +
-          `out += __qaNorm(p);` +
-          `}` +
-          `return allNullish ? null : out;` +
-          `}`
-        : '';
+      // (quoted-attr helper injection retired — $_qStr is emitted first-class
+      // by gxt >=0.0.72 under EMBER_ATTR_CONCAT and resolves through the
+      // runtime symbol table on both paths.)
       const templateFnCode = `
         "use strict";
         ${hasUnbound ? 'var __ubCache = Object.create(null);' : ''}
         ${unboundEvalInjection}
         ${namedArgHelperGuardInjection}
-        ${quotedAttrInjection}
         ${uidOuterScope}
         ${strictMaybeHelperInjection}
         return function() {
