@@ -13128,22 +13128,14 @@ function _gxtFindAddedToTreeSym(obj: object): symbol | null {
 // injections/rewrites are load-bearing for this template (keyword-helper
 // locals, each-in entries, outlet state, comment-registry lookups, unbound
 // cache, mut writers, unique-id counters).
-// (P4 increment 3 routing notes:
-//  - `$_each*(` blocked: each-containing templates stay legacy until the
-//    each machinery (morph force-rerender interplay, inverse finalize pools)
-//    gets its own native-migration increment. ⚠ earlier evidence gathered on
-//    this was contaminated by the duplicate-flags-key bug — re-baseline the
-//    native-each experiment now that the flags actually apply.
-//  - `$_qStr(` blocked: quoted-attr templates stay legacy for now — the
-//    full gate showed 2 attribute-position deltas on the native path
-//    (symbol / custom-valueOf object rendering) vs the legacy $_tag
-//    wrapper's normalization; map hook-vs-wrapper coercion before admitting.
-//  - `].join("")` blocked while EMBER_ATTR_CONCAT is off (see the flags block:
-//    the 0.0.72 dist's terser-unsafe build corrupts $_qStr's String() coercion,
-//    so quoted attrs currently keep the join emission + the legacy surgery,
-//    which the native path does not run).)
+// (P4 routing notes: the `$_each*(`, `$_qStr(` and `].join("")` blockers that
+// once lived here are all retired — each-containing and quoted-attr templates
+// ride the native templateFn. The prior evidence against native eachs was
+// gathered while the compile flags were silently inert (the duplicate-
+// flags-key bug) and did not reproduce on the clean re-baseline; the
+// quoted-attr "deltas" were the corrupt 0.0.72 dist + a stale vite dep-cache.)
 const _GXT_NATIVE_BLOCKERS_CODE =
-  /\$_each(?:Sync)?(?:Recycled)?\(|__logSite|__ubCache|\$_maybeHelper\("|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
+  /__logSite|__ubCache|\$_maybeHelper\("|\$_inElement|\b(?:gxtEntriesOf|gxtGetOutletState|__gxtCommentLookup|__mutGet|unique_id|__gxtUnboundEval)\b|(?:^|[^.\w$])(?:get|unbound|array|hash|concat|fn|mut|readonly|helper|modifier)\(/;
 function _gxtNativeTemplateEligible(
   cr: any,
   options: { strictMode?: boolean; scope?: unknown; scopeValues?: unknown } | undefined,
@@ -13748,32 +13740,17 @@ export function precompileTemplate(
   } else if (compilationResult.code) {
     _gxtNativePathStats.legacy++;
     let modifiedCode = compilationResult.code;
-    // Force every {{#each}} block in classic Ember templates onto the
-    // synchronous list path (`$_eachSync` / `SyncListComponent`).
-    //
-    // GXT's serializer emits async `$_each` by default — `AsyncListComponent`
-    // applies its DOM mutations on a microtask. After a runTask
-    // mutation that fires `notifyPropertyChange(arr, '[]')`, the
-    // `__gxtSyncDomNow` pipeline runs synchronously, so the async
-    // syncList opcode hasn't yet updated the live DOM by the time
-    // `__gxtForceEmberRerender`'s morph fallback fires. The morph then
-    // diffs the new full-template fragment against the *pre-mutation*
-    // live DOM (3 children) position-by-position, clobbering the
-    // existing Text nodes' content with whatever happens to land at the
-    // same index in the new fragment. That destroys the DOM-node
-    // identity that the `assertPartialInvariants` invariant in the
-    // `Syntax test: {{#each}} ... it maintains DOM stability for
-    // stable keys when list is updated` test guards. The synchronous
-    // SyncListComponent path moves item markers (and the rows behind
-    // them) BEFORE the morph runs, so morph then sees identical content
-    // on both sides and is a no-op for keyed rows — preserving identity.
-    //
-    // Async element destructors (the original reason GXT removed the
-    // forced-sync path) only matter for animations attached to
-    // `{{#each}}` rows; classic Ember templates compiled via
-    // `precompileTemplate` never set them up, so the sync path is
-    // strictly safe here.
-    modifiedCode = modifiedCode.replace(/\$_each\(/g, '$_eachSync(');
+    // NOTE: sync-{{#each}} is a first-class emission (FORCE_SYNC_LIST in the
+    // compile flags above; gxt >=0.0.72 buildEach + the #246 adapter fix) —
+    // the `$_each(` -> `$_eachSync(` belt regex that used to live here was
+    // retired after verifying flag emission is byte-identical to the regex
+    // output with the flags actually applying (the duplicate-flags-key bug
+    // fixed). WHY sync: classic Ember's synchronous __gxtSyncDomNow/morph
+    // flush requires the row DOM mutated before the flush inspects it; async
+    // AsyncListComponent applies on a microtask and destroys keyed-row DOM
+    // identity. Async element destructors (the reason gxt defaults to async)
+    // only matter for row animations, which precompileTemplate templates
+    // never set up.
     // NOTE: $__log site ID wrapping is now handled in the GXT serializer
     // (value.ts emits comma expression with site ID directly in IS_GLIMMER_COMPAT_MODE)
     // Post-process: replace per-compilation __logSite:N with globally unique IDs
