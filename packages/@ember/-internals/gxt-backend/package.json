@@ -27,7 +27,6 @@
     "./gxt-template-factory": "./gxt-template-factory.ts",
     "./test-compile": "./test-compile.ts",
     "./debug": "./debug.ts",
-    "./debug-render-tree": "./debug-render-tree.ts",
     "./utils": "./utils.ts"
   }
 }
