@@ -13383,19 +13383,30 @@ export function precompileTemplate(
       // replaces the __ieSet signalling channel + the source pre-parse.
       EMBER_IN_ELEMENT: true,
       // EMBER_TRUSTED_HTML (gxt >=0.0.80: #256 flag + #261 reactivity fix) — NOT
-      // enabled yet. gxt #261 CLOSED two of the three gaps that blocked the first
-      // attempt (2026-07-04, gate-verified on 0.0.80): the trusted-content suite
-      // is now 149/149 (was 147/149) — absent-path reactivity + null-proto-object
-      // reactivity work, because `$_html`'s formula now runs through the same
-      // host-bridge hooks as the normal text binding. The SOLE remaining blocker
-      // is GAP 1: `{{{this.field}}}` at the ROOT of a classic `@ember/component`
-      // LAYOUT renders EMPTY (curly-components "should not escape HTML in triple
-      // mustaches"). The template IS native-eligible (emits `$_html(() =>
-      // this.output, this)`, no blockers) and `this.output` resolves for a normal
-      // `{{this.output}}`, so the bug is at the classic-component native-layout ↔
-      // `$_html`-carrier MOUNT seam (the staged RENDERED_NODES carrier root isn't
-      // inserted into the classic component's element). Enable this flag + re-slim
-      // `gxtTripleMustacheTransform` (ast-transforms.ts) once that mount is fixed.
+      // enabled yet. Two attempt rounds narrowed the blockers (2026-07-04/05,
+      // gate-verified on 0.0.80). gxt #261 CLOSED the reactivity gaps: with the
+      // flag on the trusted-content suite is 149/149 (was 147/149) — absent-path +
+      // null-proto reactive updates work ($_html's formula now runs through the
+      // normal-text-binding host hooks). Two blockers remain:
+      //   • GAP 1 (classic-component empty render) — ROOT-CAUSED + FIXED (fix
+      //     saved in gxt-ember-trusted-html-attempt.patch, NOT applied here): the
+      //     native `$_html` range is bounded by empty `api.comment('')` anchors,
+      //     and ember's `removeGxtArtifacts` (manager.ts) strips empty comments as
+      //     artifacts → detaches the range → the next opcode run empties it. Fix =
+      //     register the carrier's boundary comments in a `_gxtHtmlRangeAnchors`
+      //     WeakSet (mirroring `_gxtListMarkers`) + skip them in cleanup.
+      //   • GAP 4 (REHYDRATION table-context) — the real remaining blocker: with
+      //     the flag on, 14 rehydration tests regress ("top-level unescaped tr/td
+      //     inside tr contextualElement"). $_html's create+insert range conflicts
+      //     with rehydration's claim-vs-write model for trusted table/select
+      //     content (rehydration is a deliberate legacy-path exclusion elsewhere).
+      // NET: LOW VALUE right now — `EmberHtmlRaw` must stay REGARDLESS (it backs
+      // HTML-comment preservation via gxtHtmlCommentTransform AND, per gap 4,
+      // rehydration), so enabling the flag deletes only the content-triple
+      // lowering (~40 lines), not the resolvedTag block/reparse. De-prioritized
+      // until gxt's $_html also handles rehydration (+ comments) so the whole
+      // EmberHtmlRaw block can delete. Then apply the gap-1 patch, enable this
+      // flag, and re-slim `gxtTripleMustacheTransform`.
     },
     // Convert PascalCase component names to kebab-case for Ember registry lookup.
     // This replaces the regex-based transformCapitalizedComponents() pre-processing.
