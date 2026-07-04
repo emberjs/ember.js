@@ -86,60 +86,6 @@ describe('containsWord', () => {
   });
 });
 
-// ============================================================
-// countWord
-// ============================================================
-describe('countWord', () => {
-  it('counts occurrences of a word', () => {
-    expect(t.countWord('foo bar foo baz foo', 'foo')).toBe(3);
-  });
-
-  it('does not count substrings', () => {
-    expect(t.countWord('foobar foo barfoo', 'foo')).toBe(1);
-  });
-
-  it('returns 0 when word not found', () => {
-    expect(t.countWord('hello world', 'xyz')).toBe(0);
-  });
-
-  it('returns 0 for empty text', () => {
-    expect(t.countWord('', 'foo')).toBe(0);
-  });
-});
-
-// ============================================================
-// replaceWord
-// ============================================================
-describe('replaceWord', () => {
-  it('replaces word occurrences using callback', () => {
-    const result = t.replaceWord('foo bar foo', 'foo', () => 'baz');
-    expect(result).toBe('baz bar baz');
-  });
-
-  it('does not replace substring matches', () => {
-    const result = t.replaceWord('foobar foo barfoo', 'foo', () => 'X');
-    expect(result).toBe('foobar X barfoo');
-  });
-
-  it('returns original text when no match', () => {
-    const result = t.replaceWord('hello world', 'xyz', () => 'Z');
-    expect(result).toBe('hello world');
-  });
-
-  it('handles empty text', () => {
-    const result = t.replaceWord('', 'foo', () => 'bar');
-    expect(result).toBe('');
-  });
-
-  it('calls replacer for each match', () => {
-    let callCount = 0;
-    t.replaceWord('a b a', 'a', () => {
-      callCount++;
-      return String(callCount);
-    });
-    expect(callCount).toBe(2);
-  });
-});
 
 // ============================================================
 // generateUUID

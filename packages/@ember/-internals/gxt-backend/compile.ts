@@ -13,7 +13,6 @@ import { getDebugFunction } from '@ember/debug';
 import {
   pascalToKebab,
   isAllDigits,
-  parseInElementInsertBefore,
   constructStyleDeprecationMessage as _constructStyleDeprecationMessage,
   isAssertionLike as _isAssertionLike,
 } from './utils';
@@ -243,61 +242,9 @@ function containsWord(text: string, word: string): boolean {
   return false;
 }
 
-/** Count occurrences of a word (with word boundaries) in text without regex */
-function countWord(text: string, word: string): number {
-  let count = 0;
-  let idx = 0;
-  while (idx <= text.length - word.length) {
-    const found = text.indexOf(word, idx);
-    if (found === -1) break;
-    const before = found > 0 ? text[found - 1]! : ' ';
-    const after = found + word.length < text.length ? text[found + word.length]! : ' ';
-    const isWordCharBefore =
-      (before >= 'a' && before <= 'z') ||
-      (before >= 'A' && before <= 'Z') ||
-      (before >= '0' && before <= '9') ||
-      before === '_';
-    const isWordCharAfter =
-      (after >= 'a' && after <= 'z') ||
-      (after >= 'A' && after <= 'Z') ||
-      (after >= '0' && after <= '9') ||
-      after === '_';
-    if (!isWordCharBefore && !isWordCharAfter) count++;
-    idx = found + 1;
-  }
-  return count;
-}
-
-/** Replace all occurrences of a word (with word boundaries) using a callback without regex */
-function replaceWord(text: string, word: string, replacer: () => string): string {
-  let result = '';
-  let idx = 0;
-  while (idx <= text.length - word.length) {
-    const found = text.indexOf(word, idx);
-    if (found === -1) break;
-    const before = found > 0 ? text[found - 1]! : ' ';
-    const after = found + word.length < text.length ? text[found + word.length]! : ' ';
-    const isWordCharBefore =
-      (before >= 'a' && before <= 'z') ||
-      (before >= 'A' && before <= 'Z') ||
-      (before >= '0' && before <= '9') ||
-      before === '_';
-    const isWordCharAfter =
-      (after >= 'a' && after <= 'z') ||
-      (after >= 'A' && after <= 'Z') ||
-      (after >= '0' && after <= '9') ||
-      after === '_';
-    if (!isWordCharBefore && !isWordCharAfter) {
-      result += text.slice(idx, found) + replacer();
-      idx = found + word.length;
-    } else {
-      result += text.slice(idx, found + 1);
-      idx = found + 1;
-    }
-  }
-  result += text.slice(idx);
-  return result;
-}
+// (countWord/replaceWord retired — their only caller was the {{unique-id}}
+// positional _uid[N] rewrite, deleted when gxt 0.0.76's $_uid made unique-id a
+// first-class stable emission.)
 
 /** Generate a UUID string (starts with letter, valid CSS selector / HTML ID) without regex */
 function generateUUID(): string {
@@ -587,9 +534,6 @@ function hasAttrsInBlockParams(str: string): boolean {
   return false;
 }
 
-// parseInElementInsertBefore moved to ./utils (zero-dependency module) so the
-// node vitest gate can unit-test it without compile.ts's full module graph.
-// Imported at the top of this file; still re-exported via __test_internals.
 
 // Dynamic `(helper)` / `(modifier)` keyword usage (`{{helper this.x}}` /
 // `(modifier this.x)`) is now DETECTED by the `gxtDynamicHelperAssert` /
@@ -13375,9 +13319,7 @@ export function precompileTemplate(
   const _inElementLiteralIds: string[] = [];
   if (transformedTemplate.includes('{{#in-element')) {
     // Scan the pre-parse template for literal string ids inside each
-    // {{#in-element ...}} opening tag. This MUST run before
-    // parseInElementInsertBefore (which may rewrite the destination
-    // expression).
+    // {{#in-element ...}} opening tag (the $_inElement render-order fallback).
     {
       const marker = '{{#in-element';
       let i = 0;
@@ -15812,8 +15754,6 @@ export const __test_internals = {
   hyphenToUnderscore,
   doubleDashToSlash,
   containsWord,
-  countWord,
-  replaceWord,
   generateUUID,
   extractThisPath,
   hasBlockParamRef,
@@ -15822,7 +15762,6 @@ export const __test_internals = {
   hasAttrsInBlockParams,
   findAttrsPatterns,
   findThisAttrsPatterns,
-  parseInElementInsertBefore,
 };
 
 // Contribute compile.ts-owned function references to the bridge's
