@@ -849,15 +849,15 @@ function _gxtTripleValueExpr(b: GxtAstEnv['syntax']['builders'], node: any): unk
  * nodes and reactively updates via `innerHTML`. ONLY detection moves to the AST;
  * the runtime mechanism in ember-gxt-wrappers is untouched.
  *
- * NOTE (2026-07-04): gxt >=0.0.79 (#256) ships a native `EMBER_TRUSTED_HTML`
- * compile flag that lowers a content `{{{expr}}}` to `$_html(() => expr, this)`,
- * which would let this content-position lowering + the compile.ts EmberHtmlRaw
- * block be deleted. That consumption was ATTEMPTED and REVERTED — gxt's `$_html`
- * renders EMPTY in component-context (`{{{this.field}}}` in a component layout)
- * and does not re-run its formula for absent-path / null-proto-object updates
- * (three gate-failing cases; see the `EMBER_TRUSTED_HTML` note in compile.ts's
- * flags block). Re-attempt once gxt closes those gaps. Until then this transform
- * keeps emitting `<EmberHtmlRaw>` for content triples.
+ * NOTE (2026-07-04): gxt >=0.0.80 (#256 flag + #261 reactivity fix) can lower a
+ * content `{{{expr}}}` to native `$_html(() => expr, this)`, retiring this
+ * content-position lowering + the compile.ts EmberHtmlRaw block. Re-attempted on
+ * 0.0.80: gaps 2/3 (absent-path + null-proto reactivity) are now FIXED (trusted
+ * suite 149/149), but GAP 1 still blocks — `{{{this.field}}}` at the root of a
+ * classic `@ember/component` layout renders EMPTY (classic-component
+ * native-layout ↔ `$_html`-carrier mount seam; see the `EMBER_TRUSTED_HTML` note
+ * in compile.ts's flags block). Until that mount is fixed this transform keeps
+ * emitting `<EmberHtmlRaw>` for content triples.
  *
  * Replaces the former `transformTripleMustaches` string scanner. A
  * triple-mustache parses as a `MustacheStatement` with `escaped === false`, so
@@ -870,18 +870,7 @@ function _gxtTripleValueExpr(b: GxtAstEnv['syntax']['builders'], node: any): unk
  * the browser parses content as plain text, so a `<EmberHtmlRaw>` element child
  * would serialize as literal `&lt;EmberHtmlRaw…&gt;` garbage. There the string
  * version emitted a plain `{{expr}}` interpolation instead; we reproduce that by
- * walking the ancestor chain for an enclosing rawtext `ElementNode` (exact, and
- * — unlike the string version's backward open/close-tag balance scan — correct
- * even when the triple sits inside a `{{#if}}`/`{{#each}}` block within the
- * rawtext element).
- *
- * Faithfulness (proven by compiling representative templates both ways through
- * `gxtCompileTemplate` and byte-diffing): identical for every realistic input.
- * The lone divergence is a triple-mustache wrapping a whitespace-containing
- * STRING LITERAL (`{{{"raw text"}}}`) — the string version paren-wrapped it into
- * the invalid sub-expression `{{("raw text")}}` (a hard compile error); the AST
- * version emits the correct `{{"raw text"}}`. No Ember template contains that
- * shape (it would not compile today), so the change is a strict improvement.
+ * walking the ancestor chain for an enclosing rawtext `ElementNode`.
  */
 function gxtTripleMustacheTransform(env: GxtAstEnv) {
   const b = env.syntax.builders;
@@ -890,17 +879,10 @@ function gxtTripleMustacheTransform(env: GxtAstEnv) {
     visitor: {
       MustacheStatement(node: any, path: any): unknown {
         if (node.escaped !== false) return undefined;
-        // CONTENT position only. A triple-stache lowers to an `<EmberHtmlRaw>`
-        // element that inserts DOM nodes — valid only in a content/body slot
-        // (parent `Template`, `Block`, or `ElementNode`). In ATTRIBUTE position
-        // (parent `AttrNode` / `ConcatStatement`, e.g. `<div style={{{x}}}>`),
-        // the former string scanner emitted syntactically broken markup
-        // (`style=<EmberHtmlRaw … />`) that failed the WHOLE compile, yielding an
-        // empty, warning-free render (the `style={{{x}}}` "no warning" test passed
-        // VACUOUSLY). gxt has no trusted-attribute channel, so emitting a real
-        // binding here would (wrongly, for a trusted value) fire the style-XSS
-        // warning. We reproduce the string version's observable outcome — no
-        // warning, no crash — by emptying the attribute value.
+        // CONTENT position only. In ATTRIBUTE position (`<div style={{{x}}}>`)
+        // emit an empty value — no trusted-attribute channel, and a real binding
+        // would fire the style-XSS warning for a value the user trusted (guards
+        // the `style={{{this.userValue}}}` no-warning test).
         const parent = path && path.parent && path.parent.node;
         const pt = parent && parent.type;
         if (pt && pt !== 'Template' && pt !== 'Block' && pt !== 'ElementNode') {

@@ -13382,26 +13382,20 @@ export function precompileTemplate(
       // $_inElement's 4th MODE arg (1=clear, 0=append, literal=dev-assert) —
       // replaces the __ieSet signalling channel + the source pre-parse.
       EMBER_IN_ELEMENT: true,
-      // EMBER_TRUSTED_HTML (gxt >=0.0.79 #256) — trusting `{{{expr}}}` → the
-      // first-class `$_html(() => expr, this)` runtime — is NOT enabled yet.
-      // Consumption reverted 2026-07-04: gxt's `$_html` has three gaps vs the
-      // ember-side `EmberHtmlRaw` path (all reproduced, all gate-failing):
-      //   1. COMPONENT-CONTEXT initial render is EMPTY — `{{{this.output}}}` in a
-      //      `precompileTemplate` component layout renders `` (curly-components
-      //      "should not escape HTML in triple mustaches"); the getter's `this`
-      //      does not resolve the component instance's class fields.
-      //   2. ABSENT-PATH reactivity — a property undefined at first render
-      //      (`renderPath('this.name',{})` then `set(context,'name',…)`) never
-      //      re-runs the `$_html` formula (content-test "render undefined dynamic
-      //      paths").
-      //   3. NULL-PROTO-OBJECT reactivity — `set(Object.create(null),'message',…)`
-      //      does not reach the `$_html` formula's cell (content-test "read from a
-      //      null object").
-      // Top-level defined-value triples work (147/149), but until gxt's `$_html`
-      // materializes absent-path cells + resolves component-context `this` +
-      // honors the null-object value-owner bridge, the ember `EmberHtmlRaw`
-      // transform + resolvedTag block stay. Re-enable this flag and re-slim
-      // `gxtTripleMustacheTransform` (ast-transforms.ts) once gxt closes the gaps.
+      // EMBER_TRUSTED_HTML (gxt >=0.0.80: #256 flag + #261 reactivity fix) — NOT
+      // enabled yet. gxt #261 CLOSED two of the three gaps that blocked the first
+      // attempt (2026-07-04, gate-verified on 0.0.80): the trusted-content suite
+      // is now 149/149 (was 147/149) — absent-path reactivity + null-proto-object
+      // reactivity work, because `$_html`'s formula now runs through the same
+      // host-bridge hooks as the normal text binding. The SOLE remaining blocker
+      // is GAP 1: `{{{this.field}}}` at the ROOT of a classic `@ember/component`
+      // LAYOUT renders EMPTY (curly-components "should not escape HTML in triple
+      // mustaches"). The template IS native-eligible (emits `$_html(() =>
+      // this.output, this)`, no blockers) and `this.output` resolves for a normal
+      // `{{this.output}}`, so the bug is at the classic-component native-layout ↔
+      // `$_html`-carrier MOUNT seam (the staged RENDERED_NODES carrier root isn't
+      // inserted into the classic component's element). Enable this flag + re-slim
+      // `gxtTripleMustacheTransform` (ast-transforms.ts) once that mount is fixed.
     },
     // Convert PascalCase component names to kebab-case for Ember registry lookup.
     // This replaces the regex-based transformCapitalizedComponents() pre-processing.

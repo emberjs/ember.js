@@ -106,8 +106,9 @@ function ensureGxtContext() {
 }
 
 // GXT-only: a minimal DebugRenderTree backed by gxt's `captureRenderTree`
-// (exported from @lifeart/gxt since 0.0.79). Only `.capture()` is reachable in
-// GXT mode — the `begin`/`create`/`update`/`didRender`/`willDestroy`/`commit`
+// (exported from @lifeart/gxt since 0.0.79; the walk's cycle/visited guard
+// landed in 0.0.80 / glimmer-next #262). Only `.capture()` is reachable in GXT
+// mode — the `begin`/`create`/`update`/`didRender`/`willDestroy`/`commit`
 // bookkeeping lives on the classic Glimmer VM environment, whose opcode eval
 // pipeline is purged from the GXT build (see the `debugRenderTree` getter).
 //
@@ -118,7 +119,8 @@ function ensureGxtContext() {
 // harmless extra `template:null` field, and always reports `type:'component'`).
 // So `capture()` is a straight pass-through with no remapping. Called with no
 // arguments, gxt auto-discovers the render roots from its own component-parent
-// registry (populated under the build's default WITH_CONTEXT_API=true).
+// registry (populated under the build's default WITH_CONTEXT_API=true). Any gxt
+// error propagates loud (never swallowed).
 let gxtDebugRenderTree: DebugRenderTree | null = null;
 
 function getGxtDebugRenderTree(): DebugRenderTree {
@@ -134,37 +136,11 @@ function getGxtDebugRenderTree(): DebugRenderTree {
         didRender: noop,
         willDestroy: noop,
         commit: noop,
-        capture: (): CapturedRenderNode[] => {
-          try {
-            // No args → gxt auto-discovers the render roots from its own
-            // component-parent registry and returns Ember-compatible
-            // CapturedRenderNode[] (see the SEAM note above).
-            return _gxtLib().captureRenderTree() as CapturedRenderNode[];
-          } catch (e) {
-            // KNOWN GXT GAP (gxt 0.0.79): `captureRenderTree` /
-            // `componentToRenderTree` walk the component graph with no
-            // visited/cycle guard, and the `prevComponent` leaf-fallback
-            // (`if (children.length === 0 && node instanceof Component)
-            // children.push(node.prevComponent)`) follows a sibling back-edge
-            // in the ember-gxt bridged graph — so the walk recurses until the
-            // stack overflows, even for a trivial static application. Re-throw
-            // (never swallow) a clear, actionable diagnostic instead of the
-            // opaque "Maximum call stack size exceeded". The Ember wiring is
-            // otherwise complete and shape-correct: once gxt adds a cycle guard
-            // to `componentToRenderTree`, this branch becomes dead and
-            // `capture()` returns the real tree with no further Ember change.
-            if (e instanceof RangeError) {
-              throw new Error(
-                '[gxt] captureRenderTree overflowed the stack walking the ' +
-                  'render graph: gxt 0.0.79 lacks a cycle/visited guard in ' +
-                  'componentToRenderTree (the prevComponent leaf-fallback ' +
-                  'follows a sibling back-edge). This needs a gxt-side fix — ' +
-                  'the Ember debugRenderTree wiring is ready and shape-correct.'
-              );
-            }
-            throw e;
-          }
-        },
+        // No args → gxt auto-discovers the render roots from its own
+        // component-parent registry and returns Ember-compatible
+        // CapturedRenderNode[] (see the SEAM note above).
+        capture: (): CapturedRenderNode[] =>
+          _gxtLib().captureRenderTree() as CapturedRenderNode[],
       } as DebugRenderTree;
     }
     return gxtDebugRenderTree;

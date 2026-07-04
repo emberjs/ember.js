@@ -31,8 +31,8 @@ importers:
         specifier: ^1.10.2
         version: 1.10.2
       '@lifeart/gxt':
-        specifier: 0.0.79
-        version: 0.0.79
+        specifier: 0.0.80
+        version: 0.0.80
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -2493,8 +2493,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0
       '@lifeart/gxt':
-        specifier: 0.0.79
-        version: 0.0.79
+        specifier: 0.0.80
+        version: 0.0.80
       autoprefixer:
         specifier: ^10.4.19
         version: 10.5.0(postcss@8.5.15)
@@ -4964,8 +4964,8 @@ packages:
   '@lifeart/gxt@0.0.67':
     resolution: {integrity: sha512-/wA6krLQid6ur07nuEY3E+pZq3CIu/d+SP4jvbPJcgxevvkWJ5XSNSk9EuOPIF12ZDTb8//YNXaBvYcEWrMhAw==}
 
-  '@lifeart/gxt@0.0.79':
-    resolution: {integrity: sha512-hlBxb8nyVOyU2xbUi0X+3x4q9EcLEJ2q4uq4/shA6Hl0LLOIEOQieWbo+vY+SkcKvxqDikod6FTyVtzkSqkv7Q==}
+  '@lifeart/gxt@0.0.80':
+    resolution: {integrity: sha512-outBko7A7zJ/eiaJxTCxKxJl7qkfw0iKGoFFscI047mboSVsMQgohc7yJLSraub4bjh5BWg21ME+z9TDhwZITA==}
 
   '@lint-todo/utils@13.1.1':
     resolution: {integrity: sha512-F5z53uvRIF4dYfFfJP3a2Cqg+4P1dgJchJsFnsZE0eZp0LK8X7g2J0CsJHRgns+skpXOlM7n5vFGwkWCWj8qJg==}
@@ -15054,7 +15054,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@lifeart/gxt@0.0.79':
+  '@lifeart/gxt@0.0.80':
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
       '@babel/preset-typescript': 7.29.7(@babel/core@7.29.7)

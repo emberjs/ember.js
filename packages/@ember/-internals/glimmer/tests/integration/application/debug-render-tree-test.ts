@@ -1737,17 +1737,16 @@ if (ENV._DEBUG_RENDER_TREE && !__GXT_MODE__) {
 // `CapturedRenderNode[]` nodes `{ id, type:'component', name, args:{positional,
 // named}, instance, bounds:{parentElement,firstNode,lastNode}|null, children }`
 // (plus a harmless extra `template:null`), matching @glimmer/interfaces exactly.
-// The FULL tree capture is currently blocked by a gxt-side runtime bug: gxt
-// 0.0.79's `componentToRenderTree` walks the component graph with no
-// cycle/visited guard, and its `prevComponent` leaf-fallback follows a sibling
-// back-edge in the ember-gxt bridged graph, overflowing the stack even for a
-// trivial static app. So `capture()` fails loud with a clear diagnostic (rather
-// than an opaque overflow) until gxt adds the guard. This test asserts:
-//   1. the getter no longer throws and returns a functional DebugRenderTree
-//      (the foundation wiring — the throw the previous getter emitted is gone);
-//   2. `.capture()` reaches gxt and fails loud with the documented diagnostic.
-// TODO(gxt cycle-guard): once gxt guards the walk, replace assertion #2 with a
-// real-tree assertion (validate the `CapturedRenderNode` shape recursively).
+// gxt >=0.0.80 (glimmer-next #262) added the cycle/visited guard to
+// `componentToRenderTree` that the earlier foundation commit was blocked on
+// (0.0.79's walk overflowed on the bridged graph's `prevComponent` sibling
+// back-edge), so `.capture()` now returns the REAL, well-formed tree. This test
+// asserts (1) the getter is wired (no throw) and (2) `.capture()` returns a
+// non-trivial tree whose every node conforms to the `CapturedRenderNode` shape.
+// NOTE (gxt-side polish, not a foundation blocker): gxt currently reports each
+// node's `name` as its (minified) runtime class name and leaves `bounds` null —
+// so this test does NOT assert on friendly names or non-null bounds. Those are
+// follow-on gxt improvements for full Inspector element-highlighting.
 if (ENV._DEBUG_RENDER_TREE && __GXT_MODE__) {
   moduleFor(
     'Application test: GXT debug render tree (captureRenderTree)',
@@ -1778,16 +1777,45 @@ if (ENV._DEBUG_RENDER_TREE && __GXT_MODE__) {
           'debugRenderTree exposes a capture() method'
         );
 
-        // 2. capture() reaches gxt's captureRenderTree. Full capture is blocked
-        //    by the gxt-side cycle-guard gap (see the module comment), so it
-        //    fails loud with the documented diagnostic rather than an opaque
-        //    "Maximum call stack size exceeded". `@ember/debug`'s
-        //    captureRenderTree(owner) delegates to this same path.
-        assert.throws(
-          () => captureRenderTree(this.applicationInstance!),
-          /gxt.*captureRenderTree overflowed the stack|cycle\/visited guard/,
-          'capture() fails loud with the documented gxt cycle-guard diagnostic'
-        );
+        // 2. capture() returns a real, well-formed tree (gxt >=0.0.80 cycle guard).
+        //    `@ember/debug`'s captureRenderTree(owner) delegates to this path.
+        const tree = captureRenderTree(this.applicationInstance!);
+        assert.ok(Array.isArray(tree), 'captureRenderTree returns an array (no overflow)');
+        assert.ok(tree.length >= 1, 'the captured tree has at least one root node');
+
+        // Recursively validate the CapturedRenderNode shape + confirm the walk
+        // actually descended (a nested child proves the cycle guard let the
+        // traversal run to completion instead of overflowing/truncating).
+        let nodeCount = 0;
+        let maxDepth = 0;
+        const validate = (nodes: CapturedRenderNode[], depth: number): void => {
+          assert.ok(Array.isArray(nodes), `children at depth ${depth} is an array`);
+          if (depth > maxDepth) maxDepth = depth;
+          for (let node of nodes) {
+            nodeCount++;
+            assert.strictEqual(typeof node.type, 'string', 'node.type is a string');
+            assert.ok('name' in node, 'node has a name');
+            assert.ok('id' in node, 'node has an id');
+            assert.ok('instance' in node, 'node has an instance slot');
+            assert.ok(
+              node.args && typeof node.args === 'object',
+              'node.args is present'
+            );
+            assert.ok(Array.isArray(node.args.positional), 'node.args.positional is an array');
+            assert.ok(
+              node.args.named && typeof node.args.named === 'object',
+              'node.args.named is an object'
+            );
+            assert.ok(
+              node.bounds === null || typeof node.bounds === 'object',
+              'node.bounds is null or an object'
+            );
+            validate(node.children, depth + 1);
+          }
+        };
+        validate(tree, 0);
+        assert.ok(nodeCount >= 2, `the tree has multiple nodes (got ${nodeCount})`);
+        assert.ok(maxDepth >= 1, `the walk descended past the root (maxDepth ${maxDepth})`);
       }
     }
   );
