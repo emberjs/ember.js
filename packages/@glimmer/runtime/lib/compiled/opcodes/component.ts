@@ -102,6 +102,7 @@ import {
   CheckInvocation,
   CheckReference,
 } from './-debug-strip';
+import { DebugRenderTreeDidRenderOpcode, DebugRenderTreeUpdateOpcode } from './debug-render-tree';
 import { UpdateDynamicAttributeOpcode } from './dom';
 
 /**
@@ -949,24 +950,5 @@ export class DidUpdateLayoutOpcode implements UpdatingOpcode {
     manager.didUpdateLayout(state, bounds);
 
     vm.env.didUpdate(component);
-  }
-}
-
-class DebugRenderTreeUpdateOpcode implements UpdatingOpcode {
-  constructor(private bucket: object) {}
-
-  evaluate(vm: UpdatingVM) {
-    vm.env.debugRenderTree?.update(this.bucket);
-  }
-}
-
-class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
-  constructor(
-    private bucket: object,
-    private bounds: Bounds
-  ) {}
-
-  evaluate(vm: UpdatingVM) {
-    vm.env.debugRenderTree?.didRender(this.bucket, this.bounds);
   }
 }
