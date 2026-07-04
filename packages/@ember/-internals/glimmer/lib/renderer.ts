@@ -104,6 +104,73 @@ function ensureGxtContext() {
     return gxtRootContext;
   }
 }
+
+// GXT-only: a minimal DebugRenderTree backed by gxt's `captureRenderTree`
+// (exported from @lifeart/gxt since 0.0.79). Only `.capture()` is reachable in
+// GXT mode — the `begin`/`create`/`update`/`didRender`/`willDestroy`/`commit`
+// bookkeeping lives on the classic Glimmer VM environment, whose opcode eval
+// pipeline is purged from the GXT build (see the `debugRenderTree` getter).
+//
+// SEAM: gxt's `captureRenderTree()` already returns Ember-compatible
+// `CapturedRenderNode[]` — each node is `{ id, type, name, args:{positional,
+// named}, instance, bounds:{parentElement,firstNode,lastNode}|null, children }`,
+// matching @glimmer/interfaces' `CapturedRenderNode` exactly (gxt adds a
+// harmless extra `template:null` field, and always reports `type:'component'`).
+// So `capture()` is a straight pass-through with no remapping. Called with no
+// arguments, gxt auto-discovers the render roots from its own component-parent
+// registry (populated under the build's default WITH_CONTEXT_API=true).
+let gxtDebugRenderTree: DebugRenderTree | null = null;
+
+function getGxtDebugRenderTree(): DebugRenderTree {
+  // GXT-only. Body gated on the literal `__GXT_MODE__` so the `_gxtLib`
+  // reference tree-shakes out of the classic dist.
+  if (__GXT_MODE__) {
+    if (!gxtDebugRenderTree) {
+      const noop = (): void => {};
+      gxtDebugRenderTree = {
+        begin: noop,
+        create: noop,
+        update: noop,
+        didRender: noop,
+        willDestroy: noop,
+        commit: noop,
+        capture: (): CapturedRenderNode[] => {
+          try {
+            // No args → gxt auto-discovers the render roots from its own
+            // component-parent registry and returns Ember-compatible
+            // CapturedRenderNode[] (see the SEAM note above).
+            return _gxtLib().captureRenderTree() as CapturedRenderNode[];
+          } catch (e) {
+            // KNOWN GXT GAP (gxt 0.0.79): `captureRenderTree` /
+            // `componentToRenderTree` walk the component graph with no
+            // visited/cycle guard, and the `prevComponent` leaf-fallback
+            // (`if (children.length === 0 && node instanceof Component)
+            // children.push(node.prevComponent)`) follows a sibling back-edge
+            // in the ember-gxt bridged graph — so the walk recurses until the
+            // stack overflows, even for a trivial static application. Re-throw
+            // (never swallow) a clear, actionable diagnostic instead of the
+            // opaque "Maximum call stack size exceeded". The Ember wiring is
+            // otherwise complete and shape-correct: once gxt adds a cycle guard
+            // to `componentToRenderTree`, this branch becomes dead and
+            // `capture()` returns the real tree with no further Ember change.
+            if (e instanceof RangeError) {
+              throw new Error(
+                '[gxt] captureRenderTree overflowed the stack walking the ' +
+                  'render graph: gxt 0.0.79 lacks a cycle/visited guard in ' +
+                  'componentToRenderTree (the prevComponent leaf-fallback ' +
+                  'follows a sibling back-edge). This needs a gxt-side fix — ' +
+                  'the Ember debugRenderTree wiring is ready and shape-correct.'
+              );
+            }
+            throw e;
+          }
+        },
+      } as DebugRenderTree;
+    }
+    return gxtDebugRenderTree;
+  }
+  throw new Error('[gxt] getGxtDebugRenderTree() called outside GXT mode');
+}
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
@@ -116,6 +183,7 @@ import {
 import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
+  CapturedRenderNode,
   Cursor,
   DebugRenderTree,
   Environment,
@@ -2760,13 +2828,13 @@ class BaseRenderer {
     if (__GXT_MODE__) {
       // The classic debugRenderTree lives on the Glimmer VM environment, which
       // is not built under the GXT backend. Reading `this.state.env` here would
-      // force the (purged) VM evaluation context. GXT exposes its own render
-      // tree via the gxt-backend debug-render-tree shim (captureRenderTree), so
-      // fail loud rather than spin up a 4MB VM heap with no opcodes to run.
-      throw new Error(
-        '[gxt] the classic Glimmer VM debugRenderTree is unavailable in GXT mode; ' +
-          'use the GXT debug-render-tree shim (captureRenderTree) instead — no VM fallback.'
-      );
+      // force the (purged) VM evaluation context. Instead, GXT exposes its own
+      // render tree via `@lifeart/gxt`'s `captureRenderTree` (0.0.79); return a
+      // minimal DebugRenderTree whose `.capture()` delegates to it. This is the
+      // Ember Inspector foundation seam consumed by
+      // `@ember/debug`'s `captureRenderTree(owner)` →
+      // `renderer.debugRenderTree.capture()`.
+      return getGxtDebugRenderTree();
     }
 
     let { debugRenderTree } = this.state.env;

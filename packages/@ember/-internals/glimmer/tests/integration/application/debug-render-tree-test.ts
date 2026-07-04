@@ -1725,3 +1725,70 @@ if (ENV._DEBUG_RENDER_TREE && !__GXT_MODE__) {
     }
   );
 }
+
+// GXT-mode counterpart. The classic module above is guarded off in GXT mode
+// (its outlet/engine/route-template node structure is produced by the Glimmer
+// VM's DebugRenderTree, which is purged from the GXT build). Under GXT,
+// `renderer.debugRenderTree` is instead backed by `@lifeart/gxt`'s
+// `captureRenderTree` (0.0.79) — see the `debugRenderTree` getter in
+// renderer.ts. This exercises that wiring end-to-end.
+//
+// SEAM STATUS: the shape seam is verified identical — gxt returns
+// `CapturedRenderNode[]` nodes `{ id, type:'component', name, args:{positional,
+// named}, instance, bounds:{parentElement,firstNode,lastNode}|null, children }`
+// (plus a harmless extra `template:null`), matching @glimmer/interfaces exactly.
+// The FULL tree capture is currently blocked by a gxt-side runtime bug: gxt
+// 0.0.79's `componentToRenderTree` walks the component graph with no
+// cycle/visited guard, and its `prevComponent` leaf-fallback follows a sibling
+// back-edge in the ember-gxt bridged graph, overflowing the stack even for a
+// trivial static app. So `capture()` fails loud with a clear diagnostic (rather
+// than an opaque overflow) until gxt adds the guard. This test asserts:
+//   1. the getter no longer throws and returns a functional DebugRenderTree
+//      (the foundation wiring — the throw the previous getter emitted is gone);
+//   2. `.capture()` reaches gxt and fails loud with the documented diagnostic.
+// TODO(gxt cycle-guard): once gxt guards the walk, replace assertion #2 with a
+// real-tree assertion (validate the `CapturedRenderNode` shape recursively).
+if (ENV._DEBUG_RENDER_TREE && __GXT_MODE__) {
+  moduleFor(
+    'Application test: GXT debug render tree (captureRenderTree)',
+    class extends ApplicationTestCase {
+      async '@test debugRenderTree is wired to gxt captureRenderTree'(assert: Assert) {
+        this.add(
+          'template:application',
+          precompileTemplate('<div id="app-root">Hello world!</div>', {
+            moduleName: 'my-app/templates/application.hbs',
+          })
+        );
+
+        await this.visit('/');
+
+        // 1. The getter is wired (previously it threw unconditionally in GXT
+        //    mode). It now returns a real DebugRenderTree backed by gxt.
+        let renderer = this.applicationInstance!.lookup('renderer:-dom') as {
+          debugRenderTree: { capture: () => CapturedRenderNode[] };
+        };
+        assert.ok(renderer, 'the -dom renderer is present');
+        assert.ok(
+          renderer.debugRenderTree,
+          'renderer.debugRenderTree resolves (no longer throws in GXT mode)'
+        );
+        assert.strictEqual(
+          typeof renderer.debugRenderTree.capture,
+          'function',
+          'debugRenderTree exposes a capture() method'
+        );
+
+        // 2. capture() reaches gxt's captureRenderTree. Full capture is blocked
+        //    by the gxt-side cycle-guard gap (see the module comment), so it
+        //    fails loud with the documented diagnostic rather than an opaque
+        //    "Maximum call stack size exceeded". `@ember/debug`'s
+        //    captureRenderTree(owner) delegates to this same path.
+        assert.throws(
+          () => captureRenderTree(this.applicationInstance!),
+          /gxt.*captureRenderTree overflowed the stack|cycle\/visited guard/,
+          'capture() fails loud with the documented gxt cycle-guard diagnostic'
+        );
+      }
+    }
+  );
+}
