@@ -27,6 +27,7 @@ import type { TemplateOnlyComponent } from '@ember/component/template-only';
 import templateOnlyComponent from '@ember/component/template-only';
 import {
   createTemplate,
+  defineSimpleHelper,
   defineSimpleModifier,
   JitRenderDelegate,
   RenderTest,
@@ -106,6 +107,83 @@ class DebugRenderTreeTest extends RenderTest {
         ],
       },
     ]);
+  }
+
+  @test({ skip: !DEBUG }) 'helpers are captured in the render tree'() {
+    const state = trackedObject({ value: 'first' });
+
+    const upcase = defineSimpleHelper((value: string) => value.toUpperCase());
+    const Root = template(`<p>{{upcase state.value}}</p>`, {
+      scope: () => ({ upcase, state }),
+    });
+
+    this.renderComponent(Root);
+
+    let rootChildren = this.delegate.getCapturedRenderTree()[0]?.children ?? [];
+    let helperNode = rootChildren.find((n: CapturedRenderNode) => n.type === 'helper');
+
+    this.assert.ok(helperNode, 'found a helper node');
+    this.assert.strictEqual(helperNode?.bounds, null, 'helper nodes have no bounds');
+    this.assert.strictEqual(helperNode?.instance, null, 'helper nodes have no instance');
+    this.assert.deepEqual(
+      helperNode?.args,
+      { positional: ['first'], named: {} },
+      'helper args are captured'
+    );
+    this.assert.strictEqual(
+      helperNode?.reactivity.updateCount,
+      0,
+      'no updates after the initial render'
+    );
+
+    state['value'] = 'second';
+    this.rerender();
+
+    rootChildren = this.delegate.getCapturedRenderTree()[0]?.children ?? [];
+    helperNode = rootChildren.find((n: CapturedRenderNode) => n.type === 'helper');
+
+    this.assert.deepEqual(
+      helperNode?.args,
+      { positional: ['second'], named: {} },
+      'helper args are captured after update'
+    );
+    this.assert.strictEqual(helperNode?.reactivity.updateCount, 1, 'one update');
+    this.assert.true(
+      helperNode?.reactivity.args.positional[0]?.changed,
+      'the changed argument is flagged as the cause of the update'
+    );
+  }
+
+  @test({ skip: !DEBUG }) 'reactivity introspection on component nodes'() {
+    const state = trackedObject({ value: 'first' });
+
+    const HelloWorld = template('{{@arg}}');
+    const Root = template(`<HelloWorld @arg={{state.value}}/>`, {
+      scope: () => ({ HelloWorld, state }),
+    });
+
+    this.renderComponent(Root);
+
+    let child = this.delegate.getCapturedRenderTree()[0]?.children[0];
+
+    this.assert.strictEqual(child?.reactivity.updateCount, 0, 'no updates yet');
+    this.assert.strictEqual(child?.reactivity.previousRevision, null, 'no previous render yet');
+    this.assert.false(child?.reactivity.args.named['arg']?.changed, '@arg has not changed');
+
+    state['value'] = 'second';
+    this.rerender();
+
+    child = this.delegate.getCapturedRenderTree()[0]?.children[0];
+
+    this.assert.strictEqual(child?.reactivity.updateCount, 1, 'one update');
+    this.assert.true(
+      typeof child?.reactivity.previousRevision === 'number',
+      'previous render revision is recorded'
+    );
+    this.assert.true(
+      child?.reactivity.args.named['arg']?.changed,
+      '@arg is flagged as the cause of the update'
+    );
   }
 
   @test 'strict-mode components preserve names from scope'() {
