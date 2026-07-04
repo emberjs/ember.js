@@ -626,6 +626,14 @@ const _gxtRegisterHostHooks: ((hooks: Record<string, unknown>) => void) | undefi
 const _gxtGetNamedBlockName: ((fn: unknown) => string | null) | undefined = (
   __gxtForHostHooks as any
 ).getNamedBlockName;
+// Native each-in key-set reactivity (gxt >=0.0.79, glimmer-next #257): gxt owns
+// the per-object key-set revision cell; ember forwards the two signals it has.
+const _gxtEntangleObjectKeys: ((obj: object, keys: string[]) => void) | undefined = (
+  __gxtForHostHooks as any
+).entangleObjectKeys;
+const _gxtNotifyObjectKeyAdded: ((obj: object, key: string) => void) | undefined = (
+  __gxtForHostHooks as any
+).notifyObjectKeyAdded;
 // Module-local seam for Ember truthiness: the canonical `emberToBool` is
 // defined inside the wrapper-installer scope below; this ref lets other
 // compile.ts scopes (the {{#if}}-helper cleanup paths) reach it without the
@@ -4167,7 +4175,7 @@ function _gxtTriggerReRenderSyncCore(
   // iterated, bump its key-SET revision so the source re-iterates. No-op when
   // the key was already observed (value-only change) or no each-in tracks `obj`.
   {
-    _gxtMaybeBumpKeySet(obj, keyName);
+    _gxtNotifyObjectKeyAdded?.(obj, keyName);
   }
   // Collect owners that need their Ember tag dirtied for force-rerender.
   // The actual dirtying is deferred to AFTER gxtSyncDom + updateRootTagValues.
@@ -4775,6 +4783,113 @@ function notifyIfWatchers(obj: object, key: string) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// {{#if}}/{{#unless}} branch class-helper teardown (module-level helpers).
+//
+// Ember's classic `Helper` lifecycle requires `destroy`/`willDestroy` to fire at
+// block-teardown time. When a `{{#if}}` branch is torn down (a true↔false swap
+// or the whole `{{#if}}` collapsing), any class-based helper instances created
+// during that branch's evaluation must be destroyed. `patchGlobalIf`'s
+// `wrapBranch` captures those instances into per-branch Sets
+// (`trueBranchHelpers` / `falseBranchHelpers`); these functions reap them.
+//
+// Historically the reaping was driven by an `ifCondition.syncState` monkey-patch
+// that flip-tracked `prevBool`. gxt >=0.0.79 (glimmer-next #259) ships the
+// `onConditionBranchSwap` host hook — the runtime fires a fresh per-branch ctx's
+// destructors at the START of the outgoing branch's teardown (pre-DOM-removal) —
+// so the reaping is delegated to that hook (registered once near
+// `registerHostHooks`) and the syncState wrapper retired. These helpers only
+// close over `getGxtRenderer()` and the module-local `_tagHelperInstanceCache`
+// (forward-referenced; the bodies run at runtime, long after module init).
+function _gxtDestroyHelperScope(scope: Set<any>): void {
+  if (!scope || scope.size === 0) return;
+  const copy = Array.from(scope);
+  scope.clear();
+  const evictFromCache = (cache: any) => {
+    try {
+      if (cache && typeof cache.forEach === 'function') {
+        // Cache values may be a raw instance, a manager-path wrapper
+        // `{__managerBucket, bucket:{instance}}`, or a compile-time
+        // `{ instance, recomputeTag }` shape.
+        const toDelete: any[] = [];
+        cache.forEach((v: any, k: any) => {
+          let instCandidate: any = v;
+          if (v && v.__managerBucket) instCandidate = v.bucket?.instance;
+          else if (v && v.instance) instCandidate = v.instance;
+          if (instCandidate && copy.indexOf(instCandidate) !== -1) {
+            toDelete.push(k);
+          }
+        });
+        for (const k of toDelete) cache.delete(k);
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+  evictFromCache(getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.());
+  evictFromCache(_tagHelperInstanceCache);
+  for (const inst of copy) {
+    try {
+      if (
+        inst &&
+        typeof inst.destroy === 'function' &&
+        !inst.isDestroyed &&
+        !inst.isDestroying
+      ) {
+        inst.destroy();
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+}
+// Snapshot the class-helper instance-cache keys BEFORE a branch body renders, so
+// the branch-teardown destructor can reap helpers created inside a DEFERRED
+// formula (outside `wrapBranch`'s dynamic scope, so absent from the per-branch
+// Set). Fallback for the old `snapshotCacheKeys`/`destroyNewCacheEntriesSince`.
+function _gxtSnapshotClassHelperCacheKeys(): Set<string> {
+  try {
+    const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
+    if (cache && typeof cache.forEach === 'function') {
+      const s = new Set<string>();
+      cache.forEach((_v: any, k: string) => s.add(k));
+      return s;
+    }
+  } catch {
+    /* ignore */
+  }
+  return new Set<string>();
+}
+function _gxtDestroyNewClassHelperCacheEntriesSince(prev: Set<string> | null): void {
+  try {
+    const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
+    if (!cache || typeof cache.forEach !== 'function') return;
+    const toDelete: string[] = [];
+    cache.forEach((_v: any, k: string) => {
+      if (!prev || !prev.has(k)) toDelete.push(k);
+    });
+    for (const k of toDelete) {
+      const entry = cache.get(k);
+      cache.delete(k);
+      const inst = entry && entry.__managerBucket ? entry.bucket?.instance : entry;
+      if (
+        inst &&
+        typeof inst.destroy === 'function' &&
+        !inst.isDestroyed &&
+        !inst.isDestroying
+      ) {
+        try {
+          inst.destroy();
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 // Patch $_if to capture IfCondition instances and fix placeholder connectivity.
 function patchGlobalIf() {
   const g = globalThis as any;
@@ -5084,176 +5199,27 @@ function patchGlobalIf() {
       }
     }
 
-    // Install branch-swap helper-destroy hook unconditionally. This fires
-    // destroy + willDestroy on any class-based helper instance created during
-    // the outgoing branch's evaluation whenever the branch toggles, so that
-    // tests like `class-based helper lifecycle` (where `{{#if this.show}}` is
-    // flipped to `false`) see the full Ember Helper lifecycle.
-    if (
-      ifCondition &&
-      typeof ifCondition.syncState === 'function' &&
-      !(ifCondition as any).__emberHelperCleanupInstalled
-    ) {
+    // Branch class-helper teardown (I-a). Stash the per-branch helper-capture
+    // Sets on the IfCondition so the global `onConditionBranchSwap` hook
+    // (registered once near `registerHostHooks`) can reap them on each branch
+    // SWAP — gxt >=0.0.79 (glimmer-next #259) fires that hook's per-branch ctx
+    // destructor at the START of the outgoing branch's teardown (pre-DOM-removal),
+    // retiring the old `ifCondition.syncState` prevBool flip-tracking wrapper +
+    // its cache-diff fallback. Here we additionally register the whole-`{{#if}}`
+    // destroy fallback: reap BOTH branches promptly when the IfCondition itself
+    // is torn down (whole `{{#if}}` removed with no final swap; gxt fires
+    // `registerDestructor` callbacks on the IfCondition synchronously on destroy).
+    // `_gxtDestroyHelperScope` is idempotent (clears the Set + guards
+    // `isDestroyed`), so a prior swap-time hook teardown makes this a no-op.
+    if (ifCondition && !(ifCondition as any).__emberHelperCleanupInstalled) {
       (ifCondition as any).__emberHelperCleanupInstalled = true;
-      const emberToBool = _emberToBoolRef || Boolean;
-      const origSS = ifCondition.syncState.bind(ifCondition);
-      let prevBool: boolean | null = null;
-      const destroyScope = (scope: Set<any>) => {
-        if (!scope || scope.size === 0) return;
-        const copy = Array.from(scope);
-        scope.clear();
-        const evictFromCache = (cache: any) => {
-          try {
-            if (cache && typeof cache.forEach === 'function') {
-              const toDelete: any[] = [];
-              cache.forEach((v: any, k: any) => {
-                // Cache values may be either a raw instance, a wrapper object
-                // from the manager path `{__managerBucket, bucket, ...}`, or a
-                // `{ instance, recomputeTag }` shape from the compile-time
-                // _tagHelperInstanceCache.
-                let instCandidate: any = v;
-                if (v && v.__managerBucket) instCandidate = v.bucket?.instance;
-                else if (v && v.instance) instCandidate = v.instance;
-                if (instCandidate && copy.indexOf(instCandidate) !== -1) {
-                  toDelete.push(k);
-                }
-              });
-              for (const k of toDelete) cache.delete(k);
-            }
-          } catch {
-            /* ignore */
-          }
-        };
-        // The class-helper instance cache lives in `ember-gxt-wrappers.ts`;
-        // route through the get-only bridge accessor
-        // `compilePipeline.getClassHelperInstanceCache?.()`. The
-        // `if (cache && typeof cache.forEach === 'function')` guard inside
-        // `evictFromCache` short-circuits when the bridge returns undefined
-        // (pre-bridge-install).
-        evictFromCache(getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.());
-        // `_tagHelperInstanceCache` is the module-local Map in this file (read
-        // directly). The forward reference is safe — this arrow body runs at
-        // runtime, long after module init hoisted the `const` binding.
-        // ember-gxt-wrappers.ts reads it via the get-only
-        // `getTagHelperInstanceCache` bridge method.
-        evictFromCache(_tagHelperInstanceCache);
-        for (const inst of copy) {
-          try {
-            if (
-              inst &&
-              typeof inst.destroy === 'function' &&
-              !inst.isDestroyed &&
-              !inst.isDestroying
-            ) {
-              inst.destroy();
-            }
-          } catch {
-            /* ignore */
-          }
-        }
-      };
-      // Initialise prevBool from the condition's current value.
-      try {
-        const initV = typeof conditionOrCell === 'function' ? conditionOrCell() : conditionOrCell;
-        prevBool = emberToBool(initV);
-      } catch {
-        prevBool = null;
-      }
-      // Fallback: if we couldn't populate the scope because helper creation
-      // happens inside a deferred formula (outside our wrapBranch's dynamic
-      // scope), snapshot the set of live class-helper instances BEFORE the
-      // branch is evaluated and destroy any newly-added ones on branch swap.
-      let preBranchCacheKeys: Set<string> | null = null;
-      const snapshotCacheKeys = () => {
-        try {
-          // Class-helper instance cache via the get-only bridge accessor; the
-          // guard short-circuits when the bridge returns undefined
-          // (pre-bridge-install).
-          const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
-          if (cache && typeof cache.forEach === 'function') {
-            const s = new Set<string>();
-            cache.forEach((_v: any, k: string) => s.add(k));
-            return s;
-          }
-        } catch {
-          /* ignore */
-        }
-        return new Set<string>();
-      };
-      const destroyNewCacheEntriesSince = (prev: Set<string> | null) => {
-        try {
-          // Class-helper instance cache via the get-only bridge accessor; the
-          // early-return guard short-circuits when the bridge returns undefined
-          // (pre-bridge-install).
-          const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
-          if (!cache || typeof cache.forEach !== 'function') return;
-          const toDelete: string[] = [];
-          cache.forEach((_v: any, k: string) => {
-            if (!prev || !prev.has(k)) toDelete.push(k);
-          });
-          for (const k of toDelete) {
-            const entry = cache.get(k);
-            cache.delete(k);
-            // Resolve the helper instance from the cache entry (manager-path
-            // wraps it in { bucket: { instance } }; direct path stores the
-            // instance directly).
-            const inst = entry && entry.__managerBucket ? entry.bucket?.instance : entry;
-            if (
-              inst &&
-              typeof inst.destroy === 'function' &&
-              !inst.isDestroyed &&
-              !inst.isDestroying
-            ) {
-              try {
-                inst.destroy();
-              } catch {
-                /* ignore */
-              }
-            }
-          }
-        } catch {
-          /* ignore */
-        }
-      };
-
-      // Capture the pre-branch snapshot at install time (just before the
-      // first syncState runs).
-      preBranchCacheKeys = snapshotCacheKeys();
-
-      ifCondition.syncState = function (v: any) {
-        try {
-          const nextBool = emberToBool(v);
-          if (prevBool !== null && prevBool !== nextBool) {
-            if (prevBool === true) {
-              destroyScope(trueBranchHelpers);
-              destroyNewCacheEntriesSince(preBranchCacheKeys);
-            } else {
-              destroyScope(falseBranchHelpers);
-            }
-            // Update snapshot to the cache state BEFORE the branch re-renders
-            preBranchCacheKeys = snapshotCacheKeys();
-          }
-          prevBool = nextBool;
-        } catch {
-          /* ignore */
-        }
-        return origSS(v);
-      };
-      // each/if delegation Step 3 (I-a, ember-side half): destroy this {{#if}}'s
-      // branch class-helpers PROMPTLY when the IfCondition itself is torn down
-      // (whole `{{#if}}` removed with no final swap). `destroyScope` only fires
-      // on a branch SWAP; without this, those helpers' `.destroy()` is deferred
-      // to the test-teardown sweep / app teardown. gxt fires `registerDestructor`
-      // callbacks on the IfCondition synchronously when it is destroyed
-      // (if.ts: `registerDestructor(this, destroyBranchSync)` pairs with our
-      // hook). `destroyScope` is idempotent (clears the Set + guards
-      // `isDestroyed`), so a prior swap or sweep makes this a no-op. The
-      // swap-time delegation needs a gxt per-branch-render hook (BLOCKED).
+      (ifCondition as any).__gxtTrueBranchHelpers = trueBranchHelpers;
+      (ifCondition as any).__gxtFalseBranchHelpers = falseBranchHelpers;
       if (_gxtRegisterDestructor) {
         try {
           _gxtRegisterDestructor(ifCondition as unknown as object, () => {
-            destroyScope(trueBranchHelpers);
-            destroyScope(falseBranchHelpers);
+            _gxtDestroyHelperScope(trueBranchHelpers);
+            _gxtDestroyHelperScope(falseBranchHelpers);
           });
         } catch {
           /* ignore — best-effort prompt teardown */
@@ -5401,43 +5367,6 @@ function patchGlobalIf() {
       if (typeof ifCondition.syncState === 'function') {
         const emberToBool = _emberToBoolRef || Boolean;
         const origSyncState = ifCondition.syncState.bind(ifCondition);
-        let prevBoolState: boolean | null = null;
-        const destroyHelpersIn = (scope: Set<any>) => {
-          if (!scope || scope.size === 0) return;
-          const copy = Array.from(scope);
-          scope.clear();
-          // Also remove from the shared classHelperInstanceCache so subsequent
-          // renders create fresh instances with their full lifecycle.
-          try {
-            // Class-helper instance cache via the get-only bridge accessor; the
-            // guard short-circuits when the bridge returns undefined
-            // (pre-bridge-install).
-            const cache = getGxtRenderer()?.compilePipeline.getClassHelperInstanceCache?.();
-            if (cache && typeof cache.forEach === 'function') {
-              const toDelete: any[] = [];
-              cache.forEach((v: any, k: any) => {
-                if (copy.indexOf(v) !== -1) toDelete.push(k);
-              });
-              for (const k of toDelete) cache.delete(k);
-            }
-          } catch {
-            /* ignore */
-          }
-          for (const inst of copy) {
-            try {
-              if (
-                inst &&
-                typeof inst.destroy === 'function' &&
-                !inst.isDestroyed &&
-                !inst.isDestroying
-              ) {
-                inst.destroy();
-              }
-            } catch {
-              /* ignore */
-            }
-          }
-        };
         ifCondition.syncState = function (v: any) {
           // Suppress mid-sync TRUE renders for an IfCondition whose parent
           // {{#if}} collapsed earlier in the same sync cycle. Without this,
@@ -5490,18 +5419,10 @@ function patchGlobalIf() {
             /* ignore — fall through to legacy path */
           }
           repairPlaceholder();
-          // On branch transition, destroy helpers captured during the *outgoing*
-          // branch's evaluation so their destroy/willDestroy hooks fire.
-          try {
-            const nextBool = emberToBool(v);
-            if (prevBoolState !== null && prevBoolState !== nextBool) {
-              if (prevBoolState === true) destroyHelpersIn(trueBranchHelpers);
-              else destroyHelpersIn(falseBranchHelpers);
-            }
-            prevBoolState = nextBool;
-          } catch {
-            /* ignore */
-          }
+          // Branch-swap class-helper teardown is delegated to the global
+          // `onConditionBranchSwap` hook (gxt >=0.0.79 #259); the whole-`{{#if}}`
+          // destroy fallback is registered once in `patchGlobalIf`'s scope-stash
+          // block above. Nothing to do on the syncState flip here anymore.
           // Push the owner view so any components created by syncState's
           // re-render of the trueBranch (typically {{yield}} block content)
           // are registered as children of the correct view via the parentView
@@ -5531,20 +5452,9 @@ function patchGlobalIf() {
             }
           }
         };
-        // each/if delegation Step 3 (I-a, ember-side half) — KVO-watch path
-        // counterpart of the native-tag registration above. Destroy branch
-        // class-helpers promptly when the IfCondition is torn down (no final
-        // swap). `destroyHelpersIn` is idempotent (clears + guards isDestroyed).
-        if (_gxtRegisterDestructor) {
-          try {
-            _gxtRegisterDestructor(ifCondition as unknown as object, () => {
-              destroyHelpersIn(trueBranchHelpers);
-              destroyHelpersIn(falseBranchHelpers);
-            });
-          } catch {
-            /* ignore — best-effort prompt teardown */
-          }
-        }
+        // (Whole-`{{#if}}`-destroy branch-helper teardown is registered once in
+        // `patchGlobalIf`'s scope-stash block above — this KVO-watch path shares
+        // the same IfCondition, so a second registration here would be redundant.)
         const _ifWatchCb: IfWatcherCb = (notifiedTarget: object) => {
           try {
             const currentValue = conditionOrCell();
@@ -6350,13 +6260,12 @@ const _gxtEachItemRawFor = function (maybeProxy: any): any {
 // key. `_keySetSeen` tracks observed keys per object so we only bump on genuine
 // additions (a value-only change of an existing key already propagates via its
 // own per-value cell).
-const _keySetSeen = new WeakMap<object, Set<string>>();
-// Exposed so the canonical `gxtEntriesOfEmber` (ember-gxt-wrappers.ts, which
-// OVERRIDES the inline `gxtEntriesOf` below) can record the key-set + subscribe
-// the active source formula.
-const _gxtRecordEachInKeySetFn = function (resolved: object, keys: string[]): void {
-  _gxtRecordKeySet(resolved, keys);
-};
+// NOTE: the per-object key-set revision cell + `_gxtRecordKeySet` /
+// `_gxtMaybeBumpKeySet` / `_gxtRecordEachInKeySetFn` / `_keySetSeen` are retired
+// — gxt >=0.0.79 owns the key-set reactivity primitive (glimmer-next #257,
+// `entangleObjectKeys`/`notifyObjectKeyAdded`); ember only forwards the two
+// signals (the each-in source's observed keys, and the SyncCore write).
+
 // Exposed so `gxtEntriesOfEmber` (ember-gxt-wrappers.ts) can subscribe the
 // active each-in source formula to an intermediate property cell — e.g. an
 // ObjectProxy's `content`. `{{#each-in proxy}}` reads `proxy.content` as a
@@ -6374,42 +6283,6 @@ const _gxtSubscribeCellFn = function (obj: any, key: string): void {
     /* ignore */
   }
 };
-function _gxtRecordKeySet(resolved: object, keys: string[]): void {
-  let seen = _keySetSeen.get(resolved);
-  if (!seen) {
-    seen = new Set();
-    _keySetSeen.set(resolved, seen);
-  } else {
-    seen.clear();
-  }
-  for (let i = 0; i < keys.length; i++) seen.add(keys[i]);
-  try {
-    // Subscribe the active source formula to this object's key-set revision.
-    const revCell = cellFor(resolved as any, '__gxtKeySet', /* skipDefine */ true);
-    if (revCell) (revCell as any).value;
-  } catch {
-    /* ignore */
-  }
-}
-// Called from SyncCore on every keyed write. Bumps the key-set revision iff
-// `keyName` is a key we have NOT previously observed for `obj` via gxtEntriesOf
-// — i.e. a genuine key addition that an each-in source must re-iterate to see.
-function _gxtMaybeBumpKeySet(obj: object, keyName: string): void {
-  const seen = _keySetSeen.get(obj);
-  // Only relevant for objects an each-in source has actually iterated. If we
-  // never recorded a key-set for `obj`, no each-in depends on it → skip.
-  if (!seen || seen.has(keyName)) return;
-  seen.add(keyName);
-  try {
-    const revCell = cellFor(obj as any, '__gxtKeySet', /* skipDefine */ true);
-    if (revCell) {
-      (revCell as any).update(((revCell as any)._value || 0) + 1);
-    }
-  } catch {
-    /* ignore */
-  }
-}
-
 // Lifecycle teardown ORDERING.
 //
 // When an `{{#each}}` transitions non-empty → empty, the `{{else}}` (inverse)
@@ -8418,12 +8291,10 @@ const _emberBuiltinHelpers: Record<string, any> = {
     // - Arrays: numeric indices + custom properties like arr.foo = 'bar'
     // - Sparse arrays: only defined indices (skips holes)
     const keys = Object.keys(resolved);
-    // Group D (gated): subscribe the each-in source to the object's key-SET
-    // revision so `set(obj,'NewKey')` re-iterates. (This inline copy is the
-    // fallback — ember-gxt-wrappers.ts overrides `gxtEntriesOf` at runtime.)
-    {
-      _gxtRecordKeySet(resolved, keys);
-    }
+    // Subscribe the each-in source to the object's key-SET revision (gxt
+    // >=0.0.79 #257) so `set(obj,'NewKey')` re-iterates. (This inline copy is
+    // the fallback — ember-gxt-wrappers.ts overrides `gxtEntriesOf` at runtime.)
+    _gxtEntangleObjectKeys?.(resolved, keys);
     return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
   },
   // get: Dynamic property lookup — supports dot-path keys like 'foo.bar'
@@ -13511,6 +13382,26 @@ export function precompileTemplate(
       // $_inElement's 4th MODE arg (1=clear, 0=append, literal=dev-assert) —
       // replaces the __ieSet signalling channel + the source pre-parse.
       EMBER_IN_ELEMENT: true,
+      // EMBER_TRUSTED_HTML (gxt >=0.0.79 #256) — trusting `{{{expr}}}` → the
+      // first-class `$_html(() => expr, this)` runtime — is NOT enabled yet.
+      // Consumption reverted 2026-07-04: gxt's `$_html` has three gaps vs the
+      // ember-side `EmberHtmlRaw` path (all reproduced, all gate-failing):
+      //   1. COMPONENT-CONTEXT initial render is EMPTY — `{{{this.output}}}` in a
+      //      `precompileTemplate` component layout renders `` (curly-components
+      //      "should not escape HTML in triple mustaches"); the getter's `this`
+      //      does not resolve the component instance's class fields.
+      //   2. ABSENT-PATH reactivity — a property undefined at first render
+      //      (`renderPath('this.name',{})` then `set(context,'name',…)`) never
+      //      re-runs the `$_html` formula (content-test "render undefined dynamic
+      //      paths").
+      //   3. NULL-PROTO-OBJECT reactivity — `set(Object.create(null),'message',…)`
+      //      does not reach the `$_html` formula's cell (content-test "read from a
+      //      null object").
+      // Top-level defined-value triples work (147/149), but until gxt's `$_html`
+      // materializes absent-path cells + resolves component-context `this` +
+      // honors the null-object value-owner bridge, the ember `EmberHtmlRaw`
+      // transform + resolvedTag block stay. Re-enable this flag and re-slim
+      // `gxtTripleMustacheTransform` (ast-transforms.ts) once gxt closes the gaps.
     },
     // Convert PascalCase component names to kebab-case for Ember registry lookup.
     // This replaces the regex-based transformCapitalizedComponents() pre-processing.
@@ -15805,10 +15696,37 @@ if (_gxtRegisterHostHooks) {
     // if-branch helper delegation (I-a) is a separate follow-on.
     onRowContextCreated: (ctx: object) => {
       const isEachRow = Object.getPrototypeOf(ctx) === Object.prototype;
-      if (!isEachRow) return; // IfCondition branch — if-branch delegation (I-a) is a follow-on
+      if (!isEachRow) return; // IfCondition branch scope — branch-swap teardown rides onConditionBranchSwap below
       _gxtEachRowCtxSet.add(ctx);
       _gxtRowCtxInstances.set(ctx, new Set());
       _gxtRegisterDestructor(ctx, () => _gxtFireRowPreDestroy(ctx));
+    },
+    // each/if delegation Step 3 (I-a): {{#if}}/{{#unless}} branch class-helper
+    // teardown. New in gxt >=0.0.79 (glimmer-next #259). gxt fires this once per
+    // branch RENDER with a fresh `branchCtx` and `meta = { if, value }`, and runs
+    // that ctx's destructors at the START of the OUTGOING branch's teardown
+    // (pre-DOM-removal) — so a destructor registered here reaps the branch's
+    // class-based helpers at the Ember-correct moment, replacing the retired
+    // `ifCondition.syncState` prevBool flip-tracking wrapper. The per-branch
+    // helper-capture Sets are stashed on the IfCondition by `patchGlobalIf`; read
+    // them LAZILY in the destructor (the initial-render hook can fire during
+    // `origIf(...)` construction, before the Sets are attached). Snapshot the
+    // class-helper cache at hook-fire time (before the branch body renders) so
+    // the destructor can also reap helpers created in deferred formulas outside
+    // `wrapBranch`'s dynamic scope — mirroring the old `destroyNewCacheEntriesSince`
+    // fallback, which the old wrapper applied only when tearing down the TRUE
+    // branch. No legacy `globalThis.__gxt*` fallback: on a pre-#259 dist the hook
+    // never fires and the whole-`{{#if}}`-destroy fallback (registered in
+    // `patchGlobalIf`) reaps both branches on teardown as before.
+    onConditionBranchSwap: (branchCtx: object, meta: { if?: object; value?: boolean }) => {
+      const ifc = meta?.if as any;
+      const isTrue = !!meta?.value;
+      const snap = isTrue ? _gxtSnapshotClassHelperCacheKeys() : null;
+      _gxtRegisterDestructor(branchCtx, () => {
+        const scope = ifc && (isTrue ? ifc.__gxtTrueBranchHelpers : ifc.__gxtFalseBranchHelpers);
+        if (scope) _gxtDestroyHelperScope(scope);
+        if (isTrue) _gxtDestroyNewClassHelperCacheEntriesSince(snap);
+      });
     },
   });
 } else {
@@ -15899,7 +15817,6 @@ installCompilePipelinePart({
   },
   getBuiltinHelpers: () => _emberBuiltinHelpers,
   subscribeCell: _gxtSubscribeCellFn,
-  recordEachInKeySet: _gxtRecordEachInKeySetFn,
   eachItemRawFor: _gxtEachItemRawFor,
   setRehydrationMode: (value) => {
     _gxtRehydrationMode = value;

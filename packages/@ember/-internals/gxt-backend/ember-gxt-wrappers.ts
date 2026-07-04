@@ -3116,10 +3116,9 @@ function _patchGxtEntriesOf(): void {
     // index path stays orthogonal: a bump there just re-iterates, producing the
     // same output). Regular `{{#each}}` over arrays does NOT route through
     // gxtEntriesOf, so it is unaffected.
-    {
-      const rec = getGxtRenderer()?.compilePipeline.recordEachInKeySet;
-      if (typeof rec === 'function') rec(resolved, keys);
-    }
+    // gxt >=0.0.79 owns the key-set revision cell (glimmer-next #257): record
+    // the observed keys + subscribe the active source formula.
+    (gxtModule as any).entangleObjectKeys?.(resolved, keys);
     return keys.map((key) => ({ k: key, v: (resolved as any)[key] }));
   };
   Object.defineProperty(BUILTIN, '__gxtEntriesOfPatched', {

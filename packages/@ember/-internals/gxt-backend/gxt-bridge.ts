@@ -1086,7 +1086,6 @@ export interface GxtCompilePipelineCapabilities {
    * and manager's nested-arg-mutation check.
    */
   subscribeCell?(obj: object, key: string): void;
-  recordEachInKeySet?(resolved: object, keys: string[]): void;
   eachItemRawFor?(maybeProxy: unknown): unknown;
   /**
    * Rehydration-mode flag + explicit in-element render target (compile.ts

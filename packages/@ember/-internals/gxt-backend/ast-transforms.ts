@@ -849,6 +849,16 @@ function _gxtTripleValueExpr(b: GxtAstEnv['syntax']['builders'], node: any): unk
  * nodes and reactively updates via `innerHTML`. ONLY detection moves to the AST;
  * the runtime mechanism in ember-gxt-wrappers is untouched.
  *
+ * NOTE (2026-07-04): gxt >=0.0.79 (#256) ships a native `EMBER_TRUSTED_HTML`
+ * compile flag that lowers a content `{{{expr}}}` to `$_html(() => expr, this)`,
+ * which would let this content-position lowering + the compile.ts EmberHtmlRaw
+ * block be deleted. That consumption was ATTEMPTED and REVERTED — gxt's `$_html`
+ * renders EMPTY in component-context (`{{{this.field}}}` in a component layout)
+ * and does not re-run its formula for absent-path / null-proto-object updates
+ * (three gate-failing cases; see the `EMBER_TRUSTED_HTML` note in compile.ts's
+ * flags block). Re-attempt once gxt closes those gaps. Until then this transform
+ * keeps emitting `<EmberHtmlRaw>` for content triples.
+ *
  * Replaces the former `transformTripleMustaches` string scanner. A
  * triple-mustache parses as a `MustacheStatement` with `escaped === false`, so
  * detection is a single flag check — the hand-rolled tokenizer the string
