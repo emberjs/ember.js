@@ -2,6 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import type {
   ClassicResolver,
   ComponentInstanceWithCreate,
+  DebugRenderTree,
   Environment,
   EnvironmentOptions,
   GlimmerTreeChanges,
@@ -19,7 +20,6 @@ import { ProgramImpl } from '@glimmer/program/lib/program';
 import { track } from '@glimmer/validator/lib/tracking';
 import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 
-import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { isArgumentError } from './vm/arguments';
 
@@ -107,15 +107,15 @@ export class EnvironmentImpl implements Environment {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError: ((error: any) => boolean) | undefined;
-  debugRenderTree: DebugRenderTree<object> | undefined;
+  debugRenderTree: DebugRenderTree | undefined;
 
   constructor(
     options: EnvironmentOptions,
     private delegate: EnvironmentDelegate
   ) {
     this.isInteractive = delegate.isInteractive;
-    this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
-    this.isArgumentCaptureError = this.delegate.enableDebugTooling ? isArgumentError : undefined;
+    this.debugRenderTree = this.delegate.debugRenderTree;
+    this.isArgumentCaptureError = this.debugRenderTree ? isArgumentError : undefined;
     if (options.appendOperations) {
       this.appendOperations = options.appendOperations;
       this.updateOperations = options.updateOperations;
@@ -192,9 +192,14 @@ export interface EnvironmentDelegate {
   isInteractive: boolean;
 
   /**
-   * Used to enable debug tooling
+   * When provided, the environment will perform the extra bookkeeping needed
+   * to power debug tooling (e.g. Ember Inspector's render tree).
+   *
+   * This is provided by the delegate (rather than constructed by the
+   * environment) so that the `DebugRenderTree` implementation can be
+   * tree-shaken out of builds that do not use it.
    */
-  enableDebugTooling: boolean;
+  debugRenderTree?: DebugRenderTree | undefined;
 
   /**
    * Callback to be called when an environment transaction commits
