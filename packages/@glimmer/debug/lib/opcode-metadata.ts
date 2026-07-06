@@ -20,7 +20,6 @@ import {
   VM_APPEND_TEXT_OP,
   VM_ASSERT_SAME_OP,
   VM_BEGIN_COMPONENT_TRANSACTION_OP,
-  VM_BIND_DYNAMIC_SCOPE_OP,
   VM_CAPTURE_ARGS_OP,
   VM_CHILD_SCOPE_OP,
   VM_CLOSE_ELEMENT_OP,
@@ -461,13 +460,6 @@ if (LOCAL_DEBUG) {
     mnemonic: 'apnd_modifier',
     stackChange: -1,
     ops: ['helper:handle'],
-  };
-
-  METADATA[VM_BIND_DYNAMIC_SCOPE_OP] = {
-    name: 'BindDynamicScope',
-    mnemonic: 'setdynscope',
-    stackChange: null,
-    ops: ['names:const/str[]'],
   };
 
   METADATA[VM_PUSH_DYNAMIC_SCOPE_OP] = {

@@ -53,7 +53,6 @@ export type InElementOpcode = 40;
 export type IfOpcode = 41;
 export type EachOpcode = 42;
 export type LetOpcode = 44;
-export type WithDynamicVarsOpcode = 45;
 export type InvokeComponentOpcode = 46;
 
 // Keyword Expressions
@@ -62,7 +61,6 @@ export type HasBlockParamsOpcode = 49;
 export type CurryOpcode = 50;
 export type NotOpcode = 51;
 export type IfInlineOpcode = 52;
-export type GetDynamicVarOpcode = 53;
 export type LogOpcode = 54;
 
 export type GetStartOpcode = GetSymbolOpcode;

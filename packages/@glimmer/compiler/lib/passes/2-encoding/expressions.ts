@@ -45,8 +45,6 @@ export class ExpressionEncoder {
         return this.IfInline(expr);
       case 'InterpolateExpression':
         return this.InterpolateExpression(expr);
-      case 'GetDynamicVar':
-        return this.GetDynamicVar(expr);
       case 'Log':
         return this.Log(expr);
     }
@@ -161,10 +159,6 @@ export class ExpressionEncoder {
     }
 
     return expr as WireFormat.Expressions.IfInline;
-  }
-
-  GetDynamicVar({ name }: mir.GetDynamicVar): WireFormat.Expressions.GetDynamicVar {
-    return [SexpOpcodes.GetDynamicVar, EXPR.expr(name)];
   }
 
   Log({ positional }: mir.Log): WireFormat.Expressions.Log {

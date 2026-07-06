@@ -4,7 +4,6 @@ import {
   VM_CONCAT_OP,
   VM_CONSTANT_REFERENCE_OP,
   VM_FETCH_OP,
-  VM_GET_DYNAMIC_VAR_OP,
   VM_GET_PROPERTY_OP,
   VM_GET_VARIABLE_OP,
   VM_HAS_BLOCK_OP,
@@ -112,11 +111,6 @@ EXPRESSIONS.add(SexpOpcodes.IfInline, (op, [, condition, truthy, falsy]) => {
 EXPRESSIONS.add(SexpOpcodes.Not, (op, [, value]) => {
   expr(op, value);
   op(VM_NOT_OP);
-});
-
-EXPRESSIONS.add(SexpOpcodes.GetDynamicVar, (op, [, expression]) => {
-  expr(op, expression);
-  op(VM_GET_DYNAMIC_VAR_OP);
 });
 
 EXPRESSIONS.add(SexpOpcodes.Log, (op, [, positional]) => {

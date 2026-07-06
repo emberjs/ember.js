@@ -11,5 +11,4 @@ export * from './suites/initial-render';
 export * from './suites/scope';
 export * from './suites/shadowing';
 export * from './suites/ssr';
-export * from './suites/with-dynamic-vars';
 export * from './suites/yield';

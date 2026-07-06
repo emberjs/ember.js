@@ -79,8 +79,6 @@ export class ContentEncoder {
         return this.Each(stmt);
       case 'Let':
         return this.Let(stmt);
-      case 'WithDynamicVars':
-        return this.WithDynamicVars(stmt);
       case 'InvokeComponent':
         return this.InvokeComponent(stmt);
       default:
@@ -213,10 +211,6 @@ export class ContentEncoder {
 
   Let({ positional, block }: mir.Let): WireFormat.Statements.Let {
     return [SexpOpcodes.Let, EXPR.Positional(positional), CONTENT.NamedBlock(block)[1]];
-  }
-
-  WithDynamicVars({ named, block }: mir.WithDynamicVars): WireFormat.Statements.WithDynamicVars {
-    return [SexpOpcodes.WithDynamicVars, EXPR.NamedArguments(named), CONTENT.NamedBlock(block)[1]];
   }
 
   InvokeComponent({

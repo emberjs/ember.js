@@ -11,7 +11,6 @@ import {
   ScopeSuite,
   ShadowingSuite,
   TemplateOnlyComponents,
-  WithDynamicVarsSuite,
   YieldSuite,
 } from '@glimmer-workspace/integration-tests';
 
@@ -26,5 +25,4 @@ jitComponentSuite(HasBlockSuite);
 jitComponentSuite(HasBlockParamsHelperSuite);
 jitComponentSuite(ScopeSuite);
 jitComponentSuite(ShadowingSuite);
-jitComponentSuite(WithDynamicVarsSuite);
 jitComponentSuite(YieldSuite);

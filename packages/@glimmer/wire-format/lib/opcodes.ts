@@ -14,7 +14,6 @@ import type {
   DynamicAttrOpcode,
   EachOpcode,
   FlushElementOpcode,
-  GetDynamicVarOpcode,
   GetFreeAsComponentHeadOpcode,
   GetFreeAsComponentOrHelperHeadOpcode,
   GetFreeAsHelperHeadOpcode,
@@ -43,7 +42,6 @@ import type {
   TrustingComponentAttrOpcode,
   TrustingDynamicAttrOpcode,
   UndefinedOpcode,
-  WithDynamicVarsOpcode,
   YieldOpcode,
 } from '@glimmer/interfaces';
 
@@ -85,13 +83,11 @@ export const opcodes = {
   If: 41 satisfies IfOpcode,
   Each: 42 satisfies EachOpcode,
   Let: 44 satisfies LetOpcode,
-  WithDynamicVars: 45 satisfies WithDynamicVarsOpcode,
   InvokeComponent: 46 satisfies InvokeComponentOpcode,
   HasBlock: 48 satisfies HasBlockOpcode,
   HasBlockParams: 49 satisfies HasBlockParamsOpcode,
   Curry: 50 satisfies CurryOpcode,
   Not: 51 satisfies NotOpcode,
   IfInline: 52 satisfies IfInlineOpcode,
-  GetDynamicVar: 53 satisfies GetDynamicVarOpcode,
   Log: 54 satisfies LogOpcode,
 } as const;

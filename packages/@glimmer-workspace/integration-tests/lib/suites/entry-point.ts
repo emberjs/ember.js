@@ -1,6 +1,5 @@
 import { castToBrowser } from '@glimmer/debug-util';
 import { createPrimitiveRef } from '@glimmer/reference';
-import { DynamicScopeImpl } from '@glimmer/runtime';
 
 import type { ComponentKind } from '../components/types';
 
@@ -68,19 +67,5 @@ export class EntryPointTest extends RenderTest {
     let body = createPrimitiveRef('text');
     delegate.renderComponent(Body, { body }, element);
     QUnit.assert.strictEqual(castToBrowser(element, 'HTML').innerHTML, '<p>body text</p>');
-  }
-
-  @test
-  'supports passing in an initial dynamic context'() {
-    let delegate = new JitRenderDelegate();
-    let Locale = defineComponent({}, `{{-get-dynamic-var "locale"}}`);
-
-    let element = delegate.getInitialElement();
-    let dynamicScope = new DynamicScopeImpl({
-      locale: createPrimitiveRef('en_US'),
-    });
-    delegate.renderComponent(Locale, {}, element, dynamicScope);
-
-    QUnit.assert.strictEqual(castToBrowser(element, 'HTML').innerHTML, 'en_US');
   }
 }

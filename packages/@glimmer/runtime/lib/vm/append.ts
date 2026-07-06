@@ -30,7 +30,6 @@ import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { createIteratorItemRef } from '@glimmer/reference/lib/iterable';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
-import { reverse } from '@glimmer/util/lib/array-utils';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { LOCAL_LOGGER } from '@glimmer/util';
 import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
@@ -608,23 +607,6 @@ export class VM {
     let child = this.dynamicScope().child();
     this.#stacks.dynamicScope.push(child);
     return child;
-  }
-
-  /**
-   * ## Opcodes
-   *
-   * - Append: `BindDynamicScope`
-   *
-   * ## State changes:
-   *
-   * [!] pop Dynamic Scope Stack `names.length` times
-   */
-  bindDynamicScope(names: string[]) {
-    let scope = this.dynamicScope();
-
-    for (const name of reverse(names)) {
-      scope.set(name, this.stack.pop<Reference>());
-    }
   }
 
   /**

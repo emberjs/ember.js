@@ -335,32 +335,6 @@ export const BLOCK_KEYWORDS = keywords('Block')
       );
     },
   })
-  .kw('-with-dynamic-vars', {
-    assert(node: ASTv2.InvokeBlock): Result<{
-      named: ASTv2.NamedArguments;
-    }> {
-      return Ok({ named: node.args.named });
-    },
-
-    translate(
-      { node, state }: { node: ASTv2.InvokeBlock; state: NormalizationState },
-      { named }: { named: ASTv2.NamedArguments }
-    ): Result<mir.WithDynamicVars> {
-      let block = node.blocks.get('default');
-
-      let namedResult = VISIT_EXPRS.NamedArguments(named, state);
-      let blockResult = VISIT_STMTS.NamedBlock(block, state);
-
-      return Result.all(namedResult, blockResult).mapOk(
-        ([named, block]) =>
-          new mir.WithDynamicVars({
-            loc: node.loc,
-            named,
-            block,
-          })
-      );
-    },
-  })
   .kw('component', {
     assert: assertCurryKeyword(CURRIED_COMPONENT),
 

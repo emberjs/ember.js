@@ -61,7 +61,6 @@ export type VmFlushElement = 54;
 export type VmCloseElement = 55;
 export type VmPopRemoteElement = 56;
 export type VmModifier = 57;
-export type VmBindDynamicScope = 58;
 export type VmPushDynamicScope = 59;
 export type VmPopDynamicScope = 60;
 export type VmCompileBlock = 61;
@@ -109,7 +108,6 @@ export type VmDynamicHelper = 107;
 export type VmDynamicModifier = 108;
 export type VmIfInline = 109;
 export type VmNot = 110;
-export type VmGetDynamicVar = 111;
 export type VmLog = 112;
 export type VmSize = 113;
 
@@ -156,7 +154,6 @@ export type VmOp =
   | VmCloseElement
   | VmPopRemoteElement
   | VmModifier
-  | VmBindDynamicScope
   | VmPushDynamicScope
   | VmPopDynamicScope
   | VmCompileBlock
@@ -205,7 +202,6 @@ export type VmOp =
   | VmDynamicModifier
   | VmIfInline
   | VmNot
-  | VmGetDynamicVar
   | VmLog;
 
 export type SomeVmOp = VmOp | VmMachineOp;

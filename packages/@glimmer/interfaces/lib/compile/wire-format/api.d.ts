@@ -18,7 +18,6 @@ import type {
   DynamicAttrOpcode,
   EachOpcode,
   FlushElementOpcode,
-  GetDynamicVarOpcode,
   GetFreeAsComponentHeadOpcode,
   GetFreeAsComponentOrHelperHeadOpcode,
   GetFreeAsHelperHeadOpcode,
@@ -45,7 +44,6 @@ import type {
   TrustingComponentAttrOpcode,
   TrustingDynamicAttrOpcode,
   UndefinedOpcode,
-  WithDynamicVarsOpcode,
   YieldOpcode,
 } from './opcodes.js';
 
@@ -139,7 +137,6 @@ export namespace Expressions {
 
   export type TupleExpression =
     | Get
-    | GetDynamicVar
     | Concat
     | HasBlock
     | HasBlockParams
@@ -168,8 +165,6 @@ export namespace Expressions {
   ];
 
   export type Not = [op: NotOpcode, value: Expression];
-
-  export type GetDynamicVar = [op: GetDynamicVarOpcode, value: Expression];
 
   export type Log = [op: LogOpcode, positional: Params];
 }
@@ -286,12 +281,6 @@ export namespace Statements {
 
   export type Let = [op: LetOpcode, positional: Core.Params, block: SerializedInlineBlock];
 
-  export type WithDynamicVars = [
-    op: WithDynamicVarsOpcode,
-    args: Core.Hash,
-    block: SerializedInlineBlock,
-  ];
-
   export type InvokeComponent = [
     op: InvokeComponentOpcode,
     definition: Expression,
@@ -324,7 +313,6 @@ export namespace Statements {
     | If
     | Each
     | Let
-    | WithDynamicVars
     | InvokeComponent;
 
   export type Attribute =

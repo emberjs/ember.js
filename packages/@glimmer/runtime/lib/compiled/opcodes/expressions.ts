@@ -15,7 +15,6 @@ import {
   VM_CURRY_OP,
   VM_DYNAMIC_HELPER_OP,
   VM_GET_BLOCK_OP,
-  VM_GET_DYNAMIC_VAR_OP,
   VM_GET_PROPERTY_OP,
   VM_GET_VARIABLE_OP,
   VM_HAS_BLOCK_OP,
@@ -303,19 +302,6 @@ APPEND_OPCODES.add(VM_NOT_OP, (vm) => {
   vm.stack.push(
     createComputeRef(() => {
       return !toBool(valueForRef(ref));
-    })
-  );
-});
-
-APPEND_OPCODES.add(VM_GET_DYNAMIC_VAR_OP, (vm) => {
-  let scope = vm.dynamicScope();
-  let stack = vm.stack;
-  let nameRef = check(stack.pop(), CheckReference);
-
-  stack.push(
-    createComputeRef(() => {
-      let name = String(valueForRef(nameRef));
-      return valueForRef(scope.get(name));
     })
   );
 });

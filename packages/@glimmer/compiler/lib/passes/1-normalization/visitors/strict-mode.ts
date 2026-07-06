@@ -96,9 +96,6 @@ export default class StrictModeValidationPass {
       case 'Let':
         return this.Let(statement);
 
-      case 'WithDynamicVars':
-        return this.WithDynamicVars(statement);
-
       case 'InvokeComponent':
         return this.InvokeComponent(statement);
     }
@@ -128,7 +125,6 @@ export default class StrictModeValidationPass {
       case 'Local':
       case 'HasBlock':
       case 'HasBlockParams':
-      case 'GetDynamicVar':
         return Ok(null);
 
       case 'PathExpression':
@@ -308,10 +304,6 @@ export default class StrictModeValidationPass {
 
   Let(statement: mir.Let): Result<null> {
     return this.Positional(statement.positional).andThen(() => this.NamedBlock(statement.block));
-  }
-
-  WithDynamicVars(statement: mir.WithDynamicVars): Result<null> {
-    return this.NamedArguments(statement.named).andThen(() => this.NamedBlock(statement.block));
   }
 
   InvokeComponent(statement: mir.InvokeComponent): Result<null> {

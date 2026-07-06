@@ -48,15 +48,6 @@ export class Let extends node('Let').fields<{
   block: NamedBlock;
 }>() {}
 
-export class WithDynamicVars extends node('WithDynamicVars').fields<{
-  named: NamedArguments;
-  block: NamedBlock;
-}>() {}
-
-export class GetDynamicVar extends node('GetDynamicVar').fields<{
-  name: ExpressionNode;
-}>() {}
-
 export class Log extends node('Log').fields<{
   positional: Positional;
 }>() {}
@@ -191,7 +182,6 @@ export type ExpressionNode =
   | HasBlock
   | HasBlockParams
   | Curry
-  | GetDynamicVar
   | Log;
 
 export type ElementParameter = StaticAttr | DynamicAttr | Modifier | SplatAttr;
@@ -219,5 +209,4 @@ export type Statement =
   | If
   | Each
   | Let
-  | WithDynamicVars
   | InvokeComponent;

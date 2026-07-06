@@ -5,7 +5,6 @@ import type { Tag } from '@glimmer/interfaces';
 import { decodeHandle, decodeImmediate, isHandle } from '@glimmer/constants/lib/immediate';
 import {
   VM_ASSERT_SAME_OP,
-  VM_BIND_DYNAMIC_SCOPE_OP,
   VM_CHILD_SCOPE_OP,
   VM_COMPILE_BLOCK_OP,
   VM_CONSTANT_OP,
@@ -128,11 +127,6 @@ APPEND_OPCODES.add(VM_LOAD_OP, (vm, { op1: register }) => {
 
 APPEND_OPCODES.add(VM_FETCH_OP, (vm, { op1: register }) => {
   vm.fetch(check(register, CheckSyscallRegister));
-});
-
-APPEND_OPCODES.add(VM_BIND_DYNAMIC_SCOPE_OP, (vm, { op1: _names }) => {
-  let names = vm.constants.getArray<string>(_names);
-  vm.bindDynamicScope(names);
 });
 
 APPEND_OPCODES.add(VM_ENTER_OP, (vm, { op1: args }) => {

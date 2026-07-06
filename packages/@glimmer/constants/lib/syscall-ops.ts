@@ -6,7 +6,6 @@ import type {
   VmAppendText,
   VmAssertSame,
   VmBeginComponentTransaction,
-  VmBindDynamicScope,
   VmCaptureArgs,
   VmChildScope,
   VmCloseElement,
@@ -38,7 +37,6 @@ import type {
   VmGetComponentLayout,
   VmGetComponentSelf,
   VmGetComponentTagName,
-  VmGetDynamicVar,
   VmGetProperty,
   VmGetVariable,
   VmHasBlock,
@@ -137,7 +135,6 @@ export const VM_FLUSH_ELEMENT_OP = 54 satisfies VmFlushElement;
 export const VM_CLOSE_ELEMENT_OP = 55 satisfies VmCloseElement;
 export const VM_POP_REMOTE_ELEMENT_OP = 56 satisfies VmPopRemoteElement;
 export const VM_MODIFIER_OP = 57 satisfies VmModifier;
-export const VM_BIND_DYNAMIC_SCOPE_OP = 58 satisfies VmBindDynamicScope;
 export const VM_PUSH_DYNAMIC_SCOPE_OP = 59 satisfies VmPushDynamicScope;
 export const VM_POP_DYNAMIC_SCOPE_OP = 60 satisfies VmPopDynamicScope;
 export const VM_COMPILE_BLOCK_OP = 61 satisfies VmCompileBlock;
@@ -185,7 +182,6 @@ export const VM_DYNAMIC_HELPER_OP = 107 satisfies VmDynamicHelper;
 export const VM_DYNAMIC_MODIFIER_OP = 108 satisfies VmDynamicModifier;
 export const VM_IF_INLINE_OP = 109 satisfies VmIfInline;
 export const VM_NOT_OP = 110 satisfies VmNot;
-export const VM_GET_DYNAMIC_VAR_OP = 111 satisfies VmGetDynamicVar;
 export const VM_LOG_OP = 112 satisfies VmLog;
 export const VM_SYSCALL_SIZE = 113 satisfies VmSize;
 

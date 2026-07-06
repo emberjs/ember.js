@@ -117,47 +117,5 @@ moduleFor(
 
       this.assertText('HIBYE');
     }
-
-    ['@test outletState can pass through user code (liquid-fire initimate API) ']() {
-      this.registerTemplate(
-        'outer',
-        'A{{#-with-dynamic-vars outletState=(identity (-get-dynamic-var "outletState"))}}B{{outlet}}D{{/-with-dynamic-vars}}E'
-      );
-      this.registerTemplate('inner', 'C');
-
-      // This looks like it doesn't do anything, but its presence
-      // guarantees that the outletState gets converted from a reference
-      // to a value and then back to a reference. That is what we're
-      // testing here.
-      this.registerHelper('identity', ([a]) => a);
-
-      let outletState = {
-        render: {
-          owner: this.owner,
-          name: 'outer',
-          controller: {},
-          template: this.owner.lookup('template:outer')(this.owner),
-        },
-        outlets: {
-          main: {
-            render: {
-              owner: this.owner,
-              name: 'inner',
-              controller: {},
-              template: this.owner.lookup('template:inner')(this.owner),
-            },
-            outlets: Object.create(null),
-          },
-        },
-      };
-
-      runTask(() => this.component.setOutletState(outletState));
-
-      runAppend(this.component);
-
-      this.assertText('ABCDE');
-
-      this.assertStableRerender();
-    }
   }
 );

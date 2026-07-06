@@ -1,23 +1,20 @@
 import type { CurriedType, NonSmallIntOperand, Nullable, WireFormat } from '@glimmer/interfaces';
 import { encodeImmediate, isSmallInt } from '@glimmer/constants/lib/immediate';
 import {
-  VM_BIND_DYNAMIC_SCOPE_OP,
   VM_CAPTURE_ARGS_OP,
   VM_CURRY_OP,
   VM_DUP_OP,
   VM_DYNAMIC_HELPER_OP,
   VM_FETCH_OP,
   VM_HELPER_OP,
-  VM_POP_DYNAMIC_SCOPE_OP,
   VM_POP_OP,
   VM_PRIMITIVE_OP,
   VM_PRIMITIVE_REFERENCE_OP,
-  VM_PUSH_DYNAMIC_SCOPE_OP,
 } from '@glimmer/constants/lib/syscall-ops';
 import { VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants/lib/vm-ops';
 import { $fp, $v0 } from '@glimmer/vm/lib/registers';
 
-import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
+import type { PushExpressionOp } from '../../syntax/compilers';
 
 import { isStrictMode, nonSmallIntOperand } from '../operands';
 import { expr } from './expr';
@@ -103,21 +100,6 @@ export function CallDynamic(
     op(VM_POP_OP, 1);
     op(VM_FETCH_OP, $v0);
   }
-}
-
-/**
- * Evaluate statements in the context of new dynamic scope entries. Move entries from the
- * stack into named entries in the dynamic scope, then evaluate the statements, then pop
- * the dynamic scope
- *
- * @param names a list of dynamic scope names
- * @param block a function that returns a list of statements to evaluate
- */
-export function DynamicScope(op: PushStatementOp, names: string[], block: () => void): void {
-  op(VM_PUSH_DYNAMIC_SCOPE_OP);
-  op(VM_BIND_DYNAMIC_SCOPE_OP, names);
-  block();
-  op(VM_POP_DYNAMIC_SCOPE_OP);
 }
 
 export function Curry(

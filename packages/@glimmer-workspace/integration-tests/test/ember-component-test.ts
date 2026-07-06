@@ -718,23 +718,6 @@ class CurlyScopeTest extends CurlyTest {
   }
 }
 
-class CurlyDynamicScopeSmokeTest extends CurlyTest {
-  static suiteName = '[curly components] dynamicScope access smoke test';
-
-  @test
-  'component has access to dynamic scope'() {
-    class SampleComponent extends EmberishCurlyComponent {
-      static fromDynamicScope = ['theme'];
-    }
-
-    this.registerComponent('Curly', 'sample-component', '{{this.theme}}', SampleComponent);
-
-    this.render('{{#-with-dynamic-vars theme="light"}}{{sample-component}}{{/-with-dynamic-vars}}');
-
-    this.assertEmberishElement('div', 'light');
-  }
-}
-
 class CurlyPositionalArgsTest extends CurlyTest {
   static suiteName = '[curly components] positional arguments';
 
@@ -2229,7 +2212,6 @@ jitSuite(CurlyDynamicComponentTest);
 jitSuite(CurlyDynamicCustomizationTest);
 jitSuite(CurlyArgsTest);
 jitSuite(CurlyScopeTest);
-jitSuite(CurlyDynamicScopeSmokeTest);
 jitSuite(CurlyPositionalArgsTest);
 jitSuite(CurlyClosureComponentsTest);
 jitSuite(CurlyIdsTest);

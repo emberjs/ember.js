@@ -40,27 +40,21 @@ moduleFor(
 
       ---
 
-      {{#let this.var as |-with-dynamic-vars|}}
-        {{-with-dynamic-vars}}
-      {{/let}}
-
-      ---
-
       {{#let this.var as |-in-element|}}
         {{-in-element}}
       {{/let}}`,
         { var: 'var' }
       );
 
-      this.assertText('var---var---var---var---var---var---var');
+      this.assertText('var---var---var---var---var---var');
 
       runTask(() => set(this.context, 'var', 'RARRR!!!'));
 
-      this.assertText('RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!');
+      this.assertText('RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!');
 
       runTask(() => set(this.context, 'var', 'var'));
 
-      this.assertText('var---var---var---var---var---var---var');
+      this.assertText('var---var---var---var---var---var');
     }
   }
 );

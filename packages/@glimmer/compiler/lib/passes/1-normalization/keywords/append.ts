@@ -11,7 +11,6 @@ import { VISIT_EXPRS } from '../visitors/expressions';
 import { keywords } from './impl';
 import { toAppend } from './utils/call-to-append';
 import { assertCurryKeyword } from './utils/curry';
-import { getDynamicVarKeyword } from './utils/dynamic-vars';
 import { hasBlockKeyword } from './utils/has-block';
 import { ifUnlessInlineKeyword } from './utils/if-unless';
 import { logKeyword } from './utils/log';
@@ -19,7 +18,6 @@ import { logKeyword } from './utils/log';
 export const APPEND_KEYWORDS = keywords('Append')
   .kw('has-block', toAppend(hasBlockKeyword('has-block')))
   .kw('has-block-params', toAppend(hasBlockKeyword('has-block-params')))
-  .kw('-get-dynamic-var', toAppend(getDynamicVarKeyword))
   .kw('log', toAppend(logKeyword))
   .kw('if', toAppend(ifUnlessInlineKeyword('if')))
   .kw('unless', toAppend(ifUnlessInlineKeyword('unless')))

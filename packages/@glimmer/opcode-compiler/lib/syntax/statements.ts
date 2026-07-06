@@ -67,7 +67,6 @@ import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared'
 import {
   Call,
   CallDynamic,
-  DynamicScope,
   PushPrimitiveReference,
 } from '../opcode-builder/helpers/vm';
 import { HighLevelBuilderOpcodes, HighLevelResolutionOpcodes } from '../opcode-builder/opcodes';
@@ -361,19 +360,6 @@ STATEMENTS.add(SexpOpcodes.Each, (op, [, value, key, block, inverse]) =>
 STATEMENTS.add(SexpOpcodes.Let, (op, [, positional, block]) => {
   let count = CompilePositional(op, positional);
   InvokeStaticBlockWithStack(op, block, count);
-});
-
-STATEMENTS.add(SexpOpcodes.WithDynamicVars, (op, [, named, block]) => {
-  if (named) {
-    let [names, expressions] = named;
-
-    CompilePositional(op, expressions);
-    DynamicScope(op, names, () => {
-      InvokeStaticBlock(op, block);
-    });
-  } else {
-    InvokeStaticBlock(op, block);
-  }
 });
 
 STATEMENTS.add(SexpOpcodes.InvokeComponent, (op, [, expr, positional, named, blocks]) => {
