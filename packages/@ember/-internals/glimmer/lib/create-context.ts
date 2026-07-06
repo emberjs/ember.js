@@ -2,7 +2,11 @@
  * @module @ember/helper
  */
 import { precompileTemplate } from '@ember/template-compilation';
-import { lookupRenderContext, provideRenderContext } from '@glimmer/runtime/lib/render-scope';
+import {
+  createRenderContextKey,
+  lookupRenderContext,
+  provideRenderContext,
+} from '@glimmer/runtime/lib/render-scope';
 import { valueForRef } from '@glimmer/reference/lib/reference';
 import InternalComponent, {
   type OpaqueInternalComponentConstructor,
@@ -78,10 +82,11 @@ export interface Context<T> {
  */
 export function createContext<T>(): Context<T> {
   // This context's identity token: unique to this `createContext()` call and
-  // stable, so the matching `<Provide>` and `value` reads find each other on
-  // a shared render-scope node without colliding with other contexts. Held in
-  // the closure -- not exported.
-  const key = {};
+  // stable, so the matching `<Provide>` and `value` reads find each other
+  // without colliding with other contexts. It also owns this context's
+  // provider-entry stack (see render-scope.ts). Held in the closure -- not
+  // exported.
+  const key = createRenderContextKey();
 
   class Provide extends InternalComponent {
     static override toString(): string {

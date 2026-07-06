@@ -387,13 +387,11 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
   let instance = check(vm.fetchValue($s0), CheckComponentInstance);
   let { definition, manager, capabilities } = instance;
 
-  // RFC #1154 -- push this component's render-tree scope before the user-land
+  // RFC #1200 -- open this component's render-scope frame before the user-land
   // constructor runs, so that provide/consume (createContext) inside the
-  // constructor see the new scope (and its parent chain). Always-on. Mirroring
-  // debugRenderTree would be too late: the user constructor runs in
-  // manager.create() below.
+  // constructor see the new frame. Always-on, but O(1) and allocation-free:
+  // a depth increment plus a frame-id stamp.
   vm.env.renderScope.create(instance);
-  vm.updateWith(new RenderScopeUpdateOpcode(instance));
 
   if (!managerHasCapability(manager, capabilities, InternalComponentCapabilities.createInstance)) {
     // TODO: Closure and Main components are always invoked dynamically, so this
@@ -432,6 +430,14 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
   // We want to reuse the `state` POJO here, because we know that the opcodes
   // only transition at exactly one place.
   instance.state = state;
+
+  // The constructor has run (in manager.create above), so provider status is
+  // known and final. Only providers need update-pass bracketing -- everyone
+  // else contributes nothing to context scope and gets no updating opcodes.
+  // Emitted before UpdateComponentOpcode so enterUpdate precedes manager.update.
+  if (vm.env.renderScope.isProvider(instance)) {
+    vm.updateWith(new RenderScopeEnterOpcode(instance));
+  }
 
   if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.updateHook)) {
     vm.updateWith(new UpdateComponentOpcode(state, manager, dynamicScope));
@@ -897,11 +903,14 @@ APPEND_OPCODES.add(VM_DID_RENDER_LAYOUT_OP, (vm, { op1: register }) => {
   let { manager, state, capabilities } = instance;
   let bounds = vm.tree().popBlock();
 
-  // RFC #1154 -- pop the render scope stack to match the create() done in
-  // VM_CREATE_COMPONENT_OP. This must happen unconditionally and outside
-  // the debugRenderTree branch below.
+  // RFC #1200 -- close the frame opened in VM_CREATE_COMPONENT_OP. The exit
+  // itself must happen unconditionally (and outside the debugRenderTree
+  // branch below), but the update-pass exit opcode is only emitted for
+  // providers, matching the enter opcode emitted at create.
   vm.env.renderScope.exit();
-  vm.updateWith(new RenderScopeExitOpcode());
+  if (vm.env.renderScope.isProvider(instance)) {
+    vm.updateWith(new RenderScopeExitOpcode());
+  }
 
   if (vm.env.debugRenderTree !== undefined) {
     if (hasCustomDebugRenderTreeLifecycle(manager)) {
@@ -985,20 +994,21 @@ class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
   }
 }
 
-// RFC #1154 -- render-tree scope lifecycle during updating frames. We have to
-// push the render node back onto the scope stack at the start of its update
-// and pop it back off at the end, so that any descendants which read a
-// context `value` during their own update see the correct parent chain.
-class RenderScopeUpdateOpcode implements UpdatingOpcode {
+// RFC #1200 -- render-scope lifecycle during update passes. A provider's
+// frame must be re-opened at the start of its update and closed at the end,
+// so descendants that read a context `value` during their own update see it
+// as live. Emitted ONLY for components that provided something at
+// construction; everyone else pays nothing during updates.
+class RenderScopeEnterOpcode implements UpdatingOpcode {
   constructor(private bucket: object) {}
 
   evaluate(vm: UpdatingVM) {
-    vm.env.renderScope.enter(this.bucket);
+    vm.env.renderScope.enterUpdate(this.bucket);
   }
 }
 
 class RenderScopeExitOpcode implements UpdatingOpcode {
   evaluate(vm: UpdatingVM) {
-    vm.env.renderScope.exit();
+    vm.env.renderScope.exitUpdate();
   }
 }

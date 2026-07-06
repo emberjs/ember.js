@@ -58,8 +58,10 @@ export interface Environment {
 
 export interface RenderScopeTracker {
   create(bucket: object): void;
-  enter(bucket: object): void;
   exit(): void;
+  isProvider(bucket: object): boolean;
+  enterUpdate(bucket: object): void;
+  exitUpdate(): void;
 }
 
 export interface RuntimeOptions {
