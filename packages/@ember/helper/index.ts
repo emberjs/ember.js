@@ -727,6 +727,10 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  * - `value`: a getter (also usable as a template path) that returns the
  *    nearest enclosing provided value. **Throws** if there is no matching
  *    provider higher in the render tree, or if read outside of rendering.
+ * - `consume`: with no argument, identical to reading `value`. Passed a
+ *    handle from `captureContext()`, it resolves the context from that
+ *    captured render-tree position instead -- the way to read a context
+ *    from event handlers and other code that runs outside of rendering.
  *
  * ```gjs
  * import { createContext } from '@ember/helper';
@@ -753,9 +757,62 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  * @method createContext
  * @static
  * @for @ember/helper
- * @returns {Object} `{ Provide, value }`
+ * @returns {Object} `{ Provide, value, consume }`
  * @public
  */
 export { createContext } from '@ember/-internals/glimmer/lib/create-context';
 
-export type { Context } from '@ember/-internals/glimmer/lib/create-context';
+/**
+ * Captures the current render-tree position as an opaque handle that can be
+ * passed to a context's `consume(captured)` later.
+ *
+ * The ambient reads — `context.value` or `context.consume()` — only work
+ * while rendering, because they resolve against the currently-rendering
+ * node. Event handlers, timers, and other async callbacks run after the
+ * render stack has unwound, so they have no ambient position to read from.
+ * `captureContext()` bridges that gap: call it while rendering (a component
+ * constructor or a field initializer is the natural spot), keep the handle,
+ * and resolve any context from that position later.
+ *
+ * ```gjs
+ * import Component from '@glimmer/component';
+ * import { createContext, captureContext } from '@ember/helper';
+ * import { on } from '@ember/modifier';
+ *
+ * const theme = createContext<Theme>();
+ *
+ * class ThemedButton extends Component {
+ *   // Field initializers run in the constructor, during rendering, so this
+ *   // captures the position of <ThemedButton/> in the render tree.
+ *   context = captureContext();
+ *
+ *   onClick = () => {
+ *     // Outside of rendering, `theme.value` would throw — but the captured
+ *     // handle still resolves the nearest <theme.Provide> above this
+ *     // component.
+ *     console.log(theme.consume(this.context).color);
+ *   };
+ *
+ *   <template>
+ *     <button {{on 'click' this.onClick}}>{{yield}}</button>
+ *   </template>
+ * }
+ * ```
+ *
+ * A single captured handle works with every context — it captures the
+ * render-tree position, not any one context's value. Resolution happens at
+ * `consume` time, so the value read is the provider's current `@value`, not
+ * a snapshot from when the handle was captured.
+ *
+ * **Throws** if called outside of rendering — there is no position to
+ * capture.
+ *
+ * @method captureContext
+ * @static
+ * @for @ember/helper
+ * @returns {Object} An opaque handle for `consume(captured)`
+ * @public
+ */
+export { captureContext } from '@ember/-internals/glimmer/lib/create-context';
+
+export type { Context, CapturedContext } from '@ember/-internals/glimmer/lib/create-context';

@@ -13,8 +13,9 @@ import GlimmerishComponent from '../utils/glimmerish-component';
 
 import { run } from '@ember/runloop';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
+import { on } from '@ember/modifier';
 import { renderComponent } from '../../lib/renderer';
-import { createContext } from '../../lib/create-context';
+import { captureContext, createContext, type CapturedContext } from '../../lib/create-context';
 import { tracked } from '@glimmer/tracking';
 import type Owner from '@ember/owner';
 
@@ -889,6 +890,286 @@ moduleFor(
         `error mentions missing provider, got: ${bareError?.message}`
       );
       assert.strictEqual(providedSeen, 'B', 'tree B: own <Provide @value="B"> visible');
+    }
+  }
+);
+
+/**
+ * Coverage for `consume()` and `captureContext()`:
+ *
+ * - `consume()` with no argument behaves exactly like reading `value`
+ *   (same result, same error cases).
+ * - `captureContext()` captures the current render-tree position; passing
+ *   the handle to `consume(captured)` resolves the context from that
+ *   position *outside* of rendering (the event-handler use case).
+ */
+moduleFor(
+  'RFC #1200 -- createContext: consume() and captureContext()',
+  class extends CreateContextTestCase {
+    afterEach() {
+      runDestroy(this);
+    }
+
+    '@test consume() with no argument reads like value'(assert: QUnit['assert']) {
+      const ctx = createContext<string>();
+
+      let observed: string | undefined;
+      class Reader extends GlimmerishComponent {
+        constructor(owner: Owner, args: Record<string, unknown>) {
+          super(owner, args);
+          observed = ctx.consume();
+        }
+      }
+      setComponentTemplate(precompileTemplate(''), Reader);
+
+      let Root = setComponentTemplate(
+        precompileTemplate('<ctx.Provide @value="ambient"><Reader/></ctx.Provide>', {
+          strictMode: true,
+          scope: () => ({ ctx, Reader }),
+        }),
+        templateOnly()
+      );
+
+      this.renderComponent(Root);
+      assert.strictEqual(observed, 'ambient', 'consume() saw the provided value');
+    }
+
+    '@test consume() with no argument throws outside of rendering'(assert: QUnit['assert']) {
+      const ctx = createContext<string>();
+
+      assert.throws(
+        () => ctx.consume(),
+        /outside of rendering/,
+        'an ambient consume() outside a render is rejected'
+      );
+    }
+
+    '@test consume() with no argument throws when no <Provide> exists'(assert: QUnit['assert']) {
+      const ctx = createContext<string>();
+
+      let error: Error | undefined;
+      class Reader extends GlimmerishComponent {
+        constructor(owner: Owner, args: Record<string, unknown>) {
+          super(owner, args);
+          try {
+            ctx.consume();
+          } catch (e) {
+            error = e as Error;
+          }
+        }
+      }
+      setComponentTemplate(precompileTemplate(''), Reader);
+
+      let Root = setComponentTemplate(
+        precompileTemplate('<Reader/>', { strictMode: true, scope: () => ({ Reader }) }),
+        templateOnly()
+      );
+
+      this.renderComponent(Root);
+      assert.ok(
+        /No matching `<Provide>`/.test(error?.message ?? ''),
+        `error mentions missing provider, got: ${error?.message}`
+      );
+    }
+
+    '@test captureContext() throws outside of rendering'(assert: QUnit['assert']) {
+      assert.throws(
+        () => captureContext(),
+        /outside of rendering/,
+        'a capture outside a render is rejected'
+      );
+    }
+
+    '@test consume(captured) resolves the context from an event handler'(assert: QUnit['assert']) {
+      const theme = createContext<{ color: string }>();
+      const value = { color: 'rebeccapurple' };
+
+      let observed: { color: string } | undefined;
+      let ambientError: Error | undefined;
+      class Button extends GlimmerishComponent {
+        // Field initializers run in the constructor, during rendering.
+        context = captureContext();
+
+        onClick = () => {
+          // Prove we really are outside of rendering: the ambient read throws...
+          try {
+            void theme.value;
+          } catch (e) {
+            ambientError = e as Error;
+          }
+          // ...but the captured position still resolves.
+          observed = theme.consume(this.context);
+        };
+      }
+      setComponentTemplate(
+        precompileTemplate('<button type="button" {{on "click" this.onClick}}>go</button>', {
+          strictMode: true,
+          scope: () => ({ on }),
+        }),
+        Button
+      );
+
+      let Root = setComponentTemplate(
+        precompileTemplate('<theme.Provide @value={{value}}><Button/></theme.Provide>', {
+          strictMode: true,
+          scope: () => ({ theme, value, Button }),
+        }),
+        templateOnly()
+      );
+
+      this.renderComponent(Root);
+      this.element.querySelector('button')!.click();
+
+      assert.ok(
+        /outside of rendering/.test(ambientError?.message ?? ''),
+        'the ambient value read in the handler threw (we were outside of rendering)'
+      );
+      assert.strictEqual(observed, value, 'consume(captured) resolved the provided value');
+    }
+
+    '@test consume(captured) resolves the nearest provider above the captured position'(
+      assert: QUnit['assert']
+    ) {
+      const ctx = createContext<string>();
+
+      let innerCapture: CapturedContext | undefined;
+      let outerCapture: CapturedContext | undefined;
+      class InnerReader extends GlimmerishComponent {
+        constructor(owner: Owner, args: Record<string, unknown>) {
+          super(owner, args);
+          innerCapture = captureContext();
+        }
+      }
+      class OuterReader extends GlimmerishComponent {
+        constructor(owner: Owner, args: Record<string, unknown>) {
+          super(owner, args);
+          outerCapture = captureContext();
+        }
+      }
+      setComponentTemplate(precompileTemplate(''), InnerReader);
+      setComponentTemplate(precompileTemplate(''), OuterReader);
+
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          `<ctx.Provide @value="outer">
+             <OuterReader/>
+             <ctx.Provide @value="inner">
+               <InnerReader/>
+             </ctx.Provide>
+           </ctx.Provide>`,
+          { strictMode: true, scope: () => ({ ctx, InnerReader, OuterReader }) }
+        ),
+        templateOnly()
+      );
+
+      this.renderComponent(Root);
+
+      // Both resolutions happen here, after the render stack has unwound.
+      assert.strictEqual(ctx.consume(outerCapture!), 'outer', 'outer capture sees "outer"');
+      assert.strictEqual(ctx.consume(innerCapture!), 'inner', 'inner capture sees "inner"');
+    }
+
+    '@test one captured handle works with every context'(assert: QUnit['assert']) {
+      const ctxA = createContext<string>();
+      const ctxB = createContext<string>();
+
+      let captured: CapturedContext | undefined;
+      class Reader extends GlimmerishComponent {
+        constructor(owner: Owner, args: Record<string, unknown>) {
+          super(owner, args);
+          captured = captureContext();
+        }
+      }
+      setComponentTemplate(precompileTemplate(''), Reader);
+
+      let Root = setComponentTemplate(
+        precompileTemplate(
+          '<ctxA.Provide @value="A"><ctxB.Provide @value="B"><Reader/></ctxB.Provide></ctxA.Provide>',
+          { strictMode: true, scope: () => ({ ctxA, ctxB, Reader }) }
+        ),
+        templateOnly()
+      );
+
+      this.renderComponent(Root);
+
+      assert.strictEqual(ctxA.consume(captured!), 'A', 'the handle resolves ctxA');
+      assert.strictEqual(ctxB.consume(captured!), 'B', 'the same handle resolves ctxB');
+    }
+
+    '@test consume(captured) reads the current @value, not a snapshot'(assert: QUnit['assert']) {
+      class State {
+        @tracked count = 1;
+      }
+      const state = new State();
+      const ctx = createContext<number>();
+
+      let captured: CapturedContext | undefined;
+      class Reader extends GlimmerishComponent {
+        constructor(owner: Owner, args: Record<string, unknown>) {
+          super(owner, args);
+          captured = captureContext();
+        }
+      }
+      setComponentTemplate(precompileTemplate(''), Reader);
+
+      let Root = setComponentTemplate(
+        precompileTemplate('<ctx.Provide @value={{state.count}}><Reader/></ctx.Provide>', {
+          strictMode: true,
+          scope: () => ({ ctx, state, Reader }),
+        }),
+        templateOnly()
+      );
+
+      this.renderComponent(Root);
+      assert.strictEqual(ctx.consume(captured!), 1, 'initial value');
+
+      run(() => {
+        state.count = 2;
+      });
+      assert.strictEqual(ctx.consume(captured!), 2, 'resolution reflects the updated @value');
+    }
+
+    '@test consume(captured) throws when no provider exists above the captured position'(
+      assert: QUnit['assert']
+    ) {
+      const provided = createContext<string>();
+      const missing = createContext<string>();
+
+      let captured: CapturedContext | undefined;
+      class Reader extends GlimmerishComponent {
+        constructor(owner: Owner, args: Record<string, unknown>) {
+          super(owner, args);
+          captured = captureContext();
+        }
+      }
+      setComponentTemplate(precompileTemplate(''), Reader);
+
+      let Root = setComponentTemplate(
+        precompileTemplate('<provided.Provide @value="here"><Reader/></provided.Provide>', {
+          strictMode: true,
+          scope: () => ({ provided, Reader }),
+        }),
+        templateOnly()
+      );
+
+      this.renderComponent(Root);
+
+      assert.strictEqual(provided.consume(captured!), 'here', 'sanity: the handle is valid');
+      assert.throws(
+        () => missing.consume(captured!),
+        /No matching `<Provide>` was found above the captured render-tree position/,
+        'a context with no provider above the captured position is rejected'
+      );
+    }
+
+    '@test consume(captured) rejects a value that is not a capture'(assert: QUnit['assert']) {
+      const ctx = createContext<string>();
+
+      assert.throws(
+        () => ctx.consume({} as CapturedContext),
+        /expects the handle returned from `captureContext\(\)`/,
+        'an arbitrary object is not accepted as a capture'
+      );
     }
   }
 );
