@@ -4,7 +4,6 @@ import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, CurriedComponent, DynamicScope } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import {
-  childRefFromParts,
   createComputeRef,
   createConstRef,
   createDebugAliasRef,
@@ -93,15 +92,11 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
       // gets switched.
       let outletOwner = outletState?.render?.owner ?? owner;
 
-      let modelRef = childRefFromParts(outletRef, ['render', 'model']);
-      let model = valueForRef(modelRef);
-
-      let context: Reference = createComputeRef(() => {
-        if (lastState === state) {
-          model = valueForRef(modelRef);
-        }
-        return model;
-      });
+      // `@context` is opaque to the outlet: the route manager builds it.
+      let produceContext = outletState?.render?.produceContext;
+      let context: Reference = produceContext
+        ? produceContext(outletRef, lastState, state)
+        : createConstRef(undefined, '@context');
 
       if (DEBUG) {
         context = createDebugAliasRef!('@context', context);
