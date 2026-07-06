@@ -99,7 +99,6 @@ module.exports = {
     'cancelRouterSetup',
     'canInvoke',
     'capabilities',
-    'captureContext',
     'captureRenderTree',
     'catalogEntriesByType',
     'catch',

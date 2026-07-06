@@ -115,44 +115,41 @@ export function lookupRenderContext(key: object): ContextRead | null | undefined
   return CURRENT === undefined ? undefined : CURRENT.lookup(key);
 }
 
-// captured handle -> node. Handing out an empty frozen object (rather than
-// the node itself) keeps captures opaque: user code can't forge or introspect
-// one. The node -- and the provider chain above it -- stays resolvable for as
-// long as user code holds the handle.
-const CAPTURED_NODES = new WeakMap<object, RenderScopeNode>();
+// user-facing component instance -> its render-scope node. Populated by the
+// VM when a component's `self` becomes known (VM_GET_COMPONENT_SELF_OP), so
+// `context.consume(this)` can resolve contexts after the render stack has
+// unwound. The association -- and the provider chain above the node -- lives
+// exactly as long as the instance itself.
+const ASSOCIATED_NODES = new WeakMap<object, RenderScopeNode>();
 
 /**
- * Capture the current render-tree position as an opaque handle
- * (createContext's `captureContext`). The handle can be resolved later with
- * `lookupCapturedRenderContext`, even after the render stack has unwound.
- * Returns `undefined` when called outside of rendering -- there is no
- * position to capture.
+ * Associate a user-facing component instance with the currently-rendering
+ * node, making the instance usable with `lookupRenderContextFor` later. A
+ * no-op outside of a render frame (there is no node to associate with).
  */
-export function captureRenderScope(): object | undefined {
+export function associateRenderScope(instance: object): void {
   let node = CURRENT === undefined ? null : CURRENT.capture();
-  if (node === null) {
-    return undefined;
+  if (node !== null) {
+    ASSOCIATED_NODES.set(instance, node);
   }
-  let handle = Object.freeze({});
-  CAPTURED_NODES.set(handle, node);
-  return handle;
 }
 
 /**
- * The nearest provider of `key` above a previously-captured render-tree
- * position:
- *   `undefined` -> `handle` is not a capture produced by `captureRenderScope`,
- *   `null`      -> a valid capture, but no provider for `key` above it,
+ * The nearest provider of `key` above `instance`'s position in the render
+ * tree:
+ *   `undefined` -> `instance` has no associated render-scope node (it is not
+ *                  a component instance, or it has not rendered),
+ *   `null`      -> a known instance, but no provider for `key` above it,
  *   a function  -> the nearest provider's read fn.
  *
  * Unlike `lookupRenderContext` this works outside of rendering -- that is the
  * point: event handlers and other async callbacks run after the render stack
  * has unwound, so the ambient lookup has nothing to see.
  */
-export function lookupCapturedRenderContext(
-  handle: object,
+export function lookupRenderContextFor(
+  instance: object,
   key: object
 ): ContextRead | null | undefined {
-  let node = CAPTURED_NODES.get(handle);
+  let node = ASSOCIATED_NODES.get(instance);
   return node === undefined ? undefined : lookupInChain(node, key);
 }

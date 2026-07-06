@@ -10,9 +10,7 @@ import {
   hash,
   type HashHelper,
   createContext,
-  captureContext,
   type Context,
-  type CapturedContext,
   uniqueId,
   type UniqueIdHelper,
 } from '@ember/helper';
@@ -41,15 +39,11 @@ createContext(Theme);
 // `consume()` with no argument reads ambiently, like `value`
 expectTypeOf(theme.consume()).toEqualTypeOf<Theme>();
 
-// `consume(captured)` resolves from a captured render-tree position
-const captured = captureContext();
-expectTypeOf(captured).toEqualTypeOf<CapturedContext>();
-expectTypeOf(theme.consume(captured)).toEqualTypeOf<Theme>();
+// `consume(component)` resolves from a component instance's render-tree
+// position (validity of the instance is checked at runtime)
+declare const componentInstance: object;
+expectTypeOf(theme.consume(componentInstance)).toEqualTypeOf<Theme>();
 
-// captureContext takes no arguments
+// consume takes an object, not a primitive
 // @ts-expect-error
-captureContext(theme);
-
-// The capture is opaque -- arbitrary objects don't typecheck as one
-// @ts-expect-error
-theme.consume({});
+theme.consume('not-a-component');
