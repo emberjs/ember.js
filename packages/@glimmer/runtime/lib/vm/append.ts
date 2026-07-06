@@ -7,7 +7,6 @@ import type {
   DebugVmSnapshot,
   DebugVmTrace,
   Destroyable,
-  DynamicScope,
   Environment,
   EvaluationContext,
   Owner,
@@ -58,22 +57,19 @@ class Stacks {
   readonly drop: object = {};
 
   readonly scope = new Stack<Scope>();
-  readonly dynamicScope = new Stack<DynamicScope>();
   readonly updating = new Stack<UpdatingOpcode[]>();
   readonly cache = new Stack<JumpIfNotModifiedOpcode>();
   readonly list = new Stack<ListBlockOpcode>();
   readonly destroyable = new Stack<object>();
 
-  constructor(scope: Scope, dynamicScope: DynamicScope) {
+  constructor(scope: Scope) {
     this.scope.push(scope);
-    this.dynamicScope.push(dynamicScope);
     this.destroyable.push(this.drop);
 
     if (LOCAL_DEBUG) {
       this.debug = (): DebugStacks => {
         return {
           scope: this.scope.snapshot(),
-          dynamicScope: this.dynamicScope.snapshot(),
           updating: this.updating.snapshot(),
           cache: this.cache.snapshot(),
           list: this.list.snapshot(),
@@ -223,7 +219,7 @@ export class VM {
   readonly context: EvaluationContext;
 
   constructor(
-    { scope, dynamicScope, stack, pc }: ClosureState,
+    { scope, stack, pc }: ClosureState,
     context: EvaluationContext,
     tree: TreeBuilder
   ) {
@@ -237,7 +233,7 @@ export class VM {
     this.#tree = tree;
     this.context = context;
 
-    this.#stacks = new Stacks(scope, dynamicScope);
+    this.#stacks = new Stacks(scope);
 
     this.args = new VMArgumentsImpl();
     this.lowlevel = new LowLevelVM(evalStack, context, externs(this), evalStack.registers);
@@ -279,11 +275,7 @@ export class VM {
       options.scope ?? { self: UNDEFINED_REFERENCE, size: 0 }
     );
 
-    const state = closureState(
-      context.program.heap.getaddr(options.handle),
-      scope,
-      options.dynamicScope
-    );
+    const state = closureState(context.program.heap.getaddr(options.handle), scope);
 
     return new VM(state, context, options.tree);
   }
@@ -314,7 +306,6 @@ export class VM {
     return {
       pc,
       scope: this.scope(),
-      dynamicScope: this.dynamicScope(),
       stack: this.stack.capture(args),
     };
   }
@@ -595,21 +586,6 @@ export class VM {
   }
 
   /**
-   * ## Opcodes
-   *
-   * - Append: `PushDynamicScope`
-   *
-   * ## State changes:
-   *
-   * [!] push Dynamic Scope Stack <- child of current Dynamic Scope
-   */
-  pushDynamicScope(): DynamicScope {
-    let child = this.dynamicScope().child();
-    this.#stacks.dynamicScope.push(child);
-    return child;
-  }
-
-  /**
    * ## State changes
    *
    * - [!] push Updating Stack
@@ -677,20 +653,6 @@ export class VM {
    */
   scope(): Scope {
     return expect(this.#stacks.scope.current, 'expected scope on the scope stack');
-  }
-
-  /**
-   * Get current Dynamic Scope
-   */
-  dynamicScope(): DynamicScope {
-    return expect(
-      this.#stacks.dynamicScope.current,
-      'expected dynamic scope on the dynamic scope stack'
-    );
-  }
-
-  popDynamicScope() {
-    this.#stacks.dynamicScope.pop();
   }
 
   /// SCOPE HELPERS
@@ -780,11 +742,10 @@ export class VM {
   }
 }
 
-function closureState(pc: number, scope: Scope, dynamicScope: DynamicScope): ClosureState {
+function closureState(pc: number, scope: Scope): ClosureState {
   return {
     pc,
     scope,
-    dynamicScope,
     stack: [],
   };
 }
@@ -806,7 +767,6 @@ export interface InitialVmState {
    *
    */
   tree: TreeBuilder;
-  dynamicScope: DynamicScope;
   owner: Owner;
 }
 
@@ -821,11 +781,6 @@ export interface ClosureState {
    * with block params is entered).
    */
   readonly scope: Scope;
-
-  /**
-   * The current value of the VM's dynamic scope
-   */
-  readonly dynamicScope: DynamicScope;
 
   /**
    * A number of stack elements captured during the initial evaluation, and which should be restored

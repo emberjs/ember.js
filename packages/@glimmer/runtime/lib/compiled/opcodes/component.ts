@@ -10,7 +10,6 @@ import type {
   ComponentInstanceState,
   ComponentInstanceWithCreate,
   Dict,
-  DynamicScope,
   ElementOperations,
   InternalComponentManager,
   ModifierInstance,
@@ -394,11 +393,6 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
     return;
   }
 
-  let dynamicScope: Nullable<DynamicScope> = null;
-  if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicScope)) {
-    dynamicScope = vm.dynamicScope();
-  }
-
   let hasDefaultBlock = flags & 1;
   let args: Nullable<VMArguments> = null;
 
@@ -416,7 +410,6 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
     definition.state,
     args,
     vm.env,
-    dynamicScope,
     self,
     !!hasDefaultBlock
   );
@@ -426,7 +419,7 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
   instance.state = state;
 
   if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.updateHook)) {
-    vm.updateWith(new UpdateComponentOpcode(state, manager, dynamicScope));
+    vm.updateWith(new UpdateComponentOpcode(state, manager));
   }
 });
 
@@ -925,14 +918,13 @@ APPEND_OPCODES.add(VM_COMMIT_COMPONENT_TRANSACTION_OP, (vm) => {
 export class UpdateComponentOpcode implements UpdatingOpcode {
   constructor(
     private component: ComponentInstanceState,
-    private manager: WithUpdateHook,
-    private dynamicScope: Nullable<DynamicScope>
+    private manager: WithUpdateHook
   ) {}
 
   evaluate(_vm: UpdatingVM) {
-    let { component, manager, dynamicScope } = this;
+    let { component, manager } = this;
 
-    manager.update(component, dynamicScope);
+    manager.update(component);
   }
 }
 

@@ -43,7 +43,14 @@ export { not } from './lib/helpers/not';
 export { or } from './lib/helpers/or';
 export { on } from './lib/modifiers/on';
 export { renderComponent, renderMain, renderSync } from './lib/render';
-export { DynamicScopeImpl, ScopeImpl } from './lib/scope';
+export {
+  EnterRenderScopeOpcode,
+  ExitRenderScopeOpcode,
+  provideRenderScopeValue,
+  readRenderScopeValue,
+  RenderScopeStackImpl,
+} from './lib/render-scope';
+export { ScopeImpl } from './lib/scope';
 export type { SafeString } from './lib/upsert';
 export { UpdatingVM, type VM } from './lib/vm';
 export {

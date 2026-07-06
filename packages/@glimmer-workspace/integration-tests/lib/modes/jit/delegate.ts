@@ -2,7 +2,6 @@ import type {
   CapturedRenderNode,
   Cursor,
   Dict,
-  DynamicScope,
   ElementNamespace,
   Environment,
   EvaluationContext,
@@ -221,13 +220,12 @@ export class JitRenderDelegate implements RenderDelegate {
   renderComponent(
     component: object,
     args: Record<string, unknown>,
-    element: SimpleElement,
-    dynamicScope?: DynamicScope
+    element: SimpleElement
   ): RenderResult {
     let cursor = { element, nextSibling: null };
     let { env } = this.context;
     let builder = this.getElementBuilder(env, cursor);
-    let iterator = renderComponent(this.context, builder, {}, component, args, dynamicScope);
+    let iterator = renderComponent(this.context, builder, {}, component, args);
 
     return renderSync(env, iterator);
   }

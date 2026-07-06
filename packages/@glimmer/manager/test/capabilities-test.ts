@@ -13,7 +13,7 @@ QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
       createArgs: false,
       attributeHook: false,
       elementHook: false,
-      dynamicScope: false,
+      renderScope: false,
       createCaller: false,
       updateHook: false,
       createInstance: false,
@@ -33,7 +33,7 @@ QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
       createArgs: true,
       attributeHook: true,
       elementHook: true,
-      dynamicScope: true,
+      renderScope: true,
       createCaller: true,
       updateHook: true,
       createInstance: true,
@@ -53,7 +53,7 @@ QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
       createArgs: false,
       attributeHook: false,
       elementHook: true,
-      dynamicScope: false,
+      renderScope: false,
       createCaller: false,
       updateHook: true,
       createInstance: false,
@@ -74,7 +74,7 @@ QUnit.test('allows querying bitmap for a capability', (assert) => {
     createArgs: false,
     attributeHook: false,
     elementHook: true,
-    dynamicScope: true,
+    renderScope: true,
     createCaller: false,
     updateHook: true,
     createInstance: false,
@@ -129,7 +129,7 @@ QUnit.test('allows querying bitmap for a capability', (assert) => {
     managerHasCapability(
       {} as InternalComponentManager,
       capabilities,
-      InternalComponentCapabilities.dynamicScope
+      InternalComponentCapabilities.renderScope
     )
   );
   assert.false(

@@ -69,7 +69,7 @@ import {
   VM_OPEN_DYNAMIC_ELEMENT_OP,
   VM_OPEN_ELEMENT_OP,
   VM_POP_ARGS_OP,
-  VM_POP_DYNAMIC_SCOPE_OP,
+  VM_POP_RENDER_SCOPE_OP,
   VM_POP_OP,
   VM_POP_REMOTE_ELEMENT_OP,
   VM_POP_SCOPE_OP,
@@ -81,7 +81,7 @@ import {
   VM_PUSH_BLOCK_SCOPE_OP,
   VM_PUSH_COMPONENT_DEFINITION_OP,
   VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
-  VM_PUSH_DYNAMIC_SCOPE_OP,
+  VM_PUSH_RENDER_SCOPE_OP,
   VM_PUSH_EMPTY_ARGS_OP,
   VM_PUSH_REMOTE_ELEMENT_OP,
   VM_PUSH_SYMBOL_TABLE_OP,
@@ -462,15 +462,15 @@ if (LOCAL_DEBUG) {
     ops: ['helper:handle'],
   };
 
-  METADATA[VM_PUSH_DYNAMIC_SCOPE_OP] = {
-    name: 'PushDynamicScope',
-    mnemonic: 'dynscopepush',
+  METADATA[VM_PUSH_RENDER_SCOPE_OP] = {
+    name: 'PushRenderScope',
+    mnemonic: 'rscopepush',
     stackChange: 0,
   };
 
-  METADATA[VM_POP_DYNAMIC_SCOPE_OP] = {
-    name: 'PopDynamicScope',
-    mnemonic: 'dynscopepop',
+  METADATA[VM_POP_RENDER_SCOPE_OP] = {
+    name: 'PopRenderScope',
+    mnemonic: 'rscopepop',
     stackChange: 0,
   };
 

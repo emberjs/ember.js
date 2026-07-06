@@ -18,13 +18,13 @@ import {
   VM_JUMP_IF_OP,
   VM_JUMP_UNLESS_OP,
   VM_LOAD_OP,
-  VM_POP_DYNAMIC_SCOPE_OP,
+  VM_POP_RENDER_SCOPE_OP,
   VM_POP_OP,
   VM_POP_SCOPE_OP,
   VM_PRIMITIVE_OP,
   VM_PRIMITIVE_REFERENCE_OP,
   VM_PUSH_BLOCK_SCOPE_OP,
-  VM_PUSH_DYNAMIC_SCOPE_OP,
+  VM_PUSH_RENDER_SCOPE_OP,
   VM_PUSH_SYMBOL_TABLE_OP,
   VM_TO_BOOLEAN_OP,
 } from '@glimmer/constants/lib/syscall-ops';
@@ -56,6 +56,7 @@ import {
 import { beginTrackFrame, consumeTag, endTrackFrame } from '@glimmer/validator/lib/tracking';
 import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
+import { EnterRenderScopeOpcode, ExitRenderScopeOpcode } from '../../render-scope';
 import type { UpdatingVM } from '../../vm';
 import type { VM } from '../../vm/append';
 
@@ -67,9 +68,16 @@ APPEND_OPCODES.add(VM_CHILD_SCOPE_OP, (vm) => vm.pushChildScope());
 
 APPEND_OPCODES.add(VM_POP_SCOPE_OP, (vm) => vm.popScope());
 
-APPEND_OPCODES.add(VM_PUSH_DYNAMIC_SCOPE_OP, (vm) => vm.pushDynamicScope());
+APPEND_OPCODES.add(VM_PUSH_RENDER_SCOPE_OP, (vm) => {
+  let scope = vm.env.renderScope;
+  vm.updateWith(new EnterRenderScopeOpcode(scope.push(), scope));
+});
 
-APPEND_OPCODES.add(VM_POP_DYNAMIC_SCOPE_OP, (vm) => vm.popDynamicScope());
+APPEND_OPCODES.add(VM_POP_RENDER_SCOPE_OP, (vm) => {
+  let scope = vm.env.renderScope;
+  scope.exit();
+  vm.updateWith(new ExitRenderScopeOpcode(scope));
+});
 
 APPEND_OPCODES.add(VM_CONSTANT_OP, (vm, { op1: other }) => {
   vm.stack.push(vm.constants.getValue(decodeHandle(other)));

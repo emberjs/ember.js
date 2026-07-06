@@ -19,6 +19,7 @@ import { ProgramImpl } from '@glimmer/program/lib/program';
 import { track } from '@glimmer/validator/lib/tracking';
 import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 
+import { RenderScopeStackImpl } from './render-scope';
 import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { isArgumentError } from './vm/arguments';
@@ -99,6 +100,8 @@ class TransactionImpl implements Transaction {
 export class EnvironmentImpl implements Environment {
   [TRANSACTION]: Nullable<TransactionImpl> = null;
 
+  readonly renderScope = new RenderScopeStackImpl();
+
   declare protected appendOperations: GlimmerTreeConstruction;
   protected updateOperations?: GlimmerTreeChanges | undefined;
 
@@ -144,6 +147,7 @@ export class EnvironmentImpl implements Environment {
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );
 
+    this.renderScope.begin();
     this.debugRenderTree?.begin();
 
     this[TRANSACTION] = new TransactionImpl();

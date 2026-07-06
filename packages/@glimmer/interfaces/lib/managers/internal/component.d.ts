@@ -9,7 +9,6 @@ import type { CapturedArguments, VMArguments } from '../../runtime/arguments.js'
 import type { RenderNode } from '../../runtime/debug-render-tree.js';
 import type { ElementOperations } from '../../runtime/element.js';
 import type { Environment } from '../../runtime/environment.js';
-import type { DynamicScope } from '../../runtime/scope.js';
 import type { CompilableProgram } from '../../template.js';
 import type { ProgramSymbolTable } from '../../tier1/symbol-table.js';
 
@@ -87,7 +86,7 @@ export interface InternalComponentCapabilities {
   /**
    * Whether the component needs an additional dynamic scope frame.
    */
-  dynamicScope: boolean;
+  renderScope: boolean;
 
   /**
    * Whether there is a component instance to create. If this is false,
@@ -119,7 +118,7 @@ export type PrepareArgsCapability = 0b0000000000100;
 export type CreateArgsCapability = 0b0000000001000;
 export type AttributeHookCapability = 0b0000000010000;
 export type ElementHookCapability = 0b0000000100000;
-export type DynamicScopeCapability = 0b0000001000000;
+export type RenderScopeCapability = 0b0000001000000;
 export type CreateCallerCapability = 0b0000010000000;
 export type UpdateHookCapability = 0b0000100000000;
 export type CreateInstanceCapability = 0b0001000000000;
@@ -135,7 +134,7 @@ export type InternalComponentCapability =
   | CreateArgsCapability
   | AttributeHookCapability
   | ElementHookCapability
-  | DynamicScopeCapability
+  | RenderScopeCapability
   | CreateCallerCapability
   | UpdateHookCapability
   | CreateInstanceCapability
@@ -203,7 +202,6 @@ export interface WithCreateInstance<
     state: ComponentDefinitionState,
     args: Nullable<VMArguments>,
     env: Environment,
-    dynamicScope: Nullable<DynamicScope>,
     caller: Nullable<Reference>,
     hasDefaultBlock: boolean
   ): ComponentInstanceState;
@@ -234,7 +232,7 @@ export interface WithUpdateHook<
 > extends InternalComponentManager<ComponentInstanceState> {
   // When the component's tag has invalidated, the manager's `update` hook is
   // called.
-  update(state: ComponentInstanceState, dynamicScope: Nullable<DynamicScope>): void;
+  update(state: ComponentInstanceState): void;
 }
 
 export interface WithDynamicLayout<

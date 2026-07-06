@@ -7,7 +7,7 @@ import type {
   CreateCallerCapability,
   CreateInstanceCapability,
   DynamicLayoutCapability,
-  DynamicScopeCapability,
+  RenderScopeCapability,
   DynamicTagCapability,
   ElementHookCapability,
   Expand,
@@ -56,7 +56,7 @@ export function capabilityFlagsFrom(capabilities: CapabilityOptions): Capability
     capability(capabilities, 'createArgs') |
     capability(capabilities, 'attributeHook') |
     capability(capabilities, 'elementHook') |
-    capability(capabilities, 'dynamicScope') |
+    capability(capabilities, 'renderScope') |
     capability(capabilities, 'createCaller') |
     capability(capabilities, 'updateHook') |
     capability(capabilities, 'createInstance') |
@@ -85,7 +85,7 @@ export type InternalComponentCapabilityFor<C extends InternalComponentCapability
             ? InternalComponentManager
             : C extends ElementHookCapability
               ? InternalComponentManager
-              : C extends DynamicScopeCapability
+              : C extends RenderScopeCapability
                 ? InternalComponentManager
                 : C extends CreateCallerCapability
                   ? InternalComponentManager

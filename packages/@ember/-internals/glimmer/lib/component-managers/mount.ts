@@ -43,7 +43,7 @@ const CAPABILITIES = {
   attributeHook: false,
   elementHook: false,
   createCaller: true,
-  dynamicScope: true,
+  renderScope: true,
   updateHook: true,
   createInstance: true,
   wrapped: false,

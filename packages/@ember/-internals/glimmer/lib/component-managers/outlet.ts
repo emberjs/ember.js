@@ -21,8 +21,8 @@ import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/referen
 import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
 import { unwrapTemplate } from './unwrap-template';
 
-import type { DynamicScope } from '../renderer';
 import type { OutletState } from '../utils/outlet';
+import { provideOutletState, readOutletState } from '../utils/render-scope';
 import type OutletView from '../views/outlet';
 
 function instrumentationPayload(def: OutletDefinitionState) {
@@ -53,7 +53,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   attributeHook: false,
   elementHook: false,
   createCaller: false,
-  dynamicScope: true,
+  renderScope: true,
   updateHook: false,
   createInstance: true,
   wrapped: false,
@@ -72,17 +72,16 @@ class OutletComponentManager
     _owner: InternalOwner,
     definition: OutletDefinitionState,
     _args: VMArguments,
-    env: Environment,
-    dynamicScope: DynamicScope
+    env: Environment
   ): OutletInstanceState {
-    let parentStateRef = dynamicScope.get('outletState');
+    let parentStateRef = readOutletState(env.renderScope.current);
     let currentStateRef = definition.ref;
 
     // This is the actual primary responsibility of the outlet component –
     // it represents the switching from one route component/template into
     // the next. The rest only exists to support the debug render tree and
     // the old-school (and unreliable) instrumentation.
-    dynamicScope.set('outletState', currentStateRef);
+    provideOutletState(env, currentStateRef);
 
     let state: OutletInstanceState = {
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),

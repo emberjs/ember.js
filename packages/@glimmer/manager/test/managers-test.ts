@@ -71,7 +71,7 @@ module('Managers', () => {
             createArgs: false,
             attributeHook: false,
             elementHook: false,
-            dynamicScope: false,
+            renderScope: false,
             createCaller: false,
             updateHook: false,
             createInstance: false,

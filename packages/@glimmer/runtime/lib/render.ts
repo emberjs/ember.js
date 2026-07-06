@@ -2,7 +2,6 @@ import { DEBUG } from '@glimmer/env';
 import type {
   CompilableProgram,
   ComponentDefinitionState,
-  DynamicScope,
   Environment,
   EvaluationContext,
   Owner,
@@ -19,7 +18,6 @@ import { childRefFor, createConstRef } from '@glimmer/reference/lib/reference';
 import { debug } from '@glimmer/validator/lib/debug';
 
 import { inTransaction } from './environment';
-import { DynamicScopeImpl } from './scope';
 import { VM } from './vm/append';
 
 class TemplateIteratorImpl implements TemplateIterator {
@@ -52,8 +50,7 @@ export function renderMain(
   owner: Owner,
   self: Reference,
   tree: TreeBuilder,
-  layout: CompilableProgram,
-  dynamicScope: DynamicScope = new DynamicScopeImpl()
+  layout: CompilableProgram
 ): TemplateIterator {
   let handle = unwrapHandle(layout.compile(context));
   let numSymbols = layout.symbolTable.symbols.length;
@@ -63,7 +60,6 @@ export function renderMain(
       self,
       size: numSymbols,
     },
-    dynamicScope,
     tree,
     handle,
     owner,
@@ -130,10 +126,9 @@ export function renderComponent(
   tree: TreeBuilder,
   owner: Owner,
   definition: ComponentDefinitionState,
-  args: Record<string, unknown> = {},
-  dynamicScope: DynamicScope = new DynamicScopeImpl()
+  args: Record<string, unknown> = {}
 ): TemplateIterator {
-  let vm = VM.initial(context, { tree, handle: context.stdlib.main, dynamicScope, owner });
+  let vm = VM.initial(context, { tree, handle: context.stdlib.main, owner });
   return renderInvocation(vm, context, owner, definition, recordToReference(args));
 }
 

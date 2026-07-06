@@ -1,40 +1,6 @@
-import type {
-  Dict,
-  DynamicScope,
-  Nullable,
-  Owner,
-  Scope,
-  ScopeBlock,
-  ScopeSlot,
-} from '@glimmer/interfaces';
+import type { Nullable, Owner, Scope, ScopeBlock, ScopeSlot } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
-import { assign } from '@glimmer/util/lib/object-utils';
-
-export class DynamicScopeImpl implements DynamicScope {
-  private bucket: Dict<Reference>;
-
-  constructor(bucket?: Dict<Reference>) {
-    if (bucket) {
-      this.bucket = assign({}, bucket);
-    } else {
-      this.bucket = {};
-    }
-  }
-
-  get(key: string): Reference {
-    return unwrap(this.bucket[key]);
-  }
-
-  set(key: string, reference: Reference): Reference {
-    return (this.bucket[key] = reference);
-  }
-
-  child(): DynamicScopeImpl {
-    return new DynamicScopeImpl(this.bucket);
-  }
-}
 
 export function isScopeReference(s: ScopeSlot): s is Reference {
   if (s === null || Array.isArray(s)) return false;

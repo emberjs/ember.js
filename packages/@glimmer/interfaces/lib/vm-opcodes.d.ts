@@ -61,8 +61,8 @@ export type VmFlushElement = 54;
 export type VmCloseElement = 55;
 export type VmPopRemoteElement = 56;
 export type VmModifier = 57;
-export type VmPushDynamicScope = 59;
-export type VmPopDynamicScope = 60;
+export type VmPushRenderScope = 59;
+export type VmPopRenderScope = 60;
 export type VmCompileBlock = 61;
 export type VmPushBlockScope = 62;
 export type VmPushSymbolTable = 63;
@@ -154,8 +154,8 @@ export type VmOp =
   | VmCloseElement
   | VmPopRemoteElement
   | VmModifier
-  | VmPushDynamicScope
-  | VmPopDynamicScope
+  | VmPushRenderScope
+  | VmPopRenderScope
   | VmCompileBlock
   | VmPushBlockScope
   | VmPushSymbolTable

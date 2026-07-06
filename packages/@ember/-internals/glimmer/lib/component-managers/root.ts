@@ -14,13 +14,13 @@ import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
 import { CONSTANT_TAG } from '@glimmer/validator/lib/validators';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import type Component from '../component';
-import type { DynamicScope } from '../renderer';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   DIRTY_TAG,
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
 } from './curly';
+import { provideView } from '../utils/render-scope';
 
 class RootComponentManager extends CurlyComponentManager {
   component: Component;
@@ -34,14 +34,14 @@ class RootComponentManager extends CurlyComponentManager {
     _owner: Owner,
     _state: unknown,
     _args: Nullable<VMArguments>,
-    { isInteractive }: Environment,
-    dynamicScope: DynamicScope
+    env: Environment
   ) {
+    let { isInteractive } = env;
     let component = this.component;
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
-    dynamicScope.view = component;
+    provideView(env, component);
 
     let hasWrappedElement = component.tagName !== '';
 
@@ -87,7 +87,7 @@ const ROOT_CAPABILITIES: InternalComponentCapabilities = {
   attributeHook: true,
   elementHook: true,
   createCaller: true,
-  dynamicScope: true,
+  renderScope: true,
   updateHook: true,
   createInstance: true,
   wrapped: true,

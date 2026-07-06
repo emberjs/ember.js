@@ -1,7 +1,6 @@
 import type {
   ComponentDefinitionState,
   Dict,
-  DynamicScope,
   Helper,
   Maybe,
   Nullable,
@@ -389,11 +388,7 @@ export class RenderTest implements IRenderTest {
     });
   }
 
-  renderComponent(
-    component: ComponentDefinitionState,
-    args: Dict = {},
-    dynamicScope?: DynamicScope
-  ): void {
+  renderComponent(component: ComponentDefinitionState, args: Dict = {}): void {
     try {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       QUnit.assert.ok(true, `Rendering ${String(component)} with ${JSON.stringify(args)}`);
@@ -407,12 +402,7 @@ export class RenderTest implements IRenderTest {
     );
 
     run(() => {
-      this.renderResult = this.delegate.renderComponent!(
-        component,
-        args,
-        this.element,
-        dynamicScope
-      );
+      this.renderResult = this.delegate.renderComponent!(component, args, this.element);
     });
   }
 

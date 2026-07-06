@@ -38,7 +38,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   attributeHook: false,
   elementHook: false,
   createCaller: false,
-  dynamicScope: false,
+  renderScope: false,
   updateHook: false,
   createInstance: true,
   wrapped: false,

@@ -48,7 +48,8 @@ import {
 } from '@glimmer/validator/lib/tracking';
 import { validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type Component from '../component';
-import type { DynamicScope } from '../renderer';
+import type { View } from '../renderer';
+import { provideView, readParentView } from '../utils/render-scope';
 import type RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
 import {
@@ -262,13 +263,14 @@ export default class CurlyComponentManager
     owner: Owner,
     ComponentClass: ComponentFactory,
     args: VMArguments,
-    { isInteractive }: Environment,
-    dynamicScope: DynamicScope,
+    env: Environment,
     callerSelfRef: Reference
   ): ComponentStateBucket {
+    let { isInteractive } = env;
+
     // Get the nearest concrete component instance from the scope. "Virtual"
     // components will be skipped.
-    let parentView = dynamicScope.view;
+    let parentView = (readParentView(env.renderScope.current) ?? null) as View | null;
 
     // Capture the arguments, which tells Glimmer to give us our own, stable
     // copy of the Arguments object that is safe to hold on to between renders.
@@ -309,8 +311,8 @@ export default class CurlyComponentManager
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
     // We become the new parentView for downstream components, so save our
-    // component off on the dynamic scope.
-    dynamicScope.view = component;
+    // component off on the render scope.
+    provideView(env, component);
 
     // Unless we're the root component, we need to add ourselves to our parent
     // component's childViews array.
@@ -554,7 +556,7 @@ const CURLY_CAPABILITIES: InternalComponentCapabilities = {
   attributeHook: true,
   elementHook: true,
   createCaller: true,
-  dynamicScope: true,
+  renderScope: true,
   updateHook: true,
   createInstance: true,
   wrapped: true,

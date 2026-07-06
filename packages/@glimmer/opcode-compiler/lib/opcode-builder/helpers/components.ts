@@ -27,7 +27,7 @@ import {
   VM_JUMP_UNLESS_OP,
   VM_LOAD_OP,
   VM_OPEN_DYNAMIC_ELEMENT_OP,
-  VM_POP_DYNAMIC_SCOPE_OP,
+  VM_POP_RENDER_SCOPE_OP,
   VM_POP_OP,
   VM_POP_SCOPE_OP,
   VM_POPULATE_LAYOUT_OP,
@@ -36,7 +36,7 @@ import {
   VM_PUSH_ARGS_OP,
   VM_PUSH_COMPONENT_DEFINITION_OP,
   VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
-  VM_PUSH_DYNAMIC_SCOPE_OP,
+  VM_PUSH_RENDER_SCOPE_OP,
   VM_PUSH_EMPTY_ARGS_OP,
   VM_PUSH_SYMBOL_TABLE_OP,
   VM_PUT_COMPONENT_OPERATIONS_OP,
@@ -310,8 +310,8 @@ function InvokeStaticComponent(
 
   op(VM_BEGIN_COMPONENT_TRANSACTION_OP, $s0);
 
-  if (hasCapability(capabilities, InternalComponentCapabilities.dynamicScope)) {
-    op(VM_PUSH_DYNAMIC_SCOPE_OP);
+  if (hasCapability(capabilities, InternalComponentCapabilities.renderScope)) {
+    op(VM_PUSH_RENDER_SCOPE_OP);
   }
 
   if (hasCapability(capabilities, InternalComponentCapabilities.createInstance)) {
@@ -367,8 +367,8 @@ function InvokeStaticComponent(
   op(VM_POP_FRAME_OP);
   op(VM_POP_SCOPE_OP);
 
-  if (hasCapability(capabilities, InternalComponentCapabilities.dynamicScope)) {
-    op(VM_POP_DYNAMIC_SCOPE_OP);
+  if (hasCapability(capabilities, InternalComponentCapabilities.renderScope)) {
+    op(VM_POP_RENDER_SCOPE_OP);
   }
 
   op(VM_COMMIT_COMPONENT_TRANSACTION_OP);
@@ -446,7 +446,7 @@ export function invokePreparedComponent(
   populateLayout: Nullable<() => void> = null
 ): void {
   op(VM_BEGIN_COMPONENT_TRANSACTION_OP, $s0);
-  op(VM_PUSH_DYNAMIC_SCOPE_OP);
+  op(VM_PUSH_RENDER_SCOPE_OP);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   op(VM_CREATE_COMPONENT_OP, (hasBlock as any) | 0);
@@ -474,7 +474,7 @@ export function invokePreparedComponent(
   op(VM_POP_FRAME_OP);
 
   op(VM_POP_SCOPE_OP);
-  op(VM_POP_DYNAMIC_SCOPE_OP);
+  op(VM_POP_RENDER_SCOPE_OP);
   op(VM_COMMIT_COMPONENT_TRANSACTION_OP);
 }
 

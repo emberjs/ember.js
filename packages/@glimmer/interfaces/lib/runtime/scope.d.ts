@@ -32,8 +32,25 @@ export interface Scope {
   child(): Scope;
 }
 
-export interface DynamicScope {
-  get(key: string): Reference;
-  set(key: string, reference: Reference): Reference;
-  child(): DynamicScope;
+/**
+ * A node in the render scope tree. Each component with the `renderScope`
+ * capability gets a node, linked to the nearest enclosing node. Values
+ * provided at a node are visible to that node's subtree via `readRenderScopeValue`.
+ */
+export interface RenderScopeNode {
+  parent: Nullable<RenderScopeNode>;
+  values: Nullable<Map<PropertyKey, unknown>>;
+}
+
+/**
+ * Tracks the current render scope node for the environment's active render.
+ * `push` creates a node during initial render; `enter`/`exit` re-establish
+ * an existing node while the updating VM descends the tree.
+ */
+export interface RenderScopeStack {
+  readonly current: Nullable<RenderScopeNode>;
+  begin(): void;
+  push(): RenderScopeNode;
+  enter(node: RenderScopeNode): void;
+  exit(): void;
 }

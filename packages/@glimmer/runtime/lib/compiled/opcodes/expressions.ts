@@ -175,7 +175,7 @@ APPEND_OPCODES.add(VM_HELPER_OP, (vm, { op1: handle }) => {
   let stack = vm.stack;
   let helper = check(vm.constants.getValue(handle), CheckHelper);
   let args = check(stack.pop(), CheckArguments);
-  let value = helper(args.capture(), vm.getOwner(), vm.dynamicScope());
+  let value = helper(args.capture(), vm.getOwner(), vm.env.renderScope.current ?? undefined);
 
   if (_hasDestroyableChildren(value)) {
     vm.associateDestroyable(value);

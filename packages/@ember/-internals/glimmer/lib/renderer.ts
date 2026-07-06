@@ -14,7 +14,6 @@ import type {
   Bounds,
   Environment,
   RenderResult as GlimmerRenderResult,
-  DynamicScope as GlimmerDynamicScope,
   Template,
   TemplateFactory,
   EvaluationContext,
@@ -39,7 +38,6 @@ import { BOUNDS } from './component-managers/curly';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import RouterResolver from './router-resolver';
-import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
 import { makeRouteTemplate } from './component-managers/route-template';
 import type { IBuilder, RendererRoot } from './base-renderer';
@@ -67,34 +65,6 @@ export interface View {
   [BOUNDS]: Bounds | null;
 }
 
-export class DynamicScope implements GlimmerDynamicScope {
-  constructor(
-    public view: View | null,
-    public outletState: Reference<OutletState | undefined>
-  ) {}
-
-  child() {
-    return new DynamicScope(this.view, this.outletState);
-  }
-
-  get(key: 'outletState'): Reference<OutletState | undefined> {
-    assert(
-      `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
-      key === 'outletState'
-    );
-    return this.outletState;
-  }
-
-  set(key: 'outletState', value: Reference<OutletState | undefined>) {
-    assert(
-      `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
-      key === 'outletState'
-    );
-    this.outletState = value;
-    return value;
-  }
-}
-
 class ClassicRootState implements RendererRoot {
   readonly type = 'classic';
   public id: string;
@@ -110,7 +80,6 @@ class ClassicRootState implements RendererRoot {
     template: Template,
     self: Reference<unknown>,
     parentElement: SimpleElement,
-    dynamicScope: DynamicScope,
     builder: IBuilder
   ) {
     assert(
@@ -131,8 +100,7 @@ class ClassicRootState implements RendererRoot {
         owner,
         self,
         builder(context.env, { element: parentElement, nextSibling: null }),
-        layout,
-        dynamicScope
+        layout
       );
 
       let result = (this.result = iterator.sync());
@@ -268,7 +236,6 @@ export class Renderer extends BaseRenderer {
     target: SimpleElement
   ): void {
     let self = createConstRef(definition, 'this');
-    let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new ClassicRootState(
       root,
       this.state.context,
@@ -276,7 +243,6 @@ export class Renderer extends BaseRenderer {
       this._rootTemplate,
       self,
       target,
-      dynamicScope,
       this.state.builder
     );
     this.state.renderRoot(rootState, this);

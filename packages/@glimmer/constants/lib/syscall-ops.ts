@@ -59,7 +59,7 @@ import type {
   VmOpenElement,
   VmPop,
   VmPopArgs,
-  VmPopDynamicScope,
+  VmPopRenderScope,
   VmPopRemoteElement,
   VmPopScope,
   VmPopulateLayout,
@@ -70,7 +70,7 @@ import type {
   VmPushBlockScope,
   VmPushComponentDefinition,
   VmPushDynamicComponentInstance,
-  VmPushDynamicScope,
+  VmPushRenderScope,
   VmPushEmptyArgs,
   VmPushRemoteElement,
   VmPushSymbolTable,
@@ -135,8 +135,8 @@ export const VM_FLUSH_ELEMENT_OP = 54 satisfies VmFlushElement;
 export const VM_CLOSE_ELEMENT_OP = 55 satisfies VmCloseElement;
 export const VM_POP_REMOTE_ELEMENT_OP = 56 satisfies VmPopRemoteElement;
 export const VM_MODIFIER_OP = 57 satisfies VmModifier;
-export const VM_PUSH_DYNAMIC_SCOPE_OP = 59 satisfies VmPushDynamicScope;
-export const VM_POP_DYNAMIC_SCOPE_OP = 60 satisfies VmPopDynamicScope;
+export const VM_PUSH_RENDER_SCOPE_OP = 59 satisfies VmPushRenderScope;
+export const VM_POP_RENDER_SCOPE_OP = 60 satisfies VmPopRenderScope;
 export const VM_COMPILE_BLOCK_OP = 61 satisfies VmCompileBlock;
 export const VM_PUSH_BLOCK_SCOPE_OP = 62 satisfies VmPushBlockScope;
 export const VM_PUSH_SYMBOL_TABLE_OP = 63 satisfies VmPushSymbolTable;

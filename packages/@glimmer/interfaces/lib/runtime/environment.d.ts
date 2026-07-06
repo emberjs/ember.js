@@ -1,3 +1,4 @@
+import type { RenderScopeStack } from './scope.js';
 import type { SimpleDocument } from '@simple-dom/interface';
 
 import type {
@@ -46,6 +47,7 @@ export interface Environment {
   getAppendOperations(): GlimmerTreeConstruction;
 
   isInteractive: boolean;
+  renderScope: RenderScopeStack;
   debugRenderTree?: DebugRenderTree | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError?: ((error: any) => boolean) | undefined;

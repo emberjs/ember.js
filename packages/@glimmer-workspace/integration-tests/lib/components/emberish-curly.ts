@@ -4,7 +4,6 @@ import type {
   CompilableProgram,
   Destroyable,
   Dict,
-  DynamicScope,
   ElementOperations,
   Environment,
   InternalComponentCapabilities,
@@ -40,7 +39,6 @@ export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Nullable<Attrs>; newAttrs: Attrs };
 
 export interface EmberishCurlyComponentFactory extends TestComponentConstructor<EmberishCurlyComponent> {
-  fromDynamicScope?: string[];
   positionalParams: string | string[];
   create(options: { attrs: Attrs; targetObject: any }): EmberishCurlyComponent;
   new (...args: unknown[]): this;
@@ -124,7 +122,7 @@ const EMBERISH_CURLY_CAPABILITIES: InternalComponentCapabilities = {
   createArgs: true,
   attributeHook: true,
   elementHook: true,
-  dynamicScope: true,
+  renderScope: true,
   createCaller: true,
   updateHook: true,
   createInstance: true,
@@ -205,7 +203,6 @@ export class EmberishCurlyComponentManager
     definition: EmberishCurlyComponentFactory,
     _args: VMArguments,
     _env: Environment,
-    dynamicScope: DynamicScope,
     callerSelf: Reference,
     hasDefaultBlock: boolean
   ): EmberishCurlyComponentState {
@@ -224,15 +221,6 @@ export class EmberishCurlyComponentManager
     let component = klass.create(merged);
 
     component.args = args;
-
-    let dyn: Nullable<string[]> = klass.fromDynamicScope || null;
-
-    if (dyn) {
-      for (let i = 0; i < dyn.length; i++) {
-        let name = dyn[i] as string;
-        component.set(name, valueForRef(dynamicScope.get(name)));
-      }
-    }
 
     consumeTag(component.dirtinessTag);
 

@@ -4,7 +4,7 @@ import { DEBUG } from '@glimmer/env';
 import type {
   CapturedArguments,
   CurriedComponent,
-  DynamicScope,
+  RenderScopeNode,
   Template,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
@@ -24,6 +24,7 @@ import { OutletComponent, type OutletDefinitionState } from '../component-manage
 import { makeRouteTemplate } from '../component-managers/route-template';
 import { internalHelper } from '../helpers/internal-helper';
 import type { OutletState } from '../utils/outlet';
+import { readOutletState } from '../utils/render-scope';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -57,15 +58,16 @@ import type { OutletState } from '../utils/outlet';
   @public
 */
 export const outletHelper = /*@__PURE__*/ internalHelper(
-  (_args: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
+  (_args: CapturedArguments, owner?: InternalOwner, scope?: RenderScopeNode) => {
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
       scope
     );
 
+    let outletStateRef = readOutletState(scope);
     let outletRef = createComputeRef(() => {
-      let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
+      let state = valueForRef(outletStateRef);
       return state?.outlets?.main;
     });
 

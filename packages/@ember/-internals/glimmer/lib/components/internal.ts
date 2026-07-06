@@ -5,7 +5,6 @@ import { assert } from '@ember/debug';
 import type {
   CapturedArguments,
   Destroyable,
-  DynamicScope,
   Environment,
   InternalComponentCapabilities,
   InternalComponentManager,
@@ -164,7 +163,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   attributeHook: false,
   elementHook: false,
   createCaller: true,
-  dynamicScope: false,
+  renderScope: false,
   updateHook: false,
   createInstance: true,
   wrapped: false,
@@ -186,7 +185,6 @@ class InternalManager
     definition: OpaqueInternalComponentConstructor,
     args: VMArguments,
     _env: Environment,
-    _dynamicScope: DynamicScope,
     caller: Reference
   ): InternalComponent {
     assert('caller must be const', isConstRef(caller));

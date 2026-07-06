@@ -2,7 +2,6 @@ import { DEBUG } from '@glimmer/env';
 import type {
   AppendingBlock,
   Bounds,
-  DynamicScope,
   Environment,
   EvaluationContext,
   ExceptionHandler,
@@ -106,7 +105,6 @@ export class UpdatingVM implements IUpdatingVM {
 export interface VMState {
   readonly pc: number;
   readonly scope: Scope;
-  readonly dynamicScope: DynamicScope;
   readonly stack: unknown[];
 }
 
