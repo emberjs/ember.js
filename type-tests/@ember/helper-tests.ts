@@ -35,3 +35,15 @@ expectTypeOf(theme.value).toEqualTypeOf<Theme>();
 
 // @ts-expect-error createContext does not accept a class (or any value) argument
 createContext(Theme);
+
+// `consume()` with no argument reads ambiently, like `value`
+expectTypeOf(theme.consume()).toEqualTypeOf<Theme>();
+
+// `consume(component)` resolves from a component instance's render-tree
+// position (validity of the instance is checked at runtime)
+declare const componentInstance: object;
+expectTypeOf(theme.consume(componentInstance)).toEqualTypeOf<Theme>();
+
+// consume takes an object, not a primitive
+// @ts-expect-error
+theme.consume('not-a-component');

@@ -727,6 +727,10 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  * - `value`: a getter (also usable as a template path) that returns the
  *    nearest enclosing provided value. **Throws** if there is no matching
  *    provider higher in the render tree, or if read outside of rendering.
+ * - `consume`: with no argument, identical to reading `value`. Passed a
+ *    component instance, it resolves the context from that component's
+ *    position in the render tree instead -- the way to read a context from
+ *    event handlers and other code that runs outside of rendering.
  *
  * ```gjs
  * import { createContext } from '@ember/helper';
@@ -750,10 +754,37 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  * consumers re-render; mutating `@tracked` fields on a stable provided
  * object likewise invalidates consumers.
  *
+ * Reading a context from an event handler (or any other code that runs
+ * outside of rendering, where the ambient `value` read throws) works by
+ * passing the component instance to `consume` — the instance identifies the
+ * component's position in the render tree:
+ *
+ * ```gjs
+ * import Component from '@glimmer/component';
+ * import { createContext } from '@ember/helper';
+ * import { on } from '@ember/modifier';
+ *
+ * const theme = createContext<Theme>();
+ *
+ * class ThemedButton extends Component {
+ *   onClick = () => {
+ *     console.log(theme.consume(this).color);
+ *   };
+ *
+ *   <template>
+ *     <button {{on 'click' this.onClick}}>{{yield}}</button>
+ *   </template>
+ * }
+ * ```
+ *
+ * Any rendered component instance works with every context, and resolution
+ * happens at `consume` time — the value read is the provider's current
+ * `@value`, not a snapshot from render time.
+ *
  * @method createContext
  * @static
  * @for @ember/helper
- * @returns {Object} `{ Provide, value }`
+ * @returns {Object} `{ Provide, value, consume }`
  * @public
  */
 export { createContext } from '@ember/-internals/glimmer/lib/create-context';
