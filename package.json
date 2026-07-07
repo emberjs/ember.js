@@ -69,7 +69,6 @@
     "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",
     "chalk": "^4.0.0",
-    "ember-cli-babel": "^8.3.1",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
