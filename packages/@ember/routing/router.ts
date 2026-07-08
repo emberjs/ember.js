@@ -57,8 +57,8 @@ import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
 import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
-import { sendEvent } from '@ember/-internals/metal';
-import { disableDeprecations } from '@ember/-internals/utils';
+import { sendEvent } from '@ember/-internals/metal/lib/events';
+import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
 
 /**
 @module @ember/routing/router

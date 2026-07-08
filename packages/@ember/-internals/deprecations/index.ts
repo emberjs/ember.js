@@ -127,11 +127,11 @@ export const DEPRECATIONS = {
     url: 'https://deprecations.emberjs.com/id/deprecate-target-action-support',
   }),
   DEPRECATE_EVENTED: deprecation({
-    id: 'ember-evented',
+    id: 'deprecate-evented',
     for: 'ember-source',
-    since: { available: '6.12.0' },
+    since: { available: '7.3.0' },
     until: '8.0.0',
-    url: 'https://deprecations.emberjs.com/id/ember-evented',
+    url: 'https://deprecations.emberjs.com/id/deprecate-evented',
   }),
 };
 

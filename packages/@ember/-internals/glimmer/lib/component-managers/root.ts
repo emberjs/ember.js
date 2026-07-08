@@ -21,7 +21,7 @@ import CurlyComponentManager, {
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
 } from './curly';
-import { sendCoreViewEvent } from '@ember/-internals/views';
+import { sendCoreViewEvent } from '@ember/-internals/views/lib/views/core-view-utils';
 
 class RootComponentManager extends CurlyComponentManager {
   component: Component;
