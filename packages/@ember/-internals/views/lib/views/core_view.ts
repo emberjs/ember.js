@@ -5,6 +5,7 @@ import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
 import states from './states';
+import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
 
 /**
   `CoreView` is an abstract class that exists to give view-like behavior
@@ -24,7 +25,7 @@ import states from './states';
 */
 
 interface CoreView extends Evented, ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
+class CoreView extends disableDeprecations(() => FrameworkObject.extend(Evented, ActionHandler)) {
   isView = true;
 
   declare _states: typeof states;

@@ -2,6 +2,7 @@ import { privatize as P } from '@ember/-internals/container/lib/registry';
 import { addObserver, flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty } from '@ember/-internals/metal/lib/decorator';
+import { sendEvent } from '@ember/-internals/metal/lib/events';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
@@ -40,6 +41,7 @@ import {
   prefixRouteNameArg,
   stashParamNames,
 } from './lib/utils';
+import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<R> {
   _names?: unknown[];
@@ -256,7 +258,10 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) implements IRoute {
+class Route<Model = unknown>
+  extends disableDeprecations(() => EmberObject.extend(ActionHandler, Evented))
+  implements IRoute
+{
   static isRouteFactory = true;
 
   // These properties will end up appearing in the public interface because we
@@ -773,7 +778,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   */
   exit(transition?: Transition) {
     this.deactivate(transition);
-    this.trigger('deactivate', transition);
+    sendEvent(this, 'deactivate', [transition]);
     this.teardownViews();
   }
 
@@ -799,7 +804,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   enter(transition: Transition) {
     this[RENDER_STATE] = undefined;
     this.activate(transition);
-    this.trigger('activate', transition);
+    sendEvent(this, 'activate', [transition]);
   }
 
   /**
