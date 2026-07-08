@@ -9,7 +9,6 @@
 
 import type {
   CustomRenderNode,
-  DynamicScope,
   InternalComponentCapabilities,
   InternalComponentManager,
   Reference,
@@ -24,14 +23,14 @@ import { outletHelper } from '@ember/-internals/glimmer/lib/syntax/outlet';
 // Renders the invokable passed in as `@Component` and forwards
 // `@model` / `@controller` onto it.
 const CLASSIC_WRAPPER_TEMPLATE = precompileTemplate(
-  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{outlet}}/>`,
+  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{(outlet)}}/>`,
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/classic/wrapper.hbs',
     strictMode: true,
     scope() {
       return {
-        outlet: outletHelper
-      }
+        outlet: outletHelper,
+      };
     },
   }
 );
@@ -41,17 +40,7 @@ class ClassicRouteWrapperManager
     InternalComponentManager<null, ClassicRouteWrapperDefinition>,
     WithCustomDebugRenderTree<null, ClassicRouteWrapperDefinition>
 {
-  create(_owner: unknown,
-    _definition: unknown,
-    _args: unknown,
-    _env: unknown,
-    dynamicScope: DynamicScope) {
-      console.log('calling create in wrapper manager')
-      console.log(dynamicScope)
-  }
   getCapabilities(): InternalComponentCapabilities {
-    // Match templateOnlyComponent's capabilities: no element, no args capture,
-    // no instance state.
     return {
       dynamicLayout: false,
       dynamicTag: false,
@@ -60,7 +49,7 @@ class ClassicRouteWrapperManager
       attributeHook: false,
       elementHook: false,
       createCaller: false,
-      dynamicScope: true,
+      dynamicScope: false,
       updateHook: false,
       createInstance: false,
       wrapped: false,
