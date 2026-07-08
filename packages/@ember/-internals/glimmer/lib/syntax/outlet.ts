@@ -50,6 +50,7 @@ import type { OutletState } from '../utils/outlet';
 */
 export const outletHelper = /*@__PURE__*/ internalHelper(
   (_args: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
+    console.log('FACE but from outlet')
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',

@@ -384,6 +384,7 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
 });
 
 APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
+  console.log('create component opcode')
   let instance = check(vm.fetchValue($s0), CheckComponentInstance);
   let { definition, manager, capabilities } = instance;
 
@@ -396,6 +397,7 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
 
   let dynamicScope: Nullable<DynamicScope> = null;
   if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicScope)) {
+    console.log('has the capabilities')
     dynamicScope = vm.dynamicScope();
   }
 
@@ -411,6 +413,7 @@ APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
     self = vm.getSelf();
   }
 
+  console.log('about to call create')
   let state = manager.create(
     vm.getOwner(),
     definition.state,
