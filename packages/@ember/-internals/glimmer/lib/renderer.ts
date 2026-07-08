@@ -3,6 +3,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { getViewElement, getViewId } from '@ember/-internals/views/lib/system/utils';
+import { sendCoreViewEvent } from '@ember/-internals/views/lib/views/core-view-utils';
 import { assert } from '@ember/debug';
 import {
   associateDestroyableChild,
@@ -309,7 +310,7 @@ export class Renderer extends BaseRenderer {
     this.cleanupRootFor(view);
 
     if (this.state.isInteractive) {
-      view.trigger('didDestroyElement');
+      sendCoreViewEvent(view, 'didDestroyElement');
     }
   }
 

@@ -8,6 +8,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
+import { addListener } from '@ember/-internals/metal';
 
 class LifeCycleHooksTest extends RenderingTestCase {
   constructor() {
@@ -176,7 +177,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
         assertNoElement('init', this);
         assertState('init', 'preRender', this);
 
-        this.on('init', () => pushHook('on(init)'));
+        addListener(this, 'init', () => pushHook('on(init)'));
 
         schedule('afterRender', () => {
           this.isInitialRender = false;

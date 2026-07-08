@@ -32,3 +32,9 @@ export {
   teardownMandatorySetter,
   setWithMandatorySetter,
 } from './lib/mandatory-setter';
+export {
+  DEPRECATION,
+  setDeprecation,
+  findDeprecation,
+  disableDeprecations,
+} from './lib/mixin-deprecation';
