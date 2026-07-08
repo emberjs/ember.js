@@ -3,6 +3,7 @@ import {
   clearViewElement,
   getViewElement,
 } from '@ember/-internals/views/lib/system/utils';
+import { sendCoreViewEvent } from '@ember/-internals/views/lib/views/core-view-utils';
 import { registerDestructor } from '@glimmer/destroyable';
 import type { CapturedNamedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
@@ -52,8 +53,8 @@ export default class ComponentStateBucket {
 
     if (isInteractive) {
       beginUntrackFrame();
-      component.trigger('willDestroyElement');
-      component.trigger('willClearRender');
+      sendCoreViewEvent(component, 'willDestroyElement');
+      sendCoreViewEvent(component, 'willClearRender');
       endUntrackFrame();
 
       let element = getViewElement(component);

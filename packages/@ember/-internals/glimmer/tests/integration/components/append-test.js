@@ -1,4 +1,11 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 import { set } from '@ember/object';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -57,7 +64,15 @@ class AbstractAppendTest extends RenderingTestCase {
           }
           componentsByName[name] = this;
           pushHook('init');
-          this.on('init', () => pushHook('on(init)'));
+          if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+            expectDeprecation(
+              () => {
+                this.on('init', () => pushHook('on(init)'));
+              },
+              /Evented#on` is deprecated/,
+              DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+            );
+          }
         }
 
         didReceiveAttrs() {
@@ -145,26 +160,28 @@ class AbstractAppendTest extends RenderingTestCase {
       { parentValue: 1, childValue: 1, foo: 'zomg', show: true }
     );
 
-    assert.deepEqual(
-      hooks,
-      [
-        ['x-parent', 'init'],
-        ['x-parent', 'on(init)'],
-        ['x-parent', 'didReceiveAttrs'],
-        ['x-parent', 'willRender'],
-        ['x-parent', 'willInsertElement'],
-        ['x-child', 'init'],
-        ['x-child', 'on(init)'],
-        ['x-child', 'didReceiveAttrs'],
-        ['x-child', 'willRender'],
-        ['x-child', 'willInsertElement'],
-        ['x-child', 'didInsertElement'],
-        ['x-child', 'didRender'],
-        ['x-parent', 'didInsertElement'],
-        ['x-parent', 'didRender'],
-      ],
-      'creation of x-parent'
-    );
+    let expectedCreationHooks = [
+      ['x-parent', 'init'],
+      ['x-parent', 'on(init)'],
+      ['x-parent', 'didReceiveAttrs'],
+      ['x-parent', 'willRender'],
+      ['x-parent', 'willInsertElement'],
+      ['x-child', 'init'],
+      ['x-child', 'on(init)'],
+      ['x-child', 'didReceiveAttrs'],
+      ['x-child', 'willRender'],
+      ['x-child', 'willInsertElement'],
+      ['x-child', 'didInsertElement'],
+      ['x-child', 'didRender'],
+      ['x-parent', 'didInsertElement'],
+      ['x-parent', 'didRender'],
+    ];
+
+    if (DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+      expectedCreationHooks = expectedCreationHooks.filter(([, hook]) => hook !== 'on(init)');
+    }
+
+    assert.deepEqual(hooks, expectedCreationHooks, 'creation of x-parent');
 
     hooks.length = 0;
     runTask(() => this.rerender());
@@ -298,7 +315,15 @@ class AbstractAppendTest extends RenderingTestCase {
           }
           componentsByName[name] = this;
           pushHook('init');
-          this.on('init', () => pushHook('on(init)'));
+          if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+            expectDeprecation(
+              () => {
+                this.on('init', () => pushHook('on(init)'));
+              },
+              /Evented#on` is deprecated/,
+              DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+            );
+          }
         }
 
         didReceiveAttrs() {
@@ -381,15 +406,18 @@ class AbstractAppendTest extends RenderingTestCase {
     XParent = this.owner.factoryFor('component:x-parent');
 
     this.component = XParent.create({ foo: 'zomg' });
-
-    assert.deepEqual(
-      hooks,
-      [
-        ['x-parent', 'init'],
-        ['x-parent', 'on(init)'],
-      ],
-      'creation of x-parent'
-    );
+    if (DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+      assert.deepEqual(hooks, [['x-parent', 'init']], 'creation of x-parent');
+    } else {
+      assert.deepEqual(
+        hooks,
+        [
+          ['x-parent', 'init'],
+          ['x-parent', 'on(init)'],
+        ],
+        'creation of x-parent'
+      );
+    }
 
     hooks.length = 0;
 
@@ -401,7 +429,7 @@ class AbstractAppendTest extends RenderingTestCase {
         ['x-parent', 'willInsertElement'],
 
         ['x-child', 'init'],
-        ['x-child', 'on(init)'],
+        !DEPRECATIONS.DEPRECATE_EVENTED.isRemoved && ['x-child', 'on(init)'],
         ['x-child', 'didReceiveAttrs'],
         ['x-child', 'willRender'],
         ['x-child', 'willInsertElement'],
@@ -411,7 +439,7 @@ class AbstractAppendTest extends RenderingTestCase {
 
         ['x-parent', 'didInsertElement'],
         ['x-parent', 'didRender'],
-      ],
+      ].filter(Boolean),
       'appending of x-parent'
     );
 
