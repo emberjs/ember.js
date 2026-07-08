@@ -13,7 +13,12 @@ import EmberRouter from '@ember/routing/router';
 import type { RouteInfo, RouteInfoWithAttributes } from './lib/route-info';
 import type { RouteArgs, RouteOptions } from './lib/utils';
 import { extractRouteArgs, resemblesURL, shallowEqual } from './lib/utils';
-import { addListener, hasListeners, removeListener, sendEvent } from '@ember/-internals/metal';
+import {
+  addListener,
+  hasListeners,
+  removeListener,
+  sendEvent,
+} from '@ember/-internals/metal/lib/events';
 
 export const ROUTER = Symbol('ROUTER');
 

@@ -1,4 +1,4 @@
-import { hasListeners, sendEvent } from '@ember/-internals/metal';
+import { hasListeners, sendEvent } from '@ember/-internals/metal/lib/events';
 import type CoreView from './core_view';
 
 export function sendCoreViewEvent(view: CoreView, name: string, args: any[] = []) {

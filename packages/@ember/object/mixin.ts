@@ -5,10 +5,7 @@ import { INIT_FACTORY } from '@ember/-internals/container/lib/container';
 import type { Meta } from '@ember/-internals/meta/lib/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
 import { observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils/lib/super';
-import {
-  DEPRECATION,
-  findDeprecation,
-} from '@ember/-internals/utils/lib/mixin-deprecation';
+import { DEPRECATION, findDeprecation } from '@ember/-internals/utils/lib/mixin-deprecation';
 import { assert } from '@ember/debug';
 import { deprecateUntil, type DeprecationObject } from '@ember/-internals/deprecations';
 import { DEBUG } from '@glimmer/env';
