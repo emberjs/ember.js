@@ -1073,6 +1073,15 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
 
+  packages/@ember/scheduler:
+    dependencies:
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
   packages/@ember/service:
     dependencies:
       '@ember/-internals':
