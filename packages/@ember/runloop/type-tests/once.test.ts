@@ -63,16 +63,11 @@ expectTypeOf(
   )
 ).toEqualTypeOf<Timer>();
 
+const invalidArgsMethod = function (this: Foo, _foo: number, _bar: boolean, _baz?: string): number {
+  return 1;
+};
 // @ts-expect-error invalid args
-once(
-  foo,
-  function (this: Foo, _foo: number, _bar: boolean, _baz?: string): number {
-    return 1;
-  },
-  1,
-  'string',
-  true
-);
+once(foo, invalidArgsMethod, 1, 'string', true);
 
 // With function string reference
 expectTypeOf(once(foo, 'test', 1, true, 'string')).toEqualTypeOf<Timer>();

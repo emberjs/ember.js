@@ -24,7 +24,7 @@ export interface Checker<T> {
 
 class NoopChecker<T> implements Checker<T> {
   declare type: T;
-  validate(value: unknown): value is T {
+  validate(_value: unknown): _value is T {
     return true;
   }
   expected(): string {

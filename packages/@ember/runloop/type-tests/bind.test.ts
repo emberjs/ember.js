@@ -112,14 +112,11 @@ expectTypeOf(
   )
 ).toEqualTypeOf<() => number | void>();
 
+const invalidArgsMethod = function (this: Foo, _foo: number): number {
+  return 1;
+};
 // @ts-expect-error Invalid args
-bind(
-  foo,
-  function (this: Foo, _foo: number): number {
-    return 1;
-  },
-  'string'
-);
+bind(foo, invalidArgsMethod, 'string');
 
 // With function string reference
 expectTypeOf(bind(foo, 'test')).toEqualTypeOf<

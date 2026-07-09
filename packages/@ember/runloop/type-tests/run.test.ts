@@ -62,16 +62,11 @@ expectTypeOf(
   )
 ).toEqualTypeOf<number>();
 
+const invalidArgsMethod = function (this: Foo, _foo: number, _bar: boolean, _baz?: string): number {
+  return 1;
+};
 // @ts-expect-error invalid args
-run(
-  foo,
-  function (this: Foo, _foo: number, _bar: boolean, _baz?: string): number {
-    return 1;
-  },
-  1,
-  'string',
-  true
-);
+run(foo, invalidArgsMethod, 1, 'string', true);
 
 // With function string reference
 expectTypeOf(run(foo, 'test', 1, true, 'string')).toEqualTypeOf<number>();

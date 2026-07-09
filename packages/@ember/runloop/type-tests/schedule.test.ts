@@ -71,17 +71,11 @@ expectTypeOf(
   )
 ).toEqualTypeOf<Timer>();
 
+const invalidArgsMethod = function (this: Foo, _foo: number, _bar: boolean, _baz?: string): number {
+  return 1;
+};
 // @ts-expect-error invalid args
-schedule(
-  'my-queue',
-  foo,
-  function (this: Foo, _foo: number, _bar: boolean, _baz?: string): number {
-    return 1;
-  },
-  1,
-  'string',
-  true
-);
+schedule('my-queue', foo, invalidArgsMethod, 1, 'string', true);
 
 // With function string reference
 expectTypeOf(schedule('my-queue', foo, 'test', 1, true, 'string')).toEqualTypeOf<Timer>();

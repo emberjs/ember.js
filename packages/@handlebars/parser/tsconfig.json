@@ -12,7 +12,6 @@
     // Enhance Strictness
     "strict": true,
     "skipLibCheck": true,
-    "suppressImplicitAnyIndexErrors": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
