@@ -98,5 +98,19 @@ moduleFor(
 
       assert.equal(location.getURL(), '/axc/secret');
     }
+
+    ['@test NoneLocation.getURL() strips the rootURL when it has an extra trailing slash'](assert) {
+      NoneTestLocation.reopen({
+        init() {
+          this._super(...arguments);
+          set(this, 'rootURL', '/foo//');
+          set(this, 'path', '/foo//bar');
+        },
+      });
+
+      createLocation();
+
+      assert.equal(location.getURL(), '/bar');
+    }
   }
 );

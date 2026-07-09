@@ -3,6 +3,9 @@
 
   Escapes any regular-expression metacharacters in `str` so it can be safely
   interpolated into a `RegExp` and matched as a literal.
+
+  TODO: delete this in favor of `RegExp.escape` once our minimum supported
+  browsers all include it (https://caniuse.com/mdn-javascript_builtins_regexp_escape).
 */
 export function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
