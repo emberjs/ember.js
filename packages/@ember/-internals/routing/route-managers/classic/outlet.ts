@@ -13,9 +13,12 @@ import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
 import { curry } from '@glimmer/runtime/lib/curried-value';
 import { dict } from '@glimmer/util/lib/collections';
-import { OutletComponent, type OutletDefinitionState } from '../component-managers/outlet';
-import { internalHelper } from '../helpers/internal-helper';
-import type { OutletState } from '../utils/outlet';
+import {
+  OutletComponent,
+  type OutletDefinitionState,
+} from '../../../glimmer/lib/component-managers/outlet';
+import { internalHelper } from '../../../glimmer/lib/helpers/internal-helper';
+import type { OutletState } from '../../../glimmer/lib/utils/outlet';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -43,6 +46,7 @@ import type { OutletState } from '../utils/outlet';
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
   `outlet` is built-in and does not need to be imported.
+  Invokes the `-outlet` view.
 
   @method outlet
   @for Ember.Templates.helpers
@@ -50,7 +54,6 @@ import type { OutletState } from '../utils/outlet';
 */
 export const outletHelper = /*@__PURE__*/ internalHelper(
   (_args: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
-    console.log('FACE but from outlet')
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',

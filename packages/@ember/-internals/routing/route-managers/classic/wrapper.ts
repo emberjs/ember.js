@@ -18,7 +18,7 @@ import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { NULL_REFERENCE } from '@glimmer/reference/lib/reference';
 import { precompileTemplate } from '@ember/template-compilation';
-import { outletHelper } from '@ember/-internals/glimmer/lib/syntax/outlet';
+import { outletHelper } from './outlet';
 
 // Renders the invokable passed in as `@Component` and forwards
 // `@model` / `@controller` onto it.
