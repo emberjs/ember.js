@@ -3,7 +3,9 @@
   "version": "7.3.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/*/packages/ember-testing/index.js"
+  ],
   "keywords": [
     "ember-addon"
   ],
