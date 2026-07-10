@@ -15,7 +15,10 @@ jobs:
       - run: pnpm build
       - run: pnpm add --save-dev typescript@latest --workspace-root
       - run: pnpm tsc --version
-      - run: pnpm type-check
+        # NOTE: these are only the public types
+        #       our internal types are not relevant for floating TS versions
+        #       (until we bump our dev-time TS)
+      - run: pnpm type-check:types
   notify:
     name: Notify Discord
     runs-on: ubuntu-latest
