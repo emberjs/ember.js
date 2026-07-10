@@ -20,7 +20,7 @@ moduleFor(
   'Location Utilities',
   class extends AbstractTestCase {
     ['@test replacePath cannot be used to redirect to a different origin'](assert) {
-      assert.expect(1);
+      assert.expect(2);
 
       let expectedURL;
 
@@ -34,6 +34,11 @@ moduleFor(
 
       expectedURL = 'http://emberjs.com:1337//google.com';
       replacePath(location, '//google.com');
+
+      // A path without a leading slash would otherwise be reparsed into the
+      // authority (`http://emberjs.com:1337@google.com` navigates to google.com).
+      expectedURL = 'http://emberjs.com:1337/@google.com';
+      replacePath(location, '@google.com');
     }
 
     ['@test getPath() should normalize location.pathname, making sure it always returns a leading slash'](

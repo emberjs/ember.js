@@ -45,5 +45,14 @@ export function getFullPath(location: Location): string {
   @private
 */
 export function replacePath(location: Location, path: string): void {
+  // `path` is joined straight onto the origin, so a value that does not begin
+  // with a slash (e.g. `@evil.com`) would be reparsed as part of the authority:
+  // `http://app.com` + `@evil.com` becomes `http://app.com@evil.com`, where the
+  // origin's host turns into userinfo and `evil.com` becomes the host. Force a
+  // leading slash so the origin always stays the authority.
+  if (path.charAt(0) !== '/') {
+    path = `/${path}`;
+  }
+
   location.replace(location.origin + path);
 }
