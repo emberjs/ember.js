@@ -492,14 +492,10 @@ export class UnresolvedRouteInfoByParam<R extends Route> extends InternalRouteIn
     // FIXME: Review these casts
     if (route.deserialize) {
       result = route.deserialize(fullParams, transition) as
-        | ModelFor<R>
-        | PromiseLike<ModelFor<R>>
-        | undefined;
+        ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
     } else if (route.model) {
       result = route.model(fullParams, transition) as
-        | ModelFor<R>
-        | PromiseLike<ModelFor<R>>
-        | undefined;
+        ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
     }
 
     if (result && isTransition(result)) {

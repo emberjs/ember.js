@@ -266,8 +266,7 @@ type ObserverDefinition<T extends AnyFn> = {
 */
 export function observer<T extends AnyFn>(
   ...args:
-    | [propertyName: string, ...additionalPropertyNames: string[], func: T]
-    | [ObserverDefinition<T>]
+    [propertyName: string, ...additionalPropertyNames: string[], func: T] | [ObserverDefinition<T>]
 ): T {
   let funcOrDef = args.pop();
 

@@ -19,8 +19,7 @@ import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 
 export type ObserverMethod<Target, Sender> =
-  | keyof Target
-  | ((this: Target, sender: Sender, key: string, value: any, rev: number) => void);
+  keyof Target | ((this: Target, sender: Sender, key: string, value: any, rev: number) => void);
 
 /**
   ## Overview

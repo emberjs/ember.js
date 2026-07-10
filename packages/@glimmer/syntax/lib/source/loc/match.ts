@@ -19,12 +19,7 @@ export const MatchAny = 'MATCH_ANY';
 export type MatchAny = 'MATCH_ANY';
 
 type Matches =
-  | 'Char,Hbs'
-  | 'Hbs,Char'
-  | 'Hbs,Hbs'
-  | 'Char,Char'
-  | 'Invisible,Any'
-  | 'Any,Invisible';
+  'Char,Hbs' | 'Hbs,Char' | 'Hbs,Hbs' | 'Char,Char' | 'Invisible,Any' | 'Any,Invisible';
 
 export const IsInvisible = 'IS_INVISIBLE';
 export type IsInvisible = 'IS_INVISIBLE';

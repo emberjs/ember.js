@@ -170,12 +170,7 @@ export type LocSexp = ['loc', SourceLocation];
 export type ElementComment = ASTv1.MustacheCommentStatement | SourceLocation | string;
 
 export type SexpValue =
-  | string
-  | ASTv1.Expression[]
-  | Dict<ASTv1.Expression>
-  | LocSexp
-  | PathSexp
-  | undefined;
+  string | ASTv1.Expression[] | Dict<ASTv1.Expression> | LocSexp | PathSexp | undefined;
 
 export interface BuildElementOptions {
   attrs?: ASTv1.AttrNode[];

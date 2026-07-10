@@ -580,9 +580,7 @@ export const span: MatchFn<SourceSpan> = match((m) =>
 );
 
 export type SerializedConcreteSourceSpan =
-  | /** collapsed */ number
-  | /** normal */ [start: number, size: number]
-  | /** synthetic */ string;
+  /** collapsed */ number | /** normal */ [start: number, size: number] | /** synthetic */ string;
 
 // `string` includes NON_EXISTENT_KIND and BROKEN_KIND
 export type SerializedSourceSpan = SerializedConcreteSourceSpan;

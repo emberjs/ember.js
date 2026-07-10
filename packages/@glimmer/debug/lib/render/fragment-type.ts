@@ -40,9 +40,7 @@ export interface ValueFragment extends AbstractLeafFragment {
    * The `display` property can be provided to override these defaults.
    */
   readonly display?:
-    | { ref: string; footnote?: Fragment | undefined }
-    | { inline: Fragment }
-    | undefined;
+    { ref: string; footnote?: Fragment | undefined } | { inline: Fragment } | undefined;
 }
 
 /**
@@ -90,11 +88,7 @@ export interface SpecialFragment extends AbstractLeafFragment {
  * format specifiers.
  */
 export type LeafFragmentType =
-  | StringFragment
-  | IntegerFragment
-  | FloatFragment
-  | ValueFragment
-  | SpecialFragment;
+  StringFragment | IntegerFragment | FloatFragment | ValueFragment | SpecialFragment;
 
 export type FragmentType =
   | LeafFragmentType

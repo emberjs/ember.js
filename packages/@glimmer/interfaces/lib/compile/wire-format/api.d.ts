@@ -188,13 +188,7 @@ export type StyleAttr = 5;
 export type HrefAttr = 6;
 
 export type WellKnownAttrName =
-  | ClassAttr
-  | IdAttr
-  | ValueAttr
-  | NameAttr
-  | TypeAttr
-  | StyleAttr
-  | HrefAttr;
+  ClassAttr | IdAttr | ValueAttr | NameAttr | TypeAttr | StyleAttr | HrefAttr;
 
 export type DivTag = 0;
 export type SpanTag = 1;
@@ -250,10 +244,7 @@ export namespace Statements {
   export type TrustingComponentAttr = Attr<TrustingComponentAttrOpcode>;
 
   export type AnyDynamicAttr =
-    | DynamicAttr
-    | ComponentAttr
-    | TrustingDynamicAttr
-    | TrustingComponentAttr;
+    DynamicAttr | ComponentAttr | TrustingDynamicAttr | TrustingComponentAttr;
 
   export type Debugger = [
     op: DebuggerOpcode,

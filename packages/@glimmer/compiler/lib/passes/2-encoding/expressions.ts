@@ -88,8 +88,7 @@ export class ExpressionEncoder {
     isTemplateLocal,
     symbol,
   }: ASTv2.LocalVarReference):
-    | WireFormat.Expressions.GetSymbol
-    | WireFormat.Expressions.GetLexicalSymbol {
+    WireFormat.Expressions.GetSymbol | WireFormat.Expressions.GetLexicalSymbol {
     return [isTemplateLocal ? SexpOpcodes.GetLexicalSymbol : SexpOpcodes.GetSymbol, symbol];
   }
 

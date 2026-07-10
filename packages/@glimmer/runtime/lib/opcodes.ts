@@ -43,8 +43,7 @@ export type Syscall = (vm: VM, opcode: RuntimeOp) => void;
 export type MachineOpcode = (vm: LowLevelVM, opcode: RuntimeOp) => void;
 
 export type Evaluate =
-  | { syscall: true; evaluate: Syscall }
-  | { syscall: false; evaluate: MachineOpcode };
+  { syscall: true; evaluate: Syscall } | { syscall: false; evaluate: MachineOpcode };
 
 export type DebugState = {
   opcode: {

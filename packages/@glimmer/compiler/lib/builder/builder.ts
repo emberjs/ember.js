@@ -522,12 +522,7 @@ export function buildAttributeValue(
 }
 
 type ExprResolution =
-  | VariableResolutionContext
-  | 'Append'
-  | 'TrustedAppend'
-  | 'AttrValue'
-  | 'SubExpression'
-  | 'Strict';
+  VariableResolutionContext | 'Append' | 'TrustedAppend' | 'AttrValue' | 'SubExpression' | 'Strict';
 
 function varContext(context: ExprResolution, bare: boolean): VarResolution {
   switch (context) {

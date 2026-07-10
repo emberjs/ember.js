@@ -134,8 +134,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   override pushElement(
     /** called from parent constructor before we initialize this */
     this:
-      | RehydrateTree
-      | (NewTreeBuilder & Partial<Pick<RehydrateTree, 'blockDepth' | 'candidate'>>),
+      RehydrateTree | (NewTreeBuilder & Partial<Pick<RehydrateTree, 'blockDepth' | 'candidate'>>),
     element: SimpleElement,
     nextSibling: Maybe<SimpleNode> = null
   ) {

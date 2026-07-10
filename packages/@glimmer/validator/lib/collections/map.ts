@@ -10,10 +10,7 @@ type Tag = ReturnType<typeof createUpdatableTag>;
 
 export function trackedMap<Key = any, Value = any>(
   data?:
-    | Map<Key, Value>
-    | Iterable<readonly [Key, Value]>
-    | readonly (readonly [Key, Value])[]
-    | null,
+    Map<Key, Value> | Iterable<readonly [Key, Value]> | readonly (readonly [Key, Value])[] | null,
   options?: { equals?: (a: Value, b: Value) => boolean; description?: string }
 ): Map<Key, Value> {
   const equals = options?.equals ?? Object.is;

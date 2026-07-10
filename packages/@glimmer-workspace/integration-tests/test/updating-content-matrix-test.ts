@@ -49,14 +49,7 @@ class ContentTest extends RenderTest {
 // swapping between unsafe and safe
 
 type ContentValue =
-  | string
-  | SafeString
-  | null
-  | undefined
-  | number
-  | boolean
-  | Element
-  | DocumentFragment;
+  string | SafeString | null | undefined | number | boolean | Element | DocumentFragment;
 
 interface ContentTestCase {
   name: string;

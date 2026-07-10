@@ -532,18 +532,12 @@ function mapObject<T extends Dict, Out>(
 }
 
 export type BuilderElement =
-  | [string]
-  | [string, BuilderAttrs, BuilderBlock]
-  | [string, BuilderBlock]
-  | [string, BuilderAttrs];
+  [string] | [string, BuilderAttrs, BuilderBlock] | [string, BuilderBlock] | [string, BuilderAttrs];
 
 export type BuilderComment = [BUILDER_COMMENT, string];
 
 export type InvocationElement =
-  | [string]
-  | [string, BuilderAttrs, BuilderBlock]
-  | [string, BuilderBlock]
-  | [string, BuilderAttrs];
+  [string] | [string, BuilderAttrs, BuilderBlock] | [string, BuilderBlock] | [string, BuilderAttrs];
 
 export function isElement(input: [string, ...unknown[]]): input is BuilderElement {
   const match = /^<([\d\-a-z][\d\-A-Za-z]*)>$/u.exec(input[0]);
@@ -580,10 +574,7 @@ export type VerboseStatement =
   | [BUILDER_DYNAMIC_COMPONENT, BuilderExpression, Hash, BuilderBlock];
 
 export type BuilderStatement =
-  | VerboseStatement
-  | SugaryArrayStatement
-  | TupleBuilderExpression
-  | string;
+  VerboseStatement | SugaryArrayStatement | TupleBuilderExpression | string;
 
 /**
  * The special value 'splat' is used to indicate that the attribute is a splat
@@ -818,13 +809,7 @@ export function normalizeExpression(expression: BuilderExpression): NormalizedEx
 // | [HAS_BLOCK_PARAMS, string]
 
 export type BuilderExpression =
-  | TupleBuilderExpression
-  | BuilderCallExpression
-  | null
-  | undefined
-  | boolean
-  | string
-  | number;
+  TupleBuilderExpression | BuilderCallExpression | null | undefined | boolean | string | number;
 
 export function isBuilderExpression(
   expr: BuilderExpression | BuilderCallExpression

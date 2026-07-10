@@ -1209,9 +1209,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
         }
         // SAFETY: This should be correct, but TS is unable to infer this.
         return transition[STATE_SYMBOL]!.routeInfos[transition.resolveIndex - 1]!.context as
-          | Model
-          | PromiseLike<Model>
-          | undefined;
+          Model | PromiseLike<Model> | undefined;
       }
     }
 

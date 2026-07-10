@@ -54,8 +54,7 @@ export function* zipArrays<T>(
   for (let i = 0; i < left.length; i++) {
     const perform = i < right.length ? 'retain' : 'pop';
     yield [perform, i, left[i], right[i]] as
-      | ['retain', number, T, T]
-      | ['pop', number, T, undefined];
+      ['retain', number, T, T] | ['pop', number, T, undefined];
   }
 
   for (let i = left.length; i < right.length; i++) {

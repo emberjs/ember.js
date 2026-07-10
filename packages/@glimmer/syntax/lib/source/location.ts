@@ -66,11 +66,7 @@ export function isLocatedWithPositions(
 }
 
 export type HasSourceLocation =
-  | SourceLocation
-  | LocatedWithPositions
-  | PresentArray<LocatedWithPositions>;
+  SourceLocation | LocatedWithPositions | PresentArray<LocatedWithPositions>;
 
 export type MaybeHasSourceLocation =
-  | null
-  | LocatedWithOptionalPositions
-  | LocatedWithOptionalPositions[];
+  null | LocatedWithOptionalPositions | LocatedWithOptionalPositions[];

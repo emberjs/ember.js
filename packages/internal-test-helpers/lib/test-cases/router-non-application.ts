@@ -75,8 +75,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
 
   addTemplate(
     templateName:
-      | string
-      | { specifier: string; source: unknown; namespace: unknown; moduleName: string },
+      string | { specifier: string; source: unknown; namespace: unknown; moduleName: string },
     templateString: string
   ) {
     if (typeof templateName === 'string') {

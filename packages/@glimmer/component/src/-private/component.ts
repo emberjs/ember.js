@@ -65,7 +65,8 @@ type ArgsFor<S> = S extends { Args: infer Args }
 
 type _ExpandSignature<T> = {
   Element: GetOrElse<T, 'Element', null>;
-  Args: keyof T extends 'Args' | 'Element' | 'Blocks' // Is this a `Signature`?
+  Args: keyof T extends
+    'Args' | 'Element' | 'Blocks' // Is this a `Signature`?
     ? ArgsFor<T> // Then use `Signature` args
     : { Named: T; Positional: [] }; // Otherwise fall back to classic `Args`.
   Blocks: T extends { Blocks: infer Blocks }

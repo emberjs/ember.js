@@ -550,8 +550,7 @@ export function filter(
 export function filter(
   dependentKey: string,
   additionalDependentKeysOrCallback:
-    | string[]
-    | ((value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown),
+    string[] | ((value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown),
   callback?: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
 ): PropertyDecorator {
   assert(
