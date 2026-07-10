@@ -2114,6 +2114,17 @@ Route.reopen({
           let options = this._optionsForQueryParam(qp);
           assert('options exists', options && typeof options === 'object');
           if ((get(options, 'refreshModel') as boolean) && this._router.currentState) {
+            // `changed` is computed from router state query params, where default values
+            // may have been pruned during finalization. A later transition can reintroduce
+            // the same serialized value via sticky QP hydration or URL parsing, making the
+            // QP appear changed even though its finalized value is unchanged. Only refresh
+            // the model when the serialized value differs from the last finalized value.
+            if (change in changed) {
+              let newSerializedValue = (changed as Record<string, unknown>)[change];
+              if (newSerializedValue === qp.serializedValue) {
+                continue;
+              }
+            }
             this.refresh();
             break;
           }
