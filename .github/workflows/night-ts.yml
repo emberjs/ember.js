@@ -14,6 +14,7 @@ jobs:
       - uses: ./.github/actions/setup
       - run: pnpm build
       - run: pnpm add --save-dev typescript@latest --workspace-root
+      - run: pnpm tsc --version
       - run: pnpm type-check
   notify:
     name: Notify Discord
