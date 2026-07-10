@@ -37,13 +37,3 @@ export function getHash(location: Location): string {
 export function getFullPath(location: Location): string {
   return getPath(location) + getQuery(location) + getHash(location);
 }
-
-/**
-  Replaces the current location, making sure we explicitly include the origin
-  to prevent redirecting to a different origin.
-
-  @private
-*/
-export function replacePath(location: Location, path: string): void {
-  location.replace(location.origin + path);
-}
