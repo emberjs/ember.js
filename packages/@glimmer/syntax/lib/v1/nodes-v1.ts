@@ -47,10 +47,7 @@ export interface CallParts {
 }
 
 export type CallNode =
-  | MustacheStatement
-  | BlockStatement
-  | ElementModifierStatement
-  | SubExpression;
+  MustacheStatement | BlockStatement | ElementModifierStatement | SubExpression;
 
 export interface MustacheStatement extends BaseNode {
   type: 'MustacheStatement';
@@ -221,11 +218,7 @@ export interface PathExpression extends MinimalPathExpression {
 }
 
 export type LiteralName =
-  | 'StringLiteral'
-  | 'BooleanLiteral'
-  | 'NumberLiteral'
-  | 'UndefinedLiteral'
-  | 'NullLiteral';
+  'StringLiteral' | 'BooleanLiteral' | 'NumberLiteral' | 'UndefinedLiteral' | 'NullLiteral';
 
 export interface StringLiteral extends BaseNode {
   type: 'StringLiteral';

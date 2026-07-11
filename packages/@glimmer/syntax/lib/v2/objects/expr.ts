@@ -106,8 +106,4 @@ export class InterpolateExpression extends node('Interpolate').fields<{
 }>() {}
 
 export type ExpressionNode =
-  | LiteralExpression
-  | PathExpression
-  | KeywordExpression
-  | CallExpression
-  | InterpolateExpression;
+  LiteralExpression | PathExpression | KeywordExpression | CallExpression | InterpolateExpression;

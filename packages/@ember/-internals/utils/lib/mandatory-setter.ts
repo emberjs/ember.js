@@ -4,8 +4,7 @@ import type { Tag } from '@glimmer/interfaces';
 import lookupDescriptor from './lookup-descriptor';
 
 export let setupMandatorySetter:
-  | ((tag: Tag, obj: object, keyName: string | symbol) => void)
-  | undefined;
+  ((tag: Tag, obj: object, keyName: string | symbol) => void) | undefined;
 export let teardownMandatorySetter: ((obj: object, keyName: string | symbol) => void) | undefined;
 export let setWithMandatorySetter: ((obj: object, keyName: string, value: any) => void) | undefined;
 

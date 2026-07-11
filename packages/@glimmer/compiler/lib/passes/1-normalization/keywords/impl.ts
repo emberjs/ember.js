@@ -112,10 +112,7 @@ export type KeywordMatch = KeywordMatches[keyof KeywordMatches];
 export type GenericKeywordNode = ASTv2.AppendContent | ASTv2.CallExpression;
 
 export type KeywordNode =
-  | GenericKeywordNode
-  | ASTv2.CallExpression
-  | ASTv2.InvokeBlock
-  | ASTv2.ElementModifier;
+  GenericKeywordNode | ASTv2.CallExpression | ASTv2.InvokeBlock | ASTv2.ElementModifier;
 
 export type PossibleKeyword = KeywordNode;
 type OutFor<K extends Keyword | BlockKeyword> =

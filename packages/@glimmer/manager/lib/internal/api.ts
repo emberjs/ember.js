@@ -12,10 +12,7 @@ import { CustomHelperManager } from '../public/helper';
 import { FunctionHelperManager } from './defaults';
 
 type InternalManager =
-  | InternalComponentManager
-  | InternalModifierManager
-  | CustomHelperManager
-  | Helper;
+  InternalComponentManager | InternalModifierManager | CustomHelperManager | Helper;
 
 const COMPONENT_MANAGERS = new WeakMap<object, InternalComponentManager>();
 

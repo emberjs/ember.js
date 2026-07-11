@@ -820,9 +820,7 @@ moduleFor(
       assert
     ) {
       class TestManager {
-        capabilities = componentCapabilities('3.13', {
-          /* implied: updateHook: false */
-        });
+        capabilities = componentCapabilities('3.13', {/* implied: updateHook: false */});
 
         createComponent() {
           assert.step('createComponent');

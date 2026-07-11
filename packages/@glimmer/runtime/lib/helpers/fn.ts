@@ -110,12 +110,10 @@ export const fn = internalHelper(({ positional }: CapturedArguments) => {
 });
 
 function assertCallbackIsFn(callbackRef: Reference | undefined): asserts callbackRef is Reference {
-  if (
-    !(
-      callbackRef &&
-      (isInvokableRef(callbackRef) || typeof valueForRef(callbackRef) === 'function')
-    )
-  ) {
+  if (!(
+    callbackRef &&
+    (isInvokableRef(callbackRef) || typeof valueForRef(callbackRef) === 'function')
+  )) {
     throw new Error(
       `You must pass a function as the \`fn\` helper's first argument, you passed ${
         callbackRef ? valueForRef(callbackRef) : callbackRef

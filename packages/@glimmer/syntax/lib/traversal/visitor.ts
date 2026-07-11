@@ -30,8 +30,7 @@ export interface FullKeyTraversal<N extends ASTv1.Node, K extends string> {
 
 export type KeyHandler<N extends ASTv1.Node, K extends VisitorKey<N>> = (node: N, key: K) => void;
 export type KeyTraversal<N extends ASTv1.Node, K extends VisitorKey<N>> =
-  | FullKeyTraversal<N, K>
-  | KeyHandler<N, K>;
+  FullKeyTraversal<N, K> | KeyHandler<N, K>;
 
 export type KeysVisitor<N extends ASTv1.Node> = { [P in VisitorKey<N>]?: KeyTraversal<N, P> } & {
   All?: KeyTraversal<N, VisitorKey<N>>;

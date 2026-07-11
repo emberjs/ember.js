@@ -147,20 +147,13 @@ export const COMPONENT_NAMESPACE = COMPONENT_VAR_NS;
  * ^ `x` is resolved in the `modifier` namespace
  */
 type Namespaces =
-  | [HELPER_VAR_NS]
-  | [MODIFIER_VAR_NS]
-  | [COMPONENT_VAR_NS]
-  | [COMPONENT_VAR_NS, HELPER_VAR_NS];
+  [HELPER_VAR_NS] | [MODIFIER_VAR_NS] | [COMPONENT_VAR_NS] | [COMPONENT_VAR_NS, HELPER_VAR_NS];
 
 export type FreeVarResolution = StrictResolution | HtmlResolution | LooseModeResolution;
 
 // Serialization
 export type SerializedResolution =
-  | 'Strict'
-  | 'Helper'
-  | 'Modifier'
-  | 'Component'
-  | 'ComponentOrHelper';
+  'Strict' | 'Helper' | 'Modifier' | 'Component' | 'ComponentOrHelper';
 
 export function loadResolution(resolution: SerializedResolution): FreeVarResolution {
   if (resolution === 'Strict') {

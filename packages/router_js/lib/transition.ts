@@ -12,13 +12,9 @@ import { log, promiseLabel } from './utils';
 import { DEBUG } from '@glimmer/env';
 
 export type OnFulfilled<T, TResult1> =
-  | ((value: T) => TResult1 | PromiseLike<TResult1>)
-  | undefined
-  | null;
+  ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null;
 export type OnRejected<T, TResult2> =
-  | ((reason: T) => TResult2 | PromiseLike<TResult2>)
-  | undefined
-  | null;
+  ((reason: T) => TResult2 | PromiseLike<TResult2>) | undefined | null;
 
 export type PublicTransition = Transition<any>;
 export type OpaqueTransition = PublicTransition;

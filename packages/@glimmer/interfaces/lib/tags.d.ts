@@ -16,10 +16,7 @@ export type CONSTANT_TAG_ID = 3;
  * be added to the monomorphic tag.
  */
 export type MonomorphicTagId =
-  | DIRTYABLE_TAG_ID
-  | UPDATABLE_TAG_ID
-  | COMBINATOR_TAG_ID
-  | CONSTANT_TAG_ID;
+  DIRTYABLE_TAG_ID | UPDATABLE_TAG_ID | COMBINATOR_TAG_ID | CONSTANT_TAG_ID;
 
 export type VOLATILE_TAG_ID = 100;
 export type CURRENT_TAG_ID = 101;

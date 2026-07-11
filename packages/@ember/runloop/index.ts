@@ -287,7 +287,7 @@ export function bind<F extends AnyFn, A extends PartialParams<Parameters<F>>>(
 export function bind<
   T,
   U extends keyof T,
-  A extends T[U] extends AnyFn ? PartialParams<Parameters<T[U]>> : [],
+  A extends (T[U] extends AnyFn ? PartialParams<Parameters<T[U]>> : []),
 >(
   target: T,
   method: U,

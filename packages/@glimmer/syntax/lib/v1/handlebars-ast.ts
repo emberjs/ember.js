@@ -170,11 +170,7 @@ export interface PathExpression extends CommonNode {
 }
 
 export type Literal =
-  | StringLiteral
-  | BooleanLiteral
-  | NumberLiteral
-  | UndefinedLiteral
-  | NullLiteral;
+  StringLiteral | BooleanLiteral | NumberLiteral | UndefinedLiteral | NullLiteral;
 
 export interface StringLiteral extends CommonNode {
   type: 'StringLiteral';

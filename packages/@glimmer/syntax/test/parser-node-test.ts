@@ -1115,12 +1115,7 @@ export type AttrSexp = [string, ASTv1.AttrNode['value'] | string, LocSexp?];
 export type LocSexp = ['loc', ASTv1.SourceLocation];
 
 export type SexpValue =
-  | string
-  | ASTv1.Expression[]
-  | Dict<ASTv1.Expression>
-  | LocSexp
-  | PathSexp
-  | undefined;
+  string | ASTv1.Expression[] | Dict<ASTv1.Expression> | LocSexp | PathSexp | undefined;
 
 export type BuildElementParams = Parameters<typeof b.element>;
 export type TagDescriptor = BuildElementParams[0];

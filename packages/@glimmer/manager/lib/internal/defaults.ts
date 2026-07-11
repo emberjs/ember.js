@@ -7,8 +7,7 @@ import type {
 import { buildCapabilities } from '../util/capabilities';
 
 type FnArgs<Args extends Arguments = Arguments> =
-  | [...Args['positional'], Args['named']]
-  | [...Args['positional']];
+  [...Args['positional'], Args['named']] | [...Args['positional']];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;

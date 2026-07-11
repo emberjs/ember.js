@@ -14,9 +14,7 @@ import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
 export type ControllerQueryParam =
-  | string
-  | Record<string, { type: ControllerQueryParamType }>
-  | Record<string, string>;
+  string | Record<string, { type: ControllerQueryParamType }> | Record<string, string>;
 
 const MODEL = Symbol('MODEL');
 

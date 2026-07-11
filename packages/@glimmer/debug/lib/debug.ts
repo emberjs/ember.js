@@ -223,14 +223,12 @@ type DefineOperand<T extends string, V, Options = undefined> = undefined extends
   : readonly [type: T, value: V, options: Options];
 
 type DefineNullableOperand<T extends string, V, Options = undefined> = Options extends undefined
-  ?
-      | readonly [type: T, value: V]
-      | readonly [type: T, value: Nullable<V>, options: { nullable: true }]
-      | readonly [type: T, value: V, options: { nullable?: false }]
-  :
-      | readonly [type: T, value: Nullable<V>, options: Expand<Options & { nullable: true }>]
-      | readonly [type: T, value: V, options: Expand<Options & { nullable?: false }>]
-      | readonly [type: T, value: V, options: Options];
+  ? | readonly [type: T, value: V]
+    | readonly [type: T, value: Nullable<V>, options: { nullable: true }]
+    | readonly [type: T, value: V, options: { nullable?: false }]
+  : | readonly [type: T, value: Nullable<V>, options: Expand<Options & { nullable: true }>]
+    | readonly [type: T, value: V, options: Expand<Options & { nullable?: false }>]
+    | readonly [type: T, value: V, options: Options];
 
 /**
  * A dynamic operand has a value that can't be easily represented as an embedded string.

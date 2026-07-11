@@ -4,12 +4,7 @@ import type { Bounds } from '../dom/bounds.js';
 import type { Arguments, CapturedArguments } from './arguments.js';
 
 export type RenderNodeType =
-  | 'outlet'
-  | 'engine'
-  | 'route-template'
-  | 'component'
-  | 'modifier'
-  | 'keyword';
+  'outlet' | 'engine' | 'route-template' | 'component' | 'modifier' | 'keyword';
 
 export interface RenderNode {
   type: RenderNodeType;

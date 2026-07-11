@@ -81,14 +81,7 @@ export type HighLevelBuilderOperand =
   | LayoutOperand;
 
 export type SingleBuilderOperand =
-  | HighLevelBuilderOperand
-  | number
-  | string
-  | boolean
-  | undefined
-  | null
-  | number[]
-  | string[];
+  HighLevelBuilderOperand | number | string | boolean | undefined | null | number[] | string[];
 
 export type Operand = number;
 

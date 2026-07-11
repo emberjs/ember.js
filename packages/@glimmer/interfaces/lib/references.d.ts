@@ -13,10 +13,7 @@ export interface ReferenceTypes {
 }
 
 export type ReferenceType =
-  | ConstantReference
-  | ComputeReference
-  | UnboundReference
-  | InvokableReference;
+  ConstantReference | ComputeReference | UnboundReference | InvokableReference;
 
 declare const REFERENCE: unique symbol;
 export type ReferenceSymbol = typeof REFERENCE;

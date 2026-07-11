@@ -194,8 +194,7 @@ export default function setGlobalContext(context: GlobalContext) {
 
 export let assertGlobalContextWasSet: (() => void) | undefined;
 export let testOverrideGlobalContext:
-  | ((context: Partial<GlobalContext> | null) => GlobalContext | null)
-  | undefined;
+  ((context: Partial<GlobalContext> | null) => GlobalContext | null) | undefined;
 
 if (DEBUG) {
   assertGlobalContextWasSet = () => {

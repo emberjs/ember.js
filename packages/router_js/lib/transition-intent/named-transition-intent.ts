@@ -68,10 +68,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
 
       let oldHandlerInfo = oldState.routeInfos[i]!;
       let newHandlerInfo:
-        | InternalRouteInfo<R>
-        | UnresolvedRouteInfoByObject<R>
-        | ResolvedRouteInfo<R>
-        | null = null;
+        InternalRouteInfo<R> | UnresolvedRouteInfoByObject<R> | ResolvedRouteInfo<R> | null = null;
 
       if (result.names.length > 0) {
         if (i >= invalidateIndex) {
@@ -118,9 +115,8 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
       }
 
       let handlerToUse:
-        | InternalRouteInfo<R>
-        | UnresolvedRouteInfoByObject<R>
-        | ResolvedRouteInfo<R> = oldHandlerInfo;
+        InternalRouteInfo<R> | UnresolvedRouteInfoByObject<R> | ResolvedRouteInfo<R> =
+        oldHandlerInfo;
 
       if (i >= invalidateIndex || newHandlerInfo.shouldSupersede(oldHandlerInfo)) {
         invalidateIndex = Math.min(i, invalidateIndex);
@@ -196,8 +192,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
     } else {
       if (this.preTransitionState) {
         let preTransitionHandlerInfo = this.preTransitionState.routeInfos[i] as
-          | ResolvedRouteInfo<R>
-          | undefined;
+          ResolvedRouteInfo<R> | undefined;
         objectToUse = preTransitionHandlerInfo?.context;
       } else {
         // Ideally we should throw this error to provide maximal

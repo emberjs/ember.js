@@ -21,8 +21,4 @@ export interface CallFields extends BaseNodeFields {
 export type CalleeNode = KeywordExpression | PathExpression | CallExpression;
 
 export type CallNode =
-  | CallExpression
-  | InvokeBlock
-  | AppendContent
-  | InvokeComponent
-  | ElementModifier;
+  CallExpression | InvokeBlock | AppendContent | InvokeComponent | ElementModifier;
