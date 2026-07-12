@@ -80,3 +80,53 @@ export { renderSettled } from '@ember/-internals/glimmer/lib/base-renderer';
  * @public
  */
 export { renderComponent } from '@ember/-internals/glimmer/lib/base-renderer';
+
+/**
+ * Render a component to an HTML string.
+ *
+ * This is the server-side-rendering (SSR) counterpart to `renderComponent`:
+ * the same rendering pipeline, rendered into a detached element and serialized
+ * to a string once rendering has settled.
+ *
+ * ```js
+ * import { renderToString } from '@ember/renderer';
+ *
+ * let html = await renderToString(MyComponent, { args: { name: 'Zoey' } });
+ * // => "<h1>Hello, Zoey!</h1>"
+ * ```
+ *
+ * Server rendering is a *real* render, not a degraded one: modifiers run
+ * against real elements, and the returned promise resolves only after
+ * rendering has settled — any tracked-state updates made during render (e.g.
+ * by a modifier) are reflected in the output.
+ *
+ * This renders with the global `document`, same as the browser does — there is
+ * no `document` option. In environments without one (Node.js), register DOM
+ * building blocks globally first — for example with
+ * [happy-dom](https://github.com/capricorn86/happy-dom):
+ *
+ * ```js
+ * import { GlobalRegistrator } from '@happy-dom/global-registrator';
+ * import { renderToString } from '@ember/renderer';
+ *
+ * GlobalRegistrator.register();
+ *
+ * let html = await renderToString(MyComponent, { args: { name: 'Zoey' } });
+ * ```
+ *
+ * Pass `env: { rehydratable: true }` to include glimmer's rehydration markers
+ * in the output so a subsequent client render (`renderComponent` with
+ * `env: { rehydrate: true }`) can rehydrate the markup.
+ *
+ * @method renderToString
+ * @static
+ * @for @ember/renderer
+ * @param {Object} component The component to render.
+ * @param {Object} [options]
+ * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
+ * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive; rendering settles before serialization.
+ * @param {Object} [options.env] Optional renderer configuration (`rehydratable`).
+ * @returns {Promise<String>} the serialized HTML for the rendered component
+ * @public
+ */
+export { renderToString } from '@ember/-internals/glimmer/lib/base-renderer';

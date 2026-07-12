@@ -23,6 +23,8 @@ import type {
 import { artifacts } from '@glimmer/program/lib/helpers';
 import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
+import { rehydrationBuilder } from '@glimmer/runtime/lib/vm/rehydrate-builder';
+import { serializeBuilder } from '@glimmer/node/lib/serialize-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
@@ -88,12 +90,17 @@ export class ComponentRootState implements RendererRoot {
   constructor(
     state: RendererState,
     definition: object,
-    options: { into: Cursor; args?: Record<string, unknown> }
+    options: { into: Cursor; args?: Record<string, unknown>; builder?: IBuilder }
   ) {
     this.#render = errorLoopTransaction(() => {
+      // The tree builder is a property of an individual render (this root),
+      // not of the renderer: the same renderer can rehydrate one root and
+      // build another from scratch.
+      let builder = options.builder ?? state.builder;
+
       let iterator = glimmerRenderComponent(
         state.context,
-        state.builder(state.env, options.into),
+        builder(state.env, options.into),
         state.owner,
         definition,
         options?.args
@@ -481,6 +488,13 @@ export function renderComponent(
        */
       isInteractive?: boolean;
       /**
+       * When true, the render adopts (rehydrates) server-rendered markup
+       * already present in `into` — produced by `renderToString` with
+       * `env: { rehydratable: true }` — instead of clearing it and building
+       * fresh DOM.
+       */
+      rehydrate?: boolean;
+      /**
        * All other options are forwarded to the underlying renderer.
        * (its API is currently private and out of scope for this RFC,
        *  so passing additional things here is also considered private API)
@@ -533,8 +547,11 @@ export function renderComponent(
    * We can only replace the inner HTML the first time.
    * Because destruction is async, it won't be safe to
    * do this again, and we'll have to rely on the above destroy.
+   *
+   * When rehydrating, the existing contents *are* the server-rendered markup
+   * that the render below will adopt, so they must not be cleared.
    */
-  if (!existing && into instanceof Element) {
+  if (!existing && into instanceof Element && !env?.rehydrate) {
     into.innerHTML = '';
   }
 
@@ -558,7 +575,14 @@ export function renderComponent(
     renderTarget = { element: parentElement, nextSibling: firstNode };
   }
 
-  let innerResult = renderer.render(component, { into: renderTarget, args }).result;
+  let innerResult = renderer.render(component, {
+    into: renderTarget,
+    args,
+    // A rehydrating render adopts server-rendered markup already in the
+    // target (emitted by `renderToString` with `rehydratable: true`) instead
+    // of building fresh DOM.
+    builder: env?.rehydrate ? rehydrationBuilder : undefined,
+  }).result;
 
   if (innerResult) {
     associateDestroyableChild(owner, innerResult);
@@ -579,6 +603,148 @@ export function renderComponent(
 
 const RENDER_CACHE = new WeakMap<IntoTarget, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
+
+/**
+ * Render a component to an HTML string.
+ *
+ * This is the server-side-rendering (SSR) counterpart to
+ * {@link renderComponent}: the same rendering pipeline, rendered into a
+ * detached element and serialized to a string once rendering has settled.
+ *
+ * ```js
+ * import { renderToString } from '@ember/renderer';
+ *
+ * let html = await renderToString(MyComponent, { args: { name: 'Zoey' } });
+ * // => "<h1>Hello, Zoey!</h1>"
+ * ```
+ *
+ * Server rendering is a *real* render, not a degraded one:
+ *
+ * - Rendering is always interactive: modifiers run against real elements,
+ *   exactly as they would in the browser.
+ * - The returned promise resolves once rendering has settled: if a modifier
+ *   (or anything else during render) updates tracked state, the resulting
+ *   re-render completes before the output is serialized.
+ * - The component tree is torn down (running destructors) before the promise
+ *   resolves.
+ *
+ * This renders with the global `document`, same as the browser does — there is
+ * no `document` option. In environments without one (Node.js), register DOM
+ * building blocks globally first — for example with
+ * [happy-dom](https://github.com/capricorn86/happy-dom):
+ *
+ * ```js
+ * import { GlobalRegistrator } from '@happy-dom/global-registrator';
+ * import { renderToString } from '@ember/renderer';
+ *
+ * GlobalRegistrator.register();
+ *
+ * let html = await renderToString(MyComponent, { args: { name: 'Zoey' } });
+ * ```
+ *
+ * Pass `env: { rehydratable: true }` to include glimmer's rehydration markers
+ * in the output so a subsequent client-side render (`renderComponent` with
+ * `env: { rehydrate: true }`) can re-use the server-rendered markup rather
+ * than throwing it away.
+ *
+ * @method renderToString
+ * @static
+ * @for @ember/renderer
+ * @param {Object} component The component to render.
+ * @param {Object} [options]
+ * @param {Object} [options.owner] Optionally specify the owner to use. This will be used for injections, and overall cleanup.
+ * @param {Object} [options.args] Optionally pass args in to the component. These may be reactive; rendering settles before serialization.
+ * @param {Object} [options.env] Optional renderer configuration. `rehydratable` (default `false`) controls whether rehydration markers are emitted.
+ * @returns {Promise<String>} the serialized HTML for the rendered component
+ * @public
+ */
+export async function renderToString(
+  /**
+   * The component definition to render. Any component that has had its manager
+   * registered is valid, same as {@link renderComponent}.
+   */
+  component: object,
+  {
+    owner = {},
+    args,
+    env,
+  }: {
+    /**
+     * Optional owner. Defaults to `{}`, can be any object, but will need to
+     * implement the [Owner](https://api.emberjs.com/ember/release/classes/Owner)
+     * API for components within this render tree to access services.
+     */
+    owner?: object;
+    /**
+     * These args get passed to the rendered component.
+     *
+     * If your args are reactive, rendering settles before serialization.
+     */
+    args?: Record<string, unknown>;
+    /**
+     * Optionally configure the rendering environment.
+     */
+    env?: {
+      /**
+       * When true, the emitted HTML includes glimmer's rehydration markers so
+       * the output can be re-used (rehydrated) by a subsequent client-side
+       * render. Defaults to `false`, which produces clean HTML with no
+       * framework-specific comments.
+       */
+      rehydratable?: boolean;
+    };
+  } = {}
+): Promise<string> {
+  let { document } = globalThis;
+
+  // Server rendering is a *real* render — modifiers run against real elements
+  // and the output is serialized via `innerHTML` — so a full DOM
+  // implementation (browser, happy-dom, jsdom) is required. There is no
+  // `document` option: the environment defines the document, same as in the
+  // browser.
+  assert(
+    'renderToString requires a global `document`. In environments without one (like Node.js), register DOM building blocks globally first — for example with happy-dom via `GlobalRegistrator.register()`.',
+    document !== undefined && document !== null
+  );
+
+  // Render into a detached wrapper element and serialize its *children*, so
+  // the returned string is only the component's own markup.
+  let element = document.createElement('div');
+
+  // Build a dedicated renderer rather than going through the per-owner
+  // renderer cache used by `renderComponent`, so a one-shot server render
+  // never interferes with an owner's live renderer.
+  //
+  // `isInteractive` and `hasDOM` are deliberately not options here: a server
+  // render is a real, interactive render against a real DOM.
+  let renderer = BaseRenderer.strict(owner, document, {
+    isInteractive: true,
+    hasDOM: true,
+  });
+
+  try {
+    renderer.render(component, {
+      into: element,
+      args,
+      // `serializeBuilder` emits glimmer's rehydration markers alongside the
+      // markup so a later client render can adopt it; the default builder
+      // emits clean markup.
+      builder: env?.rehydratable ? serializeBuilder : undefined,
+    });
+
+    // The initial render is synchronous, but rendering isn't *done* until
+    // every follow-on invalidation has settled: modifiers run during SSR and
+    // may update tracked state that the template consumed. Wait for that
+    // reactivity to flush before serializing.
+    await renderSettled();
+
+    return element.innerHTML;
+  } finally {
+    // One-shot render: tear the whole renderer down so component destructors
+    // run and nothing stays registered with the run loop.
+    _backburner.run(() => renderer.destroy());
+  }
+}
 
 export class BaseRenderer {
   static strict(
@@ -652,11 +818,12 @@ export class BaseRenderer {
 
   render(
     component: object,
-    options: { into: IntoTarget; args?: Record<string, unknown> }
+    options: { into: IntoTarget; args?: Record<string, unknown>; builder?: IBuilder }
   ): RendererRoot {
     const root = new ComponentRootState(this.state, component, {
       args: options.args,
       into: intoTarget(options.into),
+      builder: options.builder,
     });
     return this.state.renderRoot(root, this);
   }
