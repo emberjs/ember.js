@@ -147,7 +147,6 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
 
       targetArgs['context'] = context;
 
-      scope.set('outletState', outletRef);
       let named = dict<Reference>();
       named['Component'] = createConstRef(
         curry(

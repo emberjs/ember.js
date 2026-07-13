@@ -1,13 +1,9 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
-import type {
-  BootEnvironment,
-  default as OutletView,
-} from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type { OutletState } from '@ember/-internals/glimmer/lib/utils/outlet';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
-import type { FactoryManager } from '@ember/-internals/owner';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
@@ -65,9 +61,12 @@ import Router, {
 import EngineInstance from '@ember/engine/instance';
 import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
-import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
-import { face } from '@ember/-internals/glimmer/lib/components/fancy-outlet';
+import {
+  RootOutlet,
+  type UpdatableOutletRootState,
+  createRootOutletState,
+} from '@ember/-internals/routing/route-managers/root-outlet';
 
 /**
 @module @ember/routing/router
@@ -188,7 +187,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _queuedQPChanges: Record<string, unknown> = {};
 
   _bucketCache: BucketCache;
-  _toplevelView: OutletView | null = null;
+  _updatableRootOutletState: UpdatableOutletRootState | null = null;
   _handledErrors = new Set();
   _engineInstances: Record<string, Record<string, EngineInstance>> = Object.create(null);
   _engineInfoByRoute = Object.create(null);
@@ -723,7 +722,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _setOutlets() {
     // This is triggered async during Route#willDestroy.
     // If the router is also being destroyed we do not want to
-    // to create another this._toplevelView (and leak the renderer)
+    // render another root outlet (and leak the renderer)
     if (this.isDestroying || this.isDestroyed) {
       return;
     }
@@ -776,35 +775,25 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       return;
     }
 
-    if (!this._toplevelView) {
+    if (this._updatableRootOutletState) {
+      this._updatableRootOutletState.set(root);
+    } else {
       let owner = getOwner(this);
       assert('Router is unexpectedly missing an owner', owner);
-
-      // SAFETY: we don't presently have any type registries internally to make
-      // this safe, so in each of these cases we assume that nothing *else* is
-      // registered at this `FullName`, and simply check to make sure that
-      // *something* is.
-      // let OutletView = owner.factoryFor('view:-outlet') as FactoryManager<OutletView> | undefined;
-      // assert('[BUG] unexpectedly missing `view:-outlet`', OutletView !== undefined);
 
       let application = owner.lookup('application:main') as Owner | undefined;
       assert('[BUG] unexpectedly missing `application:-main`', application !== undefined);
 
       assert('[BUG] unexpectedly missing `-environment:main`', environment !== undefined);
 
-      // let template = owner.lookup('template:-outlet') as Template | undefined;
-      // assert('[BUG] unexpectedly missing `template:-outlet`', template !== undefined);
-
-      // this._toplevelView = OutletView.create({ environment, template, application });
-      // this._toplevelView.setOutletState(root);
-
-      // `Router Service - non application test:  RouterService#transitionTo with basic route`
       let instance = owner.lookup('-application-instance:main') as ApplicationInstance;
       assert('[BUG] unexpectedly missing `-application-instance:main`', instance !== undefined);
 
-      instance.renderRootComponent(face, root)
-    } else {
-      this._toplevelView.setOutletState(root);
+      this._updatableRootOutletState = createRootOutletState(root);
+      instance.renderRootComponent(
+        new RootOutlet(this._updatableRootOutletState.state),
+        this._updatableRootOutletState.state
+      );
     }
   }
 
@@ -963,10 +952,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     // renderer.
     (this._routerMicrolib as { cancelPendingOutletUpdate?(): void })?.cancelPendingOutletUpdate?.();
 
-    if (this._toplevelView) {
-      this._toplevelView.destroy();
-      this._toplevelView = null;
-    }
+    this._updatableRootOutletState = null;
 
     super.willDestroy();
 
