@@ -190,6 +190,19 @@ moduleFor(
       }, /The argument passed to the `element` helper must be a string \(you passed `false`\)/);
     }
 
+    '@test it throws when passed a tag name with invalid characters'() {
+      // A tag name is written into the DOM verbatim. The browser rejects names
+      // like this, but the server-side DOM used for SSR does not, so an
+      // unvalidated name would be serialized straight into the rendered HTML.
+      let tag = 'img src=x onerror=alert(document.cookie)';
+      this.assert.throws(() => {
+        let AComponent = template(`{{#let (element tag) as |Tag|}}<Tag>hello</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper, tag }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
+      }, /The `element` helper was passed an invalid tag name/);
+    }
+
     ['@test it throws when passed an object']() {
       if (!DEBUG) {
         this.assert.expect(0);

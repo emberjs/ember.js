@@ -13,6 +13,15 @@ import { internalHelper } from './internal-helper';
 // Renders content wrapped in the specified HTML element, or just renders
 // content without a wrapper for empty string.
 
+// The tag name flows straight into `document.createElement` and, when the app
+// is rendered on the server, into the serialized HTML. A browser rejects a name
+// containing characters like a space or `>` (InvalidCharacterError), but the
+// server-side DOM does not, so an unvalidated name such as
+// `img src=x onerror=...` would be written verbatim into the rendered markup.
+// Restrict the name to characters that are legal in a tag so both environments
+// agree.
+const VALID_TAG_NAME = /^[a-zA-Z][a-zA-Z0-9._:-]*$/;
+
 const ELEMENT_CAPABILITIES = {
   createInstance: true,
   wrapped: true,
@@ -96,6 +105,7 @@ function getElementDefinition(tagName: string): ElementComponentDefinition {
   a wrapping element.
 
   Passing `null`, `undefined`, or non-string values will throw an assertion error.
+  Passing a string that is not a valid tag name will throw an error.
 
   Changing the tag name will tear down and recreate the element and its contents.
  
@@ -127,6 +137,10 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
           }`,
           typeof tagName === 'string'
         );
+      }
+
+      if (typeof tagName === 'string' && tagName !== '' && !VALID_TAG_NAME.test(tagName)) {
+        throw new Error(`The \`element\` helper was passed an invalid tag name \`${tagName}\`.`);
       }
 
       return getElementDefinition(tagName as string);
