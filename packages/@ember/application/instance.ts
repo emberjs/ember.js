@@ -146,7 +146,7 @@ class ApplicationInstance extends EngineInstance {
   }
 
   renderRootComponent(comonent: object, outletState: OutletState) {
-    renderComponent(comonent, {into: this.rootElement!, args: {outletState}});
+    renderComponent(comonent, { into: this.rootElement!, owner: this, args: { outletState } });
   }
 
   /**
