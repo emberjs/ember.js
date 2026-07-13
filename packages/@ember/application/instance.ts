@@ -9,7 +9,7 @@ import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
 import type { BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
-import { renderSettled } from '@ember/-internals/glimmer/lib/renderer';
+import { renderComponent, renderSettled } from '@ember/-internals/glimmer/lib/renderer';
 import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type Component from '@ember/-internals/glimmer/lib/component';
 import { assert } from '@ember/debug';
@@ -17,6 +17,7 @@ import Router from '@ember/routing/router';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import type Registry from '@ember/-internals/container/lib/registry';
 import type { SimpleElement } from '@simple-dom/interface';
+import { OutletState } from '@ember/-internals/glimmer';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -59,7 +60,9 @@ class ApplicationInstance extends EngineInstance {
     @private
     @property {String|DOMElement} rootElement
   */
-  rootElement: string | Element | SimpleElement | null = null;
+  rootElement: Element | SimpleElement | null = null;
+
+
 
   declare customEvents: Record<string, string | null> | null;
 
@@ -102,7 +105,11 @@ class ApplicationInstance extends EngineInstance {
     this.setupRegistry(options);
 
     if (options.rootElement) {
-      this.rootElement = options.rootElement;
+      if(typeof options.rootElement === 'string') {
+        this.rootElement = document.querySelector(options.rootElement);
+      } else {
+        this.rootElement = options.rootElement;
+      }
     } else {
       this.rootElement = this.application.rootElement;
     }
@@ -138,21 +145,8 @@ class ApplicationInstance extends EngineInstance {
     return this._router;
   }
 
-  /**
-    This hook is called by the root-most Route (a.k.a. the ApplicationRoute)
-    when it has finished creating the root View. By default, we simply take the
-    view and append it to the `rootElement` specified on the Application.
-
-    In cases like FastBoot and testing, we can override this hook and implement
-    custom behavior, such as serializing to a string and sending over an HTTP
-    socket rather than appending to DOM.
-
-    @param view {Ember.View} the root-most view
-    @deprecated
-    @private
-  */
-  didCreateRootView(view: Component) {
-    view.appendTo(this.rootElement!);
+  renderRootComponent(comonent: object, outletState: OutletState) {
+    renderComponent(comonent, {into: this.rootElement!, args: {outletState}});
   }
 
   /**

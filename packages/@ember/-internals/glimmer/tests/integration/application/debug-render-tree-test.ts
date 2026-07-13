@@ -94,7 +94,6 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         await this.visit('/');
 
-        debugger
         this.assertRenderTree([
           this.outlet({
             type: 'route-template',

@@ -67,6 +67,7 @@ import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
 import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
+import { face } from '@ember/-internals/glimmer/lib/components/fancy-outlet';
 
 /**
 @module @ember/routing/router
@@ -783,28 +784,25 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       // this safe, so in each of these cases we assume that nothing *else* is
       // registered at this `FullName`, and simply check to make sure that
       // *something* is.
-      let OutletView = owner.factoryFor('view:-outlet') as FactoryManager<OutletView> | undefined;
-      assert('[BUG] unexpectedly missing `view:-outlet`', OutletView !== undefined);
+      // let OutletView = owner.factoryFor('view:-outlet') as FactoryManager<OutletView> | undefined;
+      // assert('[BUG] unexpectedly missing `view:-outlet`', OutletView !== undefined);
 
       let application = owner.lookup('application:main') as Owner | undefined;
       assert('[BUG] unexpectedly missing `application:-main`', application !== undefined);
 
       assert('[BUG] unexpectedly missing `-environment:main`', environment !== undefined);
 
-      let template = owner.lookup('template:-outlet') as Template | undefined;
-      assert('[BUG] unexpectedly missing `template:-outlet`', template !== undefined);
+      // let template = owner.lookup('template:-outlet') as Template | undefined;
+      // assert('[BUG] unexpectedly missing `template:-outlet`', template !== undefined);
 
-      this._toplevelView = OutletView.create({ environment, template, application });
-      this._toplevelView.setOutletState(root);
+      // this._toplevelView = OutletView.create({ environment, template, application });
+      // this._toplevelView.setOutletState(root);
 
       // `Router Service - non application test:  RouterService#transitionTo with basic route`
       let instance = owner.lookup('-application-instance:main') as ApplicationInstance;
       assert('[BUG] unexpectedly missing `-application-instance:main`', instance !== undefined);
 
-      // SAFETY: LOL. This is calling a deprecated API with a type that we
-      // cannot actually confirm at a type level *is* a `ViewMixin`. Seems:
-      // not great on multiple fronts!
-      instance.didCreateRootView(this._toplevelView as any);
+      instance.renderRootComponent(face, root)
     } else {
       this._toplevelView.setOutletState(root);
     }

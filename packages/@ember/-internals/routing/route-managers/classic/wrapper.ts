@@ -23,7 +23,7 @@ import { outletHelper } from './outlet';
 // Renders the invokable passed in as `@Component` and forwards
 // `@model` / `@controller` onto it.
 const CLASSIC_WRAPPER_TEMPLATE = precompileTemplate(
-  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{(outlet)}}/>`,
+  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{(outlet @bucket.outletState)}}/>`,
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/classic/wrapper.hbs',
     strictMode: true,
@@ -49,7 +49,7 @@ class ClassicRouteWrapperManager
       attributeHook: false,
       elementHook: false,
       createCaller: false,
-      dynamicScope: false,
+      dynamicScope: true,
       updateHook: false,
       createInstance: false,
       wrapped: false,

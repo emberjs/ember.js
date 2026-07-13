@@ -53,7 +53,7 @@ import type { OutletState } from '../../../glimmer/lib/utils/outlet';
   @public
 */
 export const outletHelper = /*@__PURE__*/ internalHelper(
-  (_args: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
+  ({ positional }: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
@@ -61,7 +61,16 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
     );
 
     let outletRef = createComputeRef(() => {
-      let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
+
+      let incomingState = positional[0];
+      let state: OutletState | undefined;
+
+      if(!incomingState) {
+        state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
+      } else {
+        state = valueForRef(incomingState as Reference<OutletState | undefined>)
+      }
+
       return state?.outlets?.main;
     });
 
