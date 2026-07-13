@@ -7,10 +7,9 @@ import { set } from '@ember/-internals/metal/lib/property_set';
 // eslint-disable-next-line ember-local/no-barrel-imports
 import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
-import type { BootOptions } from '@ember/engine/instance';
+import type { BootEnvironment, BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
 import { renderComponent, renderSettled } from '@ember/-internals/glimmer/lib/renderer';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type Component from '@ember/-internals/glimmer/lib/component';
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
@@ -18,6 +17,7 @@ import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher
 import type Registry from '@ember/-internals/container/lib/registry';
 import type { SimpleElement } from '@simple-dom/interface';
 import { OutletState } from '@ember/-internals/glimmer';
+import { UpdatableOutletRootState } from '@ember/-internals/routing/route-managers/root-outlet';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -62,8 +62,6 @@ class ApplicationInstance extends EngineInstance {
   */
   rootElement: Element | SimpleElement | null = null;
 
-
-
   declare customEvents: Record<string, string | null> | null;
 
   init(properties: object | undefined) {
@@ -105,7 +103,7 @@ class ApplicationInstance extends EngineInstance {
     this.setupRegistry(options);
 
     if (options.rootElement) {
-      if(typeof options.rootElement === 'string') {
+      if (typeof options.rootElement === 'string') {
         this.rootElement = document.querySelector(options.rootElement);
       } else {
         this.rootElement = options.rootElement;
@@ -145,8 +143,8 @@ class ApplicationInstance extends EngineInstance {
     return this._router;
   }
 
-  renderRootComponent(comonent: object, outletState: OutletState) {
-    renderComponent(comonent, { into: this.rootElement!, owner: this, args: { outletState } });
+  renderRootComponent(component: object) {
+    renderComponent(component, { into: this.rootElement!, owner: this });
   }
 
   /**

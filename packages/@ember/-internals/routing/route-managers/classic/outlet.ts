@@ -46,14 +46,13 @@ import type { OutletState } from '../../../glimmer/lib/utils/outlet';
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
   `outlet` is built-in and does not need to be imported.
-  Invokes the `-outlet` view.
 
   @method outlet
   @for Ember.Templates.helpers
   @public
 */
 export const outletHelper = /*@__PURE__*/ internalHelper(
-  ({ positional }: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
+  (_args: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
@@ -61,15 +60,7 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
     );
 
     let outletRef = createComputeRef(() => {
-
-      let incomingState = positional[0];
-      let state: OutletState | undefined;
-
-      if(!incomingState) {
-        state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
-      } else {
-        state = valueForRef(incomingState as Reference<OutletState | undefined>)
-      }
+      let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
 
       return state?.outlets?.main;
     });
@@ -135,13 +126,13 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
         targetArgs['bucket'] = createConstRef(state.bucket, '@bucket');
         target = state.wrapper;
       } else {
-        // Wrapper-less render (a manager that opted out, or a legacy
-        // `setOutletState` caller): the invokable itself is the target and
+        // Wrapper-less render (a manager that opted out of
+        // `getRouteWrapper`): the invokable itself is the target and
         // receives only the live `@context`. No `@bucket`: unlike the
         // module-stable wrapper, the invokable is per-bucket and built by
         // the manager, so anything bucket-shaped it needs the manager can
         // attach itself — the live context ref is the one thing only the
-        // outlet can supply. (Legacy renders have no bucket at all.)
+        // outlet can supply.
         target = state.invokable;
       }
 
@@ -180,9 +171,7 @@ function stateFor(
   let render = outlet.render;
   if (render === undefined) return null;
 
-  // There is nothing to render until we have an invokable. This is either the
-  // manager-driven invokable or a route template that `OutletView` upgraded
-  // from a legacy raw `template`.
+  // There is nothing to render until the manager provides an invokable.
   if (render.invokable === undefined) return null;
 
   return {
@@ -212,7 +201,6 @@ function isStable(
     return state.wrapper === lastState.wrapper && state.invokable === lastState.invokable;
   }
 
-  // Legacy `setOutletState` callers have no wrapper; key on the upgraded
-  // invokable and controller.
+  // Wrapper-less renders key on the invokable and controller.
   return state.invokable === lastState.invokable && state.controller === lastState.controller;
 }

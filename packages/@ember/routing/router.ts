@@ -1,5 +1,5 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/engine/instance';
 import type { OutletState } from '@ember/-internals/glimmer/lib/utils/outlet';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
@@ -789,11 +789,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       let instance = owner.lookup('-application-instance:main') as ApplicationInstance;
       assert('[BUG] unexpectedly missing `-application-instance:main`', instance !== undefined);
 
-      this._updatableRootOutletState = createRootOutletState(root);
-      instance.renderRootComponent(
-        new RootOutlet(this._updatableRootOutletState.state),
-        this._updatableRootOutletState.state
-      );
+      this._updatableRootOutletState = createRootOutletState(owner, root);
+      instance.renderRootComponent(new RootOutlet(this._updatableRootOutletState));
     }
   }
 

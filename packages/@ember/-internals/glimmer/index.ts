@@ -17,7 +17,7 @@
   The documentation for `@ember/component` still refers to the older authoring format. To read about
   the new authoring format, see the
   [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
-    
+
   ### Showing a property
 
   Templates manage the flow of an application's UI, and display state (through
@@ -117,7 +117,7 @@
 
   ```app/templates/application.gjs
   import LabeledTextField from '../components/labeled-textfield';
-    
+
   <template>
     <LabeledTextField @value={{@model.name}}>
       First name:
@@ -127,7 +127,7 @@
 
   ```app/components/labeled-textfield.gjs
   import { Input } from '@ember/component';
-    
+
   <template>
     <label>
       {{yield}} <Input @value={{@value}} />
@@ -148,12 +148,12 @@
   ```app/templates/application.gjs
   import Component from '@glimmer/component';
   import LabeledTextField from '../components/labeled-textfield';
-    
+
   export default class Application extends Component {
     firstNameValidator = (value) => {
       // validates
     }
-    
+
     <template>
       <LabeledTextField @value={{@model.validation}} @validator={{this.firstNameValidator}} as |validationError|>
         {{#if validationError}}
@@ -167,7 +167,7 @@
 
   ```app/components/labeled-textfield.gjs
   import { Input } from '@ember/component';
-    
+
   <template>
     <label>
       {{yield this.validationError}} <Input @value={{@value}} />
@@ -188,7 +188,7 @@
 
   ```app/templates/application.gjs
   import DateRanges from '../components/date-ranges';
-    
+
   <template>
     <DateRanges @value={{@model.date}} as |range|>
       Start date: {{range.start}}
@@ -215,10 +215,10 @@
   ```
 
   Multiple values can be yielded as block params:
-    
+
   ```app/templates/application.gjs
   import Banner from '../components/banner';
-    
+
   <template>
     <Banner @value={{@model}} as |title subtitle body|>
       <h1>{{title}}</h1>
@@ -271,7 +271,7 @@
     Title = Title;
     Subtitle = Subtitle;
     Body = Body;
-    
+
     <template>
       <div>
         {{yield (hash
@@ -408,7 +408,7 @@
   `{{(has-block-params)}}` indicates if the component was invoked with block params.
 
   This component is invoked with block params:
-    
+
   ```handlebars
   <MyComponent as |favoriteFlavor|>
   Hi Jen!
@@ -533,7 +533,7 @@ export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/
 // TODO just test these through public API
 // a lot of these are testing how a problem was solved
 // rather than the problem was solved
-export { default as OutletView, type BootEnvironment } from './lib/views/outlet';
+export type { BootEnvironment } from '@ember/engine/instance';
 export type { OutletState, RenderState } from './lib/utils/outlet';
 export {
   componentCapabilities,

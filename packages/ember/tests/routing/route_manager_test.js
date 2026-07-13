@@ -108,7 +108,7 @@ moduleFor(
 
       this.add('route:application', class extends TestRoute {});
       this.add('route:index', class extends TestRoute {});
-      this.add('template:application', precompileTemplate('app:{{@outlet}}'));
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
       this.add('template:index', precompileTemplate('index'));
     }
 

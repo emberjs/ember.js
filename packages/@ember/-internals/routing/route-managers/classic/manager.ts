@@ -12,6 +12,7 @@ import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
 import type { OutletDefinitionState } from '@ember/-internals/glimmer/lib/component-managers/outlet';
+import OutletTemplate from '@ember/-internals/glimmer/lib/templates/outlet';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import {
   childRefFromParts,
@@ -447,7 +448,7 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
         });
       }
     }
-    const template = route._topLevelViewTemplate(owner);
+    const template = OutletTemplate(owner);
     invokable = makeRouteTemplate(owner, name, template as Template, self);
   }
   // Cache here (rather than in getInvokable) so every caller shares one

@@ -1643,17 +1643,20 @@ if (ENV._DEBUG_RENDER_TREE) {
       }
 
       assertNamedArgs<T>(actual: T, expected: T, path: string) {
-        const allKeys = new Set([...Object.keys(actual as object), ...Object.keys(expected as object)])
+        const allKeys = new Set([
+          ...Object.keys(actual as object),
+          ...Object.keys(expected as object),
+        ]);
 
-        for(let key of allKeys) {
+        for (let key of allKeys) {
           this.assert.ok((expected as any)[key], `expected is mising key ${key}`);
           this.assert.ok((actual as any)[key], `actual is mising key ${key}`);
 
-          if((expected as any)[key] && (actual as any)[key]) {
+          if ((expected as any)[key] && (actual as any)[key]) {
             // TODO we should probably not rely on qunit's version of deepEqual here but at least now we're not
             // trying to print full render trees (32MB of string) to the browser unless the key exists in both
             // places and is different
-            this.assert.deepEqual((actual as any)[key], (expected as any)[key], `${path}.${key}`)
+            this.assert.deepEqual((actual as any)[key], (expected as any)[key], `${path}.${key}`);
           }
         }
       }

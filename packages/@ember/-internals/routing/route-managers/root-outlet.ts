@@ -12,6 +12,7 @@ import type {
   WithCreateInstance,
   WithCustomDebugRenderTree,
 } from '@glimmer/interfaces';
+import type { InternalOwner } from '@ember/-internals/owner';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef, NULL_REFERENCE } from '@glimmer/reference/lib/reference';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
@@ -67,7 +68,7 @@ class RootOutletManager
   ): null {
     assert('Expected the root outlet to be created with a dynamic scope', dynamicScope !== null);
 
-    dynamicScope.set('outletState', definition.ref);
+    dynamicScope.set('outletState', definition.stateRef);
 
     return null;
   }
@@ -76,9 +77,6 @@ class RootOutletManager
     return '-top-level-outlet';
   }
 
-  // Returning an empty array hides this component from the debug render
-  // tree; the tree keeps starting at the first real outlet, the same shape
-  // it had when `OutletView` owned the top level.
   getDebugCustomRenderTree(): CustomRenderNode[] {
     return [];
   }
@@ -98,10 +96,10 @@ class RootOutletManager
 }
 
 export class RootOutlet {
-  readonly ref: Reference<OutletState>;
+  readonly stateRef: Reference<OutletState>;
 
-  constructor(state: OutletState) {
-    this.ref = createConstRef(state, '-top-level');
+  constructor(state: UpdatableOutletRootState) {
+    this.stateRef = createConstRef(state.state, '-top-level');
   }
 }
 
@@ -110,18 +108,27 @@ export interface UpdatableOutletRootState {
   set(root: OutletState): void;
 }
 
-export function createRootOutletState(initial: OutletState): UpdatableOutletRootState {
+export function createRootOutletState(
+  owner: InternalOwner,
+  initial: OutletState
+): UpdatableOutletRootState {
   let tag = createTag();
   let current = initial;
 
   let state: OutletState = {
-    get render() {
-      consumeTag(tag);
-      return current.render;
+    render: {
+      owner,
+      name: '-top-level',
+      controller: undefined,
+      model: undefined,
+      wrapper: undefined,
+      invokable: undefined,
     },
-    get outlets() {
-      consumeTag(tag);
-      return current.outlets;
+    outlets: {
+      get main(): OutletState {
+        consumeTag(tag);
+        return current;
+      },
     },
   };
 
