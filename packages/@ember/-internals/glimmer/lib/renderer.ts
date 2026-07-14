@@ -48,6 +48,7 @@ export {
   errorLoopTransaction,
   renderComponent,
   renderSettled,
+  setRenderer,
   _resetRenderers,
 } from './base-renderer';
 

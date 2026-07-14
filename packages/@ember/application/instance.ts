@@ -9,7 +9,8 @@ import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
 import type { BootEnvironment, BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
-import { renderComponent, renderSettled } from '@ember/-internals/glimmer/lib/renderer';
+import { renderComponent, renderSettled, setRenderer } from '@ember/-internals/glimmer/lib/renderer';
+import type { BaseRenderer } from '@ember/-internals/glimmer/lib/renderer';
 import type Component from '@ember/-internals/glimmer/lib/component';
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
@@ -102,14 +103,11 @@ class ApplicationInstance extends EngineInstance {
 
     this.setupRegistry(options);
 
-    if (options.rootElement) {
-      if (typeof options.rootElement === 'string') {
-        this.rootElement = document.querySelector(options.rootElement);
-      } else {
-        this.rootElement = options.rootElement;
-      }
+    let rootElement = options.rootElement ?? this.application.rootElement;
+    if (typeof rootElement === 'string') {
+      this.rootElement = document.querySelector(rootElement);
     } else {
-      this.rootElement = this.application.rootElement;
+      this.rootElement = rootElement;
     }
 
     if (options.location) {
@@ -144,7 +142,8 @@ class ApplicationInstance extends EngineInstance {
   }
 
   renderRootComponent(component: object) {
-    renderComponent(component, { into: this.rootElement!, owner: this });
+    setRenderer(this, this.lookup('renderer:-dom') as BaseRenderer);
+    renderComponent(component, { into: this.rootElement!, owner: this, appendIntoTarget: true });
   }
 
   /**
