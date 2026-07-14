@@ -516,6 +516,7 @@ export {
   _resetRenderers,
   renderSettled,
   renderComponent,
+  setRenderer,
   type View,
 } from './lib/renderer';
 export {

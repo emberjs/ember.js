@@ -568,6 +568,11 @@ export function renderComponent(
 
   if (innerResult) {
     associateDestroyableChild(owner, innerResult);
+    registerDestructor(innerResult, () => {
+      if (RENDER_CACHE.get(into)?.glimmerResult === innerResult) {
+        RENDER_CACHE.delete(into);
+      }
+    });
   }
 
   let result: RenderResult = {

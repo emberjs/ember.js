@@ -22,6 +22,7 @@ import { assert } from '@ember/debug';
 import type { OutletState } from '../../glimmer/lib/utils/outlet';
 import { outletHelper } from './classic/outlet';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
 
 const ROOT_OUTLET_TEMPLATE = precompileTemplate('{{component (outlet)}}', {
   moduleName: 'packages/@ember/-internals/routing/route-managers/root-outlet.hbs',
@@ -49,11 +50,45 @@ const CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: false,
 };
 
+/**
+ * Classic components track their `parentView` through a `view` on `scope`
+ */
+interface ViewCarryingScope extends DynamicScope {
+  view?: unknown;
+  child(): ViewCarryingScope;
+}
+
+function carryParentView(scope: ViewCarryingScope): ViewCarryingScope {
+  if (!('view' in scope)) {
+    scope.view = null;
+  }
+
+  let child = scope.child.bind(scope);
+  scope.child = () => {
+    let next = child();
+    next.view = scope.view;
+    return carryParentView(next);
+  };
+
+  return scope;
+}
+
+/**
+ * The buckets identify the two synthetic debug-render-tree nodes the root
+ * outlet contributes (the top-level `{{outlet}}` and its `-top-level`
+ * route-template). They must be stable across the create/didRender passes, so
+ * they live on the component instance state.
+ */
+interface RootOutletState {
+  outletBucket: object;
+  routeTemplateBucket: object;
+}
+
 class RootOutletManager
   implements
-    InternalComponentManager<null, RootOutlet>,
-    WithCreateInstance<null, RootOutlet>,
-    WithCustomDebugRenderTree<null, RootOutlet>
+    InternalComponentManager<RootOutletState, RootOutlet>,
+    WithCreateInstance<RootOutletState, RootOutlet>,
+    WithCustomDebugRenderTree<RootOutletState, RootOutlet>
 {
   getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
@@ -65,20 +100,45 @@ class RootOutletManager
     _args: unknown,
     _env: unknown,
     dynamicScope: DynamicScope | null
-  ): null {
+  ): RootOutletState {
     assert('Expected the root outlet to be created with a dynamic scope', dynamicScope !== null);
 
+    carryParentView(dynamicScope as ViewCarryingScope);
     dynamicScope.set('outletState', definition.stateRef);
 
-    return null;
+    return { outletBucket: {}, routeTemplateBucket: {} };
   }
 
   getDebugName(): string {
     return '-top-level-outlet';
   }
 
-  getDebugCustomRenderTree(): CustomRenderNode[] {
-    return [];
+  /**
+   * Emit the top-level frame the classic `OutletView` used to provide: an
+   * `{{outlet}}` node wrapping the `-top-level` route-template. These nest (so
+   * the application's own outlet renders beneath them) and both inherit the
+   * root outlet's bounds — matching the render tree Ember Inspector expects.
+   */
+  getDebugCustomRenderTree(
+    _definition: RootOutlet,
+    state: RootOutletState
+  ): CustomRenderNode[] {
+    return [
+      {
+        bucket: state.outletBucket,
+        type: 'outlet',
+        name: 'main',
+        args: EMPTY_ARGS,
+        instance: undefined,
+      },
+      {
+        bucket: state.routeTemplateBucket,
+        type: 'route-template',
+        name: '-top-level',
+        args: EMPTY_ARGS,
+        instance: undefined,
+      },
+    ];
   }
 
   getSelf(): Reference {

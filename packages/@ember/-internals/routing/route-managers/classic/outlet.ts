@@ -110,11 +110,13 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
       assert('Expected outlet state to have an invokable to render', state.invokable !== undefined);
 
       // Args are delivered by currying them onto the render target — the
-      // outlet's layout is arg-less. Currying (rather than writing the args
-      // into the layout) keeps the target from showing up as an opaque
-      // `@Component` frame in the debug render tree and
+      // outlet's layout is otherwise arg-less. Currying (rather than writing
+      // the args into the layout) keeps the target from showing up as an
+      // opaque `@Component` frame in the debug render tree and
       // backtracking-assertion messages. Curried refs stay live, so the
       // `@context` compute ref keeps updating across renders of the mount.
+      // (`@outlet` — the child `{{outlet}}` — is supplied by the outlet layout
+      // itself; see `OUTLET_COMPONENT_TEMPLATE`.)
       let targetArgs = dict<Reference>();
       let target;
 
@@ -127,12 +129,8 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
         target = state.wrapper;
       } else {
         // Wrapper-less render (a manager that opted out of
-        // `getRouteWrapper`): the invokable itself is the target and
-        // receives only the live `@context`. No `@bucket`: unlike the
-        // module-stable wrapper, the invokable is per-bucket and built by
-        // the manager, so anything bucket-shaped it needs the manager can
-        // attach itself — the live context ref is the one thing only the
-        // outlet can supply.
+        // `getRouteWrapper`): the invokable itself is the target and receives
+        // only the live `@context` (plus the layout's `@outlet`).
         target = state.invokable;
       }
 

@@ -1649,10 +1649,20 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         for (let key of allKeys) {
-          this.assert.ok((expected as any)[key], `expected is mising key ${key}`);
-          this.assert.ok((actual as any)[key], `actual is mising key ${key}`);
+          let inExpected = key in (expected as object);
+          let inActual = key in (actual as object);
 
-          if ((expected as any)[key] && (actual as any)[key]) {
+          // Every route-template now receives an `@outlet` arg (the curried
+          // child outlet, or null for leaves) — opaque plumbing that is already
+          // represented as a child node. Treat it as opt-in: only compare it
+          // when a test specifies it, rather than requiring every expectation
+          // to list it.
+          if (key !== 'outlet') {
+            this.assert.ok(inExpected, `expected is missing key ${key}`);
+            this.assert.ok(inActual, `actual is missing key ${key}`);
+          }
+
+          if (inExpected && inActual) {
             // TODO we should probably not rely on qunit's version of deepEqual here but at least now we're not
             // trying to print full render trees (32MB of string) to the browser unless the key exists in both
             // places and is different

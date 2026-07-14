@@ -197,6 +197,7 @@
       "@ember/-internals/routing/route-managers/classic/substates.js": "ember-source/@ember/-internals/routing/route-managers/classic/substates.js",
       "@ember/-internals/routing/route-managers/classic/wrapper.js": "ember-source/@ember/-internals/routing/route-managers/classic/wrapper.js",
       "@ember/-internals/routing/route-managers/registry.js": "ember-source/@ember/-internals/routing/route-managers/registry.js",
+      "@ember/-internals/routing/route-managers/root-outlet.js": "ember-source/@ember/-internals/routing/route-managers/root-outlet.js",
       "@ember/-internals/runtime/index.js": "ember-source/@ember/-internals/runtime/index.js",
       "@ember/-internals/runtime/lib/ext/rsvp.js": "ember-source/@ember/-internals/runtime/lib/ext/rsvp.js",
       "@ember/-internals/runtime/lib/mixins/-proxy.js": "ember-source/@ember/-internals/runtime/lib/mixins/-proxy.js",

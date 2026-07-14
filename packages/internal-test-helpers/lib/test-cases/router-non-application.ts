@@ -3,7 +3,7 @@ import compile from '../compile';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Renderer } from '@ember/-internals/glimmer';
 import Component from '@ember/component';
-import { _resetRenderers } from '@ember/-internals/glimmer';
+import { _resetRenderers, renderComponent, setRenderer } from '@ember/-internals/glimmer';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 
@@ -37,9 +37,13 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     // This is a bit of a hack, but we need to register an application instance
     // so that the router can look it up. In the future, we should probably
     // make this a real application instance, or at least a real engine instance.
+    // `_setOutlets` renders the root outlet through `renderRootComponent`, so we
+    // mirror `ApplicationInstance#renderRootComponent` (seed `renderer:-dom` as
+    // the owner's renderer, then render into the fixture element).
     let appInstance = {
-      didCreateRootView: (view: any) => {
-        view.appendTo(this.element);
+      renderRootComponent: (component: object) => {
+        setRenderer(owner, this.renderer);
+        renderComponent(component, { into: this.element, owner, appendIntoTarget: true });
       },
     };
     owner.register('-application-instance:main', appInstance, { instantiate: false });
