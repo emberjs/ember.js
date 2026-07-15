@@ -159,6 +159,7 @@ moduleFor(
       this.router.reopen({
         routerService: service('router'),
         init() {
+          this._super(...arguments);
           this.routerService.one('routeDidChange', () => {
             assert.ok(true, 'routeDidChange event listener called');
           });

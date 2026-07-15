@@ -4,13 +4,14 @@ import type {
   default as OutletView,
 } from '@ember/-internals/glimmer/lib/views/outlet';
 import type { OutletState } from '@ember/-internals/glimmer/lib/utils/outlet';
-import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
+import { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import type { FactoryManager } from '@ember/-internals/owner';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/owner';
 import { default as BucketCache } from './lib/cache';
+import { makeQPArray } from '@ember/routing/lib/qp-array';
 import { default as DSL, type DSLCallback } from './lib/dsl';
 import RouterState from './lib/router_state';
 import type { EngineRouteInfo } from './lib/engines';
@@ -26,10 +27,10 @@ import type {
   Registry as LocationRegistry,
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
-import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { FrameworkObject } from '@ember/object/-internals';
+import { tracked } from '@ember/-internals/metal/lib/tracked';
 import typeOf from '@ember/utils/lib/type-of';
-import Evented from '@ember/object/evented';
+import { EventedEmitter } from '@ember/-internals/utils/lib/evented-emitter';
 import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -67,8 +68,8 @@ function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>
 
   this._cancelSlowTransitionTimer();
 
-  this.notifyPropertyChange('url');
-  this.set('currentState', this.targetState);
+  notifyPropertyChange(this, 'url');
+  set(this, 'currentState', this.targetState);
 
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
@@ -142,7 +143,7 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter extends EmberObject.extend(Evented) implements Evented {
+class EmberRouter extends FrameworkObject {
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.
@@ -179,10 +180,11 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _didSetupRouter = false;
   _initialTransitionStarted = false;
 
-  currentURL: string | null = null;
-  currentRouteName: string | null = null;
-  currentPath: string | null = null;
-  currentRoute: RouteInfo | RouteInfoWithAttributes | null = null;
+  // tracked so the RouterService's native getters over these invalidate
+  @tracked currentURL: string | null = null;
+  @tracked currentRouteName: string | null = null;
+  @tracked currentPath: string | null = null;
+  @tracked currentRoute: RouteInfo | RouteInfoWithAttributes | null = null;
 
   _qpCache: Record<string, { qps: QueryParam[]; map: QueryParamMeta['map'] }> = Object.create(null);
 
@@ -201,13 +203,32 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
   private namespace: any;
 
-  // Begin Evented
-  declare on: (name: string, method: ((...args: any[]) => void) | string) => this;
-  declare one: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare trigger: (name: string, ...args: any[]) => unknown;
-  declare off: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare has: (name: string) => boolean;
-  // End Evented
+  // Evented-compatible event API, backed by an owned emitter rather than the
+  // Evented mixin. `routeWillChange`/`routeDidChange` are the public events.
+  private _emitter = new EventedEmitter(this);
+
+  on(name: string, method: ((...args: any[]) => void) | string): this {
+    this._emitter.on(name, method);
+    return this;
+  }
+
+  one(name: string, method: ((...args: any[]) => void) | string): this {
+    this._emitter.one(name, method);
+    return this;
+  }
+
+  trigger(name: string, ...args: any[]): unknown {
+    return this._emitter.trigger(name, ...args);
+  }
+
+  off(name: string, method: ((...args: any[]) => void) | string): this {
+    this._emitter.off(name, method);
+    return this;
+  }
+
+  has(name: string): boolean {
+    return this._emitter.has(name);
+  }
 
   // Set with reopenClass
   private static dslCallbacks?: DSLCallback[];
@@ -253,8 +274,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   static map(callback: DSLCallback) {
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
-      // FIXME: Can we remove this?
-      this.reopenClass({ dslCallbacks: this.dslCallbacks });
     }
 
     this.dslCallbacks.push(callback);
@@ -433,12 +452,12 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         // to make router.currentRoute.name consistent with router.currentRouteName
         // see https://github.com/emberjs/ember.js/issues/19449
         if (transition.isIntermediate) {
-          router.set('currentRoute', transition.to);
+          set(router, 'currentRoute', transition.to);
         }
       }
 
       routeDidChange(transition: Transition) {
-        router.set('currentRoute', transition.to);
+        set(router, 'currentRoute', transition.to);
         once(() => {
           router.trigger('routeDidChange', transition);
 
@@ -1010,7 +1029,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     } else if (defaultType === 'number') {
       return Number(value).valueOf();
     } else if (defaultType === 'array') {
-      return emberA(JSON.parse(value as string));
+      return makeQPArray(JSON.parse(value as string));
     }
     return value;
   }
@@ -1329,8 +1348,9 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     );
   }
 
-  currentState: null | RouterState = null;
-  targetState: null | RouterState = null;
+  // tracked so the RoutingService's native getters over these invalidate
+  @tracked currentState: null | RouterState = null;
+  @tracked targetState: null | RouterState = null;
 
   _handleSlowTransition(transition: Transition, originRoute: Route) {
     if (!this._routerMicrolib.activeTransition) {
@@ -1343,7 +1363,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       this._routerMicrolib,
       this._routerMicrolib.activeTransition[STATE_SYMBOL]!
     );
-    this.set('targetState', targetState);
+    set(this, 'targetState', targetState);
 
     transition.trigger(true, 'loading', transition, originRoute);
   }
@@ -1471,8 +1491,15 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @type {String}
     @private
   */
-  // Set with reopen to allow overriding via extend
-  declare url: string;
+  get url(): string | undefined {
+    let location = get(this, 'location');
+
+    if (typeof location === 'string') {
+      return undefined;
+    }
+
+    return location.getURL();
+  }
 }
 
 /*
@@ -1782,9 +1809,9 @@ function didBeginTransition(transition: Transition, router: EmberRouter) {
   let routerState = new RouterState(router, router._routerMicrolib, transition[STATE_SYMBOL]!);
 
   if (!router.currentState) {
-    router.set('currentState', routerState);
+    set(router, 'currentState', routerState);
   }
-  router.set('targetState', routerState);
+  set(router, 'targetState', routerState);
 
   transition.promise = transition.catch((error: any) => {
     if (router._isErrorHandled(error)) {
@@ -1814,22 +1841,16 @@ function forEachQueryParam(
   }
 }
 
-EmberRouter.reopen({
+// Defaults are assigned to the prototype (rather than declared as instance
+// fields) so they can be overridden both by native subclassing and by classic
+// `.extend()`. The deprecated-override asserts in `_initRouterJs` compare
+// against `defaultDidTransition`/`defaultWillTransition` by identity, so the
+// functions themselves must be the prototype values.
+Object.assign(EmberRouter.prototype, {
   didTransition: defaultDidTransition,
   willTransition: defaultWillTransition,
   rootURL: '/',
   location: 'hash',
-
-  // FIXME: Does this need to be overrideable via extend?
-  url: computed(function (this: EmberRouter) {
-    let location = get(this, 'location');
-
-    if (typeof location === 'string') {
-      return undefined;
-    }
-
-    return location.getURL();
-  }),
 });
 
 export default EmberRouter;
