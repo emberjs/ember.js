@@ -82,6 +82,17 @@ moduleFor(
       assert.equal(location.getURL(), '/foo#bar#car');
     }
 
+    ['@test HashLocation.getURL() collapses a leading double slash'](assert) {
+      createLocation(
+        {
+          _location: mockBrowserLocation('/#//example.com/x'),
+        },
+        assert
+      );
+
+      assert.equal(location.getURL(), '/example.com/x');
+    }
+
     ['@test HashLocation.getURL() assumes location.hash without #/ prefix is not a route path'](
       assert
     ) {

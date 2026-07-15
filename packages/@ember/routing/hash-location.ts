@@ -85,7 +85,10 @@ export default class HashLocation extends EmberObject implements EmberLocation {
       }
     }
 
-    return outPath;
+    // Collapse a leading run of slashes so an attacker-influenced hash such as
+    // `#//example.com` is not surfaced as a protocol-relative URL through
+    // `router.currentURL`. HistoryLocation.getURL already normalizes slashes.
+    return outPath.replace(/^\/\/+/, '/');
   }
 
   /**
