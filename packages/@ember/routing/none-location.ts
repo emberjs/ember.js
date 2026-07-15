@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import { FrameworkObject } from '@ember/object/-internals';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { escapeRegExp } from './lib/location-utils';
@@ -20,7 +20,7 @@ import { escapeRegExp } from './lib/location-utils';
   @extends EmberObject
   @protected
 */
-export default class NoneLocation extends EmberObject implements EmberLocation {
+export default class NoneLocation extends FrameworkObject implements EmberLocation {
   updateCallback?: UpdateCallback;
 
   // Set in reopen so it can be overwritten with extend

@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import { FrameworkObject } from '@ember/object/-internals';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { escapeRegExp, getHash } from './lib/location-utils';
@@ -56,7 +56,7 @@ function _uuid() {
   @extends EmberObject
   @protected
 */
-export default class HistoryLocation extends EmberObject implements EmberLocation {
+export default class HistoryLocation extends FrameworkObject implements EmberLocation {
   // SAFETY: both of these properties initialized via `init`.
   declare location: Location;
   declare baseURL: string;
@@ -85,8 +85,8 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     return getHash(this.location);
   }
 
-  init(): void {
-    this._super(...arguments);
+  init(properties: object | undefined): void {
+    super.init(properties);
 
     let base = document.querySelector('base');
     let baseURL = '';
