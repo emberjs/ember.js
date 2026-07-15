@@ -15,6 +15,7 @@ import type Component from '@ember/-internals/glimmer/lib/component';
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
+import { CLASSIC_COMPONENTS } from '@ember/legacy-features';
 import type Registry from '@ember/-internals/container/lib/registry';
 import type { SimpleElement } from '@simple-dom/interface';
 
@@ -113,7 +114,7 @@ class ApplicationInstance extends EngineInstance {
 
     this.application.runInstanceInitializers(this);
 
-    if (options.isInteractive) {
+    if (CLASSIC_COMPONENTS && options.isInteractive) {
       this.setupEventDispatcher();
     }
 

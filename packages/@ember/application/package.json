@@ -14,6 +14,7 @@
     "@ember/controller": "workspace:*",
     "@ember/debug": "workspace:*",
     "@ember/engine": "workspace:*",
+    "@ember/legacy-features": "workspace:*",
     "@ember/object": "workspace:*",
     "@ember/owner": "workspace:*",
     "@ember/routing": "workspace:*",

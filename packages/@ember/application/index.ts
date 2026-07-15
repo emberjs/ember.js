@@ -13,6 +13,7 @@ import { join, once, run, schedule } from '@ember/runloop';
 import libraries from '@ember/-internals/metal/lib/libraries';
 import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
+import { CLASSIC_COMPONENTS } from '@ember/legacy-features';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import HashLocation from '@ember/routing/hash-location';
@@ -1118,7 +1119,12 @@ function commonSetupRegistry(registry: Registry) {
   });
 
   registry.register('route:basic', Route);
-  registry.register('event_dispatcher:main', EventDispatcher);
+
+  if (CLASSIC_COMPONENTS) {
+    // the EventDispatcher only serves classic components' element event
+    // methods; modern code uses the {{on}} modifier
+    registry.register('event_dispatcher:main', EventDispatcher);
+  }
 
   registry.register('location:hash', HashLocation);
   registry.register('location:history', HistoryLocation);
