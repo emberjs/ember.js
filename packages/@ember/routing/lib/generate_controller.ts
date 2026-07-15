@@ -1,6 +1,6 @@
 import { get } from '@ember/-internals/metal/lib/property_get';
 import type { InternalFactory, default as Owner } from '@ember/-internals/owner';
-import type Controller from '@ember/controller';
+import type { Controller } from '@ember/controller/-base';
 import { assert, info } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
