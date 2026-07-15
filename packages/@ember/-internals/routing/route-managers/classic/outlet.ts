@@ -13,12 +13,20 @@ import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
 import { curry } from '@glimmer/runtime/lib/curried-value';
 import { dict } from '@glimmer/util/lib/collections';
+import { precompileTemplate } from '@ember/template-compilation';
 import {
   OutletComponent,
   type OutletDefinitionState,
 } from '../../../glimmer/lib/component-managers/outlet';
 import { internalHelper } from '../../../glimmer/lib/helpers/internal-helper';
 import type { OutletState } from '../../../glimmer/lib/utils/outlet';
+
+const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component @outlet={{(outlet)}} />', {
+  strictMode: true,
+  scope() {
+    return { outlet: outletHelper };
+  },
+});
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -150,7 +158,7 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
 
       outlet = curry(
         0 as CurriedComponent,
-        new OutletComponent(owner, state),
+        new OutletComponent(owner, state, OUTLET_COMPONENT_TEMPLATE),
         outletOwner,
         createCapturedArgs(named, EMPTY_POSITIONAL),
         true

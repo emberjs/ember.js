@@ -3,7 +3,6 @@ import type { Nullable } from '@ember/-internals/utility-types';
 import { assert } from '@ember/debug';
 import type EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
-import { precompileTemplate } from '@ember/template-compilation';
 import type {
   CompilableProgram,
   ComponentDefinition,
@@ -11,6 +10,7 @@ import type {
   Destroyable,
   Environment,
   InternalComponentCapabilities,
+  TemplateFactory,
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
@@ -23,7 +23,6 @@ import { unwrapTemplate } from './unwrap-template';
 
 import type { DynamicScope } from '../renderer';
 import type { OutletState } from '../utils/outlet';
-import { outletHelper } from '../../../routing/route-managers/classic/outlet';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   // "main" used to be the outlet name, keeping it around for compatibility
@@ -179,21 +178,6 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
-// The one outlet layout. `@Component` already carries its curried args (the
-// invokable/bucket/live context for wrapped renders, the live context for
-// wrapper-less ones). The layout also supplies `@outlet` — the child outlet
-// rendered by `{{outlet}}` — computed here in the outlet's own dynamic scope,
-// so both wrapped and wrapper-less targets get it without any manual
-// recursion. `@outlet` lands on `@Component` (the wrapper, which is hidden
-// from the debug render tree, or the bare invokable), never on the outlet
-// node itself.
-const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component @outlet={{(outlet)}} />', {
-  strictMode: true,
-  scope() {
-    return { outlet: outletHelper };
-  },
-});
-
 export class OutletComponent implements ComponentDefinition<
   OutletDefinitionState,
   OutletInstanceState,
@@ -208,8 +192,9 @@ export class OutletComponent implements ComponentDefinition<
 
   constructor(
     owner: InternalOwner,
-    public state: OutletDefinitionState
+    public state: OutletDefinitionState,
+    template: TemplateFactory
   ) {
-    this.compilable = unwrapTemplate(OUTLET_COMPONENT_TEMPLATE(owner)).asLayout();
+    this.compilable = unwrapTemplate(template(owner)).asLayout();
   }
 }
