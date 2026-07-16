@@ -104,6 +104,11 @@ jobs:
           - name: "All deprecations enabled, with optional features"
             ALL_DEPRECATIONS_ENABLED: "true"
             ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Available deprecations enabled via stage config"
+            ENABLED_DEPRECATIONS: "true"
+          - name: "Deprecation compliance declared"
+            DEPRECATION_COMPLIANCE: "7.2.0"
+            RAISE_ON_DEPRECATION: "false"
           - name: "Deprecations as errors"
             OVERRIDE_DEPRECATION_VERSION: "15.0.0"
           - name: "Deprecations as errors, with optional features"
@@ -127,6 +132,8 @@ jobs:
       - name: test
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
+          ENABLED_DEPRECATIONS: ${{ matrix.ENABLED_DEPRECATIONS }}
+          DEPRECATION_COMPLIANCE: ${{ matrix.DEPRECATION_COMPLIANCE }}
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
           RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
