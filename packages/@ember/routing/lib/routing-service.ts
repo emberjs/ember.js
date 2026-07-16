@@ -5,6 +5,7 @@
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
+import { internalReopen } from '@ember/object/core';
 import Service from '@ember/service';
 import type { ModelFor } from 'router_js';
 import type Route from '@ember/routing/route';
@@ -128,7 +129,7 @@ export default class RoutingService<R extends Route> extends Service {
   }
 }
 
-RoutingService.reopen({
+internalReopen(RoutingService, {
   targetState: readOnly('router.targetState'),
   currentState: readOnly('router.currentState'),
   currentRouteName: readOnly('router.currentRouteName'),

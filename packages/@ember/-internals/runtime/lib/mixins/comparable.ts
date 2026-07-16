@@ -1,4 +1,4 @@
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import { DEPRECATE_COMPARABLE_MIXIN } from '@ember/deprecated-features';
 
@@ -21,7 +21,7 @@ interface Comparable {
   compare: ((a: unknown, b: unknown) => -1 | 0 | 1) | null;
 }
 const Comparable = DEPRECATE_COMPARABLE_MIXIN
-  ? Mixin.create({
+  ? createMixin({
       /**
         __Required.__ You must implement this method to apply this mixin.
 

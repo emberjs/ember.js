@@ -9,7 +9,7 @@ import expandProperties from '@ember/-internals/metal/lib/expand_properties';
 import { getFactoryFor } from '@ember/-internals/container/lib/container';
 import { setObservers } from '@ember/-internals/utils/lib/super';
 import type { AnyFn } from '@ember/-internals/utility-types';
-import CoreObject from '@ember/object/core';
+import CoreObject, { internalExtend } from '@ember/object/core';
 import Observable from '@ember/object/observable';
 
 export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
@@ -36,7 +36,7 @@ export { default as computed } from '@ember/-internals/metal/lib/computed';
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface EmberObject extends Observable {}
-class EmberObject extends CoreObject.extend(Observable) {
+class EmberObject extends internalExtend(CoreObject, Observable) {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;

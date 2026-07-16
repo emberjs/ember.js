@@ -5,7 +5,7 @@
 import { context } from '@ember/-internals/environment/lib/context';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import computed from '@ember/-internals/metal/lib/computed';
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
@@ -31,7 +31,7 @@ interface TargetActionSupport {
   /** @internal */
   _target?: unknown;
 }
-const TargetActionSupport = Mixin.create({
+const TargetActionSupport = createMixin({
   target: null,
   action: null,
   actionContext: null,

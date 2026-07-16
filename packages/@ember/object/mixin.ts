@@ -687,6 +687,17 @@ export default class Mixin {
   }
 }
 
+/**
+  Non-deprecating equivalent of `Mixin.create` for ember-source's own
+  framework mixins. External code must use `Mixin.create`.
+
+  @internal
+*/
+export function createMixin(...args: any[]): Mixin {
+  setUnprocessedMixins();
+  return new Mixin(args, undefined);
+}
+
 if (DEBUG) {
   Object.defineProperty(Mixin, '_disableDebugSeal', {
     configurable: true,

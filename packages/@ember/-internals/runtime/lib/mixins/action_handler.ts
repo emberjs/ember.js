@@ -2,7 +2,7 @@
 @module ember
 */
 
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { assert } from '@ember/debug';
 
@@ -21,7 +21,7 @@ interface ActionHandler {
   actions?: Record<string, (...args: any[]) => unknown>;
   send(actionName: string, ...args: unknown[]): void;
 }
-const ActionHandler = Mixin.create({
+const ActionHandler = createMixin({
   mergedProperties: ['actions'],
 
   /**

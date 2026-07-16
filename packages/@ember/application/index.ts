@@ -15,6 +15,7 @@ import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
+import { internalExtend } from '@ember/object/core';
 import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '@ember/routing/history-location';
 import NoneLocation from '@ember/routing/none-location';
@@ -386,7 +387,7 @@ class Application extends Engine {
       // Create subclass of Router for this Application instance.
       // This is to ensure that someone reopening `App.Router` does not
       // tamper with the default `Router`.
-      this.Router = (this.Router || Router).extend() as typeof Router;
+      this.Router = internalExtend(this.Router || Router) as typeof Router;
 
       this._buildDeprecatedInstance();
       this.waitForDOMReady();

@@ -3,6 +3,7 @@
  */
 import { getOwner } from '@ember/-internals/owner';
 import Evented from '@ember/object/evented';
+import { internalExtend } from '@ember/object/core';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
@@ -62,7 +63,7 @@ interface RouterService extends Evented {
     callback: (transition: Transition) => void
   ): this;
 }
-class RouterService extends Service.extend(Evented) {
+class RouterService extends internalExtend(Service, Evented) {
   [ROUTER]?: EmberRouter;
 
   get _router(): EmberRouter {

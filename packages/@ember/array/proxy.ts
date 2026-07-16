@@ -15,6 +15,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import EmberObject from '@ember/object';
+import { internalReopen } from '@ember/object/core';
 import EmberArray, { type NativeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
@@ -405,7 +406,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   }
 }
 
-ArrayProxy.reopen(MutableArray, {
+internalReopen(ArrayProxy, MutableArray, {
   arrangedContent: alias('content'),
 });
 

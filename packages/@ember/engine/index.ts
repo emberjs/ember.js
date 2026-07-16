@@ -3,6 +3,7 @@ export { getEngineParent, setEngineParent } from './parent';
 import { canInvoke } from '@ember/-internals/utils/lib/invoke';
 import Controller from '@ember/controller';
 import Namespace from '@ember/application/namespace';
+import { internalExtend, internalReopenClass } from '@ember/object/core';
 import Registry from '@ember/-internals/container/lib/registry';
 import type { ResolverClass } from '@ember/-internals/container/lib/registry';
 import DAG from 'dag-map';
@@ -56,7 +57,7 @@ export interface Initializer<T> {
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Engine extends RegistryProxyMixin {}
-class Engine extends Namespace.extend(RegistryProxyMixin) {
+class Engine extends internalExtend(Namespace, RegistryProxyMixin) {
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
   static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
 
@@ -494,7 +495,7 @@ export function buildInitializerMethod<
       let attrs = {
         [bucketName]: Object.create(this[bucketName]),
       };
-      this.reopenClass(attrs);
+      internalReopenClass(this, attrs);
     }
 
     assert(

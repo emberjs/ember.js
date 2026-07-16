@@ -2,7 +2,7 @@
  @module ember
 */
 import { get } from '@ember/-internals/metal/lib/property_get';
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
 
@@ -14,7 +14,7 @@ import { assert } from '@ember/debug';
 interface ActionSupport {
   send(actionName: string, ...args: unknown[]): void;
 }
-const ActionSupport = Mixin.create({
+const ActionSupport = createMixin({
   send(actionName: string, ...args: unknown[]) {
     assert(
       `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
