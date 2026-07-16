@@ -32,7 +32,11 @@
         EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
       }
 
-      if (QUnit.urlParams.ENABLED_DEPRECATIONS || QUnit.urlParams.DEPRECATION_COMPLIANCE) {
+      if (
+        QUnit.urlParams.ENABLED_DEPRECATIONS ||
+        QUnit.urlParams.DEPRECATION_COMPLIANCE ||
+        QUnit.urlParams.EXCEPT_DEPRECATIONS
+      ) {
         EmberENV['DEPRECATION_STAGES'] = {};
         if (QUnit.urlParams.ENABLED_DEPRECATIONS) {
           EmberENV['DEPRECATION_STAGES'].enable =
@@ -42,6 +46,9 @@
         }
         if (QUnit.urlParams.DEPRECATION_COMPLIANCE) {
           EmberENV['DEPRECATION_STAGES'].compliance = QUnit.urlParams.DEPRECATION_COMPLIANCE;
+        }
+        if (QUnit.urlParams.EXCEPT_DEPRECATIONS) {
+          EmberENV['DEPRECATION_STAGES'].except = QUnit.urlParams.EXCEPT_DEPRECATIONS.split(',');
         }
       }
 

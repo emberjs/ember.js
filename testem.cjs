@@ -20,6 +20,11 @@ const variants = [
   // enabled at or before this ember-source version throw instead of warning.
   'DEPRECATION_COMPLIANCE',
 
+  // Comma-separated deprecation ids passed to
+  // EmberENV.DEPRECATION_STAGES.except: treated as unconfigured — excluded
+  // from enable (including ENABLED_DEPRECATIONS=true) and from throwing.
+  'EXCEPT_DEPRECATIONS',
+
   // This enables all canary feature flags for unreleased feature within Ember
   // itself.
   'ENABLE_OPTIONAL_FEATURES',

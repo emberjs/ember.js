@@ -97,7 +97,9 @@ interface DeprecationStagesConfig {
   assert?: string[];
 
   /**
-   * Escape hatch: ids exempted from `compliance`/`assert` throwing.
+   * Escape hatch: ids this configuration treats as unconfigured — exempted
+   * from `compliance`/`assert` throwing and excluded from `enable`
+   * (including `enable: true`).
    */
   except?: string[];
 }
@@ -128,7 +130,10 @@ Semantics:
   their `until` version. It therefore applies to *all* deprecations flowing
   through `@ember/debug` — including addon deprecations with their own `for`
   — not only Ember's own.
-- Precedence: `except` > `assert` > `compliance`.
+- Precedence: `except` > `assert` > `compliance`, and `except` also excludes
+  an id from `enable`. `except` means "pretend this id is not configured" —
+  the lever that lets `enable: true` coexist with a handful of
+  known-too-noisy ids.
 - A compliance declaration for a package version newer than the installed
   version is invalid (asserts), mirroring RFC 0649's rule against optimistic
   declarations.
