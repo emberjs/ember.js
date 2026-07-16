@@ -105,10 +105,10 @@ jobs:
           # coverage in packages/@ember/object/tests instead.
           - name: "All deprecations enabled"
             ENABLED_DEPRECATIONS: "true"
-            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers"
+            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array"
           - name: "All deprecations enabled, with optional features"
             ENABLED_DEPRECATIONS: "true"
-            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers"
+            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array"
             ENABLE_OPTIONAL_FEATURES: "true"
           - name: "Deprecation compliance declared"
             DEPRECATION_COMPLIANCE: "7.2.0"

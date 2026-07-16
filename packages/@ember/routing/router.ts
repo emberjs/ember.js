@@ -28,7 +28,7 @@ import type {
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import { internalExtend, internalReopen, internalReopenClass } from '@ember/object/core';
-import { A as emberA } from '@ember/array';
+import { internalA as emberA } from '@ember/array';
 import typeOf from '@ember/utils/lib/type-of';
 import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';

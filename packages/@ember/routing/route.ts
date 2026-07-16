@@ -13,7 +13,7 @@ import setProperties from '@ember/-internals/metal/lib/set_properties';
 import EmberObject from '@ember/object';
 import { internalExtend, internalReopen } from '@ember/object/core';
 import Evented from '@ember/object/evented';
-import { A as emberA } from '@ember/array';
+import { internalA as emberA } from '@ember/array';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import typeOf from '@ember/utils/lib/type-of';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';

@@ -214,6 +214,13 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-observers',
   }),
+  DEPRECATE_EMBER_ARRAY: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-ember-array',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-ember-array',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {
