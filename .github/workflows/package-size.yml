@@ -28,5 +28,7 @@ jobs:
             dist/prod
             smoke-tests/v2-app-template/dist
             smoke-tests/v2-app-hello-world-template/dist
+            smoke-tests/v2-app-modern-template/dist
+            smoke-tests/v2-app-hello-world-modern-template/dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
