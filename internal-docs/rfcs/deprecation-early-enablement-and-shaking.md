@@ -317,6 +317,55 @@ and is deleted at the next major regardless.
   monotonic "compliant through X" declaration RFC 0649 designed for, where
   upgrading ember-source never silently reduces your protection.
 
+## Appendix: wave 1 — classic object model deprecations
+
+The first consumer of the early-enablement workflow is the classic object
+model, matching what the modern build variant removes. All entries are
+available-stage (`since: { available: '7.3.0' }`, no `enabled`), `until:
+'8.0.0'`:
+
+| id | fires from | replacement |
+|---|---|---|
+| `deprecate-ember-object-extend` | the public static `.extend()` | native classes (ember-native-class-codemod) |
+| `deprecate-ember-object-reopen` | the public statics `.reopen()` / `.reopenClass()` | subclassing / module refactor |
+| `deprecate-ember-mixins` | `Mixin.create` | native class composition |
+| `deprecate-computed-properties` | the public `computed()` and module eval of `@ember/object/computed` | `@tracked` + native getters, `@cached` |
+| `deprecate-observers` | `observer()`, public `addObserver`/`removeObserver` | derived state / explicit events |
+| `deprecate-ember-array` | `A()` | native arrays / tracked-built-ins |
+| `deprecate-object-proxy` | `ObjectProxy` init (once per class) | direct access / native getters |
+| `deprecate-array-proxy` | `ArrayProxy` init (once per class) | tracked-built-ins |
+
+Design notes:
+
+- **Internal aliases.** Ember's own framework hierarchy is built with these
+  exact APIs at module eval (`EmberObject` itself is
+  `CoreObject.extend(Observable)`), and internals reach them through the same
+  public modules external code uses — import-path separation is impossible
+  for `extend`/`reopen`/`Mixin.create`. Framework definitions therefore go
+  through internal non-deprecating entry points (`internalExtend`,
+  `internalReopen`, `internalReopenClass` in `@ember/object/core`;
+  `createMixin` in `@ember/object/mixin`; `internalA` in `@ember/array`; the
+  metal modules for `computed`/observers), following the `metalInject`
+  precedent. This includes the runtime paths (autoboot's Router re-extend,
+  `Router.map`'s `reopenClass`, engine initializer registration) so
+  framework operation is never blamed on the app.
+- **No shaking flags.** The classic-class machinery cannot be tree-shaken
+  in-module while ember's own base classes are built with the internal
+  aliases; removing it is the modern build variant's module-swap job. These
+  are plain registry entries.
+- **`Evented` and the array mixins have no separate ids**: applying them
+  externally goes through `.extend()`/`Mixin.create` and rides those ids.
+- **Blanket enablement excludes these ids.** Ember's own suite and
+  internal-test-helpers exercise the classic APIs pervasively, so the
+  all-available-deprecations CI rows run with these ids in `except` — the
+  first real use of the `except`-excludes-`enable` semantics. Targeted test
+  modules opt in per-id instead. This also documents the migration reality
+  for apps: `enable: true` is unrealistic for classic-object-model codebases;
+  per-id adoption is the intended path.
+- **Observer deprecation aligns with RFC PR #1115**, which proposes
+  deprecating observers; this implementation gives that RFC its
+  available-stage mechanism.
+
 ## Unresolved questions
 
 - **Should `compliance` also cover available-stage ids the app opted into

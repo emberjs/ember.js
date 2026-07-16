@@ -138,6 +138,19 @@ export function deprecation(options: DeprecationOptions, flag?: boolean): Deprec
   the throwing stub while the guarded implementation is eliminated. In a build
   where the flag is false, the registry entry reports `isRemoved`, so any
   reach of the API throws the removal error.
+
+  ## Deprecating APIs ember-source itself uses
+
+  When the deprecated API is also used by ember-source's own framework code
+  (and internal use cannot be separated by import path), give the internals a
+  non-deprecating entry point and put the deprecateUntil call only in the
+  public one. The reference pattern is `inject` (public wrapper in
+  @ember/service; internals call metal's `injected_property` directly).
+  Other examples: `internalExtend`/`internalReopen`/`internalReopenClass`
+  (@ember/object/core), `createMixin` (@ember/object/mixin), `internalA`
+  (@ember/array). Include a regression test proving framework operation
+  (module eval, boot, runtime paths) fires nothing with the deprecation
+  enabled.
  */
 export const DEPRECATIONS = {
   DEPRECATE_IMPORT_EMBER(importName: string) {
