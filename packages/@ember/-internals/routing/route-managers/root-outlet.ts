@@ -21,7 +21,8 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { assert } from '@ember/debug';
 import type { OutletState } from '../../glimmer/lib/utils/outlet';
 import { outletHelper } from './classic/outlet';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
 
 const ROOT_OUTLET_TEMPLATE = precompileTemplate('{{component (outlet)}}', {
@@ -119,10 +120,7 @@ class RootOutletManager
    * the application's own outlet renders beneath them) and both inherit the
    * root outlet's bounds — matching the render tree Ember Inspector expects.
    */
-  getDebugCustomRenderTree(
-    _definition: RootOutlet,
-    state: RootOutletState
-  ): CustomRenderNode[] {
+  getDebugCustomRenderTree(_definition: RootOutlet, state: RootOutletState): CustomRenderNode[] {
     return [
       {
         bucket: state.outletBucket,

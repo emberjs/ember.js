@@ -9,16 +9,17 @@ import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
 import type { BootEnvironment, BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
-import { renderComponent, renderSettled, setRenderer } from '@ember/-internals/glimmer/lib/renderer';
+import {
+  renderComponent,
+  renderSettled,
+  setRenderer,
+} from '@ember/-internals/glimmer/lib/renderer';
 import type { BaseRenderer } from '@ember/-internals/glimmer/lib/renderer';
-import type Component from '@ember/-internals/glimmer/lib/component';
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import type Registry from '@ember/-internals/container/lib/registry';
 import type { SimpleElement } from '@simple-dom/interface';
-import { OutletState } from '@ember/-internals/glimmer';
-import { UpdatableOutletRootState } from '@ember/-internals/routing/route-managers/root-outlet';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
