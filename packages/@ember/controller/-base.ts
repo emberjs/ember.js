@@ -261,22 +261,6 @@ class Controller<_T = unknown> extends FrameworkObject {
     }
   }
 
-  get model(): _T {
-    consumeTag(tagForProperty(this, 'model'));
-    return this[MODEL];
-  }
-
-  set model(value: _T) {
-    // Skip notification when the value is unchanged (e.g. {{mount}}
-    // re-setting the same model on rerender), like a ComputedProperty
-    // setter whose result matches the cached value.
-    if (this[MODEL] === value) {
-      return;
-    }
-    this[MODEL] = value;
-    notifyPropertyChange(this, 'model');
-  }
-
   /**
    During `Route#setup` observers are created to invoke this method
    when any of the query params declared in `Controller#queryParams` property
@@ -333,6 +317,30 @@ Object.assign(Controller.prototype, {
   store: null,
   queryParams: null,
   _qpDelegate: null,
+});
+
+// `model` is an accessor at runtime, but is defined here with defineProperty
+// (rather than as a class-body accessor) so the published types keep it as a
+// plain property — the `ControllerMixin` interface merge provides the type,
+// and subclasses may redeclare or initialize it as a field without hitting
+// TS2610 ("overridden as an instance property").
+Object.defineProperty(Controller.prototype, 'model', {
+  configurable: true,
+  enumerable: false,
+  get(this: Controller) {
+    consumeTag(tagForProperty(this, 'model'));
+    return this[MODEL];
+  },
+  set(this: Controller, value: unknown) {
+    // Skip notification when the value is unchanged (e.g. {{mount}}
+    // re-setting the same model on rerender), like a ComputedProperty
+    // setter whose result matches the cached value.
+    if (this[MODEL] === value) {
+      return;
+    }
+    this[MODEL] = value;
+    notifyPropertyChange(this, 'model');
+  },
 });
 
 // Register the `model` accessor's setter the same way `@tracked` registers
@@ -396,29 +404,3 @@ export function inject(
 
 export { Controller as default, Controller };
 export type { ControllerMixin };
-
-/**
-  A type registry for Ember `Controller`s. Meant to be declaration-merged so string
-  lookups resolve to the correct type.
-
-  Blueprints should include such a declaration merge for TypeScript:
-
-  ```ts
-  import Controller from '@ember/controller';
-
-  export default class ExampleController extends Controller {
-  // ...
-  }
-
-  declare module '@ember/controller' {
-    export interface Registry {
-      example: ExampleController;
-    }
-  }
-  ```
-
-  Then `@inject` can check that the service is registered correctly, and APIs
-  like `owner.lookup('controller:example')` can return `ExampleController`.
-*/
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Registry extends Record<string, Controller | undefined> {}

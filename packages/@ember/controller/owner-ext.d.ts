@@ -2,7 +2,7 @@
 // `@ember/controller` module. Our type publishing infrastructure will pass it
 // through unchanged, so end users will get this extension.
 
-import type { Registry } from './-base';
+import type { Registry } from '@ember/controller';
 
 declare module '@ember/owner' {
   export interface DIRegistry {

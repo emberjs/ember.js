@@ -4,14 +4,44 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import Mixin from '@ember/object/mixin';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import type { ControllerMixin as ControllerMixinInterface } from './-base';
+import type Controller from './-base';
 
 export {
   default,
   inject,
   type ControllerQueryParam,
   type ControllerQueryParamType,
-  type Registry,
 } from './-base';
+
+/**
+  A type registry for Ember `Controller`s. Meant to be declaration-merged so string
+  lookups resolve to the correct type.
+
+  Declared here in the `@ember/controller` module itself (not re-exported from
+  `-base`) because module augmentation only merges with interfaces declared in
+  the augmented module.
+
+  Blueprints should include such a declaration merge for TypeScript:
+
+  ```ts
+  import Controller from '@ember/controller';
+
+  export default class ExampleController extends Controller {
+  // ...
+  }
+
+  declare module '@ember/controller' {
+    export interface Registry {
+      example: ExampleController;
+    }
+  }
+  ```
+
+  Then `@inject` can check that the service is registered correctly, and APIs
+  like `owner.lookup('controller:example')` can return `ExampleController`.
+*/
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface Registry extends Record<string, Controller | undefined> {}
 
 /**
 @module @ember/controller

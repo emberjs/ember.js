@@ -264,22 +264,40 @@ class Route<Model = unknown> extends FrameworkObject implements IRoute {
   // Evented mixin. `activate` and `deactivate` are the public events.
   private _emitter = new EventedEmitter(this);
 
-  on(name: string, method: ((...args: any[]) => void) | string): this {
-    this._emitter.on(name, method);
+  on<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  on(name: string, method: ((...args: any[]) => void) | string): this;
+  on(name: string, targetOrMethod: object | Function | string, method?: Function | string): this {
+    this._emitter.on(name, targetOrMethod, method);
     return this;
   }
 
-  one(name: string, method: ((...args: any[]) => void) | string): this {
-    this._emitter.one(name, method);
+  one<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  one(name: string, method: ((...args: any[]) => void) | string): this;
+  one(name: string, targetOrMethod: object | Function | string, method?: Function | string): this {
+    this._emitter.one(name, targetOrMethod, method);
     return this;
   }
 
-  trigger(name: string, ...args: any[]): unknown {
+  trigger(name: string, ...args: any[]): any {
     return this._emitter.trigger(name, ...args);
   }
 
-  off(name: string, method: ((...args: any[]) => void) | string): this {
-    this._emitter.off(name, method);
+  off<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  off(name: string, method: ((...args: any[]) => void) | string): this;
+  off(name: string, targetOrMethod: object | Function | string, method?: Function | string): this {
+    this._emitter.off(name, targetOrMethod, method);
     return this;
   }
 

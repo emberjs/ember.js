@@ -11,5 +11,10 @@ export {
   type ControllerMixin,
   type ControllerQueryParam,
   type ControllerQueryParamType,
-  type Registry,
 } from './-base';
+
+// Type-only, so the classic barrel is not pulled into the modern build. Note
+// that app registrations still augment the '@ember/controller' module, which
+// is this module in the modern build; the published types (generated from the
+// classic barrel) are what TypeScript resolves either way.
+export type { Registry } from './index';
