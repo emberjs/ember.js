@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable n/no-process-exit */
+
 // Scans the modern dist for classic-object-model code that should have been
 // excluded. Content markers are used (rather than module filenames) because
 // rollup collapses internals into hashed shared chunks.

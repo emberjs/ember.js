@@ -1,7 +1,7 @@
 export { getEngineParent, setEngineParent } from './parent';
 
 import { canInvoke } from '@ember/-internals/utils/lib/invoke';
-import Controller from '@ember/controller';
+import Controller from '@ember/controller/-base';
 import Namespace from '@ember/application/namespace';
 import Registry from '@ember/-internals/container/lib/registry';
 import type { ResolverClass } from '@ember/-internals/container/lib/registry';
