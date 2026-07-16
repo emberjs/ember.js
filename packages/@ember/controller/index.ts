@@ -6,12 +6,7 @@ import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import type { ControllerMixin as ControllerMixinInterface } from './-base';
 import type Controller from './-base';
 
-export {
-  default,
-  inject,
-  type ControllerQueryParam,
-  type ControllerQueryParamType,
-} from './-base';
+export { default, inject, type ControllerQueryParam, type ControllerQueryParamType } from './-base';
 
 /**
   A type registry for Ember `Controller`s. Meant to be declaration-merged so string
