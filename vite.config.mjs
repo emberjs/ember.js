@@ -10,6 +10,7 @@ import {
   resolvePackages,
   exposedDependencies,
   hiddenDependencies,
+  modernVariant,
 } from './rollup.config.mjs';
 import { templateTag } from '@embroider/vite';
 
@@ -20,10 +21,15 @@ const { packageName: getPackageName, PackageCache } = require('@embroider/shared
 export default defineConfig(({ mode }) => {
   process.env.EMBER_ENV = mode;
 
+  // MODERN=1 runs the (curated) test suite against the modern build
+  // variant's module swaps; babel.test.config.mjs folds the legacy-feature
+  // flags accordingly.
+  const modern = process.env.MODERN ? modernVariant() : undefined;
+
   const build = {
     rollupOptions: {
       preserveEntrySignatures: 'strict',
-      input: ['index.html'],
+      input: [modern ? 'index-modern.html' : 'index.html'],
       output: {
         preserveModules: true,
       },
@@ -41,7 +47,7 @@ export default defineConfig(({ mode }) => {
       }),
       resolvePackages(
         { ...exposedDependencies(), ...hiddenDependencies() },
-        { enableLocalDebug: true }
+        { enableLocalDebug: true, moduleSwaps: modern?.moduleSwaps }
       ),
       viteResolverBug(),
       version(),

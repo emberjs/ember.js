@@ -203,6 +203,8 @@ jobs:
       - name: modern smoke app (application build)
         working-directory: smoke-tests/v2-app-modern-template
         run: pnpm vite build
+      - name: modern-variant test suite
+        run: pnpm test:modern
       # Development/test builds of the smoke app additionally require a
       # patched @ember/test-helpers (its mock-owner module calls
       # EmberObject.extend at module scope); switch this to `pnpm test` once

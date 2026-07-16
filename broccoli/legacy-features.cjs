@@ -69,6 +69,16 @@ module.exports = function legacyFeatures(flags = DEFAULT_FLAGS) {
   ];
 };
 
+// The published "modern" variant: no classic object model or classic
+// components; controllers/query params stay until a Route Manager-based
+// replacement exists (RFC #1169).
+const MODERN_OVERRIDES = Object.freeze({
+  CLASSIC_OBJECT_MODEL: false,
+  CLASSIC_COMPONENTS: false,
+  CONTROLLER_QUERY_PARAMS: true,
+});
+
 module.exports.DEFAULT_FLAGS = DEFAULT_FLAGS;
+module.exports.MODERN_OVERRIDES = MODERN_OVERRIDES;
 module.exports.resolveFlags = resolveFlags;
 module.exports.parseFlagsFromEnv = parseFlagsFromEnv;

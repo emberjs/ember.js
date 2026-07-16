@@ -67,12 +67,15 @@ function esmProdConfig() {
 }
 
 function modernFlags() {
-  return legacyFeatures.resolveFlags({
-    CLASSIC_OBJECT_MODEL: false,
-    CLASSIC_COMPONENTS: false,
-    // stays true until a Route Manager-based query params replacement exists
-    CONTROLLER_QUERY_PARAMS: true,
-  });
+  return legacyFeatures.resolveFlags(legacyFeatures.MODERN_OVERRIDES);
+}
+
+// Used by vite.config.mjs to run the test suite against the modern variant's
+// module swaps (MODERN=1).
+export function modernVariant() {
+  let flags = modernFlags();
+  let { moduleSwaps } = variantBuildOptions(flags);
+  return { flags, moduleSwaps };
 }
 
 function customFlags() {
@@ -122,6 +125,9 @@ function legacySections() {
           '@ember/-internals/runtime/lib/mixins/-proxy-modern.ts',
         '@ember/object/internals': '@ember/object/internals-modern.ts',
         'ember-testing/lib/adapters/adapter': 'ember-testing/lib/adapters/adapter-modern.ts',
+        '@ember/-internals/runtime': '@ember/-internals/runtime/index-modern.ts',
+        // test-only: the harness barrel re-exports classic test-case classes
+        'internal-test-helpers': 'internal-test-helpers/index-modern.ts',
       },
       entrypointSwaps: {
         'packages/@ember/object/-internals': '@ember/object/-internals-modern.ts',
@@ -181,6 +187,7 @@ function legacySections() {
         '@ember/-internals/glimmer': '@ember/-internals/glimmer/index-modern.ts',
         '@ember/-internals/views/lib/system/event_dispatcher':
           '@ember/-internals/views/lib/system/event_dispatcher_modern.ts',
+        '@ember/-internals/views': '@ember/-internals/views/index-modern.ts',
       },
       entrypointSwaps: {
         'packages/@ember/component/index': '@ember/component/index-modern.ts',
@@ -587,7 +594,7 @@ export function resolvePackages(deps, params) {
       }
 
       // the actual test entrypoints
-      if (source.endsWith('index.html')) {
+      if (source.endsWith('.html')) {
         return;
       }
 
