@@ -130,10 +130,14 @@ export function deprecation(options: DeprecationOptions, flag?: boolean): Deprec
 
   Rules: reference the imported const directly (no destructuring, renaming, or
   property access — babel-plugin-debug-macros can only fold direct
-  references), keep the deprecateUntil call inside the guarded branch so it is
-  stripped with the code, and put the post-removal behavior in the other
-  branch. In a build where the flag is false, the registry entry reports
-  `isRemoved`, so any unguarded reach throws the removal error.
+  references). When the deprecated code has a post-removal shape, keep the
+  deprecateUntil call inside the guarded branch (it is stripped with the code)
+  and put the post-removal behavior in the other branch. When the deprecated
+  thing is itself an entrypoint (like the deprecated `inject` function), put
+  the deprecateUntil call before the guard instead — it survives shaking as
+  the throwing stub while the guarded implementation is eliminated. In a build
+  where the flag is false, the registry entry reports `isRemoved`, so any
+  reach of the API throws the removal error.
  */
 export const DEPRECATIONS = {
   DEPRECATE_IMPORT_EMBER(importName: string) {
