@@ -271,6 +271,27 @@ deprecations of substantial subsystems should be.
 - **Publish-time folding only** (the original svelte plan via
   ember-cli-babel): predates prebuilt ESM dists; apps no longer re-transpile
   ember-source, so publish-time folding gives apps no control at all.
+- **`@embroider/macros`** (`getGlobalConfig` + `macroCondition`, configured
+  via `setConfig`): the ecosystem-standard tool for app-configured build-time
+  conditionals, and how ember-data expressed its deprecation flags for years.
+  It was not chosen here because:
+  - ember-source's published dist would gain a runtime import of
+    `@embroider/macros` (today it is dependency-free plain ESM, which
+    matters for consumers like the node-side template compiler and any
+    non-Ember tooling that imports dist modules directly).
+  - Folding only happens inside Embroider pipelines with static config;
+    every other consumer needs the macros runtime just to boot, and the
+    compile-only `macroCondition` form breaks plain-module consumption
+    outright.
+  - The externalized-flags-module approach is bundler-agnostic: any
+    vite/rollup pipeline can shake, Embroider or not.
+
+  Notably, warp-drive arrived at the same conclusion: it moved off
+  `@embroider/macros` to `@warp-drive/build-config`, whose architecture — an
+  externalized flags module in the published dist plus an app-side build
+  transform assigning the values — is structurally what this RFC proposes.
+  A future integration could still layer `setConfig`-style configuration on
+  top as sugar over the same flags module.
 - **Handler-based compliance** (build throwing on top of
   `registerDeprecationHandler`): works for warnings but cannot make the
   *removed* semantics (throw even in paths that suppress warnings) or feed
