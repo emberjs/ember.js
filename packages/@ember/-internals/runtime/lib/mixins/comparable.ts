@@ -1,5 +1,6 @@
 import Mixin from '@ember/object/mixin';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
+import { DEPRECATE_COMPARABLE_MIXIN } from '@ember/deprecated-features';
 
 /**
 @module ember
@@ -19,34 +20,36 @@ import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 interface Comparable {
   compare: ((a: unknown, b: unknown) => -1 | 0 | 1) | null;
 }
-const Comparable = Mixin.create({
-  /**
-    __Required.__ You must implement this method to apply this mixin.
+const Comparable = DEPRECATE_COMPARABLE_MIXIN
+  ? Mixin.create({
+      /**
+        __Required.__ You must implement this method to apply this mixin.
 
-    Override to return the result of the comparison of the two parameters. The
-    compare method should return:
+        Override to return the result of the comparison of the two parameters. The
+        compare method should return:
 
-    - `-1` if `a < b`
-    - `0` if `a == b`
-    - `1` if `a > b`
+        - `-1` if `a < b`
+        - `0` if `a == b`
+        - `1` if `a > b`
 
-    Default implementation raises an exception.
+        Default implementation raises an exception.
 
-    @method compare
-    @param a {Object} the first object to compare
-    @param b {Object} the second object to compare
-    @return {Number} the result of the comparison
-    @private
-  */
-  init() {
-    this._super(...arguments);
-    deprecateUntil(
-      'The `Comparable` mixin is deprecated. Implement a `compare` method directly on your class instead.',
-      DEPRECATIONS.DEPRECATE_COMPARABLE_MIXIN
-    );
-  },
+        @method compare
+        @param a {Object} the first object to compare
+        @param b {Object} the second object to compare
+        @return {Number} the result of the comparison
+        @private
+      */
+      init() {
+        this._super(...arguments);
+        deprecateUntil(
+          'The `Comparable` mixin is deprecated. Implement a `compare` method directly on your class instead.',
+          DEPRECATIONS.DEPRECATE_COMPARABLE_MIXIN
+        );
+      },
 
-  compare: null,
-});
+      compare: null,
+    })
+  : undefined;
 
 export default Comparable;

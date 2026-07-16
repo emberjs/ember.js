@@ -277,6 +277,9 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
+      '@ember/deprecated-features':
+        specifier: workspace:*
+        version: link:../deprecated-features
       '@ember/destroyable':
         specifier: workspace:*
         version: link:../destroyable
@@ -1087,6 +1090,9 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
+      '@ember/deprecated-features':
+        specifier: workspace:*
+        version: link:../deprecated-features
       '@ember/object':
         specifier: workspace:*
         version: link:../object
