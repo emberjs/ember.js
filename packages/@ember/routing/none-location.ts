@@ -23,7 +23,7 @@ import { escapeRegExp } from './lib/location-utils';
 export default class NoneLocation extends FrameworkObject implements EmberLocation {
   updateCallback?: UpdateCallback;
 
-  // Set in reopen so it can be overwritten with extend
+  // Assigned on the prototype (below) so it can be overwritten with extend
   declare path: string;
 
   /**
@@ -33,12 +33,10 @@ export default class NoneLocation extends FrameworkObject implements EmberLocati
     @property rootURL
     @default '/'
   */
-  // Set in reopen so it can be overwritten with extend
+  // Assigned on the prototype (below) so it can be overwritten with extend
   declare rootURL: string;
 
   initState(): void {
-    this._super(...arguments);
-
     let { rootURL } = this;
 
     // This assert doesn't have anything to do with state initialization,
@@ -127,7 +125,9 @@ export default class NoneLocation extends FrameworkObject implements EmberLocati
   }
 }
 
-NoneLocation.reopen({
+// Prototype values (rather than class fields) so `.extend()` and subclass
+// fields can override them.
+Object.assign(NoneLocation.prototype, {
   path: '',
   rootURL: '/',
 });
