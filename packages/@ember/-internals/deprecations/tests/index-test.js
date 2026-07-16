@@ -3,6 +3,7 @@ import { DEPRECATIONS, deprecation, deprecateUntil, isRemoved, emberVersionGte }
 import { ENV } from '@ember/-internals/environment';
 import { setDeprecationStagesConfig } from '@ember/debug';
 import * as DEPRECATED_FEATURES from '@ember/deprecated-features';
+import deprecatedFeaturesManifest from '../../../../../broccoli/deprecated-features.cjs';
 
 let originalEnvValue;
 
@@ -35,6 +36,22 @@ moduleFor(
           'boolean',
           `${flagName} is a boolean`
         );
+      }
+    }
+
+    ['@test the build manifest metadata matches the registry'](assert) {
+      // dist/deprecation-flags.json (which the deprecation-shaking plugin's
+      // `compliantThrough` relies on) is generated from the broccoli
+      // manifest; this pins its id/since/until to the registry so they
+      // cannot drift.
+      let { FLAGS } = deprecatedFeaturesManifest;
+
+      for (let [name, meta] of Object.entries(FLAGS)) {
+        let entry = DEPRECATIONS[name];
+        assert.ok(entry, `${name} exists in the registry`);
+        assert.strictEqual(meta.id, entry.options.id, `${name} id matches`);
+        assert.strictEqual(meta.until, entry.options.until, `${name} until matches`);
+        assert.deepEqual({ ...meta.since }, { ...entry.options.since }, `${name} since matches`);
       }
     }
 
