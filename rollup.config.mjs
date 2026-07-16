@@ -199,6 +199,12 @@ function legacySections() {
       ],
     },
     CONTROLLER_QUERY_PARAMS: {
+      // This flag stays enabled in every published variant until a query
+      // params implementation that does not observe controller properties
+      // exists (see RFC #1169). The seams are already in place for the flip:
+      // swapping '@ember/routing/lib/qp-observers' for no-ops severs the
+      // observer machinery, and '@ember/controller' / the controller_for and
+      // generate_controller modules become prunable with it.
       moduleSwaps: {},
       entrypointSwaps: {},
       prunedEntrypoints: [],

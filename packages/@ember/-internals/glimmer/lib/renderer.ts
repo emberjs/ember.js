@@ -35,7 +35,7 @@ import { unwrapTemplate } from './component-managers/unwrap-template';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import type Component from './component';
 import type ClassicComponent from './component';
-import { BOUNDS } from './component-managers/curly';
+import { BOUNDS } from './utils/bounds';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import RouterResolver from './router-resolver';

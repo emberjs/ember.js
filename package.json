@@ -294,6 +294,7 @@
       "@ember/routing/lib/location-utils.js": "ember-source/@ember/routing/lib/location-utils.js",
       "@ember/routing/lib/qp-array-modern.js": "ember-source/@ember/routing/lib/qp-array-modern.js",
       "@ember/routing/lib/qp-array.js": "ember-source/@ember/routing/lib/qp-array.js",
+      "@ember/routing/lib/qp-observers.js": "ember-source/@ember/routing/lib/qp-observers.js",
       "@ember/routing/lib/query_params.js": "ember-source/@ember/routing/lib/query_params.js",
       "@ember/routing/lib/router_state.js": "ember-source/@ember/routing/lib/router_state.js",
       "@ember/routing/lib/routing-service.js": "ember-source/@ember/routing/lib/routing-service.js",

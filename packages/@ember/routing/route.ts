@@ -1,5 +1,4 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
-import { addObserver, flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty } from '@ember/-internals/metal/lib/decorator';
 import type Owner from '@ember/owner';
@@ -11,6 +10,10 @@ import getProperties from '@ember/-internals/metal/lib/get_properties';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
 import { FrameworkObject } from '@ember/object/-internals';
 import { makeQPArray } from '@ember/routing/lib/qp-array';
+import {
+  flushQueryParamObservers,
+  observeControllerQueryParam,
+} from '@ember/routing/lib/qp-observers';
 import { EventedEmitter } from '@ember/-internals/utils/lib/evented-emitter';
 import typeOf from '@ember/utils/lib/type-of';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
@@ -993,7 +996,7 @@ class Route<Model = unknown> extends FrameworkObject implements IRoute {
 
     // Setup can cause changes to QPs which need to be propogated immediately in
     // some situations. Eventually, we should work on making these async somehow.
-    flushAsyncObservers(false);
+    flushQueryParamObservers();
   }
 
   /*
@@ -2059,7 +2062,7 @@ function addQueryParamsObservers(controller: any, propNames: string[]) {
       }
     }
 
-    addObserver(controller, `${prop}.[]`, controller, controller._qpChanged, false);
+    observeControllerQueryParam(controller, prop);
   });
 }
 
@@ -2248,7 +2251,7 @@ const DEFAULT_ACTIONS = {
     // Some QPs have been updated, and those changes need to be propogated
     // immediately. Eventually, we should work on making this async somehow.
     if (qpUpdated === true) {
-      flushAsyncObservers(false);
+      flushQueryParamObservers();
     }
 
     if (replaceUrl) {

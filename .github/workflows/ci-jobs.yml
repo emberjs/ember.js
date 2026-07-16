@@ -185,6 +185,29 @@ jobs:
         env:
           MATRIX_COMMAND: ${{ matrix.command }}
 
+  modern-variant:
+    name: Modern build variant (no classic object model)
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types, build-test]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: build
+        run: pnpm build:js
+      - name: assert no classic modules in the modern dist
+        run: node bin/assert-modern-dist.mjs
+      - name: dist size comparison
+        run: du -sh dist/dev dist/prod dist/modern/dev dist/modern/prod
+      - name: modern smoke app (application build)
+        working-directory: smoke-tests/v2-app-modern-template
+        run: pnpm vite build
+      # Development/test builds of the smoke app additionally require a
+      # patched @ember/test-helpers (its mock-owner module calls
+      # EmberObject.extend at module scope); switch this to `pnpm test` once
+      # that patch or an upstream release lands.
+
   smoke-test-with-deprecations-removed:
     name: Smoke tests with Deprecations Removed (Full Ember Apps)
     runs-on: ubuntu-latest
