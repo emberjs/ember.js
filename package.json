@@ -10,6 +10,7 @@
     "ember-addon"
   ],
   "exports": {
+    "./deprecation-shaking": "./lib/deprecation-shaking/index.js",
     "./*": {
       "development": "./dist/dev/packages/*",
       "production": "./dist/prod/packages/*",
