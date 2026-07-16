@@ -145,6 +145,20 @@ moduleForDevelopment(
       assert.ok(true, 'unlisted ids do not throw');
     }
 
+    ['@test except excludes an id from enable'](assert) {
+      setDeprecationStagesConfig({ enable: true, except: ['excluded-id'] });
+
+      assert.true(isDeprecationEnabledByConfig('any-other-id'), 'enable: true still applies');
+      assert.false(isDeprecationEnabledByConfig('excluded-id'), 'excepted id is not enabled');
+
+      setDeprecationStagesConfig({ enable: ['listed-id'], except: ['listed-id'] });
+
+      assert.false(
+        isDeprecationEnabledByConfig('listed-id'),
+        'except wins over an explicit enable listing'
+      );
+    }
+
     ['@test except exempts an id from compliance and assert'](assert) {
       setDeprecationStagesConfig({
         compliance: '6.1.0',

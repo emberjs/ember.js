@@ -39,7 +39,9 @@ export interface DeprecationStagesConfig {
   assert?: string[];
 
   /**
-    Ids exempted from `compliance`/`assert` throwing.
+    Ids this configuration should treat as unconfigured: exempted from
+    `compliance`/`assert` throwing and from `enable` (including
+    `enable: true`).
    */
   except?: string[];
 }
@@ -156,7 +158,8 @@ if (DEBUG) {
 
   let current = normalize(ENV.DEPRECATION_STAGES as DeprecationStagesConfig | null);
 
-  isDeprecationEnabledByConfig = (id) => current.enableAll || current.enabledIds.has(id);
+  isDeprecationEnabledByConfig = (id) =>
+    (current.enableAll || current.enabledIds.has(id)) && !current.exceptIds.has(id);
 
   shouldThrowForDeprecation = (options) => {
     if (current.exceptIds.has(options.id)) {
