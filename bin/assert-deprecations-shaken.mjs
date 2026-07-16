@@ -23,10 +23,12 @@ const { FLAGS, parseFlagsFromEnv, DEFAULT_FLAGS } = require('../broccoli/depreca
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const report = process.argv.includes('--report');
 
-// Content markers are runtime strings inside a guarded branch (never assert
-// or deprecate-call text, which the prod build strips, and never words that
-// appear in doc comments — comments are stripped before matching but only
-// block comments reliably).
+// Content markers are runtime strings inside a guarded branch. deprecateUntil
+// message arguments qualify (deprecateUntil is ordinary code, not a stripped
+// debug macro) — but only when the call sits inside the guard; entrypoint-style
+// stubs keep their message after shaking. Avoid `assert`/`deprecate` call text
+// (stripped in prod) and words that appear in doc comments (comments are
+// stripped before matching, but only block comments reliably).
 const CONTENT_MARKERS = {
   DEPRECATE_COMPARABLE_MIXIN: ['The `Comparable` mixin is deprecated'],
   // DEPRECATE_IMPORT_INJECT has no content marker: its deprecateUntil message
