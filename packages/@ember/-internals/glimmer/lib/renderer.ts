@@ -37,7 +37,9 @@ import type Component from './component';
 import type ClassicComponent from './component';
 import { BOUNDS } from './utils/bounds';
 import { createRootOutlet } from './component-managers/outlet';
-import { RootComponentDefinition } from './component-managers/root';
+// A bare specifier (not './component-managers/root') so the module can be
+// swapped for the CLASSIC_COMPONENTS-free stub at resolve time.
+import { RootComponentDefinition } from '@ember/-internals/glimmer/lib/component-managers/root';
 import RouterResolver from './router-resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';

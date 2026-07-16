@@ -32,6 +32,10 @@ const FORBIDDEN_MARKERS = [
   ['ArrayProxy', '@ember/array/proxy'],
   // @ember/object/observable.ts
   ['incrementProperty', '@ember/object/observable'],
+  // @ember/-internals/glimmer/lib/component-managers/curly.ts
+  ['CurlyComponentManager', '@ember/-internals/glimmer/lib/component-managers/curly'],
+  // @ember/-internals/views/lib/system/event_dispatcher.ts
+  ['finalEventNameMapping', '@ember/-internals/views/lib/system/event_dispatcher'],
 ];
 
 // Rough comment stripping; good enough for scanning our own generated output.

@@ -185,6 +185,8 @@ function legacySections() {
       moduleSwaps: {
         '@ember/component': '@ember/component/index-modern.ts',
         '@ember/-internals/glimmer': '@ember/-internals/glimmer/index-modern.ts',
+        '@ember/-internals/glimmer/lib/component-managers/root':
+          '@ember/-internals/glimmer/lib/component-managers/root-modern.ts',
         '@ember/-internals/views/lib/system/event_dispatcher':
           '@ember/-internals/views/lib/system/event_dispatcher_modern.ts',
         '@ember/-internals/views': '@ember/-internals/views/index-modern.ts',
