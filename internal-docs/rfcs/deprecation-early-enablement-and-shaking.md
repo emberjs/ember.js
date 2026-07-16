@@ -143,7 +143,11 @@ for triaging warnings; compliance is the tool for locking in finished
 migrations.
 
 A private `setDeprecationStagesConfig()` API allows test harnesses to swap
-configuration at runtime; it is not (yet) public API.
+configuration at runtime. It stays private in this RFC: the eventual consumer
+is a test-helpers/ember-qunit integration ("run this module with deprecation
+X enabled"), and blessing a public shape before that integration exists would
+lock in an API nobody has used. A follow-up RFC can promote it once the shape
+has proven out — the same path `registerDeprecationHandler` took.
 
 ### Part 2: Deprecation shaking
 
@@ -241,6 +245,14 @@ CI. Not every deprecation must be shakable — tiny ones with no meaningful
 implementation weight can remain plain runtime deprecations — but
 deprecations of substantial subsystems should be.
 
+Deprecations with *dynamic* ids (registry factories like
+`DEPRECATE_IMPORT_EMBER`, which mints one id per legacy import name) take a
+single flag for the whole family: shaking is a statement about the guarded
+implementation, and the family shares one. The existing
+`deprecate-import-*-from-ember` family itself is deliberately not flagged —
+it is already past its `until` version, so its entire surface throws today
+and is deleted at the next major regardless.
+
 ## How we teach this
 
 - Each deprecation guide entry gains an "early opt-in" snippet
@@ -302,15 +314,21 @@ deprecations of substantial subsystems should be.
 
 ## Unresolved questions
 
-- Should `setDeprecationStagesConfig` become public API for test harnesses
-  (e.g. ember-qunit integration), or remain private?
-- Should `compliance` also cover available-stage ids the app opted into via
-  `enable` (currently: no — use `assert` for those)?
-- Interaction with per-import factory deprecations (e.g. the
-  `deprecate-import-*-from-ember` family): a single flag for the family, or
-  none? Deferred.
+- **Should `compliance` also cover available-stage ids the app opted into
+  via `enable`?** The proposed default is no: `compliance` is a statement
+  about `since.enabled` — a fact about the package — so its meaning never
+  shifts based on another config key. Early adopters lock in available-stage
+  migrations explicitly via `assert`. A rejected middle ground is a per-id
+  stage value (`enable: { 'some-id': 'assert' }`), which is more expressive
+  but grows the API surface before there is demand.
+- **Shaken value-exports become `undefined` rather than a build error.** A
+  true removal at a major deletes the export and fails the app's build;
+  shaking resolves the import to `undefined` (e.g. the `Comparable` mixin).
+  The proposed default is to accept this: any code path that goes through
+  the deprecation still throws the removal error via the runtime backstop,
+  and `undefined` is a faithful rendering of "this API is gone." The
+  candidate improvement is build-time: the shaking plugin knows exactly
+  which exports it emptied and could warn (or error) when an app module
+  imports one. Worth doing if silent `undefined` bites in practice.
 - Glimmer VM deprecations use their own override table upstream; wiring them
   into this system is future work.
-- A shaken export read as a value (e.g. the `Comparable` mixin) becomes
-  `undefined` rather than a build error. True removal at a major would fail
-  the build instead. Is a lint rule or resolver-level error worth providing?
