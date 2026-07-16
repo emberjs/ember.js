@@ -53,7 +53,7 @@ export default configs;
 
 function esmConfig() {
   return sharedESMConfig({
-    input: esmInputs(),
+    input: standardInputs(),
     debugMacrosMode: true,
     includePackageMeta: true,
   });
@@ -61,9 +61,22 @@ function esmConfig() {
 
 function esmProdConfig() {
   return sharedESMConfig({
-    input: esmInputs(),
+    input: standardInputs(),
     debugMacrosMode: false,
   });
+}
+
+// The `*-modern` replacement modules only ever load through a variant's
+// module/entrypoint swaps (see legacySections()), so the standard build
+// leaves them out of its dist entirely.
+function standardInputs() {
+  let input = esmInputs();
+  for (let name of Object.keys(input)) {
+    if (/[-_]modern$/.test(name)) {
+      delete input[name];
+    }
+  }
+  return input;
 }
 
 function modernFlags() {
