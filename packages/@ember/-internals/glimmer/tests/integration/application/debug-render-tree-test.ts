@@ -108,89 +108,89 @@ if (ENV._DEBUG_RENDER_TREE) {
           }),
         ]);
 
-        // await this.visit('/foo');
+         await this.visit('/foo');
 
-        // this.assertRenderTree([
-        //   this.outlet({
-        //     type: 'route-template',
-        //     name: 'foo',
-        //     args: {
-        //       positional: [],
-        //       named: { controller: this.controllerFor('foo'), model: undefined },
-        //     },
-        //     instance: this.controllerFor('foo'),
-        //     bounds: this.elementBounds(this.element!),
-        //     children: [
-        //       this.outlet({
-        //         type: 'route-template',
-        //         name: 'foo.index',
-        //         args: {
-        //           positional: [],
-        //           named: { controller: this.controllerFor('foo.index'), model: undefined },
-        //         },
-        //         instance: this.controllerFor('foo.index'),
-        //         bounds: this.nodeBounds(this.element!.lastChild),
-        //         children: [],
-        //       }),
-        //     ],
-        //   }),
-        // ]);
+         this.assertRenderTree([
+           this.outlet({
+             type: 'route-template',
+             name: 'foo',
+             args: {
+               positional: [],
+               named: { controller: this.controllerFor('foo'), model: undefined },
+             },
+             instance: this.controllerFor('foo'),
+             bounds: this.elementBounds(this.element!),
+             children: [
+               this.outlet({
+                 type: 'route-template',
+                 name: 'foo.index',
+                 args: {
+                   positional: [],
+                   named: { controller: this.controllerFor('foo.index'), model: undefined },
+                 },
+                 instance: this.controllerFor('foo.index'),
+                 bounds: this.nodeBounds(this.element!.lastChild),
+                 children: [],
+               }),
+             ],
+           }),
+         ]);
 
-        // await this.visit('/foo/wow');
+         await this.visit('/foo/wow');
 
-        // this.assertRenderTree([
-        //   this.outlet({
-        //     type: 'route-template',
-        //     name: 'foo',
-        //     args: {
-        //       positional: [],
-        //       named: { controller: this.controllerFor('foo'), model: undefined },
-        //     },
-        //     instance: this.controllerFor('foo'),
-        //     bounds: this.elementBounds(this.element!),
-        //     children: [
-        //       this.outlet({
-        //         type: 'route-template',
-        //         name: 'foo.inner',
-        //         args: {
-        //           positional: [],
-        //           named: { controller: this.controllerFor('foo.inner'), model: 'wow' },
-        //         },
-        //         instance: this.controllerFor('foo.inner'),
-        //         bounds: this.nodeBounds(this.element!.lastChild),
-        //         children: [],
-        //       }),
-        //     ],
-        //   }),
-        // ]);
+         this.assertRenderTree([
+           this.outlet({
+             type: 'route-template',
+             name: 'foo',
+             args: {
+               positional: [],
+               named: { controller: this.controllerFor('foo'), model: undefined },
+             },
+             instance: this.controllerFor('foo'),
+             bounds: this.elementBounds(this.element!),
+             children: [
+               this.outlet({
+                 type: 'route-template',
+                 name: 'foo.inner',
+                 args: {
+                   positional: [],
+                   named: { controller: this.controllerFor('foo.inner'), model: 'wow' },
+                 },
+                 instance: this.controllerFor('foo.inner'),
+                 bounds: this.nodeBounds(this.element!.lastChild),
+                 children: [],
+               }),
+             ],
+           }),
+         ]);
 
-        // await this.visit('/foo/zomg');
+         await this.visit('/foo/zomg');
 
-        // this.assertRenderTree([
-        //   this.outlet({
-        //     type: 'route-template',
-        //     name: 'foo',
-        //     args: {
-        //       positional: [],
-        //       named: { controller: this.controllerFor('foo'), model: undefined },
-        //     },
-        //     instance: this.controllerFor('foo'),
-        //     bounds: this.elementBounds(this.element!),
-        //     children: [
-        //       this.outlet({
-        //         type: 'route-template',
-        //         name: 'foo.inner',
-        //         args: {
-        //           positional: [],
-        //           named: { controller: this.controllerFor('foo.inner'), model: 'zomg' },
-        //         },
-        //         instance: this.controllerFor('foo.inner'),
-        //         bounds: this.nodeBounds(this.element!.lastChild),
-        //         children: [],
-        //       }),
-        //     ],
-        //   }),
-        // ]);
+         this.assertRenderTree([
+           this.outlet({
+             type: 'route-template',
+             name: 'foo',
+             args: {
+               positional: [],
+               named: { controller: this.controllerFor('foo'), model: undefined },
+             },
+             instance: this.controllerFor('foo'),
+             bounds: this.elementBounds(this.element!),
+             children: [
+               this.outlet({
+                 type: 'route-template',
+                 name: 'foo.inner',
+                 args: {
+                   positional: [],
+                   named: { controller: this.controllerFor('foo.inner'), model: 'zomg' },
+                 },
+                 instance: this.controllerFor('foo.inner'),
+                 bounds: this.nodeBounds(this.element!.lastChild),
+                 children: [],
+               }),
+             ],
+           }),
+         ]);
       }
 
       async '@test {{mount}}'() {
@@ -1652,11 +1652,6 @@ if (ENV._DEBUG_RENDER_TREE) {
           let inExpected = key in (expected as object);
           let inActual = key in (actual as object);
 
-          // Every route-template now receives an `@outlet` arg (the curried
-          // child outlet, or null for leaves) — opaque plumbing that is already
-          // represented as a child node. Treat it as opt-in: only compare it
-          // when a test specifies it, rather than requiring every expectation
-          // to list it.
           if (key !== 'outlet') {
             this.assert.ok(inExpected, `expected is missing key ${key}`);
             this.assert.ok(inActual, `actual is missing key ${key}`);
