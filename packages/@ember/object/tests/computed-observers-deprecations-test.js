@@ -1,5 +1,7 @@
 import EmberObject, { computed, observer } from '@ember/object';
+import { readOnly } from '@ember/object/computed';
 import { addObserver, removeObserver } from '@ember/object/observers';
+import { readOnly as metalReadOnly } from '@ember/object/lib/computed/computed_macros';
 import metalComputed from '@ember/-internals/metal/lib/computed';
 import {
   addObserver as metalAddObserver,
@@ -10,11 +12,6 @@ import { moduleForDevelopment, AbstractTestCase, runLoopSettled } from 'internal
 
 const IDS = ['deprecate-computed-properties', 'deprecate-observers'];
 
-// The module-eval deprecation on the `@ember/object/computed` macros barrel
-// cannot be asserted here: the module already evaluated (silently, since
-// these ids are available-stage and off by default) when the suite loaded.
-// It is exercised by any consumer that imports the barrel with the id
-// enabled at boot.
 moduleForDevelopment(
   'computed property and observer deprecations',
   class extends AbstractTestCase {
@@ -29,6 +26,7 @@ moduleForDevelopment(
         computed('first', function () {
           return this.first;
         });
+        readOnly('first');
         observer('first', function () {});
         addObserver(obj, 'first', null, handler, true);
         removeObserver(obj, 'first', null, handler, true);
@@ -53,6 +51,29 @@ moduleForDevelopment(
       let obj = Klass.create();
       assert.strictEqual(obj.get('shouted'), 'a!', 'the computed property works');
       obj.destroy();
+    }
+
+    ['@test computed macros fire when enabled and still work'](assert) {
+      setDeprecationStagesConfig({ enable: IDS });
+
+      let cp;
+      expectDeprecation(() => {
+        cp = readOnly('first');
+      }, /Computed property macros are deprecated/);
+
+      let Klass = EmberObject.extend({ first: 'a', firstAlias: cp });
+      let obj = Klass.create();
+      assert.strictEqual(obj.get('firstAlias'), 'a', 'the macro works');
+      obj.destroy();
+    }
+
+    ['@test the deep macro modules never fire'](assert) {
+      setDeprecationStagesConfig({ enable: IDS });
+
+      expectNoDeprecation(() => {
+        metalReadOnly('first');
+      });
+      assert.ok(true, 'no deprecations fired');
     }
 
     ['@test observer() fires when enabled']() {
