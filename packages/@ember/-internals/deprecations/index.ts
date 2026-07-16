@@ -221,6 +221,20 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-ember-array',
   }),
+  DEPRECATE_OBJECT_PROXY: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-object-proxy',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-object-proxy',
+  }),
+  DEPRECATE_ARRAY_PROXY: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-array-proxy',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-array-proxy',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

@@ -16,6 +16,7 @@ import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_eve
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import EmberObject from '@ember/object';
 import { internalReopen } from '@ember/object/core';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import EmberArray, { type NativeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
@@ -115,6 +116,10 @@ function customTagForArrayProxy(proxy: object, key: string) {
   @uses MutableArray
   @public
 */
+// Dedupe: the deprecation fires once per ArrayProxy subclass, not once per
+// instance — proxies can be created in volume.
+const deprecatedClasses = new WeakSet();
+
 interface ArrayProxy<T> extends MutableArray<T> {
   /**
     The content array. Must be an object that implements `Array` and/or
@@ -201,6 +206,14 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
 
   init(props: object | undefined) {
     super.init(props);
+
+    if (!deprecatedClasses.has(this.constructor)) {
+      deprecatedClasses.add(this.constructor);
+      deprecateUntil(
+        'ArrayProxy is deprecated. Use a native array, or a tracked collection from tracked-built-ins, and expose derived state with native getters.',
+        DEPRECATIONS.DEPRECATE_ARRAY_PROXY
+      );
+    }
 
     setCustomTagFor(this, customTagForArrayProxy);
   }
