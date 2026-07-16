@@ -52,6 +52,12 @@ export function queryParamsDidChange(
       let options = route._optionsForQueryParam(qp);
       assert('options exists', options && typeof options === 'object');
       if ((get(options, 'refreshModel') as boolean) && route._router.currentState) {
+        if (change in changed) {
+          let newSerializedValue = (changed as Record<string, unknown>)[change];
+          if (newSerializedValue === qp.serializedValue) {
+            continue;
+          }
+        }
         route.refresh();
         break;
       }

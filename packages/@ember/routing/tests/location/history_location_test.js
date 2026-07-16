@@ -319,6 +319,23 @@ moduleFor(
       assert.equal(location.getURL(), '/admin/profile/');
     }
 
+    ['@test HistoryLocation.getURL() treats regex metacharacters in rootURL and baseURL literally'](
+      assert
+    ) {
+      HistoryTestLocation.reopen({
+        init() {
+          this._super(...arguments);
+          set(this, 'location', mockBrowserLocation('/axc/secret'));
+          set(this, 'rootURL', '/a.c/');
+          set(this, 'baseURL', '/a.c/');
+        },
+      });
+
+      createLocation();
+
+      assert.equal(location.getURL(), '/axc/secret');
+    }
+
     ['@test Existing state is preserved on init'](assert) {
       let existingState = {
         path: '/route/path',

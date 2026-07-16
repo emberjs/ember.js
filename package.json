@@ -3,6 +3,9 @@
   "version": "7.3.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "type": "module",
+  "sideEffects": [
+    "./dist/*/packages/ember-testing/index.js"
+  ],
   "keywords": [
     "ember-addon"
   ],
@@ -69,7 +72,6 @@
     "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",
     "chalk": "^4.0.0",
-    "ember-cli-babel": "^8.3.1",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",

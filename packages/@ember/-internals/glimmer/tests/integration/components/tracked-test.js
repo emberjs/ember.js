@@ -5,6 +5,8 @@ import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
 import { Promise } from 'rsvp';
+import { fn } from '@ember/helper';
+import { on } from '@ember/modifier';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
@@ -192,6 +194,112 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate('<button {{on "click" this.increment}}>{{this.count}}</button>'),
           CountComponent
+        )
+      );
+
+      this.render('<Counter />');
+
+      this.assertText('0');
+
+      runTask(() => this.$('button').click());
+
+      this.assertText('1');
+    }
+
+    '@test standalone tracked values rerender when updated'() {
+      class CountComponent extends Component {
+        count = tracked(0);
+
+        increment = () => {
+          this.count.value++;
+        };
+      }
+
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate('<button {{on "click" this.increment}}>{{this.count.value}}</button>'),
+          CountComponent
+        )
+      );
+
+      this.render('<Counter />');
+
+      this.assertText('0');
+
+      runTask(() => this.$('button').click());
+
+      this.assertText('1');
+    }
+
+    '@test standalone tracked values in module scope rerender when updated'() {
+      let count = tracked(0);
+
+      class CountComponent extends Component {
+        count = count;
+      }
+
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(precompileTemplate('{{this.count.value}}'), CountComponent)
+      );
+
+      this.render('<Counter />');
+
+      this.assertText('0');
+
+      runTask(() => count.set(1));
+
+      this.assertText('1');
+
+      runTask(() => count.update((value) => value + 1));
+
+      this.assertText('2');
+    }
+
+    '@test standalone tracked values do not rerender when set to an equal value'(assert) {
+      let count = tracked(0);
+      let evaluations = 0;
+
+      class CountComponent extends Component {
+        get count() {
+          evaluations++;
+          return count.value;
+        }
+      }
+
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(precompileTemplate('{{this.count}}'), CountComponent)
+      );
+
+      this.render('<Counter />');
+
+      this.assertText('0');
+      assert.strictEqual(evaluations, 1, 'rendered once');
+
+      runTask(() => count.set(0));
+
+      this.assertText('0');
+      assert.strictEqual(evaluations, 1, 'setting an equal value does not rerender');
+
+      runTask(() => count.set(1));
+
+      this.assertText('1');
+      assert.strictEqual(evaluations, 2, 'setting a new value rerenders');
+    }
+
+    '@test tracked can be used as a helper in templates'() {
+      let increment = (count) => count.value++;
+
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#let (tracked 0) as |count|}}<button {{on "click" (fn increment count)}}>{{count.value}}</button>{{/let}}',
+            { strictMode: true, scope: () => ({ tracked, on, fn, increment }) }
+          ),
+          class extends GlimmerishComponent {}
         )
       );
 

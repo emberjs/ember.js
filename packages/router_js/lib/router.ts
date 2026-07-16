@@ -496,19 +496,27 @@ export default abstract class Router<R extends BaseRoute> {
     if (routeInfosEqual(newState.routeInfos, oldState!.routeInfos)) {
       // This is a no-op transition. See if query params changed.
       if (queryParamChangelist) {
-        let newTransition = this.queryParamsTransition(
-          queryParamChangelist,
-          wasTransitioning,
-          oldState!,
-          newState
-        );
-        newTransition.queryParamsOnly = true;
-        // SAFETY: The returned OpaqueTransition should actually be this.
-        return newTransition as InternalTransition<R>;
+        if (!wasTransitioning) {
+          // Not in an active transition — use the QP-only fast path
+          // which updates the URL without re-resolving route hooks.
+          let newTransition = this.queryParamsTransition(
+            queryParamChangelist,
+            wasTransitioning,
+            oldState!,
+            newState
+          );
+          newTransition.queryParamsOnly = true;
+          // SAFETY: The returned OpaqueTransition should actually be this.
+          return newTransition as InternalTransition<R>;
+        }
+        // When a query-param-only transition is started during an active
+        // transition (for example, from beforeModel/afterModel), avoid the
+        // QP-only fast path and intentionally fall through to the normal
+        // transition path so it can abort and replace the active transition.
+      } else {
+        // No-op. No need to create a new transition.
+        return this.activeTransition || new InternalTransition(this, undefined, undefined);
       }
-
-      // No-op. No need to create a new transition.
-      return this.activeTransition || new InternalTransition(this, undefined, undefined);
     }
 
     if (isIntermediate) {
