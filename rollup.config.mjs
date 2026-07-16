@@ -14,6 +14,7 @@ const projectRoot = dirname(fileURLToPath(import.meta.url));
 const packageCache = PackageCache.shared('ember-source', projectRoot);
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.cjs');
 const canaryFeatures = require('./broccoli/canary-features.cjs');
+const deprecatedFeatures = require('./broccoli/deprecated-features.cjs');
 
 const testDependencies = [
   'qunit',
@@ -31,6 +32,19 @@ let configs = [
   glimmerSyntaxESM(),
   glimmerSyntaxCJS(),
 ];
+
+// A deprecation-shaken variant: EMBER_DEPRECATION_FLAGS="DEPRECATE_X=false,..."
+// (or "all=false") builds dist/deprecation-custom/{dev,prod} with the flagged
+// deprecations compile-time folded and their guarded code paths eliminated.
+// CI uses this to prove each shakable deprecation actually leaves the bundle;
+// apps normally shake instead via the ember-source/deprecation-shaking plugin.
+if (process.env.EMBER_DEPRECATION_FLAGS) {
+  let flags = deprecatedFeatures.parseFlagsFromEnv(process.env.EMBER_DEPRECATION_FLAGS);
+  configs.push(
+    sharedESMConfig({ input: esmInputs(), debugMacrosMode: true, deprecationFlags: flags }),
+    sharedESMConfig({ input: esmInputs(), debugMacrosMode: false, deprecationFlags: flags })
+  );
+}
 
 if (process.env.DEBUG_SINGLE_CONFIG) {
   configs = configs.slice(
@@ -71,14 +85,21 @@ function esmInputs() {
   };
 }
 
-function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false }) {
-  let outputDir = debugMacrosMode === false ? 'dist/prod' : 'dist/dev';
+function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false, deprecationFlags }) {
+  let distRoot = deprecationFlags ? 'dist/deprecation-custom' : 'dist';
+  let outputDir = debugMacrosMode === false ? `${distRoot}/prod` : `${distRoot}/dev`;
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
     ...babelConfig.plugins,
     ...buildDebugMacroPlugin(debugMacrosMode),
     canaryFeatures(),
   ];
+
+  if (deprecationFlags) {
+    // Shaken variant: fold the flags to literals so guarded deprecated code
+    // paths are dead-code-eliminated by rollup's treeshake.
+    babelConfig.plugins.push(deprecatedFeatures(deprecationFlags));
+  }
 
   let plugins = [
     babel({
@@ -89,12 +110,20 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
     }),
     resolveTS(),
     version(),
-    resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
+    deprecationFlagsModule(deprecationFlags),
+    resolvePackages(
+      { ...exposedDependencies(), ...hiddenDependencies() },
+      // The standard dist keeps @ember/deprecated-features live (externalized
+      // to a package self-reference) so apps can shake per-deprecation. In
+      // the shaken variant the imports are already folded away by babel.
+      { externalizeDeprecatedFeatures: !deprecationFlags }
+    ),
     pruneEmptyBundles(),
   ];
 
   if (includePackageMeta) {
     plugins.push(packageMeta());
+    plugins.push(emitDeprecationFlagsMeta());
   }
 
   return {
@@ -401,11 +430,12 @@ function resolveTS() {
 export function resolvePackages(deps, params) {
   const isExternal = params?.isExternal;
   const enableLocalDebug = params?.enableLocalDebug ?? false;
+  const externalizeDeprecatedFeatures = params?.externalizeDeprecatedFeatures ?? false;
 
   return {
     enforce: 'pre',
     name: 'resolve-packages',
-    async resolveId(source) {
+    async resolveId(source, importer) {
       if (source.startsWith('\0')) {
         return;
       }
@@ -417,6 +447,16 @@ export function resolvePackages(deps, params) {
 
       if (source === '@glimmer/local-debug-flags' && !enableLocalDebug) {
         return resolve(projectRoot, 'packages/@glimmer/local-debug-flags/disabled.ts');
+      }
+
+      // Keep the deprecation flags live in the published dist: consumers of
+      // the flags import a single shared module (a package self-reference
+      // that resolves through our own `exports` map), which the
+      // ember-source/deprecation-shaking app plugin can replace to shake
+      // deprecated code. Only imports are redirected; the module itself
+      // (importer === undefined) still builds as a normal entrypoint.
+      if (externalizeDeprecatedFeatures && importer && source === '@ember/deprecated-features') {
+        return { external: true, id: 'ember-source/@ember/deprecated-features/index.js' };
       }
 
       let pkgName = packageName(source);
@@ -503,6 +543,49 @@ export function version() {
           ),
         };
       }
+    },
+  };
+}
+
+// In a shaken variant build, rewrite the flags module itself so its exported
+// constants match the variant's flag values (consumer imports are already
+// folded by babel; this keeps the emitted module honest for anything that
+// imports it at runtime).
+function deprecationFlagsModule(deprecationFlags) {
+  return {
+    name: 'deprecation-flags-module',
+    load(id) {
+      if (
+        deprecationFlags &&
+        id[0] !== '\0' &&
+        id.endsWith('packages/@ember/deprecated-features/index.ts')
+      ) {
+        return {
+          code: Object.entries(deprecationFlags)
+            .map(([name, value]) => `export const ${name} = ${value};\n`)
+            .join(''),
+        };
+      }
+    },
+  };
+}
+
+// Machine-readable description of the shakable deprecation flags, consumed by
+// the ember-source/deprecation-shaking app plugin.
+function emitDeprecationFlagsMeta() {
+  return {
+    name: 'deprecation-flags-meta',
+    generateBundle() {
+      let meta = Object.entries(deprecatedFeatures.FLAGS).map(([name, { id, since, until }]) => ({
+        const: name,
+        id,
+        since,
+        until,
+      }));
+      writeFileSync(
+        resolve(projectRoot, 'dist/deprecation-flags.json'),
+        JSON.stringify(meta, null, 2) + '\n'
+      );
     },
   };
 }

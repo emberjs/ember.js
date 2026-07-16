@@ -229,6 +229,7 @@
       "@ember/debug/lib/assert.js": "ember-source/@ember/debug/lib/assert.js",
       "@ember/debug/lib/capture-render-tree.js": "ember-source/@ember/debug/lib/capture-render-tree.js",
       "@ember/debug/lib/deprecate.js": "ember-source/@ember/debug/lib/deprecate.js",
+      "@ember/debug/lib/deprecation-stages.js": "ember-source/@ember/debug/lib/deprecation-stages.js",
       "@ember/debug/lib/handlers.js": "ember-source/@ember/debug/lib/handlers.js",
       "@ember/debug/lib/inspect.js": "ember-source/@ember/debug/lib/inspect.js",
       "@ember/debug/lib/testing.js": "ember-source/@ember/debug/lib/testing.js",
