@@ -15,6 +15,7 @@ import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
 import Mixin, { applyMixin, createMixin } from '@ember/object/mixin';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
@@ -712,6 +713,10 @@ class CoreObject {
     ...mixins: M
   ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
   static extend(this: typeof CoreObject, ...mixins: any[]) {
+    deprecateUntil(
+      'The classic class definition API `.extend()` is deprecated. Convert to a native class, for example with the ember-native-class-codemod.',
+      DEPRECATIONS.DEPRECATE_EMBER_OBJECT_EXTEND
+    );
     return internalExtend(this, ...mixins);
   }
 
@@ -835,6 +840,10 @@ class CoreObject {
     @public
   */
   static reopen<C extends typeof CoreObject>(this: C, ...args: any[]): C {
+    deprecateUntil(
+      'The classic class API `.reopen()` is deprecated. Define the properties and methods on a native class (or a subclass) instead.',
+      DEPRECATIONS.DEPRECATE_EMBER_OBJECT_REOPEN
+    );
     return internalReopen(this, ...args);
   }
 
@@ -917,6 +926,10 @@ class CoreObject {
     this: C,
     ...mixins: Array<Mixin | Record<string, unknown>>
   ): C {
+    deprecateUntil(
+      'The classic class API `.reopenClass()` is deprecated. Define static properties and methods on a native class (or a subclass) instead.',
+      DEPRECATIONS.DEPRECATE_EMBER_OBJECT_REOPEN
+    );
     return internalReopenClass(this, ...mixins);
   }
 

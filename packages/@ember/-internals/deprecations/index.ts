@@ -174,6 +174,32 @@ export const DEPRECATIONS = {
     },
     DEPRECATE_COMPARABLE_MIXIN
   ),
+  // The classic object model deprecations have no @ember/deprecated-features
+  // flags: their machinery cannot be tree-shaken in-module while ember's own
+  // base classes are built with the internal aliases (internalExtend,
+  // createMixin, ...). Removing the machinery is the modern build variant's
+  // module-swap job.
+  DEPRECATE_EMBER_OBJECT_EXTEND: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-ember-object-extend',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-ember-object-extend',
+  }),
+  DEPRECATE_EMBER_OBJECT_REOPEN: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-ember-object-reopen',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-ember-object-reopen',
+  }),
+  DEPRECATE_EMBER_MIXINS: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-ember-mixins',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-ember-mixins',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {
