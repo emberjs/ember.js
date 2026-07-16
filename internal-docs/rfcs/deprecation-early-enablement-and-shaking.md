@@ -329,7 +329,7 @@ available-stage (`since: { available: '7.3.0' }`, no `enabled`), `until:
 | `deprecate-ember-object-extend` | the public static `.extend()` | native classes (ember-native-class-codemod) |
 | `deprecate-ember-object-reopen` | the public statics `.reopen()` / `.reopenClass()` | subclassing / module refactor |
 | `deprecate-ember-mixins` | `Mixin.create` | native class composition |
-| `deprecate-computed-properties` | the public `computed()` and module eval of `@ember/object/computed` | `@tracked` + native getters, `@cached` |
+| `deprecate-computed-properties` | the public `computed()` and every `@ember/object/computed` macro (call-time wrappers — a module-eval deprecation would be dropped by `sideEffects`-aware bundlers) | `@tracked` + native getters, `@cached` |
 | `deprecate-observers` | `observer()`, public `addObserver`/`removeObserver` | derived state / explicit events |
 | `deprecate-ember-array` | `A()` | native arrays / tracked-built-ins |
 | `deprecate-object-proxy` | `ObjectProxy` init (once per class) | direct access / native getters |
