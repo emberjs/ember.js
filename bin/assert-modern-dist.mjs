@@ -19,6 +19,14 @@ const DIST = 'dist/modern/prod';
 // these names do not count. Each marker is paired with the module it
 // indicts. Note that assert/deprecation message strings make poor markers:
 // they are stripped from prod builds.
+//
+// Not every pruned module needs its own marker: anything built with
+// Mixin.create or EmberObject.extend (Evented, Enumerable, PromiseProxyMixin,
+// the computed macros, ...) drags @ember/object/mixin or core.ts into the
+// bundle and trips 'applyMixin'/'CoreObject' transitively. Markers below
+// cover the standalone leaves that coverage misses. events.ts identifiers
+// (sendEvent/addListener) cannot be markers - they are legitimately present
+// through the allowlisted observer machinery.
 const FORBIDDEN_MARKERS = [
   // @ember/object/mixin.ts machinery
   ['applyMixin', '@ember/object/mixin'],
@@ -30,6 +38,14 @@ const FORBIDDEN_MARKERS = [
   ['CoreObject', '@ember/object/core'],
   // @ember/array/proxy.ts
   ['ArrayProxy', '@ember/array/proxy'],
+  // @ember/object/proxy.ts
+  ['ObjectProxy', '@ember/object/proxy'],
+  // @ember/-internals/runtime/lib/mixins/-proxy.ts
+  ['PROXY_CONTENT', '@ember/-internals/runtime/lib/mixins/-proxy'],
+  // @ember/array/mutable.ts
+  ['MutableArray', '@ember/array/mutable'],
+  // @ember/array/index.ts
+  ['NativeArray', '@ember/array'],
   // @ember/object/observable.ts
   ['incrementProperty', '@ember/object/observable'],
   // @ember/-internals/glimmer/lib/component-managers/curly.ts

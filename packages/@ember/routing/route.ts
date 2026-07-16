@@ -1626,8 +1626,8 @@ class Route<Model = unknown> extends FrameworkObject implements IRoute {
     @property _qp
     */
   protected get _qp(): QueryParamMeta {
-    // computed once per instance, like the `@computed` (no dependent keys)
-    // this getter replaced
+    // computed once per instance; nothing invalidates the meta after the
+    // first build
     let cached = this.__qpMeta;
     if (cached !== null) {
       return cached;
@@ -2272,9 +2272,9 @@ const DEFAULT_ACTIONS = {
 
 // Defaults are assigned to the prototype (rather than declared as instance
 // fields) so they can be overridden both by native subclassing and by classic
-// `.extend()`. `mergedProperties` reproduces what the ActionHandler mixin
-// (`actions`) and the old `reopen` (`queryParams`) contributed, so classic
-// `.extend()` continues to merge those hashes instead of replacing them.
+// `.extend()`. `mergedProperties` lists `actions` (per ActionHandler) and
+// `queryParams`, so classic `.extend()` merges those hashes instead of
+// replacing them.
 Object.assign(Route.prototype, {
   mergedProperties: ['actions', 'queryParams'],
   queryParams: {},

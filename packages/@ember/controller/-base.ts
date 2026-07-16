@@ -267,9 +267,9 @@ class Controller<_T = unknown> extends FrameworkObject {
   }
 
   set model(value: _T) {
-    // matches the ComputedProperty this accessor replaced, which skipped
-    // notification when the setter produced the already-cached value (e.g.
-    // {{mount}} re-setting the same model on rerender)
+    // Skip notification when the value is unchanged (e.g. {{mount}}
+    // re-setting the same model on rerender), like a ComputedProperty
+    // setter whose result matches the cached value.
     if (this[MODEL] === value) {
       return;
     }
