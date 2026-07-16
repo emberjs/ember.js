@@ -159,8 +159,10 @@ internal `DEPRECATIONS` registry:
 export const DEPRECATE_COMPARABLE_MIXIN = true;
 ```
 
-Deprecated code paths are guarded by the flag, with the deprecation call
-inside the guard and the post-removal behavior in the other branch:
+Deprecated code paths are guarded by the flag. When the deprecated thing has
+a post-removal replacement shape, the deprecation call sits inside the guard
+(it is stripped with the code) and the other branch holds the post-removal
+behavior:
 
 ```ts
 import { DEPRECATE_COMPARABLE_MIXIN } from '@ember/deprecated-features';
@@ -174,6 +176,20 @@ const Comparable = DEPRECATE_COMPARABLE_MIXIN
       compare: null,
     })
   : undefined; // post-removal shape
+```
+
+When the deprecated thing is itself an entrypoint (a deprecated function or
+import with no replacement shape), the `deprecateUntil` call instead sits
+*before* the guard: it survives shaking as the throwing stub while the
+guarded implementation is eliminated:
+
+```ts
+export function inject(...args) {
+  deprecateUntil(msg, DEPRECATIONS.DEPRECATE_IMPORT_INJECT); // throws when shaken
+  if (DEPRECATE_IMPORT_INJECT) {
+    return metalInject('service', ...args);
+  }
+}
 ```
 
 The registry entry is linked to the flag, so when the flag is `false` the
@@ -274,3 +290,6 @@ deprecations of substantial subsystems should be.
   none? Deferred.
 - Glimmer VM deprecations use their own override table upstream; wiring them
   into this system is future work.
+- A shaken export read as a value (e.g. the `Comparable` mixin) becomes
+  `undefined` rather than a build error. True removal at a major would fail
+  the build instead. Is a lint rule or resolver-level error worth providing?
