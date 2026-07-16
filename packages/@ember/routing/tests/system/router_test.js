@@ -76,7 +76,7 @@ moduleFor(
 
     ['@test should destroy its location upon destroying the routers owner.'](assert) {
       let router = createRouter();
-      let location = router.get('location');
+      let location = router.location;
 
       runDestroy(owner);
 
@@ -90,9 +90,9 @@ moduleFor(
         },
       });
 
-      let location = router.get('location');
+      let location = router.location;
 
-      assert.equal(location.get('rootURL'), '/rootdir/');
+      assert.equal(location.rootURL, '/rootdir/');
     }
 
     ['@test Router._routePath should consume identical prefixes'](assert) {

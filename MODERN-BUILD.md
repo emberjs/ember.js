@@ -77,7 +77,10 @@ and tracked objects and are widely used by tooling), `Input`/`Textarea`/
 - `@ember/test-helpers` currently calls `EmberObject.extend` at module scope
   in its mock-owner support (`dist/-internal/build-registry.js`), which
   breaks dev/test builds of modern-variant apps until that load is made lazy
-  upstream. Production app builds are unaffected.
+  upstream. Production app builds are unaffected. Until the upstream fix
+  lands, apps can serve a lazy-construction shim for that one module — see
+  `shims/test-helpers-build-registry.js` and the accompanying vite plugin in
+  `smoke-tests/v2-app-modern-template`.
 - ember-inspector support is degraded: the `DataAdapter` and the classic
   inspector glue depend on the classic object model.
 - `ControllerMixin`, `cacheFor`, and other classic exports simply do not
@@ -91,4 +94,6 @@ and tracked objects and are widely used by tooling), `Input`/`Textarea`/
   against the variant's module swaps. Grow its globs as suites become clean
   of classic patterns in their test code.
 - `smoke-tests/v2-app-modern-template` — a real Embroider/Vite app consuming
-  the variant.
+  the variant; `pnpm test` there runs acceptance and rendering tests covering
+  routing, `<LinkTo>` with query params, controller query-param sync, router
+  service events, service injection, and `<Input>` two-way binding.

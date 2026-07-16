@@ -47,6 +47,33 @@
         eager: true,
       });
 
+      import.meta.glob(
+        './packages/@ember/-internals/{container,string,deprecations,meta}/tests/**/*.{js,ts}',
+        { eager: true }
+      );
+
+      import.meta.glob('./packages/@ember/{instrumentation,template-compiler}/tests/**/*.{js,ts}', {
+        eager: true,
+      });
+
+      import.meta.glob('./packages/@ember/debug/tests/{handlers-test,inspect_test}.js', {
+        eager: true,
+      });
+
+      import.meta.glob(
+        './packages/@ember/utils/tests/{is_blank_test,is_none_test,is_present_test}.js',
+        { eager: true }
+      );
+
+      import.meta.glob(
+        [
+          './packages/@ember/routing/tests/utils_test.js',
+          './packages/@ember/routing/tests/location/{util_test,hash_location_test}.js',
+          './packages/@ember/routing/tests/system/{router_test,cache_test}.js',
+        ],
+        { eager: true }
+      );
+
       // packages originally authored in glimmer-vm repo have a different test
       // naming convention
       import.meta.glob(
