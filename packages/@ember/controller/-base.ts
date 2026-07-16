@@ -252,6 +252,42 @@ class Controller<_T = unknown> extends FrameworkObject {
   declare namespace: unknown;
   declare [MODEL]: _T;
 
+  // `model` is an accessor at runtime, but is defined here with
+  // defineProperty (rather than as a class-body accessor) so the published
+  // types keep it as a plain property — the `ControllerMixin` interface merge
+  // provides the type, and subclasses may redeclare or initialize it as a
+  // field without hitting TS2610 ("overridden as an instance property").
+  static {
+    Object.defineProperty(this.prototype, 'model', {
+      configurable: true,
+      enumerable: false,
+      get(this: Controller) {
+        consumeTag(tagForProperty(this, 'model'));
+        return this[MODEL];
+      },
+      set(this: Controller, value: unknown) {
+        // Skip notification when the value is unchanged (e.g. {{mount}}
+        // re-setting the same model on rerender), like a ComputedProperty
+        // setter whose result matches the cached value.
+        if (this[MODEL] === value) {
+          return;
+        }
+        this[MODEL] = value;
+        notifyPropertyChange(this, 'model');
+      },
+    });
+
+    // Register the `model` accessor's setter the same way `@tracked`
+    // registers its setters, so metal's `set` takes the fast path (plain
+    // assignment into the accessor) instead of the DEBUG mandatory-setter
+    // path. The latter reads the property before writing, and that read
+    // would consume the tag mid-set — tripping the backtracking-rerender
+    // assertion on legitimate mid-render writes like {{mount}}'s model
+    // update. (In this static block, rather than at module scope, so the
+    // registration tree-shakes away with the class.)
+    COMPUTED_SETTERS.add(Object.getOwnPropertyDescriptor(this.prototype, 'model')!.set!);
+  }
+
   init(properties: object | undefined) {
     super.init(properties);
     let owner = getOwner(this);
@@ -318,38 +354,6 @@ Object.assign(Controller.prototype, {
   queryParams: null,
   _qpDelegate: null,
 });
-
-// `model` is an accessor at runtime, but is defined here with defineProperty
-// (rather than as a class-body accessor) so the published types keep it as a
-// plain property — the `ControllerMixin` interface merge provides the type,
-// and subclasses may redeclare or initialize it as a field without hitting
-// TS2610 ("overridden as an instance property").
-Object.defineProperty(Controller.prototype, 'model', {
-  configurable: true,
-  enumerable: false,
-  get(this: Controller) {
-    consumeTag(tagForProperty(this, 'model'));
-    return this[MODEL];
-  },
-  set(this: Controller, value: unknown) {
-    // Skip notification when the value is unchanged (e.g. {{mount}}
-    // re-setting the same model on rerender), like a ComputedProperty
-    // setter whose result matches the cached value.
-    if (this[MODEL] === value) {
-      return;
-    }
-    this[MODEL] = value;
-    notifyPropertyChange(this, 'model');
-  },
-});
-
-// Register the `model` accessor's setter the same way `@tracked` registers
-// its setters, so metal's `set` takes the fast path (plain assignment into
-// the accessor) instead of the DEBUG mandatory-setter path. The latter reads
-// the property before writing, and that read would consume the tag mid-set —
-// tripping the backtracking-rerender assertion on legitimate mid-render
-// writes like {{mount}}'s model update.
-COMPUTED_SETTERS.add(Object.getOwnPropertyDescriptor(Controller.prototype, 'model')!.set!);
 
 /**
   Creates a property that lazily looks up another controller in the container.
