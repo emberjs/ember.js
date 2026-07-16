@@ -1,7 +1,8 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { deprecation, deprecateUntil, isRemoved, emberVersionGte } from '../index';
+import { DEPRECATIONS, deprecation, deprecateUntil, isRemoved, emberVersionGte } from '../index';
 import { ENV } from '@ember/-internals/environment';
 import { setDeprecationStagesConfig } from '@ember/debug';
+import * as DEPRECATED_FEATURES from '@ember/deprecated-features';
 
 let originalEnvValue;
 
@@ -17,6 +18,44 @@ moduleFor(
     teardown() {
       setDeprecationStagesConfig(null);
       ENV.RAISE_ON_DEPRECATION = originalEnvValue;
+    }
+
+    ['@test every @ember/deprecated-features flag matches a DEPRECATIONS registry key'](assert) {
+      let flagNames = Object.keys(DEPRECATED_FEATURES);
+      assert.notStrictEqual(flagNames.length, 0, 'flags exist');
+
+      for (let flagName of flagNames) {
+        assert.true(
+          flagName in DEPRECATIONS,
+          `${flagName} has a matching DEPRECATIONS registry entry`
+        );
+        assert.strictEqual(
+          // eslint-disable-next-line import/namespace -- iterating the namespace's own keys
+          typeof DEPRECATED_FEATURES[flagName],
+          'boolean',
+          `${flagName} is a boolean`
+        );
+      }
+    }
+
+    ['@test a deprecation whose flag is false reports itself as removed'](assert) {
+      let options = {
+        id: 'test-flagged-off',
+        until: '30.0.0',
+        for: 'ember-source',
+        url: 'http://example.com/deprecations/test-flagged-off',
+        since: { available: '1.0.0', enabled: '1.0.0' },
+      };
+
+      assert.false(deprecation(options, true).isRemoved, 'flag true: not removed');
+      assert.false(deprecation(options).isRemoved, 'no flag: not removed');
+      assert.true(deprecation(options, false).isRemoved, 'flag false: removed');
+
+      assert.throws(
+        () => deprecateUntil('Shaken API reached', deprecation(options, false)),
+        /was removed in ember-source 30\.0\.0/,
+        'deprecateUntil throws for a flagged-off deprecation'
+      );
     }
 
     ['@test available-stage deprecations reflect stage config changes'](assert) {

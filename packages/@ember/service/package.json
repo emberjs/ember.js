@@ -10,6 +10,7 @@
     "@ember/-internals": "workspace:*",
     "@ember/array": "workspace:*",
     "@ember/debug": "workspace:*",
+    "@ember/deprecated-features": "workspace:*",
     "@ember/object": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
     "@glimmer/env": "workspace:*",
