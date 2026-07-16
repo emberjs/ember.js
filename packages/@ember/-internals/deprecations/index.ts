@@ -200,6 +200,20 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-ember-mixins',
   }),
+  DEPRECATE_COMPUTED_PROPERTIES: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-computed-properties',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-computed-properties',
+  }),
+  DEPRECATE_OBSERVERS: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-observers',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-observers',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

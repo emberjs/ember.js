@@ -11,6 +11,8 @@ import { setObservers } from '@ember/-internals/utils/lib/super';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject, { internalExtend } from '@ember/object/core';
 import Observable from '@ember/object/observable';
+import metalComputed from '@ember/-internals/metal/lib/computed';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
 export { defineProperty } from '@ember/-internals/metal/lib/properties';
@@ -18,7 +20,16 @@ export { get } from '@ember/-internals/metal/lib/property_get';
 export { set, trySet } from '@ember/-internals/metal/lib/property_set';
 export { default as getProperties } from '@ember/-internals/metal/lib/get_properties';
 export { default as setProperties } from '@ember/-internals/metal/lib/set_properties';
-export { default as computed } from '@ember/-internals/metal/lib/computed';
+
+// Deprecating wrapper: ember-source's own uses go through the metal module
+// directly and stay silent.
+export const computed = ((...args: Parameters<typeof metalComputed>) => {
+  deprecateUntil(
+    'Computed properties are deprecated. Replace `computed()` with `@tracked` properties and native getters (with `@cached` where memoization is needed).',
+    DEPRECATIONS.DEPRECATE_COMPUTED_PROPERTIES
+  );
+  return metalComputed(...args);
+}) as typeof metalComputed;
 
 /**
 @module @ember/object
@@ -269,6 +280,11 @@ export function observer<T extends AnyFn>(
     | [propertyName: string, ...additionalPropertyNames: string[], func: T]
     | [ObserverDefinition<T>]
 ): T {
+  deprecateUntil(
+    'Observers are deprecated. Derive state with `@tracked` properties and native getters, or react to changes explicitly.',
+    DEPRECATIONS.DEPRECATE_OBSERVERS
+  );
+
   let funcOrDef = args.pop();
 
   assert(
