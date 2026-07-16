@@ -11,6 +11,15 @@ const variants = [
   // hit its "until" version, the tests for it will behave correctly.
   'OVERRIDE_DEPRECATION_VERSION',
 
+  // Comma-separated deprecation ids (or "true" for all) to enable early via
+  // EmberENV.DEPRECATION_STAGES.enable, so available-stage deprecations can be
+  // exercised per-id before they reach their "enabled" version.
+  'ENABLED_DEPRECATIONS',
+
+  // A version passed to EmberENV.DEPRECATION_STAGES.compliance: deprecations
+  // enabled at or before this ember-source version throw instead of warning.
+  'DEPRECATION_COMPLIANCE',
+
   // This enables all canary feature flags for unreleased feature within Ember
   // itself.
   'ENABLE_OPTIONAL_FEATURES',

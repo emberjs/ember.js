@@ -32,6 +32,19 @@
         EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
       }
 
+      if (QUnit.urlParams.ENABLED_DEPRECATIONS || QUnit.urlParams.DEPRECATION_COMPLIANCE) {
+        EmberENV['DEPRECATION_STAGES'] = {};
+        if (QUnit.urlParams.ENABLED_DEPRECATIONS) {
+          EmberENV['DEPRECATION_STAGES'].enable =
+            QUnit.urlParams.ENABLED_DEPRECATIONS === 'true'
+              ? true
+              : QUnit.urlParams.ENABLED_DEPRECATIONS.split(',');
+        }
+        if (QUnit.urlParams.DEPRECATION_COMPLIANCE) {
+          EmberENV['DEPRECATION_STAGES'].compliance = QUnit.urlParams.DEPRECATION_COMPLIANCE;
+        }
+      }
+
       QUnit.config.urlConfig.push({
         id: 'OVERRIDE_DEPRECATION_VERSION',
         value: ['20.0.0', '6.0.0', '5.12.0'],

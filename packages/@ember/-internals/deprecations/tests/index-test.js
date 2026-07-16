@@ -1,6 +1,7 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { deprecateUntil, isRemoved, emberVersionGte } from '../index';
+import { deprecation, deprecateUntil, isRemoved, emberVersionGte } from '../index';
 import { ENV } from '@ember/-internals/environment';
+import { setDeprecationStagesConfig } from '@ember/debug';
 
 let originalEnvValue;
 
@@ -14,7 +15,52 @@ moduleFor(
     }
 
     teardown() {
+      setDeprecationStagesConfig(null);
       ENV.RAISE_ON_DEPRECATION = originalEnvValue;
+    }
+
+    ['@test available-stage deprecations reflect stage config changes'](assert) {
+      let AVAILABLE_DEPRECATION = deprecation({
+        id: 'test-available-stage',
+        until: '30.0.0',
+        for: 'ember-source',
+        url: 'http://example.com/deprecations/test-available-stage',
+        since: { available: '1.0.0' },
+      });
+
+      assert.true(AVAILABLE_DEPRECATION.test, 'suppressed with no config');
+      assert.false(AVAILABLE_DEPRECATION.isEnabled, 'not enabled with no config');
+
+      setDeprecationStagesConfig({ enable: ['test-available-stage'] });
+
+      assert.false(AVAILABLE_DEPRECATION.test, 'fires once enabled by config');
+      assert.true(AVAILABLE_DEPRECATION.isEnabled, 'enabled by config');
+
+      setDeprecationStagesConfig({ enable: ['some-other-id'] });
+
+      assert.true(AVAILABLE_DEPRECATION.test, 'suppressed again when config changes');
+    }
+
+    ['@test deprecateUntil fires an available-stage deprecation enabled by config'](assert) {
+      let AVAILABLE_DEPRECATION = deprecation({
+        id: 'test-available-fires',
+        until: '30.0.0',
+        for: 'ember-source',
+        url: 'http://example.com/deprecations/test-available-fires',
+        since: { available: '1.0.0' },
+      });
+
+      expectNoDeprecation(() => {
+        deprecateUntil('This deprecation is suppressed', AVAILABLE_DEPRECATION);
+      });
+
+      setDeprecationStagesConfig({ enable: ['test-available-fires'] });
+
+      expectDeprecation(() => {
+        deprecateUntil('This deprecation fires', AVAILABLE_DEPRECATION);
+      }, /This deprecation fires/);
+
+      assert.ok(true, 'ran without throwing');
     }
 
     ['@test deprecateUntil throws when deprecation has been removed'](assert) {

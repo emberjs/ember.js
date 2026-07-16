@@ -1,11 +1,16 @@
 import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
+import { isDeprecationEnabledByConfig } from '@ember/debug/lib/deprecation-stages';
 import { ENV } from '@ember/-internals/environment/lib/env';
 import { VERSION } from '@ember/version';
 import { deprecate, assert } from '@ember/debug';
 import { dasherize } from '../string/index';
 
 function isEnabled(options: DeprecationOptions) {
-  return Object.hasOwnProperty.call(options.since, 'enabled') || ENV._ALL_DEPRECATIONS_ENABLED;
+  return (
+    Object.hasOwnProperty.call(options.since, 'enabled') ||
+    ENV._ALL_DEPRECATIONS_ENABLED ||
+    isDeprecationEnabledByConfig(options.id)
+  );
 }
 
 let numEmberVersion = parseFloat(ENV._OVERRIDE_DEPRECATION_VERSION ?? VERSION);
@@ -27,12 +32,21 @@ interface DeprecationObject {
   isRemoved: boolean;
 }
 
-function deprecation(options: DeprecationOptions) {
+// Getters rather than snapshots: registry entries are created at module
+// eval, but stage configuration can change afterwards (e.g. test harnesses
+// calling setDeprecationStagesConfig).
+export function deprecation(options: DeprecationOptions): DeprecationObject {
   return {
     options,
-    test: !isEnabled(options),
-    isEnabled: isEnabled(options) || isRemoved(options),
-    isRemoved: isRemoved(options),
+    get test() {
+      return !isEnabled(options);
+    },
+    get isEnabled() {
+      return isEnabled(options) || isRemoved(options);
+    },
+    get isRemoved() {
+      return isRemoved(options);
+    },
   };
 }
 
