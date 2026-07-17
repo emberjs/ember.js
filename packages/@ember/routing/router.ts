@@ -27,7 +27,7 @@ import type {
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
-import { internalExtend, internalReopen, internalReopenClass } from '@ember/object/core';
+import { internalExtend } from '@ember/object/core';
 import { internalA as emberA } from '@ember/array';
 import typeOf from '@ember/utils/lib/type-of';
 import Evented from '@ember/object/evented';
@@ -255,7 +255,7 @@ class EmberRouter extends internalExtend(EmberObject, Evented) implements Evente
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
       // FIXME: Can we remove this?
-      internalReopenClass(this, { dslCallbacks: this.dslCallbacks });
+      this.reopenClassInternal({ dslCallbacks: this.dslCallbacks });
     }
 
     this.dslCallbacks.push(callback);
@@ -1815,7 +1815,7 @@ function forEachQueryParam(
   }
 }
 
-internalReopen(EmberRouter, {
+EmberRouter.reopenInternal({
   didTransition: defaultDidTransition,
   willTransition: defaultWillTransition,
   rootURL: '/',

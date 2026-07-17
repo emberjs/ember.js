@@ -13,7 +13,7 @@ import {
   getViewElement,
 } from '@ember/-internals/views/lib/system/utils';
 import CoreView from '@ember/-internals/views/lib/views/core_view';
-import { internalExtend, internalReopenClass } from '@ember/object/core';
+import { internalExtend } from '@ember/object/core';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
@@ -1692,7 +1692,7 @@ class Component<S = unknown>
 
 // We continue to use the reopenClass mechanism here so that positionalParams
 // can be overridden with reopenClass in subclasses.
-internalReopenClass(Component, {
+Component.reopenClassInternal({
   positionalParams: [],
 });
 

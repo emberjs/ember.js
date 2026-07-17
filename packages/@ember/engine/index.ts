@@ -3,7 +3,7 @@ export { getEngineParent, setEngineParent } from './parent';
 import { canInvoke } from '@ember/-internals/utils/lib/invoke';
 import Controller from '@ember/controller';
 import Namespace from '@ember/application/namespace';
-import { internalExtend, internalReopenClass } from '@ember/object/core';
+import { internalExtend } from '@ember/object/core';
 import Registry from '@ember/-internals/container/lib/registry';
 import type { ResolverClass } from '@ember/-internals/container/lib/registry';
 import DAG from 'dag-map';
@@ -495,7 +495,7 @@ export function buildInitializerMethod<
       let attrs = {
         [bucketName]: Object.create(this[bucketName]),
       };
-      internalReopenClass(this, attrs);
+      this.reopenClassInternal(attrs);
     }
 
     assert(

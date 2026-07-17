@@ -1,5 +1,4 @@
 import EmberObject from '@ember/object';
-import { internalReopen } from '@ember/object/core';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { escapeRegExp } from './lib/location-utils';
@@ -128,7 +127,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
   }
 }
 
-internalReopen(NoneLocation, {
+NoneLocation.reopenInternal({
   path: '',
   rootURL: '/',
 });

@@ -847,6 +847,18 @@ class CoreObject {
     return internalReopen(this, ...args);
   }
 
+  /**
+    Non-deprecating equivalent of `reopen` for ember-source's own framework
+    definitions. A static (rather than the module-level `internalReopen`) so
+    rollup can scope the call's side effect to the class and keep the calling
+    module tree-shakable.
+
+    @internal
+  */
+  static reopenInternal<C extends typeof CoreObject>(this: C, ...args: any[]): C {
+    return internalReopen(this, ...args);
+  }
+
   static willReopen() {
     let p = this.prototype;
     if (wasApplied.has(p)) {
@@ -930,6 +942,21 @@ class CoreObject {
       'The classic class API `.reopenClass()` is deprecated. Define static properties and methods on a native class (or a subclass) instead.',
       DEPRECATIONS.DEPRECATE_EMBER_OBJECT_REOPEN
     );
+    return internalReopenClass(this, ...mixins);
+  }
+
+  /**
+    Non-deprecating equivalent of `reopenClass` for ember-source's own
+    framework definitions. A static (rather than the module-level
+    `internalReopenClass`) so rollup can scope the call's side effect to the
+    class and keep the calling module tree-shakable.
+
+    @internal
+  */
+  static reopenClassInternal<C extends typeof CoreObject>(
+    this: C,
+    ...mixins: Array<Mixin | Record<string, unknown>>
+  ): C {
     return internalReopenClass(this, ...mixins);
   }
 

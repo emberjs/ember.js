@@ -155,11 +155,14 @@ export function deprecation(options: DeprecationOptions, flag?: boolean): Deprec
   non-deprecating entry point and put the deprecateUntil call only in the
   public one. The reference pattern is `inject` (public wrapper in
   @ember/service; internals call metal's `injected_property` directly).
-  Other examples: `internalExtend`/`internalReopen`/`internalReopenClass`
-  (@ember/object/core), `createMixin` (@ember/object/mixin), `internalA`
-  (@ember/array). Include a regression test proving framework operation
-  (module eval, boot, runtime paths) fires nothing with the deprecation
-  enabled.
+  Other examples: `internalExtend` (@ember/object/core), the
+  `reopenInternal`/`reopenClassInternal` statics (statics rather than module
+  functions so rollup can scope their side effects to the class — imported
+  helper calls at module scope make the whole module un-tree-shakable, which
+  tests/node-vitest/tree-shakability.test.js guards), `createMixin`
+  (@ember/object/mixin), `internalA` (@ember/array). Include a regression
+  test proving framework operation (module eval, boot, runtime paths) fires
+  nothing with the deprecation enabled.
  */
 export const DEPRECATIONS = {
   DEPRECATE_IMPORT_EMBER(importName: string) {
