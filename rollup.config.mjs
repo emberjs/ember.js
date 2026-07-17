@@ -1,5 +1,5 @@
 import { dirname, parse, resolve, join } from 'node:path';
-import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { globSync } from 'glob';
@@ -582,6 +582,9 @@ function emitDeprecationFlagsMeta() {
         since,
         until,
       }));
+      // generateBundle runs before rollup writes its output, so dist/ may
+      // not exist yet on a fresh checkout
+      mkdirSync(resolve(projectRoot, 'dist'), { recursive: true });
       writeFileSync(
         resolve(projectRoot, 'dist/deprecation-flags.json'),
         JSON.stringify(meta, null, 2) + '\n'
