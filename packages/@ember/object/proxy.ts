@@ -129,7 +129,10 @@ class ObjectProxy<Content = unknown> extends FrameworkObject {
   init(properties: object | undefined) {
     super.init(properties);
 
-    if (!deprecatedClasses.has(this.constructor)) {
+    // The isEnabled gate keeps the dedupe set empty while the deprecation is
+    // disabled, so enabling it later (e.g. per test module) still warns for
+    // classes instantiated before that point.
+    if (DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled && !deprecatedClasses.has(this.constructor)) {
       deprecatedClasses.add(this.constructor);
       deprecateUntil(
         'ObjectProxy is deprecated. Access the underlying object directly, or expose derived state with native getters.',

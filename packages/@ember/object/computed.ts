@@ -42,19 +42,22 @@ import {
 // side-effect-free (see `sideEffects` in package.json) and are allowed to
 // drop top-level statements when only re-exports are used. ember-source's
 // own internals import the underlying lib modules directly and stay silent.
-function deprecatedMacro<F extends AnyFn>(macro: F): F {
+function deprecatedMacro<F extends AnyFn>(
+  macro: F,
+  message = 'Computed property macros are deprecated. Replace them with `@tracked` properties and native getters (with `@cached` where memoization is needed).'
+): F {
   return function (this: unknown, ...args: unknown[]) {
-    deprecateUntil(
-      'Computed property macros are deprecated. Replace them with `@tracked` properties and native getters (with `@cached` where memoization is needed).',
-      DEPRECATIONS.DEPRECATE_COMPUTED_PROPERTIES
-    );
+    deprecateUntil(message, DEPRECATIONS.DEPRECATE_COMPUTED_PROPERTIES);
     return macro.apply(this, args);
   } as F;
 }
 
 export { ComputedProperty as default } from '@ember/-internals/metal/lib/computed';
 
-export const expandProperties = deprecatedMacro(metalExpandProperties);
+export const expandProperties = deprecatedMacro(
+  metalExpandProperties,
+  '`expandProperties` is deprecated along with the computed property system it supports.'
+);
 export const alias = deprecatedMacro(metalAlias);
 
 export const empty = deprecatedMacro(_empty);

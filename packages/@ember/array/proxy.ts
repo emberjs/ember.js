@@ -207,7 +207,10 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   init(props: object | undefined) {
     super.init(props);
 
-    if (!deprecatedClasses.has(this.constructor)) {
+    // The isEnabled gate keeps the dedupe set empty while the deprecation is
+    // disabled, so enabling it later (e.g. per test module) still warns for
+    // classes instantiated before that point.
+    if (DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled && !deprecatedClasses.has(this.constructor)) {
       deprecatedClasses.add(this.constructor);
       deprecateUntil(
         'ArrayProxy is deprecated. Use a native array, or a tracked collection from tracked-built-ins, and expose derived state with native getters.',

@@ -696,6 +696,9 @@ export default class Mixin {
   Non-deprecating equivalent of `Mixin.create` for ember-source's own
   framework mixins. External code must use `Mixin.create`.
 
+  Constructs `Mixin` directly rather than the static's `this`-based `new M()`
+  — ember-source never subclasses Mixin internally.
+
   @internal
 */
 export function createMixin(...args: any[]): Mixin {
