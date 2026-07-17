@@ -40,8 +40,8 @@ moduleForDevelopment(
       console.warn = originalConsoleWarn; // eslint-disable-line no-console
     }
 
-    ['@test no config: nothing is enabled or thrown'](assert) {
-      setDeprecationStagesConfig(null);
+    ['@test empty config: nothing is enabled or thrown'](assert) {
+      setDeprecationStagesConfig({});
 
       assert.false(isDeprecationEnabledByConfig('some-id'), 'no id is enabled');
       deprecate('enabled-stage deprecation warns without throwing', false, enabledOptions('e1'));

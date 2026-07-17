@@ -1,9 +1,15 @@
 import ObjectProxy from '@ember/object/proxy';
 import ArrayProxy from '@ember/array/proxy';
 import { setDeprecationStagesConfig } from '@ember/debug';
-import { moduleForDevelopment, AbstractTestCase } from 'internal-test-helpers';
+import { emberVersionGte } from '@ember/-internals/deprecations';
+import { moduleForDevelopment, testUnless, AbstractTestCase } from 'internal-test-helpers';
 
 const IDS = ['deprecate-object-proxy', 'deprecate-array-proxy'];
+
+// Under _OVERRIDE_DEPRECATION_VERSION removal simulation these APIs throw
+// instead of warning (the test config replaces the harness's except list),
+// so the warn-expecting tests are skipped.
+const REMOVAL_SIMULATED = emberVersionGte('8.0.0');
 
 moduleForDevelopment(
   'ObjectProxy and ArrayProxy deprecations',
@@ -20,7 +26,7 @@ moduleForDevelopment(
       assert.ok(true, 'no deprecations fired');
     }
 
-    ['@test ObjectProxy fires once per class when enabled'](assert) {
+    [`${testUnless(REMOVAL_SIMULATED)} ObjectProxy fires once per class when enabled`](assert) {
       setDeprecationStagesConfig({ enable: IDS });
 
       class ProxyA extends ObjectProxy {}
@@ -45,7 +51,7 @@ moduleForDevelopment(
       [first, second, third].forEach((proxy) => proxy.destroy());
     }
 
-    ['@test ArrayProxy fires once per class when enabled'](assert) {
+    [`${testUnless(REMOVAL_SIMULATED)} ArrayProxy fires once per class when enabled`](assert) {
       setDeprecationStagesConfig({ enable: IDS });
 
       class ProxyA extends ArrayProxy {}

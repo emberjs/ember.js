@@ -1,5 +1,8 @@
 import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
-import { isDeprecationEnabledByConfig } from '@ember/debug/lib/deprecation-stages';
+import {
+  isDeprecationEnabledByConfig,
+  isDeprecationExceptedByConfig,
+} from '@ember/debug/lib/deprecation-stages';
 import { ENV } from '@ember/-internals/environment/lib/env';
 import { VERSION } from '@ember/version';
 import { deprecate, assert } from '@ember/debug';
@@ -41,6 +44,12 @@ interface DeprecationObject {
 // constant: in a build where the flag is false the guarded implementation is
 // gone, so the deprecation reports itself as removed and unguarded reaches
 // throw via deprecateUntil.
+//
+// `except` shields an id from the version-based removal computation (which
+// includes the _OVERRIDE_DEPRECATION_VERSION simulation) — without it, the
+// "Deprecations as errors" CI variant would throw for every API whose
+// deprecation is intentionally excluded from a run. It does not shield a
+// false flag: in a shaken build the implementation is actually gone.
 export function deprecation(options: DeprecationOptions, flag?: boolean): DeprecationObject {
   return {
     options,
@@ -48,10 +57,10 @@ export function deprecation(options: DeprecationOptions, flag?: boolean): Deprec
       return !isEnabled(options);
     },
     get isEnabled() {
-      return isEnabled(options) || isRemoved(options) || flag === false;
+      return isEnabled(options) || this.isRemoved;
     },
     get isRemoved() {
-      return isRemoved(options) || flag === false;
+      return (isRemoved(options) && !isDeprecationExceptedByConfig(options.id)) || flag === false;
     },
   };
 }

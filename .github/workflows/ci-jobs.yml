@@ -113,10 +113,15 @@ jobs:
           - name: "Deprecation compliance declared"
             DEPRECATION_COMPLIANCE: "7.2.0"
             RAISE_ON_DEPRECATION: "false"
+          # The classic ids are excepted here too: except also shields an id
+          # from the OVERRIDE_DEPRECATION_VERSION removal simulation, and the
+          # suite exercises the classic APIs pervasively.
           - name: "Deprecations as errors"
             OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array,deprecate-object-proxy,deprecate-array-proxy"
           - name: "Deprecations as errors, with optional features"
             OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array,deprecate-object-proxy,deprecate-array-proxy"
             ENABLE_OPTIONAL_FEATURES: "true"
           - name: "Production build"
             BUILD: "production"
@@ -215,6 +220,10 @@ jobs:
       - name: test
         env:
           OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+          # The classic ids are shielded from the removal simulation: the
+          # app-testing ecosystem (@ember/test-helpers, ember-qunit) still
+          # uses the classic APIs.
+          EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array,deprecate-object-proxy,deprecate-array-proxy"
           MATRIX_COMMAND: ${{ matrix.command }}
         working-directory: smoke-tests/scenarios
         run: |

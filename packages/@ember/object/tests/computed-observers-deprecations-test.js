@@ -8,9 +8,20 @@ import {
   removeObserver as metalRemoveObserver,
 } from '@ember/-internals/metal/lib/observer';
 import { setDeprecationStagesConfig } from '@ember/debug';
-import { moduleForDevelopment, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { emberVersionGte } from '@ember/-internals/deprecations';
+import {
+  moduleForDevelopment,
+  testUnless,
+  AbstractTestCase,
+  runLoopSettled,
+} from 'internal-test-helpers';
 
 const IDS = ['deprecate-computed-properties', 'deprecate-observers'];
+
+// Under _OVERRIDE_DEPRECATION_VERSION removal simulation these APIs throw
+// instead of warning (the test config replaces the harness's except list),
+// so the warn-expecting tests are skipped.
+const REMOVAL_SIMULATED = emberVersionGte('8.0.0');
 
 moduleForDevelopment(
   'computed property and observer deprecations',
@@ -35,7 +46,7 @@ moduleForDevelopment(
       assert.ok(true, 'no deprecations fired');
     }
 
-    ['@test computed() fires when enabled and still works'](assert) {
+    [`${testUnless(REMOVAL_SIMULATED)} computed() fires when enabled and still works`](assert) {
       setDeprecationStagesConfig({ enable: IDS });
 
       let cp;
@@ -53,12 +64,17 @@ moduleForDevelopment(
       obj.destroy();
     }
 
-    ['@test computed macros fire when enabled and still work'](assert) {
+    [`${testUnless(REMOVAL_SIMULATED)} computed macros fire per call and still work`](assert) {
       setDeprecationStagesConfig({ enable: IDS });
 
       let cp;
       expectDeprecation(() => {
         cp = readOnly('first');
+      }, /Computed property macros are deprecated/);
+
+      // no dedupe: a second call fires again
+      expectDeprecation(() => {
+        readOnly('second');
       }, /Computed property macros are deprecated/);
 
       let Klass = EmberObject.extend({ first: 'a', firstAlias: cp });
@@ -76,7 +92,7 @@ moduleForDevelopment(
       assert.ok(true, 'no deprecations fired');
     }
 
-    ['@test observer() fires when enabled']() {
+    [`${testUnless(REMOVAL_SIMULATED)} observer() fires when enabled`]() {
       setDeprecationStagesConfig({ enable: IDS });
 
       expectDeprecation(() => {
@@ -84,7 +100,7 @@ moduleForDevelopment(
       }, /Observers are deprecated/);
     }
 
-    ['@test addObserver and removeObserver fire when enabled'](assert) {
+    [`${testUnless(REMOVAL_SIMULATED)} addObserver and removeObserver fire when enabled`](assert) {
       setDeprecationStagesConfig({ enable: IDS });
 
       let obj = EmberObject.create({ first: 'a' });

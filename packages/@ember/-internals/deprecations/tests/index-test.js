@@ -55,6 +55,30 @@ moduleFor(
       }
     }
 
+    ['@test except shields an id from version-based removal, but not from a false flag'](assert) {
+      let options = {
+        id: 'test-past-until',
+        until: '3.0.0',
+        for: 'ember-source',
+        url: 'http://example.com/deprecations/test-past-until',
+        since: { available: '1.0.0' },
+      };
+
+      assert.true(deprecation(options).isRemoved, 'past-until deprecation reports removed');
+
+      setDeprecationStagesConfig({ except: ['test-past-until'] });
+
+      assert.false(deprecation(options).isRemoved, 'excepted id is not removed');
+      assert.false(deprecation(options).isEnabled, 'and not enabled via removal');
+      assert.true(
+        deprecation(options, false).isRemoved,
+        'a false flag still reports removed: the code is actually gone'
+      );
+
+      deprecateUntil('Reaching an excepted past-until deprecation', deprecation(options));
+      assert.ok(true, 'deprecateUntil does not throw for the excepted id');
+    }
+
     ['@test a deprecation whose flag is false reports itself as removed'](assert) {
       let options = {
         id: 'test-flagged-off',
@@ -76,6 +100,9 @@ moduleFor(
     }
 
     ['@test available-stage deprecations reflect stage config changes'](assert) {
+      // explicitly empty: the harness variant may run with a boot config
+      setDeprecationStagesConfig({});
+
       let AVAILABLE_DEPRECATION = deprecation({
         id: 'test-available-stage',
         until: '30.0.0',
@@ -84,8 +111,8 @@ moduleFor(
         since: { available: '1.0.0' },
       });
 
-      assert.true(AVAILABLE_DEPRECATION.test, 'suppressed with no config');
-      assert.false(AVAILABLE_DEPRECATION.isEnabled, 'not enabled with no config');
+      assert.true(AVAILABLE_DEPRECATION.test, 'suppressed with empty config');
+      assert.false(AVAILABLE_DEPRECATION.isEnabled, 'not enabled with empty config');
 
       setDeprecationStagesConfig({ enable: ['test-available-stage'] });
 
@@ -98,6 +125,9 @@ moduleFor(
     }
 
     ['@test deprecateUntil fires an available-stage deprecation enabled by config'](assert) {
+      // explicitly empty: the harness variant may run with a boot config
+      setDeprecationStagesConfig({});
+
       let AVAILABLE_DEPRECATION = deprecation({
         id: 'test-available-fires',
         until: '30.0.0',

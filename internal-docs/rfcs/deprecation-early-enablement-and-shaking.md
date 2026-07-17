@@ -131,9 +131,11 @@ Semantics:
   through `@ember/debug` — including addon deprecations with their own `for`
   — not only Ember's own.
 - Precedence: `except` > `assert` > `compliance`, and `except` also excludes
-  an id from `enable`. `except` means "pretend this id is not configured" —
-  the lever that lets `enable: true` coexist with a handful of
-  known-too-noisy ids.
+  an id from `enable` and from the version-based removal simulation
+  (`_OVERRIDE_DEPRECATION_VERSION`). `except` means "pretend this id is not
+  configured" — the lever that lets blanket modes (`enable: true`, simulated
+  future versions) coexist with a handful of known-too-noisy ids. It never
+  overrides a shaken build: code a flag removed is actually gone.
 - A compliance declaration for a package version newer than the installed
   version is invalid (asserts), mirroring RFC 0649's rule against optimistic
   declarations.

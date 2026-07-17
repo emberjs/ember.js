@@ -4,11 +4,13 @@ import Mixin, { createMixin } from '@ember/object/mixin';
 import Application from '@ember/application';
 import EmberRouter from '@ember/routing/router';
 import { setDeprecationStagesConfig } from '@ember/debug';
+import { emberVersionGte } from '@ember/-internals/deprecations';
 import {
   moduleForDevelopment,
   AbstractTestCase,
   ModuleBasedTestResolver,
   runTask,
+  testUnless,
 } from 'internal-test-helpers';
 
 const CLASSIC_IDS = [
@@ -16,6 +18,12 @@ const CLASSIC_IDS = [
   'deprecate-ember-object-reopen',
   'deprecate-ember-mixins',
 ];
+
+// Under _OVERRIDE_DEPRECATION_VERSION removal simulation these APIs throw
+// instead of warning (the test config replaces the harness's except list),
+// so the warn-expecting tests are skipped — the standard pattern for tests
+// of removed deprecations.
+const REMOVAL_SIMULATED = emberVersionGte('8.0.0');
 
 moduleForDevelopment(
   'classic object model deprecations',
@@ -34,7 +42,7 @@ moduleForDevelopment(
       assert.ok(true, 'no deprecations fired');
     }
 
-    ['@test extend fires when enabled']() {
+    [`${testUnless(REMOVAL_SIMULATED)} extend fires when enabled`]() {
       setDeprecationStagesConfig({ enable: CLASSIC_IDS });
 
       expectDeprecation(() => {
@@ -42,7 +50,7 @@ moduleForDevelopment(
       }, /The classic class definition API `\.extend\(\)` is deprecated/);
     }
 
-    ['@test extend fires for subclasses created with extend']() {
+    [`${testUnless(REMOVAL_SIMULATED)} extend fires for subclasses created with extend`]() {
       setDeprecationStagesConfig({ enable: CLASSIC_IDS });
 
       let Klass;
@@ -55,7 +63,7 @@ moduleForDevelopment(
       }, /`\.extend\(\)` is deprecated/);
     }
 
-    ['@test reopen and reopenClass fire when enabled']() {
+    [`${testUnless(REMOVAL_SIMULATED)} reopen and reopenClass fire when enabled`]() {
       setDeprecationStagesConfig({ enable: CLASSIC_IDS });
 
       class Klass extends EmberObject {}
@@ -69,7 +77,7 @@ moduleForDevelopment(
       }, /The classic class API `\.reopenClass\(\)` is deprecated/);
     }
 
-    ['@test Mixin.create fires when enabled']() {
+    [`${testUnless(REMOVAL_SIMULATED)} Mixin.create fires when enabled`]() {
       setDeprecationStagesConfig({ enable: CLASSIC_IDS });
 
       expectDeprecation(() => {
