@@ -76,10 +76,9 @@ Scenarios.fromProject(() =>
               test('flag state is consistent with runtime behavior', function (assert) {
                 if (DEPRECATE_COMPARABLE_MIXIN) {
                   assert.true(Boolean(Comparable), 'Comparable mixin exists while the flag is on');
-                  assert.false(
-                    DEPRECATIONS.DEPRECATE_COMPARABLE_MIXIN.isRemoved,
-                    'not removed while the flag is on'
-                  );
+                  // no isRemoved assertion here: version simulation
+                  // (_OVERRIDE_DEPRECATION_VERSION) can legitimately make an
+                  // unshaken deprecation report removed
                 } else {
                   assert.strictEqual(Comparable, undefined, 'Comparable mixin is shaken away');
                   assert.true(
