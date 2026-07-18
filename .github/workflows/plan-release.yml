@@ -1,0 +1,61 @@
+name: Plan Release
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+  pull_request_target: # This workflow has permissions on the repo, do NOT run code from PRs in this workflow. See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    types:
+      - labeled
+      - unlabeled
+
+concurrency:
+  group: plan-release # only the latest one of these should ever be running
+  cancel-in-progress: true
+
+jobs:
+  should-run-release-plan-prepare:
+    name: Should we run release-plan prepare?
+    runs-on: ubuntu-latest
+    outputs:
+      should-prepare: ${{ steps.should-prepare.outputs.should-prepare }}
+    steps:
+      - uses: release-plan/actions/should-prepare-release@v1
+        with:
+          ref: 'main'
+        id: should-prepare
+
+  create-prepare-release-pr:
+    name: Create Prepare Release PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: should-run-release-plan-prepare
+    permissions:
+      contents: write
+      issues: read
+      pull-requests: write
+    if: needs.should-run-release-plan-prepare.outputs.should-prepare == 'true'
+    steps:
+      - uses: release-plan/actions/prepare@v1
+        name: Run release-plan prepare
+        with:
+          ref: 'main'
+        env:
+          GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
+        id: explanation
+
+      - uses: peter-evans/create-pull-request@v8
+        name: Create Prepare Release PR
+        with:
+          commit-message: "Prepare Release ${{ steps.explanation.outputs.new-version}} using 'release-plan'"
+          labels: "internal"
+          sign-commits: true
+          branch: release-preview
+          title: Prepare Release ${{ steps.explanation.outputs.new-version }}
+          body: |
+            This PR is a preview of the release that [release-plan](https://github.com/embroider-build/release-plan) has prepared. To release you should just merge this PR 👍
+
+            -----------------------------------------
+
+            ${{ steps.explanation.outputs.text }}
