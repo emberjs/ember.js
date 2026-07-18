@@ -1156,9 +1156,11 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     }
 
     let shouldCache = true;
-    let map: QueryParamMeta['map'] = {};
+    // Both of these are looked up by names that come from the URL (or from a
+    // route's `as:` config), so they must not inherit from Object.prototype.
+    let map: QueryParamMeta['map'] = Object.create(null);
     let qps = [];
-    let qpsByUrlKey: Record<string, QueryParam> | null = DEBUG ? {} : null;
+    let qpsByUrlKey: Record<string, QueryParam> | null = DEBUG ? Object.create(null) : null;
     let qpMeta;
     let urlKey;
     let qpOther;

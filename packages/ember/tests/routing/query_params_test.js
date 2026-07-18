@@ -1237,6 +1237,17 @@ moduleFor(
       });
     }
 
+    ['@test Query params named after Object.prototype properties are left alone'](assert) {
+      assert.expect(2);
+
+      this.setSingleQPController('index', 'foo', 'bar');
+
+      return this.visit('/?toString=1&foo=baz').then(() => {
+        assert.equal(this.currentURL, '/?toString=1&foo=baz');
+        assert.equal(this.getController('index').get('foo'), 'baz');
+      });
+    }
+
     ['@test Query param without value are empty string'](assert) {
       assert.expect(1);
 

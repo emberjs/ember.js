@@ -1632,7 +1632,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     }
 
     let qps: QueryParam[] = [];
-    let map: Record<string, QueryParam> = {};
+    // Looked up by query param names that come from the URL, so it must not
+    // inherit from Object.prototype.
+    let map: Record<string, QueryParam> = Object.create(null);
     let propertyNames: string[] = [];
 
     for (let propName in combinedQueryParameterConfiguration) {
