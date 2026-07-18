@@ -2,13 +2,22 @@
   "name": "ember-source",
   "version": "7.3.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
-  "type": "module",
-  "sideEffects": [
-    "./dist/*/packages/ember-testing/index.js"
-  ],
   "keywords": [
     "ember-addon"
   ],
+  "homepage": "https://emberjs.com/",
+  "bugs": {
+    "url": "https://github.com/emberjs/ember.js/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emberjs/ember.js.git"
+  },
+  "license": "MIT",
+  "sideEffects": [
+    "./dist/*/packages/ember-testing/index.js"
+  ],
+  "type": "module",
   "exports": {
     "./*": {
       "development": "./dist/dev/packages/*",
@@ -20,12 +29,17 @@
     },
     "./package.json": "./package.json"
   },
-  "homepage": "https://emberjs.com/",
-  "bugs": {
-    "url": "https://github.com/emberjs/ember.js/issues"
-  },
-  "license": "MIT",
   "main": "lib/index.cjs",
+  "typesVersions": {
+    "*": {
+      "types": [
+        "types/stable"
+      ],
+      "types/preview": [
+        "types/preview"
+      ]
+    }
+  },
   "files": [
     "build-metadata.json",
     "blueprints",
@@ -34,19 +48,14 @@
     "lib",
     "types/stable"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/emberjs/ember.js.git"
-  },
   "scripts": {
     "actions-up": "pnpm dlx actions-up",
     "bench": "node ./bin/benchmark.mjs",
     "bench:precompile": "node --expose-gc bin/precompile.bench.mjs",
+    "build": "npm-run-all build:*",
     "build:js": "rollup --config",
     "build:types": "node types/publish.mjs",
-    "build": "npm-run-all build:*",
     "docs": "ember ember-cli-yuidoc",
-    "start": "vite dev",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
     "lint:docs": "qunit tests/docs/coverage-test.cjs",
     "lint:eslint": "eslint --report-unused-disable-directives --cache .",
@@ -54,16 +63,20 @@
     "lint:fix": "npm-run-all lint:*:fix",
     "lint:format": "prettier --check .",
     "lint:format:fix": "prettier --write .",
+    "start": "vite dev",
     "test": "testem ci -f testem.cjs --host 127.0.0.1 --port 13141",
     "test:blueprints": "pnpm --filter ember-test-node-blueprints test:node",
+    "test:browserstack": "node bin/run-browserstack-tests.cjs",
     "test:node": "qunit tests/node/**/*-test.cjs",
     "test:node:vitest": "pnpm --filter ember-test-node-vitest test:node",
-    "test:browserstack": "node bin/run-browserstack-tests.cjs",
     "test:wip": "vite build --mode development --minify false && testem ci",
-    "type-check:internals": "tsc --noEmit",
+    "type-check": "npm-run-all type-check:*",
     "type-check:handlebars": "tsc --noEmit --project packages/@handlebars/parser/tsconfig.json",
-    "type-check:types": "tsc --noEmit --project type-tests",
-    "type-check": "npm-run-all type-check:*"
+    "type-check:internals": "tsc --noEmit",
+    "type-check:types": "tsc --noEmit --project type-tests"
+  },
+  "resolutions": {
+    "socket.io": "^4.7.0"
   },
   "dependencies": {
     "@babel/core": "^7.24.4",
@@ -134,6 +147,7 @@
     "prettier": "^3.5.3",
     "qunit": "^2.19.4",
     "recast": "^0.22.0",
+    "release-plan": "^0.18.0",
     "resolve.exports": "^2.0.3",
     "rollup": "^4.57.1",
     "router_js": "workspace:*",
@@ -146,32 +160,30 @@
     "typescript-eslint": "^8.59.2",
     "vite": "^7.0.0"
   },
-  "resolutions": {
-    "socket.io": "^4.7.0"
+  "peerDependencies": {
+    "@glimmer/component": ">= 1.1.2"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">= 20.19"
   },
   "pnpm": {
-    "overrides": {
-      "rollup": "^4.2.0",
-      "ember-cli-htmlbars": "^7.0.0",
-      "babel-plugin-ember-template-compilation": "^4.0.0",
-      "ember-cli-babel": "^8.3.1",
-      "testem": "^3.20.1"
-    },
     "onlyBuiltDependencies": [
       "@swc/core",
       "core-js",
       "esbuild"
     ],
+    "overrides": {
+      "babel-plugin-ember-template-compilation": "^4.0.0",
+      "ember-cli-babel": "^8.3.1",
+      "ember-cli-htmlbars": "^7.0.0",
+      "rollup": "^4.2.0",
+      "testem": "^3.20.1"
+    },
     "patchedDependencies": {
       "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch",
       "agadoo": "patches/agadoo.patch"
     }
-  },
-  "peerDependencies": {
-    "@glimmer/component": ">= 1.1.2"
-  },
-  "engines": {
-    "node": ">= 20.19"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints",
@@ -357,16 +369,5 @@
       "router_js/index.js": "ember-source/router_js/index.js",
       "rsvp/index.js": "ember-source/rsvp/index.js"
     }
-  },
-  "typesVersions": {
-    "*": {
-      "types": [
-        "types/stable"
-      ],
-      "types/preview": [
-        "types/preview"
-      ]
-    }
-  },
-  "packageManager": "pnpm@10.33.2"
+  }
 }
