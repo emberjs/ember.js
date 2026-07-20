@@ -3,9 +3,7 @@ export type AppendOpcode = 1;
 export type TrustingAppendOpcode = 2;
 export type CommentOpcode = 3;
 export type ModifierOpcode = 4;
-export type StrictModifierOpcode = 5;
 export type BlockOpcode = 6;
-export type StrictBlockOpcode = 7;
 export type ComponentOpcode = 8;
 
 export type OpenElementOpcode = 10;
@@ -19,8 +17,6 @@ export type ComponentAttrOpcode = 16;
 export type AttrSplatOpcode = 17;
 export type YieldOpcode = 18;
 
-export type DynamicArgOpcode = 20;
-export type StaticArgOpcode = 21;
 export type TrustingDynamicAttrOpcode = 22;
 export type TrustingComponentAttrOpcode = 23;
 export type StaticComponentAttrOpcode = 24;
