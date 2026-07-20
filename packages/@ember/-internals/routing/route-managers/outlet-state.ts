@@ -1,6 +1,6 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import type { Reference } from '@glimmer/interfaces';
-import type { OutletDefinitionState } from '../component-managers/outlet';
+import type { OutletDefinitionState } from './classic/outlet-manager';
 
 export interface RenderState {
   /**

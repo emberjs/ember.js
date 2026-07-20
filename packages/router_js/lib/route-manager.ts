@@ -366,7 +366,7 @@ type RenderStateLike = {
   wrapper: object | undefined;
   /** Curried onto the wrapper as `@bucket` by the outlet. */
   bucket?: RouteStateBucket;
-  produceContext?: (outletRef: object, lastState: object, state: object) => object;
+  produceContext?: (outletRef: any, lastState: any, state: any) => any;
 };
 
 /**

@@ -14,12 +14,9 @@ import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/ar
 import { curry } from '@glimmer/runtime/lib/curried-value';
 import { dict } from '@glimmer/util/lib/collections';
 import { precompileTemplate } from '@ember/template-compilation';
-import {
-  OutletComponent,
-  type OutletDefinitionState,
-} from '../../../glimmer/lib/component-managers/outlet';
+import { OutletComponent, type OutletDefinitionState } from './outlet-manager';
 import { internalHelper } from '../../../glimmer/lib/helpers/internal-helper';
-import type { OutletState } from '../../../glimmer/lib/utils/outlet';
+import type { OutletState } from '../outlet-state';
 
 const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component @outlet={{(outlet)}} />', {
   strictMode: true,
@@ -107,7 +104,7 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
       // `@context` is opaque to the outlet: the route manager builds it.
       let produceContext = outletState?.render?.produceContext;
       let context: Reference = produceContext
-        ? produceContext(outletRef, lastState, state)
+        ? produceContext(outletRef, lastState!, state)
         : createConstRef(undefined, '@context');
 
       if (DEBUG) {

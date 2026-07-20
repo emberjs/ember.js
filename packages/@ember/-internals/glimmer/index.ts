@@ -535,7 +535,6 @@ export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/
 // a lot of these are testing how a problem was solved
 // rather than the problem was solved
 export type { BootEnvironment } from '@ember/engine/instance';
-export type { OutletState, RenderState } from './lib/utils/outlet';
 export {
   componentCapabilities,
   modifierCapabilities,

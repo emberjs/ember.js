@@ -19,7 +19,7 @@ import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import { assert } from '@ember/debug';
-import type { OutletState } from '../../glimmer/lib/utils/outlet';
+import type { OutletState } from './outlet-state';
 import { outletHelper } from './classic/outlet';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';

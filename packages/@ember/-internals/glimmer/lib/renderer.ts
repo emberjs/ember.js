@@ -35,7 +35,7 @@ import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
 import { RootComponentDefinition } from './component-managers/root';
 import RouterResolver from './router-resolver';
-import type { OutletState } from './utils/outlet';
+import type { OutletState } from '../../routing/route-managers/outlet-state';
 import type { IBuilder, RendererRoot } from './base-renderer';
 import { BaseRenderer, errorLoopTransaction } from './base-renderer';
 

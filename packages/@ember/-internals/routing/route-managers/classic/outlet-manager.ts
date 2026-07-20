@@ -19,10 +19,10 @@ import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
-import { unwrapTemplate } from './unwrap-template';
+import { unwrapTemplate } from '../../../glimmer/lib/component-managers/unwrap-template';
 
-import type { DynamicScope } from '../renderer';
-import type { OutletState } from '../utils/outlet';
+import type { DynamicScope } from '../../../glimmer/lib/renderer';
+import type { OutletState } from '../outlet-state';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   // "main" used to be the outlet name, keeping it around for compatibility
