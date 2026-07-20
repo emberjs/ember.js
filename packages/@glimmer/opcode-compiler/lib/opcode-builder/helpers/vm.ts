@@ -3,6 +3,7 @@ import { encodeImmediate, isSmallInt } from '@glimmer/constants/lib/immediate';
 import {
   VM_BIND_DYNAMIC_SCOPE_OP,
   VM_CAPTURE_ARGS_OP,
+  VM_CONSTANT_REFERENCE_OP,
   VM_CURRY_OP,
   VM_DUP_OP,
   VM_DYNAMIC_HELPER_OP,
@@ -16,9 +17,11 @@ import {
 } from '@glimmer/constants/lib/syscall-ops';
 import { VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants/lib/vm-ops';
 import { $fp, $v0 } from '@glimmer/vm/lib/registers';
+import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 
+import { HighLevelResolutionOpcodes } from '../opcodes';
 import { isStrictMode, nonSmallIntOperand } from '../operands';
 import { expr } from './expr';
 import { SimpleArgs } from './shared';
@@ -102,6 +105,43 @@ export function CallDynamic(
     op(VM_POP_FRAME_OP);
     op(VM_POP_OP, 1);
     op(VM_FETCH_OP, $v0);
+  }
+}
+
+/**
+ * Compile an expression in attribute-value position (either an entire dynamic
+ * attribute value, or one part of an attribute interpolation).
+ *
+ * In strict mode, a bare curly referencing an in-scope (lexical) binding —
+ * e.g. `class={{foo}}` or `class="prefix {{foo}}"` — is invoked as a
+ * zero-argument helper if its value has an associated helper manager (which
+ * includes plain functions, per RFC 0756). Otherwise the value itself is
+ * used. This matches loose mode, where an attribute curly that resolves to a
+ * helper is always invoked.
+ */
+export function DynamicAttrValue(op: PushExpressionOp, expression: WireFormat.Expression): void {
+  if (
+    Array.isArray(expression) &&
+    expression[0] === SexpOpcodes.GetLexicalSymbol &&
+    expression.length === 2
+  ) {
+    op(HighLevelResolutionOpcodes.OptionalComponentOrHelper, expression, {
+      // A component definition is not invokable in attribute position; use
+      // the value itself, like any other non-helper value.
+      ifComponent: () => {
+        expr(op, expression);
+      },
+
+      ifHelper: (handle: number) => {
+        Call(op, handle, null, null);
+      },
+
+      ifValue: (handle: number) => {
+        op(VM_CONSTANT_REFERENCE_OP, handle);
+      },
+    });
+  } else {
+    expr(op, expression);
   }
 }
 
