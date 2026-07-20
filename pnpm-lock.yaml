@@ -11,8 +11,12 @@ overrides:
   babel-plugin-ember-template-compilation: ^4.0.0
   ember-cli-babel: ^8.3.1
   testem: ^3.20.1
+  '@ember/test-helpers': 5.4.3
 
 patchedDependencies:
+  '@ember/test-helpers@5.4.3':
+    hash: 2b4c92927238a1f8f549a6db9c31330ef24f5bd049559a1495bb07f4b57b9dbf
+    path: patches/@ember__test-helpers@5.4.3.patch
   '@tracerbench/core@8.0.1':
     hash: 5e48bdb11a088927d3415cc5430bb6c37d5ce66ed2dab1327914b55e4fd5cd13
     path: patches/@tracerbench__core@8.0.1.patch
@@ -2794,8 +2798,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       '@ember/test-helpers':
-        specifier: ^5.4.1
-        version: 5.4.2(@babel/core@7.29.7)
+        specifier: 5.4.3
+        version: 5.4.3(patch_hash=2b4c92927238a1f8f549a6db9c31330ef24f5bd049559a1495bb07f4b57b9dbf)(@babel/core@7.29.7)
       '@embroider/macros':
         specifier: ^1.20.2
         version: 1.20.3(@babel/core@7.29.7)
@@ -2858,7 +2862,7 @@ importers:
         version: 9.0.3
       ember-qunit:
         specifier: ^9.0.4
-        version: 9.0.4(@babel/core@7.29.7)(@ember/test-helpers@5.4.2(@babel/core@7.29.7))(qunit@2.26.0)
+        version: 9.0.4(@babel/core@7.29.7)(@ember/test-helpers@5.4.3(patch_hash=2b4c92927238a1f8f549a6db9c31330ef24f5bd049559a1495bb07f4b57b9dbf)(@babel/core@7.29.7))(qunit@2.26.0)
       ember-resolver:
         specifier: ^13.1.1
         version: 13.2.0
@@ -3082,8 +3086,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
       '@ember/test-helpers':
-        specifier: ^5.4.1
-        version: 5.4.2(@babel/core@7.29.7)
+        specifier: 5.4.3
+        version: 5.4.3(patch_hash=2b4c92927238a1f8f549a6db9c31330ef24f5bd049559a1495bb07f4b57b9dbf)(@babel/core@7.29.7)
       '@ember/test-waiters':
         specifier: ^4.1.1
         version: 4.1.1(@babel/core@7.29.7)
@@ -3146,7 +3150,7 @@ importers:
         version: 9.0.3
       ember-qunit:
         specifier: ^9.0.4
-        version: 9.0.4(@babel/core@7.29.7)(@ember/test-helpers@5.4.2(@babel/core@7.29.7))(qunit@2.26.0)
+        version: 9.0.4(@babel/core@7.29.7)(@ember/test-helpers@5.4.3(patch_hash=2b4c92927238a1f8f549a6db9c31330ef24f5bd049559a1495bb07f4b57b9dbf)(@babel/core@7.29.7))(qunit@2.26.0)
       ember-resolver:
         specifier: ^13.1.1
         version: 13.2.0
@@ -4023,8 +4027,8 @@ packages:
   '@ember/string@4.0.1':
     resolution: {integrity: sha512-VWeng8BSWrIsdPfffOQt/bKwNKJL7+37gPFh/6iZZ9bke+S83kKqkS30poo4bTGfRcMnvAE0ie7txom+iDu81Q==}
 
-  '@ember/test-helpers@5.4.2':
-    resolution: {integrity: sha512-ZT++x8DbixXgvxO00J064rzNcsn9WycMPisNvee6dg9u6G4Z1yx0Hc8HqUFBJP7NyxVKZCokHlRWRQuz9S6wvQ==}
+  '@ember/test-helpers@5.4.3':
+    resolution: {integrity: sha512-WeNABJsXBidEXP87AH5gaI/KAyb0zEUYJxWa31A/Us5lqg85E3tPlHjBwCrlReOrJbSgvvArMnrdCwt7TRpjPQ==}
 
   '@ember/test-waiters@4.1.1':
     resolution: {integrity: sha512-HbK70JYCDJcGI0CrwcbjeL2QHAn0HLwa3oGep7mr6l/yO95U7JYA8VN+/9VTsWJTmKueLtWayUqEmGS3a3mVOg==}
@@ -7472,7 +7476,7 @@ packages:
   ember-qunit@9.0.4:
     resolution: {integrity: sha512-rv6gKvrdXdPBTdSZC5co82eIcDWWVR7RjafU/c+5TTz290oXhIHPoVuZbcO2F5RiAqkTW0jKzwkCP8y+2tCjFw==}
     peerDependencies:
-      '@ember/test-helpers': '>=3.0.3'
+      '@ember/test-helpers': 5.4.3
       qunit: ^2.13.0
 
   ember-resolver@13.2.0:
@@ -13202,11 +13206,10 @@ snapshots:
 
   '@ember/string@4.0.1': {}
 
-  '@ember/test-helpers@5.4.2(@babel/core@7.29.7)':
+  '@ember/test-helpers@5.4.3(patch_hash=2b4c92927238a1f8f549a6db9c31330ef24f5bd049559a1495bb07f4b57b9dbf)(@babel/core@7.29.7)':
     dependencies:
       '@ember/test-waiters': 4.1.1(@babel/core@7.29.7)
       '@embroider/addon-shim': 1.10.2
-      '@embroider/macros': 1.20.3(@babel/core@7.29.7)
       '@simple-dom/interface': 1.4.0
       decorator-transforms: 2.3.2(@babel/core@7.29.7)
       dom-element-descriptors: 0.5.1
@@ -17451,9 +17454,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-qunit@9.0.4(@babel/core@7.29.7)(@ember/test-helpers@5.4.2(@babel/core@7.29.7))(qunit@2.26.0):
+  ember-qunit@9.0.4(@babel/core@7.29.7)(@ember/test-helpers@5.4.3(patch_hash=2b4c92927238a1f8f549a6db9c31330ef24f5bd049559a1495bb07f4b57b9dbf)(@babel/core@7.29.7))(qunit@2.26.0):
     dependencies:
-      '@ember/test-helpers': 5.4.2(@babel/core@7.29.7)
+      '@ember/test-helpers': 5.4.3(patch_hash=2b4c92927238a1f8f549a6db9c31330ef24f5bd049559a1495bb07f4b57b9dbf)(@babel/core@7.29.7)
       '@embroider/addon-shim': 1.10.2
       '@embroider/macros': 1.20.3(@babel/core@7.29.7)
       qunit: 2.26.0
