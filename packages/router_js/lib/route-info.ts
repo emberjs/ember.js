@@ -3,23 +3,42 @@ import { Promise } from 'rsvp';
 import type { Dict, Option } from './core';
 import type { SerializerFunc } from './router';
 import type Router from './router';
-import type { PublicTransition as Transition } from './transition';
 import type InternalTransition from './transition';
-import { isTransition, PARAMS_SYMBOL, prepareResult, QUERY_PARAMS_SYMBOL } from './transition';
+import {
+  isTransition,
+  PARAMS_SYMBOL,
+  type PublicTransition as Transition,
+  QUERY_PARAMS_SYMBOL,
+  STATE_SYMBOL,
+} from './transition';
 import { isParam, isPromise, merge } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
+import type { EnterState, RouteManager, RouteStateBucket } from './route-manager';
+import { getRouteManagement, hasClassicInterop } from './route-manager';
 
 export type IModel = {} & {
   id?: string | number;
 };
 
-export type ModelFor<T> = T extends Route<infer V> ? V : never;
+export type ModelFor<T> = T extends BaseRoute<infer V> ? V : never;
 
-export interface Route<T = unknown> {
-  inaccessibleByURL?: boolean;
-  routeName: string;
-  _internalName: string;
+export interface BaseRoute<T = unknown> {
   context: T | undefined;
+
+  // this is used to identify the route in router_js machinery, and is not the same as the
+  // routeName property on classic ember routes. It is totally internal to router_js, and
+  // not to be confused with the routeName property on classic ember routes
+  _internalName?: string;
+
+  // I think this could potentially be deleted
+  // it's not mentioned in any ember docs that I can find, and is only
+  // used in a couple of places in router_js
+  inaccessibleByURL?: boolean;
+}
+
+// used by old router_js tests that expect to be working with the classic ember routes
+export interface ClassicRoute<T = unknown> extends BaseRoute<T> {
+  routeName: string;
   events?: Dict<(...args: unknown[]) => unknown>;
   model?(params: Dict<unknown>, transition: Transition): PromiseLike<T> | undefined | T;
   deserialize?(params: Dict<unknown>, transition: Transition): T | PromiseLike<T> | undefined;
@@ -54,11 +73,11 @@ export interface RouteInfoWithAttributes extends RouteInfo {
   attributes: any;
 }
 
-type RouteInfosKey = InternalRouteInfo<Route>;
+type RouteInfosKey = InternalRouteInfo<BaseRoute>;
 
 let ROUTE_INFOS = new WeakMap<RouteInfosKey, RouteInfo | RouteInfoWithAttributes>();
 
-export function toReadOnlyRouteInfo<R extends Route>(
+export function toReadOnlyRouteInfo<R extends BaseRoute>(
   routeInfos: InternalRouteInfo<R>[],
   queryParams: Dict<unknown> = {},
   options: {
@@ -69,12 +88,12 @@ export function toReadOnlyRouteInfo<R extends Route>(
   const LOCAL_ROUTE_INFOS = new WeakMap<RouteInfosKey, RouteInfo | RouteInfoWithAttributes>();
 
   return routeInfos.map((info, i) => {
-    let { name, params, paramNames, context, route } = info;
+    let { name, params, paramNames, context } = info;
     // SAFETY: This should be safe since it is just for use as a key
     let key = info as unknown as RouteInfosKey;
     if (ROUTE_INFOS.has(key) && options.includeAttributes) {
       let routeInfo = ROUTE_INFOS.get(key)!;
-      routeInfo = attachMetadata(route!, routeInfo);
+      routeInfo = attachMetadata(info, routeInfo);
       let routeInfoWithAttribute = createRouteInfoWithAttributes(routeInfo, context);
       LOCAL_ROUTE_INFOS.set(key, routeInfo);
       if (!options.localizeMapUpdates) {
@@ -120,7 +139,7 @@ export function toReadOnlyRouteInfo<R extends Route>(
       },
 
       get metadata() {
-        return buildRouteInfoMetadata(info.route);
+        return buildRouteInfoMetadata(info);
       },
 
       get parent() {
@@ -192,18 +211,19 @@ function createRouteInfoWithAttributes(
   return Object.assign(routeInfo, attributes);
 }
 
-function buildRouteInfoMetadata(route?: Route) {
-  if (route !== undefined && route !== null && route.buildRouteInfoMetadata !== undefined) {
-    return route.buildRouteInfoMetadata();
+function buildRouteInfoMetadata(info: InternalRouteInfo<BaseRoute>) {
+  let { manager, bucket } = info;
+  if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
+    return manager.getRouteInfoMetadata(bucket);
   }
 
   return null;
 }
 
-function attachMetadata(route: Route, routeInfo: RouteInfo) {
+function attachMetadata(info: InternalRouteInfo<BaseRoute>, routeInfo: RouteInfo) {
   let metadata = {
     get metadata() {
-      return buildRouteInfoMetadata(route);
+      return buildRouteInfoMetadata(info);
     },
   };
 
@@ -214,7 +234,7 @@ function attachMetadata(route: Route, routeInfo: RouteInfo) {
   return Object.assign(routeInfo, metadata);
 }
 
-export default class InternalRouteInfo<R extends Route> {
+export default class InternalRouteInfo<R extends BaseRoute> {
   private _routePromise?: Promise<R> = undefined;
   private _route?: Option<R> = null;
   protected router: Router<R>;
@@ -224,6 +244,7 @@ export default class InternalRouteInfo<R extends Route> {
   declare queryParams?: Dict<unknown>;
   declare context?: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
   isResolved = false;
+  enterPromise?: globalThis.Promise<unknown> = undefined;
 
   constructor(router: Router<R>, name: string, paramNames: string[], route?: R) {
     this.name = name;
@@ -244,19 +265,82 @@ export default class InternalRouteInfo<R extends Route> {
 
   resolve(transition: InternalTransition<R>): Promise<ResolvedRouteInfo<R>> {
     return Promise.resolve(this.routePromise)
-      .then((route: Route) => {
+      .then((route: R) => {
         throwIfAborted(transition);
         return route;
       })
-      .then(() => this.runBeforeModelHook(transition))
-      .then(() => throwIfAborted(transition))
-      .then(() => this.getModel(transition))
-      .then((resolvedModel) => {
-        throwIfAborted(transition);
-        return resolvedModel;
-      })
-      .then((resolvedModel) => this.runAfterModelHook(transition, resolvedModel))
-      .then((resolvedModel) => this.becomeResolved(transition, resolvedModel));
+      .then(() => {
+        const { manager, bucket } = this;
+        if (manager === undefined || bucket === undefined) {
+          throw new Error(
+            `Route '${this.name}' has no RouteManager attached. Use \`setRouteManager\` to associate one with the route class.`
+          );
+        }
+
+        // RFC NavigationState: transition-level from/to, populated by
+        // routeWillChange before any lifecycle hook runs. Hand-built
+        // transitions in unit tests may lack `to`; fall back to this route's
+        // own public info.
+        const to =
+          (transition.to as RouteInfo | undefined) ??
+          (ROUTE_INFOS.get(this as unknown as RouteInfosKey) as RouteInfo | undefined) ??
+          (this as unknown as RouteInfo);
+        const from = (transition.from ?? undefined) as RouteInfo | undefined;
+
+        const navigationArgs: EnterState = {
+          from,
+          to,
+          cancel: () => transition.abort(),
+          signal: transition.signal,
+          getAncestorContext: (ancestor: RouteInfo) => {
+            const routeInfos = transition[STATE_SYMBOL]?.routeInfos ?? [];
+            // Only true ancestors count: searching the whole hierarchy would
+            // hand a route its own (or a descendant's) pending enter promise —
+            // an easy deadlock for a manager that awaits it. When this info
+            // isn't in the transition state (hand-built test transitions),
+            // fall back to searching the full list.
+            const selfIndex = routeInfos.indexOf(this);
+            const ancestors = selfIndex === -1 ? routeInfos : routeInfos.slice(0, selfIndex);
+            const matched = ancestors.find((ri) => ri?.name === ancestor.name);
+            return matched?.enterPromise ?? Promise.resolve(undefined);
+          },
+        };
+
+        // The raw transition and the internal route info are classic-interop
+        // concerns; only provide them when the manager opts in.
+        if (hasClassicInterop(manager)) {
+          Object.assign(navigationArgs, { transition, internalRouteInfo: this });
+        }
+
+        manager.willEnter(bucket, navigationArgs);
+
+        const enterPromise = manager.enter(bucket, navigationArgs);
+        this.enterPromise = enterPromise;
+
+        // Capture the entered context locally rather than writing it onto
+        // this route info: `shouldSupersede` treats an own `context` as
+        // meaningful when infos are reused across transitions, so the info
+        // must not gain one it never had. `becomeResolved` receives the
+        // value explicitly below.
+        let enteredContext: ModelFor<R> | undefined;
+        enterPromise.then(
+          (resolvedContext) => {
+            if (transition.isAborted) return;
+            enteredContext = resolvedContext as ModelFor<R> | undefined;
+          },
+          () => {
+            // Swallow rejections; transition-level error handling reports them.
+          }
+        );
+
+        // The manager decides whether to gate getInvokable on enterPromise. The
+        // classic manager does, so getInvokable rejects when enter rejects
+        return manager.getInvokable(bucket, enterPromise).then(() => {
+          throwIfAborted(transition);
+          const resolvedContext = enteredContext ?? (this.context as ModelFor<R> | undefined);
+          return this.becomeResolved(transition, resolvedContext);
+        });
+      });
   }
 
   becomeResolved(
@@ -279,19 +363,47 @@ export default class InternalRouteInfo<R extends Route> {
     }
 
     // SAFETY: Since this is just for lookup, it should be safe
-    let cached = ROUTE_INFOS.get(this as unknown as InternalRouteInfo<Route>);
+    let cached = ROUTE_INFOS.get(this as unknown as InternalRouteInfo<BaseRoute>);
     let resolved = new ResolvedRouteInfo<R>(
       this.router,
       this.name,
       this.paramNames,
       params,
       this.route!,
-      context
+      context,
+      this.enterPromise
     );
+
+    // Back-fill the model onto `resolved` once `enter` settles, but only for
+    // managers that render before their model resolves. A manager whose
+    // `getInvokable` gates on `enter` (e.g. the classic manager) reaches here
+    // with `resolvedContext` already set, so `resolved` was built with its final
+    // `context` and there is nothing to wait for. A manager whose `getInvokable`
+    // resolves *before* `enter` (e.g. a manager which renders
+    // immediately and shows a loading state) reaches here while `enterPromise`
+    // is still pending and `resolvedContext` is undefined; the resolve()-level
+    // `.then` only updates the now-replaced unresolved info, so this is the
+    // subscription that writes the model onto the live `resolved` info (and the
+    // transition's resolved models) when it finally arrives.
+    if (resolvedContext === undefined && this.enterPromise !== undefined) {
+      this.enterPromise.then(
+        (enteredContext) => {
+          if (transition && transition.isAborted) return;
+          resolved.context = enteredContext as ModelFor<R> | undefined;
+          if (transition) {
+            transition.resolvedModels = transition.resolvedModels || {};
+            transition.resolvedModels[resolved.name] = enteredContext as ModelFor<R> | undefined;
+          }
+        },
+        () => {
+          // enter rejected; transition-level error handling reports it.
+        }
+      );
+    }
 
     if (cached !== undefined) {
       // SAFETY: This is potentially a bit risker, but for what we're doing, it should be ok.
-      ROUTE_INFOS.set(resolved as unknown as InternalRouteInfo<Route>, cached);
+      ROUTE_INFOS.set(resolved as unknown as InternalRouteInfo<BaseRoute>, cached);
     }
 
     return resolved;
@@ -326,6 +438,22 @@ export default class InternalRouteInfo<R extends Route> {
     return this.fetchRoute();
   }
 
+  /**
+    The manager driving this route's lifecycle, read from the association the
+    framework router registered via `associateRouteManagement` when it resolved
+    the route. `undefined` until the route has loaded.
+   */
+  get manager(): RouteManager | undefined {
+    let route = this.route;
+    return route === undefined ? undefined : getRouteManagement(route)?.manager;
+  }
+
+  /** The manager's bucket for this route. `undefined` until the route has loaded. */
+  get bucket(): RouteStateBucket | undefined {
+    let route = this.route;
+    return route === undefined ? undefined : getRouteManagement(route)?.bucket;
+  }
+
   set route(route: R | undefined) {
     this._route = route;
   }
@@ -353,53 +481,6 @@ export default class InternalRouteInfo<R extends Route> {
   private updateRoute(route: R) {
     route._internalName = this.name;
     return (this.route = route);
-  }
-
-  private runBeforeModelHook(transition: InternalTransition<R>) {
-    if (transition.trigger) {
-      transition.trigger(true, 'willResolveModel', transition, this.route);
-    }
-
-    let result;
-    if (this.route) {
-      if (this.route.beforeModel !== undefined) {
-        result = this.route.beforeModel(transition);
-      }
-    }
-
-    if (isTransition(result)) {
-      result = null;
-    }
-
-    return Promise.resolve(result);
-  }
-
-  private runAfterModelHook(
-    transition: InternalTransition<R>,
-    resolvedModel?: ModelFor<R> | null
-  ): Promise<ModelFor<R>> {
-    // Stash the resolved model on the payload.
-    // This makes it possible for users to swap out
-    // the resolved model in afterModel.
-    let name = this.name;
-    this.stashResolvedModel(transition, resolvedModel!);
-
-    let result;
-    if (this.route !== undefined) {
-      if (this.route.afterModel !== undefined) {
-        result = this.route.afterModel(resolvedModel!, transition);
-      }
-    }
-
-    result = prepareResult(result);
-
-    return Promise.resolve(result).then(() => {
-      // Ignore the fulfilled value returned from afterModel.
-      // Return the value stashed in resolvedModels, which
-      // might have been swapped out in afterModel.
-      // SAFETY: We expect this to be of type T, though typing it as such is challenging.
-      return transition.resolvedModels[name]! as unknown as ModelFor<R>;
-    });
   }
 
   private stashResolvedModel(
@@ -436,7 +517,7 @@ export default class InternalRouteInfo<R extends Route> {
   }
 }
 
-export class ResolvedRouteInfo<R extends Route> extends InternalRouteInfo<R> {
+export class ResolvedRouteInfo<R extends BaseRoute> extends InternalRouteInfo<R> {
   isResolved: boolean;
   context: ModelFor<R> | undefined;
   constructor(
@@ -445,12 +526,14 @@ export class ResolvedRouteInfo<R extends Route> extends InternalRouteInfo<R> {
     paramNames: string[],
     params: Dict<unknown> | undefined,
     route: R,
-    context?: ModelFor<R>
+    context?: ModelFor<R>,
+    enterPromise?: globalThis.Promise<unknown>
   ) {
     super(router, name, paramNames, route);
     this.params = params;
     this.isResolved = true;
     this.context = context;
+    this.enterPromise = enterPromise;
   }
 
   resolve(transition: InternalTransition<R>): Promise<this> {
@@ -462,7 +545,7 @@ export class ResolvedRouteInfo<R extends Route> extends InternalRouteInfo<R> {
   }
 }
 
-export class UnresolvedRouteInfoByParam<R extends Route> extends InternalRouteInfo<R> {
+export class UnresolvedRouteInfoByParam<R extends BaseRoute> extends InternalRouteInfo<R> {
   params: Dict<unknown> = {};
   constructor(
     router: Router<R>,
@@ -485,18 +568,11 @@ export class UnresolvedRouteInfoByParam<R extends Route> extends InternalRouteIn
       fullParams['queryParams'] = transition[QUERY_PARAMS_SYMBOL];
     }
 
-    let route = this.route!;
-
     let result: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
 
-    // FIXME: Review these casts
-    if (route.deserialize) {
-      result = route.deserialize(fullParams, transition) as
-        | ModelFor<R>
-        | PromiseLike<ModelFor<R>>
-        | undefined;
-    } else if (route.model) {
-      result = route.model(fullParams, transition) as
+    let { manager, bucket } = this;
+    if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
+      result = manager.getContext(bucket, fullParams, transition) as
         | ModelFor<R>
         | PromiseLike<ModelFor<R>>
         | undefined;
@@ -510,7 +586,7 @@ export class UnresolvedRouteInfoByParam<R extends Route> extends InternalRouteIn
   }
 }
 
-export class UnresolvedRouteInfoByObject<R extends Route> extends InternalRouteInfo<R> {
+export class UnresolvedRouteInfoByObject<R extends BaseRoute> extends InternalRouteInfo<R> {
   serializer?: SerializerFunc<ModelFor<R>>;
   constructor(
     router: Router<R>,
@@ -558,9 +634,10 @@ export class UnresolvedRouteInfoByObject<R extends Route> extends InternalRouteI
     if (this.serializer) {
       // invoke this.serializer unbound (getSerializer returns a stateless function)
       return this.serializer.call(null, model, paramNames);
-    } else if (this.route !== undefined) {
-      if (this.route.serialize) {
-        return this.route.serialize(model, paramNames);
+    } else {
+      let { manager, bucket } = this;
+      if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
+        return manager.serializeContext(bucket, this, model) as Dict<unknown> | undefined;
       }
     }
 

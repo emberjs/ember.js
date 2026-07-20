@@ -4,7 +4,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import EmberObject from '@ember/object';
 import { getElementView } from './utils';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/engine/instance';
 import type Component from '@ember/-internals/glimmer/lib/component';
 
 /**

@@ -8,7 +8,7 @@ import { expectTypeOf } from 'expect-type';
 declare let owner: Owner;
 
 class App extends Application {
-  rootElement = '#ember-application';
+  rootElement = document.querySelector('#ember-application')!;
   customEvents = {
     mouseenter: null,
     paste: 'paste',

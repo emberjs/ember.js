@@ -1,7 +1,6 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { getViewElement, getViewId } from '@ember/-internals/views/lib/system/utils';
 import { assert } from '@ember/debug';
 import {
@@ -26,22 +25,17 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
 import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
-import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
 import { curry } from '@glimmer/runtime/lib/curried-value';
 import { inTransaction } from '@glimmer/runtime/lib/environment';
 import { renderMain } from '@glimmer/runtime/lib/render';
-import { dict } from '@glimmer/util/lib/collections';
 import { unwrapTemplate } from './component-managers/unwrap-template';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import type Component from './component';
 import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
-import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import RouterResolver from './router-resolver';
-import type { OutletState } from './utils/outlet';
-import OutletView from './views/outlet';
-import { makeRouteTemplate } from './component-managers/route-template';
+import type { OutletState } from '../../routing/route-managers/outlet-state';
 import type { IBuilder, RendererRoot } from './base-renderer';
 import { BaseRenderer, errorLoopTransaction } from './base-renderer';
 
@@ -54,6 +48,7 @@ export {
   errorLoopTransaction,
   renderComponent,
   renderSettled,
+  setRenderer,
   _resetRenderers,
 } from './base-renderer';
 
@@ -104,7 +99,7 @@ class ClassicRootState implements RendererRoot {
   readonly env: Environment;
 
   constructor(
-    public root: Component | OutletView,
+    public root: Component,
     context: EvaluationContext,
     owner: object,
     template: Template,
@@ -118,7 +113,7 @@ class ClassicRootState implements RendererRoot {
       template !== undefined
     );
 
-    this.id = root instanceof OutletView ? guidFor(root) : getViewId(root);
+    this.id = getViewId(root);
     this.result = undefined;
     this.destroyed = false;
     this.env = context.env;
@@ -217,42 +212,6 @@ export class Renderer extends BaseRenderer {
 
   // renderer HOOKS
 
-  appendOutletView(view: OutletView, target: SimpleElement): void {
-    // TODO: This bypasses the {{outlet}} syntax so logically duplicates
-    // some of the set up code. Since this is all internal (or is it?),
-    // we can refactor this to do something more direct/less convoluted
-    // and with less setup, but get it working first
-    let outlet = createRootOutlet(view);
-    let { name, /* controller, */ template } = view.state;
-
-    let named = dict<Reference>();
-
-    named['Component'] = createConstRef(
-      makeRouteTemplate(view.owner, name, template as Template),
-      '@Component'
-    );
-
-    // TODO: is this guaranteed to be undefined? It seems to be the
-    // case in the `OutletView` class. Investigate how much that class
-    // exists as an internal implementation detail only, or if it was
-    // used outside of core. As far as I can tell, test-helpers uses
-    // it but only for `setOutletState`.
-    // named['controller'] = createConstRef(controller, '@controller');
-    // Update: at least according to the debug render tree tests, we
-    // appear to always expect this to be undefined. Not a definitive
-    // source by any means, but is useful evidence
-    named['controller'] = UNDEFINED_REFERENCE;
-    named['model'] = UNDEFINED_REFERENCE;
-
-    let args = createCapturedArgs(named, EMPTY_POSITIONAL);
-
-    this._appendDefinition(
-      view,
-      curry(0 as CurriedComponent, outlet, view.owner, args, true),
-      target
-    );
-  }
-
   appendTo(view: ClassicComponent, target: SimpleElement): void {
     let definition = new RootComponentDefinition(view);
     this._appendDefinition(
@@ -262,11 +221,7 @@ export class Renderer extends BaseRenderer {
     );
   }
 
-  _appendDefinition(
-    root: OutletView | ClassicComponent,
-    definition: CurriedValue,
-    target: SimpleElement
-  ): void {
+  _appendDefinition(root: ClassicComponent, definition: CurriedValue, target: SimpleElement): void {
     let self = createConstRef(definition, 'this');
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new ClassicRootState(

@@ -1559,13 +1559,21 @@ moduleFor(
           let router = this.applicationInstance.lookup('router:main');
 
           run(router, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
+          assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
           run(route, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+          assert.equal(
+            router._updatableRootOutletState,
+            null,
+            'the root outlet was not re-rendered'
+          );
 
           run(this.applicationInstance, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+          assert.equal(
+            router._updatableRootOutletState,
+            null,
+            'the root outlet was not re-rendered'
+          );
         });
     }
 

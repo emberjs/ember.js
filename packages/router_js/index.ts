@@ -12,8 +12,42 @@ export type { PublicTransition as Transition } from './lib/transition';
 export { default as TransitionState, TransitionError } from './lib/transition-state';
 export {
   default as InternalRouteInfo,
-  type Route,
+  type BaseRoute,
   type RouteInfo,
   type RouteInfoWithAttributes,
   type ModelFor,
 } from './lib/route-info';
+
+export { throwIfAborted } from './lib/transition-aborted-error';
+
+export {
+  routeCapabilities,
+  hasClassicInterop,
+  associateRouteManagement,
+  getRouteManagement,
+} from './lib/route-manager';
+export type {
+  RouteManager,
+  RouteManagerWithClassicInterop,
+  RouteStateBucket,
+  RouteManagement,
+  RouteCapabilities,
+  RouteCapabilitiesVersions,
+  NavigationState,
+  NavigationActions,
+  AsyncNavigationState,
+  ClassicInteropArgs,
+  WillEnterState,
+  EnterState,
+  DidEnterState,
+  WillExitState,
+  ExitState,
+  DidExitState,
+  ClassicWillEnterState,
+  ClassicEnterState,
+  ClassicDidEnterState,
+  ClassicWillExitState,
+  ClassicExitState,
+  ClassicDidExitState,
+  CreateRouteArgs,
+} from './lib/route-manager';
