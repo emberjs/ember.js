@@ -1,14 +1,42 @@
 import SimpleDOM from 'simple-dom';
 import Component from 'ember-source/@ember/component/index.js';
+import {
+  capabilities,
+  setComponentManager,
+  setComponentTemplate,
+} from 'ember-source/@ember/component/index.js';
 import { set } from 'ember-source/@ember/object/index.js';
 import { run } from 'ember-source/@ember/runloop/index.js';
 import { precompile } from 'ember-source/ember-template-compiler/index.js';
 import { createTemplateFactory } from 'ember-source/@ember/template-factory/index.js';
+import { renderComponent } from 'ember-source/@ember/-internals/glimmer/index.js';
 import buildOwner from './build-owner.js';
 
 function compile(templateString, options) {
   let templateSpec = precompile(templateString, options);
   return createTemplateFactory(JSON.parse(templateSpec));
+}
+
+const RENDER_CONTEXT_CAPABILITIES = capabilities('3.13', {
+  destructor: false,
+  asyncLifecycleCallbacks: false,
+});
+
+const renderContextManager = {
+  capabilities: RENDER_CONTEXT_CAPABILITIES,
+  createComponent(definition) {
+    return definition.context;
+  },
+  getContext(context) {
+    return context;
+  },
+};
+
+function contextComponentFor(templateFactory, context) {
+  let definition = { context };
+  setComponentManager(() => renderContextManager, definition);
+  setComponentTemplate(templateFactory, definition);
+  return definition;
 }
 
 export default function (hooks) {
@@ -48,25 +76,7 @@ function setupComponentTest() {
   });
 
   this._hasRendered = false;
-  let OutletView = module.owner.factoryFor('view:-outlet');
-  let outletTemplateFactory = module.owner.lookup('template:-outlet');
-  let environment = module.owner.lookup('-environment:main');
-  module.component = OutletView.create({ environment, template: outletTemplateFactory });
-  this._outletState = {
-    render: {
-      owner: module.owner || undefined,
-      name: 'application',
-      controller: module,
-      model: undefined,
-      template: outletTemplateFactory(module.owner),
-    },
-
-    outlets: {},
-  };
-
-  this.run(function () {
-    module.component.setOutletState(module._outletState);
-  });
+  this.component = null;
 
   module.render = render;
   module.serializeElement = serializeElement;
@@ -80,25 +90,16 @@ function setupComponentTest() {
 function render(_template) {
   let module = this;
   let templateFactory = this.compile(_template);
-
-  let stateToRender = {
-    owner: this.owner,
-    name: 'index',
-    controller: this,
-    model: undefined,
-    template: templateFactory(this.owner),
-  };
-
-  stateToRender.name = 'index';
-  this._outletState.outlets.main = { render: stateToRender, outlets: {} };
-
-  this.run(function () {
-    module.component.setOutletState(module._outletState);
-  });
+  let definition = contextComponentFor(templateFactory, module);
 
   if (!this._hasRendered) {
     this.run(function () {
-      module.component.appendTo(module.element);
+      module.component = renderComponent(definition, {
+        into: module.element,
+        owner: module.owner,
+        env: { document: module.element, isInteractive: false },
+        appendIntoTarget: true,
+      });
     });
     this._hasRendered = true;
   }

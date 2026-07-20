@@ -295,7 +295,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   private _names: unknown;
 
   _router!: EmberRouter;
-  declare _topLevelViewTemplate: any;
 
   constructor(owner?: Owner) {
     super(owner);
@@ -305,7 +304,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
       let bucketCache = owner.lookup(P`-bucket-cache:main`);
       this._router = router as EmberRouter;
       this._bucketCache = bucketCache as BucketCache;
-      this._topLevelViewTemplate = owner.lookup('template:-outlet');
     }
   }
 

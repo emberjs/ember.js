@@ -18,14 +18,20 @@ import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { NULL_REFERENCE } from '@glimmer/reference/lib/reference';
 import { precompileTemplate } from '@ember/template-compilation';
+import { outletHelper } from './outlet';
 
 // Renders the invokable passed in as `@Component` and forwards
 // `@model` / `@controller` onto it.
 const CLASSIC_WRAPPER_TEMPLATE = precompileTemplate(
-  `<@Component @model={{@context}} @controller={{@bucket.controller}} />`,
+  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{(outlet)}}/>`,
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/classic/wrapper.hbs',
     strictMode: true,
+    scope() {
+      return {
+        outlet: outletHelper,
+      };
+    },
   }
 );
 
@@ -35,8 +41,6 @@ class ClassicRouteWrapperManager
     WithCustomDebugRenderTree<null, ClassicRouteWrapperDefinition>
 {
   getCapabilities(): InternalComponentCapabilities {
-    // Match templateOnlyComponent's capabilities: no element, no args capture,
-    // no instance state.
     return {
       dynamicLayout: false,
       dynamicTag: false,
@@ -45,7 +49,7 @@ class ClassicRouteWrapperManager
       attributeHook: false,
       elementHook: false,
       createCaller: false,
-      dynamicScope: false,
+      dynamicScope: true,
       updateHook: false,
       createInstance: false,
       wrapped: false,

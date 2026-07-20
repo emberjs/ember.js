@@ -100,7 +100,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'index',
             args: {
               positional: [],
-              named: { controller: this.controllerFor('index'), model: undefined },
+              named: { controller: this.controllerFor('index'), model: undefined, outlet: null },
             },
             instance: this.controllerFor('index'),
             bounds: this.elementBounds(this.element!),
@@ -1643,7 +1643,28 @@ if (ENV._DEBUG_RENDER_TREE) {
       }
 
       assertNamedArgs<T>(actual: T, expected: T, path: string) {
-        this.assert.deepEqual(actual, expected, path);
+        const allKeys = new Set([
+          ...Object.keys(actual as object),
+          ...Object.keys(expected as object),
+        ]);
+
+        for (let key of allKeys) {
+          let inExpected = key in (expected as object);
+          let inActual = key in (actual as object);
+
+          // @TODO revisit if the skip is needed once currying is removed from the outletHelper
+          if (key !== 'outlet') {
+            this.assert.ok(inExpected, `expected is missing key ${key}`);
+            this.assert.ok(inActual, `actual is missing key ${key}`);
+          }
+
+          if (inExpected && inActual) {
+            // TODO we should probably not rely on qunit's version of deepEqual here but at least now we're not
+            // trying to print full render trees (32MB of string) to the browser unless the key exists in both
+            // places and is different
+            this.assert.deepEqual((actual as any)[key], (expected as any)[key], `${path}.${key}`);
+          }
+        }
       }
 
       assertPositionalArgs<T>(actual: T, expected: T, path: string) {

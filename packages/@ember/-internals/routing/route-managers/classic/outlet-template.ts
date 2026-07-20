@@ -1,8 +1,8 @@
 import { precompileTemplate } from '@ember/template-compilation';
-import { outletHelper } from '../syntax/outlet';
+import { outletHelper } from './outlet';
 
 export default precompileTemplate(`{{component (outletHelper)}}`, {
-  moduleName: 'packages/@ember/-internals/glimmer/lib/templates/outlet.hbs',
+  moduleName: 'packages/@ember/-internals/routing/route-managers/classic/outlet-template.hbs',
   strictMode: true,
   scope() {
     return { outletHelper };

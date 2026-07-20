@@ -26,14 +26,14 @@ BaseApp.instanceInitializer({
 });
 
 const App1 = BaseApp.create({
-  rootElement: '#app-one',
+  rootElement: document.querySelector('#app-one')!,
   customEvents: {
     paste: 'paste',
   },
 });
 
 const App2 = BaseApp.create({
-  rootElement: '#app-two',
+  rootElement: document.querySelector('#app-two')!,
   customEvents: {
     mouseenter: null,
     mouseleave: null,

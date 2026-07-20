@@ -7,9 +7,7 @@ import LinkTo from './components/link-to';
 import Textarea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
 import { Renderer } from './renderer';
-import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
-import OutletView from './views/outlet';
 
 export function setupApplicationRegistry(registry: Registry): void {
   // because we are using injections we can't use instantiate false
@@ -41,9 +39,6 @@ export function setupApplicationRegistry(registry: Registry): void {
 
 export function setupEngineRegistry(registry: Registry): void {
   registry.optionsForType('template', { instantiate: false });
-
-  registry.register('view:-outlet', OutletView);
-  registry.register('template:-outlet', OutletTemplate as any);
 
   registry.optionsForType('helper', { instantiate: false });
 

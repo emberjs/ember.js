@@ -91,7 +91,7 @@ todos.pushObject(todo);
 App.todosController.get('remaining');
 
 const NormalApp = Application.create({
-  rootElement: '#sidebar',
+  rootElement: document.querySelector('#sidebar')!,
 });
 
 class Person2 extends EmberObject {

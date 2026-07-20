@@ -3,7 +3,6 @@ import type { Nullable } from '@ember/-internals/utility-types';
 import { assert } from '@ember/debug';
 import type EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
-import { precompileTemplate } from '@ember/template-compilation';
 import type {
   CompilableProgram,
   ComponentDefinition,
@@ -11,6 +10,7 @@ import type {
   Destroyable,
   Environment,
   InternalComponentCapabilities,
+  TemplateFactory,
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
@@ -19,11 +19,10 @@ import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
-import { unwrapTemplate } from './unwrap-template';
+import { unwrapTemplate } from '../../../glimmer/lib/component-managers/unwrap-template';
 
-import type { DynamicScope } from '../renderer';
-import type { OutletState } from '../utils/outlet';
-import type OutletView from '../views/outlet';
+import type { DynamicScope } from '../../../glimmer/lib/renderer';
+import type { OutletState } from '../outlet-state';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   // "main" used to be the outlet name, keeping it around for compatibility
@@ -43,10 +42,9 @@ export interface OutletDefinitionState {
   name: string;
 
   /**
-   * What this outlet renders. The root `OutletView` provides the upgraded
-   * root template as `invokable`; per-outlet states built by the `{{outlet}}`
-   * helper carry the manager's `wrapper` (when present) plus `invokable` and
-   * `controller`, which the helper's stability check keys on.
+   * What this outlet renders. States built by the `{{outlet}}` helper carry
+   * the manager's `wrapper` (when present) plus `invokable` and `controller`,
+   * which the helper's stability check keys on.
    */
   controller?: unknown;
   wrapper?: object;
@@ -180,16 +178,6 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
-// The one outlet layout. `@Component` is always a value that already
-// carries everything it needs — the outlet helper curries the args (the
-// invokable/bucket/live context for wrapped renders, the live context for
-// wrapper-less ones) onto the render target before handing it over, and the
-// root outlet's invokable takes no args at all. Keeping the layout arg-less
-// also keeps stray named args out of the debug render tree.
-const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component />', {
-  strictMode: true,
-});
-
 export class OutletComponent implements ComponentDefinition<
   OutletDefinitionState,
   OutletInstanceState,
@@ -204,12 +192,9 @@ export class OutletComponent implements ComponentDefinition<
 
   constructor(
     owner: InternalOwner,
-    public state: OutletDefinitionState
+    public state: OutletDefinitionState,
+    template: TemplateFactory
   ) {
-    this.compilable = unwrapTemplate(OUTLET_COMPONENT_TEMPLATE(owner)).asLayout();
+    this.compilable = unwrapTemplate(template(owner)).asLayout();
   }
-}
-
-export function createRootOutlet(outletView: OutletView): OutletComponent {
-  return new OutletComponent(outletView.owner, outletView.state);
 }

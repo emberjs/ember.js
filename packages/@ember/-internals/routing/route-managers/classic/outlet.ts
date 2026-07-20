@@ -13,9 +13,17 @@ import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
 import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
 import { curry } from '@glimmer/runtime/lib/curried-value';
 import { dict } from '@glimmer/util/lib/collections';
-import { OutletComponent, type OutletDefinitionState } from '../component-managers/outlet';
-import { internalHelper } from '../helpers/internal-helper';
-import type { OutletState } from '../utils/outlet';
+import { precompileTemplate } from '@ember/template-compilation';
+import { OutletComponent, type OutletDefinitionState } from './outlet-manager';
+import { internalHelper } from '../../../glimmer/lib/helpers/internal-helper';
+import type { OutletState } from '../outlet-state';
+
+const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component @outlet={{(outlet)}} />', {
+  strictMode: true,
+  scope() {
+    return { outlet: outletHelper };
+  },
+});
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -58,6 +66,7 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
 
     let outletRef = createComputeRef(() => {
       let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
+
       return state?.outlets?.main;
     });
 
@@ -95,7 +104,7 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
       // `@context` is opaque to the outlet: the route manager builds it.
       let produceContext = outletState?.render?.produceContext;
       let context: Reference = produceContext
-        ? produceContext(outletRef, lastState, state)
+        ? produceContext(outletRef, lastState!, state)
         : createConstRef(undefined, '@context');
 
       if (DEBUG) {
@@ -106,11 +115,13 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
       assert('Expected outlet state to have an invokable to render', state.invokable !== undefined);
 
       // Args are delivered by currying them onto the render target — the
-      // outlet's layout is arg-less. Currying (rather than writing the args
-      // into the layout) keeps the target from showing up as an opaque
-      // `@Component` frame in the debug render tree and
+      // outlet's layout is otherwise arg-less. Currying (rather than writing
+      // the args into the layout) keeps the target from showing up as an
+      // opaque `@Component` frame in the debug render tree and
       // backtracking-assertion messages. Curried refs stay live, so the
       // `@context` compute ref keeps updating across renders of the mount.
+      // (`@outlet` — the child `{{outlet}}` — is supplied by the outlet layout
+      // itself; see `OUTLET_COMPONENT_TEMPLATE`.)
       let targetArgs = dict<Reference>();
       let target;
 
@@ -122,13 +133,9 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
         targetArgs['bucket'] = createConstRef(state.bucket, '@bucket');
         target = state.wrapper;
       } else {
-        // Wrapper-less render (a manager that opted out, or a legacy
-        // `setOutletState` caller): the invokable itself is the target and
-        // receives only the live `@context`. No `@bucket`: unlike the
-        // module-stable wrapper, the invokable is per-bucket and built by
-        // the manager, so anything bucket-shaped it needs the manager can
-        // attach itself — the live context ref is the one thing only the
-        // outlet can supply. (Legacy renders have no bucket at all.)
+        // Wrapper-less render (a manager that opted out of
+        // `getRouteWrapper`): the invokable itself is the target and receives
+        // only the live `@context` (plus the layout's `@outlet`).
         target = state.invokable;
       }
 
@@ -148,7 +155,7 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
 
       outlet = curry(
         0 as CurriedComponent,
-        new OutletComponent(owner, state),
+        new OutletComponent(owner, state, OUTLET_COMPONENT_TEMPLATE),
         outletOwner,
         createCapturedArgs(named, EMPTY_POSITIONAL),
         true
@@ -167,9 +174,7 @@ function stateFor(
   let render = outlet.render;
   if (render === undefined) return null;
 
-  // There is nothing to render until we have an invokable. This is either the
-  // manager-driven invokable or a route template that `OutletView` upgraded
-  // from a legacy raw `template`.
+  // There is nothing to render until the manager provides an invokable.
   if (render.invokable === undefined) return null;
 
   return {
@@ -199,7 +204,6 @@ function isStable(
     return state.wrapper === lastState.wrapper && state.invokable === lastState.invokable;
   }
 
-  // Legacy `setOutletState` callers have no wrapper; key on the upgraded
-  // invokable and controller.
+  // Wrapper-less renders key on the invokable and controller.
   return state.invokable === lastState.invokable && state.controller === lastState.controller;
 }

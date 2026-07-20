@@ -1,6 +1,6 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import type { Reference } from '@glimmer/interfaces';
-import type { OutletDefinitionState } from '../component-managers/outlet';
+import type { OutletDefinitionState } from './classic/outlet-manager';
 
 export interface RenderState {
   /**
@@ -52,13 +52,6 @@ export interface RenderState {
    * wrapper as `@bucket`.
    */
   bucket?: object;
-
-  /**
-   * Legacy template used by `setOutletState` callers (older test-helpers,
-   * liquid-fire-style addons). Usually a `Template`, but a pre-built
-   * component definition is also accepted (see `OutletView`).
-   */
-  template?: object;
 }
 
 export interface OutletState {

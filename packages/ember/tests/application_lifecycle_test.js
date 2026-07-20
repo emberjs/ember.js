@@ -101,9 +101,7 @@ moduleFor(
       return application;
     }
 
-    [`@test Destroying a route after the router does create an undestroyed 'toplevelView'`](
-      assert
-    ) {
+    [`@test Destroying a route after the router does not re-render the root outlet`](assert) {
       runTask(() => {
         this.createApplication();
         this.add('template:index', precompileTemplate(`Index!`));
@@ -114,13 +112,13 @@ moduleFor(
       let route = this.applicationInstance.lookup('route:index');
 
       runTask(() => router.destroy());
-      assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
+      assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
       runTask(() => route.destroy());
-      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+      assert.equal(router._updatableRootOutletState, null, 'the root outlet was not re-rendered');
 
       runTask(() => this.application.destroy());
-      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+      assert.equal(router._updatableRootOutletState, null, 'the root outlet was not re-rendered');
     }
 
     [`@test initializers can augment an applications customEvents hash`](assert) {
