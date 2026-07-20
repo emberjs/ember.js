@@ -106,7 +106,7 @@ class ApplicationInstance extends EngineInstance {
 
     let rootElement = options.rootElement ?? this.application.rootElement;
     if (typeof rootElement === 'string') {
-      this.rootElement = document.querySelector(rootElement);
+      this.rootElement = options.document ? options.document.querySelector(rootElement) : null;
     } else {
       this.rootElement = rootElement;
     }

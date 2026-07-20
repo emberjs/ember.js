@@ -252,7 +252,7 @@ class Application extends Engine {
     @default 'body'
     @public
   */
-  declare rootElement: SimpleElement | Element;
+  declare rootElement: SimpleElement | Element | string;
 
   /**
 
@@ -359,7 +359,7 @@ class Application extends Engine {
   init(properties: object | undefined) {
     super.init(properties);
 
-    this.rootElement ??= document.querySelector('body')!;
+    this.rootElement ??= 'body';
     this._document ??= null;
     this.eventDispatcher ??= null;
     this.customEvents ??= null;
