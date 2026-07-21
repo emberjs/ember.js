@@ -3,7 +3,7 @@
   "packages": [
     {
       "name": "@ember/app-blueprint",
-      "version": "6.11.1",
+      "version": "7.1.1",
       "blueprints": [
         {
           "name": "@ember/app-blueprint",
@@ -11,7 +11,6 @@
           "options": [
             "--no-welcome",
             "--ci-provider=github",
-            "--no-ember-data",
             "--no-warp-drive"
           ]
         }
