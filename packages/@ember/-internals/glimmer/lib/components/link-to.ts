@@ -6,13 +6,12 @@ import { assert, debugFreeze, warn } from '@ember/debug';
 import { getEngineParent } from '@ember/engine/parent';
 import type EngineInstance from '@ember/engine/instance';
 import { flaggedInstrument } from '@ember/instrumentation';
-import { action } from '@ember/object';
+import { action } from '@ember/object/-action';
 import { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import type { Maybe } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { consumeTag, createCache, getValue, untrack } from '@glimmer/validator/lib/tracking';
-import { tagFor } from '@glimmer/validator/lib/meta';
+import { createCache, getValue, untrack } from '@glimmer/validator/lib/tracking';
 import type { Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
 import InternalComponent, { type OpaqueInternalComponentConstructor, opaquify } from './internal';
@@ -346,9 +345,12 @@ class _LinkTo extends InternalComponent {
 
     assert('[BUG] route can only be missing if isLoading is true', isPresent(route));
 
-    // consume the current router state so we invalidate when QP changes
+    // Read (and thereby consume, for invalidation) the current router state
+    // so the href recomputes when it changes, including query-param-only
+    // transitions. `currentState` is a native getter over the router's
+    // tracked state, so a plain read is what entangles it.
     // TODO: can we narrow this down to QP changes only?
-    consumeTag(tagFor(routing, 'currentState'));
+    void routing.currentState;
 
     if (DEBUG) {
       try {
@@ -437,7 +439,9 @@ class _LinkTo extends InternalComponent {
 
   // GH #17963
   private currentRouteCache = createCache<Maybe<string>>(() => {
-    consumeTag(tagFor(this.routing, 'currentState'));
+    // reading `currentState` (a native getter over the router's tracked
+    // state) is what entangles the current router state
+    void this.routing.currentState;
     return untrack(() => this.routing.currentRouteName);
   });
 

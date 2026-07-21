@@ -24,8 +24,8 @@ import { normalizeProperty } from '@glimmer/runtime/lib/dom/props';
 import type { DirtyableTag } from '@glimmer/interfaces';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import type { SimpleElement } from '@simple-dom/interface';
+import { BOUNDS } from './utils/bounds';
 import {
-  BOUNDS,
   CURLY_COMPONENT_MANAGER,
   DIRTY_TAG,
   IS_DISPATCHING_ATTRS,

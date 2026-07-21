@@ -1,6 +1,6 @@
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { getOwner } from '@ember/-internals/owner';
-import type { ControllerQueryParam, ControllerQueryParamType } from '@ember/controller';
+import type { ControllerQueryParam, ControllerQueryParamType } from '@ember/controller/-base';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import type { InternalRouteInfo } from 'router_js';

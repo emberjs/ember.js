@@ -32,6 +32,7 @@
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/owner": "workspace:*",
+    "@glimmer/tracking": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/validator": "workspace:*",
     "backburner.js": "^2.7.0",

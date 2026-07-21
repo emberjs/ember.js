@@ -1,4 +1,5 @@
 import type { InternalOwner } from '@ember/-internals/owner';
+import { set } from '@ember/-internals/metal/lib/property_set';
 import { generateControllerFactory } from '@ember/routing/lib/generate_controller';
 import { assert } from '@ember/debug';
 import type EngineInstance from '@ember/engine/instance';
@@ -161,7 +162,7 @@ class MountManager
     let { controller, modelRef } = bucket;
 
     if (modelRef !== undefined) {
-      controller.set('model', valueForRef(modelRef));
+      set(controller, 'model', valueForRef(modelRef));
     }
   }
 }

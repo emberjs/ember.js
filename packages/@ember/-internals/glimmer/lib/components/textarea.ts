@@ -2,7 +2,7 @@
 @module @ember/component
 */
 import { type Opaque } from '@ember/-internals/utility-types';
-import { action } from '@ember/object';
+import { action } from '@ember/object/-action';
 import TextareaTemplate from '../templates/textarea';
 import AbstractInput from './abstract-input';
 import { type OpaqueInternalComponentConstructor, opaquify } from './internal';

@@ -29,7 +29,9 @@ for (let variant of variants) {
 }
 
 module.exports = {
-  test_page: `index.html/?${queryString}`,
+  // MODERN=1 pairs with the vite MODERN mode (see vite.config.mjs), which
+  // builds the curated modern-variant suite from index-modern.html
+  test_page: `${process.env.MODERN ? 'index-modern.html' : 'index.html'}/?${queryString}`,
   cwd: 'dist',
   timeout: 540,
   parallel: 1,

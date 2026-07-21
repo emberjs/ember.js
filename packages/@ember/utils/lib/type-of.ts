@@ -1,4 +1,4 @@
-import CoreObject from '@ember/object/core';
+import { isClassicClass, isClassicInstance } from '@ember/utils/lib/classic-detect';
 
 export type TypeName =
   | 'undefined'
@@ -108,13 +108,13 @@ export default function typeOf(item: unknown): TypeName {
   let ret = TYPE_MAP[toString.call(item)] || 'object';
 
   if (ret === 'function') {
-    if (CoreObject.detect(item)) {
+    if (isClassicClass(item)) {
       ret = 'class';
     }
   } else if (ret === 'object') {
     if (item instanceof Error) {
       ret = 'error';
-    } else if (item instanceof CoreObject) {
+    } else if (isClassicInstance(item)) {
       ret = 'instance';
     } else if (item instanceof Date) {
       ret = 'date';

@@ -32,3 +32,4 @@ export {
   teardownMandatorySetter,
   setWithMandatorySetter,
 } from './lib/mandatory-setter';
+export { EventedEmitter } from './lib/evented-emitter';
