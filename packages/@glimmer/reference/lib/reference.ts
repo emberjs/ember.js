@@ -46,10 +46,19 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
   public update: Nullable<(val: T) => void> = null;
 
   public debugLabel?: string;
+  public debugName?: string;
 
   constructor(type: ReferenceType) {
     this[REFERENCE] = type;
   }
+}
+
+/**
+ * Debug-only introspection used by the debug render tree: the revision of
+ * the reference's most recently computed value.
+ */
+export function lastRevisionForRef(ref: Reference): Revision {
+  return (ref as ReferenceImpl).lastRevision;
 }
 
 export function createPrimitiveRef<T extends string | symbol | number | boolean | null | undefined>(
@@ -80,6 +89,9 @@ export function createConstRef<T>(value: T, debugLabel: false | string): Referen
 
   if (DEBUG) {
     ref.debugLabel = debugLabel as string;
+    if (debugLabel) {
+      ref.debugName = debugLabel;
+    }
   }
 
   return ref;
@@ -110,6 +122,9 @@ export function createComputeRef<T = unknown>(
 
   if (DEBUG) {
     ref.debugLabel = `(result of a \`${debugLabel}\` helper)`;
+    if (debugLabel) {
+      ref.debugName = debugLabel;
+    }
   }
 
   return ref;
