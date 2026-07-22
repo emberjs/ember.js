@@ -4,7 +4,7 @@ import {
   hasListeners,
   sendEvent,
 } from '@ember/-internals/metal/lib/events';
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 
 export { on } from '@ember/-internals/metal/lib/events';
 
@@ -149,7 +149,7 @@ interface Evented {
    */
   has(name: string): boolean;
 }
-const Evented = Mixin.create({
+const Evented = createMixin({
   on(name: string, target: object, method?: string | Function) {
     addListener(this, name, target, method);
     return this;

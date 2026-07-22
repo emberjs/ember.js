@@ -14,7 +14,8 @@ import { activateObserver } from '@ember/-internals/metal/lib/observer';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
-import Mixin, { applyMixin } from '@ember/object/mixin';
+import Mixin, { applyMixin, createMixin } from '@ember/object/mixin';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
@@ -711,10 +712,12 @@ class CoreObject {
     this: Statics & EmberClassConstructor<Instance>,
     ...mixins: M
   ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
-  static extend(...mixins: any[]) {
-    let Class = class extends this {};
-    reopen.apply(Class.PrototypeMixin, mixins);
-    return Class;
+  static extend(this: typeof CoreObject, ...mixins: any[]) {
+    deprecateUntil(
+      'The classic class definition API `.extend()` is deprecated. Convert to a native class, for example with the ember-native-class-codemod.',
+      DEPRECATIONS.DEPRECATE_EMBER_OBJECT_EXTEND
+    );
+    return internalExtend(this, ...mixins);
   }
 
   /**
@@ -837,9 +840,23 @@ class CoreObject {
     @public
   */
   static reopen<C extends typeof CoreObject>(this: C, ...args: any[]): C {
-    this.willReopen();
-    reopen.apply(this.PrototypeMixin, args);
-    return this;
+    deprecateUntil(
+      'The classic class API `.reopen()` is deprecated. Define the properties and methods on a native class (or a subclass) instead.',
+      DEPRECATIONS.DEPRECATE_EMBER_OBJECT_REOPEN
+    );
+    return internalReopen(this, ...args);
+  }
+
+  /**
+    Non-deprecating equivalent of `reopen` for ember-source's own framework
+    definitions. A static (rather than the module-level `internalReopen`) so
+    rollup can scope the call's side effect to the class and keep the calling
+    module tree-shakable.
+
+    @internal
+  */
+  static reopenInternal<C extends typeof CoreObject>(this: C, ...args: any[]): C {
+    return internalReopen(this, ...args);
   }
 
   static willReopen() {
@@ -851,7 +868,7 @@ class CoreObject {
       // make sure that it gets properly applied. Reusing the same mixin after
       // the first `proto` call will cause it to get skipped.
       if (prototypeMixinMap.has(this)) {
-        prototypeMixinMap.set(this, Mixin.create(this.PrototypeMixin));
+        prototypeMixinMap.set(this, createMixin(this.PrototypeMixin));
       }
     }
   }
@@ -921,8 +938,26 @@ class CoreObject {
     this: C,
     ...mixins: Array<Mixin | Record<string, unknown>>
   ): C {
-    applyMixin(this, mixins);
-    return this;
+    deprecateUntil(
+      'The classic class API `.reopenClass()` is deprecated. Define static properties and methods on a native class (or a subclass) instead.',
+      DEPRECATIONS.DEPRECATE_EMBER_OBJECT_REOPEN
+    );
+    return internalReopenClass(this, ...mixins);
+  }
+
+  /**
+    Non-deprecating equivalent of `reopenClass` for ember-source's own
+    framework definitions. A static (rather than the module-level
+    `internalReopenClass`) so rollup can scope the call's side effect to the
+    class and keep the calling module tree-shakable.
+
+    @internal
+  */
+  static reopenClassInternal<C extends typeof CoreObject>(
+    this: C,
+    ...mixins: Array<Mixin | Record<string, unknown>>
+  ): C {
+    return internalReopenClass(this, ...mixins);
   }
 
   static detect(obj: unknown) {
@@ -1010,7 +1045,7 @@ class CoreObject {
   static get PrototypeMixin() {
     let prototypeMixin = prototypeMixinMap.get(this);
     if (prototypeMixin === undefined) {
-      prototypeMixin = Mixin.create();
+      prototypeMixin = createMixin();
       prototypeMixin.ownerConstructor = this;
       prototypeMixinMap.set(this, prototypeMixin);
     }
@@ -1127,6 +1162,50 @@ if (DEBUG) {
 
     return injections;
   };
+}
+
+/**
+  Non-deprecating equivalent of `CoreObject.extend` for ember-source's own
+  framework class definitions. External code must use the public static.
+
+  @internal
+*/
+export function internalExtend<Statics, Instance, M extends Array<unknown>>(
+  Base: Statics & EmberClassConstructor<Instance>,
+  ...mixins: M
+): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
+export function internalExtend(Base: any, ...mixins: any[]) {
+  let Class = class extends Base {};
+  reopen.apply((Class as unknown as typeof CoreObject).PrototypeMixin, mixins);
+  return Class;
+}
+
+/**
+  Non-deprecating equivalent of the static `reopen` for ember-source's own
+  framework definitions. Unlike bare `Class.PrototypeMixin.reopen(...)`, this
+  keeps the `willReopen` cache invalidation, so it is safe after first
+  instantiation.
+
+  @internal
+*/
+export function internalReopen<C extends typeof CoreObject>(Class: C, ...args: any[]): C {
+  Class.willReopen();
+  reopen.apply(Class.PrototypeMixin, args);
+  return Class;
+}
+
+/**
+  Non-deprecating equivalent of the static `reopenClass` for ember-source's
+  own framework definitions.
+
+  @internal
+*/
+export function internalReopenClass<C extends typeof CoreObject>(
+  Class: C,
+  ...mixins: Array<Mixin | Record<string, unknown>>
+): C {
+  applyMixin(Class, mixins);
+  return Class;
 }
 
 export default CoreObject;

@@ -4,6 +4,7 @@
 
 import { FrameworkObject } from '@ember/object/-internals';
 import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 /**
   `ObjectProxy` forwards all properties not defined by the proxy itself
@@ -119,8 +120,27 @@ interface ObjectProxy<Content = unknown> extends _ProxyMixin<Content> {
   setProperties<T extends Record<string, unknown>>(hash: T): T;
 }
 
+// Dedupe: the deprecation fires once per ObjectProxy subclass, not once per
+// instance — proxies can be created in volume.
+const deprecatedClasses = new WeakSet();
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-class ObjectProxy<Content = unknown> extends FrameworkObject {}
+class ObjectProxy<Content = unknown> extends FrameworkObject {
+  init(properties: object | undefined) {
+    super.init(properties);
+
+    // The isEnabled gate keeps the dedupe set empty while the deprecation is
+    // disabled, so enabling it later (e.g. per test module) still warns for
+    // classes instantiated before that point.
+    if (DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled && !deprecatedClasses.has(this.constructor)) {
+      deprecatedClasses.add(this.constructor);
+      deprecateUntil(
+        'ObjectProxy is deprecated. Access the underlying object directly, or expose derived state with native getters.',
+        DEPRECATIONS.DEPRECATE_OBJECT_PROXY
+      );
+    }
+  }
+}
 ObjectProxy.PrototypeMixin.reopen(_ProxyMixin);
 
 export default ObjectProxy;

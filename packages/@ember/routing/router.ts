@@ -27,7 +27,8 @@ import type {
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { internalExtend } from '@ember/object/core';
+import { internalA as emberA } from '@ember/array';
 import typeOf from '@ember/utils/lib/type-of';
 import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
@@ -142,7 +143,7 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter extends EmberObject.extend(Evented) implements Evented {
+class EmberRouter extends internalExtend(EmberObject, Evented) implements Evented {
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.
@@ -254,7 +255,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
       // FIXME: Can we remove this?
-      this.reopenClass({ dslCallbacks: this.dslCallbacks });
+      this.reopenClassInternal({ dslCallbacks: this.dslCallbacks });
     }
 
     this.dslCallbacks.push(callback);
@@ -1814,7 +1815,7 @@ function forEachQueryParam(
   }
 }
 
-EmberRouter.reopen({
+EmberRouter.reopenInternal({
   didTransition: defaultDidTransition,
   willTransition: defaultWillTransition,
   rootURL: '/',

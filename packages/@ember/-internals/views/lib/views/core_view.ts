@@ -2,6 +2,7 @@ import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
 import inject from '@ember/-internals/metal/lib/injected_property';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import Evented from '@ember/object/evented';
+import { internalExtend } from '@ember/object/core';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
 import states from './states';
@@ -24,7 +25,7 @@ import states from './states';
 */
 
 interface CoreView extends Evented, ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
+class CoreView extends internalExtend(FrameworkObject, Evented, ActionHandler) {
   isView = true;
 
   declare _states: typeof states;

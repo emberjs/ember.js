@@ -10,8 +10,9 @@ import {
 } from '@ember/-internals/metal/lib/property_events';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 import { assert } from '@ember/debug';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import Enumerable from '@ember/enumerable';
 import MutableEnumerable from '@ember/enumerable/mutable';
 import compare from '@ember/utils/lib/compare';
@@ -1139,7 +1140,7 @@ interface EmberArray<T> extends Enumerable {
   */
   without(value: T): NativeArray<T>;
 }
-const EmberArray = Mixin.create(Enumerable, {
+const EmberArray = createMixin(Enumerable, {
   init() {
     this._super(...arguments);
     setEmberArray(this);
@@ -1687,7 +1688,7 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   */
   addObjects(objects: T[]): this;
 }
-const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
+const MutableArray = createMixin(EmberArray, MutableEnumerable, {
   clear() {
     let len = this.length;
     if (len === 0) {
@@ -2023,7 +2024,7 @@ interface MutableArrayWithoutNative<T> extends Omit<
 */
 interface NativeArray<T> extends Array<T>, Observable, MutableArrayWithoutNative<T> {}
 
-let NativeArray = Mixin.create(MutableArray, Observable, {
+let NativeArray = createMixin(MutableArray, Observable, {
   objectAt(idx: number) {
     return this[idx];
   },
@@ -2049,14 +2050,13 @@ NativeArray.keys().forEach((methodName) => {
 
 NativeArray = NativeArray.without(...ignore);
 
-let A: <T>(arr?: Array<T>) => NativeArray<T>;
+/**
+  Non-deprecating equivalent of `A()` for ember-source's own internals.
+  External code must use `A()`.
 
-A = function <T>(this: unknown, arr?: Array<T>) {
-  assert(
-    'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
-    !(this instanceof A)
-  );
-
+  @internal
+*/
+export function internalA<T>(arr?: Array<T>): NativeArray<T> {
   if (isEmberArray(arr)) {
     // SAFETY: If it's a true native array and it is also an EmberArray then it should be an Ember NativeArray
     return arr as unknown as NativeArray<T>;
@@ -2064,6 +2064,21 @@ A = function <T>(this: unknown, arr?: Array<T>) {
     // SAFETY: This will return an NativeArray but TS can't infer that.
     return NativeArray.apply(arr ?? []) as NativeArray<T>;
   }
+}
+
+let A: <T>(arr?: Array<T>) => NativeArray<T>;
+
+A = function <T>(this: unknown, arr?: Array<T>) {
+  assert(
+    'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
+    !(this instanceof A)
+  );
+  deprecateUntil(
+    'Ember Arrays are deprecated. Use native arrays (replacing them on change), or tracked collections from tracked-built-ins.',
+    DEPRECATIONS.DEPRECATE_EMBER_ARRAY
+  );
+
+  return internalA(arr);
 };
 
 export { A, NativeArray, MutableArray };

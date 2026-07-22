@@ -7,10 +7,15 @@ module.exports = function (environment) {
     rootURL: '/',
     locationType: 'history',
     EmberENV: {
-              /* The following enables the infrastructure allow us to test as if deprecations
+      /* The following enables the infrastructure allow us to test as if deprecations
           have been turned into errors at a specific version.
         */
-        _OVERRIDE_DEPRECATION_VERSION: process.env.OVERRIDE_DEPRECATION_VERSION,
+      _OVERRIDE_DEPRECATION_VERSION: process.env.OVERRIDE_DEPRECATION_VERSION,
+      // Deprecation ids to shield from the removal simulation (and blanket
+      // enablement) — comma-separated, mirroring the main test harness.
+      DEPRECATION_STAGES: process.env.EXCEPT_DEPRECATIONS
+        ? { except: process.env.EXCEPT_DEPRECATIONS.split(',') }
+        : undefined,
       EXTEND_PROTOTYPES: false,
       FEATURES: {
         // Here you can enable experimental features on an ember canary build

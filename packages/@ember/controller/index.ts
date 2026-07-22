@@ -2,12 +2,13 @@ import { getOwner } from '@ember/-internals/owner'; // This is imported from -in
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { FrameworkObject } from '@ember/object/-internals';
+import { internalExtend } from '@ember/object/core';
 import metalInject from '@ember/-internals/metal/lib/injected_property';
 import type {
   DecoratorPropertyDescriptor,
   ElementDescriptor,
 } from '@ember/-internals/metal/lib/decorator';
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 import type { RouteArgs } from '@ember/routing/-internals';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import type { Transition } from 'router_js';
@@ -233,7 +234,7 @@ interface ControllerMixin<T> extends ActionHandler {
   */
   replaceRoute(...args: RouteArgs): Transition;
 }
-const ControllerMixin = Mixin.create(ActionHandler, {
+const ControllerMixin = createMixin(ActionHandler, {
   /* ducktype as a controller */
   isController: true,
 
@@ -315,7 +316,7 @@ const ControllerMixin = Mixin.create(ActionHandler, {
   @public
 */
 interface Controller<_T = unknown> extends FrameworkObject, ControllerMixin<_T> {}
-class Controller<_T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
+class Controller<_T = unknown> extends internalExtend(FrameworkObject, ControllerMixin) {}
 
 /**
   Creates a property that lazily looks up another controller in the container.

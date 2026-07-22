@@ -99,15 +99,29 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # The classic object model deprecations are excluded from the
+          # blanket rows: ember's own test suite (and internal-test-helpers)
+          # still exercises those APIs pervasively. They get targeted
+          # coverage in packages/@ember/object/tests instead.
           - name: "All deprecations enabled"
-            ALL_DEPRECATIONS_ENABLED: "true"
+            ENABLED_DEPRECATIONS: "true"
+            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array,deprecate-object-proxy,deprecate-array-proxy"
           - name: "All deprecations enabled, with optional features"
-            ALL_DEPRECATIONS_ENABLED: "true"
+            ENABLED_DEPRECATIONS: "true"
+            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array,deprecate-object-proxy,deprecate-array-proxy"
             ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Deprecation compliance declared"
+            DEPRECATION_COMPLIANCE: "7.2.0"
+            RAISE_ON_DEPRECATION: "false"
+          # The classic ids are excepted here too: except also shields an id
+          # from the OVERRIDE_DEPRECATION_VERSION removal simulation, and the
+          # suite exercises the classic APIs pervasively.
           - name: "Deprecations as errors"
             OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array,deprecate-object-proxy,deprecate-array-proxy"
           - name: "Deprecations as errors, with optional features"
             OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+            EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array,deprecate-object-proxy,deprecate-array-proxy"
             ENABLE_OPTIONAL_FEATURES: "true"
           - name: "Production build"
             BUILD: "production"
@@ -126,7 +140,9 @@ jobs:
           NODE_ENV: ${{ matrix.BUILD || 'development' }}
       - name: test
         env:
-          ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
+          ENABLED_DEPRECATIONS: ${{ matrix.ENABLED_DEPRECATIONS }}
+          EXCEPT_DEPRECATIONS: ${{ matrix.EXCEPT_DEPRECATIONS }}
+          DEPRECATION_COMPLIANCE: ${{ matrix.DEPRECATION_COMPLIANCE }}
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
           RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
@@ -204,10 +220,34 @@ jobs:
       - name: test
         env:
           OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+          # The classic ids are shielded from the removal simulation: the
+          # app-testing ecosystem (@ember/test-helpers, ember-qunit) still
+          # uses the classic APIs.
+          EXCEPT_DEPRECATIONS: "deprecate-ember-object-extend,deprecate-ember-object-reopen,deprecate-ember-mixins,deprecate-computed-properties,deprecate-observers,deprecate-ember-array,deprecate-object-proxy,deprecate-array-proxy"
           MATRIX_COMMAND: ${{ matrix.command }}
         working-directory: smoke-tests/scenarios
         run: |
           ${MATRIX_COMMAND}
+
+  deprecation-shaken-dist:
+    name: Deprecation-shaken dist
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: build (standard + shaken variant)
+        env:
+          EMBER_DEPRECATION_FLAGS: "all=false"
+        run: pnpm build:js
+      - name: assert shaken dist is clean and standard dist stays live
+        env:
+          EMBER_DEPRECATION_FLAGS: "all=false"
+        run: node bin/assert-deprecations-shaken.mjs
+      - name: dist size report
+        run: du -sh dist/dev dist/prod dist/deprecation-custom/dev dist/deprecation-custom/prod
 
   node-test:
     name: Node.js Tests

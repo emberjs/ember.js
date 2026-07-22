@@ -7,7 +7,7 @@ import type { RegistryProxy } from '@ember/-internals/owner';
 import type { AnyFn } from '@ember/-internals/utility-types';
 
 import { assert } from '@ember/debug';
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
@@ -21,7 +21,7 @@ interface RegistryProxyMixin extends RegistryProxy {
   /** @internal */
   __registry__: Registry;
 }
-const RegistryProxyMixin = Mixin.create({
+const RegistryProxyMixin = createMixin({
   __registry__: null,
 
   resolveRegistration(fullName: string) {
