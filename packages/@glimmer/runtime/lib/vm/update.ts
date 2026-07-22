@@ -18,13 +18,13 @@ import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib
 import type { Reference } from '@glimmer/reference/lib/reference';
 import type { Revision, Tag } from '@glimmer/interfaces';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
-import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
+import { associateDestroyableChild, destroy, destroyChildren, isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { tagOfRef, updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
 import { debug } from '@glimmer/validator/lib/debug';
 import { beginTrackFrame, consumeTag, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
-import { INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import { CONSTANT_TAG, INITIAL, markUnsubscribedDirt, subscribeToTag, unsubscribeFromTags, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
@@ -132,6 +132,49 @@ export class UpdatingVM implements IUpdatingVM {
 
 const EMPTY_OPS: UpdatingOpcode[] = [];
 
+/**
+ * SPIKE push-invalidation: opcodes queued directly by tag dirtying.
+ * The render flush drains this instead of walking the whole tree,
+ * falling back to a full walk when unsubscribed dirt was seen.
+ */
+const queuedBlocks = new Set<ListBlockOpcode>();
+const queuedItems = new Set<ListItemOpcode>();
+
+export function hasQueuedInvalidations(): boolean {
+  return queuedBlocks.size > 0 || queuedItems.size > 0;
+}
+
+const NOOP_HANDLER: ExceptionHandler = {
+  handleException() {},
+};
+
+export function drainInvalidationQueue(env: Environment): void {
+  // blocks first: membership syncs may destroy queued items
+  while (queuedBlocks.size > 0 || queuedItems.size > 0) {
+    if (queuedBlocks.size > 0) {
+      const blocks = [...queuedBlocks];
+
+      queuedBlocks.clear();
+
+      for (const block of blocks) {
+        if (isDestroyed(block) || isDestroying(block)) continue;
+
+        block.pushEvaluate(env);
+      }
+    } else {
+      const items = [...queuedItems];
+
+      queuedItems.clear();
+
+      for (const item of items) {
+        if (isDestroyed(item) || isDestroying(item)) continue;
+
+        new UpdatingVM(env, {}).execute([item], item);
+      }
+    }
+  }
+}
+
 export interface VMState {
   readonly pc: number;
   readonly scope: Scope;
@@ -214,7 +257,11 @@ export class ListItemOpcode extends TryOpcode {
    */
   private subtreeTag: Nullable<Tag> = null;
   private subtreeRevision: Revision = INITIAL;
-  private isTrivial: boolean | null = null;
+  /** SPIKE push-invalidation */
+  private subscribedLeaves: Nullable<Tag[]> = null;
+  private enqueue = () => {
+    queuedItems.add(this);
+  };
 
   constructor(
     state: Closure,
@@ -225,20 +272,20 @@ export class ListItemOpcode extends TryOpcode {
     public value: Reference
   ) {
     super(state, context, bounds, []);
+
+    registerDestructor(this, () => {
+      if (this.subscribedLeaves !== null) {
+        unsubscribeFromTags(this.subscribedLeaves, this.enqueue);
+        this.subscribedLeaves = null;
+      }
+      queuedItems.delete(this);
+    });
   }
 
   override evaluate(vm: UpdatingVM) {
-    // Trivial items (a text node or two) can't win: validating their
-    // combined tag costs as much as just updating them, so collection
-    // would be pure overhead. Skipping only pays off for items with a
-    // real subtree -- more than a couple of opcodes, or any nested
-    // block (a nested block child means an arbitrarily large subtree
-    // hides behind a small top-level count).
-    if (this.isTrivial ?? (this.isTrivial = computeIsTrivial(this.children))) {
-      vm.try(this.children, this);
-      return;
-    }
-
+    // SPIKE push-invalidation: every item collects and subscribes (the
+    // triviality gate is incompatible with push -- unsubscribed items
+    // would silently go stale).
     let { subtreeTag } = this;
 
     if (
@@ -262,14 +309,26 @@ export class ListItemOpcode extends TryOpcode {
       this.subtreeTag = tag;
       this.subtreeRevision = valueForTag(tag);
       consumeTag(tag);
+
+      // keep the push-invalidation subscription pointing at the leaves
+      // this subtree actually read
+      if (this.subscribedLeaves !== null) {
+        unsubscribeFromTags(this.subscribedLeaves, this.enqueue);
+      }
+      this.subscribedLeaves = subscribeToTag(tag, this.enqueue);
     });
   }
 
   override handleException() {
-    // children are about to be rebuilt; the collected tag and triviality
-    // no longer describe them
+    // children are about to be rebuilt; the collected tag and
+    // subscriptions no longer describe them
     this.subtreeTag = null;
-    this.isTrivial = null;
+
+    if (this.subscribedLeaves !== null) {
+      unsubscribeFromTags(this.subscribedLeaves, this.enqueue);
+      this.subscribedLeaves = null;
+    }
+
     super.handleException();
   }
 
@@ -282,16 +341,6 @@ export class ListItemOpcode extends TryOpcode {
   }
 }
 
-function computeIsTrivial(children: UpdatingOpcode[]): boolean {
-  if (children.length > 2) return false;
-
-  for (const child of children) {
-    if (child instanceof BlockOpcode) return false;
-  }
-
-  return true;
-}
-
 export class ListBlockOpcode extends BlockOpcode {
   public type = 'list-block';
   declare public children: ListItemOpcode[];
@@ -299,6 +348,12 @@ export class ListBlockOpcode extends BlockOpcode {
   private opcodeMap = new Map<unknown, ListItemOpcode>();
   private marker: SimpleComment | null = null;
   private lastIterator: OpaqueIterator;
+
+  /** SPIKE push-invalidation */
+  private subscribedLeaves: Nullable<Tag[]> = null;
+  private enqueueBlock = () => {
+    queuedBlocks.add(this);
+  };
 
   declare protected readonly bounds: AppendingBlockList;
 
@@ -311,6 +366,28 @@ export class ListBlockOpcode extends BlockOpcode {
   ) {
     super(state, context, bounds, children);
     this.lastIterator = valueForRef(iterableRef);
+    this.resubscribeTo(CONSTANT_TAG);
+
+    registerDestructor(this, () => {
+      if (this.subscribedLeaves !== null) {
+        unsubscribeFromTags(this.subscribedLeaves, this.enqueueBlock);
+        this.subscribedLeaves = null;
+      }
+      queuedBlocks.delete(this);
+    });
+  }
+
+  private resubscribeTo(syncTag: Tag) {
+    if (this.subscribedLeaves !== null) {
+      unsubscribeFromTags(this.subscribedLeaves, this.enqueueBlock);
+    }
+
+    let leaves = subscribeToTag(syncTag, this.enqueueBlock);
+    let refTag = tagOfRef(this.iterableRef);
+
+    if (refTag !== null) subscribeToTag(refTag, this.enqueueBlock, leaves);
+
+    this.subscribedLeaves = leaves;
   }
 
   initializeChild(opcode: ListItemOpcode) {
@@ -318,7 +395,71 @@ export class ListBlockOpcode extends BlockOpcode {
     this.opcodeMap.set(opcode.key, opcode);
   }
 
+  /**
+   * SPIKE push-invalidation: membership sync only -- children are NOT
+   * walked; changed items enqueue themselves via their own
+   * subscriptions and are processed by the drain. Falls back to a full
+   * walk (via the unsubscribed-dirt flag) when the list transitions
+   * between empty and non-empty, because the surrounding Enter/Assert
+   * opcodes this path skips are what rebuild that region.
+   */
+  pushEvaluate(env: Environment) {
+    let wasEmpty = this.children.length === 0;
+
+    beginTrackFrame();
+
+    try {
+      let iterator = valueForRef(this.iterableRef);
+
+      if (this.lastIterator !== iterator) {
+        if (wasEmpty !== iterator.isEmpty()) {
+          markUnsubscribedDirt();
+          return;
+        }
+
+        let buffered = this.tryFastSync(iterator);
+
+        if (buffered !== null) {
+          let { bounds } = this;
+          let dom = env.getDOM();
+
+          let marker = (this.marker = dom.createComment(''));
+          dom.insertAfter(
+            bounds.parentElement(),
+            marker,
+            expect(bounds.lastNode(), "can't insert after an empty bounds")
+          );
+
+          this.sync(new PrefixedIterator(buffered, iterator));
+
+          this.parentElement().removeChild(marker);
+          this.marker = null;
+        }
+
+        this.lastIterator = iterator;
+      }
+    } finally {
+      // iteration consumes collection cell tags lazily (e.g. a tracked
+      // array proxy read during next()), so the subscription must come
+      // from what the sync actually read, not just the iterable ref
+      this.resubscribeTo(endTrackFrame());
+    }
+  }
+
   override evaluate(vm: UpdatingVM) {
+    beginTrackFrame();
+
+    try {
+      this.evaluateSync(vm);
+    } finally {
+      this.resubscribeTo(endTrackFrame());
+    }
+
+    // Run now-updated updating opcodes
+    super.evaluate(vm);
+  }
+
+  private evaluateSync(vm: UpdatingVM) {
     let iterator = valueForRef(this.iterableRef);
 
     if (this.lastIterator !== iterator) {
@@ -348,9 +489,6 @@ export class ListBlockOpcode extends BlockOpcode {
 
       this.lastIterator = iterator;
     }
-
-    // Run now-updated updating opcodes
-    super.evaluate(vm);
   }
 
   /**

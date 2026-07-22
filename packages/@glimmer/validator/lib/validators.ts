@@ -76,6 +76,10 @@ export function validateTag(tag: Tag, snapshot: Revision): boolean {
 
 const TYPE: TagTypeSymbol = Symbol('TAG_TYPE') as TagTypeSymbol;
 
+// SPIKE push-invalidation (declared early: the module warm-up below
+// dirties tags during evaluation)
+let sawUnsubscribedDirt = false;
+
 // this is basically a const
 export let ALLOW_CYCLES: WeakMap<Tag, boolean> | undefined;
 
@@ -138,6 +142,9 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   private revision = INITIAL;
   private lastChecked = INITIAL;
   private lastValue = INITIAL;
+
+  /** SPIKE push-invalidation: callbacks to run when this tag dirties. */
+  subscribers: Set<() => void> | null = null;
 
   private isUpdating = false;
   public subtag: Tag | Tag[] | null = null;
@@ -252,6 +259,18 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
 
     (tag as MonomorphicTagImpl).revision = ++$REVISION;
 
+    // SPIKE push-invalidation: notify subscribers right here; dirt on
+    // an unsubscribed tag means the next flush cannot use the push
+    // path and must fall back to a full revalidation walk.
+    let subscribers = (tag as MonomorphicTagImpl).subscribers;
+
+    if (subscribers !== null && subscribers.size > 0) {
+      for (const callback of subscribers) callback();
+    } else {
+      sawUnsubscribedDirt = true;
+      (globalThis as any).__dirtHook?.();
+    }
+
     scheduleRevalidate();
   }
 }
@@ -326,3 +345,61 @@ UPDATE_TAG(tag1, tag3);
 valueForTag(tag1);
 DIRTY_TAG(tag3);
 valueForTag(tag1);
+
+//////////
+// SPIKE push-invalidation
+
+export function markUnsubscribedDirt(): void {
+  sawUnsubscribedDirt = true;
+}
+
+export function consumeUnsubscribedDirt(): boolean {
+  let saw = sawUnsubscribedDirt;
+  sawUnsubscribedDirt = false;
+  return saw;
+}
+
+/**
+ * Attach `callback` to every dirtyable leaf reachable from `tag`.
+ * Combinators are walked; constants are skipped. Returns the leaves so
+ * the caller can unsubscribe the same set later (a combined tag is an
+ * immutable snapshot, so the set is stable).
+ */
+export function subscribeToTag(tag: Tag, callback: () => void, leaves: Tag[] = []): Tag[] {
+  const impl = tag as MonomorphicTagImpl;
+
+  if (impl === (CONSTANT_TAG as unknown as MonomorphicTagImpl)) return leaves;
+
+  const type = impl[TYPE];
+
+  if (type === COMBINATOR_TAG_ID) {
+    const subtag = impl.subtag;
+
+    if (Array.isArray(subtag)) {
+      for (const sub of subtag as Tag[]) subscribeToTag(sub, callback, leaves);
+    } else if (subtag !== null) {
+      subscribeToTag(subtag, callback, leaves);
+    }
+
+    return leaves;
+  }
+
+  if (type === DIRYTABLE_TAG_ID || type === UPDATABLE_TAG_ID) {
+    (impl.subscribers ??= new Set()).add(callback);
+    leaves.push(tag);
+
+    // updatable tags can be re-pointed at another tag (UPDATE_TAG);
+    // walk the current target too so its leaves notify as well
+    if (type === UPDATABLE_TAG_ID && impl.subtag !== null && !Array.isArray(impl.subtag)) {
+      subscribeToTag(impl.subtag, callback, leaves);
+    }
+  }
+
+  return leaves;
+}
+
+export function unsubscribeFromTags(leaves: Tag[], callback: () => void): void {
+  for (const leaf of leaves) {
+    (leaf as MonomorphicTagImpl).subscribers?.delete(callback);
+  }
+}

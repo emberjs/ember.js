@@ -180,6 +180,11 @@ export function valueForRef<T>(_ref: Reference<T>): T {
   return lastValue as T;
 }
 
+/** SPIKE push-invalidation: the tag a ref last computed with, if any. */
+export function tagOfRef(_ref: Reference): Tag | null {
+  return (_ref as ReferenceImpl).tag;
+}
+
 export function updateRef(_ref: Reference, value: unknown) {
   const ref = _ref as ReferenceImpl;
 

@@ -24,8 +24,9 @@ import { artifacts } from '@glimmer/program/lib/helpers';
 import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
+import { drainInvalidationQueue, hasQueuedInvalidations } from '@glimmer/runtime/lib/vm/update';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import { consumeUnsubscribedDirt, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
@@ -386,31 +387,8 @@ export class RendererState {
     }
   }
 
-  #frameScheduled = false;
-
-  /**
-   * SPIKE: coalesce revalidation to at most once per animation frame.
-   *
-   * Invalidation bursts (sockets, workers) otherwise trigger a full
-   * revalidation per runloop flush -- many times per painted frame.
-   * Only frames that will actually paint need the DOM updated.
-   */
   scheduleRevalidate(renderer: BaseRenderer): void {
-    if (typeof requestAnimationFrame === 'function') {
-      if (this.#frameScheduled) {
-        return;
-      }
-
-      this.#frameScheduled = true;
-      setFramePending(true);
-      requestAnimationFrame(() => {
-        this.#frameScheduled = false;
-        setFramePending(false);
-        _backburner.join(() => this.revalidate(renderer));
-      });
-    } else {
-      _backburner.scheduleOnce('render', this, this.revalidate, renderer);
-    }
+    _backburner.scheduleOnce('render', this, this.revalidate, renderer);
   }
 
   isValid(): boolean {
@@ -423,7 +401,30 @@ export class RendererState {
     if (this.isValid()) {
       return;
     }
+
+    // SPIKE push-invalidation: when every piece of dirt since the last
+    // flush reached a subscribed opcode, process exactly those opcodes
+    // instead of walking the tree.
+    const stats = ((globalThis as any).__pushStats ??= { push: 0, walk: 0, dirtBlocked: 0 });
+    const unsub = consumeUnsubscribedDirt();
+    if (unsub) stats.dirtBlocked++;
+    if (!unsub && hasQueuedInvalidations()) {
+      stats.push++;
+      inTransaction(this.context.env, () => drainInvalidationQueue(this.context.env));
+
+      this.#lastRevision = valueForTag(CURRENT_TAG);
+      // dirt produced while draining was handled by the drain
+      consumeUnsubscribedDirt();
+
+      if (this.isValid()) {
+        return;
+      }
+    }
+
+    stats.walk++;
     this.#renderRootsTransaction(renderer);
+    // dirt produced during the walk was handled by the walk
+    consumeUnsubscribedDirt();
   }
 
   clearAllRoots(renderer: BaseRenderer): void {
