@@ -22,7 +22,6 @@ import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/de
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
-import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { debug } from '@glimmer/validator/lib/debug';
 import { beginTrackFrame, consumeTag, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
 import { INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
@@ -38,7 +37,15 @@ export class UpdatingVM implements IUpdatingVM {
   public dom: GlimmerTreeChanges;
   public alwaysRevalidate: boolean;
 
-  private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
+  /**
+   * SPIKE: a flat frame stack (parallel arrays indexed by depth)
+   * instead of allocating an UpdatingVMFrame per block per render.
+   */
+  #ops: UpdatingOpcode[][] = [];
+  #current: number[] = [];
+  #handlers: Nullable<ExceptionHandler>[] = [];
+  #finalizers: (((didError: boolean) => void) | undefined)[] = [];
+  #depth = -1;
 
   constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
@@ -71,39 +78,59 @@ export class UpdatingVM implements IUpdatingVM {
   }
 
   private _execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
-    let { frameStack } = this;
-
     this.try(opcodes, handler);
 
-    while (!frameStack.isEmpty()) {
-      let opcode = this.frame.nextStatement();
+    while (this.#depth >= 0) {
+      let depth = this.#depth;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- depth checked
+      let ops = this.#ops[depth]!;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- depth checked
+      let index = this.#current[depth]!;
 
-      if (opcode === undefined) {
-        frameStack.pop()?.finalize(false);
+      if (index >= ops.length) {
+        this.#pop(false);
         continue;
       }
 
-      opcode.evaluate(this);
+      this.#current[depth] = index + 1;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+      ops[index]!.evaluate(this);
     }
   }
 
-  private get frame() {
-    return expect(this.frameStack.current, 'bug: expected a frame');
+  #pop(didError: boolean) {
+    let depth = this.#depth;
+    let finalizer = this.#finalizers[depth];
+
+    // release references so retained arrays don't leak between renders
+    this.#ops[depth] = EMPTY_OPS;
+    this.#handlers[depth] = null;
+    this.#finalizers[depth] = undefined;
+    this.#depth = depth - 1;
+
+    finalizer?.(didError);
   }
 
   goto(index: number) {
-    this.frame.goto(index);
+    this.#current[this.#depth] = index;
   }
 
   try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>, finalizer?: (didError: boolean) => void) {
-    this.frameStack.push(new UpdatingVMFrame(ops, handler, finalizer));
+    let depth = ++this.#depth;
+
+    this.#ops[depth] = ops;
+    this.#current[depth] = 0;
+    this.#handlers[depth] = handler;
+    this.#finalizers[depth] = finalizer;
   }
 
   throw() {
-    this.frame.handleException();
-    this.frameStack.pop()?.finalize(true);
+    this.#handlers[this.#depth]?.handleException();
+    this.#pop(true);
   }
 }
+
+const EMPTY_OPS: UpdatingOpcode[] = [];
 
 export interface VMState {
   readonly pc: number;
@@ -327,42 +354,69 @@ export class ListBlockOpcode extends BlockOpcode {
   }
 
   /**
-   * Streaming compare of the new iteration against existing children.
-   * Returns null when everything matched in order (refs updated in
-   * place); otherwise returns the already-consumed items so the full
+   * Streaming compare of the new iteration against existing children,
+   * applied as it matches: allocation-free on the happy path (a shared
+   * scratch item via nextInto). Returns null when everything matched in
+   * order; otherwise reconstructs the already-applied prefix (reading
+   * the just-updated refs back) plus the mismatched item, so the full
    * sync can replay them.
    */
   private tryFastSync(iterator: OpaqueIterator): Nullable<OpaqueIterationItem[]> {
     let { children } = this;
-    let buffered: OpaqueIterationItem[] = [];
+    let matched = 0;
 
     while (true) {
-      let item = iterator.next();
+      let item =
+        iterator.nextInto !== undefined ? iterator.nextInto(SCRATCH_ITEM) : iterator.next();
 
       if (item === null) {
-        if (buffered.length !== children.length) return buffered;
+        if (matched === children.length) return null;
 
-        for (let i = 0; i < buffered.length; i++) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
-          let opcode = children[i]!;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
-          let next = buffered[i]!;
-
-          updateRef(opcode.memo, next.memo);
-          updateRef(opcode.value, next.value);
-        }
-
-        return null;
+        // the list shrank; replay the matched prefix through full sync
+        return this.reconstructPrefix(matched, null);
       }
 
-      let opcode = children[buffered.length];
-
-      buffered.push(item);
+      let opcode = children[matched];
 
       if (opcode === undefined || opcode.key !== item.key) {
-        return buffered;
+        return this.reconstructPrefix(matched, {
+          key: item.key,
+          value: item.value,
+          memo: item.memo,
+        });
       }
+
+      updateRef(opcode.memo, item.memo);
+      updateRef(opcode.value, item.value);
+      matched++;
     }
+  }
+
+  /**
+   * The matched prefix was already applied to the item refs, so its
+   * items can be reconstructed from the opcodes themselves.
+   */
+  private reconstructPrefix(
+    matched: number,
+    mismatch: Nullable<OpaqueIterationItem>
+  ): OpaqueIterationItem[] {
+    let { children } = this;
+    let prefix: OpaqueIterationItem[] = [];
+
+    for (let i = 0; i < matched; i++) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+      let opcode = children[i]!;
+
+      prefix.push({
+        key: opcode.key,
+        value: valueForRef(opcode.value),
+        memo: valueForRef(opcode.memo),
+      });
+    }
+
+    if (mismatch !== null) prefix.push(mismatch);
+
+    return prefix;
   }
 
   private sync(iterator: OpaqueIterator) {
@@ -539,6 +593,9 @@ export class ListBlockOpcode extends BlockOpcode {
   }
 }
 
+/** Shared scratch for allocation-free fast-path iteration. */
+const SCRATCH_ITEM: OpaqueIterationItem = { key: null, value: null, memo: null };
+
 /** Replays already-consumed items before draining the rest. */
 class PrefixedIterator implements OpaqueIterator {
   private index = 0;
@@ -562,30 +619,3 @@ class PrefixedIterator implements OpaqueIterator {
   }
 }
 
-class UpdatingVMFrame {
-  private current = 0;
-
-  constructor(
-    private ops: UpdatingOpcode[],
-    private exceptionHandler: Nullable<ExceptionHandler>,
-    private finalizer?: (didError: boolean) => void
-  ) {}
-
-  goto(index: number) {
-    this.current = index;
-  }
-
-  nextStatement(): UpdatingOpcode | undefined {
-    return this.ops[this.current++];
-  }
-
-  finalize(didError: boolean) {
-    this.finalizer?.(didError);
-  }
-
-  handleException() {
-    if (this.exceptionHandler) {
-      this.exceptionHandler.handleException();
-    }
-  }
-}
