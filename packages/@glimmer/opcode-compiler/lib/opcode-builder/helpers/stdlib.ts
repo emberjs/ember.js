@@ -63,7 +63,9 @@ export function StdAppend(
         });
 
         when(ContentType.Helper, () => {
-          CallDynamic(op, null, null, () => {
+          // generic append has no syntactic receiver: a bare `{{value}}` that resolves
+          // to a function is invoked unbound (use `{{(value)}}` to bind `this`).
+          CallDynamic(op, null, null, null, () => {
             op(VM_INVOKE_STATIC_OP, nonDynamicAppend);
           });
         });

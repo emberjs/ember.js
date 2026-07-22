@@ -94,8 +94,14 @@ APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
 
 APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
   let stack = vm.stack;
+  // The compiler pushes the syntactic receiver for member-calls (`this.obj` in
+  // `(this.obj.method)`), or `undefined` when the call has no syntactic receiver
+  // (`(@cb)`). A plain function helper is invoked with it as `this`.
+  let receiver = check(stack.pop(), CheckReference);
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments).capture();
+
+  args.receiver = receiver;
 
   let helperRef: Initializable<Reference>;
   let initialOwner = vm.getOwner();

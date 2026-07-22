@@ -1,14 +1,6 @@
-import type {
-  CapturedArguments as Arguments,
-  HelperCapabilities,
-  HelperManagerWithValue,
-} from '@glimmer/interfaces';
+import type { Arguments, HelperCapabilities, HelperManagerWithValue } from '@glimmer/interfaces';
 
 import { buildCapabilities } from '../util/capabilities';
-
-type FnArgs<Args extends Arguments = Arguments> =
-  | [...Args['positional'], Args['named']]
-  | [...Args['positional']];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any[]) => unknown;
@@ -30,13 +22,16 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
   }
 
   getValue({ fn, args }: State): unknown {
+    // A plain function read off a path is invoked with the object it was read from
+    // as `this` (provided lazily via `args.receiver`), matching the JavaScript
+    // semantics of `obj.method()`. `this` is applied at the call itself, never by
+    // producing a `.bind()`ed copy, so the function keeps its identity everywhere it
+    // is passed around as a reference.
     if (Object.keys(args.named).length > 0) {
-      let argsForFn: FnArgs = [...args.positional, args.named];
-
-      return fn(...argsForFn);
+      return fn.apply(args.receiver, [...args.positional, args.named]);
     }
 
-    return fn(...args.positional);
+    return fn.apply(args.receiver, [...args.positional]);
   }
 
   getDebugName(fn: AnyFunction): string {
