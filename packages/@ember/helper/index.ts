@@ -711,3 +711,82 @@ export const not = glimmerNot as unknown as NotHelper;
 export interface NotHelper extends Opaque<'helper:not'> {}
 
 /* eslint-enable @typescript-eslint/no-empty-object-type */
+
+/**
+ * Creates a render-tree-scoped context (provide/consume) for sharing values
+ * with descendant components without prop drilling.
+ *
+ * See [RFC #1200](https://github.com/emberjs/rfcs/pull/1200) and the original
+ * [Context RFC #975](https://github.com/emberjs/rfcs/pull/975).
+ *
+ * `createContext` takes no value of its own — it only establishes the *type*
+ * of the value (via a type parameter) and returns an object with:
+ *
+ * - `Provide`: a component that exposes its `@value` argument to every
+ *    descendant in the block.
+ * - `value`: a getter (also usable as a template path) that returns the
+ *    nearest enclosing provided value. **Throws** if there is no matching
+ *    provider higher in the render tree, or if read outside of rendering.
+ * - `consume`: with no argument, identical to reading `value`. Passed a
+ *    component instance, it resolves the context from that component's
+ *    position in the render tree instead -- the way to read a context from
+ *    event handlers and other code that runs outside of rendering.
+ *
+ * ```gjs
+ * import { createContext } from '@ember/helper';
+ *
+ * class Theme {
+ *   color = 'dark';
+ * }
+ *
+ * const theme = createContext<Theme>();
+ *
+ * <template>
+ *   <theme.Provide @value={{this.theme}}>
+ *     {{theme.value.color}}
+ *   </theme.Provide>
+ *
+ *   {{theme.value}} {{! throws -- no provider }}
+ * </template>
+ * ```
+ *
+ * Reactivity: the `@value` binding is reactive. When the argument updates,
+ * consumers re-render; mutating `@tracked` fields on a stable provided
+ * object likewise invalidates consumers.
+ *
+ * Reading a context from an event handler (or any other code that runs
+ * outside of rendering, where the ambient `value` read throws) works by
+ * passing the component instance to `consume` — the instance identifies the
+ * component's position in the render tree:
+ *
+ * ```gjs
+ * import Component from '@glimmer/component';
+ * import { createContext } from '@ember/helper';
+ * import { on } from '@ember/modifier';
+ *
+ * const theme = createContext<Theme>();
+ *
+ * class ThemedButton extends Component {
+ *   onClick = () => {
+ *     console.log(theme.consume(this).color);
+ *   };
+ *
+ *   <template>
+ *     <button {{on 'click' this.onClick}}>{{yield}}</button>
+ *   </template>
+ * }
+ * ```
+ *
+ * Any rendered component instance works with every context, and resolution
+ * happens at `consume` time — the value read is the provider's current
+ * `@value`, not a snapshot from render time.
+ *
+ * @method createContext
+ * @static
+ * @for @ember/helper
+ * @returns {Object} `{ Provide, value, consume }`
+ * @public
+ */
+export { createContext } from '@ember/-internals/glimmer/lib/create-context';
+
+export type { Context } from '@ember/-internals/glimmer/lib/create-context';

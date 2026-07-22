@@ -233,6 +233,78 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 });
               });
             `,
+            'create-context-test.gjs': `
+              import { module, test } from 'qunit';
+              import { render, rerender } from '@ember/test-helpers';
+              import { setupRenderingTest } from 'ember-qunit';
+              import { createContext } from '@ember/helper';
+              import { tracked } from '@glimmer/tracking';
+
+              module('Integration | createContext (RFC #1200)', function (hooks) {
+                setupRenderingTest(hooks);
+
+                test('provide a value via @value and consume it', async function (assert) {
+                  class Theme {
+                    color = 'dark';
+                  }
+                  const theme = createContext();
+                  const value = new Theme();
+
+                  await render(
+                    <template>
+                      <theme.Provide @value={{value}}>
+                        {{#let theme.value as |t|}}
+                          <div data-test="color">{{t.color}}</div>
+                        {{/let}}
+                      </theme.Provide>
+                    </template>
+                  );
+
+                  assert.dom('[data-test="color"]').hasText('dark');
+                });
+
+                test('consumer reads the nearest provider', async function (assert) {
+                  const ctx = createContext();
+
+                  await render(
+                    <template>
+                      <ctx.Provide @value="outer">
+                        {{#let ctx.value as |v|}}<div data-test="outer">{{v}}</div>{{/let}}
+                        <ctx.Provide @value="inner">
+                          {{#let ctx.value as |v|}}<div data-test="inner">{{v}}</div>{{/let}}
+                        </ctx.Provide>
+                      </ctx.Provide>
+                    </template>
+                  );
+
+                  assert.dom('[data-test="outer"]').hasText('outer');
+                  assert.dom('[data-test="inner"]').hasText('inner');
+                });
+
+                test('consumer re-renders when @value changes', async function (assert) {
+                  class State {
+                    @tracked count = 1;
+                  }
+                  const state = new State();
+                  const ctx = createContext();
+
+                  await render(
+                    <template>
+                      <ctx.Provide @value={{state.count}}>
+                        {{#let ctx.value as |v|}}<div data-test="count">{{v}}</div>{{/let}}
+                      </ctx.Provide>
+                    </template>
+                  );
+
+                  assert.dom('[data-test="count"]').hasText('1');
+
+                  state.count = 2;
+                  await rerender();
+
+                  assert.dom('[data-test="count"]').hasText('2');
+                });
+              });
+            `,
             'interactive-example-test.js': `
               import { module, test } from 'qunit';
               import { setupRenderingTest } from 'ember-qunit';

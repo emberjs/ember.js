@@ -518,6 +518,8 @@ export {
   renderComponent,
   type View,
 } from './lib/renderer';
+// RFC #1200 -- render-tree-scoped context (provide/consume)
+export { createContext, type Context } from './lib/create-context';
 export {
   getTemplate,
   setTemplate,
