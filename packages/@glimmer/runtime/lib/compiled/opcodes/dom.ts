@@ -67,8 +67,21 @@ APPEND_OPCODES.add(VM_OPEN_ELEMENT_OP, (vm, { op1: tag }) => {
   vm.tree().openElement(vm.constants.getValue(tag));
 });
 
+// The children of a raw text element are not markup, so the escaping applied to
+// `{{...}}` output means nothing there: whatever the layout renders inside a
+// `<script>` runs as JavaScript, and inside a `<style>` it applies as CSS. A tag
+// name that arrives as a runtime value must therefore never open one, otherwise
+// data flowing into `(element ...)` or a curly component's `tagName` turns the
+// surrounding escaped content into code.
+const RAW_TEXT_TAGS = ['script', 'style'];
+
 APPEND_OPCODES.add(VM_OPEN_DYNAMIC_ELEMENT_OP, (vm) => {
   let tagName = check(valueForRef(check(vm.stack.pop(), CheckReference)), CheckString);
+
+  if (RAW_TEXT_TAGS.indexOf(tagName.toLowerCase()) !== -1) {
+    throw new Error(`Cannot create a <${tagName}> element from a dynamic tag name`);
+  }
+
   vm.tree().openElement(tagName);
 });
 

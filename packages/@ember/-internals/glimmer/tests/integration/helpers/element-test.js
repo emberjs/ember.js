@@ -65,6 +65,31 @@ moduleFor(
       });
     }
 
+    ['@test it throws when passed "script" instead of running the block as code']() {
+      window.__elementHelperScriptRan = false;
+
+      let tag = 'script';
+      let code = 'window.__elementHelperScriptRan = true;';
+      this.assert.throws(() => {
+        let AComponent = template(`{{#let (element tag) as |Tag|}}<Tag>{{code}}</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper, tag, code }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
+      }, /Cannot create a <script> element from a dynamic tag name/);
+
+      this.assert.strictEqual(window.__elementHelperScriptRan, false);
+    }
+
+    ['@test it throws when passed a raw text tag name in any casing']() {
+      let tag = 'STYLE';
+      this.assert.throws(() => {
+        let AComponent = template(`{{#let (element tag) as |Tag|}}<Tag>a{b:c}</Tag>{{/let}}`, {
+          scope: () => ({ element: elementHelper, tag }),
+        });
+        this.renderComponent(AComponent, { expect: '' });
+      }, /Cannot create a <STYLE> element from a dynamic tag name/);
+    }
+
     '@test it can be rendered multiple times'() {
       let AComponent = template(
         `{{#let (element "h1") as |Tag|}}<Tag id="content-1">hello</Tag><Tag id="content-2">world</Tag><Tag id="content-3">!!!!!</Tag>{{/let}}`,

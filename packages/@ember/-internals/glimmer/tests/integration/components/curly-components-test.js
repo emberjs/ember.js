@@ -336,6 +336,24 @@ moduleFor(
       });
     }
 
+    ['@test tagName can not be a raw text element']() {
+      window.__curlyTagNameScriptRan = false;
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('window.__curlyTagNameScriptRan = true;'),
+          class extends Component {}
+        )
+      );
+
+      this.assert.throws(() => {
+        this.render('{{foo-bar tagName="script"}}');
+      }, /Cannot create a <script> element from a dynamic tag name/);
+
+      this.assert.strictEqual(window.__curlyTagNameScriptRan, false);
+    }
+
     ['@test tagName can not be a computed property']() {
       let FooBarComponent = class extends Component {
         @computed
