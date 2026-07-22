@@ -24,9 +24,11 @@ import { artifacts } from '@glimmer/program/lib/helpers';
 import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
-import { drainInvalidationQueue, hasQueuedInvalidations } from '@glimmer/runtime/lib/vm/update';
+import { drainInvalidationQueue } from '@glimmer/runtime/lib/vm/update';
+import { beginTrackFrame, endTrackFrame } from '@glimmer/validator/lib/tracking';
+import type { Tag } from '@glimmer/interfaces';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
-import { consumeUnsubscribedDirt, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import { consumeUnsubscribedDirt, CURRENT_TAG, subscribeToTag, unsubscribeFromTags, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
@@ -134,6 +136,13 @@ export class ComponentRootState implements RendererRoot {
     return this.#result;
   }
 }
+
+/** SPIKE push-invalidation: roots whose own deps changed. */
+const queuedRoots = new Set<RendererRoot>();
+const rootSubscriptions = new WeakMap<
+  RendererRoot,
+  { leaves: Tag[]; enqueue: () => void }
+>();
 
 const renderers: BaseRenderer[] = [];
 
@@ -367,7 +376,7 @@ export class RendererState {
             continue;
           }
 
-          root.render();
+          this.#renderRootSubscribed(root);
         }
 
         this.#lastRevision = valueForTag(CURRENT_TAG);
@@ -387,8 +396,25 @@ export class RendererState {
     }
   }
 
+  #frameScheduled = false;
+
+  /** SPIKE: coalesce all invalidation delivery to one drain per frame. */
   scheduleRevalidate(renderer: BaseRenderer): void {
-    _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+    if (typeof requestAnimationFrame === 'function') {
+      if (this.#frameScheduled) {
+        return;
+      }
+
+      this.#frameScheduled = true;
+      setFramePending(true);
+      requestAnimationFrame(() => {
+        this.#frameScheduled = false;
+        setFramePending(false);
+        _backburner.join(() => this.revalidate(renderer));
+      });
+    } else {
+      _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+    }
   }
 
   isValid(): boolean {
@@ -397,34 +423,66 @@ export class RendererState {
     );
   }
 
+  /**
+   * SPIKE push-invalidation v5, walk-free: subscription coverage is
+   * complete (roots + blocks + items), so unsubscribed dirt affects
+   * nothing rendered and is deliberately ignored. The only "walk" is
+   * re-rendering a root whose own (non-delegated) deps changed --
+   * which is the minimal correct response, not a fallback.
+   */
   revalidate(renderer: BaseRenderer): void {
     if (this.isValid()) {
       return;
     }
 
-    // SPIKE push-invalidation: when every piece of dirt since the last
-    // flush reached a subscribed opcode, process exactly those opcodes
-    // instead of walking the tree.
-    const stats = ((globalThis as any).__pushStats ??= { push: 0, walk: 0, dirtBlocked: 0 });
-    const unsub = consumeUnsubscribedDirt();
-    if (unsub) stats.dirtBlocked++;
-    if (!unsub && hasQueuedInvalidations()) {
-      stats.push++;
-      inTransaction(this.context.env, () => drainInvalidationQueue(this.context.env));
+    const stats = ((globalThis as any).__pushStats ??= { drains: 0, rootRenders: 0 });
 
-      this.#lastRevision = valueForTag(CURRENT_TAG);
-      // dirt produced while draining was handled by the drain
-      consumeUnsubscribedDirt();
-
-      if (this.isValid()) {
-        return;
-      }
-    }
-
-    stats.walk++;
-    this.#renderRootsTransaction(renderer);
-    // dirt produced during the walk was handled by the walk
+    stats.drains++;
     consumeUnsubscribedDirt();
+
+    inTransaction(this.context.env, () => {
+      if (queuedRoots.size > 0) {
+        const roots = [...queuedRoots];
+
+        queuedRoots.clear();
+
+        for (const root of roots) {
+          if (root.destroyed) continue;
+
+          stats.rootRenders++;
+          this.#renderRootSubscribed(root);
+        }
+      }
+
+      drainInvalidationQueue(this.context.env);
+    });
+
+    this.#lastRevision = valueForTag(CURRENT_TAG);
+    consumeUnsubscribedDirt();
+  }
+
+  /**
+   * Render one root inside a tracking frame and keep its subscription
+   * pointed at what it actually read. Items and blocks do not
+   * propagate their deps upward, so this collects only the root's own
+   * non-delegated dependencies.
+   */
+  #renderRootSubscribed(root: RendererRoot): void {
+    beginTrackFrame();
+
+    try {
+      root.render();
+    } finally {
+      const tag = endTrackFrame();
+      const previous = rootSubscriptions.get(root);
+      const enqueue = previous?.enqueue ?? (() => queuedRoots.add(root));
+
+      if (previous !== undefined) {
+        unsubscribeFromTags(previous.leaves, previous.enqueue);
+      }
+
+      rootSubscriptions.set(root, { leaves: subscribeToTag(tag, enqueue), enqueue });
+    }
   }
 
   clearAllRoots(renderer: BaseRenderer): void {

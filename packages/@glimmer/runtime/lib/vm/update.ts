@@ -293,9 +293,9 @@ export class ListItemOpcode extends TryOpcode {
       !vm.alwaysRevalidate &&
       validateTag(subtreeTag, this.subtreeRevision)
     ) {
-      // propagate this item's dependencies to any enclosing tracking
-      // frame, exactly as executing the children would have
-      consumeTag(subtreeTag);
+      // push-invalidation owns delivery: do NOT propagate item deps
+      // upward, or enclosing subscriptions (the root's) would fire on
+      // every item change and re-walk everything
       return;
     }
 
@@ -308,7 +308,6 @@ export class ListItemOpcode extends TryOpcode {
 
       this.subtreeTag = tag;
       this.subtreeRevision = valueForTag(tag);
-      consumeTag(tag);
 
       // keep the push-invalidation subscription pointing at the leaves
       // this subtree actually read
@@ -330,6 +329,11 @@ export class ListItemOpcode extends TryOpcode {
     }
 
     super.handleException();
+  }
+
+  /** push bootstrap: items that never collected must be walked once */
+  get needsCollection(): boolean {
+    return this.subtreeTag === null;
   }
 
   shouldRemove(): boolean {
@@ -443,6 +447,13 @@ export class ListBlockOpcode extends BlockOpcode {
       // array proxy read during next()), so the subscription must come
       // from what the sync actually read, not just the iterable ref
       this.resubscribeTo(endTrackFrame());
+      this.enqueueUncollectedItems();
+    }
+  }
+
+  private enqueueUncollectedItems() {
+    for (const item of this.children) {
+      if (item.needsCollection) queuedItems.add(item);
     }
   }
 
@@ -453,6 +464,7 @@ export class ListBlockOpcode extends BlockOpcode {
       this.evaluateSync(vm);
     } finally {
       this.resubscribeTo(endTrackFrame());
+      this.enqueueUncollectedItems();
     }
 
     // Run now-updated updating opcodes
