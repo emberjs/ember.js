@@ -295,25 +295,74 @@ export class ListBlockOpcode extends BlockOpcode {
     let iterator = valueForRef(this.iterableRef);
 
     if (this.lastIterator !== iterator) {
-      let { bounds } = this;
-      let { dom } = vm;
+      // SPIKE: deriving a fresh array from tracked state is the idiomatic
+      // pattern, so iterator identity changes every render even when the
+      // list's keys did not. When items match the existing children in
+      // order and count, just update the item refs -- no diff
+      // bookkeeping, no marker DOM, no children rebuild.
+      let buffered = this.tryFastSync(iterator);
 
-      let marker = (this.marker = dom.createComment(''));
-      dom.insertAfter(
-        bounds.parentElement(),
-        marker,
-        expect(bounds.lastNode(), "can't insert after an empty bounds")
-      );
+      if (buffered !== null) {
+        let { bounds } = this;
+        let { dom } = vm;
 
-      this.sync(iterator);
+        let marker = (this.marker = dom.createComment(''));
+        dom.insertAfter(
+          bounds.parentElement(),
+          marker,
+          expect(bounds.lastNode(), "can't insert after an empty bounds")
+        );
 
-      this.parentElement().removeChild(marker);
-      this.marker = null;
+        this.sync(new PrefixedIterator(buffered, iterator));
+
+        this.parentElement().removeChild(marker);
+        this.marker = null;
+      }
+
       this.lastIterator = iterator;
     }
 
     // Run now-updated updating opcodes
     super.evaluate(vm);
+  }
+
+  /**
+   * Streaming compare of the new iteration against existing children.
+   * Returns null when everything matched in order (refs updated in
+   * place); otherwise returns the already-consumed items so the full
+   * sync can replay them.
+   */
+  private tryFastSync(iterator: OpaqueIterator): Nullable<OpaqueIterationItem[]> {
+    let { children } = this;
+    let buffered: OpaqueIterationItem[] = [];
+
+    while (true) {
+      let item = iterator.next();
+
+      if (item === null) {
+        if (buffered.length !== children.length) return buffered;
+
+        for (let i = 0; i < buffered.length; i++) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+          let opcode = children[i]!;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+          let next = buffered[i]!;
+
+          updateRef(opcode.memo, next.memo);
+          updateRef(opcode.value, next.value);
+        }
+
+        return null;
+      }
+
+      let opcode = children[buffered.length];
+
+      buffered.push(item);
+
+      if (opcode === undefined || opcode.key !== item.key) {
+        return buffered;
+      }
+    }
   }
 
   private sync(iterator: OpaqueIterator) {
@@ -487,6 +536,29 @@ export class ListBlockOpcode extends BlockOpcode {
     destroy(opcode);
     clear(opcode);
     this.opcodeMap.delete(opcode.key);
+  }
+}
+
+/** Replays already-consumed items before draining the rest. */
+class PrefixedIterator implements OpaqueIterator {
+  private index = 0;
+
+  constructor(
+    private prefix: OpaqueIterationItem[],
+    private inner: OpaqueIterator
+  ) {}
+
+  isEmpty(): boolean {
+    return this.index >= this.prefix.length && this.inner.isEmpty();
+  }
+
+  next(): Nullable<OpaqueIterationItem> {
+    if (this.index < this.prefix.length) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+      return this.prefix[this.index++]!;
+    }
+
+    return this.inner.next();
   }
 }
 
