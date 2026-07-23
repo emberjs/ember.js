@@ -1512,6 +1512,65 @@ class AttributeStrictModeTest extends RenderTest {
   }
 
   @test
+  'Component definitions in attribute position are used as values'() {
+    const Foo = defineComponent({}, 'Hello, world!');
+    const Bar = defineComponent({ Foo }, '<div data-foo={{Foo}}></div>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div data-foo="@glimmer/component/template-only"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Paths on lexical variables in attribute position are used as values'() {
+    const styles = { works: 'works' };
+    const Foo = defineComponent(
+      { styles },
+      '<div data-foo={{styles.works}} class="it {{styles.works}}"></div>'
+    );
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div data-foo="works" class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can call a helper in attribute position (with args)'() {
+    const echo = defineSimpleHelper((value: string) => value);
+    const Foo = defineComponent(
+      { echo },
+      '<div data-foo={{echo "works"}} class="it {{echo "works"}}"></div>'
+    );
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div data-foo="works" class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can call a helper in attribute position as a subexpression (without args)'() {
+    const works = defineSimpleHelper(() => 'works');
+    const Foo = defineComponent(
+      { works },
+      '<div data-foo={{(works)}} class="it {{(works)}}"></div>'
+    );
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div data-foo="works" class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a helper in trusting attribute position (without args)'() {
+    const works = defineSimpleHelper(() => 'works');
+    const Foo = defineComponent({ works }, '<div data-foo={{{works}}}></div>');
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div data-foo="works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
   'Helpers in argument position (without parens) are passed by value'(assert: Assert) {
     const works = defineSimpleHelper(() => 'works');
     const Foo = defineComponent({}, '{{this.receivedFunction}}', {
