@@ -870,6 +870,50 @@ moduleFor(
       assert.equal(indexController.get('omg'), 'lol');
     }
 
+    ['@test query params are based on actual model not on url params of lowest route only'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.router.map(function () {
+        this.route('parent', { path: '/parent/:parent_id/' }, function () {
+          this.route('child', { path: '/child/:child_id' });
+        });
+      });
+
+      let parentCache = {};
+      let childCache = {};
+
+      this.add(
+        'route:parent',
+        Route.extend({
+          model({ parent_id }) {
+            return parentCache[parent_id] || (parentCache[parent_id] = { id: parent_id });
+          },
+        })
+      );
+
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          model({ child_id }) {
+            let parent = this.modelFor('parent');
+            let id = `${parent.id}:${child_id}`;
+            return childCache[id] || (childCache[id] = { id });
+          },
+        })
+      );
+
+      this.setSingleQPController('parent.child', 'query', '');
+
+      return this.visitAndAssert('/parent/1/child/2?query=foo').then(() => {
+        this.transitionTo('parent.child', { id: 2 }, { id: 2 });
+        // Since Child { id: '2:2' } != Child { id: '1:2' } we should not have the same query
+        // params even though the url param for the parent.child route matches.
+        this.assertCurrentPath('/parent/2/child/2');
+      });
+    }
+
     async ['@test can opt into a replace query by specifying replace:true in the Route config hash'](
       assert
     ) {
