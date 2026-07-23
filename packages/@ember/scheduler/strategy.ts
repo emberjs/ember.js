@@ -106,7 +106,10 @@ export class FrameStrategy implements Strategy {
   idle(): Promise<void> {
     return new Promise((resolve) => {
       if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(() => resolve());
+        // an idle period may never arrive: fully-idle or backgrounded pages
+        // can starve requestIdleCallback indefinitely, so cap the wait to
+        // keep the promise resolvable
+        requestIdleCallback(() => resolve(), { timeout: 500 });
       } else {
         setTimeout(resolve, 0);
       }

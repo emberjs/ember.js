@@ -1,3 +1,4 @@
+/* globals requestAnimationFrame: false */
 import defaultStrategy, { FrameStrategy } from '../strategy';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -86,12 +87,23 @@ moduleFor(
 
       await strategy.composite();
 
-      let nextPromise = strategy.next().then(() => order.push('next (this frame)'));
+      // a raw requestAnimationFrame registered now (during frame 1's
+      // composite window) marks the start of frame 2, ahead of the phase
+      // windows the strategy schedules for it below. Anchoring to the rAF
+      // channel keeps this deterministic: whether a timer task scheduled
+      // during frame 1 runs before or after frame 2's rAF callbacks is
+      // browser-defined (Safari orders it differently than Chrome).
+      let frameBoundary = new Promise((resolve) =>
+        requestAnimationFrame(() => {
+          order.push('frame 2 began');
+          resolve();
+        })
+      );
       let compositePromise = strategy.composite().then(() => order.push('composite (next frame)'));
 
-      await Promise.all([nextPromise, compositePromise]);
+      await Promise.all([frameBoundary, compositePromise]);
 
-      assert.deepEqual(order, ['next (this frame)', 'composite (next frame)']);
+      assert.deepEqual(order, ['frame 2 began', 'composite (next frame)']);
     }
 
     async ['@test work can be scheduled again after a frame completes'](assert) {
