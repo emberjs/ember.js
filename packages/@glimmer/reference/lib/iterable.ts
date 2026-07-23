@@ -19,6 +19,12 @@ export interface IterationItem<T, U> {
 export interface AbstractIterator<T, U, V extends IterationItem<T, U>> {
   isEmpty(): boolean;
   next(): Nullable<V>;
+  /**
+   * SPIKE: allocation-free iteration -- writes into `target` and returns
+   * it, instead of allocating a fresh item per step. Optional; callers
+   * must not retain the returned object across steps.
+   */
+  nextInto?(target: V): Nullable<V>;
 }
 
 export type OpaqueIterationItem = IterationItem<unknown, unknown>;
@@ -262,5 +268,25 @@ class ArrayIterator implements OpaqueIterator {
     let memo = this.pos;
 
     return { key, value, memo };
+  }
+
+  nextInto(target: IterationItem<unknown, number>): Nullable<IterationItem<unknown, number>> {
+    let value: unknown;
+
+    let current = this.current;
+    if (current.kind === 'first') {
+      this.current = { kind: 'progress' };
+      value = current.value;
+    } else if (this.pos >= this.iterator.length - 1) {
+      return null;
+    } else {
+      value = this.iterator[++this.pos];
+    }
+
+    target.key = this.keyFor(value, this.pos);
+    target.value = value;
+    target.memo = this.pos;
+
+    return target;
   }
 }

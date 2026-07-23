@@ -16,14 +16,15 @@ import type {
 } from '@glimmer/interfaces';
 import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
 import type { Reference } from '@glimmer/reference/lib/reference';
+import type { Revision, Tag } from '@glimmer/interfaces';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
-import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
+import { associateDestroyableChild, destroy, destroyChildren, isDestroyed, isDestroying, registerDestructor } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { tagOfRef, updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
-import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { debug } from '@glimmer/validator/lib/debug';
-import { resetTracking } from '@glimmer/validator/lib/tracking';
+import { beginTrackFrame, consumeTag, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
+import { CONSTANT_TAG, INITIAL, markUnsubscribedDirt, subscribeToTag, unsubscribeFromTags, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
@@ -36,7 +37,15 @@ export class UpdatingVM implements IUpdatingVM {
   public dom: GlimmerTreeChanges;
   public alwaysRevalidate: boolean;
 
-  private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
+  /**
+   * SPIKE: a flat frame stack (parallel arrays indexed by depth)
+   * instead of allocating an UpdatingVMFrame per block per render.
+   */
+  #ops: UpdatingOpcode[][] = [];
+  #current: number[] = [];
+  #handlers: Nullable<ExceptionHandler>[] = [];
+  #finalizers: (((didError: boolean) => void) | undefined)[] = [];
+  #depth = -1;
 
   constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
@@ -69,37 +78,100 @@ export class UpdatingVM implements IUpdatingVM {
   }
 
   private _execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
-    let { frameStack } = this;
-
     this.try(opcodes, handler);
 
-    while (!frameStack.isEmpty()) {
-      let opcode = this.frame.nextStatement();
+    while (this.#depth >= 0) {
+      let depth = this.#depth;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- depth checked
+      let ops = this.#ops[depth]!;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- depth checked
+      let index = this.#current[depth]!;
 
-      if (opcode === undefined) {
-        frameStack.pop();
+      if (index >= ops.length) {
+        this.#pop(false);
         continue;
       }
 
-      opcode.evaluate(this);
+      this.#current[depth] = index + 1;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+      ops[index]!.evaluate(this);
     }
   }
 
-  private get frame() {
-    return expect(this.frameStack.current, 'bug: expected a frame');
+  #pop(didError: boolean) {
+    let depth = this.#depth;
+    let finalizer = this.#finalizers[depth];
+
+    // release references so retained arrays don't leak between renders
+    this.#ops[depth] = EMPTY_OPS;
+    this.#handlers[depth] = null;
+    this.#finalizers[depth] = undefined;
+    this.#depth = depth - 1;
+
+    finalizer?.(didError);
   }
 
   goto(index: number) {
-    this.frame.goto(index);
+    this.#current[this.#depth] = index;
   }
 
-  try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>) {
-    this.frameStack.push(new UpdatingVMFrame(ops, handler));
+  try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>, finalizer?: (didError: boolean) => void) {
+    let depth = ++this.#depth;
+
+    this.#ops[depth] = ops;
+    this.#current[depth] = 0;
+    this.#handlers[depth] = handler;
+    this.#finalizers[depth] = finalizer;
   }
 
   throw() {
-    this.frame.handleException();
-    this.frameStack.pop();
+    this.#handlers[this.#depth]?.handleException();
+    this.#pop(true);
+  }
+}
+
+const EMPTY_OPS: UpdatingOpcode[] = [];
+
+/**
+ * SPIKE push-invalidation: opcodes queued directly by tag dirtying.
+ * The render flush drains this instead of walking the whole tree,
+ * falling back to a full walk when unsubscribed dirt was seen.
+ */
+const queuedBlocks = new Set<ListBlockOpcode>();
+const queuedItems = new Set<ListItemOpcode>();
+
+export function hasQueuedInvalidations(): boolean {
+  return queuedBlocks.size > 0 || queuedItems.size > 0;
+}
+
+const NOOP_HANDLER: ExceptionHandler = {
+  handleException() {},
+};
+
+export function drainInvalidationQueue(env: Environment): void {
+  // blocks first: membership syncs may destroy queued items
+  while (queuedBlocks.size > 0 || queuedItems.size > 0) {
+    if (queuedBlocks.size > 0) {
+      const blocks = [...queuedBlocks];
+
+      queuedBlocks.clear();
+
+      for (const block of blocks) {
+        if (isDestroyed(block) || isDestroying(block)) continue;
+
+        block.pushEvaluate(env);
+      }
+    } else {
+      const items = [...queuedItems];
+
+      queuedItems.clear();
+
+      for (const item of items) {
+        if (isDestroyed(item) || isDestroying(item)) continue;
+
+        new UpdatingVM(env, {}).execute([item], item);
+      }
+    }
   }
 }
 
@@ -178,6 +250,19 @@ export class ListItemOpcode extends TryOpcode {
   public retained = false;
   public index = -1;
 
+  /**
+   * Everything this item's subtree consumed during its last update,
+   * combined. When still valid, the whole subtree is skipped -- one tag
+   * validation instead of walking every opcode in the item.
+   */
+  private subtreeTag: Nullable<Tag> = null;
+  private subtreeRevision: Revision = INITIAL;
+  /** SPIKE push-invalidation */
+  private subscribedLeaves: Nullable<Tag[]> = null;
+  private enqueue = () => {
+    queuedItems.add(this);
+  };
+
   constructor(
     state: Closure,
     context: EvaluationContext,
@@ -187,6 +272,68 @@ export class ListItemOpcode extends TryOpcode {
     public value: Reference
   ) {
     super(state, context, bounds, []);
+
+    registerDestructor(this, () => {
+      if (this.subscribedLeaves !== null) {
+        unsubscribeFromTags(this.subscribedLeaves, this.enqueue);
+        this.subscribedLeaves = null;
+      }
+      queuedItems.delete(this);
+    });
+  }
+
+  override evaluate(vm: UpdatingVM) {
+    // SPIKE push-invalidation: every item collects and subscribes (the
+    // triviality gate is incompatible with push -- unsubscribed items
+    // would silently go stale).
+    let { subtreeTag } = this;
+
+    if (
+      subtreeTag !== null &&
+      !vm.alwaysRevalidate &&
+      validateTag(subtreeTag, this.subtreeRevision)
+    ) {
+      // push-invalidation owns delivery: do NOT propagate item deps
+      // upward, or enclosing subscriptions (the root's) would fire on
+      // every item change and re-walk everything
+      return;
+    }
+
+    beginTrackFrame();
+    vm.try(this.children, this, (didError) => {
+      // always balance beginTrackFrame, even when unwinding
+      let tag = endTrackFrame();
+
+      if (didError) return;
+
+      this.subtreeTag = tag;
+      this.subtreeRevision = valueForTag(tag);
+
+      // keep the push-invalidation subscription pointing at the leaves
+      // this subtree actually read
+      if (this.subscribedLeaves !== null) {
+        unsubscribeFromTags(this.subscribedLeaves, this.enqueue);
+      }
+      this.subscribedLeaves = subscribeToTag(tag, this.enqueue);
+    });
+  }
+
+  override handleException() {
+    // children are about to be rebuilt; the collected tag and
+    // subscriptions no longer describe them
+    this.subtreeTag = null;
+
+    if (this.subscribedLeaves !== null) {
+      unsubscribeFromTags(this.subscribedLeaves, this.enqueue);
+      this.subscribedLeaves = null;
+    }
+
+    super.handleException();
+  }
+
+  /** push bootstrap: items that never collected must be walked once */
+  get needsCollection(): boolean {
+    return this.subtreeTag === null;
   }
 
   shouldRemove(): boolean {
@@ -206,6 +353,12 @@ export class ListBlockOpcode extends BlockOpcode {
   private marker: SimpleComment | null = null;
   private lastIterator: OpaqueIterator;
 
+  /** SPIKE push-invalidation */
+  private subscribedLeaves: Nullable<Tag[]> = null;
+  private enqueueBlock = () => {
+    queuedBlocks.add(this);
+  };
+
   declare protected readonly bounds: AppendingBlockList;
 
   constructor(
@@ -217,6 +370,28 @@ export class ListBlockOpcode extends BlockOpcode {
   ) {
     super(state, context, bounds, children);
     this.lastIterator = valueForRef(iterableRef);
+    this.resubscribeTo(CONSTANT_TAG);
+
+    registerDestructor(this, () => {
+      if (this.subscribedLeaves !== null) {
+        unsubscribeFromTags(this.subscribedLeaves, this.enqueueBlock);
+        this.subscribedLeaves = null;
+      }
+      queuedBlocks.delete(this);
+    });
+  }
+
+  private resubscribeTo(syncTag: Tag) {
+    if (this.subscribedLeaves !== null) {
+      unsubscribeFromTags(this.subscribedLeaves, this.enqueueBlock);
+    }
+
+    let leaves = subscribeToTag(syncTag, this.enqueueBlock);
+    let refTag = tagOfRef(this.iterableRef);
+
+    if (refTag !== null) subscribeToTag(refTag, this.enqueueBlock, leaves);
+
+    this.subscribedLeaves = leaves;
   }
 
   initializeChild(opcode: ListItemOpcode) {
@@ -224,29 +399,174 @@ export class ListBlockOpcode extends BlockOpcode {
     this.opcodeMap.set(opcode.key, opcode);
   }
 
+  /**
+   * SPIKE push-invalidation: membership sync only -- children are NOT
+   * walked; changed items enqueue themselves via their own
+   * subscriptions and are processed by the drain. Falls back to a full
+   * walk (via the unsubscribed-dirt flag) when the list transitions
+   * between empty and non-empty, because the surrounding Enter/Assert
+   * opcodes this path skips are what rebuild that region.
+   */
+  pushEvaluate(env: Environment) {
+    let wasEmpty = this.children.length === 0;
+
+    beginTrackFrame();
+
+    try {
+      let iterator = valueForRef(this.iterableRef);
+
+      if (this.lastIterator !== iterator) {
+        if (wasEmpty !== iterator.isEmpty()) {
+          markUnsubscribedDirt();
+          return;
+        }
+
+        let buffered = this.tryFastSync(iterator);
+
+        if (buffered !== null) {
+          let { bounds } = this;
+          let dom = env.getDOM();
+
+          let marker = (this.marker = dom.createComment(''));
+          dom.insertAfter(
+            bounds.parentElement(),
+            marker,
+            expect(bounds.lastNode(), "can't insert after an empty bounds")
+          );
+
+          this.sync(new PrefixedIterator(buffered, iterator));
+
+          this.parentElement().removeChild(marker);
+          this.marker = null;
+        }
+
+        this.lastIterator = iterator;
+      }
+    } finally {
+      // iteration consumes collection cell tags lazily (e.g. a tracked
+      // array proxy read during next()), so the subscription must come
+      // from what the sync actually read, not just the iterable ref
+      this.resubscribeTo(endTrackFrame());
+      this.enqueueUncollectedItems();
+    }
+  }
+
+  private enqueueUncollectedItems() {
+    for (const item of this.children) {
+      if (item.needsCollection) queuedItems.add(item);
+    }
+  }
+
   override evaluate(vm: UpdatingVM) {
-    let iterator = valueForRef(this.iterableRef);
+    beginTrackFrame();
 
-    if (this.lastIterator !== iterator) {
-      let { bounds } = this;
-      let { dom } = vm;
-
-      let marker = (this.marker = dom.createComment(''));
-      dom.insertAfter(
-        bounds.parentElement(),
-        marker,
-        expect(bounds.lastNode(), "can't insert after an empty bounds")
-      );
-
-      this.sync(iterator);
-
-      this.parentElement().removeChild(marker);
-      this.marker = null;
-      this.lastIterator = iterator;
+    try {
+      this.evaluateSync(vm);
+    } finally {
+      this.resubscribeTo(endTrackFrame());
+      this.enqueueUncollectedItems();
     }
 
     // Run now-updated updating opcodes
     super.evaluate(vm);
+  }
+
+  private evaluateSync(vm: UpdatingVM) {
+    let iterator = valueForRef(this.iterableRef);
+
+    if (this.lastIterator !== iterator) {
+      // SPIKE: deriving a fresh array from tracked state is the idiomatic
+      // pattern, so iterator identity changes every render even when the
+      // list's keys did not. When items match the existing children in
+      // order and count, just update the item refs -- no diff
+      // bookkeeping, no marker DOM, no children rebuild.
+      let buffered = this.tryFastSync(iterator);
+
+      if (buffered !== null) {
+        let { bounds } = this;
+        let { dom } = vm;
+
+        let marker = (this.marker = dom.createComment(''));
+        dom.insertAfter(
+          bounds.parentElement(),
+          marker,
+          expect(bounds.lastNode(), "can't insert after an empty bounds")
+        );
+
+        this.sync(new PrefixedIterator(buffered, iterator));
+
+        this.parentElement().removeChild(marker);
+        this.marker = null;
+      }
+
+      this.lastIterator = iterator;
+    }
+  }
+
+  /**
+   * Streaming compare of the new iteration against existing children,
+   * applied as it matches: allocation-free on the happy path (a shared
+   * scratch item via nextInto). Returns null when everything matched in
+   * order; otherwise reconstructs the already-applied prefix (reading
+   * the just-updated refs back) plus the mismatched item, so the full
+   * sync can replay them.
+   */
+  private tryFastSync(iterator: OpaqueIterator): Nullable<OpaqueIterationItem[]> {
+    let { children } = this;
+    let matched = 0;
+
+    while (true) {
+      let item =
+        iterator.nextInto !== undefined ? iterator.nextInto(SCRATCH_ITEM) : iterator.next();
+
+      if (item === null) {
+        if (matched === children.length) return null;
+
+        // the list shrank; replay the matched prefix through full sync
+        return this.reconstructPrefix(matched, null);
+      }
+
+      let opcode = children[matched];
+
+      if (opcode === undefined || opcode.key !== item.key) {
+        return this.reconstructPrefix(matched, {
+          key: item.key,
+          value: item.value,
+          memo: item.memo,
+        });
+      }
+
+      updateRef(opcode.memo, item.memo);
+      updateRef(opcode.value, item.value);
+      matched++;
+    }
+  }
+
+  /**
+   * The matched prefix was already applied to the item refs, so its
+   * items can be reconstructed from the opcodes themselves.
+   */
+  private reconstructPrefix(
+    matched: number,
+    mismatch: Nullable<OpaqueIterationItem>
+  ): OpaqueIterationItem[] {
+    let { children } = this;
+    let prefix: OpaqueIterationItem[] = [];
+
+    for (let i = 0; i < matched; i++) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+      let opcode = children[i]!;
+
+      prefix.push({
+        key: opcode.key,
+        value: valueForRef(opcode.value),
+        memo: valueForRef(opcode.memo),
+      });
+    }
+
+    if (mismatch !== null) prefix.push(mismatch);
+
+    return prefix;
   }
 
   private sync(iterator: OpaqueIterator) {
@@ -423,25 +743,29 @@ export class ListBlockOpcode extends BlockOpcode {
   }
 }
 
-class UpdatingVMFrame {
-  private current = 0;
+/** Shared scratch for allocation-free fast-path iteration. */
+const SCRATCH_ITEM: OpaqueIterationItem = { key: null, value: null, memo: null };
+
+/** Replays already-consumed items before draining the rest. */
+class PrefixedIterator implements OpaqueIterator {
+  private index = 0;
 
   constructor(
-    private ops: UpdatingOpcode[],
-    private exceptionHandler: Nullable<ExceptionHandler>
+    private prefix: OpaqueIterationItem[],
+    private inner: OpaqueIterator
   ) {}
 
-  goto(index: number) {
-    this.current = index;
+  isEmpty(): boolean {
+    return this.index >= this.prefix.length && this.inner.isEmpty();
   }
 
-  nextStatement(): UpdatingOpcode | undefined {
-    return this.ops[this.current++];
-  }
-
-  handleException() {
-    if (this.exceptionHandler) {
-      this.exceptionHandler.handleException();
+  next(): Nullable<OpaqueIterationItem> {
+    if (this.index < this.prefix.length) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+      return this.prefix[this.index++]!;
     }
+
+    return this.inner.next();
   }
 }
+
