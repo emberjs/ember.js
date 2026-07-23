@@ -1,4 +1,5 @@
 import type { CurriedType, NonSmallIntOperand, Nullable, WireFormat } from '@glimmer/interfaces';
+import { DEBUG } from '@glimmer/env';
 import { encodeImmediate, isSmallInt } from '@glimmer/constants/lib/immediate';
 import {
   VM_BIND_DYNAMIC_SCOPE_OP,
@@ -126,10 +127,14 @@ export function DynamicAttrValue(op: PushExpressionOp, expression: WireFormat.Ex
     expression.length === 2
   ) {
     op(HighLevelResolutionOpcodes.OptionalComponentOrHelper, expression, {
-      // A component definition is not invokable in attribute position; use
-      // the value itself, like any other non-helper value.
       ifComponent: () => {
-        expr(op, expression);
+        if (DEBUG) {
+          throw new Error(
+            'Attempted to use a component as the value of an attribute, but only values and helpers are valid in attribute position.'
+          );
+        }
+
+        PushPrimitiveReference(op, undefined);
       },
 
       ifHelper: (handle: number) => {

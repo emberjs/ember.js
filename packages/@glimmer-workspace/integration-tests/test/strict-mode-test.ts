@@ -1511,14 +1511,14 @@ class AttributeStrictModeTest extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test
-  'Component definitions in attribute position are used as values'() {
+  @test({ skip: !DEBUG })
+  'Component definitions in attribute position are an error'() {
     const Foo = defineComponent({}, 'Hello, world!');
     const Bar = defineComponent({ Foo }, '<div data-foo={{Foo}}></div>');
 
-    this.renderComponent(Bar);
-    this.assertHTML('<div data-foo="@glimmer/component/template-only"></div>');
-    this.assertStableRerender();
+    this.assert.throws(() => {
+      this.renderComponent(Bar);
+    }, /Attempted to use a component as the value of an attribute, but only values and helpers are valid in attribute position./u);
   }
 
   @test
@@ -1576,6 +1576,11 @@ class AttributeStrictModeTest extends RenderTest {
     const Foo = defineComponent({}, '{{this.receivedFunction}}', {
       definition: class extends GlimmerishComponent {
         get receivedFunction() {
+          assert.strictEqual(
+            typeof this.args['value'],
+            'function',
+            'the argument is a function, not an invoked result'
+          );
           assert.strictEqual(
             (this.args as { value: unknown })['value'],
             works,
