@@ -394,6 +394,7 @@ export class RendererState {
   #flushesThisFrame = 0;
   #lastFlushEnd = 0;
   #lastFrameAt = 0;
+  #viaStream = false;
 
   // scheduling must not allocate per dirt event: dependent chains
   // (render -> effect -> set) re-enter scheduleRevalidate once per step,
@@ -430,17 +431,25 @@ export class RendererState {
       this.#flushesThisFrame = 0;
       this.#rafHandle = null;
     } else {
-      this.#flushesThisFrame++;
+      if (this.#viaStream) {
+        // only stream-scheduled flushes count toward the rAF
+        // stand-down: chain flushes are same-task and invisible to
+        // frames, and counting them would starve later stream dirt of
+        // its macrotask leg
+        this.#flushesThisFrame++;
+      }
       if (this.#rafHandle !== null) {
         cancelAnimationFrame(this.#rafHandle);
         this.#rafHandle = null;
       }
     }
 
-    this.#flushScheduled = false;
-    setFramePending(false);
+    this.#viaStream = false;
 
     _backburner.join(this.#revalidateUntilStable);
+
+    this.#flushScheduled = false;
+    setFramePending(false);
 
     this.#lastFlushEnd = performance.now();
   }
@@ -492,6 +501,7 @@ export class RendererState {
       return;
     }
 
+    this.#viaStream = true;
     this.#rafHandle = requestAnimationFrame(this.#frameFlush);
 
     // The stand-down only applies while rAF is actually being serviced:
