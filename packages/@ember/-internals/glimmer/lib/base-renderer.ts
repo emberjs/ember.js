@@ -134,11 +134,6 @@ export class ComponentRootState implements RendererRoot {
   }
 }
 
-function flushViaChannel(state: RendererState): void {
-  // eslint-disable-next-line dot-notation -- private access helper
-  (state as any).runChannelFlush();
-}
-
 const renderers: BaseRenderer[] = [];
 
 export function _resetRenderers() {
@@ -392,11 +387,63 @@ export class RendererState {
   }
 
   #flushScheduled = false;
+  #renderer: BaseRenderer | null = null;
   #rafHandle: number | null = null;
   #channel: MessageChannel | null = null;
   #channelArmed = false;
   #flushesThisFrame = 0;
   #lastFlushEnd = 0;
+  #lastFrameAt = 0;
+
+  // scheduling must not allocate per dirt event: dependent chains
+  // (render -> effect -> set) re-enter scheduleRevalidate once per step,
+  // and per-step closures were measurable GC pressure in exactly that
+  // case, so every callback here is persistent
+  #microtaskFlush = () => this.#flush(false);
+
+  #frameFlush = () => {
+    this.#lastFrameAt = performance.now();
+    this.#flush(true);
+  };
+
+  #revalidateUntilStable = () => {
+    const renderer = this.#renderer;
+
+    if (renderer === null) return;
+
+    this.revalidate(renderer);
+
+    // dirt produced synchronously by the render itself (e.g. an
+    // after-render effect advancing a loop) flushes in the same task;
+    // only dirt arriving between tasks waits
+    let guard = 0;
+
+    while (!this.isValid() && guard++ < 1_000_000) {
+      this.revalidate(renderer);
+    }
+  };
+
+  #flush(viaFrame: boolean): void {
+    if (!this.#flushScheduled) return;
+
+    if (viaFrame) {
+      this.#flushesThisFrame = 0;
+      this.#rafHandle = null;
+    } else {
+      this.#flushesThisFrame++;
+      if (this.#rafHandle !== null) {
+        cancelAnimationFrame(this.#rafHandle);
+        this.#rafHandle = null;
+      }
+    }
+
+    this.#flushScheduled = false;
+    setFramePending(false);
+
+    _backburner.join(this.#revalidateUntilStable);
+
+    this.#lastFlushEnd = performance.now();
+  }
 
   /**
    * SPIKE: task-coalesced flushing, zoneless-Angular shaped but
@@ -411,7 +458,8 @@ export class RendererState {
    * - adaptive frame alignment: when several flushes land within one
    *   frame (a sustained external stream like a worker firehose), the
    *   macrotask leg stands down and flushes ride rAF until the burst
-   *   subsides
+   *   subsides -- unless rAF itself has stopped being serviced (see
+   *   below)
    */
   scheduleRevalidate(renderer: BaseRenderer): void {
     if (typeof requestAnimationFrame !== 'function') {
@@ -423,41 +471,11 @@ export class RendererState {
       return;
     }
 
+    this.#renderer = renderer;
     this.#flushScheduled = true;
     setFramePending(true);
 
-    const flush = (viaFrame: boolean) => {
-      if (!this.#flushScheduled) return;
-
-      if (viaFrame) {
-        this.#flushesThisFrame = 0;
-        this.#rafHandle = null;
-      } else {
-        this.#flushesThisFrame++;
-        if (this.#rafHandle !== null) {
-          cancelAnimationFrame(this.#rafHandle);
-          this.#rafHandle = null;
-        }
-      }
-
-      this.#flushScheduled = false;
-      setFramePending(false);
-
-      _backburner.join(() => {
-        this.revalidate(renderer);
-
-        // dirt produced synchronously by the render itself (e.g. an
-        // after-render effect advancing a loop) flushes in the same
-        // task; only dirt arriving between tasks waits
-        let guard = 0;
-
-        while (!this.isValid() && guard++ < 1_000_000) {
-          this.revalidate(renderer);
-        }
-      });
-
-      this.#lastFlushEnd = performance.now();
-    };
+    const now = performance.now();
 
     // Distinguish dependent chains from external streams: chain dirt
     // (render -> microtask -> set) arrives ~immediately after the last
@@ -469,37 +487,34 @@ export class RendererState {
     // arrives whole milliseconds later in fresh tasks: it flushes on a
     // race of unclamped macrotask + rAF, standing the macrotask leg
     // down under sustained bursts so flushes ride the frame.
-    const isChain = performance.now() - this.#lastFlushEnd < 1;
-
-    if (isChain) {
-      queueMicrotask(() => flush(false));
+    if (now - this.#lastFlushEnd < 1) {
+      queueMicrotask(this.#microtaskFlush);
       return;
     }
 
-    this.#rafHandle = requestAnimationFrame(() => flush(true));
+    this.#rafHandle = requestAnimationFrame(this.#frameFlush);
 
-    if (this.#flushesThisFrame < 3) {
+    // The stand-down only applies while rAF is actually being serviced:
+    // backgrounded/occluded pages stop firing rAF entirely, and since
+    // the per-frame counter is only reset by a frame firing, standing
+    // the macrotask leg down there would strand all rendering until the
+    // tab becomes visible again.
+    const rafStarved = now - this.#lastFrameAt > 250;
+
+    if (this.#flushesThisFrame < 3 || rafStarved) {
       if (this.#channel === null) {
         this.#channel = new MessageChannel();
         this.#channel.port1.onmessage = () => {
           this.#channelArmed = false;
-          flushViaChannel(this);
+          this.#flush(false);
         };
       }
 
       if (!this.#channelArmed) {
         this.#channelArmed = true;
-        this.#currentFlush = flush;
         this.#channel.port2.postMessage(null);
       }
     }
-  }
-
-  #currentFlush: ((viaFrame: boolean) => void) | null = null;
-
-  /** @internal channel-leg trampoline */
-  runChannelFlush(): void {
-    this.#currentFlush?.(false);
   }
 
   isValid(): boolean {
