@@ -87,6 +87,14 @@ function initialize(obj: CoreObject, properties?: unknown) {
     let keyNames = Object.keys(properties);
 
     for (let keyName of keyNames) {
+      // `JSON.parse` produces `__proto__` as an own enumerable key, so it
+      // survives `Object.keys` and reaches the assignment below, where it hits
+      // the `Object.prototype.__proto__` setter and re-parents the instance
+      // instead of setting a property on it.
+      if (keyName === '__proto__') {
+        continue;
+      }
+
       // SAFETY: this cast as a Record is safe because all object types can be
       // indexed in JS, and we explicitly type it as returning `unknown`, so the
       // result *must* be checked below.
@@ -1068,6 +1076,9 @@ function flattenProps(this: typeof CoreObject, ...props: Array<Record<string, un
 
     for (let j = 0, k = keyNames.length; j < k; j++) {
       let keyName = keyNames[j]!;
+      if (keyName === '__proto__') {
+        continue;
+      }
       let value = properties[keyName];
       initProperties[keyName] = value;
     }

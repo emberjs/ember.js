@@ -282,5 +282,37 @@ moduleFor(
       assert.equal(getOwner(instance), container.owner, 'owner was defined on the instance');
       assert.ok(getFactoryFor(instance), 'factory was defined on the instance');
     }
+
+    ['@test a __proto__ key in the passed properties does not re-parent the instance'](assert) {
+      class Greeter extends EmberObject {
+        greet() {
+          return 'hi';
+        }
+      }
+
+      let payload = JSON.parse('{"__proto__": {"isAdmin": true}, "name": "zoey"}');
+      let obj = Greeter.create(payload);
+
+      assert.ok(obj instanceof Greeter, 'prototype chain is intact');
+      assert.equal(obj.greet(), 'hi', 'class methods are still reachable');
+      assert.equal(obj.isAdmin, undefined, 'nothing was inherited from the payload');
+      assert.equal(obj.get('name'), 'zoey', 'the remaining properties are still set');
+    }
+
+    ['@test a __proto__ key does not leak into the hash passed to init'](assert) {
+      let seen;
+
+      class Recorder extends EmberObject {
+        init(props) {
+          super.init(...arguments);
+          seen = props.isAdmin;
+        }
+      }
+
+      let obj = Recorder.create({ name: 'zoey' }, JSON.parse('{"__proto__": {"isAdmin": true}}'));
+
+      assert.equal(seen, undefined, 'init did not read an inherited value off the merged hash');
+      assert.equal(obj.get('name'), 'zoey', 'the remaining properties are still set');
+    }
   }
 );
