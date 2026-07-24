@@ -122,7 +122,7 @@ export const DEPRECATIONS = {
   DEPRECATE_TARGET_ACTION_SUPPORT: deprecation({
     for: 'ember-source',
     id: 'deprecate-target-action-support',
-    since: { available: '7.3.0' },
+    since: { available: '7.3.0', enabled: '7.4.0' },
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-target-action-support',
   }),
