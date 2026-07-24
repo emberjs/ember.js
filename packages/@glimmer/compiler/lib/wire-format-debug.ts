@@ -100,12 +100,6 @@ export default class WireFormatDebugger {
         case Op.Yield:
           return ['yield', opcode[1], this.formatParams(opcode[2])];
 
-        case Op.DynamicArg:
-          return ['dynamic-arg', opcode[1], this.formatOpcode(opcode[2])];
-
-        case Op.StaticArg:
-          return ['static-arg', opcode[1], this.formatOpcode(opcode[2])];
-
         case Op.TrustingDynamicAttr:
           return [
             'trusting-dynamic-attr',

@@ -114,7 +114,7 @@ export function SwitchCases(
  * # Updating Execution
  *
  * Updating execution for this `replayable` occurs if the `body` added an
- * assertion, via one of the `JumpIf`, `JumpUnless` or `AssertSame` opcodes.
+ * assertion, via one of the `JumpUnless`, `JumpEq` or `AssertSame` opcodes.
  *
  * If, during updating executon, the assertion fails, the initial VM is
  * restored, and the stored arguments are pushed onto the stack. The DOM

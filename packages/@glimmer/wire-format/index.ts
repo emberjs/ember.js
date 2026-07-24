@@ -37,10 +37,6 @@ export function getStringFromValue(expr: Expressions.StringValue): string {
   return expr;
 }
 
-export function isArgument(val: Statement): val is Statements.Argument {
-  return val[0] === opcodes.StaticArg || val[0] === opcodes.DynamicArg;
-}
-
 export function isHelper(expr: Expression): expr is Expressions.Helper {
   return Array.isArray(expr) && expr[0] === opcodes.Call;
 }

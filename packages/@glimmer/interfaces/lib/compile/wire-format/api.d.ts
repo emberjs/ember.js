@@ -14,7 +14,6 @@ import type {
   ConcatOpcode,
   CurryOpcode,
   DebuggerOpcode,
-  DynamicArgOpcode,
   DynamicAttrOpcode,
   EachOpcode,
   FlushElementOpcode,
@@ -38,7 +37,6 @@ import type {
   NotOpcode,
   OpenElementOpcode,
   OpenElementWithSplatOpcode,
-  StaticArgOpcode,
   StaticAttrOpcode,
   StaticComponentAttrOpcode,
   TrustingAppendOpcode,
@@ -241,8 +239,6 @@ export namespace Statements {
 
   export type AttrSplat = [AttrSplatOpcode, YieldTo];
   export type Yield = [YieldOpcode, YieldTo, Nullable<Params>];
-  export type DynamicArg = [DynamicArgOpcode, string, Expression];
-  export type StaticArg = [StaticArgOpcode, string, Expression];
 
   export type DynamicAttr = Attr<DynamicAttrOpcode>;
   export type ComponentAttr = Attr<ComponentAttrOpcode>;
@@ -317,8 +313,6 @@ export namespace Statements {
     | Attribute
     | AttrSplat
     | Yield
-    | StaticArg
-    | DynamicArg
     | Debugger
     | InElement
     | If
@@ -336,15 +330,13 @@ export namespace Statements {
     | TrustingComponentAttr;
 
   export type ComponentFeature = Modifier | AttrSplat;
-  export type Argument = StaticArg | DynamicArg;
 
-  export type ElementParameter = Attribute | Argument | ComponentFeature;
+  export type ElementParameter = Attribute | ComponentFeature;
 }
 
 /** A Handlebars statement */
 export type Statement = Statements.Statement;
 export type Attribute = Statements.Attribute;
-export type Argument = Statements.Argument;
 export type ElementParameter = Statements.ElementParameter;
 
 export type SexpSyntax = Statement | TupleExpression;

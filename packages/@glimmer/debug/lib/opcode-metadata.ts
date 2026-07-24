@@ -61,7 +61,6 @@ import {
   VM_INVOKE_YIELD_OP,
   VM_ITERATE_OP,
   VM_JUMP_EQ_OP,
-  VM_JUMP_IF_OP,
   VM_JUMP_UNLESS_OP,
   VM_LOAD_OP,
   VM_MAIN_OP,
@@ -69,7 +68,6 @@ import {
   VM_NOT_OP,
   VM_OPEN_DYNAMIC_ELEMENT_OP,
   VM_OPEN_ELEMENT_OP,
-  VM_POP_ARGS_OP,
   VM_POP_DYNAMIC_SCOPE_OP,
   VM_POP_OP,
   VM_POP_REMOTE_ELEMENT_OP,
@@ -506,13 +504,6 @@ if (LOCAL_DEBUG) {
     stackChange: null,
   };
 
-  METADATA[VM_JUMP_IF_OP] = {
-    name: 'JumpIf',
-    mnemonic: 'iftrue',
-    stackChange: -1,
-    ops: ['to:instruction/relative'],
-  };
-
   METADATA[VM_JUMP_UNLESS_OP] = {
     name: 'JumpUnless',
     mnemonic: 'iffalse',
@@ -630,12 +621,6 @@ if (LOCAL_DEBUG) {
     name: 'PushEmptyArgs',
     mnemonic: 'emptyargsload',
     stackChange: 1,
-  };
-
-  METADATA[VM_POP_ARGS_OP] = {
-    name: 'PopArgs',
-    mnemonic: 'argspop',
-    stackChange: null,
   };
 
   METADATA[VM_PREPARE_ARGS_OP] = {
