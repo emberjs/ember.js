@@ -18,7 +18,7 @@ interface ActionSupport {
 const ActionSupport = Mixin.create({
   send(actionName: string, ...args: unknown[]) {
     deprecateUntil(
-      `Calling \`.send()\` on ${this} is deprecated. Invoke the corresponding method directly instead.`,
+      `Calling \`.send()\` on ${this} is deprecated. Invoke the corresponding method directly.`,
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT
     );
 
