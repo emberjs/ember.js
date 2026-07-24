@@ -112,7 +112,7 @@ const TargetActionSupport = Mixin.create({
   */
   triggerAction(opts: { action?: string; target?: unknown; actionContext?: unknown } = {}) {
     deprecateUntil(
-      `Calling \`triggerAction\` on ${this} is deprecated. Invoke the target method directly instead.`,
+      `Calling \`triggerAction\` on ${this} is deprecated. Invoke the target method directly.`,
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT
     );
 
