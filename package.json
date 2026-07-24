@@ -283,6 +283,8 @@
       "@ember/routing/router-service.js": "ember-source/@ember/routing/router-service.js",
       "@ember/routing/router.js": "ember-source/@ember/routing/router.js",
       "@ember/runloop/index.js": "ember-source/@ember/runloop/index.js",
+      "@ember/scheduler/index.js": "ember-source/@ember/scheduler/index.js",
+      "@ember/scheduler/strategy.js": "ember-source/@ember/scheduler/strategy.js",
       "@ember/service/index.js": "ember-source/@ember/service/index.js",
       "@ember/template-compilation/index.js": "ember-source/@ember/template-compilation/index.js",
       "@ember/template-compiler/-internal-primitives.js": "ember-source/@ember/template-compiler/-internal-primitives.js",
