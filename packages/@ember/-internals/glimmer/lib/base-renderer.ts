@@ -134,6 +134,11 @@ export class ComponentRootState implements RendererRoot {
   }
 }
 
+function flushViaChannel(state: RendererState): void {
+  // eslint-disable-next-line dot-notation -- private access helper
+  (state as any).runChannelFlush();
+}
+
 const renderers: BaseRenderer[] = [];
 
 export function _resetRenderers() {
@@ -197,10 +202,28 @@ function resolveRenderPromise() {
   }
 }
 
+/**
+ * SPIKE: revalidation deferred to an animation frame is *expected* to
+ * leave the renderer invalid at runloop end -- the frame will handle
+ * it. Without this, loopEnd spins NO_OP runloops (recursing via join)
+ * until the loop guard throws.
+ */
+let framePending = false;
+
+export function setFramePending(value: boolean) {
+  framePending = value;
+}
+
 let loops = 0;
 function loopEnd() {
   for (let renderer of renderers) {
     if (!renderer.isValid()) {
+      if (framePending) {
+        // the scheduled frame will revalidate; its own runloop will
+        // re-enter loopEnd and resolve the render promise
+        return;
+      }
+
       if (loops > ENV._RERENDER_LOOP_LIMIT) {
         loops = 0;
         // TODO: do something better
@@ -368,8 +391,115 @@ export class RendererState {
     }
   }
 
+  #flushScheduled = false;
+  #rafHandle: number | null = null;
+  #channel: MessageChannel | null = null;
+  #channelArmed = false;
+  #flushesThisFrame = 0;
+  #lastFlushEnd = 0;
+
+  /**
+   * SPIKE: task-coalesced flushing, zoneless-Angular shaped but
+   * adaptive:
+   *
+   * - a flush is scheduled as a race between an UNCLAMPED macrotask
+   *   (MessageChannel -- setTimeout's 4ms nesting clamp would make
+   *   render->microtask->set chains crawl) and requestAnimationFrame
+   * - every update inside the current task + microtasks coalesces into
+   *   one flush; awaited (microtask) update loops stop paying a render
+   *   per resume
+   * - adaptive frame alignment: when several flushes land within one
+   *   frame (a sustained external stream like a worker firehose), the
+   *   macrotask leg stands down and flushes ride rAF until the burst
+   *   subsides
+   */
   scheduleRevalidate(renderer: BaseRenderer): void {
-    _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+    if (typeof requestAnimationFrame !== 'function') {
+      _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+      return;
+    }
+
+    if (this.#flushScheduled) {
+      return;
+    }
+
+    this.#flushScheduled = true;
+    setFramePending(true);
+
+    const flush = (viaFrame: boolean) => {
+      if (!this.#flushScheduled) return;
+
+      if (viaFrame) {
+        this.#flushesThisFrame = 0;
+        this.#rafHandle = null;
+      } else {
+        this.#flushesThisFrame++;
+        if (this.#rafHandle !== null) {
+          cancelAnimationFrame(this.#rafHandle);
+          this.#rafHandle = null;
+        }
+      }
+
+      this.#flushScheduled = false;
+      setFramePending(false);
+
+      _backburner.join(() => {
+        this.revalidate(renderer);
+
+        // dirt produced synchronously by the render itself (e.g. an
+        // after-render effect advancing a loop) flushes in the same
+        // task; only dirt arriving between tasks waits
+        let guard = 0;
+
+        while (!this.isValid() && guard++ < 1_000_000) {
+          this.revalidate(renderer);
+        }
+      });
+
+      this.#lastFlushEnd = performance.now();
+    };
+
+    // Distinguish dependent chains from external streams: chain dirt
+    // (render -> microtask -> set) arrives ~immediately after the last
+    // flush; it flushes at MICROTASK speed (same task turn, like the
+    // classic runloop) so sequential render-coupled loops don't pay a
+    // task hop per step. This cannot defeat coalescing of awaited
+    // update loops: those drain their entire microtask chain before
+    // their FIRST flush ever runs. Stream dirt (worker messages)
+    // arrives whole milliseconds later in fresh tasks: it flushes on a
+    // race of unclamped macrotask + rAF, standing the macrotask leg
+    // down under sustained bursts so flushes ride the frame.
+    const isChain = performance.now() - this.#lastFlushEnd < 1;
+
+    if (isChain) {
+      queueMicrotask(() => flush(false));
+      return;
+    }
+
+    this.#rafHandle = requestAnimationFrame(() => flush(true));
+
+    if (this.#flushesThisFrame < 3) {
+      if (this.#channel === null) {
+        this.#channel = new MessageChannel();
+        this.#channel.port1.onmessage = () => {
+          this.#channelArmed = false;
+          flushViaChannel(this);
+        };
+      }
+
+      if (!this.#channelArmed) {
+        this.#channelArmed = true;
+        this.#currentFlush = flush;
+        this.#channel.port2.postMessage(null);
+      }
+    }
+  }
+
+  #currentFlush: ((viaFrame: boolean) => void) | null = null;
+
+  /** @internal channel-leg trampoline */
+  runChannelFlush(): void {
+    this.#currentFlush?.(false);
   }
 
   isValid(): boolean {
