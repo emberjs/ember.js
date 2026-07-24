@@ -37,6 +37,15 @@ const TargetActionSupport = Mixin.create({
   action: null,
   actionContext: null,
 
+  init: function () {
+    deprecateUntil(
+      `Extending from \`TargetActionSupport\` is deprecated.`,
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT
+    );
+
+    return this._super(...arguments);
+  },
+
   actionContextObject: computed('actionContext', function () {
     let actionContext = get(this, 'actionContext');
 

@@ -24,6 +24,17 @@ moduleFor(
       assert.expect(2);
 
       expectDeprecation(
+        /Extending from `TargetActionSupport` is deprecated/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
+    }
+
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test it should return false if no target or action are specified`](assert) {
+      assert.expect(2);
+
+      expectDeprecation(
         /Calling `triggerAction` on/,
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
       );
