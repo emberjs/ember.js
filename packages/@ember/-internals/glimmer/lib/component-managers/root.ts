@@ -21,6 +21,7 @@ import CurlyComponentManager, {
   initialRenderInstrumentDetails,
   processComponentInitializationAssertions,
 } from './curly';
+import { sendCoreViewEvent } from '@ember/-internals/views/lib/views/core-view-utils';
 
 class RootComponentManager extends CurlyComponentManager {
   component: Component;
@@ -48,13 +49,13 @@ class RootComponentManager extends CurlyComponentManager {
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (!hasWrappedElement) {
       if (isInteractive) {
-        component.trigger('willRender');
+        sendCoreViewEvent(component, 'willRender');
       }
 
       component._transitionTo('hasElement');
 
       if (isInteractive) {
-        component.trigger('willInsertElement');
+        sendCoreViewEvent(component, 'willInsertElement');
       }
     }
 

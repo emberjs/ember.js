@@ -20,7 +20,7 @@ export function isRemoved(options: DeprecationOptions) {
   return emberVersionGte(options.until);
 }
 
-interface DeprecationObject {
+export interface DeprecationObject {
   options: DeprecationOptions;
   test: boolean;
   isEnabled: boolean;
@@ -118,6 +118,13 @@ export const DEPRECATIONS = {
     since: { available: '7.2.0', enabled: '7.2.0' },
     until: '7.5.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-comparable-mixin',
+  }),
+  DEPRECATE_EVENTED: deprecation({
+    id: 'deprecate-evented',
+    for: 'ember-source',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-evented',
   }),
 };
 
