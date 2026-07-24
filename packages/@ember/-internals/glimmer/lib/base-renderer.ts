@@ -197,10 +197,28 @@ function resolveRenderPromise() {
   }
 }
 
+/**
+ * SPIKE: revalidation deferred to an animation frame is *expected* to
+ * leave the renderer invalid at runloop end -- the frame will handle
+ * it. Without this, loopEnd spins NO_OP runloops (recursing via join)
+ * until the loop guard throws.
+ */
+let framePending = false;
+
+export function setFramePending(value: boolean) {
+  framePending = value;
+}
+
 let loops = 0;
 function loopEnd() {
   for (let renderer of renderers) {
     if (!renderer.isValid()) {
+      if (framePending) {
+        // the scheduled frame will revalidate; its own runloop will
+        // re-enter loopEnd and resolve the render promise
+        return;
+      }
+
       if (loops > ENV._RERENDER_LOOP_LIMIT) {
         loops = 0;
         // TODO: do something better
@@ -368,8 +386,31 @@ export class RendererState {
     }
   }
 
+  #frameScheduled = false;
+
+  /**
+   * SPIKE: coalesce revalidation to at most once per animation frame.
+   *
+   * Invalidation bursts (sockets, workers) otherwise trigger a full
+   * revalidation per runloop flush -- many times per painted frame.
+   * Only frames that will actually paint need the DOM updated.
+   */
   scheduleRevalidate(renderer: BaseRenderer): void {
-    _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+    if (typeof requestAnimationFrame === 'function') {
+      if (this.#frameScheduled) {
+        return;
+      }
+
+      this.#frameScheduled = true;
+      setFramePending(true);
+      requestAnimationFrame(() => {
+        this.#frameScheduled = false;
+        setFramePending(false);
+        _backburner.join(() => this.revalidate(renderer));
+      });
+    } else {
+      _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+    }
   }
 
   isValid(): boolean {

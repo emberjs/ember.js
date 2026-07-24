@@ -111,24 +111,13 @@ export function _getProp(obj: unknown, keyName: string) {
       value = (obj as any)[keyName];
     }
 
-    if (
-      value === undefined &&
-      typeof obj === 'object' &&
-      !(keyName in obj) &&
-      hasUnknownProperty(obj)
-    ) {
-      value = obj.unknownProperty(keyName);
-    }
-
-    if (isTracking()) {
-      consumeTag(tagFor(obj, keyName));
-
-      if (Array.isArray(value) || isEmberArray(value)) {
-        // Add the tag of the returned value if it is an array, since arrays
-        // should always cause updates if they are consumed and then changed
-        consumeTag(tagFor(value, '[]'));
-      }
-    }
+    // SPIKE: deleted legacy read-path support:
+    // - unknownProperty (ObjectProxy / EmberObject)
+    // - per-(object, key) tag consumption on arbitrary objects, which
+    //   existed so Ember.set() on POJOs invalidates renders
+    // - the '[]' EmberArray tag consume for array-valued reads
+    // Modern semantics: plain-data reads don't entangle; reactivity
+    // comes from @tracked, tracked collections, and value replacement.
   } else {
     // SAFETY: It should be ok to access properties on any non-nullish value
     value = (obj as any)[keyName];
