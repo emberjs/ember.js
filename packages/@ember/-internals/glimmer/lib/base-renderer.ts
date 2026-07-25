@@ -1,7 +1,5 @@
-import { ENV } from '@ember/-internals/environment/lib/env';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
   associateDestroyableChild,
   destroy,
@@ -28,13 +26,15 @@ import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
-import { EmberEnvironmentDelegate } from './environment';
+import {
+  EmberEnvironmentDelegate,
+  _setNotifyRevalidate,
+  _drainScheduledDestroys,
+} from './environment';
 import ResolverImpl from './resolver';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
-
-const NO_OP = () => {};
 
 // This wrapper logic prevents us from rerendering in case of a hard failure
 // during render. This prevents infinite revalidation type loops from occuring,
@@ -151,11 +151,15 @@ function deregister(renderer: BaseRenderer): void {
   renderers.splice(index, 1);
 }
 
-function loopBegin(): void {
+// SPIKE (RFC 957 end state): tag invalidation notifies the renderer's
+// scheduler directly -- there is no runloop in the render path. This
+// replaces the classic wiring where every dirty tag spun up a
+// backburner autorun whose `begin` hook rerendered the renderers.
+_setNotifyRevalidate(() => {
   for (let renderer of renderers) {
     renderer.rerender();
   }
-}
+});
 
 interface RenderSettledDeferred {
   promise: Promise<void>;
@@ -166,8 +170,9 @@ let renderSettledDeferred: RenderSettledDeferred | null = null;
 /*
   Returns a promise which will resolve when rendering has settled. Settled in
   this context is defined as when all of the tags in use are "current" (e.g.
-  `renderers.every(r => r._isValid())`). When this is checked at the _end_ of
-  the run loop, this essentially guarantees that all rendering is completed.
+  `renderers.every(r => r._isValid())`). Resolution is attempted at the end
+  of every scheduler flush; if nothing is dirty when this is called, it
+  settles on a microtask.
 
   @method renderSettled
   @returns {Promise<void>} a promise which fulfills when rendering has settled
@@ -177,64 +182,23 @@ export function renderSettled() {
     let resolve!: () => void;
     let promise = new Promise<void>((r) => (resolve = r));
     renderSettledDeferred = { promise, resolve };
-    // if there is no current runloop, the promise created above will not have
-    // a chance to resolve (because its resolved in backburner's "end" event)
-    if (!_getCurrentRunLoop()) {
-      // ensure a runloop has been kicked off
-      _backburner.schedule('actions', null, NO_OP);
-    }
+    queueMicrotask(resolveRenderPromiseIfSettled);
   }
 
   return renderSettledDeferred.promise;
 }
 
-function resolveRenderPromise() {
-  if (renderSettledDeferred !== null) {
-    let resolve = renderSettledDeferred.resolve;
-    renderSettledDeferred = null;
+function resolveRenderPromiseIfSettled() {
+  if (renderSettledDeferred === null) return;
 
-    _backburner.join(null, resolve);
-  }
-}
-
-/**
- * SPIKE: revalidation deferred to an animation frame is *expected* to
- * leave the renderer invalid at runloop end -- the frame will handle
- * it. Without this, loopEnd spins NO_OP runloops (recursing via join)
- * until the loop guard throws.
- */
-let framePending = false;
-
-export function setFramePending(value: boolean) {
-  framePending = value;
-}
-
-let loops = 0;
-function loopEnd() {
   for (let renderer of renderers) {
-    if (!renderer.isValid()) {
-      if (framePending) {
-        // the scheduled frame will revalidate; its own runloop will
-        // re-enter loopEnd and resolve the render promise
-        return;
-      }
-
-      if (loops > ENV._RERENDER_LOOP_LIMIT) {
-        loops = 0;
-        // TODO: do something better
-        renderer.destroy();
-        throw new Error('infinite rendering invalidation detected');
-      }
-      loops++;
-      return _backburner.join(null, NO_OP);
-    }
+    if (!renderer.isValid()) return;
   }
-  loops = 0;
-  resolveRenderPromise();
-}
 
-_backburner.on('begin', loopBegin);
-_backburner.on('end', loopEnd);
+  let resolve = renderSettledDeferred.resolve;
+  renderSettledDeferred = null;
+  resolve();
+}
 
 type Resolver = ClassicResolver;
 
@@ -446,12 +410,19 @@ export class RendererState {
 
     this.#viaStream = false;
 
-    _backburner.join(this.#revalidateUntilStable);
+    this.#revalidateUntilStable();
 
+    // the flag clears after revalidation so dirt produced mid-flush
+    // dedupes into the running flush's stability loop, but before the
+    // destroy drain, whose destructors may legitimately dirty state
+    // that needs a new flush
     this.#flushScheduled = false;
-    setFramePending(false);
+
+    _drainScheduledDestroys();
 
     this.#lastFlushEnd = performance.now();
+
+    resolveRenderPromiseIfSettled();
   }
 
   /**
@@ -471,18 +442,19 @@ export class RendererState {
    *   below)
    */
   scheduleRevalidate(renderer: BaseRenderer): void {
-    if (typeof requestAnimationFrame !== 'function') {
-      _backburner.scheduleOnce('render', this, this.revalidate, renderer);
-      return;
-    }
-
     if (this.#flushScheduled) {
       return;
     }
 
     this.#renderer = renderer;
     this.#flushScheduled = true;
-    setFramePending(true);
+
+    // no paint to schedule against in SSR environments; flush on a
+    // microtask so rendering completes within the current task's drain
+    if (typeof requestAnimationFrame !== 'function') {
+      queueMicrotask(this.#microtaskFlush);
+      return;
+    }
 
     const now = performance.now();
 
