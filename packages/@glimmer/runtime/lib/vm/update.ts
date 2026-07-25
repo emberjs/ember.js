@@ -16,6 +16,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
 import type { Reference } from '@glimmer/reference/lib/reference';
+import type { Revision, Tag } from '@glimmer/interfaces';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
@@ -23,7 +24,8 @@ import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { debug } from '@glimmer/validator/lib/debug';
-import { resetTracking } from '@glimmer/validator/lib/tracking';
+import { beginTrackFrame, consumeTag, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
+import { INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
@@ -77,7 +79,7 @@ export class UpdatingVM implements IUpdatingVM {
       let opcode = this.frame.nextStatement();
 
       if (opcode === undefined) {
-        frameStack.pop();
+        frameStack.pop()?.finalize(false);
         continue;
       }
 
@@ -93,13 +95,13 @@ export class UpdatingVM implements IUpdatingVM {
     this.frame.goto(index);
   }
 
-  try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>) {
-    this.frameStack.push(new UpdatingVMFrame(ops, handler));
+  try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>, finalizer?: (didError: boolean) => void) {
+    this.frameStack.push(new UpdatingVMFrame(ops, handler, finalizer));
   }
 
   throw() {
     this.frame.handleException();
-    this.frameStack.pop();
+    this.frameStack.pop()?.finalize(true);
   }
 }
 
@@ -178,6 +180,15 @@ export class ListItemOpcode extends TryOpcode {
   public retained = false;
   public index = -1;
 
+  /**
+   * Everything this item's subtree consumed during its last update,
+   * combined. When still valid, the whole subtree is skipped -- one tag
+   * validation instead of walking every opcode in the item.
+   */
+  private subtreeTag: Nullable<Tag> = null;
+  private subtreeRevision: Revision = INITIAL;
+  private isTrivial: boolean | null = null;
+
   constructor(
     state: Closure,
     context: EvaluationContext,
@@ -189,6 +200,52 @@ export class ListItemOpcode extends TryOpcode {
     super(state, context, bounds, []);
   }
 
+  override evaluate(vm: UpdatingVM) {
+    // Trivial items (a text node or two) can't win: validating their
+    // combined tag costs as much as just updating them, so collection
+    // would be pure overhead. Skipping only pays off for items with a
+    // real subtree -- more than a couple of opcodes, or any nested
+    // block (a nested block child means an arbitrarily large subtree
+    // hides behind a small top-level count).
+    if (this.isTrivial ?? (this.isTrivial = computeIsTrivial(this.children))) {
+      vm.try(this.children, this);
+      return;
+    }
+
+    let { subtreeTag } = this;
+
+    if (
+      subtreeTag !== null &&
+      !vm.alwaysRevalidate &&
+      validateTag(subtreeTag, this.subtreeRevision)
+    ) {
+      // propagate this item's dependencies to any enclosing tracking
+      // frame, exactly as executing the children would have
+      consumeTag(subtreeTag);
+      return;
+    }
+
+    beginTrackFrame();
+    vm.try(this.children, this, (didError) => {
+      // always balance beginTrackFrame, even when unwinding
+      let tag = endTrackFrame();
+
+      if (didError) return;
+
+      this.subtreeTag = tag;
+      this.subtreeRevision = valueForTag(tag);
+      consumeTag(tag);
+    });
+  }
+
+  override handleException() {
+    // children are about to be rebuilt; the collected tag and triviality
+    // no longer describe them
+    this.subtreeTag = null;
+    this.isTrivial = null;
+    super.handleException();
+  }
+
   shouldRemove(): boolean {
     return !this.retained;
   }
@@ -196,6 +253,16 @@ export class ListItemOpcode extends TryOpcode {
   reset() {
     this.retained = false;
   }
+}
+
+function computeIsTrivial(children: UpdatingOpcode[]): boolean {
+  if (children.length > 2) return false;
+
+  for (const child of children) {
+    if (child instanceof BlockOpcode) return false;
+  }
+
+  return true;
 }
 
 export class ListBlockOpcode extends BlockOpcode {
@@ -428,7 +495,8 @@ class UpdatingVMFrame {
 
   constructor(
     private ops: UpdatingOpcode[],
-    private exceptionHandler: Nullable<ExceptionHandler>
+    private exceptionHandler: Nullable<ExceptionHandler>,
+    private finalizer?: (didError: boolean) => void
   ) {}
 
   goto(index: number) {
@@ -437,6 +505,10 @@ class UpdatingVMFrame {
 
   nextStatement(): UpdatingOpcode | undefined {
     return this.ops[this.current++];
+  }
+
+  finalize(didError: boolean) {
+    this.finalizer?.(didError);
   }
 
   handleException() {
