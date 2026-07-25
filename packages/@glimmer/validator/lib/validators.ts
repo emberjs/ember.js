@@ -99,8 +99,37 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
       case 1:
         return tags[0] as Tag;
       default: {
+        // SPIKE: flatten nested combinators (and drop constants) so
+        // validating a combined tag is one flat loop instead of a
+        // pointer-chasing tree walk. Capped so pathological frames
+        // don't build giant arrays.
+        let flattened: Tag[] = [];
+        let budget = 64;
+
+        for (const t of tags) {
+          const impl = t as MonomorphicTagImpl;
+
+          if (impl === CONSTANT_TAG) continue;
+
+          if (
+            impl[TYPE] === COMBINATOR_TAG_ID &&
+            Array.isArray(impl.subtag) &&
+            impl.subtag.length <= budget
+          ) {
+            for (const sub of impl.subtag) {
+              if (sub !== CONSTANT_TAG) flattened.push(sub);
+            }
+            budget -= impl.subtag.length;
+          } else {
+            flattened.push(t);
+          }
+        }
+
+        if (flattened.length === 0) return CONSTANT_TAG;
+        if (flattened.length === 1) return flattened[0] as Tag;
+
         let tag: MonomorphicTagImpl = new MonomorphicTagImpl(COMBINATOR_TAG_ID);
-        tag.subtag = tags;
+        tag.subtag = flattened;
         return tag;
       }
     }
