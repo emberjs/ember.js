@@ -356,9 +356,24 @@ export class RendererState {
   #channel: MessageChannel | null = null;
   #channelArmed = false;
   #flushesThisFrame = 0;
-  #lastFlushEnd = 0;
   #lastFrameAt = 0;
   #viaStream = false;
+
+  /**
+   * True during the microtask drain that follows a tick. Dirt arriving
+   * in that window comes from the tick's own continuations
+   * (render-coupled follow-ups: an after-render effect awaiting a
+   * microtask before setting state), so the next tick is scheduled at
+   * microtask speed; anything later takes the frame-paced legs. This is
+   * the same classifier Angular's zoneless scheduler ships
+   * (useMicrotaskScheduler + switchToMicrotaskScheduler): semantically
+   * exact, no wall clocks, no misclassification under CPU throttle.
+   */
+  #microtaskWindow = false;
+
+  #closeMicrotaskWindow = () => {
+    this.#microtaskWindow = false;
+  };
 
   // scheduling must not allocate per dirt event: dependent chains
   // (render -> effect -> set) re-enter scheduleRevalidate once per step,
@@ -418,9 +433,10 @@ export class RendererState {
 
     this.#flushScheduled = false;
 
-    _drainScheduledDestroys();
+    this.#microtaskWindow = true;
+    queueMicrotask(this.#closeMicrotaskWindow);
 
-    this.#lastFlushEnd = performance.now();
+    _drainScheduledDestroys();
 
     if (this.isValid()) {
       this.#settleRounds = 0;
@@ -430,7 +446,7 @@ export class RendererState {
       this.#flushScheduled = true;
       queueMicrotask(this.#microtaskFlush);
     } else {
-      this.#armStreamTick(renderer, this.#lastFlushEnd);
+      this.#armStreamTick(renderer, performance.now());
     }
   }
 
@@ -458,31 +474,19 @@ export class RendererState {
     this.#renderer = renderer;
     this.#flushScheduled = true;
 
-    // no paint to schedule against in SSR environments; flush on a
-    // microtask so rendering completes within the current task's drain
-    if (typeof requestAnimationFrame !== 'function') {
+    // Dirt inside the post-tick microtask window is render-coupled
+    // (chain) work and ticks at microtask speed, like the classic
+    // runloop -- this cannot defeat coalescing of awaited update loops,
+    // which drain their entire microtask chain before their first tick
+    // ever runs. Everything else is stream dirt and takes the
+    // frame-paced legs. SSR has no paint to schedule against, so it
+    // always ticks on a microtask.
+    if (this.#microtaskWindow || typeof requestAnimationFrame !== 'function') {
       queueMicrotask(this.#microtaskFlush);
       return;
     }
 
-    const now = performance.now();
-
-    // Distinguish dependent chains from external streams: chain dirt
-    // (render -> microtask -> set) arrives ~immediately after the last
-    // flush; it flushes at MICROTASK speed (same task turn, like the
-    // classic runloop) so sequential render-coupled loops don't pay a
-    // task hop per step. This cannot defeat coalescing of awaited
-    // update loops: those drain their entire microtask chain before
-    // their FIRST flush ever runs. Stream dirt (worker messages)
-    // arrives whole milliseconds later in fresh tasks: it flushes on a
-    // race of unclamped macrotask + rAF, standing the macrotask leg
-    // down under sustained bursts so flushes ride the frame.
-    if (now - this.#lastFlushEnd < 1) {
-      queueMicrotask(this.#microtaskFlush);
-      return;
-    }
-
-    this.#armStreamTick(renderer, now);
+    this.#armStreamTick(renderer, performance.now());
   }
 
   /**
