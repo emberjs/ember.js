@@ -371,22 +371,15 @@ export class RendererState {
     this.#flush(true);
   };
 
-  #revalidateUntilStable = () => {
-    const renderer = this.#renderer;
-
-    if (renderer === null) return;
-
-    this.revalidate(renderer);
-
-    // dirt produced synchronously by the render itself (e.g. an
-    // after-render effect advancing a loop) flushes in the same task;
-    // only dirt arriving between tasks waits
-    let guard = 0;
-
-    while (!this.isValid() && guard++ < 1_000_000) {
-      this.revalidate(renderer);
-    }
-  };
+  /**
+   * consecutive ticks that ended still-dirty (state was dirtied while
+   * we were rendering). A few settle rounds run at microtask speed for
+   * legitimate measure-then-adjust patterns; past that, ticking
+   * degrades to the frame-paced stream legs so a pathological
+   * render->dirty loop paints between ticks instead of freezing the
+   * thread. Replaces the old unbounded flush-until-stable loop.
+   */
+  #settleRounds = 0;
 
   #flush(viaFrame: boolean): void {
     if (!this.#flushScheduled) return;
@@ -410,19 +403,35 @@ export class RendererState {
 
     this.#viaStream = false;
 
-    this.#revalidateUntilStable();
+    const renderer = this.#renderer;
 
-    // the flag clears after revalidation so dirt produced mid-flush
-    // dedupes into the running flush's stability loop, but before the
-    // destroy drain, whose destructors may legitimately dirty state
-    // that needs a new flush
+    if (renderer === null) return;
+
+    // clock semantics: one render per tick, taking whatever has been
+    // dirtied so far. Code that keeps dirtying state while we render
+    // just accumulates work for the next tick -- the flag stays set
+    // through revalidation so mid-render dirt dedupes into this tick's
+    // snapshot rather than arming machinery, and clears before the
+    // destroy drain, whose destructors may dirty state that genuinely
+    // belongs to the next tick.
+    this.revalidate(renderer);
+
     this.#flushScheduled = false;
 
     _drainScheduledDestroys();
 
     this.#lastFlushEnd = performance.now();
 
-    resolveRenderPromiseIfSettled();
+    if (this.isValid()) {
+      this.#settleRounds = 0;
+      resolveRenderPromiseIfSettled();
+    } else if (this.#settleRounds < 3) {
+      this.#settleRounds++;
+      this.#flushScheduled = true;
+      queueMicrotask(this.#microtaskFlush);
+    } else {
+      this.#armStreamTick(renderer, this.#lastFlushEnd);
+    }
   }
 
   /**
@@ -473,6 +482,18 @@ export class RendererState {
       return;
     }
 
+    this.#armStreamTick(renderer, now);
+  }
+
+  /**
+   * The frame-paced legs of the clock: a tick arrives at the next
+   * rendering opportunity (rAF), raced by an unclamped macrotask that
+   * stands down under sustained per-frame bursts so flushes ride the
+   * frame.
+   */
+  #armStreamTick(renderer: BaseRenderer, now: number): void {
+    this.#renderer = renderer;
+    this.#flushScheduled = true;
     this.#viaStream = true;
     this.#rafHandle = requestAnimationFrame(this.#frameFlush);
 
