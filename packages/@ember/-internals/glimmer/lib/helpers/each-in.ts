@@ -45,6 +45,21 @@ import { internalHelper } from './internal-helper';
   </ul>
   ```
 
+  `{{#each}}` also supports native JavaScript [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
+  values and other iterables:
+
+  ```javascript
+  new Set([{ name: 'Yehuda' }, { name: 'Tom' }, { name: 'Paul' }]);
+  ```
+
+  ```handlebars
+  <ul>
+    {{#each @developers as |person|}}
+      <li>Hello, {{person.name}}!</li>
+    {{/each}}
+  </ul>
+  ```
+
   During iteration, the index of each item in the array is provided as a second block
   parameter.
 
@@ -55,8 +70,8 @@ import { internalHelper } from './internal-helper';
     {{/each}}
   </ul>
   ```
-    
-  `#each` is a keyword and does not need to be imported. 
+
+  `#each` is a keyword and does not need to be imported.
 
   ### Specifying Keys
 
@@ -124,7 +139,8 @@ import { internalHelper } from './internal-helper';
  */
 
 /**
-  The `{{#each-in}}` keyword loops over properties on an object.
+  The `{{#each-in}}` keyword loops over properties on an object, or entries in a
+  native JavaScript [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
 
   For example, given this component definition:
 
@@ -137,7 +153,7 @@ import { internalHelper } from './internal-helper';
       "name": "Shelly Sails",
       "age": 42
     };
-    
+
     <template>
       <ul>
         {{#each-in this.developer as |key value|}}
@@ -157,7 +173,33 @@ import { internalHelper } from './internal-helper';
     <li>age: 42</li>
   </ul>
   ```
- 
+
+  The same template works with a `Map`:
+
+  ```javascript
+  new Map([
+    ['name', 'Shelly Sails'],
+    ['age', 42],
+  ]);
+  ```
+
+  ```handlebars
+  <ul>
+    {{#each-in this.map as |key value|}}
+      <li>{{key}}: {{value}}</li>
+    {{/each-in}}
+  </ul>
+  ```
+
+  When a `Map` uses object keys, you can pass `key="@identity"` to explicitly
+  track entries across re-renders using the JavaScript identity of each key:
+
+  ```handlebars
+  {{#each-in this.map key="@identity" as |key value|}}
+    <li>{{key.name}}: {{value}}</li>
+  {{/each-in}}
+  ```
+
   `#each-in` is a keyword and does not need to be imported.
 
   @method each-in
