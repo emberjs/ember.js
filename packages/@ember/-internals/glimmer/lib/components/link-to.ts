@@ -469,7 +469,7 @@ class _LinkTo extends InternalComponent {
     if ('query' in this.args.named) {
       let query = this.named('query');
 
-      if (query == null) {
+      if (query === null) {
         return EMPTY_QUERY_PARAMS;
       }
 
