@@ -252,6 +252,20 @@ function isQueryParams(value: unknown): value is QueryParams {
   </a>
   ```
 
+  Query parameters are sticky by default: omitting `@query` keeps previously used
+  values for that route. To reset sticky values back to their defaults for the
+  destination route, pass an explicitly empty hash:
+
+  ```handlebars
+  <LinkTo @route='photoGallery' @query={{(hash)}}>
+    Great Hamster Photos
+  </LinkTo>
+  ```
+
+  An explicitly empty `@query` resets defaults for that link/transition only; it
+  does not clear sticky values cached for other routes. Apps that previously
+  passed a dynamic empty hash as a no-op may observe a behavior change.
+
   @for Ember.Templates.components
   @method LinkTo
   @public
@@ -352,7 +366,9 @@ class _LinkTo extends InternalComponent {
 
     if (DEBUG) {
       try {
-        return routing.generateURL(route, models, query);
+        return routing.generateURL(route, models, query, {
+          queryParamsProvided: this.hasExplicitQuery,
+        });
       } catch (e) {
         let details = e instanceof Error ? e.message : inspect(e);
         let message = `While generating link to route "${route}": ${details}`;
@@ -364,7 +380,9 @@ class _LinkTo extends InternalComponent {
         }
       }
     } else {
-      return routing.generateURL(route, models, query);
+      return routing.generateURL(route, models, query, {
+        queryParamsProvided: this.hasExplicitQuery,
+      });
     }
   }
 
@@ -416,7 +434,9 @@ class _LinkTo extends InternalComponent {
     flaggedInstrument('interaction.link-to', payload, () => {
       assert('[BUG] route can only be missing if isLoading is true', isPresent(route));
 
-      payload.transition = routing.transitionTo(route, models, query, replace);
+      payload.transition = routing.transitionTo(route, models, query, replace, {
+        queryParamsProvided: this.hasExplicitQuery,
+      });
     });
   }
 
@@ -465,8 +485,12 @@ class _LinkTo extends InternalComponent {
     }
   }
 
+  private get hasExplicitQuery(): boolean {
+    return 'query' in this.args.named;
+  }
+
   private get query(): Record<string, unknown> {
-    if ('query' in this.args.named) {
+    if (this.hasExplicitQuery) {
       let query = this.named('query');
 
       assert(
@@ -572,7 +596,9 @@ class _LinkTo extends InternalComponent {
 
       assert('[BUG] route can only be missing if isLoading is true', isPresent(route));
 
-      return routing.isActiveForRoute(models, query, route, state);
+      return routing.isActiveForRoute(models, query, route, state, {
+        queryParamsProvided: this.hasExplicitQuery,
+      });
     }
   }
 

@@ -151,7 +151,7 @@ moduleFor(
       );
     }
 
-    async [`@test doesn't update controller QP properties on current route when invoked (empty query-params obj)`](
+    async [`@test an explicit empty query hash resets sticky query params on the current route`](
       assert
     ) {
       this.add(
@@ -161,20 +161,58 @@ moduleFor(
         )
       );
 
-      await this.visit('/');
-
-      await this.click('#the-link > a');
+      await this.visit('/?foo=456&bar=YES');
 
       let indexController = this.getController('index');
 
       assert.deepEqual(
         indexController.getProperties('foo', 'bar'),
+        { foo: '456', bar: 'YES' },
+        'starts with sticky non-default QP values'
+      );
+
+      await this.click('#the-link > a');
+
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
         this.indexProperties,
-        'controller QP properties do not update'
+        'explicit empty query hash resets sticky QP values to defaults'
       );
     }
 
-    async [`@test it doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)`](
+    async [`@test omitting query preserves sticky query params on the current route`](assert) {
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<div id='preserve-link'>{{#link-to route='index'}}Index{{/link-to}}</div>
+           <div id='reset-link'>{{#link-to route='index' query=(hash)}}Reset{{/link-to}}</div>`
+        )
+      );
+
+      await this.visit('/?foo=456&bar=YES');
+
+      assert.ok(
+        this.$('#preserve-link > a').attr('href').includes('foo=456'),
+        'paramless link-to href keeps sticky QPs'
+      );
+      assert.equal(
+        this.$('#reset-link > a').attr('href'),
+        '/',
+        'empty query href resets sticky QPs'
+      );
+
+      await this.click('#preserve-link > a');
+
+      let indexController = this.getController('index');
+
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
+        { foo: '456', bar: 'YES' },
+        'omitting query keeps sticky QP values'
+      );
+    }
+
+    async [`@test an explicit empty query hash resets sticky query params (inferred route)`](
       assert
     ) {
       this.add(
@@ -182,7 +220,7 @@ moduleFor(
         precompileTemplate(`<div id='the-link'>{{#link-to query=(hash)}}Index{{/link-to}}</div>`)
       );
 
-      await this.visit('/');
+      await this.visit('/?foo=456&bar=YES');
 
       await this.click('#the-link > a');
 
@@ -191,7 +229,7 @@ moduleFor(
       assert.deepEqual(
         indexController.getProperties('foo', 'bar'),
         this.indexProperties,
-        'controller QP properties do not update'
+        'explicit empty query hash resets sticky QP values to defaults'
       );
     }
 

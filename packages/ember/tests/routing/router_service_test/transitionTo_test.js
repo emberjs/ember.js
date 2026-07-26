@@ -277,6 +277,135 @@ moduleFor(
         });
     }
 
+    ['@test RouterService#transitionTo with an explicit empty queryParams object resets sticky query params'](
+      assert
+    ) {
+      assert.expect(3);
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['sort'],
+          sort: 'ASC',
+        })
+      );
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo(
+            'parent.child',
+            this.buildQueryParams({ sort: 'DESC' })
+          );
+        })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
+          assert.equal(get(this.controllerFor('parent.child'), 'sort'), 'DESC');
+        })
+        .then(() => {
+          return this.routerService.transitionTo('parent.child', this.buildQueryParams({}));
+        })
+        .then(() => {
+          assert.equal(
+            this.routerService.get('currentURL'),
+            '/child',
+            'explicit empty queryParams resets sticky values to defaults'
+          );
+        });
+    }
+
+    ['@test RouterService#transitionTo without queryParams preserves sticky query params'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['sort'],
+          sort: 'ASC',
+        })
+      );
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo(
+            'parent.child',
+            this.buildQueryParams({ sort: 'DESC' })
+          );
+        })
+        .then(() => {
+          return this.routerService.transitionTo('parent.child');
+        })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
+          assert.equal(get(this.controllerFor('parent.child'), 'sort'), 'DESC');
+        });
+    }
+
+    ['@test RouterService#replaceWith with an explicit empty queryParams object resets sticky query params'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['sort'],
+          sort: 'ASC',
+        })
+      );
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo(
+            'parent.child',
+            this.buildQueryParams({ sort: 'DESC' })
+          );
+        })
+        .then(() => {
+          return this.routerService.replaceWith('parent.child', this.buildQueryParams({}));
+        })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child');
+          assert.equal(get(this.controllerFor('parent.child'), 'sort'), 'ASC');
+        });
+    }
+
+    ['@test RouterService#isActive treats explicit empty queryParams as defaults'](assert) {
+      assert.expect(2);
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['sort'],
+          sort: 'ASC',
+        })
+      );
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo(
+            'parent.child',
+            this.buildQueryParams({ sort: 'DESC' })
+          );
+        })
+        .then(() => {
+          assert.false(
+            this.routerService.isActive('parent.child', this.buildQueryParams({})),
+            'empty queryParams is not active while sticky non-defaults are present'
+          );
+        })
+        .then(() => {
+          return this.routerService.transitionTo('parent.child', this.buildQueryParams({}));
+        })
+        .then(() => {
+          assert.true(
+            this.routerService.isActive('parent.child', this.buildQueryParams({})),
+            'empty queryParams is active at defaults'
+          );
+        });
+    }
+
     ['@test RouterService#transitionTo passing only queryParams works'](assert) {
       assert.expect(2);
 

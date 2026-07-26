@@ -151,7 +151,7 @@ moduleFor(
       );
     }
 
-    async [`@test it doesn't update controller QP properties on current route when invoked (empty query-params obj)`](
+    async [`@test an explicit empty @query object resets sticky query params on the current route`](
       assert
     ) {
       this.add(
@@ -159,20 +159,27 @@ moduleFor(
         precompileTemplate(`<LinkTo id='the-link' @route='index' @query={{(hash)}}>Index</LinkTo>`)
       );
 
-      await this.visit('/');
-
-      await this.click('#the-link');
+      await this.visit('/?foo=456&bar=YES');
 
       let indexController = this.getController('index');
 
       assert.deepEqual(
         indexController.getProperties('foo', 'bar'),
-        this.indexProperties,
-        'controller QP properties do not update'
+        { foo: '456', bar: 'YES' },
+        'starts with sticky non-default QP values'
       );
+
+      await this.click('#the-link');
+
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
+        this.indexProperties,
+        'explicit empty @query resets sticky QP values to defaults'
+      );
+      assert.equal(this.appRouter.get('location.path'), '/', 'URL drops non-default QPs');
     }
 
-    async [`@test it doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)`](
+    async [`@test an explicit empty @query object resets sticky query params (inferred route)`](
       assert
     ) {
       this.add(
@@ -180,7 +187,7 @@ moduleFor(
         precompileTemplate(`<LinkTo id='the-link' @query={{(hash)}}>Index</LinkTo>`)
       );
 
-      await this.visit('/');
+      await this.visit('/?foo=456&bar=YES');
 
       await this.click('#the-link');
 
@@ -189,8 +196,87 @@ moduleFor(
       assert.deepEqual(
         indexController.getProperties('foo', 'bar'),
         this.indexProperties,
-        'controller QP properties do not update'
+        'explicit empty @query resets sticky QP values to defaults'
       );
+    }
+
+    async [`@test omitting @query preserves sticky query params on the current route`](assert) {
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<LinkTo id='preserve-link' @route='index'>Index</LinkTo>
+           <LinkTo id='reset-link' @route='index' @query={{(hash)}}>Reset</LinkTo>`
+        )
+      );
+
+      await this.visit('/?foo=456&bar=YES');
+
+      assert.equal(
+        this.$('#preserve-link').attr('href'),
+        '/?bar=YES&foo=456',
+        'paramless LinkTo href keeps sticky QPs'
+      );
+      assert.equal(this.$('#reset-link').attr('href'), '/', 'empty @query href resets sticky QPs');
+
+      await this.click('#preserve-link');
+
+      let indexController = this.getController('index');
+
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
+        { foo: '456', bar: 'YES' },
+        'omitting @query keeps sticky QP values'
+      );
+    }
+
+    async [`@test an explicit empty @query resets sticky query params when transitioning to another route`](
+      assert
+    ) {
+      this.router.map(function () {
+        this.route('about');
+      });
+
+      this.add(
+        'template:about',
+        precompileTemplate(
+          `<LinkTo id='reset-link' @route='index' @query={{(hash)}}>Index</LinkTo>`
+        )
+      );
+
+      await this.visit('/?foo=456&bar=YES');
+      await this.visit('/about');
+
+      assert.equal(this.$('#reset-link').attr('href'), '/', 'href targets defaults, not sticky QPs');
+
+      await this.click('#reset-link');
+
+      let indexController = this.getController('index');
+
+      assert.equal(this.appRouter.get('location.path'), '/');
+      assert.deepEqual(
+        indexController.getProperties('foo', 'bar'),
+        this.indexProperties,
+        'empty @query clears sticky values when entering the route'
+      );
+    }
+
+    async [`@test an explicit empty @query is inactive while sticky non-default query params are present`](
+      assert
+    ) {
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<LinkTo id='reset-link' @route='index' @query={{(hash)}}>Reset</LinkTo>`
+        )
+      );
+
+      await this.visit('/?foo=456&bar=YES');
+
+      this.shouldNotBeActive(assert, '#reset-link');
+
+      await this.click('#reset-link');
+
+      this.shouldBeActive(assert, '#reset-link');
     }
 
     async ['@test it updates controller QP properties on current route when invoked'](assert) {

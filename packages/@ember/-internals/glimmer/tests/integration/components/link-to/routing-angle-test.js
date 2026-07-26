@@ -1784,12 +1784,24 @@ moduleFor(
 
       this.add(
         'template:index',
-        precompileTemplate(`<LinkTo id='the-link' @route='index' @query={{(hash)}}>Index</LinkTo>`)
+        precompileTemplate(
+          `<LinkTo id='sticky-link' @route='index'>Sticky</LinkTo>
+           <LinkTo id='reset-link' @route='index' @query={{(hash)}}>Reset</LinkTo>`
+        )
       );
 
-      await this.visit('/');
+      await this.visit('/?foo=456');
 
-      assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
+      assert.equal(
+        this.$('#sticky-link').attr('href'),
+        '/?foo=456',
+        'omitting @query keeps sticky href'
+      );
+      assert.equal(
+        this.$('#reset-link').attr('href'),
+        '/',
+        'empty @query href resets sticky query params'
+      );
     }
 
     async [`@test it updates when route changes with only query-params and a block`](assert) {

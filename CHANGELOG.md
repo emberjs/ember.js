@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## Unreleased
+
+- [BUGFIX] An explicitly empty `{ queryParams: {} }` (and LinkTo `@query={{(hash)}}`) now resets sticky query params to their defaults for that transition. Omitting `queryParams` / `@query` still preserves sticky values. Apps that used an empty object as a no-op placeholder may observe a behavior change. See #20211.
+
 ## v7.2.0-beta.1 (June 22, 2026)
 
 - [#21303](https://github.com/emberjs/ember.js/pull/21303) [FEATURE] Build in a default Strict Resolver, an opt-in replacement for `ember-resolver` per [RFC #1132](https://rfcs.emberjs.com/id/1132-default-strict-resolver).

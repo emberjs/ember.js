@@ -33,9 +33,29 @@ type ExtractedArgs = {
   routeName: string | undefined;
   models: unknown[];
   queryParams: Record<string, unknown>;
+  /**
+    True when the caller passed an options hash with a `queryParams` key.
+    An explicitly empty `{ queryParams: {} }` resets sticky query params
+    instead of restoring cached values.
+   */
+  queryParamsProvided: boolean;
 };
 
 export type RouteOptions = { queryParams: Record<string, unknown> };
+
+export type QueryParamsTransitionOptions = {
+  fromRouterService?: boolean;
+  queryParamsProvided?: boolean;
+};
+
+export type PrepareQueryParamsOptions = {
+  fromRouterService?: boolean;
+  /**
+    When true, unsupplied query params are set to their defaults instead of
+    restoring sticky (cached) values.
+   */
+  resetStickyQueryParams?: boolean;
+};
 
 export function extractRouteArgs(args: RouteArgs): ExtractedArgs {
   // SAFETY: This should just be the same thing
@@ -44,9 +64,11 @@ export function extractRouteArgs(args: RouteArgs): ExtractedArgs {
   let possibleOptions = args[args.length - 1];
 
   let queryParams: Record<string, unknown>;
+  let queryParamsProvided = false;
   if (isRouteOptions(possibleOptions)) {
     args.pop(); // Remove options
     queryParams = possibleOptions.queryParams;
+    queryParamsProvided = true;
   } else {
     queryParams = {};
   }
@@ -62,7 +84,18 @@ export function extractRouteArgs(args: RouteArgs): ExtractedArgs {
   // SAFTEY: We removed the name and options if they existed, only models left.
   let models = args;
 
-  return { routeName, models, queryParams };
+  return { routeName, models, queryParams, queryParamsProvided };
+}
+
+/**
+  An explicitly empty query-params object means "do not restore sticky values";
+  omitted query params keep existing sticky hydration behavior.
+ */
+export function shouldResetStickyQueryParams(
+  queryParams: Record<string, unknown>,
+  queryParamsProvided: boolean | undefined
+): boolean {
+  return Boolean(queryParamsProvided) && Object.keys(queryParams).length === 0;
 }
 
 export function getActiveTargetName(router: Router<Route>): string {

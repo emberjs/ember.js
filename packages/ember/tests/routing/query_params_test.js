@@ -1820,5 +1820,135 @@ moduleFor(
       assert.equal(parentController.bar, 'NEW_BAR');
       this.assertCurrentPath('/grandparent/1/parent/child?bar=NEW_BAR&foo=NEW_FOO');
     }
+
+    async [`@test EmberRouter#transitionTo omits queryParams to keep sticky values and uses {} to reset defaults`](
+      assert
+    ) {
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child');
+        });
+      });
+
+      this.add(
+        'controller:parent.child',
+        class extends Controller {
+          queryParams = ['sort'];
+          sort = 'ASC';
+        }
+      );
+
+      await this.visit('/parent/child?sort=DESC');
+      assert.equal(this.getController('parent.child').get('sort'), 'DESC');
+
+      await this.transitionTo('parent.child');
+      this.assertCurrentPath('/parent/child?sort=DESC', 'omitting queryParams keeps sticky values');
+      assert.equal(this.getController('parent.child').get('sort'), 'DESC');
+
+      await this.transitionTo('parent.child', { queryParams: {} });
+      this.assertCurrentPath('/parent/child', 'explicit empty queryParams resets to defaults');
+      assert.equal(this.getController('parent.child').get('sort'), 'ASC');
+    }
+
+    async [`@test EmberRouter#transitionTo sticky semantics with multiple typed query params`](
+      assert
+    ) {
+      this.router.map(function () {
+        this.route('filters');
+      });
+
+      this.add(
+        'controller:filters',
+        class extends Controller {
+          queryParams = ['label', 'enabled', 'page'];
+          label = 'all';
+          enabled = false;
+          page = 1;
+        }
+      );
+
+      await this.visit('/filters?label=photos&enabled=true&page=4');
+      let controller = this.getController('filters');
+
+      assert.strictEqual(controller.get('label'), 'photos');
+      // Boolean QPs deserialize from the URL as booleans when the default is a boolean
+      // (see "A default boolean value deserializes QPs as booleans rather than strings").
+      assert.strictEqual(controller.get('enabled'), true);
+      assert.strictEqual(controller.get('page'), 4);
+
+      let assertPathHasQuery = (path, expected, message) => {
+        let query = path.split('?')[1] || '';
+        let actual = Object.fromEntries(new URLSearchParams(query).entries());
+        // URL serialization layer is always strings.
+        assert.deepEqual(actual, expected, message);
+      };
+
+      await this.transitionTo('filters');
+      assertPathHasQuery(
+        this.appRouter.get('location.path'),
+        { label: 'photos', enabled: 'true', page: '4' },
+        'omitting queryParams keeps all sticky values'
+      );
+
+      await this.transitionTo('filters', { queryParams: { page: 2 } });
+      assertPathHasQuery(
+        this.appRouter.get('location.path'),
+        { label: 'photos', enabled: 'true', page: '2' },
+        'partial queryParams updates only the supplied key'
+      );
+      assert.strictEqual(controller.get('label'), 'photos', 'unsupplied string QP stays sticky');
+      assert.strictEqual(controller.get('enabled'), true, 'unsupplied boolean QP stays sticky');
+      assert.strictEqual(controller.get('page'), 2, 'supplied number QP updates');
+
+      await this.transitionTo('filters', { queryParams: {} });
+      this.assertCurrentPath('/filters', 'empty queryParams resets every QP to defaults');
+      assert.deepEqual(
+        controller.getProperties('label', 'enabled', 'page'),
+        { label: 'all', enabled: false, page: 1 },
+        'string/boolean/number defaults are restored without sticky leftovers'
+      );
+    }
+
+    async [`@test EmberRouter#transitionTo empty queryParams reset does not clear sticky cache for other routes`](
+      assert
+    ) {
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child');
+          this.route('sibling');
+        });
+      });
+
+      this.add(
+        'controller:parent.child',
+        class extends Controller {
+          queryParams = ['sort'];
+          sort = 'ASC';
+        }
+      );
+
+      this.add(
+        'controller:parent.sibling',
+        class extends Controller {
+          queryParams = ['filter'];
+          filter = 'ALL';
+        }
+      );
+
+      await this.visit('/parent/child?sort=DESC');
+      await this.transitionTo('parent.sibling', { queryParams: { filter: 'MINE' } });
+      this.assertCurrentPath('/parent/sibling?filter=MINE');
+
+      await this.transitionTo('parent.child', { queryParams: {} });
+      this.assertCurrentPath('/parent/child', 'child sticky values reset to defaults');
+      assert.equal(this.getController('parent.child').get('sort'), 'ASC');
+
+      await this.transitionTo('parent.sibling');
+      this.assertCurrentPath(
+        '/parent/sibling?filter=MINE',
+        'sibling sticky cache is intact after resetting a different route'
+      );
+      assert.equal(this.getController('parent.sibling').get('filter'), 'MINE');
+    }
   }
 );

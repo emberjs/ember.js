@@ -19,8 +19,14 @@ import {
   extractRouteArgs,
   getActiveTargetName,
   resemblesURL,
+  shouldResetStickyQueryParams,
 } from './lib/utils';
-import type { RouteArgs, RouteOptions } from './lib/utils';
+import type {
+  PrepareQueryParamsOptions,
+  QueryParamsTransitionOptions,
+  RouteArgs,
+  RouteOptions,
+} from './lib/utils';
 import type {
   default as EmberLocation,
   Registry as LocationRegistry,
@@ -702,12 +708,23 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     Transition the application into another route. The route may
     be either a single route or route path:
 
+    Passing `{ queryParams: {} }` (an explicitly empty object) resets sticky
+    query param values for the destination route back to their defaults for
+    that transition. Omitting `queryParams` preserves sticky values.
+
+    Resetting fills unsupplied keys with each query param's default for the
+    destination; it does not clear the global sticky query-param cache used
+    by other routes or models.
+
     @method transitionTo
     @param {String} [name] the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used while
       transitioning to the route.
     @param {Object} [options] optional hash with a queryParams property
-      containing a mapping of query parameters
+      containing a mapping of query parameters. An empty `queryParams: {}`
+      resets sticky query params for this transition; omitting `queryParams`
+      keeps them sticky. Apps that used `{}` as a no-op placeholder may see
+      a behavior change.
     @return {Transition} the transition object associated with this
       attempted transition
     @public
@@ -720,12 +737,12 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       );
       return this._doURLTransition('transitionTo', args[0]);
     }
-    let { routeName, models, queryParams } = extractRouteArgs(args);
+    let { routeName, models, queryParams, queryParamsProvided } = extractRouteArgs(args);
     assert(
       `A transition was attempted from '${this.currentRouteName}' to '${routeName}' but the application instance has already been destroyed.`,
       !this.isDestroying && !this.isDestroyed
     );
-    return this._doTransition(routeName, models, queryParams);
+    return this._doTransition(routeName, models, queryParams, { queryParamsProvided });
   }
 
   intermediateTransitionTo(name: string, ...args: any[]) {
@@ -755,7 +772,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @param {...Object} models the model(s) or identifier(s) to be used while
       transitioning to the route.
     @param {Object} [options] optional hash with a queryParams property
-      containing a mapping of query parameters
+      containing a mapping of query parameters. An empty `queryParams: {}`
+      resets sticky query params; omitting `queryParams` keeps them sticky.
     @return {Transition} the transition object associated with this
       attempted transition
     @public
@@ -1042,8 +1060,9 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     _targetRouteName: string | undefined,
     models: ModelFor<Route>[],
     _queryParams: Record<string, unknown>,
-    _fromRouterService?: boolean
+    options: QueryParamsTransitionOptions = {}
   ): Transition {
+    let { fromRouterService = false, queryParamsProvided = false } = options;
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
     assert(
       `The route ${targetRouteName} was not found`,
@@ -1052,13 +1071,19 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     this._initialTransitionStarted = true;
 
+    let resetSticky = shouldResetStickyQueryParams(_queryParams, queryParamsProvided);
     let queryParams: Record<string, unknown> = {};
 
-    this._processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams);
+    if (!resetSticky) {
+      this._processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams);
+    }
 
     Object.assign(queryParams, _queryParams);
 
-    this._prepareQueryParams(targetRouteName, models, queryParams, Boolean(_fromRouterService));
+    this._prepareQueryParams(targetRouteName, models, queryParams, {
+      fromRouterService,
+      resetStickyQueryParams: resetSticky,
+    });
 
     let transition = this._routerMicrolib.transitionTo(targetRouteName, ...models, { queryParams });
 
@@ -1106,20 +1131,24 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     @param {String} targetRouteName
     @param {Array<Object>} models
     @param {Object} queryParams
-    @param {boolean} keepDefaultQueryParamValues
+    @param {Object} [options]
     @return {Void}
   */
   _prepareQueryParams(
     targetRouteName: string,
     models: ModelFor<Route>[],
     queryParams: Record<string, unknown>,
-    _fromRouterService?: boolean
+    options: PrepareQueryParamsOptions = {}
   ) {
+    let { fromRouterService = false, resetStickyQueryParams = false } = options;
     let state = calculatePostTransitionState(this, targetRouteName, models);
-    this._hydrateUnsuppliedQueryParams(state, queryParams, Boolean(_fromRouterService));
+    this._hydrateUnsuppliedQueryParams(state, queryParams, {
+      fromRouterService,
+      resetStickyQueryParams,
+    });
     this._serializeQueryParams(state.routeInfos, queryParams);
 
-    if (!_fromRouterService) {
+    if (!fromRouterService) {
       this._pruneDefaultQueryParamValues(state.routeInfos, queryParams);
     }
   }
@@ -1247,16 +1276,24 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     the given queryParams hash. This is what allows query params to be "sticky"
     and restore their last known values for their scope.
 
+    When `resetStickyQueryParams` is true, unsupplied keys are filled with each
+    QP's default instead of the sticky cache (used for explicitly empty
+    `queryParams: {}` / LinkTo `@query={{(hash)}}`).
+
     @private
     @method _hydrateUnsuppliedQueryParams
     @param {TransitionState} state
     @param {Object} queryParams
+    @param {Object} [options]
     @return {Void}
   */
   _hydrateUnsuppliedQueryParams(
     state: TransitionState<Route>,
     queryParams: QueryParams,
-    _fromRouterService: boolean
+    {
+      fromRouterService: _fromRouterService = false,
+      resetStickyQueryParams = false,
+    }: PrepareQueryParamsOptions = {}
   ): void {
     let routeInfos = state.routeInfos;
     let appCache = this._bucketCache;
@@ -1304,6 +1341,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
             queryParams[qp.scopedPropertyName] = queryParams[presentProp];
             delete queryParams[presentProp];
           }
+        } else if (resetStickyQueryParams) {
+          queryParams[qp.scopedPropertyName] = qp.defaultValue;
         } else {
           let cacheKey = calculateCacheKey(qp.route.fullRouteName, qp.parts, state.params);
 

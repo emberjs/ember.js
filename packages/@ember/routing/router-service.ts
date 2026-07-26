@@ -13,7 +13,7 @@ import type Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
 import type { RouteInfo, RouteInfoWithAttributes } from './lib/route-info';
 import type { RouteArgs, RouteOptions } from './lib/utils';
-import { extractRouteArgs, resemblesURL, shallowEqual } from './lib/utils';
+import { extractRouteArgs, resemblesURL, shallowEqual, shouldResetStickyQueryParams } from './lib/utils';
 
 export const ROUTER = Symbol('ROUTER');
 
@@ -127,7 +127,12 @@ class RouterService extends Service.extend(Evented) {
        transitioning to the route.
      @param {Object} [options] optional hash with a queryParams property
        containing a mapping of query parameters. May be supplied as the only
-      parameter to trigger a query-parameter-only transition.
+       parameter to trigger a query-parameter-only transition.
+       Passing `{ queryParams: {} }` resets sticky query params for the
+       destination route to their defaults for that transition (without
+       clearing the sticky cache for other routes). Omitting `queryParams`
+       preserves sticky values. Apps that used `{}` as a no-op placeholder
+       may see a behavior change.
      @return {Transition} the transition object associated with this
        attempted transition
      @public
@@ -139,9 +144,12 @@ class RouterService extends Service.extend(Evented) {
       return this._router._doURLTransition('transitionTo', args[0]);
     }
 
-    let { routeName, models, queryParams } = extractRouteArgs(args);
+    let { routeName, models, queryParams, queryParamsProvided } = extractRouteArgs(args);
 
-    let transition = this._router._doTransition(routeName, models, queryParams, true);
+    let transition = this._router._doTransition(routeName, models, queryParams, {
+      fromRouterService: true,
+      queryParamsProvided,
+    });
 
     return transition;
   }
@@ -178,7 +186,9 @@ class RouterService extends Service.extend(Evented) {
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route i.e. an object of params to pass to the destination route
      @param {Object} [options] optional hash with a queryParams property
-       containing a mapping of query parameters
+       containing a mapping of query parameters. Passing `{ queryParams: {} }`
+       resets sticky query params for the destination route to their defaults;
+       omitting `queryParams` preserves sticky values.
      @return {Transition} the transition object associated with this
        attempted transition
      @public
@@ -314,12 +324,14 @@ class RouterService extends Service.extend(Evented) {
      @param {String} routeName the name of the route
      @param {...Object} models the model(s) or identifier(s) to be used when determining the active route.
      @param {Object} [options] optional hash with a queryParams property
-       containing a mapping of query parameters
+       containing a mapping of query parameters. An explicitly empty
+       `{ queryParams: {} }` is compared against default values (not sticky
+       cached values).
      @return {boolean} true if the provided routeName/models/queryParams are active
      @public
    */
   isActive(...args: RouteArgs) {
-    let { routeName, models, queryParams } = extractRouteArgs(args);
+    let { routeName, models, queryParams, queryParamsProvided } = extractRouteArgs(args);
     this._router.setupRouter();
     let routerMicrolib = this._router._routerMicrolib;
 
@@ -343,7 +355,8 @@ class RouterService extends Service.extend(Evented) {
     if (!routerMicrolib.isActiveIntent(routeName as string, models)) {
       return false;
     }
-    let hasQueryParams = Object.keys(queryParams).length > 0;
+    let resetSticky = shouldResetStickyQueryParams(queryParams, queryParamsProvided);
+    let hasQueryParams = Object.keys(queryParams).length > 0 || resetSticky;
 
     if (hasQueryParams) {
       // UNSAFE: casting `routeName as string` here encodes the existing
@@ -355,20 +368,15 @@ class RouterService extends Service.extend(Evented) {
       let targetRouteName = routeName as string;
 
       queryParams = Object.assign({}, queryParams);
-      this._router._prepareQueryParams(
-        targetRouteName,
-        models,
-        queryParams,
-        true /* fromRouterService */
-      );
+      this._router._prepareQueryParams(targetRouteName, models, queryParams, {
+        fromRouterService: true,
+        resetStickyQueryParams: resetSticky,
+      });
 
       let currentQueryParams = Object.assign({}, routerMicrolib.state!.queryParams);
-      this._router._prepareQueryParams(
-        targetRouteName,
-        models,
-        currentQueryParams,
-        true /* fromRouterService */
-      );
+      this._router._prepareQueryParams(targetRouteName, models, currentQueryParams, {
+        fromRouterService: true,
+      });
 
       return shallowEqual(queryParams, currentQueryParams);
     }

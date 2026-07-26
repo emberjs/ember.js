@@ -11,6 +11,11 @@ import type Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
 import type RouterState from './router_state';
 import { ROUTER } from '@ember/routing/router-service';
+import { shouldResetStickyQueryParams } from './utils';
+
+export type RoutingQueryParamsOptions = {
+  queryParamsProvided?: boolean;
+};
 
 /**
   The Routing service is used by LinkTo, and provides facilities for
@@ -55,9 +60,12 @@ export default class RoutingService<R extends Route> extends Service {
     routeName: string,
     models: ModelFor<R>[],
     queryParams: Record<string, unknown>,
-    shouldReplace: boolean
+    shouldReplace: boolean,
+    { queryParamsProvided = false }: RoutingQueryParamsOptions = {}
   ) {
-    let transition = this.router._doTransition(routeName, models, queryParams);
+    let transition = this.router._doTransition(routeName, models, queryParams, {
+      queryParamsProvided,
+    });
 
     if (shouldReplace) {
       transition.method('replace');
@@ -69,16 +77,24 @@ export default class RoutingService<R extends Route> extends Service {
   normalizeQueryParams(
     routeName: string,
     models: ModelFor<R>[],
-    queryParams: Record<string, unknown>
+    queryParams: Record<string, unknown>,
+    { queryParamsProvided = false }: RoutingQueryParamsOptions = {}
   ) {
-    this.router._prepareQueryParams(routeName, models, queryParams);
+    this.router._prepareQueryParams(routeName, models, queryParams, {
+      resetStickyQueryParams: shouldResetStickyQueryParams(queryParams, queryParamsProvided),
+    });
   }
 
-  _generateURL(routeName: string, models: ModelFor<R>[], queryParams: Record<string, unknown>) {
+  _generateURL(
+    routeName: string,
+    models: ModelFor<R>[],
+    queryParams: Record<string, unknown>,
+    options: RoutingQueryParamsOptions = {}
+  ) {
     let visibleQueryParams = {};
     if (queryParams) {
       Object.assign(visibleQueryParams, queryParams);
-      this.normalizeQueryParams(routeName, models, visibleQueryParams);
+      this.normalizeQueryParams(routeName, models, visibleQueryParams, options);
     }
 
     return this.router.generate(routeName, ...models, {
@@ -86,14 +102,19 @@ export default class RoutingService<R extends Route> extends Service {
     });
   }
 
-  generateURL(routeName: string, models: ModelFor<R>[], queryParams: Record<string, unknown>) {
+  generateURL(
+    routeName: string,
+    models: ModelFor<R>[],
+    queryParams: Record<string, unknown>,
+    options: RoutingQueryParamsOptions = {}
+  ) {
     if (this.router._initialTransitionStarted) {
-      return this._generateURL(routeName, models, queryParams);
+      return this._generateURL(routeName, models, queryParams, options);
     } else {
       // Swallow error when transition has not started.
       // When rendering in tests without visit(), we cannot infer the route context which <LinkTo/> needs be aware of
       try {
-        return this._generateURL(routeName, models, queryParams);
+        return this._generateURL(routeName, models, queryParams, options);
       } catch (_e) {
         return;
       }
@@ -104,7 +125,8 @@ export default class RoutingService<R extends Route> extends Service {
     contexts: ModelFor<R>[],
     queryParams: Record<string, unknown> | undefined,
     routeName: string,
-    routerState: RouterState
+    routerState: RouterState,
+    { queryParamsProvided = false }: RoutingQueryParamsOptions = {}
   ): boolean {
     let handlers = this.router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;
@@ -124,7 +146,9 @@ export default class RoutingService<R extends Route> extends Service {
       routeName = leafName;
     }
 
-    return routerState.isActiveIntent(routeName, contexts, queryParams);
+    return routerState.isActiveIntent(routeName, contexts, queryParams, {
+      queryParamsProvided,
+    });
   }
 }
 
