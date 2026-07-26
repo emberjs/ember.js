@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, strip, runTask, runAppend } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -7,6 +7,7 @@ import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
+import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
   'Components test: dynamic components',
@@ -110,24 +111,19 @@ moduleFor(
         return;
       }
 
+      let Bar = setComponentTemplate(
+        precompileTemplate('{{component this.componentName}}', {
+          strictMode: true,
+        }),
+        class extends GlimmerishComponent {
+          componentName = { name: 'not-a-component' };
+        }
+      );
+
+      this.owner.register('component:bar', Bar);
+
       assert.throws(() => {
-        this.owner.register(
-          'template:-top-level',
-          this.compile('{{component this.componentName}}', {
-            moduleName: '-top-level',
-            strictMode: true,
-          })
-        );
-
-        let attrs = {
-          componentName: { name: 'not-a-component' },
-          tagName: '',
-          layoutName: '-top-level',
-        };
-
-        this.owner.register('component:-top-level', Component.extend(attrs));
-        this.component = this.owner.lookup('component:-top-level');
-        runAppend(this.component);
+        this.render('<Bar/>');
       }, /The `{{component}}` helper received an invalid value\. In strict mode, it expects a component definition\./);
     }
 
