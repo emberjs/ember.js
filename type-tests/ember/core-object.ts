@@ -9,6 +9,13 @@ expectTypeOf(co1.isDestroying).toBeBoolean();
 expectTypeOf(co1.destroy()).toEqualTypeOf<CoreObject>();
 expectTypeOf(co1.toString()).toBeString();
 
+/** Subclasses may override init and call super.init() without arguments. */
+class CoreObjectWithInit extends CoreObject {
+  override init(): void {
+    super.init();
+  }
+}
+
 /** .create tests */
 const co2 = CoreObject.create();
 expectTypeOf(co2.isDestroyed).toBeBoolean();
