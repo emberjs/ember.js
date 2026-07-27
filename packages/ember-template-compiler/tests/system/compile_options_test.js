@@ -78,3 +78,15 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'ember-template-compiler: syntax error locations (GH#21031)',
+  class extends AbstractTestCase {
+    ['@test compile errors include the module name and source location'](assert) {
+      assert.throws(
+        () => compile('<div><span></div>', { moduleName: 'my-app/components/foo.hbs' }),
+        /error occurred in 'my-app\/components\/foo\.hbs' @ line 1 : column \d+/
+      );
+    }
+  }
+);
