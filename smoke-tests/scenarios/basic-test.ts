@@ -718,6 +718,39 @@ function basicTest(scenarios: Scenarios, appName: string) {
         },
       });
 
+      if (appName === 'ember-test-app') {
+        // GH#19602: an on-disk component template without a trailing newline
+        // must not render extra whitespace. v1-only: the inner test uses
+        // loose-mode hbs, which the v2 app template does not depend on.
+        project.mergeFiles({
+          app: {
+            components: {
+              // no trailing newline, intentionally
+              'no-newline.hbs': 'asd',
+            },
+          },
+          tests: {
+            integration: {
+              'whitespace-test.js': `
+                import { module, test } from 'qunit';
+                import { render } from '@ember/test-helpers';
+                import { setupRenderingTest } from '${appName}/tests/helpers';
+                import { hbs } from 'ember-cli-htmlbars';
+
+                module('Integration | component template whitespace (GH#19602)', function (hooks) {
+                  setupRenderingTest(hooks);
+
+                  test('a component template without a trailing newline adds no extra whitespace', async function (assert) {
+                    await render(hbs\`<span>({{no-newline}})</span><span>({{#no-newline}}{{/no-newline}})</span>\`);
+                    assert.strictEqual(this.element.textContent, '(asd)(asd)');
+                  });
+                });
+              `,
+            },
+          },
+        });
+      }
+
       let v1AddonWithoutEAI = project.addDependency('v1-addon-without-eai');
       v1AddonWithoutEAI.pkg.keywords = ['ember-addon'];
       v1AddonWithoutEAI.linkDependency('ember-cli-babel', { baseDir: __dirname } );
