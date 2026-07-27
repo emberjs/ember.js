@@ -269,6 +269,33 @@ moduleFor(
         assert.expect(0);
       }
     }
+
+    '@test it does not clobber a static spellcheck attribute, before or after the modifier (GH#18758)'(
+      assert
+    ) {
+      this.render(
+        '<input spellcheck="false" {{on "click" this.callback}} /><input {{on "click" this.callback}} spellcheck="false" />',
+        {
+          callback() {},
+        }
+      );
+
+      let [attrFirst, attrLast] = this.element.querySelectorAll('input');
+
+      assert.strictEqual(
+        attrFirst.getAttribute('spellcheck'),
+        'false',
+        'attribute before modifier renders as authored'
+      );
+      assert.strictEqual(
+        attrLast.getAttribute('spellcheck'),
+        'false',
+        'attribute after modifier renders as authored'
+      );
+
+      this.assertStableRerender();
+      this.assertCounts({ adds: 2, removes: 0 });
+    }
   }
 );
 
