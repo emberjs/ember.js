@@ -611,3 +611,20 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'Modifiers - modifier class without a modifier manager (GH#21029)',
+  class extends RenderingTestCase {
+    ['@test a resolved modifier class without an associated manager raises a clear error'](assert) {
+      if (DEBUG) {
+        this.owner.register('modifier:example', class {});
+
+        expectAssertion(() => {
+          this.render('<div {{example}}></div>');
+        }, /wasn't a modifier manager associated with the definition/);
+      } else {
+        assert.expect(0);
+      }
+    }
+  }
+);
