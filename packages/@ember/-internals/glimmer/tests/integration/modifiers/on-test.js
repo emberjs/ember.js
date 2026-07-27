@@ -269,6 +269,29 @@ moduleFor(
         assert.expect(0);
       }
     }
+
+    '@test all listeners for an event run even when an earlier one removes the element (GH#19344)'(
+      assert
+    ) {
+      let sequence = [];
+
+      this.render(
+        '{{#if this.showButton}}<button {{on "click" this.closeModal}} {{on "click" this.trackEvent}}>Close</button>{{/if}}',
+        {
+          showButton: true,
+          closeModal: () => {
+            sequence.push('closeModal');
+            this.context.set('showButton', false);
+          },
+          trackEvent: () => sequence.push('trackEvent'),
+        }
+      );
+
+      runTask(() => this.$('button').click());
+
+      assert.deepEqual(sequence, ['closeModal', 'trackEvent'], 'both listeners ran, in order');
+      assert.strictEqual(this.element.querySelector('button'), null, 'the button was removed');
+    }
   }
 );
 
