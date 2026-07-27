@@ -11,6 +11,8 @@ import { getRouteManager } from '@ember/-internals/routing/route-managers/regist
 import type { RouteManager } from '@ember/-internals/routing/route-managers/api';
 import type { RouteManagement } from 'router_js';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
+// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
+import { recordUse } from '@ember/-internals/routing/route-managers/probe';
 import { default as BucketCache } from './lib/cache';
 import { default as DSL, type DSLCallback } from './lib/dsl';
 import RouterState from './lib/router_state';
@@ -366,6 +368,9 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       const fullRouteName = `route:${routeName}` as const;
       let factoryManager = routeOwner.factoryFor(fullRouteName);
       if (!factoryManager) {
+        // EXPERIMENT tripwire: this is the `route:basic` auto-generation branch.
+        recordUse('router:generated-route');
+        recordUse(`router:generated-route:${routeName}`);
         // Auto-generate a default route if none is registered.
         // SAFETY: configured in commonSetupRegistry in @ember/application/lib.
         let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;

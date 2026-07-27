@@ -27,6 +27,8 @@ import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments'
 
 import type { DynamicScope } from '../../../glimmer/lib/renderer';
 import type { OutletState, RenderState } from '../outlet-state';
+// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
+import { recordUse } from '../probe';
 
 export type RenderableState = RenderState & { invokable: object };
 
@@ -100,6 +102,7 @@ class OutletComponentManager
     env: Environment,
     dynamicScope: DynamicScope
   ): OutletInstanceState {
+    recordUse('outlet:component-create');
     let parentStateRef = dynamicScope.get('outletState');
     let currentStateRef = definition.ref;
 

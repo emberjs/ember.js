@@ -19,6 +19,12 @@ import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { NULL_REFERENCE } from '@glimmer/reference/lib/reference';
 import { precompileTemplate } from '@ember/template-compilation';
 import { outletHelper } from './outlet';
+// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
+import { recordUse } from '../probe';
+
+// Module scope: always fires, because `classic/manager.ts` imports this and is
+// itself always evaluated via `@ember/routing/route`.
+recordUse('classic:wrapper-eval');
 
 // Renders the invokable passed in as `@Component` and forwards
 // `@model` / `@controller` onto it.
@@ -69,6 +75,10 @@ class ClassicRouteWrapperManager
   }
 
   getSelf(): Reference {
+    // Render-time hook: only reached when the classic wrapper is actually
+    // rendered by the outlet (this manager has `createInstance: false`, so
+    // `getSelf` is the earliest per-render hook available).
+    recordUse('classic:wrapper-render');
     return NULL_REFERENCE;
   }
 

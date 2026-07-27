@@ -9,6 +9,8 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { isRenderable, OutletComponent } from './outlet-manager';
 import { internalHelper } from '../../../glimmer/lib/helpers/internal-helper';
 import type { OutletState } from '../outlet-state';
+// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
+import { recordUse } from '../probe';
 
 const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
   `{{#if @wrapper}}<@wrapper @Component={{@Component}} @bucket={{@bucket}} @context={{@context}} @outlet={{(outlet)}} />{{else}}<@Component @context={{@context}} @outlet={{(outlet)}} />{{/if}}`,
@@ -57,6 +59,7 @@ const outletComponents = new WeakMap<object, OutletComponent>();
 */
 export const outletHelper = /*@__PURE__*/ internalHelper(
   (_args: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
+    recordUse('outlet:helper');
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
@@ -72,6 +75,7 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
     let last: OutletComponent | null = null;
 
     let ref = createComputeRef(() => {
+      recordUse('outlet:helper-compute');
       let render = valueForRef(outletRef)?.render;
 
       if (!isRenderable(render)) {

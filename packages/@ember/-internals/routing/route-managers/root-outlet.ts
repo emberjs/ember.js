@@ -21,6 +21,8 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { assert } from '@ember/debug';
 import type { OutletState } from './outlet-state';
 import { outletHelper } from './classic/outlet';
+// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
+import { recordUse } from './probe';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
@@ -102,6 +104,7 @@ class RootOutletManager
     _env: unknown,
     dynamicScope: DynamicScope | null
   ): RootOutletState {
+    recordUse('root-outlet:create');
     assert('Expected the root outlet to be created with a dynamic scope', dynamicScope !== null);
 
     carryParentView(dynamicScope as ViewCarryingScope);
@@ -170,6 +173,7 @@ export function createRootOutletState(
   owner: InternalOwner,
   initial: OutletState
 ): UpdatableOutletRootState {
+  recordUse('root-outlet:create-state');
   let tag = createTag();
   let current = initial;
 
