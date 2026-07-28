@@ -18,7 +18,6 @@ import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { NULL_REFERENCE } from '@glimmer/reference/lib/reference';
 import { precompileTemplate } from '@ember/template-compilation';
-import { outletHelper } from './outlet';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
 
@@ -29,15 +28,10 @@ recordUse('classic:wrapper-eval');
 // Renders the invokable passed in as `@Component` and forwards
 // `@model` / `@controller` onto it.
 const CLASSIC_WRAPPER_TEMPLATE = precompileTemplate(
-  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{(outlet)}}/>`,
+  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>`,
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/classic/wrapper.hbs',
     strictMode: true,
-    scope() {
-      return {
-        outlet: outletHelper,
-      };
-    },
   }
 );
 
