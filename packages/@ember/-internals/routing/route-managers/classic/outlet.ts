@@ -10,8 +10,6 @@ import { isRenderable, OutletComponent } from './outlet-manager';
 import { internalHelper } from '../../../glimmer/lib/helpers/internal-helper';
 import type { OutletState } from '../outlet-state';
 
-// Args come from `OutletComponentManager#prepareArgs`. No whitespace: these
-// are the outlet's bounds in the debug render tree.
 const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
   `{{#if @wrapper}}<@wrapper @Component={{@Component}} @bucket={{@bucket}} @context={{@context}} @outlet={{(outlet)}} />{{else}}<@Component @context={{@context}} @outlet={{(outlet)}} />{{/if}}`,
   {
@@ -23,6 +21,8 @@ const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
 );
 
 setComponentTemplate(OUTLET_COMPONENT_TEMPLATE, OutletComponent.prototype);
+
+const outletComponents = new WeakMap<object, OutletComponent>();
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -79,13 +79,25 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
         return null;
       }
 
+      // Shared across visits: the VM interns every definition state forever.
+      let { bucket } = render;
+      let cached = bucket === undefined ? last : outletComponents.get(bucket);
+
       // `<@Component />` stabilizes on `===`: the same object re-renders in
-      // place, a different one tears the old route down.
-      if (last !== null && last.isStableFor(render)) {
+      // place, a different one tears the old route down. The invokable is
+      // per-render, so a bucket's component can still go stale.
+      if (cached != null && cached.isStableFor(render)) {
+        last = cached;
         return last;
       }
 
-      return (last = new OutletComponent(render, outletRef, owner));
+      last = new OutletComponent(render, outletRef, owner);
+
+      if (bucket !== undefined) {
+        outletComponents.set(bucket, last);
+      }
+
+      return last;
     });
 
     if (DEBUG) {
