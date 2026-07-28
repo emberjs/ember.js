@@ -7,6 +7,7 @@ import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
+import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
   'Components test: dynamic components',
@@ -85,6 +86,45 @@ moduleFor(
       this.assertComponentElement(this.firstChild, {
         content: 'hello Alex from foo-bar',
       });
+    }
+
+    ['@test it throws a useful assertion for an invalid dynamic component value in non-strict mode'](
+      assert
+    ) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
+        this.render('{{component this.componentName}}', {
+          componentName: { name: 'not-a-component' },
+        });
+      }, /The `{{component}}` helper received an invalid value\. It expects a component definition or a string component name\./);
+    }
+
+    ['@test it throws a useful assertion for an invalid dynamic component value in strict mode'](
+      assert
+    ) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      let Bar = setComponentTemplate(
+        precompileTemplate('{{component this.componentName}}', {
+          strictMode: true,
+        }),
+        class extends GlimmerishComponent {
+          componentName = { name: 'not-a-component' };
+        }
+      );
+
+      this.owner.register('component:bar', Bar);
+
+      assert.throws(() => {
+        this.render('<Bar/>');
+      }, /The `{{component}}` helper received an invalid value\. In strict mode, it expects a component definition\./);
     }
 
     ['@test it has an element']() {

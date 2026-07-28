@@ -72,6 +72,7 @@ import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
 import { registerDestructor } from '@glimmer/destroyable';
+import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
 import { isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { assign } from '@glimmer/util/lib/object-utils';
@@ -167,6 +168,20 @@ APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => 
   let isStrict = constants.getValue<boolean>(_isStrict);
 
   vm.loadValue($t1, null); // Clear the temp register
+
+  if (DEBUG) {
+    assert(
+      component === null ||
+        component === undefined ||
+        typeof component === 'string' ||
+        isCurriedValue(component) ||
+        ((typeof component === 'object' || typeof component === 'function') &&
+          hasInternalComponentManager(component)),
+      isStrict
+        ? 'The `{{component}}` helper received an invalid value. In strict mode, it expects a component definition.'
+        : 'The `{{component}}` helper received an invalid value. It expects a component definition or a string component name.'
+    );
+  }
 
   let definition: ComponentDefinition | CurriedValue;
 
