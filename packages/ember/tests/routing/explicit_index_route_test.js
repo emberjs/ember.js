@@ -15,10 +15,7 @@ moduleFor(
         });
       });
 
-      await this.visit('/secure/clusters/100').then(
-        () => assert.ok(false, 'expected the URL not to match'),
-        (error) => assert.ok(/did not match any routes/.test(error.message), error.message)
-      );
+      await assert.rejects(this.visit('/secure/clusters/100'), /\/secure\/clusters\/100/);
     }
 
     async ['@test an explicitly declared index route with path "/" matches the parent URL'](
