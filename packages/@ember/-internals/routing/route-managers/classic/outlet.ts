@@ -6,7 +6,7 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
-import { isRenderable, OutletComponent } from './outlet-manager';
+import { OutletComponent } from './outlet-manager';
 import { internalHelper } from '../../../glimmer/lib/helpers/internal-helper';
 import type { OutletState } from '../outlet-state';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
@@ -23,8 +23,6 @@ const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
 );
 
 setComponentTemplate(OUTLET_COMPONENT_TEMPLATE, OutletComponent.prototype);
-
-const outletComponents = new WeakMap<object, OutletComponent>();
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -66,42 +64,16 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
       scope
     );
 
+    // Renders the child `outletState` or a root outlet
     let outletRef = createComputeRef(() => {
       let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
 
       return state?.outlets?.main;
     });
 
-    let last: OutletComponent | null = null;
-
     let ref = createComputeRef(() => {
       recordUse('outlet:helper-compute');
-      let render = valueForRef(outletRef)?.render;
-
-      if (!isRenderable(render)) {
-        last = null;
-        return null;
-      }
-
-      // Shared across visits: the VM interns every definition state forever.
-      let { bucket } = render;
-      let cached = bucket === undefined ? last : outletComponents.get(bucket);
-
-      // `<@Component />` stabilizes on `===`: the same object re-renders in
-      // place, a different one tears the old route down. The invokable is
-      // per-render, so a bucket's component can still go stale.
-      if (cached != null && cached.isStableFor(render)) {
-        last = cached;
-        return last;
-      }
-
-      last = new OutletComponent(render, outletRef, owner);
-
-      if (bucket !== undefined) {
-        outletComponents.set(bucket, last);
-      }
-
-      return last;
+      return OutletComponent.getCachedComponent(valueForRef(outletRef)?.render, outletRef, owner);
     });
 
     if (DEBUG) {

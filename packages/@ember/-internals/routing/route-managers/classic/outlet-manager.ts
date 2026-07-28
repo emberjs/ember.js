@@ -105,11 +105,6 @@ class OutletComponentManager
     recordUse('outlet:component-create');
     let parentStateRef = dynamicScope.get('outletState');
     let currentStateRef = definition.ref;
-
-    // This is the actual primary responsibility of the outlet component –
-    // it represents the switching from one route component/template into
-    // the next. The rest only exists to support the debug render tree and
-    // the old-school (and unreliable) instrumentation.
     dynamicScope.set('outletState', currentStateRef);
 
     let state: OutletInstanceState = {
@@ -206,16 +201,43 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
-/**
- * An `OutletComponent` *is* the outlet's definition state: the helper builds
- * one per render target and returns it directly, and the VM turns it into a
- * `ComponentDefinition` via the manager and template on the prototype below.
- */
+// Keyed by the manager's `bucket` when it supplies one, otherwise by `outletRef`.
+const outletComponents = new WeakMap<object, OutletComponent>();
+
 export class OutletComponent implements OutletDefinitionState {
+  /**
+   * `<@Component />` stabilizes on `===`: the same object re-renders in place,
+   * a different one tears the old route down. The invokable is per-render, so
+   * a bucket's component can still go stale — hence `isStableFor`.
+   */
+  static getCachedComponent(
+    render: RenderState | undefined,
+    outletRef: Reference<OutletState | undefined>,
+    callerOwner: InternalOwner
+  ): OutletComponent | null {
+    if (!isRenderable(render)) {
+      outletComponents.delete(outletRef);
+      return null;
+    }
+
+    let key = render.bucket ?? outletRef;
+    let cached = outletComponents.get(key);
+
+    if (cached !== undefined && cached.isStableFor(render)) {
+      return cached;
+    }
+
+    let component = new OutletComponent(render, outletRef, callerOwner);
+
+    outletComponents.set(key, component);
+
+    return component;
+  }
+
   readonly owner: InternalOwner;
   readonly context: Reference;
 
-  constructor(
+  private constructor(
     private readonly render: RenderableState,
     readonly ref: Reference<OutletState | undefined>,
     callerOwner: InternalOwner
@@ -250,10 +272,7 @@ export class OutletComponent implements OutletDefinitionState {
     return this.render.bucket;
   }
 
-  isStableFor(render: RenderableState): boolean {
-    // The wrapper is module-stable, so identity is carried by the invokable.
-    // `controller` is excluded: it can legitimately appear after the first
-    // render (setupController runs in didEnter).
+  private isStableFor(render: RenderableState): boolean {
     if (this.wrapper !== undefined || render.wrapper !== undefined) {
       return this.wrapper === render.wrapper && this.invokable === render.invokable;
     }
