@@ -112,7 +112,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {
-    // Ensure the controller exists (idempotent) so the outlet can curry
+    // Ensure the controller exists (idempotent) so the wrapper can forward
     // @controller as soon as the route renders.
     bucket.route._initController();
 

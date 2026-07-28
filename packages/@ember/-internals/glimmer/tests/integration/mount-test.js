@@ -156,9 +156,9 @@ moduleFor(
         includeTopLevel: 'outlet',
         renderTree: [
           '{{outlet}} for application',
-          'application',
+          '@Component',
           '{{outlet}} for route-with-mount',
-          'route-with-mount',
+          '@Component',
           'chat',
           'this.person.name',
         ],

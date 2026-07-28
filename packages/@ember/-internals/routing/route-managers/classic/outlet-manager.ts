@@ -4,25 +4,35 @@ import { assert } from '@ember/debug';
 import type EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import type {
-  CompilableProgram,
-  ComponentDefinition,
   CustomRenderNode,
   Destroyable,
   Environment,
   InternalComponentCapabilities,
-  TemplateFactory,
-  VMArguments,
+  PreparedArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
+  WithPrepareArgs,
+  WithSubOwner,
 } from '@glimmer/interfaces';
-import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
+import { DEBUG } from '@glimmer/env';
+import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
-import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
-import { unwrapTemplate } from '../../../glimmer/lib/component-managers/unwrap-template';
+import {
+  createConstRef,
+  createDebugAliasRef,
+  UNDEFINED_REFERENCE,
+  valueForRef,
+} from '@glimmer/reference/lib/reference';
+import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
 
 import type { DynamicScope } from '../../../glimmer/lib/renderer';
-import type { OutletState } from '../outlet-state';
+import type { OutletState, RenderState } from '../outlet-state';
+
+export type RenderableState = RenderState & { invokable: object };
+
+export function isRenderable(render: RenderState | undefined): render is RenderableState {
+  return render?.invokable !== undefined;
+}
 
 function instrumentationPayload(def: OutletDefinitionState) {
   // "main" used to be the outlet name, keeping it around for compatibility
@@ -30,6 +40,7 @@ function instrumentationPayload(def: OutletDefinitionState) {
 }
 
 interface OutletInstanceState {
+  owner: InternalOwner;
   engine?: {
     instance: EngineInstance;
     mountPoint: string;
@@ -37,15 +48,10 @@ interface OutletInstanceState {
   finalize: () => void;
 }
 
+/** What route managers see of `OutletComponent`, via `produceContext`. */
 export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
-
-  /**
-   * What this outlet renders. States built by the `{{outlet}}` helper carry
-   * the manager's `wrapper` (when present) plus `invokable` and `controller`,
-   * which the helper's stability check keys on.
-   */
   controller?: unknown;
   wrapper?: object;
   invokable?: object;
@@ -55,7 +61,7 @@ export interface OutletDefinitionState {
 const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
-  prepareArgs: false,
+  prepareArgs: true,
   createArgs: false,
   attributeHook: false,
   elementHook: false,
@@ -65,20 +71,32 @@ const CAPABILITIES: InternalComponentCapabilities = {
   createInstance: true,
   wrapped: false,
   willDestroy: false,
-  hasSubOwner: false,
+  hasSubOwner: true,
 };
-
-const CAPABILITIES_MASK = /*@__PURE__*/ capabilityFlagsFrom(CAPABILITIES);
 
 class OutletComponentManager
   implements
-    WithCreateInstance<OutletInstanceState, OutletDefinitionState>,
-    WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState>
+    WithCreateInstance<OutletInstanceState, OutletComponent>,
+    WithCustomDebugRenderTree<OutletInstanceState, OutletComponent>,
+    WithPrepareArgs<OutletInstanceState, OutletComponent>,
+    WithSubOwner<OutletInstanceState, OutletComponent>
 {
+  prepareArgs(definition: OutletComponent): PreparedArguments {
+    return {
+      positional: EMPTY_POSITIONAL,
+      named: {
+        Component: createConstRef(definition.invokable, '@Component'),
+        wrapper: createConstRef(definition.wrapper, '@wrapper'),
+        bucket: createConstRef(definition.bucket, '@bucket'),
+        context: definition.context,
+      },
+    };
+  }
+
   create(
     _owner: InternalOwner,
-    definition: OutletDefinitionState,
-    _args: VMArguments,
+    definition: OutletComponent,
+    _args: unknown,
     env: Environment,
     dynamicScope: DynamicScope
   ): OutletInstanceState {
@@ -92,6 +110,7 @@ class OutletComponentManager
     dynamicScope.set('outletState', currentStateRef);
 
     let state: OutletInstanceState = {
+      owner: definition.owner,
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
 
@@ -122,12 +141,18 @@ class OutletComponentManager
     return state;
   }
 
-  getDebugName({ name }: OutletDefinitionState): string {
+  // How a routable engine's subtree gets the engine instance rather than
+  // inheriting the parent app's owner from the call site.
+  getOwner(state: OutletInstanceState): InternalOwner {
+    return state.owner;
+  }
+
+  getDebugName({ name }: OutletComponent): string {
     return `{{outlet}} for ${name}`;
   }
 
   getDebugCustomRenderTree(
-    _definition: OutletDefinitionState,
+    _definition: OutletComponent,
     state: OutletInstanceState
   ): CustomRenderNode[] {
     let nodes: CustomRenderNode[] = [];
@@ -178,23 +203,63 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
-export class OutletComponent implements ComponentDefinition<
-  OutletDefinitionState,
-  OutletInstanceState,
-  OutletComponentManager
-> {
-  // handle is not used by this custom definition
-  public handle = -1;
-  public resolvedName = null;
-  public manager = OUTLET_MANAGER;
-  public capabilities = CAPABILITIES_MASK;
-  public compilable: CompilableProgram;
+/**
+ * An `OutletComponent` *is* the outlet's definition state: the helper builds
+ * one per render target and returns it directly, and the VM turns it into a
+ * `ComponentDefinition` via the manager and template on the prototype below.
+ */
+export class OutletComponent implements OutletDefinitionState {
+  readonly owner: InternalOwner;
+  readonly context: Reference;
 
   constructor(
-    owner: InternalOwner,
-    public state: OutletDefinitionState,
-    template: TemplateFactory
+    private readonly render: RenderableState,
+    readonly ref: Reference<OutletState | undefined>,
+    callerOwner: InternalOwner
   ) {
-    this.compilable = unwrapTemplate(template(owner)).asLayout();
+    this.owner = render.owner ?? callerOwner;
+
+    // Built here because `produceContext` is given the state it belongs to.
+    let context = render.produceContext
+      ? render.produceContext(ref, this, this)
+      : createConstRef(undefined, '@context');
+
+    this.context = DEBUG ? createDebugAliasRef!('@context', context) : context;
+  }
+
+  get name(): string {
+    return this.render.name;
+  }
+
+  get controller(): unknown {
+    return this.render.controller;
+  }
+
+  get wrapper(): object | undefined {
+    return this.render.wrapper;
+  }
+
+  get invokable(): object {
+    return this.render.invokable;
+  }
+
+  get bucket(): object | undefined {
+    return this.render.bucket;
+  }
+
+  isStableFor(render: RenderableState): boolean {
+    // The wrapper is module-stable, so identity is carried by the invokable.
+    // `controller` is excluded: it can legitimately appear after the first
+    // render (setupController runs in didEnter).
+    if (this.wrapper !== undefined || render.wrapper !== undefined) {
+      return this.wrapper === render.wrapper && this.invokable === render.invokable;
+    }
+
+    return this.invokable === render.invokable && this.controller === render.controller;
   }
 }
+
+setInternalComponentManager(OUTLET_MANAGER, OutletComponent.prototype);
+
+// The layout is associated in `./outlet`: importing the helper here would make
+// the two modules mutually dependent, and the build rejects cycles.

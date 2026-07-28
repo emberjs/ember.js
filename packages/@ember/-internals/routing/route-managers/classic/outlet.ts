@@ -1,29 +1,28 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments, CurriedComponent, DynamicScope } from '@glimmer/interfaces';
+import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import {
-  createComputeRef,
-  createConstRef,
-  createDebugAliasRef,
-  valueForRef,
-} from '@glimmer/reference/lib/reference';
-import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
-import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
-import { curry } from '@glimmer/runtime/lib/curried-value';
-import { dict } from '@glimmer/util/lib/collections';
+import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
-import { OutletComponent, type OutletDefinitionState } from './outlet-manager';
+import { isRenderable, OutletComponent } from './outlet-manager';
 import { internalHelper } from '../../../glimmer/lib/helpers/internal-helper';
 import type { OutletState } from '../outlet-state';
 
-const OUTLET_COMPONENT_TEMPLATE = precompileTemplate('<@Component @outlet={{(outlet)}} />', {
-  strictMode: true,
-  scope() {
-    return { outlet: outletHelper };
-  },
-});
+// Args come from `OutletComponentManager#prepareArgs`. No whitespace: these
+// are the outlet's bounds in the debug render tree.
+const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
+  `{{#if @wrapper}}<@wrapper @Component={{@Component}} @bucket={{@bucket}} @context={{@context}} @outlet={{(outlet)}} />{{else}}<@Component @context={{@context}} @outlet={{(outlet)}} />{{/if}}`,
+  {
+    strictMode: true,
+    scope() {
+      return { outlet: outletHelper };
+    },
+  }
+);
+
+setComponentTemplate(OUTLET_COMPONENT_TEMPLATE, OutletComponent.prototype);
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -70,140 +69,31 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
       return state?.outlets?.main;
     });
 
-    let lastState: OutletDefinitionState | null = null;
-    let outlet: CurriedValue | null = null;
+    let last: OutletComponent | null = null;
 
-    return createComputeRef(() => {
-      let outletState = valueForRef(outletRef);
-      let state = stateFor(outletRef, outletState);
+    let ref = createComputeRef(() => {
+      let render = valueForRef(outletRef)?.render;
 
-      // This code is deliberately using the behavior in glimmer-vm where in
-      // <@Component />, the component is considered stabled via `===`, and
-      // will continue to re-render in-place as long as the `===` holds, but
-      // when it changes to a different object, it teardown the old component
-      // (running destructors, etc), and render the component in its place (or
-      // nothing if the new value is nullish. Here we are carefully exploiting
-      // that fact, and returns the same stable object so long as it is the
-      // same route, but return a different one when the route changes. On the
-      // other hand, changing the model only intentionally do not teardown the
-      // component and instead re-render in-place.
-      if (isStable(state, lastState)) {
-        return outlet;
-      }
-
-      lastState = state;
-
-      if (state === null) {
+      if (!isRenderable(render)) {
+        last = null;
         return null;
       }
 
-      // If we are crossing an engine mount point, this is how the owner
-      // gets switched.
-      let outletOwner = outletState?.render?.owner ?? owner;
-
-      // `@context` is opaque to the outlet: the route manager builds it.
-      let produceContext = outletState?.render?.produceContext;
-      let context: Reference = produceContext
-        ? produceContext(outletRef, lastState!, state)
-        : createConstRef(undefined, '@context');
-
-      if (DEBUG) {
-        context = createDebugAliasRef!('@context', context);
+      // `<@Component />` stabilizes on `===`: the same object re-renders in
+      // place, a different one tears the old route down.
+      if (last !== null && last.isStableFor(render)) {
+        return last;
       }
 
-      // stateFor guarantees an invokable is present.
-      assert('Expected outlet state to have an invokable to render', state.invokable !== undefined);
-
-      // Args are delivered by currying them onto the render target — the
-      // outlet's layout is otherwise arg-less. Currying (rather than writing
-      // the args into the layout) keeps the target from showing up as an
-      // opaque `@Component` frame in the debug render tree and
-      // backtracking-assertion messages. Curried refs stay live, so the
-      // `@context` compute ref keeps updating across renders of the mount.
-      // (`@outlet` — the child `{{outlet}}` — is supplied by the outlet layout
-      // itself; see `OUTLET_COMPONENT_TEMPLATE`.)
-      let targetArgs = dict<Reference>();
-      let target;
-
-      if (state.wrapper !== undefined) {
-        // Manager render with a wrapper: the RFC's wrapper args —
-        // `@Component` (the per-bucket invokable), `@bucket`, and the live
-        // `@context`.
-        targetArgs['Component'] = createConstRef(state.invokable, '@Component');
-        targetArgs['bucket'] = createConstRef(state.bucket, '@bucket');
-        target = state.wrapper;
-      } else {
-        // Wrapper-less render (a manager that opted out of
-        // `getRouteWrapper`): the invokable itself is the target and receives
-        // only the live `@context` (plus the layout's `@outlet`).
-        target = state.invokable;
-      }
-
-      targetArgs['context'] = context;
-
-      let named = dict<Reference>();
-      named['Component'] = createConstRef(
-        curry(
-          0 as CurriedComponent,
-          target,
-          outletOwner,
-          createCapturedArgs(targetArgs, EMPTY_POSITIONAL),
-          false
-        ),
-        '@Component'
-      );
-
-      outlet = curry(
-        0 as CurriedComponent,
-        new OutletComponent(owner, state, OUTLET_COMPONENT_TEMPLATE),
-        outletOwner,
-        createCapturedArgs(named, EMPTY_POSITIONAL),
-        true
-      );
-
-      return outlet;
+      return (last = new OutletComponent(render, outletRef, owner));
     });
+
+    if (DEBUG) {
+      // A truthy label would be stamped onto the definition, shadowing
+      // `getDebugName()` in render stacks.
+      ref.debugLabel = false;
+    }
+
+    return ref;
   }
 );
-
-function stateFor(
-  ref: Reference<OutletState | undefined>,
-  outlet: OutletState | undefined
-): OutletDefinitionState | null {
-  if (outlet === undefined) return null;
-  let render = outlet.render;
-  if (render === undefined) return null;
-
-  // There is nothing to render until the manager provides an invokable.
-  if (render.invokable === undefined) return null;
-
-  return {
-    ref,
-    name: render.name,
-    controller: render.controller,
-    wrapper: render.wrapper,
-    invokable: render.invokable,
-    bucket: render.bucket,
-  };
-}
-
-function isStable(
-  state: OutletDefinitionState | null,
-  lastState: OutletDefinitionState | null
-): boolean {
-  if (state === null || lastState === null) {
-    return false;
-  }
-
-  // Manager-driven routes with a wrapper: the wrapper is module-stable, so
-  // route identity is carried by the per-bucket invokable. `controller` is
-  // deliberately excluded here: it can legitimately appear after the first
-  // render (setupController runs in didEnter) and must not tear the route
-  // down.
-  if (state.wrapper !== undefined || lastState.wrapper !== undefined) {
-    return state.wrapper === lastState.wrapper && state.invokable === lastState.invokable;
-  }
-
-  // Wrapper-less renders key on the invokable and controller.
-  return state.invokable === lastState.invokable && state.controller === lastState.controller;
-}
