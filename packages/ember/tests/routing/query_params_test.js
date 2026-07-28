@@ -265,6 +265,28 @@ moduleFor(
       this.assertCurrentPath('/?fun-times=woot');
     }
 
+    async ['@test Routes can override serializeQueryParam to customize serialization (GH#11288)'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.add(
+        'route:index',
+        class extends Route {
+          serializeQueryParam(value) {
+            return 'v' + value;
+          }
+        }
+      );
+
+      this.setSingleQPController('index', 'foo', 1);
+
+      await this.visitAndAssert('/');
+
+      await this.setAndFlush(this.getController('index'), 'foo', 5);
+      this.assertCurrentPath('/?foo=v5');
+    }
+
     async ['@test Can override inherited QP behavior by specifying queryParams as a computed property'](
       assert
     ) {
