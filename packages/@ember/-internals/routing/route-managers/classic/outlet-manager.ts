@@ -129,7 +129,6 @@ interface OutletInstanceState {
 export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
-  controller?: unknown;
   wrapper?: object;
   invokable?: object;
   bucket?: object;
