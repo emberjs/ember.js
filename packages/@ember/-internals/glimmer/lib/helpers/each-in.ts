@@ -17,58 +17,88 @@ import { internalHelper } from './internal-helper';
   The default behavior of `{{#each}}` is to yield its inner block once for every
   item in an array passing the item as the first block parameter.
 
-  Assuming the `@developers` argument contains this array:
+  ```app/components/developer-list.gjs
+  import Component from '@glimmer/component';
 
-  ```javascript
-  [{ name: 'Yehuda' },{ name: 'Tom' }, { name: 'Paul' }];
+  export default class DeveloperList extends Component {
+    developers = [
+      { name: 'Yehuda' },
+      { name: 'Tom' },
+      { name: 'Paul' },
+    ];
+
+    <template>
+      <ul>
+        {{#each this.developers as |person|}}
+          <li>Hello, {{person.name}}!</li>
+        {{/each}}
+      </ul>
+    </template>
+  }
   ```
 
-  ```handlebars
-  <ul>
-    {{#each @developers as |person|}}
-      <li>Hello, {{person.name}}!</li>
-    {{/each}}
-  </ul>
-  ```
+  The same rules apply to arrays of primitives:
 
-  The same rules apply to arrays of primitives.
+  ```app/components/developer-names.gjs
+  import Component from '@glimmer/component';
 
-  ```javascript
-  ['Yehuda', 'Tom', 'Paul']
-  ```
+  export default class DeveloperNames extends Component {
+    developerNames = ['Yehuda', 'Tom', 'Paul'];
 
-  ```handlebars
-  <ul>
-    {{#each @developerNames as |name|}}
-      <li>Hello, {{name}}!</li>
-    {{/each}}
-  </ul>
+    <template>
+      <ul>
+        {{#each this.developerNames as |name|}}
+          <li>Hello, {{name}}!</li>
+        {{/each}}
+      </ul>
+    </template>
+  }
   ```
 
   `{{#each}}` also supports native JavaScript [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
   values and other iterables:
 
-  ```javascript
-  new Set([{ name: 'Yehuda' }, { name: 'Tom' }, { name: 'Paul' }]);
+  ```app/components/developer-set.gjs
+  import Component from '@glimmer/component';
+
+  export default class DeveloperSet extends Component {
+    developers = new Set([
+      { name: 'Yehuda' },
+      { name: 'Tom' },
+      { name: 'Paul' },
+    ]);
+
+    <template>
+      <ul>
+        {{#each this.developers as |person|}}
+          <li>Hello, {{person.name}}!</li>
+        {{/each}}
+      </ul>
+    </template>
+  }
   ```
 
-  ```handlebars
-  <ul>
-    {{#each @developers as |person|}}
-      <li>Hello, {{person.name}}!</li>
-    {{/each}}
-  </ul>
-  ```
+  During iteration, the index of each item in the array is provided as a second
+  block parameter:
 
-  During iteration, the index of each item in the array is provided as a second block
-  parameter.
+  ```app/components/developer-list-with-index.gjs
+  import Component from '@glimmer/component';
 
-  ```handlebars
-  <ul>
-    {{#each @developers as |person index|}}
-      <li>Hello, {{person.name}}! You're number {{index}} in line</li>
-    {{/each}}
-  </ul>
+  export default class DeveloperListWithIndex extends Component {
+    developers = [
+      { name: 'Yehuda' },
+      { name: 'Tom' },
+      { name: 'Paul' },
+    ];
+
+    <template>
+      <ul>
+        {{#each this.developers as |person index|}}
+          <li>Hello, {{person.name}}! You're number {{index}} in line</li>
+        {{/each}}
+      </ul>
+    </template>
+  }
   ```
 
   `#each` is a keyword and does not need to be imported.
@@ -87,30 +117,38 @@ import { internalHelper } from './internal-helper';
   needed. However, in some rare cases, the objects' identities may change even
   though they represent the same underlying data.
 
-  For example:
+  For example, mapping over `people` produces a new array of new objects on each
+  render. Use `key` so Ember can match items across those renders:
 
-  ```javascript
-  people.map(person => {
-    return { ...person, type: 'developer' };
-  });
-  ```
+  ```app/components/mapped-developers.gjs
+  import Component from '@glimmer/component';
 
-  In this case, each time the `people` array is `map`-ed over, it will produce
-  an new array with completely different objects between renders. In these cases,
-  you can help Ember determine how these objects related to each other with the
-  `key` option:
+  export default class MappedDevelopers extends Component {
+    people = [
+      { name: 'Yehuda' },
+      { name: 'Tom' },
+      { name: 'Paul' },
+    ];
 
-  ```handlebars
-  <ul>
-    {{#each @developers key="name" as |person|}}
-      <li>Hello, {{person.name}}!</li>
-    {{/each}}
-  </ul>
+    get developers() {
+      return this.people.map((person) => {
+        return { ...person, type: 'developer' };
+      });
+    }
+
+    <template>
+      <ul>
+        {{#each this.developers key="name" as |person|}}
+          <li>Hello, {{person.name}}!</li>
+        {{/each}}
+      </ul>
+    </template>
+  }
   ```
 
   By doing so, Ember will use the value of the property specified (`person.name`
   in the example) to find a "match" from the previous render. That is, if Ember
-  has previously seen an object from the `@developers` array with a matching
+  has previously seen an object from the `developers` array with a matching
   name, its DOM elements will be re-used.
 
   There are two special values for `key`:
@@ -123,14 +161,22 @@ import { internalHelper } from './internal-helper';
   `{{#each}}` can have a matching `{{else}}`. The contents of this block will render
   if the collection is empty.
 
-  ```handlebars
-  <ul>
-    {{#each @developers as |person|}}
-      <li>{{person.name}} is available!</li>
-    {{else}}
-      <li>Sorry, nobody is available for this task.</li>
-    {{/each}}
-  </ul>
+  ```app/components/available-developers.gjs
+  import Component from '@glimmer/component';
+
+  export default class AvailableDevelopers extends Component {
+    developers = [];
+
+    <template>
+      <ul>
+        {{#each this.developers as |person|}}
+          <li>{{person.name}} is available!</li>
+        {{else}}
+          <li>Sorry, nobody is available for this task.</li>
+        {{/each}}
+      </ul>
+    </template>
+  }
   ```
 
   @method each
@@ -148,10 +194,10 @@ import { internalHelper } from './internal-helper';
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
-  export default class extends Component {
+  export default class DeveloperDetails extends Component {
     @tracked developer = {
-      "name": "Shelly Sails",
-      "age": 42
+      name: 'Shelly Sails',
+      age: 42,
     };
 
     <template>
@@ -174,30 +220,47 @@ import { internalHelper } from './internal-helper';
   </ul>
   ```
 
-  The same template works with a `Map`:
+  The same pattern works with a `Map`:
 
-  ```javascript
-  new Map([
-    ['name', 'Shelly Sails'],
-    ['age', 42],
-  ]);
-  ```
+  ```app/components/developer-map.gjs
+  import Component from '@glimmer/component';
 
-  ```handlebars
-  <ul>
-    {{#each-in this.map as |key value|}}
-      <li>{{key}}: {{value}}</li>
-    {{/each-in}}
-  </ul>
+  export default class DeveloperMap extends Component {
+    map = new Map([
+      ['name', 'Shelly Sails'],
+      ['age', 42],
+    ]);
+
+    <template>
+      <ul>
+        {{#each-in this.map as |key value|}}
+          <li>{{key}}: {{value}}</li>
+        {{/each-in}}
+      </ul>
+    </template>
+  }
   ```
 
   When a `Map` uses object keys, you can pass `key="@identity"` to explicitly
   track entries across re-renders using the JavaScript identity of each key:
 
-  ```handlebars
-  {{#each-in this.map key="@identity" as |key value|}}
-    <li>{{key.name}}: {{value}}</li>
-  {{/each-in}}
+  ```app/components/object-keyed-map.gjs
+  import Component from '@glimmer/component';
+
+  export default class ObjectKeyedMap extends Component {
+    map = new Map([
+      [{ name: 'one' }, 'foo'],
+      [{ name: 'two' }, 'bar'],
+    ]);
+
+    <template>
+      <ul>
+        {{#each-in this.map key="@identity" as |key value|}}
+          <li>{{key.name}}: {{value}}</li>
+        {{/each-in}}
+      </ul>
+    </template>
+  }
   ```
 
   `#each-in` is a keyword and does not need to be imported.
