@@ -125,7 +125,7 @@ interface OutletInstanceState {
   finalize: () => void;
 }
 
-/** What route managers see of `OutletComponent`, via `produceContext`. */
+/** The definition shape `OutletComponent` presents to the VM. */
 export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
@@ -333,12 +333,32 @@ export class OutletComponent implements OutletDefinitionState {
   ) {
     this.owner = render.owner ?? callerOwner;
 
-    // Built here because `produceContext` is given the state it belongs to.
-    let context = render.produceContext
-      ? render.produceContext(ref, this, this)
-      : createConstRef(undefined, '@context');
+    let context = this.contextRefFor(render);
 
     this.context = DEBUG ? createDebugAliasRef!('@context', context) : context;
+  }
+
+  private contextRefFor(render: RenderableState): Reference {
+    let last: unknown = render.model;
+
+    return createComputeRef(() => {
+      let state = valueForRef(this.ref);
+
+      if (state !== undefined) {
+        let current = state.render;
+
+        if (isRenderable(current) && this.isStableFor(current)) {
+          let manager = state.manager;
+
+          last =
+            manager?.getRenderContext !== undefined
+              ? manager.getRenderContext(current.bucket!)
+              : current.model;
+        }
+      }
+
+      return last;
+    });
   }
 
   get name(): string {

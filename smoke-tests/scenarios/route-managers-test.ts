@@ -496,6 +496,89 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         'sibling-transitions.funky-child': COMPONENTS.SiblingTransitionsFunkyChild,
       `,
     },
+    {
+      routerMap: `
+        this.route('funky-reentry', { path: '/funky-reentry/:thing_id' });
+      `,
+      routes: {
+        'funky-reentry.js': `
+          import FunkyRoute from '${appName}/routes/funky';
+
+          export default class extends FunkyRoute {
+            model(params) {
+              return params.thing_id;
+            }
+          }
+        `,
+      },
+      routeComponent: createRouteComponent(
+        'FunkyReentry',
+        `<div data-test-funky-route="funky-reentry">
+          funky reentry
+          <span data-test-route-model>{{@model}}</span>
+        </div>`
+      ),
+      managerInvokableMap: `
+        'funky-reentry': COMPONENTS.FunkyReentry,
+      `,
+    },
+    {
+      routerMap: `
+        this.route('reactive-context', function () {
+          this.route('child');
+        });
+      `,
+      routes: {
+        'reactive-context.js': `
+          import ReactiveRoute from '${appName}/routes/reactive';
+
+          let resolve;
+          export function resolveModel(value) {
+            resolve(value);
+          }
+
+          export default class extends ReactiveRoute {
+            model() {
+              return new Promise((r) => (resolve = r));
+            }
+          }
+        `,
+        'reactive-context': {
+          'child.js': `
+            import ReactiveRoute from '${appName}/routes/reactive';
+
+            let resolve;
+            export function resolveModel(value) {
+              resolve(value);
+            }
+
+            export default class extends ReactiveRoute {
+              model() {
+                return new Promise((r) => (resolve = r));
+              }
+            }
+          `,
+        },
+      },
+      routeComponent:
+        createRouteComponent(
+          'ReactiveContextParent',
+          `<div data-test-reactive-route="reactive-context">
+            <span data-test-route-model>{{@context}}</span>
+            <div data-test-outlet-boundary>{{outlet}}</div>
+          </div>`
+        ) +
+        createRouteComponent(
+          'ReactiveContextChild',
+          `<div data-test-reactive-route="reactive-context.child">
+            <span data-test-route-model>{{@context}}</span>
+          </div>`
+        ),
+      managerInvokableMap: `
+        'reactive-context': COMPONENTS.ReactiveContextParent,
+        'reactive-context.child': COMPONENTS.ReactiveContextChild,
+      `,
+    },
   ];
 
   const ROUTER_MAP = ROUTE_FIXTURES.map((fixture) => fixture.routerMap).join('\n');
@@ -653,9 +736,84 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
             'funky-route-components.gjs': ROUTE_COMPONENTS,
           },
           'route-managers': {
+            'reactive.js': `
+              import { routeCapabilities } from '@ember/routing';
+              import { tracked } from '@glimmer/tracking';
+              import * as COMPONENTS from '${appName}/components/funky-route-components';
+
+              const ROUTES = {
+                ${MANAGER_INVOKABLE_MAP}
+              };
+
+              class ReactiveBucket {
+                @tracked context = undefined;
+
+                constructor(name, route, invokable) {
+                  this.name = name;
+                  this.route = route;
+                  this.invokable = invokable;
+                }
+              }
+
+              export default class ReactiveRouteManager {
+                capabilities = routeCapabilities('1.0');
+
+                constructor(owner) {
+                  this.owner = owner;
+                }
+
+                createRoute(RouteClass, { name }) {
+                  return new ReactiveBucket(name, new RouteClass(this.owner), ROUTES[name]);
+                }
+
+                getRoute(bucket) {
+                  return bucket.route;
+                }
+
+                getDestroyable() {
+                  return null;
+                }
+
+                getRouteWrapper() {
+                  return undefined;
+                }
+
+                getRenderState(bucket) {
+                  return {
+                    owner: this.owner,
+                    name: bucket.name,
+                    controller: undefined,
+                    model: bucket.context,
+                    wrapper: undefined,
+                    invokable: bucket.invokable,
+                    bucket,
+                  };
+                }
+
+                getRenderContext(bucket) {
+                  return bucket.context;
+                }
+
+                willEnter() {}
+
+                async enter(bucket) {
+                  bucket.route.model().then((value) => {
+                    bucket.context = value;
+                  });
+                }
+
+                didEnter() {}
+                willExit() {}
+                exit() {}
+                didExit() {}
+
+                async getInvokable(bucket) {
+                  return bucket.invokable;
+                }
+              }
+            `,
             'funky.js': `
               import { routeCapabilities } from '@ember/routing';
-              import { createConstRef } from '@glimmer/reference';
               import FunkyRouteWrapper from '${appName}/components/funky-route-wrapper';
               import * as COMPONENTS from '${appName}/components/funky-route-components';
 
@@ -699,16 +857,14 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     wrapper: this.getRouteWrapper(),
                     invokable: bucket.invokable,
                     bucket,
-                    produceContext() {
-                      return createConstRef(bucket.model, '@context');
-                    },
                   };
                 }
 
                 willEnter() {}
 
-                async enter(bucket) {
-                  let model = await bucket.route.model?.();
+                async enter(bucket, state) {
+                  let info = state.to.find((i) => i.name === bucket.name) ?? state.to;
+                  let model = await bucket.route.model?.(info.params);
                   bucket.model = model;
                   return model;
                 }
@@ -739,6 +895,19 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
               setRouteManager((owner) => new FunkyRouteManager(owner), FunkyRoute);
             `,
+            'reactive.js': `
+              import { setOwner } from '@ember/owner';
+              import { setRouteManager } from '@ember/routing';
+              import ReactiveRouteManager from '${appName}/route-managers/reactive';
+
+              export default class ReactiveRoute {
+                constructor(owner) {
+                  setOwner(this, owner);
+                }
+              }
+
+              setRouteManager((owner) => new ReactiveRouteManager(owner), ReactiveRoute);
+            `,
             ...ROUTE_FILES,
           },
           templates: {
@@ -750,8 +919,10 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           acceptance: {
             'route-managers-test.js': `
               import { module, test } from 'qunit';
-              import { click, findAll, visit } from '@ember/test-helpers';
+              import { click, findAll, settled, visit } from '@ember/test-helpers';
               import { setupApplicationTest } from '${appName}/tests/helpers';
+              import { resolveModel as resolveParentModel } from '${appName}/routes/reactive-context';
+              import { resolveModel as resolveChildModel } from '${appName}/routes/reactive-context/child';
 
               const CLASSIC_ROUTE_SELECTOR = '[data-test-classic-route]';
               const FUNKY_ROUTE_SELECTOR = '[data-test-funky-route]';
@@ -939,6 +1110,39 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     'funky-to-classic-to-funky.child.grandchild',
                     '3'
                   );
+                });
+
+                test('a manager whose context arrives after the transition settles still renders it', async function (assert) {
+                  await visit('/reactive-context/child');
+
+                  assert
+                    .dom('[data-test-reactive-route="reactive-context"] > [data-test-route-model]')
+                    .hasText('');
+                  assert
+                    .dom('[data-test-reactive-route="reactive-context.child"] > [data-test-route-model]')
+                    .hasText('');
+
+                  resolveParentModel('PARENT-CTX');
+                  resolveChildModel('CHILD-CTX');
+                  await settled();
+
+                  assert
+                    .dom('[data-test-reactive-route="reactive-context"] > [data-test-route-model]')
+                    .hasText('PARENT-CTX');
+                  assert
+                    .dom('[data-test-reactive-route="reactive-context.child"] > [data-test-route-model]')
+                    .hasText('CHILD-CTX');
+                });
+
+                test('re-entering a route with a changed model updates @context', async function (assert) {
+                  await visit('/funky-reentry/alpha');
+                  await openFunkyRoute(assert, 'funky-reentry');
+                  assertFunkyRoute(assert, 0, 'funky-reentry', 'alpha');
+
+                  await visit('/funky-reentry/beta');
+
+                  assert.dom(GATE_SELECTOR).doesNotExist();
+                  assertFunkyRoute(assert, 0, 'funky-reentry', 'beta');
                 });
               });
             `,

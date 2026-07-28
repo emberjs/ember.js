@@ -11,15 +11,8 @@ import { getOwner } from '@ember/-internals/owner';
 import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
-import type { OutletDefinitionState } from './outlet-manager';
 import OutletTemplate from './outlet-template';
-import type { Reference } from '@glimmer/reference/lib/reference';
-import {
-  childRefFromParts,
-  createComputeRef,
-  createConstRef,
-  valueForRef,
-} from '@glimmer/reference/lib/reference';
+import { createConstRef } from '@glimmer/reference/lib/reference';
 import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
 import type { InternalRouteInfo, BaseRoute as IRoute, RouteInfo, Transition } from 'router_js';
@@ -118,7 +111,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
       wrapper: this.getRouteWrapper(),
       invokable: buildClassicInvokable(bucket),
       bucket,
-      produceContext: classicProduceContext,
     };
   }
 
@@ -380,27 +372,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   getRouteInfoMetadata(bucket: ClassicRouteBucket): unknown {
     return bucket.route.buildRouteInfoMetadata();
   }
-}
-
-// Builds the classic `@context` reference for an outlet: the live model
-// The function is a bridge between glimmer-land {{outlet}} and manager.
-// The goal is to keep glimmer agnostic of route internals.
-function classicProduceContext(
-  outletRef: Reference,
-  lastState: OutletDefinitionState,
-  state: OutletDefinitionState
-): Reference {
-  let modelRef = childRefFromParts(outletRef, ['render', 'model']);
-  let controllerRef = childRefFromParts(outletRef, ['render', 'controller']);
-  let outletController = state.controller;
-  let model = valueForRef(modelRef);
-
-  return createComputeRef(() => {
-    if (lastState === state && valueForRef(controllerRef) === outletController) {
-      model = valueForRef(modelRef);
-    }
-    return model;
-  });
 }
 
 // Build or return cached invokable for a classic route: look up `template:<name>`,

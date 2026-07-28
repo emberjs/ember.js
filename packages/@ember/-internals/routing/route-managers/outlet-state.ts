@@ -1,6 +1,4 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { Reference } from '@glimmer/interfaces';
-import type { OutletDefinitionState } from './classic/outlet-manager';
 
 export interface RenderState {
   /**
@@ -26,18 +24,6 @@ export interface RenderState {
   model: unknown;
 
   /**
-   * Supplied by the route manager via `getRenderState` to keep `outlet` agnostic
-   * Produces a stable context reference
-   *
-   * @TODO: alternatively put it on OutletState directly and pass through `_setOutlets`;
-   */
-  produceContext?(
-    outletRef: Reference,
-    lastState: OutletDefinitionState,
-    state: OutletDefinitionState
-  ): Reference;
-
-  /**
    * The stable wrapper component returned by `RouteManager.getRouteWrapper`
    */
   wrapper: object | undefined;
@@ -59,6 +45,11 @@ export interface OutletState {
    * Represents what was rendered into this outlet.
    */
   render: RenderState | undefined;
+
+  /**
+   * The manager that produced `render`, written by `Router#_setOutlets`.
+   */
+  manager: { getRenderContext?(bucket: object): unknown } | undefined;
 
   /**
    * Represents what, if any, should be rendered into the next {{outlet}} found

@@ -353,6 +353,11 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
    */
   getInvokable(bucket: Bucket, enterPromise?: Promise<unknown>): Promise<object | undefined>;
 
+  /**
+    Provides the value of `@context` used by the wrapper
+  */
+  getRenderContext?(bucket: Bucket): unknown;
+
   getRenderState(bucket: Bucket): RenderStateLike;
 }
 
@@ -366,7 +371,6 @@ type RenderStateLike = {
   wrapper: object | undefined;
   /** Curried onto the wrapper as `@bucket` by the outlet. */
   bucket?: RouteStateBucket;
-  produceContext?: (outletRef: any, lastState: any, state: any) => any;
 };
 
 /**

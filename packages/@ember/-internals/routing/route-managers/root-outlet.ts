@@ -186,6 +186,7 @@ export function createRootOutletState(
       wrapper: undefined,
       invokable: undefined,
     },
+    manager: undefined,
     outlets: {
       get main(): OutletState {
         consumeTag(tag);
