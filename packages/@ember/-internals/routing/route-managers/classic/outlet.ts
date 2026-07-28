@@ -13,12 +13,9 @@ import type { OutletState } from '../outlet-state';
 import { recordUse } from '../probe';
 
 const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
-  `{{#if @wrapper}}<@wrapper @Component={{@Component}} @bucket={{@bucket}} @context={{@context}} @outlet={{(outlet)}} />{{else}}<@Component @context={{@context}} @outlet={{(outlet)}} />{{/if}}`,
+  `{{#if @wrapper}}<@wrapper @Component={{@Component}} @bucket={{@bucket}} @context={{@context}} @outlet={{@outlet}} />{{else}}<@Component @context={{@context}} @outlet={{@outlet}} />{{/if}}`,
   {
     strictMode: true,
-    scope() {
-      return { outlet: outletHelper };
-    },
   }
 );
 

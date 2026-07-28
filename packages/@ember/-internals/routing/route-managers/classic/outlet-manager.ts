@@ -18,6 +18,7 @@ import { DEBUG } from '@glimmer/env';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import {
+  createComputeRef,
   createConstRef,
   createDebugAliasRef,
   UNDEFINED_REFERENCE,
@@ -29,6 +30,34 @@ import type { DynamicScope } from '../../../glimmer/lib/renderer';
 import type { OutletState, RenderState } from '../outlet-state';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
+
+/**
+ * The `@outlet` argument: the `OutletComponent` for the child route level.
+ *
+ * Equivalent to the `{{(outlet)}}` this replaced — `create()` publishes
+ * `definition.ref` as `outletState` before the layout runs, so reading
+ * `ref.outlets.main` here and reading it back out of the dynamic scope there
+ * resolve to the same state. Built directly because an adopted wrapper template
+ * has no call site for the helper.
+ */
+function childOutletRefFor(
+  parentRef: Reference<OutletState | undefined>,
+  owner: InternalOwner
+): Reference {
+  let outletRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
+
+  let ref = createComputeRef(() =>
+    OutletComponent.getCachedComponent(valueForRef(outletRef)?.render, outletRef, owner)
+  );
+
+  if (DEBUG) {
+    // A truthy label would be stamped onto the definition, shadowing
+    // `getDebugName()` in render stacks.
+    ref.debugLabel = false;
+  }
+
+  return ref;
+}
 
 export type RenderableState = RenderState & { invokable: object };
 
@@ -91,6 +120,7 @@ class OutletComponentManager
         wrapper: createConstRef(definition.wrapper, '@wrapper'),
         bucket: createConstRef(definition.bucket, '@bucket'),
         context: definition.context,
+        outlet: definition.childOutlet,
       },
     };
   }
@@ -237,6 +267,8 @@ export class OutletComponent implements OutletDefinitionState {
   readonly owner: InternalOwner;
   readonly context: Reference;
 
+  private cachedChildOutlet: Reference | undefined;
+
   private constructor(
     private readonly render: RenderableState,
     readonly ref: Reference<OutletState | undefined>,
@@ -270,6 +302,16 @@ export class OutletComponent implements OutletDefinitionState {
 
   get bucket(): object | undefined {
     return this.render.bucket;
+  }
+
+  get childOutlet(): Reference {
+    let ref = this.cachedChildOutlet;
+
+    if (ref === undefined) {
+      ref = this.cachedChildOutlet = childOutletRefFor(this.ref, this.owner);
+    }
+
+    return ref;
   }
 
   private isStableFor(render: RenderableState): boolean {
