@@ -49,7 +49,12 @@ export interface OutletState {
   /**
    * The manager that produced `render`, written by `Router#_setOutlets`.
    */
-  manager: { getRenderContext?(bucket: object): unknown } | undefined;
+  manager:
+    | {
+        getRenderContext?(bucket: object): unknown;
+        getRenderInvokable?(bucket: object): object | undefined;
+      }
+    | undefined;
 
   /**
    * Represents what, if any, should be rendered into the next {{outlet}} found

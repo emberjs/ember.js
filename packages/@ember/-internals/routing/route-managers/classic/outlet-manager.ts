@@ -91,7 +91,7 @@ function childOutletRefFor(
   let outletRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
 
   let ref = createComputeRef(() =>
-    OutletComponent.getCachedComponent(valueForRef(outletRef)?.render, outletRef, owner)
+    OutletComponent.getCachedComponent(valueForRef(outletRef), outletRef, owner)
   );
 
   if (DEBUG) {
@@ -103,10 +103,22 @@ function childOutletRefFor(
   return ref;
 }
 
-export type RenderableState = RenderState & { invokable: object };
+function invokableFor(state: OutletState | undefined): object | undefined {
+  if (state === undefined) {
+    return undefined;
+  }
 
-export function isRenderable(render: RenderState | undefined): render is RenderableState {
-  return render?.invokable !== undefined;
+  let { render, manager } = state;
+
+  if (render === undefined) {
+    return undefined;
+  }
+
+  if (manager?.getRenderInvokable !== undefined) {
+    return manager.getRenderInvokable(render.bucket!) ?? render.invokable;
+  }
+
+  return render.invokable;
 }
 
 function instrumentationPayload(def: OutletDefinitionState) {
@@ -293,11 +305,14 @@ export class OutletComponent implements OutletDefinitionState {
    * a bucket's component can still go stale — hence `isStableFor`.
    */
   static getCachedComponent(
-    render: RenderState | undefined,
+    state: OutletState | undefined,
     outletRef: Reference<OutletState | undefined>,
     callerOwner: InternalOwner
   ): OutletComponent | null {
-    if (!isRenderable(render)) {
+    let render = state?.render;
+    let invokable = invokableFor(state);
+
+    if (render === undefined || invokable === undefined) {
       outletComponents.delete(outletRef);
       return null;
     }
@@ -305,11 +320,11 @@ export class OutletComponent implements OutletDefinitionState {
     let key = render.bucket ?? outletRef;
     let cached = outletComponents.get(key);
 
-    if (cached !== undefined && cached.isStableFor(render)) {
+    if (cached !== undefined && cached.isStableFor(render, invokable)) {
       return cached;
     }
 
-    let component = new OutletComponent(render, outletRef, callerOwner);
+    let component = new OutletComponent(render, invokable, outletRef, callerOwner);
 
     outletComponents.set(key, component);
 
@@ -326,7 +341,8 @@ export class OutletComponent implements OutletDefinitionState {
   private cachedChildOutlet: Reference | undefined;
 
   private constructor(
-    private readonly render: RenderableState,
+    private readonly render: RenderState,
+    readonly invokable: object,
     readonly ref: Reference<OutletState | undefined>,
     callerOwner: InternalOwner
   ) {
@@ -337,7 +353,7 @@ export class OutletComponent implements OutletDefinitionState {
     this.context = DEBUG ? createDebugAliasRef!('@context', context) : context;
   }
 
-  private contextRefFor(render: RenderableState): Reference {
+  private contextRefFor(render: RenderState): Reference {
     let last: unknown = render.model;
 
     return createComputeRef(() => {
@@ -346,7 +362,7 @@ export class OutletComponent implements OutletDefinitionState {
       if (state !== undefined) {
         let current = state.render;
 
-        if (isRenderable(current) && this.isStableFor(current)) {
+        if (current !== undefined && this.isStableFor(current, invokableFor(state))) {
           let manager = state.manager;
 
           last =
@@ -370,10 +386,6 @@ export class OutletComponent implements OutletDefinitionState {
 
   get wrapper(): object | undefined {
     return this.render.wrapper;
-  }
-
-  get invokable(): object {
-    return this.render.invokable;
   }
 
   get bucket(): object | undefined {
@@ -400,12 +412,12 @@ export class OutletComponent implements OutletDefinitionState {
     return ref;
   }
 
-  private isStableFor(render: RenderableState): boolean {
+  private isStableFor(render: RenderState, invokable: object | undefined): boolean {
     if (this.wrapper !== undefined || render.wrapper !== undefined) {
-      return this.wrapper === render.wrapper && this.invokable === render.invokable;
+      return this.wrapper === render.wrapper && this.invokable === invokable;
     }
 
-    return this.invokable === render.invokable && this.controller === render.controller;
+    return this.invokable === invokable && this.controller === render.controller;
   }
 }
 

@@ -59,7 +59,7 @@ export const outletHelper = /*@__PURE__*/ internalHelper(
 
     let ref = createComputeRef(() => {
       recordUse('outlet:helper-compute');
-      return OutletComponent.getCachedComponent(valueForRef(outletRef)?.render, outletRef, owner);
+      return OutletComponent.getCachedComponent(valueForRef(outletRef), outletRef, owner);
     });
 
     if (DEBUG) {

@@ -358,6 +358,8 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   */
   getRenderContext?(bucket: Bucket): unknown;
 
+  getRenderInvokable?(bucket: Bucket): object | undefined;
+
   getRenderState(bucket: Bucket): RenderStateLike;
 }
 
