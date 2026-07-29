@@ -26,8 +26,9 @@ import { recordUse } from '../probe';
 recordUse('classic:wrapper-eval');
 
 // Renders the invokable passed in as `@Component` and forwards
-// `@model` / `@controller` onto it.
-const CLASSIC_WRAPPER_TEMPLATE = precompileTemplate(
+// `@model` / `@controller` onto it. The outlet renders this directly as its
+// own layout for `CLASSIC_ROUTE_WRAPPER`; see `layoutFor` in `./outlet-manager`.
+export const CLASSIC_WRAPPER_TEMPLATE = precompileTemplate(
   `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>`,
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/classic/wrapper.hbs',
@@ -90,4 +91,11 @@ setInternalComponentManager(
 setComponentTemplate(CLASSIC_WRAPPER_TEMPLATE, ClassicRouteWrapperDefinition.prototype);
 
 // The one wrapper instance shared by every classic route.
+//
+// The outlet renders `CLASSIC_WRAPPER_TEMPLATE` as its own layout rather than
+// invoking this wrapper, so the manager above never runs. That is only sound
+// while the manager stays unobservable: `createInstance: false`, a `getSelf`
+// the template never reads, and `[]` from `getDebugCustomRenderTree`. Give it
+// anything to contribute and `layoutFor` must send classic through
+// `WRAPPER_LAYOUT` like any other wrapper.
 export const CLASSIC_ROUTE_WRAPPER = new ClassicRouteWrapperDefinition();

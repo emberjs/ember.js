@@ -4,22 +4,11 @@ import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
-import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
-import { precompileTemplate } from '@ember/template-compilation';
 import { OutletComponent } from './outlet-manager';
 import { internalHelper } from '../../../glimmer/lib/helpers/internal-helper';
 import type { OutletState } from '../outlet-state';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
-
-const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
-  `{{#if @wrapper}}<@wrapper @Component={{@Component}} @bucket={{@bucket}} @context={{@context}} @outlet={{@outlet}} />{{else}}<@Component @context={{@context}} @outlet={{@outlet}} />{{/if}}`,
-  {
-    strictMode: true,
-  }
-);
-
-setComponentTemplate(OUTLET_COMPONENT_TEMPLATE, OutletComponent.prototype);
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in

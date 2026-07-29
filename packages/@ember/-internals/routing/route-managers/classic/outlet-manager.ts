@@ -4,13 +4,16 @@ import { assert } from '@ember/debug';
 import type EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import type {
+  CompilableProgram,
   CustomRenderNode,
   Destroyable,
   Environment,
   InternalComponentCapabilities,
   PreparedArguments,
+  TemplateFactory,
   WithCreateInstance,
   WithCustomDebugRenderTree,
+  WithDynamicLayout,
   WithPrepareArgs,
   WithSubOwner,
 } from '@glimmer/interfaces';
@@ -25,11 +28,52 @@ import {
   valueForRef,
 } from '@glimmer/reference/lib/reference';
 import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { precompileTemplate } from '@ember/template-compilation';
 
+import { unwrapTemplate } from '../../../glimmer/lib/component-managers/unwrap-template';
 import type { DynamicScope } from '../../../glimmer/lib/renderer';
 import type { OutletState, RenderState } from '../outlet-state';
+import { CLASSIC_ROUTE_WRAPPER, CLASSIC_WRAPPER_TEMPLATE } from './wrapper';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
+
+const NO_WRAPPER_LAYOUT = precompileTemplate(
+  `<@Component @context={{@context}} @outlet={{@outlet}} />`,
+  {
+    moduleName: 'packages/@ember/-internals/routing/route-managers/classic/outlet-no-wrapper.hbs',
+    strictMode: true,
+  }
+);
+
+// Invoking the wrapper as a component costs a second component boundary per
+// active route level. The classic wrapper is exempt; see `layoutFor`.
+const WRAPPER_LAYOUT = precompileTemplate(
+  `<@wrapper @Component={{@Component}} @bucket={{@bucket}} @context={{@context}} @outlet={{@outlet}} />`,
+  {
+    moduleName: 'packages/@ember/-internals/routing/route-managers/classic/outlet-wrapper.hbs',
+    strictMode: true,
+  }
+);
+
+function layoutFor(wrapper: object | undefined, owner: InternalOwner): CompilableProgram {
+  let factory: TemplateFactory;
+
+  if (wrapper === undefined) {
+    factory = NO_WRAPPER_LAYOUT;
+  } else if (wrapper === CLASSIC_ROUTE_WRAPPER) {
+    // Render classic's wrapper template across the boundary the outlet already
+    // has instead of opening a second one. Sound only because that wrapper's
+    // manager contributes nothing at render time — the invariant is stated
+    // where `CLASSIC_ROUTE_WRAPPER` is defined. Strict-mode scope travels with
+    // the template, so its upvars still resolve when invoked from here.
+    factory = CLASSIC_WRAPPER_TEMPLATE;
+  } else {
+    factory = WRAPPER_LAYOUT;
+  }
+
+  // Both `factory(owner)` and `asLayout()` memoize, so this is one lookup.
+  return unwrapTemplate(factory(owner)).asLayout();
+}
 
 /**
  * The `@outlet` argument: the `OutletComponent` for the child route level.
@@ -72,6 +116,8 @@ function instrumentationPayload(def: OutletDefinitionState) {
 
 interface OutletInstanceState {
   owner: InternalOwner;
+  // `getDynamicLayout` only receives the instance state, never the definition.
+  layout: CompilableProgram;
   engine?: {
     instance: EngineInstance;
     mountPoint: string;
@@ -90,7 +136,8 @@ export interface OutletDefinitionState {
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
-  dynamicLayout: false,
+  // The layout is chosen per outlet; see `layoutFor`.
+  dynamicLayout: true,
   dynamicTag: false,
   prepareArgs: true,
   createArgs: false,
@@ -109,6 +156,7 @@ class OutletComponentManager
   implements
     WithCreateInstance<OutletInstanceState, OutletComponent>,
     WithCustomDebugRenderTree<OutletInstanceState, OutletComponent>,
+    WithDynamicLayout<OutletInstanceState>,
     WithPrepareArgs<OutletInstanceState, OutletComponent>,
     WithSubOwner<OutletInstanceState, OutletComponent>
 {
@@ -139,6 +187,7 @@ class OutletComponentManager
 
     let state: OutletInstanceState = {
       owner: definition.owner,
+      layout: definition.layout,
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
 
@@ -173,6 +222,10 @@ class OutletComponentManager
   // inheriting the parent app's owner from the call site.
   getOwner(state: OutletInstanceState): InternalOwner {
     return state.owner;
+  }
+
+  getDynamicLayout(state: OutletInstanceState): CompilableProgram {
+    return state.layout;
   }
 
   getDebugName({ name }: OutletComponent): string {
@@ -267,6 +320,10 @@ export class OutletComponent implements OutletDefinitionState {
   readonly owner: InternalOwner;
   readonly context: Reference;
 
+  // Both are per-`OutletComponent`: `isStableFor` already rejects a render
+  // whose wrapper or invokable changed, so a cached layout can never outlive
+  // the wrapper it was derived from.
+  private cachedLayout: CompilableProgram | undefined;
   private cachedChildOutlet: Reference | undefined;
 
   private constructor(
@@ -304,6 +361,16 @@ export class OutletComponent implements OutletDefinitionState {
     return this.render.bucket;
   }
 
+  get layout(): CompilableProgram {
+    let layout = this.cachedLayout;
+
+    if (layout === undefined) {
+      layout = this.cachedLayout = layoutFor(this.wrapper, this.owner);
+    }
+
+    return layout;
+  }
+
   get childOutlet(): Reference {
     let ref = this.cachedChildOutlet;
 
@@ -325,5 +392,8 @@ export class OutletComponent implements OutletDefinitionState {
 
 setInternalComponentManager(OUTLET_MANAGER, OutletComponent.prototype);
 
-// The layout is associated in `./outlet`: importing the helper here would make
-// the two modules mutually dependent, and the build rejects cycles.
+// No `setComponentTemplate` here on purpose: `getComponentTemplate` walks the
+// prototype chain when the VM builds the `ComponentDefinition`, and a template
+// found there would be compiled into `definition.compilable` — which makes
+// `VM_GET_COMPONENT_LAYOUT_OP` skip `getDynamicLayout` entirely
+// (`@glimmer/runtime/lib/compiled/opcodes/component.ts:750`).
