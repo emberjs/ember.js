@@ -2,9 +2,8 @@
  * @module @ember/routing/router-service
  */
 import { getOwner } from '@ember/-internals/owner';
-import Evented from '@ember/object/evented';
+import { EventedEmitter } from '@ember/-internals/utils/lib/evented-emitter';
 import { assert } from '@ember/debug';
-import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
@@ -56,14 +55,62 @@ function cleanURL(url: string, rootURL: string) {
    @extends Service
    @class RouterService
  */
-interface RouterService extends Evented {
+class RouterService extends Service {
+  [ROUTER]?: EmberRouter;
+
+  // Evented-compatible event API, backed by an owned emitter rather than the
+  // Evented mixin. `routeWillChange`/`routeDidChange` are the public events,
+  // triggered by EmberRouter.
+  private _emitter = new EventedEmitter(this);
+
   on(
     eventName: 'routeWillChange' | 'routeDidChange',
     callback: (transition: Transition) => void
   ): this;
-}
-class RouterService extends Service.extend(Evented) {
-  [ROUTER]?: EmberRouter;
+  on<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  on(name: string, method: ((...args: any[]) => void) | string): this;
+  on(name: string, targetOrMethod: object | Function | string, method?: Function | string): this {
+    this._emitter.on(name, targetOrMethod, method);
+    return this;
+  }
+
+  one(
+    eventName: 'routeWillChange' | 'routeDidChange',
+    callback: (transition: Transition) => void
+  ): this;
+  one<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  one(name: string, method: ((...args: any[]) => void) | string): this;
+  one(name: string, targetOrMethod: object | Function | string, method?: Function | string): this {
+    this._emitter.one(name, targetOrMethod, method);
+    return this;
+  }
+
+  trigger(name: string, ...args: any[]): any {
+    return this._emitter.trigger(name, ...args);
+  }
+
+  off<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  off(name: string, method: ((...args: any[]) => void) | string): this;
+  off(name: string, targetOrMethod: object | Function | string, method?: Function | string): this {
+    this._emitter.off(name, targetOrMethod, method);
+    return this;
+  }
+
+  has(name: string): boolean {
+    return this._emitter.has(name);
+  }
 
   get _router(): EmberRouter {
     let router = this[ROUTER];
@@ -628,8 +675,9 @@ class RouterService extends Service.extend(Evented) {
     @type {String | null}
     @public
   */
-  @readOnly('_router.currentRouteName')
-  declare readonly currentRouteName: this['_router']['currentRouteName'];
+  get currentRouteName(): EmberRouter['currentRouteName'] {
+    return this._router.currentRouteName;
+  }
 
   /**
    Current URL for the application.
@@ -657,8 +705,9 @@ class RouterService extends Service.extend(Evented) {
     @type String
     @public
   */
-  @readOnly('_router.currentURL')
-  declare readonly currentURL: this['_router']['currentURL'];
+  get currentURL(): EmberRouter['currentURL'] {
+    return this._router.currentURL;
+  }
 
   /**
     The `location` property returns what implementation of the `location` API
@@ -696,8 +745,9 @@ class RouterService extends Service.extend(Evented) {
     @see {Location}
     @public
   */
-  @readOnly('_router.location')
-  declare readonly location: this['_router']['location'];
+  get location(): EmberRouter['location'] {
+    return this._router.location;
+  }
 
   /**
     The `rootURL` property represents the URL of the root of
@@ -726,8 +776,9 @@ class RouterService extends Service.extend(Evented) {
     @default '/'
     @public
   */
-  @readOnly('_router.rootURL')
-  declare readonly rootURL: this['_router']['rootURL'];
+  get rootURL(): EmberRouter['rootURL'] {
+    return this._router.rootURL;
+  }
 
   /**
     The `currentRoute` property contains metadata about the current leaf route.
@@ -757,8 +808,9 @@ class RouterService extends Service.extend(Evented) {
     @type RouteInfo
     @public
   */
-  @readOnly('_router.currentRoute')
-  declare readonly currentRoute: this['_router']['currentRoute'];
+  get currentRoute(): EmberRouter['currentRoute'] {
+    return this._router.currentRoute;
+  }
 }
 
 export { RouterService as default, type RouteInfo, type RouteInfoWithAttributes };

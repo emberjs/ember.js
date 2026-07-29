@@ -17,7 +17,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { getName, setName } from '@ember/-internals/utils/lib/name';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
-import EmberObject from '@ember/object';
+import { FrameworkObject } from '@ember/object/-internals';
 
 /**
   A Namespace is an object usually used to contain other objects or methods
@@ -37,7 +37,7 @@ import EmberObject from '@ember/object';
   @extends EmberObject
   @public
 */
-class Namespace extends EmberObject {
+class Namespace extends FrameworkObject {
   static NAMESPACES: MetalNamespace[] = NAMESPACES;
   static NAMESPACES_BY_ID: { [name: string]: MetalNamespace } = NAMESPACES_BY_ID;
   static processAll = processAllNamespaces;

@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import { FrameworkObject } from '@ember/object/-internals';
 import { bind } from '@ember/runloop';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
@@ -35,13 +35,14 @@ import { getHash } from './lib/location-utils';
   @extends EmberObject
   @protected
 */
-export default class HashLocation extends EmberObject implements EmberLocation {
+export default class HashLocation extends FrameworkObject implements EmberLocation {
   _hashchangeHandler?: EventListener;
 
   private _location?: Location;
   declare location: Location;
 
-  init(): void {
+  init(properties: object | undefined): void {
+    super.init(properties);
     this.location = this._location ?? window.location;
     this._hashchangeHandler = undefined;
   }

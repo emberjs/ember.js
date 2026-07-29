@@ -1531,7 +1531,7 @@ moduleFor(
       this.add('engine:blog', BlogEngine);
       class EngineIndexRoute extends Route {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           engineInstance = getOwner(this);
         }
       }

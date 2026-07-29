@@ -13,8 +13,9 @@ import {
 import { tagMetaFor } from '@glimmer/validator/lib/meta';
 import { objectAt } from './object-at';
 import { tagForProperty } from './tags';
+import { CHAIN_PASS_THROUGH } from './chain-pass-through';
 
-export const CHAIN_PASS_THROUGH = new WeakSet();
+export { CHAIN_PASS_THROUGH };
 
 export function finishLazyChains(meta: Meta, key: string, value: any) {
   let lazyTags = meta.readableLazyChainsFor(key);

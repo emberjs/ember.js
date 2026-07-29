@@ -1,5 +1,5 @@
 import { classify, dasherize } from '@ember/-internals/string';
-import EmberObject from '@ember/object';
+import { FrameworkObject } from '@ember/object/-internals';
 import typeOf from '@ember/utils/lib/type-of';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
@@ -44,7 +44,7 @@ import Namespace from '@ember/application/namespace';
   @since 1.5.0
   @public
 */
-export default class ContainerDebugAdapter extends EmberObject {
+export default class ContainerDebugAdapter extends FrameworkObject {
   constructor(owner: Owner) {
     super(owner);
 

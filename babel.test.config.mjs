@@ -13,7 +13,14 @@ import baseConfig from './babel.config.mjs';
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.cjs');
+const legacyFeatures = require('./broccoli/legacy-features.cjs');
 const isProduction = process.env.EMBER_ENV === 'production';
+
+// MODERN=1 folds the legacy-feature flags the way the modern build variant
+// does (see vite.config.mjs, which applies the matching module swaps).
+const legacyFlags = process.env.MODERN
+  ? legacyFeatures.resolveFlags(legacyFeatures.MODERN_OVERRIDES)
+  : legacyFeatures.DEFAULT_FLAGS;
 
 export default {
   ...baseConfig,
@@ -27,5 +34,9 @@ export default {
     ],
   ],
 
-  plugins: [...baseConfig.plugins, ...buildDebugMacroPlugin(!isProduction)],
+  plugins: [
+    ...baseConfig.plugins,
+    ...buildDebugMacroPlugin(!isProduction),
+    legacyFeatures(legacyFlags),
+  ],
 };

@@ -2,14 +2,16 @@
 @module @ember/engine
 */
 
-import EmberObject from '@ember/object';
+import { FrameworkObject } from '@ember/object/-internals';
+import { CLASSIC_COMPONENTS } from '@ember/legacy-features';
 import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
 import { assert } from '@ember/debug';
+import { join, schedule } from '@ember/runloop';
 import { default as Registry, privatize as P } from '@ember/-internals/container/lib/registry';
+import type Container from '@ember/-internals/container/lib/container';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './parent';
-import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
-import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
+import { containerProxyMethods, registryProxyMethods } from './lib/owner-proxies';
 import type { InternalOwner } from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
 import { type FullName, isFactory } from '@ember/-internals/owner';
@@ -45,15 +47,31 @@ export interface EngineInstanceOptions {
   @uses ContainerProxyMixin
 */
 
-// Note on types: since `EngineInstance` uses `RegistryProxyMixin` and
-// `ContainerProxyMixin`, which respectively implement the same `RegistryMixin`
+// Note on types: since `EngineInstance` implements the same `RegistryMixin`
 // and `ContainerMixin` types used to define `InternalOwner`, this is the same
 // type as `InternalOwner` from TS's POV. The point of the explicit `extends`
 // clauses for `InternalOwner` and `Owner` is to keep us honest: if this stops
 // type checking, we have broken part of our public API contract. Medium-term,
 // the goal here is to `EngineInstance` simple be `Owner`.
-interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
-class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
+interface EngineInstance extends InternalOwner, Owner {}
+class EngineInstance extends FrameworkObject {
+  /** @internal */
+  declare __registry__: Registry;
+  /** @internal */
+  declare __container__: Container;
+
+  destroy() {
+    let container = this.__container__;
+
+    if (container) {
+      join(() => {
+        container.destroy();
+        schedule('destroy', container, 'finalizeDestroy');
+      });
+    }
+
+    return super.destroy();
+  }
   /**
    @private
    @method setupRegistry
@@ -247,7 +265,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
       'service:-document',
     ];
 
-    if (env['isInteractive']) {
+    if (CLASSIC_COMPONENTS && env['isInteractive']) {
       singletons.push('event_dispatcher:main');
     }
 
@@ -258,5 +276,13 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     });
   }
 }
+
+// RegistryProxy and ContainerProxy implementations. The public types come
+// from the InternalOwner/Owner interface merge above; `unregister` is not
+// taken from the shared bag because EngineInstance's class body overrides it
+// to also reset the container.
+const { unregister: _defaultUnregister, ...engineInstanceRegistryProxyMethods } =
+  registryProxyMethods;
+Object.assign(EngineInstance.prototype, engineInstanceRegistryProxyMethods, containerProxyMethods);
 
 export default EngineInstance;

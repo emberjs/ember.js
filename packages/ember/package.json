@@ -18,6 +18,7 @@
     "@ember/enumerable": "workspace:*",
     "@ember/helper": "workspace:*",
     "@ember/instrumentation": "workspace:*",
+    "@ember/legacy-features": "workspace:*",
     "@ember/modifier": "workspace:*",
     "@ember/object": "workspace:*",
     "@ember/owner": "workspace:*",

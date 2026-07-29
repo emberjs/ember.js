@@ -14,6 +14,7 @@ const projectRoot = dirname(fileURLToPath(import.meta.url));
 const packageCache = PackageCache.shared('ember-source', projectRoot);
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.cjs');
 const canaryFeatures = require('./broccoli/canary-features.cjs');
+const legacyFeatures = require('./broccoli/legacy-features.cjs');
 
 const testDependencies = [
   'qunit',
@@ -27,10 +28,19 @@ const testDependencies = [
 let configs = [
   esmConfig(),
   esmProdConfig(),
+  esmModernConfig(),
+  esmModernProdConfig(),
   glimmerComponent(),
   glimmerSyntaxESM(),
   glimmerSyntaxCJS(),
 ];
+
+if (process.env.EMBER_LEGACY_FLAGS) {
+  configs.push(
+    esmVariantConfig({ name: 'custom', flags: customFlags(), debugMacrosMode: true }),
+    esmVariantConfig({ name: 'custom', flags: customFlags(), debugMacrosMode: false })
+  );
+}
 
 if (process.env.DEBUG_SINGLE_CONFIG) {
   configs = configs.slice(
@@ -43,7 +53,7 @@ export default configs;
 
 function esmConfig() {
   return sharedESMConfig({
-    input: esmInputs(),
+    input: standardInputs(),
     debugMacrosMode: true,
     includePackageMeta: true,
   });
@@ -51,9 +61,191 @@ function esmConfig() {
 
 function esmProdConfig() {
   return sharedESMConfig({
-    input: esmInputs(),
+    input: standardInputs(),
     debugMacrosMode: false,
   });
+}
+
+// The `*-modern` replacement modules only ever load through a variant's
+// module/entrypoint swaps (see legacySections()), so the standard build
+// leaves them out of its dist entirely.
+function standardInputs() {
+  let input = esmInputs();
+  for (let name of Object.keys(input)) {
+    if (/[-_]modern$/.test(name)) {
+      delete input[name];
+    }
+  }
+  return input;
+}
+
+function modernFlags() {
+  return legacyFeatures.resolveFlags(legacyFeatures.MODERN_OVERRIDES);
+}
+
+// Used by vite.config.mjs to run the test suite against the modern variant's
+// module swaps (MODERN=1).
+export function modernVariant() {
+  let flags = modernFlags();
+  let { moduleSwaps } = variantBuildOptions(flags);
+  return { flags, moduleSwaps };
+}
+
+function customFlags() {
+  return legacyFeatures.parseFlagsFromEnv(process.env.EMBER_LEGACY_FLAGS);
+}
+
+function esmModernConfig() {
+  return esmVariantConfig({ name: 'modern', flags: modernFlags(), debugMacrosMode: true });
+}
+
+function esmModernProdConfig() {
+  return esmVariantConfig({ name: 'modern', flags: modernFlags(), debugMacrosMode: false });
+}
+
+function esmVariantConfig({ name, flags, debugMacrosMode }) {
+  let { moduleSwaps, entrypointSwaps, prunedEntrypoints } = variantBuildOptions(flags);
+  let input = { ...esmInputs() };
+  for (let pruned of prunedEntrypoints) {
+    delete input[pruned];
+  }
+  for (let [entrypoint, replacement] of Object.entries(entrypointSwaps)) {
+    if (input[entrypoint] !== undefined) {
+      input[entrypoint] = replacement;
+    }
+  }
+  return sharedESMConfig({ input, debugMacrosMode, variant: { name, flags, moduleSwaps } });
+}
+
+// Each legacy section owns the coordinated build-time levers for its code:
+// the flag's fold value (handled by broccoli/legacy-features.cjs), module
+// swaps applied to import specifiers at resolve time, entrypoint swaps that
+// replace the published module's implementation, and entrypoints pruned from
+// the build entirely. Disabling a section activates all of its levers at
+// once.
+function legacySections() {
+  return {
+    CLASSIC_OBJECT_MODEL: {
+      moduleSwaps: {
+        '@ember/-internals/metal/lib/injected_property':
+          '@ember/-internals/metal/lib/injected_property_modern.ts',
+        '@ember/object/-internals': '@ember/object/-internals-modern.ts',
+        '@ember/object': '@ember/object/index-modern.ts',
+        '@ember/controller': '@ember/controller/index-modern.ts',
+        '@ember/routing/lib/qp-array': '@ember/routing/lib/qp-array-modern.ts',
+        '@ember/utils/lib/classic-detect': '@ember/utils/lib/classic-detect-modern.ts',
+        '@ember/-internals/runtime/lib/mixins/-proxy':
+          '@ember/-internals/runtime/lib/mixins/-proxy-modern.ts',
+        '@ember/object/internals': '@ember/object/internals-modern.ts',
+        'ember-testing/lib/adapters/adapter': 'ember-testing/lib/adapters/adapter-modern.ts',
+        '@ember/-internals/runtime': '@ember/-internals/runtime/index-modern.ts',
+        // test-only: the harness barrel re-exports classic test-case classes
+        'internal-test-helpers': 'internal-test-helpers/index-modern.ts',
+      },
+      entrypointSwaps: {
+        'packages/@ember/object/-internals': '@ember/object/-internals-modern.ts',
+        'packages/@ember/object/index': '@ember/object/index-modern.ts',
+        'packages/@ember/object/internals': '@ember/object/internals-modern.ts',
+        'packages/@ember/controller/index': '@ember/controller/index-modern.ts',
+        'packages/@ember/routing/lib/qp-array': '@ember/routing/lib/qp-array-modern.ts',
+        'packages/@ember/utils/lib/classic-detect': '@ember/utils/lib/classic-detect-modern.ts',
+        'packages/ember-testing/lib/adapters/adapter':
+          'ember-testing/lib/adapters/adapter-modern.ts',
+        'packages/@ember/-internals/runtime/index': '@ember/-internals/runtime/index-modern.ts',
+      },
+      prunedEntrypoints: [
+        // the metal barrel is what pulls the whole classic reactivity system
+        // (mixin, computed, observers, ...) into the graph; modern-kept
+        // modules deep-import the individual metal modules they need
+        'packages/@ember/-internals/metal/index',
+        // EmberObject and the mixin system
+        'packages/@ember/object/core',
+        'packages/@ember/object/mixin',
+        'packages/@ember/object/observable',
+        'packages/@ember/object/evented',
+        'packages/@ember/object/events',
+        'packages/@ember/object/observers',
+        'packages/@ember/object/proxy',
+        'packages/@ember/object/promise-proxy-mixin',
+        'packages/@ember/object/compat',
+        'packages/@ember/object/computed',
+        'packages/@ember/object/lib/computed/computed_macros',
+        'packages/@ember/object/lib/computed/reduce_computed_macros',
+        // EmberArray (@ember/array/-internals stays: it is a standalone
+        // WeakSet consulted by tracked/property_get)
+        'packages/@ember/array/index',
+        'packages/@ember/array/proxy',
+        'packages/@ember/array/mutable',
+        'packages/@ember/array/make',
+        'packages/@ember/array/lib/is-array',
+        'packages/@ember/array/lib/make-array',
+        'packages/@ember/enumerable/index',
+        'packages/@ember/enumerable/mutable',
+        // inspector's DataAdapter is built on EmberArray; nothing in
+        // ember-source registers it, so it can simply be absent
+        'packages/@ember/debug/data-adapter',
+        // classic runtime mixins (the RSVP ext deep module stays; the barrel
+        // is swapped rather than pruned — see entrypointSwaps)
+        'packages/@ember/-internals/runtime/lib/mixins/-proxy',
+        'packages/@ember/-internals/runtime/lib/mixins/action_handler',
+        'packages/@ember/-internals/runtime/lib/mixins/comparable',
+        'packages/@ember/-internals/runtime/lib/mixins/container_proxy',
+        'packages/@ember/-internals/runtime/lib/mixins/registry_proxy',
+        'packages/@ember/-internals/runtime/lib/mixins/target_action_support',
+      ],
+    },
+    CLASSIC_COMPONENTS: {
+      moduleSwaps: {
+        '@ember/component': '@ember/component/index-modern.ts',
+        '@ember/-internals/glimmer': '@ember/-internals/glimmer/index-modern.ts',
+        '@ember/-internals/glimmer/lib/component-managers/root':
+          '@ember/-internals/glimmer/lib/component-managers/root-modern.ts',
+        '@ember/-internals/views/lib/system/event_dispatcher':
+          '@ember/-internals/views/lib/system/event_dispatcher_modern.ts',
+        '@ember/-internals/views': '@ember/-internals/views/index-modern.ts',
+      },
+      entrypointSwaps: {
+        'packages/@ember/component/index': '@ember/component/index-modern.ts',
+        'packages/@ember/-internals/glimmer/index': '@ember/-internals/glimmer/index-modern.ts',
+        'packages/@ember/-internals/views/index': '@ember/-internals/views/index-modern.ts',
+        'packages/@ember/-internals/views/lib/system/event_dispatcher':
+          '@ember/-internals/views/lib/system/event_dispatcher_modern.ts',
+      },
+      prunedEntrypoints: [
+        // classic view/component support classes; `lib/system/utils` and the
+        // fallback view registry stay (used by the renderer and LinkTo)
+        'packages/@ember/-internals/views/lib/views/core_view',
+        'packages/@ember/-internals/views/lib/views/states',
+        'packages/@ember/-internals/views/lib/mixins/action_support',
+        'packages/@ember/-internals/views/lib/compat/attrs',
+      ],
+    },
+    CONTROLLER_QUERY_PARAMS: {
+      // This flag stays enabled in every published variant until a query
+      // params implementation that does not observe controller properties
+      // exists (see RFC #1169). The seams are already in place for the flip:
+      // swapping '@ember/routing/lib/qp-observers' for no-ops severs the
+      // observer machinery, and '@ember/controller' / the controller_for and
+      // generate_controller modules become prunable with it.
+      moduleSwaps: {},
+      entrypointSwaps: {},
+      prunedEntrypoints: [],
+    },
+  };
+}
+
+function variantBuildOptions(flags) {
+  let moduleSwaps = {};
+  let entrypointSwaps = {};
+  let prunedEntrypoints = [];
+  for (let [flag, section] of Object.entries(legacySections())) {
+    if (!flags[flag]) {
+      Object.assign(moduleSwaps, section.moduleSwaps);
+      Object.assign(entrypointSwaps, section.entrypointSwaps);
+      prunedEntrypoints.push(...section.prunedEntrypoints);
+    }
+  }
+  return { moduleSwaps, entrypointSwaps, prunedEntrypoints };
 }
 
 function esmInputs() {
@@ -71,13 +263,15 @@ function esmInputs() {
   };
 }
 
-function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false }) {
-  let outputDir = debugMacrosMode === false ? 'dist/prod' : 'dist/dev';
+function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false, variant }) {
+  let distRoot = variant ? `dist/${variant.name}` : 'dist';
+  let outputDir = debugMacrosMode === false ? `${distRoot}/prod` : `${distRoot}/dev`;
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
     ...babelConfig.plugins,
     ...buildDebugMacroPlugin(debugMacrosMode),
     canaryFeatures(),
+    legacyFeatures(variant?.flags),
   ];
 
   let plugins = [
@@ -89,7 +283,10 @@ function sharedESMConfig({ input, debugMacrosMode, includePackageMeta = false })
     }),
     resolveTS(),
     version(),
-    resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
+    resolvePackages(
+      { ...exposedDependencies(), ...hiddenDependencies() },
+      { moduleSwaps: variant?.moduleSwaps }
+    ),
     pruneEmptyBundles(),
   ];
 
@@ -401,6 +598,7 @@ function resolveTS() {
 export function resolvePackages(deps, params) {
   const isExternal = params?.isExternal;
   const enableLocalDebug = params?.enableLocalDebug ?? false;
+  const moduleSwaps = params?.moduleSwaps ?? {};
 
   return {
     enforce: 'pre',
@@ -411,7 +609,7 @@ export function resolvePackages(deps, params) {
       }
 
       // the actual test entrypoints
-      if (source.endsWith('index.html')) {
+      if (source.endsWith('.html')) {
         return;
       }
 
@@ -429,6 +627,12 @@ export function resolvePackages(deps, params) {
 
         if (isExternal?.(source)) {
           return { external: true, id: source };
+        }
+
+        // variant builds substitute alternate implementations of specific
+        // modules (see legacySections in this file)
+        if (moduleSwaps[source]) {
+          return resolve(projectRoot, 'packages', moduleSwaps[source]);
         }
 
         if (deps[source]) {

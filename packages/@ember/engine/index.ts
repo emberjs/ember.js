@@ -1,7 +1,7 @@
 export { getEngineParent, setEngineParent } from './parent';
 
 import { canInvoke } from '@ember/-internals/utils/lib/invoke';
-import Controller from '@ember/controller';
+import Controller from '@ember/controller/-base';
 import Namespace from '@ember/application/namespace';
 import Registry from '@ember/-internals/container/lib/registry';
 import type { ResolverClass } from '@ember/-internals/container/lib/registry';
@@ -14,7 +14,8 @@ import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
 import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
-import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
+import type { RegistryProxy } from '@ember/-internals/owner';
+import { registryProxyMethods } from './lib/owner-proxies';
 import { StrictResolver } from './lib/strict-resolver';
 
 function props(obj: object) {
@@ -55,8 +56,11 @@ export interface Initializer<T> {
   @public
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface Engine extends RegistryProxyMixin {}
-class Engine extends Namespace.extend(RegistryProxyMixin) {
+interface Engine extends RegistryProxy {}
+class Engine extends Namespace {
+  /** @internal */
+  declare __registry__: Registry;
+
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
   static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
 
@@ -484,17 +488,15 @@ export function buildInitializerMethod<
   T extends B extends 'initializers' ? Engine : EngineInstance,
 >(bucketName: B, humanName: string) {
   return function (this: typeof Engine, initializer: Initializer<T>) {
-    // If this is the first initializer being added to a subclass, we are going to reopen the class
-    // to make sure we have a new `initializers` object, which extends from the parent class' using
-    // prototypal inheritance. Without this, attempting to add initializers to the subclass would
-    // pollute the parent class as well as other subclasses.
+    // If this is the first initializer being added to a subclass, give the
+    // subclass its own `initializers` object, which extends from the parent
+    // class' using prototypal inheritance. Without this, attempting to add
+    // initializers to the subclass would pollute the parent class as well as
+    // other subclasses.
     // SAFETY: The superclass may be an Engine, we don't call unless we confirmed it was ok.
-    let superclass = this.superclass as typeof Engine;
+    let superclass = Object.getPrototypeOf(this) as typeof Engine;
     if (superclass[bucketName] !== undefined && superclass[bucketName] === this[bucketName]) {
-      let attrs = {
-        [bucketName]: Object.create(this[bucketName]),
-      };
-      this.reopenClass(attrs);
+      (this as any)[bucketName] = Object.create(this[bucketName]);
     }
 
     assert(
@@ -531,5 +533,9 @@ function commonSetupRegistry(registry: Registry) {
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);
 }
+
+// RegistryProxy implementation; the public types come from the RegistryProxy
+// interface merge above.
+Object.assign(Engine.prototype, registryProxyMethods);
 
 export default Engine;

@@ -49,6 +49,7 @@ import {
 import { validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
+import { BOUNDS } from '../utils/bounds';
 import type RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
 import {
@@ -72,7 +73,6 @@ export function getComponentCapturedArgs(
 
 export const DIRTY_TAG = Symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
-export const BOUNDS = Symbol('BOUNDS');
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 

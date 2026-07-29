@@ -7,7 +7,7 @@ import { dirtyTagFor, tagFor } from '@glimmer/validator/lib/meta';
 import { trackedData } from '@glimmer/validator/lib/tracked-data';
 import { trackedValue, type TrackedValue } from '@glimmer/validator/lib/tracked-value';
 import type { ElementDescriptor } from '..';
-import { CHAIN_PASS_THROUGH } from './chain-tags';
+import { CHAIN_PASS_THROUGH } from './chain-pass-through';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
