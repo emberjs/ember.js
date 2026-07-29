@@ -262,7 +262,7 @@ if (DEBUG) {
 
     ref[REFERENCE] = inner[REFERENCE];
 
-    ref.debugLabel = debugLabel;
+    ref.debugLabel = inner.debugLabel === false ? false : debugLabel;
 
     return ref;
   };

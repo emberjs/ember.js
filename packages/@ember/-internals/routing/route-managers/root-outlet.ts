@@ -1,7 +1,6 @@
 /**
   The component rendered at the very top of the application by
   `Router#_setOutlets` (via `ApplicationInstance#renderRootComponent`).
-  Provides `outletState` via `dynamicScope` for child outlets.
 */
 
 import type {
@@ -14,27 +13,22 @@ import type {
 } from '@glimmer/interfaces';
 import type { InternalOwner } from '@ember/-internals/owner';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { createConstRef, NULL_REFERENCE } from '@glimmer/reference/lib/reference';
+import { createConstRef } from '@glimmer/reference/lib/reference';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import { assert } from '@ember/debug';
 import type { OutletState } from './outlet-state';
-import { outletHelper } from './classic/outlet';
+import { childOutletRefFor } from './classic/outlet-manager';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from './probe';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
 
-const ROOT_OUTLET_TEMPLATE = precompileTemplate('{{component (outlet)}}', {
+const ROOT_OUTLET_TEMPLATE = precompileTemplate('{{this}}', {
   moduleName: 'packages/@ember/-internals/routing/route-managers/root-outlet.hbs',
   strictMode: true,
-  scope() {
-    return {
-      outlet: outletHelper,
-    };
-  },
 });
 
 const CAPABILITIES: InternalComponentCapabilities = {
@@ -85,6 +79,7 @@ function carryParentView(scope: ViewCarryingScope): ViewCarryingScope {
 interface RootOutletState {
   outletBucket: object;
   routeTemplateBucket: object;
+  self: Reference;
 }
 
 class RootOutletManager
@@ -98,7 +93,7 @@ class RootOutletManager
   }
 
   create(
-    _owner: object,
+    owner: object,
     definition: RootOutlet,
     _args: unknown,
     _env: unknown,
@@ -108,9 +103,12 @@ class RootOutletManager
     assert('Expected the root outlet to be created with a dynamic scope', dynamicScope !== null);
 
     carryParentView(dynamicScope as ViewCarryingScope);
-    dynamicScope.set('outletState', definition.stateRef);
 
-    return { outletBucket: {}, routeTemplateBucket: {} };
+    return {
+      outletBucket: {},
+      routeTemplateBucket: {},
+      self: childOutletRefFor(definition.stateRef, owner as InternalOwner),
+    };
   }
 
   getDebugName(): string {
@@ -142,8 +140,8 @@ class RootOutletManager
     ];
   }
 
-  getSelf(): Reference {
-    return NULL_REFERENCE;
+  getSelf({ self }: RootOutletState): Reference {
+    return self;
   }
 
   didCreate() {}

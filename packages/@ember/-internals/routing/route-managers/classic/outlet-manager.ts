@@ -31,11 +31,42 @@ import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments'
 import { precompileTemplate } from '@ember/template-compilation';
 
 import { unwrapTemplate } from '../../../glimmer/lib/component-managers/unwrap-template';
-import type { DynamicScope } from '../../../glimmer/lib/renderer';
 import type { OutletState, RenderState } from '../outlet-state';
 import { CLASSIC_ROUTE_WRAPPER, CLASSIC_WRAPPER_TEMPLATE } from './wrapper';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
+
+/**
+  The `{{outlet}}` helper lets you specify where a child route will render in
+  your template. An important use of the `{{outlet}}` helper is in your
+  application's `application.gjs` file:
+
+  ```app/templates/application.gjs
+  import MyHeader from '../components/my-header';
+  import MyFooter from '../components/my-footer';
+
+  <template>
+    <MyHeader />
+
+    <div class="my-dynamic-content">
+      <!-- this content will change based on the current route, which depends on the current URL -->
+      {{outlet}}
+    </div>
+
+    <MyFooter />
+  </template>
+  ```
+
+  See the [routing guide](https://guides.emberjs.com/release/routing/rendering-a-template/) for more
+  information on how your `route` interacts with the `{{outlet}}` helper.
+  Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
+
+  `outlet` is built-in and does not need to be imported.
+
+  @method outlet
+  @for Ember.Templates.helpers
+  @public
+*/
 
 const NO_WRAPPER_LAYOUT = precompileTemplate(
   `<@Component @context={{@context}} @outlet={{@outlet}} />`,
@@ -75,16 +106,7 @@ function layoutFor(wrapper: object | undefined, owner: InternalOwner): Compilabl
   return unwrapTemplate(factory(owner)).asLayout();
 }
 
-/**
- * The `@outlet` argument: the `OutletComponent` for the child route level.
- *
- * Equivalent to the `{{(outlet)}}` this replaced — `create()` publishes
- * `definition.ref` as `outletState` before the layout runs, so reading
- * `ref.outlets.main` here and reading it back out of the dynamic scope there
- * resolve to the same state. Built directly because an adopted wrapper template
- * has no call site for the helper.
- */
-function childOutletRefFor(
+export function childOutletRefFor(
   parentRef: Reference<OutletState | undefined>,
   owner: InternalOwner
 ): Reference {
@@ -155,7 +177,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   attributeHook: false,
   elementHook: false,
   createCaller: false,
-  dynamicScope: true,
+  dynamicScope: false,
   updateHook: false,
   createInstance: true,
   wrapped: false,
@@ -185,16 +207,12 @@ class OutletComponentManager
   }
 
   create(
-    _owner: InternalOwner,
+    owner: InternalOwner,
     definition: OutletComponent,
     _args: unknown,
-    env: Environment,
-    dynamicScope: DynamicScope
+    env: Environment
   ): OutletInstanceState {
     recordUse('outlet:component-create');
-    let parentStateRef = dynamicScope.get('outletState');
-    let currentStateRef = definition.ref;
-    dynamicScope.set('outletState', currentStateRef);
 
     let state: OutletInstanceState = {
       owner: definition.owner,
@@ -202,27 +220,22 @@ class OutletComponentManager
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
 
-    if (env.debugRenderTree !== undefined) {
-      let parentState = valueForRef(parentStateRef);
-      let parentOwner = parentState?.render?.owner;
-      let currentState = valueForRef(currentStateRef);
-      let currentOwner = currentState?.render?.owner;
+    if (env.debugRenderTree !== undefined && owner !== definition.owner) {
+      let currentOwner = definition.owner;
 
-      if (parentOwner && parentOwner !== currentOwner) {
-        assert(
-          'Expected currentOwner to be an EngineInstance',
-          currentOwner != null && 'buildChildEngineInstance' in currentOwner
-        );
+      assert(
+        'Expected currentOwner to be an EngineInstance',
+        'buildChildEngineInstance' in currentOwner
+      );
 
-        let engineInstance = currentOwner as EngineInstance;
-        let { mountPoint } = engineInstance;
+      let engineInstance = currentOwner as EngineInstance;
+      let { mountPoint } = engineInstance;
 
-        if (mountPoint) {
-          state.engine = {
-            mountPoint,
-            instance: engineInstance,
-          };
-        }
+      if (mountPoint) {
+        state.engine = {
+          mountPoint,
+          instance: engineInstance,
+        };
       }
     }
 

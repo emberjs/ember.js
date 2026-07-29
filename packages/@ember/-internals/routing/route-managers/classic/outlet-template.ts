@@ -1,5 +1,4 @@
 import { precompileTemplate } from '@ember/template-compilation';
-import { outletHelper } from './outlet';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
 
@@ -9,10 +8,7 @@ import { recordUse } from '../probe';
 // so the exported TemplateFactory identity is left untouched.
 recordUse('classic:outlet-template-eval');
 
-export default precompileTemplate(`{{component (outletHelper)}}`, {
+export default precompileTemplate(`<@outlet />`, {
   moduleName: 'packages/@ember/-internals/routing/route-managers/classic/outlet-template.hbs',
   strictMode: true,
-  scope() {
-    return { outletHelper };
-  },
 });
