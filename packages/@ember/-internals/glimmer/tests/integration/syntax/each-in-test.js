@@ -701,6 +701,128 @@ moduleFor(
   }
 );
 
+moduleFor(
+  'Syntax test: {{#each-in}} with the key option',
+  class extends RenderingTestCase {
+    items() {
+      let items = Array.from(this.element.querySelectorAll('li'));
+      this.assert.strictEqual(items.length, 2, 'both entries rendered');
+      return items;
+    }
+
+    [`@test by default the entry's value is the key, so changing a value replaces its DOM`]() {
+      this.render(
+        `<ul>{{#each-in this.hash as |name value|}}<li>{{name}}: {{value}}</li>{{/each-in}}</ul>`,
+        { hash: { a: 1, b: 2 } }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      runTask(() => set(this.context, 'hash', { a: 1, b: 3 }));
+      this.assertText('a: 1b: 3');
+
+      let after = this.items();
+      this.assert.strictEqual(after[0], before[0], 'unchanged entry keeps its node');
+      this.assert.notStrictEqual(after[1], before[1], 'changed entry gets a new node');
+    }
+
+    [`@test key="@key" uses the property name, so a changed value updates in place`]() {
+      this.render(
+        `<ul>{{#each-in this.hash key="@key" as |name value|}}<li>{{name}}: {{value}}</li>{{/each-in}}</ul>`,
+        { hash: { a: 1, b: 2 } }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      runTask(() => set(this.context, 'hash', { a: 1, b: 3 }));
+      this.assertText('a: 1b: 3');
+
+      let after = this.items();
+      this.assert.strictEqual(after[0], before[0], 'unchanged entry keeps its node');
+      this.assert.strictEqual(after[1], before[1], 'changed entry keeps its node');
+    }
+
+    // `@index` is accepted here and #16719 calls it public API, though docs omit it and
+    // rfc #321 was never accepted. These two record what it resolves to, ensuring a
+    // future change is deliberate.
+    [`@test key="@index" keys on the property name, not the position or the value`]() {
+      this.render(
+        `<ul>{{#each-in this.hash key="@index" as |name value|}}<li>{{name}}: {{value}}</li>{{/each-in}}</ul>`,
+        { hash: { a: 1, b: 2 } }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      // reordering while changing a value: keying by name moves both nodes, a
+      // position would keep them put, and the value would replace the changed one
+      runTask(() => set(this.context, 'hash', { b: 2, a: 9 }));
+      this.assertText('b: 2a: 9');
+
+      let after = this.items();
+      this.assert.strictEqual(after[0], before[1], `b's node moves with its name`);
+      this.assert.strictEqual(after[1], before[0], `a's node moves and survives its new value`);
+    }
+
+    [`@test a path key is looked up on the entry's value`]() {
+      this.render(
+        `<ul>{{#each-in this.hash key="id" as |name value|}}<li>{{name}}: {{value.id}}</li>{{/each-in}}</ul>`,
+        { hash: { a: { id: 1 }, b: { id: 2 } } }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      runTask(() => set(this.context, 'hash', { a: { id: 9 }, b: { id: 2 } }));
+      this.assertText('a: 9b: 2');
+
+      let after = this.items();
+      this.assert.notStrictEqual(after[0], before[0], 'a changed value.id gets a new node');
+      this.assert.strictEqual(after[1], before[1], 'an unchanged value.id keeps its node');
+    }
+
+    [`@test key="@index" collides when a Map is keyed by objects`]() {
+      let a = { name: 'a' };
+      let b = { name: 'b' };
+
+      this.render(
+        `<ul>{{#each-in this.map key="@index" as |name value|}}<li>{{name.name}}: {{value}}</li>{{/each-in}}</ul>`,
+        {
+          map: new Map([
+            [a, 1],
+            [b, 2],
+          ]),
+        }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      runTask(() =>
+        set(
+          this.context,
+          'map',
+          new Map([
+            [b, 2],
+            [a, 1],
+          ])
+        )
+      );
+      this.assertText('b: 2a: 1');
+
+      let after = this.items();
+      this.assert.strictEqual(
+        after[0],
+        before[0],
+        'every object key stringifies alike, so nodes are reused by position rather than moved'
+      );
+      this.assert.strictEqual(after[1], before[1], 'likewise for the second entry');
+    }
+  }
+);
+
 // Utils
 function makeIterator(ary) {
   let index = 0;
