@@ -6,7 +6,6 @@ export type {
   ReadOnlyReactive,
   TrackedValue,
 } from '@glimmer/validator/lib/tracked-value';
-export type { CachedValue } from '@glimmer/validator/lib/cached-value';
 
 /**
   In order to tell Ember a value might change, we need to mark it as trackable.

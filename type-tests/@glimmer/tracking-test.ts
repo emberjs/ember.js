@@ -1,5 +1,5 @@
 import { cached, tracked } from '@glimmer/tracking';
-import type { CachedValue, Reactive, ReadOnlyReactive, TrackedValue } from '@glimmer/tracking';
+import type { Reactive, ReadOnlyReactive, TrackedValue } from '@glimmer/tracking';
 import { expectTypeOf } from 'expect-type';
 
 // ------- public types -------
@@ -53,12 +53,11 @@ expectTypeOf(tracked({ value: 'Zoey' }, {})).toMatchTypeOf<Reactive<Record<strin
 // ------- cached: standalone form -------
 const doubled = cached(() => count.value * 2);
 
-expectTypeOf(doubled).toMatchTypeOf<ReadOnlyReactive<number>>();
-expectTypeOf(doubled).toMatchTypeOf<CachedValue<number>>();
+expectTypeOf(doubled).toEqualTypeOf<ReadOnlyReactive<number>>();
 expectTypeOf(doubled.value).toEqualTypeOf<number>();
 expectTypeOf(doubled.get()).toEqualTypeOf<number>();
 
-// @ts-expect-error -- a CachedValue is read-only
+// @ts-expect-error -- the returned value is read-only
 doubled.value = 4;
 
 // ------- cached: standalone form with options -------

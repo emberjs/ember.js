@@ -9,7 +9,7 @@ import { type Cache, createCache, getValue } from './tracking';
  * re-invokes the wrapped function when tracked state it previously read has
  * changed.
  */
-export class CachedValue<Value = unknown> implements ReadOnlyReactive<Value> {
+class CachedValue<Value = unknown> implements ReadOnlyReactive<Value> {
   readonly #cache: Cache<Value>;
 
   constructor(fn: () => Value, options?: { description?: string }) {
@@ -35,6 +35,6 @@ export class CachedValue<Value = unknown> implements ReadOnlyReactive<Value> {
 export function cachedValue<Value>(
   fn: () => Value,
   options?: { description?: string }
-): CachedValue<Value> {
+): ReadOnlyReactive<Value> {
   return new CachedValue(fn, options);
 }

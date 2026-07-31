@@ -3,7 +3,8 @@
 // of @cached, so any changes made to one should also be made to the other
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { type CachedValue, cachedValue } from '@glimmer/validator/lib/cached-value';
+import { cachedValue } from '@glimmer/validator/lib/cached-value';
+import type { ReadOnlyReactive } from '@glimmer/validator/lib/tracked-value';
 import { createCache, getValue } from '@glimmer/validator/lib/tracking';
 
 /**
@@ -142,8 +143,11 @@ export function cached<T>(
  * `cached` as a standalone cached reactive value, usable outside of classes:
  * `const doubled = cached(() => count.value * 2)`.
  */
-export function cached<Value>(fn: () => Value, options?: CachedValueOptions): CachedValue<Value>;
-export function cached(...args: any[]): CachedValue<unknown> | void {
+export function cached<Value>(
+  fn: () => Value,
+  options?: CachedValueOptions
+): ReadOnlyReactive<Value>;
+export function cached(...args: any[]): ReadOnlyReactive<unknown> | void {
   const [target, key, descriptor] = args;
 
   // Error on `@cached()`, `@cached(...args)`, and `@cached propName = value;`
@@ -151,7 +155,7 @@ export function cached(...args: any[]): CachedValue<unknown> | void {
 
   if (typeof target === 'function' && args.length <= 2) {
     /*
-      Standalone form. Returns a read-only `CachedValue` usable outside of
+      Standalone form. Returns a `ReadOnlyReactive` usable outside of
       classes. A legacy decorator invocation always receives three arguments,
       so it can never land in this branch.
 
