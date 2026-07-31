@@ -6,6 +6,7 @@ export type {
   ReadOnlyReactive,
   TrackedValue,
 } from '@glimmer/validator/lib/tracked-value';
+export type { CachedValue } from '@glimmer/validator/lib/cached-value';
 
 /**
   In order to tell Ember a value might change, we need to mark it as trackable.
@@ -271,6 +272,40 @@ export type {
   your app. Many getters and tracked properties are only accessed once, rendered,
   and then never rerendered, so adding `@cached` when it is unnecessary can
   negatively impact performance.
+
+  ### Standalone usage
+
+  Calling `cached` with a function creates a standalone memoized reactive
+  value, usable outside of classes:
+
+  ```js
+  import { tracked, cached } from '@glimmer/tracking';
+
+  const count = tracked(0);
+  const doubled = cached(() => count.value * 2);
+
+  doubled.value; // read the memoized value, entangling with any tracking context
+  doubled.get(); // function shorthand for reading
+  ```
+
+  The function is only re-invoked when tracked state it previously read has
+  changed; reading `value` in a template (or in a getter used by a template)
+  will rerender just like a `@cached` getter.
+
+  This form accepts an options object containing an `equals` function and a
+  `description` used for debugging. When a re-computation produces a value
+  that `equals` deems equal to the previous one (it defaults to `Object.is`),
+  the previous value -- and its identity -- is retained, so downstream
+  consumers do not update:
+
+  ```js
+  const letters = tracked(['b', 'a']);
+  const sorted = cached(() => letters.value.slice().sort(), {
+    equals: (a, b) => a.length === b.length && a.every((x, i) => x === b[i]),
+  });
+
+  letters.value = ['a', 'b']; // recomputes, but `sorted.value` keeps its identity
+  ```
 
   @method cached
   @static

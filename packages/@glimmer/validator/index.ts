@@ -8,6 +8,7 @@ if (Reflect.has(globalThis, GLIMMER_VALIDATOR_REGISTRATION)) {
 
 Reflect.set(globalThis, GLIMMER_VALIDATOR_REGISTRATION, true);
 
+export { CachedValue, cachedValue } from './lib/cached-value';
 export { trackedArray } from './lib/collections/array';
 export { trackedMap } from './lib/collections/map';
 export { trackedObject } from './lib/collections/object';

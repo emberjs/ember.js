@@ -1,7 +1,9 @@
 // NOTE: copied from: https://github.com/glimmerjs/glimmer.js/pull/358
 // Both glimmerjs/glimmer.js and emberjs/ember.js have the exact same implementation
 // of @cached, so any changes made to one should also be made to the other
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { type CachedValue, cachedValue } from '@glimmer/validator/lib/cached-value';
 import { createCache, getValue } from '@glimmer/validator/lib/tracking';
 
 /**
@@ -84,20 +86,119 @@ import { createCache, getValue } from '@glimmer/validator/lib/tracking';
   the subsequent cache invalidations of the `@cached` properties who were
   using this `trackedProp`.
 
-  Remember that setting tracked data should only be done during initialization, 
+  Remember that setting tracked data should only be done during initialization,
   or as the result of a user action. Setting tracked data during render
   (such as in a getter), is not supported.
+
+  ### Standalone usage
+
+  Calling `cached` with a function creates a standalone memoized reactive
+  value, usable outside of classes:
+
+  ```js
+  import { tracked, cached } from '@glimmer/tracking';
+
+  const count = tracked(0);
+  const doubled = cached(() => count.value * 2);
+
+  doubled.value; // read the memoized value, entangling with any tracking context
+  doubled.get(); // function shorthand for reading
+  ```
+
+  The function is only re-invoked when tracked state it previously read has
+  changed; reading `value` in a template (or in a getter used by a template)
+  will rerender just like a `@cached` getter.
+
+  This form accepts an options object containing an `equals` function and a
+  `description` used for debugging. When a re-computation produces a value
+  that `equals` deems equal to the previous one (it defaults to `Object.is`),
+  the previous value -- and its identity -- is retained, so downstream
+  consumers do not update:
+
+  ```js
+  const letters = tracked(['b', 'a']);
+  const sorted = cached(() => letters.value.slice().sort(), {
+    equals: (a, b) => a.length === b.length && a.every((x, i) => x === b[i]),
+  });
+
+  letters.value = ['a', 'b']; // recomputes, but `sorted.value` keeps its identity
+  ```
 
   @method cached
   @static
   @for @glimmer/tracking
   @public
  */
-export const cached: MethodDecorator = (...args: any[]) => {
+/**
+ * Reactivity options for the standalone `cached(fn, options)` form.
+ *
+ * - `equals` decides whether a re-computed value counts as a new value; when it
+ *   returns `true`, the previous value (and its identity) is retained. It
+ *   defaults to `Object.is`.
+ * - `description` is used in development for debugging.
+ */
+interface CachedValueOptions<Value> {
+  equals?: (a: Value, b: Value) => boolean;
+  description?: string;
+}
+
+/**
+ * `cached` as a decorator: `@cached get fullName() { … }`.
+ */
+export function cached<T>(
+  target: object,
+  key: string | symbol,
+  descriptor: TypedPropertyDescriptor<T>
+): void;
+/**
+ * `cached` as a standalone memoized reactive value, usable outside of classes:
+ * `const doubled = cached(() => count.value * 2)`.
+ */
+export function cached<Value>(
+  fn: () => Value,
+  options?: CachedValueOptions<Value>
+): CachedValue<Value>;
+export function cached(...args: any[]): CachedValue<unknown> | void {
   const [target, key, descriptor] = args;
 
   // Error on `@cached()`, `@cached(...args)`, and `@cached propName = value;`
   if (DEBUG && target === undefined) throwCachedExtraneousParens();
+
+  if (typeof target === 'function' && args.length <= 2) {
+    /*
+      Standalone form. Returns a read-only `CachedValue` usable outside of
+      classes. A legacy decorator invocation always receives three arguments,
+      so it can never land in this branch.
+
+      ```js
+      const doubled = cached(() => count.value * 2);
+
+      doubled.value; // read (consumes what the function read)
+      doubled.get(); // function shorthand for reading
+      ```
+    */
+    const options = key as CachedValueOptions<unknown> | undefined;
+
+    assert(
+      `cached() may only receive an options object containing 'equals' or 'description' as its second argument, received ${options}`,
+      options === undefined || (typeof options === 'object' && options !== null)
+    );
+
+    if (DEBUG && options) {
+      assert(
+        `The 'equals' option passed to cached must be a function. Received ${options.equals}`,
+        !('equals' in options) || typeof options.equals === 'function'
+      );
+
+      assert(
+        `The 'description' option passed to cached must be a string. Received ${options.description}`,
+        !('description' in options) || typeof options.description === 'string'
+      );
+    }
+
+    return cachedValue(target as () => unknown, options);
+  }
+
   if (
     DEBUG &&
     (typeof target !== 'object' ||
@@ -121,7 +222,7 @@ export const cached: MethodDecorator = (...args: any[]) => {
 
     return getValue(caches.get(this));
   };
-};
+}
 
 function throwCachedExtraneousParens(): never {
   throw new Error(
