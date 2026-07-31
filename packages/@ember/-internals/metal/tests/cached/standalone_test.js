@@ -6,7 +6,7 @@ import { track, valueForTag, validateTag } from '@glimmer/validator';
 moduleFor(
   'cached() - standalone usage',
   class extends AbstractTestCase {
-    ['@test creates a memoized derived value'](assert) {
+    ['@test creates a cached computation'](assert) {
       let count = tracked(1);
 
       let computations = 0;
@@ -38,33 +38,10 @@ moduleFor(
       assert.false(validateTag(tag, snapshot), 'tag is invalidated by a change to an input');
     }
 
-    ['@test equals option retains the previous value and its identity'](assert) {
-      let letters = tracked(['b', 'a']);
-      let sorted = cached(() => letters.value.slice().sort(), {
-        equals: (a, b) => a.length === b.length && a.every((x, i) => x === b[i]),
-      });
-
-      let first = sorted.value;
-      assert.deepEqual(first, ['a', 'b']);
-
-      letters.value = ['a', 'b'];
-      assert.strictEqual(sorted.value, first, 'an equal recomputation retains the previous array');
-
-      letters.value = ['c', 'a'];
-      assert.notStrictEqual(sorted.value, first, 'an unequal recomputation is a new array');
-      assert.deepEqual(sorted.value, ['a', 'c']);
-    }
-
     ['@test errors when the second argument is not an options object']() {
       expectAssertion(() => {
         cached(() => 1, null);
-      }, "cached() may only receive an options object containing 'equals' or 'description' as its second argument, received null");
-    }
-
-    ['@test errors when equals is not a function']() {
-      expectAssertion(() => {
-        cached(() => 1, { equals: true });
-      }, "The 'equals' option passed to cached must be a function. Received true");
+      }, "cached() may only receive an options object containing 'description' as its second argument, received null");
     }
 
     ['@test errors when description is not a string']() {

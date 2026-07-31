@@ -62,15 +62,12 @@ expectTypeOf(doubled.get()).toEqualTypeOf<number>();
 doubled.value = 4;
 
 // ------- cached: standalone form with options -------
-const sorted = cached(() => ['a', 'b'], {
-  equals: (a, b) => a.length === b.length && a.every((x, i) => x === b[i]),
-  description: 'sorted letters',
-});
+const sorted = cached(() => ['a', 'b'], { description: 'sorted letters' });
 
 expectTypeOf(sorted.value).toEqualTypeOf<string[]>();
 
-// @ts-expect-error -- equals must compare the value type
-cached(() => 0, { equals: (a: string, b: string) => a === b });
+// @ts-expect-error -- description must be a string
+cached(() => 0, { description: 123 });
 
 // ------- cached: decorator form -------
 class Person {

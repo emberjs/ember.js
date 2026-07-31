@@ -92,7 +92,7 @@ import { createCache, getValue } from '@glimmer/validator/lib/tracking';
 
   ### Standalone usage
 
-  Calling `cached` with a function creates a standalone memoized reactive
+  Calling `cached` with a function creates a standalone cached reactive
   value, usable outside of classes:
 
   ```js
@@ -101,7 +101,7 @@ import { createCache, getValue } from '@glimmer/validator/lib/tracking';
   const count = tracked(0);
   const doubled = cached(() => count.value * 2);
 
-  doubled.value; // read the memoized value, entangling with any tracking context
+  doubled.value; // read the cached value, entangling with any tracking context
   doubled.get(); // function shorthand for reading
   ```
 
@@ -109,19 +109,11 @@ import { createCache, getValue } from '@glimmer/validator/lib/tracking';
   changed; reading `value` in a template (or in a getter used by a template)
   will rerender just like a `@cached` getter.
 
-  This form accepts an options object containing an `equals` function and a
-  `description` used for debugging. When a re-computation produces a value
-  that `equals` deems equal to the previous one (it defaults to `Object.is`),
-  the previous value -- and its identity -- is retained, so downstream
-  consumers do not update:
+  This form accepts an options object containing a `description` used for
+  debugging:
 
   ```js
-  const letters = tracked(['b', 'a']);
-  const sorted = cached(() => letters.value.slice().sort(), {
-    equals: (a, b) => a.length === b.length && a.every((x, i) => x === b[i]),
-  });
-
-  letters.value = ['a', 'b']; // recomputes, but `sorted.value` keeps its identity
+  const doubled = cached(() => count.value * 2, { description: 'doubled' });
   ```
 
   @method cached
@@ -130,15 +122,11 @@ import { createCache, getValue } from '@glimmer/validator/lib/tracking';
   @public
  */
 /**
- * Reactivity options for the standalone `cached(fn, options)` form.
+ * Options for the standalone `cached(fn, options)` form.
  *
- * - `equals` decides whether a re-computed value counts as a new value; when it
- *   returns `true`, the previous value (and its identity) is retained. It
- *   defaults to `Object.is`.
  * - `description` is used in development for debugging.
  */
-interface CachedValueOptions<Value> {
-  equals?: (a: Value, b: Value) => boolean;
+interface CachedValueOptions {
   description?: string;
 }
 
@@ -151,13 +139,10 @@ export function cached<T>(
   descriptor: TypedPropertyDescriptor<T>
 ): void;
 /**
- * `cached` as a standalone memoized reactive value, usable outside of classes:
+ * `cached` as a standalone cached reactive value, usable outside of classes:
  * `const doubled = cached(() => count.value * 2)`.
  */
-export function cached<Value>(
-  fn: () => Value,
-  options?: CachedValueOptions<Value>
-): CachedValue<Value>;
+export function cached<Value>(fn: () => Value, options?: CachedValueOptions): CachedValue<Value>;
 export function cached(...args: any[]): CachedValue<unknown> | void {
   const [target, key, descriptor] = args;
 
@@ -177,19 +162,14 @@ export function cached(...args: any[]): CachedValue<unknown> | void {
       doubled.get(); // function shorthand for reading
       ```
     */
-    const options = key as CachedValueOptions<unknown> | undefined;
+    const options = key as CachedValueOptions | undefined;
 
     assert(
-      `cached() may only receive an options object containing 'equals' or 'description' as its second argument, received ${options}`,
+      `cached() may only receive an options object containing 'description' as its second argument, received ${options}`,
       options === undefined || (typeof options === 'object' && options !== null)
     );
 
     if (DEBUG && options) {
-      assert(
-        `The 'equals' option passed to cached must be a function. Received ${options.equals}`,
-        !('equals' in options) || typeof options.equals === 'function'
-      );
-
       assert(
         `The 'description' option passed to cached must be a string. Received ${options.description}`,
         !('description' in options) || typeof options.description === 'string'
