@@ -297,7 +297,6 @@ export function hiddenDependencies() {
       findFromProject('@glimmer/syntax', 'simple-html-tokenizer'),
       'module'
     ).path,
-    rsvp: resolve(findFromProject('rsvp').root, 'dist/es6/rsvp.es.js'),
     '@handlebars/parser': resolve(packageCache.appRoot, 'packages/@handlebars/parser/lib/index.js'),
     ...walkGlimmerDeps(['@glimmer/compiler']),
     'decorator-transforms/runtime': resolve(
