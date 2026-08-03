@@ -99,6 +99,30 @@ function basicTest(scenarios: Scenarios, appName: string) {
                 })
               });
             `,
+            'rsvp-runloop-test.js': `
+              import { module, test } from 'qunit';
+              import { run } from '@ember/runloop';
+              import RSVP from 'rsvp';
+
+              // Ember configures RSVP's async hook to schedule through
+              // backburner, in @ember/-internals/runtime/lib/ext/rsvp. That
+              // module must be the same rsvp instance apps import, and its
+              // side-effectful configure() calls must survive app bundling.
+              // https://github.com/emberjs/ember.js/issues/21538
+              module('Unit | rsvp is runloop-integrated', function () {
+                test('a deferred resolved inside run() settles before run() returns', function (assert) {
+                  let settled = false;
+                  const deferred = RSVP.defer();
+                  deferred.promise.then(() => {
+                    settled = true;
+                  });
+
+                  run(() => deferred.resolve());
+
+                  assert.true(settled, 'RSVP callbacks flushed by the runloop');
+                });
+              });
+            `,
           },
           acceptance: {
             'example-gjs-route-test.js': `
