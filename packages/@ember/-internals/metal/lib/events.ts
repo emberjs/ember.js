@@ -39,24 +39,11 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
   @param {Boolean} once A flag whether a function should only be called once
   @public
 */
-export function addListener<Target>(
-  obj: object,
-  eventName: string,
-  target: Target,
-  method: PropertyKey | ((this: Target, ...args: any[]) => void),
-  once?: boolean,
-  sync?: boolean
-): void;
 export function addListener(
   obj: object,
   eventName: string,
-  method: PropertyKey | ((...args: any[]) => void)
-): void;
-export function addListener(
-  obj: object,
-  eventName: string,
-  target: object | PropertyKey | ((...args: any[]) => void) | null,
-  method?: PropertyKey | ((...args: any[]) => void),
+  target: object | Function | null,
+  method?: Function | PropertyKey,
   once?: boolean,
   sync = true
 ): void {
@@ -66,12 +53,9 @@ export function addListener(
   );
 
   if (!method && 'function' === typeof target) {
-    // SAFETY: This should be correct. It may be possible to get TS to infer it.
-    method = target as (...args: any[]) => void;
+    method = target;
     target = null;
   }
-
-  assert('target should be object or null', target === null || typeof target === 'object');
 
   metaFor(obj).addToListeners(eventName, target, method!, once === true, sync);
 }
@@ -93,19 +77,8 @@ export function addListener(
 export function removeListener(
   obj: object,
   eventName: string,
-  target: object | null,
-  methodOrName: string | ((...args: any[]) => void)
-): void;
-export function removeListener(
-  obj: object,
-  eventName: string,
-  method: (...args: any[]) => void
-): void;
-export function removeListener(
-  obj: object,
-  eventName: string,
-  targetOrFunction: object | ((...args: any[]) => void) | null,
-  functionOrName?: string | ((...args: any[]) => void)
+  targetOrFunction: object | Function | null,
+  functionOrName?: string | Function
 ): void {
   assert(
     'You must pass at least an object, event name, and method or target and method/method name to removeListener',
@@ -171,7 +144,7 @@ export function sendEvent(
       continue;
     }
     if (once) {
-      removeListener(obj, eventName, target, method as string | ((...args: any[]) => void));
+      removeListener(obj, eventName, target, method);
     }
     if (!target) {
       target = obj;

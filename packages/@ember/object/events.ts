@@ -33,8 +33,8 @@ export function addListener(
   return originalAddListener(
     obj,
     eventName,
-    target as any,
-    method as PropertyKey | ((...args: any[]) => void),
+    target as object | Function | null,
+    method,
     once,
     sync
   );
@@ -64,8 +64,8 @@ export function removeListener(
   return originalRemoveListener(
     obj,
     eventName,
-    target as any,
-    method as string | ((...args: any[]) => void)
+    target as object | Function | null,
+    method as string | Function
   );
 }
 

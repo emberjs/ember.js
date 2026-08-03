@@ -163,8 +163,7 @@ const Evented = Mixin.create({
       '`Evented#on` is deprecated. Use native JavaScript events or a dedicated event library instead.',
       DEPRECATIONS.DEPRECATE_EVENTED
     );
-    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we're deprecating this API.
-    addListener(this, name, target, method as PropertyKey | ((...args: any[]) => void));
+    addListener(this, name, target, method);
     return this;
   },
 
@@ -173,8 +172,7 @@ const Evented = Mixin.create({
       '`Evented#one` is deprecated. Use native JavaScript events or a dedicated event library instead.',
       DEPRECATIONS.DEPRECATE_EVENTED
     );
-    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we're deprecating this API.
-    addListener(this, name, target, method as PropertyKey | ((...args: any[]) => void), true);
+    addListener(this, name, target, method, true);
     return this;
   },
 
@@ -191,8 +189,7 @@ const Evented = Mixin.create({
       '`Evented#off` is deprecated. Use native JavaScript events or a dedicated event library instead.',
       DEPRECATIONS.DEPRECATE_EVENTED
     );
-    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we're deprecating this API.
-    removeListener(this, name, target, method as string | ((...args: any[]) => void));
+    removeListener(this, name, target, method);
     return this;
   },
 

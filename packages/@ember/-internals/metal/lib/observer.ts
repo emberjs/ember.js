@@ -44,14 +44,7 @@ export function addObserver(
 ): void {
   let eventName = changeEvent(path);
 
-  addListener(
-    obj,
-    eventName,
-    target as any,
-    method as PropertyKey | ((...args: any[]) => void),
-    false,
-    sync
-  );
+  addListener(obj, eventName, target, method, false, sync);
 
   let meta = peekMeta(obj);
 
@@ -85,7 +78,7 @@ export function removeObserver(
     deactivateObserver(obj, eventName, sync);
   }
 
-  removeListener(obj, eventName, target as any, method as string | ((...args: any[]) => void));
+  removeListener(obj, eventName, target, method);
 }
 
 function getOrCreateActiveObserversFor(target: object, sync: boolean) {

@@ -88,7 +88,7 @@ class RouterService extends Service {
     method?: string | ((...args: any[]) => void)
   ) {
     // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
-    addListener(this, name, target, method as any);
+    addListener(this, name, target as object | Function, method as any);
     return this;
   }
 
@@ -114,7 +114,7 @@ class RouterService extends Service {
     method?: string | Function
   ) {
     // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
-    addListener(this, name, target, method as any, true);
+    addListener(this, name, target as object | Function, method as any, true);
     return this;
   }
 
