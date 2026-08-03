@@ -27,6 +27,7 @@ import type {
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
+import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
 import typeOf from '@ember/utils/lib/type-of';
 import { assert, info } from '@ember/debug';
@@ -57,6 +58,7 @@ import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-
 import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
 import { sendEvent } from '@ember/-internals/metal/lib/events';
+import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import {
   eventedOn,
   eventedOne,
@@ -150,6 +152,12 @@ const { slice } = Array.prototype;
   @public
 */
 class EmberRouter extends EmberObject {
+  static {
+    // The deprecated Evented mixin is no longer applied, but instances still
+    // provide its methods, so `Evented.detect` must keep returning true.
+    metaFor(this.prototype).addMixin(Evented);
+  }
+
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.

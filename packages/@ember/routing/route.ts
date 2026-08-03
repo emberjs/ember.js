@@ -19,6 +19,8 @@ import { set } from '@ember/-internals/metal/lib/property_set';
 import getProperties from '@ember/-internals/metal/lib/get_properties';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
 import EmberObject from '@ember/object';
+import Evented from '@ember/object/evented';
+import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import { A as emberA } from '@ember/array';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import typeOf from '@ember/utils/lib/type-of';
@@ -264,6 +266,12 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler {
 }
 
 class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implements IRoute {
+  static {
+    // The deprecated Evented mixin is no longer applied, but instances still
+    // provide its methods, so `Evented.detect` must keep returning true.
+    metaFor(this.prototype).addMixin(Evented);
+  }
+
   static isRouteFactory = true;
 
   // These properties will end up appearing in the public interface because we

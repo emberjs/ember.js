@@ -1,4 +1,5 @@
 import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
+import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import inject from '@ember/-internals/metal/lib/injected_property';
 import {
   eventedOn,
@@ -8,6 +9,7 @@ import {
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
+import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
 import states from './states';
@@ -31,6 +33,12 @@ import states from './states';
 
 interface CoreView extends ActionHandler, View {}
 class CoreView extends FrameworkObject.extend(ActionHandler) {
+  static {
+    // The deprecated Evented mixin is no longer applied, but instances still
+    // provide its methods, so `Evented.detect` must keep returning true.
+    metaFor(this.prototype).addMixin(Evented);
+  }
+
   isView = true;
 
   declare _states: typeof states;
