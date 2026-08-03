@@ -10,17 +10,11 @@ moduleFor(
       DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
     )} @test works properly on proxy-ish objects`](assert) {
       let eventedProxyObj;
-      expectDeprecation(
-        () => {
-          eventedProxyObj = class extends CoreObject.extend(EventedMixin) {
-            unknownProperty() {
-              return true;
-            }
-          }.create();
-        },
-        /Evented is deprecated/,
-        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
-      );
+      eventedProxyObj = class extends CoreObject.extend(EventedMixin) {
+        unknownProperty() {
+          return true;
+        }
+      }.create();
 
       let noop = function () {};
 

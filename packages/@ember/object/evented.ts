@@ -1,11 +1,10 @@
 import {
-  addListener,
-  removeListener,
-  hasListeners,
-  sendEvent,
-} from '@ember/-internals/metal/lib/events';
-import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
-import { setDeprecation } from '@ember/-internals/utils/lib/mixin-deprecation';
+  eventedOn,
+  eventedOne,
+  eventedTrigger,
+  eventedOff,
+  eventedHas,
+} from '@ember/-internals/metal/lib/evented-methods';
 import Mixin from '@ember/object/mixin';
 
 export { on } from '@ember/-internals/metal/lib/events';
@@ -159,53 +158,27 @@ interface Evented {
 }
 const Evented = Mixin.create({
   on(name: string, target: object, method?: string | Function) {
-    deprecateUntil(
-      '`Evented#on` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      DEPRECATIONS.DEPRECATE_EVENTED
-    );
-    addListener(this, name, target, method);
+    eventedOn(this, name, target, method);
     return this;
   },
 
   one(name: string, target: object, method?: string | Function) {
-    deprecateUntil(
-      '`Evented#one` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      DEPRECATIONS.DEPRECATE_EVENTED
-    );
-    addListener(this, name, target, method, true);
+    eventedOne(this, name, target, method);
     return this;
   },
 
   trigger(name: string, ...args: any[]) {
-    deprecateUntil(
-      '`Evented#trigger` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      DEPRECATIONS.DEPRECATE_EVENTED
-    );
-    sendEvent(this, name, args);
+    eventedTrigger(this, name, args);
   },
 
   off(name: string, target: object, method?: string | Function) {
-    deprecateUntil(
-      '`Evented#off` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      DEPRECATIONS.DEPRECATE_EVENTED
-    );
-    removeListener(this, name, target, method);
+    eventedOff(this, name, target, method);
     return this;
   },
 
   has(name: string) {
-    deprecateUntil(
-      '`Evented#has` is deprecated. Use native JavaScript events or a dedicated event library instead.',
-      DEPRECATIONS.DEPRECATE_EVENTED
-    );
-    return hasListeners(this, name);
+    return eventedHas(this, name);
   },
-});
-
-setDeprecation(Evented, {
-  message:
-    'Evented is deprecated. Use native JavaScript events or a dedicated event library instead.',
-  deprecation: DEPRECATIONS.DEPRECATE_EVENTED,
 });
 
 export default Evented;

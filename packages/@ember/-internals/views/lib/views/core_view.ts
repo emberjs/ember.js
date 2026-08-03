@@ -1,11 +1,16 @@
 import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
 import inject from '@ember/-internals/metal/lib/injected_property';
+import {
+  eventedOn,
+  eventedOne,
+  eventedTrigger,
+  eventedOff,
+  eventedHas,
+} from '@ember/-internals/metal/lib/evented-methods';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
-import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
 import states from './states';
-import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecation';
 
 /**
   `CoreView` is an abstract class that exists to give view-like behavior
@@ -24,17 +29,14 @@ import { disableDeprecations } from '@ember/-internals/utils/lib/mixin-deprecati
   @private
 */
 
-interface CoreView extends Evented, ActionHandler, View {}
-class CoreView extends disableDeprecations(() => FrameworkObject.extend(Evented, ActionHandler)) {
+interface CoreView extends ActionHandler, View {}
+class CoreView extends FrameworkObject.extend(ActionHandler) {
   isView = true;
 
   declare _states: typeof states;
 
   declare _state: keyof typeof states;
   declare _currentState: ViewState;
-
-  _superTrigger?: Evented['trigger'];
-  _superHas?: Evented['has'];
 
   /**
     If the view is currently inserted into the DOM of a parent view, this
@@ -49,15 +51,6 @@ class CoreView extends disableDeprecations(() => FrameworkObject.extend(Evented,
 
   init(properties: object | undefined) {
     super.init(properties);
-
-    // Handle methods from Evented
-    // The native class inheritance will not work for mixins. To work around this,
-    // we copy the existing trigger and has methods provided by the mixin and swap in the
-    // new ones from our class.
-    this._superTrigger = this.trigger;
-    this.trigger = this._trigger;
-    this._superHas = this.has;
-    this.has = this._has;
 
     this.parentView ??= null;
 
@@ -75,6 +68,28 @@ class CoreView extends disableDeprecations(() => FrameworkObject.extend(Evented,
     return hash;
   }
 
+  on<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  on(name: string, method: ((...args: any[]) => void) | string): this;
+  on(name: string, target: any, method?: any) {
+    eventedOn(this, name, target, method);
+    return this;
+  }
+
+  one<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  one(name: string, method: string | ((...args: any[]) => void)): this;
+  one(name: string, target: any, method?: any) {
+    eventedOne(this, name, target, method);
+    return this;
+  }
+
   /**
     Override the default event firing from `Evented` to
     also call methods with the given name.
@@ -83,18 +98,27 @@ class CoreView extends disableDeprecations(() => FrameworkObject.extend(Evented,
     @param name {String}
     @private
   */
-  // Changed to `trigger` on init
-  _trigger(name: string, ...args: any[]) {
-    this._superTrigger!(name, ...args);
+  trigger(name: string, ...args: any[]) {
+    eventedTrigger(this, name, args);
     let method = (this as any)[name];
     if (typeof method === 'function') {
       return method.apply(this, args);
     }
   }
 
-  // Changed to `has` on init
-  _has(name: string) {
-    return typeof (this as any)[name] === 'function' || this._superHas!(name);
+  off<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  off(name: string, method: string | ((...args: any[]) => void)): this;
+  off(name: string, target: any, method?: any) {
+    eventedOff(this, name, target, method);
+    return this;
+  }
+
+  has(name: string) {
+    return typeof (this as any)[name] === 'function' || eventedHas(this, name);
   }
 
   static isViewFactory = true;

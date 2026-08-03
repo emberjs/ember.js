@@ -120,7 +120,6 @@ export function annotatePureClassicCalls() {
     ['setProxy', 0],
     ['addListener', 0],
     ['removeListener', 0],
-    ['setDeprecation', 0],
   ]);
 
   // functions that run their callback argument on the spot (used for
