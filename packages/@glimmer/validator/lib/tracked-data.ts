@@ -2,6 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import type { UpdatableTag } from '@glimmer/interfaces';
 
 import { debug } from './debug';
+import { registerTagFor } from './meta';
 import { consumeTag } from './tracking';
 import { unwrap } from './utils';
 import { createUpdatableTag, DIRTY_TAG } from './validators';
@@ -40,6 +41,10 @@ export function trackedData<T extends object, K extends keyof T>(
         initialized: !hasInitializer,
       };
       cells.set(self, cell);
+      // one-time bridge: notifyPropertyChange / computed chains resolve
+      // tags through the central registry; hand them this cell's tag so
+      // both worlds dirty and consume the same object
+      registerTagFor(self, key, cell.tag);
     }
 
     return cell;

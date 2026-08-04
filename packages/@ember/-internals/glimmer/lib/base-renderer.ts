@@ -145,6 +145,8 @@ export function _resetRenderers() {
 function register(renderer: BaseRenderer): void {
   assert('Cannot register the same renderer twice', renderers.indexOf(renderer) === -1);
   renderers.push(renderer);
+  // a suppressed notification cannot have reached this renderer
+  _resetInvalidationNotified();
 }
 
 function deregister(renderer: BaseRenderer): void {
@@ -158,9 +160,13 @@ function deregister(renderer: BaseRenderer): void {
 // replaces the classic wiring where every dirty tag spun up a
 // backburner autorun whose `begin` hook rerendered the renderers.
 _setNotifyRevalidate(() => {
+  if (renderers.length === 0) return false;
+
   for (let renderer of renderers) {
     renderer.rerender();
   }
+
+  return true;
 });
 
 // The default @ember/scheduler strategy IS this clock: awaited phases
@@ -434,10 +440,6 @@ export class RendererState {
 
     if (renderer === null) return;
 
-    // dirt from here on is new information again -- the next set after
-    // this tick must notify the scheduler
-    _resetInvalidationNotified();
-
     // clock semantics: one render per tick, taking whatever has been
     // dirtied so far. Code that keeps dirtying state while we render
     // just accumulates work for the next tick -- the flag stays set
@@ -465,6 +467,12 @@ export class RendererState {
     } else {
       this.#armStreamTick(renderer, performance.now());
     }
+
+    // dirt from here on is new information again -- the next set must
+    // notify the scheduler. Reset at the END of the tick so dirt that
+    // arrived during revalidation (which latched the flag but was
+    // absorbed by this tick or its settle rounds) can't leave it stuck.
+    _resetInvalidationNotified();
   }
 
   /**

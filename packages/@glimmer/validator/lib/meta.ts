@@ -17,6 +17,24 @@ export type TagMeta = Map<PropertyKey, UpdatableTag>;
 
 const TRACKED_TAGS = new WeakMap<object, TagMeta>();
 
+/**
+ * Adopts an externally-owned tag (e.g. a tracked field's inline cell
+ * tag) as THE tag for (obj, key) in the central registry, so
+ * `tagFor`/`dirtyTagFor` consumers -- notifyPropertyChange, computed
+ * property chains -- observe the same tag object the field itself
+ * consumes and dirties.
+ */
+export function registerTagFor(obj: object, key: PropertyKey, tag: UpdatableTag): void {
+  let tags = TRACKED_TAGS.get(obj);
+
+  if (tags === undefined) {
+    tags = new Map();
+    TRACKED_TAGS.set(obj, tags);
+  }
+
+  tags.set(key, tag);
+}
+
 export function dirtyTagFor<T extends object>(
   obj: T,
   key: keyof T | string | symbol,

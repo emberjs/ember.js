@@ -23,9 +23,9 @@ import toBool from './utils/to-bool';
 // rendering). The setter indirection exists only to avoid a module
 // cycle with the renderer.
 
-let notifyRevalidate: () => void = () => {};
+let notifyRevalidate: () => boolean = () => false;
 
-export function _setNotifyRevalidate(fn: () => void): void {
+export function _setNotifyRevalidate(fn: () => boolean): void {
   notifyRevalidate = fn;
 }
 
@@ -85,8 +85,12 @@ function armDestroyDrain(): void {
 setGlobalContext({
   scheduleRevalidate() {
     if (invalidationNotified) return;
-    invalidationNotified = true;
-    notifyRevalidate();
+    // only latch when a renderer actually heard the notification --
+    // latching against an empty renderer list (dirt during app boot)
+    // would permanently swallow all future invalidations
+    if (notifyRevalidate()) {
+      invalidationNotified = true;
+    }
   },
 
   toBool,
