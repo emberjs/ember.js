@@ -18,6 +18,14 @@ export type TagMeta = Map<PropertyKey, UpdatableTag>;
 const TRACKED_TAGS = new WeakMap<object, TagMeta>();
 
 /**
+ * Read-only registry lookup: the canonical tag for (obj, key) if one
+ * exists, with no create-on-miss allocation.
+ */
+export function peekTagFor(obj: object, key: PropertyKey): UpdatableTag | undefined {
+  return TRACKED_TAGS.get(obj)?.get(key);
+}
+
+/**
  * Adopts an externally-owned tag (e.g. a tracked field's inline cell
  * tag) as THE tag for (obj, key) in the central registry, so
  * `tagFor`/`dirtyTagFor` consumers -- notifyPropertyChange, computed

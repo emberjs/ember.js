@@ -1,5 +1,5 @@
 import { get } from '@ember/object';
-import { RSVP } from '@ember/-internals/runtime';
+import * as RSVP from 'rsvp';
 import Route from '@ember/routing/route';
 
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';

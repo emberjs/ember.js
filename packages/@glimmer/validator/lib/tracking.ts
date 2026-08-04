@@ -37,7 +37,20 @@ class Tracker {
       return combine(Array.from(this.tags));
     }
   }
+
+  reset(): void {
+    this.tags.clear();
+    this.last = null;
+  }
 }
+
+// Frames are strictly LIFO, so finished trackers can be reset and
+// reused -- rendering opens a frame per compute, and the per-frame
+// Tracker + Set allocation was measurable GC pressure. Capped: depth
+// beyond the cap (error-path resets, pathological nesting) just
+// allocates.
+const TRACKER_POOL: Tracker[] = [];
+const TRACKER_POOL_MAX = 32;
 
 /**
  * Whenever a tracked computed property is entered, the current tracker is
@@ -59,7 +72,7 @@ const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 export function beginTrackFrame(debuggingContext?: string | false): void {
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
 
-  CURRENT_TRACKER = new Tracker();
+  CURRENT_TRACKER = TRACKER_POOL.pop() ?? new Tracker();
 
   if (DEBUG) {
     unwrap(debug.beginTrackingTransaction)(debuggingContext);
@@ -79,7 +92,15 @@ export function endTrackFrame(): Tag {
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  return unwrap(current).combine();
+  const tracker = unwrap(current);
+  const tag = tracker.combine();
+
+  if (TRACKER_POOL.length < TRACKER_POOL_MAX) {
+    tracker.reset();
+    TRACKER_POOL.push(tracker);
+  }
+
+  return tag;
 }
 
 export function beginUntrackFrame(): void {

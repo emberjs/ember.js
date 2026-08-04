@@ -7,7 +7,7 @@ import {
 } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
 import { A as emberA } from '@ember/array';
-import { RSVP } from '@ember/-internals/runtime';
+import * as RSVP from 'rsvp';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import { service } from '@ember/service';

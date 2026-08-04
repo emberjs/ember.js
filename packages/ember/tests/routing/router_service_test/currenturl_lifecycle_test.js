@@ -5,7 +5,7 @@ import { Component } from '@ember/-internals/glimmer';
 import Route from '@ember/routing/route';
 import { get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import { RSVP } from '@ember/-internals/runtime';
+import * as RSVP from 'rsvp';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
