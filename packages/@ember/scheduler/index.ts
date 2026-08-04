@@ -1,4 +1,5 @@
 import { assert } from '@ember/debug';
+import defaultStrategy from '@ember/scheduler/strategy';
 
 /**
   The `@ember/scheduler` package provides a render-aware scheduling interface,
@@ -75,21 +76,15 @@ let registeredStrategy: Strategy | null = null;
   Registers the scheduling strategy which the phase functions of
   `@ember/scheduler` delegate to.
 
-  The scheduling strategy should be registered once, when defining the
-  Application:
+  By default the phase functions delegate to the renderer-clock strategy
+  from `@ember/scheduler/strategy` -- no registration is required.
+  Registering exists to swap in an alternative implementation, at most
+  once, when defining the Application:
 
   ```js
-  import Application from '@ember/application';
   import { registerStrategy } from '@ember/scheduler';
 
-  // the default scheduler implementation
-  import strategy from '@ember/scheduler/strategy';
-
-  export default class App extends Application {
-    // ...
-  }
-
-  registerStrategy(strategy);
+  registerStrategy(myAlternativeStrategy);
   ```
 
   A strategy is any object implementing the scheduler interface:
@@ -123,12 +118,10 @@ export function _clearRegisteredStrategy(): void {
   registeredStrategy = null;
 }
 
-function getStrategy(phaseName: string): Strategy {
-  assert(
-    `Attempted to schedule work into the '${phaseName}' phase, but no scheduling strategy is registered. Register a strategy when defining your Application, e.g. the default strategy:\n\n\timport { registerStrategy } from '@ember/scheduler';\n\timport strategy from '@ember/scheduler/strategy';\n\n\tregisterStrategy(strategy);`,
-    registeredStrategy !== null
-  );
-  return registeredStrategy;
+function getStrategy(): Strategy {
+  // the renderer-clock strategy is the ambient default; registration
+  // exists to swap in an alternative implementation
+  return registeredStrategy ?? defaultStrategy;
 }
 
 /**
@@ -156,7 +149,7 @@ function getStrategy(phaseName: string): Strategy {
   @public
 */
 export function render(): Promise<void> {
-  return getStrategy('render').render();
+  return getStrategy().render();
 }
 
 /**
@@ -182,7 +175,7 @@ export function render(): Promise<void> {
   @public
 */
 export function layout(): Promise<void> {
-  return getStrategy('layout').layout();
+  return getStrategy().layout();
 }
 
 /**
@@ -212,7 +205,7 @@ export function layout(): Promise<void> {
   @public
 */
 export function composite(): Promise<void> {
-  return getStrategy('composite').composite();
+  return getStrategy().composite();
 }
 
 /**
@@ -237,7 +230,7 @@ export function composite(): Promise<void> {
   @public
 */
 export function next(): Promise<void> {
-  return getStrategy('next').next();
+  return getStrategy().next();
 }
 
 /**
@@ -261,5 +254,5 @@ export function next(): Promise<void> {
   @public
 */
 export function idle(): Promise<void> {
-  return getStrategy('idle').idle();
+  return getStrategy().idle();
 }

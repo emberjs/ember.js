@@ -32,6 +32,7 @@ import {
   _drainScheduledDestroys,
 } from './environment';
 import ResolverImpl from './resolver';
+import schedulerStrategy from '@ember/scheduler/strategy';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
@@ -156,6 +157,16 @@ function deregister(renderer: BaseRenderer): void {
 // replaces the classic wiring where every dirty tag spun up a
 // backburner autorun whose `begin` hook rerendered the renderers.
 _setNotifyRevalidate(() => {
+  for (let renderer of renderers) {
+    renderer.rerender();
+  }
+});
+
+// The default @ember/scheduler strategy IS this clock: awaited phases
+// request a tick here (a clean renderer revalidates as a no-op and the
+// tick still arrives pre-paint), and every tick that leaves the
+// renderer valid drives the strategy's phase windows below.
+schedulerStrategy._setTickRequester(() => {
   for (let renderer of renderers) {
     renderer.rerender();
   }
@@ -440,6 +451,7 @@ export class RendererState {
 
     if (this.isValid()) {
       this.#settleRounds = 0;
+      schedulerStrategy._onRendererTick();
       resolveRenderPromiseIfSettled();
     } else if (this.#settleRounds < 3) {
       this.#settleRounds++;
