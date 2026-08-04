@@ -1591,9 +1591,9 @@ importers:
       '@ember/owner':
         specifier: workspace:*
         version: link:../../@ember/owner
-      '@ember/runloop':
+      '@glimmer/global-context':
         specifier: workspace:*
-        version: link:../../@ember/runloop
+        version: link:../global-context
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces
