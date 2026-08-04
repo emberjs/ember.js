@@ -779,7 +779,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 <FunkyGate @bucket={{@bucket}} @outlet={{@outlet}} />
               </template>;
 
-              // What \`getOutlet\` returns: this manager's whole rendering story
+              // What \`getRouteWrapper\` returns: this manager's whole rendering story
               // for one route level — its own bucket and the level below.
               export class FunkyOutlet {
                 constructor(bucket, childOutlet) {
@@ -891,8 +891,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getRouteWrapper() {
-                  return undefined;
+                getRouteWrapper(bucket, childOutlet, defaultOutlet) {
+                  return defaultOutlet();
                 }
 
                 getRenderState(bucket) {
@@ -963,8 +963,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getRouteWrapper() {
-                  return undefined;
+                getRouteWrapper(bucket, childOutlet, defaultOutlet) {
+                  return defaultOutlet();
                 }
 
                 getRenderState(bucket) {
@@ -1029,7 +1029,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getOutlet(bucket, childOutlet) {
+                getRouteWrapper(bucket, childOutlet) {
                   return new FunkyOutlet(bucket, childOutlet);
                 }
 

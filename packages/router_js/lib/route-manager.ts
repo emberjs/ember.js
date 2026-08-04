@@ -328,46 +328,31 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   didExit(bucket: Bucket, state: DidExitState): void;
 
   /**
-    Optional. Returns a module-stable wrapper component: the same value for
-    every call, across all buckets. The outlet invokes it with `@Component`
-    (the per-bucket invokable from the render state), `@context` (the live
-    model), and `@bucket`; route identity for the rendering layer's stability
-    check is carried by the invokable, so the wrapper itself carries no
-    per-route state.
+    Required. Returns the component rendered at this manager's outlet
+    positions. There is no framework fallback, so a manager with no opinion
+    returns `defaultOutlet()`. Called once per bucket and cached; return `null`
+    for "nothing yet" (an invokable still in flight), which is not cached.
 
-    A wrapper is an argument-forwarding policy, and it costs one extra
-    component boundary per outlet level per transition (measured at roughly
-    8–10µs per level). Managers whose route components can consume `@context`
-    directly should omit it (and leave `wrapper` undefined in their render
-    state); the outlet then invokes the invokable directly.
+    `childOutlet` renders the next level down and may belong to a different
+    manager — walking the hierarchy is the framework's job. Everything else an
+    outlet needs is reachable from the bucket.
+
+    `defaultOutlet` builds the framework outlet, optionally through a layout of
+    the manager's choosing (default: `@context`). It is a thunk so this level's
+    state reference never has to be exposed, which would break `@outlet`
+    opacity. Both it and `childOutlet` are `unknown` because `router_js` stays
+    renderer-agnostic.
    */
-  getRouteWrapper?(): object;
-
-  /**
-    Optional. Returns the component this manager renders at its own routes'
-    outlet positions, in place of the framework's outlet. Called once per
-    bucket and cached, so it can build its outlet inline — and so an outlet
-    cannot be swapped later; reactivity within a level is its own business.
-
-    `childOutlet` is a reference to whatever renders at the next level down,
-    which may belong to a different manager. Walking the route hierarchy is
-    the framework's job, so it is handed in; everything else such an outlet
-    needs is reachable from the bucket. Nothing about models, controllers,
-    wrappers or engines is passed to it.
-
-    `@outlet` opacity comes from the framework outlet clearing call-site
-    arguments; a manager wanting the same guarantee needs a component whose
-    own manager does likewise.
-
-    `childOutlet` is `unknown` because `router_js` stays renderer-agnostic;
-    the `@ember` layer passes a Glimmer reference.
-   */
-  getOutlet?(bucket: Bucket, childOutlet: unknown): object;
+  getRouteWrapper(
+    bucket: Bucket,
+    childOutlet: unknown,
+    defaultOutlet: (layout?: unknown) => object | null
+  ): object | null;
 
   /**
     Returns the renderable for the route. Async to absorb dynamic imports of
     lazy-loaded route modules. The returned promise resolves with the
-    component the wrapper should render, or `undefined` to render nothing.
+    component the outlet should render, or `undefined` to render nothing.
 
     The router passes the in-flight `enterPromise` so the manager can choose
     whether to await data before resolving.
@@ -375,7 +360,7 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   getInvokable(bucket: Bucket, enterPromise?: Promise<unknown>): Promise<object | undefined>;
 
   /**
-    Provides the value of `@context` used by the wrapper
+    Provides the value of `@context` used by the outlet
   */
   getRenderContext?(bucket: Bucket): unknown;
 
@@ -387,12 +372,9 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
 type RenderStateLike = {
   owner: any;
   name: string;
-  controller: unknown;
   model: unknown;
   invokable: object | undefined;
-  /** Optional argument-forwarding wrapper; see `getRouteWrapper`. */
-  wrapper: object | undefined;
-  /** Curried onto the wrapper as `@bucket` by the outlet. */
+  /** Curried onto the invokable as `@bucket` by the outlet. */
   bucket?: RouteStateBucket;
 };
 

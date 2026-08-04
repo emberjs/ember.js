@@ -1,15 +1,6 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import type { Reference } from '@glimmer/reference/lib/reference';
 
-/**
- * How an outlet implementation reaches the level below it. Produced by
- * `root-outlet.ts` and passed in, never imported; see the note there.
- */
-export type ChildOutletRefFactory = (
-  parentRef: Reference<OutletState | undefined>,
-  owner: InternalOwner
-) => Reference;
-
 export interface RenderState {
   /**
    * This is usually inherited from the parent (all the way up to the app
@@ -24,19 +15,9 @@ export interface RenderState {
   name: string;
 
   /**
-   * The controller (the self of the outlet component)
-   */
-  controller: unknown;
-
-  /**
    * The model (the resolved value of the model hook)
    */
   model: unknown;
-
-  /**
-   * The stable wrapper component returned by `RouteManager.getRouteWrapper`
-   */
-  wrapper: object | undefined;
 
   /**
    * The per-render invokable returned by `RouteManager.getInvokable`
@@ -45,7 +26,7 @@ export interface RenderState {
 
   /**
    * The manager's bucket for the route; the outlet curries it onto the
-   * wrapper as `@bucket`.
+   * invokable as `@bucket`.
    */
   bucket?: object;
 }
@@ -63,7 +44,12 @@ export interface OutletState {
     | {
         getRenderContext?(bucket: object): unknown;
         getRenderInvokable?(bucket: object): object | undefined;
-        getOutlet?(bucket: object, childOutlet: Reference): object;
+        /** Required. `null` means nothing renders here yet. */
+        getRouteWrapper(
+          bucket: object,
+          childOutlet: Reference,
+          defaultOutlet: (layout?: unknown) => object | null
+        ): object | null;
       }
     | undefined;
 

@@ -1552,23 +1552,17 @@ if (ENV._DEBUG_RENDER_TREE) {
       assertRenderTree(expected: ExpectedRenderNode[]): void {
         let actual = captureRenderTree(this.owner);
         let controller = this.controllerFor('application');
+        // The root outlet is a bare mount shim and contributes no node of its
+        // own, so the tree starts at the application level's `OutletComponent`.
+        // There is no longer a synthetic `-top-level` route-template above it.
         let wrapped: ExpectedRenderNode[] = [
           this.outlet({
             type: 'route-template',
-            name: '-top-level',
-            args: { positional: [], named: {} },
-            instance: undefined,
+            name: 'application',
+            args: { positional: [], named: { controller, model: undefined } },
+            instance: controller,
             bounds: this.elementBounds(this.element!),
-            children: [
-              this.outlet({
-                type: 'route-template',
-                name: 'application',
-                args: { positional: [], named: { controller, model: undefined } },
-                instance: controller,
-                bounds: this.elementBounds(this.element!),
-                children: expected,
-              }),
-            ],
+            children: expected,
           }),
         ];
 

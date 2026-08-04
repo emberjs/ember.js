@@ -3,7 +3,6 @@ import { setRouteManager } from '@ember/routing';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { createConstRef, NULL_REFERENCE } from '@glimmer/reference/lib/reference';
-import templateOnly from '@ember/component/template-only';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import {
   moduleFor,
@@ -32,9 +31,9 @@ class RecordingRouteManager extends ClassicRouteManager {
     return bucket;
   }
 
-  getRouteWrapper() {
-    this.log.push(['getRouteWrapper']);
-    return super.getRouteWrapper();
+  getRouteWrapper(bucket, childOutlet, defaultOutlet) {
+    this.log.push(['getRouteWrapper', bucket.route.routeName]);
+    return super.getRouteWrapper(bucket, childOutlet, defaultOutlet);
   }
 
   getInvokable(bucket, enterPromise) {
@@ -198,12 +197,11 @@ moduleFor(
 
       let TestRoute = class extends Route {};
 
-      // A manager that opts out of the wrapper: the outlet then invokes the
-      // route's invokable directly, passing the live model as `@context`,
-      // and keys teardown on invokable identity.
+      // Keeps classic's route wiring but takes the default `@context`
+      // contract instead of classic's layout.
       class WrapperlessRouteManager extends ClassicRouteManager {
-        getRenderState(bucket) {
-          return { ...super.getRenderState(bucket), wrapper: undefined };
+        getRouteWrapper(_bucket, _childOutlet, defaultOutlet) {
+          return defaultOutlet();
         }
       }
 
@@ -329,7 +327,7 @@ moduleFor(
       let SlimRoute = class extends Route {};
 
       class SlimRouteManager extends ClassicRouteManager {
-        getOutlet(bucket, childOutlet) {
+        getRouteWrapper(bucket, childOutlet) {
           return new SlimOutlet(bucket, childOutlet);
         }
       }
@@ -386,17 +384,60 @@ moduleFor(
   }
 );
 
-// The wrapper path: an ordinary component the outlet invokes. No smoke app
-// uses it now that the funky manager provides its own outlet.
-const COMPONENT_WRAPPER = setComponentTemplate(
-  precompileTemplate(`wrap(<@Component @model={{@context}} @outlet={{@outlet}} />)`, {
-    strictMode: true,
-  }),
-  templateOnly()
+// Decorates every level by nesting the framework's outlet inside its own.
+class WrappingOutlet {
+  constructor(inner) {
+    this.inner = inner;
+  }
+}
+
+class WrappingOutletManager {
+  getCapabilities() {
+    return {
+      dynamicLayout: false,
+      dynamicTag: false,
+      prepareArgs: true,
+      createArgs: false,
+      attributeHook: false,
+      elementHook: false,
+      createCaller: false,
+      dynamicScope: false,
+      updateHook: false,
+      createInstance: false,
+      wrapped: false,
+      willDestroy: false,
+      hasSubOwner: false,
+    };
+  }
+
+  prepareArgs(definition) {
+    return {
+      positional: [],
+      named: { Inner: createConstRef(definition.inner, '@Inner') },
+    };
+  }
+
+  getDebugName() {
+    return 'wrapping-outlet';
+  }
+
+  getSelf() {
+    return NULL_REFERENCE;
+  }
+
+  getDestroyable() {
+    return null;
+  }
+}
+
+setInternalComponentManager(new WrappingOutletManager(), WrappingOutlet.prototype);
+setComponentTemplate(
+  precompileTemplate('wrap(<@Inner />)', { strictMode: true }),
+  WrappingOutlet.prototype
 );
 
 moduleFor(
-  'Route manager - component wrapper',
+  'Route manager - outlet composition',
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
@@ -404,8 +445,12 @@ moduleFor(
       let TestRoute = class extends Route {};
 
       class WrapperRouteManager extends ClassicRouteManager {
-        getRouteWrapper() {
-          return COMPONENT_WRAPPER;
+        getRouteWrapper(bucket, childOutlet, defaultOutlet) {
+          // `super` supplies classic's contract; this only adds a boundary.
+          let inner = super.getRouteWrapper(bucket, childOutlet, defaultOutlet);
+
+          // Pass `null` through, or the level would render `wrap()`.
+          return inner === null ? null : new WrappingOutlet(inner);
         }
       }
 
@@ -440,12 +485,12 @@ moduleFor(
       });
     }
 
-    async ['@test a wrapper component renders each level and nests'](assert) {
+    async ['@test a manager can nest the default outlet inside its own'](assert) {
       await this.visit('/parent/child');
       assert.strictEqual(
         this.element.textContent,
         'wrap(app:wrap(parent:P:wrap(child:C)))',
-        'the wrapper rendered around every level it managed'
+        'the manager rendered around every level it managed'
       );
 
       await this.visit('/parent');

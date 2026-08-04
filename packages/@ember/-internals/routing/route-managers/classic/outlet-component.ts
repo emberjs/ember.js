@@ -7,6 +7,7 @@ import type {
   CompilableProgram,
   CustomRenderNode,
   Destroyable,
+  DynamicScope,
   Environment,
   InternalComponentCapabilities,
   PreparedArguments,
@@ -19,8 +20,6 @@ import type {
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/env';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
-import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
-import { templateOnlyComponent } from '@glimmer/runtime/lib/component/template-only';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import {
   createComputeRef,
@@ -33,12 +32,9 @@ import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments'
 import { precompileTemplate } from '@ember/template-compilation';
 
 import { unwrapTemplate } from '../../../glimmer/lib/component-managers/unwrap-template';
-import type { ChildOutletRefFactory, OutletState, RenderState } from '../outlet-state';
+import type { OutletState, RenderState } from '../outlet-state';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
-
-// Kept from the deleted `classic/wrapper.ts` so probe runs stay comparable.
-recordUse('classic:wrapper-eval');
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -72,52 +68,16 @@ recordUse('classic:wrapper-eval');
   @public
 */
 
-const NO_WRAPPER_LAYOUT = precompileTemplate(
+/** Default contract; a manager may pass any layout instead. */
+export const CONTEXT_LAYOUT = precompileTemplate(
   `<@Component @context={{@context}} @outlet={{@outlet}} />`,
   {
-    moduleName: 'packages/@ember/-internals/routing/route-managers/classic/outlet-no-wrapper.hbs',
+    moduleName: 'packages/@ember/-internals/routing/route-managers/classic/outlet-context.hbs',
     strictMode: true,
   }
 );
 
-// Invoking the wrapper as a component costs a second component boundary per
-// active route level. The classic wrapper is exempt; see `layoutFor`.
-const WRAPPER_LAYOUT = precompileTemplate(
-  `<@wrapper @Component={{@Component}} @bucket={{@bucket}} @context={{@context}} @outlet={{@outlet}} />`,
-  {
-    moduleName: 'packages/@ember/-internals/routing/route-managers/classic/outlet-wrapper.hbs',
-    strictMode: true,
-  }
-);
-
-const CLASSIC_WRAPPER_LAYOUT = precompileTemplate(
-  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>`,
-  {
-    moduleName:
-      'packages/@ember/-internals/routing/route-managers/classic/outlet-classic-wrapper.hbs',
-    strictMode: true,
-  }
-);
-
-export const CLASSIC_ROUTE_WRAPPER = /*@__PURE__*/ templateOnlyComponent(
-  'packages/@ember/-internals/routing/route-managers/classic/outlet-classic-wrapper',
-  'ClassicRouteWrapper'
-);
-
-setComponentTemplate(CLASSIC_WRAPPER_LAYOUT, CLASSIC_ROUTE_WRAPPER);
-
-function layoutFor(wrapper: object | undefined, owner: InternalOwner): CompilableProgram {
-  let factory: TemplateFactory;
-
-  if (wrapper === undefined) {
-    factory = NO_WRAPPER_LAYOUT;
-  } else if (wrapper === CLASSIC_ROUTE_WRAPPER) {
-    // Reuse the boundary the outlet already has instead of opening a second one.
-    factory = CLASSIC_WRAPPER_LAYOUT;
-  } else {
-    factory = WRAPPER_LAYOUT;
-  }
-
+function layoutFor(factory: TemplateFactory, owner: InternalOwner): CompilableProgram {
   // Both `factory(owner)` and `asLayout()` memoize, so this is one lookup.
   return unwrapTemplate(factory(owner)).asLayout();
 }
@@ -160,7 +120,6 @@ interface OutletInstanceState {
 export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
-  wrapper?: object;
   invokable?: object;
   bucket?: object;
 }
@@ -174,13 +133,34 @@ const CAPABILITIES: InternalComponentCapabilities = {
   attributeHook: false,
   elementHook: false,
   createCaller: false,
-  dynamicScope: false,
+  dynamicScope: true,
   updateHook: false,
   createInstance: true,
   wrapped: false,
   willDestroy: false,
   hasSubOwner: true,
 };
+
+/** Classic components read `parentView` off the dynamic scope. */
+interface ViewCarryingScope extends DynamicScope {
+  view?: unknown;
+  child(): ViewCarryingScope;
+}
+
+function carryParentView(scope: ViewCarryingScope): ViewCarryingScope {
+  if (!('view' in scope)) {
+    scope.view = null;
+  }
+
+  let child = scope.child.bind(scope);
+  scope.child = () => {
+    let next = child();
+    next.view = scope.view;
+    return carryParentView(next);
+  };
+
+  return scope;
+}
 
 class OutletComponentManager
   implements
@@ -194,8 +174,7 @@ class OutletComponentManager
     return {
       positional: EMPTY_POSITIONAL,
       named: {
-        Component: createConstRef(definition.invokable, '@Component'),
-        wrapper: createConstRef(definition.wrapper, '@wrapper'),
+        Component: definition.component,
         bucket: createConstRef(definition.bucket, '@bucket'),
         context: definition.context,
         outlet: definition.childOutlet,
@@ -207,9 +186,14 @@ class OutletComponentManager
     owner: InternalOwner,
     definition: OutletComponent,
     _args: unknown,
-    env: Environment
+    env: Environment,
+    dynamicScope: DynamicScope | null
   ): OutletInstanceState {
     recordUse('outlet:component-create');
+
+    assert('Expected the outlet to be created with a dynamic scope', dynamicScope !== null);
+
+    carryParentView(dynamicScope as ViewCarryingScope);
 
     let state: OutletInstanceState = {
       owner: definition.owner,
@@ -305,71 +289,65 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
-// Keyed by the manager's `bucket` when it supplies one, otherwise by `outletRef`.
-const outletComponents = new WeakMap<object, OutletComponent>();
-
 export class OutletComponent implements OutletDefinitionState {
-  /**
-   * `<@Component />` stabilizes on `===`: the same object re-renders in place,
-   * a different one tears the old route down. The invokable is per-render, so
-   * a bucket's component can still go stale — hence `isStableFor`.
-   *
-   * The state is deref'd here rather than accepted alongside `outletRef`: as a
-   * parameter it was a precondition (`state === valueForRef(outletRef)`) that
-   * callers had to uphold and nothing enforced, and this removes the way to get
-   * it wrong. Deref'ing again is cheap — `valueForRef` returns the memoized
-   * `lastValue` while the ref's tag still validates, rather than re-running the
-   * compute (`@glimmer/reference/lib/reference.ts`).
-   */
-  static getCachedComponent(
+  /** Deref'd here so `state` cannot disagree with `outletRef`. */
+  static forLevel(
     outletRef: Reference<OutletState | undefined>,
     callerOwner: InternalOwner,
-    childRefFor: ChildOutletRefFactory
+    childOutlet: Reference,
+    layoutFactory: TemplateFactory
   ): OutletComponent | null {
     let state = valueForRef(outletRef);
     let render = state?.render;
     let invokable = invokableFor(state);
 
     if (render === undefined || invokable === undefined) {
-      outletComponents.delete(outletRef);
       return null;
     }
 
-    let key = render.bucket ?? outletRef;
-    let cached = outletComponents.get(key);
-
-    if (cached !== undefined && cached.isStableFor(render, invokable)) {
-      return cached;
-    }
-
-    let component = new OutletComponent(render, invokable, outletRef, callerOwner, childRefFor);
-
-    outletComponents.set(key, component);
-
-    return component;
+    return new OutletComponent(render, invokable, outletRef, callerOwner, childOutlet, layoutFactory);
   }
 
   readonly owner: InternalOwner;
   readonly context: Reference;
+  readonly component: Reference;
 
-  // Both are per-`OutletComponent`: `isStableFor` already rejects a render
-  // whose wrapper or invokable changed, so a cached layout can never outlive
-  // the wrapper it was derived from.
   private cachedLayout: CompilableProgram | undefined;
-  private cachedChildOutlet: Reference | undefined;
 
   private constructor(
     private readonly render: RenderState,
     readonly invokable: object,
     readonly ref: Reference<OutletState | undefined>,
     callerOwner: InternalOwner,
-    private readonly childRefFor: ChildOutletRefFactory
+    readonly childOutlet: Reference,
+    private readonly layoutFactory: TemplateFactory
   ) {
     this.owner = render.owner ?? callerOwner;
 
     let context = this.contextRefFor(render);
+    let component = this.componentRefFor(invokable);
 
     this.context = DEBUG ? createDebugAliasRef!('@context', context) : context;
+    this.component = DEBUG ? createDebugAliasRef!('@Component', component) : component;
+  }
+
+  /** Live invokable; frozen once the level stops being ours. */
+  private componentRefFor(initial: object): Reference {
+    let last: object = initial;
+
+    return createComputeRef(() => {
+      let state = valueForRef(this.ref);
+
+      if (state !== undefined) {
+        let current = state.render;
+
+        if (current !== undefined && this.isCurrentLevel(current)) {
+          last = invokableFor(state) ?? last;
+        }
+      }
+
+      return last;
+    });
   }
 
   private contextRefFor(render: RenderState): Reference {
@@ -381,7 +359,7 @@ export class OutletComponent implements OutletDefinitionState {
       if (state !== undefined) {
         let current = state.render;
 
-        if (current !== undefined && this.isStableFor(current, invokableFor(state))) {
+        if (current !== undefined && this.isCurrentLevel(current)) {
           let manager = state.manager;
 
           last =
@@ -399,14 +377,6 @@ export class OutletComponent implements OutletDefinitionState {
     return this.render.name;
   }
 
-  get controller(): unknown {
-    return this.render.controller;
-  }
-
-  get wrapper(): object | undefined {
-    return this.render.wrapper;
-  }
-
   get bucket(): object | undefined {
     return this.render.bucket;
   }
@@ -415,35 +385,19 @@ export class OutletComponent implements OutletDefinitionState {
     let layout = this.cachedLayout;
 
     if (layout === undefined) {
-      layout = this.cachedLayout = layoutFor(this.wrapper, this.owner);
+      layout = this.cachedLayout = layoutFor(this.layoutFactory, this.owner);
     }
 
     return layout;
   }
 
-  get childOutlet(): Reference {
-    let ref = this.cachedChildOutlet;
-
-    if (ref === undefined) {
-      ref = this.cachedChildOutlet = this.childRefFor(this.ref, this.owner);
-    }
-
-    return ref;
-  }
-
-  private isStableFor(render: RenderState, invokable: object | undefined): boolean {
-    if (this.wrapper !== undefined || render.wrapper !== undefined) {
-      return this.wrapper === render.wrapper && this.invokable === invokable;
-    }
-
-    return this.invokable === invokable && this.controller === render.controller;
+  /** Bucket identity; the invokable may swap without this changing. */
+  private isCurrentLevel(render: RenderState): boolean {
+    return this.bucket === render.bucket;
   }
 }
 
 setInternalComponentManager(OUTLET_MANAGER, OutletComponent.prototype);
 
-// No `setComponentTemplate` here on purpose: `getComponentTemplate` walks the
-// prototype chain when the VM builds the `ComponentDefinition`, and a template
-// found there would be compiled into `definition.compilable` — which makes
-// `VM_GET_COMPONENT_LAYOUT_OP` skip `getDynamicLayout` entirely
-// (`@glimmer/runtime/lib/compiled/opcodes/component.ts:750`).
+// No `setComponentTemplate` on purpose: a template on the prototype would make
+// the VM skip `getDynamicLayout`.

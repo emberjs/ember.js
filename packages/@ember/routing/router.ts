@@ -758,22 +758,12 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       assert('Expected active route to have a manager and bucket', manager && bucket);
       let render = manager.getRenderState(bucket);
 
+      // Every level resolves through `getRouteWrapper`, keyed on the bucket.
       assert(
-        `The route manager for "${render.name}" implements \`getRenderContext\` but did not ` +
-          `return a \`bucket\` from \`getRenderState\`; \`getRenderContext\` needs one.`,
-        manager.getRenderContext === undefined || render.bucket !== undefined
-      );
-
-      assert(
-        `The route manager for "${render.name}" implements \`getRenderInvokable\` but did not ` +
-          `return a \`bucket\` from \`getRenderState\`; \`getRenderInvokable\` needs one.`,
-        manager.getRenderInvokable === undefined || render.bucket !== undefined
-      );
-
-      assert(
-        `The route manager for "${render.name}" implements \`getOutlet\` but did not ` +
-          `return a \`bucket\` from \`getRenderState\`; \`getOutlet\` needs one.`,
-        manager.getOutlet === undefined || render.bucket !== undefined
+        `The route manager for "${render.name}" did not return a \`bucket\` from ` +
+          `\`getRenderState\`. Every route level is resolved through \`getRouteWrapper\` and ` +
+          `cached against its bucket, so one is always required.`,
+        render.bucket !== undefined
       );
 
       let state: OutletState = {

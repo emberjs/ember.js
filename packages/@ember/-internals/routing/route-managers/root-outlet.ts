@@ -1,25 +1,21 @@
 /**
-  The component rendered at the very top of the application by
-  `Router#_setOutlets` (via `ApplicationInstance#renderRootComponent`), and the
-  resolution it drives: what renders at each outlet position below it, and how
-  to walk to the next one.
+  The app's root mount point, and the outlet walk it anchors.
 
-  The walk lives here rather than beside an outlet implementation because
-  resolution has to import every implementation it can dispatch to. An
-  implementation is instead *handed* `childOutletRefFor` — as the
-  `ChildOutletRefFactory` argument to `getCachedComponent`, or as the second
-  argument to `RouteManager#getOutlet`. That keeps the imports pointing one way
-  (and the build rejects the cycle if they ever stop), but the reason is
-  `@outlet` opacity: an implementation receives a finished ref for the level
-  beneath it and has no way to construct or reparameterize one, because it
-  never holds the resolver.
+  It cannot itself be an `OutletComponent`: `renderComponent` requires a
+  statically registered template and never emits `VM_PREPARE_ARGS_OP` at the
+  root, while `OutletComponent` has no static template and gets every argument
+  from `prepareArgs`.
+
+  The walk lives here because resolution imports every implementation it can
+  dispatch to. Implementations are handed a finished child ref instead, so one
+  can never construct or reparameterize its own — that is `@outlet` opacity.
 */
 
 import type {
   CustomRenderNode,
-  DynamicScope,
   InternalComponentCapabilities,
   InternalComponentManager,
+  TemplateFactory,
   WithCreateInstance,
   WithCustomDebugRenderTree,
 } from '@glimmer/interfaces';
@@ -32,12 +28,11 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { OutletState } from './outlet-state';
-import { OutletComponent } from './classic/outlet-manager';
+import { CONTEXT_LAYOUT, OutletComponent } from './classic/outlet-component';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from './probe';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
-import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
 
 const ROOT_OUTLET_TEMPLATE = precompileTemplate('{{this}}', {
   moduleName: 'packages/@ember/-internals/routing/route-managers/root-outlet.hbs',
@@ -52,7 +47,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   attributeHook: false,
   elementHook: false,
   createCaller: false,
-  dynamicScope: true,
+  dynamicScope: false,
   updateHook: false,
   createInstance: true,
   wrapped: false,
@@ -60,38 +55,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: false,
 };
 
-/**
- * Classic components track their `parentView` through a `view` on `scope`
- */
-interface ViewCarryingScope extends DynamicScope {
-  view?: unknown;
-  child(): ViewCarryingScope;
-}
-
-function carryParentView(scope: ViewCarryingScope): ViewCarryingScope {
-  if (!('view' in scope)) {
-    scope.view = null;
-  }
-
-  let child = scope.child.bind(scope);
-  scope.child = () => {
-    let next = child();
-    next.view = scope.view;
-    return carryParentView(next);
-  };
-
-  return scope;
-}
-
-/**
- * The buckets identify the two synthetic debug-render-tree nodes the root
- * outlet contributes (the top-level `{{outlet}}` and its `-top-level`
- * route-template). They must be stable across the create/didRender passes, so
- * they live on the component instance state.
- */
 interface RootOutletState {
-  outletBucket: object;
-  routeTemplateBucket: object;
   self: Reference;
 }
 
@@ -105,21 +69,10 @@ class RootOutletManager
     return CAPABILITIES;
   }
 
-  create(
-    owner: object,
-    definition: RootOutlet,
-    _args: unknown,
-    _env: unknown,
-    dynamicScope: DynamicScope | null
-  ): RootOutletState {
+  create(owner: object, definition: RootOutlet): RootOutletState {
     recordUse('root-outlet:create');
-    assert('Expected the root outlet to be created with a dynamic scope', dynamicScope !== null);
-
-    carryParentView(dynamicScope as ViewCarryingScope);
 
     return {
-      outletBucket: {},
-      routeTemplateBucket: {},
       self: childOutletRefFor(definition.stateRef, owner as InternalOwner),
     };
   }
@@ -128,29 +81,10 @@ class RootOutletManager
     return '-top-level-outlet';
   }
 
-  /**
-   * Emit the top-level frame the classic `OutletView` used to provide: an
-   * `{{outlet}}` node wrapping the `-top-level` route-template. These nest (so
-   * the application's own outlet renders beneath them) and both inherit the
-   * root outlet's bounds — matching the render tree Ember Inspector expects.
-   */
-  getDebugCustomRenderTree(_definition: RootOutlet, state: RootOutletState): CustomRenderNode[] {
-    return [
-      {
-        bucket: state.outletBucket,
-        type: 'outlet',
-        name: 'main',
-        args: EMPTY_ARGS,
-        instance: undefined,
-      },
-      {
-        bucket: state.routeTemplateBucket,
-        type: 'route-template',
-        name: '-top-level',
-        args: EMPTY_ARGS,
-        instance: undefined,
-      },
-    ];
+  // Must stay implemented to be empty: without it the VM emits a `component`
+  // node instead, and the shim would show up in the render tree.
+  getDebugCustomRenderTree(): CustomRenderNode[] {
+    return [];
   }
 
   getSelf({ self }: RootOutletState): Reference {
@@ -192,9 +126,7 @@ export function createRootOutletState(
     render: {
       owner,
       name: '-top-level',
-      controller: undefined,
       model: undefined,
-      wrapper: undefined,
       invokable: undefined,
     },
     manager: undefined,
@@ -215,32 +147,33 @@ export function createRootOutletState(
   };
 }
 
-// bucket → the outlet its manager provided. Keyed by bucket alone because
-// `manager` is functionally determined by `bucket`: `EmberRouter#getRoute`
-// (`@ember/routing/router.ts:412`) mints each bucket from exactly one manager
-// and memoizes the resulting `{ manager, bucket }` pair per (owner, routeName),
-// so no bucket is ever observed under a second manager. `outletComponents`
-// (`classic/outlet-manager.ts`) keys on `render.bucket` on that same
-// assumption; stating it once keeps the two caches in this subsystem from
-// encoding contradictory claims about bucket uniqueness.
-//
-// Buckets are app-lifetime, so a level resolves the same way across exit and
-// re-entry. Caching here is what lets `getOutlet` build its outlet inline.
+// bucket → its manager's outlet. Keyed by bucket alone: `EmberRouter#getRoute`
+// mints each bucket from exactly one manager. The only identity cache left.
 const managerOutlets = new WeakMap<object, object>();
 
-function managerOutletFor(
-  state: OutletState,
+/**
+  One outlet level, or `null` when nothing renders there. Every level is its
+  manager's to fill; there is no framework fallback. The `defaultOutlet` thunk
+  keeps `OutletComponent` reachable without exposing this level's state ref,
+  which would hand the walk back to a manager.
+*/
+function outletFor(
   outletRef: Reference<OutletState | undefined>,
   callerOwner: InternalOwner
 ): object | null {
-  let { render, manager } = state;
-  let getOutlet = manager?.getOutlet;
+  let state = valueForRef(outletRef);
 
-  if (render === undefined || manager === undefined || getOutlet === undefined) {
+  if (state === undefined) {
     return null;
   }
 
-  // Asserted in `Router#_setOutlets`; falling back keeps production defined.
+  let { render, manager } = state;
+
+  if (render === undefined || manager === undefined) {
+    return null;
+  }
+
+  // Asserted in `_setOutlets`; bailing keeps production defined.
   let bucket = render.bucket;
 
   if (bucket === undefined) {
@@ -249,52 +182,33 @@ function managerOutletFor(
 
   let outlet = managerOutlets.get(bucket);
 
-  if (outlet === undefined) {
-    // Label kept from the merged `outlet-chain.ts` so probe runs stay comparable.
-    recordUse('outlet-chain:manager-outlet');
-
-    // The child ref cannot go stale: the walk is a pure formula over the root
-    // state, so a ref built for this level now derefs the same path later.
-    outlet = getOutlet.call(manager, bucket, childOutletRefFor(outletRef, callerOwner));
-
-    assert(
-      `The route manager for "${render.name}" returned nothing from \`getOutlet\`; ` +
-        `it must return a component.`,
-      outlet !== undefined && outlet !== null
-    );
-
-    managerOutlets.set(bucket, outlet);
+  if (outlet !== undefined) {
+    return outlet;
   }
 
-  return outlet;
-}
+  // Label kept from the merged `outlet-chain.ts` so probe runs stay comparable.
+  recordUse('outlet-chain:manager-outlet');
 
-/**
-  The definition for one outlet level, or `null` when nothing renders there.
-  A manager providing `getOutlet` owns its own levels; every other level
-  renders through `OutletComponent`.
+  let childOutlet = childOutletRefFor(outletRef, callerOwner);
 
-  Only `outletRef` is passed on: handing the deref'd state along beside it made
-  `state === valueForRef(outletRef)` a precondition every call site had to
-  uphold and nothing checked, so deref'ing at each use removes a way to be
-  wrong. `managerOutletFor` still takes the narrowed `OutletState` because it is
-  reached only past the `undefined` check here.
-*/
-function outletFor(
-  outletRef: Reference<OutletState | undefined>,
-  callerOwner: InternalOwner
-): object | null {
-  let state = valueForRef(outletRef);
+  // The one place bridging `router_js`'s `unknown` to Glimmer.
+  let provided = manager.getRouteWrapper(bucket, childOutlet, (layout) =>
+    OutletComponent.forLevel(
+      outletRef,
+      callerOwner,
+      childOutlet,
+      (layout as TemplateFactory | undefined) ?? CONTEXT_LAYOUT
+    )
+  );
 
-  if (state !== undefined) {
-    let provided = managerOutletFor(state, outletRef, callerOwner);
-
-    if (provided !== null) {
-      return provided;
-    }
+  // Not cached: `null` means "nothing yet", so ask again next revalidation.
+  if (provided === null || provided === undefined) {
+    return null;
   }
 
-  return OutletComponent.getCachedComponent(outletRef, callerOwner, childOutletRefFor);
+  managerOutlets.set(bucket, provided);
+
+  return provided;
 }
 
 /** Derefs one level of `outlets.main` off `parentRef` and resolves it. */
@@ -307,8 +221,7 @@ function childOutletRefFor(
   let ref = createComputeRef(() => outletFor(outletRef, owner));
 
   if (DEBUG) {
-    // A truthy label would be stamped onto the definition, shadowing
-    // `getDebugName()` in render stacks.
+    // A truthy label would shadow `getDebugName()` in render stacks.
     ref.debugLabel = false;
   }
 
