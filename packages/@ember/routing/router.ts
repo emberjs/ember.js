@@ -770,6 +770,12 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         manager.getRenderInvokable === undefined || render.bucket !== undefined
       );
 
+      assert(
+        `The route manager for "${render.name}" implements \`getOutlet\` but did not ` +
+          `return a \`bucket\` from \`getRenderState\`; \`getOutlet\` needs one.`,
+        manager.getOutlet === undefined || render.bucket !== undefined
+      );
+
       let state: OutletState = {
         render,
         manager,

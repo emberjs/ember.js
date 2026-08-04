@@ -13,7 +13,6 @@ import { DEBUG } from '@glimmer/env';
 
 export interface ProbeRecord {
   count: number;
-  firstStack: string | undefined;
 }
 
 export type ProbeLedger = Record<string, ProbeRecord>;
@@ -48,13 +47,7 @@ export function recordUse(id: string): void {
     let record = all[id];
 
     if (record === undefined) {
-      let firstStack: string | undefined;
-      try {
-        firstStack = new Error(`probe:${id}`).stack ?? undefined;
-      } catch {
-        firstStack = undefined;
-      }
-      all[id] = { count: 1, firstStack };
+      all[id] = { count: 1 };
     } else {
       record.count++;
     }

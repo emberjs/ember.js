@@ -728,12 +728,32 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
             `,
           },
           components: {
-            'funky-route-wrapper.gjs': `
+            'funky-outlet.gjs': `
               import Component from '@glimmer/component';
               import { tracked } from '@glimmer/tracking';
               import { on } from '@ember/modifier';
+              import {
+                getComponentTemplate,
+                setComponentTemplate,
+                setInternalComponentManager,
+              } from '@glimmer/manager';
+              import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
 
-              export default class FunkyRouteWrapper extends Component {
+              // \`model\` is tracked, so this manager needs none of the
+              // framework's render-state plumbing to get a model on screen.
+              export class FunkyBucket {
+                @tracked model;
+
+                constructor(name, route, invokable) {
+                  this.name = name;
+                  this.route = route;
+                  this.invokable = invokable;
+                }
+              }
+
+              // Ordinary component lifetime, so the gate re-closes on
+              // re-entry without anyone resetting it.
+              class FunkyGate extends Component {
                 @tracked shouldRender = false;
 
                 renderRoute = () => {
@@ -742,9 +762,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
                 <template>
                   {{#if this.shouldRender}}
-                    {{!--@TODO the 'outlet' should be transparent to manager outlet --}}
-                    <@Component @model={{@context}} @outlet={{@outlet}} />
-                    {{log "funky" @outlet}}
+                    <@bucket.invokable @model={{@bucket.model}} @outlet={{@outlet}} />
                   {{else}}
                     <button
                       type="button"
@@ -756,6 +774,68 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   {{/if}}
                 </template>
               }
+
+              const LAYOUT = <template>
+                <FunkyGate @bucket={{@bucket}} @outlet={{@outlet}} />
+              </template>;
+
+              // What \`getOutlet\` returns: this manager's whole rendering story
+              // for one route level — its own bucket and the level below.
+              export class FunkyOutlet {
+                constructor(bucket, childOutlet) {
+                  this.bucket = bucket;
+                  this.childOutlet = childOutlet;
+                }
+              }
+
+              setInternalComponentManager(
+                {
+                  getCapabilities() {
+                    return {
+                      dynamicLayout: false,
+                      dynamicTag: false,
+                      // Supplies the layout's args, and discards anything a
+                      // parent passed into \`<@outlet />\`.
+                      prepareArgs: true,
+                      createArgs: false,
+                      attributeHook: false,
+                      elementHook: false,
+                      createCaller: false,
+                      dynamicScope: false,
+                      updateHook: false,
+                      createInstance: false,
+                      wrapped: false,
+                      willDestroy: false,
+                      hasSubOwner: false,
+                    };
+                  },
+
+                  prepareArgs(definition) {
+                    return {
+                      positional: [],
+                      named: {
+                        bucket: createConstRef(definition.bucket, '@bucket'),
+                        outlet: definition.childOutlet,
+                      },
+                    };
+                  },
+
+                  getDebugName(definition) {
+                    return \`funky outlet for \${definition.bucket.name}\`;
+                  },
+
+                  getSelf() {
+                    return NULL_REFERENCE;
+                  },
+
+                  getDestroyable() {
+                    return null;
+                  },
+                },
+                FunkyOutlet.prototype
+              );
+
+              setComponentTemplate(getComponentTemplate(LAYOUT), FunkyOutlet.prototype);
             `,
             'funky-route-components.gjs': ROUTE_COMPONENTS,
           },
@@ -923,7 +1003,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
             `,
             'funky.js': `
               import { routeCapabilities } from '@ember/routing';
-              import FunkyRouteWrapper from '${appName}/components/funky-route-wrapper';
+              import { FunkyBucket, FunkyOutlet } from '${appName}/components/funky-outlet';
               import * as COMPONENTS from '${appName}/components/funky-route-components';
 
               const ROUTES = {
@@ -938,11 +1018,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 }
 
                 createRoute(RouteClass, { name }) {
-                  return {
-                    name,
-                    route: new RouteClass(this.owner),
-                    invokable: ROUTES[name],
-                  };
+                  return new FunkyBucket(name, new RouteClass(this.owner), ROUTES[name]);
                 }
 
                 getRoute(bucket) {
@@ -953,8 +1029,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getRouteWrapper() {
-                  return FunkyRouteWrapper;
+                getOutlet(bucket, childOutlet) {
+                  return new FunkyOutlet(bucket, childOutlet);
                 }
 
                 getRenderState(bucket) {
@@ -963,7 +1039,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     name: bucket.name,
                     controller: undefined,
                     model: bucket.model,
-                    wrapper: this.getRouteWrapper(),
+                    wrapper: undefined,
                     invokable: bucket.invokable,
                     bucket,
                   };

@@ -344,6 +344,27 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   getRouteWrapper?(): object;
 
   /**
+    Optional. Returns the component this manager renders at its own routes'
+    outlet positions, in place of the framework's outlet. Called once per
+    bucket and cached, so it can build its outlet inline — and so an outlet
+    cannot be swapped later; reactivity within a level is its own business.
+
+    `childOutlet` is a reference to whatever renders at the next level down,
+    which may belong to a different manager. Walking the route hierarchy is
+    the framework's job, so it is handed in; everything else such an outlet
+    needs is reachable from the bucket. Nothing about models, controllers,
+    wrappers or engines is passed to it.
+
+    `@outlet` opacity comes from the framework outlet clearing call-site
+    arguments; a manager wanting the same guarantee needs a component whose
+    own manager does likewise.
+
+    `childOutlet` is `unknown` because `router_js` stays renderer-agnostic;
+    the `@ember` layer passes a Glimmer reference.
+   */
+  getOutlet?(bucket: Bucket, childOutlet: unknown): object;
+
+  /**
     Returns the renderable for the route. Async to absorb dynamic imports of
     lazy-loaded route modules. The returned promise resolves with the
     component the wrapper should render, or `undefined` to render nothing.

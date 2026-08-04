@@ -42,7 +42,7 @@ import {
   enterLoadingSubstate as enterClassicLoadingSubstate,
   fireLoadingEvent,
 } from './substates';
-import { CLASSIC_ROUTE_WRAPPER } from './wrapper';
+import { CLASSIC_ROUTE_WRAPPER } from './outlet-manager';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
 

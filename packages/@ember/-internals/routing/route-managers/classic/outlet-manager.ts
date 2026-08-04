@@ -19,6 +19,8 @@ import type {
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/env';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
+import { templateOnlyComponent } from '@glimmer/runtime/lib/component/template-only';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import {
   createComputeRef,
@@ -31,10 +33,12 @@ import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments'
 import { precompileTemplate } from '@ember/template-compilation';
 
 import { unwrapTemplate } from '../../../glimmer/lib/component-managers/unwrap-template';
-import type { OutletState, RenderState } from '../outlet-state';
-import { CLASSIC_ROUTE_WRAPPER, CLASSIC_WRAPPER_TEMPLATE } from './wrapper';
+import type { ChildOutletRefFactory, OutletState, RenderState } from '../outlet-state';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
+
+// Kept from the deleted `classic/wrapper.ts` so probe runs stay comparable.
+recordUse('classic:wrapper-eval');
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -86,43 +90,36 @@ const WRAPPER_LAYOUT = precompileTemplate(
   }
 );
 
+const CLASSIC_WRAPPER_LAYOUT = precompileTemplate(
+  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>`,
+  {
+    moduleName:
+      'packages/@ember/-internals/routing/route-managers/classic/outlet-classic-wrapper.hbs',
+    strictMode: true,
+  }
+);
+
+export const CLASSIC_ROUTE_WRAPPER = /*@__PURE__*/ templateOnlyComponent(
+  'packages/@ember/-internals/routing/route-managers/classic/outlet-classic-wrapper',
+  'ClassicRouteWrapper'
+);
+
+setComponentTemplate(CLASSIC_WRAPPER_LAYOUT, CLASSIC_ROUTE_WRAPPER);
+
 function layoutFor(wrapper: object | undefined, owner: InternalOwner): CompilableProgram {
   let factory: TemplateFactory;
 
   if (wrapper === undefined) {
     factory = NO_WRAPPER_LAYOUT;
   } else if (wrapper === CLASSIC_ROUTE_WRAPPER) {
-    // Render classic's wrapper template across the boundary the outlet already
-    // has instead of opening a second one. Sound only because that wrapper's
-    // manager contributes nothing at render time — the invariant is stated
-    // where `CLASSIC_ROUTE_WRAPPER` is defined. Strict-mode scope travels with
-    // the template, so its upvars still resolve when invoked from here.
-    factory = CLASSIC_WRAPPER_TEMPLATE;
+    // Reuse the boundary the outlet already has instead of opening a second one.
+    factory = CLASSIC_WRAPPER_LAYOUT;
   } else {
     factory = WRAPPER_LAYOUT;
   }
 
   // Both `factory(owner)` and `asLayout()` memoize, so this is one lookup.
   return unwrapTemplate(factory(owner)).asLayout();
-}
-
-export function childOutletRefFor(
-  parentRef: Reference<OutletState | undefined>,
-  owner: InternalOwner
-): Reference {
-  let outletRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
-
-  let ref = createComputeRef(() =>
-    OutletComponent.getCachedComponent(valueForRef(outletRef), outletRef, owner)
-  );
-
-  if (DEBUG) {
-    // A truthy label would be stamped onto the definition, shadowing
-    // `getDebugName()` in render stacks.
-    ref.debugLabel = false;
-  }
-
-  return ref;
 }
 
 function invokableFor(state: OutletState | undefined): object | undefined {
@@ -316,12 +313,20 @@ export class OutletComponent implements OutletDefinitionState {
    * `<@Component />` stabilizes on `===`: the same object re-renders in place,
    * a different one tears the old route down. The invokable is per-render, so
    * a bucket's component can still go stale — hence `isStableFor`.
+   *
+   * The state is deref'd here rather than accepted alongside `outletRef`: as a
+   * parameter it was a precondition (`state === valueForRef(outletRef)`) that
+   * callers had to uphold and nothing enforced, and this removes the way to get
+   * it wrong. Deref'ing again is cheap — `valueForRef` returns the memoized
+   * `lastValue` while the ref's tag still validates, rather than re-running the
+   * compute (`@glimmer/reference/lib/reference.ts`).
    */
   static getCachedComponent(
-    state: OutletState | undefined,
     outletRef: Reference<OutletState | undefined>,
-    callerOwner: InternalOwner
+    callerOwner: InternalOwner,
+    childRefFor: ChildOutletRefFactory
   ): OutletComponent | null {
+    let state = valueForRef(outletRef);
     let render = state?.render;
     let invokable = invokableFor(state);
 
@@ -337,7 +342,7 @@ export class OutletComponent implements OutletDefinitionState {
       return cached;
     }
 
-    let component = new OutletComponent(render, invokable, outletRef, callerOwner);
+    let component = new OutletComponent(render, invokable, outletRef, callerOwner, childRefFor);
 
     outletComponents.set(key, component);
 
@@ -357,7 +362,8 @@ export class OutletComponent implements OutletDefinitionState {
     private readonly render: RenderState,
     readonly invokable: object,
     readonly ref: Reference<OutletState | undefined>,
-    callerOwner: InternalOwner
+    callerOwner: InternalOwner,
+    private readonly childRefFor: ChildOutletRefFactory
   ) {
     this.owner = render.owner ?? callerOwner;
 
@@ -419,7 +425,7 @@ export class OutletComponent implements OutletDefinitionState {
     let ref = this.cachedChildOutlet;
 
     if (ref === undefined) {
-      ref = this.cachedChildOutlet = childOutletRefFor(this.ref, this.owner);
+      ref = this.cachedChildOutlet = this.childRefFor(this.ref, this.owner);
     }
 
     return ref;

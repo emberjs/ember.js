@@ -1,4 +1,14 @@
 import type { InternalOwner } from '@ember/-internals/owner';
+import type { Reference } from '@glimmer/reference/lib/reference';
+
+/**
+ * How an outlet implementation reaches the level below it. Produced by
+ * `root-outlet.ts` and passed in, never imported; see the note there.
+ */
+export type ChildOutletRefFactory = (
+  parentRef: Reference<OutletState | undefined>,
+  owner: InternalOwner
+) => Reference;
 
 export interface RenderState {
   /**
@@ -53,6 +63,7 @@ export interface OutletState {
     | {
         getRenderContext?(bucket: object): unknown;
         getRenderInvokable?(bucket: object): object | undefined;
+        getOutlet?(bucket: object, childOutlet: Reference): object;
       }
     | undefined;
 

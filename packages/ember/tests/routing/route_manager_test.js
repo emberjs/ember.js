@@ -1,5 +1,9 @@
 import Route from '@ember/routing/route';
 import { setRouteManager } from '@ember/routing';
+import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
+import { createConstRef, NULL_REFERENCE } from '@glimmer/reference/lib/reference';
+import templateOnly from '@ember/component/template-only';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import {
   moduleFor,
@@ -252,6 +256,203 @@ moduleFor(
         this.element.textContent,
         'app:index:INDEX-CTX',
         'round-trip renders correctly'
+      );
+    }
+  }
+);
+
+// A manager-provided outlet: the framework hands it only the reference to the
+// level below, and it reads the rest off its manager's own bucket.
+class SlimOutlet {
+  constructor(bucket, childOutlet) {
+    this.bucket = bucket;
+    this.childOutlet = childOutlet;
+  }
+}
+
+class SlimOutletManager {
+  getCapabilities() {
+    return {
+      dynamicLayout: false,
+      dynamicTag: false,
+      // Supplies the layout's args, and discards anything a parent passed
+      // into `<@outlet />`.
+      prepareArgs: true,
+      createArgs: false,
+      attributeHook: false,
+      elementHook: false,
+      createCaller: false,
+      dynamicScope: false,
+      updateHook: false,
+      createInstance: false,
+      wrapped: false,
+      willDestroy: false,
+      hasSubOwner: false,
+    };
+  }
+
+  prepareArgs(definition) {
+    return {
+      positional: [],
+      named: {
+        name: createConstRef(definition.bucket.route.routeName, '@name'),
+        outlet: definition.childOutlet,
+      },
+    };
+  }
+
+  getDebugName() {
+    return 'slim-outlet';
+  }
+
+  getSelf() {
+    return NULL_REFERENCE;
+  }
+
+  getDestroyable() {
+    return null;
+  }
+}
+
+setInternalComponentManager(new SlimOutletManager(), SlimOutlet.prototype);
+setComponentTemplate(
+  precompileTemplate('[{{@name}}:<@outlet />]', { strictMode: true }),
+  SlimOutlet.prototype
+);
+
+moduleFor(
+  'Route manager - manager-provided outlet',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      let SlimRoute = class extends Route {};
+
+      class SlimRouteManager extends ClassicRouteManager {
+        getOutlet(bucket, childOutlet) {
+          return new SlimOutlet(bucket, childOutlet);
+        }
+      }
+
+      setRouteManager((owner) => new SlimRouteManager(owner), SlimRoute);
+
+      // Only `parent` provides its own outlet, so one chain covers both
+      // directions: custom below classic, and classic below custom.
+      this.add('route:application', class extends Route {});
+      this.add('route:parent', class extends SlimRoute {});
+      this.add(
+        'route:parent.child',
+        class extends Route {
+          model() {
+            return { msg: 'C' };
+          }
+        }
+      );
+
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      // Never rendered: the manager's outlet is the whole story for its level.
+      this.add('template:parent', precompileTemplate('SHOULD-NOT-RENDER'));
+      this.add('template:parent.child', precompileTemplate('child:{{@model.msg}}'));
+
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child');
+        });
+      });
+    }
+
+    async ['@test a manager-provided outlet owns its level and continues the chain'](assert) {
+      await this.visit('/parent/child');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:[parent:child:C]',
+        'the custom outlet replaced the level, and the classic child below it still rendered'
+      );
+
+      await this.visit('/parent');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:[parent:]',
+        'the child level tore down; the custom level stayed'
+      );
+
+      await this.visit('/parent/child');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:[parent:child:C]',
+        'round-trip renders correctly'
+      );
+    }
+  }
+);
+
+// The wrapper path: an ordinary component the outlet invokes. No smoke app
+// uses it now that the funky manager provides its own outlet.
+const COMPONENT_WRAPPER = setComponentTemplate(
+  precompileTemplate(`wrap(<@Component @model={{@context}} @outlet={{@outlet}} />)`, {
+    strictMode: true,
+  }),
+  templateOnly()
+);
+
+moduleFor(
+  'Route manager - component wrapper',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      let TestRoute = class extends Route {};
+
+      class WrapperRouteManager extends ClassicRouteManager {
+        getRouteWrapper() {
+          return COMPONENT_WRAPPER;
+        }
+      }
+
+      setRouteManager((owner) => new WrapperRouteManager(owner), TestRoute);
+
+      this.add('route:application', class extends TestRoute {});
+      this.add(
+        'route:parent',
+        class extends TestRoute {
+          model() {
+            return { msg: 'P' };
+          }
+        }
+      );
+      this.add(
+        'route:parent.child',
+        class extends TestRoute {
+          model() {
+            return { msg: 'C' };
+          }
+        }
+      );
+
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      this.add('template:parent', precompileTemplate('parent:{{@model.msg}}:{{outlet}}'));
+      this.add('template:parent.child', precompileTemplate('child:{{@model.msg}}'));
+
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child');
+        });
+      });
+    }
+
+    async ['@test a wrapper component renders each level and nests'](assert) {
+      await this.visit('/parent/child');
+      assert.strictEqual(
+        this.element.textContent,
+        'wrap(app:wrap(parent:P:wrap(child:C)))',
+        'the wrapper rendered around every level it managed'
+      );
+
+      await this.visit('/parent');
+      assert.strictEqual(
+        this.element.textContent,
+        'wrap(app:wrap(parent:P:))',
+        'the child level tore down'
       );
     }
   }
