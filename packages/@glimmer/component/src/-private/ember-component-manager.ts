@@ -1,6 +1,6 @@
 import { destroy } from '@ember/destroyable';
 import { capabilities } from '@ember/component';
-import { schedule } from '@ember/runloop';
+import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 import BaseComponentManager from './base-component-manager';
 
 import { type default as GlimmerComponent, setDestroyed, setDestroying } from './component';
@@ -11,6 +11,10 @@ const CAPABILITIES = capabilities('3.13', {
   asyncLifecycleCallbacks: false,
   updateHook: false,
 });
+
+function invokeWillDestroy(component: GlimmerComponent): void {
+  component.willDestroy();
+}
 
 function scheduledDestroyComponent(component: GlimmerComponent): void {
   if (component.isDestroyed) {
@@ -37,8 +41,12 @@ class EmberGlimmerComponentManager extends BaseComponentManager<GlimmerComponent
 
     setDestroying(component);
 
-    schedule('actions', component, component.willDestroy);
-    schedule('destroy', this, scheduledDestroyComponent, component);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- global-context types are ambient here
+    scheduleDestroy(component, invokeWillDestroy);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- global-context types are ambient here
+    scheduleDestroyed(() => {
+      scheduledDestroyComponent(component);
+    });
   }
 }
 

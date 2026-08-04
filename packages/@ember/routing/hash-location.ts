@@ -1,5 +1,4 @@
 import EmberObject from '@ember/object';
-import { bind } from '@ember/runloop';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
 
@@ -128,7 +127,8 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   */
   onUpdateURL(callback: UpdateCallback): void {
     this._removeEventListener();
-    this._hashchangeHandler = bind(this, function (this: HashLocation, _event: Event) {
+    this._hashchangeHandler = ((handler: (this: HashLocation, _event: Event) => void) =>
+      handler.bind(this))(function (this: HashLocation, _event: Event) {
       let path = this.getURL();
       if (this.lastSetURL === path) {
         return;

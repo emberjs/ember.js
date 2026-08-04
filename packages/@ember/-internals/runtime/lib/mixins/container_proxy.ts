@@ -1,4 +1,4 @@
-import { schedule, join } from '@ember/runloop';
+import { scheduleDestroyed } from '@glimmer/global-context';
 /**
 @module ember
 */
@@ -42,10 +42,8 @@ const ContainerProxyMixin = Mixin.create({
     let container = this.__container__;
 
     if (container) {
-      join(() => {
-        container.destroy();
-        schedule('destroy', container, 'finalizeDestroy');
-      });
+      container.destroy();
+      scheduleDestroyed(() => container.finalizeDestroy());
     }
 
     this._super();

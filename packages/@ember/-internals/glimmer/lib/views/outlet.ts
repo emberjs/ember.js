@@ -5,7 +5,6 @@
 import { type InternalOwner, getOwner } from '@ember/-internals/owner';
 import type { BootOptions } from '@ember/engine/instance';
 import { assert } from '@ember/debug';
-import { schedule } from '@ember/runloop';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createComputeRef, updateRef } from '@glimmer/reference/lib/reference';
@@ -107,7 +106,7 @@ export default class OutletView {
 
     // SAFETY: It's not clear that this cast is safe.
     // The types for appendOutletView may be incorrect or this is a potential bug.
-    schedule('render', renderer, 'appendOutletView', this, target as SimpleElement);
+    renderer.appendOutletView(this, target as SimpleElement);
   }
 
   rerender(): void {

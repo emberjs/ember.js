@@ -24,7 +24,7 @@ import { isTesting } from '@ember/debug/lib/testing';
 import { assert, info } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { once } from '@ember/runloop';
+import { scheduleMethodOnce } from '@ember/-internals/utils/lib/microtask-scheduling';
 import { DEBUG } from '@glimmer/env';
 import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import type { RenderState } from '@ember/-internals/glimmer/lib/utils/outlet';
@@ -1473,7 +1473,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
    */
   [RENDER]() {
     this[RENDER_STATE] = buildRenderState(this);
-    once(this._router, '_setOutlets');
+    scheduleMethodOnce(this._router, '_setOutlets');
   }
 
   willDestroy() {
@@ -1488,7 +1488,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   teardownViews() {
     if (this[RENDER_STATE]) {
       this[RENDER_STATE] = undefined;
-      once(this._router, '_setOutlets');
+      scheduleMethodOnce(this._router, '_setOutlets');
     }
   }
 
