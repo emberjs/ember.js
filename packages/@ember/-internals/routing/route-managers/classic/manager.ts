@@ -42,7 +42,6 @@ import {
   enterLoadingSubstate as enterClassicLoadingSubstate,
   fireLoadingEvent,
 } from './substates';
-import { precompileTemplate } from '@ember/template-compilation';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
 
@@ -50,15 +49,6 @@ import { recordUse } from '../probe';
 // every boot because `@ember/routing/route` imports it. Distinct from the
 // invocation probes below, which only fire when classic code actually runs.
 recordUse('classic:manager-eval');
-
-/** Classic's argument contract, owned here rather than by the outlet. */
-const ROUTE_TEMPLATE_LAYOUT = precompileTemplate(
-  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>`,
-  {
-    moduleName: 'packages/@ember/-internals/routing/route-managers/classic/route-template.hbs',
-    strictMode: true,
-  }
-);
 
 type TransitionLike = Transition & {
   isAborted?: boolean;
@@ -122,6 +112,8 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 
   getRenderContext(bucket: ClassicRouteBucket): unknown {
     recordUse('classic:getRenderContext');
+    // Rehomed from the removed `getRouteWrapper`; counts are not comparable.
+    recordUse('classic:getRouteWrapper');
     return bucket.context;
   }
 
@@ -236,16 +228,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 
   didExit(_bucket: ClassicRouteBucket, _state: ClassicDidExitState): void {
     // No-op for classic routes.
-  }
-
-  getRouteWrapper(
-    _bucket: ClassicRouteBucket,
-    _childOutlet: unknown,
-    defaultOutlet: (layout?: TemplateFactory) => object | null
-  ): object | null {
-    recordUse('classic:getRouteWrapper');
-    // Classic's outlet is the framework outlet; only the contract differs.
-    return defaultOutlet(ROUTE_TEMPLATE_LAYOUT);
   }
 
   getInvokable(

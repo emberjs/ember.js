@@ -837,12 +837,153 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
               setComponentTemplate(getComponentTemplate(LAYOUT), FunkyOutlet.prototype);
             `,
+            'swap-outlet.gjs': `
+              import {
+                getComponentTemplate,
+                setComponentTemplate,
+                setInternalComponentManager,
+              } from '@glimmer/manager';
+              import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
+              import { SwapInvokableLoading } from '${appName}/components/funky-route-components';
+
+              // \`ready\` is tracked, so the swap needs no _setOutlets pass.
+              const LAYOUT = <template>
+                {{#if @bucket.ready}}
+                  <@bucket.invokable @outlet={{@outlet}} />
+                {{else}}
+                  <SwapInvokableLoading @outlet={{@outlet}} />
+                {{/if}}
+              </template>;
+
+              export class SwapOutlet {
+                constructor(bucket, childOutlet) {
+                  this.bucket = bucket;
+                  this.childOutlet = childOutlet;
+                }
+              }
+
+              setInternalComponentManager(
+                {
+                  getCapabilities() {
+                    return {
+                      dynamicLayout: false,
+                      dynamicTag: false,
+                      prepareArgs: true,
+                      createArgs: false,
+                      attributeHook: false,
+                      elementHook: false,
+                      createCaller: false,
+                      dynamicScope: false,
+                      updateHook: false,
+                      createInstance: false,
+                      wrapped: false,
+                      willDestroy: false,
+                      hasSubOwner: false,
+                    };
+                  },
+
+                  prepareArgs(definition) {
+                    return {
+                      positional: [],
+                      named: {
+                        bucket: createConstRef(definition.bucket, '@bucket'),
+                        outlet: definition.childOutlet,
+                      },
+                    };
+                  },
+
+                  getDebugName(definition) {
+                    return \`swap outlet for \${definition.bucket.name}\`;
+                  },
+
+                  getSelf() {
+                    return NULL_REFERENCE;
+                  },
+
+                  getDestroyable() {
+                    return null;
+                  },
+                },
+                SwapOutlet.prototype
+              );
+
+              setComponentTemplate(getComponentTemplate(LAYOUT), SwapOutlet.prototype);
+            `,
+            'reactive-outlet.gjs': `
+              import {
+                getComponentTemplate,
+                setComponentTemplate,
+                setInternalComponentManager,
+              } from '@glimmer/manager';
+              import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
+
+              // \`context\` is tracked, so a late model still lands on screen.
+              const LAYOUT = <template>
+                <@bucket.invokable @context={{@bucket.context}} @outlet={{@outlet}} />
+              </template>;
+
+              export class ReactiveOutlet {
+                constructor(bucket, childOutlet) {
+                  this.bucket = bucket;
+                  this.childOutlet = childOutlet;
+                }
+              }
+
+              setInternalComponentManager(
+                {
+                  getCapabilities() {
+                    return {
+                      dynamicLayout: false,
+                      dynamicTag: false,
+                      prepareArgs: true,
+                      createArgs: false,
+                      attributeHook: false,
+                      elementHook: false,
+                      createCaller: false,
+                      dynamicScope: false,
+                      updateHook: false,
+                      createInstance: false,
+                      wrapped: false,
+                      willDestroy: false,
+                      hasSubOwner: false,
+                    };
+                  },
+
+                  prepareArgs(definition) {
+                    return {
+                      positional: [],
+                      named: {
+                        bucket: createConstRef(definition.bucket, '@bucket'),
+                        outlet: definition.childOutlet,
+                      },
+                    };
+                  },
+
+                  getDebugName(definition) {
+                    return \`reactive outlet for \${definition.bucket.name}\`;
+                  },
+
+                  getSelf() {
+                    return NULL_REFERENCE;
+                  },
+
+                  getDestroyable() {
+                    return null;
+                  },
+                },
+                ReactiveOutlet.prototype
+              );
+
+              setComponentTemplate(getComponentTemplate(LAYOUT), ReactiveOutlet.prototype);
+            `,
             'funky-route-components.gjs': ROUTE_COMPONENTS,
           },
           'route-managers': {
             'swap.js': `
               import { routeCapabilities } from '@ember/routing';
               import { tracked } from '@glimmer/tracking';
+
+              import { SwapOutlet } from '${appName}/components/swap-outlet';
               import * as COMPONENTS from '${appName}/components/funky-route-components';
 
               const ROUTES = {
@@ -891,8 +1032,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getRouteWrapper(bucket, childOutlet, defaultOutlet) {
-                  return defaultOutlet();
+                getRouteWrapper(bucket, childOutlet) {
+                  return new SwapOutlet(bucket, childOutlet);
                 }
 
                 getRenderState(bucket) {
@@ -904,10 +1045,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     invokable: bucket.invokable,
                     bucket,
                   };
-                }
-
-                getRenderInvokable(bucket) {
-                  return bucket.ready ? bucket.invokable : COMPONENTS.SwapInvokableLoading;
                 }
 
                 willEnter() {}
@@ -925,6 +1062,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
             'reactive.js': `
               import { routeCapabilities } from '@ember/routing';
               import { tracked } from '@glimmer/tracking';
+
+              import { ReactiveOutlet } from '${appName}/components/reactive-outlet';
               import * as COMPONENTS from '${appName}/components/funky-route-components';
 
               const ROUTES = {
@@ -960,8 +1099,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getRouteWrapper(bucket, childOutlet, defaultOutlet) {
-                  return defaultOutlet();
+                getRouteWrapper(bucket, childOutlet) {
+                  return new ReactiveOutlet(bucket, childOutlet);
                 }
 
                 getRenderState(bucket) {
@@ -971,10 +1110,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     invokable: bucket.invokable,
                     bucket,
                   };
-                }
-
-                getRenderContext(bucket) {
-                  return bucket.context;
                 }
 
                 willEnter() {}

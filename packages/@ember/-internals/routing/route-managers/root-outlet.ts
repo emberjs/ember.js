@@ -3,8 +3,7 @@
 
   It cannot itself be an `OutletComponent`: `renderComponent` requires a
   statically registered template and never emits `VM_PREPARE_ARGS_OP` at the
-  root, while `OutletComponent` has no static template and gets every argument
-  from `prepareArgs`.
+  root, while `OutletComponent` gets every argument from `prepareArgs`.
 
   The walk lives here because resolution imports every implementation it can
   dispatch to. Implementations are handed a finished child ref instead, so one
@@ -15,7 +14,6 @@ import type {
   CustomRenderNode,
   InternalComponentCapabilities,
   InternalComponentManager,
-  TemplateFactory,
   WithCreateInstance,
   WithCustomDebugRenderTree,
 } from '@glimmer/interfaces';
@@ -25,10 +23,9 @@ import { createComputeRef, createConstRef, valueForRef } from '@glimmer/referenc
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
-import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { OutletState } from './outlet-state';
-import { CONTEXT_LAYOUT, OutletComponent } from './classic/outlet-component';
+import { OutletComponent } from './classic/outlet-component';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from './probe';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
@@ -58,7 +55,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
 interface RootOutletState {
   self: Reference;
 }
-
+// @TODO: RootOutlet likely doesn't need the manager anymore
 class RootOutletManager
   implements
     InternalComponentManager<RootOutletState, RootOutlet>,
@@ -113,7 +110,6 @@ export interface UpdatableOutletRootState {
   state: OutletState;
   set(root: OutletState): void;
 }
-
 export function createRootOutletState(
   owner: InternalOwner,
   initial: OutletState
@@ -152,9 +148,9 @@ const managerOutlets = new WeakMap<object, object>();
 
 /**
   One outlet level, or `null` when nothing renders there. Every level is its
-  manager's to fill; there is no framework fallback. The `defaultOutlet` thunk
-  keeps `OutletComponent` reachable without exposing this level's state ref,
-  which would hand the walk back to a manager.
+  manager's to fill; there is no framework fallback. The manager only describes
+  what it wants, so this level's state ref is never exposed — handing that back
+  to a manager would break `@outlet` opacity.
 */
 function outletFor(
   outletRef: Reference<OutletState | undefined>,
@@ -190,18 +186,12 @@ function outletFor(
 
   let childOutlet = childOutletRefFor(outletRef, callerOwner);
 
-  // The one place bridging `router_js`'s `unknown` to Glimmer.
-  let provided = manager.getRouteWrapper(bucket, childOutlet, (layout) =>
-    OutletComponent.forLevel(
-      outletRef,
-      callerOwner,
-      childOutlet,
-      (layout as TemplateFactory | undefined) ?? CONTEXT_LAYOUT
-    )
-  );
+  let provided = manager.getRouteWrapper
+    ? manager.getRouteWrapper(bucket, childOutlet)
+    : OutletComponent.forLevel(outletRef, callerOwner, childOutlet);
 
   // Not cached: `null` means "nothing yet", so ask again next revalidation.
-  if (provided === null || provided === undefined) {
+  if (provided == null) {
     return null;
   }
 

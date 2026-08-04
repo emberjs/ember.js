@@ -4,22 +4,21 @@ import { assert } from '@ember/debug';
 import type EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import type {
-  CompilableProgram,
   CustomRenderNode,
   Destroyable,
   DynamicScope,
   Environment,
   InternalComponentCapabilities,
   PreparedArguments,
-  TemplateFactory,
   WithCreateInstance,
   WithCustomDebugRenderTree,
-  WithDynamicLayout,
   WithPrepareArgs,
   WithSubOwner,
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/env';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
+import { precompileTemplate } from '@ember/template-compilation';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import {
   createComputeRef,
@@ -29,9 +28,7 @@ import {
   valueForRef,
 } from '@glimmer/reference/lib/reference';
 import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
-import { precompileTemplate } from '@ember/template-compilation';
 
-import { unwrapTemplate } from '../../../glimmer/lib/component-managers/unwrap-template';
 import type { OutletState, RenderState } from '../outlet-state';
 // EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
 import { recordUse } from '../probe';
@@ -68,37 +65,14 @@ import { recordUse } from '../probe';
   @public
 */
 
-/** Default contract; a manager may pass any layout instead. */
-export const CONTEXT_LAYOUT = precompileTemplate(
-  `<@Component @context={{@context}} @outlet={{@outlet}} />`,
+/** Classic's argument contract. */
+const CLASSIC_TEMPLATE = precompileTemplate(
+  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>`,
   {
-    moduleName: 'packages/@ember/-internals/routing/route-managers/classic/outlet-context.hbs',
+    moduleName: 'packages/@ember/-internals/routing/route-managers/classic/route-template.hbs',
     strictMode: true,
   }
 );
-
-function layoutFor(factory: TemplateFactory, owner: InternalOwner): CompilableProgram {
-  // Both `factory(owner)` and `asLayout()` memoize, so this is one lookup.
-  return unwrapTemplate(factory(owner)).asLayout();
-}
-
-function invokableFor(state: OutletState | undefined): object | undefined {
-  if (state === undefined) {
-    return undefined;
-  }
-
-  let { render, manager } = state;
-
-  if (render === undefined) {
-    return undefined;
-  }
-
-  if (manager?.getRenderInvokable !== undefined) {
-    return manager.getRenderInvokable(render.bucket!) ?? render.invokable;
-  }
-
-  return render.invokable;
-}
 
 function instrumentationPayload(def: OutletDefinitionState) {
   // "main" used to be the outlet name, keeping it around for compatibility
@@ -107,8 +81,6 @@ function instrumentationPayload(def: OutletDefinitionState) {
 
 interface OutletInstanceState {
   owner: InternalOwner;
-  // `getDynamicLayout` only receives the instance state, never the definition.
-  layout: CompilableProgram;
   engine?: {
     instance: EngineInstance;
     mountPoint: string;
@@ -125,8 +97,7 @@ export interface OutletDefinitionState {
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
-  // The layout is chosen per outlet; see `layoutFor`.
-  dynamicLayout: true,
+  dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: true,
   createArgs: false,
@@ -166,7 +137,6 @@ class OutletComponentManager
   implements
     WithCreateInstance<OutletInstanceState, OutletComponent>,
     WithCustomDebugRenderTree<OutletInstanceState, OutletComponent>,
-    WithDynamicLayout<OutletInstanceState>,
     WithPrepareArgs<OutletInstanceState, OutletComponent>,
     WithSubOwner<OutletInstanceState, OutletComponent>
 {
@@ -197,7 +167,6 @@ class OutletComponentManager
 
     let state: OutletInstanceState = {
       owner: definition.owner,
-      layout: definition.layout,
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
 
@@ -227,10 +196,6 @@ class OutletComponentManager
   // inheriting the parent app's owner from the call site.
   getOwner(state: OutletInstanceState): InternalOwner {
     return state.owner;
-  }
-
-  getDynamicLayout(state: OutletInstanceState): CompilableProgram {
-    return state.layout;
   }
 
   getDebugName({ name }: OutletComponent): string {
@@ -294,33 +259,29 @@ export class OutletComponent implements OutletDefinitionState {
   static forLevel(
     outletRef: Reference<OutletState | undefined>,
     callerOwner: InternalOwner,
-    childOutlet: Reference,
-    layoutFactory: TemplateFactory
+    childOutlet: Reference
   ): OutletComponent | null {
     let state = valueForRef(outletRef);
     let render = state?.render;
-    let invokable = invokableFor(state);
+    let invokable = state?.render?.invokable;
 
     if (render === undefined || invokable === undefined) {
       return null;
     }
 
-    return new OutletComponent(render, invokable, outletRef, callerOwner, childOutlet, layoutFactory);
+    return new OutletComponent(render, invokable, outletRef, callerOwner, childOutlet);
   }
 
   readonly owner: InternalOwner;
   readonly context: Reference;
   readonly component: Reference;
 
-  private cachedLayout: CompilableProgram | undefined;
-
   private constructor(
     private readonly render: RenderState,
     readonly invokable: object,
     readonly ref: Reference<OutletState | undefined>,
     callerOwner: InternalOwner,
-    readonly childOutlet: Reference,
-    private readonly layoutFactory: TemplateFactory
+    readonly childOutlet: Reference
   ) {
     this.owner = render.owner ?? callerOwner;
 
@@ -342,7 +303,7 @@ export class OutletComponent implements OutletDefinitionState {
         let current = state.render;
 
         if (current !== undefined && this.isCurrentLevel(current)) {
-          last = invokableFor(state) ?? last;
+          last = state.render?.invokable ?? last;
         }
       }
 
@@ -378,16 +339,6 @@ export class OutletComponent implements OutletDefinitionState {
     return this.render.bucket;
   }
 
-  get layout(): CompilableProgram {
-    let layout = this.cachedLayout;
-
-    if (layout === undefined) {
-      layout = this.cachedLayout = layoutFor(this.layoutFactory, this.owner);
-    }
-
-    return layout;
-  }
-
   /** Bucket identity; the invokable may swap without this changing. */
   private isCurrentLevel(render: RenderState): boolean {
     return this.bucket === render.bucket;
@@ -395,6 +346,4 @@ export class OutletComponent implements OutletDefinitionState {
 }
 
 setInternalComponentManager(OUTLET_MANAGER, OutletComponent.prototype);
-
-// No `setComponentTemplate` on purpose: a template on the prototype would make
-// the VM skip `getDynamicLayout`.
+setComponentTemplate(CLASSIC_TEMPLATE, OutletComponent.prototype);

@@ -328,26 +328,22 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   didExit(bucket: Bucket, state: DidExitState): void;
 
   /**
-    Required. Returns the component rendered at this manager's outlet
-    positions. There is no framework fallback, so a manager with no opinion
-    returns `defaultOutlet()`. Called once per bucket and cached; return `null`
-    for "nothing yet" (an invokable still in flight), which is not cached.
+    Optional. The component that renders at this manager's outlet positions,
+    called once per bucket and cached. Omitting it takes the framework's
+    (classic) outlet, with everything that provides: engine owner swapping,
+    `parentView`, instrumentation, the debug-tree node, and the live invokable
+    and context references.
+
+    Implementing it opts out of all of that, which is the point: a manager
+    holding its own tracked state renders from it directly and needs none of
+    that plumbing. Either way costs one component boundary.
 
     `childOutlet` renders the next level down and may belong to a different
     manager — walking the hierarchy is the framework's job. Everything else an
-    outlet needs is reachable from the bucket.
-
-    `defaultOutlet` builds the framework outlet, optionally through a layout of
-    the manager's choosing (default: `@context`). It is a thunk so this level's
-    state reference never has to be exposed, which would break `@outlet`
-    opacity. Both it and `childOutlet` are `unknown` because `router_js` stays
-    renderer-agnostic.
+    outlet needs is reachable from the bucket. It is `unknown` because
+    `router_js` stays renderer-agnostic.
    */
-  getRouteWrapper(
-    bucket: Bucket,
-    childOutlet: unknown,
-    defaultOutlet: (layout?: unknown) => object | null
-  ): object | null;
+  getRouteWrapper?(bucket: Bucket, childOutlet: unknown): object;
 
   /**
     Returns the renderable for the route. Async to absorb dynamic imports of
@@ -364,8 +360,21 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   */
   getRenderContext?(bucket: Bucket): unknown;
 
-  getRenderInvokable?(bucket: Bucket): object | undefined;
+  /**
+    Describes what this route renders. The chain from here to the DOM:
 
+    1. `_setOutlets` calls this for each active route.
+    2. Its result becomes that level's `OutletState.render`.
+    3. `RootOutlet` renders once; later passes only dirty.
+    4. `childOutletRefFor` derefs `outlets.main` into a ref.
+    5. `outletFor` reads that state's manager and bucket.
+    6. A cached outlet for that bucket wins immediately.
+    7. Otherwise `getRouteWrapper` runs, once per bucket.
+    8. Its component is rendered as the level, unchanged.
+    9. Without it, `OutletComponent.forLevel` builds classic's outlet.
+    10. An unresolved invokable renders nothing, uncached, retried later.
+    11. Classic's template invokes `@Component` with this level's arguments.
+   */
   getRenderState(bucket: Bucket): RenderStateLike;
 }
 

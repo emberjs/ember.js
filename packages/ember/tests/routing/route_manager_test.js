@@ -2,7 +2,7 @@ import Route from '@ember/routing/route';
 import { setRouteManager } from '@ember/routing';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
-import { createConstRef, NULL_REFERENCE } from '@glimmer/reference/lib/reference';
+import { createComputeRef, createConstRef, NULL_REFERENCE } from '@glimmer/reference/lib/reference';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import {
   moduleFor,
@@ -15,6 +15,72 @@ import { registerDestructor } from '@ember/destroyable';
 import { precompileTemplate } from '@ember/template-compilation';
 import { getOwner } from '@ember/owner';
 import { defer, reject, resolve } from 'rsvp';
+
+// Outlets over a classic bucket: `@Component` is the route's invokable and
+// `@context` its model, so a manager can take a contract other than classic's.
+const CLASSIC_BUCKET_OUTLET_MANAGER = {
+  getCapabilities() {
+    return {
+      dynamicLayout: false,
+      dynamicTag: false,
+      prepareArgs: true,
+      createArgs: false,
+      attributeHook: false,
+      elementHook: false,
+      createCaller: false,
+      dynamicScope: false,
+      updateHook: false,
+      createInstance: false,
+      wrapped: false,
+      willDestroy: false,
+      hasSubOwner: false,
+    };
+  },
+
+  prepareArgs({ bucket, childOutlet }) {
+    return {
+      positional: [],
+      named: {
+        Component: createConstRef(bucket.invokable, '@Component'),
+        context: createComputeRef(() => bucket.context),
+        outlet: childOutlet,
+      },
+    };
+  },
+
+  getDebugName({ bucket }) {
+    return `outlet for ${bucket.route.routeName}`;
+  },
+
+  getSelf() {
+    return NULL_REFERENCE;
+  },
+
+  getDestroyable() {
+    return null;
+  },
+};
+
+function classicBucketOutlet(layout) {
+  class ClassicBucketOutlet {
+    constructor(bucket, childOutlet) {
+      this.bucket = bucket;
+      this.childOutlet = childOutlet;
+    }
+  }
+
+  setInternalComponentManager(CLASSIC_BUCKET_OUTLET_MANAGER, ClassicBucketOutlet.prototype);
+  setComponentTemplate(layout, ClassicBucketOutlet.prototype);
+
+  return ClassicBucketOutlet;
+}
+
+// The `@context` contract, for managers that do not want classic's.
+const ContextOutlet = classicBucketOutlet(
+  precompileTemplate('<@Component @context={{@context}} @outlet={{@outlet}} />', {
+    strictMode: true,
+  })
+);
 
 // A manager that delegates everything to the ClassicRouteManager so existing
 // routing behaviour is preserved, but records every hook into a shared log so
@@ -31,9 +97,9 @@ class RecordingRouteManager extends ClassicRouteManager {
     return bucket;
   }
 
-  getRouteWrapper(bucket, childOutlet, defaultOutlet) {
-    this.log.push(['getRouteWrapper', bucket.route.routeName]);
-    return super.getRouteWrapper(bucket, childOutlet, defaultOutlet);
+  getRenderState(bucket) {
+    this.log.push(['getRenderState', bucket.route.routeName]);
+    return super.getRenderState(bucket);
   }
 
   getInvokable(bucket, enterPromise) {
@@ -122,7 +188,7 @@ moduleFor(
       let methods = this.log.map(([m]) => m);
 
       assert.ok(methods.includes('createRoute'), 'createRoute was called');
-      assert.ok(methods.includes('getRouteWrapper'), 'getRouteWrapper was called');
+      assert.ok(methods.includes('getRenderState'), 'getRenderState was called');
       assert.ok(methods.includes('getInvokable'), 'getInvokable was called');
 
       let createdRoutes = this.log
@@ -197,11 +263,11 @@ moduleFor(
 
       let TestRoute = class extends Route {};
 
-      // Keeps classic's route wiring but takes the default `@context`
-      // contract instead of classic's layout.
+      // Keeps classic's route wiring but takes the `@context` contract
+      // instead of classic's.
       class WrapperlessRouteManager extends ClassicRouteManager {
-        getRouteWrapper(_bucket, _childOutlet, defaultOutlet) {
-          return defaultOutlet();
+        getRouteWrapper(bucket, childOutlet) {
+          return new ContextOutlet(bucket, childOutlet);
         }
       }
 
@@ -384,56 +450,11 @@ moduleFor(
   }
 );
 
-// Decorates every level by nesting the framework's outlet inside its own.
-class WrappingOutlet {
-  constructor(inner) {
-    this.inner = inner;
-  }
-}
-
-class WrappingOutletManager {
-  getCapabilities() {
-    return {
-      dynamicLayout: false,
-      dynamicTag: false,
-      prepareArgs: true,
-      createArgs: false,
-      attributeHook: false,
-      elementHook: false,
-      createCaller: false,
-      dynamicScope: false,
-      updateHook: false,
-      createInstance: false,
-      wrapped: false,
-      willDestroy: false,
-      hasSubOwner: false,
-    };
-  }
-
-  prepareArgs(definition) {
-    return {
-      positional: [],
-      named: { Inner: createConstRef(definition.inner, '@Inner') },
-    };
-  }
-
-  getDebugName() {
-    return 'wrapping-outlet';
-  }
-
-  getSelf() {
-    return NULL_REFERENCE;
-  }
-
-  getDestroyable() {
-    return null;
-  }
-}
-
-setInternalComponentManager(new WrappingOutletManager(), WrappingOutlet.prototype);
-setComponentTemplate(
-  precompileTemplate('wrap(<@Inner />)', { strictMode: true }),
-  WrappingOutlet.prototype
+// Decorates every level the manager owns, around the invokable it renders.
+const WrapOutlet = classicBucketOutlet(
+  precompileTemplate('wrap(<@Component @model={{@context}} @outlet={{@outlet}} />)', {
+    strictMode: true,
+  })
 );
 
 moduleFor(
@@ -445,12 +466,8 @@ moduleFor(
       let TestRoute = class extends Route {};
 
       class WrapperRouteManager extends ClassicRouteManager {
-        getRouteWrapper(bucket, childOutlet, defaultOutlet) {
-          // `super` supplies classic's contract; this only adds a boundary.
-          let inner = super.getRouteWrapper(bucket, childOutlet, defaultOutlet);
-
-          // Pass `null` through, or the level would render `wrap()`.
-          return inner === null ? null : new WrappingOutlet(inner);
+        getRouteWrapper(bucket, childOutlet) {
+          return new WrapOutlet(bucket, childOutlet);
         }
       }
 
@@ -485,7 +502,7 @@ moduleFor(
       });
     }
 
-    async ['@test a manager can nest the default outlet inside its own'](assert) {
+    async ['@test a manager can wrap every level it invokes itself'](assert) {
       await this.visit('/parent/child');
       assert.strictEqual(
         this.element.textContent,

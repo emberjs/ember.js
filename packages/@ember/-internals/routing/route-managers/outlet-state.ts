@@ -38,13 +38,8 @@ export interface OutletState {
   manager:
     | {
         getRenderContext?(bucket: object): unknown;
-        getRenderInvokable?(bucket: object): object | undefined;
-        /** Required. `null` means nothing renders here yet. */
-        getRouteWrapper(
-          bucket: object,
-          childOutlet: Reference,
-          defaultOutlet: (layout?: unknown) => object | null
-        ): object | null;
+        /** Absent → the framework's (classic) outlet. */
+        getRouteWrapper?(bucket: object, childOutlet: Reference): object;
       }
     | undefined;
 
