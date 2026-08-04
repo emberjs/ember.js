@@ -126,7 +126,6 @@ export function createRootOutletState(
     render: {
       owner,
       name: '-top-level',
-      model: undefined,
       invokable: undefined,
     },
     manager: undefined,

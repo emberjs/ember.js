@@ -351,7 +351,7 @@ export class OutletComponent implements OutletDefinitionState {
   }
 
   private contextRefFor(render: RenderState): Reference {
-    let last: unknown = render.model;
+    let last: unknown = valueForRef(this.ref)?.manager?.getRenderContext?.(render.bucket!);
 
     return createComputeRef(() => {
       let state = valueForRef(this.ref);
@@ -362,10 +362,7 @@ export class OutletComponent implements OutletDefinitionState {
         if (current !== undefined && this.isCurrentLevel(current)) {
           let manager = state.manager;
 
-          last =
-            manager?.getRenderContext !== undefined
-              ? manager.getRenderContext(current.bucket!)
-              : current.model;
+          last = manager?.getRenderContext?.(current.bucket!);
         }
       }
 

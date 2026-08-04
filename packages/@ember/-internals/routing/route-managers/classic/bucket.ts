@@ -17,6 +17,11 @@ export class ClassicRouteBucket {
     return this.route.controller;
   }
 
+  // A getter, not a copied field, for the same staleness reason as `controller`.
+  get context(): unknown {
+    return this.route.currentModel;
+  }
+
   // Runloop timer for the pending loading-event dispatch scheduled during
   // willEnter. Per-bucket so concurrent routes track their own timers and
   // didEnter can cancel the right one.

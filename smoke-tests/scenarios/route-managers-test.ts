@@ -901,9 +901,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return {
                     owner: this.owner,
                     name: bucket.name,
-                    controller: undefined,
-                    model: undefined,
-                    wrapper: undefined,
                     invokable: bucket.invokable,
                     bucket,
                   };
@@ -971,9 +968,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return {
                     owner: this.owner,
                     name: bucket.name,
-                    controller: undefined,
-                    model: bucket.context,
-                    wrapper: undefined,
                     invokable: bucket.invokable,
                     bucket,
                   };
@@ -1037,9 +1031,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return {
                     owner: this.owner,
                     name: bucket.name,
-                    controller: undefined,
-                    model: bucket.model,
-                    wrapper: undefined,
                     invokable: bucket.invokable,
                     bucket,
                   };

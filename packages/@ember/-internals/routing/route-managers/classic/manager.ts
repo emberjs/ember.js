@@ -115,10 +115,14 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     return {
       owner,
       name: route.routeName,
-      model: route.currentModel,
       invokable: buildClassicInvokable(bucket),
       bucket,
     };
+  }
+
+  getRenderContext(bucket: ClassicRouteBucket): unknown {
+    recordUse('classic:getRenderContext');
+    return bucket.context;
   }
 
   willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {

@@ -372,7 +372,6 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
 type RenderStateLike = {
   owner: any;
   name: string;
-  model: unknown;
   invokable: object | undefined;
   /** Curried onto the invokable as `@bucket` by the outlet. */
   bucket?: RouteStateBucket;

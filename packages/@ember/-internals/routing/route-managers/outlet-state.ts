@@ -15,11 +15,6 @@ export interface RenderState {
   name: string;
 
   /**
-   * The model (the resolved value of the model hook)
-   */
-  model: unknown;
-
-  /**
    * The per-render invokable returned by `RouteManager.getInvokable`
    */
   invokable: object | undefined;
