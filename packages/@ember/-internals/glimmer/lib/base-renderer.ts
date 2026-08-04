@@ -30,6 +30,7 @@ import {
   EmberEnvironmentDelegate,
   _setNotifyRevalidate,
   _drainScheduledDestroys,
+  _resetInvalidationNotified,
 } from './environment';
 import ResolverImpl from './resolver';
 import schedulerStrategy from '@ember/scheduler/strategy';
@@ -432,6 +433,10 @@ export class RendererState {
     const renderer = this.#renderer;
 
     if (renderer === null) return;
+
+    // dirt from here on is new information again -- the next set after
+    // this tick must notify the scheduler
+    _resetInvalidationNotified();
 
     // clock semantics: one render per tick, taking whatever has been
     // dirtied so far. Code that keeps dirtying state while we render

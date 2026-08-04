@@ -29,6 +29,16 @@ export function _setNotifyRevalidate(fn: () => void): void {
   notifyRevalidate = fn;
 }
 
+// Dirtying is much hotter than ticking: a 100k-set loop notifies once
+// and then pays a single boolean check per set, instead of walking the
+// notify chain per dirty tag. The renderer re-arms this at the start of
+// every tick.
+let invalidationNotified = false;
+
+export function _resetInvalidationNotified(): void {
+  invalidationNotified = false;
+}
+
 interface ScheduledDestructor {
   destroyable: object;
   destructor: (destroyable: object) => void;
@@ -74,6 +84,8 @@ function armDestroyDrain(): void {
 
 setGlobalContext({
   scheduleRevalidate() {
+    if (invalidationNotified) return;
+    invalidationNotified = true;
     notifyRevalidate();
   },
 
