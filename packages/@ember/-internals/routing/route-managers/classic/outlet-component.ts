@@ -73,7 +73,7 @@ const CLASSIC_TEMPLATE = precompileTemplate(
 );
 
 function instrumentationPayload(def: OutletDefinitionState) {
-  // "main" used to be the outlet name, keeping it around for compatibility
+  // legacy outlet name
   return { object: `${def.name}:main` };
 }
 
@@ -86,7 +86,6 @@ interface OutletInstanceState {
   finalize: () => void;
 }
 
-/** The definition shape `OutletComponent` presents to the VM. */
 export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
@@ -110,7 +109,7 @@ const CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: true,
 };
 
-/** Classic components read `parentView` off the dynamic scope. */
+/** Classic reads `parentView` off scope. */
 interface ViewCarryingScope extends DynamicScope {
   view?: unknown;
   child(): ViewCarryingScope;
@@ -188,8 +187,7 @@ class OutletComponentManager
     return state;
   }
 
-  // How a routable engine's subtree gets the engine instance rather than
-  // inheriting the parent app's owner from the call site.
+  // Engine subtrees need the engine owner.
   getOwner(state: OutletInstanceState): InternalOwner {
     return state.owner;
   }
@@ -207,7 +205,7 @@ class OutletComponentManager
     nodes.push({
       bucket: state,
       type: 'outlet',
-      // "main" used to be the outlet name, keeping it around for compatibility
+      // legacy outlet name
       name: 'main',
       args: EMPTY_ARGS,
       instance: undefined,
@@ -251,7 +249,7 @@ class OutletComponentManager
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
 export class OutletComponent implements OutletDefinitionState {
-  /** Deref'd here so `state` cannot disagree with `outletRef`. */
+  /** Deref'd so `state` matches `outletRef`. */
   static forLevel(
     outletRef: Reference<OutletState | undefined>,
     callerOwner: InternalOwner,
@@ -288,7 +286,7 @@ export class OutletComponent implements OutletDefinitionState {
     this.component = DEBUG ? createDebugAliasRef!('@Component', component) : component;
   }
 
-  /** Live invokable; frozen once the level stops being ours. */
+  /** Frozen once the level stops being ours. */
   private componentRefFor(initial: object): Reference {
     let last: object = initial;
 
@@ -335,7 +333,7 @@ export class OutletComponent implements OutletDefinitionState {
     return this.render.bucket;
   }
 
-  /** Bucket identity; the invokable may swap without this changing. */
+  /** Bucket identity, not invokable identity. */
   private isCurrentLevel(render: RenderState): boolean {
     return this.bucket === render.bucket;
   }

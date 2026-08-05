@@ -33,7 +33,7 @@ export interface OutletState {
   render: RenderState | undefined;
 
   /**
-   * The manager that produced `render`, written by `Router#_setOutlets`.
+   * The manager that produced `render`.
    */
   manager:
     | {

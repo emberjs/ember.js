@@ -327,22 +327,7 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
    */
   didExit(bucket: Bucket, state: DidExitState): void;
 
-  /**
-    Optional. The component that renders at this manager's outlet positions,
-    called once per bucket and cached. Omitting it takes the framework's
-    (classic) outlet, with everything that provides: engine owner swapping,
-    `parentView`, instrumentation, the debug-tree node, and the live invokable
-    and context references.
-
-    Implementing it opts out of all of that, which is the point: a manager
-    holding its own tracked state renders from it directly and needs none of
-    that plumbing. Either way costs one component boundary.
-
-    `childOutlet` renders the next level down and may belong to a different
-    manager — walking the hierarchy is the framework's job. Everything else an
-    outlet needs is reachable from the bucket. It is `unknown` because
-    `router_js` stays renderer-agnostic.
-   */
+  /** Optional. This manager's outlet, cached per bucket. */
   getRouteWrapper?(bucket: Bucket, childOutlet: unknown): object;
 
   /**
@@ -355,26 +340,10 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
    */
   getInvokable(bucket: Bucket, enterPromise?: Promise<unknown>): Promise<object | undefined>;
 
-  /**
-    Provides the value of `@context` used by the outlet
-  */
+  /** The `@context` the outlet renders with. */
   getRenderContext?(bucket: Bucket): unknown;
 
-  /**
-    Describes what this route renders. The chain from here to the DOM:
-
-    1. `_setOutlets` calls this for each active route.
-    2. Its result becomes that level's `OutletState.render`.
-    3. `RootOutlet` renders once; later passes only dirty.
-    4. `childOutletRefFor` derefs `outlets.main` into a ref.
-    5. `outletFor` reads that state's manager and bucket.
-    6. A cached outlet for that bucket wins immediately.
-    7. Otherwise `getRouteWrapper` runs, once per bucket.
-    8. Its component is rendered as the level, unchanged.
-    9. Without it, `OutletComponent.forLevel` builds classic's outlet.
-    10. An unresolved invokable renders nothing, uncached, retried later.
-    11. Classic's template invokes `@Component` with this level's arguments.
-   */
+  /** Describes what this route renders. */
   getRenderState(bucket: Bucket): RenderStateLike;
 }
 
@@ -382,7 +351,7 @@ type RenderStateLike = {
   owner: any;
   name: string;
   invokable: object | undefined;
-  /** Curried onto the invokable as `@bucket` by the outlet. */
+  /** Curried onto the invokable as `@bucket`. */
   bucket?: RouteStateBucket;
 };
 

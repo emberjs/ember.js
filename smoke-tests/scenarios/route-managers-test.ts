@@ -739,8 +739,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               } from '@glimmer/manager';
               import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
 
-              // \`model\` is tracked, so this manager needs none of the
-              // framework's render-state plumbing to get a model on screen.
+              // \`model\` is tracked; no render-state plumbing.
               export class FunkyBucket {
                 @tracked model;
 
@@ -751,8 +750,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 }
               }
 
-              // Ordinary component lifetime, so the gate re-closes on
-              // re-entry without anyone resetting it.
+              // Component lifetime re-closes the gate.
               class FunkyGate extends Component {
                 @tracked shouldRender = false;
 
@@ -779,8 +777,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 <FunkyGate @bucket={{@bucket}} @outlet={{@outlet}} />
               </template>;
 
-              // What \`getRouteWrapper\` returns: this manager's whole rendering story
-              // for one route level — its own bucket and the level below.
+              // What \`getRouteWrapper\` returns.
               export class FunkyOutlet {
                 constructor(bucket, childOutlet) {
                   this.bucket = bucket;
@@ -794,8 +791,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     return {
                       dynamicLayout: false,
                       dynamicTag: false,
-                      // Supplies the layout's args, and discards anything a
-                      // parent passed into \`<@outlet />\`.
+                      // Supplies args; discards a parent's.
                       prepareArgs: true,
                       createArgs: false,
                       attributeHook: false,
@@ -846,7 +842,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
               import { SwapInvokableLoading } from '${appName}/components/funky-route-components';
 
-              // \`ready\` is tracked, so the swap needs no _setOutlets pass.
+              // \`ready\` is tracked; no _setOutlets pass.
               const LAYOUT = <template>
                 {{#if @bucket.ready}}
                   <@bucket.invokable @outlet={{@outlet}} />
@@ -917,7 +913,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               } from '@glimmer/manager';
               import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
 
-              // \`context\` is tracked, so a late model still lands on screen.
+              // \`context\` is tracked; late models land.
               const LAYOUT = <template>
                 <@bucket.invokable @context={{@bucket.context}} @outlet={{@outlet}} />
               </template>;

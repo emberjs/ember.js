@@ -16,8 +16,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { getOwner } from '@ember/owner';
 import { defer, reject, resolve } from 'rsvp';
 
-// Outlets over a classic bucket: `@Component` is the route's invokable and
-// `@context` its model, so a manager can take a contract other than classic's.
+// Outlets over a classic bucket.
 const CLASSIC_BUCKET_OUTLET_MANAGER = {
   getCapabilities() {
     return {
@@ -75,7 +74,7 @@ function classicBucketOutlet(layout) {
   return ClassicBucketOutlet;
 }
 
-// The `@context` contract, for managers that do not want classic's.
+// The `@context` contract, not classic's.
 const ContextOutlet = classicBucketOutlet(
   precompileTemplate('<@Component @context={{@context}} @outlet={{@outlet}} />', {
     strictMode: true,
@@ -263,8 +262,7 @@ moduleFor(
 
       let TestRoute = class extends Route {};
 
-      // Keeps classic's route wiring but takes the `@context` contract
-      // instead of classic's.
+      // Classic wiring, `@context` contract.
       class WrapperlessRouteManager extends ClassicRouteManager {
         getRouteWrapper(bucket, childOutlet) {
           return new ContextOutlet(bucket, childOutlet);
@@ -325,8 +323,7 @@ moduleFor(
   }
 );
 
-// A manager-provided outlet: the framework hands it only the reference to the
-// level below, and it reads the rest off its manager's own bucket.
+// A manager-provided outlet.
 class SlimOutlet {
   constructor(bucket, childOutlet) {
     this.bucket = bucket;
@@ -339,8 +336,7 @@ class SlimOutletManager {
     return {
       dynamicLayout: false,
       dynamicTag: false,
-      // Supplies the layout's args, and discards anything a parent passed
-      // into `<@outlet />`.
+      // Supplies args; discards a parent's.
       prepareArgs: true,
       createArgs: false,
       attributeHook: false,
@@ -400,8 +396,7 @@ moduleFor(
 
       setRouteManager((owner) => new SlimRouteManager(owner), SlimRoute);
 
-      // Only `parent` provides its own outlet, so one chain covers both
-      // directions: custom below classic, and classic below custom.
+      // One chain covers both nesting directions.
       this.add('route:application', class extends Route {});
       this.add('route:parent', class extends SlimRoute {});
       this.add(
@@ -414,7 +409,7 @@ moduleFor(
       );
 
       this.add('template:application', precompileTemplate('app:{{outlet}}'));
-      // Never rendered: the manager's outlet is the whole story for its level.
+      // Never rendered; the manager's outlet wins.
       this.add('template:parent', precompileTemplate('SHOULD-NOT-RENDER'));
       this.add('template:parent.child', precompileTemplate('child:{{@model.msg}}'));
 
@@ -450,7 +445,7 @@ moduleFor(
   }
 );
 
-// Decorates every level the manager owns, around the invokable it renders.
+// Decorates every level the manager owns.
 const WrapOutlet = classicBucketOutlet(
   precompileTemplate('wrap(<@Component @model={{@context}} @outlet={{@outlet}} />)', {
     strictMode: true,

@@ -1,14 +1,4 @@
-/**
-  The app's root mount point, and the outlet walk it anchors.
-
-  It cannot itself be an `OutletComponent`: `renderComponent` requires a
-  statically registered template and never emits `VM_PREPARE_ARGS_OP` at the
-  root, while `OutletComponent` gets every argument from `prepareArgs`.
-
-  The walk lives here because resolution imports every implementation it can
-  dispatch to. Implementations are handed a finished child ref instead, so one
-  can never construct or reparameterize its own — that is `@outlet` opacity.
-*/
+/** The app's root mount point, and the outlet walk it anchors. */
 
 import type {
   CustomRenderNode,
@@ -74,8 +64,7 @@ class RootOutletManager
     return '-top-level-outlet';
   }
 
-  // Must stay implemented to be empty: without it the VM emits a `component`
-  // node instead, and the shim would show up in the render tree.
+  // Empty, not absent: hides the shim.
   getDebugCustomRenderTree(): CustomRenderNode[] {
     return [];
   }
@@ -137,16 +126,10 @@ export function createRootOutletState(
   };
 }
 
-// bucket → its manager's outlet. Keyed by bucket alone: `EmberRouter#getRoute`
-// mints each bucket from exactly one manager. The only identity cache left.
+// bucket → its manager's outlet.
 const managerOutlets = new WeakMap<object, object>();
 
-/**
-  One outlet level, or `null` when nothing renders there. Every level is its
-  manager's to fill; there is no framework fallback. The manager only describes
-  what it wants, so this level's state ref is never exposed — handing that back
-  to a manager would break `@outlet` opacity.
-*/
+/** One outlet level, or `null`. */
 function outletFor(
   outletRef: Reference<OutletState | undefined>,
   callerOwner: InternalOwner
@@ -163,7 +146,7 @@ function outletFor(
     return null;
   }
 
-  // Asserted in `_setOutlets`; bailing keeps production defined.
+  // Asserted in `_setOutlets`.
   let bucket = render.bucket;
 
   if (bucket === undefined) {
@@ -182,7 +165,7 @@ function outletFor(
     ? manager.getRouteWrapper(bucket, childOutlet)
     : OutletComponent.forLevel(outletRef, callerOwner, childOutlet);
 
-  // Not cached: `null` means "nothing yet", so ask again next revalidation.
+  // `null` is retried, not cached.
   if (provided == null) {
     return null;
   }
@@ -192,7 +175,6 @@ function outletFor(
   return provided;
 }
 
-/** Derefs one level of `outlets.main` off `parentRef` and resolves it. */
 function childOutletRefFor(
   parentRef: Reference<OutletState | undefined>,
   owner: InternalOwner
@@ -202,7 +184,7 @@ function childOutletRefFor(
   let ref = createComputeRef(() => outletFor(outletRef, owner));
 
   if (DEBUG) {
-    // A truthy label would shadow `getDebugName()` in render stacks.
+    // A truthy label shadows `getDebugName()`.
     ref.debugLabel = false;
   }
 

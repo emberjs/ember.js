@@ -15,7 +15,7 @@ export class ClassicRouteBucket {
     return this.route.controller;
   }
 
-  // A getter, not a copied field, for the same staleness reason as `controller`.
+  // Getter for the same staleness reason.
   get context(): unknown {
     return this.route.currentModel;
   }
