@@ -18,11 +18,6 @@ import type EmberRouter from '@ember/routing/router';
 import type { InternalRouteInfo } from 'router_js';
 import { getRouteManagement, hasClassicInterop, STATE_SYMBOL } from 'router_js';
 import type { ClassicRouteBucket } from './bucket';
-// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
-import { recordUse } from '../probe';
-
-// Module scope: always fires (imported by `classic/manager.ts`).
-recordUse('classic:substates-eval');
 
 export type ActiveTransition = {
   isActive: boolean;
@@ -116,8 +111,6 @@ function routeHasBeenDefined(owner: Owner, router: any, localName: string, fullN
   @param {Transition} transition
  */
 export function fireLoadingEvent(bucket: ClassicRouteBucket, transition: ActiveTransition): void {
-  recordUse('classic:substates');
-  recordUse('classic:substates-fireLoadingEvent');
   if (!transition.isActive) {
     return;
   }
@@ -146,8 +139,6 @@ export function enterLoadingSubstate(
   originRoute: Route | undefined,
   transition: ActiveTransition
 ): void {
-  recordUse('classic:substates');
-  recordUse('classic:substates-enterLoading');
   if (!transition.isActive) {
     return;
   }
@@ -182,8 +173,6 @@ export function enterErrorSubstate(
   transition: ActiveTransition,
   error: Error
 ): boolean {
-  recordUse('classic:substates');
-  recordUse('classic:substates-enterError');
   const substateName = findSubstateName(originRoute, transition, 'error');
   if (!substateName) {
     return false;

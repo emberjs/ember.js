@@ -26,8 +26,6 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
 import type { OutletState } from './outlet-state';
 import { OutletComponent } from './classic/outlet-component';
-// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
-import { recordUse } from './probe';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 
@@ -67,8 +65,6 @@ class RootOutletManager
   }
 
   create(owner: object, definition: RootOutlet): RootOutletState {
-    recordUse('root-outlet:create');
-
     return {
       self: childOutletRefFor(definition.stateRef, owner as InternalOwner),
     };
@@ -114,7 +110,6 @@ export function createRootOutletState(
   owner: InternalOwner,
   initial: OutletState
 ): UpdatableOutletRootState {
-  recordUse('root-outlet:create-state');
   let tag = createTag();
   let current = initial;
 
@@ -180,9 +175,6 @@ function outletFor(
   if (outlet !== undefined) {
     return outlet;
   }
-
-  // Label kept from the merged `outlet-chain.ts` so probe runs stay comparable.
-  recordUse('outlet-chain:manager-outlet');
 
   let childOutlet = childOutletRefFor(outletRef, callerOwner);
 

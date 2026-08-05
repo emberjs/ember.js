@@ -1,8 +1,6 @@
 import type Controller from '@ember/controller';
 import type Route from '@ember/routing/route';
 import type { scheduleOnce } from '@ember/runloop';
-// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
-import { recordUse } from '../probe';
 
 export class ClassicRouteBucket {
   // Cached invokable, written by buildClassicInvokable on first build.
@@ -27,7 +25,5 @@ export class ClassicRouteBucket {
   // didEnter can cancel the right one.
   loadingSubstateTimer: ReturnType<typeof scheduleOnce> | null = null;
 
-  constructor(public route: Route) {
-    recordUse('classic:bucket-construct');
-  }
+  constructor(public route: Route) {}
 }

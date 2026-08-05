@@ -42,13 +42,6 @@ import {
   enterLoadingSubstate as enterClassicLoadingSubstate,
   fireLoadingEvent,
 } from './substates';
-// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
-import { recordUse } from '../probe';
-
-// Module scope: fires whenever this module is *evaluated*, which happens on
-// every boot because `@ember/routing/route` imports it. Distinct from the
-// invocation probes below, which only fire when classic code actually runs.
-recordUse('classic:manager-eval');
 
 type TransitionLike = Transition & {
   isAborted?: boolean;
@@ -71,12 +64,10 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   #owner: Owner;
 
   constructor(owner: Owner) {
-    recordUse('classic:manager-construct');
     this.#owner = owner;
   }
 
   createRoute(_factory: object, args: CreateRouteArgs): ClassicRouteBucket {
-    recordUse('classic:createRoute');
     const route = this.#owner.lookup(`route:${args.name}`) as Route;
     route._setRouteName(args.name);
 
@@ -96,7 +87,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   getRenderState(bucket: ClassicRouteBucket) {
-    recordUse('classic:getRenderState');
     const route = bucket.route;
 
     let owner = getOwner(route);
@@ -111,9 +101,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   getRenderContext(bucket: ClassicRouteBucket): unknown {
-    recordUse('classic:getRenderContext');
-    // Rehomed from the removed `getRouteWrapper`; counts are not comparable.
-    recordUse('classic:getRouteWrapper');
     return bucket.context;
   }
 
@@ -234,7 +221,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     bucket: ClassicRouteBucket,
     enterPromise?: Promise<unknown>
   ): Promise<object | undefined> {
-    recordUse('classic:getInvokable');
     // Build the invokable synchronously, then gate its resolution on the
     // enter promise so onRouteInvokableReady does not fire (and the real
     // route template does not render) until the model has loaded. During
@@ -374,7 +360,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 // lookup returns a component definition, use it directly. Falls back to the
 // shared top-level `{{outlet}}` template when no template is registered.
 function buildClassicInvokable(bucket: ClassicRouteBucket): object {
-  recordUse('classic:buildInvokable');
   if (bucket.invokable !== undefined) {
     return bucket.invokable;
   }
@@ -428,7 +413,6 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
         });
       }
     }
-    recordUse('classic:outlet-template');
     const template = OutletTemplate(owner);
     invokable = makeRouteTemplate(owner, name, template as Template, self);
   }

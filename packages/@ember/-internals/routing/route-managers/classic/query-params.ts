@@ -17,19 +17,11 @@ import type { QueryParam } from '@ember/routing/router';
 import type { Transition } from 'router_js';
 import { STATE_SYMBOL } from 'router_js';
 import type { ClassicRouteBucket } from './bucket';
-// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
-import { recordUse } from '../probe';
-
-// Module scope: always fires (imported by `classic/manager.ts` and by
-// `@ember/routing/route`, which `@ember/application` pulls in).
-recordUse('classic:query-params-eval');
 
 // Returns a fresh native array when the value is an array so callers cannot
 // mutate the shared default. Also used by `@ember/routing/route`'s QP meta
 // building.
 export function copyDefaultValue<T>(value: T): T {
-  recordUse('classic:query-params');
-  recordUse('classic:query-params-copyDefaultValue');
   if (Array.isArray(value)) {
     // SAFETY: We lost the type data about the array if we don't cast.
     return emberA(value.slice()) as unknown as T;
@@ -49,8 +41,6 @@ export function queryParamsDidChange(
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   removed: {}
 ): boolean {
-  recordUse('classic:query-params');
-  recordUse('classic:query-params-didChange');
   let { route } = bucket;
   // SAFETY: Since `_qp` is protected we can't infer the type
   let qpMap = (get(route, '_qp') as Route['_qp']).map;
@@ -89,8 +79,6 @@ export function finalizeQueryParamChange(
   finalParams: {}[],
   transition: Transition
 ): boolean | void {
-  recordUse('classic:query-params');
-  recordUse('classic:query-params-finalize');
   let { route } = bucket;
   if (route.fullRouteName !== 'application') {
     return true;

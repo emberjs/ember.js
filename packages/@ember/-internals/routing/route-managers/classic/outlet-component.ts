@@ -30,8 +30,6 @@ import {
 import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
 
 import type { OutletState, RenderState } from '../outlet-state';
-// EXPERIMENT ONLY — see EXPERIMENT-CLASSIC-OUTLET-USAGE.md
-import { recordUse } from '../probe';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -159,8 +157,6 @@ class OutletComponentManager
     env: Environment,
     dynamicScope: DynamicScope | null
   ): OutletInstanceState {
-    recordUse('outlet:component-create');
-
     assert('Expected the outlet to be created with a dynamic scope', dynamicScope !== null);
 
     carryParentView(dynamicScope as ViewCarryingScope);
