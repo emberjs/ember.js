@@ -3,8 +3,17 @@ import Service, { service } from '@ember/service';
 import EmberObject, { get } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { setOwner } from '@ember/-internals/owner';
-import { runDestroy, buildOwner } from 'internal-test-helpers';
-import { moduleFor, ApplicationTestCase, AbstractTestCase, runTask } from 'internal-test-helpers';
+import {
+  runDestroy,
+  buildOwner,
+  expectDeprecation,
+  moduleFor,
+  ApplicationTestCase,
+  AbstractTestCase,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { action } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 
@@ -79,8 +88,16 @@ moduleFor(
 moduleFor(
   'Controller event handling',
   class extends AbstractTestCase {
-    ['@test Action can be handled by a function on actions object'](assert) {
-      assert.expect(1);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test Action can be handled by a function on actions object`](assert) {
+      assert.expect(2);
+
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
+
       let TestController = Controller.extend({
         actions: {
           poke() {
@@ -92,8 +109,16 @@ moduleFor(
       controller.send('poke');
     }
 
-    ['@test A handled action can be bubbled to the target for continued processing'](assert) {
-      assert.expect(2);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test A handled action can be bubbled to the target for continued processing`](assert) {
+      assert.expect(3);
+
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
+
       let owner = buildOwner();
 
       let TestController = Controller.extend({
@@ -124,8 +149,15 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ["@test Action can be handled by a superclass' actions object"](assert) {
-      assert.expect(4);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test Action can be handled by a superclass' actions object`](assert) {
+      assert.expect(5);
+
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
 
       let SuperController = Controller.extend({
         actions: {
@@ -161,7 +193,14 @@ moduleFor(
       controller.send('baz');
     }
 
-    ['@test .send asserts if called on a destroyed controller']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test .send asserts if called on a destroyed controller`]() {
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
+
       let owner = buildOwner();
 
       owner.register(

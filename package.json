@@ -4,7 +4,8 @@
   "description": "A JavaScript framework for creating ambitious web applications",
   "type": "module",
   "sideEffects": [
-    "./dist/*/packages/ember-testing/index.js"
+    "./dist/*/packages/ember-testing/index.js",
+    "./dist/*/packages/@ember/-internals/runtime/lib/ext/rsvp.js"
   ],
   "keywords": [
     "ember-addon"

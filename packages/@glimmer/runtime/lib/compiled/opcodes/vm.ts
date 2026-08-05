@@ -16,7 +16,6 @@ import {
   VM_FETCH_OP,
   VM_INVOKE_YIELD_OP,
   VM_JUMP_EQ_OP,
-  VM_JUMP_IF_OP,
   VM_JUMP_UNLESS_OP,
   VM_LOAD_OP,
   VM_POP_DYNAMIC_SCOPE_OP,
@@ -205,23 +204,6 @@ APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
   vm.pushScope(invokingScope);
 
   vm.call(handle);
-});
-
-APPEND_OPCODES.add(VM_JUMP_IF_OP, (vm, { op1: target }) => {
-  let reference = check(vm.stack.pop(), CheckReference);
-  let value = Boolean(valueForRef(reference));
-
-  if (isConstRef(reference)) {
-    if (value) {
-      vm.lowlevel.goto(target);
-    }
-  } else {
-    if (value) {
-      vm.lowlevel.goto(target);
-    }
-
-    vm.updateWith(new Assert(reference));
-  }
 });
 
 APPEND_OPCODES.add(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {

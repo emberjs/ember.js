@@ -469,9 +469,13 @@ class _LinkTo extends InternalComponent {
     if ('query' in this.args.named) {
       let query = this.named('query');
 
+      if (query === null || query === undefined) {
+        return EMPTY_QUERY_PARAMS;
+      }
+
       assert(
         'The `@query` argument to the <LinkTo> component must be an object.',
-        query !== null && typeof query === 'object'
+        typeof query === 'object'
       );
 
       return { ...query };

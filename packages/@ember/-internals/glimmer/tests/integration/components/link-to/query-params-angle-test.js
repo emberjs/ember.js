@@ -72,6 +72,48 @@ moduleFor(
         content: 'Index',
       });
     }
+
+    async ['@test it treats a nullish @query value as an empty query object']() {
+      this.add(
+        'controller:index',
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = '123';
+          maybeQuery = undefined;
+        }
+      );
+
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo @route='index' @query={{this.maybeQuery}}>Index</LinkTo>`)
+      );
+
+      await this.visit('/');
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/', class: classMatcher('ember-view active') },
+        content: 'Index',
+      });
+
+      let indexController = this.controllerFor('index');
+
+      runTask(() => indexController.set('maybeQuery', null));
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/', class: classMatcher('ember-view active') },
+        content: 'Index',
+      });
+
+      runTask(() => indexController.set('maybeQuery', { foo: '456' }));
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/?foo=456' },
+        content: 'Index',
+      });
+    }
   }
 );
 

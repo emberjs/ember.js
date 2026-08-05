@@ -346,7 +346,7 @@ class CoreObject {
     @method init
     @public
   */
-  init(_properties: object | undefined) {}
+  init(_properties?: object) {}
 
   /**
     Defines the properties that will be concatenated from the superclass

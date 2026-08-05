@@ -7,6 +7,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import computed from '@ember/-internals/metal/lib/computed';
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import { DEBUG } from '@glimmer/env';
 
 /**
@@ -104,11 +105,17 @@ const TargetActionSupport = Mixin.create({
   ```
 
   @method triggerAction
+  @deprecated Use a direct method call or closure action instead.
   @param opts {Object} (optional, with the optional keys action, target and/or actionContext)
   @return {Boolean} true if the action was sent successfully and did not return false
   @private
   */
   triggerAction(opts: { action?: string; target?: unknown; actionContext?: unknown } = {}) {
+    deprecateUntil(
+      `Calling \`triggerAction\` on ${this} is deprecated. Invoke the target method directly.`,
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT
+    );
+
     let { action, target, actionContext } = opts;
     action = action || get(this, 'action');
     target = target || getTarget(this);
