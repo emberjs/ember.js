@@ -11,7 +11,7 @@ import { getOwner } from '@ember/-internals/owner';
 import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
-import OutletTemplate from './outlet-template';
+import { precompileTemplate } from '@ember/template-compilation';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef } from '@glimmer/reference/lib/reference';
 import { OutletComponent } from './outlet-component';
@@ -353,6 +353,15 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     return bucket.route.buildRouteInfoMetadata();
   }
 }
+
+/**
+ *  Passthrough for a route with no template of its own.
+ *  This is the auto-generated template
+ */
+const OutletTemplate = precompileTemplate(`<@outlet />`, {
+  moduleName: 'packages/@ember/-internals/routing/route-managers/classic/manager.hbs',
+  strictMode: true,
+});
 
 // Build or return cached invokable for a classic route: look up `template:<name>`,
 // upgrade a TemplateFactory into a Template, then wrap as a RouteTemplate. If the

@@ -1,4 +1,4 @@
-/** Root mount point; anchors the outlet walk. */
+/** The top-level that boots your 'application' route */
 
 import type {
   CustomRenderNode,
@@ -17,6 +17,7 @@ import type { OutletParent, OutletState } from './outlet-state';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 
+// `this` == <@outlet />; returned by `getSelf`
 const ROOT_OUTLET_TEMPLATE = precompileTemplate('{{this}}', {
   moduleName: 'packages/@ember/-internals/routing/route-managers/root-outlet.hbs',
   strictMode: true,

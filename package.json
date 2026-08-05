@@ -195,7 +195,6 @@
       "@ember/-internals/routing/route-managers/classic/bucket.js": "ember-source/@ember/-internals/routing/route-managers/classic/bucket.js",
       "@ember/-internals/routing/route-managers/classic/manager.js": "ember-source/@ember/-internals/routing/route-managers/classic/manager.js",
       "@ember/-internals/routing/route-managers/classic/outlet-component.js": "ember-source/@ember/-internals/routing/route-managers/classic/outlet-component.js",
-      "@ember/-internals/routing/route-managers/classic/outlet-template.js": "ember-source/@ember/-internals/routing/route-managers/classic/outlet-template.js",
       "@ember/-internals/routing/route-managers/classic/query-params.js": "ember-source/@ember/-internals/routing/route-managers/classic/query-params.js",
       "@ember/-internals/routing/route-managers/classic/substates.js": "ember-source/@ember/-internals/routing/route-managers/classic/substates.js",
       "@ember/-internals/routing/route-managers/registry.js": "ember-source/@ember/-internals/routing/route-managers/registry.js",

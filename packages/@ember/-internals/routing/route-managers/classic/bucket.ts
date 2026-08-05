@@ -12,7 +12,6 @@ export class ClassicRenderState {
 
   constructor(readonly bucket: ClassicRouteBucket) {}
 
-  // Both invariant for the life of a bucket.
   get owner(): InternalOwner {
     let owner = getOwner(this.bucket.route);
     assert('Route is unexpectedly missing an owner', owner);
@@ -37,7 +36,6 @@ export class ClassicRouteBucket {
     return this.route.controller;
   }
 
-  // Getter for the same staleness reason.
   get context(): unknown {
     return this.route.currentModel;
   }
