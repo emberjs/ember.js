@@ -29,8 +29,6 @@ import {
 import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
 
 import type { ClassicRenderState } from './bucket';
-import { ClassicRoute } from '../../../../../router_js/lib/route-info';
-import { ClassicRouteManager } from './manager';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -250,16 +248,12 @@ const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
 export class OutletComponent implements OutletDefinitionState {
   /** Nothing to render until the invokable resolves. */
-  static forLevel(
-    render: ClassicRenderState,
-    childOutlet: Reference,
-    manager: ClassicRouteManager
-  ): OutletComponent | null {
+  static forLevel(render: ClassicRenderState, childOutlet: Reference): OutletComponent | null {
     if (render.invokable === undefined) {
       return null;
     }
 
-    return new OutletComponent(render, childOutlet, manager);
+    return new OutletComponent(render, childOutlet);
   }
 
   readonly owner: InternalOwner;
@@ -268,8 +262,7 @@ export class OutletComponent implements OutletDefinitionState {
 
   private constructor(
     private readonly render: ClassicRenderState,
-    readonly childOutlet: Reference,
-    private readonly manager: ClassicRouteManager
+    readonly childOutlet: Reference
   ) {
     this.owner = render.owner;
 
@@ -284,11 +277,11 @@ export class OutletComponent implements OutletDefinitionState {
   private componentRefFor(): Reference {
     let last = this.render.invokable!;
 
-    return createComputeRef(() => (last = this.render.consume().invokable ?? last));
+    return createComputeRef(() => (last = this.render.invokable ?? last));
   }
 
   private contextRefFor(): Reference {
-    return createComputeRef(() => this.manager.getRenderContext?.(this.render.consume().bucket));
+    return createComputeRef(() => this.render.context);
   }
 
   get name(): string {

@@ -1,30 +1,26 @@
 import type Controller from '@ember/controller';
+import { getOwner } from '@ember/-internals/owner';
 import type { InternalOwner } from '@ember/-internals/owner';
+import { assert } from '@ember/debug';
+import { tracked } from '@ember/-internals/metal/lib/tracked';
 import type Route from '@ember/routing/route';
 import type { scheduleOnce } from '@ember/runloop';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 
 export class ClassicRenderState {
-  #tag = createTag();
-
-  declare owner: InternalOwner;
-  name = '';
-  invokable: object | undefined = undefined;
+  @tracked invokable: object | undefined = undefined;
+  @tracked context: unknown = undefined;
 
   constructor(readonly bucket: ClassicRouteBucket) {}
 
-  consume(): this {
-    consumeTag(this.#tag);
-    return this;
+  // Both invariant for the life of a bucket.
+  get owner(): InternalOwner {
+    let owner = getOwner(this.bucket.route);
+    assert('Route is unexpectedly missing an owner', owner);
+    return owner;
   }
 
-  update(owner: InternalOwner, name: string, invokable: object | undefined): this {
-    this.owner = owner;
-    this.name = name;
-    this.invokable = invokable;
-    dirtyTag(this.#tag);
-    return this;
+  get name(): string {
+    return this.bucket.route.routeName;
   }
 }
 

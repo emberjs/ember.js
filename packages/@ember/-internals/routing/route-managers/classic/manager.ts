@@ -88,12 +88,12 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   getRenderState(bucket: ClassicRouteBucket) {
-    const route = bucket.route;
+    const render = bucket.render;
 
-    let owner = getOwner(route);
-    assert('Route is unexpectedly missing an owner', owner);
+    render.invokable = buildClassicInvokable(bucket);
+    render.context = bucket.context;
 
-    return bucket.render.update(owner, route.routeName, buildClassicInvokable(bucket));
+    return render;
   }
 
   getRenderContext(bucket: ClassicRouteBucket): unknown {
@@ -101,7 +101,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   getRouteWrapper(bucket: ClassicRouteBucket, childOutlet: Reference): object | null {
-    return OutletComponent.forLevel(bucket.render, childOutlet, this);
+    return OutletComponent.forLevel(bucket.render, childOutlet);
   }
 
   willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {
