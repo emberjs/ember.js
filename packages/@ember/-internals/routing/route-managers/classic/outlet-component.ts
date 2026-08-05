@@ -71,7 +71,7 @@ const CLASSIC_TEMPLATE = precompileTemplate(
   }
 );
 
-function instrumentationPayload(def: OutletDefinitionState) {
+function instrumentationPayload(def: { name: string }) {
   // legacy outlet name
   return { object: `${def.name}:main` };
 }
@@ -83,12 +83,6 @@ interface OutletInstanceState {
     mountPoint: string;
   };
   finalize: () => void;
-}
-
-export interface OutletDefinitionState {
-  name: string;
-  invokable?: object;
-  bucket?: object;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
@@ -246,7 +240,7 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
-export class OutletComponent implements OutletDefinitionState {
+export class OutletComponent {
   readonly owner: InternalOwner;
   readonly context: Reference;
   readonly component: Reference;
@@ -264,11 +258,9 @@ export class OutletComponent implements OutletDefinitionState {
     this.component = DEBUG ? createDebugAliasRef!('@Component', component) : component;
   }
 
-  /** Frozen if the level ever stops resolving. */
+  // Cached on the bucket, so constant for this level.
   private componentRefFor(): Reference {
-    let last = this.render.invokable!;
-
-    return createComputeRef(() => (last = this.render.invokable ?? last));
+    return createConstRef(this.render.invokable, '@Component');
   }
 
   private contextRefFor(): Reference {
@@ -277,10 +269,6 @@ export class OutletComponent implements OutletDefinitionState {
 
   get name(): string {
     return this.render.name;
-  }
-
-  get invokable(): object | undefined {
-    return this.render.invokable;
   }
 
   get bucket(): object {

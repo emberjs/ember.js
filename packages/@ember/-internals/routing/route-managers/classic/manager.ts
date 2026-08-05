@@ -96,10 +96,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     return render;
   }
 
-  getRenderContext(bucket: ClassicRouteBucket): unknown {
-    return bucket.context;
-  }
-
   getRouteWrapper(bucket: ClassicRouteBucket, childOutlet: Reference): object | null {
     const render = bucket.render;
 

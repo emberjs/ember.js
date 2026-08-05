@@ -7,7 +7,6 @@ import type {
   WithCreateInstance,
   WithCustomDebugRenderTree,
 } from '@glimmer/interfaces';
-import type { InternalOwner } from '@ember/-internals/owner';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createComputeRef, createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
@@ -82,8 +81,8 @@ class RootOutletManager
 export class RootOutlet {
   readonly self: Reference;
 
-  constructor(state: UpdatableOutletRootState, owner: InternalOwner) {
-    this.self = childOutletRefFor(createConstRef(state.state, '-top-level'), owner);
+  constructor(state: UpdatableOutletRootState) {
+    this.self = childOutletRefFor(createConstRef(state.state, '-top-level'));
   }
 }
 
@@ -119,10 +118,7 @@ export function createRootOutletState(initial: OutletState): UpdatableOutletRoot
 const managerOutlets = new WeakMap<object, object>();
 
 /** One outlet level, or `null`. */
-function outletFor(
-  outletRef: Reference<OutletState | undefined>,
-  callerOwner: InternalOwner
-): object | null {
+function outletFor(outletRef: Reference<OutletState | undefined>): object | null {
   let state = valueForRef(outletRef);
 
   if (state === undefined) {
@@ -130,10 +126,6 @@ function outletFor(
   }
 
   let { render, manager } = state;
-
-  if (render === undefined || manager === undefined) {
-    return null;
-  }
 
   // Asserted in `_setOutlets`.
   let bucket = render.bucket;
@@ -148,7 +140,7 @@ function outletFor(
     return outlet;
   }
 
-  let childOutlet = childOutletRefFor(outletRef, callerOwner);
+  let childOutlet = childOutletRefFor(outletRef);
 
   let provided = manager.getRouteWrapper(bucket, childOutlet);
 
@@ -162,13 +154,10 @@ function outletFor(
   return provided;
 }
 
-function childOutletRefFor(
-  parentRef: Reference<OutletParent | undefined>,
-  owner: InternalOwner
-): Reference {
+function childOutletRefFor(parentRef: Reference<OutletParent | undefined>): Reference {
   let outletRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
 
-  let ref = createComputeRef(() => outletFor(outletRef, owner));
+  let ref = createComputeRef(() => outletFor(outletRef));
 
   if (DEBUG) {
     // A truthy label shadows `getDebugName()`.

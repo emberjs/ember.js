@@ -340,9 +340,6 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
    */
   getInvokable(bucket: Bucket, enterPromise?: Promise<unknown>): Promise<object | undefined>;
 
-  /** The `@context` the outlet renders with. */
-  getRenderContext?(bucket: Bucket): unknown;
-
   /** Describes what this route renders. */
   getRenderState(bucket: Bucket): RenderStateLike;
 }

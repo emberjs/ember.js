@@ -47,16 +47,13 @@ export interface OutletState extends OutletParent {
   /**
    * Represents what was rendered into this outlet.
    */
-  render: RenderState | undefined;
+  render: RenderState;
 
   /**
    * The manager that produced `render`.
    */
-  manager:
-    | {
-        getRenderContext?(bucket: object): unknown;
-        /** `null` until this level has something to render. */
-        getRouteWrapper(bucket: object, childOutlet: Reference): object | null;
-      }
-    | undefined;
+  manager: {
+    /** `null` until this level has something to render. */
+    getRouteWrapper(bucket: object, childOutlet: Reference): object | null;
+  };
 }
