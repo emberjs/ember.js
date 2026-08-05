@@ -496,6 +496,113 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         'sibling-transitions.funky-child': COMPONENTS.SiblingTransitionsFunkyChild,
       `,
     },
+    {
+      routerMap: `
+        this.route('funky-reentry', { path: '/funky-reentry/:thing_id' });
+      `,
+      routes: {
+        'funky-reentry.js': `
+          import FunkyRoute from '${appName}/routes/funky';
+
+          export default class extends FunkyRoute {
+            model(params) {
+              return params.thing_id;
+            }
+          }
+        `,
+      },
+      routeComponent: createRouteComponent(
+        'FunkyReentry',
+        `<div data-test-funky-route="funky-reentry">
+          funky reentry
+          <span data-test-route-model>{{@model}}</span>
+        </div>`
+      ),
+      managerInvokableMap: `
+        'funky-reentry': COMPONENTS.FunkyReentry,
+      `,
+    },
+    {
+      routerMap: `
+        this.route('reactive-context', function () {
+          this.route('child');
+        });
+      `,
+      routes: {
+        'reactive-context.js': `
+          import ReactiveRoute from '${appName}/routes/reactive';
+
+          let resolve;
+          export function resolveModel(value) {
+            resolve(value);
+          }
+
+          export default class extends ReactiveRoute {
+            model() {
+              return new Promise((r) => (resolve = r));
+            }
+          }
+        `,
+        'reactive-context': {
+          'child.js': `
+            import ReactiveRoute from '${appName}/routes/reactive';
+
+            let resolve;
+            export function resolveModel(value) {
+              resolve(value);
+            }
+
+            export default class extends ReactiveRoute {
+              model() {
+                return new Promise((r) => (resolve = r));
+              }
+            }
+          `,
+        },
+      },
+      routeComponent:
+        createRouteComponent(
+          'ReactiveContextParent',
+          `<div data-test-reactive-route="reactive-context">
+            <span data-test-route-model>{{@context}}</span>
+            <div data-test-outlet-boundary>{{outlet}}</div>
+          </div>`
+        ) +
+        createRouteComponent(
+          'ReactiveContextChild',
+          `<div data-test-reactive-route="reactive-context.child">
+            <span data-test-route-model>{{@context}}</span>
+          </div>`
+        ),
+      managerInvokableMap: `
+        'reactive-context': COMPONENTS.ReactiveContextParent,
+        'reactive-context.child': COMPONENTS.ReactiveContextChild,
+      `,
+    },
+    {
+      routerMap: `
+        this.route('swap-invokable');
+      `,
+      routes: {
+        'swap-invokable.js': `
+          import SwapRoute from '${appName}/routes/swap';
+
+          export default class extends SwapRoute {}
+        `,
+      },
+      routeComponent:
+        createRouteComponent(
+          'SwapInvokableLoading',
+          `<div data-test-swap-invokable="loading">swap loading</div>`
+        ) +
+        createRouteComponent(
+          'SwapInvokableReady',
+          `<div data-test-swap-invokable="ready">swap ready</div>`
+        ),
+      managerInvokableMap: `
+        'swap-invokable': COMPONENTS.SwapInvokableReady,
+      `,
+    },
   ];
 
   const ROUTER_MAP = ROUTE_FIXTURES.map((fixture) => fixture.routerMap).join('\n');
@@ -621,12 +728,30 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
             `,
           },
           components: {
-            'funky-route-wrapper.gjs': `
+            'funky-outlet.gjs': `
               import Component from '@glimmer/component';
               import { tracked } from '@glimmer/tracking';
               import { on } from '@ember/modifier';
+              import {
+                getComponentTemplate,
+                setComponentTemplate,
+                setInternalComponentManager,
+              } from '@glimmer/manager';
+              import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
 
-              export default class FunkyRouteWrapper extends Component {
+              // \`model\` is tracked; no render-state plumbing.
+              export class FunkyBucket {
+                @tracked model;
+
+                constructor(name, route, invokable) {
+                  this.name = name;
+                  this.route = route;
+                  this.invokable = invokable;
+                }
+              }
+
+              // Component lifetime re-closes the gate.
+              class FunkyGate extends Component {
                 @tracked shouldRender = false;
 
                 renderRoute = () => {
@@ -635,9 +760,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
                 <template>
                   {{#if this.shouldRender}}
-                    {{!--@TODO the 'outlet' should be transparent to manager outlet --}}
-                    <@Component @model={{@context}} @outlet={{@outlet}} />
-                    {{log "funky" @outlet}}
+                    <@bucket.invokable @model={{@bucket.model}} @outlet={{@outlet}} />
                   {{else}}
                     <button
                       type="button"
@@ -649,14 +772,363 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   {{/if}}
                 </template>
               }
+
+              const LAYOUT = <template>
+                <FunkyGate @bucket={{@bucket}} @outlet={{@outlet}} />
+              </template>;
+
+              // What \`getRouteWrapper\` returns.
+              export class FunkyOutlet {
+                constructor(bucket, childOutlet) {
+                  this.bucket = bucket;
+                  this.childOutlet = childOutlet;
+                }
+              }
+
+              setInternalComponentManager(
+                {
+                  getCapabilities() {
+                    return {
+                      dynamicLayout: false,
+                      dynamicTag: false,
+                      // Supplies args; discards a parent's.
+                      prepareArgs: true,
+                      createArgs: false,
+                      attributeHook: false,
+                      elementHook: false,
+                      createCaller: false,
+                      dynamicScope: false,
+                      updateHook: false,
+                      createInstance: false,
+                      wrapped: false,
+                      willDestroy: false,
+                      hasSubOwner: false,
+                    };
+                  },
+
+                  prepareArgs(definition) {
+                    return {
+                      positional: [],
+                      named: {
+                        bucket: createConstRef(definition.bucket, '@bucket'),
+                        outlet: definition.childOutlet,
+                      },
+                    };
+                  },
+
+                  getDebugName(definition) {
+                    return \`funky outlet for \${definition.bucket.name}\`;
+                  },
+
+                  getSelf() {
+                    return NULL_REFERENCE;
+                  },
+
+                  getDestroyable() {
+                    return null;
+                  },
+                },
+                FunkyOutlet.prototype
+              );
+
+              setComponentTemplate(getComponentTemplate(LAYOUT), FunkyOutlet.prototype);
+            `,
+            'swap-outlet.gjs': `
+              import {
+                getComponentTemplate,
+                setComponentTemplate,
+                setInternalComponentManager,
+              } from '@glimmer/manager';
+              import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
+              import { SwapInvokableLoading } from '${appName}/components/funky-route-components';
+
+              // \`ready\` is tracked; no _setOutlets pass.
+              const LAYOUT = <template>
+                {{#if @bucket.ready}}
+                  <@bucket.invokable @outlet={{@outlet}} />
+                {{else}}
+                  <SwapInvokableLoading @outlet={{@outlet}} />
+                {{/if}}
+              </template>;
+
+              export class SwapOutlet {
+                constructor(bucket, childOutlet) {
+                  this.bucket = bucket;
+                  this.childOutlet = childOutlet;
+                }
+              }
+
+              setInternalComponentManager(
+                {
+                  getCapabilities() {
+                    return {
+                      dynamicLayout: false,
+                      dynamicTag: false,
+                      prepareArgs: true,
+                      createArgs: false,
+                      attributeHook: false,
+                      elementHook: false,
+                      createCaller: false,
+                      dynamicScope: false,
+                      updateHook: false,
+                      createInstance: false,
+                      wrapped: false,
+                      willDestroy: false,
+                      hasSubOwner: false,
+                    };
+                  },
+
+                  prepareArgs(definition) {
+                    return {
+                      positional: [],
+                      named: {
+                        bucket: createConstRef(definition.bucket, '@bucket'),
+                        outlet: definition.childOutlet,
+                      },
+                    };
+                  },
+
+                  getDebugName(definition) {
+                    return \`swap outlet for \${definition.bucket.name}\`;
+                  },
+
+                  getSelf() {
+                    return NULL_REFERENCE;
+                  },
+
+                  getDestroyable() {
+                    return null;
+                  },
+                },
+                SwapOutlet.prototype
+              );
+
+              setComponentTemplate(getComponentTemplate(LAYOUT), SwapOutlet.prototype);
+            `,
+            'reactive-outlet.gjs': `
+              import {
+                getComponentTemplate,
+                setComponentTemplate,
+                setInternalComponentManager,
+              } from '@glimmer/manager';
+              import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
+
+              // \`context\` is tracked; late models land.
+              const LAYOUT = <template>
+                <@bucket.invokable @context={{@bucket.context}} @outlet={{@outlet}} />
+              </template>;
+
+              export class ReactiveOutlet {
+                constructor(bucket, childOutlet) {
+                  this.bucket = bucket;
+                  this.childOutlet = childOutlet;
+                }
+              }
+
+              setInternalComponentManager(
+                {
+                  getCapabilities() {
+                    return {
+                      dynamicLayout: false,
+                      dynamicTag: false,
+                      prepareArgs: true,
+                      createArgs: false,
+                      attributeHook: false,
+                      elementHook: false,
+                      createCaller: false,
+                      dynamicScope: false,
+                      updateHook: false,
+                      createInstance: false,
+                      wrapped: false,
+                      willDestroy: false,
+                      hasSubOwner: false,
+                    };
+                  },
+
+                  prepareArgs(definition) {
+                    return {
+                      positional: [],
+                      named: {
+                        bucket: createConstRef(definition.bucket, '@bucket'),
+                        outlet: definition.childOutlet,
+                      },
+                    };
+                  },
+
+                  getDebugName(definition) {
+                    return \`reactive outlet for \${definition.bucket.name}\`;
+                  },
+
+                  getSelf() {
+                    return NULL_REFERENCE;
+                  },
+
+                  getDestroyable() {
+                    return null;
+                  },
+                },
+                ReactiveOutlet.prototype
+              );
+
+              setComponentTemplate(getComponentTemplate(LAYOUT), ReactiveOutlet.prototype);
             `,
             'funky-route-components.gjs': ROUTE_COMPONENTS,
           },
           'route-managers': {
+            'swap.js': `
+              import { routeCapabilities } from '@ember/routing';
+              import { tracked } from '@glimmer/tracking';
+
+              import { SwapOutlet } from '${appName}/components/swap-outlet';
+              import * as COMPONENTS from '${appName}/components/funky-route-components';
+
+              const ROUTES = {
+                ${MANAGER_INVOKABLE_MAP}
+              };
+
+              const BUCKETS = new Map();
+              let renderStateCalls = 0;
+
+              export function renderStateCallCount() {
+                return renderStateCalls;
+              }
+
+              export function finishLoading(name) {
+                BUCKETS.get(name).ready = true;
+              }
+
+              class SwapBucket {
+                @tracked ready = false;
+
+                constructor(name, route, invokable) {
+                  this.name = name;
+                  this.route = route;
+                  this.invokable = invokable;
+                }
+              }
+
+              export default class SwapRouteManager {
+                capabilities = routeCapabilities('1.0');
+
+                constructor(owner) {
+                  this.owner = owner;
+                }
+
+                createRoute(RouteClass, { name }) {
+                  let bucket = new SwapBucket(name, new RouteClass(this.owner), ROUTES[name]);
+                  BUCKETS.set(name, bucket);
+                  return bucket;
+                }
+
+                getRoute(bucket) {
+                  return bucket.route;
+                }
+
+                getDestroyable() {
+                  return null;
+                }
+
+                getRouteWrapper(bucket, childOutlet) {
+                  return new SwapOutlet(bucket, childOutlet);
+                }
+
+                getRenderState(bucket) {
+                  renderStateCalls++;
+
+                  return {
+                    owner: this.owner,
+                    name: bucket.name,
+                    invokable: bucket.invokable,
+                    bucket,
+                  };
+                }
+
+                willEnter() {}
+                async enter() {}
+                didEnter() {}
+                willExit() {}
+                exit() {}
+                didExit() {}
+
+                async getInvokable(bucket) {
+                  return bucket.invokable;
+                }
+              }
+            `,
+            'reactive.js': `
+              import { routeCapabilities } from '@ember/routing';
+              import { tracked } from '@glimmer/tracking';
+
+              import { ReactiveOutlet } from '${appName}/components/reactive-outlet';
+              import * as COMPONENTS from '${appName}/components/funky-route-components';
+
+              const ROUTES = {
+                ${MANAGER_INVOKABLE_MAP}
+              };
+
+              class ReactiveBucket {
+                @tracked context = undefined;
+
+                constructor(name, route, invokable) {
+                  this.name = name;
+                  this.route = route;
+                  this.invokable = invokable;
+                }
+              }
+
+              export default class ReactiveRouteManager {
+                capabilities = routeCapabilities('1.0');
+
+                constructor(owner) {
+                  this.owner = owner;
+                }
+
+                createRoute(RouteClass, { name }) {
+                  return new ReactiveBucket(name, new RouteClass(this.owner), ROUTES[name]);
+                }
+
+                getRoute(bucket) {
+                  return bucket.route;
+                }
+
+                getDestroyable() {
+                  return null;
+                }
+
+                getRouteWrapper(bucket, childOutlet) {
+                  return new ReactiveOutlet(bucket, childOutlet);
+                }
+
+                getRenderState(bucket) {
+                  return {
+                    owner: this.owner,
+                    name: bucket.name,
+                    invokable: bucket.invokable,
+                    bucket,
+                  };
+                }
+
+                willEnter() {}
+
+                async enter(bucket) {
+                  bucket.route.model().then((value) => {
+                    bucket.context = value;
+                  });
+                }
+
+                didEnter() {}
+                willExit() {}
+                exit() {}
+                didExit() {}
+
+                async getInvokable(bucket) {
+                  return bucket.invokable;
+                }
+              }
+            `,
             'funky.js': `
               import { routeCapabilities } from '@ember/routing';
-              import { createConstRef } from '@glimmer/reference';
-              import FunkyRouteWrapper from '${appName}/components/funky-route-wrapper';
+              import { FunkyBucket, FunkyOutlet } from '${appName}/components/funky-outlet';
               import * as COMPONENTS from '${appName}/components/funky-route-components';
 
               const ROUTES = {
@@ -671,11 +1143,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 }
 
                 createRoute(RouteClass, { name }) {
-                  return {
-                    name,
-                    route: new RouteClass(this.owner),
-                    invokable: ROUTES[name],
-                  };
+                  return new FunkyBucket(name, new RouteClass(this.owner), ROUTES[name]);
                 }
 
                 getRoute(bucket) {
@@ -686,29 +1154,24 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getRouteWrapper() {
-                  return FunkyRouteWrapper;
+                getRouteWrapper(bucket, childOutlet) {
+                  return new FunkyOutlet(bucket, childOutlet);
                 }
 
                 getRenderState(bucket) {
                   return {
                     owner: this.owner,
                     name: bucket.name,
-                    controller: undefined,
-                    model: bucket.model,
-                    wrapper: this.getRouteWrapper(),
                     invokable: bucket.invokable,
                     bucket,
-                    produceContext() {
-                      return createConstRef(bucket.model, '@context');
-                    },
                   };
                 }
 
                 willEnter() {}
 
-                async enter(bucket) {
-                  let model = await bucket.route.model?.();
+                async enter(bucket, state) {
+                  let info = state.to.find((i) => i.name === bucket.name) ?? state.to;
+                  let model = await bucket.route.model?.(info.params);
                   bucket.model = model;
                   return model;
                 }
@@ -739,6 +1202,32 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
               setRouteManager((owner) => new FunkyRouteManager(owner), FunkyRoute);
             `,
+            'reactive.js': `
+              import { setOwner } from '@ember/owner';
+              import { setRouteManager } from '@ember/routing';
+              import ReactiveRouteManager from '${appName}/route-managers/reactive';
+
+              export default class ReactiveRoute {
+                constructor(owner) {
+                  setOwner(this, owner);
+                }
+              }
+
+              setRouteManager((owner) => new ReactiveRouteManager(owner), ReactiveRoute);
+            `,
+            'swap.js': `
+              import { setOwner } from '@ember/owner';
+              import { setRouteManager } from '@ember/routing';
+              import SwapRouteManager from '${appName}/route-managers/swap';
+
+              export default class SwapRoute {
+                constructor(owner) {
+                  setOwner(this, owner);
+                }
+              }
+
+              setRouteManager((owner) => new SwapRouteManager(owner), SwapRoute);
+            `,
             ...ROUTE_FILES,
           },
           templates: {
@@ -750,8 +1239,14 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           acceptance: {
             'route-managers-test.js': `
               import { module, test } from 'qunit';
-              import { click, findAll, visit } from '@ember/test-helpers';
+              import { click, findAll, settled, visit } from '@ember/test-helpers';
               import { setupApplicationTest } from '${appName}/tests/helpers';
+              import { resolveModel as resolveParentModel } from '${appName}/routes/reactive-context';
+              import { resolveModel as resolveChildModel } from '${appName}/routes/reactive-context/child';
+              import {
+                finishLoading as finishSwapLoading,
+                renderStateCallCount,
+              } from '${appName}/route-managers/swap';
 
               const CLASSIC_ROUTE_SELECTOR = '[data-test-classic-route]';
               const FUNKY_ROUTE_SELECTOR = '[data-test-funky-route]';
@@ -939,6 +1434,59 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     'funky-to-classic-to-funky.child.grandchild',
                     '3'
                   );
+                });
+
+                test('a manager whose context arrives after the transition settles still renders it', async function (assert) {
+                  await visit('/reactive-context/child');
+
+                  assert
+                    .dom('[data-test-reactive-route="reactive-context"] > [data-test-route-model]')
+                    .hasText('');
+                  assert
+                    .dom('[data-test-reactive-route="reactive-context.child"] > [data-test-route-model]')
+                    .hasText('');
+
+                  resolveParentModel('PARENT-CTX');
+                  resolveChildModel('CHILD-CTX');
+                  await settled();
+
+                  assert
+                    .dom('[data-test-reactive-route="reactive-context"] > [data-test-route-model]')
+                    .hasText('PARENT-CTX');
+                  assert
+                    .dom('[data-test-reactive-route="reactive-context.child"] > [data-test-route-model]')
+                    .hasText('CHILD-CTX');
+                });
+
+                test('a manager swaps what is rendered from tracked state, with no router pass', async function (assert) {
+                  await visit('/swap-invokable');
+
+                  assert.dom('[data-test-swap-invokable="loading"]').exists();
+                  assert.dom('[data-test-swap-invokable="ready"]').doesNotExist();
+
+                  let passesBefore = renderStateCallCount();
+
+                  finishSwapLoading('swap-invokable');
+                  await settled();
+
+                  assert.strictEqual(
+                    renderStateCallCount(),
+                    passesBefore,
+                    'the swap happened without a _setOutlets pass'
+                  );
+                  assert.dom('[data-test-swap-invokable="loading"]').doesNotExist();
+                  assert.dom('[data-test-swap-invokable="ready"]').exists();
+                });
+
+                test('re-entering a route with a changed model updates @context', async function (assert) {
+                  await visit('/funky-reentry/alpha');
+                  await openFunkyRoute(assert, 'funky-reentry');
+                  assertFunkyRoute(assert, 0, 'funky-reentry', 'alpha');
+
+                  await visit('/funky-reentry/beta');
+
+                  assert.dom(GATE_SELECTOR).doesNotExist();
+                  assertFunkyRoute(assert, 0, 'funky-reentry', 'beta');
                 });
               });
             `,

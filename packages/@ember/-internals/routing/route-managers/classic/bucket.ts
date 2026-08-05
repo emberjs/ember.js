@@ -1,6 +1,27 @@
 import type Controller from '@ember/controller';
+import { getOwner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
+import { assert } from '@ember/debug';
+import { tracked } from '@ember/-internals/metal/lib/tracked';
 import type Route from '@ember/routing/route';
 import type { scheduleOnce } from '@ember/runloop';
+
+export class ClassicRenderState {
+  @tracked invokable: object | undefined = undefined;
+  @tracked context: unknown = undefined;
+
+  constructor(readonly bucket: ClassicRouteBucket) {}
+
+  get owner(): InternalOwner {
+    let owner = getOwner(this.bucket.route);
+    assert('Route is unexpectedly missing an owner', owner);
+    return owner;
+  }
+
+  get name(): string {
+    return this.bucket.route.routeName;
+  }
+}
 
 export class ClassicRouteBucket {
   // Cached invokable, written by buildClassicInvokable on first build.
@@ -15,10 +36,16 @@ export class ClassicRouteBucket {
     return this.route.controller;
   }
 
+  get context(): unknown {
+    return this.route.currentModel;
+  }
+
   // Runloop timer for the pending loading-event dispatch scheduled during
   // willEnter. Per-bucket so concurrent routes track their own timers and
   // didEnter can cancel the right one.
   loadingSubstateTimer: ReturnType<typeof scheduleOnce> | null = null;
+
+  readonly render = new ClassicRenderState(this);
 
   constructor(public route: Route) {}
 }

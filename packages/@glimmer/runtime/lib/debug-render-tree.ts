@@ -202,5 +202,13 @@ export function getDebugName(
   definition: ComponentDefinition,
   manager = definition.manager
 ): string {
-  return definition.resolvedName ?? definition.debugName ?? manager.getDebugName(definition.state);
+  if (definition.resolvedName != null) return definition.resolvedName;
+
+  // An empty name is a manager declining to appear in the render stack (falsy
+  // names are dropped by `logTrackingStack`). Otherwise `debugName` wins, as
+  // it always has.
+  const managerName = manager.getDebugName(definition.state);
+  if (managerName === '') return '';
+
+  return definition.debugName ?? managerName;
 }

@@ -11,15 +11,10 @@ import { getOwner } from '@ember/-internals/owner';
 import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
-import type { OutletDefinitionState } from './outlet-manager';
-import OutletTemplate from './outlet-template';
+import { precompileTemplate } from '@ember/template-compilation';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import {
-  childRefFromParts,
-  createComputeRef,
-  createConstRef,
-  valueForRef,
-} from '@glimmer/reference/lib/reference';
+import { createConstRef } from '@glimmer/reference/lib/reference';
+import { OutletComponent } from './outlet-component';
 import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
 import type { InternalRouteInfo, BaseRoute as IRoute, RouteInfo, Transition } from 'router_js';
@@ -49,7 +44,6 @@ import {
   enterLoadingSubstate as enterClassicLoadingSubstate,
   fireLoadingEvent,
 } from './substates';
-import { CLASSIC_ROUTE_WRAPPER } from './wrapper';
 
 type TransitionLike = Transition & {
   isAborted?: boolean;
@@ -94,25 +88,23 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   getRenderState(bucket: ClassicRouteBucket) {
-    const route = bucket.route;
+    const render = bucket.render;
 
-    let owner = getOwner(route);
-    assert('Route is unexpectedly missing an owner', owner);
+    render.invokable = buildClassicInvokable(bucket);
+    render.context = bucket.context;
 
-    return {
-      owner,
-      name: route.routeName,
-      controller: route.controller,
-      model: route.currentModel,
-      wrapper: this.getRouteWrapper(),
-      invokable: buildClassicInvokable(bucket),
-      bucket,
-      produceContext: classicProduceContext,
-    };
+    return render;
+  }
+
+  getRouteWrapper(bucket: ClassicRouteBucket, childOutlet: Reference): object | null {
+    const render = bucket.render;
+
+    // Nothing to render until the invokable resolves.
+    return render.invokable === undefined ? null : new OutletComponent(render, childOutlet);
   }
 
   willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {
-    // Ensure the controller exists (idempotent) so the outlet can curry
+    // Ensure the controller exists (idempotent) so the wrapper can forward
     // @controller as soon as the route renders.
     bucket.route._initController();
 
@@ -222,13 +214,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 
   didExit(_bucket: ClassicRouteBucket, _state: ClassicDidExitState): void {
     // No-op for classic routes.
-  }
-
-  getRouteWrapper(): object {
-    // Module-stable, per the RFC: the outlet supplies `@Component` (the
-    // invokable), `@context`, and `@bucket` at render time, and keys its
-    // stability check on the per-bucket invokable.
-    return CLASSIC_ROUTE_WRAPPER;
   }
 
   getInvokable(
@@ -369,26 +354,14 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 }
 
-// Builds the classic `@context` reference for an outlet: the live model
-// The function is a bridge between glimmer-land {{outlet}} and manager.
-// The goal is to keep glimmer agnostic of route internals.
-function classicProduceContext(
-  outletRef: Reference,
-  lastState: OutletDefinitionState,
-  state: OutletDefinitionState
-): Reference {
-  let modelRef = childRefFromParts(outletRef, ['render', 'model']);
-  let controllerRef = childRefFromParts(outletRef, ['render', 'controller']);
-  let outletController = state.controller;
-  let model = valueForRef(modelRef);
-
-  return createComputeRef(() => {
-    if (lastState === state && valueForRef(controllerRef) === outletController) {
-      model = valueForRef(modelRef);
-    }
-    return model;
-  });
-}
+/**
+ *  Passthrough for a route with no template of its own.
+ *  This is the auto-generated template
+ */
+const OutletTemplate = precompileTemplate(`<@outlet />`, {
+  moduleName: 'packages/@ember/-internals/routing/route-managers/classic/manager.hbs',
+  strictMode: true,
+});
 
 // Build or return cached invokable for a classic route: look up `template:<name>`,
 // upgrade a TemplateFactory into a Template, then wrap as a RouteTemplate. If the

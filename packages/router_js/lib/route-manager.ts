@@ -327,46 +327,29 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
    */
   didExit(bucket: Bucket, state: DidExitState): void;
 
-  /**
-    Optional. Returns a module-stable wrapper component: the same value for
-    every call, across all buckets. The outlet invokes it with `@Component`
-    (the per-bucket invokable from the render state), `@context` (the live
-    model), and `@bucket`; route identity for the rendering layer's stability
-    check is carried by the invokable, so the wrapper itself carries no
-    per-route state.
-
-    A wrapper is an argument-forwarding policy, and it costs one extra
-    component boundary per outlet level per transition (measured at roughly
-    8–10µs per level). Managers whose route components can consume `@context`
-    directly should omit it (and leave `wrapper` undefined in their render
-    state); the outlet then invokes the invokable directly.
-   */
-  getRouteWrapper?(): object;
+  /** This manager's outlet, cached per bucket. */
+  getRouteWrapper(bucket: Bucket, childOutlet: unknown): object | null;
 
   /**
     Returns the renderable for the route. Async to absorb dynamic imports of
     lazy-loaded route modules. The returned promise resolves with the
-    component the wrapper should render, or `undefined` to render nothing.
+    component the outlet should render, or `undefined` to render nothing.
 
     The router passes the in-flight `enterPromise` so the manager can choose
     whether to await data before resolving.
    */
   getInvokable(bucket: Bucket, enterPromise?: Promise<unknown>): Promise<object | undefined>;
 
+  /** Describes what this route renders. */
   getRenderState(bucket: Bucket): RenderStateLike;
 }
 
 type RenderStateLike = {
   owner: any;
   name: string;
-  controller: unknown;
-  model: unknown;
   invokable: object | undefined;
-  /** Optional argument-forwarding wrapper; see `getRouteWrapper`. */
-  wrapper: object | undefined;
-  /** Curried onto the wrapper as `@bucket` by the outlet. */
+  /** Curried onto the invokable as `@bucket`. */
   bucket?: RouteStateBucket;
-  produceContext?: (outletRef: any, lastState: any, state: any) => any;
 };
 
 /**

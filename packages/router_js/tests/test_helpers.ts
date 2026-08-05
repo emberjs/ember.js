@@ -92,7 +92,6 @@ interface RouteManagerLike {
   willExit(bucket: TestRouteBucket, args: NavigationArgs & { isExiting?: boolean }): void;
   exit(bucket: TestRouteBucket, args?: NavigationArgs): void;
   didExit(bucket: TestRouteBucket, args: NavigationArgs): void;
-  getRouteWrapper(): object;
   getInvokable(
     bucket: TestRouteBucket,
     enterPromise: Promise<unknown>
@@ -279,12 +278,6 @@ class TestRouteManager implements RouteManagerLike {
     return route.buildRouteInfoMetadata ? route.buildRouteInfoMetadata() : null;
   }
 
-  // Tests never actually render, so the wrapper identity is unused; we just
-  // need a stable reference to satisfy the manager contract.
-  getRouteWrapper(): object {
-    return TEST_WRAPPER_SENTINEL;
-  }
-
   // Gate on enterPromise so resolution stays sequential, matching the
   // classic expectation that a parent's model resolves before a child's
   // model starts.
@@ -296,7 +289,6 @@ class TestRouteManager implements RouteManagerLike {
   }
 }
 
-const TEST_WRAPPER_SENTINEL = {};
 const SHARED_TEST_MANAGER = new TestRouteManager();
 
 export function createHandler<T extends IModel>(

@@ -5,7 +5,6 @@ import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import type Owner from '@ember/owner';
-import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/owner';
 import { getRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import type { RouteManager } from '@ember/-internals/routing/route-managers/api';
@@ -753,8 +752,16 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       assert('Expected active route to have a manager and bucket', manager && bucket);
       let render = manager.getRenderState(bucket);
 
+      assert(
+        `The route manager for "${render.name}" did not return a \`bucket\` from ` +
+          `\`getRenderState\`. Every route level's outlet is resolved once and ` +
+          `cached against its bucket, so one is always required.`,
+        render.bucket !== undefined
+      );
+
       let state: OutletState = {
         render,
+        manager,
         outlets: { main: undefined },
       };
 
@@ -790,7 +797,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       let instance = owner.lookup('-application-instance:main') as ApplicationInstance;
       assert('[BUG] unexpectedly missing `-application-instance:main`', instance !== undefined);
 
-      this._updatableRootOutletState = createRootOutletState(owner as InternalOwner, root);
+      this._updatableRootOutletState = createRootOutletState(root);
       instance.renderRootComponent(new RootOutlet(this._updatableRootOutletState));
     }
   }

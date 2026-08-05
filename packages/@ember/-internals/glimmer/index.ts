@@ -495,6 +495,7 @@ export { default as Input } from './lib/components/input';
 export { default as LinkTo } from './lib/components/link-to';
 export { default as Textarea } from './lib/components/textarea';
 export { default as Component } from './lib/component';
+export { makeRouteTemplate } from './lib/component-managers/route-template';
 export {
   default as Helper,
   helper,

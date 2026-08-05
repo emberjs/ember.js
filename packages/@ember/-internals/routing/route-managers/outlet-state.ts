@@ -1,6 +1,5 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { Reference } from '@glimmer/interfaces';
-import type { OutletDefinitionState } from './classic/outlet-manager';
+import type { Reference } from '@glimmer/reference/lib/reference';
 
 export interface RenderState {
   /**
@@ -16,50 +15,21 @@ export interface RenderState {
   name: string;
 
   /**
-   * The controller (the self of the outlet component)
-   */
-  controller: unknown;
-
-  /**
-   * The model (the resolved value of the model hook)
-   */
-  model: unknown;
-
-  /**
-   * Supplied by the route manager via `getRenderState` to keep `outlet` agnostic
-   * Produces a stable context reference
-   *
-   * @TODO: alternatively put it on OutletState directly and pass through `_setOutlets`;
-   */
-  produceContext?(
-    outletRef: Reference,
-    lastState: OutletDefinitionState,
-    state: OutletDefinitionState
-  ): Reference;
-
-  /**
-   * The stable wrapper component returned by `RouteManager.getRouteWrapper`
-   */
-  wrapper: object | undefined;
-
-  /**
    * The per-render invokable returned by `RouteManager.getInvokable`
    */
   invokable: object | undefined;
 
   /**
    * The manager's bucket for the route; the outlet curries it onto the
-   * wrapper as `@bucket`.
+   * invokable as `@bucket`.
    */
   bucket?: object;
 }
 
-export interface OutletState {
-  /**
-   * Represents what was rendered into this outlet.
-   */
-  render: RenderState | undefined;
-
+/**
+ * What the outlet walk descends from.
+ */
+export interface OutletParent {
   /**
    * Represents what, if any, should be rendered into the next {{outlet}} found
    * at this level.
@@ -70,5 +40,20 @@ export interface OutletState {
    */
   outlets: {
     main: OutletState | undefined;
+  };
+}
+
+export interface OutletState extends OutletParent {
+  /**
+   * Represents what was rendered into this outlet.
+   */
+  render: RenderState;
+
+  /**
+   * The manager that produced `render`.
+   */
+  manager: {
+    /** `null` until this level has something to render. */
+    getRouteWrapper(bucket: object, childOutlet: Reference): object | null;
   };
 }
