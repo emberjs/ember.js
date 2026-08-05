@@ -1,4 +1,4 @@
-/** The app's root mount point, and the outlet walk it anchors. */
+/** Root mount point; anchors the outlet walk. */
 
 import type {
   CustomRenderNode,
@@ -14,8 +14,7 @@ import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
-import type { OutletState } from './outlet-state';
-import { OutletComponent } from './classic/outlet-component';
+import type { OutletParent, OutletState } from './outlet-state';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 
@@ -43,7 +42,6 @@ const CAPABILITIES: InternalComponentCapabilities = {
 interface RootOutletState {
   self: Reference;
 }
-// @TODO: RootOutlet likely doesn't need the manager anymore
 class RootOutletManager
   implements
     InternalComponentManager<RootOutletState, RootOutlet>,
@@ -54,10 +52,8 @@ class RootOutletManager
     return CAPABILITIES;
   }
 
-  create(owner: object, definition: RootOutlet): RootOutletState {
-    return {
-      self: childOutletRefFor(definition.stateRef, owner as InternalOwner),
-    };
+  create(_owner: object, definition: RootOutlet): RootOutletState {
+    return { self: definition.self };
   }
 
   getDebugName(): string {
@@ -84,31 +80,24 @@ class RootOutletManager
 }
 
 export class RootOutlet {
-  readonly stateRef: Reference<OutletState>;
+  readonly self: Reference;
 
-  constructor(state: UpdatableOutletRootState) {
-    this.stateRef = createConstRef(state.state, '-top-level');
+  constructor(state: UpdatableOutletRootState, owner: InternalOwner) {
+    this.self = childOutletRefFor(createConstRef(state.state, '-top-level'), owner);
   }
 }
 
 export interface UpdatableOutletRootState {
-  state: OutletState;
+  state: OutletParent;
   set(root: OutletState): void;
 }
-export function createRootOutletState(
-  owner: InternalOwner,
-  initial: OutletState
-): UpdatableOutletRootState {
+
+/** The chain's head: a reactive first level. */
+export function createRootOutletState(initial: OutletState): UpdatableOutletRootState {
   let tag = createTag();
   let current = initial;
 
-  let state: OutletState = {
-    render: {
-      owner,
-      name: '-top-level',
-      invokable: undefined,
-    },
-    manager: undefined,
+  let state: OutletParent = {
     outlets: {
       get main(): OutletState {
         consumeTag(tag);
@@ -161,9 +150,7 @@ function outletFor(
 
   let childOutlet = childOutletRefFor(outletRef, callerOwner);
 
-  let provided = manager.getRouteWrapper
-    ? manager.getRouteWrapper(bucket, childOutlet)
-    : OutletComponent.forLevel(outletRef, callerOwner, childOutlet);
+  let provided = manager.getRouteWrapper(bucket, childOutlet);
 
   // `null` is retried, not cached.
   if (provided == null) {
@@ -176,7 +163,7 @@ function outletFor(
 }
 
 function childOutletRefFor(
-  parentRef: Reference<OutletState | undefined>,
+  parentRef: Reference<OutletParent | undefined>,
   owner: InternalOwner
 ): Reference {
   let outletRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);

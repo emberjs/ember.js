@@ -12,7 +12,9 @@ import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
 import OutletTemplate from './outlet-template';
+import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef } from '@glimmer/reference/lib/reference';
+import { OutletComponent } from './outlet-component';
 import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
 import type { InternalRouteInfo, BaseRoute as IRoute, RouteInfo, Transition } from 'router_js';
@@ -74,7 +76,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     return new ClassicRouteBucket(route);
   }
 
-  // @TODO: this is unused, lets remove
   getRoute(bucket: ClassicRouteBucket) {
     assert('Expected route bucket to expose a `route` instance', bucket.route);
     return bucket.route;
@@ -92,16 +93,15 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     let owner = getOwner(route);
     assert('Route is unexpectedly missing an owner', owner);
 
-    return {
-      owner,
-      name: route.routeName,
-      invokable: buildClassicInvokable(bucket),
-      bucket,
-    };
+    return bucket.render.update(owner, route.routeName, buildClassicInvokable(bucket));
   }
 
   getRenderContext(bucket: ClassicRouteBucket): unknown {
     return bucket.context;
+  }
+
+  getRouteWrapper(bucket: ClassicRouteBucket, childOutlet: Reference): object | null {
+    return OutletComponent.forLevel(bucket.render, childOutlet, this);
   }
 
   willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {

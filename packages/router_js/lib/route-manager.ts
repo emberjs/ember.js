@@ -327,8 +327,8 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
    */
   didExit(bucket: Bucket, state: DidExitState): void;
 
-  /** Optional. This manager's outlet, cached per bucket. */
-  getRouteWrapper?(bucket: Bucket, childOutlet: unknown): object;
+  /** This manager's outlet, cached per bucket. */
+  getRouteWrapper(bucket: Bucket, childOutlet: unknown): object | null;
 
   /**
     Returns the renderable for the route. Async to absorb dynamic imports of

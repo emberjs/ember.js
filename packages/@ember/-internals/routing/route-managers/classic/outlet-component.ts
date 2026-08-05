@@ -25,11 +25,12 @@ import {
   createConstRef,
   createDebugAliasRef,
   UNDEFINED_REFERENCE,
-  valueForRef,
 } from '@glimmer/reference/lib/reference';
 import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
 
-import type { OutletState, RenderState } from '../outlet-state';
+import type { ClassicRenderState } from './bucket';
+import { ClassicRoute } from '../../../../../router_js/lib/route-info';
+import { ClassicRouteManager } from './manager';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -87,7 +88,6 @@ interface OutletInstanceState {
 }
 
 export interface OutletDefinitionState {
-  ref: Reference<OutletState | undefined>;
   name: string;
   invokable?: object;
   bucket?: object;
@@ -249,21 +249,17 @@ class OutletComponentManager
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
 export class OutletComponent implements OutletDefinitionState {
-  /** Deref'd so `state` matches `outletRef`. */
+  /** Nothing to render until the invokable resolves. */
   static forLevel(
-    outletRef: Reference<OutletState | undefined>,
-    callerOwner: InternalOwner,
-    childOutlet: Reference
+    render: ClassicRenderState,
+    childOutlet: Reference,
+    manager: ClassicRouteManager
   ): OutletComponent | null {
-    let state = valueForRef(outletRef);
-    let render = state?.render;
-    let invokable = state?.render?.invokable;
-
-    if (render === undefined || invokable === undefined) {
+    if (render.invokable === undefined) {
       return null;
     }
 
-    return new OutletComponent(render, invokable, outletRef, callerOwner, childOutlet);
+    return new OutletComponent(render, childOutlet, manager);
   }
 
   readonly owner: InternalOwner;
@@ -271,71 +267,40 @@ export class OutletComponent implements OutletDefinitionState {
   readonly component: Reference;
 
   private constructor(
-    private readonly render: RenderState,
-    readonly invokable: object,
-    readonly ref: Reference<OutletState | undefined>,
-    callerOwner: InternalOwner,
-    readonly childOutlet: Reference
+    private readonly render: ClassicRenderState,
+    readonly childOutlet: Reference,
+    private readonly manager: ClassicRouteManager
   ) {
-    this.owner = render.owner ?? callerOwner;
+    this.owner = render.owner;
 
-    let context = this.contextRefFor(render);
-    let component = this.componentRefFor(invokable);
+    let context = this.contextRefFor();
+    let component = this.componentRefFor();
 
     this.context = DEBUG ? createDebugAliasRef!('@context', context) : context;
     this.component = DEBUG ? createDebugAliasRef!('@Component', component) : component;
   }
 
-  /** Frozen once the level stops being ours. */
-  private componentRefFor(initial: object): Reference {
-    let last: object = initial;
+  /** Frozen if the level ever stops resolving. */
+  private componentRefFor(): Reference {
+    let last = this.render.invokable!;
 
-    return createComputeRef(() => {
-      let state = valueForRef(this.ref);
-
-      if (state !== undefined) {
-        let current = state.render;
-
-        if (current !== undefined && this.isCurrentLevel(current)) {
-          last = state.render?.invokable ?? last;
-        }
-      }
-
-      return last;
-    });
+    return createComputeRef(() => (last = this.render.consume().invokable ?? last));
   }
 
-  private contextRefFor(render: RenderState): Reference {
-    let last: unknown = valueForRef(this.ref)?.manager?.getRenderContext?.(render.bucket!);
-
-    return createComputeRef(() => {
-      let state = valueForRef(this.ref);
-
-      if (state !== undefined) {
-        let current = state.render;
-
-        if (current !== undefined && this.isCurrentLevel(current)) {
-          let manager = state.manager;
-
-          last = manager?.getRenderContext?.(current.bucket!);
-        }
-      }
-
-      return last;
-    });
+  private contextRefFor(): Reference {
+    return createComputeRef(() => this.manager.getRenderContext?.(this.render.consume().bucket));
   }
 
   get name(): string {
     return this.render.name;
   }
 
-  get bucket(): object | undefined {
-    return this.render.bucket;
+  get invokable(): object | undefined {
+    return this.render.invokable;
   }
 
-  /** Bucket identity, not invokable identity. */
-  private isCurrentLevel(render: RenderState): boolean {
-    return this.bucket === render.bucket;
+  get bucket(): object {
+    return this.render.bucket;
   }
 }
 

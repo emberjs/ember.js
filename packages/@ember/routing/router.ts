@@ -798,8 +798,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       let instance = owner.lookup('-application-instance:main') as ApplicationInstance;
       assert('[BUG] unexpectedly missing `-application-instance:main`', instance !== undefined);
 
-      this._updatableRootOutletState = createRootOutletState(owner as InternalOwner, root);
-      instance.renderRootComponent(new RootOutlet(this._updatableRootOutletState));
+      this._updatableRootOutletState = createRootOutletState(root);
+      instance.renderRootComponent(
+        new RootOutlet(this._updatableRootOutletState, owner as InternalOwner)
+      );
     }
   }
 

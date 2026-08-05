@@ -26,23 +26,10 @@ export interface RenderState {
   bucket?: object;
 }
 
-export interface OutletState {
-  /**
-   * Represents what was rendered into this outlet.
-   */
-  render: RenderState | undefined;
-
-  /**
-   * The manager that produced `render`.
-   */
-  manager:
-    | {
-        getRenderContext?(bucket: object): unknown;
-        /** Absent → the framework's (classic) outlet. */
-        getRouteWrapper?(bucket: object, childOutlet: Reference): object;
-      }
-    | undefined;
-
+/**
+ * What the outlet walk descends from.
+ */
+export interface OutletParent {
   /**
    * Represents what, if any, should be rendered into the next {{outlet}} found
    * at this level.
@@ -54,4 +41,22 @@ export interface OutletState {
   outlets: {
     main: OutletState | undefined;
   };
+}
+
+export interface OutletState extends OutletParent {
+  /**
+   * Represents what was rendered into this outlet.
+   */
+  render: RenderState | undefined;
+
+  /**
+   * The manager that produced `render`.
+   */
+  manager:
+    | {
+        getRenderContext?(bucket: object): unknown;
+        /** `null` until this level has something to render. */
+        getRouteWrapper(bucket: object, childOutlet: Reference): object | null;
+      }
+    | undefined;
 }
