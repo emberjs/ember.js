@@ -247,20 +247,11 @@ class OutletComponentManager
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
 export class OutletComponent implements OutletDefinitionState {
-  /** Nothing to render until the invokable resolves. */
-  static forLevel(render: ClassicRenderState, childOutlet: Reference): OutletComponent | null {
-    if (render.invokable === undefined) {
-      return null;
-    }
-
-    return new OutletComponent(render, childOutlet);
-  }
-
   readonly owner: InternalOwner;
   readonly context: Reference;
   readonly component: Reference;
 
-  private constructor(
+  constructor(
     private readonly render: ClassicRenderState,
     readonly childOutlet: Reference
   ) {

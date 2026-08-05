@@ -101,7 +101,10 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   getRouteWrapper(bucket: ClassicRouteBucket, childOutlet: Reference): object | null {
-    return OutletComponent.forLevel(bucket.render, childOutlet);
+    const render = bucket.render;
+
+    // Nothing to render until the invokable resolves.
+    return render.invokable === undefined ? null : new OutletComponent(render, childOutlet);
   }
 
   willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {
