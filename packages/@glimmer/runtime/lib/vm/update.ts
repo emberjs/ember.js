@@ -31,6 +31,27 @@ import type { AppendingBlockList } from './element-builder';
 import { clear, move as moveBounds } from '../bounds';
 import { NewTreeBuilder } from './element-builder';
 
+// Same discard-on-exception discipline as the transaction pool: an
+// instance is repooled only after a clean execute, so error paths
+// allocate fresh and recovery behavior is unchanged.
+let pooledUpdatingVM: UpdatingVM | null = null;
+
+export function acquireUpdatingVM(env: Environment, alwaysRevalidate: boolean): UpdatingVM {
+  const vm = pooledUpdatingVM;
+
+  if (vm === null) {
+    return new UpdatingVM(env, { alwaysRevalidate });
+  }
+
+  pooledUpdatingVM = null;
+  vm.prepare(env, alwaysRevalidate);
+  return vm;
+}
+
+export function releaseUpdatingVM(vm: UpdatingVM): void {
+  pooledUpdatingVM = vm;
+}
+
 export class UpdatingVM implements IUpdatingVM {
   public env: Environment;
   public dom: GlimmerTreeChanges;
@@ -39,6 +60,19 @@ export class UpdatingVM implements IUpdatingVM {
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
   constructor(env: Environment, { alwaysRevalidate = false }) {
+    this.env = env;
+    this.dom = env.getDOM();
+    this.alwaysRevalidate = alwaysRevalidate;
+  }
+
+  /**
+   * Re-arms a pooled instance. The frame stack is necessarily empty
+   * after a clean execute (execution runs until it is), so only the
+   * environment-derived fields need refreshing.
+   *
+   * @internal
+   */
+  prepare(env: Environment, alwaysRevalidate: boolean): void {
     this.env = env;
     this.dom = env.getDOM();
     this.alwaysRevalidate = alwaysRevalidate;
