@@ -10,7 +10,7 @@ import { unreachable } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 
 import { clear } from '../bounds';
-import { acquireUpdatingVM, releaseUpdatingVM } from './update';
+import { UpdatingVM } from './update';
 
 export default class RenderResultImpl implements RenderResult {
   constructor(
@@ -25,10 +25,8 @@ export default class RenderResultImpl implements RenderResult {
 
   rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {
     let { env, updating } = this;
-    let vm = acquireUpdatingVM(env, alwaysRevalidate);
+    let vm = new UpdatingVM(env, { alwaysRevalidate });
     vm.execute(updating, this);
-    // reached only on clean completion; a throw discards the instance
-    releaseUpdatingVM(vm);
   }
 
   parentElement(): SimpleElement {

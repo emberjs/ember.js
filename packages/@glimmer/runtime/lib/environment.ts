@@ -25,25 +25,11 @@ import { isArgumentError } from './vm/arguments';
 
 export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
 
-// SPIKE: one transaction per tick was measurable allocation churn on
-// dependent chains (a fresh TransactionImpl plus four arrays per step).
-// Discard-on-exception discipline: an instance is only repooled after a
-// fully clean commit, so any throw leaves the pool empty and the error
-// path allocates fresh -- byte-for-byte today's behavior.
-let pooledTransaction: TransactionImpl | null = null;
-
 class TransactionImpl implements Transaction {
   public scheduledInstallModifiers: ModifierInstance[] = [];
   public scheduledUpdateModifiers: ModifierInstance[] = [];
   public createdComponents: ComponentInstanceWithCreate[] = [];
   public updatedComponents: ComponentInstanceWithCreate[] = [];
-
-  reset(): void {
-    this.scheduledInstallModifiers.length = 0;
-    this.scheduledUpdateModifiers.length = 0;
-    this.createdComponents.length = 0;
-    this.updatedComponents.length = 0;
-  }
 
   didCreate(component: ComponentInstanceWithCreate) {
     this.createdComponents.push(component);
@@ -160,12 +146,7 @@ export class EnvironmentImpl implements Environment {
 
     this.debugRenderTree?.begin();
 
-    if (pooledTransaction !== null) {
-      this[TRANSACTION] = pooledTransaction;
-      pooledTransaction = null;
-    } else {
-      this[TRANSACTION] = new TransactionImpl();
-    }
+    this[TRANSACTION] = new TransactionImpl();
   }
 
   private get transaction(): TransactionImpl {
@@ -200,10 +181,6 @@ export class EnvironmentImpl implements Environment {
     this.debugRenderTree?.commit();
 
     this.delegate.onTransactionCommit();
-
-    // clean completion: safe to reuse next tick
-    transaction.reset();
-    pooledTransaction = transaction;
   }
 }
 

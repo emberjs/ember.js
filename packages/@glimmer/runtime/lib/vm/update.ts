@@ -32,28 +32,6 @@ import type { AppendingBlockList } from './element-builder';
 import { clear, move as moveBounds } from '../bounds';
 import { NewTreeBuilder } from './element-builder';
 
-// SPIKE: one UpdatingVM per tick is allocation churn on dependent
-// chains. Same discard-on-exception discipline as the transaction pool:
-// repooled only after a clean execute, so error paths allocate fresh.
-let pooledUpdatingVM: UpdatingVM | null = null;
-
-export function acquireUpdatingVM(env: Environment, alwaysRevalidate: boolean): UpdatingVM {
-  const vm = pooledUpdatingVM;
-
-  if (vm === null) {
-    return new UpdatingVM(env, { alwaysRevalidate });
-  }
-
-  pooledUpdatingVM = null;
-  vm.prepare(env, alwaysRevalidate);
-  return vm;
-}
-
-export function releaseUpdatingVM(vm: UpdatingVM): void {
-  vm.release();
-  pooledUpdatingVM = vm;
-}
-
 export class UpdatingVM implements IUpdatingVM {
   public env: Environment;
   public dom: GlimmerTreeChanges;
@@ -73,22 +51,6 @@ export class UpdatingVM implements IUpdatingVM {
     this.env = env;
     this.dom = env.getDOM();
     this.alwaysRevalidate = alwaysRevalidate;
-  }
-
-  /** @internal re-arm a pooled instance for a new tick */
-  prepare(env: Environment, alwaysRevalidate: boolean): void {
-    this.env = env;
-    this.dom = env.getDOM();
-    this.alwaysRevalidate = alwaysRevalidate;
-    this.#depth = -1;
-  }
-
-  /** @internal drop retained opcode references before repooling */
-  release(): void {
-    this.#ops.length = 0;
-    this.#current.length = 0;
-    this.#handlers.length = 0;
-    this.#finalizers.length = 0;
   }
 
   execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
