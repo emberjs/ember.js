@@ -68,11 +68,11 @@ import { type Opaque } from '@ember/-internals/utility-types';
   capability is enabled.
 
   @method capabilities
-  @for @ember/helper
   @static
   @param {String} managerApiVersion The version of capabilities that are being used
   @param options The capabilities values
   @return {Capabilities} The capabilities object instance
+  @since 3.23.0
   @public
 */
 export const capabilities = helperCapabilities;
@@ -262,11 +262,11 @@ export const capabilities = helperCapabilities;
   - called if the `hasDestroyable` capability is disabled
 
   @method setHelperManager
-  @for @ember/helper
   @static
   @param {Function} factory A factory function which receives an optional owner, and returns a helper manager
   @param {object} definition The definition to associate the manager factory with
   @return {object} The definition passed into setHelperManager
+  @since 3.23.0
   @public
 */
 export const setHelperManager = glimmerSetHelperManager;
@@ -278,8 +278,7 @@ export const setHelperManager = glimmerSetHelperManager;
   To access a helper's value you have to use `getValue` from
   `@glimmer/tracking/primitives/cache`.
 
-  ```js
-  // app/components/data-loader.js
+  ```gjs {data-filename="app/components/data-loader.js"}
   import Component from '@glimmer/component';
   import { getValue } from '@glimmer/tracking/primitives/cache';
   import Helper from '@ember/component/helper';
@@ -302,9 +301,10 @@ export const setHelperManager = glimmerSetHelperManager;
       return getValue(this.plusOne);
     }
   }
-  ```
-  ```js
-  {{this.value}}
+  
+  <template>
+    {{this.value}}
+  </template>
   ```
 
   It receives three arguments:
@@ -326,12 +326,12 @@ export const setHelperManager = glimmerSetHelperManager;
   trigger the effect early. Effects will continue to run at their scheduled time.
 
   @method invokeHelper
-  @for @ember/helper
   @static
   @param {object} context The parent context of the helper
   @param {object} definition The helper definition
   @param {Function} computeArgs An optional function that produces args
   @returns
+  @since 3.23.0
   @public
 */
 export const invokeHelper = glimmerInvokeHelper;
@@ -347,7 +347,7 @@ export const invokeHelper = glimmerInvokeHelper;
  * Using the `{{hash}}` helper, you can pass objects directly from the template
  * as an argument to your components.
  *
- * ```
+ * ```gjs
  * <template>
  *   {{#each-in (hash givenName='Jen' familyName='Weber') as |key value|}}
  *     <p>{{key}}: {{value}}</p>
@@ -355,10 +355,27 @@ export const invokeHelper = glimmerInvokeHelper;
  * </template>
  * ```
  *
+ *
+ * Note that the hash is an empty object with no prototype chain, therefore
+ * common methods like `toString` are not available in the resulting hash.
+ * If you need to use such a method, you can use the `call` or `apply`
+ * approach:
+ *
+ * ```js
+ * function toString(obj) {
+ *   return Object.prototype.toString.apply(obj);
+ * }
+ * ```
+ * The `hash` helper is available as a keyword and does not need to be imported.
+ *
  * @method hash
- * @for @ember/helper
  * @public
  * @static
+ * @keyword
+ * @noimport
+ * @param {Object} options
+ * @return {Object} Hash
+ * @since 2.3.0
  */
 export const hash = glimmerHash as HashHelper;
 export interface HashHelper extends Opaque<'helper:hash'> {}
@@ -367,8 +384,7 @@ export interface HashHelper extends Opaque<'helper:hash'> {}
  * Using the `{{array}}` helper, you can pass arrays directly from the template
  * as an argument to your components.
  *
- * ```js
- *
+ * ```gjs
  * <template>
  *   <ul>
  *   {{#each (array 'Tom Dale' 'Yehuda Katz' @anotherPerson) as |person|}}
@@ -378,36 +394,46 @@ export interface HashHelper extends Opaque<'helper:hash'> {}
  * </template>
  * ```
  *
+ * The `array` helper is available as a keyword and does not need to be imported.
+ *
  * @method array
- * @for @ember/helper
  * @public
  * @static
+ * @keyword
+ * @noimport
+ * @param {Array} options
+ * @return {Array} Array
+ * @since 3.8.0
  */
 export const array = glimmerArray as ArrayHelper;
 export interface ArrayHelper extends Opaque<'helper:array'> {}
 
 /**
- * The `{{concat}}` helper makes it easy to dynamically send a number of
- * parameters to a component or helper as a single parameter in the format of a
- * concatenated string.
+ * The `{{concat}}` helper Concatenates the given arguments into a string.
  *
- * For example:
+ * Example:
  *
- * ```js
- * import { concat } from '@ember/helper';
- *
- * <template>
- *   {{get @foo (concat "item" @index)}}
- * </template>
- * ```
- *
- * This will display the result of `@foo.item1` when `index` is `1`, and
- * `this.foo.item2` when `index` is `2`, etc.
+ ```gjs
+  import { concat } from '@ember/helper';
+
+  <template>
+    {{yield (concat firstName " " lastName)}}
+
+    {{! would yield name="<first name value> <last name value>" to the component}}
+  </template>
+  ```
+
+  or for angle bracket invocation, you actually don't need concat at all:
+
+  ```handlebars
+  <SomeComponent @name="{{firstName}} {{lastName}}" />
+  ```
  *
  * @method concat
- * @for @ember/helper
+ * @exampleimport import { concat } from '@ember/helper';
  * @public
  * @static
+ * @since 1.13.0
  */
 export const concat = glimmerConcat as ConcatHelper;
 export interface ConcatHelper extends Opaque<'helper:concat'> {}
@@ -419,7 +445,7 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  *
  * To access a property on an object with a string key:
  *
- * ```js
+ * ```gjs
  * import { get } from '@ember/helper';
  *
  * <template>
@@ -429,7 +455,7 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  *
  * To access the first element in an array:
  *
- * ```js
+ * ```gjs
  * import { get } from '@ember/helper';
  *
  * <template>
@@ -439,7 +465,7 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  *
  * To access a property on an object with a dynamic key:
  *
- * ```js
+ * ```gjs
  * import { get } from '@ember/helper';
  *
  * <template>
@@ -451,7 +477,8 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  * `this.foo.item2` when `index` is `2`, etc.
  *
  * @method get
- * @for @ember/helper
+ * @since 2.1.0
+ * @exampleimport import { get } from '@ember/helper';
  * @public
  * @static
  */
@@ -463,9 +490,7 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  * a new function that combines. This allows you to pass parameters along to
  * functions in your templates:
  *
- * ```js
- * import { fn } from '@ember/helper';
- *
+ * ```gjs
  * function showAlert(message) {
  *   alert(`The message is: '${message}'`);
  * }
@@ -477,9 +502,54 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  * </template>
  * ```
  *
+ * For example, if you have an `each` helper looping over a number of items, you
+ * may need to pass a function that expects to receive the item as an argument
+ * to a component invoked within the loop. Here's how you could use the `fn`
+ * helper to pass both the function and its arguments together:
+ *
+ * ```gjs {data-filename="app/components/items-listing.gjs"}
+ * <template>
+ *   {{#each @items as |item|}}
+ *     <DisplayItem @item=item @select={{fn this.handleSelected item}} />
+ *   {{/each}}
+ * </template>
+ * ```
+ *
+ * ```gjs {data-filename="app/components/items-list.gjs"}
+ * import Component from '@glimmer/component';
+ * import { action } from '@ember/object';
+ *
+ * export default class ItemsList extends Component {
+ *   @action
+ *   handleSelected(item) {
+ *     // ...snip...
+ *   }
+ * }
+ * ```
+ *
+ * In this case the `DisplayItem` component will receive a normal function
+ * that it can invoke. When it invokes the function, the `handleSelected`
+ * function will receive the `item` and any arguments passed, thanks to the
+ * `fn` helper.
+ *
+ * Let's take a look at what that means in a couple circumstances:
+ *
+ * - When invoked as `this.args.select()` the `handleSelected` function will
+ * receive the `item` from the loop as its first and only argument.
+ * - When invoked as `this.args.select('foo')` the `handleSelected` function
+ * will receive the `item` from the loop as its first argument and the
+ * string `'foo'` as its second argument.
+ *
+ * See also [partial application](https://en.wikipedia.org/wiki/Partial_application).
+ *
+ * The `fn` helper is available as a keyword and does not need to be imported.
+ *
  * @method fn
  * @for @ember/helper
+ * @keyword
+ * @noimport
  * @public
+ * @since 3.11.0
  * @static
  */
 export const fn = glimmerFn as FnHelper;
@@ -489,21 +559,23 @@ export interface FnHelper extends Opaque<'helper:fn'> {}
  * The `{{gt}}` helper returns `true` if the first argument is greater than
  * the second argument.
  *
- * ```js
- * import { gt } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{if (gt @score 100) "High score!" "Keep trying"}}
  * </template>
  * ```
  *
- * In strict-mode (gjs/gts) templates, `gt` is available as a keyword and
- * does not need to be imported.
+ * The `gt` helper is available as a keyword and does not need to be imported.
  *
  * @method gt
  * @param {number} left
  * @param {number} right
  * @return {boolean}
+ * @noimport
+ * @keyword
+ * @since 7.1.0
+ * @static
+ * @public
  */
 export const gt = glimmerGt as unknown as GtHelper;
 export interface GtHelper extends Opaque<'helper:gt'> {}
@@ -512,21 +584,23 @@ export interface GtHelper extends Opaque<'helper:gt'> {}
  * The `{{gte}}` helper returns `true` if the first argument is greater than
  * or equal to the second argument.
  *
- * ```js
- * import { gte } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{if (gte @age 18) "Adult" "Minor"}}
  * </template>
  * ```
  *
- * In strict-mode (gjs/gts) templates, `gte` is available as a keyword and
- * does not need to be imported.
+ * The `gte` helper is available as a keyword and does not need to be imported.
  *
  * @method gte
  * @param {number} left
  * @param {number} right
  * @return {boolean}
+ * @noimport
+ * @keyword
+ * @since 7.1.0
+ * @static
+ * @public
  */
 export const gte = glimmerGte as unknown as GteHelper;
 export interface GteHelper extends Opaque<'helper:gte'> {}
@@ -535,21 +609,23 @@ export interface GteHelper extends Opaque<'helper:gte'> {}
  * The `{{lt}}` helper returns `true` if the first argument is less than
  * the second argument.
  *
- * ```js
- * import { lt } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{if (lt @temperature 0) "Freezing" "Above zero"}}
  * </template>
  * ```
  *
- * In strict-mode (gjs/gts) templates, `lt` is available as a keyword and
- * does not need to be imported.
+ * The `lt` helper is available as a keyword and does not need to be imported.
  *
  * @method lt
  * @param {number} left
  * @param {number} right
  * @return {boolean}
+ * @noimport
+ * @keyword
+ * @since 7.1.0
+ * @static
+ * @public
  */
 export const lt = glimmerLt as unknown as LtHelper;
 export interface LtHelper extends Opaque<'helper:lt'> {}
@@ -558,21 +634,23 @@ export interface LtHelper extends Opaque<'helper:lt'> {}
  * The `{{lte}}` helper returns `true` if the first argument is less than
  * or equal to the second argument.
  *
- * ```js
- * import { lte } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{if (lte @count 0) "Empty" "Has items"}}
  * </template>
  * ```
  *
- * In strict-mode (gjs/gts) templates, `lte` is available as a keyword and
- * does not need to be imported.
+ * The `lte` helper is available as a keyword and does not need to be imported.
  *
  * @method lte
  * @param {number} left
  * @param {number} right
  * @return {boolean}
+ * @noimport
+ * @keyword
+ * @since 7.1.0
+ * @static
+ * @public
  */
 export const lte = glimmerLte as unknown as LteHelper;
 export interface LteHelper extends Opaque<'helper:lte'> {}
@@ -580,9 +658,7 @@ export interface LteHelper extends Opaque<'helper:lte'> {}
 /**
  * The `element` helper lets you dynamically set the tag name of an element.
  *
- * ```js
- * import { element } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{#let (element @tagName) as |Tag|}}
  *     <Tag class="my-element">Hello</Tag>
@@ -594,8 +670,15 @@ export interface LteHelper extends Opaque<'helper:lte'> {}
  * When `@tagName` is an empty string, the block content is rendered without a
  * wrapping element. When `@tagName` is `null` or `undefined`, nothing is rendered.
  *
+ * The `element` helper is available as a keyword and does not need to be imported.
+ *
  * @method element
  * @param {string} tagName
+ * @noimport
+ * @keyword
+ * @since 7.1.0
+ * @static
+ * @public
  */
 export const element = glimmerElement as ElementHelper;
 export interface ElementHelper extends Opaque<'helper:element'> {}
@@ -607,7 +690,7 @@ export interface ElementHelper extends Opaque<'helper:element'> {}
  * Each invocation of {{uniqueId}} will return a new, unique ID string.
  * You can use the `let` helper to create an ID that can be reused within a template.
  *
- * ```js
+ * ```gjs
  * import { uniqueId } from '@ember/helper';
  *
  * <template>
@@ -619,9 +702,10 @@ export interface ElementHelper extends Opaque<'helper:element'> {}
  * ```
  *
  * @method uniqueId
- * @for @ember/helper
  * @public
  * @static
+ * @exampleimport import { uniqueId } from '@ember/helper';
+ * @since 4.4.0
  */
 export const uniqueId = glimmerUniqueId;
 export type UniqueIdHelper = typeof uniqueId;
@@ -630,21 +714,23 @@ export type UniqueIdHelper = typeof uniqueId;
  * The `{{eq}}` helper returns `true` if its two arguments are strictly equal
  * (`===`). Takes exactly two arguments.
  *
- * ```js
- * import { eq } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{if (eq @status "active") "Active" "Inactive"}}
  * </template>
  * ```
  *
- * In strict-mode (gjs/gts) templates, `eq` is available as a keyword and
- * does not need to be imported.
+ * The `eq` helper is available as a keyword and does not need to be imported.
  *
  * @method eq
  * @param {unknown} left
  * @param {unknown} right
  * @return {boolean}
+ * @noimport
+ * @keyword
+ * @static
+ * @since 7.1.0
+ * @public
  */
 export const eq = glimmerEq as unknown as EqHelper;
 export interface EqHelper extends Opaque<'helper:eq'> {}
@@ -653,21 +739,23 @@ export interface EqHelper extends Opaque<'helper:eq'> {}
  * The `{{neq}}` helper returns `true` if its two arguments are strictly
  * not equal (`!==`). Takes exactly two arguments.
  *
- * ```js
- * import { neq } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{if (neq @status "active") "Not active" "Active"}}
  * </template>
  * ```
  *
- * In strict-mode (gjs/gts) templates, `neq` is available as a keyword and
- * does not need to be imported.
+ * The `neq` helper is available as a keyword and does not need to be imported.
  *
  * @method neq
  * @param {unknown} left
  * @param {unknown} right
  * @return {boolean}
+ * @keyword
+ * @noimport
+ * @static
+ * @since 7.1.0
+ * @public
  */
 export const neq = glimmerNeq as unknown as NeqHelper;
 export interface NeqHelper extends Opaque<'helper:neq'> {}
@@ -677,20 +765,22 @@ export interface NeqHelper extends Opaque<'helper:neq'> {}
  * falsy value (using Handlebars truthiness) or the right-most value if all
  * are truthy. Requires at least two arguments.
  *
- * ```js
- * import { and } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{if (and @isAdmin @isLoggedIn) "Welcome, admin!" "Access denied"}}
  * </template>
  * ```
  *
- * In strict-mode (gjs/gts) templates, `and` is available as a keyword and
- * does not need to be imported.
+ * The `and` helper is available as a keyword and does not need to be imported.
  *
  * @method and
  * @param {unknown} args Two or more values to evaluate
  * @return {unknown} The first falsy value or the last value
+ * @noimport
+ * @keyword
+ * @static
+ * @since 7.1.0
+ * @public
  */
 export const and = glimmerAnd as unknown as AndHelper;
 export interface AndHelper extends Opaque<'helper:and'> {}
@@ -700,9 +790,7 @@ export interface AndHelper extends Opaque<'helper:and'> {}
  * truthy value (using Handlebars truthiness) or the right-most value if all
  * are falsy. Requires at least two arguments.
  *
- * ```js
- * import { or } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{if (or @hasAccess @isAdmin) "Welcome!" "No access"}}
  * </template>
@@ -714,6 +802,11 @@ export interface AndHelper extends Opaque<'helper:and'> {}
  * @method or
  * @param {unknown} args Two or more values to evaluate
  * @return {unknown} The first truthy value or the last value
+ * @noimport
+ * @keyword
+ * @static
+ * @since 7.1.0
+ * @public
  */
 export const or = glimmerOr as unknown as OrHelper;
 export interface OrHelper extends Opaque<'helper:or'> {}
@@ -722,9 +815,7 @@ export interface OrHelper extends Opaque<'helper:or'> {}
  * The `{{not}}` helper returns the logical negation of its argument using
  * Handlebars truthiness. Takes exactly one argument.
  *
- * ```js
- * import { not } from '@ember/helper';
- *
+ * ```gjs
  * <template>
  *   {{if (not @isDisabled) "Enabled" "Disabled"}}
  * </template>
@@ -736,6 +827,11 @@ export interface OrHelper extends Opaque<'helper:or'> {}
  * @method not
  * @param {unknown} value The value to negate
  * @return {boolean}
+ * @keyword
+ * @noimport
+ * @static
+ * @since 7.1.0
+ * @public
  */
 export const not = glimmerNot as unknown as NotHelper;
 export interface NotHelper extends Opaque<'helper:not'> {}
