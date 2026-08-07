@@ -30,7 +30,7 @@ import type { OutletState } from '../utils/outlet';
   your template. An important use of the `{{outlet}}` helper is in your
   application's `application.gjs` file:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import MyHeader from '../components/my-header';
   import MyFooter from '../components/my-footer';
     
