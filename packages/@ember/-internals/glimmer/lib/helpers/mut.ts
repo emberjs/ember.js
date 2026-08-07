@@ -1,5 +1,5 @@
 /**
-@module ember
+@module @ember/helper
 */
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
@@ -45,7 +45,8 @@ import { internalHelper } from './internal-helper';
 
   @method mut
   @param {Object} [attr] the "two-way" attribute that can be modified.
-  @for Ember.Templates.helpers
+  @static
+  @for Keywords
   @public
 */
 
