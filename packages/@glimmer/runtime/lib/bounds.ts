@@ -4,7 +4,7 @@ import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 
 export class CursorImpl implements Cursor {
   constructor(
-    public element: SimpleElement,
+    public element: SimpleNode,
     public nextSibling: Nullable<SimpleNode>
   ) {
     setLocalDebugType('cursor', this);
@@ -15,12 +15,12 @@ export type DestroyableBounds = Bounds;
 
 export class ConcreteBounds implements Bounds {
   constructor(
-    public parentNode: SimpleElement,
+    public parentNode: SimpleNode,
     private first: SimpleNode,
     private last: SimpleNode
   ) {}
 
-  parentElement(): SimpleElement {
+  parentElement(): SimpleNode {
     return this.parentNode;
   }
 
@@ -54,9 +54,14 @@ export function move(bounds: Bounds, reference: Nullable<SimpleNode>): Nullable<
 }
 
 export function clear(bounds: Bounds): Nullable<SimpleNode> {
-  let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
+
+  // Use the node's actual current parent rather than the stored parentElement.
+  // When bounds were rendered into a DocumentFragment that was subsequently
+  // appended to a real DOM container, the nodes' parentNode is the container
+  // while parentElement() still returns the (now-empty) fragment.
+  let parent = (first.parentNode as Nullable<SimpleElement>) ?? bounds.parentElement();
 
   let current: SimpleNode = first;
 

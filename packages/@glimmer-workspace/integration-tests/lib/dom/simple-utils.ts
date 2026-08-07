@@ -21,12 +21,12 @@ import { clearElement } from '@glimmer/util';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 
-export function toInnerHTML(parent: SimpleElement | SimpleDocumentFragment): string {
+export function toInnerHTML(parent: SimpleNode): string {
   const serializer = new Serializer(voidMap);
   return serializer.serializeChildren(parent);
 }
 
-export function toOuterHTML(parent: SimpleElement | SimpleDocumentFragment): string {
+export function toOuterHTML(parent: SimpleNode): string {
   const serializer = new Serializer(voidMap);
   return serializer.serialize(parent);
 }

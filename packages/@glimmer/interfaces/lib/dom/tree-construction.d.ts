@@ -1,4 +1,4 @@
-import type { Namespace, SimpleDocumentFragment, SimpleElement, SimpleNode } from './simple.js';
+import type { Namespace, SimpleNode } from './simple.js';
 
 export type NodeToken = number;
 
@@ -17,5 +17,5 @@ export interface SpecTreeConstruction {
   appendComment(text: string): NodeToken;
   setAttribute(name: string, value: string, namespace?: Namespace): void;
 
-  appendTo(parent: SimpleElement | SimpleDocumentFragment): NodeTokens;
+  appendTo(parent: SimpleNode): NodeTokens;
 }
