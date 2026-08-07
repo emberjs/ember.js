@@ -90,6 +90,9 @@ export default class StrictModeValidationPass {
       case 'If':
         return this.If(statement);
 
+      case 'TryCatch':
+        return this.TryCatch(statement);
+
       case 'Each':
         return this.Each(statement);
 
@@ -285,6 +288,16 @@ export default class StrictModeValidationPass {
           return Ok(null);
         }
       });
+  }
+
+  TryCatch(statement: mir.TryCatch): Result<null> {
+    return this.NamedBlock(statement.block).andThen(() => {
+      if (statement.catchBlock) {
+        return this.NamedBlock(statement.catchBlock);
+      } else {
+        return Ok(null);
+      }
+    });
   }
 
   Each(statement: mir.Each): Result<null> {

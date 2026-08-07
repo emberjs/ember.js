@@ -51,6 +51,7 @@ export type EachOpcode = 42;
 export type LetOpcode = 44;
 export type WithDynamicVarsOpcode = 45;
 export type InvokeComponentOpcode = 46;
+export type TryCatchOpcode = 55;
 
 // Keyword Expressions
 export type HasBlockOpcode = 48;

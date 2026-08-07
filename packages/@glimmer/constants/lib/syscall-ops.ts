@@ -30,6 +30,7 @@ import type {
   VmDynamicModifier,
   VmEnter,
   VmEnterList,
+  VmEnterTry,
   VmExit,
   VmExitList,
   VmFetch,
@@ -61,6 +62,7 @@ import type {
   VmPop,
   VmPopDynamicScope,
   VmPopRemoteElement,
+  VmPopTryFrame,
   VmPopScope,
   VmPopulateLayout,
   VmPrepareArgs,
@@ -72,6 +74,7 @@ import type {
   VmPushDynamicComponentInstance,
   VmPushDynamicScope,
   VmPushEmptyArgs,
+  VmPushTryFrame,
   VmPushRemoteElement,
   VmPushSymbolTable,
   VmPutComponentOperations,
@@ -183,7 +186,10 @@ export const VM_IF_INLINE_OP = 109 satisfies VmIfInline;
 export const VM_NOT_OP = 110 satisfies VmNot;
 export const VM_GET_DYNAMIC_VAR_OP = 111 satisfies VmGetDynamicVar;
 export const VM_LOG_OP = 112 satisfies VmLog;
-export const VM_SYSCALL_SIZE = 113 satisfies VmSize;
+export const VM_ENTER_TRY_OP = 113 satisfies VmEnterTry;
+export const VM_PUSH_TRY_FRAME_OP = 114 satisfies VmPushTryFrame;
+export const VM_POP_TRY_FRAME_OP = 115 satisfies VmPopTryFrame;
+export const VM_SYSCALL_SIZE = 116 satisfies VmSize;
 
 export function isOp(value: number): value is VmOp {
   return value >= 16;

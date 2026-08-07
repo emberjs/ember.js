@@ -75,6 +75,8 @@ export class ContentEncoder {
         return this.InvokeBlock(stmt);
       case 'If':
         return this.If(stmt);
+      case 'TryCatch':
+        return this.TryCatch(stmt);
       case 'Each':
         return this.Each(stmt);
       case 'Let':
@@ -198,6 +200,14 @@ export class ContentEncoder {
       EXPR.expr(condition),
       CONTENT.NamedBlock(block)[1],
       inverse ? CONTENT.NamedBlock(inverse)[1] : null,
+    ];
+  }
+
+  TryCatch({ block, catchBlock }: mir.TryCatch): WireFormat.Statements.TryCatch {
+    return [
+      SexpOpcodes.TryCatch,
+      CONTENT.NamedBlock(block)[1],
+      catchBlock ? CONTENT.NamedBlock(catchBlock)[1] : null,
     ];
   }
 

@@ -1,9 +1,12 @@
 import {
   VM_ENTER_OP,
+  VM_ENTER_TRY_OP,
   VM_EXIT_OP,
   VM_JUMP_EQ_OP,
   VM_JUMP_UNLESS_OP,
   VM_POP_OP,
+  VM_POP_TRY_FRAME_OP,
+  VM_PUSH_TRY_FRAME_OP,
 } from '@glimmer/constants/lib/syscall-ops';
 import {
   VM_JUMP_OP,
@@ -179,6 +182,47 @@ export function Replayable(op: PushStatementOp, args: () => number, body: () => 
 
   // Cleanup code for the block. Runs on initial execution
   // but not on updating.
+  op(HighLevelBuilderOpcodes.Label, 'ENDINITIAL');
+  op(VM_POP_FRAME_OP);
+  op(HighLevelBuilderOpcodes.StopLabels);
+}
+
+/**
+ * A variant of `Replayable` for `{{#try}}`/`{{else catch}}`.
+ *
+ * The overall shape matches `Replayable`: the whole try/catch region lives in
+ * a single updatable block (created by `EnterTry`), so re-rendering the region
+ * from its closure re-attempts the `try` branch from scratch.
+ *
+ * `PushTryFrame` marks the beginning of the protected range and records the
+ * address of the CATCH label. If a JavaScript error is thrown while appending
+ * the `try` branch, the VM unwinds its internal stacks back to the state
+ * captured by the frame, pushes a reference to the caught error, and resumes
+ * execution at CATCH. `PopTryFrame` disarms the handler when the `try` branch
+ * completes without throwing.
+ *
+ * Because `PushTryFrame` sits after `EnterTry` (and therefore after the pc
+ * captured by the region's closure), a structural or error-triggered re-render
+ * of the region re-arms the handler before re-attempting the `try` branch.
+ */
+export function ReplayableTry(
+  op: PushStatementOp,
+  tryBody: () => void,
+  catchBody: () => void
+): void {
+  op(HighLevelBuilderOpcodes.StartLabels);
+  op(VM_PUSH_FRAME_OP);
+  op(VM_RETURN_TO_OP, labelOperand('ENDINITIAL'));
+  op(VM_ENTER_TRY_OP, 0);
+  op(VM_PUSH_TRY_FRAME_OP, labelOperand('CATCH'));
+  tryBody();
+  op(VM_POP_TRY_FRAME_OP);
+  op(VM_JUMP_OP, labelOperand('FINALLY'));
+  op(HighLevelBuilderOpcodes.Label, 'CATCH');
+  catchBody();
+  op(HighLevelBuilderOpcodes.Label, 'FINALLY');
+  op(VM_EXIT_OP);
+  op(VM_RETURN_OP);
   op(HighLevelBuilderOpcodes.Label, 'ENDINITIAL');
   op(VM_POP_FRAME_OP);
   op(HighLevelBuilderOpcodes.StopLabels);

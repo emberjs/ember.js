@@ -16,6 +16,8 @@ import type {
 } from '@glimmer/interfaces';
 import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
 import type { Reference } from '@glimmer/reference/lib/reference';
+import type { Tag } from '@glimmer/interfaces';
+import type { Revision } from '@glimmer/validator/lib/validators';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
@@ -23,7 +25,13 @@ import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { debug } from '@glimmer/validator/lib/debug';
-import { resetTracking } from '@glimmer/validator/lib/tracking';
+import {
+  consumeTag,
+  resetTracking,
+  trackingFrameDepth,
+  unwindTracking,
+} from '@glimmer/validator/lib/tracking';
+import { INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
@@ -68,8 +76,12 @@ export class UpdatingVM implements IUpdatingVM {
     }
   }
 
+  #entryTrackingDepth = 0;
+
   private _execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
     let { frameStack } = this;
+
+    this.#entryTrackingDepth = trackingFrameDepth();
 
     this.try(opcodes, handler);
 
@@ -81,8 +93,44 @@ export class UpdatingVM implements IUpdatingVM {
         continue;
       }
 
-      opcode.evaluate(this);
+      try {
+        opcode.evaluate(this);
+      } catch (error) {
+        if (!this.#unwindToErrorBoundary()) {
+          throw error;
+        }
+      }
     }
+  }
+
+  /**
+   * An updating opcode threw a JavaScript error. Pop frames until we find one
+   * whose exception handler is a `{{#try}}` boundary, then re-render that
+   * region from scratch. The re-render re-attempts the `try` branch; if the
+   * error persists, the append-time unwind renders the catch branch instead.
+   *
+   * Returns false (and leaves the error to propagate) when no boundary
+   * encloses the failed opcode.
+   */
+  #unwindToErrorBoundary(): boolean {
+    let { frameStack } = this;
+
+    while (!frameStack.isEmpty()) {
+      let boundary = this.frame.errorBoundary;
+
+      frameStack.pop();
+
+      if (boundary !== null) {
+        // Rebalance the tracking frames the throw skipped, and surface what
+        // the failed opcodes consumed to any enclosing cache group.
+        consumeTag(unwindTracking(this.#entryTrackingDepth));
+
+        boundary.handleException();
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private get frame() {
@@ -162,6 +210,77 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
     let tree = NewTreeBuilder.resume(env, bounds);
     let vm = state.evaluate(tree);
+
+    let children = (this.children = []);
+
+    let result = vm.execute((vm) => {
+      vm.updateWith(this);
+      vm.pushUpdating(children);
+    });
+
+    associateDestroyableChild(this, result.drop);
+  }
+}
+
+/**
+ * The block opcode for a `{{#try}}` region. In addition to `TryOpcode`'s
+ * structural re-render behavior, it acts as an error boundary:
+ *
+ * - When the region's append-time render throws, the VM unwinds to the
+ *   region's try frame and records the dependencies the failed branch
+ *   consumed (via `didUnwind`).
+ * - When any of those dependencies change, the region re-renders from
+ *   scratch, re-attempting the `try` branch.
+ * - When an updating opcode inside the region throws, the `UpdatingVM`
+ *   unwinds to this boundary and re-renders the region; if the error
+ *   persists, the append-time unwind renders the catch branch.
+ */
+export class TryErrorOpcode extends TryOpcode implements ExceptionHandler {
+  override type = 'try-error';
+
+  #failedDeps: Nullable<Tag> = null;
+  #failedDepsRevision: Revision = INITIAL;
+
+  didUnwind(failedDeps: Tag): void {
+    this.#failedDeps = failedDeps;
+    this.#failedDepsRevision = valueForTag(failedDeps);
+  }
+
+  override evaluate(vm: UpdatingVM) {
+    let failedDeps = this.#failedDeps;
+
+    if (failedDeps !== null) {
+      // Keep the failed branch's dependencies visible to any enclosing cache
+      // group, so a change to them re-runs this opcode at all.
+      consumeTag(failedDeps);
+
+      if (!validateTag(failedDeps, this.#failedDepsRevision)) {
+        this.handleException();
+        return;
+      }
+    }
+
+    super.evaluate(vm);
+  }
+
+  override handleException() {
+    this.#failedDeps = null;
+
+    let {
+      state,
+      bounds,
+      context: { env },
+    } = this;
+
+    destroyChildren(this);
+
+    let tree = NewTreeBuilder.resume(env, bounds);
+    let vm = state.evaluate(tree);
+
+    // The resumed VM starts executing after this region's `EnterTry`, so its
+    // `PushTryFrame` has no freshly-entered boundary to attach to. Register
+    // this opcode so an error during the re-render still unwinds to it.
+    vm.setResumingTryBoundary(this);
 
     let children = (this.children = []);
 
@@ -430,6 +549,10 @@ class UpdatingVMFrame {
     private ops: UpdatingOpcode[],
     private exceptionHandler: Nullable<ExceptionHandler>
   ) {}
+
+  get errorBoundary(): Nullable<TryErrorOpcode> {
+    return this.exceptionHandler instanceof TryErrorOpcode ? this.exceptionHandler : null;
+  }
 
   goto(index: number) {
     this.current = index;

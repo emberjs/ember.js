@@ -23,6 +23,7 @@ export function isKeyword(word: string, type?: KeywordType): boolean {
  */
 export const KEYWORDS_TYPES = {
   action: ['Call', 'Modifier'],
+  catch: ['Block'],
   component: ['Call', 'Append', 'Block'],
   debugger: ['Append'],
   'each-in': ['Block'],
@@ -39,6 +40,7 @@ export const KEYWORDS_TYPES = {
   mut: ['Call', 'Append'],
   outlet: ['Append'],
   readonly: ['Call', 'Append'],
+  try: ['Block'],
   unbound: ['Call', 'Append'],
   unless: ['Call', 'Append', 'Block'],
   yield: ['Append'],

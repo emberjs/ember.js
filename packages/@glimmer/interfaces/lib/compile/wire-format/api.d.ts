@@ -42,6 +42,7 @@ import type {
   TrustingAppendOpcode,
   TrustingComponentAttrOpcode,
   TrustingDynamicAttrOpcode,
+  TryCatchOpcode,
   UndefinedOpcode,
   WithDynamicVarsOpcode,
   YieldOpcode,
@@ -296,6 +297,12 @@ export namespace Statements {
     blocks: Blocks | null,
   ];
 
+  export type TryCatch = [
+    op: TryCatchOpcode,
+    block: SerializedInlineBlock,
+    catchBlock: Nullable<SerializedInlineBlock>,
+  ];
+
   /**
    * A Handlebars statement
    */
@@ -319,7 +326,8 @@ export namespace Statements {
     | Each
     | Let
     | WithDynamicVars
-    | InvokeComponent;
+    | InvokeComponent
+    | TryCatch;
 
   export type Attribute =
     | StaticAttr

@@ -112,6 +112,28 @@ export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
   popBlock(): AppendingBlock;
 
   didAppendBounds(bounds: Bounds): void;
+
+  mark(): TreeBuilderMark;
+  unwindTo(mark: TreeBuilderMark): void;
+}
+
+/**
+ * An opaque snapshot of a `TreeBuilder`'s open cursors, blocks, and modifiers,
+ * plus the DOM position of the current cursor, used to roll the builder back
+ * if a `{{#try}}` region throws while appending.
+ *
+ * The DOM position is captured as real nodes (the node just before the
+ * region's content, and the fixed node the cursor inserts before) rather than
+ * block bounds: partially-appended content can contain inner blocks that are
+ * still empty, whose bounds cannot be queried.
+ */
+export interface TreeBuilderMark {
+  readonly cursors: number;
+  readonly blocks: number;
+  readonly modifiers: number;
+  readonly parent: SimpleElement;
+  readonly prevSibling: Nullable<SimpleNode>;
+  readonly nextSibling: Nullable<SimpleNode>;
 }
 
 export interface AttributeCursor {
