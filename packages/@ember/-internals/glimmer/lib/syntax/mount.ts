@@ -21,7 +21,7 @@ import { internalHelper } from '../helpers/internal-helper';
 
   For example, the following template mounts the `ember-chat` engine:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   {{mount "ember-chat"}}
   ```
 

@@ -17,7 +17,7 @@
   using the block form to wrap the section of template you want to conditionally render.
   Like so:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import Weather from '../components/weather';
     
   <template>
@@ -25,7 +25,7 @@
   </template>
   ```
 
-  ```app/components/weather.gjs
+  ```gjs {data-filename="app/components/weather.gjs"}
   <template>
     {{! will not render because greeting is undefined}}
     {{#if @isRaining}}
@@ -37,7 +37,7 @@
   You can also define what to show if the property is falsey by using
   the `else` helper.
 
-  ```app/components/weather.gjs
+  ```gjs {data-filename="app/components/weather.gjs"}
   <template>
     {{#if @isRaining}}
       Yes, grab an umbrella!
@@ -52,7 +52,7 @@
 
   For the following template:
 
-   ```app/components/weather.gjs
+   ```gjs {data-filename="app/components/weather.gjs"}
   <template>
     {{#if @isRaining}}
       Yes, grab an umbrella!
@@ -66,7 +66,7 @@
 
   If you call it by saying `isCold` is true:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import Weather from '../components/weather';
     
   <template>
@@ -85,7 +85,7 @@
 
   For example, if `useLongGreeting` is truthy, the following:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import Greeting from '../components/greeting';
   
   <template>
@@ -93,7 +93,7 @@
   <template>
   ```
 
-  ```app/components/greeting.gjs
+  ```gjs {data-filename="app/components/greeting.gjs"}
   <template>
     {{if @useLongGreeting "Hello" "Hi"}} Alex
   <template>
@@ -130,7 +130,7 @@
 
   For example, if you pass a falsey `useLongGreeting` to the `Greeting` component:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import Greeting from '../components/greeting';
     
   <template>
@@ -138,7 +138,7 @@
   </template>
   ```
 
-  ```app/components/greeting.gjs
+  ```gjs {data-filename="app/components/greeting.gjs"}
   <template>
     {{unless @useLongGreeting "Hi" "Hello"}} Ben
   </template>
@@ -156,7 +156,7 @@
 
   The following will not render anything:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import Greeting from '../components/greeting';
     
   <template>
@@ -164,7 +164,7 @@
   </template>
   ```
 
-  ```app/components/greeting.gjs
+  ```gjs {data-filename="app/components/greeting.gjs"}
   <template>
     {{#unless @greeting}}
       No greeting was found. Why not set one?
@@ -177,7 +177,7 @@
 
   If you have the following component:
 
-  ```app/components/logged-in.gjs
+  ```gjs {data-filename="app/components/logged-in.gjs"}
   <template>
     {{#unless @userData}}
       Please login.
@@ -189,7 +189,7 @@
 
   Calling it with a truthy `userData`:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import LoggedIn from '../components/logged-in';
     
   <template>
@@ -205,7 +205,7 @@
 
   and calling it with a falsey `userData`:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import LoggedIn from '../components/logged-in';
 
   <template>

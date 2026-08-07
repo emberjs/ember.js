@@ -23,7 +23,7 @@ import { internalHelper } from './internal-helper';
 
   The child `Component` would invoke the function with the new click count:
 
-  ```app/components/my-child.gjs
+  ```gjs {data-filename="app/components/my-child.gjs"}
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
     

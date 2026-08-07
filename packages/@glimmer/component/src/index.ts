@@ -39,7 +39,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   The simplest way to create a component is to create a `gjs` file in
   `app/components` with a `<template>` tag wrapper:
 
-  ```app/components/person-profile.gjs
+  ```gjs {data-filename="app/components/person-profile.gjs"}
   <template>
     <h1>{{@person.name}}</h1>
     <img src={{@person.avatar}}>
@@ -50,7 +50,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   You will be able to use `<PersonProfile />` to invoke this component elsewhere
   in your application:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import PersonProfile from '../components/person-profile';
     
   <template>
@@ -97,7 +97,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   attached to the component. For instance, if we added a `{{yield}}` to our
   component like so:
 
-  ```app/components/person-profile.gjs
+  ```gjs {data-filename="app/components/person-profile.gjs"}
   <template>
     <h1>{{@person.name}}</h1>
     {{yield}}
@@ -127,7 +127,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   You can also pass positional parameters to `{{yield}}`, which are then made
   available in the block:
 
-  ```app/components/person-profile.gjs
+  ```gjs {data-filename="app/components/person-profile.gjs"}
   <template>
     <h1>{{@person.name}}</h1>
     {{yield @person.signature}}
@@ -153,7 +153,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   we wanted to add a way for users to customize the title of our
   `<PersonProfile>` component, we could add a named block inside of the header:
 
-  ```app/components/person-profile.gjs
+  ```gjs {data-filename="app/components/person-profile.gjs"}
   <template>
     <h1>{{yield to="title"}}</h1>
     {{yield}}
@@ -182,7 +182,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
 
   You can also pass parameters to named blocks:
 
-  ```app/components/person-profile.gjs
+  ```gjs {data-filename="app/components/person-profile.gjs"}
   <template>
     <h1>{{yield @person.name to="title"}}</h1>
     {{yield @person.signature}}
@@ -207,7 +207,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   You can also check to see if a block exists using the `(has-block)` keyword,
   and conditionally use it, or provide a default template instead.
 
-  ```app/components/person-profile.gjs
+  ```gjs {data-filename="app/components/person-profile.gjs"}
   <template>
     <h1>
       {{#if (has-block "title")}}
@@ -258,7 +258,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   We can also check if a block receives parameters using the `(has-block-params)`
   keyword, and conditionally yield different values if so.
 
-  ```app/components/person-profile.gjs
+  ```gjs {data-filename="app/components/person-profile.gjs"}
   <template>
     {{#if (has-block-params)}}
       {{yield @person.signature}}
@@ -274,7 +274,7 @@ import { setOwner, type default as Owner } from '@ember/owner';
   file, wrapping your `<template>` tag.
   For example, to add JavaScript to the `PersonProfile` component which we defined above:
 
-  ```app/components/person-profile.gjs
+  ```gjs {data-filename="app/components/person-profile.gjs"}
   import Component from '@glimmer/component';
 
   export default class PersonProfile extends Component {
