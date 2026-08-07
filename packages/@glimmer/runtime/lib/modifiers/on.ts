@@ -247,6 +247,10 @@ function addEventListener(
 }
 
 /**
+ @module @ember/helper
+ */
+
+/**
   The `{{on}}` modifier lets you easily add event listeners (it uses
   [EventTarget.addEventListener](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
   internally).
@@ -258,8 +262,9 @@ function addEventListener(
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
-  export default class LikePostComponent extends Component {
-    saveLike = () => {
+  export default class LikePost extends Component {
+    @action
+    saveLike() {
       // someone likes your post!
       // better send a request off to your server...
     }
@@ -301,7 +306,7 @@ function addEventListener(
   For example, in our example case above if you'd like to pass in the post that
   was being liked when the button is clicked you could do something like:
 
-  ```app/components/like-post.hbs
+  ```hbs
   <button {{on 'click' (fn this.saveLike @post)}}>Like this post!</button>
   ```
 
@@ -310,14 +315,14 @@ function addEventListener(
 
   ### Function Context
 
-  In the example above, we used an arrow function to ensure that `likePost` is
-  properly bound to the `items-list`, but let's explore what happens if we
-  left out the arrow function:
+  In the example above, we used `@action` to ensure that `likePost` is
+  properly bound to the `LikePost` Component, but let's explore what happens if we
+  left out `@action`:
 
   ```gjs {data-filename="app/components/like-post.gjs"}
   import Component from '@glimmer/component';
 
-  export default class LikePostComponent extends Component {
+  export default class LikePost extends Component {
     saveLike() {
       // ...snip...
     }
@@ -327,10 +332,16 @@ function addEventListener(
   In this example, when the button is clicked `saveLike` will be invoked,
   it will **not** have access to the component instance. In other
   words, it will have no `this` context, so please make sure your functions
-  are bound (via an arrow function or other means) before passing into `on`!
+  are bound (via `@action` or other means) before passing into `on`!
+
+  The `on` modifier is a keyword and does not need to be imported.
 
   @method on
+  @static
+  @for Keywords
+  @noimport
   @public
+  @since 3.11.0
 */
 class OnModifierManager implements InternalModifierManager<OnModifierState> {
   getDebugName(): string {
