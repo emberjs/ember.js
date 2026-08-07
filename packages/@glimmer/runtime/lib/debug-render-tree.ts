@@ -191,7 +191,7 @@ export default class DebugRenderTreeImpl<
 
   private captureBounds(node: InternalRenderNode<TBucket>): CapturedRenderNode['bounds'] {
     let bounds = expect(node.bounds, 'BUG: missing bounds');
-    let parentElement = bounds.parentElement();
+    let parentElement = bounds.parentNode();
     let firstNode = bounds.firstNode();
     let lastNode = bounds.lastNode();
     return { parentElement, firstNode, lastNode };
