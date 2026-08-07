@@ -30,6 +30,7 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
+import { _getStrategy } from '@ember/scheduler';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
@@ -368,8 +369,28 @@ export class RendererState {
     }
   }
 
+  #renderer: BaseRenderer | null = null;
+
+  // stable identity so strategies (and classic scheduleOnce dedupe) can
+  // coalesce repeat scheduling between flushes
+  #revalidateCurrent = (): void => {
+    if (this.#renderer !== null) {
+      this.revalidate(this.#renderer);
+    }
+  };
+
   scheduleRevalidate(renderer: BaseRenderer): void {
-    _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+    this.#renderer = renderer;
+
+    const strategy = _getStrategy();
+
+    if (strategy._scheduleRevalidate !== undefined) {
+      strategy._scheduleRevalidate(this.#revalidateCurrent);
+    } else {
+      // a registered strategy without the internal seam leaves the
+      // renderer on classic runloop scheduling
+      _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+    }
   }
 
   isValid(): boolean {

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@ember/debug": "workspace:*",
-    "internal-test-helpers": "workspace:*"
+    "internal-test-helpers": "workspace:*",
+    "@ember/runloop": "workspace:*"
   }
 }

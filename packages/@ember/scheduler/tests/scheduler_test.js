@@ -6,6 +6,7 @@ import {
   idle,
   registerStrategy,
   _clearRegisteredStrategy,
+  _getStrategy,
 } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -45,14 +46,41 @@ moduleFor(
       _clearRegisteredStrategy();
     }
 
-    ['@test phase functions assert when no strategy is registered'](assert) {
-      for (let phase of [render, layout, composite, next, idle]) {
-        expectAssertion(() => {
-          phase();
-        }, /no scheduling strategy is registered/);
-      }
+    async ['@test phase functions fall back to the classic strategy when none is registered'](
+      assert
+    ) {
+      // no registerStrategy call: the ambient classic default handles
+      // phases with runloop semantics
+      let order = [];
 
-      assert.expect(5);
+      await Promise.all([
+        composite().then(() => order.push('composite')),
+        layout().then(() => order.push('layout')),
+        render().then(() => order.push('render')),
+      ]);
+
+      assert.deepEqual(order, ['render', 'layout', 'composite']);
+    }
+
+    ['@test the renderer seam prefers a registered strategy that implements it'](assert) {
+      let scheduled = [];
+
+      registerStrategy({
+        render: () => Promise.resolve(),
+        layout: () => Promise.resolve(),
+        composite: () => Promise.resolve(),
+        next: () => Promise.resolve(),
+        idle: () => Promise.resolve(),
+        _scheduleRevalidate(flush) {
+          scheduled.push(flush);
+        },
+      });
+
+      let flush = () => {};
+      _getStrategy()._scheduleRevalidate(flush);
+
+      assert.strictEqual(scheduled.length, 1, 'the registered strategy received the flush');
+      assert.strictEqual(scheduled[0], flush, 'with the stable callback');
     }
 
     ['@test phase functions delegate to the registered strategy'](assert) {

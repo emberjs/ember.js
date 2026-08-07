@@ -1,4 +1,5 @@
 import { assert } from '@ember/debug';
+import classicStrategy from '@ember/scheduler/-private/classic';
 
 /**
   The `@ember/scheduler` package provides a render-aware scheduling interface,
@@ -67,6 +68,18 @@ export interface Strategy {
   composite(): Promise<void>;
   next(): Promise<void>;
   idle(): Promise<void>;
+
+  /**
+   * Internal seam used by the renderer to schedule revalidation. The
+   * public phase functions are for user work; revalidation is hotter
+   * than any user phase, so the renderer talks to the strategy through
+   * this callback-based hook rather than allocating promises per
+   * invalidation. Optional: strategies that do not implement it leave
+   * the renderer on its classic runloop scheduling.
+   *
+   * @internal
+   */
+  _scheduleRevalidate?(flush: () => void): void;
 }
 
 let registeredStrategy: Strategy | null = null;
@@ -123,12 +136,20 @@ export function _clearRegisteredStrategy(): void {
   registeredStrategy = null;
 }
 
-function getStrategy(phaseName: string): Strategy {
-  assert(
-    `Attempted to schedule work into the '${phaseName}' phase, but no scheduling strategy is registered. Register a strategy when defining your Application, e.g. the default strategy:\n\n\timport { registerStrategy } from '@ember/scheduler';\n\timport strategy from '@ember/scheduler/strategy';\n\n\tregisterStrategy(strategy);`,
-    registeredStrategy !== null
-  );
-  return registeredStrategy;
+function getStrategy(): Strategy {
+  // the classic strategy is the ambient default: existing applications
+  // keep today's runloop scheduling with no registration required, and
+  // `registerStrategy` swaps in a render-aware implementation
+  return registeredStrategy ?? classicStrategy;
+}
+
+/**
+ * The renderer's accessor for the active strategy.
+ *
+ * @internal
+ */
+export function _getStrategy(): Strategy {
+  return getStrategy();
 }
 
 /**
@@ -156,7 +177,7 @@ function getStrategy(phaseName: string): Strategy {
   @public
 */
 export function render(): Promise<void> {
-  return getStrategy('render').render();
+  return getStrategy().render();
 }
 
 /**
@@ -182,7 +203,7 @@ export function render(): Promise<void> {
   @public
 */
 export function layout(): Promise<void> {
-  return getStrategy('layout').layout();
+  return getStrategy().layout();
 }
 
 /**
@@ -212,7 +233,7 @@ export function layout(): Promise<void> {
   @public
 */
 export function composite(): Promise<void> {
-  return getStrategy('composite').composite();
+  return getStrategy().composite();
 }
 
 /**
@@ -237,7 +258,7 @@ export function composite(): Promise<void> {
   @public
 */
 export function next(): Promise<void> {
-  return getStrategy('next').next();
+  return getStrategy().next();
 }
 
 /**
@@ -261,5 +282,5 @@ export function next(): Promise<void> {
   @public
 */
 export function idle(): Promise<void> {
-  return getStrategy('idle').idle();
+  return getStrategy().idle();
 }
