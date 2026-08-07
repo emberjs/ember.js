@@ -82,7 +82,14 @@ export interface Strategy {
   _scheduleRevalidate?(flush: () => void): void;
 }
 
-let registeredStrategy: Strategy | null = null;
+/**
+ * The active strategy, as a live binding for the renderer's hot path.
+ * The framework registers the classic strategy at the glimmer<->ember
+ * hookup during boot, so this is non-null in any booted application.
+ *
+ * @internal
+ */
+export let _registeredStrategy: Strategy | null = null;
 
 /**
   Registers the scheduling strategy which the phase functions of
@@ -126,30 +133,16 @@ let registeredStrategy: Strategy | null = null;
 export function registerStrategy(strategy: Strategy): void {
   assert(
     'Cannot call `registerStrategy`: a different scheduling strategy has already been registered. The scheduling strategy should be registered exactly once, when defining the Application.',
-    registeredStrategy === null || registeredStrategy === strategy
+    _registeredStrategy === null ||
+      _registeredStrategy === strategy ||
+      _registeredStrategy === classicStrategy
   );
-  registeredStrategy = strategy;
+  _registeredStrategy = strategy;
 }
 
 // Private API used by tests to swap out the registered strategy.
 export function _clearRegisteredStrategy(): void {
-  registeredStrategy = null;
-}
-
-function getStrategy(): Strategy {
-  // the classic strategy is the ambient default: existing applications
-  // keep today's runloop scheduling with no registration required, and
-  // `registerStrategy` swaps in a render-aware implementation
-  return registeredStrategy ?? classicStrategy;
-}
-
-/**
- * The renderer's accessor for the active strategy.
- *
- * @internal
- */
-export function _getStrategy(): Strategy {
-  return getStrategy();
+  _registeredStrategy = null;
 }
 
 /**
@@ -177,7 +170,11 @@ export function _getStrategy(): Strategy {
   @public
 */
 export function render(): Promise<void> {
-  return getStrategy().render();
+  assert(
+    `Attempted to schedule work into the 'render' phase before a scheduling strategy was available. The framework registers the default strategy during boot.`,
+    _registeredStrategy !== null
+  );
+  return _registeredStrategy.render();
 }
 
 /**
@@ -203,7 +200,11 @@ export function render(): Promise<void> {
   @public
 */
 export function layout(): Promise<void> {
-  return getStrategy().layout();
+  assert(
+    `Attempted to schedule work into the 'layout' phase before a scheduling strategy was available. The framework registers the default strategy during boot.`,
+    _registeredStrategy !== null
+  );
+  return _registeredStrategy.layout();
 }
 
 /**
@@ -233,7 +234,11 @@ export function layout(): Promise<void> {
   @public
 */
 export function composite(): Promise<void> {
-  return getStrategy().composite();
+  assert(
+    `Attempted to schedule work into the 'composite' phase before a scheduling strategy was available. The framework registers the default strategy during boot.`,
+    _registeredStrategy !== null
+  );
+  return _registeredStrategy.composite();
 }
 
 /**
@@ -258,7 +263,11 @@ export function composite(): Promise<void> {
   @public
 */
 export function next(): Promise<void> {
-  return getStrategy().next();
+  assert(
+    `Attempted to schedule work into the 'next' phase before a scheduling strategy was available. The framework registers the default strategy during boot.`,
+    _registeredStrategy !== null
+  );
+  return _registeredStrategy.next();
 }
 
 /**
@@ -282,5 +291,9 @@ export function next(): Promise<void> {
   @public
 */
 export function idle(): Promise<void> {
-  return getStrategy().idle();
+  assert(
+    `Attempted to schedule work into the 'idle' phase before a scheduling strategy was available. The framework registers the default strategy during boot.`,
+    _registeredStrategy !== null
+  );
+  return _registeredStrategy.idle();
 }

@@ -30,7 +30,7 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
-import { _getStrategy } from '@ember/scheduler';
+import { _registeredStrategy } from '@ember/scheduler';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
@@ -382,13 +382,13 @@ export class RendererState {
   scheduleRevalidate(renderer: BaseRenderer): void {
     this.#renderer = renderer;
 
-    const strategy = _getStrategy();
+    const strategy = _registeredStrategy;
 
-    if (strategy._scheduleRevalidate !== undefined) {
+    if (strategy !== null && strategy._scheduleRevalidate !== undefined) {
       strategy._scheduleRevalidate(this.#revalidateCurrent);
     } else {
-      // a registered strategy without the internal seam leaves the
-      // renderer on classic runloop scheduling
+      // pre-boot (no strategy registered yet) or a registered strategy
+      // without the internal seam: classic runloop scheduling
       _backburner.scheduleOnce('render', this, this.revalidate, renderer);
     }
   }

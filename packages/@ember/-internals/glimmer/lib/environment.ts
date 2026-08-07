@@ -9,11 +9,20 @@ import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
 import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
+import { registerStrategy } from '@ember/scheduler';
+import classicStrategy from '@ember/scheduler/-private/classic';
 import type { EnvironmentDelegate } from '@glimmer/runtime/lib/environment';
 import { debug } from '@glimmer/validator/lib/debug';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';
+
+///////////
+
+// The glimmer<->ember hookup is where the framework's scheduling
+// strategy is established: classic (today's runloop scheduling) unless
+// an application swaps it via `registerStrategy`.
+registerStrategy(classicStrategy);
 
 ///////////
 
