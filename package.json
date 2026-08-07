@@ -69,7 +69,6 @@
     "@babel/core": "^7.24.4",
     "@embroider/addon-shim": "^1.10.2",
     "@simple-dom/interface": "^1.4.0",
-    "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",
     "chalk": "^4.0.0",
     "ember-cli-get-component-path-option": "^1.0.0",
@@ -343,7 +342,6 @@
       "@glimmer/vm/index.js": "ember-source/@glimmer/vm/index.js",
       "@glimmer/wire-format/index.js": "ember-source/@glimmer/wire-format/index.js",
       "@simple-dom/document/index.js": "ember-source/@simple-dom/document/index.js",
-      "backburner.js/index.js": "ember-source/backburner.js/index.js",
       "dag-map/index.js": "ember-source/dag-map/index.js",
       "ember-template-compiler/index.js": "ember-source/ember-template-compiler/index.js",
       "ember-testing/index.js": "ember-source/ember-testing/index.js",
@@ -355,8 +353,7 @@
       "ember-testing/lib/test/waiters.js": "ember-source/ember-testing/lib/test/waiters.js",
       "ember/version.js": "ember-source/ember/version.js",
       "route-recognizer/index.js": "ember-source/route-recognizer/index.js",
-      "router_js/index.js": "ember-source/router_js/index.js",
-      "rsvp/index.js": "ember-source/rsvp/index.js"
+      "router_js/index.js": "ember-source/router_js/index.js"
     }
   },
   "typesVersions": {
