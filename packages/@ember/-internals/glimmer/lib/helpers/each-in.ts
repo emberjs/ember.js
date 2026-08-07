@@ -180,9 +180,8 @@ import { internalHelper } from './internal-helper';
   ```
 
   @method each
-  @for @ember/helper
+  @for Keywords
   @static
-  @keyword
   @noimport
   @public
  */
@@ -270,9 +269,8 @@ import { internalHelper } from './internal-helper';
 
   @method each-in
   @static
-  @keyword
   @noimport
-  @for @ember/helper
+  @for Keywords
   @public
   @since 2.1.0
 */

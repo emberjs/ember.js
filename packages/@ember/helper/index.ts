@@ -69,6 +69,7 @@ import { type Opaque } from '@ember/-internals/utility-types';
 
   @method capabilities
   @static
+  @for @ember/helper
   @param {String} managerApiVersion The version of capabilities that are being used
   @param options The capabilities values
   @return {Capabilities} The capabilities object instance
@@ -262,6 +263,7 @@ export const capabilities = helperCapabilities;
   - called if the `hasDestroyable` capability is disabled
 
   @method setHelperManager
+  @for @ember/helper
   @static
   @param {Function} factory A factory function which receives an optional owner, and returns a helper manager
   @param {object} definition The definition to associate the manager factory with
@@ -326,6 +328,7 @@ export const setHelperManager = glimmerSetHelperManager;
   trigger the effect early. Effects will continue to run at their scheduled time.
 
   @method invokeHelper
+  @for @ember/helper
   @static
   @param {object} context The parent context of the helper
   @param {object} definition The helper definition
@@ -371,7 +374,7 @@ export const invokeHelper = glimmerInvokeHelper;
  * @method hash
  * @public
  * @static
- * @keyword
+ * @for Keywords
  * @noimport
  * @param {Object} options
  * @return {Object} Hash
@@ -399,7 +402,7 @@ export interface HashHelper extends Opaque<'helper:hash'> {}
  * @method array
  * @public
  * @static
- * @keyword
+ * @for Keywords
  * @noimport
  * @param {Array} options
  * @return {Array} Array
@@ -430,6 +433,7 @@ export interface ArrayHelper extends Opaque<'helper:array'> {}
   ```
  *
  * @method concat
+ * @for @ember/helper
  * @exampleimport import { concat } from '@ember/helper';
  * @public
  * @static
@@ -477,6 +481,7 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  * `this.foo.item2` when `index` is `2`, etc.
  *
  * @method get
+ * @for @ember/helper
  * @since 2.1.0
  * @exampleimport import { get } from '@ember/helper';
  * @public
@@ -545,8 +550,7 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  * The `fn` helper is available as a keyword and does not need to be imported.
  *
  * @method fn
- * @for @ember/helper
- * @keyword
+ * @for Keywords
  * @noimport
  * @public
  * @since 3.11.0
@@ -572,7 +576,7 @@ export interface FnHelper extends Opaque<'helper:fn'> {}
  * @param {number} right
  * @return {boolean}
  * @noimport
- * @keyword
+ * @for Keywords
  * @since 7.1.0
  * @static
  * @public
@@ -597,7 +601,7 @@ export interface GtHelper extends Opaque<'helper:gt'> {}
  * @param {number} right
  * @return {boolean}
  * @noimport
- * @keyword
+ * @for Keywords
  * @since 7.1.0
  * @static
  * @public
@@ -622,7 +626,7 @@ export interface GteHelper extends Opaque<'helper:gte'> {}
  * @param {number} right
  * @return {boolean}
  * @noimport
- * @keyword
+ * @for Keywords
  * @since 7.1.0
  * @static
  * @public
@@ -647,7 +651,7 @@ export interface LtHelper extends Opaque<'helper:lt'> {}
  * @param {number} right
  * @return {boolean}
  * @noimport
- * @keyword
+ * @for Keywords
  * @since 7.1.0
  * @static
  * @public
@@ -675,7 +679,7 @@ export interface LteHelper extends Opaque<'helper:lte'> {}
  * @method element
  * @param {string} tagName
  * @noimport
- * @keyword
+ * @for Keywords
  * @since 7.1.0
  * @static
  * @public
@@ -702,6 +706,7 @@ export interface ElementHelper extends Opaque<'helper:element'> {}
  * ```
  *
  * @method uniqueId
+ * @for @ember/helper
  * @public
  * @static
  * @exampleimport import { uniqueId } from '@ember/helper';
@@ -727,7 +732,7 @@ export type UniqueIdHelper = typeof uniqueId;
  * @param {unknown} right
  * @return {boolean}
  * @noimport
- * @keyword
+ * @for Keywords
  * @static
  * @since 7.1.0
  * @public
@@ -751,7 +756,7 @@ export interface EqHelper extends Opaque<'helper:eq'> {}
  * @param {unknown} left
  * @param {unknown} right
  * @return {boolean}
- * @keyword
+ * @for Keywords
  * @noimport
  * @static
  * @since 7.1.0
@@ -777,7 +782,7 @@ export interface NeqHelper extends Opaque<'helper:neq'> {}
  * @param {unknown} args Two or more values to evaluate
  * @return {unknown} The first falsy value or the last value
  * @noimport
- * @keyword
+ * @for Keywords
  * @static
  * @since 7.1.0
  * @public
@@ -803,7 +808,7 @@ export interface AndHelper extends Opaque<'helper:and'> {}
  * @param {unknown} args Two or more values to evaluate
  * @return {unknown} The first truthy value or the last value
  * @noimport
- * @keyword
+ * @for Keywords
  * @static
  * @since 7.1.0
  * @public
@@ -827,7 +832,7 @@ export interface OrHelper extends Opaque<'helper:or'> {}
  * @method not
  * @param {unknown} value The value to negate
  * @return {boolean}
- * @keyword
+ * @for Keywords
  * @noimport
  * @static
  * @since 7.1.0
@@ -1096,7 +1101,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   @param {Hash} options
   @return {String} HTML string
   @static
-  @keyword
+  @for Keywords
   @noimport
   @public
  */
@@ -1137,7 +1142,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   @param {String} blockName the name of the block. The name is either "main" or "inverse" (though only curly components support inverse) or the name given to a named block.
   @return {Boolean} `true` if the component was invoked with a block
   @static
-  @keyword
+  @for Keywords
   @noimport
   @public
  */
@@ -1178,7 +1183,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   @method has-block-params
   @static
-  @keyword
+  @for Keywords
   @noimport
   @param {String} blockName the name of the block. The name is either "main" or "inverse" (though only curly components support inverse) or the name given to a named block.
   @return {Boolean} `true` if the component was invoked with block params
@@ -1225,7 +1230,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   @method debugger
   @static
-  @keyword
+  @for Keywords
   @noimport
   @public
  */
@@ -1315,7 +1320,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   @method component
   @since 1.11.0
   @static
-  @keyword
+  @for Keywords
   @noimport
   @public
 */
@@ -1354,7 +1359,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
  @method helper
  @static
- @keyword
+ @for Keywords
  @noimport
  @public
  @since 3.27.0
@@ -1472,7 +1477,6 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   @method if
   @static
   @for Keywords
-  @keyword
   @noimport
   @public
 */
@@ -1583,7 +1587,6 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   `unless` is built-in and does not need to be imported.
  
   @method unless
-  @keyword
   @for Keywords
   @noimport
   @static
