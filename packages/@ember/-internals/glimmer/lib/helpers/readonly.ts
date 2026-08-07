@@ -1,5 +1,5 @@
 /**
-@module ember
+@module @ember/helper
 */
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createReadOnlyRef } from '@glimmer/reference/lib/reference';
@@ -114,7 +114,9 @@ import { internalHelper } from './internal-helper';
 
   @method readonly
   @param {Object} [attr] the read-only attribute.
-  @for Ember.Templates.helpers
+  @for Keywords
+  @noimport
+  @static
   @private
 */
 export default internalHelper(({ positional }: CapturedArguments) => {
