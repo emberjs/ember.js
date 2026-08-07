@@ -1593,4 +1593,20 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   @public
 */
 
+/**
+  `log` allows you to output the value of variables in the current rendering
+  context. `log` also accepts primitive types such as strings or numbers.
+
+  ```handlebars
+  {{log "myVariable:" myVariable }}
+  ```
+
+  @method log
+  @for Keywords
+  @noimport
+  @static
+  @param {Array} params
+  @public
+*/
+
 /* eslint-enable @typescript-eslint/no-empty-object-type */
