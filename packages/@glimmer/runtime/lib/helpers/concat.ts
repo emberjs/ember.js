@@ -15,31 +15,6 @@ const normalizeTextValue = (value: unknown): string => {
   return String(value);
 };
 
-/**
-  Concatenates the given arguments into a string.
-
-  Example:
-
-
-  ```gjs
-  import { concat } from '@ember/helper';
-
-  <template>
-  {{yield (concat firstName " " lastName)}}
-
-  {{! would yield name="<first name value> <last name value>" to the component}}
-  </template>
-  ```
-
-  or for angle bracket invocation, you actually don't need concat at all.
-
-  ```handlebars
-  <SomeComponent @name="{{firstName}} {{lastName}}" />
-  ```
-
-  @public
-  @method concat
-*/
 export const concat = internalHelper(({ positional }: CapturedArguments) => {
   return createComputeRef(
     () => reifyPositional(positional).map(normalizeTextValue).join(''),
