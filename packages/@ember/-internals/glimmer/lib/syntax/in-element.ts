@@ -21,8 +21,13 @@
 
  `{{in-element}}` requires a single positional argument:
 
- - `destinationElement` -- the DOM element to render into. It must exist at the time
- of rendering.
+ - `destinationElement` -- the DOM element, `DocumentFragment`, or `ShadowRoot` to
+ render into. It must exist at the time of rendering.
+
+ When the destination is a `DocumentFragment`, appending the fragment to the DOM
+ moves its children into the new parent. Content rendered by `{{in-element}}`
+ follows that move: subsequent updates apply to the content in its new location,
+ and destroying the block removes the content from its new location.
 
  It also supports an optional named argument:
 
