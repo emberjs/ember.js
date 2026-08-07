@@ -24,7 +24,12 @@ import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { debug } from '@glimmer/validator/lib/debug';
-import { beginTrackFrame, consumeTag, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
+import {
+  beginTrackFrame,
+  consumeTag,
+  endTrackFrame,
+  resetTracking,
+} from '@glimmer/validator/lib/tracking';
 import { INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { Closure } from './append';
@@ -95,7 +100,11 @@ export class UpdatingVM implements IUpdatingVM {
     this.frame.goto(index);
   }
 
-  try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>, finalizer?: (didError: boolean) => void) {
+  try(
+    ops: UpdatingOpcode[],
+    handler: Nullable<ExceptionHandler>,
+    finalizer?: (didError: boolean) => void
+  ) {
     this.frameStack.push(new UpdatingVMFrame(ops, handler, finalizer));
   }
 
