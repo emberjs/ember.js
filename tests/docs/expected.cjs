@@ -547,7 +547,6 @@ module.exports = {
     'Ember',
     'Ember.Controller',
     'Ember.NativeArray',
-    'Ember.Templates.components',
     'Ember.Templates.helpers',
     'Ember.Test',
     'EmberArray',
