@@ -188,6 +188,138 @@ export class InElementDocumentFragmentSuite extends RenderTest {
   }
 
   @test
+  'Conditional content follows the fragment after it is attached to the DOM'() {
+    const fragment = document.createDocumentFragment();
+    const container = document.createElement('div');
+
+    this.render(
+      '{{#in-element this.fragment}}' +
+        '<p id="stable">stable</p>' +
+        '{{#if this.show}}<span id="cond">cond</span>{{/if}}' +
+        '{{/in-element}}',
+      {
+        fragment,
+        show: false,
+      }
+    );
+
+    container.appendChild(fragment);
+
+    // The conditional block was empty at attach time; toggling it on must
+    // render the new element into the container (where the surrounding content
+    // now lives), not into the now-empty fragment.
+    this.rerender({ show: true });
+    this.assert.ok(container.querySelector('#cond'), 'conditional element rendered in container');
+    this.assert.strictEqual(fragment.childNodes.length, 0, 'nothing was rendered into fragment');
+    this.assert.strictEqual(
+      container.querySelector('#stable')?.nextSibling?.nodeName,
+      'SPAN',
+      'conditional element is in position, next to the stable element'
+    );
+
+    this.rerender({ show: false });
+    this.assert.notOk(container.querySelector('#cond'), 'conditional element removed');
+    this.assert.ok(container.querySelector('#stable'), 'stable element remains');
+    this.assert.strictEqual(fragment.childNodes.length, 0, 'fragment is still empty');
+  }
+
+  @test
+  'Destroying {{#in-element}} clears the container after the fragment is attached'() {
+    const fragment = document.createDocumentFragment();
+    const container = document.createElement('div');
+
+    this.render(
+      '{{#if this.showing}}' +
+        '{{#in-element this.fragment}}<p id="content">hello</p>{{/in-element}}' +
+        '{{/if}}',
+      {
+        fragment,
+        showing: true,
+      }
+    );
+
+    container.appendChild(fragment);
+    this.assert.ok(container.querySelector('#content'), 'content is in container after append');
+
+    // Tearing down the {{#in-element}} must remove the content from wherever it
+    // currently lives (the container), not from the stale fragment.
+    this.rerender({ showing: false });
+    this.assert.notOk(container.querySelector('#content'), 'content removed from container');
+    this.assert.strictEqual(container.childNodes.length, 0, 'container is empty after destroy');
+
+    this.rerender({ showing: true });
+    this.assert.strictEqual(
+      fragment.querySelector('#content')?.textContent,
+      'hello',
+      'content renders into the fragment again when in-element comes back'
+    );
+  }
+
+  @test
+  '{{#each}} updates follow the content after the fragment is attached'() {
+    const fragment = document.createDocumentFragment();
+    const container = document.createElement('div');
+    const text = (parent: ParentNode) =>
+      Array.from(parent.querySelectorAll('span.item'))
+        .map((node) => node.textContent)
+        .join('');
+
+    this.render(
+      '{{#in-element this.fragment}}' +
+        '{{#each this.items as |item|}}<span class="item">{{item}}</span>{{/each}}' +
+        '{{/in-element}}',
+      {
+        fragment,
+        items: ['a', 'b'],
+      }
+    );
+
+    this.assert.strictEqual(text(fragment), 'ab', 'initial items rendered into fragment');
+
+    container.appendChild(fragment);
+
+    this.rerender({ items: ['a', 'b', 'c'] });
+    this.assert.strictEqual(text(container), 'abc', 'new item appended in container');
+    this.assert.strictEqual(fragment.childNodes.length, 0, 'nothing was rendered into fragment');
+
+    this.rerender({ items: ['c', 'b', 'a'] });
+    this.assert.strictEqual(text(container), 'cba', 'items reordered in container');
+    this.assert.strictEqual(fragment.childNodes.length, 0, 'fragment is still empty');
+
+    this.rerender({ items: ['b'] });
+    this.assert.strictEqual(text(container), 'b', 'items removed in container');
+  }
+
+  @test
+  'Renders into a ShadowRoot (a DocumentFragment subtype)'() {
+    const host = document.createElement('div');
+    const shadowRoot = host.attachShadow({ mode: 'open' });
+
+    this.render(
+      '{{#in-element this.shadowRoot}}<p id="in-shadow">{{this.message}}</p>{{/in-element}}',
+      {
+        shadowRoot,
+        message: 'hello',
+      }
+    );
+
+    this.assert.strictEqual(
+      shadowRoot.querySelector('#in-shadow')?.textContent,
+      'hello',
+      'content rendered into shadow root'
+    );
+    this.assertHTML('<!---->');
+    this.assertStableRerender();
+
+    this.rerender({ message: 'updated' });
+    this.assert.strictEqual(
+      shadowRoot.querySelector('#in-shadow')?.textContent,
+      'updated',
+      'content updated in shadow root'
+    );
+  }
+
+  @test
   'Multiple in-element calls to the same DocumentFragment with insertBefore=null'() {
     const fragment = document.createDocumentFragment();
 
