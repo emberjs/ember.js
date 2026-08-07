@@ -81,30 +81,6 @@ function getElementDefinition(tagName: string): ElementComponentDefinition {
 
 // ============ Element Helper ============
 
-/**
-  The `element` helper lets you dynamically set the tag name of an element.
-
-  ```handlebars
-  {{#let (element @tagName) as |Tag|}}
-    <Tag class="my-element">Hello</Tag>
-  {{/let}}
-  ```
-
-  When `@tagName` is `"h1"`, this renders `<h1 class="my-element">Hello</h1>`.
-
-  When `@tagName` is an empty string `""`, the block content is rendered without
-  a wrapping element.
-
-  Passing `null`, `undefined`, or non-string values will throw an assertion error.
-
-  Changing the tag name will tear down and recreate the element and its contents.
- 
-  The `element` helper is built-in and does not need to be imported.
-
-  @method element
-  @for Ember.Templates.helpers
-  @public
-*/
 export default internalHelper(({ positional, named }: CapturedArguments) => {
   return createComputeRef(
     () => {
