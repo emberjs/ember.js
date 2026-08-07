@@ -125,15 +125,6 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 */
 
 /**
-  See [Ember.Templates.components.Textarea](/ember/release/classes/Ember.Templates.components/methods/Textarea?anchor=Textarea)
-
-  @method textarea
-  @for Ember.Templates.helpers
-  @see {Ember.Templates.components.Textarea}
-  @public
-*/
-
-/**
   An opaque interface which can be imported and used in strict-mode
   templates to call <Textarea>.
 

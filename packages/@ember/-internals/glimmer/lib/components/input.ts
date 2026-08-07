@@ -44,15 +44,6 @@ if (hasDOM) {
 }
 
 /**
-  See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
-
-  @method input
-  @for Ember.Templates.helpers
-  @param {Hash} options
-  @public
-  */
-
-/**
   An opaque interface which can be imported and used in strict-mode
   templates to call <Input>.
 
