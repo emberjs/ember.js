@@ -44,18 +44,6 @@ if (hasDOM) {
 }
 
 /**
-  An opaque interface which can be imported and used in strict-mode
-  templates to call <Input>.
-
-  See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
-
-  @for @ember/component
-  @method Input
-  @see {Ember.Templates.components.Input}
-  @public
-**/
-
-/**
   The `Input` component lets you create an HTML `<input>` element.
 
   ```gjs
@@ -150,7 +138,8 @@ if (hasDOM) {
   changes, it will be reflected in the other.
 
   @method Input
-  @for Ember.Templates.components
+  @for @ember/component
+  @static
   @param {Hash} options
   @public
 */
