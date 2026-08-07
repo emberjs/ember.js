@@ -35,7 +35,7 @@ function cleanURL(url: string, rootURL: string) {
    In this example, the Router service is injected into a component to initiate a transition
    to a dedicated route:
 
-   ```app/components/example.gjs
+   ```gjs {data-filename="app/components/example.gjs"}
    import Component from '@glimmer/component';
    import { action } from '@ember/object';
    import { service } from '@ember/service';
@@ -99,7 +99,7 @@ class RouterService extends Service.extend(Evented) {
      specific model from a Component in the first action, and in the second we trigger
      a query-params only transition.
 
-     ```app/components/example.gjs
+     ```gjs {data-filename="app/components/example.gjs"}
      import Component from '@glimmer/component';
      import { action } from '@ember/object';
      import { service } from '@ember/service';
@@ -194,7 +194,7 @@ class RouterService extends Service.extend(Evented) {
     In this example, the URL for the `author.books` route for a given author
     is copied to the clipboard.
 
-    ```app/templates/application.gjs
+    ```gjs {data-filename="app/templates/application.gjs"}
     import CopyLink from '../components/copy-link';
       
     <template>
@@ -202,7 +202,7 @@ class RouterService extends Service.extend(Evented) {
     </template>
     ```
 
-    ```app/components/copy-link.gjs
+    ```gjs {data-filename="app/components/copy-link.gjs"}
     import Component from '@glimmer/component';
     import { service } from '@ember/service';
     import { action } from '@ember/object';
@@ -225,7 +225,7 @@ class RouterService extends Service.extend(Evented) {
     Just like with `transitionTo` and `replaceWith`, `urlFor` can also handle
     query parameters.
 
-    ```app/templates/application.gjs
+    ```gjs {data-filename="app/templates/application.gjs"}
     import CopyLink from '../components/copy-link';
 
     <template>
@@ -233,7 +233,7 @@ class RouterService extends Service.extend(Evented) {
     </template>
     ```
 
-    ```app/components/copy-link.gjs
+    ```gjs {data-filename="app/components/copy-link.gjs"}
     import Component from '@glimmer/component';
     import { service } from '@ember/service';
     import { action } from '@ember/object';
@@ -278,7 +278,7 @@ class RouterService extends Service.extend(Evented) {
 
      In the following example, `isActive` will return `true` if the current route is `/posts`.
 
-     ```app/components/posts.gjs
+     ```gjs {data-filename="app/components/posts.gjs"}
      import Component from '@glimmer/component';
      import { service } from '@ember/service';
 
@@ -294,7 +294,7 @@ class RouterService extends Service.extend(Evented) {
      The next example includes a dynamic segment, and will return `true` if the current route is `/posts/1`,
      assuming the post has an id of 1:
 
-     ```app/components/posts.gjs
+     ```gjs {data-filename="app/components/posts.gjs"}
      import Component from '@glimmer/component';
      import { service } from '@ember/service';
 
@@ -741,7 +741,7 @@ class RouterService extends Service.extend(Evented) {
     and doesn't change the active route).
 
     Usage example:
-    ```app/components/header.gjs
+    ```gjs {data-filename="app/components/header.gjs"}
       import Component from '@glimmer/component';
       import { service } from '@ember/service';
       import { notEmpty } from '@ember/object/computed';

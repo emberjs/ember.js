@@ -13,7 +13,7 @@
     
   For example, given a `FullName` component:
   
-  ```app/components/full-name.gjs
+  ```gjs {data-filename="app/components/full-name.gjs"}
   import MyInputComponent from './my-input-component';
   
   <template>
@@ -24,7 +24,7 @@
   The yielded component can be invoked by the calling component.
   See the following snippet:
   
-  ```app/components/person-form.gjs
+  ```gjs {data-filename="app/components/person-form.gjs"}
   import FullName from './full-name';
     
   <template>
@@ -40,7 +40,7 @@
   Any arguments passed at the invocation site of the component will override those applied via
   the `component` helper. For example, if the invocation site of the component is:
 
-  ```app/components/person-form.gjs
+  ```gjs {data-filename="app/components/person-form.gjs"}
   import FullName from './full-name';
 
   <template>
@@ -60,7 +60,7 @@
 
   ### Dynamic Component Invocation
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
   import { component } from '@ember/helper';
