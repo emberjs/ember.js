@@ -120,21 +120,10 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   `layoutName` properties will not be applied.
 
   @method Textarea
-  @for Ember.Templates.components
+  @for @ember/component
+  @static
   @public
 */
-
-/**
-  An opaque interface which can be imported and used in strict-mode
-  templates to call <Textarea>.
-
-  See [Ember.Templates.components.Textarea](/ember/release/classes/Ember.Templates.components/methods/Textarea?anchor=Textarea).
-
-  @for @ember/component
-  @method Textarea
-  @see {Ember.Templates.components.Textarea}
-  @public
-**/
 class _Textarea extends AbstractInput {
   static toString(): string {
     return 'Textarea';
