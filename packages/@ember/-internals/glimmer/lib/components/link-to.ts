@@ -262,15 +262,6 @@ function isQueryParams(value: unknown): value is QueryParams {
 */
 
 /**
-  See [Ember.Templates.components.LinkTo](/ember/release/classes/Ember.Templates.components/methods/input?anchor=LinkTo).
-
-  @for Ember.Templates.helpers
-  @method link-to
-  @see {Ember.Templates.components.LinkTo}
-  @public
-**/
-
-/**
   An opaque interface which can be imported and used in strict-mode
   templates to call <LinkTo>.
 
