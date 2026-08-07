@@ -125,8 +125,8 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
     this.bounds = bounds;
   }
 
-  parentElement() {
-    return this.bounds.parentElement();
+  parentNode() {
+    return this.bounds.parentNode();
   }
 
   firstNode() {
@@ -232,15 +232,15 @@ export class ListBlockOpcode extends BlockOpcode {
       let { dom } = vm;
 
       let marker = (this.marker = dom.createComment(''));
-      dom.insertAfter(
-        bounds.parentElement(),
-        marker,
-        expect(bounds.lastNode(), "can't insert after an empty bounds")
-      );
+      // Anchor on the last node's live parent rather than the stored parent:
+      // they differ when the content was rendered into a DocumentFragment that
+      // was later appended to the DOM.
+      let lastNode = expect(bounds.lastNode(), "can't insert after an empty bounds");
+      dom.insertAfter(lastNode.parentNode ?? bounds.parentNode(), marker, lastNode);
 
       this.sync(iterator);
 
-      this.parentElement().removeChild(marker);
+      marker.parentNode?.removeChild(marker);
       this.marker = null;
       this.lastIterator = iterator;
     }
@@ -356,8 +356,13 @@ export class ListBlockOpcode extends BlockOpcode {
     let { key } = item;
     let nextSibling = before === undefined ? this.marker : before.firstNode();
 
+    // The insertion reference (the sync marker or an existing item's first
+    // node) is live in the DOM; insert through its parent, which differs from
+    // the stored parent when the content was rendered into a DocumentFragment
+    // that was later appended to the DOM. bounds.firstNode() is not usable
+    // here: sync() empties the block list, so the bounds are mid-initialization.
     let elementStack = NewTreeBuilder.forInitialRender(env, {
-      element: bounds.parentElement(),
+      element: nextSibling?.parentNode ?? bounds.parentNode(),
       nextSibling,
     });
 

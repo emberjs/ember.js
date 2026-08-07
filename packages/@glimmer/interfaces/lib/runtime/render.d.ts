@@ -14,7 +14,7 @@ export interface RenderResult extends Bounds, ExceptionHandler {
 
   rerender(options?: { alwaysRevalidate: false }): void;
 
-  parentElement(): SimpleNode;
+  parentNode(): SimpleNode;
 
   firstNode(): SimpleNode;
   lastNode(): SimpleNode;

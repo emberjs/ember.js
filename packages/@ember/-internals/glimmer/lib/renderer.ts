@@ -361,7 +361,7 @@ export class Renderer extends BaseRenderer {
 
     assert('object passed to getBounds must have the BOUNDS symbol as a property', bounds);
 
-    let parentElement = bounds.parentElement();
+    let parentElement = bounds.parentNode();
     let firstNode = bounds.firstNode();
     let lastNode = bounds.lastNode();
 

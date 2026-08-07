@@ -28,8 +28,8 @@ export default class RenderResultImpl implements RenderResult {
     vm.execute(updating, this);
   }
 
-  parentElement(): SimpleNode {
-    return this.bounds.parentElement();
+  parentNode(): SimpleNode {
+    return this.bounds.parentNode();
   }
 
   firstNode(): SimpleNode {

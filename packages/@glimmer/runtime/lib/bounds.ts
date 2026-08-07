@@ -1,4 +1,4 @@
-import type { Bounds, Cursor, Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import type { Bounds, Cursor, Nullable, SimpleNode } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 
@@ -15,13 +15,13 @@ export type DestroyableBounds = Bounds;
 
 export class ConcreteBounds implements Bounds {
   constructor(
-    public parentNode: SimpleNode,
+    private parent: SimpleNode,
     private first: SimpleNode,
     private last: SimpleNode
   ) {}
 
-  parentElement(): SimpleNode {
-    return this.parentNode;
+  parentNode(): SimpleNode {
+    return this.parent;
   }
 
   firstNode(): SimpleNode {
@@ -33,8 +33,16 @@ export class ConcreteBounds implements Bounds {
   }
 }
 
+// The parent to mutate through: normally the stored parentNode(), but when the
+// bounds were rendered into a DocumentFragment that was later appended to the
+// DOM, the nodes' live parentNode is the container while the stored parent is
+// the (now-empty) fragment.
+function liveParent(bounds: Bounds): SimpleNode {
+  return bounds.firstNode().parentNode ?? bounds.parentNode();
+}
+
 export function move(bounds: Bounds, reference: Nullable<SimpleNode>): Nullable<SimpleNode> {
-  let parent = bounds.parentElement();
+  let parent = liveParent(bounds);
   let first = bounds.firstNode();
   let last = bounds.lastNode();
 
@@ -54,14 +62,9 @@ export function move(bounds: Bounds, reference: Nullable<SimpleNode>): Nullable<
 }
 
 export function clear(bounds: Bounds): Nullable<SimpleNode> {
+  let parent = liveParent(bounds);
   let first = bounds.firstNode();
   let last = bounds.lastNode();
-
-  // Use the node's actual current parent rather than the stored parentElement.
-  // When bounds were rendered into a DocumentFragment that was subsequently
-  // appended to a real DOM container, the nodes' parentNode is the container
-  // while parentElement() still returns the (now-empty) fragment.
-  let parent = (first.parentNode as Nullable<SimpleElement>) ?? bounds.parentElement();
 
   let current: SimpleNode = first;
 
