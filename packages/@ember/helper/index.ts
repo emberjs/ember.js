@@ -1651,4 +1651,24 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  @since 3.27.0
  */
 
+/**
+  `pageTitle` allows you to set the title of any page in your application and
+  append additional titles for each route. For complete documentation, see
+  https://github.com/ember-cli/ember-page-title.
+
+  ```gjs
+  import { pageTitle } from 'ember-page-title';
+    
+  <template>
+    {{pageTitle "My Page Title" }}
+  </template>
+  ```
+
+  @method pageTitle
+  @for External
+  @param {String} param
+  @static
+  @public
+*/
+
 /* eslint-enable @typescript-eslint/no-empty-object-type */
