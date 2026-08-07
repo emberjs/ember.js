@@ -1,5 +1,5 @@
 /**
-@module ember
+@module @ember/helper
 */
 import { tagForObject } from '@ember/-internals/metal/lib/tags';
 import { contentFor as _contentFor } from '@ember/-internals/runtime/lib/mixins/-proxy';
@@ -180,7 +180,10 @@ import { internalHelper } from './internal-helper';
   ```
 
   @method each
-  @for Ember.Templates.helpers
+  @for @ember/helper
+  @static
+  @keyword
+  @noimport
   @public
  */
 
@@ -266,7 +269,10 @@ import { internalHelper } from './internal-helper';
   `#each-in` is a keyword and does not need to be imported.
 
   @method each-in
-  @for Ember.Templates.helpers
+  @static
+  @keyword
+  @noimport
+  @for @ember/helper
   @public
   @since 2.1.0
 */
