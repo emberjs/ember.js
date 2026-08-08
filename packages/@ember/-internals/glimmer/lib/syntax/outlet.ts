@@ -26,11 +26,15 @@ import { internalHelper } from '../helpers/internal-helper';
 import type { OutletState } from '../utils/outlet';
 
 /**
+ @module @ember/helper
+ */
+
+/**
   The `{{outlet}}` helper lets you specify where a child route will render in
   your template. An important use of the `{{outlet}}` helper is in your
   application's `application.gjs` file:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import MyHeader from '../components/my-header';
   import MyFooter from '../components/my-footer';
     
@@ -53,7 +57,9 @@ import type { OutletState } from '../utils/outlet';
   `outlet` is built-in and does not need to be imported. 
  
   @method outlet
-  @for Ember.Templates.helpers
+  @for Keywords
+  @static
+  @noimport
   @public
 */
 export const outletHelper = /*@__PURE__*/ internalHelper(

@@ -1,5 +1,5 @@
 /**
-@module ember
+@module @ember/helper
 */
 
 import { assert } from '@ember/debug';
@@ -29,9 +29,13 @@ import { internalHelper } from './internal-helper';
 
   The `unbound` helper only accepts a single argument, and it return an
   unbound value.
+ 
+ `unbound` is a template keyword and does not need to be imported.
 
   @method unbound
-  @for Ember.Templates.helpers
+  @static
+  @noimport
+  @for Keywords
   @public
 */
 

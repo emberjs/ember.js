@@ -1,5 +1,5 @@
 /**
-@module ember
+@module @ember/helper
 */
 import { tagForObject } from '@ember/-internals/metal/lib/tags';
 import { contentFor as _contentFor } from '@ember/-internals/runtime/lib/mixins/-proxy';
@@ -17,7 +17,7 @@ import { internalHelper } from './internal-helper';
   The default behavior of `{{#each}}` is to yield its inner block once for every
   item in an array passing the item as the first block parameter.
 
-  ```app/components/developer-list.gjs
+  ```gjs {data-filename="app/components/developer-list.gjs"}
   import Component from '@glimmer/component';
 
   export default class DeveloperList extends Component {
@@ -39,7 +39,7 @@ import { internalHelper } from './internal-helper';
 
   The same rules apply to arrays of primitives:
 
-  ```app/components/developer-names.gjs
+  ```gjs {data-filename="app/components/developer-names.gjs"}
   import Component from '@glimmer/component';
 
   export default class DeveloperNames extends Component {
@@ -58,7 +58,7 @@ import { internalHelper } from './internal-helper';
   `{{#each}}` also supports native JavaScript [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
   values and other iterables:
 
-  ```app/components/developer-set.gjs
+  ```gjs {data-filename="app/components/developer-set.gjs"}
   import Component from '@glimmer/component';
 
   export default class DeveloperSet extends Component {
@@ -81,7 +81,7 @@ import { internalHelper } from './internal-helper';
   During iteration, the index of each item in the array is provided as a second
   block parameter:
 
-  ```app/components/developer-list-with-index.gjs
+  ```gjs {data-filename="app/components/developer-list-with-index.gjs"}
   import Component from '@glimmer/component';
 
   export default class DeveloperListWithIndex extends Component {
@@ -120,7 +120,7 @@ import { internalHelper } from './internal-helper';
   For example, mapping over `people` produces a new array of new objects on each
   render. Use `key` so Ember can match items across those renders:
 
-  ```app/components/mapped-developers.gjs
+  ```gjs {data-filename="app/components/mapped-developers.gjs"}
   import Component from '@glimmer/component';
 
   export default class MappedDevelopers extends Component {
@@ -161,7 +161,7 @@ import { internalHelper } from './internal-helper';
   `{{#each}}` can have a matching `{{else}}`. The contents of this block will render
   if the collection is empty.
 
-  ```app/components/available-developers.gjs
+  ```gjs {data-filename="app/components/available-developers.gjs"}
   import Component from '@glimmer/component';
 
   export default class AvailableDevelopers extends Component {
@@ -180,7 +180,9 @@ import { internalHelper } from './internal-helper';
   ```
 
   @method each
-  @for Ember.Templates.helpers
+  @for Keywords
+  @static
+  @noimport
   @public
  */
 
@@ -190,7 +192,7 @@ import { internalHelper } from './internal-helper';
 
   For example, given this component definition:
 
-  ```app/components/developer-details.gjs
+  ```gjs {data-filename="app/components/developer-details.gjs"}
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
@@ -222,7 +224,7 @@ import { internalHelper } from './internal-helper';
 
   The same pattern works with a `Map`:
 
-  ```app/components/developer-map.gjs
+  ```gjs {data-filename="app/components/developer-map.gjs"}
   import Component from '@glimmer/component';
 
   export default class DeveloperMap extends Component {
@@ -244,7 +246,7 @@ import { internalHelper } from './internal-helper';
   When a `Map` uses object keys, you can pass `key="@identity"` to explicitly
   track entries across re-renders using the JavaScript identity of each key:
 
-  ```app/components/object-keyed-map.gjs
+  ```gjs {data-filename="app/components/object-keyed-map.gjs"}
   import Component from '@glimmer/component';
 
   export default class ObjectKeyedMap extends Component {
@@ -266,7 +268,9 @@ import { internalHelper } from './internal-helper';
   `#each-in` is a keyword and does not need to be imported.
 
   @method each-in
-  @for Ember.Templates.helpers
+  @static
+  @noimport
+  @for Keywords
   @public
   @since 2.1.0
 */

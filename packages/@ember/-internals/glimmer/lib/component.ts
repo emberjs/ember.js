@@ -719,7 +719,7 @@ declare const SIGNATURE: unique symbol;
 
   See the [Guide on Component event
   handlers](https://guides.emberjs.com/release/components/component-state-and-actions/#toc_html-modifiers-and-actions)
-  and the [API docs for `on`](../Ember.Templates.helpers/methods/on?anchor=on)
+  and the [API docs for `on`](../functions/Keywords/on)
   for more details.
 
   ### Event Handler Methods
