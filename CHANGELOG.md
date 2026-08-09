@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v7.3.0 (August 9, 2026)
+## v7.3.0-beta.1 (August 9, 2026)
 
 - [#21471](https://github.com/emberjs/ember.js/pull/21471) [FEATURE] Overload tracked to be able to work outside of classes per [RFC #1071](https://rfcs.emberjs.com/id/1071-overload-tracked-for-non-class-use/).
 - [#21203](https://github.com/emberjs/ember.js/pull/21203) [BUGFIX] Fix `@model` becomes `undefined` or changes to the wrong route's model during Glimmer component willDestroy
