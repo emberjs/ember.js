@@ -51,6 +51,10 @@ let destroyDrainArmed = false;
 let draining = false;
 let renderTransactionDepth = 0;
 
+export function _hasScheduledDestroys(): boolean {
+  return scheduledDestructors.length > 0 || scheduledFinalizers.length > 0;
+}
+
 export function _beginRenderTransaction(): void {
   renderTransactionDepth++;
 }

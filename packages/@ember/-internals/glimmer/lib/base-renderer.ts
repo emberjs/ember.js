@@ -26,12 +26,14 @@ import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
+import { _setHasPendingRenderWork } from '@ember/runloop';
 import {
   EmberEnvironmentDelegate,
   _setNotifyRevalidate,
   _beginRenderTransaction,
   _drainScheduledDestroys,
   _endRenderTransaction,
+  _hasScheduledDestroys,
   _resetInvalidationNotified,
 } from './environment';
 import ResolverImpl from './resolver';
@@ -171,6 +173,14 @@ _setNotifyRevalidate(() => {
   return true;
 });
 
+// The `_backburner` stub's `currentInstance` reports whether work is
+// still outstanding -- an invalid renderer awaiting its tick, or
+// destruction awaiting its drain -- the same window classic's autorun
+// instance covered, which test-helpers' settled() polls on.
+_setHasPendingRenderWork(
+  () => renderers.some((renderer) => !renderer.isValid()) || _hasScheduledDestroys()
+);
+
 // The default @ember/scheduler strategy IS this clock: awaited phases
 // request a tick here (a clean renderer revalidates as a no-op and the
 // tick still arrives pre-paint), and every tick that leaves the
@@ -202,7 +212,21 @@ export function renderSettled() {
     let resolve!: () => void;
     let promise = new Promise<void>((r) => (resolve = r));
     renderSettledDeferred = { promise, resolve };
-    queueMicrotask(resolveRenderPromiseIfSettled);
+    // Resolution belongs to the end of a scheduler flush -- classic
+    // resolved at the end of the next runloop flush, whose render queue
+    // had already run. Request a tick (a no-op revalidation when
+    // nothing is dirty) and the flush resolves on its way out; work
+    // that lands before that tick, like an un-awaited render() call
+    // dirtying the renderer, coalesces into the same flush and is
+    // rendered before resolution. With no renderers yet (pre-boot),
+    // settle on a microtask.
+    if (renderers.length === 0) {
+      queueMicrotask(resolveRenderPromiseIfSettled);
+    } else {
+      for (let renderer of renderers) {
+        renderer.rerender();
+      }
+    }
   }
 
   return renderSettledDeferred.promise;
