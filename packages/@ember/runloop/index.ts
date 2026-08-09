@@ -374,3 +374,15 @@ export function _hasScheduledTimers(): boolean {
 }
 
 export function _cancelTimers(): void {}
+
+// `@ember/test-helpers` and `ember-qunit` import this to toggle debug
+// mode and ask whether work is pending; the answers are always "nothing
+// is pending". `getDebugInfo` is intentionally absent: callers check
+// for it before use and fall back to reporting no debug info.
+export const _backburner = {
+  DEBUG: false,
+  currentInstance: null,
+  hasTimers(): boolean {
+    return false;
+  },
+};

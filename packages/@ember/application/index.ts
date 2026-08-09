@@ -11,10 +11,15 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import libraries from '@ember/-internals/metal/lib/libraries';
 
+// resolve/reject use method syntax on purpose: property-syntax function
+// types are strictly contravariant in T under strictFunctionTypes, which
+// would stop `Deferred<App>` (via `_bootResolver: Deferred<this>`) from
+// being assignable to `Deferred<Application>` at consumer call sites like
+// `setApplication()`. RSVP's Deferred was method-syntax (bivariant) too.
 interface Deferred<T> {
   promise: Promise<T>;
-  resolve: (value: T) => void;
-  reject: (error: unknown) => void;
+  resolve(value: T): void;
+  reject(error: unknown): void;
 }
 
 function makeDeferred<T>(): Deferred<T> {
