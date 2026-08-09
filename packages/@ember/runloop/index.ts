@@ -375,30 +375,6 @@ export function _hasScheduledTimers(): boolean {
 
 export function _cancelTimers(): void {}
 
-// Classic's autorun instance existed exactly while a flush was still
-// pending, and test-helpers' settled() reads `currentInstance` to
-// decide whether a re-render or teardown is outstanding. The renderer
-// registers a probe here so the stub keeps answering that question
-// truthfully; the registration indirection avoids a module cycle.
-let hasPendingRenderWork: () => boolean = () => false;
-
-export function _setHasPendingRenderWork(probe: () => boolean): void {
-  hasPendingRenderWork = probe;
-}
-
-const AUTORUN_STUB = {};
-
-// `@ember/test-helpers` and `ember-qunit` import this to toggle debug
-// mode and ask whether work is pending. Timers are native and
-// unobservable, so `hasTimers` always answers false. `getDebugInfo` is
-// intentionally absent: callers check for it before use and fall back
-// to reporting no debug info.
-export const _backburner = {
-  DEBUG: false,
-  get currentInstance(): object | null {
-    return hasPendingRenderWork() ? AUTORUN_STUB : null;
-  },
-  hasTimers(): boolean {
-    return false;
-  },
-};
+// There is deliberately no `_backburner` export: backburner is gone,
+// not stubbed. Test infrastructure that imported it to ask "is work
+// pending?" should use `isRenderPending` from '@ember/renderer'.

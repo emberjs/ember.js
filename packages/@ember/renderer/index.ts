@@ -64,6 +64,19 @@
 export { renderSettled } from '@ember/-internals/glimmer/lib/base-renderer';
 
 /**
+  Synchronously reports whether rendering work is still outstanding --
+  a dirtied renderer whose flush has not run yet, or destruction whose
+  drain is still pending. This is the probe test infrastructure needs
+  for its settled checks, answered by the renderer itself rather than
+  inferred from run loop internals.
+
+  @method isRenderPending
+  @returns {Boolean} true while a render or destroy drain is pending
+  @public
+*/
+export { isRenderPending } from '@ember/-internals/glimmer/lib/base-renderer';
+
+/**
  * Render a component into a DOM element.
  *
  * See also: [RFC#1099](https://github.com/emberjs/rfcs/blob/main/text/1099-renderComponent.md)

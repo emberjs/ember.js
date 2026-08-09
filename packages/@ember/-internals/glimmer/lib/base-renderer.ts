@@ -26,7 +26,6 @@ import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
-import { _setHasPendingRenderWork } from '@ember/runloop';
 import {
   EmberEnvironmentDelegate,
   _setNotifyRevalidate,
@@ -173,13 +172,19 @@ _setNotifyRevalidate(() => {
   return true;
 });
 
-// The `_backburner` stub's `currentInstance` reports whether work is
-// still outstanding -- an invalid renderer awaiting its tick, or
-// destruction awaiting its drain -- the same window classic's autorun
-// instance covered, which test-helpers' settled() polls on.
-_setHasPendingRenderWork(
-  () => renderers.some((renderer) => !renderer.isValid()) || _hasScheduledDestroys()
-);
+/**
+  Whether work is still outstanding -- an invalid renderer awaiting its
+  tick, or destruction awaiting its drain. The same window classic's
+  autorun instance covered, which test-helpers' settled() polls on;
+  this is the synchronous probe its getSettledState always wanted from
+  the framework instead of reading backburner internals.
+
+  @method isRenderPending
+  @returns {Boolean} true while a render or destroy drain is pending
+*/
+export function isRenderPending(): boolean {
+  return renderers.some((renderer) => !renderer.isValid()) || _hasScheduledDestroys();
+}
 
 // The default @ember/scheduler strategy IS this clock: awaited phases
 // request a tick here (a clean renderer revalidates as a no-op and the
