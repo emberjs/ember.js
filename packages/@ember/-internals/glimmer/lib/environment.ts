@@ -48,25 +48,48 @@ const scheduledDestructors: ScheduledDestructor[] = [];
 const scheduledFinalizers: Array<() => void> = [];
 
 let destroyDrainArmed = false;
+let draining = false;
+let renderTransactionDepth = 0;
+
+export function _beginRenderTransaction(): void {
+  renderTransactionDepth++;
+}
+
+export function _endRenderTransaction(): void {
+  renderTransactionDepth--;
+}
 
 /**
  * Runs pending destructors, then finalizers -- the classic
  * actions-before-destroy queue ordering. Destruction can schedule
  * further destruction, so drain until quiet.
+ *
+ * Draining is skipped while a drain is already running (the outer
+ * loop picks up whatever was scheduled) or while roots are mid-render
+ * (running destructors would mutate DOM under the updating VM); in
+ * both cases the pending work is picked up by the caller that holds
+ * the guard, or by the armed fallback microtask.
  */
 export function _drainScheduledDestroys(): void {
+  if (draining || renderTransactionDepth > 0) return;
+
   destroyDrainArmed = false;
+  draining = true;
 
-  while (scheduledDestructors.length > 0 || scheduledFinalizers.length > 0) {
-    const destructors = scheduledDestructors.splice(0);
-    for (const { destroyable, destructor } of destructors) {
-      destructor(destroyable);
-    }
+  try {
+    while (scheduledDestructors.length > 0 || scheduledFinalizers.length > 0) {
+      const destructors = scheduledDestructors.splice(0);
+      for (const { destroyable, destructor } of destructors) {
+        destructor(destroyable);
+      }
 
-    const finalizers = scheduledFinalizers.splice(0);
-    for (const finalize of finalizers) {
-      finalize();
+      const finalizers = scheduledFinalizers.splice(0);
+      for (const finalize of finalizers) {
+        finalize();
+      }
     }
+  } finally {
+    draining = false;
   }
 }
 

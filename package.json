@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "7.3.0-alpha.1",
+  "version": "7.3.0-alpha.1.all-optimizations+a967e878",
   "description": "A JavaScript framework for creating ambitious web applications",
   "type": "module",
   "sideEffects": [
@@ -366,5 +366,10 @@
       ]
     }
   },
-  "packageManager": "pnpm@10.33.2"
+  "packageManager": "pnpm@10.33.2",
+  "_originalVersion": "7.3.0-alpha.1",
+  "_versionPreviouslyCalculated": true,
+  "publishConfig": {
+    "tag": "old"
+  }
 }

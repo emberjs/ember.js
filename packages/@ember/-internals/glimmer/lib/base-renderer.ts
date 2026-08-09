@@ -29,7 +29,9 @@ import { hasDOM } from '../../browser-environment';
 import {
   EmberEnvironmentDelegate,
   _setNotifyRevalidate,
+  _beginRenderTransaction,
   _drainScheduledDestroys,
+  _endRenderTransaction,
   _resetInvalidationNotified,
 } from './environment';
 import ResolverImpl from './resolver';
@@ -305,6 +307,7 @@ export class RendererState {
     // used to prevent calling _renderRoots again (see above)
     // while we are actively rendering roots
     this.#inRenderTransaction = true;
+    _beginRenderTransaction();
 
     let completedWithoutError = false;
     try {
@@ -315,6 +318,7 @@ export class RendererState {
         this.#lastRevision = valueForTag(CURRENT_TAG);
       }
       this.#inRenderTransaction = false;
+      _endRenderTransaction();
     }
   }
 
