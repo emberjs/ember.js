@@ -37,6 +37,7 @@ class Tracker {
       return combine(Array.from(this.tags));
     }
   }
+
 }
 
 /**

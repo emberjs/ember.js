@@ -4,7 +4,7 @@ import Adapter from '../lib/adapters/adapter';
 import { getAdapter, setAdapter } from '../lib/test/adapter';
 import EmberApplication from '@ember/application';
 import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-test-helpers';
-import { RSVP } from '@ember/-internals/runtime';
+import * as RSVP from 'rsvp';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;

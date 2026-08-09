@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "7.3.0-alpha.1",
+  "version": "7.3.0-alpha.1.all-optimizations+a4999398",
   "description": "A JavaScript framework for creating ambitious web applications",
   "type": "module",
   "sideEffects": [
@@ -70,7 +70,6 @@
     "@babel/core": "^7.24.4",
     "@embroider/addon-shim": "^1.10.2",
     "@simple-dom/interface": "^1.4.0",
-    "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",
     "chalk": "^4.0.0",
     "ember-cli-get-component-path-option": "^1.0.0",
@@ -191,7 +190,6 @@
       "@ember/-internals/owner/index.js": "ember-source/@ember/-internals/owner/index.js",
       "@ember/-internals/routing/index.js": "ember-source/@ember/-internals/routing/index.js",
       "@ember/-internals/runtime/index.js": "ember-source/@ember/-internals/runtime/index.js",
-      "@ember/-internals/runtime/lib/ext/rsvp.js": "ember-source/@ember/-internals/runtime/lib/ext/rsvp.js",
       "@ember/-internals/runtime/lib/mixins/-proxy.js": "ember-source/@ember/-internals/runtime/lib/mixins/-proxy.js",
       "@ember/-internals/runtime/lib/mixins/action_handler.js": "ember-source/@ember/-internals/runtime/lib/mixins/action_handler.js",
       "@ember/-internals/runtime/lib/mixins/comparable.js": "ember-source/@ember/-internals/runtime/lib/mixins/comparable.js",
@@ -284,6 +282,8 @@
       "@ember/routing/router-service.js": "ember-source/@ember/routing/router-service.js",
       "@ember/routing/router.js": "ember-source/@ember/routing/router.js",
       "@ember/runloop/index.js": "ember-source/@ember/runloop/index.js",
+      "@ember/scheduler/index.js": "ember-source/@ember/scheduler/index.js",
+      "@ember/scheduler/strategy.js": "ember-source/@ember/scheduler/strategy.js",
       "@ember/service/index.js": "ember-source/@ember/service/index.js",
       "@ember/template-compilation/index.js": "ember-source/@ember/template-compilation/index.js",
       "@ember/template-compiler/-internal-primitives.js": "ember-source/@ember/template-compiler/-internal-primitives.js",
@@ -343,7 +343,6 @@
       "@glimmer/vm/index.js": "ember-source/@glimmer/vm/index.js",
       "@glimmer/wire-format/index.js": "ember-source/@glimmer/wire-format/index.js",
       "@simple-dom/document/index.js": "ember-source/@simple-dom/document/index.js",
-      "backburner.js/index.js": "ember-source/backburner.js/index.js",
       "dag-map/index.js": "ember-source/dag-map/index.js",
       "ember-template-compiler/index.js": "ember-source/ember-template-compiler/index.js",
       "ember-testing/index.js": "ember-source/ember-testing/index.js",
@@ -355,8 +354,7 @@
       "ember-testing/lib/test/waiters.js": "ember-source/ember-testing/lib/test/waiters.js",
       "ember/version.js": "ember-source/ember/version.js",
       "route-recognizer/index.js": "ember-source/route-recognizer/index.js",
-      "router_js/index.js": "ember-source/router_js/index.js",
-      "rsvp/index.js": "ember-source/rsvp/index.js"
+      "router_js/index.js": "ember-source/router_js/index.js"
     }
   },
   "typesVersions": {
@@ -369,5 +367,10 @@
       ]
     }
   },
-  "packageManager": "pnpm@10.33.2"
+  "packageManager": "pnpm@10.33.2",
+  "_originalVersion": "7.3.0-alpha.1",
+  "_versionPreviouslyCalculated": true,
+  "publishConfig": {
+    "tag": "old"
+  }
 }

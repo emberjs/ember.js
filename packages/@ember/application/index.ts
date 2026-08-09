@@ -9,9 +9,28 @@ import { ENV } from '@ember/-internals/environment/lib/env';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { join, once, run, schedule } from '@ember/runloop';
 import libraries from '@ember/-internals/metal/lib/libraries';
-import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
+
+// resolve/reject use method syntax on purpose: property-syntax function
+// types are strictly contravariant in T under strictFunctionTypes, which
+// would stop `Deferred<App>` (via `_bootResolver: Deferred<this>`) from
+// being assignable to `Deferred<Application>` at consumer call sites like
+// `setApplication()`. RSVP's Deferred was method-syntax (bivariant) too.
+interface Deferred<T> {
+  promise: Promise<T>;
+  resolve(value: T): void;
+  reject(error: unknown): void;
+}
+
+function makeDeferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
@@ -490,7 +509,7 @@ class Application extends Engine {
     // If it's not actually a Document then it will evaluate false which is fine for our
     // purposes.
     if (document === null || (document as Document).readyState !== 'loading') {
-      schedule('actions', this, this.domReady);
+      queueMicrotask(() => this.domReady());
     } else {
       // Ideally we'd just check `document instanceof Document` but currently some tests pass a fake document.
       assert(
@@ -502,7 +521,7 @@ class Application extends Engine {
 
       let callback = () => {
         document.removeEventListener('DOMContentLoaded', callback);
-        run(this, this.domReady);
+        this.domReady();
       };
 
       document.addEventListener('DOMContentLoaded', callback);
@@ -637,7 +656,7 @@ class Application extends Engine {
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
-      once(this, this.didBecomeReady);
+      this.didBecomeReady();
     }
   }
 
@@ -683,7 +702,7 @@ class Application extends Engine {
     return this._bootPromise;
   }
 
-  _bootResolver: ReturnType<(typeof RSVP)['defer']> | null = null;
+  _bootResolver: Deferred<this> | null = null;
 
   /**
     Unfortunately, a lot of existing code assumes the booting process is
@@ -707,8 +726,8 @@ class Application extends Engine {
     // boot promise exists for book-keeping purposes: if anything went wrong in
     // the boot process, we need to store the error as a rejection on the boot
     // promise so that a future caller of `boot()` can tell what failed.
-    let defer = (this._bootResolver = RSVP.defer());
-    this._bootPromise = defer.promise as Promise<this>;
+    let defer = (this._bootResolver = makeDeferred<this>());
+    this._bootPromise = defer.promise;
 
     try {
       this.runInitializers();
@@ -817,14 +836,10 @@ class Application extends Engine {
     this._bootResolver = null;
     this._booted = false;
 
-    function handleReset(this: Application) {
-      assert('expected instance', instance);
-      run(instance, 'destroy');
-      this._buildDeprecatedInstance();
-      schedule('actions', this, '_bootSync');
-    }
-
-    join(this, handleReset);
+    assert('expected instance', instance);
+    instance.destroy();
+    this._buildDeprecatedInstance();
+    queueMicrotask(() => this._bootSync());
   }
 
   /**

@@ -15,6 +15,7 @@ import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { getProp, setProp } from '@glimmer/global-context';
 import { isDict } from '@glimmer/util/lib/collections';
 import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import { peekTagFor } from '@glimmer/validator/lib/meta';
 import { consumeTag, track } from '@glimmer/validator/lib/tracking';
 
 export const REFERENCE: ReferenceSymbol = Symbol('REFERENCE') as ReferenceSymbol;
@@ -44,6 +45,17 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
 
   public compute: Nullable<() => T> = null;
   public update: Nullable<(val: T) => void> = null;
+
+  /**
+   * Proven plain tracked-field read: the first framed compute consumed
+   * exactly the property's canonical cell tag, so the consumed set can
+   * never change and recomputes skip frame machinery entirely.
+   */
+  public knownTag = false;
+
+  /** pending known-tag candidacy; checked once after the first compute */
+  public pathParent: Nullable<Reference> = null;
+  public pathKey: Nullable<string> = null;
 
   public debugLabel?: string;
 
@@ -163,6 +175,16 @@ export function valueForRef<T>(_ref: Reference<T>): T {
   if (tag === null || !validateTag(tag, lastRevision)) {
     const { compute } = ref;
 
+    if (ref.knownTag) {
+      // the getter's own consumeTag lands in the ambient frame, which
+      // is exactly what the framed path's trailing consumeTag achieved
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- knownTag implies compute
+      lastValue = ref.lastValue = compute!();
+      ref.lastRevision = valueForTag(tag);
+
+      return lastValue;
+    }
+
     const newTag = track(() => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       lastValue = ref.lastValue = compute!();
@@ -171,6 +193,10 @@ export function valueForRef<T>(_ref: Reference<T>): T {
     tag = ref.tag = newTag;
 
     ref.lastRevision = valueForTag(newTag);
+
+    if (ref.pathParent !== null) {
+      maybeLockKnownTag(ref, newTag);
+    }
   } else {
     lastValue = ref.lastValue;
   }
@@ -178,6 +204,28 @@ export function valueForRef<T>(_ref: Reference<T>): T {
   consumeTag(tag);
 
   return lastValue as T;
+}
+
+/**
+ * A child ref locks onto its property's canonical tag when its first
+ * framed compute consumed EXACTLY that tag: single tag means no
+ * branching getter (those consume different sets per run), and
+ * identity with the registry's cell tag means the read was the plain
+ * tracked-field getter on a parent that can never change (a mutable
+ * parent's tag would have been in the frame too). Checked once.
+ */
+function maybeLockKnownTag(ref: ReferenceImpl, tag: Tag): void {
+  const parentRef = ref.pathParent as ReferenceImpl;
+  const key = ref.pathKey as string;
+
+  ref.pathParent = null;
+  ref.pathKey = null;
+
+  const parent = parentRef.lastValue;
+
+  if (isDict(parent) && peekTagFor(parent, key) === tag) {
+    ref.knownTag = true;
+  }
 }
 
 export function updateRef(_ref: Reference, value: unknown) {
@@ -232,6 +280,9 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
         }
       }
     );
+
+    (child as ReferenceImpl).pathParent = parentRef;
+    (child as ReferenceImpl).pathKey = path;
 
     if (DEBUG) {
       child.debugLabel = `${parentRef.debugLabel}.${path}`;

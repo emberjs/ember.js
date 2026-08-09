@@ -33,9 +33,6 @@ importers:
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
-      backburner.js:
-        specifier: ^2.8.0
-        version: 2.8.0
       broccoli-file-creator:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1063,12 +1060,18 @@ importers:
       '@glimmer/validator':
         specifier: workspace:*
         version: link:../../@glimmer/validator
-      backburner.js:
-        specifier: ^2.7.0
-        version: 2.8.0
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/scheduler:
+    dependencies:
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
@@ -1582,9 +1585,9 @@ importers:
       '@ember/owner':
         specifier: workspace:*
         version: link:../../@ember/owner
-      '@ember/runloop':
+      '@glimmer/global-context':
         specifier: workspace:*
-        version: link:../../@ember/runloop
+        version: link:../global-context
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces

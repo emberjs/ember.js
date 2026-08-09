@@ -265,8 +265,6 @@ function rolledUpPackages() {
 // these that we publish.
 export function exposedDependencies() {
   return {
-    'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
-    rsvp: require.resolve('rsvp/lib/rsvp.js'),
     'dag-map': require.resolve('dag-map/dag-map.js'),
     router_js: require.resolve('router_js'),
     'route-recognizer': require.resolve('route-recognizer/dist/route-recognizer.es.js'),

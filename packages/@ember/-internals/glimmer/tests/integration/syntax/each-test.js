@@ -4,7 +4,7 @@ import { notifyPropertyChange, on } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
-import { RSVP } from '@ember/-internals/runtime';
+import * as RSVP from 'rsvp';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 

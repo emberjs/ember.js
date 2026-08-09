@@ -1,7 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 import type { MatchCallback, Params, QueryParams } from 'route-recognizer';
 import RouteRecognizer from 'route-recognizer';
-import { Promise } from 'rsvp';
 import type { Dict, Maybe, Option } from './core';
 import type { ModelFor, Route, RouteInfo, RouteInfoWithAttributes } from './route-info';
 import type InternalRouteInfo from './route-info';

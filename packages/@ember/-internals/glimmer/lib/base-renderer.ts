@@ -1,7 +1,5 @@
-import { ENV } from '@ember/-internals/environment/lib/env';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
   associateDestroyableChild,
   destroy,
@@ -28,13 +26,20 @@ import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
-import { EmberEnvironmentDelegate } from './environment';
+import {
+  EmberEnvironmentDelegate,
+  _setNotifyRevalidate,
+  _beginRenderTransaction,
+  _drainScheduledDestroys,
+  _endRenderTransaction,
+  _hasScheduledDestroys,
+  _resetInvalidationNotified,
+} from './environment';
 import ResolverImpl from './resolver';
+import schedulerStrategy from '@ember/scheduler/strategy';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
-
-const NO_OP = () => {};
 
 // This wrapper logic prevents us from rerendering in case of a hard failure
 // during render. This prevents infinite revalidation type loops from occuring,
@@ -143,6 +148,8 @@ export function _resetRenderers() {
 function register(renderer: BaseRenderer): void {
   assert('Cannot register the same renderer twice', renderers.indexOf(renderer) === -1);
   renderers.push(renderer);
+  // a suppressed notification cannot have reached this renderer
+  _resetInvalidationNotified();
 }
 
 function deregister(renderer: BaseRenderer): void {
@@ -151,11 +158,43 @@ function deregister(renderer: BaseRenderer): void {
   renderers.splice(index, 1);
 }
 
-function loopBegin(): void {
+// SPIKE (RFC 957 end state): tag invalidation notifies the renderer's
+// scheduler directly -- there is no runloop in the render path. This
+// replaces the classic wiring where every dirty tag spun up a
+// backburner autorun whose `begin` hook rerendered the renderers.
+_setNotifyRevalidate(() => {
+  if (renderers.length === 0) return false;
+
   for (let renderer of renderers) {
     renderer.rerender();
   }
+
+  return true;
+});
+
+/**
+  Whether work is still outstanding -- an invalid renderer awaiting its
+  tick, or destruction awaiting its drain. The same window classic's
+  autorun instance covered, which test-helpers' settled() polls on;
+  this is the synchronous probe its getSettledState always wanted from
+  the framework instead of reading backburner internals.
+
+  @method isRenderPending
+  @returns {Boolean} true while a render or destroy drain is pending
+*/
+export function isRenderPending(): boolean {
+  return renderers.some((renderer) => !renderer.isValid()) || _hasScheduledDestroys();
 }
+
+// The default @ember/scheduler strategy IS this clock: awaited phases
+// request a tick here (a clean renderer revalidates as a no-op and the
+// tick still arrives pre-paint), and every tick that leaves the
+// renderer valid drives the strategy's phase windows below.
+schedulerStrategy._setTickRequester(() => {
+  for (let renderer of renderers) {
+    renderer.rerender();
+  }
+});
 
 interface RenderSettledDeferred {
   promise: Promise<void>;
@@ -166,8 +205,9 @@ let renderSettledDeferred: RenderSettledDeferred | null = null;
 /*
   Returns a promise which will resolve when rendering has settled. Settled in
   this context is defined as when all of the tags in use are "current" (e.g.
-  `renderers.every(r => r._isValid())`). When this is checked at the _end_ of
-  the run loop, this essentially guarantees that all rendering is completed.
+  `renderers.every(r => r._isValid())`). Resolution is attempted at the end
+  of every scheduler flush; if nothing is dirty when this is called, it
+  settles on a microtask.
 
   @method renderSettled
   @returns {Promise<void>} a promise which fulfills when rendering has settled
@@ -177,46 +217,37 @@ export function renderSettled() {
     let resolve!: () => void;
     let promise = new Promise<void>((r) => (resolve = r));
     renderSettledDeferred = { promise, resolve };
-    // if there is no current runloop, the promise created above will not have
-    // a chance to resolve (because its resolved in backburner's "end" event)
-    if (!_getCurrentRunLoop()) {
-      // ensure a runloop has been kicked off
-      _backburner.schedule('actions', null, NO_OP);
+    // Resolution belongs to the end of a scheduler flush -- classic
+    // resolved at the end of the next runloop flush, whose render queue
+    // had already run. Request a tick (a no-op revalidation when
+    // nothing is dirty) and the flush resolves on its way out; work
+    // that lands before that tick, like an un-awaited render() call
+    // dirtying the renderer, coalesces into the same flush and is
+    // rendered before resolution. With no renderers yet (pre-boot),
+    // settle on a microtask.
+    if (renderers.length === 0) {
+      queueMicrotask(resolveRenderPromiseIfSettled);
+    } else {
+      for (let renderer of renderers) {
+        renderer.rerender();
+      }
     }
   }
 
   return renderSettledDeferred.promise;
 }
 
-function resolveRenderPromise() {
-  if (renderSettledDeferred !== null) {
-    let resolve = renderSettledDeferred.resolve;
-    renderSettledDeferred = null;
+function resolveRenderPromiseIfSettled() {
+  if (renderSettledDeferred === null) return;
 
-    _backburner.join(null, resolve);
-  }
-}
-
-let loops = 0;
-function loopEnd() {
   for (let renderer of renderers) {
-    if (!renderer.isValid()) {
-      if (loops > ENV._RERENDER_LOOP_LIMIT) {
-        loops = 0;
-        // TODO: do something better
-        renderer.destroy();
-        throw new Error('infinite rendering invalidation detected');
-      }
-      loops++;
-      return _backburner.join(null, NO_OP);
-    }
+    if (!renderer.isValid()) return;
   }
-  loops = 0;
-  resolveRenderPromise();
-}
 
-_backburner.on('begin', loopBegin);
-_backburner.on('end', loopEnd);
+  let resolve = renderSettledDeferred.resolve;
+  renderSettledDeferred = null;
+  resolve();
+}
 
 type Resolver = ClassicResolver;
 
@@ -305,6 +336,7 @@ export class RendererState {
     // used to prevent calling _renderRoots again (see above)
     // while we are actively rendering roots
     this.#inRenderTransaction = true;
+    _beginRenderTransaction();
 
     let completedWithoutError = false;
     try {
@@ -315,6 +347,7 @@ export class RendererState {
         this.#lastRevision = valueForTag(CURRENT_TAG);
       }
       this.#inRenderTransaction = false;
+      _endRenderTransaction();
     }
   }
 
@@ -368,8 +401,185 @@ export class RendererState {
     }
   }
 
+  #flushScheduled = false;
+  #renderer: BaseRenderer | null = null;
+  #rafHandle: number | null = null;
+  #channel: MessageChannel | null = null;
+  #channelArmed = false;
+  #flushesThisFrame = 0;
+  #lastFrameAt = 0;
+  #viaStream = false;
+
+  /**
+   * True during the microtask drain that follows a tick. Dirt arriving
+   * in that window comes from the tick's own continuations
+   * (render-coupled follow-ups: an after-render effect awaiting a
+   * microtask before setting state), so the next tick is scheduled at
+   * microtask speed; anything later takes the frame-paced legs. This is
+   * the same classifier Angular's zoneless scheduler ships
+   * (useMicrotaskScheduler + switchToMicrotaskScheduler): semantically
+   * exact, no wall clocks, no misclassification under CPU throttle.
+   */
+  #microtaskWindow = false;
+
+  #closeMicrotaskWindow = () => {
+    this.#microtaskWindow = false;
+  };
+
+  // scheduling must not allocate per dirt event: dependent chains
+  // (render -> effect -> set) re-enter scheduleRevalidate once per step,
+  // and per-step closures were measurable GC pressure in exactly that
+  // case, so every callback here is persistent
+  #microtaskFlush = () => this.#flush(false);
+
+  #frameFlush = () => {
+    this.#lastFrameAt = performance.now();
+    this.#flush(true);
+  };
+
+  /**
+   * consecutive ticks that ended still-dirty (state was dirtied while
+   * we were rendering). A few settle rounds run at microtask speed for
+   * legitimate measure-then-adjust patterns; past that, ticking
+   * degrades to the frame-paced stream legs so a pathological
+   * render->dirty loop paints between ticks instead of freezing the
+   * thread. Replaces the old unbounded flush-until-stable loop.
+   */
+  #settleRounds = 0;
+
+  #flush(viaFrame: boolean): void {
+    if (!this.#flushScheduled) return;
+
+    if (viaFrame) {
+      this.#flushesThisFrame = 0;
+      this.#rafHandle = null;
+    } else {
+      if (this.#viaStream) {
+        // only stream-scheduled flushes count toward the rAF
+        // stand-down: chain flushes are same-task and invisible to
+        // frames, and counting them would starve later stream dirt of
+        // its macrotask leg
+        this.#flushesThisFrame++;
+      }
+      if (this.#rafHandle !== null) {
+        cancelAnimationFrame(this.#rafHandle);
+        this.#rafHandle = null;
+      }
+    }
+
+    this.#viaStream = false;
+
+    const renderer = this.#renderer;
+
+    if (renderer === null) return;
+
+    // clock semantics: one render per tick, taking whatever has been
+    // dirtied so far. Code that keeps dirtying state while we render
+    // just accumulates work for the next tick -- the flag stays set
+    // through revalidation so mid-render dirt dedupes into this tick's
+    // snapshot rather than arming machinery, and clears before the
+    // destroy drain, whose destructors may dirty state that genuinely
+    // belongs to the next tick.
+    this.revalidate(renderer);
+
+    this.#flushScheduled = false;
+
+    this.#microtaskWindow = true;
+    queueMicrotask(this.#closeMicrotaskWindow);
+
+    _drainScheduledDestroys();
+
+    if (this.isValid()) {
+      this.#settleRounds = 0;
+      schedulerStrategy._onRendererTick();
+      resolveRenderPromiseIfSettled();
+    } else if (this.#settleRounds < 3) {
+      this.#settleRounds++;
+      this.#flushScheduled = true;
+      queueMicrotask(this.#microtaskFlush);
+    } else {
+      this.#armStreamTick(renderer, performance.now());
+    }
+
+    // dirt from here on is new information again -- the next set must
+    // notify the scheduler. Reset at the END of the tick so dirt that
+    // arrived during revalidation (which latched the flag but was
+    // absorbed by this tick or its settle rounds) can't leave it stuck.
+    _resetInvalidationNotified();
+  }
+
+  /**
+   * SPIKE: task-coalesced flushing, zoneless-Angular shaped but
+   * adaptive:
+   *
+   * - a flush is scheduled as a race between an UNCLAMPED macrotask
+   *   (MessageChannel -- setTimeout's 4ms nesting clamp would make
+   *   render->microtask->set chains crawl) and requestAnimationFrame
+   * - every update inside the current task + microtasks coalesces into
+   *   one flush; awaited (microtask) update loops stop paying a render
+   *   per resume
+   * - adaptive frame alignment: when several flushes land within one
+   *   frame (a sustained external stream like a worker firehose), the
+   *   macrotask leg stands down and flushes ride rAF until the burst
+   *   subsides -- unless rAF itself has stopped being serviced (see
+   *   below)
+   */
   scheduleRevalidate(renderer: BaseRenderer): void {
-    _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+    if (this.#flushScheduled) {
+      return;
+    }
+
+    this.#renderer = renderer;
+    this.#flushScheduled = true;
+
+    // Dirt inside the post-tick microtask window is render-coupled
+    // (chain) work and ticks at microtask speed, like the classic
+    // runloop -- this cannot defeat coalescing of awaited update loops,
+    // which drain their entire microtask chain before their first tick
+    // ever runs. Everything else is stream dirt and takes the
+    // frame-paced legs. SSR has no paint to schedule against, so it
+    // always ticks on a microtask.
+    if (this.#microtaskWindow || typeof requestAnimationFrame !== 'function') {
+      queueMicrotask(this.#microtaskFlush);
+      return;
+    }
+
+    this.#armStreamTick(renderer, performance.now());
+  }
+
+  /**
+   * The frame-paced legs of the clock: a tick arrives at the next
+   * rendering opportunity (rAF), raced by an unclamped macrotask that
+   * stands down under sustained per-frame bursts so flushes ride the
+   * frame.
+   */
+  #armStreamTick(renderer: BaseRenderer, now: number): void {
+    this.#renderer = renderer;
+    this.#flushScheduled = true;
+    this.#viaStream = true;
+    this.#rafHandle = requestAnimationFrame(this.#frameFlush);
+
+    // The stand-down only applies while rAF is actually being serviced:
+    // backgrounded/occluded pages stop firing rAF entirely, and since
+    // the per-frame counter is only reset by a frame firing, standing
+    // the macrotask leg down there would strand all rendering until the
+    // tab becomes visible again.
+    const rafStarved = now - this.#lastFrameAt > 250;
+
+    if (this.#flushesThisFrame < 3 || rafStarved) {
+      if (this.#channel === null) {
+        this.#channel = new MessageChannel();
+        this.#channel.port1.onmessage = () => {
+          this.#channelArmed = false;
+          this.#flush(false);
+        };
+      }
+
+      if (!this.#channelArmed) {
+        this.#channelArmed = true;
+        this.#channel.port2.postMessage(null);
+      }
+    }
   }
 
   isValid(): boolean {

@@ -6,7 +6,6 @@ import getDebugName from '@ember/-internals/utils/lib/get-debug-name';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views/lib/system/utils';
 import { assert, deprecate, warn } from '@ember/debug';
 import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
-import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
 import type { EnvironmentDelegate } from '@glimmer/runtime/lib/environment';
@@ -17,11 +16,108 @@ import toBool from './utils/to-bool';
 
 ///////////
 
+// SPIKE (RFC 957 end state): tag invalidation and destruction no longer
+// flow through the runloop. Invalidation notifies the renderer's
+// scheduler directly; destruction work queues here and is drained by
+// the scheduler's flush (or a fallback microtask when nothing is
+// rendering). The setter indirection exists only to avoid a module
+// cycle with the renderer.
+
+let notifyRevalidate: () => boolean = () => false;
+
+export function _setNotifyRevalidate(fn: () => boolean): void {
+  notifyRevalidate = fn;
+}
+
+// Dirtying is much hotter than ticking: a 100k-set loop notifies once
+// and then pays a single boolean check per set, instead of walking the
+// notify chain per dirty tag. The renderer re-arms this at the start of
+// every tick.
+let invalidationNotified = false;
+
+export function _resetInvalidationNotified(): void {
+  invalidationNotified = false;
+}
+
+interface ScheduledDestructor {
+  destroyable: object;
+  destructor: (destroyable: object) => void;
+}
+
+const scheduledDestructors: ScheduledDestructor[] = [];
+const scheduledFinalizers: Array<() => void> = [];
+
+let destroyDrainArmed = false;
+let draining = false;
+let renderTransactionDepth = 0;
+
+export function _hasScheduledDestroys(): boolean {
+  return scheduledDestructors.length > 0 || scheduledFinalizers.length > 0;
+}
+
+export function _beginRenderTransaction(): void {
+  renderTransactionDepth++;
+}
+
+export function _endRenderTransaction(): void {
+  renderTransactionDepth--;
+}
+
+/**
+ * Runs pending destructors, then finalizers -- the classic
+ * actions-before-destroy queue ordering. Destruction can schedule
+ * further destruction, so drain until quiet.
+ *
+ * Draining is skipped while a drain is already running (the outer
+ * loop picks up whatever was scheduled) or while roots are mid-render
+ * (running destructors would mutate DOM under the updating VM); in
+ * both cases the pending work is picked up by the caller that holds
+ * the guard, or by the armed fallback microtask.
+ */
+export function _drainScheduledDestroys(): void {
+  if (draining || renderTransactionDepth > 0) return;
+
+  destroyDrainArmed = false;
+  draining = true;
+
+  try {
+    while (scheduledDestructors.length > 0 || scheduledFinalizers.length > 0) {
+      const destructors = scheduledDestructors.splice(0);
+      for (const { destroyable, destructor } of destructors) {
+        destructor(destroyable);
+      }
+
+      const finalizers = scheduledFinalizers.splice(0);
+      for (const finalize of finalizers) {
+        finalize();
+      }
+    }
+  } finally {
+    draining = false;
+  }
+}
+
+function armDestroyDrain(): void {
+  if (destroyDrainArmed) return;
+  destroyDrainArmed = true;
+  queueMicrotask(() => {
+    if (destroyDrainArmed) {
+      _drainScheduledDestroys();
+    }
+  });
+}
+
 // Setup global context
 
 setGlobalContext({
   scheduleRevalidate() {
-    _backburner.ensureInstance();
+    if (invalidationNotified) return;
+    // only latch when a renderer actually heard the notification --
+    // latching against an empty renderer list (dirt during app boot)
+    // would permanently swallow all future invalidations
+    if (notifyRevalidate()) {
+      invalidationNotified = true;
+    }
   },
 
   toBool,
@@ -33,11 +129,16 @@ setGlobalContext({
   setPath: set,
 
   scheduleDestroy(destroyable, destructor) {
-    schedule('actions', null, destructor, destroyable);
+    scheduledDestructors.push({
+      destroyable,
+      destructor: destructor as (destroyable: object) => void,
+    });
+    armDestroyDrain();
   },
 
   scheduleDestroyed(finalizeDestructor) {
-    schedule('destroy', null, finalizeDestructor);
+    scheduledFinalizers.push(finalizeDestructor);
+    armDestroyDrain();
   },
 
   warnIfStyleNotTrusted(value: unknown) {

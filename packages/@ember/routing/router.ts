@@ -31,7 +31,11 @@ import { A as emberA } from '@ember/array';
 import typeOf from '@ember/utils/lib/type-of';
 import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
-import { cancel, once, run, scheduleOnce } from '@ember/runloop';
+import {
+  scheduleMethodOnce,
+  scheduleCancelableMicrotask,
+} from '@ember/-internals/utils/lib/microtask-scheduling';
+import type { CancelableMicrotask } from '@ember/-internals/utils/lib/microtask-scheduling';
 import { DEBUG } from '@glimmer/env';
 import {
   type QueryParamMeta,
@@ -51,7 +55,6 @@ import type {
   TransitionState,
 } from 'router_js';
 import Router, { logAbort, STATE_SYMBOL } from 'router_js';
-import type { Timer } from 'backburner.js';
 import EngineInstance from '@ember/engine/instance';
 import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
@@ -197,7 +200,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _engineInfoByRoute = Object.create(null);
   _routerService: RouterService;
 
-  _slowTransitionTimer: Timer | null = null;
+  _slowTransitionTimer: CancelableMicrotask | null = null;
 
   private namespace: any;
 
@@ -388,7 +391,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
 
       updateURL(path: string) {
-        once(() => {
+        queueMicrotask(() => {
           location.setURL(path);
           set(router, 'currentURL', path);
         });
@@ -439,7 +442,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
       routeDidChange(transition: Transition) {
         router.set('currentRoute', transition.to);
-        once(() => {
+        queueMicrotask(() => {
           router.trigger('routeDidChange', transition);
 
           if (DEBUG) {
@@ -480,7 +483,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
             location.replaceURL!(url);
             set(router, 'currentURL', url);
           };
-          once(doReplaceURL);
+          queueMicrotask(doReplaceURL);
         } else {
           this.updateURL(url);
         }
@@ -851,7 +854,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       for (let id in instanceMap) {
         let instance: EngineInstance | undefined = instanceMap[id];
         assert('has instance', instance);
-        run(instance, 'destroy');
+        instance.destroy();
       }
     }
   }
@@ -863,7 +866,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   */
   _activeQPChanged(queryParameterName: string, newValue: unknown) {
     this._queuedQPChanges[queryParameterName] = newValue;
-    once(this, this._fireQueryParamTransition);
+    scheduleMethodOnce(this, '_fireQueryParamTransition');
   }
 
   // The queryParameterName is QueryParam['urlKey']
@@ -1320,13 +1323,9 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
   _scheduleLoadingEvent(transition: Transition, originRoute: Route) {
     this._cancelSlowTransitionTimer();
-    this._slowTransitionTimer = scheduleOnce(
-      'routerTransitions',
-      this,
-      this._handleSlowTransition,
-      transition,
-      originRoute
-    );
+    this._slowTransitionTimer = scheduleCancelableMicrotask(() => {
+      this._handleSlowTransition(transition, originRoute);
+    });
   }
 
   currentState: null | RouterState = null;
@@ -1350,7 +1349,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
   _cancelSlowTransitionTimer() {
     if (this._slowTransitionTimer) {
-      cancel(this._slowTransitionTimer);
+      this._slowTransitionTimer.cancelled = true;
     }
     this._slowTransitionTimer = null;
   }

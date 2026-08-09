@@ -1,6 +1,5 @@
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { _backburner, next } from '@ember/runloop';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { dasherize } from '@ember/-internals/string';
 import Namespace from '@ember/application/namespace';
@@ -166,7 +165,7 @@ class TypeWatcher {
       consumeTag(tagFor(records, '[]'));
 
       if (hasBeenAccessed === true) {
-        next(onChange);
+        setTimeout(onChange, 0);
       } else {
         hasBeenAccessed = true;
       }
@@ -225,6 +224,8 @@ export default class DataAdapter<T> extends EmberObject {
   recordsWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
   typeWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
   flushWatchers: (() => void) | null = null;
+
+  _flushInterval: ReturnType<typeof setInterval> | undefined = undefined;
 
   // TODO: Revisit this
   declare containerDebugAdapter: ContainerDebugAdapter;
@@ -436,10 +437,13 @@ export default class DataAdapter<T> extends EmberObject {
           this.recordsWatchers.forEach((watcher) => watcher.revalidate());
         };
 
-        _backburner.on('end', this.flushWatchers);
+        // SPIKE (runloop removal): watchers used to revalidate at
+        // runloop end; poll instead -- this is inspector-only tooling
+        this._flushInterval = setInterval(this.flushWatchers, 100);
       }
     } else if (this.typeWatchers.size === 0 && this.recordsWatchers.size === 0) {
-      _backburner.off('end', this.flushWatchers);
+      clearInterval(this._flushInterval);
+      this._flushInterval = undefined;
       this.flushWatchers = null;
     }
   }
@@ -458,7 +462,8 @@ export default class DataAdapter<T> extends EmberObject {
     this.releaseMethods.forEach((fn) => fn());
 
     if (this.flushWatchers) {
-      _backburner.off('end', this.flushWatchers);
+      clearInterval(this._flushInterval);
+      this._flushInterval = undefined;
     }
   }
 

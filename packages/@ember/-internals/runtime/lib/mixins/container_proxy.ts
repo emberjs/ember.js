@@ -1,4 +1,5 @@
-import { schedule, join } from '@ember/runloop';
+import { scheduleDestroyed } from '@glimmer/global-context';
+import { _drainScheduledDestroys } from '@ember/-internals/glimmer/lib/environment';
 /**
 @module ember
 */
@@ -42,10 +43,16 @@ const ContainerProxyMixin = Mixin.create({
     let container = this.__container__;
 
     if (container) {
-      join(() => {
-        container.destroy();
-        schedule('destroy', container, 'finalizeDestroy');
-      });
+      container.destroy();
+      scheduleDestroyed(() => container.finalizeDestroy());
+
+      // Classic wrapped the two calls above in `join`, which outside a
+      // run loop flushed every queue before returning -- embedders
+      // (SSR/prerender workers, FastBoot) rely on instance.destroy()
+      // having torn down its rendered DOM by the time it returns, and
+      // then reuse or reset the document. The drain no-ops when called
+      // mid-render or mid-drain; the tick/microtask drain covers those.
+      _drainScheduledDestroys();
     }
 
     this._super();

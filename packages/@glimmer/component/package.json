@@ -25,9 +25,9 @@
     "@ember/component": "workspace:*",
     "@ember/destroyable": "workspace:*",
     "@ember/owner": "workspace:*",
-    "@ember/runloop": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "@glimmer/global-context": "workspace:*"
   },
   "engines": {
     "node": ">= 18"

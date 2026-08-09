@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
 import EmberObject, { action, get, computed } from '@ember/object';
-import { RSVP } from '@ember/-internals/runtime';
+import * as RSVP from 'rsvp';
 import { A as emberA } from '@ember/array';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';

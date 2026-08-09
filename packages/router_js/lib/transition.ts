@@ -1,4 +1,3 @@
-import { Promise } from 'rsvp';
 import type { Dict, Maybe, Option } from './core';
 import type { ModelFor, Route, RouteInfo, RouteInfoWithAttributes } from './route-info';
 import type InternalRouteInfo from './route-info';
@@ -230,9 +229,9 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
   then<TResult1 = R, TResult2 = never>(
     onFulfilled?: ((value: R) => TResult1 | PromiseLike<TResult1>) | undefined | null,
     onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
-    label?: string
+    _label?: string
   ): Promise<TResult1 | TResult2> {
-    return this.promise!.then(onFulfilled, onRejected, label);
+    return this.promise!.then(onFulfilled, onRejected);
   }
 
   /**
@@ -248,8 +247,8 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
     @return {Promise}
     @public
    */
-  catch<T>(onRejection?: OnRejected<TransitionState<any>, T>, label?: string) {
-    return this.promise!.catch(onRejection, label);
+  catch<T>(onRejection?: OnRejected<TransitionState<any>, T>, _label?: string) {
+    return this.promise!.catch(onRejection);
   }
 
   /**
@@ -265,9 +264,8 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
     @return {Promise}
     @public
    */
-  finally<T>(callback?: T | undefined, label?: string) {
-    // @ts-expect-error @types/rsvp doesn't have the correct signature for RSVP.Promise.finally
-    return this.promise!.finally(callback, label);
+  finally<T>(callback?: T | undefined, _label?: string) {
+    return this.promise!.finally(callback as (() => void) | undefined);
   }
 
   /**

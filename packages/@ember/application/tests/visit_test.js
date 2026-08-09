@@ -7,7 +7,8 @@ import {
 import { service } from '@ember/service';
 import { setComponentTemplate } from '@glimmer/manager';
 import EmberObject from '@ember/object';
-import { RSVP, onerrorDefault } from '@ember/-internals/runtime';
+import * as RSVP from 'rsvp';
+const onerrorDefault = () => {};
 import { later } from '@ember/runloop';
 import { action } from '@ember/object';
 import Application from '@ember/application';
