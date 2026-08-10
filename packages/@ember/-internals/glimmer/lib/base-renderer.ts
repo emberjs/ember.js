@@ -34,6 +34,7 @@ import {
   _endRenderTransaction,
   _hasScheduledDestroys,
   _resetInvalidationNotified,
+  _setDestroyQueueObserver,
 } from './environment';
 import ResolverImpl from './resolver';
 import schedulerStrategy from '@ember/scheduler/strategy';
@@ -169,22 +170,43 @@ _setNotifyRevalidate(() => {
     renderer.rerender();
   }
 
+  // first dirt after a flush (the notify latch dedupes the rest) --
+  // the pending edge for the settledness observer
+  sampleSettledState();
+
   return true;
 });
 
-/**
-  Whether work is still outstanding -- an invalid renderer awaiting its
-  tick, or destruction awaiting its drain. The same window classic's
-  autorun instance covered, which test-helpers' settled() polls on;
-  this is the synchronous probe its getSettledState always wanted from
-  the framework instead of reading backburner internals.
+// Settledness edges. Work is outstanding while any renderer awaits its
+// flush or destruction awaits its drain -- the window classic's autorun
+// instance covered. Rather than exporting that level as a probe, the
+// renderer reports its EDGES to a single observer (test infrastructure
+// registers a bridge that translates them into an @ember/test-waiters
+// waiter, folding rendering into the one settledness protocol the
+// ecosystem already has). The level is sampled at every site that can
+// change it; with no observer registered the sites pay one null check.
+let settledObserver: ((pending: boolean) => void) | null = null;
+let observedPending = false;
 
-  @method isRenderPending
-  @returns {Boolean} true while a render or destroy drain is pending
-*/
-export function isRenderPending(): boolean {
-  return renderers.some((renderer) => !renderer.isValid()) || _hasScheduledDestroys();
+function sampleSettledState(): void {
+  if (settledObserver === null) return;
+
+  const pending =
+    renderers.some((renderer) => !renderer.isValid()) || _hasScheduledDestroys();
+
+  if (pending !== observedPending) {
+    observedPending = pending;
+    settledObserver(pending);
+  }
 }
+
+export function _onRenderSettledChange(observer: (pending: boolean) => void): void {
+  settledObserver = observer;
+  observedPending = false;
+  sampleSettledState();
+}
+
+_setDestroyQueueObserver(sampleSettledState);
 
 // The default @ember/scheduler strategy IS this clock: awaited phases
 // request a tick here (a clean renderer revalidates as a no-op and the
@@ -506,6 +528,10 @@ export class RendererState {
     // arrived during revalidation (which latched the flag but was
     // absorbed by this tick or its settle rounds) can't leave it stuck.
     _resetInvalidationNotified();
+
+    // the quiet edge for the settledness observer (a no-op while the
+    // settle rounds above still hold the renderer invalid)
+    sampleSettledState();
   }
 
   /**

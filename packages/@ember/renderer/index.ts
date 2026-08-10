@@ -64,17 +64,20 @@
 export { renderSettled } from '@ember/-internals/glimmer/lib/base-renderer';
 
 /**
-  Synchronously reports whether rendering work is still outstanding --
-  a dirtied renderer whose flush has not run yet, or destruction whose
-  drain is still pending. This is the probe test infrastructure needs
-  for its settled checks, answered by the renderer itself rather than
-  inferred from run loop internals.
+  Registers an observer notified at the edges of rendering work: called
+  with `true` when rendering (or destruction) becomes outstanding, and
+  with `false` when it has completed. Test infrastructure uses this to
+  represent rendering as a test waiter, so settledness stays a single
+  push-based protocol rather than something that must be polled.
 
-  @method isRenderPending
-  @returns {Boolean} true while a render or destroy drain is pending
-  @public
+  Only one observer is registered at a time; registering replaces the
+  previous one.
+
+  @method _onRenderSettledChange
+  @param {Function} observer called with `true` on pending, `false` on quiet
+  @private
 */
-export { isRenderPending } from '@ember/-internals/glimmer/lib/base-renderer';
+export { _onRenderSettledChange } from '@ember/-internals/glimmer/lib/base-renderer';
 
 /**
  * Render a component into a DOM element.

@@ -55,6 +55,16 @@ export function _hasScheduledDestroys(): boolean {
   return scheduledDestructors.length > 0 || scheduledFinalizers.length > 0;
 }
 
+// Notified when the destroy queues go non-empty or fully drain, so the
+// renderer's settledness observer sees destroy-only work (teardown with
+// nothing dirty) without polling. The setter indirection avoids a
+// module cycle with the renderer.
+let destroyQueueObserver: (() => void) | null = null;
+
+export function _setDestroyQueueObserver(observer: () => void): void {
+  destroyQueueObserver = observer;
+}
+
 export function _beginRenderTransaction(): void {
   renderTransactionDepth++;
 }
@@ -95,6 +105,8 @@ export function _drainScheduledDestroys(): void {
   } finally {
     draining = false;
   }
+
+  destroyQueueObserver?.();
 }
 
 function armDestroyDrain(): void {
@@ -129,16 +141,24 @@ setGlobalContext({
   setPath: set,
 
   scheduleDestroy(destroyable, destructor) {
+    const wasEmpty = !_hasScheduledDestroys();
+
     scheduledDestructors.push({
       destroyable,
       destructor: destructor as (destroyable: object) => void,
     });
     armDestroyDrain();
+
+    if (wasEmpty) destroyQueueObserver?.();
   },
 
   scheduleDestroyed(finalizeDestructor) {
+    const wasEmpty = !_hasScheduledDestroys();
+
     scheduledFinalizers.push(finalizeDestructor);
     armDestroyDrain();
+
+    if (wasEmpty) destroyQueueObserver?.();
   },
 
   warnIfStyleNotTrusted(value: unknown) {
