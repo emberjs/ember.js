@@ -144,6 +144,22 @@ export const ENV = {
   _DEFAULT_ASYNC_OBSERVERS: false,
 
   /**
+    Whether Ember schedules its own work (rendering, runloop-scheduled
+    callbacks, promise resolution) through `@ember/scheduler` instead of
+    backburner and RSVP, per RFC 0957.
+
+    This is not intended to be set directly, as the implementation may change in
+    the future. Use `@ember/optional-features` instead.
+
+    @property _USE_ASYNC_SCHEDULER
+    @for EmberENV
+    @type Boolean
+    @default false
+    @private
+  */
+  _USE_ASYNC_SCHEDULER: false,
+
+  /**
     Controls the maximum number of scheduled rerenders without "settling". In general,
     applications should not need to modify this environment variable, but please
     open an issue so that we can determine if a better default value is needed.

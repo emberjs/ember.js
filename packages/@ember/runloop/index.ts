@@ -1,8 +1,10 @@
 import { assert } from '@ember/debug';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
 import Backburner, { type Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
+import * as schedulerLoop from './-private/scheduler-loop';
 
 export type { Timer };
 
@@ -146,6 +148,9 @@ export function run<T, U extends keyof T>(
   ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): T[U] extends AnyFn ? ReturnType<T[U]> : unknown;
 export function run(...args: any[]): unknown {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    return schedulerLoop.run(...args);
+  }
   // @ts-expect-error TS doesn't like our spread args
   return _backburner.run(...args);
 }
@@ -206,6 +211,9 @@ export function join<T, U extends keyof T>(
   ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): T[U] extends AnyFn ? ReturnType<T[U]> | void : void;
 export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: any[]): any {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    return schedulerLoop.join(methodOrTarget, methodOrArg, ...additionalArgs);
+  }
   return _backburner.join(methodOrTarget, methodOrArg, ...additionalArgs);
 }
 
@@ -351,6 +359,10 @@ export function bind(...curried: any[]): any {
   @public
 */
 export function begin() {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    // There is no runloop to open; work is scheduled as it arrives.
+    return;
+  }
   _backburner.begin();
 }
 
@@ -374,6 +386,9 @@ export function begin() {
   @public
 */
 export function end() {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    return;
+  }
   _backburner.end();
 }
 
@@ -436,17 +451,28 @@ export function schedule<T, U extends keyof T>(
   ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function schedule(...args: any[]): Timer {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    // @ts-expect-error TS doesn't like the rest args here
+    return schedulerLoop.schedule(...args) as unknown as Timer;
+  }
   // @ts-expect-error TS doesn't like the rest args here
   return _backburner.schedule(...args);
 }
 
 // Used by global test teardown
 export function _hasScheduledTimers() {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    return schedulerLoop.hasTimers();
+  }
   return _backburner.hasTimers();
 }
 
 // Used by global test teardown
 export function _cancelTimers() {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    schedulerLoop.cancelTimers();
+    return;
+  }
   _backburner.cancelTimers();
 }
 
@@ -495,6 +521,9 @@ export function later<T, U extends keyof T>(
   ...args: [...args: T[U] extends AnyFn ? Parameters<T[U]> : [], wait: string | number]
 ): Timer;
 export function later(...args: any): Timer {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    return schedulerLoop.later(...args) as unknown as Timer;
+  }
   return _backburner.later(...args);
 }
 
@@ -525,6 +554,9 @@ export function once<T, U extends keyof T>(
   ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function once(...args: any[]): Timer {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    return schedulerLoop.scheduleOnce('actions', ...args) as unknown as Timer;
+  }
   // @ts-expect-error TS doesn't like the rest args here
   return _backburner.scheduleOnce('actions', ...args);
 }
@@ -619,6 +651,10 @@ export function scheduleOnce<T, U extends keyof T>(
   ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function scheduleOnce(...args: any[]): Timer {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    // @ts-expect-error TS doesn't like the rest args here
+    return schedulerLoop.scheduleOnce(...args) as unknown as Timer;
+  }
   // @ts-expect-error TS doesn't like the rest args here
   return _backburner.scheduleOnce(...args);
 }
@@ -705,6 +741,9 @@ export function next<T, U extends keyof T>(
   ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function next(...args: any[]) {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    return schedulerLoop.next(...args) as unknown as Timer;
+  }
   return _backburner.later(...args, 1);
 }
 
@@ -776,6 +815,9 @@ export function next(...args: any[]) {
   @public
 */
 export function cancel(timer?: Timer): boolean {
+  if (schedulerLoop.isSchedulerTimer(timer)) {
+    return schedulerLoop.cancel(timer);
+  }
   return _backburner.cancel(timer);
 }
 
@@ -872,6 +914,9 @@ export function debounce<T, U extends keyof T>(
   ]
 ): Timer;
 export function debounce(...args: any[]) {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    return schedulerLoop.debounce(...args) as unknown as Timer;
+  }
   // @ts-expect-error TS doesn't like the rest args here
   return _backburner.debounce(...args);
 }
@@ -938,6 +983,9 @@ export function throttle<T, U extends keyof T>(
   ]
 ): Timer;
 export function throttle(...args: any[]): Timer {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    return schedulerLoop.throttle(...args) as unknown as Timer;
+  }
   // @ts-expect-error TS doesn't like the rest args here
   return _backburner.throttle(...args);
 }
