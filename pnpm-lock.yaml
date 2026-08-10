@@ -1060,6 +1060,9 @@ importers:
       '@ember/object':
         specifier: workspace:*
         version: link:../object
+      '@ember/scheduler':
+        specifier: workspace:*
+        version: link:../scheduler
       '@ember/utils':
         specifier: workspace:*
         version: link:../utils
