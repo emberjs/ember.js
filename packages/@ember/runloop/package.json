@@ -12,6 +12,7 @@
     "@ember/array": "workspace:*",
     "@ember/debug": "workspace:*",
     "@ember/object": "workspace:*",
+    "@ember/scheduler": "workspace:*",
     "@ember/utils": "workspace:*",
     "@glimmer/env": "workspace:*",
     "@glimmer/validator": "workspace:*",

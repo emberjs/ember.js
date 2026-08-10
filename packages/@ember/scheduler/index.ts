@@ -123,6 +123,12 @@ export function _clearRegisteredStrategy(): void {
   registeredStrategy = null;
 }
 
+// Private API used by the runloop's scheduler backend to fall back to the
+// default strategy when the app has not registered one.
+export function _getRegisteredStrategy(): Strategy | null {
+  return registeredStrategy;
+}
+
 function getStrategy(phaseName: string): Strategy {
   assert(
     `Attempted to schedule work into the '${phaseName}' phase, but no scheduling strategy is registered. Register a strategy when defining your Application, e.g. the default strategy:\n\n\timport { registerStrategy } from '@ember/scheduler';\n\timport strategy from '@ember/scheduler/strategy';\n\n\tregisterStrategy(strategy);`,

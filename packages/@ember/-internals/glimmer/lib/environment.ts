@@ -9,6 +9,7 @@ import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
 import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
+import { _scheduleAsyncRevalidate } from './async-revalidate';
 import type { EnvironmentDelegate } from '@glimmer/runtime/lib/environment';
 import { debug } from '@glimmer/validator/lib/debug';
 import toIterator from './utils/iterator';
@@ -21,6 +22,10 @@ import toBool from './utils/to-bool';
 
 setGlobalContext({
   scheduleRevalidate() {
+    if (ENV._USE_ASYNC_SCHEDULER) {
+      _scheduleAsyncRevalidate();
+      return;
+    }
     _backburner.ensureInstance();
   },
 
