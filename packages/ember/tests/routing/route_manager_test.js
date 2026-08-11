@@ -1,8 +1,6 @@
 import Route from '@ember/routing/route';
 import { setRouteManager } from '@ember/routing';
-import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
-import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
-import { createComputeRef, createConstRef, NULL_REFERENCE } from '@glimmer/reference/lib/reference';
+import { capabilities, setComponentManager, setComponentTemplate } from '@ember/component';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import {
   moduleFor,
@@ -16,59 +14,46 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { getOwner } from '@ember/owner';
 import { defer, reject, resolve } from 'rsvp';
 
-// Outlets over a classic bucket.
-const CLASSIC_BUCKET_OUTLET_MANAGER = {
-  getCapabilities() {
-    return {
-      dynamicLayout: false,
-      dynamicTag: false,
-      prepareArgs: true,
-      createArgs: false,
-      attributeHook: false,
-      elementHook: false,
-      createCaller: false,
-      dynamicScope: false,
-      updateHook: false,
-      createInstance: false,
-      wrapped: false,
-      willDestroy: false,
-      hasSubOwner: false,
-    };
+// Definition-as-self: the outlet *is* its own component definition, so
+// `createComponent` hands it straight back and `this` inside the layout is the
+// object the route manager built. Nothing is copied onto named args, so there
+// is no `prepareArgs` — and therefore nothing here has to speak in references.
+const OUTLET_MANAGER = {
+  capabilities: capabilities('3.13'),
+
+  createComponent(definition) {
+    return definition;
   },
 
-  prepareArgs({ bucket, childOutlet }) {
-    return {
-      positional: [],
-      named: {
-        Component: createConstRef(bucket.invokable, '@Component'),
-        context: createComputeRef(() => bucket.context),
-        outlet: childOutlet,
-      },
-    };
-  },
-
-  getDebugName({ bucket }) {
-    return `outlet for ${bucket.route.routeName}`;
-  },
-
-  getSelf() {
-    return NULL_REFERENCE;
-  },
-
-  getDestroyable() {
-    return null;
+  getContext(component) {
+    return component;
   },
 };
 
 function classicBucketOutlet(layout) {
   class ClassicBucketOutlet {
+    #childOutlet;
+
     constructor(bucket, childOutlet) {
       this.bucket = bucket;
-      this.childOutlet = childOutlet;
+      this.#childOutlet = childOutlet;
+    }
+
+    get Component() {
+      return this.bucket.invokable;
+    }
+
+    get context() {
+      return this.bucket.context;
+    }
+
+    /** The next outlet down, re-read on every transition. */
+    get outlet() {
+      return this.#childOutlet();
     }
   }
 
-  setInternalComponentManager(CLASSIC_BUCKET_OUTLET_MANAGER, ClassicBucketOutlet.prototype);
+  setComponentManager(() => OUTLET_MANAGER, ClassicBucketOutlet.prototype);
   setComponentTemplate(layout, ClassicBucketOutlet.prototype);
 
   return ClassicBucketOutlet;
@@ -76,7 +61,7 @@ function classicBucketOutlet(layout) {
 
 // The `@context` contract, not classic's.
 const ContextOutlet = classicBucketOutlet(
-  precompileTemplate('<@Component @context={{@context}} @outlet={{@outlet}} />', {
+  precompileTemplate('<this.Component @context={{this.context}} @outlet={{this.outlet}} />', {
     strictMode: true,
   })
 );
@@ -323,60 +308,28 @@ moduleFor(
   }
 );
 
-// A manager-provided outlet.
+// A manager-provided outlet. See `classicBucketOutlet`: definition-as-self, so
+// the layout reads `this.*` and no reference is built anywhere.
 class SlimOutlet {
+  #childOutlet;
+
   constructor(bucket, childOutlet) {
     this.bucket = bucket;
-    this.childOutlet = childOutlet;
+    this.#childOutlet = childOutlet;
+  }
+
+  get name() {
+    return this.bucket.route.routeName;
+  }
+
+  get outlet() {
+    return this.#childOutlet();
   }
 }
 
-class SlimOutletManager {
-  getCapabilities() {
-    return {
-      dynamicLayout: false,
-      dynamicTag: false,
-      // Supplies args; discards a parent's.
-      prepareArgs: true,
-      createArgs: false,
-      attributeHook: false,
-      elementHook: false,
-      createCaller: false,
-      dynamicScope: false,
-      updateHook: false,
-      createInstance: false,
-      wrapped: false,
-      willDestroy: false,
-      hasSubOwner: false,
-    };
-  }
-
-  prepareArgs(definition) {
-    return {
-      positional: [],
-      named: {
-        name: createConstRef(definition.bucket.route.routeName, '@name'),
-        outlet: definition.childOutlet,
-      },
-    };
-  }
-
-  getDebugName() {
-    return 'slim-outlet';
-  }
-
-  getSelf() {
-    return NULL_REFERENCE;
-  }
-
-  getDestroyable() {
-    return null;
-  }
-}
-
-setInternalComponentManager(new SlimOutletManager(), SlimOutlet.prototype);
+setComponentManager(() => OUTLET_MANAGER, SlimOutlet.prototype);
 setComponentTemplate(
-  precompileTemplate('[{{@name}}:<@outlet />]', { strictMode: true }),
+  precompileTemplate('[{{this.name}}:<this.outlet />]', { strictMode: true }),
   SlimOutlet.prototype
 );
 
@@ -447,7 +400,7 @@ moduleFor(
 
 // Decorates every level the manager owns.
 const WrapOutlet = classicBucketOutlet(
-  precompileTemplate('wrap(<@Component @model={{@context}} @outlet={{@outlet}} />)', {
+  precompileTemplate('wrap(<this.Component @model={{this.context}} @outlet={{this.outlet}} />)', {
     strictMode: true,
   })
 );

@@ -737,7 +737,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 setComponentTemplate,
                 setInternalComponentManager,
               } from '@glimmer/manager';
-              import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
+              import { createComputeRef, createConstRef, NULL_REFERENCE } from '@glimmer/reference';
 
               // \`model\` is tracked; no render-state plumbing.
               export class FunkyBucket {
@@ -781,7 +781,9 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               export class FunkyOutlet {
                 constructor(bucket, childOutlet) {
                   this.bucket = bucket;
-                  this.childOutlet = childOutlet;
+                  // Managers get a callback; \`prepareArgs\` passes \`@outlet\`
+                  // to the template as an argument, which wants a reference.
+                  this.childOutlet = createComputeRef(childOutlet);
                 }
               }
 
@@ -835,142 +837,94 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
             `,
             'swap-outlet.gjs': `
               import {
+                capabilities,
                 getComponentTemplate,
+                setComponentManager,
                 setComponentTemplate,
-                setInternalComponentManager,
-              } from '@glimmer/manager';
-              import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
+              } from '@ember/component';
               import { SwapInvokableLoading } from '${appName}/components/funky-route-components';
 
-              // \`ready\` is tracked; no _setOutlets pass.
-              const LAYOUT = <template>
-                {{#if @bucket.ready}}
-                  <@bucket.invokable @outlet={{@outlet}} />
-                {{else}}
-                  <SwapInvokableLoading @outlet={{@outlet}} />
-                {{/if}}
-              </template>;
+              // Definition-as-self: \`createComponent\` hands the definition back
+              // and \`getContext\` returns it unchanged, so \`this\` in the layout
+              // is the outlet the route manager built. No args are copied, so
+              // there is no \`prepareArgs\` and no reference anywhere.
+              const MANAGER = {
+                capabilities: capabilities('3.13'),
+                createComponent: (definition) => definition,
+                getContext: (component) => component,
+              };
 
               export class SwapOutlet {
+                #childOutlet;
+
                 constructor(bucket, childOutlet) {
                   this.bucket = bucket;
-                  this.childOutlet = childOutlet;
+                  this.#childOutlet = childOutlet;
                 }
+
+                /** The next outlet down, re-read on every transition. */
+                get outlet() {
+                  return this.#childOutlet();
+                }
+
+                // \`ready\` is tracked; no _setOutlets pass.
+                <template>
+                  {{#if this.bucket.ready}}
+                    <this.bucket.invokable @outlet={{this.outlet}} />
+                  {{else}}
+                    <SwapInvokableLoading @outlet={{this.outlet}} />
+                  {{/if}}
+                </template>
               }
 
-              setInternalComponentManager(
-                {
-                  getCapabilities() {
-                    return {
-                      dynamicLayout: false,
-                      dynamicTag: false,
-                      prepareArgs: true,
-                      createArgs: false,
-                      attributeHook: false,
-                      elementHook: false,
-                      createCaller: false,
-                      dynamicScope: false,
-                      updateHook: false,
-                      createInstance: false,
-                      wrapped: false,
-                      willDestroy: false,
-                      hasSubOwner: false,
-                    };
-                  },
-
-                  prepareArgs(definition) {
-                    return {
-                      positional: [],
-                      named: {
-                        bucket: createConstRef(definition.bucket, '@bucket'),
-                        outlet: definition.childOutlet,
-                      },
-                    };
-                  },
-
-                  getDebugName(definition) {
-                    return \`swap outlet for \${definition.bucket.name}\`;
-                  },
-
-                  getSelf() {
-                    return NULL_REFERENCE;
-                  },
-
-                  getDestroyable() {
-                    return null;
-                  },
-                },
-                SwapOutlet.prototype
-              );
-
-              setComponentTemplate(getComponentTemplate(LAYOUT), SwapOutlet.prototype);
+              // The manager renders an *instance*, and both the component
+              // manager and the template are found by walking that instance's
+              // prototype chain. A class-body \`<template>\` lands on the class
+              // itself, which is not on that chain, so it is re-hung here.
+              setComponentTemplate(getComponentTemplate(SwapOutlet), SwapOutlet.prototype);
+              setComponentManager(() => MANAGER, SwapOutlet.prototype);
             `,
             'reactive-outlet.gjs': `
               import {
+                capabilities,
                 getComponentTemplate,
+                setComponentManager,
                 setComponentTemplate,
-                setInternalComponentManager,
-              } from '@glimmer/manager';
-              import { createConstRef, NULL_REFERENCE } from '@glimmer/reference';
+              } from '@ember/component';
 
-              // \`context\` is tracked; late models land.
-              const LAYOUT = <template>
-                <@bucket.invokable @context={{@bucket.context}} @outlet={{@outlet}} />
-              </template>;
+              // Definition-as-self; see \`swap-outlet.gjs\`. No references.
+              const MANAGER = {
+                capabilities: capabilities('3.13'),
+                createComponent: (definition) => definition,
+                getContext: (component) => component,
+              };
 
               export class ReactiveOutlet {
+                #childOutlet;
+
                 constructor(bucket, childOutlet) {
                   this.bucket = bucket;
-                  this.childOutlet = childOutlet;
+                  this.#childOutlet = childOutlet;
                 }
+
+                /** The next outlet down, re-read on every transition. */
+                get outlet() {
+                  return this.#childOutlet();
+                }
+
+                // \`context\` is tracked; late models land.
+                <template>
+                  <this.bucket.invokable
+                    @context={{this.bucket.context}}
+                    @outlet={{this.outlet}}
+                  />
+                </template>
               }
 
-              setInternalComponentManager(
-                {
-                  getCapabilities() {
-                    return {
-                      dynamicLayout: false,
-                      dynamicTag: false,
-                      prepareArgs: true,
-                      createArgs: false,
-                      attributeHook: false,
-                      elementHook: false,
-                      createCaller: false,
-                      dynamicScope: false,
-                      updateHook: false,
-                      createInstance: false,
-                      wrapped: false,
-                      willDestroy: false,
-                      hasSubOwner: false,
-                    };
-                  },
-
-                  prepareArgs(definition) {
-                    return {
-                      positional: [],
-                      named: {
-                        bucket: createConstRef(definition.bucket, '@bucket'),
-                        outlet: definition.childOutlet,
-                      },
-                    };
-                  },
-
-                  getDebugName(definition) {
-                    return \`reactive outlet for \${definition.bucket.name}\`;
-                  },
-
-                  getSelf() {
-                    return NULL_REFERENCE;
-                  },
-
-                  getDestroyable() {
-                    return null;
-                  },
-                },
-                ReactiveOutlet.prototype
-              );
-
-              setComponentTemplate(getComponentTemplate(LAYOUT), ReactiveOutlet.prototype);
+              // See \`swap-outlet.gjs\`: a class-body template has to be re-hung
+              // on the prototype, because the manager renders an instance.
+              setComponentTemplate(getComponentTemplate(ReactiveOutlet), ReactiveOutlet.prototype);
+              setComponentManager(() => MANAGER, ReactiveOutlet.prototype);
             `,
             'funky-route-components.gjs': ROUTE_COMPONENTS,
           },

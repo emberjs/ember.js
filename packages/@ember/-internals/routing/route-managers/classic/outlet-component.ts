@@ -9,24 +9,17 @@ import type {
   DynamicScope,
   Environment,
   InternalComponentCapabilities,
-  PreparedArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
-  WithPrepareArgs,
   WithSubOwner,
 } from '@glimmer/interfaces';
-import { DEBUG } from '@glimmer/env';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import {
-  createComputeRef,
-  createConstRef,
-  createDebugAliasRef,
-  UNDEFINED_REFERENCE,
-} from '@glimmer/reference/lib/reference';
-import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { createConstRef } from '@glimmer/reference/lib/reference';
+import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
+import type { ChildOutlet } from 'router_js';
 
 import type { ClassicRenderState } from './bucket';
 
@@ -62,9 +55,16 @@ import type { ClassicRenderState } from './bucket';
   @public
 */
 
-/** Classic's argument contract. */
+/**
+  Classic's argument contract.
+
+  The outlet *is* its own definition — `getSelf` hands it back, so everything
+  is read off `this` rather than copied onto named args by `prepareArgs`. The
+  template declares no arguments of its own, which is what keeps `{{outlet}}`
+  opaque: a parent can place it, but has nothing to parameterize.
+*/
 const CLASSIC_TEMPLATE = precompileTemplate(
-  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>`,
+  `<this.render.invokable @model={{this.render.context}} @controller={{this.render.bucket.controller}} @outlet={{this.childOutlet}}/>`,
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/classic/route-template.hbs',
     strictMode: true,
@@ -78,6 +78,8 @@ function instrumentationPayload(def: { name: string }) {
 
 interface OutletInstanceState {
   owner: InternalOwner;
+  /** `this` in the layout: the definition itself. */
+  self: Reference;
   engine?: {
     instance: EngineInstance;
     mountPoint: string;
@@ -88,7 +90,8 @@ interface OutletInstanceState {
 const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
-  prepareArgs: true,
+  // The layout reads `this`, so there is nothing to project onto args.
+  prepareArgs: false,
   createArgs: false,
   attributeHook: false,
   elementHook: false,
@@ -126,21 +129,8 @@ class OutletComponentManager
   implements
     WithCreateInstance<OutletInstanceState, OutletComponent>,
     WithCustomDebugRenderTree<OutletInstanceState, OutletComponent>,
-    WithPrepareArgs<OutletInstanceState, OutletComponent>,
     WithSubOwner<OutletInstanceState, OutletComponent>
 {
-  prepareArgs(definition: OutletComponent): PreparedArguments {
-    return {
-      positional: EMPTY_POSITIONAL,
-      named: {
-        Component: definition.component,
-        bucket: createConstRef(definition.bucket, '@bucket'),
-        context: definition.context,
-        outlet: definition.childOutlet,
-      },
-    };
-  }
-
   create(
     owner: InternalOwner,
     definition: OutletComponent,
@@ -154,6 +144,7 @@ class OutletComponentManager
 
     let state: OutletInstanceState = {
       owner: definition.owner,
+      self: createConstRef(definition, 'this'),
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
 
@@ -220,8 +211,8 @@ class OutletComponentManager
     return CAPABILITIES;
   }
 
-  getSelf() {
-    return UNDEFINED_REFERENCE;
+  getSelf(state: OutletInstanceState): Reference {
+    return state.self;
   }
 
   didCreate() {}
@@ -242,29 +233,24 @@ const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
 export class OutletComponent {
   readonly owner: InternalOwner;
-  readonly context: Reference;
-  readonly component: Reference;
+
+  #childOutlet: ChildOutlet;
 
   constructor(
-    private readonly render: ClassicRenderState,
-    readonly childOutlet: Reference
+    readonly render: ClassicRenderState,
+    childOutlet: ChildOutlet
   ) {
     this.owner = render.owner;
-
-    let context = this.contextRefFor();
-    let component = this.componentRefFor();
-
-    this.context = DEBUG ? createDebugAliasRef!('@context', context) : context;
-    this.component = DEBUG ? createDebugAliasRef!('@Component', component) : component;
+    this.#childOutlet = childOutlet;
   }
 
-  // Cached on the bucket, so constant for this level.
-  private componentRefFor(): Reference {
-    return createConstRef(this.render.invokable, '@Component');
-  }
-
-  private contextRefFor(): Reference {
-    return createComputeRef(() => this.render.context);
+  /**
+    The next outlet down the chain. A getter, not a stored value: the layout
+    reads it as a path off `this`, so it is re-read — and re-entangled — on
+    every revalidation, which is what lets a transition swap the level below.
+  */
+  get childOutlet(): object | null {
+    return this.#childOutlet();
   }
 
   get name(): string {

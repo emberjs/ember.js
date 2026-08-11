@@ -19,4 +19,5 @@ export type {
   ExitState,
   DidExitState,
   CreateRouteArgs,
+  ChildOutlet,
 } from '@ember/-internals/routing/route-managers/api';

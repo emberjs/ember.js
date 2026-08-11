@@ -14,6 +14,7 @@ import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-manag
 import { precompileTemplate } from '@ember/template-compilation';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef } from '@glimmer/reference/lib/reference';
+import type { ChildOutlet } from 'router_js';
 import { OutletComponent } from './outlet-component';
 import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
@@ -96,11 +97,22 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     return render;
   }
 
-  getRouteWrapper(bucket: ClassicRouteBucket, childOutlet: Reference): object | null {
+  getRouteWrapper(bucket: ClassicRouteBucket, childOutlet: ChildOutlet): object | null {
     const render = bucket.render;
 
-    // Nothing to render until the invokable resolves.
-    return render.invokable === undefined ? null : new OutletComponent(render, childOutlet);
+    if (render.invokable === undefined) {
+      // Nothing to render until the invokable resolves.
+      return null;
+    }
+
+    return new OutletComponent(render, childOutlet);
+  }
+
+  getRouteContext(bucket: ClassicRouteBucket): unknown {
+    // The tracked copy written by `getRenderState`, not `bucket.context`:
+    // classic's outlet has always rendered the model the router last
+    // published, not whatever `route.currentModel` happens to hold.
+    return bucket.render.context;
   }
 
   willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {

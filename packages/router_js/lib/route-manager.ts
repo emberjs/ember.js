@@ -251,6 +251,19 @@ export interface CreateRouteArgs {
   name: string;
 }
 
+/**
+  Reads what belongs in this route's `{{outlet}}`, or `null` where the chain
+  ends.
+
+  A manager receives one of these in `getRouteWrapper` and must call it while
+  rendering rather than up front: the wrapper it returns is cached for the life
+  of the bucket, but what sits below that wrapper is rebuilt on every
+  transition. Handing over a callback rather than the underlying reference is
+  what keeps the outlet opaque — a manager can place it, but never inspect or
+  parameterize it.
+ */
+export type ChildOutlet = () => object | null;
+
 // -- RouteManager -------------------------------------------------------------
 
 /**
@@ -328,7 +341,16 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   didExit(bucket: Bucket, state: DidExitState): void;
 
   /** This manager's outlet, cached per bucket. */
-  getRouteWrapper(bucket: Bucket, childOutlet: unknown): object | null;
+  getRouteWrapper(bucket: Bucket, childOutlet: ChildOutlet): object | null;
+
+  /**
+    The route's current context, forwarded to the outlet as `@context`.
+
+    Read during render, so it must come from tracked state: whatever this
+    returns is re-read whenever that state changes. Managers that render their
+    own instance can skip this and read their bucket directly instead.
+   */
+  getRouteContext?(bucket: Bucket): unknown;
 
   /**
     Returns the renderable for the route. Async to absorb dynamic imports of

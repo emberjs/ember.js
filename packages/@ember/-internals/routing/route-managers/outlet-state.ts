@@ -1,5 +1,5 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { Reference } from '@glimmer/reference/lib/reference';
+import type { ChildOutlet } from 'router_js';
 
 export interface RenderState {
   /**
@@ -54,6 +54,9 @@ export interface OutletState extends OutletParent {
    */
   manager: {
     /** `null` until this level has something to render. */
-    getRouteWrapper(bucket: object, childOutlet: Reference): object | null;
+    getRouteWrapper(bucket: object, childOutlet: ChildOutlet): object | null;
+
+    /** Optional: lets a plain-component outlet receive `@context`. */
+    getRouteContext?(bucket: object): unknown;
   };
 }
