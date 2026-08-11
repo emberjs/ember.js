@@ -58,7 +58,7 @@ declare const SIGNATURE: unique symbol;
   Ember Helpers are functions that can compute values, and are used in templates.
   For example, this code calls a helper named `format-currency`:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   import Cost from '../components/cost';
 
   <template>
@@ -66,7 +66,7 @@ declare const SIGNATURE: unique symbol;
   </template>
   ```
 
-  ```app/components/cost.gjs
+  ```gjs {data-filename="app/components/cost.gjs"}
   import formatCurrency from '../helpers/format-currency';
 
   <template>

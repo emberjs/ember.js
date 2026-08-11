@@ -1,11 +1,29 @@
 # Ember Changelog
 
-## v7.2.0-beta.1 (June 22, 2026)
+## v7.3.0-beta.1 (August 9, 2026)
+
+- [#21471](https://github.com/emberjs/ember.js/pull/21471) [FEATURE] Overload tracked to be able to work outside of classes per [RFC #1071](https://rfcs.emberjs.com/id/1071-overload-tracked-for-non-class-use/).
+- [#21203](https://github.com/emberjs/ember.js/pull/21203) [BUGFIX] Fix `@model` becomes `undefined` or changes to the wrong route's model during Glimmer component willDestroy
+- [#21406](https://github.com/emberjs/ember.js/pull/21406) [BUGFIX] Add assertion for invalid component helper argument
+- [#21407](https://github.com/emberjs/ember.js/pull/21407) [BUGFIX] Improve debugger message for template-only components
+- [#21409](https://github.com/emberjs/ember.js/pull/21409) [BUGFIX] Fix query params trigger model refresh unnecessarily
+- [#21410](https://github.com/emberjs/ember.js/pull/21410) [BUGFIX] Fix query param redirects during active transitions
+- [#21521](https://github.com/emberjs/ember.js/pull/21521) [BUGFIX] Treat nullish LinkTo @query as an empty query object
+- [#21524](https://github.com/emberjs/ember.js/pull/21524) [BUGFIX] Allow CoreObject#init to be called with no arguments
+- [#21523](https://github.com/emberjs/ember.js/pull/21523) [DOC] Document Set and Map support for {{each}} and {{each-in}}
+- [#21451](https://github.com/emberjs/ember.js/pull/21451) Block prototype traversal in set-path pollution guard
+- [#21456](https://github.com/emberjs/ember.js/pull/21456) Set sideEffects: false in package.json so that tree-shaking optimizes away unused ember-source code (hello-world is 42.5% smaller)
+- [#21462](https://github.com/emberjs/ember.js/pull/21462) Refactor so that small apps don't pull in the old renderer as well as some classic things
+- [#21496](https://github.com/emberjs/ember.js/pull/21496) Widen TS matrix
+- [#21515](https://github.com/emberjs/ember.js/pull/21515) Remove unused opcodes
+
+## v7.2.0 (August 9, 2026)
 
 - [#21303](https://github.com/emberjs/ember.js/pull/21303) [FEATURE] Build in a default Strict Resolver, an opt-in replacement for `ember-resolver` per [RFC #1132](https://rfcs.emberjs.com/id/1132-default-strict-resolver).
 - [#21371](https://github.com/emberjs/ember.js/pull/21371) Set type=module on the `ember-source` package. Requires `ember-cli` to be at least `v7.0.1`.
 - [#21458](https://github.com/emberjs/ember.js/pull/21458) [BUGFIX] Sanitization improvements for uppercase source, svg hrefs with `javascript:`, `<iframe>` src with `data:` urls, and `<object>` data attributes with `data:` and `javascript:` urls.
 - [#21470](https://github.com/emberjs/ember.js/pull/21470) [BUGFIX] Re-render dynamic components in append position when the definition changes
+- [#21547](https://github.com/emberjs/ember.js/pull/21547) [DOC] Display newly added keywords and organize template helpers into one list under `@ember/helper`.
 - [#21427](https://github.com/emberjs/ember.js/pull/21427) [INTERNAL] Convert cjs blueprint index.js files to 'cjs masquerading as esm' (in…
 
 ## v7.1.0 (June 22, 2026)
