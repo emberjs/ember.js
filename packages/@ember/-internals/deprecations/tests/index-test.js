@@ -1,6 +1,9 @@
-import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { deprecateUntil, isRemoved, emberVersionGte } from '../index';
+import { AbstractTestCase, moduleFor, moduleForDevelopment } from 'internal-test-helpers';
+import { DEPRECATIONS, deprecation, deprecateUntil, isRemoved, emberVersionGte } from '../index';
 import { ENV } from '@ember/-internals/environment';
+import { setDeprecationStagesConfig } from '@ember/debug';
+import * as DEPRECATED_FEATURES from '@ember/deprecated-features';
+import deprecatedFeaturesManifest from '../../../../../broccoli/deprecated-features.cjs';
 
 let originalEnvValue;
 
@@ -14,7 +17,62 @@ moduleFor(
     }
 
     teardown() {
+      setDeprecationStagesConfig(null);
       ENV.RAISE_ON_DEPRECATION = originalEnvValue;
+    }
+
+    ['@test every @ember/deprecated-features flag matches a DEPRECATIONS registry key'](assert) {
+      let flagNames = Object.keys(DEPRECATED_FEATURES);
+      assert.notStrictEqual(flagNames.length, 0, 'flags exist');
+
+      for (let flagName of flagNames) {
+        assert.true(
+          flagName in DEPRECATIONS,
+          `${flagName} has a matching DEPRECATIONS registry entry`
+        );
+        assert.strictEqual(
+          // eslint-disable-next-line import/namespace -- iterating the namespace's own keys
+          typeof DEPRECATED_FEATURES[flagName],
+          'boolean',
+          `${flagName} is a boolean`
+        );
+      }
+    }
+
+    ['@test the build manifest metadata matches the registry'](assert) {
+      // dist/deprecation-flags.json (which the deprecation-shaking plugin's
+      // `compliantThrough` relies on) is generated from the broccoli
+      // manifest; this pins its id/since/until to the registry so they
+      // cannot drift.
+      let { FLAGS } = deprecatedFeaturesManifest;
+
+      for (let [name, meta] of Object.entries(FLAGS)) {
+        let entry = DEPRECATIONS[name];
+        assert.ok(entry, `${name} exists in the registry`);
+        assert.strictEqual(meta.id, entry.options.id, `${name} id matches`);
+        assert.strictEqual(meta.until, entry.options.until, `${name} until matches`);
+        assert.deepEqual({ ...meta.since }, { ...entry.options.since }, `${name} since matches`);
+      }
+    }
+
+    ['@test a deprecation whose flag is false reports itself as removed'](assert) {
+      let options = {
+        id: 'test-flagged-off',
+        until: '30.0.0',
+        for: 'ember-source',
+        url: 'http://example.com/deprecations/test-flagged-off',
+        since: { available: '1.0.0', enabled: '1.0.0' },
+      };
+
+      assert.false(deprecation(options, true).isRemoved, 'flag true: not removed');
+      assert.false(deprecation(options).isRemoved, 'no flag: not removed');
+      assert.true(deprecation(options, false).isRemoved, 'flag false: removed');
+
+      assert.throws(
+        () => deprecateUntil('Shaken API reached', deprecation(options, false)),
+        /was removed in ember-source 30\.0\.0/,
+        'deprecateUntil throws for a flagged-off deprecation'
+      );
     }
 
     ['@test deprecateUntil throws when deprecation has been removed'](assert) {
@@ -43,6 +101,10 @@ moduleFor(
 
     ['@test deprecateUntil does not throw when isRemoved is false on deprecation'](assert) {
       assert.expect(1);
+
+      // explicitly empty: the compliance CI variant's boot config would
+      // otherwise make this enabled-stage deprecation throw
+      setDeprecationStagesConfig({});
 
       let MY_DEPRECATION = {
         options: {
@@ -132,6 +194,92 @@ moduleFor(
         true,
         '5.10.1 is after 5.9.2'
       );
+    }
+  }
+);
+
+// Stage configuration only exists in debug builds (the config functions are
+// no-op stubs in production), so these run as development-only.
+moduleForDevelopment(
+  '@ember/-internals/deprecations: stage configuration',
+  class extends AbstractTestCase {
+    teardown() {
+      setDeprecationStagesConfig(null);
+    }
+
+    ['@test available-stage deprecations reflect stage config changes'](assert) {
+      // explicitly empty: the harness variant may run with a boot config
+      setDeprecationStagesConfig({});
+
+      let AVAILABLE_DEPRECATION = deprecation({
+        id: 'test-available-stage',
+        until: '30.0.0',
+        for: 'ember-source',
+        url: 'http://example.com/deprecations/test-available-stage',
+        since: { available: '1.0.0' },
+      });
+
+      assert.true(AVAILABLE_DEPRECATION.test, 'suppressed with empty config');
+      assert.false(AVAILABLE_DEPRECATION.isEnabled, 'not enabled with empty config');
+
+      setDeprecationStagesConfig({ enable: ['test-available-stage'] });
+
+      assert.false(AVAILABLE_DEPRECATION.test, 'fires once enabled by config');
+      assert.true(AVAILABLE_DEPRECATION.isEnabled, 'enabled by config');
+
+      setDeprecationStagesConfig({ enable: ['some-other-id'] });
+
+      assert.true(AVAILABLE_DEPRECATION.test, 'suppressed again when config changes');
+    }
+
+    ['@test deprecateUntil fires an available-stage deprecation enabled by config'](assert) {
+      // explicitly empty: the harness variant may run with a boot config
+      setDeprecationStagesConfig({});
+
+      let AVAILABLE_DEPRECATION = deprecation({
+        id: 'test-available-fires',
+        until: '30.0.0',
+        for: 'ember-source',
+        url: 'http://example.com/deprecations/test-available-fires',
+        since: { available: '1.0.0' },
+      });
+
+      expectNoDeprecation(() => {
+        deprecateUntil('This deprecation is suppressed', AVAILABLE_DEPRECATION);
+      });
+
+      setDeprecationStagesConfig({ enable: ['test-available-fires'] });
+
+      expectDeprecation(() => {
+        deprecateUntil('This deprecation fires', AVAILABLE_DEPRECATION);
+      }, /This deprecation fires/);
+
+      assert.ok(true, 'ran without throwing');
+    }
+
+    ['@test except shields an id from version-based removal, but not from a false flag'](assert) {
+      let options = {
+        id: 'test-past-until',
+        until: '3.0.0',
+        for: 'ember-source',
+        url: 'http://example.com/deprecations/test-past-until',
+        since: { available: '1.0.0' },
+      };
+
+      setDeprecationStagesConfig({});
+      assert.true(deprecation(options).isRemoved, 'past-until deprecation reports removed');
+
+      setDeprecationStagesConfig({ except: ['test-past-until'] });
+
+      assert.false(deprecation(options).isRemoved, 'excepted id is not removed');
+      assert.false(deprecation(options).isEnabled, 'and not enabled via removal');
+      assert.true(
+        deprecation(options, false).isRemoved,
+        'a false flag still reports removed: the code is actually gone'
+      );
+
+      deprecateUntil('Reaching an excepted past-until deprecation', deprecation(options));
+      assert.ok(true, 'deprecateUntil does not throw for the excepted id');
     }
   }
 );

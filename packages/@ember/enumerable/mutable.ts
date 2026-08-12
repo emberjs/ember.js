@@ -1,5 +1,5 @@
 import Enumerable from '@ember/enumerable';
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 
 /**
 @module ember
@@ -17,6 +17,6 @@ import Mixin from '@ember/object/mixin';
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface MutableEnumerable extends Enumerable {}
-const MutableEnumerable = Mixin.create(Enumerable);
+const MutableEnumerable = createMixin(Enumerable);
 
 export default MutableEnumerable;

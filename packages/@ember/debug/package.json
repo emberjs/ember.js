@@ -19,6 +19,7 @@
     "@ember/routing": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/utils": "workspace:*",
+    "@ember/version": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
     "@glimmer/env": "workspace:*",
     "@glimmer/interfaces": "workspace:*",

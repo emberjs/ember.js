@@ -11,8 +11,9 @@ import { set } from '@ember/-internals/metal/lib/property_set';
 import getProperties from '@ember/-internals/metal/lib/get_properties';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
 import EmberObject from '@ember/object';
+import { internalExtend } from '@ember/object/core';
 import Evented from '@ember/object/evented';
-import { A as emberA } from '@ember/array';
+import { internalA as emberA } from '@ember/array';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import typeOf from '@ember/utils/lib/type-of';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
@@ -256,7 +257,10 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) implements IRoute {
+class Route<Model = unknown>
+  extends internalExtend(EmberObject, ActionHandler, Evented)
+  implements IRoute
+{
   static isRouteFactory = true;
 
   // These properties will end up appearing in the public interface because we
@@ -2039,7 +2043,7 @@ export function hasDefaultSerialize(route: Route): boolean {
 }
 
 // Set these here so they can be overridden with extend
-Route.reopen({
+Route.reopenInternal({
   mergedProperties: ['queryParams'],
   queryParams: {},
   templateName: null,

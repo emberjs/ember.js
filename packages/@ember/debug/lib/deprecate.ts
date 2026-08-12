@@ -2,6 +2,7 @@ import { ENV } from '@ember/-internals/environment/lib/env';
 import { DEBUG } from '@glimmer/env';
 
 import { assert } from './assert';
+import { shouldThrowForDeprecation } from './deprecation-stages';
 import type { HandlerCallback } from './handlers';
 import { invoke, registerHandler as genericRegisterHandler } from './handlers';
 
@@ -255,6 +256,14 @@ if (DEBUG) {
     assert(missingOptionDeprecation(options!.id, 'until'), Boolean(options!.until));
     assert(missingOptionDeprecation(options!.id, 'for'), Boolean(options!.for));
     assert(missingOptionDeprecation(options!.id, 'since'), Boolean(options!.since));
+
+    if (!test && shouldThrowForDeprecation(options!)) {
+      throw new Error(
+        `The deprecation ${options!.id} was triggered, but this app has declared compliance with it via EmberENV.DEPRECATION_STAGES. The message was: ${message}.${
+          options!.url ? ` See ${options!.url} for more details.` : ''
+        }`
+      );
+    }
 
     invoke('deprecate', message, test, options);
   };

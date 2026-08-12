@@ -127,7 +127,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
   }
 }
 
-NoneLocation.reopen({
+NoneLocation.reopenInternal({
   path: '',
   rootURL: '/',
 });

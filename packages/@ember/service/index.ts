@@ -1,5 +1,6 @@
 import { FrameworkObject } from '@ember/object/-internals';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
+import { DEPRECATE_IMPORT_INJECT } from '@ember/deprecated-features';
 import type {
   DecoratorPropertyDescriptor,
   ElementDescriptor,
@@ -34,7 +35,9 @@ export function inject(
     DEPRECATIONS.DEPRECATE_IMPORT_INJECT
   );
 
-  return metalInject('service', ...args);
+  if (DEPRECATE_IMPORT_INJECT) {
+    return metalInject('service', ...args);
+  }
 }
 
 /**

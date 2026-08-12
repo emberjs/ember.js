@@ -280,6 +280,9 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
+      '@ember/deprecated-features':
+        specifier: workspace:*
+        version: link:../deprecated-features
       '@ember/destroyable':
         specifier: workspace:*
         version: link:../destroyable
@@ -649,6 +652,9 @@ importers:
       '@ember/utils':
         specifier: workspace:*
         version: link:../utils
+      '@ember/version':
+        specifier: workspace:*
+        version: link:../version
       '@glimmer/destroyable':
         specifier: workspace:*
         version: link:../../@glimmer/destroyable
@@ -1087,6 +1093,9 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
+      '@ember/deprecated-features':
+        specifier: workspace:*
+        version: link:../deprecated-features
       '@ember/object':
         specifier: workspace:*
         version: link:../object

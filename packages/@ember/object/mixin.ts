@@ -6,6 +6,7 @@ import type { Meta } from '@ember/-internals/meta/lib/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
 import { observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils/lib/super';
 import { assert } from '@ember/debug';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import { DEBUG } from '@glimmer/env';
 import type {
   ComputedDecorator,
@@ -577,6 +578,10 @@ export default class Mixin {
     @public
   */
   static create<M extends typeof Mixin>(...args: any[]): InstanceType<M> {
+    deprecateUntil(
+      'Ember Mixins are deprecated. Replace mixin usage with native class composition (utility functions, delegation, or base classes).',
+      DEPRECATIONS.DEPRECATE_EMBER_MIXINS
+    );
     setUnprocessedMixins();
     let M = this;
     return new M(args, undefined) as InstanceType<M>;
@@ -685,6 +690,20 @@ export default class Mixin {
   toString() {
     return '(unknown mixin)';
   }
+}
+
+/**
+  Non-deprecating equivalent of `Mixin.create` for ember-source's own
+  framework mixins. External code must use `Mixin.create`.
+
+  Constructs `Mixin` directly rather than the static's `this`-based `new M()`
+  — ember-source never subclasses Mixin internally.
+
+  @internal
+*/
+export function createMixin(...args: any[]): Mixin {
+  setUnprocessedMixins();
+  return new Mixin(args, undefined);
 }
 
 if (DEBUG) {

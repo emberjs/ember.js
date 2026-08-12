@@ -1,7 +1,7 @@
 import { get } from '@ember/-internals/metal/lib/property_get';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
 import computed from '@ember/-internals/metal/lib/computed';
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 import type { AnyFn, MethodNamesOf } from '@ember/-internals/utility-types';
 import type RSVP from 'rsvp';
 import type CoreObject from '@ember/object/core';
@@ -211,7 +211,7 @@ interface PromiseProxyMixin<T> {
   */
   finally: this['promise']['finally'];
 }
-const PromiseProxyMixin = Mixin.create({
+const PromiseProxyMixin = createMixin({
   reason: null,
 
   isPending: computed('isSettled', function () {

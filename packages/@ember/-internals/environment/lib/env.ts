@@ -118,6 +118,34 @@ export const ENV = {
   _ALL_DEPRECATIONS_ENABLED: false,
 
   /**
+   Configuration for the deprecation staging system. Allows an app to enable
+   individual available-stage deprecations early (`enable`), and to declare
+   compliance with deprecations it has migrated away from so that triggering
+   them throws instead of warning (`compliance`, `assert`, `except`).
+
+   ```js
+   EmberENV: {
+     DEPRECATION_STAGES: {
+       enable: ['some-available-stage-deprecation-id'],
+       compliance: '6.8.0',
+       assert: ['a-migrated-deprecation-id'],
+       except: ['a-deprecation-still-being-worked-on'],
+     },
+   }
+   ```
+
+   Only meaningful in development builds; deprecations do not exist in
+   production builds.
+
+   @property DEPRECATION_STAGES
+   @for EmberENV
+   @type Object | null
+   @default null
+   @public
+   */
+  DEPRECATION_STAGES: null as Record<string, unknown> | null,
+
+  /**
    Override the version of ember-source used to determine when deprecations "break".
    This is used internally by Ember to test with deprecated features "removed".
    This is never intended to be set by projects.

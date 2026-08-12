@@ -3,7 +3,7 @@ import { schedule, join } from '@ember/runloop';
 @module ember
 */
 import type Container from '@ember/-internals/container/lib/container';
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 import type { ContainerProxy } from '@ember/-internals/owner';
 
 // This is defined as a separate interface so that it can be used in the definition of
@@ -21,7 +21,7 @@ interface ContainerProxyMixin extends ContainerProxy {
   /** @internal */
   __container__: Container;
 }
-const ContainerProxyMixin = Mixin.create({
+const ContainerProxyMixin = createMixin({
   /**
    The container stores state.
 

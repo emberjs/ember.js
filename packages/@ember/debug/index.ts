@@ -14,6 +14,7 @@ export {
   registerHandler as registerDeprecationHandler,
   type DeprecationOptions,
 } from './lib/deprecate';
+export { setDeprecationStagesConfig, type DeprecationStagesConfig } from './lib/deprecation-stages';
 export { default as inspect } from './lib/inspect';
 export { isTesting, setTesting } from './lib/testing';
 export { default as captureRenderTree } from './lib/capture-render-tree';

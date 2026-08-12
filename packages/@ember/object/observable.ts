@@ -15,7 +15,7 @@ import { set } from '@ember/-internals/metal/lib/property_set';
 import getProperties from '@ember/-internals/metal/lib/get_properties';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
 
-import Mixin from '@ember/object/mixin';
+import { createMixin } from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 
 export type ObserverMethod<Target, Sender> =
@@ -420,7 +420,7 @@ interface Observable {
   */
   cacheFor<K extends keyof this>(key: K): unknown;
 }
-const Observable = Mixin.create({
+const Observable = createMixin({
   get(keyName: string) {
     return get(this, keyName);
   },
