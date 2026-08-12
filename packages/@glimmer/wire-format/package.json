@@ -2,6 +2,7 @@
   "name": "@glimmer/wire-format",
   "version": "0.94.8",
   "license": "MIT",
+  "private": true,
   "description": "",
   "repository": {
     "type": "git",

@@ -2,6 +2,7 @@
   "name": "@glimmer/util",
   "version": "0.94.8",
   "license": "MIT",
+  "private": true,
   "description": "Common utilities used in Glimmer",
   "repository": {
     "type": "git",
