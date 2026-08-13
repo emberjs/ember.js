@@ -251,19 +251,6 @@ export interface CreateRouteArgs {
   name: string;
 }
 
-/**
-  Reads what belongs in this route's `{{outlet}}`, or `null` where the chain
-  ends.
-
-  A manager receives one of these in `getRouteWrapper` and must call it while
-  rendering rather than up front: the wrapper it returns is cached for the life
-  of the bucket, but what sits below that wrapper is rebuilt on every
-  transition. Handing over a callback rather than the underlying reference is
-  what keeps the outlet opaque — a manager can place it, but never inspect or
-  parameterize it.
- */
-export type ChildOutlet = () => object | null;
-
 // -- RouteManager -------------------------------------------------------------
 
 /**
@@ -340,17 +327,19 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
    */
   didExit(bucket: Bucket, state: DidExitState): void;
 
-  /** This manager's outlet, cached per bucket. */
-  getRouteWrapper(bucket: Bucket, childOutlet: ChildOutlet): object | null;
-
   /**
-    The route's current context, forwarded to the outlet as `@context`.
+    The component this manager renders every one of its routes through.
 
-    Read during render, so it must come from tracked state: whatever this
-    returns is re-read whenever that state changes. Managers that render their
-    own instance can skip this and read their bucket directly instead.
+    Module-stable: return the same component every call. The framework curries
+    this level's state onto it as `@Component` (the invokable), `@bucket` and
+    `@outlet`, so an ordinary component is enough — there is no need to author
+    a component manager, and nothing here needs the bucket.
+
+    Read anything else, including the route's context, off `@bucket` inside the
+    wrapper: that read happens during render, so it entangles with tracked state
+    that lands after the transition settles.
    */
-  getRouteContext?(bucket: Bucket): unknown;
+  getRouteWrapper(): object;
 
   /**
     Returns the renderable for the route. Async to absorb dynamic imports of
@@ -369,9 +358,8 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
 type RenderStateLike = {
   owner: any;
   name: string;
+  /** Passed to the wrapper as `@Component`. */
   invokable: object | undefined;
-  /** Curried onto the invokable as `@bucket`. */
-  bucket?: RouteStateBucket;
 };
 
 /**

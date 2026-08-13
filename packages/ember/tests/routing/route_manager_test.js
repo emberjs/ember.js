@@ -1,6 +1,7 @@
 import Route from '@ember/routing/route';
 import { setRouteManager } from '@ember/routing';
-import { capabilities, setComponentManager, setComponentTemplate } from '@ember/component';
+import { setComponentTemplate } from '@ember/component';
+import templateOnly from '@ember/component/template-only';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import {
   moduleFor,
@@ -12,58 +13,19 @@ import {
 import { registerDestructor } from '@ember/destroyable';
 import { precompileTemplate } from '@ember/template-compilation';
 import { getOwner } from '@ember/owner';
+import Engine from '@ember/engine';
 import { defer, reject, resolve } from 'rsvp';
 
-// Definition-as-self: the outlet *is* its own component definition, so
-// `createComponent` hands it straight back and `this` inside the layout is the
-// object the route manager built. Nothing is copied onto named args, so there
-// is no `prepareArgs` — and therefore nothing here has to speak in references.
-const OUTLET_MANAGER = {
-  capabilities: capabilities('3.13'),
-
-  createComponent(definition) {
-    return definition;
-  },
-
-  getContext(component) {
-    return component;
-  },
-};
-
-function classicBucketOutlet(layout) {
-  class ClassicBucketOutlet {
-    #childOutlet;
-
-    constructor(bucket, childOutlet) {
-      this.bucket = bucket;
-      this.#childOutlet = childOutlet;
-    }
-
-    get Component() {
-      return this.bucket.invokable;
-    }
-
-    get context() {
-      return this.bucket.context;
-    }
-
-    /** The next outlet down, re-read on every transition. */
-    get outlet() {
-      return this.#childOutlet();
-    }
-  }
-
-  setComponentManager(() => OUTLET_MANAGER, ClassicBucketOutlet.prototype);
-  setComponentTemplate(layout, ClassicBucketOutlet.prototype);
-
-  return ClassicBucketOutlet;
-}
-
+// A wrapper is an ordinary component now: the framework curries `@Component`,
+// `@bucket` and `@outlet` onto it. `precompileTemplate` is a build-time macro,
+// so each layout has to be a literal at its call site.
+//
 // The `@context` contract, not classic's.
-const ContextOutlet = classicBucketOutlet(
-  precompileTemplate('<this.Component @context={{this.context}} @outlet={{this.outlet}} />', {
+const ContextOutlet = setComponentTemplate(
+  precompileTemplate('<@Component @context={{@bucket.render.context}} @outlet={{@outlet}} />', {
     strictMode: true,
-  })
+  }),
+  templateOnly()
 );
 
 // A manager that delegates everything to the ClassicRouteManager so existing
@@ -249,8 +211,8 @@ moduleFor(
 
       // Classic wiring, `@context` contract.
       class WrapperlessRouteManager extends ClassicRouteManager {
-        getRouteWrapper(bucket, childOutlet) {
-          return new ContextOutlet(bucket, childOutlet);
+        getRouteWrapper() {
+          return ContextOutlet;
         }
       }
 
@@ -308,29 +270,12 @@ moduleFor(
   }
 );
 
-// A manager-provided outlet. See `classicBucketOutlet`: definition-as-self, so
-// the layout reads `this.*` and no reference is built anywhere.
-class SlimOutlet {
-  #childOutlet;
-
-  constructor(bucket, childOutlet) {
-    this.bucket = bucket;
-    this.#childOutlet = childOutlet;
-  }
-
-  get name() {
-    return this.bucket.route.routeName;
-  }
-
-  get outlet() {
-    return this.#childOutlet();
-  }
-}
-
-setComponentManager(() => OUTLET_MANAGER, SlimOutlet.prototype);
-setComponentTemplate(
-  precompileTemplate('[{{this.name}}:<this.outlet />]', { strictMode: true }),
-  SlimOutlet.prototype
+// Deliberately does NOT render @Component: this fixture asserts a wrapper can
+// own its level outright (`template:parent` is `SHOULD-NOT-RENDER`). Contrary to
+// the RFC's "the wrapper calls the route's invokable", and that is the point.
+const SlimOutlet = setComponentTemplate(
+  precompileTemplate('[{{@bucket.route.routeName}}:<@outlet />]', { strictMode: true }),
+  templateOnly()
 );
 
 moduleFor(
@@ -342,8 +287,8 @@ moduleFor(
       let SlimRoute = class extends Route {};
 
       class SlimRouteManager extends ClassicRouteManager {
-        getRouteWrapper(bucket, childOutlet) {
-          return new SlimOutlet(bucket, childOutlet);
+        getRouteWrapper() {
+          return SlimOutlet;
         }
       }
 
@@ -399,10 +344,11 @@ moduleFor(
 );
 
 // Decorates every level the manager owns.
-const WrapOutlet = classicBucketOutlet(
-  precompileTemplate('wrap(<this.Component @model={{this.context}} @outlet={{this.outlet}} />)', {
+const WrapOutlet = setComponentTemplate(
+  precompileTemplate('wrap(<@Component @model={{@bucket.render.context}} @outlet={{@outlet}} />)', {
     strictMode: true,
-  })
+  }),
+  templateOnly()
 );
 
 moduleFor(
@@ -414,8 +360,8 @@ moduleFor(
       let TestRoute = class extends Route {};
 
       class WrapperRouteManager extends ClassicRouteManager {
-        getRouteWrapper(bucket, childOutlet) {
-          return new WrapOutlet(bucket, childOutlet);
+        getRouteWrapper() {
+          return WrapOutlet;
         }
       }
 
@@ -866,6 +812,159 @@ moduleFor(
       );
       let didEnter = this.log.find(([h, n]) => h === 'didEnter' && n === 'error');
       assert.ok(didEnter, 'the error substate entered through the manager');
+    }
+  }
+);
+
+// A wrapper the framework supplies every argument to. Module-stable: the same
+// object backs every route level, in the application and inside an engine.
+const StampOutlet = setComponentTemplate(
+  precompileTemplate(
+    'stamp[{{@bucket.route.routeName}}](<@Component @model={{@bucket.render.context}} @outlet={{@outlet}} />)',
+    { strictMode: true }
+  ),
+  templateOnly()
+);
+
+class StampRouteManager extends ClassicRouteManager {
+  getRouteWrapper() {
+    return StampOutlet;
+  }
+}
+
+// `{{outlet}}` compiles to `<@outlet />`, so a route template can also write
+// `<@outlet ... />` by hand and pass whatever it likes. Nothing *clears* those
+// args — the provider's layout simply declares none — so this is the guarantee
+// that the framework's curried arguments are the only ones a wrapper can see.
+moduleFor(
+  'Route manager - outlet opacity',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      let StampRoute = class extends Route {};
+      setRouteManager((owner) => new StampRouteManager(owner), StampRoute);
+
+      this.add('route:application', class extends Route {});
+      this.add('route:parent', class extends Route {});
+      this.add(
+        'route:parent.child',
+        class extends StampRoute {
+          model() {
+            return { msg: 'C' };
+          }
+        }
+      );
+
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      this.add(
+        'template:parent',
+        precompileTemplate(
+          'parent:<@outlet @Component="HACKED" @bucket="HACKED" @context="HACKED" @outlet="HACKED" />'
+        )
+      );
+      this.add('template:parent.child', precompileTemplate('child:{{@model.msg}}'));
+
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child');
+        });
+      });
+    }
+
+    async ['@test a parent cannot parameterize the outlet it places'](assert) {
+      await this.visit('/parent/child');
+
+      assert.strictEqual(
+        this.element.textContent,
+        'app:parent:stamp[parent.child](child:C)',
+        'the call site args were ignored; the framework supplied every argument'
+      );
+    }
+  }
+);
+
+// Glimmer caches a `ComponentDefinition` by definition object, not by owner, so
+// a module-stable wrapper is compiled once and then reused under whatever owner
+// it is next invoked under. Rendering the *same* wrapper first in the
+// application and then inside a routable engine is what catches owner-local
+// resolution being baked in on the first compile; an engine-only test would not.
+moduleFor(
+  'Route manager - module-stable wrapper across owners',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      let StampRoute = class extends Route {};
+      setRouteManager((owner) => new StampRouteManager(owner), StampRoute);
+
+      this.add('route:application', class extends Route {});
+      this.add(
+        'route:local',
+        class extends StampRoute {
+          model() {
+            return { msg: 'L' };
+          }
+        }
+      );
+
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      this.add('template:local', precompileTemplate('local:{{@model.msg}}'));
+
+      this.add(
+        'engine:blog',
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
+
+          init() {
+            super.init(...arguments);
+            this.register('route:application', class extends Route {});
+            this.register(
+              'route:post',
+              class extends StampRoute {
+                model() {
+                  return { msg: 'P' };
+                }
+              }
+            );
+            this.register('template:application', precompileTemplate('engine:{{outlet}}'));
+            this.register('template:post', precompileTemplate('post:{{@model.msg}}'));
+          }
+        }
+      );
+      this.add('route-map:blog', function () {
+        this.route('post');
+      });
+
+      this.router.map(function () {
+        this.route('local');
+        this.mount('blog');
+      });
+    }
+
+    async ['@test the same wrapper renders under the application owner and an engine owner'](
+      assert
+    ) {
+      await this.visit('/local');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:stamp[local](local:L)',
+        'the wrapper rendered under the application owner'
+      );
+
+      await this.visit('/blog/post');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:engine:stamp[post](post:P)',
+        'the same wrapper rendered under the engine owner, across the mount point'
+      );
+
+      await this.visit('/local');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:stamp[local](local:L)',
+        'round-trip back to the application owner renders correctly'
+      );
     }
   }
 );

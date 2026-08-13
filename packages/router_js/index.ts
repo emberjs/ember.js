@@ -50,5 +50,4 @@ export type {
   ClassicExitState,
   ClassicDidExitState,
   CreateRouteArgs,
-  ChildOutlet,
 } from './lib/route-manager';

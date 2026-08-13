@@ -603,6 +603,47 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         'swap-invokable': COMPONENTS.SwapInvokableReady,
       `,
     },
+    {
+      routerMap: `
+        this.route('glimmer-wrapper', function () {
+          this.route('child');
+        });
+      `,
+      routes: {
+        'glimmer-wrapper.js': `
+          import GlimmerRoute from '${appName}/routes/glimmer';
+
+          export default class extends GlimmerRoute {}
+        `,
+        'glimmer-wrapper': {
+          'child.js': `
+            import GlimmerRoute from '${appName}/routes/glimmer';
+
+            export default class extends GlimmerRoute {}
+          `,
+        },
+      },
+      routeComponent:
+        createRouteComponent(
+          'GlimmerWrapperParent',
+          `<div data-test-glimmer-route="glimmer-wrapper">
+            glimmer parent
+            <span data-test-route-model>{{@context}}</span>
+            <div data-test-outlet-boundary>{{outlet}}</div>
+          </div>`
+        ) +
+        createRouteComponent(
+          'GlimmerWrapperChild',
+          `<div data-test-glimmer-route="glimmer-wrapper.child">
+            glimmer child
+            <span data-test-route-model>{{@context}}</span>
+          </div>`
+        ),
+      managerInvokableMap: `
+        'glimmer-wrapper': COMPONENTS.GlimmerWrapperParent,
+        'glimmer-wrapper.child': COMPONENTS.GlimmerWrapperChild,
+      `,
+    },
   ];
 
   const ROUTER_MAP = ROUTE_FIXTURES.map((fixture) => fixture.routerMap).join('\n');
@@ -732,12 +773,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               import Component from '@glimmer/component';
               import { tracked } from '@glimmer/tracking';
               import { on } from '@ember/modifier';
-              import {
-                getComponentTemplate,
-                setComponentTemplate,
-                setInternalComponentManager,
-              } from '@glimmer/manager';
-              import { createComputeRef, createConstRef, NULL_REFERENCE } from '@glimmer/reference';
 
               // \`model\` is tracked; no render-state plumbing.
               export class FunkyBucket {
@@ -773,158 +808,80 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 </template>
               }
 
-              const LAYOUT = <template>
+              // What \`getRouteWrapper\` returns: module-stable, and an ordinary
+              // component. The framework curries \`@Component\`, \`@bucket\` and
+              // \`@outlet\` onto it, so there is no component manager and nothing
+              // here speaks in references.
+              export const FunkyOutlet = <template>
                 <FunkyGate @bucket={{@bucket}} @outlet={{@outlet}} />
               </template>;
-
-              // What \`getRouteWrapper\` returns.
-              export class FunkyOutlet {
-                constructor(bucket, childOutlet) {
-                  this.bucket = bucket;
-                  // Managers get a callback; \`prepareArgs\` passes \`@outlet\`
-                  // to the template as an argument, which wants a reference.
-                  this.childOutlet = createComputeRef(childOutlet);
-                }
-              }
-
-              setInternalComponentManager(
-                {
-                  getCapabilities() {
-                    return {
-                      dynamicLayout: false,
-                      dynamicTag: false,
-                      // Supplies args; discards a parent's.
-                      prepareArgs: true,
-                      createArgs: false,
-                      attributeHook: false,
-                      elementHook: false,
-                      createCaller: false,
-                      dynamicScope: false,
-                      updateHook: false,
-                      createInstance: false,
-                      wrapped: false,
-                      willDestroy: false,
-                      hasSubOwner: false,
-                    };
-                  },
-
-                  prepareArgs(definition) {
-                    return {
-                      positional: [],
-                      named: {
-                        bucket: createConstRef(definition.bucket, '@bucket'),
-                        outlet: definition.childOutlet,
-                      },
-                    };
-                  },
-
-                  getDebugName(definition) {
-                    return \`funky outlet for \${definition.bucket.name}\`;
-                  },
-
-                  getSelf() {
-                    return NULL_REFERENCE;
-                  },
-
-                  getDestroyable() {
-                    return null;
-                  },
-                },
-                FunkyOutlet.prototype
-              );
-
-              setComponentTemplate(getComponentTemplate(LAYOUT), FunkyOutlet.prototype);
             `,
             'swap-outlet.gjs': `
-              import {
-                capabilities,
-                getComponentTemplate,
-                setComponentManager,
-                setComponentTemplate,
-              } from '@ember/component';
               import { SwapInvokableLoading } from '${appName}/components/funky-route-components';
 
-              // Definition-as-self: \`createComponent\` hands the definition back
-              // and \`getContext\` returns it unchanged, so \`this\` in the layout
-              // is the outlet the route manager built. No args are copied, so
-              // there is no \`prepareArgs\` and no reference anywhere.
-              const MANAGER = {
-                capabilities: capabilities('3.13'),
-                createComponent: (definition) => definition,
-                getContext: (component) => component,
-              };
-
-              export class SwapOutlet {
-                #childOutlet;
-
-                constructor(bucket, childOutlet) {
-                  this.bucket = bucket;
-                  this.#childOutlet = childOutlet;
-                }
-
-                /** The next outlet down, re-read on every transition. */
-                get outlet() {
-                  return this.#childOutlet();
-                }
-
-                // \`ready\` is tracked; no _setOutlets pass.
-                <template>
-                  {{#if this.bucket.ready}}
-                    <this.bucket.invokable @outlet={{this.outlet}} />
-                  {{else}}
-                    <SwapInvokableLoading @outlet={{this.outlet}} />
-                  {{/if}}
-                </template>
-              }
-
-              // The manager renders an *instance*, and both the component
-              // manager and the template are found by walking that instance's
-              // prototype chain. A class-body \`<template>\` lands on the class
-              // itself, which is not on that chain, so it is re-hung here.
-              setComponentTemplate(getComponentTemplate(SwapOutlet), SwapOutlet.prototype);
-              setComponentManager(() => MANAGER, SwapOutlet.prototype);
+              // An ordinary component: the framework curries \`@Component\`,
+              // \`@bucket\` and \`@outlet\` onto it, so there is no component
+              // manager and no reference anywhere. \`ready\` is tracked and read
+              // during render, so it swaps with no _setOutlets pass.
+              export const SwapOutlet = <template>
+                {{#if @bucket.ready}}
+                  <@Component @outlet={{@outlet}} />
+                {{else}}
+                  <SwapInvokableLoading @outlet={{@outlet}} />
+                {{/if}}
+              </template>;
             `,
             'reactive-outlet.gjs': `
-              import {
-                capabilities,
-                getComponentTemplate,
-                setComponentManager,
-                setComponentTemplate,
-              } from '@ember/component';
+              // See \`swap-outlet.gjs\`. \`context\` is tracked and read here,
+              // inside the render frame, which is what lets a model that lands
+              // after the transition settles reach the invokable.
+              export const ReactiveOutlet = <template>
+                <@Component @context={{@bucket.context}} @outlet={{@outlet}} />
+              </template>;
+            `,
+            'glimmer-outlet.gjs': `
+              import Component from '@glimmer/component';
+              import { service } from '@ember/service';
+              import { getOwner } from '@ember/owner';
 
-              // Definition-as-self; see \`swap-outlet.gjs\`. No references.
-              const MANAGER = {
-                capabilities: capabilities('3.13'),
-                createComponent: (definition) => definition,
-                getContext: (component) => component,
-              };
+              // A real Glimmer component class as the wrapper: the DEFAULT
+              // component manager, no \`setComponentManager\`, no \`@glimmer/*\`
+              // imports, nothing hung on a prototype. Everything the framework
+              // curries arrives on \`this.args\`.
+              //
+              // The definition is module-stable per RFC-1169, but the
+              // *instances* are per level — which is the whole reason to reach
+              // for a class here: a constructor, an injected service and a
+              // destructor, none of which a template-only wrapper can have.
+              export default class GlimmerOutlet extends Component {
+                @service wrapperLog;
 
-              export class ReactiveOutlet {
-                #childOutlet;
-
-                constructor(bucket, childOutlet) {
-                  this.bucket = bucket;
-                  this.#childOutlet = childOutlet;
+                constructor(owner, args) {
+                  super(owner, args);
+                  this.wrapperLog.record('created:' + this.args.bucket.name);
                 }
 
-                /** The next outlet down, re-read on every transition. */
-                get outlet() {
-                  return this.#childOutlet();
+                // Only resolvable through the owner, so this proves the owner
+                // reached the wrapper's own instance — not merely the route
+                // template below it, which gets its own from RouteTemplateManager.
+                get ownerTag() {
+                  return getOwner(this) === undefined ? 'missing' : 'present';
                 }
 
-                // \`context\` is tracked; late models land.
+                willDestroy() {
+                  super.willDestroy();
+                  this.wrapperLog.record('destroyed:' + this.args.bucket.name);
+                }
+
                 <template>
-                  <this.bucket.invokable
-                    @context={{this.bucket.context}}
-                    @outlet={{this.outlet}}
-                  />
+                  <div
+                    data-test-glimmer-outlet={{@bucket.name}}
+                    data-test-wrapper-owner={{this.ownerTag}}
+                  >
+                    <@Component @context={{@bucket.context}} @outlet={{@outlet}} />
+                  </div>
                 </template>
               }
-
-              // See \`swap-outlet.gjs\`: a class-body template has to be re-hung
-              // on the prototype, because the manager renders an instance.
-              setComponentTemplate(getComponentTemplate(ReactiveOutlet), ReactiveOutlet.prototype);
-              setComponentManager(() => MANAGER, ReactiveOutlet.prototype);
             `,
             'funky-route-components.gjs': ROUTE_COMPONENTS,
           },
@@ -982,8 +939,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getRouteWrapper(bucket, childOutlet) {
-                  return new SwapOutlet(bucket, childOutlet);
+                getRouteWrapper() {
+                  return SwapOutlet;
                 }
 
                 getRenderState(bucket) {
@@ -993,7 +950,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     owner: this.owner,
                     name: bucket.name,
                     invokable: bucket.invokable,
-                    bucket,
                   };
                 }
 
@@ -1049,8 +1005,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getRouteWrapper(bucket, childOutlet) {
-                  return new ReactiveOutlet(bucket, childOutlet);
+                getRouteWrapper() {
+                  return ReactiveOutlet;
                 }
 
                 getRenderState(bucket) {
@@ -1058,7 +1014,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     owner: this.owner,
                     name: bucket.name,
                     invokable: bucket.invokable,
-                    bucket,
                   };
                 }
 
@@ -1070,6 +1025,70 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   });
                 }
 
+                didEnter() {}
+                willExit() {}
+                exit() {}
+                didExit() {}
+
+                async getInvokable(bucket) {
+                  return bucket.invokable;
+                }
+              }
+            `,
+            'glimmer.js': `
+              import { routeCapabilities } from '@ember/routing';
+
+              import GlimmerOutlet from '${appName}/components/glimmer-outlet';
+              import * as COMPONENTS from '${appName}/components/funky-route-components';
+
+              const ROUTES = {
+                ${MANAGER_INVOKABLE_MAP}
+              };
+
+              class GlimmerBucket {
+                constructor(name, route, invokable) {
+                  this.name = name;
+                  this.route = route;
+                  this.invokable = invokable;
+                  this.context = name;
+                }
+              }
+
+              export default class GlimmerRouteManager {
+                capabilities = routeCapabilities('1.0');
+
+                constructor(owner) {
+                  this.owner = owner;
+                }
+
+                createRoute(RouteClass, { name }) {
+                  return new GlimmerBucket(name, new RouteClass(this.owner), ROUTES[name]);
+                }
+
+                getRoute(bucket) {
+                  return bucket.route;
+                }
+
+                getDestroyable() {
+                  return null;
+                }
+
+                // Module-stable per RFC-1169: the same component every call, for
+                // every route this manager owns.
+                getRouteWrapper() {
+                  return GlimmerOutlet;
+                }
+
+                getRenderState(bucket) {
+                  return {
+                    owner: this.owner,
+                    name: bucket.name,
+                    invokable: bucket.invokable,
+                  };
+                }
+
+                willEnter() {}
+                async enter() {}
                 didEnter() {}
                 willExit() {}
                 exit() {}
@@ -1108,8 +1127,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return null;
                 }
 
-                getRouteWrapper(bucket, childOutlet) {
-                  return new FunkyOutlet(bucket, childOutlet);
+                getRouteWrapper() {
+                  return FunkyOutlet;
                 }
 
                 getRenderState(bucket) {
@@ -1117,7 +1136,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     owner: this.owner,
                     name: bucket.name,
                     invokable: bucket.invokable,
-                    bucket,
                   };
                 }
 
@@ -1182,7 +1200,35 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
               setRouteManager((owner) => new SwapRouteManager(owner), SwapRoute);
             `,
+            'glimmer.js': `
+              import { setOwner } from '@ember/owner';
+              import { setRouteManager } from '@ember/routing';
+              import GlimmerRouteManager from '${appName}/route-managers/glimmer';
+
+              export default class GlimmerRoute {
+                constructor(owner) {
+                  setOwner(this, owner);
+                }
+              }
+
+              setRouteManager((owner) => new GlimmerRouteManager(owner), GlimmerRoute);
+            `,
             ...ROUTE_FILES,
+          },
+          services: {
+            'wrapper-log.js': `
+              import Service from '@ember/service';
+
+              // Owner-resolved, so a wrapper that can inject it is a wrapper the
+              // owner actually reached.
+              export default class WrapperLogService extends Service {
+                entries = [];
+
+                record(entry) {
+                  this.entries.push(entry);
+                }
+              }
+            `,
           },
           templates: {
             'application.gjs': `<template>{{outlet}}</template>`,
@@ -1441,6 +1487,56 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
                   assert.dom(GATE_SELECTOR).doesNotExist();
                   assertFunkyRoute(assert, 0, 'funky-reentry', 'beta');
+                });
+
+                test('a real Glimmer component class works as a wrapper', async function (assert) {
+                  let log = this.owner.lookup('service:wrapper-log');
+
+                  await visit('/glimmer-wrapper/child');
+
+                  // It rendered, and it rendered the invokable it was curried.
+                  assert.dom('[data-test-glimmer-outlet="glimmer-wrapper"]').exists();
+                  assert.dom('[data-test-glimmer-outlet="glimmer-wrapper.child"]').exists();
+                  assert.dom('[data-test-glimmer-route="glimmer-wrapper"]').exists();
+                  assert.dom('[data-test-glimmer-route="glimmer-wrapper.child"]').exists();
+
+                  // @context reached the invokable through the wrapper.
+                  assert
+                    .dom('[data-test-glimmer-route="glimmer-wrapper.child"] > [data-test-route-model]')
+                    .hasText('glimmer-wrapper.child');
+
+                  // The owner reached the wrapper's own instance: \`@service\`
+                  // resolved in the constructor, and \`getOwner(this)\` is set.
+                  assert
+                    .dom('[data-test-glimmer-outlet="glimmer-wrapper"]')
+                    .hasAttribute('data-test-wrapper-owner', 'present');
+                  assert
+                    .dom('[data-test-glimmer-outlet="glimmer-wrapper.child"]')
+                    .hasAttribute('data-test-wrapper-owner', 'present');
+
+                  // One module-stable definition, one instance per level.
+                  assert.deepEqual(
+                    log.entries.filter((entry) => entry.startsWith('created:')),
+                    ['created:glimmer-wrapper', 'created:glimmer-wrapper.child'],
+                    'the shared definition was instantiated once per route level'
+                  );
+                });
+
+                test('a Glimmer wrapper is torn down when its level exits', async function (assert) {
+                  let log = this.owner.lookup('service:wrapper-log');
+
+                  await visit('/glimmer-wrapper/child');
+                  log.entries.length = 0;
+
+                  await visit('/glimmer-wrapper');
+
+                  assert.deepEqual(
+                    log.entries,
+                    ['destroyed:glimmer-wrapper.child'],
+                    'only the exiting level was destroyed; the parent instance stayed'
+                  );
+                  assert.dom('[data-test-glimmer-outlet="glimmer-wrapper.child"]').doesNotExist();
+                  assert.dom('[data-test-glimmer-outlet="glimmer-wrapper"]').exists();
                 });
               });
             `,

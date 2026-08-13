@@ -752,16 +752,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       assert('Expected active route to have a manager and bucket', manager && bucket);
       let render = manager.getRenderState(bucket);
 
-      assert(
-        `The route manager for "${render.name}" did not return a \`bucket\` from ` +
-          `\`getRenderState\`. Every route level's outlet is resolved once and ` +
-          `cached against its bucket, so one is always required.`,
-        render.bucket !== undefined
-      );
-
       let state: OutletState = {
         render,
         manager,
+        bucket,
         outlets: { main: undefined },
       };
 

@@ -1,22 +1,16 @@
 /** The top-level that boots your 'application' route */
 
 import type {
+  CapturedArguments,
   CustomRenderNode,
   InternalComponentCapabilities,
   InternalComponentManager,
-  PreparedArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
-  WithPrepareArgs,
 } from '@glimmer/interfaces';
+import { internalHelper } from '@ember/-internals/glimmer/lib/helpers/internal-helper';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import {
-  createComputeRef,
-  createConstRef,
-  NULL_REFERENCE,
-  valueForRef,
-} from '@glimmer/reference/lib/reference';
-import { EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { createComputeRef, createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -124,96 +118,109 @@ export function createRootOutletState(initial: OutletState): UpdatableOutletRoot
 }
 
 /**
- * Delivers a manager's outlet its state, so the manager doesn't have to.
- *
- * Both boundaries that render an outlet — `{{this}}` above and `<@outlet />`
- * inside a route template — invoke it with no arguments. Without this shim the
- * only way to get `bucket`, `context` and the child outlet into the rendered
- * component is to carry them on an instance, which is why a manager returning
- * a plain component previously had to hand-roll a component manager. The shim
- * supplies them as arguments instead, so `getRouteWrapper` can return an
- * ordinary component.
- *
- * `prepareArgs` is what keeps `{{outlet}}` opaque: it discards whatever the
- * caller passed and substitutes these. A manager that still returns its own
- * instance is unaffected — it ignores the arguments it is handed.
- */
-const SHIM_TEMPLATE = precompileTemplate(
-  '<@Component @bucket={{@bucket}} @context={{@context}} @outlet={{@outlet}} />',
+  Wrapping in a helper allows `<@outlet />` invocation to use the `getDebugName` of `OutletArgs` manager.
+*/
+const asReference = internalHelper(
+  ({ positional }: CapturedArguments) => valueForRef(positional[0]!) as Reference
+);
+
+/**
+ Curries a route's render state onto its manager's wrapper.
+ This provider is what allows `getRouteWrapper` to provide a regular component without a custom manager.
+ It's role is to enforce the shape of outlet.
+*/
+const PROVIDER_TEMPLATE = precompileTemplate(
+  '<this.component @Component={{this.invokable}} @bucket={{this.bucket}} @outlet={{asReference this.childOutletRef}} />',
   {
-    moduleName: 'packages/@ember/-internals/routing/route-managers/route-outlet-shim.hbs',
+    moduleName: 'packages/@ember/-internals/routing/route-managers/outlet-arg-provider.hbs',
     strictMode: true,
+    scope: () => ({ asReference }),
   }
 );
 
-const SHIM_CAPABILITIES: InternalComponentCapabilities = {
+const PROVIDER_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
-  // Supplies the layout's arguments, and discards the caller's.
-  prepareArgs: true,
+  prepareArgs: false,
   createArgs: false,
   attributeHook: false,
   elementHook: false,
   createCaller: false,
   dynamicScope: false,
   updateHook: false,
-  createInstance: false,
+  createInstance: true,
   wrapped: false,
   willDestroy: false,
   hasSubOwner: false,
 };
 
-class RouteOutletShim {
+class OutletArgProvider {
+  readonly childOutletRef: Reference<object | null>;
+  readonly self: Reference;
+
+  /**
+    The level's last published state. Glimmer revalidates this component's
+    arguments on the way out, after `_setOutlets` has dropped the level from the
+    chain, so the ref can read `undefined` while the layout still asks for
+    `@Component`.
+  */
+  private lastState: OutletState;
+
   constructor(
     readonly component: object,
     readonly bucket: object,
-    readonly name: string,
-    readonly context: Reference,
-    readonly childOutlet: Reference
-  ) {}
+    readonly outletRef: Reference<OutletState | undefined>
+  ) {
+    this.childOutletRef = childOutletRefFor(outletRef);
+    this.lastState = valueForRef(outletRef)!;
+    this.self = createConstRef(this, 'this');
+  }
+
+  get invokable(): object | undefined {
+    return (this.lastState = valueForRef(this.outletRef) ?? this.lastState).render.invokable;
+  }
 }
 
-const SHIM_MANAGER: InternalComponentManager<null, RouteOutletShim> &
-  WithPrepareArgs<null, RouteOutletShim> &
-  WithCustomDebugRenderTree<null, RouteOutletShim> = {
+class OutletArgProviderManager
+  implements
+    InternalComponentManager<OutletArgProvider, OutletArgProvider>,
+    WithCreateInstance<OutletArgProvider, OutletArgProvider>,
+    WithCustomDebugRenderTree<OutletArgProvider, OutletArgProvider>
+{
   getCapabilities(): InternalComponentCapabilities {
-    return SHIM_CAPABILITIES;
-  },
+    return PROVIDER_CAPABILITIES;
+  }
 
-  prepareArgs(definition: RouteOutletShim): PreparedArguments {
-    return {
-      positional: EMPTY_POSITIONAL,
-      named: {
-        Component: createConstRef(definition.component, '@Component'),
-        bucket: createConstRef(definition.bucket, '@bucket'),
-        context: definition.context,
-        outlet: definition.childOutlet,
-      },
-    };
-  },
+  create(_owner: object, definition: OutletArgProvider): OutletArgProvider {
+    return definition;
+  }
 
-  getDebugName(definition: RouteOutletShim): string {
-    return `{{outlet}} for ${definition.name}`;
-  },
+  getSelf({ self }: OutletArgProvider): Reference {
+    return self;
+  }
 
-  // Empty, not absent: hides the shim.
+  getDebugName({ outletRef }: OutletArgProvider): string {
+    return `{{outlet}} for ${valueForRef(outletRef)?.render.name}`;
+  }
+
   getDebugCustomRenderTree(): CustomRenderNode[] {
     return [];
-  },
+  }
 
-  getSelf(): Reference {
-    return NULL_REFERENCE;
-  },
+  didCreate() {}
+  didUpdate() {}
+  didRenderLayout() {}
+  didUpdateLayout() {}
 
   getDestroyable(): null {
     return null;
-  },
-};
+  }
+}
 
-setInternalComponentManager(SHIM_MANAGER, RouteOutletShim.prototype);
-setComponentTemplate(SHIM_TEMPLATE, RouteOutletShim.prototype);
+setInternalComponentManager(new OutletArgProviderManager(), OutletArgProvider.prototype);
+setComponentTemplate(PROVIDER_TEMPLATE, OutletArgProvider.prototype);
 
-// bucket → its manager's outlet.
+// bucket -> the provider wrapping its manager's wrapper
 const managerOutlets = new WeakMap<object, object>();
 
 /** One outlet level, or `null`. */
@@ -224,14 +231,7 @@ function outletFor(outletRef: Reference<OutletState | undefined>): object | null
     return null;
   }
 
-  let { render, manager } = state;
-
-  // Asserted in `_setOutlets`.
-  let bucket = render.bucket;
-
-  if (bucket === undefined) {
-    return null;
-  }
+  let { bucket, manager } = state;
 
   let outlet = managerOutlets.get(bucket);
 
@@ -239,25 +239,11 @@ function outletFor(outletRef: Reference<OutletState | undefined>): object | null
     return outlet;
   }
 
-  let childOutletRef = childOutletRefFor(outletRef);
-  let provided = manager.getRouteWrapper(bucket, () => valueForRef(childOutletRef));
+  let provider = new OutletArgProvider(manager.getRouteWrapper(), bucket, outletRef);
 
-  // `null` is retried, not cached.
-  if (provided == null) {
-    return null;
-  }
+  managerOutlets.set(bucket, provider);
 
-  let shim = new RouteOutletShim(
-    provided,
-    bucket,
-    render.name,
-    createComputeRef(() => manager.getRouteContext?.(bucket)),
-    childOutletRef
-  );
-
-  managerOutlets.set(bucket, shim);
-
-  return shim;
+  return provider;
 }
 
 function childOutletRefFor(

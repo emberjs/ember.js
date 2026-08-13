@@ -1,5 +1,4 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { ChildOutlet } from 'router_js';
 
 export interface RenderState {
   /**
@@ -15,15 +14,9 @@ export interface RenderState {
   name: string;
 
   /**
-   * The per-render invokable returned by `RouteManager.getInvokable`
+   * The route's invokable, passed to the wrapper as `@Component`.
    */
   invokable: object | undefined;
-
-  /**
-   * The manager's bucket for the route; the outlet curries it onto the
-   * invokable as `@bucket`.
-   */
-  bucket?: object;
 }
 
 /**
@@ -50,13 +43,15 @@ export interface OutletState extends OutletParent {
   render: RenderState;
 
   /**
+   * The router's bucket for this level, passed to the wrapper as `@bucket`.
+   */
+  bucket: object;
+
+  /**
    * The manager that produced `render`.
    */
   manager: {
-    /** `null` until this level has something to render. */
-    getRouteWrapper(bucket: object, childOutlet: ChildOutlet): object | null;
-
-    /** Optional: lets a plain-component outlet receive `@context`. */
-    getRouteContext?(bucket: object): unknown;
+    /** Module-stable per RFC-1169; the framework curries this level's state onto it. */
+    getRouteWrapper(): object;
   };
 }

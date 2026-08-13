@@ -32,7 +32,6 @@ export type {
   ClassicExitState,
   ClassicDidExitState,
   CreateRouteArgs,
-  ChildOutlet,
 } from 'router_js';
 
 /**
