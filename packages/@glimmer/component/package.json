@@ -19,7 +19,11 @@
     "Robert Jackson <me@rwjblue.com>",
     "Tom Dale <tom@tomdale.net>"
   ],
-  "repository": "https://github.com/emberjs/ember.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emberjs/ember.js.git",
+    "directory": "packages/@glimmer/component"
+  },
   "scripts": {},
   "dependencies": {
     "@embroider/addon-shim": "^1.10.2"
