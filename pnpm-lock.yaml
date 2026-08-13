@@ -1572,9 +1572,6 @@ importers:
       '@embroider/addon-shim':
         specifier: ^1.10.2
         version: 1.10.2
-      '@glimmer/env':
-        specifier: workspace:*
-        version: link:../env
     devDependencies:
       '@ember/component':
         specifier: workspace:*

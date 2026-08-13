@@ -27,7 +27,8 @@ const testDependencies = [
 let configs = [
   esmConfig(),
   esmProdConfig(),
-  glimmerComponent(),
+  glimmerComponent({ prod: false }),
+  glimmerComponent({ prod: true }),
   glimmerSyntaxESM(),
   glimmerSyntaxCJS(),
 ];
@@ -168,7 +169,11 @@ function glimmerSyntaxCJS() {
   };
 }
 
-function glimmerComponent() {
+function glimmerComponent({ prod }) {
+  let babelConfig = { ...sharedBabelConfig };
+  let outputDir = prod ? 'dist/prod' : 'dist/dev';
+  let isDebug = !prod;
+
   return {
     onLog: handleRollupWarnings,
     input: {
@@ -176,7 +181,7 @@ function glimmerComponent() {
     },
     output: {
       format: 'es',
-      dir: 'packages/@glimmer/component/dist',
+      dir: `packages/@glimmer/component/${outputDir}`,
       hoistTransitiveImports: false,
       generatedCode: 'es2015',
     },
@@ -185,7 +190,8 @@ function glimmerComponent() {
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
         configFile: false,
-        ...sharedBabelConfig,
+        ...babelConfig,
+        plugins: [...babelConfig.plugins, ...buildDebugMacroPlugin(isDebug)],
       }),
       resolveTS(),
       externalizePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
