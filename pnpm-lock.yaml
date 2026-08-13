@@ -2157,18 +2157,6 @@ importers:
 
   packages/@glimmer/syntax:
     dependencies:
-      '@glimmer/interfaces':
-        specifier: workspace:*
-        version: link:../interfaces
-      '@glimmer/util':
-        specifier: workspace:*
-        version: link:../util
-      '@glimmer/wire-format':
-        specifier: workspace:*
-        version: link:../wire-format
-      '@handlebars/parser':
-        specifier: workspace:*
-        version: link:../../@handlebars/parser
       simple-html-tokenizer:
         specifier: ^0.5.11
         version: 0.5.11
@@ -2179,9 +2167,21 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../env
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@glimmer/wire-format':
+        specifier: workspace:*
+        version: link:../wire-format
+      '@handlebars/parser':
+        specifier: workspace:*
+        version: link:../../@handlebars/parser
       eslint:
         specifier: ^9.20.1
         version: 9.39.4
