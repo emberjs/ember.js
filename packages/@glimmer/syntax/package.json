@@ -4,7 +4,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
+    "url": "git+https://github.com/emberjs/ember.js.git",
     "directory": "packages/@glimmer/syntax"
   },
   "type": "module",
