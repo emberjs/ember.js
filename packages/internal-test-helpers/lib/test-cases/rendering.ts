@@ -1,5 +1,6 @@
 import type { Renderer } from '@ember/-internals/glimmer';
 import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
+import { isClassicDecorator, tracked } from '@ember/-internals/metal';
 import { EventDispatcher } from '@ember/-internals/views';
 import Component from '@ember/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
@@ -16,6 +17,28 @@ import { runAppend, runDestroy, runTask } from '../run';
 import AbstractTestCase from './abstract';
 
 const TextNode = window.Text;
+
+/**
+ * Test state reaches templates through the top-level component, and tests
+ * update it with `set(this.context, ...)`. That only drives a rerender
+ * because non-tracked reads currently entangle a per-property tag, which
+ * is a legacy read path on its way out (and which the async scheduler's
+ * end state removes). Declaring the properties tracked makes the same
+ * `set` calls reactive under modern semantics, so the suite stops
+ * depending on the legacy path.
+ *
+ * Values that are already decorators (computed properties, injections)
+ * define their own reactivity and are passed through untouched.
+ */
+function trackedContext(context: object): Record<string, unknown> {
+  let attrs: Record<string, unknown> = {};
+
+  for (let [key, value] of Object.entries(context)) {
+    attrs[key] = isClassicDecorator(value) ? value : tracked({ value });
+  }
+
+  return attrs;
+}
 
 export default abstract class RenderingTestCase extends AbstractTestCase {
   owner: EngineInstance;
@@ -106,7 +129,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       })
     );
 
-    let attrs = Object.assign({}, context, {
+    let attrs = Object.assign(trackedContext(context), {
       tagName: '',
       layoutName: '-top-level',
     });
