@@ -27,7 +27,7 @@ import {
   revalidateObservers,
 } from '@ember/-internals/metal/lib/observer';
 import { defineDecorator, defineValue } from '@ember/-internals/metal/lib/properties';
-import { addListener, removeListener } from '@ember/object/events';
+import { addListener, removeListener } from '@ember/-internals/metal/lib/events';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;

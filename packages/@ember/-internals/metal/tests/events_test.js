@@ -1,6 +1,7 @@
 import { on, addListener, removeListener, sendEvent, hasListeners } from '..';
 import Mixin from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../deprecations';
 
 moduleFor(
   'system/props/events_test',
@@ -139,17 +140,26 @@ moduleFor(
       assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
     }
 
-    ['@test a listener can be added as part of a mixin'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test a listener can be added as part of a mixin`](assert) {
       let triggered = 0;
-      let MyMixin = Mixin.create({
-        foo1: on('bar', function () {
-          triggered++;
-        }),
+      let MyMixin;
+      expectDeprecation(
+        () => {
+          MyMixin = Mixin.create({
+            foo1: on('bar', function () {
+              triggered++;
+            }),
 
-        foo2: on('bar', function () {
-          triggered++;
-        }),
-      });
+            foo2: on('bar', function () {
+              triggered++;
+            }),
+          });
+        },
+        /`on\(\)` event decorator is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       let obj = {};
       MyMixin.apply(obj);
@@ -158,32 +168,63 @@ moduleFor(
       assert.equal(triggered, 2, 'should invoke listeners');
     }
 
-    [`@test 'on' asserts for invalid arguments`]() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test 'on' asserts for invalid arguments`]() {
       expectAssertion(() => {
-        Mixin.create({
-          foo1: on('bar'),
-        });
+        expectDeprecation(
+          () => {
+            Mixin.create({
+              foo1: on('bar'),
+            });
+          },
+          /`on\(\)` event decorator is deprecated/,
+          DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+        );
       }, 'on expects function as last argument');
 
       expectAssertion(() => {
-        Mixin.create({
-          foo1: on(function () {}),
-        });
+        expectDeprecation(
+          () => {
+            Mixin.create({
+              foo1: on(function () {}),
+            });
+          },
+          /`on\(\)` event decorator is deprecated/,
+          DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+        );
       }, 'on called without valid event names');
     }
 
-    ['@test a listener added as part of a mixin may be overridden'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+    )} @test a listener added as part of a mixin may be overridden`](assert) {
       let triggered = 0;
-      let FirstMixin = Mixin.create({
-        foo: on('bar', function () {
-          triggered++;
-        }),
-      });
-      let SecondMixin = Mixin.create({
-        foo: on('baz', function () {
-          triggered++;
-        }),
-      });
+      let FirstMixin;
+      expectDeprecation(
+        () => {
+          FirstMixin = Mixin.create({
+            foo: on('bar', function () {
+              triggered++;
+            }),
+          });
+        },
+        /`on\(\)` event decorator is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
+
+      let SecondMixin;
+      expectDeprecation(
+        () => {
+          SecondMixin = Mixin.create({
+            foo: on('baz', function () {
+              triggered++;
+            }),
+          });
+        },
+        /`on\(\)` event decorator is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       let obj = {};
       FirstMixin.apply(obj);
