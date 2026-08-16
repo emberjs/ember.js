@@ -17,6 +17,7 @@ type DestroyableState = 0 | 1 | 2;
 type OneOrMany<T> = null | T | BrandedArray<T>;
 
 interface DestroyableMeta<T extends Destroyable> {
+  source?: T;
   parents: OneOrMany<Destroyable>;
   children: OneOrMany<Destroyable>;
   eagerDestructors: OneOrMany<Destructor<T>>;
@@ -28,11 +29,9 @@ interface UndestroyedDestroyablesError extends Error {
   destroyables: object[];
 }
 
-// Meta lives on the destroyable rather than in a side table. A `WeakMap.get`
-// also forces an identity hash onto the key, and every list item pays for one.
-const META = Symbol('DESTROYABLE_META');
-
-type WithMeta = { [META]?: DestroyableMeta<Destroyable> };
+let DESTROYABLE_META:
+  | Map<Destroyable, DestroyableMeta<Destroyable>>
+  | WeakMap<Destroyable, DestroyableMeta<Destroyable>> = new WeakMap();
 
 const branded = Symbol('BrandedArray');
 type BrandedArray<T> = T[] & { [branded]: true };
@@ -135,7 +134,7 @@ function getDestroyableMeta<T extends Destroyable>(destroyable: T): DestroyableM
     DESTROYABLE_META.set(destroyable, meta);
   }
 
-  return meta;
+  return meta as unknown as DestroyableMeta<T>;
 }
 
 export function associateDestroyableChild<T extends Destroyable>(parent: Destroyable, child: T): T {
@@ -210,38 +209,23 @@ function deferDestructor<T extends Destroyable>(destructor: Destructor<T>, destr
   scheduleDestroy(destroyable, destructor);
 }
 
-// Every destroy schedules a pass, so a cancelled queue cannot strand anything,
-// but the first pass to run drains everyone queued since. Clearing a large list
-// produces tens of thousands of these.
-let pendingFinalize: Destroyable[] = [];
-
-function finalizeDestroyed() {
-  if (pendingFinalize.length === 0) return;
-
-  let batch = pendingFinalize;
-  pendingFinalize = [];
-
-  for (const destroyable of batch) {
-    let meta = getDestroyableMeta(destroyable);
-
-    iterate(meta.parents, removeChildFromParent, destroyable);
-    meta.state = DESTROYED_STATE;
-  }
-}
-
 export function destroy(destroyable: Destroyable) {
   let meta = getDestroyableMeta(destroyable);
 
   if (meta.state >= DESTROYING_STATE) return;
 
+  let { parents, children, eagerDestructors, destructors } = meta;
+
   meta.state = DESTROYING_STATE;
 
-  iterate(meta.children, destroy, undefined);
-  iterate(meta.eagerDestructors, runDestructor, destroyable);
-  iterate(meta.destructors, deferDestructor, destroyable);
+  iterate(children, destroy, undefined);
+  iterate(eagerDestructors, runDestructor, destroyable);
+  iterate(destructors, deferDestructor, destroyable);
 
-  pendingFinalize.push(destroyable);
-  scheduleDestroyed(finalizeDestroyed);
+  scheduleDestroyed(() => {
+    iterate(parents, removeChildFromParent, destroyable);
+    meta.state = DESTROYED_STATE;
+  });
 }
 
 function removeChildFromParent(parent: Destroyable, child: Destroyable) {
@@ -297,36 +281,40 @@ export function isDestroyed(destroyable: Destroyable) {
 export let enableDestroyableTracking: undefined | (() => void);
 export let assertDestroyablesDestroyed: undefined | (() => void);
 
-// Meta is not enumerable, so tracking needs its own registry.
-let TRACKED_DESTROYABLES: Set<Destroyable> | null = null;
-
 if (DEBUG) {
+  let isTesting = false;
+
   enableDestroyableTracking = () => {
-    if (TRACKED_DESTROYABLES !== null) {
-      TRACKED_DESTROYABLES = null;
+    if (isTesting) {
+      // Reset destroyable meta just in case, before throwing the error
+      DESTROYABLE_META = new WeakMap();
       throw new Error(
         'Attempted to start destroyable testing, but you did not end the previous destroyable test. Did you forget to call `assertDestroyablesDestroyed()`'
       );
     }
 
-    TRACKED_DESTROYABLES = new Set();
+    isTesting = true;
+    DESTROYABLE_META = new Map();
   };
 
   assertDestroyablesDestroyed = () => {
-    if (TRACKED_DESTROYABLES === null) {
+    if (!isTesting) {
       throw new Error(
         'Attempted to assert destroyables destroyed, but you did not start a destroyable test. Did you forget to call `enableDestroyableTracking()`'
       );
     }
 
-    let tracked = TRACKED_DESTROYABLES;
-    TRACKED_DESTROYABLES = null;
+    isTesting = false;
+
+    let map = DESTROYABLE_META as Map<Destroyable, DestroyableMeta<Destroyable>>;
+    DESTROYABLE_META = new WeakMap();
 
     let undestroyed: object[] = [];
 
-    tracked.forEach((destroyable) => {
-      if (getDestroyableMeta(destroyable).state !== DESTROYED_STATE) {
-        undestroyed.push(destroyable);
+    map.forEach((meta) => {
+      if (meta.state !== DESTROYED_STATE) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+        undestroyed.push(meta.source!);
       }
     });
 
