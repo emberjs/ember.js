@@ -28,12 +28,8 @@ interface UndestroyedDestroyablesError extends Error {
   destroyables: object[];
 }
 
-/**
- * Meta lives on the destroyable itself rather than in a side table. Rendering a
- * list associates a destroyable per item, and a `WeakMap` lookup (plus the
- * identity hash it forces onto the key) was the single hottest function in a
- * profile of the benchmark app.
- */
+// Meta lives on the destroyable rather than in a side table. A `WeakMap.get`
+// also forces an identity hash onto the key, and every list item pays for one.
 const META = Symbol('DESTROYABLE_META');
 
 type WithMeta = { [META]?: DestroyableMeta<Destroyable> };
@@ -58,10 +54,8 @@ function push<T extends object>(collection: OneOrMany<T>, newItem: T): OneOrMany
   }
 }
 
-/**
- * `arg` is threaded through rather than captured so callers can pass a
- * module-level function instead of allocating a closure per call.
- */
+// `arg` is threaded through so callers pass a module-level function instead of
+// allocating a closure per call.
 function iterate<T extends object, A>(
   collection: OneOrMany<T>,
   fn: (item: T, arg: A) => void,
@@ -216,11 +210,9 @@ function deferDestructor<T extends Destroyable>(destructor: Destructor<T>, destr
   scheduleDestroy(destroyable, destructor);
 }
 
-// Finalizing detaches a destroyable from its parents and marks it destroyed.
-// Every destroy still schedules a pass, so a dropped or cancelled queue can't
-// strand anything, but whichever pass runs first drains everyone who has piled
-// up since — clearing a large list destroys tens of thousands of these, and one
-// shared function reference is a lot cheaper than a closure apiece.
+// Every destroy schedules a pass, so a cancelled queue cannot strand anything,
+// but the first pass to run drains everyone queued since. Clearing a large list
+// produces tens of thousands of these.
 let pendingFinalize: Destroyable[] = [];
 
 function finalizeDestroyed() {
@@ -305,8 +297,7 @@ export function isDestroyed(destroyable: Destroyable) {
 export let enableDestroyableTracking: undefined | (() => void);
 export let assertDestroyablesDestroyed: undefined | (() => void);
 
-// Only populated between `enableDestroyableTracking()` and
-// `assertDestroyablesDestroyed()`, since meta itself is not enumerable.
+// Meta is not enumerable, so tracking needs its own registry.
 let TRACKED_DESTROYABLES: Set<Destroyable> | null = null;
 
 if (DEBUG) {

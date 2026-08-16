@@ -64,9 +64,8 @@ class Drop {
 }
 
 /**
- * The VM's bookkeeping stacks. A VM is constructed for every block that gets
- * re-rendered independently (each `{{#each}}` item, for instance), so these are
- * plain arrays rather than wrapper objects — one allocation each instead of two.
+ * A VM is constructed for every block that re-renders independently, one per
+ * `{{#each}}` item included, so these are arrays rather than wrapper objects.
  */
 class Stacks {
   declare debug?: () => DebugStacks;

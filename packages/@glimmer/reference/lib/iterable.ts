@@ -115,8 +115,8 @@ function identityForNthOccurence(value: unknown, count: number) {
  * Glimmer know that it should reuse the DOM for the previous nth occurence.
  */
 function uniqueKeyFor(keyFor: KeyFor) {
-  // Two maps rather than one wrapper: this runs for every item on every pass
-  // over a list, and duplicate keys are the rare case.
+  // Two maps rather than a wrapper object: this runs for every item on every
+  // pass over a list, and duplicate keys are the rare case.
   let seenObjects: WeakMap<object, number> | undefined;
   let seenPrimitives: Map<unknown, number> | undefined;
 
@@ -201,14 +201,9 @@ class IteratorWrapper implements OpaqueIterator {
 class ArrayIterator implements OpaqueIterator {
   private pos = -1;
 
-  /**
-   * Reading `length` in the constructor is load-bearing, not just convenient:
-   * the constructor runs inside the iterator reference's tracking frame, so
-   * this is the read that attributes a tracked collection's tag to that
-   * reference. Read lazily from `next()` instead and the tag lands in whichever
-   * frame happens to be open during iteration, and the list stops revalidating
-   * when its contents change.
-   */
+  // The constructor runs inside the iterator reference's tracking frame, so
+  // reading `length` here is what attributes a tracked collection's tag to that
+  // reference. Read it from `next()` instead and the list stops revalidating.
   private length: number;
 
   constructor(

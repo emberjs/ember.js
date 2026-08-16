@@ -41,8 +41,8 @@ export interface LastNode {
 }
 
 /**
- * A block's edge is either a node it appended directly, or a nested block whose
- * own edges aren't known until it finishes building.
+ * A block's edge is either a node it appended, or a nested block whose own edges
+ * are not known until it finishes building.
  */
 type Edge = SimpleNode | Bounds;
 
@@ -50,10 +50,7 @@ function isBounds(edge: Edge): edge is Bounds {
   return 'firstNode' in edge;
 }
 
-/**
- * Resolve an edge for debug output without throwing while a nested block is
- * still being built.
- */
+/** Resolve an edge for debug output without throwing mid-build. */
 function debugEdge(edge: Nullable<Edge>, which: 'first' | 'last'): Nullable<SimpleNode> {
   if (edge === null) return null;
   if (!isBounds(edge)) return edge;
@@ -93,11 +90,9 @@ export class NewTreeBuilder implements TreeBuilder {
   public operations: Nullable<ElementOperations> = null;
   private env: Environment;
 
-  // Slots above `cursorDepth` are retained and reused. Opening an element is
-  // one of the most frequent operations the VM performs, and a builder is
-  // created per re-rendered block, so this is a lot of short-lived garbage
-  // otherwise. Subclasses that need a richer cursor push their own via
-  // `pushCursor`.
+  // Slots above `cursorDepth` are retained and reused, because opening an
+  // element is one of the most frequent operations the VM performs. Subclasses
+  // that need a richer cursor push their own through `pushCursor`.
   readonly cursors: CursorImpl[] = [];
   protected cursorDepth = -1;
   private modifierStack: Nullable<ModifierInstance[]>[] = [];
@@ -287,10 +282,7 @@ export class NewTreeBuilder implements TreeBuilder {
     }
   }
 
-  /**
-   * Push a cursor a subclass built itself. Unlike `pushElement` this cannot
-   * reuse the slot, so it always stores the object it was given.
-   */
+  /** Store a subclass-built cursor. Unlike `pushElement`, this cannot reuse a slot. */
   pushCursor(cursor: CursorImpl): void {
     this.cursors[++this.cursorDepth] = cursor;
   }

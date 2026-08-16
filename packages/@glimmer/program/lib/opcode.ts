@@ -2,9 +2,8 @@ import type { ProgramHeap, RuntimeOp, SomeVmOp } from '@glimmer/interfaces';
 import { ARG_SHIFT, MACHINE_MASK, OPERAND_LEN_MASK, TYPE_MASK } from '@glimmer/vm/lib/flags';
 
 /**
- * A cursor over the program heap. `seek` decodes the header word once and
- * caches `type`, `size` and `isMachine` as plain fields — the VM reads all
- * three for every instruction it executes.
+ * A cursor over the program heap. `seek` decodes the header word once, because
+ * the VM reads `type`, `size` and `isMachine` for every instruction.
  */
 export class RuntimeOpImpl implements RuntimeOp {
   public offset = 0;
