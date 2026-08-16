@@ -40,20 +40,24 @@ export interface LastNode {
   lastNode(): SimpleNode;
 }
 
-class First {
-  constructor(private node: SimpleNode) {}
+/**
+ * A block's edge is either a node it appended directly, or a nested block whose
+ * own edges aren't known until it finishes building.
+ */
+type Edge = SimpleNode | Bounds;
 
-  firstNode(): SimpleNode {
-    return this.node;
-  }
+function isBounds(edge: Edge): edge is Bounds {
+  return 'firstNode' in edge;
 }
 
-class Last {
-  constructor(private node: SimpleNode) {}
-
-  lastNode(): SimpleNode {
-    return this.node;
-  }
+/**
+ * Resolve an edge for debug output without throwing while a nested block is
+ * still being built.
+ */
+function debugEdge(edge: Nullable<Edge>, which: 'first' | 'last'): Nullable<SimpleNode> {
+  if (edge === null) return null;
+  if (!isBounds(edge)) return edge;
+  return (edge as FirstNode & LastNode).debug?.[which]() ?? null;
 }
 
 export class Fragment implements Bounds {
@@ -90,8 +94,8 @@ export class NewTreeBuilder implements TreeBuilder {
   private env: Environment;
 
   readonly cursors = new Stack<Cursor>();
-  private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
-  private blockStack = new Stack<AppendingBlock>();
+  private modifierStack: Nullable<ModifierInstance[]>[] = [];
+  private blockStack: AppendingBlock[] = [];
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
@@ -115,7 +119,7 @@ export class NewTreeBuilder implements TreeBuilder {
 
     if (LOCAL_DEBUG) {
       this.debug = () => ({
-        blocks: this.blockStack.snapshot(),
+        blocks: [...this.blockStack],
         constructing: this.constructing,
         cursors: this.cursors.snapshot(),
       });
@@ -128,7 +132,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   debugBlocks(): AppendingBlock[] {
-    return this.blockStack.toArray();
+    return this.blockStack;
   }
 
   get element(): SimpleElement {
@@ -142,11 +146,11 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   get hasBlocks() {
-    return this.blockStack.size > 0;
+    return this.blockStack.length > 0;
   }
 
   protected block(): AppendingBlock {
-    return expect(this.blockStack.current, 'Expected a current live block');
+    return expect(this.blockStack.at(-1), 'Expected a current live block');
   }
 
   popElement() {
@@ -167,9 +171,9 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   protected pushBlock<T extends AppendingBlock>(block: T, isRemote = false): T {
-    let current = this.blockStack.current;
+    let current = this.blockStack.at(-1);
 
-    if (current !== null) {
+    if (current !== undefined) {
       if (!isRemote) {
         current.didAppendBounds(block);
       }
@@ -270,7 +274,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   private popModifiers(): Nullable<ModifierInstance[]> {
-    return this.modifierStack.pop();
+    return this.modifierStack.pop() ?? null;
   }
 
   didAppendBounds(bounds: Bounds): Bounds {
@@ -398,8 +402,8 @@ export class NewTreeBuilder implements TreeBuilder {
 export class AppendingBlockImpl implements AppendingBlock {
   declare debug?: { first: () => Nullable<SimpleNode>; last: () => Nullable<SimpleNode> };
 
-  protected first: Nullable<FirstNode> = null;
-  protected last: Nullable<LastNode> = null;
+  protected first: Nullable<Edge> = null;
+  protected last: Nullable<Edge> = null;
   protected nesting = 0;
 
   constructor(private parent: SimpleElement) {
@@ -407,8 +411,8 @@ export class AppendingBlockImpl implements AppendingBlock {
 
     if (LOCAL_DEBUG) {
       this.debug = {
-        first: () => this.first?.debug?.first() ?? null,
-        last: () => this.last?.debug?.last() ?? null,
+        first: () => debugEdge(this.first, 'first'),
+        last: () => debugEdge(this.last, 'last'),
       };
     }
   }
@@ -423,7 +427,7 @@ export class AppendingBlockImpl implements AppendingBlock {
       'cannot call `firstNode()` while `AppendingBlock` is still initializing'
     );
 
-    return first.firstNode();
+    return isBounds(first) ? first.firstNode() : first;
   }
 
   lastNode(): SimpleNode {
@@ -432,7 +436,7 @@ export class AppendingBlockImpl implements AppendingBlock {
       'cannot call `lastNode()` while `AppendingBlock` is still initializing'
     );
 
-    return last.lastNode();
+    return isBounds(last) ? last.lastNode() : last;
   }
 
   openElement(element: SimpleElement) {
@@ -445,19 +449,13 @@ export class AppendingBlockImpl implements AppendingBlock {
   }
 
   didAppendNode(node: SimpleNode) {
-    if (this.nesting !== 0) return;
-
-    if (!this.first) {
-      this.first = new First(node);
-    }
-
-    this.last = new Last(node);
+    this.didAppendBounds(node);
   }
 
-  didAppendBounds(bounds: Bounds) {
+  didAppendBounds(bounds: Edge) {
     if (this.nesting !== 0) return;
 
-    if (!this.first) {
+    if (this.first === null) {
       this.first = bounds;
     }
 
