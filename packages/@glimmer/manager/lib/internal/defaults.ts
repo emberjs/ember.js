@@ -30,8 +30,7 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
   }
 
   getValue({ fn, args: { named, positional } }: State): unknown {
-    // Named args are passed as a trailing hash, but only when there are any.
-    // `for..in` answers that without allocating a key array on every call.
+    // `for..in` tests for named args without allocating a key array per call.
     for (const _ in named) {
       let argsForFn: FnArgs = [...positional, named];
 

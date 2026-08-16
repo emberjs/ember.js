@@ -35,9 +35,8 @@ export class UpdatingVM implements IUpdatingVM {
   public dom: GlimmerTreeChanges;
   public alwaysRevalidate: boolean;
 
-  // Frames are held as three parallel stacks. Revalidation pushes a frame for
-  // every block in the tree — one per `{{#each}}` item — so the frames
-  // themselves are the allocation worth avoiding.
+  // Revalidation pushes a frame for every block in the tree, one per
+  // `{{#each}}` item, so the frame objects are the allocation worth avoiding.
   readonly #ops: UpdatingOpcode[][] = [];
   readonly #handlers: Nullable<ExceptionHandler>[] = [];
   readonly #pcs: number[] = [];
@@ -263,10 +262,8 @@ export class ListBlockOpcode extends BlockOpcode {
   private sync(iterator: OpaqueIterator) {
     let { opcodeMap: itemMap, children } = this;
 
-    // Both loops below walk off the end of `children` in the normal case (a
-    // list that grew). Reading past the end turns these into generic element
-    // loads for the rest of the process, and they run once per item, so the
-    // bounds are checked explicitly instead.
+    // Both loops below walk off the end of `children` when a list grows.
+    // Reading past the end leaves the load generic for the rest of the process.
     let childCount = children.length;
 
     let currentOpcodeIndex = 0;

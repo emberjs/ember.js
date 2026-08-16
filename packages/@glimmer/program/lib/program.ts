@@ -79,8 +79,7 @@ export class ProgramHeapImpl implements ProgramHeap {
   }
 
   finishMalloc(handle: number): void {
-    // Only the debug tooling needs to know how big a template is, and tracking
-    // it costs a table slot per handle, so it's debug-only.
+    // Only the debug tooling needs a template's size, and it costs a table slot.
     if (LOCAL_DEBUG) {
       this.handleTable[handle + 1] = this.offset;
     }
