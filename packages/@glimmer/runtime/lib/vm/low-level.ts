@@ -17,29 +17,14 @@ import type { DebugState } from '../opcodes';
 import type { VM } from './append';
 
 // Loading the VM is what creates the demand for opcode handlers — its
-// `evaluateSyscall` calls `APPEND_OPCODES.evaluate(...)`. Pull bootstrap in
+// `evaluate` calls `APPEND_OPCODES.evaluate(...)`. Pull bootstrap in
 // here (rather than at the package barrel) so consumers using deep imports
 // still get every opcode handler registered before the VM runs.
 import '../bootstrap';
 import { APPEND_OPCODES } from '../opcodes';
 
-export type LowLevelRegisters = [$pc: number, $ra: number, $sp: number, $fp: number];
-
-export function initializeRegisters(): LowLevelRegisters {
-  return [0, -1, 0, 0];
-}
-
-export function restoreRegisters(pc: number, sp: number): LowLevelRegisters {
-  return [pc, -1, sp, 0];
-}
-
-export function initializeRegistersWithSP(sp: number): LowLevelRegisters {
-  return [0, -1, sp, 0];
-}
-
-export function initializeRegistersWithPC(pc: number): LowLevelRegisters {
-  return [pc, -1, 0, 0];
-}
+// Positional order matches the register constants: $pc=0, $ra=1, $fp=2, $sp=3.
+export type LowLevelRegisters = [$pc: number, $ra: number, $fp: number, $sp: number];
 
 export interface VmStack {
   readonly registers: LowLevelRegisters;
@@ -162,41 +147,37 @@ export class LowLevelVM {
         externs: { debugBefore, debugAfter },
       } = this;
       let state = debugBefore(opcode);
-      this.evaluateInner(opcode, vm);
+      this.evaluate(opcode, vm);
       debugAfter(state);
     } else {
-      this.evaluateInner(opcode, vm);
+      this.evaluate(opcode, vm);
     }
   }
 
-  evaluateInner(opcode: RuntimeOp, vm: VM) {
-    if (opcode.isMachine) {
-      this.evaluateMachine(opcode, vm);
-    } else {
-      this.evaluateSyscall(opcode, vm);
-    }
-  }
+  /**
+   * Machine opcodes manipulate the low-level registers directly and are handled
+   * inline; everything else is a syscall dispatched through `APPEND_OPCODES`.
+   */
+  evaluate(opcode: RuntimeOp, vm: VM) {
+    let type = opcode.type;
 
-  evaluateMachine(opcode: RuntimeOp, vm: VM) {
-    switch (opcode.type) {
+    if (!opcode.isMachine) return APPEND_OPCODES.evaluate(vm, opcode, type);
+
+    switch (type) {
       case VM_PUSH_FRAME_OP:
-        return void this.pushFrame();
+        return this.pushFrame();
       case VM_POP_FRAME_OP:
-        return void this.popFrame();
+        return this.popFrame();
       case VM_INVOKE_STATIC_OP:
-        return void this.call(opcode.op1);
+        return this.call(opcode.op1);
       case VM_INVOKE_VIRTUAL_OP:
-        return void vm.call(this.stack.pop());
+        return vm.call(this.stack.pop());
       case VM_JUMP_OP:
-        return void this.goto(opcode.op1);
+        return this.goto(opcode.op1);
       case VM_RETURN_OP:
-        return void vm.return();
+        return vm.return();
       case VM_RETURN_TO_OP:
-        return void this.returnTo(opcode.op1);
+        return this.returnTo(opcode.op1);
     }
-  }
-
-  evaluateSyscall(opcode: RuntimeOp, vm: VM) {
-    APPEND_OPCODES.evaluate(vm, opcode, opcode.type);
   }
 }

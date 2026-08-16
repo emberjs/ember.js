@@ -5,13 +5,6 @@ import { MACHINE_MASK } from '@glimmer/vm/lib/flags';
 
 import { RuntimeOpImpl } from './opcode';
 
-const ALLOCATED = 0;
-const FREED = 1;
-const PURGED = 2;
-const POINTER = 3;
-
-type TableSlotState = typeof ALLOCATED | typeof FREED | typeof PURGED | typeof POINTER;
-
 export type Placeholder = [number, () => number];
 export type StdlibPlaceholder = [number, StdLibOperand];
 
@@ -31,23 +24,18 @@ const PAGE_SIZE = 0x100000;
  * | ... |  Handle  | Scope Size | State | Size       |
  * | ... | 32bits   | 30bits     | 2bits | 32bit      |
  *
- * With this information we effectively have the ability to
- * control when we want to free memory. That being said you
- * can not free during execution as raw address are only
- * valid during the execution. This means you cannot close
- * over them as you will have a bad memory access exception.
+ * Memory is never reclaimed: templates live for the lifetime of the
+ * application, so the heap only ever grows.
  */
 export class ProgramHeapImpl implements ProgramHeap {
   offset = 0;
 
   private heap: Int32Array;
   private handleTable: number[];
-  private handleState: TableSlotState[];
 
   constructor() {
     this.heap = new Int32Array(PAGE_SIZE);
     this.handleTable = [];
-    this.handleState = [];
   }
   entries(): number {
     return this.offset;
@@ -91,11 +79,9 @@ export class ProgramHeapImpl implements ProgramHeap {
   }
 
   finishMalloc(handle: number): void {
-    // @TODO: At the moment, garbage collection isn't actually used, so this is
-    // wrapped to prevent us from allocating extra space in prod. In the future,
-    // if we start using the compact API, we should change this.
+    // Only the debug tooling needs to know how big a template is, and tracking
+    // it costs a table slot per handle, so it's debug-only.
     if (LOCAL_DEBUG) {
-      this.handleState[handle] = ALLOCATED;
       this.handleTable[handle + 1] = this.offset;
     }
   }
@@ -104,57 +90,12 @@ export class ProgramHeapImpl implements ProgramHeap {
     return this.offset;
   }
 
-  // It is illegal to close over this address, as compaction
-  // may move it. However, it is legal to use this address
-  // multiple times between compactions.
   getaddr(handle: number): number {
     return unwrap(this.handleTable[handle]);
   }
 
   sizeof(handle: number): number {
     return sizeof(this.handleTable, handle);
-  }
-
-  free(handle: number): void {
-    this.handleState[handle] = FREED;
-  }
-
-  /**
-   * The heap uses the [Mark-Compact Algorithm](https://en.wikipedia.org/wiki/Mark-compact_algorithm) to shift
-   * reachable memory to the bottom of the heap and freeable
-   * memory to the top of the heap. When we have shifted all
-   * the reachable memory to the top of the heap, we move the
-   * offset to the next free position.
-   */
-  compact(): void {
-    let compactedSize = 0;
-    let { handleTable, handleState, heap } = this;
-
-    for (let i = 0; i < length; i++) {
-      let offset = unwrap(handleTable[i]);
-      let size = unwrap(handleTable[i + 1]) - unwrap(offset);
-      let state = handleState[i];
-
-      if (state === PURGED) {
-        continue;
-      } else if (state === FREED) {
-        // transition to "already freed" aka "purged"
-        // a good improvement would be to reuse
-        // these slots
-        handleState[i] = PURGED;
-        compactedSize += size;
-      } else if (state === ALLOCATED) {
-        for (let j = offset; j <= i + size; j++) {
-          heap[j - compactedSize] = unwrap(heap[j]);
-        }
-
-        handleTable[i] = offset - compactedSize;
-      } else if (state === POINTER) {
-        handleTable[i] = offset - compactedSize;
-      }
-    }
-
-    this.offset = this.offset - compactedSize;
   }
 }
 
@@ -171,8 +112,7 @@ export class ProgramImpl implements Program {
   }
 
   opcode(offset: number): RuntimeOpImpl {
-    this._opcode.offset = offset;
-    return this._opcode;
+    return this._opcode.seek(offset);
   }
 }
 

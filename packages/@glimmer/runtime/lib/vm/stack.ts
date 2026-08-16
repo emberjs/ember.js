@@ -1,10 +1,8 @@
 import assert from '@glimmer/debug-util/lib/assert';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { $fp, $pc, $sp } from '@glimmer/vm/lib/registers';
+import { $fp, $sp } from '@glimmer/vm/lib/registers';
 
 import type { LowLevelRegisters } from './low-level';
-
-import { initializeRegistersWithSP } from './low-level';
 
 export interface EvaluationStack {
   readonly registers: LowLevelRegisters;
@@ -25,15 +23,10 @@ export interface EvaluationStack {
 
 export default class EvaluationStackImpl implements EvaluationStack {
   static restore(snapshot: unknown[], pc: number): EvaluationStackImpl {
-    const stack = new this(snapshot.slice(), initializeRegistersWithSP(snapshot.length - 1));
-
     assert(typeof pc === 'number', 'pc is a number');
 
-    stack.registers[$pc] = pc;
-    stack.registers[$sp] = snapshot.length - 1;
-    stack.registers[$fp] = -1;
-
-    return stack;
+    // [$pc, $ra, $fp, $sp]
+    return new this(snapshot.slice(), [pc, -1, -1, snapshot.length - 1]);
   }
 
   readonly registers: LowLevelRegisters;
@@ -100,12 +93,4 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   declare snapshot?: (this: EvaluationStackImpl) => unknown[];
-
-  static {
-    if (LOCAL_DEBUG) {
-      EvaluationStackImpl.prototype.snapshot = function () {
-        return this.stack.slice(this.registers[$fp], this.registers[$sp] + 1);
-      };
-    }
-  }
 }

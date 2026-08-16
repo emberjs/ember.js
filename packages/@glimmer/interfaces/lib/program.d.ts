@@ -10,13 +10,16 @@ import type { SomeVmOp, VmMachineOp, VmOp } from './vm-opcodes.js';
 export type CreateRuntimeOp = (heap: ProgramHeap) => RuntimeOp;
 
 export interface RuntimeOp {
-  offset: number;
-  type: SomeVmOp;
-  op1: number;
-  op2: number;
-  op3: number;
-  size: number;
-  isMachine: 0 | 1;
+  readonly offset: number;
+  readonly type: SomeVmOp;
+  readonly op1: number;
+  readonly op2: number;
+  readonly op3: number;
+  readonly size: number;
+  readonly isMachine: 0 | 1;
+
+  /** Point the cursor at `offset` and decode that instruction's header. */
+  seek(offset: number): this;
 }
 
 export interface SerializedHeap {
