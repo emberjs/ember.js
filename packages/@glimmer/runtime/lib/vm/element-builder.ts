@@ -23,7 +23,6 @@ import assert from '@glimmer/debug-util/lib/assert';
 import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
 import type { DynamicAttribute } from './attributes/dynamic';
 
@@ -93,7 +92,13 @@ export class NewTreeBuilder implements TreeBuilder {
   public operations: Nullable<ElementOperations> = null;
   private env: Environment;
 
-  readonly cursors = new Stack<Cursor>();
+  // Slots above `cursorDepth` are retained and reused. Opening an element is
+  // one of the most frequent operations the VM performs, and a builder is
+  // created per re-rendered block, so this is a lot of short-lived garbage
+  // otherwise. Subclasses that need a richer cursor push their own via
+  // `pushCursor`.
+  readonly cursors: CursorImpl[] = [];
+  protected cursorDepth = -1;
   private modifierStack: Nullable<ModifierInstance[]>[] = [];
   private blockStack: AppendingBlock[] = [];
 
@@ -121,7 +126,7 @@ export class NewTreeBuilder implements TreeBuilder {
       this.debug = () => ({
         blocks: [...this.blockStack],
         constructing: this.constructing,
-        cursors: this.cursors.snapshot(),
+        cursors: this.cursors.slice(0, this.cursorDepth + 1),
       });
     }
   }
@@ -137,12 +142,16 @@ export class NewTreeBuilder implements TreeBuilder {
 
   get element(): SimpleElement {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    return this.cursors.current!.element;
+    return this.cursors[this.cursorDepth]!.element;
   }
 
   get nextSibling(): Nullable<SimpleNode> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    return this.cursors.current!.nextSibling;
+    return this.cursors[this.cursorDepth]!.nextSibling;
+  }
+
+  protected get currentCursor(): Nullable<CursorImpl> {
+    return this.cursors[this.cursorDepth] ?? null;
   }
 
   get hasBlocks() {
@@ -154,8 +163,8 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   popElement() {
-    this.cursors.pop();
-    expect(this.cursors.current, "can't pop past the last element");
+    this.cursorDepth--;
+    assert(this.cursorDepth >= 0, "can't pop past the last element");
   }
 
   pushAppendingBlock(): AppendingBlock {
@@ -266,7 +275,23 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
-    this.cursors.push(new CursorImpl(element, nextSibling));
+    let depth = ++this.cursorDepth;
+    let existing = this.cursors[depth];
+
+    if (existing === undefined) {
+      this.cursors[depth] = new CursorImpl(element, nextSibling);
+    } else {
+      existing.element = element;
+      existing.nextSibling = nextSibling ?? null;
+    }
+  }
+
+  /**
+   * Push a cursor a subclass built itself. Unlike `pushElement` this cannot
+   * reuse the slot, so it always stores the object it was given.
+   */
+  pushCursor(cursor: CursorImpl): void {
+    this.cursors[++this.cursorDepth] = cursor;
   }
 
   private pushModifiers(modifiers: Nullable<ModifierInstance[]>): void {

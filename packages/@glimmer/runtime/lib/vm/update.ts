@@ -263,6 +263,12 @@ export class ListBlockOpcode extends BlockOpcode {
   private sync(iterator: OpaqueIterator) {
     let { opcodeMap: itemMap, children } = this;
 
+    // Both loops below walk off the end of `children` in the normal case (a
+    // list that grew). Reading past the end turns these into generic element
+    // loads for the rest of the process, and they run once per item, so the
+    // bounds are checked explicitly instead.
+    let childCount = children.length;
+
     let currentOpcodeIndex = 0;
     let seenIndex = 0;
 
@@ -273,13 +279,13 @@ export class ListBlockOpcode extends BlockOpcode {
 
       if (item === null) break;
 
-      let opcode = children[currentOpcodeIndex];
+      let opcode = currentOpcodeIndex < childCount ? children[currentOpcodeIndex] : undefined;
       let { key } = item;
 
       // Items that have already been found and moved will already be retained,
       // we can continue until we find the next unretained item
       while (opcode !== undefined && opcode.retained) {
-        opcode = children[++currentOpcodeIndex];
+        opcode = ++currentOpcodeIndex < childCount ? children[currentOpcodeIndex] : undefined;
       }
 
       if (opcode !== undefined && opcode.key === key) {
