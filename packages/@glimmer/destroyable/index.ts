@@ -27,6 +27,18 @@ let DESTROYABLE_META:
   | Map<Destroyable, DestroyableMeta<Destroyable>>
   | WeakMap<Destroyable, DestroyableMeta<Destroyable>> = new WeakMap();
 
+/**
+ * Classes Glimmer constructs itself declare a slot for their meta, which skips
+ * the `WeakMap` and the identity hash it forces onto a key. Objects that arrive
+ * from anywhere else are never touched: they keep using the `WeakMap`, so a
+ * frozen instance still works and nothing new shows up in `Reflect.ownKeys`.
+ */
+export const DESTROYABLE_META_SLOT = Symbol('DESTROYABLE_META_SLOT');
+
+export interface HasDestroyableMetaSlot {
+  [DESTROYABLE_META_SLOT]?: object | undefined;
+}
+
 const branded = Symbol('BrandedArray');
 type BrandedArray<T> = T[] & { [branded]: true };
 
@@ -78,22 +90,45 @@ function remove<T extends object>(collection: OneOrMany<T>, item: T, message: st
   }
 }
 
+function createMeta<T extends Destroyable>(destroyable: T): DestroyableMeta<T> {
+  let meta: DestroyableMeta<Destroyable> = {
+    parents: null,
+    children: null,
+    eagerDestructors: null,
+    destructors: null,
+    state: LIVE_STATE,
+  };
+
+  if (DEBUG) {
+    meta.source = destroyable;
+  }
+
+  return meta as unknown as DestroyableMeta<T>;
+}
+
 function getDestroyableMeta<T extends Destroyable>(destroyable: T): DestroyableMeta<T> {
+  let slotted = destroyable as HasDestroyableMetaSlot;
+  let own = slotted[DESTROYABLE_META_SLOT];
+
+  if (own !== undefined) return own as DestroyableMeta<T>;
+
+  // `in` rather than a write, so this stays a read for everything else.
+  if (DESTROYABLE_META_SLOT in slotted) {
+    let meta = createMeta(destroyable);
+
+    slotted[DESTROYABLE_META_SLOT] = meta;
+
+    if (DEBUG && DESTROYABLE_META instanceof Map) {
+      DESTROYABLE_META.set(destroyable, meta as unknown as DestroyableMeta<Destroyable>);
+    }
+
+    return meta;
+  }
+
   let meta = DESTROYABLE_META.get(destroyable);
 
   if (meta === undefined) {
-    meta = {
-      parents: null,
-      children: null,
-      eagerDestructors: null,
-      destructors: null,
-      state: LIVE_STATE,
-    };
-
-    if (DEBUG) {
-      meta.source = destroyable;
-    }
-
+    meta = createMeta(destroyable) as unknown as DestroyableMeta<Destroyable>;
     DESTROYABLE_META.set(destroyable, meta);
   }
 
