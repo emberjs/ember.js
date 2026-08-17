@@ -2,6 +2,10 @@ import { DEBUG } from '@glimmer/env';
 import type { Destroyable, Destructor } from '@glimmer/interfaces';
 import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
+import {
+  DESTROYABLE_META_SLOT,
+  type HasDestroyableMetaSlot,
+} from '@glimmer/util/lib/destroyable-slot';
 
 const LIVE_STATE = 0;
 const DESTROYING_STATE = 1;
@@ -26,18 +30,6 @@ interface UndestroyedDestroyablesError extends Error {
 let DESTROYABLE_META:
   | Map<Destroyable, DestroyableMeta<Destroyable>>
   | WeakMap<Destroyable, DestroyableMeta<Destroyable>> = new WeakMap();
-
-/**
- * Classes Glimmer constructs itself declare a slot for their meta, which skips
- * the `WeakMap` and the identity hash it forces onto a key. Objects that arrive
- * from anywhere else are never touched: they keep using the `WeakMap`, so a
- * frozen instance still works and nothing new shows up in `Reflect.ownKeys`.
- */
-export const DESTROYABLE_META_SLOT = Symbol('DESTROYABLE_META_SLOT');
-
-export interface HasDestroyableMetaSlot {
-  [DESTROYABLE_META_SLOT]?: object | undefined;
-}
 
 const branded = Symbol('BrandedArray');
 type BrandedArray<T> = T[] & { [branded]: true };

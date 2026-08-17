@@ -17,12 +17,8 @@ import type {
 import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
-import {
-  associateDestroyableChild,
-  DESTROYABLE_META_SLOT,
-  destroy,
-  destroyChildren,
-} from '@glimmer/destroyable';
+import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
+import { DESTROYABLE_META_SLOT } from '@glimmer/util/lib/destroyable-slot';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';

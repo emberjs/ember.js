@@ -21,3 +21,5 @@ export function assertNever(value: never, desc = 'unexpected unreachable branch'
 
   throw new Error(`code reached unreachable`);
 }
+export { DESTROYABLE_META_SLOT } from './lib/destroyable-slot';
+export type { HasDestroyableMetaSlot } from './lib/destroyable-slot';
