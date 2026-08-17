@@ -244,20 +244,29 @@ export function destroyChildren(destroyable: Destroyable) {
   iterate(children, destroy);
 }
 
+/** Meta if there is any, without creating it. Mirrors `getDestroyableMeta`. */
+function peekDestroyableMeta(destroyable: Destroyable): DestroyableMeta<Destroyable> | undefined {
+  let own = (destroyable as HasDestroyableMetaSlot)[DESTROYABLE_META_SLOT];
+
+  if (own !== undefined) return own as DestroyableMeta<Destroyable>;
+
+  return DESTROYABLE_META.get(destroyable);
+}
+
 export function _hasDestroyableChildren(destroyable: Destroyable) {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = peekDestroyableMeta(destroyable);
 
   return meta === undefined ? false : meta.children !== null;
 }
 
 export function isDestroying(destroyable: Destroyable) {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = peekDestroyableMeta(destroyable);
 
   return meta === undefined ? false : meta.state >= DESTROYING_STATE;
 }
 
 export function isDestroyed(destroyable: Destroyable) {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = peekDestroyableMeta(destroyable);
 
   return meta === undefined ? false : meta.state >= DESTROYED_STATE;
 }
