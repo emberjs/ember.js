@@ -627,6 +627,38 @@ export class AttributesTests extends RenderTest {
   }
 
   @test
+  'iframe[srcdoc] escapes a bound string so it renders as text, not markup'() {
+    this.render('<iframe srcdoc={{this.foo}}></iframe>', {
+      foo: '<script>alert(1)</script>',
+    });
+    let iframe = this.element.firstChild as SimpleElement;
+    this.assert.strictEqual(
+      this.readDOMAttr('srcdoc', iframe),
+      '&lt;script&gt;alert(1)&lt;/script&gt;'
+    );
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'plain text' });
+    this.assert.strictEqual(this.readDOMAttr('srcdoc', iframe), 'plain text');
+
+    this.rerender({ foo: '<img src=x onerror=alert(1)>' });
+    this.assert.strictEqual(
+      this.readDOMAttr('srcdoc', iframe),
+      '&lt;img src=x onerror=alert(1)&gt;'
+    );
+  }
+
+  @test
+  'iframe[srcdoc] renders a SafeString as html'() {
+    let html = '<p>hello</p>';
+    this.render('<iframe srcdoc={{this.foo}}></iframe>', {
+      foo: { toHTML: () => html },
+    });
+    let iframe = this.element.firstChild as SimpleElement;
+    this.assert.strictEqual(this.readDOMAttr('srcdoc', iframe), html);
+  }
+
+  @test
   'marks javascript: protocol as unsafe on a camelCased url attribute'() {
     // `formAction` resolves to the DOM property, so the attribute name reaches
     // the sanitizer camelCased rather than as the lowercase `formaction`.

@@ -12,6 +12,25 @@ const badAttributes = ['href', 'src', 'background', 'action', 'formaction', 'xli
 const badAttributesForDataURI = ['src'];
 const badAttributesForDataProtocol = ['src', 'data'];
 
+// Unlike the attributes above, `srcdoc` does not hold a URL: the browser parses
+// its value as a full HTML document, so the protocol checks can never catch a
+// `<script>` in it. It is the one iframe content channel not already guarded.
+const badTagsForHTMLContent = ['IFRAME'];
+const badAttributesForHTMLContent = ['srcdoc'];
+
+function escapeHTMLContent(str: string): string {
+  return str.replace(/[&<>]/g, (char) => {
+    switch (char) {
+      case '&':
+        return '&amp;';
+      case '<':
+        return '&lt;';
+      default:
+        return '&gt;';
+    }
+  });
+}
+
 function has(array: Array<string>, item: string): boolean {
   return array.indexOf(item) !== -1;
 }
@@ -44,11 +63,20 @@ function checkDataProtocol(tagName: Nullable<string>, attribute: string): boolea
   );
 }
 
+function checkHTMLContent(tagName: Nullable<string>, attribute: string): boolean {
+  if (tagName === null) return false;
+  return (
+    has(badTagsForHTMLContent, tagName.toUpperCase()) &&
+    has(badAttributesForHTMLContent, attribute.toLowerCase())
+  );
+}
+
 export function requiresSanitization(tagName: Nullable<string>, attribute: string): boolean {
   return (
     checkURI(tagName, attribute) ||
     checkDataURI(tagName, attribute) ||
-    checkDataProtocol(tagName, attribute)
+    checkDataProtocol(tagName, attribute) ||
+    checkHTMLContent(tagName, attribute)
   );
 }
 
@@ -155,6 +183,10 @@ export function sanitizeAttributeValue(
 
   if (checkDataURI(tagName, attribute)) {
     return `unsafe:${str}`;
+  }
+
+  if (checkHTMLContent(tagName, attribute)) {
+    return escapeHTMLContent(str);
   }
 
   return str;
