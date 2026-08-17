@@ -246,9 +246,13 @@ export function destroyChildren(destroyable: Destroyable) {
 
 /** Meta if there is any, without creating it. Mirrors `getDestroyableMeta`. */
 function peekDestroyableMeta(destroyable: Destroyable): DestroyableMeta<Destroyable> | undefined {
-  let own = (destroyable as HasDestroyableMetaSlot)[DESTROYABLE_META_SLOT];
+  let slotted = destroyable as HasDestroyableMetaSlot;
+  let own = slotted[DESTROYABLE_META_SLOT];
 
   if (own !== undefined) return own as DestroyableMeta<Destroyable>;
+
+  // An empty slot is proof there is no meta, so the map can be skipped.
+  if (DESTROYABLE_META_SLOT in slotted) return undefined;
 
   return DESTROYABLE_META.get(destroyable);
 }
