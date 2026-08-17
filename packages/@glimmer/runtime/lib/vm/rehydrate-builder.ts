@@ -377,6 +377,11 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     return super.__appendComment(string);
   }
 
+  // Rehydration matches against nodes already in the tree.
+  protected override get supportsCloning(): boolean {
+    return false;
+  }
+
   override __openElement(tag: string): SimpleElement {
     const _candidate = this.candidate;
 

@@ -109,7 +109,10 @@ export type VmIfInline = 109;
 export type VmNot = 110;
 export type VmGetDynamicVar = 111;
 export type VmLog = 112;
-export type VmSize = 113;
+export type VmAppendStaticTree = 113;
+export type VmEnterHole = 114;
+export type VmExitHole = 115;
+export type VmSize = 116;
 
 export type VmOp =
   | VmHelper
@@ -202,6 +205,9 @@ export type VmOp =
   | VmIfInline
   | VmNot
   | VmGetDynamicVar
-  | VmLog;
+  | VmLog
+  | VmAppendStaticTree
+  | VmEnterHole
+  | VmExitHole;
 
 export type SomeVmOp = VmOp | VmMachineOp;

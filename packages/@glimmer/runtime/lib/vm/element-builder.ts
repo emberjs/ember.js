@@ -7,6 +7,7 @@ import type {
   Environment,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
+  Hole,
   Maybe,
   ModifierInstance,
   Nullable,
@@ -16,6 +17,8 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
+  StaticElement,
+  StaticTree,
   TreeBuilder,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
@@ -24,11 +27,46 @@ import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
+import { logStep } from '@glimmer/util/lib/debug-steps';
 
 import type { DynamicAttribute } from './attributes/dynamic';
 
 import { clear, ConcreteBounds, CursorImpl } from '../bounds';
 import { dynamicAttribute } from './attributes/dynamic';
+
+// `context` only decides namespace, so one cached node suits every instance.
+function buildStaticTree(
+  dom: GlimmerTreeConstruction,
+  node: StaticElement,
+  context: SimpleElement
+): SimpleElement {
+  let element = dom.createElement(node.tag, context);
+
+  for (const [name, value, namespace] of node.attrs) {
+    dom.setAttribute(element, name, value, (namespace as AttrNamespace) ?? undefined);
+  }
+
+  for (const child of node.children) {
+    if (child.kind === 'text') {
+      element.insertBefore(dom.createTextNode(child.chars), null);
+    } else {
+      element.insertBefore(buildStaticTree(dom, child, element), null);
+    }
+  }
+
+  return element;
+}
+
+// Hole paths index the descriptor's child list, which includes text nodes.
+function elementChildAt(element: SimpleElement, index: number): SimpleElement {
+  let node = element.firstChild;
+
+  for (let i = 0; i < index; i++) {
+    node = expect(node, 'BUG: static tree shape does not match its descriptor').nextSibling;
+  }
+
+  return expect(node, 'BUG: static tree shape does not match its descriptor') as SimpleElement;
+}
 
 export interface FirstNode {
   debug?: { first: () => Nullable<SimpleNode> };
@@ -92,6 +130,27 @@ export class NewTreeBuilder implements TreeBuilder {
   readonly cursors = new Stack<Cursor>();
   private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
   private blockStack = new Stack<AppendingBlock>();
+
+  /**
+   * The root of the most recently appended static tree, so `enterHole` can
+   * navigate to a hole relative to it.
+   */
+  private staticRoot: Nullable<SimpleElement> = null;
+  private staticTree: Nullable<StaticTree> = null;
+
+  /**
+   * Saved region state, one entry per hole currently being filled.
+   *
+   * A hole's own opcodes can append further static trees -- a content hole
+   * that renders a component pulls in that component's layout -- which would
+   * otherwise leave the enclosing run pointing at the wrong tree when it
+   * moves on to its next hole.
+   */
+  private readonly holeStack: {
+    root: Nullable<SimpleElement>;
+    tree: Nullable<StaticTree>;
+    hole: Hole;
+  }[] = [];
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
@@ -365,6 +424,79 @@ export class NewTreeBuilder implements TreeBuilder {
     let node = dom.createComment(string);
     dom.insertBefore(element, node, nextSibling);
     return node;
+  }
+
+  // False for builders that must observe every construction step in order.
+  protected get supportsCloning(): boolean {
+    return true;
+  }
+
+  // Returns false when the caller must compile the run the ordinary way.
+  appendStaticTree(tree: StaticTree): boolean {
+    if (!this.supportsCloning) return false;
+
+    let cached = tree.cached as Nullable<SimpleElement>;
+    let wasCached = cached !== null && cached !== undefined;
+
+    if (!cached) {
+      cached = buildStaticTree(this.dom, tree.root, this.element);
+      (tree as { cached?: unknown }).cached = cached;
+    }
+
+    if (LOCAL_DEBUG) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+      logStep!('static-trees', [wasCached ? 'clone' : 'build', tree.root.tag]);
+    }
+
+    let root = cached.cloneNode(true) as SimpleElement;
+
+    this.dom.insertBefore(this.element, root, this.nextSibling);
+    this.didAppendNode(root);
+
+    this.staticRoot = root;
+    this.staticTree = tree;
+
+    return true;
+  }
+
+  // Positions the builder at a hole so the hole's own opcodes run unchanged.
+  enterHole(index: number): void {
+    let hole = this.holeAt(index);
+    let element = expect(this.staticRoot, 'BUG: no static tree to enter a hole in');
+
+    this.holeStack.push({ root: this.staticRoot, tree: this.staticTree, hole });
+
+    for (const step of hole.path) {
+      element = elementChildAt(element, step);
+    }
+
+    if (hole.kind === 'attr') {
+      this.constructing = element;
+    } else {
+      // a content hole is always its element's last child
+      this.pushElement(element, null);
+    }
+  }
+
+  exitHole(_index: number): void {
+    let saved = expect(this.holeStack.pop(), 'BUG: exited a hole that was never entered');
+
+    if (saved.hole.kind === 'attr') {
+      this.constructing = null;
+    } else {
+      this.popElement();
+    }
+
+    // a hole may append static trees of its own
+    this.staticRoot = saved.root;
+    this.staticTree = saved.tree;
+  }
+
+  private holeAt(index: number): Hole {
+    let tree = expect(this.staticTree, 'BUG: no static tree for this hole');
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- emitted in step with the holes
+    return tree.holes[index]!;
   }
 
   __setAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {

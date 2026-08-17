@@ -99,6 +99,11 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     return super.__appendText(string);
   }
 
+  // The serializer interleaves block markers with construction.
+  protected override get supportsCloning(): boolean {
+    return false;
+  }
+
   override closeElement(): Nullable<ModifierInstance[]> {
     if (NEEDS_EXTRA_CLOSE.has(this.element)) {
       NEEDS_EXTRA_CLOSE.delete(this.element);

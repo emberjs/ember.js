@@ -15,10 +15,13 @@ import type { Revision } from '@glimmer/validator/lib/validators';
 import type { Tag } from '@glimmer/interfaces';
 import { CURRIED_MODIFIER } from '@glimmer/constants/lib/curried';
 import {
+  VM_APPEND_STATIC_TREE_OP,
   VM_CLOSE_ELEMENT_OP,
   VM_COMMENT_OP,
   VM_DYNAMIC_ATTR_OP,
   VM_DYNAMIC_MODIFIER_OP,
+  VM_ENTER_HOLE_OP,
+  VM_EXIT_HOLE_OP,
   VM_FLUSH_ELEMENT_OP,
   VM_MODIFIER_OP,
   VM_OPEN_DYNAMIC_ELEMENT_OP,
@@ -57,6 +60,22 @@ import { Assert } from './vm';
 
 APPEND_OPCODES.add(VM_TEXT_OP, (vm, { op1: text }) => {
   vm.tree().appendText(vm.constants.getValue(text));
+});
+
+// The dynamic values inside the subtree are filled in by the EnterHole and
+// ExitHole pairs that follow, which refer to holes by index.
+APPEND_OPCODES.add(VM_APPEND_STATIC_TREE_OP, (vm, { op1: fallback, op2: handle }) => {
+  if (!vm.tree().appendStaticTree(vm.constants.getValue(handle))) {
+    vm.lowlevel.goto(fallback);
+  }
+});
+
+APPEND_OPCODES.add(VM_ENTER_HOLE_OP, (vm, { op1: index }) => {
+  vm.tree().enterHole(index);
+});
+
+APPEND_OPCODES.add(VM_EXIT_HOLE_OP, (vm, { op1: index }) => {
+  vm.tree().exitHole(index);
 });
 
 APPEND_OPCODES.add(VM_COMMENT_OP, (vm, { op1: text }) => {

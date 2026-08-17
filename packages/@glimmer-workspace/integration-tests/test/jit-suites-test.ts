@@ -10,6 +10,7 @@ import {
   jitSuite,
   ScopeSuite,
   ShadowingSuite,
+  StaticTreeSuite,
   TemplateOnlyComponents,
   WithDynamicVarsSuite,
   YieldSuite,
@@ -18,6 +19,7 @@ import {
 jitComponentSuite(DebuggerSuite);
 jitSuite(EachSuite);
 jitSuite(InElementSuite);
+jitSuite(StaticTreeSuite);
 
 jitComponentSuite(GlimmerishComponents);
 jitComponentSuite(TemplateOnlyComponents);

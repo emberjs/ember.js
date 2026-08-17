@@ -18,6 +18,7 @@ export type * from './lib/runtime.d.ts';
 export type * from './lib/runtime/vm.d.ts';
 export type * from './lib/serialize.d.ts';
 export type * from './lib/stack.d.ts';
+export type * from './lib/static-tree.d.ts';
 export type * from './lib/tags.d.ts';
 export type * from './lib/template.d.ts';
 export type * from './lib/tier1/symbol-table.d.ts';
