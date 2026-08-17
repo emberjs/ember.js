@@ -164,12 +164,35 @@ export function unregisterDestructor<T extends Destroyable>(
 
 ////////////
 
+// Clearing a large list destroys tens of thousands of destroyables, and each one
+// allocated a closure to finalize itself. Every destroy still schedules a pass,
+// so a cancelled queue cannot strand anything, but the first pass to run drains
+// everyone queued since.
+let pendingFinalize: Destroyable[] = [];
+
+function finalizeDestroyed() {
+  if (pendingFinalize.length === 0) return;
+
+  let batch = pendingFinalize;
+  pendingFinalize = [];
+
+  for (const destroyable of batch) {
+    let meta = getDestroyableMeta(destroyable);
+
+    iterate(meta.parents, (parent) => {
+      removeChildFromParent(destroyable, parent);
+    });
+
+    meta.state = DESTROYED_STATE;
+  }
+}
+
 export function destroy(destroyable: Destroyable) {
   let meta = getDestroyableMeta(destroyable);
 
   if (meta.state >= DESTROYING_STATE) return;
 
-  let { parents, children, eagerDestructors, destructors } = meta;
+  let { children, eagerDestructors, destructors } = meta;
 
   meta.state = DESTROYING_STATE;
 
@@ -181,13 +204,8 @@ export function destroy(destroyable: Destroyable) {
     scheduleDestroy(destroyable, destructor);
   });
 
-  scheduleDestroyed(() => {
-    iterate(parents, (parent) => {
-      removeChildFromParent(destroyable, parent);
-    });
-
-    meta.state = DESTROYED_STATE;
-  });
+  pendingFinalize.push(destroyable);
+  scheduleDestroyed(finalizeDestroyed);
 }
 
 function removeChildFromParent(child: Destroyable, parent: Destroyable) {
