@@ -36,7 +36,9 @@ export {
   isTracking,
   resetTracking,
   track,
+  trackingFrameDepth,
   untrack,
+  unwindTracking,
 } from './lib/tracking';
 export {
   ALLOW_CYCLES,

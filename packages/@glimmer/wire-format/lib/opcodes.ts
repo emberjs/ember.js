@@ -38,6 +38,7 @@ import type {
   TrustingAppendOpcode,
   TrustingComponentAttrOpcode,
   TrustingDynamicAttrOpcode,
+  TryCatchOpcode,
   UndefinedOpcode,
   WithDynamicVarsOpcode,
   YieldOpcode,
@@ -86,4 +87,5 @@ export const opcodes = {
   IfInline: 52 satisfies IfInlineOpcode,
   GetDynamicVar: 53 satisfies GetDynamicVarOpcode,
   Log: 54 satisfies LogOpcode,
+  TryCatch: 55 satisfies TryCatchOpcode,
 } as const;

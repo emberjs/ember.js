@@ -95,6 +95,42 @@ export function endUntrackFrame(): void {
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 }
 
+/**
+ * The number of currently open tracking frames (including untrack frames).
+ * Rendering error recovery snapshots this before a `{{#try}}` region and
+ * passes it back to `unwindTracking` if the region throws.
+ */
+export function trackingFrameDepth(): number {
+  return OPEN_TRACK_FRAMES.length;
+}
+
+/**
+ * Pop open tracking frames down to `depth`, combining the tags consumed by the
+ * discarded frames into a single tag. A thrown error skips the `endTrackFrame`
+ * calls that would normally balance the frame stack; this restores balance
+ * while preserving what the failed render consumed, so an error boundary can
+ * revalidate (and retry) when one of those dependencies changes.
+ */
+export function unwindTracking(depth: number): Tag {
+  let tags: Tag[] = [];
+
+  while (OPEN_TRACK_FRAMES.length > depth) {
+    let current = CURRENT_TRACKER;
+
+    if (current !== null) {
+      tags.push(current.combine());
+
+      if (DEBUG) {
+        unwrap(debug.endTrackingTransaction)();
+      }
+    }
+
+    CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
+  }
+
+  return tags.length === 0 ? CONSTANT_TAG : combine(tags);
+}
+
 // This function is only for handling errors and resetting to a valid state
 export function resetTracking(): string | void {
   while (OPEN_TRACK_FRAMES.length > 0) {
@@ -234,11 +270,20 @@ export function track(block: () => void, debugLabel?: string | false): Tag {
   beginTrackFrame(debugLabel);
 
   let tag;
+  let didError = true;
 
   try {
     block();
+    didError = false;
   } finally {
     tag = endTrackFrame();
+
+    // When `block` throws, the caller never sees the combined tag. Surface it
+    // to the parent tracker so an error boundary that catches the throw can
+    // retry when one of the failed computation's dependencies changes.
+    if (didError) {
+      consumeTag(tag);
+    }
   }
 
   return tag;

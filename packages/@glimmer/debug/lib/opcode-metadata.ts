@@ -43,8 +43,11 @@ import {
   VM_DYNAMIC_HELPER_OP,
   VM_ENTER_LIST_OP,
   VM_ENTER_OP,
+  VM_ENTER_TRY_OP,
   VM_EXIT_LIST_OP,
   VM_EXIT_OP,
+  VM_PUSH_TRY_FRAME_OP,
+  VM_POP_TRY_FRAME_OP,
   VM_FETCH_OP,
   VM_FLUSH_ELEMENT_OP,
   VM_GET_BLOCK_OP,
@@ -534,6 +537,26 @@ if (LOCAL_DEBUG) {
   METADATA[VM_EXIT_OP] = {
     name: 'Exit',
     mnemonic: 'blk_end',
+    stackChange: 0,
+  };
+
+  METADATA[VM_ENTER_TRY_OP] = {
+    name: 'EnterTry',
+    mnemonic: 'try_start',
+    stackChange: 0,
+    ops: ['args:imm/u32'],
+  };
+
+  METADATA[VM_PUSH_TRY_FRAME_OP] = {
+    name: 'PushTryFrame',
+    mnemonic: 'try_frame_push',
+    stackChange: 0,
+    ops: ['catch:imm/pc'],
+  };
+
+  METADATA[VM_POP_TRY_FRAME_OP] = {
+    name: 'PopTryFrame',
+    mnemonic: 'try_frame_pop',
     stackChange: 0,
   };
 

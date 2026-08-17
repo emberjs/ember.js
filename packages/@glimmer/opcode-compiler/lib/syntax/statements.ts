@@ -56,7 +56,12 @@ import {
   InvokeDynamicComponent,
   InvokeNonStaticComponent,
 } from '../opcode-builder/helpers/components';
-import { Replayable, ReplayableIf, SwitchCases } from '../opcode-builder/helpers/conditional';
+import {
+  Replayable,
+  ReplayableIf,
+  ReplayableTry,
+  SwitchCases,
+} from '../opcode-builder/helpers/conditional';
 import { expr } from '../opcode-builder/helpers/expr';
 import {
   isGetFreeComponent,
@@ -315,6 +320,23 @@ STATEMENTS.add(SexpOpcodes.If, (op, [, condition, block, inverse]) =>
           InvokeStaticBlock(op, inverse);
         }
       : undefined
+  )
+);
+
+STATEMENTS.add(SexpOpcodes.TryCatch, (op, [, block, catchBlock]) =>
+  ReplayableTry(
+    op,
+    () => {
+      InvokeStaticBlock(op, block);
+    },
+    () => {
+      // The unwinder pushes a reference to the caught error before jumping
+      // here; hand it to the catch block as its block param, then drop it.
+      if (catchBlock) {
+        InvokeStaticBlockWithStack(op, catchBlock, 1);
+      }
+      op(VM_POP_OP, 1);
+    }
   )
 );
 

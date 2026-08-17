@@ -12,6 +12,7 @@ import {
   VM_CONSTANT_REFERENCE_OP,
   VM_DUP_OP,
   VM_ENTER_OP,
+  VM_ENTER_TRY_OP,
   VM_EXIT_OP,
   VM_FETCH_OP,
   VM_INVOKE_YIELD_OP,
@@ -21,11 +22,13 @@ import {
   VM_POP_DYNAMIC_SCOPE_OP,
   VM_POP_OP,
   VM_POP_SCOPE_OP,
+  VM_POP_TRY_FRAME_OP,
   VM_PRIMITIVE_OP,
   VM_PRIMITIVE_REFERENCE_OP,
   VM_PUSH_BLOCK_SCOPE_OP,
   VM_PUSH_DYNAMIC_SCOPE_OP,
   VM_PUSH_SYMBOL_TABLE_OP,
+  VM_PUSH_TRY_FRAME_OP,
   VM_TO_BOOLEAN_OP,
 } from '@glimmer/constants/lib/syscall-ops';
 import {
@@ -140,6 +143,18 @@ APPEND_OPCODES.add(VM_ENTER_OP, (vm, { op1: args }) => {
 
 APPEND_OPCODES.add(VM_EXIT_OP, (vm) => {
   vm.exit();
+});
+
+APPEND_OPCODES.add(VM_ENTER_TRY_OP, (vm, { op1: args }) => {
+  vm.enterTry(args);
+});
+
+APPEND_OPCODES.add(VM_PUSH_TRY_FRAME_OP, (vm, { op1: catchOffset }) => {
+  vm.pushTryFrame(vm.lowlevel.target(catchOffset));
+});
+
+APPEND_OPCODES.add(VM_POP_TRY_FRAME_OP, (vm) => {
+  vm.popTryFrame();
 });
 
 APPEND_OPCODES.add(VM_PUSH_SYMBOL_TABLE_OP, (vm, { op1: _table }) => {

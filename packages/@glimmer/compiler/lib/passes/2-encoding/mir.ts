@@ -36,6 +36,11 @@ export class IfInline extends node('IfInline').fields<{
   falsy: ExpressionNode | null;
 }>() {}
 
+export class TryCatch extends node('TryCatch').fields<{
+  block: NamedBlock;
+  catchBlock: NamedBlock | null;
+}>() {}
+
 export class Each extends node('Each').fields<{
   value: ExpressionNode;
   key: ExpressionNode | null;
@@ -220,4 +225,5 @@ export type Statement =
   | Each
   | Let
   | WithDynamicVars
-  | InvokeComponent;
+  | InvokeComponent
+  | TryCatch;

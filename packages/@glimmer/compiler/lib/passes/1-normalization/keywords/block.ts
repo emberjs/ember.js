@@ -11,6 +11,14 @@ import { VISIT_STMTS } from '../visitors/statements';
 import { keywords } from './impl';
 import { assertCurryKeyword } from './utils/curry';
 
+function isCatchInvocation(stmt: ASTv2.ContentNode): stmt is ASTv2.InvokeBlock {
+  if (stmt.type !== 'InvokeBlock') return false;
+
+  let callee = stmt.callee;
+
+  return callee.type === 'Path' && callee.ref.type === 'Free' && callee.ref.name === 'catch';
+}
+
 export const BLOCK_KEYWORDS = keywords('Block')
   .kw('in-element', {
     assert(node: ASTv2.InvokeBlock): Result<{
@@ -211,6 +219,76 @@ export const BLOCK_KEYWORDS = keywords('Block')
             inverse,
           })
       );
+    },
+  })
+  .kw('try', {
+    assert(node: ASTv2.InvokeBlock): Result<{
+      catchBlock: ASTv2.NamedBlock | null;
+    }> {
+      let { args } = node;
+
+      if (!args.named.isEmpty() || args.positional.size > 0) {
+        return Err(generateSyntaxError(`{{#try}} does not accept any parameters`, node.loc));
+      }
+
+      let inverse = node.blocks.get('else');
+
+      if (inverse === null) {
+        return Ok({ catchBlock: null });
+      }
+
+      // `{{#try}}...{{else catch as |error|}}...{{/try}}` parses as an `else`
+      // block whose only statement is an invocation of the `catch` block
+      // keyword. Unwrap it so the catch body (and its `|error|` block param)
+      // becomes the handler block. A plain `{{else}}` block is also allowed
+      // as a handler that ignores the error value.
+      let body = inverse.block.body;
+      let first = body[0];
+
+      if (body.length === 1 && first !== undefined && isCatchInvocation(first)) {
+        let stmt = first;
+
+        if (!stmt.args.named.isEmpty() || stmt.args.positional.size > 0) {
+          return Err(generateSyntaxError(`{{catch}} does not accept any parameters`, stmt.loc));
+        }
+
+        return Ok({ catchBlock: stmt.blocks.get('default') });
+      }
+
+      return Ok({ catchBlock: inverse });
+    },
+
+    translate(
+      { node, state }: { node: ASTv2.InvokeBlock; state: NormalizationState },
+      { catchBlock }: { catchBlock: ASTv2.NamedBlock | null }
+    ): Result<mir.TryCatch> {
+      let block = node.blocks.get('default');
+
+      let blockResult = VISIT_STMTS.NamedBlock(block, state);
+      let catchResult = catchBlock ? VISIT_STMTS.NamedBlock(catchBlock, state) : Ok(null);
+
+      return Result.all(blockResult, catchResult).mapOk(
+        ([block, catchBlock]) =>
+          new mir.TryCatch({
+            loc: node.loc,
+            block,
+            catchBlock,
+          })
+      );
+    },
+  })
+  .kw('catch', {
+    assert(node: ASTv2.InvokeBlock): Result<never> {
+      return Err(
+        generateSyntaxError(
+          `{{catch}} can only be used as \`{{else catch as |error|}}\` inside {{#try}}`,
+          node.loc
+        )
+      );
+    },
+
+    translate(): Result<never> {
+      throw new Error(`unreachable: {{catch}} always fails to assert`);
     },
   })
   .kw('each', {

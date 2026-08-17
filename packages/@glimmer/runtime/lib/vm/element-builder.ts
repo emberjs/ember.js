@@ -17,6 +17,7 @@ import type {
   SimpleNode,
   SimpleText,
   TreeBuilder,
+  TreeBuilderMark,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
@@ -184,6 +185,48 @@ export class NewTreeBuilder implements TreeBuilder {
     this.block().finalize(this);
     this.__closeBlock();
     return expect(this.blockStack.pop(), 'Expected popBlock to return a block');
+  }
+
+  mark(): TreeBuilderMark {
+    let nextSibling = this.nextSibling;
+
+    return {
+      cursors: this.cursors.size,
+      blocks: this.blockStack.size,
+      modifiers: this.modifierStack.size,
+      parent: this.element,
+      prevSibling: nextSibling ? nextSibling.previousSibling : this.element.lastChild,
+      nextSibling,
+    };
+  }
+
+  unwindTo(mark: TreeBuilderMark): void {
+    while (this.cursors.size > mark.cursors) this.cursors.pop();
+    while (this.blockStack.size > mark.blocks) this.blockStack.pop();
+    while (this.modifierStack.size > mark.modifiers) this.modifierStack.pop();
+
+    this.constructing = null;
+    this.operations = null;
+
+    // Remove every node the region appended: the range between the node that
+    // preceded the region's content and the cursor's (fixed) next sibling.
+    let { parent, prevSibling, nextSibling } = mark;
+    let node = prevSibling ? prevSibling.nextSibling : parent.firstChild;
+
+    while (node !== null && node !== nextSibling) {
+      let next = node.nextSibling;
+      parent.removeChild(node);
+      node = next;
+    }
+
+    // The now-current block is the `{{#try}}` region's resettable block.
+    // Discard its (partial, possibly unqueryable) bounds bookkeeping so the
+    // catch branch appends into a clean region.
+    let block = this.block();
+
+    if (block instanceof ResettableBlockImpl) {
+      block.unwindAppending();
+    }
   }
 
   __openBlock(): void {}
@@ -524,6 +567,19 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
     this.nesting = 0;
 
     return nextSibling;
+  }
+
+  /**
+   * Discard the block's bounds bookkeeping after a caught rendering error.
+   * The DOM itself is removed by `unwindTo` using real node positions; the
+   * bounds may reference inner blocks that are still empty and cannot be
+   * queried. Unlike `reset`, the block is not destroyed: it remains open so
+   * the catch branch can append into it.
+   */
+  unwindAppending(): void {
+    this.first = null;
+    this.last = null;
+    this.nesting = 0;
   }
 }
 

@@ -203,6 +203,13 @@ export default class WireFormatDebugger {
             opcode[3] ? this.formatBlock(opcode[3]) : null,
           ];
 
+        case Op.TryCatch:
+          return [
+            'try',
+            this.formatBlock(opcode[1]),
+            opcode[2] ? this.formatBlock(opcode[2]) : null,
+          ];
+
         case Op.IfInline:
           return ['if-inline'];
 

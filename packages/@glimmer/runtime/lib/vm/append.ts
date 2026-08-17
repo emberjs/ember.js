@@ -16,8 +16,10 @@ import type {
   RenderResult,
   RichIteratorResult,
   Scope,
+  Nullable,
   SyscallRegisters,
   TreeBuilder,
+  TreeBuilderMark,
   UpdatingOpcode,
 } from '@glimmer/interfaces';
 import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
@@ -25,16 +27,23 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm/lib/registers';
 import { dev, expect } from '@glimmer/debug-util/lib/platform-utils';
 import { unwrapHandle } from '@glimmer/debug-util/lib/template';
-import { associateDestroyableChild } from '@glimmer/destroyable';
+import { associateDestroyableChild, destroyChildren } from '@glimmer/destroyable';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { createIteratorItemRef } from '@glimmer/reference/lib/iterable';
-import { UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
+import { createUnboundRef, UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
 import { reverse } from '@glimmer/util/lib/array-utils';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { LOCAL_LOGGER } from '@glimmer/util';
-import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
-import { $pc, isLowLevelRegister } from '@glimmer/vm/lib/registers';
+import {
+  beginTrackFrame,
+  consumeTag,
+  endTrackFrame,
+  resetTracking,
+  trackingFrameDepth,
+  unwindTracking,
+} from '@glimmer/validator/lib/tracking';
+import { $fp, $pc, $ra, $sp, isLowLevelRegister } from '@glimmer/vm/lib/registers';
 
 import type { ScopeOptions } from '../scope';
 import type { AppendingBlockList } from './element-builder';
@@ -52,7 +61,7 @@ import { VMArgumentsImpl } from './arguments';
 import { LowLevelVM } from './low-level';
 import RenderResultImpl from './render-result';
 import EvaluationStackImpl from './stack';
-import { ListBlockOpcode, ListItemOpcode, TryOpcode } from './update';
+import { ListBlockOpcode, ListItemOpcode, TryErrorOpcode, TryOpcode } from './update';
 
 class Stacks {
   declare debug?: () => DebugStacks;
@@ -398,6 +407,146 @@ export class VM {
     let tryOpcode = new TryOpcode(state, this.context, block, updating);
 
     this.didEnter(tryOpcode);
+  }
+
+  /**
+   * ## Opcodes
+   *
+   * - Append: `EnterTry`
+   *
+   * Like `Enter`, but the block opcode is a `TryErrorOpcode`: the error
+   * boundary for a `{{#try}}` region. The subsequent `PushTryFrame` opcode
+   * attaches to the boundary created here.
+   */
+  enterTry(args: number) {
+    let updating: UpdatingOpcode[] = [];
+
+    let state = this.capture(args);
+    let block = this.tree().pushResettableBlock();
+
+    let tryOpcode = new TryErrorOpcode(state, this.context, block, updating);
+
+    this.didEnter(tryOpcode);
+    this.#pendingTryBoundary = tryOpcode;
+  }
+
+  #tryFrames: TryFrame[] = [];
+  #pendingTryBoundary: Nullable<TryErrorOpcode> = null;
+
+  /**
+   * When a `{{#try}}` region re-renders (via `TryErrorOpcode.handleException`),
+   * the resumed VM starts executing after the region's `EnterTry`, so no
+   * boundary is freshly entered when `PushTryFrame` runs. The re-render
+   * registers the existing boundary here instead.
+   */
+  setResumingTryBoundary(boundary: TryErrorOpcode): void {
+    this.#pendingTryBoundary = boundary;
+  }
+
+  /**
+   * ## Opcodes
+   *
+   * - Append: `PushTryFrame`
+   *
+   * Snapshot every piece of VM state needed to resume at the CATCH label if
+   * appending the `try` branch throws.
+   */
+  pushTryFrame(catchPc: number): void {
+    let boundary = this.#pendingTryBoundary;
+    this.#pendingTryBoundary = null;
+
+    this.#tryFrames.push({
+      catchPc,
+      ra: this.lowlevel.fetchRegister($ra),
+      sp: this.lowlevel.fetchRegister($sp),
+      fp: this.lowlevel.fetchRegister($fp),
+      registers: this.#registers.slice() as SyscallRegisters,
+      scope: this.#stacks.scope.size,
+      dynamicScope: this.#stacks.dynamicScope.size,
+      cache: this.#stacks.cache.size,
+      list: this.#stacks.list.size,
+      destroyable: this.#stacks.destroyable.size,
+      updating: this.#stacks.updating.size,
+      updatingListLength: this.updating().length,
+      tree: this.tree().mark(),
+      tracking: trackingFrameDepth(),
+      boundary,
+    });
+
+    // Hold a tracking frame open across the try branch. Compute references
+    // balance their own frames even when they throw, so without a parent
+    // frame the failed branch's dependencies would be discarded before the
+    // unwind can capture them for retry.
+    beginTrackFrame(DEBUG ? 'try boundary' : undefined);
+  }
+
+  /**
+   * ## Opcodes
+   *
+   * - Append: `PopTryFrame`
+   *
+   * The `try` branch finished appending without throwing; disarm the handler.
+   */
+  popTryFrame(): void {
+    this.#tryFrames.pop();
+
+    // Close the frame opened by `pushTryFrame`, forwarding what the try
+    // branch consumed to any enclosing tracker (as if the frame wasn't there).
+    consumeTag(endTrackFrame());
+  }
+
+  get canUnwind(): boolean {
+    return this.#tryFrames.length > 0;
+  }
+
+  /**
+   * A JavaScript error was thrown while appending a `{{#try}}` region's `try`
+   * branch. Roll every piece of VM state back to the `PushTryFrame` snapshot,
+   * discard the region's partially-rendered DOM, updating opcodes, and
+   * destroyables, then resume at the CATCH label with a reference to the
+   * error on the stack.
+   */
+  unwind(error: unknown): void {
+    let frame = expect(this.#tryFrames.pop(), 'BUG: unwind called without an open try frame');
+    let { lowlevel } = this;
+    let stacks = this.#stacks;
+
+    // Rebalance the tracking frames the throw skipped, capturing what the
+    // failed branch consumed so the boundary re-attempts the try branch when
+    // one of those dependencies changes.
+    let failedDeps = unwindTracking(frame.tracking);
+
+    lowlevel.loadRegister($ra, frame.ra);
+    lowlevel.loadRegister($sp, frame.sp);
+    lowlevel.loadRegister($fp, frame.fp);
+    lowlevel.setPc(frame.catchPc);
+    this.#registers = frame.registers;
+
+    truncate(stacks.scope, frame.scope);
+    truncate(stacks.dynamicScope, frame.dynamicScope);
+    truncate(stacks.cache, frame.cache);
+    truncate(stacks.list, frame.list);
+    truncate(stacks.updating, frame.updating);
+
+    // Discard the updating opcodes the failed branch appended to the region.
+    this.updating().length = frame.updatingListLength;
+
+    // Destroy anything the failed branch registered (component instances,
+    // modifiers, remote blocks). The destroyable parent at frame-push time
+    // owns exactly the region's content.
+    truncate(stacks.destroyable, frame.destroyable);
+    destroyChildren(expect(stacks.destroyable.current, 'Expected destructor parent'));
+
+    // Remove the region's partially-appended DOM.
+    this.tree().unwindTo(frame.tree);
+
+    // Surface the failed branch's dependencies to any enclosing tracking
+    // frame (e.g. a component's cache group), and remember them on the
+    // boundary so it revalidates.
+    consumeTag(failedDeps);
+    frame.boundary?.didUnwind(failedDeps);
+
+    this.stack.push(createUnboundRef(error, DEBUG ? 'a caught rendering error' : false));
   }
 
   /**
@@ -767,8 +916,20 @@ export class VM {
 
     let result: RichIteratorResult<null, RenderResult>;
 
-    do result = this.next();
-    while (!result.done);
+    while (true) {
+      try {
+        result = this.next();
+      } catch (error) {
+        // A `{{#try}}` region is open: unwind to its catch branch and keep
+        // appending. Without one, the error propagates as before.
+        if (!this.canUnwind) throw error;
+
+        this.unwind(error);
+        continue;
+      }
+
+      if (result.done) break;
+    }
 
     return result.value;
   }
@@ -796,6 +957,32 @@ export class VM {
     }
     return result;
   }
+}
+
+/**
+ * The snapshot taken by `PushTryFrame`: enough state to roll the VM back to
+ * the top of a `{{#try}}` region and resume at its CATCH label.
+ */
+interface TryFrame {
+  readonly catchPc: number;
+  readonly ra: number;
+  readonly sp: number;
+  readonly fp: number;
+  readonly registers: SyscallRegisters;
+  readonly scope: number;
+  readonly dynamicScope: number;
+  readonly cache: number;
+  readonly list: number;
+  readonly destroyable: number;
+  readonly updating: number;
+  readonly updatingListLength: number;
+  readonly tree: TreeBuilderMark;
+  readonly tracking: number;
+  readonly boundary: Nullable<TryErrorOpcode>;
+}
+
+function truncate<T>(stack: Stack<T>, size: number): void {
+  while (stack.size > size) stack.pop();
 }
 
 function closureState(pc: number, scope: Scope, dynamicScope: DynamicScope): ClosureState {
