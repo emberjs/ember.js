@@ -22,6 +22,7 @@ import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
+import { DESTROYABLE_META_SLOT } from '@glimmer/util/lib/destroyable-slot';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
@@ -397,12 +398,15 @@ export class NewTreeBuilder implements TreeBuilder {
 
 export class AppendingBlockImpl implements AppendingBlock {
   declare debug?: { first: () => Nullable<SimpleNode>; last: () => Nullable<SimpleNode> };
+  declare [DESTROYABLE_META_SLOT]: object | undefined;
 
   protected first: Nullable<FirstNode> = null;
   protected last: Nullable<LastNode> = null;
   protected nesting = 0;
 
   constructor(private parent: SimpleElement) {
+    this[DESTROYABLE_META_SLOT] = undefined;
+
     setLocalDebugType('block:simple', this);
 
     if (LOCAL_DEBUG) {

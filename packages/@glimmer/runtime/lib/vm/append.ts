@@ -26,6 +26,7 @@ import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm/lib
 import { dev, expect } from '@glimmer/debug-util/lib/platform-utils';
 import { unwrapHandle } from '@glimmer/debug-util/lib/template';
 import { associateDestroyableChild } from '@glimmer/destroyable';
+import { DESTROYABLE_META_SLOT } from '@glimmer/util/lib/destroyable-slot';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { createIteratorItemRef } from '@glimmer/reference/lib/iterable';
@@ -54,9 +55,18 @@ import RenderResultImpl from './render-result';
 import EvaluationStackImpl from './stack';
 import { ListBlockOpcode, ListItemOpcode, TryOpcode } from './update';
 
+/** The VM's own root destroyable, on the fast path like the block opcodes. */
+class Drop {
+  declare [DESTROYABLE_META_SLOT]: object | undefined;
+
+  constructor() {
+    this[DESTROYABLE_META_SLOT] = undefined;
+  }
+}
+
 class Stacks {
   declare debug?: () => DebugStacks;
-  readonly drop: object = {};
+  readonly drop: object = new Drop();
 
   readonly scope = new Stack<Scope>();
   readonly dynamicScope = new Stack<DynamicScope>();

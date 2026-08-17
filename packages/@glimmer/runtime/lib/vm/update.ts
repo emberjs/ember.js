@@ -18,6 +18,7 @@ import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
+import { DESTROYABLE_META_SLOT } from '@glimmer/util/lib/destroyable-slot';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
@@ -111,6 +112,10 @@ export interface VMState {
 }
 
 export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
+  // Declaring the slot is what opts these into the fast path in
+  // `@glimmer/destroyable`. One of these exists per `{{#each}}` item.
+  declare [DESTROYABLE_META_SLOT]: object | undefined;
+
   public children: UpdatingOpcode[];
 
   protected readonly bounds: AppendingBlock;
@@ -123,6 +128,7 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   ) {
     this.children = children;
     this.bounds = bounds;
+    this[DESTROYABLE_META_SLOT] = undefined;
   }
 
   parentElement() {
