@@ -11,7 +11,6 @@ type DestroyableState = 0 | 1 | 2;
 type OneOrMany<T> = null | T | BrandedArray<T>;
 
 interface DestroyableMeta<T extends Destroyable> {
-  source?: T;
   parents: OneOrMany<Destroyable>;
   children: OneOrMany<Destroyable>;
   eagerDestructors: OneOrMany<Destructor<T>>;
@@ -23,9 +22,11 @@ interface UndestroyedDestroyablesError extends Error {
   destroyables: object[];
 }
 
-let DESTROYABLE_META:
-  | Map<Destroyable, DestroyableMeta<Destroyable>>
-  | WeakMap<Destroyable, DestroyableMeta<Destroyable>> = new WeakMap();
+// A `WeakMap.get` forces an identity hash onto the key the first time it is
+// used as one, and every rendered list item pays for one.
+const META = Symbol('DESTROYABLE_META');
+
+type WithMeta = { [META]?: DestroyableMeta<Destroyable> };
 
 const branded = Symbol('BrandedArray');
 type BrandedArray<T> = T[] & { [branded]: true };
@@ -79,7 +80,7 @@ function remove<T extends object>(collection: OneOrMany<T>, item: T, message: st
 }
 
 function getDestroyableMeta<T extends Destroyable>(destroyable: T): DestroyableMeta<T> {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = (destroyable as WithMeta)[META];
 
   if (meta === undefined) {
     meta = {
@@ -91,13 +92,13 @@ function getDestroyableMeta<T extends Destroyable>(destroyable: T): DestroyableM
     };
 
     if (DEBUG) {
-      meta.source = destroyable;
+      TRACKED_DESTROYABLES?.add(destroyable);
     }
 
-    DESTROYABLE_META.set(destroyable, meta);
+    (destroyable as WithMeta)[META] = meta;
   }
 
-  return meta as unknown as DestroyableMeta<T>;
+  return meta;
 }
 
 export function associateDestroyableChild<T extends Destroyable>(parent: Destroyable, child: T): T {
@@ -210,19 +211,19 @@ export function destroyChildren(destroyable: Destroyable) {
 }
 
 export function _hasDestroyableChildren(destroyable: Destroyable) {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = (destroyable as WithMeta)[META];
 
   return meta === undefined ? false : meta.children !== null;
 }
 
 export function isDestroying(destroyable: Destroyable) {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = (destroyable as WithMeta)[META];
 
   return meta === undefined ? false : meta.state >= DESTROYING_STATE;
 }
 
 export function isDestroyed(destroyable: Destroyable) {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = (destroyable as WithMeta)[META];
 
   return meta === undefined ? false : meta.state >= DESTROYED_STATE;
 }
@@ -232,40 +233,36 @@ export function isDestroyed(destroyable: Destroyable) {
 export let enableDestroyableTracking: undefined | (() => void);
 export let assertDestroyablesDestroyed: undefined | (() => void);
 
-if (DEBUG) {
-  let isTesting = false;
+// Meta is not enumerable, so tracking needs its own registry.
+let TRACKED_DESTROYABLES: Set<Destroyable> | null = null;
 
+if (DEBUG) {
   enableDestroyableTracking = () => {
-    if (isTesting) {
-      // Reset destroyable meta just in case, before throwing the error
-      DESTROYABLE_META = new WeakMap();
+    if (TRACKED_DESTROYABLES !== null) {
+      TRACKED_DESTROYABLES = null;
       throw new Error(
         'Attempted to start destroyable testing, but you did not end the previous destroyable test. Did you forget to call `assertDestroyablesDestroyed()`'
       );
     }
 
-    isTesting = true;
-    DESTROYABLE_META = new Map();
+    TRACKED_DESTROYABLES = new Set();
   };
 
   assertDestroyablesDestroyed = () => {
-    if (!isTesting) {
+    if (TRACKED_DESTROYABLES === null) {
       throw new Error(
         'Attempted to assert destroyables destroyed, but you did not start a destroyable test. Did you forget to call `enableDestroyableTracking()`'
       );
     }
 
-    isTesting = false;
-
-    let map = DESTROYABLE_META as Map<Destroyable, DestroyableMeta<Destroyable>>;
-    DESTROYABLE_META = new WeakMap();
+    let tracked = TRACKED_DESTROYABLES;
+    TRACKED_DESTROYABLES = null;
 
     let undestroyed: object[] = [];
 
-    map.forEach((meta) => {
-      if (meta.state !== DESTROYED_STATE) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-        undestroyed.push(meta.source!);
+    tracked.forEach((destroyable) => {
+      if (getDestroyableMeta(destroyable).state !== DESTROYED_STATE) {
+        undestroyed.push(destroyable);
       }
     });
 
