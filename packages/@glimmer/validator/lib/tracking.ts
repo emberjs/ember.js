@@ -11,31 +11,31 @@ import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './v
  * An object that that tracks @tracked properties that were consumed.
  */
 class Tracker {
-  private tags = new Set<Tag>();
-  private last: Tag | null = null;
+  // The overwhelming majority of frames consume zero or one distinct tag, so
+  // the Set is only allocated once a *second* tag shows up.
+  private first: Tag | null = null;
+  private rest: Set<Tag> | null = null;
 
   add(tag: Tag) {
     if (tag === CONSTANT_TAG) return;
-
-    this.tags.add(tag);
 
     if (DEBUG) {
       unwrap(debug.markTagAsConsumed)(tag);
     }
 
-    this.last = tag;
+    if (this.rest !== null) {
+      this.rest.add(tag);
+    } else if (this.first === null) {
+      this.first = tag;
+    } else if (this.first !== tag) {
+      this.rest = new Set([this.first, tag]);
+    }
   }
 
   combine(): Tag {
-    let { tags } = this;
+    if (this.rest !== null) return combine(Array.from(this.rest));
 
-    if (tags.size === 0) {
-      return CONSTANT_TAG;
-    } else if (tags.size === 1) {
-      return this.last as Tag;
-    } else {
-      return combine(Array.from(this.tags));
-    }
+    return this.first ?? CONSTANT_TAG;
   }
 }
 
@@ -67,7 +67,7 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
 }
 
 export function endTrackFrame(): Tag {
-  let current = CURRENT_TRACKER;
+  let current = CURRENT_TRACKER as Tracker;
 
   if (DEBUG) {
     if (OPEN_TRACK_FRAMES.length === 0) {
@@ -79,7 +79,7 @@ export function endTrackFrame(): Tag {
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  return unwrap(current).combine();
+  return current.combine();
 }
 
 export function beginUntrackFrame(): void {

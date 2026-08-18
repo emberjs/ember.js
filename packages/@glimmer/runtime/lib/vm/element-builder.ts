@@ -23,7 +23,6 @@ import assert from '@glimmer/debug-util/lib/assert';
 import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
 import type { DynamicAttribute } from './attributes/dynamic';
 
@@ -40,20 +39,15 @@ export interface LastNode {
   lastNode(): SimpleNode;
 }
 
-class First {
-  constructor(private node: SimpleNode) {}
-
-  firstNode(): SimpleNode {
-    return this.node;
-  }
-}
-
-class Last {
-  constructor(private node: SimpleNode) {}
-
-  lastNode(): SimpleNode {
-    return this.node;
-  }
+/** Resolve a block edge for debug output without throwing mid-build. */
+function debugEdge(
+  node: Nullable<SimpleNode>,
+  block: Nullable<Bounds>,
+  which: 'first' | 'last'
+): Nullable<SimpleNode> {
+  if (node !== null) return node;
+  if (block === null) return null;
+  return (block as FirstNode & LastNode).debug?.[which]() ?? null;
 }
 
 export class Fragment implements Bounds {
@@ -89,9 +83,13 @@ export class NewTreeBuilder implements TreeBuilder {
   public operations: Nullable<ElementOperations> = null;
   private env: Environment;
 
-  readonly cursors = new Stack<Cursor>();
-  private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
-  private blockStack = new Stack<AppendingBlock>();
+  // Slots above `cursorDepth` are retained and reused, because opening an
+  // element is one of the most frequent operations the VM performs. Subclasses
+  // that need a richer cursor push their own through `pushCursor`.
+  readonly cursors: CursorImpl[] = [];
+  protected cursorDepth = -1;
+  private modifierStack: Nullable<ModifierInstance[]>[] = [];
+  private blockStack: AppendingBlock[] = [];
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
@@ -115,9 +113,9 @@ export class NewTreeBuilder implements TreeBuilder {
 
     if (LOCAL_DEBUG) {
       this.debug = () => ({
-        blocks: this.blockStack.snapshot(),
+        blocks: [...this.blockStack],
         constructing: this.constructing,
-        cursors: this.cursors.snapshot(),
+        cursors: this.cursors.slice(0, this.cursorDepth + 1),
       });
     }
   }
@@ -128,30 +126,34 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   debugBlocks(): AppendingBlock[] {
-    return this.blockStack.toArray();
+    return this.blockStack;
   }
 
   get element(): SimpleElement {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    return this.cursors.current!.element;
+    return this.cursors[this.cursorDepth]!.element;
   }
 
   get nextSibling(): Nullable<SimpleNode> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    return this.cursors.current!.nextSibling;
+    return this.cursors[this.cursorDepth]!.nextSibling;
+  }
+
+  protected get currentCursor(): Nullable<CursorImpl> {
+    return this.cursors[this.cursorDepth] ?? null;
   }
 
   get hasBlocks() {
-    return this.blockStack.size > 0;
+    return this.blockStack.length > 0;
   }
 
   protected block(): AppendingBlock {
-    return expect(this.blockStack.current, 'Expected a current live block');
+    return expect(this.blockStack.at(-1), 'Expected a current live block');
   }
 
   popElement() {
-    this.cursors.pop();
-    expect(this.cursors.current, "can't pop past the last element");
+    this.cursorDepth--;
+    assert(this.cursorDepth >= 0, "can't pop past the last element");
   }
 
   pushAppendingBlock(): AppendingBlock {
@@ -167,9 +169,9 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   protected pushBlock<T extends AppendingBlock>(block: T, isRemote = false): T {
-    let current = this.blockStack.current;
+    let current = this.blockStack.at(-1);
 
-    if (current !== null) {
+    if (current !== undefined) {
       if (!isRemote) {
         current.didAppendBounds(block);
       }
@@ -262,7 +264,20 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
-    this.cursors.push(new CursorImpl(element, nextSibling));
+    let depth = ++this.cursorDepth;
+    let existing = this.cursors[depth];
+
+    if (existing === undefined) {
+      this.cursors[depth] = new CursorImpl(element, nextSibling);
+    } else {
+      existing.element = element;
+      existing.nextSibling = nextSibling ?? null;
+    }
+  }
+
+  /** Store a subclass-built cursor. Unlike `pushElement`, this cannot reuse a slot. */
+  pushCursor(cursor: CursorImpl): void {
+    this.cursors[++this.cursorDepth] = cursor;
   }
 
   private pushModifiers(modifiers: Nullable<ModifierInstance[]>): void {
@@ -270,7 +285,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   private popModifiers(): Nullable<ModifierInstance[]> {
-    return this.modifierStack.pop();
+    return this.modifierStack.pop() ?? null;
   }
 
   didAppendBounds(bounds: Bounds): Bounds {
@@ -398,8 +413,13 @@ export class NewTreeBuilder implements TreeBuilder {
 export class AppendingBlockImpl implements AppendingBlock {
   declare debug?: { first: () => Nullable<SimpleNode>; last: () => Nullable<SimpleNode> };
 
-  protected first: Nullable<FirstNode> = null;
-  protected last: Nullable<LastNode> = null;
+  // A block's edge is either a node it appended, or a nested block whose own
+  // edges are not known until it finishes building. Keeping the two apart keeps
+  // both fields monomorphic; `clear` reads them for every bounds it removes.
+  protected first: Nullable<SimpleNode> = null;
+  protected firstBlock: Nullable<Bounds> = null;
+  protected last: Nullable<SimpleNode> = null;
+  protected lastBlock: Nullable<Bounds> = null;
   protected nesting = 0;
 
   constructor(private parent: SimpleElement) {
@@ -407,8 +427,8 @@ export class AppendingBlockImpl implements AppendingBlock {
 
     if (LOCAL_DEBUG) {
       this.debug = {
-        first: () => this.first?.debug?.first() ?? null,
-        last: () => this.last?.debug?.last() ?? null,
+        first: () => debugEdge(this.first, this.firstBlock, 'first'),
+        last: () => debugEdge(this.last, this.lastBlock, 'last'),
       };
     }
   }
@@ -418,21 +438,25 @@ export class AppendingBlockImpl implements AppendingBlock {
   }
 
   firstNode(): SimpleNode {
-    let first = expect(
-      this.first,
-      'cannot call `firstNode()` while `AppendingBlock` is still initializing'
-    );
+    let first = this.first;
 
-    return first.firstNode();
+    if (first !== null) return first;
+
+    return expect(
+      this.firstBlock,
+      'cannot call `firstNode()` while `AppendingBlock` is still initializing'
+    ).firstNode();
   }
 
   lastNode(): SimpleNode {
-    let last = expect(
-      this.last,
-      'cannot call `lastNode()` while `AppendingBlock` is still initializing'
-    );
+    let last = this.last;
 
-    return last.lastNode();
+    if (last !== null) return last;
+
+    return expect(
+      this.lastBlock,
+      'cannot call `lastNode()` while `AppendingBlock` is still initializing'
+    ).lastNode();
   }
 
   openElement(element: SimpleElement) {
@@ -447,25 +471,27 @@ export class AppendingBlockImpl implements AppendingBlock {
   didAppendNode(node: SimpleNode) {
     if (this.nesting !== 0) return;
 
-    if (!this.first) {
-      this.first = new First(node);
+    if (this.first === null && this.firstBlock === null) {
+      this.first = node;
     }
 
-    this.last = new Last(node);
+    this.last = node;
+    this.lastBlock = null;
   }
 
   didAppendBounds(bounds: Bounds) {
     if (this.nesting !== 0) return;
 
-    if (!this.first) {
-      this.first = bounds;
+    if (this.first === null && this.firstBlock === null) {
+      this.firstBlock = bounds;
     }
 
-    this.last = bounds;
+    this.lastBlock = bounds;
+    this.last = null;
   }
 
   finalize(stack: TreeBuilder) {
-    if (this.first === null) {
+    if (this.first === null && this.firstBlock === null) {
       stack.appendComment('');
     }
   }
@@ -520,7 +546,9 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
     let nextSibling = clear(this);
 
     this.first = null;
+    this.firstBlock = null;
     this.last = null;
+    this.lastBlock = null;
     this.nesting = 0;
 
     return nextSibling;

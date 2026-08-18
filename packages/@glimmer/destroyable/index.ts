@@ -47,11 +47,19 @@ function push<T extends object>(collection: OneOrMany<T>, newItem: T): OneOrMany
   }
 }
 
-function iterate<T extends object>(collection: OneOrMany<T>, fn: (item: T) => void) {
+// `arg` is threaded through so callers pass a module-level function instead of
+// allocating a closure per call.
+function iterate<T extends object, A>(
+  collection: OneOrMany<T>,
+  fn: (item: T, arg: A) => void,
+  arg: A
+) {
   if (isBrandedArray(collection)) {
-    collection.forEach(fn);
+    for (let i = 0; i < collection.length; i++) {
+      fn(collection[i] as T, arg);
+    }
   } else if (collection !== null) {
-    fn(collection);
+    fn(collection, arg);
   }
 }
 
@@ -164,6 +172,14 @@ export function unregisterDestructor<T extends Destroyable>(
 
 ////////////
 
+function runDestructor<T extends Destroyable>(destructor: Destructor<T>, destroyable: T) {
+  destructor(destroyable);
+}
+
+function deferDestructor<T extends Destroyable>(destructor: Destructor<T>, destroyable: T) {
+  scheduleDestroy(destroyable, destructor);
+}
+
 export function destroy(destroyable: Destroyable) {
   let meta = getDestroyableMeta(destroyable);
 
@@ -173,24 +189,17 @@ export function destroy(destroyable: Destroyable) {
 
   meta.state = DESTROYING_STATE;
 
-  iterate(children, destroy);
-  iterate(eagerDestructors, (destructor) => {
-    destructor(destroyable);
-  });
-  iterate(destructors, (destructor) => {
-    scheduleDestroy(destroyable, destructor);
-  });
+  iterate(children, destroy, undefined);
+  iterate(eagerDestructors, runDestructor, destroyable);
+  iterate(destructors, deferDestructor, destroyable);
 
   scheduleDestroyed(() => {
-    iterate(parents, (parent) => {
-      removeChildFromParent(destroyable, parent);
-    });
-
+    iterate(parents, removeChildFromParent, destroyable);
     meta.state = DESTROYED_STATE;
   });
 }
 
-function removeChildFromParent(child: Destroyable, parent: Destroyable) {
+function removeChildFromParent(parent: Destroyable, child: Destroyable) {
   let parentMeta = getDestroyableMeta(parent);
 
   if (parentMeta.state !== DESTROYED_STATE) {
@@ -204,9 +213,7 @@ function removeChildFromParent(child: Destroyable, parent: Destroyable) {
 }
 
 export function destroyChildren(destroyable: Destroyable) {
-  let { children } = getDestroyableMeta(destroyable);
-
-  iterate(children, destroy);
+  iterate(getDestroyableMeta(destroyable).children, destroy, undefined);
 }
 
 export function _hasDestroyableChildren(destroyable: Destroyable) {
