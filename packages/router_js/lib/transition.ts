@@ -71,6 +71,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
   _visibleQueryParams: Dict<unknown> = {};
   isIntermediate = false;
   [REDIRECT_DESTINATION_SYMBOL]?: Transition<R>;
+   _pausingPromise?: Promise<any>;
 
   /**
     In non-production builds, this function will return the stack that this Transition was
@@ -308,6 +309,10 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
       this.router.activeTransition = undefined;
     }
   }
+
+  waitFor(promise: Promise<any>) {
+     this._pausingPromise = promise;
+   }
 
   redirect(newTransition: Transition<R>) {
     this[REDIRECT_DESTINATION_SYMBOL] = newTransition;
