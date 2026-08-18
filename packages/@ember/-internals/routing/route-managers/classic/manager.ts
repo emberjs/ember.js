@@ -12,9 +12,8 @@ import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
 import { precompileTemplate } from '@ember/template-compilation';
-import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef } from '@glimmer/reference/lib/reference';
-import { OutletComponent } from './outlet-component';
+import { CLASSIC_OUTLET } from './outlet-component';
 import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
 import type { InternalRouteInfo, BaseRoute as IRoute, RouteInfo, Transition } from 'router_js';
@@ -91,16 +90,12 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     const render = bucket.render;
 
     render.invokable = buildClassicInvokable(bucket);
-    render.context = bucket.context;
 
     return render;
   }
 
-  getRouteWrapper(bucket: ClassicRouteBucket, childOutlet: Reference): object | null {
-    const render = bucket.render;
-
-    // Nothing to render until the invokable resolves.
-    return render.invokable === undefined ? null : new OutletComponent(render, childOutlet);
+  getRouteWrapper(): object {
+    return CLASSIC_OUTLET;
   }
 
   willEnter(bucket: ClassicRouteBucket, state: ClassicWillEnterState): void {
@@ -216,10 +211,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     // No-op for classic routes.
   }
 
-  getInvokable(
-    bucket: ClassicRouteBucket,
-    enterPromise?: Promise<unknown>
-  ): Promise<object | undefined> {
+  getInvokable(bucket: ClassicRouteBucket, enterPromise: Promise<unknown>): Promise<object> {
     // Build the invokable synchronously, then gate its resolution on the
     // enter promise so onRouteInvokableReady does not fire (and the real
     // route template does not render) until the model has loaded. During
@@ -227,7 +219,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     // the loading substate.
 
     const invokable = buildClassicInvokable(bucket);
-    return (enterPromise || Promise.resolve()).then(() => invokable);
+    return enterPromise.then(() => invokable);
   }
 
   qp(bucket: ClassicRouteBucket): QueryParamMeta {

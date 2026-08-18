@@ -1,5 +1,6 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { Reference } from '@glimmer/reference/lib/reference';
+import type { BaseRoute, InternalRouteInfo } from 'router_js';
+import { tracked } from '@ember/-internals/metal/lib/tracked';
 
 export interface RenderState {
   /**
@@ -18,12 +19,6 @@ export interface RenderState {
    * The per-render invokable returned by `RouteManager.getInvokable`
    */
   invokable: object | undefined;
-
-  /**
-   * The manager's bucket for the route; the outlet curries it onto the
-   * invokable as `@bucket`.
-   */
-  bucket?: object;
 }
 
 /**
@@ -43,17 +38,35 @@ export interface OutletParent {
   };
 }
 
-export interface OutletState extends OutletParent {
-  /**
-   * Represents what was rendered into this outlet.
-   */
-  render: RenderState;
+/**
+ * Represents one rendered instance of a route.
+ * Maps to a `routeInfo`.
+ */
+export class OutletState implements OutletParent {
+  @tracked context: unknown;
 
-  /**
-   * The manager that produced `render`.
-   */
-  manager: {
-    /** `null` until this level has something to render. */
-    getRouteWrapper(bucket: object, childOutlet: Reference): object | null;
+  readonly outlets: {
+    main: OutletState | undefined;
+  } = {
+    main: undefined,
   };
+
+  constructor(
+    readonly render: RenderState,
+    readonly manager: { getRouteWrapper(): object },
+    readonly bucket: object,
+    readonly invokable: object | undefined,
+    routeInfo: InternalRouteInfo<BaseRoute>
+  ) {
+    this.context = routeInfo.context;
+
+    routeInfo.enterPromise?.then(
+      () => {
+        this.context = routeInfo.context;
+      },
+      () => {
+        // enter rejected; transition-level error handling reports it.
+      }
+    );
+  }
 }

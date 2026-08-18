@@ -1,6 +1,6 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
 import type { BootEnvironment } from '@ember/engine/instance';
-import type { OutletState } from '@ember/-internals/routing/route-managers/outlet-state';
+import { OutletState } from '@ember/-internals/routing/route-managers/outlet-state';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
@@ -752,18 +752,9 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       assert('Expected active route to have a manager and bucket', manager && bucket);
       let render = manager.getRenderState(bucket);
 
-      assert(
-        `The route manager for "${render.name}" did not return a \`bucket\` from ` +
-          `\`getRenderState\`. Every route level's outlet is resolved once and ` +
-          `cached against its bucket, so one is always required.`,
-        render.bucket !== undefined
-      );
+      let invokable = routeInfo.invokable || render.invokable;
 
-      let state: OutletState = {
-        render,
-        manager,
-        outlets: { main: undefined },
-      };
+      let state = new OutletState(render, manager, bucket, invokable, routeInfo);
 
       if (parent) {
         parent.outlets.main = state;

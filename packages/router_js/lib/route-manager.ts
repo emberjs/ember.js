@@ -327,18 +327,22 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
    */
   didExit(bucket: Bucket, state: DidExitState): void;
 
-  /** This manager's outlet, cached per bucket. */
-  getRouteWrapper(bucket: Bucket, childOutlet: unknown): object | null;
+  /**
+    Module-stable: return the same component every call. The framework curries
+    this level's state onto it as `@Component` (the invokable), `@context`,
+    `@bucket` and `@outlet`
+  */
+  getRouteWrapper(): object;
 
   /**
     Returns the renderable for the route. Async to absorb dynamic imports of
     lazy-loaded route modules. The returned promise resolves with the
-    component the outlet should render, or `undefined` to render nothing.
+    component the outlet should render.
 
     The router passes the in-flight `enterPromise` so the manager can choose
     whether to await data before resolving.
    */
-  getInvokable(bucket: Bucket, enterPromise?: Promise<unknown>): Promise<object | undefined>;
+  getInvokable(bucket: Bucket, enterPromise: Promise<unknown>): Promise<object>;
 
   /** Describes what this route renders. */
   getRenderState(bucket: Bucket): RenderStateLike;
@@ -347,9 +351,8 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
 type RenderStateLike = {
   owner: any;
   name: string;
+  /** Passed to the wrapper as `@Component`. */
   invokable: object | undefined;
-  /** Curried onto the invokable as `@bucket`. */
-  bucket?: RouteStateBucket;
 };
 
 /**

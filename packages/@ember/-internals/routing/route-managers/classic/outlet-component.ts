@@ -9,26 +9,19 @@ import type {
   DynamicScope,
   Environment,
   InternalComponentCapabilities,
-  PreparedArguments,
+  VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
-  WithPrepareArgs,
   WithSubOwner,
 } from '@glimmer/interfaces';
-import { DEBUG } from '@glimmer/env';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import {
-  createComputeRef,
-  createConstRef,
-  createDebugAliasRef,
-  UNDEFINED_REFERENCE,
-} from '@glimmer/reference/lib/reference';
-import { EMPTY_ARGS, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
+import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
 
-import type { ClassicRenderState } from './bucket';
+import type { ClassicRouteBucket, ClassicRenderState } from './bucket';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -62,7 +55,10 @@ import type { ClassicRenderState } from './bucket';
   @public
 */
 
-/** Classic's argument contract. */
+/**
+  The framework curries `@Component`, `@bucket`, `@context` and `@outlet` onto the wrapper.
+  Classic renames them to what a classic route template expects.
+*/
 const CLASSIC_TEMPLATE = precompileTemplate(
   `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>`,
   {
@@ -71,10 +67,27 @@ const CLASSIC_TEMPLATE = precompileTemplate(
   }
 );
 
-function instrumentationPayload(def: { name: string }) {
-  // legacy outlet name
-  return { object: `${def.name}:main` };
-}
+const CAPABILITIES: InternalComponentCapabilities = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  // The wrapper is module-stable, so everything per-route arrives as an
+  // argument. `create` reads `@bucket` to recover this level's owner and name.
+  createArgs: true,
+  attributeHook: false,
+  elementHook: false,
+  createCaller: false,
+  // Carries `parentView`.
+  dynamicScope: true,
+  updateHook: false,
+  // The only hook that can reach the scope and the args.
+  createInstance: true,
+  wrapped: false,
+  willDestroy: false,
+  // Engines swap the owner at a mount point. Classic's business, not the
+  // framework's: `render.owner` is the owner this level renders under.
+  hasSubOwner: true,
+};
 
 interface OutletInstanceState {
   owner: InternalOwner;
@@ -85,21 +98,10 @@ interface OutletInstanceState {
   finalize: () => void;
 }
 
-const CAPABILITIES: InternalComponentCapabilities = {
-  dynamicLayout: false,
-  dynamicTag: false,
-  prepareArgs: true,
-  createArgs: false,
-  attributeHook: false,
-  elementHook: false,
-  createCaller: false,
-  dynamicScope: true,
-  updateHook: false,
-  createInstance: true,
-  wrapped: false,
-  willDestroy: false,
-  hasSubOwner: true,
-};
+function instrumentationPayload({ name }: ClassicRenderState) {
+  // legacy outlet name
+  return { object: `${name}:main` };
+}
 
 /** Classic reads `parentView` off scope. */
 interface ViewCarryingScope extends DynamicScope {
@@ -126,25 +128,12 @@ class OutletComponentManager
   implements
     WithCreateInstance<OutletInstanceState, OutletComponent>,
     WithCustomDebugRenderTree<OutletInstanceState, OutletComponent>,
-    WithPrepareArgs<OutletInstanceState, OutletComponent>,
     WithSubOwner<OutletInstanceState, OutletComponent>
 {
-  prepareArgs(definition: OutletComponent): PreparedArguments {
-    return {
-      positional: EMPTY_POSITIONAL,
-      named: {
-        Component: definition.component,
-        bucket: createConstRef(definition.bucket, '@bucket'),
-        context: definition.context,
-        outlet: definition.childOutlet,
-      },
-    };
-  }
-
   create(
     owner: InternalOwner,
-    definition: OutletComponent,
-    _args: unknown,
+    _definition: OutletComponent,
+    args: VMArguments,
     env: Environment,
     dynamicScope: DynamicScope | null
   ): OutletInstanceState {
@@ -152,20 +141,25 @@ class OutletComponentManager
 
     carryParentView(dynamicScope as ViewCarryingScope);
 
+    // The wrapper is shared by every classic route, so this level's identity
+    // comes from the argument the framework curried onto it.
+    let bucket = valueForRef(args.named.get('bucket')) as ClassicRouteBucket;
+    let { render } = bucket;
+
     let state: OutletInstanceState = {
-      owner: definition.owner,
-      finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
+      owner: render.owner,
+      finalize: _instrumentStart('render.outlet', instrumentationPayload, render),
     };
 
-    if (env.debugRenderTree !== undefined && owner !== definition.owner) {
-      let currentOwner = definition.owner;
+    if (env.debugRenderTree !== undefined && owner !== render.owner) {
+      let currentOwner = render.owner;
 
       assert(
         'Expected currentOwner to be an EngineInstance',
         'buildChildEngineInstance' in currentOwner
       );
 
-      let engineInstance = currentOwner as EngineInstance;
+      let engineInstance = currentOwner as unknown as EngineInstance;
       let { mountPoint } = engineInstance;
 
       if (mountPoint) {
@@ -184,8 +178,16 @@ class OutletComponentManager
     return state.owner;
   }
 
-  getDebugName({ name }: OutletComponent): string {
-    return `{{outlet}} for ${name}`;
+  getCapabilities(): InternalComponentCapabilities {
+    return CAPABILITIES;
+  }
+
+  getSelf(): Reference {
+    return UNDEFINED_REFERENCE;
+  }
+
+  getDebugName(): string {
+    return '';
   }
 
   getDebugCustomRenderTree(
@@ -216,14 +218,6 @@ class OutletComponentManager
     return nodes;
   }
 
-  getCapabilities(): InternalComponentCapabilities {
-    return CAPABILITIES;
-  }
-
-  getSelf() {
-    return UNDEFINED_REFERENCE;
-  }
-
   didCreate() {}
   didUpdate() {}
 
@@ -238,43 +232,9 @@ class OutletComponentManager
   }
 }
 
-const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
+class OutletComponent {}
 
-export class OutletComponent {
-  readonly owner: InternalOwner;
-  readonly context: Reference;
-  readonly component: Reference;
-
-  constructor(
-    private readonly render: ClassicRenderState,
-    readonly childOutlet: Reference
-  ) {
-    this.owner = render.owner;
-
-    let context = this.contextRefFor();
-    let component = this.componentRefFor();
-
-    this.context = DEBUG ? createDebugAliasRef!('@context', context) : context;
-    this.component = DEBUG ? createDebugAliasRef!('@Component', component) : component;
-  }
-
-  // Cached on the bucket, so constant for this level.
-  private componentRefFor(): Reference {
-    return createConstRef(this.render.invokable, '@Component');
-  }
-
-  private contextRefFor(): Reference {
-    return createComputeRef(() => this.render.context);
-  }
-
-  get name(): string {
-    return this.render.name;
-  }
-
-  get bucket(): object {
-    return this.render.bucket;
-  }
-}
-
-setInternalComponentManager(OUTLET_MANAGER, OutletComponent.prototype);
+setInternalComponentManager(new OutletComponentManager(), OutletComponent.prototype);
 setComponentTemplate(CLASSIC_TEMPLATE, OutletComponent.prototype);
+
+export const CLASSIC_OUTLET = /*@__PURE__*/ new OutletComponent();

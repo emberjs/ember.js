@@ -1,12 +1,14 @@
 /** The top-level that boots your 'application' route */
 
 import type {
+  CapturedArguments,
   CustomRenderNode,
   InternalComponentCapabilities,
   InternalComponentManager,
   WithCreateInstance,
   WithCustomDebugRenderTree,
 } from '@glimmer/interfaces';
+import { internalHelper } from '@ember/-internals/glimmer/lib/helpers/internal-helper';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createComputeRef, createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
@@ -39,21 +41,18 @@ const CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: false,
 };
 
-interface RootOutletState {
-  self: Reference;
-}
 class RootOutletManager
   implements
-    InternalComponentManager<RootOutletState, RootOutlet>,
-    WithCreateInstance<RootOutletState, RootOutlet>,
-    WithCustomDebugRenderTree<RootOutletState, RootOutlet>
+    InternalComponentManager<RootOutlet, RootOutlet>,
+    WithCreateInstance<RootOutlet, RootOutlet>,
+    WithCustomDebugRenderTree<RootOutlet, RootOutlet>
 {
   getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 
-  create(_owner: object, definition: RootOutlet): RootOutletState {
-    return { self: definition.self };
+  create(_owner: object, definition: RootOutlet): RootOutlet {
+    return definition;
   }
 
   getDebugName(): string {
@@ -65,7 +64,7 @@ class RootOutletManager
     return [];
   }
 
-  getSelf({ self }: RootOutletState): Reference {
+  getSelf({ self }: RootOutlet): Reference {
     return self;
   }
 
@@ -115,25 +114,114 @@ export function createRootOutletState(initial: OutletState): UpdatableOutletRoot
   };
 }
 
-// bucket → its manager's outlet.
+/**
+  Wrapping in a helper allows `<@outlet />` invocation to use the `getDebugName` of `OutletArgs` manager.
+*/
+const asReference = internalHelper(
+  ({ positional }: CapturedArguments) => valueForRef(positional[0]!) as Reference
+);
+
+/**
+ Curries a route's render state onto its manager's wrapper.
+ This provider is what allows `getRouteWrapper` to provide a regular component without a custom manager.
+ It's role is to enforce the shape of outlet.
+*/
+const PROVIDER_TEMPLATE = precompileTemplate(
+  '<this.component @Component={{this.invokable}} @bucket={{this.bucket}} @context={{this.context}} @outlet={{asReference this.childOutletRef}} />',
+  {
+    moduleName: 'packages/@ember/-internals/routing/route-managers/outlet-arg-provider.hbs',
+    strictMode: true,
+    scope: () => ({ asReference }),
+  }
+);
+
+class OutletArgProvider {
+  readonly childOutletRef: Reference<object | null>;
+  readonly self: Reference;
+
+  // Without it, an exiting level renders whatever route replaced it.
+  private lastState: OutletState;
+
+  constructor(
+    readonly component: object,
+    readonly bucket: object,
+    readonly outletRef: Reference<OutletState | undefined>
+  ) {
+    this.childOutletRef = childOutletRefFor(outletRef);
+    this.lastState = valueForRef(outletRef)!;
+    this.self = createConstRef(this, 'this');
+  }
+
+  private get state(): OutletState {
+    let state = valueForRef(this.outletRef);
+
+    if (state?.bucket === this.bucket) {
+      this.lastState = state;
+    }
+
+    return this.lastState;
+  }
+
+  get invokable(): object | undefined {
+    return this.state.invokable;
+  }
+
+  get context(): unknown {
+    return this.state.context;
+  }
+}
+
+class OutletArgProviderManager
+  implements
+    InternalComponentManager<OutletArgProvider, OutletArgProvider>,
+    WithCreateInstance<OutletArgProvider, OutletArgProvider>,
+    WithCustomDebugRenderTree<OutletArgProvider, OutletArgProvider>
+{
+  getCapabilities(): InternalComponentCapabilities {
+    return CAPABILITIES;
+  }
+
+  create(_owner: object, definition: OutletArgProvider): OutletArgProvider {
+    return definition;
+  }
+
+  getSelf({ self }: OutletArgProvider): Reference {
+    return self;
+  }
+
+  getDebugName({ outletRef }: OutletArgProvider): string {
+    return `{{outlet}} for ${valueForRef(outletRef)?.render.name}`;
+  }
+
+  getDebugCustomRenderTree(): CustomRenderNode[] {
+    return [];
+  }
+
+  didCreate() {}
+  didUpdate() {}
+  didRenderLayout() {}
+  didUpdateLayout() {}
+
+  getDestroyable(): null {
+    return null;
+  }
+}
+
+setInternalComponentManager(new OutletArgProviderManager(), OutletArgProvider.prototype);
+setComponentTemplate(PROVIDER_TEMPLATE, OutletArgProvider.prototype);
+
+// bucket -> the provider wrapping its manager's wrapper
 const managerOutlets = new WeakMap<object, object>();
 
 /** One outlet level, or `null`. */
-function outletFor(outletRef: Reference<OutletState | undefined>): object | null {
-  let state = valueForRef(outletRef);
+function outletFor(outletStateRef: Reference<OutletState | undefined>): object | null {
+  let state = valueForRef(outletStateRef);
 
   if (state === undefined) {
     return null;
   }
 
-  let { render, manager } = state;
-
-  // Asserted in `_setOutlets`.
-  let bucket = render.bucket;
-
-  if (bucket === undefined) {
-    return null;
-  }
+  let { bucket, manager } = state;
 
   let outlet = managerOutlets.get(bucket);
 
@@ -141,24 +229,19 @@ function outletFor(outletRef: Reference<OutletState | undefined>): object | null
     return outlet;
   }
 
-  let childOutlet = childOutletRefFor(outletRef);
+  let provider = new OutletArgProvider(manager.getRouteWrapper(), bucket, outletStateRef);
 
-  let provided = manager.getRouteWrapper(bucket, childOutlet);
+  managerOutlets.set(bucket, provider);
 
-  // `null` is retried, not cached.
-  if (provided == null) {
-    return null;
-  }
-
-  managerOutlets.set(bucket, provided);
-
-  return provided;
+  return provider;
 }
 
-function childOutletRefFor(parentRef: Reference<OutletParent | undefined>): Reference {
-  let outletRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
+function childOutletRefFor(
+  parentRef: Reference<OutletParent | undefined>
+): Reference<object | null> {
+  let outletStateRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
 
-  let ref = createComputeRef(() => outletFor(outletRef));
+  let ref = createComputeRef(() => outletFor(outletStateRef));
 
   if (DEBUG) {
     // A truthy label shadows `getDebugName()`.

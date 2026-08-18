@@ -1,8 +1,7 @@
 import Route from '@ember/routing/route';
 import { setRouteManager } from '@ember/routing';
-import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
-import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
-import { createComputeRef, createConstRef, NULL_REFERENCE } from '@glimmer/reference/lib/reference';
+import { setComponentTemplate } from '@ember/component';
+import templateOnly from '@ember/component/template-only';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import {
   moduleFor,
@@ -14,71 +13,14 @@ import {
 import { registerDestructor } from '@ember/destroyable';
 import { precompileTemplate } from '@ember/template-compilation';
 import { getOwner } from '@ember/owner';
+import Engine from '@ember/engine';
 import { defer, reject, resolve } from 'rsvp';
 
-// Outlets over a classic bucket.
-const CLASSIC_BUCKET_OUTLET_MANAGER = {
-  getCapabilities() {
-    return {
-      dynamicLayout: false,
-      dynamicTag: false,
-      prepareArgs: true,
-      createArgs: false,
-      attributeHook: false,
-      elementHook: false,
-      createCaller: false,
-      dynamicScope: false,
-      updateHook: false,
-      createInstance: false,
-      wrapped: false,
-      willDestroy: false,
-      hasSubOwner: false,
-    };
-  },
-
-  prepareArgs({ bucket, childOutlet }) {
-    return {
-      positional: [],
-      named: {
-        Component: createConstRef(bucket.invokable, '@Component'),
-        context: createComputeRef(() => bucket.context),
-        outlet: childOutlet,
-      },
-    };
-  },
-
-  getDebugName({ bucket }) {
-    return `outlet for ${bucket.route.routeName}`;
-  },
-
-  getSelf() {
-    return NULL_REFERENCE;
-  },
-
-  getDestroyable() {
-    return null;
-  },
-};
-
-function classicBucketOutlet(layout) {
-  class ClassicBucketOutlet {
-    constructor(bucket, childOutlet) {
-      this.bucket = bucket;
-      this.childOutlet = childOutlet;
-    }
-  }
-
-  setInternalComponentManager(CLASSIC_BUCKET_OUTLET_MANAGER, ClassicBucketOutlet.prototype);
-  setComponentTemplate(layout, ClassicBucketOutlet.prototype);
-
-  return ClassicBucketOutlet;
-}
-
-// The `@context` contract, not classic's.
-const ContextOutlet = classicBucketOutlet(
+const ContextOutlet = setComponentTemplate(
   precompileTemplate('<@Component @context={{@context}} @outlet={{@outlet}} />', {
     strictMode: true,
-  })
+  }),
+  templateOnly()
 );
 
 // A manager that delegates everything to the ClassicRouteManager so existing
@@ -264,8 +206,8 @@ moduleFor(
 
       // Classic wiring, `@context` contract.
       class WrapperlessRouteManager extends ClassicRouteManager {
-        getRouteWrapper(bucket, childOutlet) {
-          return new ContextOutlet(bucket, childOutlet);
+        getRouteWrapper() {
+          return ContextOutlet;
         }
       }
 
@@ -323,61 +265,9 @@ moduleFor(
   }
 );
 
-// A manager-provided outlet.
-class SlimOutlet {
-  constructor(bucket, childOutlet) {
-    this.bucket = bucket;
-    this.childOutlet = childOutlet;
-  }
-}
-
-class SlimOutletManager {
-  getCapabilities() {
-    return {
-      dynamicLayout: false,
-      dynamicTag: false,
-      // Supplies args; discards a parent's.
-      prepareArgs: true,
-      createArgs: false,
-      attributeHook: false,
-      elementHook: false,
-      createCaller: false,
-      dynamicScope: false,
-      updateHook: false,
-      createInstance: false,
-      wrapped: false,
-      willDestroy: false,
-      hasSubOwner: false,
-    };
-  }
-
-  prepareArgs(definition) {
-    return {
-      positional: [],
-      named: {
-        name: createConstRef(definition.bucket.route.routeName, '@name'),
-        outlet: definition.childOutlet,
-      },
-    };
-  }
-
-  getDebugName() {
-    return 'slim-outlet';
-  }
-
-  getSelf() {
-    return NULL_REFERENCE;
-  }
-
-  getDestroyable() {
-    return null;
-  }
-}
-
-setInternalComponentManager(new SlimOutletManager(), SlimOutlet.prototype);
-setComponentTemplate(
-  precompileTemplate('[{{@name}}:<@outlet />]', { strictMode: true }),
-  SlimOutlet.prototype
+const SlimOutlet = setComponentTemplate(
+  precompileTemplate('[{{@bucket.route.routeName}}:<@outlet />]', { strictMode: true }),
+  templateOnly()
 );
 
 moduleFor(
@@ -389,8 +279,8 @@ moduleFor(
       let SlimRoute = class extends Route {};
 
       class SlimRouteManager extends ClassicRouteManager {
-        getRouteWrapper(bucket, childOutlet) {
-          return new SlimOutlet(bucket, childOutlet);
+        getRouteWrapper() {
+          return SlimOutlet;
         }
       }
 
@@ -446,10 +336,11 @@ moduleFor(
 );
 
 // Decorates every level the manager owns.
-const WrapOutlet = classicBucketOutlet(
+const WrapOutlet = setComponentTemplate(
   precompileTemplate('wrap(<@Component @model={{@context}} @outlet={{@outlet}} />)', {
     strictMode: true,
-  })
+  }),
+  templateOnly()
 );
 
 moduleFor(
@@ -461,8 +352,8 @@ moduleFor(
       let TestRoute = class extends Route {};
 
       class WrapperRouteManager extends ClassicRouteManager {
-        getRouteWrapper(bucket, childOutlet) {
-          return new WrapOutlet(bucket, childOutlet);
+        getRouteWrapper() {
+          return WrapOutlet;
         }
       }
 
@@ -913,6 +804,148 @@ moduleFor(
       );
       let didEnter = this.log.find(([h, n]) => h === 'didEnter' && n === 'error');
       assert.ok(didEnter, 'the error substate entered through the manager');
+    }
+  }
+);
+
+const StampOutlet = setComponentTemplate(
+  precompileTemplate(
+    'stamp[{{@bucket.route.routeName}}](<@Component @model={{@context}} @outlet={{@outlet}} />)',
+    { strictMode: true }
+  ),
+  templateOnly()
+);
+
+class StampRouteManager extends ClassicRouteManager {
+  getRouteWrapper() {
+    return StampOutlet;
+  }
+}
+
+moduleFor(
+  'Route manager - outlet opacity',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      let StampRoute = class extends Route {};
+      setRouteManager((owner) => new StampRouteManager(owner), StampRoute);
+
+      this.add('route:application', class extends Route {});
+      this.add('route:parent', class extends Route {});
+      this.add(
+        'route:parent.child',
+        class extends StampRoute {
+          model() {
+            return { msg: 'C' };
+          }
+        }
+      );
+
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      this.add(
+        'template:parent',
+        precompileTemplate(
+          'parent:<@outlet @Component="HACKED" @bucket="HACKED" @context="HACKED" @outlet="HACKED" />'
+        )
+      );
+      this.add('template:parent.child', precompileTemplate('child:{{@model.msg}}'));
+
+      this.router.map(function () {
+        this.route('parent', function () {
+          this.route('child');
+        });
+      });
+    }
+
+    async ['@test a parent cannot parameterize the outlet it places'](assert) {
+      await this.visit('/parent/child');
+
+      assert.strictEqual(
+        this.element.textContent,
+        'app:parent:stamp[parent.child](child:C)',
+        'the call site args were ignored; the framework supplied every argument'
+      );
+    }
+  }
+);
+
+moduleFor(
+  'Route manager - module-stable wrapper across owners',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      let StampRoute = class extends Route {};
+      setRouteManager((owner) => new StampRouteManager(owner), StampRoute);
+
+      this.add('route:application', class extends Route {});
+      this.add(
+        'route:local',
+        class extends StampRoute {
+          model() {
+            return { msg: 'L' };
+          }
+        }
+      );
+
+      this.add('template:application', precompileTemplate('app:{{outlet}}'));
+      this.add('template:local', precompileTemplate('local:{{@model.msg}}'));
+
+      this.add(
+        'engine:blog',
+        class extends Engine {
+          Resolver = ModuleBasedTestResolver;
+
+          init() {
+            super.init(...arguments);
+            this.register('route:application', class extends Route {});
+            this.register(
+              'route:post',
+              class extends StampRoute {
+                model() {
+                  return { msg: 'P' };
+                }
+              }
+            );
+            this.register('template:application', precompileTemplate('engine:{{outlet}}'));
+            this.register('template:post', precompileTemplate('post:{{@model.msg}}'));
+          }
+        }
+      );
+      this.add('route-map:blog', function () {
+        this.route('post');
+      });
+
+      this.router.map(function () {
+        this.route('local');
+        this.mount('blog');
+      });
+    }
+
+    async ['@test the same wrapper renders under the application owner and an engine owner'](
+      assert
+    ) {
+      await this.visit('/local');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:stamp[local](local:L)',
+        'the wrapper rendered under the application owner'
+      );
+
+      await this.visit('/blog/post');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:engine:stamp[post](post:P)',
+        'the same wrapper rendered under the engine owner, across the mount point'
+      );
+
+      await this.visit('/local');
+      assert.strictEqual(
+        this.element.textContent,
+        'app:stamp[local](local:L)',
+        'round-trip back to the application owner renders correctly'
+      );
     }
   }
 );

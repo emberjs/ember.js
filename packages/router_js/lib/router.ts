@@ -206,7 +206,11 @@ export default abstract class Router<R extends BaseRoute> {
     for (const exitingRouteInfo of partition.exited) {
       const { manager, bucket } = exitingRouteInfo;
       if (manager !== undefined && bucket !== undefined) {
-        const willExitState: WillExitState = { from: navFrom, to: navTo, cancel };
+        const willExitState: WillExitState = {
+          from: navFrom,
+          to: navTo,
+          cancel,
+        };
         const exitState: ExitState = { from: navFrom, to: navTo };
         if (hasClassicInterop(manager)) {
           Object.assign(willExitState, {
@@ -270,7 +274,10 @@ export default abstract class Router<R extends BaseRoute> {
         for (const enteredRouteInfo of partition.entered) {
           const { manager, bucket } = enteredRouteInfo;
           if (manager !== undefined && bucket !== undefined) {
-            const didEnterState: DidEnterState = { from: navFrom, to: navTo };
+            const didEnterState: DidEnterState = {
+              from: navFrom,
+              to: navTo,
+            };
             if (hasClassicInterop(manager)) {
               Object.assign(didEnterState, {
                 transition: activeTransition,
@@ -310,7 +317,10 @@ export default abstract class Router<R extends BaseRoute> {
       for (const exitedRouteInfo of partition.exited) {
         const { manager, bucket } = exitedRouteInfo;
         if (manager !== undefined && bucket !== undefined) {
-          const didExitState: DidExitState = { from: navFrom, to: navTo };
+          const didExitState: DidExitState = {
+            from: navFrom,
+            to: navTo,
+          };
           if (hasClassicInterop(manager)) {
             Object.assign(didExitState, {
               transition: activeTransition,
