@@ -1,4 +1,6 @@
 import type { InternalOwner } from '@ember/-internals/owner';
+import type { BaseRoute, InternalRouteInfo } from 'router_js';
+import { tracked } from '@ember/-internals/metal/lib/tracked';
 
 export interface RenderState {
   /**
@@ -14,7 +16,7 @@ export interface RenderState {
   name: string;
 
   /**
-   * The route's invokable, passed to the wrapper as `@Component`.
+   * The per-render invokable returned by `RouteManager.getInvokable`
    */
   invokable: object | undefined;
 }
@@ -36,22 +38,35 @@ export interface OutletParent {
   };
 }
 
-export interface OutletState extends OutletParent {
-  /**
-   * Represents what was rendered into this outlet.
-   */
-  render: RenderState;
+/**
+ * Represents one rendered instance of a route.
+ * Maps to a `routeInfo`.
+ */
+export class OutletState implements OutletParent {
+  @tracked context: unknown;
 
-  /**
-   * The router's bucket for this level, passed to the wrapper as `@bucket`.
-   */
-  bucket: object;
-
-  /**
-   * The manager that produced `render`.
-   */
-  manager: {
-    /** Module-stable per RFC-1169; the framework curries this level's state onto it. */
-    getRouteWrapper(): object;
+  readonly outlets: {
+    main: OutletState | undefined;
+  } = {
+    main: undefined,
   };
+
+  constructor(
+    readonly render: RenderState,
+    readonly manager: { getRouteWrapper(): object },
+    readonly bucket: object,
+    readonly invokable: object | undefined,
+    routeInfo: InternalRouteInfo<BaseRoute>
+  ) {
+    this.context = routeInfo.context;
+
+    routeInfo.enterPromise?.then(
+      () => {
+        this.context = routeInfo.context;
+      },
+      () => {
+        // enter rejected; transition-level error handling reports it.
+      }
+    );
+  }
 }

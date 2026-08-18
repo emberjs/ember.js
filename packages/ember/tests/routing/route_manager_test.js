@@ -16,13 +16,8 @@ import { getOwner } from '@ember/owner';
 import Engine from '@ember/engine';
 import { defer, reject, resolve } from 'rsvp';
 
-// A wrapper is an ordinary component now: the framework curries `@Component`,
-// `@bucket` and `@outlet` onto it. `precompileTemplate` is a build-time macro,
-// so each layout has to be a literal at its call site.
-//
-// The `@context` contract, not classic's.
 const ContextOutlet = setComponentTemplate(
-  precompileTemplate('<@Component @context={{@bucket.render.context}} @outlet={{@outlet}} />', {
+  precompileTemplate('<@Component @context={{@context}} @outlet={{@outlet}} />', {
     strictMode: true,
   }),
   templateOnly()
@@ -270,9 +265,6 @@ moduleFor(
   }
 );
 
-// Deliberately does NOT render @Component: this fixture asserts a wrapper can
-// own its level outright (`template:parent` is `SHOULD-NOT-RENDER`). Contrary to
-// the RFC's "the wrapper calls the route's invokable", and that is the point.
 const SlimOutlet = setComponentTemplate(
   precompileTemplate('[{{@bucket.route.routeName}}:<@outlet />]', { strictMode: true }),
   templateOnly()
@@ -345,7 +337,7 @@ moduleFor(
 
 // Decorates every level the manager owns.
 const WrapOutlet = setComponentTemplate(
-  precompileTemplate('wrap(<@Component @model={{@bucket.render.context}} @outlet={{@outlet}} />)', {
+  precompileTemplate('wrap(<@Component @model={{@context}} @outlet={{@outlet}} />)', {
     strictMode: true,
   }),
   templateOnly()
@@ -816,11 +808,9 @@ moduleFor(
   }
 );
 
-// A wrapper the framework supplies every argument to. Module-stable: the same
-// object backs every route level, in the application and inside an engine.
 const StampOutlet = setComponentTemplate(
   precompileTemplate(
-    'stamp[{{@bucket.route.routeName}}](<@Component @model={{@bucket.render.context}} @outlet={{@outlet}} />)',
+    'stamp[{{@bucket.route.routeName}}](<@Component @model={{@context}} @outlet={{@outlet}} />)',
     { strictMode: true }
   ),
   templateOnly()
@@ -832,10 +822,6 @@ class StampRouteManager extends ClassicRouteManager {
   }
 }
 
-// `{{outlet}}` compiles to `<@outlet />`, so a route template can also write
-// `<@outlet ... />` by hand and pass whatever it likes. Nothing *clears* those
-// args — the provider's layout simply declares none — so this is the guarantee
-// that the framework's curried arguments are the only ones a wrapper can see.
 moduleFor(
   'Route manager - outlet opacity',
   class extends ApplicationTestCase {
@@ -884,11 +870,6 @@ moduleFor(
   }
 );
 
-// Glimmer caches a `ComponentDefinition` by definition object, not by owner, so
-// a module-stable wrapper is compiled once and then reused under whatever owner
-// it is next invoked under. Rendering the *same* wrapper first in the
-// application and then inside a routable engine is what catches owner-local
-// resolution being baked in on the first compile; an engine-only test would not.
 moduleFor(
   'Route manager - module-stable wrapper across owners',
   class extends ApplicationTestCase {

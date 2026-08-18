@@ -56,13 +56,11 @@ import type { ClassicRouteBucket, ClassicRenderState } from './bucket';
 */
 
 /**
-  Classic's argument contract (RFC-1169): the framework curries `@Component`,
-  `@bucket` and `@outlet` onto the wrapper, and classic renames them to what a
-  classic route template expects. Context is read off the bucket, during render,
-  so it tracks.
+  The framework curries `@Component`, `@bucket`, `@context` and `@outlet` onto the wrapper.
+  Classic renames them to what a classic route template expects.
 */
 const CLASSIC_TEMPLATE = precompileTemplate(
-  `{{#if @Component}}<@Component @model={{@bucket.render.context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>{{/if}}`,
+  `<@Component @model={{@context}} @controller={{@bucket.controller}} @outlet={{@outlet}}/>`,
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/classic/route-template.hbs',
     strictMode: true,
@@ -239,5 +237,4 @@ class OutletComponent {}
 setInternalComponentManager(new OutletComponentManager(), OutletComponent.prototype);
 setComponentTemplate(CLASSIC_TEMPLATE, OutletComponent.prototype);
 
-/** Module-stable per RFC-1169. */
 export const CLASSIC_OUTLET = /*@__PURE__*/ new OutletComponent();

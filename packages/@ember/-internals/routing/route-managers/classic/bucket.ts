@@ -2,13 +2,11 @@ import type Controller from '@ember/controller';
 import { getOwner } from '@ember/-internals/owner';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { tracked } from '@ember/-internals/metal/lib/tracked';
 import type Route from '@ember/routing/route';
 import type { scheduleOnce } from '@ember/runloop';
 
 export class ClassicRenderState {
-  @tracked invokable: object | undefined = undefined;
-  @tracked context: unknown = undefined;
+  invokable: object | undefined = undefined;
 
   constructor(readonly bucket: ClassicRouteBucket) {}
 
@@ -34,10 +32,6 @@ export class ClassicRouteBucket {
   // later by `setup` — and their templates would render with no `{{this}}`.
   get controller(): Controller | undefined {
     return this.route.controller;
-  }
-
-  get context(): unknown {
-    return this.route.currentModel;
   }
 
   // Runloop timer for the pending loading-event dispatch scheduled during

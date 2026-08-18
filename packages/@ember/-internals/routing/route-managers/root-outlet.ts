@@ -41,21 +41,18 @@ const CAPABILITIES: InternalComponentCapabilities = {
   hasSubOwner: false,
 };
 
-interface RootOutletState {
-  self: Reference;
-}
 class RootOutletManager
   implements
-    InternalComponentManager<RootOutletState, RootOutlet>,
-    WithCreateInstance<RootOutletState, RootOutlet>,
-    WithCustomDebugRenderTree<RootOutletState, RootOutlet>
+    InternalComponentManager<RootOutlet, RootOutlet>,
+    WithCreateInstance<RootOutlet, RootOutlet>,
+    WithCustomDebugRenderTree<RootOutlet, RootOutlet>
 {
   getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }
 
-  create(_owner: object, definition: RootOutlet): RootOutletState {
-    return { self: definition.self };
+  create(_owner: object, definition: RootOutlet): RootOutlet {
+    return definition;
   }
 
   getDebugName(): string {
@@ -67,7 +64,7 @@ class RootOutletManager
     return [];
   }
 
-  getSelf({ self }: RootOutletState): Reference {
+  getSelf({ self }: RootOutlet): Reference {
     return self;
   }
 
@@ -130,7 +127,7 @@ const asReference = internalHelper(
  It's role is to enforce the shape of outlet.
 */
 const PROVIDER_TEMPLATE = precompileTemplate(
-  '<this.component @Component={{this.invokable}} @bucket={{this.bucket}} @outlet={{asReference this.childOutletRef}} />',
+  '<this.component @Component={{this.invokable}} @bucket={{this.bucket}} @context={{this.context}} @outlet={{asReference this.childOutletRef}} />',
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/outlet-arg-provider.hbs',
     strictMode: true,
@@ -138,32 +135,11 @@ const PROVIDER_TEMPLATE = precompileTemplate(
   }
 );
 
-const PROVIDER_CAPABILITIES: InternalComponentCapabilities = {
-  dynamicLayout: false,
-  dynamicTag: false,
-  prepareArgs: false,
-  createArgs: false,
-  attributeHook: false,
-  elementHook: false,
-  createCaller: false,
-  dynamicScope: false,
-  updateHook: false,
-  createInstance: true,
-  wrapped: false,
-  willDestroy: false,
-  hasSubOwner: false,
-};
-
 class OutletArgProvider {
   readonly childOutletRef: Reference<object | null>;
   readonly self: Reference;
 
-  /**
-    The level's last published state. Glimmer revalidates this component's
-    arguments on the way out, after `_setOutlets` has dropped the level from the
-    chain, so the ref can read `undefined` while the layout still asks for
-    `@Component`.
-  */
+  // Without it, an exiting level renders whatever route replaced it.
   private lastState: OutletState;
 
   constructor(
@@ -176,8 +152,22 @@ class OutletArgProvider {
     this.self = createConstRef(this, 'this');
   }
 
+  private get state(): OutletState {
+    let state = valueForRef(this.outletRef);
+
+    if (state?.bucket === this.bucket) {
+      this.lastState = state;
+    }
+
+    return this.lastState;
+  }
+
   get invokable(): object | undefined {
-    return (this.lastState = valueForRef(this.outletRef) ?? this.lastState).render.invokable;
+    return this.state.invokable;
+  }
+
+  get context(): unknown {
+    return this.state.context;
   }
 }
 
@@ -188,7 +178,7 @@ class OutletArgProviderManager
     WithCustomDebugRenderTree<OutletArgProvider, OutletArgProvider>
 {
   getCapabilities(): InternalComponentCapabilities {
-    return PROVIDER_CAPABILITIES;
+    return CAPABILITIES;
   }
 
   create(_owner: object, definition: OutletArgProvider): OutletArgProvider {
@@ -224,8 +214,8 @@ setComponentTemplate(PROVIDER_TEMPLATE, OutletArgProvider.prototype);
 const managerOutlets = new WeakMap<object, object>();
 
 /** One outlet level, or `null`. */
-function outletFor(outletRef: Reference<OutletState | undefined>): object | null {
-  let state = valueForRef(outletRef);
+function outletFor(outletStateRef: Reference<OutletState | undefined>): object | null {
+  let state = valueForRef(outletStateRef);
 
   if (state === undefined) {
     return null;
@@ -239,7 +229,7 @@ function outletFor(outletRef: Reference<OutletState | undefined>): object | null
     return outlet;
   }
 
-  let provider = new OutletArgProvider(manager.getRouteWrapper(), bucket, outletRef);
+  let provider = new OutletArgProvider(manager.getRouteWrapper(), bucket, outletStateRef);
 
   managerOutlets.set(bucket, provider);
 
@@ -249,9 +239,9 @@ function outletFor(outletRef: Reference<OutletState | undefined>): object | null
 function childOutletRefFor(
   parentRef: Reference<OutletParent | undefined>
 ): Reference<object | null> {
-  let outletRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
+  let outletStateRef = createComputeRef(() => valueForRef(parentRef)?.outlets?.main);
 
-  let ref = createComputeRef(() => outletFor(outletRef));
+  let ref = createComputeRef(() => outletFor(outletStateRef));
 
   if (DEBUG) {
     // A truthy label shadows `getDebugName()`.
