@@ -2,6 +2,7 @@
   "name": "@glimmer/component",
   "version": "2.1.1",
   "description": "Glimmer component library",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/component/src/index.d.ts",
