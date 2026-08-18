@@ -5,6 +5,7 @@ import type {
   Maybe,
   ModifierInstance,
   Nullable,
+  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
@@ -19,7 +20,7 @@ const TEXT_NODE = 3;
 const NEEDS_EXTRA_CLOSE = new WeakMap<SimpleNode>();
 
 function currentNode(
-  cursor: TreeBuilder | { element: SimpleElement; nextSibling: SimpleNode }
+  cursor: TreeBuilder | { element: SimpleElement | SimpleDocumentFragment; nextSibling: SimpleNode }
 ): Nullable<SimpleNode> {
   let { element, nextSibling } = cursor;
 
@@ -144,7 +145,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override pushRemoteElement(
-    element: SimpleNode,
+    element: SimpleElement | SimpleDocumentFragment,
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null
   ): RemoteBlock {
@@ -158,7 +159,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
 
 export function serializeBuilder(
   env: Environment,
-  cursor: { element: SimpleNode; nextSibling: Nullable<SimpleNode> }
+  cursor: { element: SimpleElement | SimpleDocumentFragment; nextSibling: Nullable<SimpleNode> }
 ): TreeBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }

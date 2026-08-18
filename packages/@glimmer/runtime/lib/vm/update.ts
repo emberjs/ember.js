@@ -28,7 +28,7 @@ import { resetTracking } from '@glimmer/validator/lib/tracking';
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
 
-import { clear, move as moveBounds } from '../bounds';
+import { clear, move as moveBounds, parentOf } from '../bounds';
 import { NewTreeBuilder } from './element-builder';
 
 export class UpdatingVM implements IUpdatingVM {
@@ -233,7 +233,7 @@ export class ListBlockOpcode extends BlockOpcode {
 
       let marker = (this.marker = dom.createComment(''));
       let lastNode = expect(bounds.lastNode(), "can't insert after an empty bounds");
-      dom.insertAfter(lastNode.parentNode ?? bounds.parentNode(), marker, lastNode);
+      dom.insertAfter(parentOf(lastNode) ?? bounds.parentNode(), marker, lastNode);
 
       this.sync(iterator);
 
@@ -354,7 +354,7 @@ export class ListBlockOpcode extends BlockOpcode {
     let nextSibling = before === undefined ? this.marker : before.firstNode();
 
     let elementStack = NewTreeBuilder.forInitialRender(env, {
-      element: nextSibling?.parentNode ?? bounds.parentNode(),
+      element: parentOf(nextSibling) ?? bounds.parentNode(),
       nextSibling,
     });
 
