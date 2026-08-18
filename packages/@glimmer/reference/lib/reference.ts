@@ -12,7 +12,7 @@ import type {
 import type { Revision } from '@glimmer/validator/lib/validators';
 import type { Tag } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
-import { DESTROYABLE_META_SLOT } from '@glimmer/util/lib/destroyable-slot';
+import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { getProp, setProp } from '@glimmer/global-context';
 import { isDict } from '@glimmer/util/lib/collections';
 import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
@@ -36,8 +36,7 @@ export interface ReferenceEnvironment {
 }
 
 class ReferenceImpl<T = unknown> implements Reference<T> {
-  declare [DESTROYABLE_META_SLOT]: object | undefined;
-
+  [DESTROYABLE_META_KEY]: object | undefined;
   [REFERENCE]: ReferenceType;
   public tag: Nullable<Tag> = null;
   public lastRevision: Revision = INITIAL;
@@ -52,7 +51,6 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
 
   constructor(type: ReferenceType) {
     this[REFERENCE] = type;
-    this[DESTROYABLE_META_SLOT] = undefined;
   }
 }
 

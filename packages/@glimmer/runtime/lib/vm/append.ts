@@ -26,7 +26,7 @@ import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm/lib
 import { dev, expect } from '@glimmer/debug-util/lib/platform-utils';
 import { unwrapHandle } from '@glimmer/debug-util/lib/template';
 import { associateDestroyableChild } from '@glimmer/destroyable';
-import { DESTROYABLE_META_SLOT } from '@glimmer/util/lib/destroyable-slot';
+import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { createIteratorItemRef } from '@glimmer/reference/lib/iterable';
@@ -55,13 +55,13 @@ import RenderResultImpl from './render-result';
 import EvaluationStackImpl from './stack';
 import { ListBlockOpcode, ListItemOpcode, TryOpcode } from './update';
 
-/** The VM's own root destroyable, on the fast path like the block opcodes. */
+/*
+ * The VM's own root destroyable, on the fast path like the block opcodes.
+ *
+ * Introduction and background in https://github.com/emberjs/ember.js/pull/21571
+ */
 class Drop {
-  declare [DESTROYABLE_META_SLOT]: object | undefined;
-
-  constructor() {
-    this[DESTROYABLE_META_SLOT] = undefined;
-  }
+  [DESTROYABLE_META_KEY]: object | undefined;
 }
 
 class Stacks {

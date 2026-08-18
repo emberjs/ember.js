@@ -8,13 +8,13 @@ import type {
 } from '@glimmer/interfaces';
 import { unreachable } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
-import { DESTROYABLE_META_SLOT } from '@glimmer/util/lib/destroyable-slot';
+import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 
 import { clear } from '../bounds';
 import { UpdatingVM } from './update';
 
 export default class RenderResultImpl implements RenderResult {
-  declare [DESTROYABLE_META_SLOT]: object | undefined;
+  [DESTROYABLE_META_KEY]: object | undefined;
 
   constructor(
     public env: Environment,
@@ -22,8 +22,6 @@ export default class RenderResultImpl implements RenderResult {
     private bounds: AppendingBlock,
     readonly drop: object
   ) {
-    this[DESTROYABLE_META_SLOT] = undefined;
-
     associateDestroyableChild(this, drop);
     registerDestructor(this, () => clear(this.bounds));
   }
