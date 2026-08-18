@@ -39,7 +39,8 @@
   },
   "dependencies": {
     "@glimmer/global-context": "workspace:*",
-    "@glimmer/interfaces": "workspace:*"
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/util": "workspace:*"
   },
   "devDependencies": {
     "@ember/runloop": "workspace:*",
