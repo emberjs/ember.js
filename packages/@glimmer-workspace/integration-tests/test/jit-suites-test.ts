@@ -9,6 +9,7 @@ import {
   InElementSuite,
   jitComponentSuite,
   jitSuite,
+  RenderDocumentFragmentSuite,
   ScopeSuite,
   ShadowingSuite,
   TemplateOnlyComponents,
@@ -20,6 +21,7 @@ jitComponentSuite(DebuggerSuite);
 jitSuite(EachSuite);
 jitSuite(InElementSuite);
 jitSuite(InElementDocumentFragmentSuite);
+jitSuite(RenderDocumentFragmentSuite);
 
 jitComponentSuite(GlimmerishComponents);
 jitComponentSuite(TemplateOnlyComponents);

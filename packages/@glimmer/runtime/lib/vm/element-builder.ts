@@ -28,6 +28,7 @@ import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import type { DynamicAttribute } from './attributes/dynamic';
 
 import { clear, ConcreteBounds, CursorImpl, liveParent } from '../bounds';
+import { fragmentRegionFor, FragmentRegion, setFragmentRegion } from '../dom/fragment-region';
 import { dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
@@ -249,6 +250,23 @@ export class NewTreeBuilder implements TreeBuilder {
     _guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
+    let region = fragmentRegionFor(element);
+
+    // A fragment that was already rendered through `{{fragment}}` is empty,
+    // because its children moved into the region. Render into the region,
+    // because content put into the fragment itself stays detached from the DOM.
+    if (region) {
+      let parent = region.parentNode();
+
+      this.pushElement(parent, insertBefore ?? region.insertionPoint());
+
+      if (insertBefore === undefined) {
+        region.clearContent();
+      }
+
+      return this.pushBlock(new RemoteBlock(parent), true);
+    }
+
     this.pushElement(element, insertBefore);
 
     if (insertBefore === undefined) {
@@ -319,18 +337,26 @@ export class NewTreeBuilder implements TreeBuilder {
     return node;
   }
 
+  /**
+   * Appends the fragment's children between a pair of comment markers, and
+   * records the markers as the fragment's region. The markers are always
+   * present, so the region is a stable address even when the fragment is empty
+   * and even after its content changes.
+   */
   __appendFragment(fragment: SimpleDocumentFragment): Bounds {
-    let first = fragment.firstChild;
+    let parent = this.element;
+    let open = this.__appendComment('');
 
-    if (first) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      let ret = new ConcreteBounds(this.element, first, fragment.lastChild!);
-      this.dom.insertBefore(this.element, fragment, this.nextSibling);
-      return ret;
-    } else {
-      const comment = this.__appendComment('');
-      return new ConcreteBounds(this.element, comment, comment);
+    if (fragment.firstChild) {
+      this.dom.insertBefore(parent, fragment, this.nextSibling);
     }
+
+    let close = this.__appendComment('');
+    let region = new FragmentRegion(parent, open, close);
+
+    setFragmentRegion(fragment, region);
+
+    return region;
   }
 
   __appendHTML(html: string): Bounds {
