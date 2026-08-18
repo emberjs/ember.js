@@ -153,8 +153,8 @@ import { internalHelper } from './internal-helper';
 
   There are two special values for `key`:
 
+    * `@identity` - The item in the array itself. This is the default.
     * `@index` - The index of the item in the array.
-    * `@identity` - The item in the array itself.
 
   ### {{else}} condition
 
@@ -266,6 +266,30 @@ import { internalHelper } from './internal-helper';
   ```
 
   `#each-in` is a keyword and does not need to be imported.
+
+  ### Specifying Keys
+
+  Like `{{#each}}`, `{{#each-in}}` accepts a `key` option to decide which DOM
+  elements can be reused between renders. Since `{{#each-in}}` yields two block
+  params, the special values pick which one is used:
+
+    * `@identity` - The second block param: the property's value. This is the
+      default. Changing a value replaces that entry's DOM instead of updating it
+      in place.
+    * `@key` - The first block param: the property name, or for a `Map`, its key.
+
+  Any other string is a path, looked up on the value: `key="id"` keys each entry
+  by its `value.id`.
+
+  For example, `@key` keeps each entry's DOM as its score changes, so anything
+  stateful inside it — focus, a running transition, a component instance — survives
+  the update:
+
+  ```handlebars
+  {{#each-in this.scores key="@key" as |player score|}}
+    <PlayerScore @name={{player}} @score={{score}} />
+  {{/each-in}}
+  ```
 
   @method each-in
   @static

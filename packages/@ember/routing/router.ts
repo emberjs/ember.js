@@ -27,9 +27,9 @@ import type {
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
+import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
 import typeOf from '@ember/utils/lib/type-of';
-import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
 import { cancel, later, once, run } from '@ember/runloop';
 import { associateDestroyableChild } from '@glimmer/destroyable';
@@ -67,6 +67,15 @@ import {
   type UpdatableOutletRootState,
   createRootOutletState,
 } from '@ember/-internals/routing/route-managers/root-outlet';
+import { sendEvent } from '@ember/-internals/metal/lib/events';
+import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
+import {
+  eventedOn,
+  eventedOne,
+  eventedTrigger,
+  eventedOff,
+  eventedHas,
+} from '@ember/-internals/metal/lib/evented-methods';
 
 /**
 @module @ember/routing/router
@@ -138,7 +147,13 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter extends EmberObject.extend(Evented) implements Evented {
+class EmberRouter extends EmberObject {
+  static {
+    // The deprecated Evented mixin is no longer applied, but instances still
+    // provide its methods, so `Evented.detect` must keep returning true.
+    metaFor(this.prototype).addMixin(Evented);
+  }
+
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.
@@ -205,11 +220,46 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   private namespace: any;
 
   // Begin Evented
-  declare on: (name: string, method: ((...args: any[]) => void) | string) => this;
-  declare one: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare trigger: (name: string, ...args: any[]) => unknown;
-  declare off: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare has: (name: string) => boolean;
+  on<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  on(name: string, method: ((...args: any[]) => void) | string): this;
+  on(name: string, target: any, method?: any) {
+    eventedOn(this, name, target, method);
+    return this;
+  }
+
+  one<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  one(name: string, method: string | ((...args: any[]) => void)): this;
+  one(name: string, target: any, method?: any) {
+    eventedOne(this, name, target, method);
+    return this;
+  }
+
+  trigger(name: string, ...args: any[]): void {
+    eventedTrigger(this, name, args);
+  }
+
+  off<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  off(name: string, method: string | ((...args: any[]) => void)): this;
+  off(name: string, target: any, method?: any) {
+    eventedOff(this, name, target, method);
+    return this;
+  }
+
+  has(name: string): boolean {
+    return eventedHas(this, name);
+  }
   // End Evented
 
   // Set with reopenClass
@@ -494,7 +544,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
 
       routeWillChange(transition: Transition) {
-        router.trigger('routeWillChange', transition);
+        sendEvent(router, 'routeWillChange', [transition]);
 
         if (DEBUG) {
           freezeRouteInfo(transition);
@@ -512,7 +562,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       routeDidChange(transition: Transition) {
         router.set('currentRoute', transition.to);
         once(() => {
-          router.trigger('routeDidChange', transition);
+          sendEvent(router, 'routeDidChange', [transition]);
 
           if (DEBUG) {
             freezeRouteInfo(transition);

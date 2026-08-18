@@ -2,6 +2,7 @@
   "name": "@glimmer/reference",
   "version": "0.94.9",
   "license": "MIT",
+  "private": true,
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "repository": {
     "type": "git",

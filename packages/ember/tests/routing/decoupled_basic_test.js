@@ -13,7 +13,9 @@ import {
   ModuleBasedTestResolver,
   runDestroy,
   runTask,
+  expectDeprecation,
 } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
 import { service } from '@ember/service';
@@ -888,8 +890,12 @@ moduleFor(
       });
     }
 
-    ['@test `activate` event fires on the route'](assert) {
-      assert.expect(4);
+    [`@test \`activate\` event fires on the route`](assert) {
+      if (DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+        assert.expect(2);
+      } else {
+        assert.expect(5);
+      }
 
       let eventFired = 0;
 
@@ -903,10 +909,18 @@ moduleFor(
           init() {
             super.init(...arguments);
 
-            this.on('activate', function (transition) {
-              assert.equal(++eventFired, 1, 'activate event is fired once');
-              assert.ok(transition, 'transition is passed to activate event');
-            });
+            if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+              expectDeprecation(
+                () => {
+                  this.on('activate', function (transition) {
+                    assert.equal(++eventFired, 1, 'activate event is fired once');
+                    assert.ok(transition, 'transition is passed to activate event');
+                  });
+                },
+                /Evented#on` is deprecated/,
+                DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+              );
+            }
           }
 
           activate(transition) {
@@ -919,8 +933,12 @@ moduleFor(
       return this.visit('/nork');
     }
 
-    ['@test `deactivate` event fires on the route'](assert) {
-      assert.expect(4);
+    [`@test \`deactivate\` event fires on the route`](assert) {
+      if (DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+        assert.expect(2);
+      } else {
+        assert.expect(5);
+      }
 
       let eventFired = 0;
 
@@ -935,10 +953,18 @@ moduleFor(
           init() {
             super.init(...arguments);
 
-            this.on('deactivate', function (transition) {
-              assert.equal(++eventFired, 1, 'deactivate event is fired once');
-              assert.ok(transition, 'transition is passed');
-            });
+            if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+              expectDeprecation(
+                () => {
+                  this.on('deactivate', function (transition) {
+                    assert.equal(++eventFired, 1, 'deactivate event is fired once');
+                    assert.ok(transition, 'transition is passed');
+                  });
+                },
+                /Evented#on` is deprecated/,
+                DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+              );
+            }
           }
 
           deactivate(transition) {

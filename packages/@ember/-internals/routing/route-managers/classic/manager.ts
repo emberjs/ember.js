@@ -10,6 +10,7 @@ import { assert, info } from '@ember/debug';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as Owner } from '@ember/-internals/owner';
 import { get } from '@ember/-internals/metal/lib/property_get';
+import { sendEvent } from '@ember/-internals/metal/lib/events';
 import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-managers/route-template';
 import { precompileTemplate } from '@ember/template-compilation';
 import { createConstRef } from '@glimmer/reference/lib/reference';
@@ -181,7 +182,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
 
     if (state.enter) {
       route.activate(transition);
-      route.trigger('activate', transition);
+      sendEvent(route, 'activate', [transition]);
     }
 
     route.context = context;
@@ -203,7 +204,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     const route = bucket.route;
     delete route.context;
     route.deactivate(state.transition);
-    route.trigger('deactivate', state.transition);
+    sendEvent(route, 'deactivate', [state.transition]);
     route.teardownViews();
   }
 

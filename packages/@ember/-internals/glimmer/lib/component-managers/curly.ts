@@ -10,6 +10,7 @@ import {
   setElementView,
   setViewElement,
 } from '@ember/-internals/views/lib/system/utils';
+import { sendCoreViewEvent } from '@ember/-internals/views/lib/views/core-view-utils';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -318,20 +319,20 @@ export default class CurlyComponentManager
       addChildView(parentView, component);
     }
 
-    component.trigger('didReceiveAttrs');
+    sendCoreViewEvent(component, 'didReceiveAttrs');
 
     let hasWrappedElement = component.tagName !== '';
 
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
     if (!hasWrappedElement) {
       if (isInteractive) {
-        component.trigger('willRender');
+        sendCoreViewEvent(component, 'willRender');
       }
 
       component._transitionTo('hasElement');
 
       if (isInteractive) {
-        component.trigger('willInsertElement');
+        sendCoreViewEvent(component, 'willInsertElement');
       }
     }
 
@@ -355,7 +356,7 @@ export default class CurlyComponentManager
     }
 
     if (isInteractive && hasWrappedElement) {
-      component.trigger('willRender');
+      sendCoreViewEvent(component, 'willRender');
     }
 
     endUntrackFrame();
@@ -420,7 +421,7 @@ export default class CurlyComponentManager
 
     if (isInteractive) {
       beginUntrackFrame();
-      component.trigger('willInsertElement');
+      sendCoreViewEvent(component, 'willInsertElement');
       endUntrackFrame();
     }
   }
@@ -433,8 +434,8 @@ export default class CurlyComponentManager
   didCreate({ component, isInteractive }: ComponentStateBucket): void {
     if (isInteractive) {
       component._transitionTo('inDOM');
-      component.trigger('didInsertElement');
-      component.trigger('didRender');
+      sendCoreViewEvent(component, 'didInsertElement');
+      sendCoreViewEvent(component, 'didRender');
     }
   }
 
@@ -456,13 +457,13 @@ export default class CurlyComponentManager
       component.setProperties(props);
       component[IS_DISPATCHING_ATTRS] = false;
 
-      component.trigger('didUpdateAttrs');
-      component.trigger('didReceiveAttrs');
+      sendCoreViewEvent(component, 'didUpdateAttrs');
+      sendCoreViewEvent(component, 'didReceiveAttrs');
     }
 
     if (isInteractive) {
-      component.trigger('willUpdate');
-      component.trigger('willRender');
+      sendCoreViewEvent(component, 'willUpdate');
+      sendCoreViewEvent(component, 'willRender');
     }
 
     endUntrackFrame();
@@ -477,8 +478,8 @@ export default class CurlyComponentManager
 
   didUpdate({ component, isInteractive }: ComponentStateBucket): void {
     if (isInteractive) {
-      component.trigger('didUpdate');
-      component.trigger('didRender');
+      sendCoreViewEvent(component, 'didUpdate');
+      sendCoreViewEvent(component, 'didRender');
     }
   }
 

@@ -984,16 +984,16 @@ moduleFor(
 class LazyObject {
   value = 123;
 
+  /* eslint-disable no-dupe-class-members */
   @computed('_value')
-  // eslint-disable-next-line no-dupe-class-members
   get value() {
     return get(this, '_value');
   }
 
-  // eslint-disable-next-line no-dupe-class-members
   set value(value) {
     set(this, '_value', value);
   }
+  /* eslint-enable no-dupe-class-members */
 
   static create() {
     obj = new LazyObject();

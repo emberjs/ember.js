@@ -2,6 +2,7 @@
   "name": "@glimmer/program",
   "version": "0.94.10",
   "license": "MIT",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
