@@ -87,14 +87,6 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     return null;
   }
 
-  getRenderState(bucket: ClassicRouteBucket) {
-    const render = bucket.render;
-
-    render.invokable = buildClassicInvokable(bucket);
-
-    return render;
-  }
-
   getRouteWrapper(): object {
     return CLASSIC_OUTLET;
   }

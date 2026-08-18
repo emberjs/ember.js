@@ -190,7 +190,7 @@ class OutletArgProviderManager
   }
 
   getDebugName({ outletRef }: OutletArgProvider): string {
-    return `{{outlet}} for ${valueForRef(outletRef)?.render.name}`;
+    return `{{outlet}} for ${valueForRef(outletRef)?.name}`;
   }
 
   getDebugCustomRenderTree(): CustomRenderNode[] {

@@ -343,17 +343,7 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
     whether to await data before resolving.
    */
   getInvokable(bucket: Bucket, enterPromise: Promise<unknown>): Promise<object>;
-
-  /** Describes what this route renders. */
-  getRenderState(bucket: Bucket): RenderStateLike;
 }
-
-type RenderStateLike = {
-  owner: any;
-  name: string;
-  /** Passed to the wrapper as `@Component`. */
-  invokable: object | undefined;
-};
 
 /**
   Additional methods a manager must implement when `capabilities.classicInterop`

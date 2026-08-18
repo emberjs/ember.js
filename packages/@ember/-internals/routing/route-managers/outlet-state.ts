@@ -1,25 +1,5 @@
-import type { InternalOwner } from '@ember/-internals/owner';
 import type { BaseRoute, InternalRouteInfo } from 'router_js';
 import { tracked } from '@ember/-internals/metal/lib/tracked';
-
-export interface RenderState {
-  /**
-   * This is usually inherited from the parent (all the way up to the app
-   * instance). However, engines uses this to swap out the owner when crossing
-   * a mount point.
-   */
-  owner: InternalOwner;
-
-  /**
-   * The name of the route/template
-   */
-  name: string;
-
-  /**
-   * The per-render invokable returned by `RouteManager.getInvokable`
-   */
-  invokable: object | undefined;
-}
 
 /**
  * What the outlet walk descends from.
@@ -51,12 +31,15 @@ export class OutletState implements OutletParent {
     main: undefined,
   };
 
+  get name() {
+    return this.routeInfo.name;
+  }
+
   constructor(
-    readonly render: RenderState,
     readonly manager: { getRouteWrapper(): object },
     readonly bucket: object,
     readonly invokable: object | undefined,
-    routeInfo: InternalRouteInfo<BaseRoute>
+    readonly routeInfo: InternalRouteInfo<BaseRoute>
   ) {
     this.context = routeInfo.context;
 

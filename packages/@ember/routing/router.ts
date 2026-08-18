@@ -800,11 +800,9 @@ class EmberRouter extends EmberObject {
     for (let routeInfo of routeInfos) {
       let { manager, bucket } = routeInfo;
       assert('Expected active route to have a manager and bucket', manager && bucket);
-      let render = manager.getRenderState(bucket);
+      let invokable = routeInfo.invokable;
 
-      let invokable = routeInfo.invokable || render.invokable;
-
-      let state = new OutletState(render, manager, bucket, invokable, routeInfo);
+      let state = new OutletState( manager, bucket, invokable, routeInfo);
 
       if (parent) {
         parent.outlets.main = state;

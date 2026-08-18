@@ -21,7 +21,7 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
 
-import type { ClassicRouteBucket, ClassicRenderState } from './bucket';
+import type { ClassicRouteBucket } from './bucket';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -98,7 +98,7 @@ interface OutletInstanceState {
   finalize: () => void;
 }
 
-function instrumentationPayload({ name }: ClassicRenderState) {
+function instrumentationPayload({ name }: any) {
   // legacy outlet name
   return { object: `${name}:main` };
 }
@@ -144,15 +144,15 @@ class OutletComponentManager
     // The wrapper is shared by every classic route, so this level's identity
     // comes from the argument the framework curried onto it.
     let bucket = valueForRef(args.named.get('bucket')) as ClassicRouteBucket;
-    let { render } = bucket;
+    let routeOwner = bucket.owner;
 
     let state: OutletInstanceState = {
-      owner: render.owner,
-      finalize: _instrumentStart('render.outlet', instrumentationPayload, render),
+      owner: routeOwner,
+      finalize: _instrumentStart('render.outlet', instrumentationPayload, { name: bucket.route }),
     };
 
-    if (env.debugRenderTree !== undefined && owner !== render.owner) {
-      let currentOwner = render.owner;
+    if (env.debugRenderTree !== undefined && owner !== routeOwner) {
+      let currentOwner = routeOwner;
 
       assert(
         'Expected currentOwner to be an EngineInstance',

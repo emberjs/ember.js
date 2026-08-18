@@ -38,11 +38,6 @@ class RecordingRouteManager extends ClassicRouteManager {
     return bucket;
   }
 
-  getRenderState(bucket) {
-    this.log.push(['getRenderState', bucket.route.routeName]);
-    return super.getRenderState(bucket);
-  }
-
   getInvokable(bucket, enterPromise) {
     this.log.push(['getInvokable', bucket.route.routeName]);
     return super.getInvokable(bucket, enterPromise);
@@ -129,7 +124,6 @@ moduleFor(
       let methods = this.log.map(([m]) => m);
 
       assert.ok(methods.includes('createRoute'), 'createRoute was called');
-      assert.ok(methods.includes('getRenderState'), 'getRenderState was called');
       assert.ok(methods.includes('getInvokable'), 'getInvokable was called');
 
       let createdRoutes = this.log

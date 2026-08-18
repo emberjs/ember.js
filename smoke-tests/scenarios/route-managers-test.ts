@@ -928,16 +928,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return SwapOutlet;
                 }
 
-                getRenderState(bucket) {
-                  renderStateCalls++;
-
-                  return {
-                    owner: this.owner,
-                    name: bucket.name,
-                    invokable: bucket.invokable,
-                  };
-                }
-
                 willEnter() {}
                 async enter() {}
                 didEnter() {}
@@ -946,6 +936,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 didExit() {}
 
                 async getInvokable(bucket) {
+                renderStateCalls++;
                   return bucket.invokable;
                 }
               }
@@ -989,14 +980,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
                 getRouteWrapper() {
                   return ReactiveOutlet;
-                }
-
-                getRenderState(bucket) {
-                  return {
-                    owner: this.owner,
-                    name: bucket.name,
-                    invokable: bucket.invokable,
-                  };
                 }
 
                 willEnter() {}
@@ -1045,14 +1028,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
                 getRouteWrapper() {
                   return FunkyOutlet;
-                }
-
-                getRenderState(bucket) {
-                  return {
-                    owner: this.owner,
-                    name: bucket.name,
-                    invokable: bucket.invokable,
-                  };
                 }
 
                 willEnter() {}
