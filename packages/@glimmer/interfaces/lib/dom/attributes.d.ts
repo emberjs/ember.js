@@ -62,7 +62,7 @@ export interface DOMStack {
 
   appendDynamicHTML(value: string): void;
   appendDynamicText(value: string): SimpleText;
-  appendDynamicFragment(value: SimpleDocumentFragment): void;
+  appendDynamicFragment(value: SimpleDocumentFragment): Bounds;
   appendDynamicNode(value: SimpleNode): void;
 
   setStaticAttribute(name: string, value: string, namespace: Nullable<string>): void;

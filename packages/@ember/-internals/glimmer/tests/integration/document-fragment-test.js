@@ -1,6 +1,9 @@
 import { moduleFor, RenderingTestCase, strip, equalTokens, runTask } from 'internal-test-helpers';
 
+import { Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   '{{documentFragment}}',
@@ -38,6 +41,91 @@ moduleFor(
 
       runTask(() => set(this.context, 'text', 'Whoop!'));
       equalTokens(this.element, '<div><!---->[Whoop!]<!----></div><!---->');
+    }
+
+    ['@test content in a fragment survives the fragment leaving the DOM'](assert) {
+      let hooks = [];
+      let fragment = document.createDocumentFragment();
+
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate('[counter]'),
+          class extends Component {
+            tagName = '';
+
+            didInsertElement() {
+              hooks.push('didInsertElement');
+            }
+
+            willDestroyElement() {
+              hooks.push('willDestroyElement');
+            }
+          }
+        )
+      );
+
+      this.render(
+        strip`
+          <div>{{#if this.show}}{{this.fragment}}{{/if}}</div>
+          {{#in-element this.fragment}}<Counter />{{/in-element}}
+        `,
+        {
+          fragment,
+          show: true,
+        }
+      );
+
+      equalTokens(this.element, '<div><!---->[counter]<!----></div><!---->');
+      assert.deepEqual(hooks, ['didInsertElement'], 'the component rendered once');
+
+      runTask(() => set(this.context, 'show', false));
+
+      equalTokens(this.element, '<div><!----></div><!---->');
+      assert.strictEqual(fragment.textContent, '[counter]', 'the content is back in the fragment');
+      assert.deepEqual(hooks, ['didInsertElement'], 'the component was not destroyed');
+
+      runTask(() => set(this.context, 'show', true));
+
+      equalTokens(this.element, '<div><!---->[counter]<!----></div><!---->');
+      assert.deepEqual(hooks, ['didInsertElement'], 'the component was not created again');
+    }
+
+    ['@test content survives when the fragment renders inside a yielded block'](assert) {
+      let fragment = document.createDocumentFragment();
+
+      this.owner.register(
+        'component:toggler',
+        setComponentTemplate(
+          precompileTemplate('{{#if @shown}}{{yield}}{{/if}}'),
+          class extends Component {
+            tagName = '';
+          }
+        )
+      );
+
+      this.render(
+        strip`
+          <div><Toggler @shown={{this.show}}>{{this.fragment}}</Toggler></div>
+          {{#in-element this.fragment}}[{{this.text}}]{{/in-element}}
+        `,
+        {
+          fragment,
+          show: true,
+          text: 'Whoop!',
+        }
+      );
+
+      equalTokens(this.element, '<div><!---->[Whoop!]<!----></div><!---->');
+
+      runTask(() => set(this.context, 'show', false));
+      assert.strictEqual(fragment.textContent, '[Whoop!]', 'the content is back in the fragment');
+
+      runTask(() => set(this.context, 'show', true));
+      equalTokens(this.element, '<div><!---->[Whoop!]<!----></div><!---->');
+
+      runTask(() => set(this.context, 'text', 'Huzzah!!'));
+      equalTokens(this.element, '<div><!---->[Huzzah!!]<!----></div><!---->');
     }
 
     ['@test two fragments render as siblings and keep their own content']() {

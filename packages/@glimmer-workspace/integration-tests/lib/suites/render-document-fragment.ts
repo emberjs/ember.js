@@ -220,6 +220,101 @@ export class RenderDocumentFragmentSuite extends RenderTest {
   }
 
   @test
+  'content moves back into the fragment when the region is removed'() {
+    const fragment = document.createDocumentFragment();
+
+    this.render(
+      '<div>{{#if this.show}}{{this.fragment}}{{/if}}</div>' +
+        '{{#in-element this.fragment}}[{{this.foo}}]{{/in-element}}',
+      { fragment, show: true, foo: 'kept' }
+    );
+
+    this.assertHTML('<div><!---->[kept]<!----></div><!---->');
+    this.assertStableRerender();
+
+    this.rerender({ show: false });
+    this.assertHTML('<div><!----></div><!---->');
+    this.assert.strictEqual(fragment.textContent, '[kept]', 'the content is back in the fragment');
+
+    this.rerender({ show: true });
+    this.assertHTML('<div><!---->[kept]<!----></div><!---->');
+    this.assert.strictEqual(fragment.childNodes.length, 0, 'the fragment is empty again');
+
+    this.rerender({ foo: 'updated' });
+    this.assertHTML('<div><!---->[updated]<!----></div><!---->');
+  }
+
+  @test
+  'the same nodes come back after the region is removed and rendered again'() {
+    const fragment = document.createDocumentFragment();
+
+    this.render(
+      '<div>{{#if this.show}}{{this.fragment}}{{/if}}</div>' +
+        '{{#in-element this.fragment}}<p>{{this.foo}}</p>{{/in-element}}',
+      { fragment, show: true, foo: 'first' }
+    );
+
+    const paragraph = (this.element as unknown as Element).querySelector('p');
+
+    this.rerender({ show: false });
+    this.rerender({ show: true });
+
+    this.assert.strictEqual(
+      (this.element as unknown as Element).querySelector('p'),
+      paragraph,
+      'the same element is rendered, so its state survives'
+    );
+
+    this.rerender({ foo: 'second' });
+    this.assertHTML('<div><!----><p>second</p><!----></div><!---->');
+  }
+
+  @test
+  'toggling the region repeatedly keeps the content'() {
+    const fragment = document.createDocumentFragment();
+
+    this.render(
+      '<div>{{#if this.show}}{{this.fragment}}{{/if}}</div>' +
+        '{{#in-element this.fragment}}[{{this.foo}}]{{/in-element}}',
+      { fragment, show: true, foo: 'kept' }
+    );
+
+    for (let round = 0; round < 3; round++) {
+      this.rerender({ show: false });
+      this.assertHTML('<div><!----></div><!---->');
+
+      this.rerender({ show: true });
+      this.assertHTML('<div><!---->[kept]<!----></div><!---->');
+    }
+  }
+
+  @test
+  'sibling regions each hand their content back'() {
+    const first = document.createDocumentFragment();
+    const second = document.createDocumentFragment();
+
+    this.render(
+      '<div>{{#if this.show}}{{this.first}}{{this.second}}{{/if}}</div>' +
+        '{{#in-element this.first}}[first]{{/in-element}}' +
+        '{{#in-element this.second}}[second]{{/in-element}}',
+      { first, second, show: true }
+    );
+
+    this.assertHTML('<div><!---->[first]<!----><!---->[second]<!----></div><!----><!---->');
+
+    this.rerender({ show: false });
+    this.assert.strictEqual(first.textContent, '[first]', 'the first fragment holds its content');
+    this.assert.strictEqual(
+      second.textContent,
+      '[second]',
+      'the second fragment holds its content'
+    );
+
+    this.rerender({ show: true });
+    this.assertHTML('<div><!---->[first]<!----><!---->[second]<!----></div><!----><!---->');
+  }
+
+  @test
   'swapping between a fragment and other content'() {
     const fragment = document.createDocumentFragment();
     fragment.appendChild(paragraph('one'));

@@ -352,7 +352,7 @@ export class NewTreeBuilder implements TreeBuilder {
     }
 
     let close = this.__appendComment('');
-    let region = new FragmentRegion(parent, open, close);
+    let region = new FragmentRegion(fragment, parent, open, close);
 
     setFragmentRegion(fragment, region);
 
@@ -374,9 +374,8 @@ export class NewTreeBuilder implements TreeBuilder {
     return node;
   }
 
-  appendDynamicFragment(value: SimpleDocumentFragment): void {
-    let bounds = this.__appendFragment(value);
-    this.didAppendBounds(bounds);
+  appendDynamicFragment(value: SimpleDocumentFragment): Bounds {
+    return this.didAppendBounds(this.__appendFragment(value));
   }
 
   appendDynamicNode(value: SimpleNode): void {
