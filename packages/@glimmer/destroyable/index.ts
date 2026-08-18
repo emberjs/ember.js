@@ -7,6 +7,8 @@ import {
   type HasDestroyableMetaSlot,
 } from '@glimmer/util/lib/destroyable-key';
 
+export { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
+
 const LIVE_STATE = 0;
 const DESTROYING_STATE = 1;
 const DESTROYED_STATE = 2;
