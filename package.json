@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "7.4.0-alpha.1.nvp-perf-destroyable-slot-widen+b92b228d",
+  "version": "7.4.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -374,10 +374,5 @@
       "router_js/index.js": "ember-source/router_js/index.js",
       "rsvp/index.js": "ember-source/rsvp/index.js"
     }
-  },
-  "_originalVersion": "7.4.0-alpha.1",
-  "_versionPreviouslyCalculated": true,
-  "publishConfig": {
-    "tag": "alpha"
   }
 }
