@@ -1802,3 +1802,50 @@ if (DEBUG) {
     }
   );
 }
+
+// The bug this documents is the backtracking assertion, which only exists in
+// debug builds; in production the listener succeeds and the todo would pass.
+if (DEBUG) {
+  moduleFor(
+    'Dynamic content tests: disabling a focused element',
+    class extends RenderingTestCase {
+      async '@todo a {{on "blur"}} listener may update rendered state when the element becomes disabled (GH#19287)'(
+        assert
+      ) {
+        let error;
+
+        this.render(
+          '<span>{{this.isFocused}}</span><textarea disabled={{this.isDisabled}} {{on "focus" this.onFocus}} {{on "blur" this.onBlur}}></textarea>',
+          {
+            isDisabled: false,
+            isFocused: false,
+            onFocus: () => set(this.context, 'isFocused', true),
+            onBlur: () => {
+              try {
+                set(this.context, 'isFocused', false);
+              } catch (e) {
+                error = e;
+              }
+            },
+          }
+        );
+
+        let textarea = this.element.querySelector('textarea');
+
+        runTask(() => textarea.focus());
+        assert.strictEqual(this.context.isFocused, true, 'precond - focus listener ran');
+
+        runTask(() => set(this.context, 'isDisabled', true));
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        assert.strictEqual(
+          error,
+          undefined,
+          'no backtracking assertion was thrown from the blur listener'
+        );
+        assert.strictEqual(this.context.isFocused, false, 'blur listener updated the state');
+      }
+    }
+  );
+}
