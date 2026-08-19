@@ -11,7 +11,7 @@ import { A as emberA } from '@ember/array';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 
 moduleFor(
   'Helpers test: {{unbound}}',
@@ -604,8 +604,8 @@ moduleFor(
     ['@test yielding unbound does not update']() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           fooBarInstance = this;
         }
         model = { foo: 'bork' };
@@ -639,8 +639,8 @@ moduleFor(
     ['@test yielding unbound hash does not update']() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           fooBarInstance = this;
         }
         model = { foo: 'bork' };

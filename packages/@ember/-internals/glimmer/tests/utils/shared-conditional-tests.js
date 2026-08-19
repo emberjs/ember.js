@@ -11,7 +11,7 @@ import ArrayProxy from '@ember/array/proxy';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from './helpers';
+import Component from '@glimmer/component';
 
 class AbstractConditionalsTest extends RenderingTestCase {
   get truthyValue() {
@@ -861,8 +861,8 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
       setComponentTemplate(
         precompileTemplate('foo-bar'),
         class extends Component {
-          init() {
-            super.init(...arguments);
+          constructor(owner, args) {
+            super(owner, args);
             childCreated = true;
           }
         }

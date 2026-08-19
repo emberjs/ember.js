@@ -5,7 +5,10 @@
     "noEmit": true,
     "paths": {
       // We compile away @glimmer/env during all our builds
-      "@glimmer/env": ["./packages/@glimmer/env/index.ts"]
+      "@glimmer/env": ["./packages/@glimmer/env/index.ts"],
+      // @glimmer/component is published as its own addon and only gets a
+      // dist/ from rollup, so point at the source for type-checking
+      "@glimmer/component": ["./packages/@glimmer/component/src/index.ts"]
     }
   },
   "include": ["packages/**/*.ts"],

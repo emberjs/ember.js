@@ -1,6 +1,6 @@
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '@ember/application';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import { getOwner } from '@ember/-internals/owner';
 import { resolve } from 'rsvp';
 import { action } from '@ember/object';

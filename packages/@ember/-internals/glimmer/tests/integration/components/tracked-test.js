@@ -9,7 +9,8 @@ import { fn } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -29,7 +30,7 @@ moduleFor(
         }
       }
 
-      class PersonComponent extends Component {
+      class PersonComponent extends EmberComponent {
         @tracked first;
         @tracked last;
 
@@ -447,7 +448,7 @@ moduleFor(
         get countAlias() {
           return this.count;
         }
-        increment = () => this.set('count', this.count + 1);
+        increment = () => set(this, 'count', this.count + 1);
       }
 
       this.owner.register(
@@ -521,8 +522,8 @@ moduleFor(
 
       class ChildComponent extends Component {
         updatePerson = () => {
-          this.person.first = 'Kris';
-          this.person.last = 'Selden';
+          this.args.person.first = 'Kris';
+          this.args.person.last = 'Selden';
         };
       }
 
@@ -540,7 +541,7 @@ moduleFor(
         'component:child',
         setComponentTemplate(
           precompileTemplate(
-            '<div id="child">{{this.person.full}}</div><button onclick={{this.updatePerson}}></button>'
+            '<div id="child">{{@person.full}}</div><button onclick={{this.updatePerson}}></button>'
           ),
           ChildComponent
         )

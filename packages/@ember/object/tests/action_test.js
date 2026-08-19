@@ -1,4 +1,4 @@
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import EmberObject, { action } from '@ember/object';
 import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';

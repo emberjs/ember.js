@@ -3,7 +3,7 @@ import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 
 moduleFor(
   'ember-template-compiler: assert against attrs',
@@ -69,7 +69,7 @@ moduleFor(
         )
       );
       this.render('<Foo />');
-      this.assertComponentElement(this.firstChild, { content: 'foo' });
+      this.assertText('foo');
     }
 
     ["@test it doesn't assert lexical scope values"]() {
@@ -93,7 +93,7 @@ moduleFor(
         setComponentTemplate(precompileTemplate('{{yield "foo"}}'), class extends Component {})
       );
       this.render('<Foo as |attrs|>{{attrs}}</Foo>');
-      this.assertComponentElement(this.firstChild, { content: 'foo' });
+      this.assertText('foo');
     }
 
     ["@test it doesn't assert block params with nested keys"]() {
@@ -105,7 +105,7 @@ moduleFor(
         )
       );
       this.render('<Foo as |attrs|>{{attrs.bar}}</Foo>');
-      this.assertComponentElement(this.firstChild, { content: 'baz' });
+      this.assertText('baz');
     }
   }
 );

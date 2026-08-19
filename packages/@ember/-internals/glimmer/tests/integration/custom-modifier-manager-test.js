@@ -7,7 +7,7 @@ import {
   defineSimpleModifier,
 } from 'internal-test-helpers';
 
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import { setModifierManager, modifierCapabilities, setComponentTemplate } from '@glimmer/manager';
 import { precompileTemplate } from '@ember/template-compilation';
 import EmberObject, { set } from '@ember/object';
@@ -537,7 +537,6 @@ moduleFor(
           class extends Component {
             foo = foo;
             bar = bar;
-            tagName = '';
           }
         )
       );

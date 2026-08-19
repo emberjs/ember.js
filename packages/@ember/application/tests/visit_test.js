@@ -14,7 +14,12 @@ import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import Route from '@ember/routing/route';
-import { Component, helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
+import {
+  Component as EmberComponent,
+  helper,
+  isSerializationFirstNode,
+} from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import { precompileTemplate } from '@ember/template-compilation';
 
 function expectAsyncError() {
@@ -678,7 +683,7 @@ moduleFor(
             `<h1>X-Foo</h1>
            <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>`
           ),
-          class extends Component {
+          class extends EmberComponent {
             tagName = 'x-foo';
 
             @service
@@ -710,7 +715,7 @@ moduleFor(
             `<h1>X-Bar</h1>
           <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>`
           ),
-          class extends Component {
+          class extends EmberComponent {
             @service('sharedCounter')
             counter;
 

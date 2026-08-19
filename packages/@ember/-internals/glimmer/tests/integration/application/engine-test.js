@@ -5,7 +5,7 @@ import {
   runTaskNext,
 } from 'internal-test-helpers';
 
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import Route from '@ember/routing/route';
 import { RSVP } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
@@ -235,9 +235,7 @@ moduleFor(
 
       let sharedLayout = precompileTemplate('{{ambiguous-curlies}}');
 
-      let sharedComponent = class extends Component {
-        layout = sharedLayout;
-      };
+      let sharedComponent = setComponentTemplate(sharedLayout, class extends Component {});
 
       this.add(
         'template:application',

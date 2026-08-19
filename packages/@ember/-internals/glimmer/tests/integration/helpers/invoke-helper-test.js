@@ -1,6 +1,7 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { helperCapabilities, setHelperManager, setComponentTemplate } from '@glimmer/manager';
-import { Helper, helper, Component as EmberComponent } from '@ember/-internals/glimmer';
+import { Helper, helper } from '@ember/-internals/glimmer';
+import EmberComponent from '@glimmer/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { tracked } from '@ember/-internals/metal';
 import { set } from '@ember/object';
@@ -22,11 +23,9 @@ moduleFor(
       }
 
       class PlusOne extends EmberComponent {
-        @tracked number;
-
         plusOne = invokeHelper(this, PlusOneHelper, () => {
           return {
-            positional: [this.number],
+            positional: [this.args.number],
           };
         });
 
@@ -59,11 +58,9 @@ moduleFor(
       let PlusOneHelper = helper(([num]) => num + 1);
 
       class PlusOne extends EmberComponent {
-        @tracked number;
-
         plusOne = invokeHelper(this, PlusOneHelper, () => {
           return {
-            positional: [this.number],
+            positional: [this.args.number],
           };
         });
 
@@ -118,7 +115,7 @@ moduleFor(
       class PlusOne extends EmberComponent {
         plusOne = invokeHelper(this, PlusOneHelper, () => {
           return {
-            positional: [this.number],
+            positional: [this.args.number],
           };
         });
 
@@ -493,11 +490,9 @@ moduleFor(
       }
 
       class PlusOne extends EmberComponent {
-        @tracked number;
-
         plusOne = invokeHelper(this, PlusOneHelper, () => {
           return {
-            positional: [this.number],
+            positional: [this.args.number],
           };
         });
 
