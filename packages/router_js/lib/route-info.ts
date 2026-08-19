@@ -246,8 +246,6 @@ export default class InternalRouteInfo<R extends BaseRoute> {
   isResolved = false;
   enterPromise?: globalThis.Promise<unknown> = undefined;
 
-  invokable: object | undefined = undefined;
-
   constructor(router: Router<R>, name: string, paramNames: string[], route?: R) {
     this.name = name;
     this.paramNames = paramNames;
@@ -335,14 +333,11 @@ export default class InternalRouteInfo<R extends BaseRoute> {
           }
         );
 
-        // The manager decides whether to gate getInvokable on enterPromise. The
-        // classic manager does, so getInvokable rejects when enter rejects
-        return manager.getInvokable(bucket, enterPromise).then((invokable) => {
+        const awaitEnter = manager.capabilities.awaitEnter ? enterPromise : Promise.resolve();
+        return awaitEnter.then(() => {
           throwIfAborted(transition);
           const resolvedContext = enteredContext ?? (this.context as ModelFor<R> | undefined);
           const resolved = this.becomeResolved(transition, resolvedContext);
-
-          resolved.invokable = invokable;
 
           return resolved;
         });

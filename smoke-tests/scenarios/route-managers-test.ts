@@ -935,8 +935,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 exit() {}
                 didExit() {}
 
-                async getInvokable(bucket) {
-                renderStateCalls++;
+                getInvokable(bucket) {
+                  renderStateCalls++;
                   return bucket.invokable;
                 }
               }
@@ -993,7 +993,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 exit() {}
                 didExit() {}
 
-                async getInvokable(bucket) {
+                getInvokable(bucket) {
                   return bucket.invokable;
                 }
               }
@@ -1044,8 +1044,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 exit() {}
                 didExit() {}
 
-                async getInvokable(bucket, enterPromise) {
-                  await enterPromise;
+                getInvokable(bucket) {
                   return bucket.invokable;
                 }
               }

@@ -6,9 +6,6 @@ import type Route from '@ember/routing/route';
 import type { scheduleOnce } from '@ember/runloop';
 
 export class ClassicRouteBucket {
-  // Cached invokable, written by buildClassicInvokable on first build.
-  invokable: object | undefined = undefined;
-
   // The route's controller, read through as a getter so there is a single
   // source of truth. An eagerly-copied field would go stale for substate
   // routes: they enter via intermediate transitions that skip `willEnter`,

@@ -72,6 +72,7 @@ export {
 
 interface RouteCapabilities {
   classicInterop: boolean;
+  awaitEnter: boolean;
 }
 
 interface NavigationArgs {
@@ -130,7 +131,7 @@ const isTransitionLike = (value: unknown): boolean =>
   (no EmberObject, no DI container) so the manager dispatches directly.
  */
 class TestRouteManager implements RouteManagerLike {
-  capabilities: RouteCapabilities = { classicInterop: true };
+  capabilities: RouteCapabilities = { classicInterop: true, awaitEnter: true };
 
   createRoute(handler: ClassicRoute, args: { name: string }): TestRouteBucket {
     const bucket = new TestRouteBucket(handler, args);

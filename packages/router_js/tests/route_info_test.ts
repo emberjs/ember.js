@@ -247,7 +247,7 @@ function createNonGatingHandler(
   enter: (bucket: any, args: any) => Promise<unknown>
 ): ClassicRoute {
   let manager = {
-    capabilities: { classicInterop: false },
+    capabilities: { classicInterop: false, awaitEnter: false },
     willEnter() {},
     enter,
     // Resolves immediately, without awaiting enterPromise. This is the

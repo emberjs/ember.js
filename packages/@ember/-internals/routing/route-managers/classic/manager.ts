@@ -61,7 +61,10 @@ function isTransitionObject(value: unknown): boolean {
 }
 
 export class ClassicRouteManager implements RouteManagerWithClassicInterop<ClassicRouteBucket> {
-  capabilities: RouteCapabilities = routeCapabilities('1.0', { classicInterop: true });
+  capabilities: RouteCapabilities = routeCapabilities('1.0', {
+    classicInterop: true,
+    awaitEnter: true,
+  });
 
   #owner: Owner;
 
@@ -204,15 +207,8 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     // No-op for classic routes.
   }
 
-  getInvokable(bucket: ClassicRouteBucket, enterPromise: Promise<unknown>): Promise<object> {
-    // Build the invokable synchronously, then gate its resolution on the
-    // enter promise so onRouteInvokableReady does not fire (and the real
-    // route template does not render) until the model has loaded. During
-    // the wait, the deferred scheduleOnce in willEnter fires and enters
-    // the loading substate.
-
-    const invokable = buildClassicInvokable(bucket);
-    return enterPromise.then(() => invokable);
+  getInvokable(bucket: ClassicRouteBucket): object {
+    return buildClassicInvokable(bucket);
   }
 
   qp(bucket: ClassicRouteBucket): QueryParamMeta {
@@ -348,15 +344,11 @@ const OutletTemplate = precompileTemplate(`<@outlet />`, {
   strictMode: true,
 });
 
-// Build or return cached invokable for a classic route: look up `template:<name>`,
+// Build invokable for a classic route: look up `template:<name>`,
 // upgrade a TemplateFactory into a Template, then wrap as a RouteTemplate. If the
 // lookup returns a component definition, use it directly. Falls back to the
 // shared top-level `{{outlet}}` template when no template is registered.
 function buildClassicInvokable(bucket: ClassicRouteBucket): object {
-  if (bucket.invokable !== undefined) {
-    return bucket.invokable;
-  }
-
   const route = bucket.route;
   const owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
@@ -409,8 +401,5 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
     const template = OutletTemplate(owner);
     invokable = makeRouteTemplate(owner, name, template as Template, self);
   }
-  // Cache here (rather than in getInvokable) so every caller shares one
-  // invokable — substate routes never go through getInvokable and would
-  // otherwise rebuild it on every _setOutlets pass.
-  return (bucket.invokable = invokable);
+  return invokable;
 }

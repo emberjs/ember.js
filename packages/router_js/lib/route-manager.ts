@@ -37,18 +37,24 @@ export type RouteStateBucket = object;
   into new behaviour while keeping older managers working.
  */
 export interface RouteCapabilitiesVersions {
-  '1.0': {
-    /**
-      When `true`, the router will provide the per-navigation `Transition`
-      to manager hooks via the `ClassicInteropArgs` mix-in, and the manager
-      must implement the methods on `RouteManagerWithClassicInterop`.
+  /**
+    When `true`, the router will provide the per-navigation `Transition`
+    to manager hooks via the `ClassicInteropArgs` mix-in, and the manager
+    must implement the methods on `RouteManagerWithClassicInterop`.
 
-      This capability exists to bridge the classic router to the new manager
-      surface. It is not intended to be used by managers outside the
-      framework-provided `ClassicRouteManager`.
-     */
-    classicInterop?: boolean;
-  };
+    This capability exists to bridge the classic router to the new manager
+    surface. It is not intended to be used by managers outside the
+    framework-provided `ClassicRouteManager`.
+   */
+  '1.0':
+    | {
+        classicInterop: true;
+        awaitEnter: boolean;
+      }
+    | {
+        classicInterop?: false;
+        awaitEnter?: boolean;
+      };
 }
 
 /**
@@ -57,6 +63,7 @@ export interface RouteCapabilitiesVersions {
  */
 export interface RouteCapabilities {
   classicInterop: boolean;
+  awaitEnter: boolean;
 }
 
 /**
@@ -64,7 +71,7 @@ export interface RouteCapabilities {
   be assigned to `manager.capabilities`.
 
   ```ts
-  capabilities = routeCapabilities('1.0', { classicInterop: true });
+  capabilities = routeCapabilities('1.0', { classicInterop: true, awaitEnter: true });
   ```
 
   @param _managerAPI The version of the manager API the route manager targets.
@@ -76,6 +83,7 @@ export function routeCapabilities<Version extends keyof RouteCapabilitiesVersion
 ): RouteCapabilities {
   return {
     classicInterop: Boolean(options.classicInterop),
+    awaitEnter: Boolean(options.awaitEnter),
   };
 }
 
@@ -335,14 +343,10 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   getRouteWrapper(): object;
 
   /**
-    Returns the renderable for the route. Async to absorb dynamic imports of
-    lazy-loaded route modules. The returned promise resolves with the
-    component the outlet should render.
-
-    The router passes the in-flight `enterPromise` so the manager can choose
-    whether to await data before resolving.
+    Returns the renderable for the route: the component the outlet should
+    render.
    */
-  getInvokable(bucket: Bucket, enterPromise: Promise<unknown>): Promise<object>;
+  getInvokable(bucket: Bucket): object;
 }
 
 /**

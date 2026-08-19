@@ -36,9 +36,8 @@ export class OutletState implements OutletParent {
   }
 
   constructor(
-    readonly manager: { getRouteWrapper(): object },
+    readonly manager: { getRouteWrapper(): object; getInvokable(bucket: object): object },
     readonly bucket: object,
-    readonly invokable: object | undefined,
     readonly routeInfo: InternalRouteInfo<BaseRoute>
   ) {
     this.context = routeInfo.context;

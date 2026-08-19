@@ -127,7 +127,7 @@ const asReference = internalHelper(
  It's role is to enforce the shape of outlet.
 */
 const PROVIDER_TEMPLATE = precompileTemplate(
-  '<this.component @Component={{this.invokable}} @bucket={{this.bucket}} @context={{this.context}} @outlet={{asReference this.childOutletRef}} />',
+  '<this.component @Component={{this.bucket.invokable}} @bucket={{this.bucket}} @context={{this.state.context}} @outlet={{asReference this.childOutletRef}} />',
   {
     moduleName: 'packages/@ember/-internals/routing/route-managers/outlet-arg-provider.hbs',
     strictMode: true,
@@ -160,14 +160,6 @@ class OutletArgProvider {
     }
 
     return this.lastState;
-  }
-
-  get invokable(): object | undefined {
-    return this.state.invokable;
-  }
-
-  get context(): unknown {
-    return this.state.context;
   }
 }
 
