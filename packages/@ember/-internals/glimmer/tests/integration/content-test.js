@@ -1,6 +1,15 @@
 import { DEBUG } from '@glimmer/env';
 
-import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'internal-test-helpers';
+import {
+  RenderingTestCase,
+  moduleFor,
+  applyMixins,
+  classes,
+  runTask,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { set, computed } from '@ember/object';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
@@ -346,7 +355,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can read from a proxy object']() {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+  )} @test it can read from a proxy object`]() {
+    expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
+
     this.renderPath('this.proxy.name', {
       proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
     });
@@ -382,7 +395,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can read from a nested path in a proxy object']() {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+  )} @test it can read from a nested path in a proxy object`]() {
+    expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
+
     this.renderPath('this.proxy.name.last', {
       proxy: ObjectProxy.create({
         content: { name: { first: 'Tom', last: 'Dale' } },
@@ -439,7 +456,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can read from a path flipping between a proxy and a real object']() {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+  )} @test it can read from a path flipping between a proxy and a real object`]() {
+    expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
+
     this.renderPath('this.proxyOrObject.name.last', {
       proxyOrObject: ObjectProxy.create({
         content: { name: { first: 'Tom', last: 'Dale' } },
@@ -517,7 +538,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertInvariants();
   }
 
-  ['@test it can read from a path flipping between a real object and a proxy']() {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+  )} @test it can read from a path flipping between a real object and a proxy`]() {
+    expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
+
     this.renderPath('this.objectOrProxy.name.last', {
       objectOrProxy: { name: { first: 'Tom', last: 'Dale' } },
     });

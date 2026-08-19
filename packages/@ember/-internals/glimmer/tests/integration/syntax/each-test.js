@@ -1,4 +1,12 @@
-import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  applyMixins,
+  strip,
+  runTask,
+  ignoreDeprecation,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { notifyPropertyChange } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
@@ -142,13 +150,22 @@ class TogglingEachTest extends TogglingSyntaxConditionalsTest {
 
 class BasicEachTest extends TogglingEachTest {}
 
+// `ArrayProxy` is deprecated; the deprecation itself is asserted by the
+// dedicated `ArrayProxy` tests, so it is silenced in these rendering fixtures.
+const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
+
+function arrayProxy(props) {
+  return ignoreDeprecation(() => ArrayProxy.create(props));
+}
+
 const TRUTHY_CASES = [
   ['hello'],
   emberA(['hello']),
   new Set(['hello']),
   new ForEachable(['hello']),
-  ArrayProxy.create({ content: ['hello'] }),
-  ArrayProxy.create({ content: emberA(['hello']) }),
+  ...(ARRAY_PROXY_REMOVED
+    ? []
+    : [arrayProxy({ content: ['hello'] }), arrayProxy({ content: emberA(['hello']) })]),
   new ArrayIterable(['hello']),
 ];
 
@@ -162,8 +179,9 @@ const FALSY_CASES = [
   emberA([]),
   new Set([]),
   new ForEachable([]),
-  ArrayProxy.create({ content: [] }),
-  ArrayProxy.create({ content: emberA([]) }),
+  ...(ARRAY_PROXY_REMOVED
+    ? []
+    : [arrayProxy({ content: [] }), arrayProxy({ content: emberA([]) })]),
   new ArrayIterable([]),
 ];
 
@@ -1066,66 +1084,72 @@ moduleFor(
   }
 );
 
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, modifying itself',
-  class extends EachTest {
-    createList(items) {
-      let proxty = ArrayProxy.create({ content: emberA(items) });
-      return { list: proxty, delegate: proxty };
+if (!ARRAY_PROXY_REMOVED) {
+  moduleFor(
+    'Syntax test: {{#each}} with array proxies, modifying itself',
+    class extends EachTest {
+      createList(items) {
+        let proxty = arrayProxy({ content: emberA(items) });
+        return { list: proxty, delegate: proxty };
+      }
     }
-  }
-);
+  );
 
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, replacing its content',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      return {
-        list: wrapped,
-        delegate: ArrayProxy.create({ content: wrapped }),
-      };
+  moduleFor(
+    'Syntax test: {{#each}} with array proxies, replacing its content',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        return {
+          list: wrapped,
+          delegate: arrayProxy({ content: wrapped }),
+        };
+      }
     }
-  }
-);
+  );
 
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      let proxy = class extends ArrayProxy {
-        @computed('wrappedItems.[]')
-        get arrangedContent() {
-          // Slice the items to ensure that updates must be propogated
-          return this.wrappedItems.slice();
-        }
-      }.create({
-        wrappedItems: wrapped,
-      });
+  moduleFor(
+    'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        let proxy = ignoreDeprecation(() =>
+          class extends ArrayProxy {
+            @computed('wrappedItems.[]')
+            get arrangedContent() {
+              // Slice the items to ensure that updates must be propogated
+              return this.wrappedItems.slice();
+            }
+          }.create({
+            wrappedItems: wrapped,
+          })
+        );
 
-      return { list: proxy, delegate: wrapped };
+        return { list: proxy, delegate: wrapped };
+      }
     }
-  }
-);
+  );
 
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, content is updated after init',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      let proxy = ArrayProxy.extend({
-        init: function () {
-          this._super(...arguments);
+  moduleFor(
+    'Syntax test: {{#each}} with array proxies, content is updated after init',
+    class extends EachTest {
+      createList(items) {
+        let wrapped = emberA(items);
+        let proxy = ignoreDeprecation(() =>
+          ArrayProxy.extend({
+            init: function () {
+              this._super(...arguments);
 
-          this.set('content', emberA(wrapped));
-        },
-      }).create();
+              this.set('content', emberA(wrapped));
+            },
+          }).create()
+        );
 
-      return { list: proxy, delegate: wrapped };
+        return { list: proxy, delegate: wrapped };
+      }
     }
-  }
-);
+  );
+}
 
 moduleFor(
   'Syntax test: {{#each as}} undefined path',

@@ -18,6 +18,7 @@ import EmberObject from '@ember/object';
 import EmberArray, { type NativeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
 import {
   combine,
@@ -113,6 +114,7 @@ function customTagForArrayProxy(proxy: object, key: string) {
   @extends EmberObject
   @uses MutableArray
   @public
+  @deprecated Use a tracked array or a native `Proxy` instead.
 */
 interface ArrayProxy<T> extends MutableArray<T> {
   /**
@@ -200,6 +202,11 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
 
   init(props: object | undefined) {
     super.init(props);
+
+    deprecateUntil(
+      '`ArrayProxy` is deprecated. Use a tracked array (for example `TrackedArray` from `tracked-built-ins`) or a native `Proxy` instead.',
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY
+    );
 
     setCustomTagFor(this, customTagForArrayProxy);
   }
