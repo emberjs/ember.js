@@ -4,6 +4,7 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 import { precompileTemplate } from '@ember/template-compilation';
 import { Component } from '../../utils/helpers';
+import { classicExtend, classicReopenClass } from '@ember/object/lib/classic';
 
 moduleFor(
   'Components test: setComponentTemplate',
@@ -66,7 +67,7 @@ moduleFor(
 
       let Thing = setComponentTemplate(
         precompileTemplate('hello'),
-        Component.extend().reopenClass({
+        classicReopenClass(classicExtend(Component), {
           toString() {
             return 'Thing';
           },
@@ -78,7 +79,7 @@ moduleFor(
       }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Class`\)/);
     }
 
-    '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
+    '@test templates set with setComponentTemplate are inherited (classicExtend(EmberObject, ))'() {
       let Parent = setComponentTemplate(precompileTemplate('hello'), class extends Component {});
 
       this.owner.register('component:foo-bar', class extends Parent {});

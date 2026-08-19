@@ -12,6 +12,7 @@ import {
 import { run } from '@ember/runloop';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
+import { classicExtend } from '@ember/object/lib/classic';
 
 let obj, objA, objB, count, func;
 
@@ -731,7 +732,7 @@ moduleFor(
     }
 
     ['@test the return value of the setter gets cached'](assert) {
-      let testObj = EmberObject.extend({
+      let testObj = classicExtend(EmberObject, {
         a: '1',
         sampleCP: computed('a', {
           get() {

@@ -1,5 +1,6 @@
 import EmberObject, { get } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicExtend, classicReopen } from '@ember/object/lib/classic';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -23,7 +24,7 @@ moduleFor(
   'EmberObject Concatenated Properties',
   class extends AbstractTestCase {
     beforeEach() {
-      klass = EmberObject.extend({
+      klass = classicExtend(EmberObject, {
         concatenatedProperties: ['values', 'functions'],
         values: ['a', 'b', 'c'],
         functions: [K],
@@ -46,7 +47,7 @@ moduleFor(
     }
 
     ['@test concatenates subclasses'](assert) {
-      let subKlass = klass.extend({
+      let subKlass = classicExtend(klass, {
         values: ['d', 'e', 'f'],
       });
       let obj = subKlass.create();
@@ -62,7 +63,7 @@ moduleFor(
     }
 
     ['@test concatenates reopen'](assert) {
-      klass.reopen({
+      classicReopen(klass, {
         values: ['d', 'e', 'f'],
       });
       let obj = klass.create();
@@ -81,7 +82,7 @@ moduleFor(
       let mixin = {
         values: ['d', 'e'],
       };
-      let subKlass = klass.extend(mixin, {
+      let subKlass = classicExtend(klass, mixin, {
         values: ['f'],
       });
       let obj = subKlass.create();
@@ -97,8 +98,8 @@ moduleFor(
     }
 
     ['@test concatenates reopen, subclass, and instance'](assert) {
-      klass.reopen({ values: ['d'] });
-      let subKlass = klass.extend({ values: ['e'] });
+      classicReopen(klass, { values: ['d'] });
+      let subKlass = classicExtend(klass, { values: ['e'] });
       let obj = subKlass.create({ values: ['f'] });
 
       let values = get(obj, 'values');
@@ -112,7 +113,7 @@ moduleFor(
     }
 
     ['@test concatenates subclasses when the values are functions'](assert) {
-      let subKlass = klass.extend({
+      let subKlass = classicExtend(klass, {
         functions: K,
       });
       let obj = subKlass.create();

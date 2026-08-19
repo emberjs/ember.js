@@ -133,6 +133,13 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-evented',
   }),
+  DEPRECATE_CLASSIC_CLASSES: deprecation({
+    id: 'deprecate-classic-classes',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-classic-classes',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

@@ -17,6 +17,7 @@ import type Engine from '@ember/engine';
 import type Application from '@ember/application';
 import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type { SimpleElement } from '@simple-dom/interface';
+import { classicExtend } from '@ember/object/lib/classic';
 
 export interface BootOptions {
   isBrowser?: boolean;
@@ -53,7 +54,7 @@ export interface EngineInstanceOptions {
 // type checking, we have broken part of our public API contract. Medium-term,
 // the goal here is to `EngineInstance` simple be `Owner`.
 interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
-class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
+class EngineInstance extends classicExtend(EmberObject, RegistryProxyMixin, ContainerProxyMixin) {
   /**
    @private
    @method setupRegistry

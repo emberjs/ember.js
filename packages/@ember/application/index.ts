@@ -29,6 +29,7 @@ import { setupApplicationRegistry } from '@ember/-internals/glimmer/lib/setup-re
 import RouterService from '@ember/routing/router-service';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import { classicExtend } from '@ember/object/lib/classic';
 
 /**
  * @deprecated Use `import { getOwner } from '@ember/owner';` instead.
@@ -386,7 +387,7 @@ class Application extends Engine {
       // Create subclass of Router for this Application instance.
       // This is to ensure that someone reopening `App.Router` does not
       // tamper with the default `Router`.
-      this.Router = (this.Router || Router).extend() as typeof Router;
+      this.Router = classicExtend(this.Router || Router) as typeof Router;
 
       this._buildDeprecatedInstance();
       this.waitForDOMReady();

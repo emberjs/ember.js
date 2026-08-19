@@ -9,12 +9,13 @@ import {
 import EmberObject, { get, set, computed, observer as emberObserver } from '@ember/object';
 import EmberArray, { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestArray = class extends EmberObject.extend(EmberArray) {
+const TestArray = class extends classicExtend(EmberObject, EmberArray) {
   _content = null;
 
   init() {
@@ -50,7 +51,7 @@ moduleFor(
   'Ember.Array',
   class extends AbstractTestCase {
     ['@test the return value of slice has Ember.Array applied'](assert) {
-      let x = EmberObject.extend(EmberArray).create({
+      let x = classicExtend(EmberObject, EmberArray).create({
         length: 0,
       });
       let y = x.slice(1);
@@ -80,7 +81,7 @@ moduleFor(
 // CONTENT DID CHANGE
 //
 
-class DummyArray extends EmberObject.extend(EmberArray) {
+class DummyArray extends classicExtend(EmberObject, EmberArray) {
   length = 0;
   objectAt(idx) {
     return 'ITEM-' + idx;
@@ -97,7 +98,7 @@ moduleFor(
   'mixins/array/arrayContent[Will|Did]Change',
   class extends AbstractTestCase {
     async ['@test should notify observers of []'](assert) {
-      obj = DummyArray.extend({
+      obj = classicExtend(DummyArray, {
         enumerablePropertyDidChange: emberObserver('[]', function () {
           this._count++;
         }),
@@ -129,7 +130,7 @@ moduleFor(
   'notify observers of length',
   class extends AbstractTestCase {
     beforeEach(assert) {
-      obj = DummyArray.extend({
+      obj = classicExtend(DummyArray, {
         lengthDidChange: emberObserver('length', function () {
           this._after++;
         }),
@@ -366,7 +367,7 @@ moduleFor(
     ) {
       let count = 0;
 
-      let obj = EmberObject.extend({
+      let obj = classicExtend(EmberObject, {
         init() {
           this._super(...arguments);
           // Observer does not fire on init

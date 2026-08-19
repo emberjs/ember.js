@@ -12,6 +12,7 @@ import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Component Tracked Properties',
@@ -96,7 +97,7 @@ moduleFor(
     }
 
     '@test creating an array proxy inside a tracking context does not trigger backtracking assertion'() {
-      let PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
+      let PromiseArray = classicExtend(ArrayProxy, PromiseProxyMixin);
 
       class LoaderComponent extends GlimmerishComponent {
         get data() {

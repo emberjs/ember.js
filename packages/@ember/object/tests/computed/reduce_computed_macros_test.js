@@ -27,6 +27,7 @@ import {
   collect,
 } from '@ember/object/computed';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 let obj;
 moduleFor(
@@ -2007,18 +2008,16 @@ moduleFor(
     ['@test sort correctly when multiple sorts are chained on the same instance of a class'](
       assert
     ) {
-      let obj2 = klass
-        .extend({
-          items: computed('sibling.sortedItems.[]', function () {
-            return this.get('sibling.sortedItems');
-          }),
-          asdf: observer('sibling.sortedItems.[]', function () {
-            this.get('sibling.sortedItems');
-          }),
-        })
-        .create({
-          sibling: obj,
-        });
+      let obj2 = classicExtend(klass, {
+        items: computed('sibling.sortedItems.[]', function () {
+          return this.get('sibling.sortedItems');
+        }),
+        asdf: observer('sibling.sortedItems.[]', function () {
+          this.get('sibling.sortedItems');
+        }),
+      }).create({
+        sibling: obj,
+      });
 
       /*
                                              ┌───────────┐                              ┌────────────┐

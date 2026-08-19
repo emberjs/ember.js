@@ -12,6 +12,7 @@ import { service } from '@ember/service';
 
 import { precompileTemplate } from '@ember/template-compilation';
 import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Query Params - main',
@@ -1636,7 +1637,7 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        classicExtend(Route, {
           queryParams: [{ commitBy: { replace: true } }],
         })
       );

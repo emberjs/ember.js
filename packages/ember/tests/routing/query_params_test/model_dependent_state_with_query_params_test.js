@@ -4,6 +4,7 @@ import Route from '@ember/routing/route';
 import { computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { QueryParamTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend, classicReopen } from '@ember/object/lib/classic';
 
 class ModelDependentQPTestCase extends QueryParamTestCase {
   boot() {
@@ -20,11 +21,11 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
   }
 
   reopenController(name, options) {
-    this.application.resolveRegistration(`controller:${name}`).reopen(options);
+    classicReopen(this.application.resolveRegistration(`controller:${name}`), options);
   }
 
   reopenRoute(name, options) {
-    this.application.resolveRegistration(`route:${name}`).reopen(options);
+    classicReopen(this.application.resolveRegistration(`route:${name}`), options);
   }
 }
 
@@ -69,7 +70,7 @@ moduleFor(
 
       this.add(
         'controller:article',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['q', 'z'],
           q: 'wat',
           z: 0,
@@ -78,7 +79,7 @@ moduleFor(
 
       this.add(
         'controller:comments',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: 'page',
           page: 1,
         })
@@ -415,7 +416,7 @@ moduleFor(
 
       this.add(
         'controller:site.article',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['q', 'z'],
           q: 'wat',
           z: 0,
@@ -424,7 +425,7 @@ moduleFor(
 
       this.add(
         'controller:site.article.comments',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: 'page',
           page: 1,
         })
@@ -800,7 +801,7 @@ moduleFor(
 
       this.add(
         'controller:site',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['country'],
           country: 'au',
         })
@@ -808,7 +809,7 @@ moduleFor(
 
       this.add(
         'controller:site.article',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['q', 'z'],
           q: 'wat',
           z: 0,
@@ -817,7 +818,7 @@ moduleFor(
 
       this.add(
         'controller:site.article.comments',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['page'],
           page: 1,
         })

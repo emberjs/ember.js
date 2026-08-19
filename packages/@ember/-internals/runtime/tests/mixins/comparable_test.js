@@ -3,8 +3,9 @@ import { compare } from '@ember/utils';
 import Comparable from '../../lib/mixins/comparable';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
+import { classicExtend } from '@ember/object/lib/classic';
 
-class Rectangle extends EmberObject.extend(Comparable) {
+class Rectangle extends classicExtend(EmberObject, Comparable) {
   length = 0;
   width = 0;
 

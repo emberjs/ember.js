@@ -6,6 +6,7 @@ import Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../-internals/deprecations';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Ember.Evented',
@@ -31,7 +32,7 @@ moduleFor(
       DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
     )} @test works properly on proxy-ish objects`](assert) {
       let eventedProxyObj;
-      eventedProxyObj = class extends CoreObject.extend(EventedMixin) {
+      eventedProxyObj = class extends classicExtend(CoreObject, EventedMixin) {
         unknownProperty() {
           return true;
         }

@@ -1,5 +1,6 @@
 import EmberObject, { get } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicReopen } from '@ember/object/lib/classic';
 
 // TODO: Update these tests (or the title) to match each other.
 moduleFor(
@@ -7,7 +8,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test adds new properties to subclass instance'](assert) {
       let Subclass = class extends EmberObject {};
-      Subclass.reopen({
+      classicReopen(Subclass, {
         foo() {
           return 'FOO';
         },
@@ -22,7 +23,7 @@ moduleFor(
       let Subclass = class extends EmberObject {};
       let SubSub = class extends Subclass {};
 
-      Subclass.reopen({
+      classicReopen(Subclass, {
         foo() {
           return 'FOO';
         },
@@ -38,7 +39,7 @@ moduleFor(
 
       Subclass.create();
 
-      Subclass.reopen({
+      classicReopen(Subclass, {
         trololol: true,
       });
 

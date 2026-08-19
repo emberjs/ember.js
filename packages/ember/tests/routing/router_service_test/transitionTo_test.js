@@ -9,6 +9,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Router Service - transitionTo',
@@ -260,7 +261,7 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['sort'],
           sort: 'ASC',
         })
@@ -282,7 +283,7 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['sort'],
         })
       );
@@ -309,7 +310,7 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['sort', 'page', 'category', 'extra'],
           sort: 'ASC',
           page: null,
@@ -335,7 +336,7 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: {
             cont_sort: 'url_sort',
           },
@@ -361,7 +362,7 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: {
             cont_sort: 'url_sort',
           },
@@ -400,7 +401,7 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
+        classicExtend(Route, {
           queryParams: {
             cont_sort: { as: 'url_sort' },
           },
@@ -430,7 +431,7 @@ moduleFor(
       );
       this.add(
         'controller:parent',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['url_sort'],
         })
       );
@@ -463,7 +464,7 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['bar'],
           bar: null,
         })
@@ -504,7 +505,7 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['bar'],
           bar: null,
         })
@@ -615,7 +616,7 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['filter', 'sort'],
           filter: '',
           sort: '',
@@ -673,7 +674,7 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
+        classicExtend(Controller, {
           queryParams: ['filter', 'sort'],
           filter: '',
           sort: '',

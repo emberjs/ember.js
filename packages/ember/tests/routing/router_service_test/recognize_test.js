@@ -1,6 +1,7 @@
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import Route from '@ember/routing/route';
+import { classicReopen } from '@ember/object/lib/classic';
 
 moduleFor(
   'Router Service - recognize',
@@ -33,7 +34,7 @@ moduleFor(
     }
 
     '@test respects the usage of a different rootURL'(assert) {
-      this.router.reopen({
+      classicReopen(this.router, {
         rootURL: '/app/',
       });
 
@@ -51,7 +52,7 @@ moduleFor(
       this.add('template:parent', precompileTemplate('Parent'));
       this.add('template:dynamic-with-child.child', precompileTemplate('Dynamic Child'));
 
-      this.router.reopen({
+      classicReopen(this.router, {
         rootURL: '/app/',
       });
 
@@ -138,7 +139,7 @@ moduleFor(
     }
 
     '@test respects the usage of a different rootURL'(assert) {
-      this.router.reopen({
+      classicReopen(this.router, {
         rootURL: '/app/',
       });
 
@@ -156,7 +157,7 @@ moduleFor(
     }
 
     '@test must include rootURL'() {
-      this.router.reopen({
+      classicReopen(this.router, {
         rootURL: '/app/',
       });
 

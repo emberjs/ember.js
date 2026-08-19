@@ -12,6 +12,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Helper Tracked Properties',
@@ -177,7 +178,7 @@ moduleFor(
     }
 
     '@test custom ember array properties rerender when updated'() {
-      let CustomArray = class extends EmberObject.extend(MutableArray) {
+      let CustomArray = class extends classicExtend(EmberObject, MutableArray) {
         init() {
           super.init(...arguments);
           this._vals = [1, 2, 3];

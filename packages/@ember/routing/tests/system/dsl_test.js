@@ -1,5 +1,6 @@
 import EmberRouter from '@ember/routing/router';
 import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
+import { classicReopenInstance } from '@ember/object/lib/classic';
 
 moduleFor(
   'Ember Router DSL',
@@ -87,7 +88,7 @@ moduleFor(
         this.route('blork');
       });
 
-      this.routerInstance.reopen({
+      classicReopenInstance(this.routerInstance, {
         _hasModuleBasedResolver() {
           return true;
         },
@@ -133,7 +134,7 @@ moduleFor(
         });
       });
 
-      this.routerInstance.reopen({
+      classicReopenInstance(this.routerInstance, {
         _hasModuleBasedResolver() {
           return true;
         },
@@ -285,7 +286,7 @@ moduleFor(
         this.mount('chat');
       });
 
-      this.routerInstance.reopen({
+      classicReopenInstance(this.routerInstance, {
         _hasModuleBasedResolver() {
           return true;
         },
@@ -304,7 +305,7 @@ moduleFor(
         this.mount('chat', { as: 'shoutbox' });
       });
 
-      this.routerInstance.reopen({
+      classicReopenInstance(this.routerInstance, {
         _hasModuleBasedResolver() {
           return true;
         },
@@ -351,7 +352,7 @@ moduleFor(
         });
       });
 
-      this.routerInstance.reopen({
+      classicReopenInstance(this.routerInstance, {
         _hasModuleBasedResolver() {
           return true;
         },

@@ -11,6 +11,7 @@ import type Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
 import type RouterState from './router_state';
 import { ROUTER } from '@ember/routing/router-service';
+import { classicReopen } from '@ember/object/lib/classic';
 
 /**
   The Routing service is used by LinkTo, and provides facilities for
@@ -128,7 +129,7 @@ export default class RoutingService<R extends Route> extends Service {
   }
 }
 
-RoutingService.reopen({
+classicReopen(RoutingService, {
   targetState: readOnly('router.targetState'),
   currentState: readOnly('router.currentState'),
   currentRouteName: readOnly('router.currentRouteName'),

@@ -5,6 +5,7 @@ import { Component, Helper } from '@ember/-internals/glimmer';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
+import { classicExtend } from '@ember/object/lib/classic';
 
 function expect(value) {
   if (!value) {
@@ -94,7 +95,7 @@ moduleFor(
       // with the template already set on the existing class
       let FreshClass;
       if (ComponentClass && 'extend' in ComponentClass) {
-        FreshClass = ComponentClass.extend({});
+        FreshClass = classicExtend(ComponentClass, {});
       } else {
         FreshClass = templateOnly();
       }

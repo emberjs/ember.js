@@ -1,27 +1,28 @@
 import { computed, get } from '@ember/object';
 import EmberObject, { observer } from '@ember/object';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend, classicReopenClass } from '@ember/object/lib/classic';
 
 moduleFor(
   'EmberObject.extend',
   class extends AbstractTestCase {
     ['@test Basic extend'](assert) {
-      let SomeClass = EmberObject.extend({ foo: 'BAR' });
+      let SomeClass = classicExtend(EmberObject, { foo: 'BAR' });
       assert.ok(SomeClass.isClass, 'A class has isClass of true');
       let obj = SomeClass.create();
       assert.equal(obj.foo, 'BAR');
     }
 
     ['@test Sub-subclass'](assert) {
-      let SomeClass = EmberObject.extend({ foo: 'BAR' });
-      let AnotherClass = SomeClass.extend({ bar: 'FOO' });
+      let SomeClass = classicExtend(EmberObject, { foo: 'BAR' });
+      let AnotherClass = classicExtend(SomeClass, { bar: 'FOO' });
       let obj = AnotherClass.create();
       assert.equal(obj.foo, 'BAR');
       assert.equal(obj.bar, 'FOO');
     }
 
     ['@test Overriding a method several layers deep'](assert) {
-      let SomeClass = EmberObject.extend({
+      let SomeClass = classicExtend(EmberObject, {
         fooCnt: 0,
         foo() {
           this.fooCnt++;
@@ -33,7 +34,7 @@ moduleFor(
         },
       });
 
-      let AnotherClass = SomeClass.extend({
+      let AnotherClass = classicExtend(SomeClass, {
         barCnt: 0,
         bar() {
           this.barCnt++;
@@ -41,7 +42,7 @@ moduleFor(
         },
       });
 
-      let FinalClass = AnotherClass.extend({
+      let FinalClass = classicExtend(AnotherClass, {
         fooCnt: 0,
         foo() {
           this.fooCnt++;
@@ -56,7 +57,7 @@ moduleFor(
       assert.equal(obj.barCnt, 2, 'should invoke both');
 
       // Try overriding on create also
-      obj = FinalClass.extend({
+      obj = classicExtend(FinalClass, {
         foo() {
           this.fooCnt++;
           this._super(...arguments);
@@ -70,12 +71,12 @@ moduleFor(
     }
 
     ['@test With concatenatedProperties'](assert) {
-      let SomeClass = EmberObject.extend({
+      let SomeClass = classicExtend(EmberObject, {
         things: 'foo',
         concatenatedProperties: ['things'],
       });
-      let AnotherClass = SomeClass.extend({ things: 'bar' });
-      let YetAnotherClass = SomeClass.extend({ things: 'baz' });
+      let AnotherClass = classicExtend(SomeClass, { things: 'bar' });
+      let YetAnotherClass = classicExtend(SomeClass, { things: 'baz' });
       let some = SomeClass.create();
       let another = AnotherClass.create();
       let yetAnother = YetAnotherClass.create();
@@ -93,15 +94,15 @@ moduleFor(
     }
 
     ['@test With concatenatedProperties class properties'](assert) {
-      let SomeClass = EmberObject.extend();
-      SomeClass.reopenClass({
+      let SomeClass = classicExtend(EmberObject);
+      classicReopenClass(SomeClass, {
         concatenatedProperties: ['things'],
         things: 'foo',
       });
-      let AnotherClass = SomeClass.extend();
-      AnotherClass.reopenClass({ things: 'bar' });
-      let YetAnotherClass = SomeClass.extend();
-      YetAnotherClass.reopenClass({ things: 'baz' });
+      let AnotherClass = classicExtend(SomeClass);
+      classicReopenClass(AnotherClass, { things: 'bar' });
+      let YetAnotherClass = classicExtend(SomeClass);
+      classicReopenClass(YetAnotherClass, { things: 'baz' });
       let some = SomeClass.create();
       let another = AnotherClass.create();
       let yetAnother = YetAnotherClass.create();
@@ -123,7 +124,7 @@ moduleFor(
     }
 
     async ['@test Overriding a computed property with an observer'](assert) {
-      let Parent = EmberObject.extend({
+      let Parent = classicExtend(EmberObject, {
         foo: computed(function () {
           return 'FOO';
         }),
@@ -131,7 +132,7 @@ moduleFor(
 
       let seen = [];
 
-      let Child = Parent.extend({
+      let Child = classicExtend(Parent, {
         foo: observer('bar', function () {
           seen.push(this.get('bar'));
         }),

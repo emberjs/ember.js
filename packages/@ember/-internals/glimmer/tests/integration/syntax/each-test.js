@@ -15,6 +15,7 @@ import {
   FalsyGenerator,
   ArrayTestCases,
 } from '../../utils/shared-conditional-tests';
+import { classicExtend } from '@ember/object/lib/classic';
 
 class ArrayDelegate {
   constructor(content, target) {
@@ -1114,7 +1115,7 @@ moduleFor(
   class extends EachTest {
     createList(items) {
       let wrapped = emberA(items);
-      let proxy = ArrayProxy.extend({
+      let proxy = classicExtend(ArrayProxy, {
         init: function () {
           this._super(...arguments);
 

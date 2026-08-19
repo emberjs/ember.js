@@ -3,6 +3,7 @@ import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { Registry } from '..';
 import { factory, moduleFor, AbstractTestCase, runTask } from 'internal-test-helpers';
+import { classicReopenClass } from '@ember/object/lib/classic';
 
 moduleFor(
   'Container.lookup',
@@ -432,7 +433,7 @@ moduleFor(
       let Apple = factory();
       let Orange = factory();
 
-      Apple.reopenClass({
+      classicReopenClass(Apple, {
         _lazyInjections() {
           return [{ specifier: 'orange:main' }, { specifier: 'banana:main' }];
         },
@@ -459,7 +460,7 @@ moduleFor(
       let Apple = factory();
       let Orange = factory();
 
-      Apple.reopenClass({
+      classicReopenClass(Apple, {
         _lazyInjections: () => {
           assert.ok(true, 'should call lazy injection method');
           return [{ specifier: 'orange:main' }];

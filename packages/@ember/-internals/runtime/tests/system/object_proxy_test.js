@@ -3,6 +3,7 @@ import { addObserver, removeObserver } from '@ember/-internals/metal';
 import { computed, get, set, observer } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'ObjectProxy',
@@ -137,7 +138,7 @@ moduleFor(
     }
 
     [`@test setting a property on the proxy's prototype avoids the assertion`](assert) {
-      let proxy = ObjectProxy.extend({
+      let proxy = classicExtend(ObjectProxy, {
         toJSON: null,
       }).create({
         content: {
@@ -337,7 +338,7 @@ moduleFor(
     ) {
       assert.expect(0);
 
-      let obj = ObjectProxy.extend({
+      let obj = classicExtend(ObjectProxy, {
         observe: observer('foo', function () {}),
       }).create();
 

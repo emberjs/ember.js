@@ -2,6 +2,7 @@ import EmberObject, { computed, observer } from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'dependentKeyCompat',
@@ -61,7 +62,7 @@ moduleFor(
     async '@test it works with async observers'(assert) {
       let count = 0;
 
-      let Person = EmberObject.extend({
+      let Person = classicExtend(EmberObject, {
         firstName: tracked({ value: 'Tom' }),
         lastName: tracked({ value: 'Dale' }),
 
@@ -98,7 +99,7 @@ moduleFor(
     '@test it does not work with sync observers'(assert) {
       let count = 0;
 
-      let Person = EmberObject.extend({
+      let Person = classicExtend(EmberObject, {
         firstName: tracked({ value: 'Tom' }),
         lastName: tracked({ value: 'Dale' }),
 

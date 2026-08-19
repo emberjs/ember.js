@@ -4,6 +4,7 @@ import Router from '@ember/routing/router';
 import Resolver from '../test-resolver';
 import { assert } from '@ember/debug';
 import type ApplicationInstance from '@ember/application/instance';
+import { classicExtend } from '@ember/object/lib/classic';
 
 export default abstract class AutobootApplicationTestCase extends TestResolverApplicationTestCase {
   resolver?: Resolver;
@@ -18,7 +19,7 @@ export default abstract class AutobootApplicationTestCase extends TestResolverAp
     assert('expected a resolver', resolver instanceof Resolver);
     this.resolver = resolver;
 
-    resolver.add('router:main', Router.extend(this.routerOptions));
+    resolver.add('router:main', classicExtend(Router, this.routerOptions));
 
     return application;
   }
