@@ -46,6 +46,17 @@ export default defineConfig(({ mode }) => {
       viteResolverBug(),
       version(),
     ],
+    // `@glimmer/component` is published as its own v2 addon and is only built
+    // (into `dist/`) by `rollup.config.mjs`. Tests run straight off source, so
+    // point the bare specifier at the TypeScript entrypoint instead.
+    resolve: {
+      alias: [
+        {
+          find: /^@glimmer\/component$/,
+          replacement: resolve(projectRoot, 'packages/@glimmer/component/src/index.ts'),
+        },
+      ],
+    },
     optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
     publicDir: 'tests/public',
     build,

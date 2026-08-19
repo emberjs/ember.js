@@ -11,7 +11,7 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 
 moduleFor(
   'Helper Tracked Properties',

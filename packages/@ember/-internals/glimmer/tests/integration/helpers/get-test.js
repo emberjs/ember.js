@@ -5,7 +5,7 @@ import { set, get } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
@@ -390,8 +390,8 @@ moduleFor(
     ['@test the result of a get helper can be yielded']() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           fooBarInstance = this;
           this.mcintosh = 'red';
         }
@@ -400,7 +400,7 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate(`{{yield (get this.colors this.mcintosh)}}`),
+          precompileTemplate(`{{yield (get @colors this.mcintosh)}}`),
           FooBarComponent
         )
       );

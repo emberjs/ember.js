@@ -5,7 +5,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 
 import { DEBUG } from '@glimmer/env';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 
 moduleFor(
   '{{on}} Modifier',
@@ -336,7 +336,6 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate(`<button {{on 'click' this.fire}}>Fire!</button>`),
           class extends Component {
-            tagName = '';
             fire() {
               assert.ok(false);
             }

@@ -1,7 +1,8 @@
 import { moduleFor, ApplicationTestCase, strip, runTask } from 'internal-test-helpers';
 
 import Service, { service } from '@ember/service';
-import { Component, Helper } from '@ember/-internals/glimmer';
+import { Helper } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
@@ -93,8 +94,8 @@ moduleFor(
       // Create a fresh class/instance so setComponentTemplate doesn't collide
       // with the template already set on the existing class
       let FreshClass;
-      if (ComponentClass && 'extend' in ComponentClass) {
-        FreshClass = ComponentClass.extend({});
+      if (typeof ComponentClass === 'function') {
+        FreshClass = class extends ComponentClass {};
       } else {
         FreshClass = templateOnly();
       }
@@ -190,11 +191,7 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate('x-foo: {{@name}} ({{this.id}})'),
           class extends Component {
-            tagName = '';
-            init() {
-              super.init(...arguments);
-              this.set('id', id++);
-            }
+            id = id++;
           }
         )
       );
@@ -204,11 +201,7 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate('x-bar ({{this.id}})'),
           class extends Component {
-            tagName = '';
-            init() {
-              super.init(...arguments);
-              this.set('id', id++);
-            }
+            id = id++;
           }
         )
       );
