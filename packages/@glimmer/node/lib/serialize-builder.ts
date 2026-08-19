@@ -13,6 +13,11 @@ import type {
 } from '@glimmer/interfaces';
 import type { RemoteBlock } from '@glimmer/runtime/lib/vm/element-builder';
 import { ConcreteBounds } from '@glimmer/runtime/lib/bounds';
+import {
+  FRAGMENT_REGION_CLOSE,
+  FRAGMENT_REGION_OPEN,
+  fragmentRegionFor,
+} from '@glimmer/runtime/lib/dom/fragment-region';
 import { NewTreeBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 
 const TEXT_NODE = 3;
@@ -144,6 +149,10 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     return super.openElement(tag);
   }
 
+  protected override fragmentMarker(position: 'open' | 'close'): string {
+    return position === 'open' ? FRAGMENT_REGION_OPEN : FRAGMENT_REGION_CLOSE;
+  }
+
   override pushRemoteElement(
     element: SimpleElement | SimpleDocumentFragment,
     cursorId: string,
@@ -152,7 +161,17 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     let { dom } = this;
     let script = dom.createElement('script');
     script.setAttribute('glmr', cursorId);
-    dom.insertBefore(element, script, insertBefore);
+
+    // A fragment that already rendered is empty. Its marker belongs in the
+    // region, which is the part of the document that gets serialized.
+    let region = fragmentRegionFor(element);
+
+    if (region) {
+      dom.insertBefore(region.parentNode(), script, insertBefore ?? region.insertionPoint());
+    } else {
+      dom.insertBefore(element, script, insertBefore);
+    }
+
     return super.pushRemoteElement(element, cursorId, insertBefore);
   }
 }

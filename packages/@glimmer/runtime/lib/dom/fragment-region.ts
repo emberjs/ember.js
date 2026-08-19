@@ -88,10 +88,29 @@ export class FragmentRegion implements Bounds {
   }
 }
 
+/**
+ * Serialized region markers. The client uses empty comments, but a serialized
+ * document has to name them so that rehydration can find the region again.
+ */
+export const FRAGMENT_REGION_OPEN = '%+f%';
+export const FRAGMENT_REGION_CLOSE = '%-f%';
+
 const REGIONS = new WeakMap<SimpleDocumentFragment, FragmentRegion>();
 
-export function setFragmentRegion(fragment: SimpleDocumentFragment, region: FragmentRegion): void {
+/**
+ * Creates a region for a fragment and records it as the fragment's current one.
+ */
+export function makeFragmentRegion(
+  fragment: SimpleDocumentFragment,
+  parent: SimpleElement | SimpleDocumentFragment,
+  open: SimpleNode,
+  close: SimpleNode
+): FragmentRegion {
+  let region = new FragmentRegion(fragment, parent, open, close);
+
   REGIONS.set(fragment, region);
+
+  return region;
 }
 
 /**

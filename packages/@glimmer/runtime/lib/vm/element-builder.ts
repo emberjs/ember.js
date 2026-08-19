@@ -28,7 +28,7 @@ import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import type { DynamicAttribute } from './attributes/dynamic';
 
 import { clear, ConcreteBounds, CursorImpl, liveParent } from '../bounds';
-import { fragmentRegionFor, FragmentRegion, setFragmentRegion } from '../dom/fragment-region';
+import { fragmentRegionFor, makeFragmentRegion } from '../dom/fragment-region';
 import { dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
@@ -345,18 +345,23 @@ export class NewTreeBuilder implements TreeBuilder {
    */
   __appendFragment(fragment: SimpleDocumentFragment): Bounds {
     let parent = this.element;
-    let open = this.__appendComment('');
+    let open = this.__appendComment(this.fragmentMarker('open'));
 
     if (fragment.firstChild) {
       this.dom.insertBefore(parent, fragment, this.nextSibling);
     }
 
-    let close = this.__appendComment('');
-    let region = new FragmentRegion(fragment, parent, open, close);
+    let close = this.__appendComment(this.fragmentMarker('close'));
 
-    setFragmentRegion(fragment, region);
+    return makeFragmentRegion(fragment, parent, open, close);
+  }
 
-    return region;
+  /**
+   * The value of a region marker. It is empty on the client, and serialization
+   * gives it a name so that rehydration can find the region.
+   */
+  protected fragmentMarker(_position: 'open' | 'close'): string {
+    return '';
   }
 
   __appendHTML(html: string): Bounds {
