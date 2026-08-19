@@ -3,6 +3,7 @@ import setProperties from '@ember/-internals/metal/lib/set_properties';
 import computed from '@ember/-internals/metal/lib/computed';
 import Mixin from '@ember/object/mixin';
 import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import type { AnyFn, MethodNamesOf } from '@ember/-internals/utility-types';
 import type RSVP from 'rsvp';
 import type CoreObject from '@ember/object/core';
@@ -108,6 +109,7 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
 
   @class PromiseProxyMixin
   @public
+  @deprecated Use native `async`/`await` and promises directly instead.
 */
 interface PromiseProxyMixin<T> {
   /**
@@ -213,6 +215,15 @@ interface PromiseProxyMixin<T> {
   finally: this['promise']['finally'];
 }
 const PromiseProxyMixin = Mixin[INTERNAL_MIXIN_CREATE]({
+  init() {
+    this._super(...arguments);
+
+    deprecateUntil(
+      '`PromiseProxyMixin` is deprecated. Use native `async`/`await` and promises directly, tracking the loading state on your own class instead.',
+      DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN
+    );
+  },
+
   reason: null,
 
   isPending: computed('isSettled', function () {
