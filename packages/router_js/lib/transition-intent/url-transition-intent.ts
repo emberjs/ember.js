@@ -1,4 +1,4 @@
-import type { Route } from '../route-info';
+import type { BaseRoute } from '../route-info';
 import { UnresolvedRouteInfoByParam } from '../route-info';
 import type Router from '../router';
 import { TransitionIntent } from '../transition-intent';
@@ -6,7 +6,7 @@ import TransitionState from '../transition-state';
 import UnrecognizedURLError from '../unrecognized-url-error';
 import { merge } from '../utils';
 
-export default class URLTransitionIntent<R extends Route> extends TransitionIntent<R> {
+export default class URLTransitionIntent<R extends BaseRoute> extends TransitionIntent<R> {
   preTransitionState?: TransitionState<R>;
   url: string;
   constructor(router: Router<R>, url: string, data?: object) {

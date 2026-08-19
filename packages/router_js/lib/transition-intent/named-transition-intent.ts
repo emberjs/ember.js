@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 import type { Dict } from '../core';
-import type { ModelFor, ResolvedRouteInfo, Route } from '../route-info';
+import type { ModelFor, ResolvedRouteInfo, BaseRoute } from '../route-info';
 import type InternalRouteInfo from '../route-info';
 import { UnresolvedRouteInfoByObject, UnresolvedRouteInfoByParam } from '../route-info';
 import type { ParsedHandler } from '../router';
@@ -9,9 +9,9 @@ import { TransitionIntent } from '../transition-intent';
 import TransitionState from '../transition-state';
 import { isParam, merge } from '../utils';
 
-export default class NamedTransitionIntent<R extends Route> extends TransitionIntent<R> {
+export default class NamedTransitionIntent<R extends BaseRoute> extends TransitionIntent<R> {
   name: string;
-  pivotHandler?: Route;
+  pivotHandler?: BaseRoute;
   contexts: ModelFor<R>[];
   queryParams: Dict<unknown>;
   preTransitionState?: TransitionState<R> = undefined;
@@ -19,7 +19,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
   constructor(
     router: Router<R>,
     name: string,
-    pivotHandler: Route | undefined,
+    pivotHandler: BaseRoute | undefined,
     contexts: ModelFor<R>[] = [],
     queryParams: Dict<unknown> = {},
     data?: object
