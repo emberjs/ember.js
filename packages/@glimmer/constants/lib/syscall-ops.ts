@@ -3,6 +3,7 @@ import type {
   VmAppendHTML,
   VmAppendNode,
   VmAppendSafeHTML,
+  VmAppendStaticTree,
   VmAppendText,
   VmAssertSame,
   VmBeginComponentTransaction,
@@ -29,8 +30,10 @@ import type {
   VmDynamicHelper,
   VmDynamicModifier,
   VmEnter,
+  VmEnterHole,
   VmEnterList,
   VmExit,
+  VmExitHole,
   VmExitList,
   VmFetch,
   VmFlushElement,
@@ -183,7 +186,10 @@ export const VM_IF_INLINE_OP = 109 satisfies VmIfInline;
 export const VM_NOT_OP = 110 satisfies VmNot;
 export const VM_GET_DYNAMIC_VAR_OP = 111 satisfies VmGetDynamicVar;
 export const VM_LOG_OP = 112 satisfies VmLog;
-export const VM_SYSCALL_SIZE = 113 satisfies VmSize;
+export const VM_APPEND_STATIC_TREE_OP = 113 satisfies VmAppendStaticTree;
+export const VM_ENTER_HOLE_OP = 114 satisfies VmEnterHole;
+export const VM_EXIT_HOLE_OP = 115 satisfies VmExitHole;
+export const VM_SYSCALL_SIZE = 116 satisfies VmSize;
 
 export function isOp(value: number): value is VmOp {
   return value >= 16;

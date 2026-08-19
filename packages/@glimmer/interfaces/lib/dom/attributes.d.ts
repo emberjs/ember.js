@@ -1,6 +1,7 @@
 import type { Maybe, Nullable } from '../core.js';
 import type { ElementOperations, Environment, ModifierInstance } from '../runtime.js';
 import type { Stack } from '../stack.js';
+import type { StaticTree } from '../static-tree.js';
 import type { Bounds, Cursor } from './bounds.js';
 import type { GlimmerTreeChanges, GlimmerTreeConstruction } from './changes.js';
 import type {
@@ -74,6 +75,16 @@ export interface DOMStack {
   ): AttributeOperation;
 
   closeElement(): Nullable<ModifierInstance[]>;
+
+  /**
+   * Materialize a run of static structure in one step, and remember it so
+   * its dynamic holes can be found by index.
+   */
+  appendStaticTree(tree: StaticTree): boolean;
+  /** Position the builder at hole `index` of the current static tree. */
+  enterHole(index: number): void;
+  /** Restore the position saved by `enterHole`. */
+  exitHole(index: number): void;
 }
 
 export interface TreeOperations {
