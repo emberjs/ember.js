@@ -1,6 +1,13 @@
 /* eslint-disable no-new-wrappers */
 
-import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
+import {
+  RenderingTestCase,
+  applyMixins,
+  runTask,
+  ignoreDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/object';
@@ -12,6 +19,24 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from './helpers';
+
+// `ObjectProxy` and `ArrayProxy` are deprecated, but their interaction with
+// conditionals is still worth covering until they are removed. The deprecation
+// itself is asserted by the dedicated proxy tests, so it is silenced here.
+const OBJECT_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved;
+const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
+
+function objectProxy(props) {
+  return ignoreDeprecation(() => ObjectProxy.create(props));
+}
+
+function arrayProxy(props) {
+  return ignoreDeprecation(() => ArrayProxy.create(props));
+}
+
+function unlessRemoved(removed, cases) {
+  return removed ? [] : cases();
+}
 
 class AbstractConditionalsTest extends RenderingTestCase {
   get truthyValue() {
@@ -169,10 +194,10 @@ class ObjectProxyGenerator extends AbstractGenerator {
     // simply uses !!content to determine truthiness
     if (value) {
       return {
-        [`@test it should consider an object proxy with \`${JSON.stringify(
+        [`${testUnless(OBJECT_PROXY_REMOVED)} @test it should consider an object proxy with \`${JSON.stringify(
           value
         )}\` truthy [${idx}]`]() {
-          this.renderValues(ObjectProxy.create({ content: value }));
+          this.renderValues(objectProxy({ content: value }));
 
           this.assertText('T1');
 
@@ -184,17 +209,17 @@ class ObjectProxyGenerator extends AbstractGenerator {
 
           this.assertText('F1');
 
-          runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
+          runTask(() => set(this.context, 'cond1', objectProxy({ content: value })));
 
           this.assertText('T1');
         },
       };
     } else {
       return {
-        [`@test it should consider an object proxy with \`${JSON.stringify(
+        [`${testUnless(OBJECT_PROXY_REMOVED)} @test it should consider an object proxy with \`${JSON.stringify(
           value
         )}\` falsy [${idx}]`]() {
-          this.renderValues(ObjectProxy.create({ content: value }));
+          this.renderValues(objectProxy({ content: value }));
 
           this.assertText('F1');
 
@@ -206,7 +231,7 @@ class ObjectProxyGenerator extends AbstractGenerator {
 
           this.assertText('T1');
 
-          runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
+          runTask(() => set(this.context, 'cond1', objectProxy({ content: value })));
 
           this.assertText('F1');
         },
@@ -249,11 +274,11 @@ export class BasicConditionalsTest extends AbstractConditionalsTest {
 
 // Testing behaviors related to ember objects, object proxies, etc
 export const ObjectTestCases = {
-  ['@test it considers object proxies without content falsy']() {
+  [`${testUnless(OBJECT_PROXY_REMOVED)} @test it considers object proxies without content falsy`]() {
     this.renderValues(
-      ObjectProxy.create({ content: {} }),
-      ObjectProxy.create({ content: EmberObject.create() }),
-      ObjectProxy.create({ content: null })
+      objectProxy({ content: {} }),
+      objectProxy({ content: EmberObject.create() }),
+      objectProxy({ content: null })
     );
 
     this.assertText('T1T2F3');
@@ -278,9 +303,9 @@ export const ObjectTestCases = {
     this.assertText('T1T2T3');
 
     runTask(() => {
-      set(this.context, 'cond1', ObjectProxy.create({ content: {} }));
-      set(this.context, 'cond2', ObjectProxy.create({ content: EmberObject.create() }));
-      set(this.context, 'cond3', ObjectProxy.create({ content: null }));
+      set(this.context, 'cond1', objectProxy({ content: {} }));
+      set(this.context, 'cond2', objectProxy({ content: EmberObject.create() }));
+      set(this.context, 'cond3', objectProxy({ content: null }));
     });
 
     this.assertText('T1T2F3');
@@ -317,11 +342,8 @@ export const ArrayTestCases = {
     this.assertText('T1F2');
   },
 
-  ['@test it considers array proxies without content falsy']() {
-    this.renderValues(
-      ArrayProxy.create({ content: emberA(['hello']) }),
-      ArrayProxy.create({ content: null })
-    );
+  [`${testUnless(ARRAY_PROXY_REMOVED)} @test it considers array proxies without content falsy`]() {
+    this.renderValues(arrayProxy({ content: emberA(['hello']) }), arrayProxy({ content: null }));
 
     this.assertText('T1F2');
 
@@ -344,17 +366,17 @@ export const ArrayTestCases = {
     this.assertText('T1T2');
 
     runTask(() => {
-      set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
-      set(this.context, 'cond2', ArrayProxy.create({ content: null }));
+      set(this.context, 'cond1', arrayProxy({ content: emberA(['hello']) }));
+      set(this.context, 'cond2', arrayProxy({ content: null }));
     });
 
     this.assertText('T1F2');
   },
 
-  ['@test it considers array proxies with empty arrays falsy']() {
+  [`${testUnless(ARRAY_PROXY_REMOVED)} @test it considers array proxies with empty arrays falsy`]() {
     this.renderValues(
-      ArrayProxy.create({ content: emberA(['hello']) }),
-      ArrayProxy.create({ content: emberA() })
+      arrayProxy({ content: emberA(['hello']) }),
+      arrayProxy({ content: emberA() })
     );
 
     this.assertText('T1F2');
@@ -375,8 +397,8 @@ export const ArrayTestCases = {
     this.assertText('T1T2');
 
     runTask(() => {
-      set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
-      set(this.context, 'cond2', ArrayProxy.create({ content: emberA() }));
+      set(this.context, 'cond1', arrayProxy({ content: emberA(['hello']) }));
+      set(this.context, 'cond2', arrayProxy({ content: emberA() }));
     });
 
     this.assertText('T1F2');
@@ -398,7 +420,7 @@ const IfUnlessWithTestCases = [
     { foo: 'bar' },
     EmberObject.create(),
     EmberObject.create({ foo: 'bar' }),
-    ObjectProxy.create({ content: true }),
+    ...unlessRemoved(OBJECT_PROXY_REMOVED, () => [objectProxy({ content: true })]),
     Object,
     function () {},
     async function () {},
@@ -418,7 +440,7 @@ const IfUnlessWithTestCases = [
     0,
     [],
     emberA(),
-    ObjectProxy.create({ content: undefined }),
+    ...unlessRemoved(OBJECT_PROXY_REMOVED, () => [objectProxy({ content: undefined })]),
     htmlSafe(''),
   ]),
 
@@ -432,14 +454,18 @@ const IfUnlessWithTestCases = [
     1,
     ['hello'],
     emberA(['hello']),
-    ArrayProxy.create({ content: ['hello'] }),
-    ArrayProxy.create({ content: [] }),
+    ...unlessRemoved(ARRAY_PROXY_REMOVED, () => [
+      arrayProxy({ content: ['hello'] }),
+      arrayProxy({ content: [] }),
+    ]),
     {},
     { foo: 'bar' },
     EmberObject.create(),
     EmberObject.create({ foo: 'bar' }),
-    ObjectProxy.create({ content: true }),
-    ObjectProxy.create({ content: undefined }),
+    ...unlessRemoved(OBJECT_PROXY_REMOVED, () => [
+      objectProxy({ content: true }),
+      objectProxy({ content: undefined }),
+    ]),
     new String('hello'),
     new String(''),
     new Boolean(true),

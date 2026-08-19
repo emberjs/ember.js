@@ -7,7 +7,15 @@ import { computed, get, set } from '@ember/object';
 import { Promise } from 'rsvp';
 import { fn } from '@ember/helper';
 import { on } from '@ember/modifier';
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -95,7 +103,15 @@ moduleFor(
       this.assertText('max jackson | max jackson');
     }
 
-    '@test creating an array proxy inside a tracking context does not trigger backtracking assertion'() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved
+    )} @test creating an array proxy inside a tracking context does not trigger backtracking assertion`]() {
+      expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+      expectDeprecation(
+        /`PromiseProxyMixin` is deprecated/,
+        DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isEnabled
+      );
+
       let PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
 
       class LoaderComponent extends GlimmerishComponent {
@@ -123,7 +139,11 @@ moduleFor(
       this.assertText('123');
     }
 
-    '@test creating an array proxy inside a tracking context and immediately updating its content before usage does not trigger backtracking assertion'() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved
+    )} @test creating an array proxy inside a tracking context and immediately updating its content before usage does not trigger backtracking assertion`]() {
+      expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+
       class LoaderComponent extends GlimmerishComponent {
         get data() {
           if (!this._data) {
