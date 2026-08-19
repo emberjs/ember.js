@@ -2,6 +2,7 @@ import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../-internals/deprecations';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Object events',
@@ -15,7 +16,7 @@ moduleFor(
       };
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      obj = classicExtend(EmberObject, Evented).create();
 
       expectDeprecation(
         () => {
@@ -56,7 +57,7 @@ moduleFor(
       };
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      obj = classicExtend(EmberObject, Evented).create();
 
       expectDeprecation(
         () => {
@@ -93,7 +94,7 @@ moduleFor(
       let self, args;
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      obj = classicExtend(EmberObject, Evented).create();
 
       expectDeprecation(
         () => {
@@ -125,7 +126,7 @@ moduleFor(
       let count = 0;
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      obj = classicExtend(EmberObject, Evented).create();
 
       expectDeprecation(
         () => {
@@ -170,7 +171,7 @@ moduleFor(
       let self, args;
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      obj = classicExtend(EmberObject, Evented).create();
       let target = {};
 
       expectDeprecation(
@@ -208,7 +209,7 @@ moduleFor(
       };
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      obj = classicExtend(EmberObject, Evented).create();
 
       expectDeprecation(
         () => {
@@ -243,7 +244,7 @@ moduleFor(
       DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
     )} @test a listener registered with one can be removed with off`](assert) {
       let obj;
-      obj = class extends EmberObject.extend(Evented) {
+      obj = class extends classicExtend(EmberObject, Evented) {
         F() {}
       }.create();
       let F = function () {};
@@ -305,7 +306,7 @@ moduleFor(
       DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
     )} @test adding and removing listeners should be chainable`](assert) {
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      obj = classicExtend(EmberObject, Evented).create();
       let F = function () {};
 
       let ret;

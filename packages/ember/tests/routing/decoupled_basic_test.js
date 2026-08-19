@@ -21,6 +21,7 @@ import { addObserver } from '@ember/-internals/metal';
 import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
+import { classicReopen } from '@ember/object/lib/classic';
 
 let originalConsoleError;
 
@@ -345,7 +346,7 @@ moduleFor(
     ['@test using replaceWith calls location.replaceURL if available'](assert) {
       let setCount = 0;
       let replaceCount = 0;
-      this.router.reopen({
+      classicReopen(this.router, {
         location: NoneLocation.create({
           setURL(path) {
             setCount++;
@@ -380,7 +381,7 @@ moduleFor(
     ['@test using replaceWith calls setURL if location.replaceURL is not defined'](assert) {
       let setCount = 0;
 
-      this.router.reopen({
+      classicReopen(this.router, {
         location: NoneLocation.create({
           setURL(path) {
             setCount++;
@@ -655,7 +656,7 @@ moduleFor(
         },
       });
 
-      this.router.reopen({
+      classicReopen(this.router, {
         // location: 'historyTest',
         location,
         rootURL: rootURL,
@@ -700,7 +701,7 @@ moduleFor(
         }
       );
 
-      this.router.reopen({
+      classicReopen(this.router, {
         location: 'history-test',
         rootURL: rootURL,
         // if we transition in this test we will receive failures

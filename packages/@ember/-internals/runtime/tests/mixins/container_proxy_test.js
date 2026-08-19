@@ -5,12 +5,13 @@ import EmberObject from '@ember/object';
 import { run, schedule } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   '@ember/-internals/runtime/mixins/container_proxy',
   class extends AbstractTestCase {
     beforeEach() {
-      this.Owner = EmberObject.extend(ContainerProxy);
+      this.Owner = classicExtend(EmberObject, ContainerProxy);
       this.instance = this.Owner.create();
 
       this.registry = new Registry();

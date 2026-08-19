@@ -5,6 +5,7 @@ import { _ProxyMixin } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Service Injection',
@@ -37,7 +38,7 @@ moduleFor(
           myService;
         }
       );
-      let MyService = class extends Service.extend(_ProxyMixin) {
+      let MyService = class extends classicExtend(Service, _ProxyMixin) {
         init() {
           super.init(...arguments);
 

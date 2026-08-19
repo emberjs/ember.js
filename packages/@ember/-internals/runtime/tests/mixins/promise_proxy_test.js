@@ -6,6 +6,7 @@ import EmberRSVP from '../../lib/ext/rsvp';
 import { onerrorDefault } from '../../lib/ext/rsvp';
 import * as RSVP from 'rsvp';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 let ObjectPromiseProxy, proxy;
 
@@ -13,7 +14,7 @@ moduleFor(
   'Ember.PromiseProxy - ObjectProxy',
   class extends AbstractTestCase {
     beforeEach() {
-      ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
+      ObjectPromiseProxy = classicExtend(ObjectProxy, PromiseProxyMixin);
     }
 
     afterEach() {

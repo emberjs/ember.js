@@ -2,6 +2,7 @@ import { typeOf } from '@ember/utils';
 import EmberObject from '@ember/object';
 import { window } from '@ember/-internals/browser-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Ember Type Checking',
@@ -40,7 +41,7 @@ moduleFor(
       assert.equal(typeOf(instance), 'instance', 'item of type instance');
       assert.equal(typeOf(instance.method), 'function', 'item of type function');
       assert.equal(typeOf(instance.asyncMethod), 'function', 'item of type async function');
-      assert.equal(typeOf(EmberObject.extend()), 'class', 'item of type class');
+      assert.equal(typeOf(classicExtend(EmberObject)), 'class', 'item of type class');
       assert.equal(typeOf(new Error()), 'error', 'item of type error');
     }
 

@@ -16,6 +16,7 @@ import {
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { action } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Controller model',
@@ -98,7 +99,7 @@ moduleFor(
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
       );
 
-      let TestController = Controller.extend({
+      let TestController = classicExtend(Controller, {
         actions: {
           poke() {
             assert.ok(true, 'poked');
@@ -121,7 +122,7 @@ moduleFor(
 
       let owner = buildOwner();
 
-      let TestController = Controller.extend({
+      let TestController = classicExtend(Controller, {
         actions: {
           poke() {
             assert.ok(true, 'poked 1');
@@ -133,7 +134,7 @@ moduleFor(
       owner.register('controller:index', TestController);
 
       let controller = TestController.create({
-        target: Controller.extend({
+        target: classicExtend(Controller, {
           actions: {
             poke() {
               assert.ok(true, 'poked 2');
@@ -159,7 +160,7 @@ moduleFor(
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
       );
 
-      let SuperController = Controller.extend({
+      let SuperController = classicExtend(Controller, {
         actions: {
           foo() {
             assert.ok(true, 'foo');
@@ -179,7 +180,7 @@ moduleFor(
         },
       });
 
-      let IndexController = SuperController.extend(BarControllerMixin, {
+      let IndexController = classicExtend(SuperController, BarControllerMixin, {
         actions: {
           baz() {
             assert.ok(true, 'baz');

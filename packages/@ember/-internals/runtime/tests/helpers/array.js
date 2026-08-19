@@ -10,6 +10,7 @@ import {
 } from '@ember/-internals/metal';
 import EmberObject, { get, computed } from '@ember/object';
 import { moduleFor } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 export function newFixture(cnt) {
   let ret = [];
@@ -168,7 +169,7 @@ class ArrayProxyHelpers extends AbstractArrayHelper {
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestArray = EmberObject.extend(EmberArray, {
+const TestArray = classicExtend(EmberObject, EmberArray, {
   _content: null,
 
   init() {
@@ -204,7 +205,7 @@ const TestArray = EmberObject.extend(EmberArray, {
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestMutableArray = EmberObject.extend(MutableArray, {
+const TestMutableArray = classicExtend(EmberObject, MutableArray, {
   _content: null,
 
   init(ary = []) {

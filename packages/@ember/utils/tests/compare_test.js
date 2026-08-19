@@ -1,11 +1,12 @@
 import { compare, typeOf } from '@ember/utils';
 import EmberObject from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicExtend, classicReopenClass } from '@ember/object/lib/classic';
 
 let data = [];
-let Comp = EmberObject.extend();
+let Comp = classicExtend(EmberObject);
 
-Comp.reopenClass({
+classicReopenClass(Comp, {
   compare(obj) {
     return obj.get('val');
   },

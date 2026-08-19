@@ -8,6 +8,7 @@ import EmberObject, { computed, observer } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'EmberObject.create',
@@ -40,7 +41,7 @@ moduleFor(
     }
 
     ['@test calls computed property setters'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         foo: computed({
           get() {
             return "this is not the value you're looking for";
@@ -57,7 +58,7 @@ moduleFor(
 
     ['@test sets up mandatory setters for simple properties watched with observers'](assert) {
       if (DEBUG) {
-        let MyClass = EmberObject.extend({
+        let MyClass = classicExtend(EmberObject, {
           foo: null,
           bar: null,
           fooDidChange: observer('foo', function () {}),
@@ -130,7 +131,7 @@ moduleFor(
 
     ['@test does not sets up separate mandatory setters on getters'](assert) {
       if (DEBUG) {
-        let MyClass = EmberObject.extend({
+        let MyClass = classicExtend(EmberObject, {
           get foo() {
             return 'bar';
           },

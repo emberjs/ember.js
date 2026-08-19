@@ -5,6 +5,7 @@ import { setComponentTemplate } from '@glimmer/manager';
 import { set, computed } from '@ember/object';
 
 import { Component, htmlSafe } from '../../utils/helpers';
+import { classicReopenClass } from '@ember/object/lib/classic';
 
 moduleFor(
   'Components test: attrs lookup',
@@ -171,7 +172,7 @@ moduleFor(
         }
       };
 
-      FooBarComponent.reopenClass({
+      classicReopenClass(FooBarComponent, {
         positionalParams: ['firstPositional'],
       });
 

@@ -5,6 +5,7 @@ import { guidFor, getName } from '@ember/-internals/utils';
 import EmberObject from '@ember/object';
 import Namespace from '@ember/application/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 const originalLookup = context.lookup;
 let lookup;
@@ -61,16 +62,16 @@ moduleFor(
 
     ['@test Classes under an Namespace are properly named'](assert) {
       let nsA = (lookup.NamespaceA = Namespace.create());
-      nsA.Foo = EmberObject.extend();
+      nsA.Foo = classicExtend(EmberObject);
       Namespace.processAll();
       assert.equal(getName(nsA.Foo), 'NamespaceA.Foo', 'Classes pick up their parent namespace');
 
-      nsA.Bar = EmberObject.extend();
+      nsA.Bar = classicExtend(EmberObject);
       Namespace.processAll();
       assert.equal(getName(nsA.Bar), 'NamespaceA.Bar', 'New Classes get the naming treatment too');
 
       let nsB = (lookup.NamespaceB = Namespace.create());
-      nsB.Foo = EmberObject.extend();
+      nsB.Foo = classicExtend(EmberObject);
       Namespace.processAll();
       assert.equal(
         getName(nsB.Foo),

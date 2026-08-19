@@ -17,6 +17,7 @@ import {
   testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../-internals/deprecations';
+import { classicExtend, classicReopen } from '@ember/object/lib/classic';
 
 moduleFor(
   'EmberObject ES Compatibility',
@@ -183,7 +184,7 @@ moduleFor(
         property2: 'data-2',
       });
 
-      class MyObject extends EmberObject.extend(Mixin1, Mixin2) {}
+      class MyObject extends classicExtend(EmberObject, Mixin1, Mixin2) {}
 
       let myObject = MyObject.create();
       assert.equal(myObject.property1, 'data-1', 'includes the first mixin');
@@ -296,7 +297,7 @@ moduleFor(
       expectDeprecation(
         () => {
           A = class extends (
-            EmberObject.extend({
+            classicExtend(EmberObject, {
               fooDidChange: observer('foo', function () {
                 fooDidChangeBase++;
               }),
@@ -410,7 +411,7 @@ moduleFor(
         },
       });
 
-      class B extends A.extend(Mixin1, Mixin2) {
+      class B extends classicExtend(A, Mixin1, Mixin2) {
         init() {
           calls.push('B init before super.init');
           super.init(...arguments);
@@ -443,7 +444,7 @@ moduleFor(
       // Only string listeners are allowed for prototypes
       addListener(B.prototype, 'someEvent', null, 'onSomeEvent');
 
-      B.reopen({
+      classicReopen(B, {
         init() {
           calls.push('reopen init before _super');
           this._super(...arguments);

@@ -13,6 +13,7 @@ import { runAppend, runDestroy } from '../run';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
 import type { InternalFactory } from '@ember/-internals/owner';
+import { classicExtend } from '@ember/object/lib/classic';
 
 export default class RouterNonApplicationTestCase extends AbstractTestCase {
   owner: EngineInstance;
@@ -139,7 +140,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
       layoutName: '-top-level',
     });
 
-    owner.register('component:-top-level', Component.extend(attrs));
+    owner.register('component:-top-level', classicExtend(Component, attrs));
 
     this.component = owner.lookup('component:-top-level');
 

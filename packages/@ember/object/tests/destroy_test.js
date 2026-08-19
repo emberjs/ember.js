@@ -4,6 +4,7 @@ import { peekMeta } from '@ember/-internals/meta';
 import EmberObject, { get, set, observer } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   '@ember/-internals/runtime/system/object/destroy_test',
@@ -31,7 +32,7 @@ moduleFor(
       assert
     ) {
       if (DEBUG) {
-        let obj = EmberObject.extend({
+        let obj = classicExtend(EmberObject, {
           fooDidChange: observer('foo', function () {}),
         }).create({
           foo: 'bar',
@@ -47,7 +48,7 @@ moduleFor(
 
     async ['@test observers should not fire after an object has been destroyed'](assert) {
       let count = 0;
-      let obj = EmberObject.extend({
+      let obj = classicExtend(EmberObject, {
         fooDidChange: observer('foo', function () {
           count++;
         }),
@@ -75,7 +76,7 @@ moduleFor(
 
       let objs = {};
 
-      let A = EmberObject.extend({
+      let A = classicExtend(EmberObject, {
         objs: objs,
         isAlive: true,
         willDestroy() {
@@ -89,7 +90,7 @@ moduleFor(
         }),
       });
 
-      let B = EmberObject.extend({
+      let B = classicExtend(EmberObject, {
         objs: objs,
         isAlive: true,
         willDestroy() {
@@ -103,7 +104,7 @@ moduleFor(
         }),
       });
 
-      let C = EmberObject.extend({
+      let C = classicExtend(EmberObject, {
         objs: objs,
         isAlive: true,
         willDestroy() {
@@ -117,7 +118,7 @@ moduleFor(
         }),
       });
 
-      let LongLivedObject = EmberObject.extend({
+      let LongLivedObject = classicExtend(EmberObject, {
         objs: objs,
         isAliveDidChange: observer('objs.a.isAlive', function () {
           shouldChange++;

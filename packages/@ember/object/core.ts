@@ -14,10 +14,17 @@ import { activateObserver } from '@ember/-internals/metal/lib/observer';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
-import Mixin, { applyMixin } from '@ember/object/mixin';
+import Mixin from '@ember/object/mixin';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
+import {
+  classicExtend,
+  classicReopen,
+  classicReopenClass,
+  classicReopenInstance,
+} from './lib/classic';
 import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
@@ -51,7 +58,6 @@ function hasToStringExtension(val: unknown): val is HasToStringExtension {
     typeof (val as HasToStringExtension).toStringExtension === 'function'
   );
 }
-const reopen = Mixin.prototype.reopen;
 
 const wasApplied = new WeakSet();
 const prototypeMixinMap = new WeakMap();
@@ -310,8 +316,11 @@ class CoreObject {
   }
 
   reopen(...args: Array<Mixin | Record<string, unknown>>): this {
-    applyMixin(this, args);
-    return this;
+    deprecateUntil(
+      '`reopen` is part of the classic class system, which is deprecated. Define the properties and methods on a native class instead.',
+      DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES
+    );
+    return classicReopenInstance(this, ...args);
   }
 
   /**
@@ -712,9 +721,11 @@ class CoreObject {
     ...mixins: M
   ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
   static extend(...mixins: any[]) {
-    let Class = class extends this {};
-    reopen.apply(Class.PrototypeMixin, mixins);
-    return Class;
+    deprecateUntil(
+      '`.extend()` creates a classic class, which is deprecated. Use native class syntax (`class Foo extends Bar {}`) instead.',
+      DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES
+    );
+    return classicExtend(this as any, ...mixins);
   }
 
   /**
@@ -837,9 +848,11 @@ class CoreObject {
     @public
   */
   static reopen<C extends typeof CoreObject>(this: C, ...args: any[]): C {
-    this.willReopen();
-    reopen.apply(this.PrototypeMixin, args);
-    return this;
+    deprecateUntil(
+      '`reopen` is part of the classic class system, which is deprecated. Define the properties and methods on a native class instead.',
+      DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES
+    );
+    return classicReopen(this, ...args);
   }
 
   static willReopen() {
@@ -921,8 +934,11 @@ class CoreObject {
     this: C,
     ...mixins: Array<Mixin | Record<string, unknown>>
   ): C {
-    applyMixin(this, mixins);
-    return this;
+    deprecateUntil(
+      '`reopenClass` is part of the classic class system, which is deprecated. Define static properties and methods on a native class instead.',
+      DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES
+    );
+    return classicReopenClass(this, ...mixins);
   }
 
   static detect(obj: unknown) {

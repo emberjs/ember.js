@@ -2,6 +2,7 @@ import { run } from '@ember/runloop';
 import { set } from '@ember/object';
 import HistoryLocation from '@ember/routing/history-location';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicReopen } from '@ember/object/lib/classic';
 
 let FakeHistory, HistoryTestLocation, location;
 
@@ -68,7 +69,7 @@ moduleFor(
     ['@test HistoryLocation initState does not get fired on init'](assert) {
       assert.expect(1);
 
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           assert.ok(true, 'init was called');
           this._super(...arguments);
@@ -120,7 +121,7 @@ moduleFor(
     ['@test base URL is removed when retrieving the current pathname'](assert) {
       assert.expect(1);
 
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
 
@@ -142,7 +143,7 @@ moduleFor(
     ['@test base URL is preserved when moving around'](assert) {
       assert.expect(2);
 
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
 
@@ -184,7 +185,7 @@ moduleFor(
     ['@test HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
 
@@ -202,7 +203,7 @@ moduleFor(
     ['@test HistoryLocation.getURL() returns the current url, does not remove rootURL if its not at start of url'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
 
@@ -219,7 +220,7 @@ moduleFor(
     ['@test HistoryLocation.getURL() will not remove the rootURL when only a partial match'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/bars/baz'));
@@ -235,7 +236,7 @@ moduleFor(
     ['@test HistoryLocation.getURL() returns the current url, does not remove baseURL if its not at start of url'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
 
@@ -252,7 +253,7 @@ moduleFor(
     ['@test HistoryLocation.getURL() will not remove the baseURL when only a partial match'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/bars/baz'));
@@ -266,7 +267,7 @@ moduleFor(
     }
 
     ['@test HistoryLocation.getURL() includes location.search'](assert) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin'));
@@ -279,7 +280,7 @@ moduleFor(
     }
 
     ['@test HistoryLocation.getURL() includes location.hash'](assert) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/foo/bar#pink-power-ranger'));
@@ -292,7 +293,7 @@ moduleFor(
     }
 
     ['@test HistoryLocation.getURL() includes location.hash and location.search'](assert) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/foo/bar?time=morphin#pink-power-ranger'));
@@ -305,7 +306,7 @@ moduleFor(
     }
 
     ['@test HistoryLocation.getURL() drops duplicate slashes'](assert) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
           let location = mockBrowserLocation('//admin//profile//');
@@ -322,7 +323,7 @@ moduleFor(
     ['@test HistoryLocation.getURL() treats regex metacharacters in rootURL and baseURL literally'](
       assert
     ) {
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/axc/secret'));
@@ -344,7 +345,7 @@ moduleFor(
 
       FakeHistory.state = existingState;
 
-      HistoryTestLocation.reopen({
+      classicReopen(HistoryTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'location', mockBrowserLocation('/route/path'));

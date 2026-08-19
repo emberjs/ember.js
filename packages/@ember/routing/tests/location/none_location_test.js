@@ -2,6 +2,7 @@ import { run } from '@ember/runloop';
 import { set } from '@ember/object';
 import NoneLocation from '@ember/routing/none-location';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicReopen } from '@ember/object/lib/classic';
 
 let NoneTestLocation, location;
 
@@ -29,7 +30,7 @@ moduleFor(
     }
 
     ['@test NoneLocation.formatURL() returns the current url always appending rootURL'](assert) {
-      NoneTestLocation.reopen({
+      classicReopen(NoneTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'rootURL', '/en/');
@@ -42,7 +43,7 @@ moduleFor(
     }
 
     ['@test NoneLocation.getURL() returns the current path minus rootURL'](assert) {
-      NoneTestLocation.reopen({
+      classicReopen(NoneTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'rootURL', '/foo/');
@@ -58,7 +59,7 @@ moduleFor(
     ['@test NoneLocation.getURL() will remove the rootURL only from the beginning of a url'](
       assert
     ) {
-      NoneTestLocation.reopen({
+      classicReopen(NoneTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'rootURL', '/bar/');
@@ -72,7 +73,7 @@ moduleFor(
     }
 
     ['@test NoneLocation.getURL() will not remove the rootURL when only a partial match'](assert) {
-      NoneTestLocation.reopen({
+      classicReopen(NoneTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'rootURL', '/bar/');
@@ -86,7 +87,7 @@ moduleFor(
     }
 
     ['@test NoneLocation.getURL() treats regex metacharacters in rootURL literally'](assert) {
-      NoneTestLocation.reopen({
+      classicReopen(NoneTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'rootURL', '/a.c/');
@@ -100,7 +101,7 @@ moduleFor(
     }
 
     ['@test NoneLocation.getURL() strips the rootURL when it has an extra trailing slash'](assert) {
-      NoneTestLocation.reopen({
+      classicReopen(NoneTestLocation, {
         init() {
           this._super(...arguments);
           set(this, 'rootURL', '/foo//');

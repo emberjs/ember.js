@@ -2,12 +2,13 @@ import { run } from '@ember/runloop';
 import { alias } from '@ember/-internals/metal';
 import EmberObject, { get, set, observer } from '@ember/object';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'EmberObject observer',
   class extends AbstractTestCase {
     async ['@test observer on class'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         count: 0,
 
         foo: observer('bar', function () {
@@ -27,7 +28,7 @@ moduleFor(
     }
 
     async ['@test setting `undefined` value on observed property behaves correctly'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         mood: 'good',
         foo: observer('mood', function () {}),
       });
@@ -54,7 +55,7 @@ moduleFor(
     }
 
     async ['@test observer on subclass'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         count: 0,
 
         foo: observer('bar', function () {
@@ -62,7 +63,7 @@ moduleFor(
         }),
       });
 
-      let Subclass = MyClass.extend({
+      let Subclass = classicExtend(MyClass, {
         foo: observer('baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
@@ -85,7 +86,7 @@ moduleFor(
     }
 
     async ['@test observer on instance'](assert) {
-      let obj = EmberObject.extend({
+      let obj = classicExtend(EmberObject, {
         foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
@@ -105,7 +106,7 @@ moduleFor(
     }
 
     async ['@test observer on instance overriding class'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         count: 0,
 
         foo: observer('bar', function () {
@@ -113,7 +114,7 @@ moduleFor(
         }),
       });
 
-      let obj = MyClass.extend({
+      let obj = classicExtend(MyClass, {
         foo: observer('baz', function () {
           // <-- change property we observe
           set(this, 'count', get(this, 'count') + 1);
@@ -136,7 +137,7 @@ moduleFor(
     }
 
     async ['@test observer should not fire after being destroyed'](assert) {
-      let obj = EmberObject.extend({
+      let obj = classicExtend(EmberObject, {
         count: 0,
         foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
@@ -161,7 +162,7 @@ moduleFor(
     //
 
     async ['@test chain observer on class'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         count: 0,
 
         foo: observer('bar.baz', function () {
@@ -197,7 +198,7 @@ moduleFor(
     }
 
     async ['@test clobbering a chain observer on subclass'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         count: 0,
 
         foo: observer('bar.baz', function () {
@@ -205,11 +206,11 @@ moduleFor(
         }),
       });
 
-      let obj1 = MyClass.extend().create({
+      let obj1 = classicExtend(MyClass).create({
         bar: { baz: 'biff' },
       });
 
-      let obj2 = MyClass.extend({
+      let obj2 = classicExtend(MyClass, {
         foo: observer('bar2.baz', function () {
           set(this, 'count', get(this, 'count') + 1);
         }),
@@ -248,14 +249,14 @@ moduleFor(
     ) {
       let changed = false;
 
-      let ChildClass = EmberObject.extend({
+      let ChildClass = classicExtend(EmberObject, {
         parent: null,
         parentOneTwoDidChange: observer('parent.one.two', function () {
           changed = true;
         }),
       });
 
-      let ParentClass = EmberObject.extend({
+      let ParentClass = classicExtend(EmberObject, {
         one: {
           two: 'old',
         },
@@ -287,7 +288,7 @@ moduleFor(
     async ['@test cannot re-enter observer while it is flushing'](assert) {
       let changed = false;
 
-      let Class = EmberObject.extend({
+      let Class = classicExtend(EmberObject, {
         bar: 0,
 
         get foo() {

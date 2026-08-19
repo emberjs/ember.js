@@ -11,6 +11,7 @@ import {
 import { track } from '@glimmer/validator';
 import { destroy } from '@glimmer/destroyable';
 import { run } from '@ember/runloop';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Ember.CoreObject',
@@ -99,7 +100,7 @@ moduleFor(
 
     async ['@test observed properties are enumerable when set GH#14594'](assert) {
       let callCount = 0;
-      let Test = CoreObject.extend({
+      let Test = classicExtend(CoreObject, {
         myProp: null,
         anotherProp: undefined,
         didChangeMyProp: observer('myProp', function () {

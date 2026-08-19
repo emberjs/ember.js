@@ -3,6 +3,7 @@ import NoneLocation from '@ember/routing/none-location';
 import { set } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { service } from '@ember/service';
+import { classicReopen } from '@ember/object/lib/classic';
 
 moduleFor(
   'Router Service - main',
@@ -156,7 +157,7 @@ moduleFor(
     ['@test RouterService can be injected into router and accessed on init'](assert) {
       assert.expect(1);
 
-      this.router.reopen({
+      classicReopen(this.router, {
         routerService: service('router'),
         init() {
           this.routerService.one('routeDidChange', () => {

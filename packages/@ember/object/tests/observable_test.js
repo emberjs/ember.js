@@ -5,6 +5,7 @@ import EmberObject, { observer } from '@ember/object';
 import Observable from '@ember/object/observable';
 import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -33,7 +34,7 @@ import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpe
 
 let object, objectA, objectB, objectC, objectD, objectE, objectF, lookup;
 
-const ObservableObject = EmberObject.extend(Observable);
+const ObservableObject = classicExtend(EmberObject, Observable);
 const originalLookup = context.lookup;
 
 class ObservableTestCase extends AbstractTestCase {
@@ -58,7 +59,7 @@ moduleFor(
   'object.get()',
   class extends ObservableTestCase {
     beforeEach() {
-      object = ObservableObject.extend(Observable, {
+      object = classicExtend(ObservableObject, Observable, {
         computed: computed(function () {
           return 'value';
         }),
@@ -107,7 +108,7 @@ moduleFor(
   'Ember.get()',
   class extends ObservableTestCase {
     beforeEach() {
-      objectA = ObservableObject.extend({
+      objectA = classicExtend(ObservableObject, {
         computed: computed(function () {
           return 'value';
         }),
@@ -174,7 +175,7 @@ moduleFor(
   class extends ObservableTestCase {
     ['@test should return a property at a given path relative to the passed object'](assert) {
       let foo = ObservableObject.create({
-        bar: ObservableObject.extend({
+        bar: classicExtend(ObservableObject, {
           baz: computed(function () {
             return 'blargh';
           }),
@@ -206,7 +207,7 @@ moduleFor(
   'object.set()',
   class extends ObservableTestCase {
     beforeEach() {
-      object = ObservableObject.extend({
+      object = classicExtend(ObservableObject, {
         computed: computed({
           get() {
             return this._computed;
@@ -297,7 +298,7 @@ moduleFor(
     beforeEach() {
       lookup = context.lookup = {};
 
-      object = ObservableObject.extend({
+      object = classicExtend(ObservableObject, {
         computed: computed({
           get() {
             this.computedCalls.push('getter-called');
@@ -508,7 +509,7 @@ moduleFor(
     }
 
     ['@test dependent keys should be able to be specified as property paths'](assert) {
-      let depObj = ObservableObject.extend({
+      let depObj = classicExtend(ObservableObject, {
         menuPrice: computed('menu.price', function () {
           return this.get('menu.price');
         }),
@@ -535,7 +536,7 @@ moduleFor(
       let DepObj;
 
       run(function () {
-        lookup.DepObj = DepObj = ObservableObject.extend({
+        lookup.DepObj = DepObj = classicExtend(ObservableObject, {
           price: computed('restaurant.menu.price', function () {
             return this.get('restaurant.menu.price');
           }),
@@ -614,7 +615,7 @@ moduleFor(
   'Observable objects & object properties ',
   class extends ObservableTestCase {
     beforeEach() {
-      object = ObservableObject.extend({
+      object = classicExtend(ObservableObject, {
         getEach() {
           let keys = ['normal', 'abnormal'];
           let ret = [];

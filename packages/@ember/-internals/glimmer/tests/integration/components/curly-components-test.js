@@ -28,6 +28,7 @@ import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { precompileTemplate } from '@ember/template-compilation';
+import { classicExtend, classicReopenClass } from '@ember/object/lib/classic';
 
 moduleFor(
   'Components test: curly components',
@@ -1219,7 +1220,7 @@ moduleFor(
       // import Component from '@ember/component';
       // import layout from './template';
       //
-      // export default Component.extend({
+      // export default classicExtend(Component, {
       //   layout
       // });
       let hello = precompileTemplate('Hello');
@@ -3376,7 +3377,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{this.bar}}-{{this.barCopy}}'),
-          Component.extend({
+          classicExtend(Component, {
             init() {
               this._super(...arguments);
               this.didInit = true;
@@ -3454,7 +3455,7 @@ moduleFor(
         () => {
           this.owner.register(
             'component:evented-component',
-            Component.extend({
+            classicExtend(Component, {
               someTruthyProperty: true,
 
               init() {
@@ -3559,7 +3560,7 @@ moduleFor(
           template(
             'MyVar1: {{attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{attrs.myVar2}}',
             {
-              component: MyComponent.reopenClass({ positionalParams: ['myVar'] }),
+              component: classicReopenClass(MyComponent, { positionalParams: ['myVar'] }),
               strictMode: false,
             }
           )
@@ -3577,7 +3578,7 @@ moduleFor(
           template(
             'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
             {
-              component: MyComponent.reopenClass({ positionalParams: ['myVar'] }),
+              component: classicReopenClass(MyComponent, { positionalParams: ['myVar'] }),
               strictMode: false,
             }
           )
@@ -3598,7 +3599,7 @@ moduleFor(
           precompileTemplate(
             'MyVar1: {{@myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{@myVar2}}'
           ),
-          MyComponent.reopenClass({
+          classicReopenClass(MyComponent, {
             positionalParams: ['myVar'],
           })
         )

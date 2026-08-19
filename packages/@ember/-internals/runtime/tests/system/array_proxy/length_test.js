@@ -5,6 +5,7 @@ import { A as a } from '@ember/array';
 import { moduleFor, AbstractTestCase, runTask, runLoopSettled } from 'internal-test-helpers';
 import { set, get } from '@ember/object';
 import { createCache, getValue } from '@glimmer/validator';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Ember.ArrayProxy - content change (length)',
@@ -158,7 +159,7 @@ moduleFor(
 
       aCalled = bCalled = cCalled = dCalled = eCalled = 0;
 
-      let obj = EmberObject.extend({
+      let obj = classicExtend(EmberObject, {
         colors: reads('model'),
         length: reads('colors.length'),
 

@@ -3,6 +3,7 @@ import { alias, oneWay as reads } from '@ember/object/computed';
 import { A as emberA, isArray } from '@ember/array';
 import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicExtend, classicReopen } from '@ember/object/lib/classic';
 
 function K() {
   return this;
@@ -141,7 +142,7 @@ moduleFor(
     }
 
     ['@test can retrieve metadata for a computed property'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         computedProperty: computed(function () {}).meta({ key: 'keyValue' }),
       });
 
@@ -178,7 +179,7 @@ moduleFor(
     ['@test overriding a computed property with null removes it from eachComputedProperty iteration'](
       assert
     ) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         foo: computed(function () {}),
 
         fooDidChange: observer('foo', function () {}),
@@ -186,7 +187,7 @@ moduleFor(
         bar: computed(function () {}),
       });
 
-      let SubClass = MyClass.extend({
+      let SubClass = classicExtend(MyClass, {
         foo: null,
       });
 
@@ -202,7 +203,7 @@ moduleFor(
     }
 
     ['@test can iterate over a list of computed properties for a class'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         foo: computed(function () {}),
 
         fooDidChange: observer('foo', function () {}),
@@ -212,11 +213,11 @@ moduleFor(
         qux: alias('foo'),
       });
 
-      let SubClass = MyClass.extend({
+      let SubClass = classicExtend(MyClass, {
         baz: computed(function () {}),
       });
 
-      SubClass.reopen({
+      classicReopen(SubClass, {
         bat: computed(function () {}).meta({ iAmBat: true }),
       });
 
@@ -254,7 +255,7 @@ moduleFor(
     ['@test list of properties updates when an additional property is added (such cache busting)'](
       assert
     ) {
-      let MyClass = EmberObject.extend({
+      let MyClass = classicExtend(EmberObject, {
         foo: computed(K),
 
         fooDidChange: observer('foo', function () {}),
@@ -270,7 +271,7 @@ moduleFor(
 
       assert.deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
 
-      MyClass.reopen({
+      classicReopen(MyClass, {
         baz: computed(K),
       });
 
@@ -354,7 +355,7 @@ moduleFor(
     ['@test observing prop installed with computed macro reads and overriding it in create() works'](
       assert
     ) {
-      let Obj = EmberObject.extend({
+      let Obj = classicExtend(EmberObject, {
         name: reads('model.name'),
         nameDidChange: observer('name', function () {}),
       });
@@ -391,7 +392,7 @@ moduleFor(
     }
 
     ['@test @each on maybe array'](assert) {
-      let Normalizer = EmberObject.extend({
+      let Normalizer = classicExtend(EmberObject, {
         options: null, // null | undefined | { value: any } | Array<{ value: any }>
 
         // Normalize into Array<any>
@@ -487,7 +488,7 @@ moduleFor(
         }
       }
 
-      let Normalizer = EmberObject.extend({
+      let Normalizer = classicExtend(EmberObject, {
         options: null, // null | ArrayLike<{ value: any }>
 
         // Normalize into Array<any>

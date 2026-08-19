@@ -2,6 +2,7 @@ import EmberObject, { get } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { run } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicReopen } from '@ember/object/lib/classic';
 
 moduleFor(
   'Mixin#reopen',
@@ -30,7 +31,7 @@ moduleFor(
         }
       };
 
-      Taco.reopen({
+      classicReopen(Taco, {
         createBreakfast() {
           return this._super(...arguments);
         },

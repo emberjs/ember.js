@@ -2,6 +2,7 @@ import EmberObject from '@ember/object';
 import { defineProperty, nativeDescDecorator } from '..';
 import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 let classes = [
   class {
@@ -66,7 +67,7 @@ let classes = [
 
   class {
     static module(title) {
-      return `${title}: in EmberObject.extend()`;
+      return `${title}: in classicExtend(EmberObject, )`;
     }
 
     constructor() {
@@ -83,7 +84,7 @@ let classes = [
     }
 
     finalize() {
-      this.klass = EmberObject.extend(this.props);
+      this.klass = classicExtend(EmberObject, this.props);
       return this.klass.create();
     }
 
@@ -94,7 +95,7 @@ let classes = [
 
   class {
     static module(title) {
-      return `${title}: in EmberObject.extend() through a mixin`;
+      return `${title}: in classicExtend(EmberObject, ) through a mixin`;
     }
 
     constructor() {
@@ -111,7 +112,7 @@ let classes = [
     }
 
     finalize() {
-      this.klass = EmberObject.extend(Mixin.create(this.props));
+      this.klass = classicExtend(EmberObject, Mixin.create(this.props));
       return this.klass.create();
     }
 
@@ -139,8 +140,8 @@ let classes = [
     }
 
     finalize() {
-      this.superklass = EmberObject.extend(this.props);
-      return this.superklass.extend().create();
+      this.superklass = classicExtend(EmberObject, this.props);
+      return classicExtend(this.superklass).create();
     }
 
     source() {

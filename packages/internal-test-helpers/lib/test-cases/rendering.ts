@@ -14,6 +14,7 @@ import buildOwner from '../build-owner';
 import { define } from '../module-for';
 import { runAppend, runDestroy, runTask } from '../run';
 import AbstractTestCase from './abstract';
+import { classicExtend } from '@ember/object/lib/classic';
 
 const TextNode = window.Text;
 
@@ -111,7 +112,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       layoutName: '-top-level',
     });
 
-    owner.register('component:-top-level', Component.extend(attrs));
+    owner.register('component:-top-level', classicExtend(Component, attrs));
 
     this.component = owner.lookup('component:-top-level');
 
@@ -137,7 +138,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     if (typeof funcOrClassBody === 'function') {
       this.owner.register(`helper:${name}`, helper(funcOrClassBody));
     } else if (typeof funcOrClassBody === 'object' && funcOrClassBody !== null) {
-      this.owner.register(`helper:${name}`, Helper.extend(funcOrClassBody));
+      this.owner.register(`helper:${name}`, classicExtend(Helper, funcOrClassBody));
     } else {
       throw new Error(`Cannot register ${funcOrClassBody} as a helper`);
     }

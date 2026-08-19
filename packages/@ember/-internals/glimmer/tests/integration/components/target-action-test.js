@@ -13,6 +13,7 @@ import EmberObject from '@ember/object';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { Component } from '../../utils/helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Components test: send',
@@ -99,7 +100,7 @@ moduleFor(
 
       this.owner.register(
         'component:foo-bar',
-        Component.extend({
+        classicExtend(Component, {
           init() {
             this._super(...arguments);
             component = this;
@@ -110,7 +111,7 @@ moduleFor(
               return true;
             },
           },
-          target: Controller.extend({
+          target: classicExtend(Controller, {
             actions: {
               poke: () => {
                 this.assert.ok(true, 'action bubbled to controller');
@@ -160,7 +161,7 @@ moduleFor(
 
       this.owner.register(
         'component:x-index',
-        class extends SuperComponent.extend(BarViewMixin) {
+        class extends classicExtend(SuperComponent, BarViewMixin) {
           init() {
             super.init(...arguments);
             component = this;

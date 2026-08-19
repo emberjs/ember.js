@@ -2,6 +2,7 @@ import Controller from '@ember/controller';
 import Route from '@ember/routing/route';
 import Mixin from '@ember/object/mixin';
 import { QueryParamTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
+import { classicExtend } from '@ember/object/lib/classic';
 
 moduleFor(
   'Query Params - overlapping query param property names',
@@ -116,7 +117,7 @@ moduleFor(
     ) {
       assert.expect(1);
 
-      let parentController = Controller.extend({
+      let parentController = classicExtend(Controller, {
         queryParams: { page: 'page' },
       });
       this.add('controller:parent', parentController);
@@ -157,12 +158,12 @@ moduleFor(
 
       this.add(
         'controller:parent',
-        Controller.extend(HasPage, {
+        classicExtend(Controller, HasPage, {
           queryParams: { page: 'yespage' },
         })
       );
 
-      this.add('controller:parent.child', Controller.extend(HasPage));
+      this.add('controller:parent.child', classicExtend(Controller, HasPage));
 
       await this.setupBase();
       this.assertCurrentPath('/parent/child');

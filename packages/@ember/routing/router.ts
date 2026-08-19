@@ -66,6 +66,7 @@ import {
   eventedOff,
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
+import { classicReopen, classicReopenClass } from '@ember/object/lib/classic';
 
 /**
 @module @ember/routing/router
@@ -304,7 +305,7 @@ class EmberRouter extends EmberObject {
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
       // FIXME: Can we remove this?
-      this.reopenClass({ dslCallbacks: this.dslCallbacks });
+      classicReopenClass(this, { dslCallbacks: this.dslCallbacks });
     }
 
     this.dslCallbacks.push(callback);
@@ -1864,7 +1865,7 @@ function forEachQueryParam(
   }
 }
 
-EmberRouter.reopen({
+classicReopen(EmberRouter, {
   didTransition: defaultDidTransition,
   willTransition: defaultWillTransition,
   rootURL: '/',

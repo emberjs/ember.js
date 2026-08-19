@@ -3,6 +3,7 @@ import EmberObject from '@ember/object';
 import TargetActionSupport from '../../lib/mixins/target_action_support';
 import { expectDeprecation, moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
+import { classicExtend } from '@ember/object/lib/classic';
 
 let originalLookup = context.lookup;
 let lookup;
@@ -28,7 +29,7 @@ moduleFor(
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
       );
 
-      let obj = EmberObject.extend(TargetActionSupport).create();
+      let obj = classicExtend(EmberObject, TargetActionSupport).create();
 
       assert.ok(false === obj.triggerAction(), 'no target or action was specified');
     }
@@ -43,7 +44,7 @@ moduleFor(
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
       );
 
-      let obj = EmberObject.extend(TargetActionSupport).create({
+      let obj = classicExtend(EmberObject, TargetActionSupport).create({
         target: EmberObject.create({
           anEvent() {
             assert.ok(true, 'anEvent method was called');
@@ -66,7 +67,7 @@ moduleFor(
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
       );
 
-      let obj = EmberObject.extend(TargetActionSupport).create({
+      let obj = classicExtend(EmberObject, TargetActionSupport).create({
         target: EmberObject.create({
           send(evt, context) {
             assert.equal(evt, 'anEvent', 'send() method was invoked with correct event name');
@@ -99,7 +100,7 @@ moduleFor(
         },
       });
 
-      let myObj = EmberObject.extend(TargetActionSupport).create({
+      let myObj = classicExtend(EmberObject, TargetActionSupport).create({
         target: 'Test.targetObj',
         action: 'anEvent',
       });
@@ -117,7 +118,7 @@ moduleFor(
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
       );
 
-      let obj = EmberObject.extend(TargetActionSupport).create({
+      let obj = classicExtend(EmberObject, TargetActionSupport).create({
         action: 'anEvent',
         actionContext: {},
         target: EmberObject.create({
@@ -147,7 +148,7 @@ moduleFor(
       lookup.Test = Test;
       Test.aContext = {};
 
-      let obj = EmberObject.extend(TargetActionSupport).create({
+      let obj = classicExtend(EmberObject, TargetActionSupport).create({
         action: 'anEvent',
         actionContext: 'Test.aContext',
         target: EmberObject.create({
@@ -175,7 +176,7 @@ moduleFor(
           assert.ok(true, 'anEvent method was called');
         },
       });
-      let obj = EmberObject.extend(TargetActionSupport).create({
+      let obj = classicExtend(EmberObject, TargetActionSupport).create({
         action: 'anEvent',
       });
 
@@ -195,7 +196,7 @@ moduleFor(
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
       );
 
-      let obj = EmberObject.extend(TargetActionSupport).create({
+      let obj = classicExtend(EmberObject, TargetActionSupport).create({
         target: EmberObject.create({
           anEvent() {
             assert.ok(true, 'anEvent method was called');
@@ -220,7 +221,7 @@ moduleFor(
       );
 
       let context = {};
-      let obj = EmberObject.extend(TargetActionSupport).create({
+      let obj = classicExtend(EmberObject, TargetActionSupport).create({
         target: EmberObject.create({
           anEvent(ctx) {
             assert.ok(context === ctx, 'anEvent method was called with the expected context');
@@ -247,7 +248,7 @@ moduleFor(
 
       let param1 = 'someParam';
       let param2 = 'someOtherParam';
-      let obj = EmberObject.extend(TargetActionSupport).create({
+      let obj = classicExtend(EmberObject, TargetActionSupport).create({
         target: EmberObject.create({
           anEvent(first, second) {
             assert.ok(
@@ -279,7 +280,7 @@ moduleFor(
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
       );
 
-      let obj = EmberObject.extend(TargetActionSupport).create({
+      let obj = classicExtend(EmberObject, TargetActionSupport).create({
         target: EmberObject.create({
           anEvent(ctx) {
             assert.ok(null === ctx, 'anEvent method was called with the expected context (null)');
