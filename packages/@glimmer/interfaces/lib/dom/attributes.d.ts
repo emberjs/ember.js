@@ -49,7 +49,7 @@ export interface ResettableBlock extends FixedBlock {
 
 export interface DOMStack {
   pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     guid: string,
     insertBefore: Maybe<SimpleNode>
   ): FixedBlock;
@@ -62,7 +62,7 @@ export interface DOMStack {
 
   appendDynamicHTML(value: string): void;
   appendDynamicText(value: string): SimpleText;
-  appendDynamicFragment(value: SimpleDocumentFragment): void;
+  appendDynamicFragment(value: SimpleDocumentFragment): Bounds;
   appendDynamicNode(value: SimpleNode): void;
 
   setStaticAttribute(name: string, value: string, namespace: Nullable<string>): void;
@@ -78,7 +78,7 @@ export interface DOMStack {
 
 export interface TreeOperations {
   __openElement(tag: string): SimpleElement;
-  __flushElement(parent: SimpleElement, constructing: SimpleElement): void;
+  __flushElement(parent: SimpleElement | SimpleDocumentFragment, constructing: SimpleElement): void;
   __openBlock(): void;
   __closeBlock(): void;
   __appendText(text: string): SimpleText;
@@ -101,7 +101,7 @@ export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
   dom: GlimmerTreeConstruction;
   updateOperations: GlimmerTreeChanges;
   constructing: Nullable<SimpleElement>;
-  element: SimpleElement;
+  element: SimpleElement | SimpleDocumentFragment;
 
   hasBlocks: boolean;
   debugBlocks(): AppendingBlock[];
