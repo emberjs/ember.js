@@ -1,7 +1,5 @@
+import { isDestroying, isDestroyed } from '@ember/destroyable';
 import { DEBUG } from '@glimmer/env';
-
-export const IS_DESTROYING_KEY = Symbol('__is_destroying__');
-export const IS_DESTROYED_KEY = Symbol('__is_destroyed__');
 
 // This provides a type-safe `WeakMap`: the getter and setter link the key to a
 // specific value. This is how `WeakMap`s actually behave, but the TS type
@@ -217,9 +215,6 @@ export type Args<S> = ExpandSignature<S>['Args']['Named'];
  * inside the component `this.args.firstName` would also be `Tom`.
  */
 export default class GlimmerComponent<S = unknown> {
-  [IS_DESTROYING_KEY] = false;
-  [IS_DESTROYED_KEY] = false;
-
   /**
    * Constructs a new component and assigns itself the passed properties. You
    * should not construct new components yourself. Instead, Glimmer will
@@ -265,11 +260,11 @@ export default class GlimmerComponent<S = unknown> {
   readonly args: Readonly<Args<S>>;
 
   get isDestroying(): boolean {
-    return this[IS_DESTROYING_KEY] || false;
+    return isDestroying(this);
   }
 
   get isDestroyed(): boolean {
-    return this[IS_DESTROYED_KEY] || false;
+    return isDestroyed(this);
   }
 
   /**
