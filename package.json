@@ -271,6 +271,7 @@
       "@ember/object/events.js": "ember-source/@ember/object/events.js",
       "@ember/object/index.js": "ember-source/@ember/object/index.js",
       "@ember/object/internals.js": "ember-source/@ember/object/internals.js",
+      "@ember/object/lib/classic.js": "ember-source/@ember/object/lib/classic.js",
       "@ember/object/lib/computed/computed_macros.js": "ember-source/@ember/object/lib/computed/computed_macros.js",
       "@ember/object/lib/computed/reduce_computed_macros.js": "ember-source/@ember/object/lib/computed/reduce_computed_macros.js",
       "@ember/object/mixin.js": "ember-source/@ember/object/mixin.js",
