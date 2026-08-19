@@ -1,0 +1,12 @@
+# Unlabeled Changes
+
+* Other
+  * [#21576](https://github.com/emberjs/ember.js/pull/21576) Don't use build for publishing in 'pnpm bench' ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21574](https://github.com/emberjs/ember.js/pull/21574) Revert accidental changes to package manifest ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21571](https://github.com/emberjs/ember.js/pull/21571) improve batch rendering performance by moving VM blocks out of the DESTRYABLE_META ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21573](https://github.com/emberjs/ember.js/pull/21573) [BUGFIX release] Fix link to @ember/helper from Ember.Templates.helpers docs ([@kategengler](https://github.com/kategengler))
+* `@glimmer/component`
+  * [#21561](https://github.com/emberjs/ember.js/pull/21561) Update @glimmer/component's package.json to declare type=module ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+
+*Cannot plan release until the above changes are labeled*.
