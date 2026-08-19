@@ -5,6 +5,7 @@ import { INIT_FACTORY } from '@ember/-internals/container/lib/container';
 import type { Meta } from '@ember/-internals/meta/lib/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
 import { observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils/lib/super';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type {
@@ -28,6 +29,7 @@ import {
 } from '@ember/-internals/metal/lib/observer';
 import { defineDecorator, defineValue } from '@ember/-internals/metal/lib/properties';
 import { addListener, removeListener } from '@ember/-internals/metal/lib/events';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
@@ -577,6 +579,15 @@ export default class Mixin {
     @public
   */
   static create<M extends typeof Mixin>(...args: any[]): InstanceType<M> {
+    deprecateUntil(
+      `Using mixins is deprecated. Refactor to composition patterns or class decorators.`,
+      DEPRECATIONS.DEPRECATE_MIXINS
+    );
+    return this[INTERNAL_MIXIN_CREATE]<M>(...args);
+  }
+
+  /** @internal */
+  static [INTERNAL_MIXIN_CREATE]<M extends typeof Mixin>(...args: any[]): InstanceType<M> {
     setUnprocessedMixins();
     let M = this;
     return new M(args, undefined) as InstanceType<M>;

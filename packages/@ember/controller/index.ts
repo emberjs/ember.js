@@ -8,6 +8,7 @@ import type {
   ElementDescriptor,
 } from '@ember/-internals/metal/lib/decorator';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import type { RouteArgs } from '@ember/routing/-internals';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import type { Transition } from 'router_js';
@@ -233,7 +234,7 @@ interface ControllerMixin<T> extends ActionHandler {
   */
   replaceRoute(...args: RouteArgs): Transition;
 }
-const ControllerMixin = Mixin.create(ActionHandler, {
+const ControllerMixin = Mixin[INTERNAL_MIXIN_CREATE](ActionHandler, {
   /* ducktype as a controller */
   isController: true,
 
