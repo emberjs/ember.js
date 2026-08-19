@@ -1,4 +1,5 @@
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 /**
@@ -19,7 +20,7 @@ import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 interface Comparable {
   compare: ((a: unknown, b: unknown) => -1 | 0 | 1) | null;
 }
-const Comparable = Mixin.create({
+const Comparable = Mixin[INTERNAL_MIXIN_CREATE]({
   /**
     __Required.__ You must implement this method to apply this mixin.
 

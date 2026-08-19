@@ -174,7 +174,9 @@ moduleFor(
       });
     }
 
-    ['@test using mixins'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test using mixins`](assert) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let Mixin1 = Mixin.create({
         property1: 'data-1',
       });
@@ -394,23 +396,23 @@ moduleFor(
         }
       }
 
-      let Mixin1 = Mixin.create({
+      let classicProps1 = {
         init() {
           calls.push('Mixin1 init before _super');
           this._super(...arguments);
           calls.push('Mixin1 init after _super');
         },
-      });
+      };
 
-      let Mixin2 = Mixin.create({
+      let classicProps2 = {
         init() {
           calls.push('Mixin2 init before _super');
           this._super(...arguments);
           calls.push('Mixin2 init after _super');
         },
-      });
+      };
 
-      class B extends A.extend(Mixin1, Mixin2) {
+      class B extends A.extend(classicProps1, classicProps2) {
         init() {
           calls.push('B init before super.init');
           super.init(...arguments);

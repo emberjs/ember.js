@@ -6,6 +6,7 @@ import {
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 
 export { on } from '@ember/-internals/metal/lib/events';
 
@@ -156,7 +157,7 @@ interface Evented {
    */
   has(name: string): boolean;
 }
-const Evented = Mixin.create({
+const Evented = Mixin[INTERNAL_MIXIN_CREATE]({
   on(name: string, target: object, method?: string | Function) {
     eventedOn(this, name, target, method);
     return this;

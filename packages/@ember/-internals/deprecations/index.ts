@@ -133,6 +133,13 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-evented',
   }),
+  DEPRECATE_MIXINS: deprecation({
+    id: 'deprecate-mixins',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-mixins',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

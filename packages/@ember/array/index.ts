@@ -11,6 +11,7 @@ import {
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import { assert } from '@ember/debug';
 import Enumerable from '@ember/enumerable';
 import MutableEnumerable from '@ember/enumerable/mutable';
@@ -1139,7 +1140,7 @@ interface EmberArray<T> extends Enumerable {
   */
   without(value: T): NativeArray<T>;
 }
-const EmberArray = Mixin.create(Enumerable, {
+const EmberArray = Mixin[INTERNAL_MIXIN_CREATE](Enumerable, {
   init() {
     this._super(...arguments);
     setEmberArray(this);
@@ -1687,7 +1688,7 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   */
   addObjects(objects: T[]): this;
 }
-const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
+const MutableArray = Mixin[INTERNAL_MIXIN_CREATE](EmberArray, MutableEnumerable, {
   clear() {
     let len = this.length;
     if (len === 0) {
@@ -2023,7 +2024,7 @@ interface MutableArrayWithoutNative<T> extends Omit<
 */
 interface NativeArray<T> extends Array<T>, Observable, MutableArrayWithoutNative<T> {}
 
-let NativeArray = Mixin.create(MutableArray, Observable, {
+let NativeArray = Mixin[INTERNAL_MIXIN_CREATE](MutableArray, Observable, {
   objectAt(idx: number) {
     return this[idx];
   },

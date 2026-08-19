@@ -15,6 +15,7 @@ import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
 import Mixin, { applyMixin } from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
@@ -851,7 +852,7 @@ class CoreObject {
       // make sure that it gets properly applied. Reusing the same mixin after
       // the first `proto` call will cause it to get skipped.
       if (prototypeMixinMap.has(this)) {
-        prototypeMixinMap.set(this, Mixin.create(this.PrototypeMixin));
+        prototypeMixinMap.set(this, Mixin[INTERNAL_MIXIN_CREATE](this.PrototypeMixin));
       }
     }
   }
@@ -1010,7 +1011,7 @@ class CoreObject {
   static get PrototypeMixin() {
     let prototypeMixin = prototypeMixinMap.get(this);
     if (prototypeMixin === undefined) {
-      prototypeMixin = Mixin.create();
+      prototypeMixin = Mixin[INTERNAL_MIXIN_CREATE]();
       prototypeMixin.ownerConstructor = this;
       prototypeMixinMap.set(this, prototypeMixin);
     }
