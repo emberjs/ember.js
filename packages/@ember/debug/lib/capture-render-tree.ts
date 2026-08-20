@@ -1,6 +1,14 @@
+import { enableDebugRenderTree } from '@ember/-internals/glimmer/lib/setup-debug-render-tree';
 import type { Renderer } from '@ember/-internals/glimmer/lib/renderer';
 import type Owner from '@ember/owner';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
+
+// Register the DebugRenderTree implementation as a side effect of importing
+// this module. This is what makes `EmberENV._DEBUG_RENDER_TREE` work in
+// production builds: any build that includes `captureRenderTree` (e.g. for
+// Ember Inspector) also includes the render tree bookkeeping, while builds
+// that never import it can tree-shake the implementation away entirely.
+enableDebugRenderTree();
 
 /**
   @module @ember/debug

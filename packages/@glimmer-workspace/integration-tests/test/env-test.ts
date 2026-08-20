@@ -11,7 +11,6 @@ if (DEBUG) {
       {
         onTransactionCommit() {},
         isInteractive: true,
-        enableDebugTooling: false,
       }
     );
     env.begin();
@@ -28,7 +27,6 @@ QUnit.test('ensure commit cleans up when it can', (assert) => {
     {
       onTransactionCommit() {},
       isInteractive: true,
-      enableDebugTooling: false,
     }
   );
   env.begin();
