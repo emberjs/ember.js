@@ -91,7 +91,7 @@ function allowsCycles(tag: Tag): boolean {
   }
 }
 
-class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
+export class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   static combine(this: void, tags: Tag[]): Tag {
     switch (tags.length) {
       case 0:
@@ -113,6 +113,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   private isUpdating = false;
   public subtag: Tag | Tag[] | null = null;
   private subtagBufferCache: Revision | null = null;
+  public meta: any = null;
 
   declare [TYPE]: T;
 
