@@ -292,7 +292,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
 
   _router!: EmberRouter;
   declare _topLevelViewTemplate: any;
-  declare _environment: any;
+  declare private _environment: any;
 
   constructor(owner?: Owner) {
     super(owner);
@@ -598,7 +598,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
 
     @property _activeQPChanged
   */
-  _activeQPChanged(qp: QueryParam, value: unknown) {
+  private _activeQPChanged(qp: QueryParam, value: unknown) {
     this._router._activeQPChanged(qp.scopedPropertyName, value);
   }
 
@@ -606,7 +606,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
     @private
     @method _updatingQPChanged
   */
-  _updatingQPChanged(qp: QueryParam) {
+  private _updatingQPChanged(qp: QueryParam) {
     this._router._updatingQPChanged(qp.urlKey);
   }
 
@@ -698,7 +698,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
     @param {String} controllerPropertyName
     @private
   */
-  serializeQueryParamKey(controllerPropertyName: string) {
+  private serializeQueryParamKey(controllerPropertyName: string) {
     return controllerPropertyName;
   }
 
@@ -740,7 +740,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
     @property _optionsForQueryParam
   */
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  _optionsForQueryParam(qp: QueryParam): {} {
+  protected _optionsForQueryParam(qp: QueryParam): {} {
     const queryParams = get(this, 'queryParams');
     return (
       get(queryParams, qp.urlKey) ||
@@ -1441,7 +1441,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
     @param {String} name the name of the controller
     @private
   */
-  generateController(name: string) {
+  private generateController(name: string) {
     let owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
 
@@ -1527,7 +1527,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
     @method this[RENDER]
     @private
    */
-  [RENDER]() {
+  private [RENDER]() {
     this[RENDER_STATE] = buildRenderState(this);
     once(this._router, '_setOutlets');
   }
@@ -1541,7 +1541,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
 
     @method teardownViews
   */
-  teardownViews() {
+  private teardownViews() {
     if (this[RENDER_STATE]) {
       this[RENDER_STATE] = undefined;
       once(this._router, '_setOutlets');
