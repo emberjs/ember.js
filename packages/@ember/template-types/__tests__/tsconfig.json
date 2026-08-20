@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tsconfig.compileroptions.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["es2020", "dom"],
+    "types": ["ember-source/types"]
+  }
+}
