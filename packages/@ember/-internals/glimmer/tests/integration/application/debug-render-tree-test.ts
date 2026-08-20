@@ -5,6 +5,7 @@ import { Component, setComponentManager } from '@ember/-internals/glimmer';
 import type { InternalOwner } from '@ember/-internals/owner';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
+import { helper } from '@ember/component/helper';
 import { assert, captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
@@ -40,10 +41,64 @@ interface ExpectedRenderNode {
   children: Expected<CapturedRenderNode['children']> | ExpectedRenderNode[];
 }
 
+function collectByType(
+  nodes: CapturedRenderNode[],
+  type: CapturedRenderNode['type']
+): CapturedRenderNode[] {
+  let result: CapturedRenderNode[] = [];
+
+  for (let node of nodes) {
+    if (node.type === type) {
+      result.push(node);
+    }
+    result.push(...collectByType(node.children, type));
+  }
+
+  return result;
+}
+
 if (ENV._DEBUG_RENDER_TREE) {
   moduleFor(
     'Application test: debug render tree',
     class extends ApplicationTestCase {
+      async '@test helpers'() {
+        this.add(
+          'helper:up-case',
+          helper(([value]: [unknown]) => String(value).toUpperCase())
+        );
+        this.add(
+          'template:index',
+          precompileTemplate('{{up-case "hello"}} {{array "a" "b"}}', {
+            moduleName: 'my-app/templates/index.hbs',
+          })
+        );
+
+        await this.visit('/');
+
+        let helperNodes = collectByType(captureRenderTree(this.owner), 'helper');
+
+        this.assert.strictEqual(
+          helperNodes.length,
+          1,
+          'user helpers are captured; internal helpers ({{array}}, the outlet machinery) are not'
+        );
+
+        let [node] = helperNodes;
+        assert('expected node', node);
+
+        this.assert.strictEqual(node.bounds, null, 'helper nodes have no bounds');
+        this.assert.deepEqual(
+          node.args,
+          { positional: ['hello'], named: {} },
+          'helper args are captured'
+        );
+        this.assert.strictEqual(
+          node.reactivity.updateCount,
+          0,
+          'no re-renders after initial render'
+        );
+      }
+
       async '@test routes'() {
         this.add(
           'template:index',
