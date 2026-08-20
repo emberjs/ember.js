@@ -23,7 +23,13 @@ import type { PushExpressionOp } from './compilers';
 import { expr } from '../opcode-builder/helpers/expr';
 import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
 import { SimpleArgs } from '../opcode-builder/helpers/shared';
-import { Call, CallDynamic, Curry, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
+import {
+  Call,
+  CallDynamic,
+  Curry,
+  PushPrimitiveReference,
+  receiverExpressionFor,
+} from '../opcode-builder/helpers/vm';
 import { HighLevelResolutionOpcodes } from '../opcode-builder/opcodes';
 import { Compilers } from './compilers';
 
@@ -44,7 +50,7 @@ EXPRESSIONS.add(SexpOpcodes.Call, (op, [, expression, positional, named]) => {
     });
   } else {
     expr(op, expression);
-    CallDynamic(op, positional, named);
+    CallDynamic(op, positional, named, receiverExpressionFor(expression));
   }
 });
 
