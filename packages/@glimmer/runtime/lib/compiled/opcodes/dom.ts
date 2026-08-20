@@ -363,11 +363,16 @@ export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
 
         this.tag = tag;
         vm.env.scheduleInstallModifier(newInstance);
+      } else {
+        tag = null;
+        this.tag = null;
       }
 
       this.instance = newInstance;
     } else if (tag !== null && !validateTag(tag, lastUpdated)) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+      // tag !== null guarantees instance is defined: this.tag is only set to a
+      // non-null value alongside this.instance being set to a non-null value.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       vm.env.scheduleUpdateModifier(instance!);
       this.lastUpdated = valueForTag(tag);
     }

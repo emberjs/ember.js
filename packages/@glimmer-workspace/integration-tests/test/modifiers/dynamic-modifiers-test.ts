@@ -88,6 +88,52 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
   }
 
   @test
+  'Dynamic modifier becoming undefined does not error when args change afterwards'(assert: Assert) {
+    let installCount = 0;
+    let lastValue: unknown;
+
+    // The modifier reads args[0], so its tag tracks the arg's reactivity.
+    // When outer changes and the modifier's tag is invalidated, the bug triggers:
+    // scheduleUpdateModifier would be called with undefined instance.
+    const foo = defineSimpleModifier((element: Element, args: unknown[]) => {
+      installCount++;
+      lastValue = args[0];
+      (element as HTMLElement).dataset['value'] = String(args[0]);
+    });
+
+    this.render(
+      `
+      {{~#let (modifier this.foo this.outer) as |bar|~}}
+        <div {{ (if this.cond bar) }}>content</div>
+      {{~/let~}}
+      `,
+      { foo, outer: 'initial', cond: true }
+    );
+
+    this.assertHTML('<div data-value="initial">content</div>');
+    assert.strictEqual(installCount, 1, 'modifier installed once on initial render');
+    assert.strictEqual(lastValue, 'initial');
+
+    // Disable the modifier — newInstance becomes undefined, instance is destroyed
+    // (data-value persists because no cleanup function was returned)
+    this.rerender({ cond: false });
+    this.assertHTML('<div data-value="initial">content</div>');
+
+    // Change args while the modifier is disabled — this triggered the bug:
+    // "Cannot destructure property 'manager' of '.for' as it is undefined"
+    // because the modifier's tag was invalidated by the arg change, and the
+    // stale tag caused scheduleUpdateModifier to be called with undefined.
+    this.rerender({ outer: 'changed' });
+    this.assertHTML('<div data-value="initial">content</div>');
+
+    // Re-enable the modifier — should install cleanly with updated args
+    this.rerender({ cond: true });
+    this.assertHTML('<div data-value="changed">content</div>');
+    assert.strictEqual(installCount, 2, 'modifier installed again after re-enabling');
+    assert.strictEqual(lastValue, 'changed');
+  }
+
+  @test
   'Can pass curried modifier as argument and invoke dynamically (with args)'() {
     const foo = defineSimpleModifier(
       (element: Element, [first, second]: string[]) => (element.innerHTML = `${first} ${second}`)
