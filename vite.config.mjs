@@ -40,7 +40,15 @@ export default defineConfig(({ mode }) => {
         configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
       }),
       resolvePackages(
-        { ...exposedDependencies(), ...hiddenDependencies() },
+        {
+          ...exposedDependencies(),
+          ...hiddenDependencies(),
+          // @glimmer/component is published separately and gets its own rollup
+          // build, so it's not part of ember-source's build graph. Point the
+          // test suite at its source, so tests exercise what's in git instead
+          // of whatever happens to be sitting in its dist/ directory.
+          '@glimmer/component': resolve(projectRoot, 'packages/@glimmer/component/src/index.ts'),
+        },
         { enableLocalDebug: true }
       ),
       viteResolverBug(),
