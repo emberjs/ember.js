@@ -1,7 +1,7 @@
 import { service } from '@ember/service';
 import Router from '@ember/routing/router';
 import NoneLocation from '@ember/routing/none-location';
-import { action, get } from '@ember/object';
+import { action } from '@ember/object';
 import { run } from '@ember/runloop';
 import Component from '@glimmer/component';
 import { setComponentTemplate } from '@glimmer/manager';
