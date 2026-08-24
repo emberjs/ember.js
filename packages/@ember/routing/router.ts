@@ -464,9 +464,11 @@ class EmberRouter extends EmberObject {
       ownerRouteManagement.set(routeName, managed);
     }
 
-    const route = managed.manager.getRoute(managed.bucket);
+    const route = hasClassicInterop(managed.manager)
+      ? managed.manager.getRoute(managed.bucket)
+      : managed.bucket;
 
-    // Register the route → {manager, bucket} association that router_js
+    // Register the handle → {manager, bucket} association that router_js
     // dispatches lifecycle hooks through. Owned by the router so managers
     // don't have to stamp anything onto their route objects. Registered on
     // every call (cheap WeakMap set) because a manager may instantiate its

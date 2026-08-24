@@ -57,7 +57,18 @@ export default class Transition<R extends BaseRoute> implements Partial<Promise<
   [PARAMS_SYMBOL]: Dict<unknown>;
   routeInfos: InternalRouteInfo<R>[];
   targetName: Maybe<string>;
-  pivotHandler: Maybe<object>;
+  pivotBucket: Maybe<object>;
+
+  // The route behind `pivotBucket`.
+  get pivotHandler(): Maybe<object> {
+    let bucket = this.pivotBucket;
+
+    if (bucket === undefined) {
+      return undefined;
+    }
+
+    return this.routeInfos.find((routeInfo) => routeInfo.bucket === bucket)?.route;
+  }
   sequence: number;
   isAborted = false;
   isActive = true;
@@ -127,7 +138,7 @@ export default class Transition<R extends BaseRoute> implements Partial<Promise<
     this[PARAMS_SYMBOL] = {};
     this.routeInfos = [];
     this.targetName = undefined;
-    this.pivotHandler = undefined;
+    this.pivotBucket = undefined;
     this.sequence = -1;
 
     if (DEBUG) {
@@ -179,7 +190,7 @@ export default class Transition<R extends BaseRoute> implements Partial<Promise<
         if (!handlerInfo.isResolved) {
           break;
         }
-        this.pivotHandler = handlerInfo.route;
+        this.pivotBucket = handlerInfo.bucket;
       }
 
       this.sequence = router.currentSequence++;

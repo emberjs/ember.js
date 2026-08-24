@@ -11,7 +11,7 @@ import { isParam, merge } from '../utils';
 
 export default class NamedTransitionIntent<R extends BaseRoute> extends TransitionIntent<R> {
   name: string;
-  pivotHandler?: BaseRoute;
+  pivotName?: string;
   contexts: ModelFor<R>[];
   queryParams: Dict<unknown>;
   preTransitionState?: TransitionState<R> = undefined;
@@ -19,14 +19,14 @@ export default class NamedTransitionIntent<R extends BaseRoute> extends Transiti
   constructor(
     router: Router<R>,
     name: string,
-    pivotHandler: BaseRoute | undefined,
+    pivotName: string | undefined,
     contexts: ModelFor<R>[] = [],
     queryParams: Dict<unknown> = {},
     data?: object
   ) {
     super(router, data);
     this.name = name;
-    this.pivotHandler = pivotHandler;
+    this.pivotName = pivotName;
     this.contexts = contexts;
     this.queryParams = queryParams;
   }
@@ -52,10 +52,10 @@ export default class NamedTransitionIntent<R extends BaseRoute> extends Transiti
 
     let invalidateIndex = parsedHandlers.length;
 
-    // Pivot handlers are provided for refresh transitions
-    if (this.pivotHandler) {
+    // Pivot names are provided for refresh transitions
+    if (this.pivotName !== undefined) {
       for (i = 0, len = parsedHandlers.length; i < len; ++i) {
-        if (parsedHandlers[i]!.handler === this.pivotHandler._internalName) {
+        if (parsedHandlers[i]!.handler === this.pivotName) {
           invalidateIndex = i;
           break;
         }

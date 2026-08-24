@@ -16,12 +16,24 @@ import { getOwner } from '@ember/-internals/owner';
 import type Route from '@ember/routing/route';
 import type EmberRouter from '@ember/routing/router';
 import type { InternalRouteInfo } from 'router_js';
-import { getRouteManagement, hasClassicInterop, STATE_SYMBOL } from 'router_js';
+import { hasClassicInterop, STATE_SYMBOL } from 'router_js';
 import type { ClassicRouteBucket } from './bucket';
+
+// Substates are classic machinery: only a classic route has a `foo.loading`
+// sibling, and only it carries the owner and names the lookup needs.
+function classicRouteFor(routeInfo: InternalRouteInfo<Route>): Route | undefined {
+  const { manager, bucket } = routeInfo;
+
+  if (manager === undefined || bucket === undefined || !hasClassicInterop(manager)) {
+    return undefined;
+  }
+
+  return manager.getRoute(bucket) as Route;
+}
 
 export type ActiveTransition = {
   isActive: boolean;
-  pivotHandler?: unknown;
+  pivotBucket?: unknown;
   trigger?(ignoreFailure: boolean, name: string, ...args: unknown[]): void;
   [STATE_SYMBOL]?: { routeInfos: InternalRouteInfo<Route>[] };
 };
@@ -38,11 +50,6 @@ export type ActiveTransition = {
 function findRouteSubstateName(route: Route, state: string) {
   let owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
-
-  let managed = getRouteManagement(route);
-  if (managed === undefined || !hasClassicInterop(managed.manager)) {
-    return '';
-  }
 
   let { routeName, fullRouteName, _router: router } = route;
 
@@ -65,11 +72,6 @@ function findRouteSubstateName(route: Route, state: string) {
 function findRouteStateName(route: Route, state: string) {
   let owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
-
-  let managed = getRouteManagement(route);
-  if (managed === undefined || !hasClassicInterop(managed.manager)) {
-    return '';
-  }
 
   let { routeName, fullRouteName, _router: router } = route;
 
@@ -215,7 +217,7 @@ function findSubstateName(
   state: 'loading' | 'error'
 ): string {
   const routeInfos = transition[STATE_SYMBOL]?.routeInfos ?? [];
-  const pivotHandler = transition.pivotHandler;
+  const pivotBucket = transition.pivotBucket;
 
   const originIndex =
     originRoute === undefined
@@ -226,7 +228,9 @@ function findSubstateName(
 
   for (let i = startIndex; i >= 0; i--) {
     const ancestorRouteInfo = routeInfos[i];
-    const ancestorRoute = ancestorRouteInfo?.route;
+    if (ancestorRouteInfo === undefined) continue;
+
+    const ancestorRoute = classicRouteFor(ancestorRouteInfo);
     if (!ancestorRoute) continue;
 
     if (ancestorRouteInfo !== originRouteInfo) {
@@ -237,7 +241,12 @@ function findSubstateName(
     const substateName = findRouteSubstateName(ancestorRoute, state);
     if (substateName) return substateName;
 
-    if (state === 'loading' && pivotHandler === ancestorRoute) break;
+    if (
+      state === 'loading' &&
+      pivotBucket !== undefined &&
+      pivotBucket === ancestorRouteInfo.bucket
+    )
+      break;
   }
 
   return '';

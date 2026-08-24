@@ -13,7 +13,7 @@ import {
 } from './transition';
 import { isParam, isPromise, merge } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
-import type { EnterState, RouteManager, RouteStateBucket } from './route-manager';
+import type { EnterState, RouteManagement, RouteManager, RouteStateBucket } from './route-manager';
 import { getRouteManagement, hasClassicInterop } from './route-manager';
 
 export type IModel = {} & {
@@ -25,14 +25,6 @@ export type ModelFor<T> = T extends BaseRoute<infer V> ? V : never;
 export interface BaseRoute<T = unknown> {
   context: T | undefined;
 
-  // this is used to identify the route in router_js machinery, and is not the same as the
-  // routeName property on classic ember routes. It is totally internal to router_js, and
-  // not to be confused with the routeName property on classic ember routes
-  _internalName?: string;
-
-  // I think this could potentially be deleted
-  // it's not mentioned in any ember docs that I can find, and is only
-  // used in a couple of places in router_js
   inaccessibleByURL?: boolean;
 }
 
@@ -237,6 +229,7 @@ function attachMetadata(info: InternalRouteInfo<BaseRoute>, routeInfo: RouteInfo
 export default class InternalRouteInfo<R extends BaseRoute> {
   private _routePromise?: Promise<R> = undefined;
   private _route?: Option<R> = null;
+  private _management?: RouteManagement = undefined;
   protected router: Router<R>;
   declare paramNames: string[];
   declare name: string;
@@ -448,20 +441,24 @@ export default class InternalRouteInfo<R extends BaseRoute> {
     return this.fetchRoute();
   }
 
-  /**
-    The manager driving this route's lifecycle, read from the association the
-    framework router registered via `associateRouteManagement` when it resolved
-    the route. `undefined` until the route has loaded.
-   */
-  get manager(): RouteManager | undefined {
-    let route = this.route;
-    return route === undefined ? undefined : getRouteManagement(route)?.manager;
+  // Reading before the route has loaded forces the load, matching `route`.
+  private get management(): RouteManagement | undefined {
+    if (this._management === undefined) {
+      let route = this.route;
+      if (route !== undefined) {
+        this._management = getRouteManagement(route);
+      }
+    }
+
+    return this._management;
   }
 
-  /** The manager's bucket for this route. `undefined` until the route has loaded. */
+  get manager(): RouteManager | undefined {
+    return this.management?.manager;
+  }
+
   get bucket(): RouteStateBucket | undefined {
-    let route = this.route;
-    return route === undefined ? undefined : getRouteManagement(route)?.bucket;
+    return this.management?.bucket;
   }
 
   set route(route: R | undefined) {
@@ -489,7 +486,7 @@ export default class InternalRouteInfo<R extends BaseRoute> {
   }
 
   private updateRoute(route: R) {
-    route._internalName = this.name;
+    this._management = getRouteManagement(route);
     return (this.route = route);
   }
 

@@ -935,10 +935,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return bucket;
                 }
 
-                getRoute(bucket) {
-                  return bucket.route;
-                }
-
                 getDestroyable() {
                   return null;
                 }
@@ -989,10 +985,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   return new ReactiveBucket(name, new RouteClass(this.owner), ROUTES[name]);
                 }
 
-                getRoute(bucket) {
-                  return bucket.route;
-                }
-
                 getDestroyable() {
                   return null;
                 }
@@ -1035,10 +1027,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
                 createRoute(RouteClass, { name }) {
                   return new FunkyBucket(name, new RouteClass(this.owner), ROUTES[name]);
-                }
-
-                getRoute(bucket) {
-                  return bucket.route;
                 }
 
                 getDestroyable() {

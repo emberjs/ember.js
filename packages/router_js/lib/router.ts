@@ -228,10 +228,10 @@ export default abstract class Router<R extends BaseRoute> {
     // Filter exited routes out of currentRouteInfos. Truncating to
     // `unchanged.length` would lose entering routes that
     // `onRouteInvokableReady` already wrote at higher indices.
-    const exitedRouteObjects = new Set(partition.exited.map((ri) => ri.route));
+    const exitedBuckets = new Set(partition.exited.map((ri) => ri.bucket));
     if (this.currentRouteInfos) {
       this.currentRouteInfos = this.currentRouteInfos.filter(
-        (cri) => !exitedRouteObjects.has(cri.route)
+        (cri) => !exitedBuckets.has(cri.bucket)
       );
     }
 
@@ -724,7 +724,7 @@ export default abstract class Router<R extends BaseRoute> {
       let oldRouteInfo = oldRouteInfos[i]!,
         newRouteInfo = newRouteInfos[i]!;
 
-      if (!oldRouteInfo || oldRouteInfo.route !== newRouteInfo.route) {
+      if (!oldRouteInfo || oldRouteInfo.bucket !== newRouteInfo.bucket) {
         routeChanged = true;
       }
 
@@ -990,13 +990,18 @@ export default abstract class Router<R extends BaseRoute> {
     return this.doTransition(name, args, true);
   }
 
-  refresh(pivotRoute?: R) {
+  refresh(pivot?: R | string) {
     let previousTransition = this.activeTransition;
     let state = previousTransition ? previousTransition[STATE_SYMBOL] : this.state;
     let routeInfos = state!.routeInfos;
 
-    if (pivotRoute === undefined) {
-      pivotRoute = routeInfos[0]!.route;
+    let pivotRouteName: string | undefined;
+    if (pivot === undefined) {
+      pivotRouteName = routeInfos[0]!.name;
+    } else if (typeof pivot === 'string') {
+      pivotRouteName = pivot;
+    } else {
+      pivotRouteName = routeInfos.find((routeInfo) => routeInfo.route === pivot)?.name;
     }
 
     log(this, 'Starting a refresh transition');
@@ -1004,7 +1009,7 @@ export default abstract class Router<R extends BaseRoute> {
     let intent = new NamedTransitionIntent(
       this,
       name,
-      pivotRoute,
+      pivotRouteName,
       [],
       this._changedQueryParams || state!.queryParams
     );

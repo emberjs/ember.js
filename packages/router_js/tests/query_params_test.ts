@@ -320,7 +320,7 @@ scenarios.forEach(function (scenario) {
             if (count === 0) {
               assert.ok(false, "shouldn't fire on first trans");
             } else {
-              router.refresh(this as ClassicRoute);
+              router.refresh('index');
             }
           },
           finalizeQueryParamChange: consumeAllFinalQueryParams,
@@ -493,7 +493,7 @@ scenarios.forEach(function (scenario) {
         },
         events: {
           queryParamsDidChange: function () {
-            router.refresh(this as ClassicRoute);
+            router.refresh('index');
           },
         },
       });
@@ -532,7 +532,7 @@ scenarios.forEach(function (scenario) {
         queryParamsDidChange: function () {
           assert.ok(true, 'index#queryParamsDidChange');
           redirect = causeRedirect;
-          router.refresh(this as ClassicRoute);
+          router.refresh('index');
         },
         finalizeQueryParamChange: function (params: Dict<unknown>, finalParams: Dict<unknown>[]) {
           (finalParams as any).foo = params['foo']; // TODO wat
