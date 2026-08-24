@@ -102,7 +102,7 @@ moduleFor(
           }
           @action
           transitionToSister() {
-            get(this, 'routerService').transitionTo('parent.sister');
+            this.routerService.transitionTo('parent.sister');
           }
         }
       );
