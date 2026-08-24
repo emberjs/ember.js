@@ -24,13 +24,12 @@ export type ModelFor<T> = T extends BaseRoute<infer V> ? V : never;
 
 export interface BaseRoute<T = unknown> {
   context: T | undefined;
-
-  inaccessibleByURL?: boolean;
 }
 
 // used by old router_js tests that expect to be working with the classic ember routes
 export interface ClassicRoute<T = unknown> extends BaseRoute<T> {
   routeName: string;
+  inaccessibleByURL?: boolean;
   events?: Dict<(...args: unknown[]) => unknown>;
   model?(params: Dict<unknown>, transition: Transition): PromiseLike<T> | undefined | T;
   deserialize?(params: Dict<unknown>, transition: Transition): T | PromiseLike<T> | undefined;
@@ -459,6 +458,10 @@ export default class InternalRouteInfo<R extends BaseRoute> {
 
   get bucket(): RouteStateBucket | undefined {
     return this.management?.bucket;
+  }
+
+  get inaccessibleByURL(): boolean {
+    return this.router.isRouteInaccessibleByURL(this.name);
   }
 
   set route(route: R | undefined) {

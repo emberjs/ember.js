@@ -25,9 +25,6 @@ function createRouteComponent(componentName: string, route: string): string {
 }
 
 function routeManagerTests(scenarios: Scenarios, appName: string) {
-  // Every route resolves `model:<its own name>`, so asserting the rendered
-  // value proves the right context reached the right level rather than merely
-  // that a level rendered.
   const modelFor = (name: string) => `model:${name}`;
 
   const funkyRoute = (name: string) => `

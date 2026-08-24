@@ -217,6 +217,8 @@ class EmberRouter extends EmberObject {
   #routeManagement = new WeakMap<Owner, Map<string, RouteManagement>>();
   #routeManagerInstances = new WeakMap<Owner, WeakMap<object, RouteManager>>();
 
+  #inaccessibleByURL = new Map<string, boolean>();
+
   private namespace: any;
 
   // Begin Evented
@@ -477,7 +479,18 @@ class EmberRouter extends EmberObject {
       associateRouteManagement(route, managed.manager, managed.bucket);
     }
 
+    if (hasClassicInterop(managed.manager)) {
+      this.#inaccessibleByURL.set(
+        name,
+        Boolean((route as { inaccessibleByURL?: boolean } | undefined)?.inaccessibleByURL)
+      );
+    }
+
     return route;
+  }
+
+  isRouteInaccessibleByURL(name: string): boolean {
+    return this.#inaccessibleByURL.get(name) ?? false;
   }
 
   _initRouterJs(): void {
@@ -498,6 +511,10 @@ class EmberRouter extends EmberObject {
         // manager/bucket dispatch goes through the routeInfo association, so
         // nothing downstream depends on the route's actual shape.
         return route as BaseRoute;
+      }
+
+      isRouteInaccessibleByURL(name: string) {
+        return router.isRouteInaccessibleByURL(name);
       }
 
       getSerializer(name: string) {

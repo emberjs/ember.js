@@ -65,6 +65,10 @@ export default abstract class Router<R extends BaseRoute> {
   abstract routeDidChange(transition: Transition): void;
   abstract transitionDidError(error: TransitionError, transition: Transition): Transition | Error;
 
+  isRouteInaccessibleByURL(_routeName: string): boolean {
+    return false;
+  }
+
   // -- Manager-driven transition lifecycle -------------------------------------
   //
   // The three `on*` methods below drive the RouteManager lifecycle for every
@@ -767,7 +771,7 @@ export default abstract class Router<R extends BaseRoute> {
     for (let i = routeInfos.length - 1; i >= 0; --i) {
       let routeInfo = routeInfos[i]!;
       merge(params, routeInfo.params);
-      if (routeInfo.route!.inaccessibleByURL) {
+      if (routeInfo.inaccessibleByURL) {
         urlMethod = null;
       }
     }

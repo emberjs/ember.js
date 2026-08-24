@@ -1,4 +1,4 @@
-import type { BaseRoute } from '../route-info';
+import type { BaseRoute, default as InternalRouteInfo } from '../route-info';
 import { UnresolvedRouteInfoByParam } from '../route-info';
 import type Router from '../router';
 import { TransitionIntent } from '../transition-intent';
@@ -28,15 +28,12 @@ export default class URLTransitionIntent<R extends BaseRoute> extends Transition
     let statesDiffer = false;
     let _url = this.url;
 
-    // Checks if a handler is accessible by URL. If it is not, an error is thrown.
-    // For the case where the handler is loaded asynchronously, the error will be
+    // For the case where the route is loaded asynchronously, the error will be
     // thrown once it is loaded.
-    function checkHandlerAccessibility(handler: R) {
-      if (handler && handler.inaccessibleByURL) {
+    function checkAccessibility(routeInfo: InternalRouteInfo<R>) {
+      if (routeInfo.inaccessibleByURL) {
         throw new UnrecognizedURLError(_url);
       }
-
-      return handler;
     }
 
     for (i = 0, len = results.length; i < len; ++i) {
@@ -58,11 +55,12 @@ export default class URLTransitionIntent<R extends BaseRoute> extends Transition
       let route = newRouteInfo.route;
 
       if (route) {
-        checkHandlerAccessibility(route);
+        checkAccessibility(newRouteInfo);
       } else {
-        // If the handler is being loaded asynchronously, check if we can
-        // access it after it has resolved
-        newRouteInfo.routePromise = newRouteInfo.routePromise.then(checkHandlerAccessibility);
+        newRouteInfo.routePromise = newRouteInfo.routePromise.then((handler) => {
+          checkAccessibility(newRouteInfo);
+          return handler;
+        });
       }
 
       let oldRouteInfo = oldState.routeInfos[i]!;

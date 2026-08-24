@@ -19,7 +19,7 @@ import type { InternalRouteInfo } from 'router_js';
 import { hasClassicInterop, STATE_SYMBOL } from 'router_js';
 import type { ClassicRouteBucket } from './bucket';
 
-// Substates are classic machinery: only a classic route has a `foo.loading`
+// Substates are classic only. A classic route has a `foo.loading`
 // sibling, and only it carries the owner and names the lookup needs.
 function classicRouteFor(routeInfo: InternalRouteInfo<Route>): Route | undefined {
   const { manager, bucket } = routeInfo;
