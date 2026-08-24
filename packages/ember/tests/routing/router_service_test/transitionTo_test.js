@@ -1,5 +1,5 @@
 import Service, { service } from '@ember/service';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
@@ -110,8 +110,8 @@ moduleFor(
           class extends Component {
             @service('router')
             routerService;
-            init() {
-              super.init();
+            constructor(owner, args) {
+              super(owner, args);
               componentInstance = this;
             }
             @action
@@ -145,8 +145,8 @@ moduleFor(
           class extends Component {
             @service('router')
             routerService;
-            init() {
-              super.init();
+            constructor(owner, args) {
+              super(owner, args);
               componentInstance = this;
             }
             @action
@@ -182,8 +182,8 @@ moduleFor(
           class extends Component {
             @service('router')
             routerService;
-            init() {
-              super.init();
+            constructor(owner, args) {
+              super(owner, args);
               componentInstance = this;
             }
             @action
@@ -230,8 +230,8 @@ moduleFor(
           class extends Component {
             @service('router')
             routerService;
-            init() {
-              super.init();
+            constructor(owner, args) {
+              super(owner, args);
               componentInstance = this;
             }
             @action

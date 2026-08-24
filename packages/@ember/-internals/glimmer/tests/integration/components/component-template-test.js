@@ -3,7 +3,8 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 import { precompileTemplate } from '@ember/template-compilation';
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
 
 moduleFor(
   'Components test: setComponentTemplate',
@@ -16,11 +17,11 @@ moduleFor(
 
       this.render('<FooBar />');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     '@test calling it with primitives asserts'(assert) {
@@ -66,7 +67,7 @@ moduleFor(
 
       let Thing = setComponentTemplate(
         precompileTemplate('hello'),
-        Component.extend().reopenClass({
+        EmberComponent.extend().reopenClass({
           toString() {
             return 'Thing';
           },
@@ -79,7 +80,10 @@ moduleFor(
     }
 
     '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
-      let Parent = setComponentTemplate(precompileTemplate('hello'), class extends Component {});
+      let Parent = setComponentTemplate(
+        precompileTemplate('hello'),
+        class extends EmberComponent {}
+      );
 
       this.owner.register('component:foo-bar', class extends Parent {});
 
@@ -99,11 +103,11 @@ moduleFor(
 
       this.render('<FooBar />');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     '@test it can re-assign templates from another class'() {

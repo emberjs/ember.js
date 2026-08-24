@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '@ember/-internals/glimmer';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
@@ -65,7 +66,7 @@ moduleFor(
       );
       this.add(
         'component:my-component',
-        class extends Component {
+        class extends EmberComponent {
           text = 'inner';
         }
       );
@@ -127,7 +128,7 @@ moduleFor(
       );
       this.add(
         'component:my-component',
-        class extends Component {
+        class extends EmberComponent {
           didInsertElement() {
             this.element.innerHTML = 'Some text inserted';
           }
@@ -160,7 +161,7 @@ moduleFor(
       );
       this.add(
         'component:my-component',
-        class extends Component {
+        class extends EmberComponent {
           didInsertElement() {
             this.element.innerHTML = this.get('data');
           }
@@ -194,7 +195,7 @@ moduleFor(
       );
       this.add(
         'component:my-component',
-        class extends Component {
+        class extends EmberComponent {
           didInsertElement() {
             this.element.innerHTML = this.get('attrs.attrs.value');
           }

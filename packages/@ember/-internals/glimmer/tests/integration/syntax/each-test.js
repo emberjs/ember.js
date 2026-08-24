@@ -8,7 +8,8 @@ import { RSVP } from '@ember/-internals/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component, htmlSafe } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent, htmlSafe } from '../../utils/helpers';
 import {
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,
@@ -506,7 +507,7 @@ class EachTest extends AbstractEachTest {
   [`@test updating and setting within #each`]() {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
-    let FooBarComponent = class extends Component {
+    let FooBarComponent = class extends EmberComponent {
       init() {
         super.init(...arguments);
         this.isEven = true;

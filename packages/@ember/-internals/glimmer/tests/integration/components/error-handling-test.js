@@ -6,7 +6,8 @@ import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
 
 moduleFor(
   'Errors thrown during render',
@@ -16,8 +17,8 @@ moduleFor(
     ) {
       let shouldThrow = true;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           if (shouldThrow) {
             throw new Error('silly mistake in init!');
           }
@@ -61,8 +62,8 @@ moduleFor(
     ) {
       let shouldThrow = false;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           if (shouldThrow) {
             throw new Error('silly mistake in init!');
           }
@@ -112,7 +113,7 @@ moduleFor(
       assert
     ) {
       let shouldThrow = true;
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         didInsertElement() {
           super.didInsertElement(...arguments);
           if (shouldThrow) {
@@ -147,7 +148,7 @@ moduleFor(
 
     ['@test it can recover resets the transaction when an error is thrown during destroy'](assert) {
       let shouldThrow = true;
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         destroy() {
           super.destroy(...arguments);
           if (shouldThrow) {

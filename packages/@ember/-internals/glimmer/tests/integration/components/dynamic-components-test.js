@@ -5,7 +5,8 @@ import { set, computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
@@ -15,38 +16,38 @@ moduleFor(
     ['@test it can render a basic component with a static component name argument']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello {{@name}}'), class extends Component {})
       );
 
       this.render('{{component "foo-bar" name=this.name}}', { name: 'Sarah' });
 
-      this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
+      this.assertText('hello Sarah');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
+      this.assertText('hello Sarah');
 
       runTask(() => set(this.context, 'name', 'Gavin'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello Gavin' });
+      this.assertText('hello Gavin');
 
       runTask(() => set(this.context, 'name', 'Sarah'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
+      this.assertText('hello Sarah');
     }
 
     ['@test it can render a basic component with a dynamic component name argument']() {
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('hello {{this.name}} from foo-bar'),
+          precompileTemplate('hello {{@name}} from foo-bar'),
           class extends Component {}
         )
       );
       this.owner.register(
         'component:foo-bar-baz',
         setComponentTemplate(
-          precompileTemplate('hello {{this.name}} from foo-bar-baz'),
+          precompileTemplate('hello {{@name}} from foo-bar-baz'),
           class extends Component {}
         )
       );
@@ -56,36 +57,26 @@ moduleFor(
         name: 'Alex',
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex from foo-bar',
-      });
+      this.assertText('hello Alex from foo-bar');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex from foo-bar',
-      });
+      this.assertText('hello Alex from foo-bar');
 
       runTask(() => set(this.context, 'name', 'Ben'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben from foo-bar',
-      });
+      this.assertText('hello Ben from foo-bar');
 
       runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben from foo-bar-baz',
-      });
+      this.assertText('hello Ben from foo-bar-baz');
 
       runTask(() => {
         set(this.context, 'componentName', 'foo-bar');
         set(this.context, 'name', 'Alex');
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex from foo-bar',
-      });
+      this.assertText('hello Alex from foo-bar');
     }
 
     ['@test it throws a useful assertion for an invalid dynamic component value in non-strict mode'](
@@ -130,7 +121,7 @@ moduleFor(
     ['@test it has an element']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         init() {
           super.init();
           instance = this;
@@ -160,14 +151,14 @@ moduleFor(
     ['@test it has the right parentView and childViews'](assert) {
       let fooBarInstance, fooBarBazInstance;
 
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         init() {
           super.init();
           fooBarInstance = this;
         }
       };
 
-      let FooBarBazComponent = class extends Component {
+      let FooBarBazComponent = class extends EmberComponent {
         init() {
           super.init();
           fooBarBazInstance = this;
@@ -210,17 +201,17 @@ moduleFor(
 
       this.render('{{#component "foo-bar"}}hello{{/component}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     ['@test it renders the layout with the component instance as the context']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         init() {
           super.init();
           instance = this;
@@ -260,19 +251,19 @@ moduleFor(
         message: 'hello',
       });
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => set(this.context, 'message', 'goodbye'));
 
-      this.assertComponentElement(this.firstChild, { content: 'goodbye' });
+      this.assertText('goodbye');
 
       runTask(() => set(this.context, 'message', 'hello'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     ['@test the component and its child components are destroyed'](assert) {
@@ -282,7 +273,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{this.id}} {{yield}}'),
-          class extends Component {
+          class extends EmberComponent {
             willDestroy() {
               super.willDestroy();
               destroyed[this.get('id')]++;
@@ -395,7 +386,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('hello from foo-bar'),
-          class extends Component {
+          class extends EmberComponent {
             willDestroyElement() {
               assert.equal(
                 testContext.$(`#${this.elementId}`).length,
@@ -416,7 +407,7 @@ moduleFor(
         'component:foo-bar-baz',
         setComponentTemplate(
           precompileTemplate('hello from foo-bar-baz'),
-          class extends Component {
+          class extends EmberComponent {
             willDestroy() {
               super.willDestroy();
               destroyed['foo-bar-baz']++;
@@ -449,7 +440,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('foo-bar {{this.location}} {{this.locationCopy}} {{yield}}'),
-          class extends Component {
+          class extends EmberComponent {
             init() {
               super.init(...arguments);
               this.set('locationCopy', this.get('location'));
@@ -462,7 +453,7 @@ moduleFor(
         'component:foo-bar-baz',
         setComponentTemplate(
           precompileTemplate('foo-bar-baz {{this.location}} {{this.locationCopy}} {{yield}}'),
-          class extends Component {
+          class extends EmberComponent {
             init() {
               super.init(...arguments);
               this.set('locationCopy', this.get('location'));
@@ -477,7 +468,7 @@ moduleFor(
           precompileTemplate(
             '{{#component this.componentName location=this.location}}arepas!{{/component}}'
           ),
-          class extends Component {
+          class extends EmberComponent {
             @computed('location')
             get componentName() {
               if (this.get('location') === 'Caracas') {
@@ -590,7 +581,7 @@ moduleFor(
     ['@test component with dynamic component name resolving to a component, then non-existent component']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello {{@name}}'), class extends Component {})
       );
 
       this.render('{{component this.componentName name=this.name}}', {
@@ -618,7 +609,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('[{{this.internalName}} - {{this.name}}]'),
-          class extends Component {
+          class extends EmberComponent {
             willRender() {
               // store internally available name to ensure that the name available in `this.attrs.name`
               // matches the template lookup name
@@ -652,7 +643,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -662,7 +653,7 @@ moduleFor(
         'component:foo-bar-baz',
         setComponentTemplate(
           precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar-baz'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -718,7 +709,7 @@ moduleFor(
         'component:normal-message',
         setComponentTemplate(
           precompileTemplate('Normal: {{this.something}}!'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['something'];
           }
         )
@@ -728,7 +719,7 @@ moduleFor(
         'component:alternative-message',
         setComponentTemplate(
           precompileTemplate('Alternative: {{this.something}} {{this.somethingElse}}!'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['somethingElse'];
             something = 'Another';
           }
@@ -777,7 +768,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{#each this.names as |name|}}{{name}}{{/each}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = 'names';
           }
         )
@@ -797,7 +788,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{#each this.n as |name|}}{{name}}{{/each}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = 'n';
           }
         )
@@ -837,7 +828,7 @@ moduleFor(
           precompileTemplate(
             `Hi {{this.person.name}}! {{component "error-component" person=this.person}}`
           ),
-          class extends Component {
+          class extends EmberComponent {
             init() {
               super.init(...arguments);
               this.set('person', {
@@ -855,7 +846,7 @@ moduleFor(
         'component:error-component',
         setComponentTemplate(
           precompileTemplate('{{this.person.name}}'),
-          class extends Component {
+          class extends EmberComponent {
             init() {
               super.init(...arguments);
               this.set('person.name', 'Ben');

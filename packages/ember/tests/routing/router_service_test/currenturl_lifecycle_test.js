@@ -1,7 +1,7 @@
 import { service } from '@ember/service';
 import { action } from '@ember/object';
 import { readOnly } from '@ember/object/computed';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import Route from '@ember/routing/route';
 import { get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';

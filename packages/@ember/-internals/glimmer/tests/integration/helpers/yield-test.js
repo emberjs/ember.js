@@ -4,7 +4,8 @@ import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
 
 moduleFor(
   'Helpers test: {{yield}} helper',
@@ -94,7 +95,7 @@ moduleFor(
       this.owner.register(
         'component:inner-comp',
         setComponentTemplate(
-          precompileTemplate('{{#outer-comp}}[In Block:] {{this.object.title}}{{/outer-comp}}'),
+          precompileTemplate('{{#outer-comp}}[In Block:] {{@object.title}}{{/outer-comp}}'),
           class extends Component {}
         )
       );
@@ -119,7 +120,7 @@ moduleFor(
       this.owner.register(
         'component:outer-comp',
         setComponentTemplate(
-          precompileTemplate('{{#each this.list as |item|}}{{yield}}{{/each}}'),
+          precompileTemplate('{{#each @list as |item|}}{{yield}}{{/each}}'),
           class extends Component {}
         )
       );
@@ -142,7 +143,7 @@ moduleFor(
       this.owner.register(
         'component:outer-comp',
         setComponentTemplate(
-          precompileTemplate('{{#if this.boolean}}{{yield}}{{/if}}'),
+          precompileTemplate('{{#if @boolean}}{{yield}}{{/if}}'),
           class extends Component {}
         )
       );
@@ -165,7 +166,7 @@ moduleFor(
       this.owner.register(
         'component:kiwi-comp',
         setComponentTemplate(
-          precompileTemplate('{{#if this.falsy}}{{else}}{{yield}}{{/if}}'),
+          precompileTemplate('{{#if @falsy}}{{else}}{{yield}}{{/if}}'),
           class extends Component {}
         )
       );
@@ -186,14 +187,14 @@ moduleFor(
       this.owner.register(
         'component:parent-comp',
         setComponentTemplate(
-          precompileTemplate('{{#if this.falsy}}{{else}}{{yield}}{{/if}}'),
+          precompileTemplate('{{#if @falsy}}{{else}}{{yield}}{{/if}}'),
           class extends Component {}
         )
       );
       this.owner.register(
         'component:child-comp',
         setComponentTemplate(
-          precompileTemplate('{{#if this.falsy}}{{else}}{{this.text}}{{/if}}'),
+          precompileTemplate('{{#if @falsy}}{{else}}{{@text}}{{/if}}'),
           class extends Component {}
         )
       );
@@ -220,7 +221,7 @@ moduleFor(
       this.owner.register(
         'component:outer-comp',
         setComponentTemplate(
-          precompileTemplate('{{yielding-comp}} {{this.title}}'),
+          precompileTemplate('{{yielding-comp}} {{@title}}'),
           class extends Component {}
         )
       );
@@ -323,7 +324,7 @@ moduleFor(
       this.owner.register(
         'component:kiwi-comp',
         setComponentTemplate(
-          precompileTemplate('<p>{{this.content}}</p><p>{{yield}}</p>'),
+          precompileTemplate('<p>{{@content}}</p><p>{{yield}}</p>'),
           class extends Component {}
         )
       );
@@ -345,11 +346,11 @@ moduleFor(
 
     // INUR not need with no data update
     ['@test yield should not introduce a view'](assert) {
-      let ParentCompComponent = class extends Component {
+      let ParentCompComponent = class extends EmberComponent {
         isParentComponent = true;
       };
 
-      let ChildCompComponent = class extends Component {
+      let ChildCompComponent = class extends EmberComponent {
         didReceiveAttrs() {
           super.didReceiveAttrs();
           let parentView = this.get('parentView');
