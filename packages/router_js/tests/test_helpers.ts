@@ -279,14 +279,8 @@ class TestRouteManager implements RouteManagerLike {
     return route.buildRouteInfoMetadata ? route.buildRouteInfoMetadata() : null;
   }
 
-  // Gate on enterPromise so resolution stays sequential, matching the
-  // classic expectation that a parent's model resolves before a child's
-  // model starts.
-  getInvokable(
-    _bucket: TestRouteBucket,
-    enterPromise: Promise<unknown>
-  ): Promise<object | undefined> {
-    return (enterPromise ?? Promise.resolve()).then(() => undefined);
+  getInvokable(_bucket: TestRouteBucket): Promise<object | undefined> {
+    return Promise.resolve(undefined);
   }
 }
 

@@ -18,12 +18,16 @@ export interface OutletParent {
   };
 }
 
+const INVOKABLES = new WeakMap<object, object>();
+
 /**
  * Represents one rendered instance of a route.
  * Maps to a `routeInfo`.
  */
 export class OutletState implements OutletParent {
   @tracked context: unknown;
+
+  @tracked invokable: object | undefined;
 
   readonly outlets: {
     main: OutletState | undefined;
@@ -36,11 +40,30 @@ export class OutletState implements OutletParent {
   }
 
   constructor(
-    readonly manager: { getRouteWrapper(): object; getInvokable(bucket: object): object },
+    readonly manager: {
+      getRouteWrapper(): object;
+      getInvokable(bucket: object): Promise<object>;
+    },
     readonly bucket: object,
     readonly routeInfo: InternalRouteInfo<BaseRoute>
   ) {
     this.context = routeInfo.context;
+
+    this.invokable = INVOKABLES.get(bucket);
+    if (this.invokable === undefined) {
+      // Substate routes never 'enter' and don't initialize `getInvokablePromise`
+      const invokablePromise = routeInfo.getInvokablePromise ?? manager.getInvokable(bucket);
+
+      invokablePromise.then(
+        (invokable) => {
+          INVOKABLES.set(bucket, invokable);
+          this.invokable = invokable;
+        },
+        () => {
+          // getInvokable rejected; this level renders nothing.
+        }
+      );
+    }
 
     routeInfo.enterPromise?.then(
       () => {

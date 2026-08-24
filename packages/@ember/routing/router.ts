@@ -801,15 +801,6 @@ class EmberRouter extends EmberObject {
       let { manager, bucket } = routeInfo;
       assert('Expected active route to have a manager and bucket', manager && bucket);
 
-      // @TODO: could be cached here but currently OutletState is rebuilt each `_setOutletPass`.
-      // So we save on the `bucket` instead
-      // @TODO: bucket is otherwise opaque and it feels weird to mutate a manager owned object.
-      // But invokable caching is ultimately not the managers' concern right now
-      let mutableBucket = bucket as any;
-      if (!mutableBucket.invokable) {
-        const invokable = manager.getInvokable(bucket);
-        mutableBucket.invokable = invokable;
-      }
       let state = new OutletState(manager, bucket, routeInfo);
 
       if (parent) {

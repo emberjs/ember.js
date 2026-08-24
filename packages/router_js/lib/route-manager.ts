@@ -343,10 +343,9 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   getRouteWrapper(): object;
 
   /**
-    Returns the renderable for the route: the component the outlet should
-    render.
+    Returns the renderable for the route. Async to support lazily loaded modules
    */
-  getInvokable(bucket: Bucket): object;
+  getInvokable(bucket: Bucket): Promise<object>;
 }
 
 /**

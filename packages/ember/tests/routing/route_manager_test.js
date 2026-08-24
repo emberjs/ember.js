@@ -38,7 +38,7 @@ class RecordingRouteManager extends ClassicRouteManager {
     return bucket;
   }
 
-  getInvokable(bucket,) {
+  getInvokable(bucket) {
     this.log.push(['getInvokable', bucket.route.routeName]);
     return super.getInvokable(bucket);
   }

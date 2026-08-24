@@ -207,8 +207,8 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     // No-op for classic routes.
   }
 
-  getInvokable(bucket: ClassicRouteBucket): object {
-    return buildClassicInvokable(bucket);
+  getInvokable(bucket: ClassicRouteBucket): Promise<object> {
+    return RSVPPromise.resolve(buildClassicInvokable(bucket));
   }
 
   qp(bucket: ClassicRouteBucket): QueryParamMeta {

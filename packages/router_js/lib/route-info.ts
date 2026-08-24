@@ -245,6 +245,7 @@ export default class InternalRouteInfo<R extends BaseRoute> {
   declare context?: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
   isResolved = false;
   enterPromise?: globalThis.Promise<unknown> = undefined;
+  getInvokablePromise?: globalThis.Promise<object> = undefined;
 
   constructor(router: Router<R>, name: string, paramNames: string[], route?: R) {
     this.name = name;
@@ -317,6 +318,12 @@ export default class InternalRouteInfo<R extends BaseRoute> {
         const enterPromise = manager.enter(bucket, navigationArgs);
         this.enterPromise = enterPromise;
 
+        const getInvokablePromise = manager.getInvokable(bucket);
+        this.getInvokablePromise = getInvokablePromise;
+        getInvokablePromise.catch(() => {
+          // Unobserved when a transition is abandoned before rendering.
+        });
+
         // Capture the entered context locally rather than writing it onto
         // this route info: `shouldSupersede` treats an own `context` as
         // meaningful when infos are reused across transitions, so the info
@@ -374,6 +381,8 @@ export default class InternalRouteInfo<R extends BaseRoute> {
       context,
       this.enterPromise
     );
+
+    resolved.getInvokablePromise = this.getInvokablePromise;
 
     // Back-fill the model onto `resolved` once `enter` settles, but only for
     // managers that render before their model resolves. A manager whose
