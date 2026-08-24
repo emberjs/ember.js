@@ -25,9 +25,39 @@ function createRouteComponent(componentName: string, route: string): string {
 }
 
 function routeManagerTests(scenarios: Scenarios, appName: string) {
-  const FUNKY_ROUTE_SOURCE = `
+  // Every route resolves `model:<its own name>`, so asserting the rendered
+  // value proves the right context reached the right level rather than merely
+  // that a level rendered.
+  const modelFor = (name: string) => `model:${name}`;
+
+  const funkyRoute = (name: string) => `
     import FunkyRoute from '${appName}/routes/funky';
-    export default class extends FunkyRoute {}
+
+    export default class extends FunkyRoute {
+      model() {
+        return '${modelFor(name)}';
+      }
+    }
+  `;
+
+  const classicRoute = (name: string) => `
+    import Route from '@ember/routing/route';
+
+    export default class extends Route {
+      model() {
+        return '${modelFor(name)}';
+      }
+    }
+  `;
+
+  const glimmerRoute = (name: string) => `
+    import GlimmerRoute from '${appName}/routes/glimmer-route';
+
+    export default class extends GlimmerRoute {
+      model() {
+        return '${modelFor(name)}';
+      }
+    }
   `;
 
   const ROUTE_FIXTURES: RouteChainManifest[] = [
@@ -38,8 +68,9 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         });
       `,
       routes: {
+        'classic-to-funky.js': classicRoute('classic-to-funky'),
         'classic-to-funky': {
-          'child.js': FUNKY_ROUTE_SOURCE,
+          'child.js': funkyRoute('classic-to-funky.child'),
         },
       },
       templates: {
@@ -47,6 +78,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           <template>
             <div data-test-classic-route="classic-to-funky">
               classic parent
+              <span data-test-route-model>{{@model}}</span>
               <div data-test-outlet-boundary>{{outlet}}</div>
             </div>
           </template>
@@ -54,7 +86,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
       },
       routeComponent: createRouteComponent(
         'ClassicToFunkyChild',
-        `<div data-test-funky-route="classic-to-funky.child">funky child</div>`
+        `<div data-test-funky-route="classic-to-funky.child"><span data-test-route-model>{{@context}}</span>funky child</div>`
       ),
       managerInvokableMap: `
         'classic-to-funky.child': COMPONENTS.ClassicToFunkyChild,
@@ -67,13 +99,16 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         });
       `,
       routes: {
-        'funky-to-classic.js': FUNKY_ROUTE_SOURCE,
+        'funky-to-classic.js': funkyRoute('funky-to-classic'),
+        'funky-to-classic': {
+          'child.js': classicRoute('funky-to-classic.child'),
+        },
       },
       templates: {
         'funky-to-classic': {
           'child.gjs': `
             <template>
-              <div data-test-classic-route="funky-to-classic.child">classic child</div>
+              <div data-test-classic-route="funky-to-classic.child"><span data-test-route-model>{{@model}}</span>classic child</div>
             </template>
           `,
         },
@@ -82,6 +117,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         'FunkyToClassic',
         `<div data-test-funky-route="funky-to-classic">
           funky parent
+          <span data-test-route-model>{{@context}}</span>
           <div data-test-outlet-boundary>{{outlet}}</div>
         </div>`
       ),
@@ -98,35 +134,11 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         });
       `,
       routes: {
-        'classic-to-funky-to-classic.js': `
-          import Route from '@ember/routing/route';
-
-          export default class extends Route {
-            model() {
-              return '1';
-            }
-          }
-        `,
+        'classic-to-funky-to-classic.js': classicRoute('classic-to-funky-to-classic'),
         'classic-to-funky-to-classic': {
-          'child.js': `
-            import FunkyRoute from '${appName}/routes/funky';
-
-            export default class extends FunkyRoute {
-              model() {
-                return '2';
-              }
-            }
-          `,
+          'child.js': funkyRoute('classic-to-funky-to-classic.child'),
           child: {
-            'grandchild.js': `
-              import Route from '@ember/routing/route';
-
-              export default class extends Route {
-                model() {
-                  return '3';
-                }
-              }
-            `,
+            'grandchild.js': classicRoute('classic-to-funky-to-classic.child.grandchild'),
           },
         },
       },
@@ -157,7 +169,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         'ClassicToFunkyToClassicChild',
         `<div data-test-funky-route="classic-to-funky-to-classic.child">
             funky child
-            <span data-test-route-model>{{@model}}</span>
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
       ),
@@ -174,35 +186,11 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         });
       `,
       routes: {
-        'funky-to-classic-to-funky.js': `
-          import FunkyRoute from '${appName}/routes/funky';
-
-          export default class extends FunkyRoute {
-            model() {
-              return '1';
-            }
-          }
-        `,
+        'funky-to-classic-to-funky.js': funkyRoute('funky-to-classic-to-funky'),
         'funky-to-classic-to-funky': {
-          'child.js': `
-            import Route from '@ember/routing/route';
-
-            export default class extends Route {
-              model() {
-                return '2';
-              }
-            }
-          `,
+          'child.js': classicRoute('funky-to-classic-to-funky.child'),
           child: {
-            'grandchild.js': `
-              import FunkyRoute from '${appName}/routes/funky';
-
-              export default class extends FunkyRoute {
-                model() {
-                  return '3';
-                }
-              }
-            `,
+            'grandchild.js': funkyRoute('funky-to-classic-to-funky.child.grandchild'),
           },
         },
       },
@@ -224,7 +212,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'FunkyToClassicToFunky',
           `<div data-test-funky-route="funky-to-classic-to-funky">
             funky parent
-            <span data-test-route-model>{{@model}}</span>
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
         ) +
@@ -232,7 +220,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'FunkyToClassicToFunkyGrandchild',
           `<div data-test-funky-route="funky-to-classic-to-funky.child.grandchild">
             funky grandchild
-            <span data-test-route-model>{{@model}}</span>
+            <span data-test-route-model>{{@context}}</span>
           </div>`
         ),
       managerInvokableMap: `
@@ -251,11 +239,16 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         });
       `,
       routes: {
-        'funky-to-funky-to-funky-to-classic.js': FUNKY_ROUTE_SOURCE,
+        'funky-to-funky-to-funky-to-classic.js': funkyRoute('funky-to-funky-to-funky-to-classic'),
         'funky-to-funky-to-funky-to-classic': {
-          'child.js': FUNKY_ROUTE_SOURCE,
+          'child.js': funkyRoute('funky-to-funky-to-funky-to-classic.child'),
           child: {
-            'grandchild.js': FUNKY_ROUTE_SOURCE,
+            'grandchild.js': funkyRoute('funky-to-funky-to-funky-to-classic.child.grandchild'),
+            grandchild: {
+              'great-grandchild.js': classicRoute(
+                'funky-to-funky-to-funky-to-classic.child.grandchild.great-grandchild'
+              ),
+            },
           },
         },
       },
@@ -267,6 +260,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 <template>
                   <div data-test-classic-route="funky-to-funky-to-funky-to-classic.child.grandchild.great-grandchild">
                     classic leaf
+                    <span data-test-route-model>{{@model}}</span>
                   </div>
                 </template>
               `,
@@ -279,6 +273,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'FunkyToFunkyToFunkyToClassic',
           `<div data-test-funky-route="funky-to-funky-to-funky-to-classic">
             funky parent
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
         ) +
@@ -286,6 +281,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'FunkyToFunkyToFunkyToClassicChild',
           `<div data-test-funky-route="funky-to-funky-to-funky-to-classic.child">
             funky middle
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
         ) +
@@ -293,6 +289,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'FunkyToFunkyToFunkyToClassicGrandchild',
           `<div data-test-funky-route="funky-to-funky-to-funky-to-classic.child.grandchild">
             funky child
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
         ),
@@ -315,13 +312,23 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         });
       `,
       routes: {
-        'funky-to-funky-to-classic-to-classic-to-funky.js': FUNKY_ROUTE_SOURCE,
+        'funky-to-funky-to-classic-to-classic-to-funky.js': funkyRoute(
+          'funky-to-funky-to-classic-to-classic-to-funky'
+        ),
         'funky-to-funky-to-classic-to-classic-to-funky': {
-          'child.js': FUNKY_ROUTE_SOURCE,
+          'child.js': funkyRoute('funky-to-funky-to-classic-to-classic-to-funky.child'),
           child: {
+            'grandchild.js': classicRoute(
+              'funky-to-funky-to-classic-to-classic-to-funky.child.grandchild'
+            ),
             grandchild: {
+              'great-grandchild.js': classicRoute(
+                'funky-to-funky-to-classic-to-classic-to-funky.child.grandchild.great-grandchild'
+              ),
               'great-grandchild': {
-                'great-great-grandchild.js': FUNKY_ROUTE_SOURCE,
+                'great-great-grandchild.js': funkyRoute(
+                  'funky-to-funky-to-classic-to-classic-to-funky.child.grandchild.great-grandchild.great-great-grandchild'
+                ),
               },
             },
           },
@@ -334,6 +341,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               <template>
                 <div data-test-classic-route="funky-to-funky-to-classic-to-classic-to-funky.child.grandchild">
                   classic middle
+                  <span data-test-route-model>{{@model}}</span>
                   <div data-test-outlet-boundary>{{outlet}}</div>
                 </div>
               </template>
@@ -343,6 +351,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 <template>
                   <div data-test-classic-route="funky-to-funky-to-classic-to-classic-to-funky.child.grandchild.great-grandchild">
                     classic child
+                    <span data-test-route-model>{{@model}}</span>
                     <div data-test-outlet-boundary>{{outlet}}</div>
                   </div>
                 </template>
@@ -356,6 +365,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'FunkyToFunkyToClassicToClassicToFunky',
           `<div data-test-funky-route="funky-to-funky-to-classic-to-classic-to-funky">
             funky parent
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
         ) +
@@ -363,6 +373,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'FunkyToFunkyToClassicToClassicToFunkyChild',
           `<div data-test-funky-route="funky-to-funky-to-classic-to-classic-to-funky.child">
             funky child
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
         ) +
@@ -370,6 +381,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'FunkyToFunkyToClassicToClassicToFunkyLeaf',
           `<div data-test-funky-route="funky-to-funky-to-classic-to-classic-to-funky.child.grandchild.great-grandchild.great-great-grandchild">
             funky leaf
+            <span data-test-route-model>{{@context}}</span>
           </div>`
         ),
       managerInvokableMap: `
@@ -391,11 +403,24 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         });
       `,
       routes: {
+        'classic-to-classic-to-funky-to-funky-to-classic.js': classicRoute(
+          'classic-to-classic-to-funky-to-funky-to-classic'
+        ),
         'classic-to-classic-to-funky-to-funky-to-classic': {
+          'child.js': classicRoute('classic-to-classic-to-funky-to-funky-to-classic.child'),
           child: {
-            'grandchild.js': FUNKY_ROUTE_SOURCE,
+            'grandchild.js': funkyRoute(
+              'classic-to-classic-to-funky-to-funky-to-classic.child.grandchild'
+            ),
             grandchild: {
-              'great-grandchild.js': FUNKY_ROUTE_SOURCE,
+              'great-grandchild.js': funkyRoute(
+                'classic-to-classic-to-funky-to-funky-to-classic.child.grandchild.great-grandchild'
+              ),
+              'great-grandchild': {
+                'great-great-grandchild.js': classicRoute(
+                  'classic-to-classic-to-funky-to-funky-to-classic.child.grandchild.great-grandchild.great-great-grandchild'
+                ),
+              },
             },
           },
         },
@@ -405,6 +430,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           <template>
             <div data-test-classic-route="classic-to-classic-to-funky-to-funky-to-classic">
               classic parent
+              <span data-test-route-model>{{@model}}</span>
               <div data-test-outlet-boundary>{{outlet}}</div>
             </div>
           </template>
@@ -414,6 +440,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
             <template>
               <div data-test-classic-route="classic-to-classic-to-funky-to-funky-to-classic.child">
                 classic child
+                <span data-test-route-model>{{@model}}</span>
                 <div data-test-outlet-boundary>{{outlet}}</div>
               </div>
             </template>
@@ -425,6 +452,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   <template>
                     <div data-test-classic-route="classic-to-classic-to-funky-to-funky-to-classic.child.grandchild.great-grandchild.great-great-grandchild">
                       classic leaf
+                      <span data-test-route-model>{{@model}}</span>
                     </div>
                   </template>
                 `,
@@ -438,6 +466,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'ClassicToClassicToFunkyToFunkyToClassicGrandchild',
           `<div data-test-funky-route="classic-to-classic-to-funky-to-funky-to-classic.child.grandchild">
             funky middle
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
         ) +
@@ -445,6 +474,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'ClassicToClassicToFunkyToFunkyToClassicGreatGrandchild',
           `<div data-test-funky-route="classic-to-classic-to-funky-to-funky-to-classic.child.grandchild.great-grandchild">
             funky child
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
         ),
@@ -461,9 +491,10 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         });
       `,
       routes: {
-        'sibling-transitions.js': FUNKY_ROUTE_SOURCE,
+        'sibling-transitions.js': funkyRoute('sibling-transitions'),
         'sibling-transitions': {
-          'funky-child.js': FUNKY_ROUTE_SOURCE,
+          'classic-child.js': classicRoute('sibling-transitions.classic-child'),
+          'funky-child.js': funkyRoute('sibling-transitions.funky-child'),
         },
       },
       templates: {
@@ -472,6 +503,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
             <template>
               <div data-test-classic-route="sibling-transitions.classic-child">
                 classic sibling
+                <span data-test-route-model>{{@model}}</span>
               </div>
             </template>
           `,
@@ -482,6 +514,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'SiblingTransitions',
           `<div data-test-funky-route="sibling-transitions">
             funky parent
+            <span data-test-route-model>{{@context}}</span>
             <div data-test-outlet-boundary>{{outlet}}</div>
           </div>`
         ) +
@@ -489,6 +522,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'SiblingTransitionsFunkyChild',
           `<div data-test-funky-route="sibling-transitions.funky-child">
             funky sibling
+            <span data-test-route-model>{{@context}}</span>
           </div>`
         ),
       managerInvokableMap: `
@@ -515,7 +549,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         'FunkyReentry',
         `<div data-test-funky-route="funky-reentry">
           funky reentry
-          <span data-test-route-model>{{@model}}</span>
+          <span data-test-route-model>{{@context}}</span>
         </div>`
       ),
       managerInvokableMap: `
@@ -610,25 +644,9 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         });
       `,
       routes: {
-        'glimmer-wrapper.js': `
-          import GlimmerRoute from '${appName}/routes/glimmer-route';
-
-          export default class extends GlimmerRoute {
-            model() {
-              return 'glimmer-wrapper';
-            }
-          }
-        `,
+        'glimmer-wrapper.js': glimmerRoute('glimmer-wrapper'),
         'glimmer-wrapper': {
-          'child.js': `
-            import GlimmerRoute from '${appName}/routes/glimmer-route';
-
-            export default class extends GlimmerRoute {
-              model() {
-                return 'glimmer-wrapper.child';
-              }
-            }
-          `,
+          'child.js': glimmerRoute('glimmer-wrapper.child'),
         },
       },
       routeComponent:
@@ -782,10 +800,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               import { tracked } from '@glimmer/tracking';
               import { on } from '@ember/modifier';
 
-              // \`model\` is tracked; no render-state plumbing.
               export class FunkyBucket {
-                @tracked model;
-
                 constructor(name, route, invokable) {
                   this.name = name;
                   this.route = route;
@@ -803,7 +818,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
                 <template>
                   {{#if this.shouldRender}}
-                    <@bucket.invokable @model={{@bucket.model}} @outlet={{@outlet}} />
+                    <@Component @context={{@context}} @outlet={{@outlet}} />
                   {{else}}
                     <button
                       type="button"
@@ -817,7 +832,12 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               }
 
               export const FunkyOutlet = <template>
-                <FunkyGate @bucket={{@bucket}} @outlet={{@outlet}} />
+                <FunkyGate
+                  @Component={{@Component}}
+                  @context={{@context}}
+                  @bucket={{@bucket}}
+                  @outlet={{@outlet}}
+                />
               </template>;
             `,
             'swap-outlet.gjs': `
@@ -883,10 +903,10 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               };
 
               const BUCKETS = new Map();
-              let renderStateCalls = 0;
+              let getInvokableCalls = 0;
 
-              export function renderStateCallCount() {
-                return renderStateCalls;
+              export function getInvokableCallCount() {
+                return getInvokableCalls;
               }
 
               export function finishLoading(name) {
@@ -896,8 +916,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               class SwapBucket {
                 @tracked ready = false;
 
-                constructor(name, route, invokable) {
-                  this.name = name;
+                constructor(route, invokable) {
                   this.route = route;
                   this.invokable = invokable;
                 }
@@ -911,7 +930,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 }
 
                 createRoute(RouteClass, { name }) {
-                  let bucket = new SwapBucket(name, new RouteClass(this.owner), ROUTES[name]);
+                  let bucket = new SwapBucket(new RouteClass(this.owner), ROUTES[name]);
                   BUCKETS.set(name, bucket);
                   return bucket;
                 }
@@ -936,7 +955,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 didExit() {}
 
                 async getInvokable(bucket) {
-                  renderStateCalls++;
+                  getInvokableCalls++;
                   return bucket.invokable;
                 }
               }
@@ -1034,9 +1053,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
                 async enter(bucket, state) {
                   let info = state.to.find((i) => i.name === bucket.name) ?? state.to;
-                  let model = await bucket.route.model?.(info.params);
-                  bucket.model = model;
-                  return model;
+                  return bucket.route.model?.(info.params);
                 }
 
                 didEnter() {}
@@ -1142,14 +1159,14 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               import { resolveModel as resolveChildModel } from '${appName}/routes/reactive-context/child';
               import {
                 finishLoading as finishSwapLoading,
-                renderStateCallCount,
+                getInvokableCallCount,
               } from '${appName}/route-managers/swap';
 
               const CLASSIC_ROUTE_SELECTOR = '[data-test-classic-route]';
               const FUNKY_ROUTE_SELECTOR = '[data-test-funky-route]';
               const GATE_SELECTOR = 'button[data-test-render-route]';
 
-              function assertClassicRoute(assert, index, name, expectedModel) {
+              function assertClassicRoute(assert, index, name, expectedModel = 'model:' + name) {
                 let route = findAll(CLASSIC_ROUTE_SELECTOR)[index];
 
                 assert.dom(route).hasAttribute(
@@ -1157,14 +1174,12 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   name
                 );
 
-                if (expectedModel !== undefined) {
-                  assert
-                    .dom(route.querySelector(':scope > [data-test-route-model]'))
-                    .hasText(expectedModel);
-                }
+                assert
+                  .dom(route.querySelector(':scope > [data-test-route-model]'))
+                  .hasText(expectedModel);
               }
 
-              function assertFunkyRoute(assert, index, name, expectedModel) {
+              function assertFunkyRoute(assert, index, name, expectedModel = 'model:' + name) {
                 let route = findAll(FUNKY_ROUTE_SELECTOR)[index];
 
                 assert.dom(route).hasAttribute(
@@ -1172,11 +1187,9 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   name
                 );
 
-                if (expectedModel !== undefined) {
-                  assert
-                    .dom(route.querySelector(':scope > [data-test-route-model]'))
-                    .hasText(expectedModel);
-                }
+                assert
+                  .dom(route.querySelector(':scope > [data-test-route-model]'))
+                  .hasText(expectedModel);
               }
 
               async function openFunkyRoute(assert, name) {
@@ -1208,15 +1221,14 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 test('classic -> funky -> classic', async function (assert) {
                   await visit('/classic-to-funky-to-classic/child/grandchild');
 
-                  assertClassicRoute(assert, 0, 'classic-to-funky-to-classic', '1');
+                  assertClassicRoute(assert, 0, 'classic-to-funky-to-classic');
                   assert.dom(FUNKY_ROUTE_SELECTOR).doesNotExist();
                   await openFunkyRoute(assert, 'classic-to-funky-to-classic.child');
-                  assertFunkyRoute(assert, 0, 'classic-to-funky-to-classic.child', '2');
+                  assertFunkyRoute(assert, 0, 'classic-to-funky-to-classic.child');
                   assertClassicRoute(
                     assert,
                     1,
-                    'classic-to-funky-to-classic.child.grandchild',
-                    '3'
+                    'classic-to-funky-to-classic.child.grandchild'
                   );
                 });
 
@@ -1318,8 +1330,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
                   assert.dom(FUNKY_ROUTE_SELECTOR).doesNotExist();
                   await openFunkyRoute(assert, 'funky-to-classic-to-funky');
-                  assertFunkyRoute(assert, 0, 'funky-to-classic-to-funky', '1');
-                  assertClassicRoute(assert, 0, 'funky-to-classic-to-funky.child', '2');
+                  assertFunkyRoute(assert, 0, 'funky-to-classic-to-funky');
+                  assertClassicRoute(assert, 0, 'funky-to-classic-to-funky.child');
                   assert.dom(FUNKY_ROUTE_SELECTOR).exists({ count: 1 });
                   await openFunkyRoute(
                     assert,
@@ -1328,8 +1340,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   assertFunkyRoute(
                     assert,
                     1,
-                    'funky-to-classic-to-funky.child.grandchild',
-                    '3'
+                    'funky-to-classic-to-funky.child.grandchild'
                   );
                 });
 
@@ -1391,21 +1402,21 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                     .hasText('PARENT-CTX');
                 });
 
-                test('a manager swaps what is rendered from tracked state, with no router pass', async function (assert) {
+                test('a manager swaps what is rendered from tracked state, without re-entering the route', async function (assert) {
                   await visit('/swap-invokable');
 
                   assert.dom('[data-test-swap-invokable="loading"]').exists();
                   assert.dom('[data-test-swap-invokable="ready"]').doesNotExist();
 
-                  let passesBefore = renderStateCallCount();
+                  let callsBefore = getInvokableCallCount();
 
                   finishSwapLoading('swap-invokable');
                   await settled();
 
                   assert.strictEqual(
-                    renderStateCallCount(),
-                    passesBefore,
-                    'the swap happened without a _setOutlets pass'
+                    getInvokableCallCount(),
+                    callsBefore,
+                    'the swap needed no new invokable, so no re-entry'
                   );
                   assert.dom('[data-test-swap-invokable="loading"]').doesNotExist();
                   assert.dom('[data-test-swap-invokable="ready"]').exists();
@@ -1433,8 +1444,11 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   assert.dom('[data-test-glimmer-route="glimmer-wrapper.child"]').exists();
 
                   assert
+                    .dom('[data-test-glimmer-route="glimmer-wrapper"] > [data-test-route-model]')
+                    .hasText('model:glimmer-wrapper');
+                  assert
                     .dom('[data-test-glimmer-route="glimmer-wrapper.child"] > [data-test-route-model]')
-                    .hasText('glimmer-wrapper.child');
+                    .hasText('model:glimmer-wrapper.child');
 
                   assert
                     .dom('[data-test-outlet-with-service="glimmer-wrapper"]')
