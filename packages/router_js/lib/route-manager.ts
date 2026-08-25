@@ -163,7 +163,7 @@ export interface AsyncNavigationState {
 
     A `RouteInfo` for the desired ancestor must always be passed explicitly.
    */
-  getAncestorContext(routeInfo: RouteInfo): Promise<unknown>;
+  getAncestorPromise(routeInfo: RouteInfo): Promise<unknown>;
 }
 
 /**
@@ -302,7 +302,7 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   /**
     Asynchronous entry point. The returned promise resolves with the route's
     context. The router stores the promise on the matching `RouteInfo` so
-    descendant routes can await it via `getAncestorContext`.
+    descendant routes can await it via `getAncestorPromise`.
    */
   enter(bucket: Bucket, state: EnterState): Promise<unknown>;
 

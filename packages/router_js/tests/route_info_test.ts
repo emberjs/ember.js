@@ -298,7 +298,7 @@ QUnit.test(
   }
 );
 
-QUnit.test('getAncestorContext resolves with the ancestor enter result', async function (assert) {
+QUnit.test('getAncestorPromise resolves with the ancestor enter result', async function (assert) {
   assert.expect(1);
 
   let router = new TestRouter();
@@ -314,19 +314,19 @@ QUnit.test('getAncestorContext resolves with the ancestor enter result', async f
 
   let captured: ((routeInfo: any) => Promise<unknown>) | undefined;
   let handler = createNonGatingHandler('parent.child', (_bucket, args) => {
-    captured = args.getAncestorContext;
+    captured = args.getAncestorPromise;
     return resolve(undefined);
   });
   let childInfo = new UnresolvedRouteInfoByParam(router, 'parent.child', [], {}, handler);
 
   let transition = { isAborted: false } as unknown as InternalTransition<ClassicRoute>;
-  // Seed the transition state so getAncestorContext can find the ancestor.
+  // Seed the transition state so getAncestorPromise can find the ancestor.
   transition[STATE_SYMBOL] = { routeInfos: [ancestorInfo] } as never;
 
   await childInfo.resolve(transition);
 
   let result = await captured!({ name: 'parent' });
-  assert.equal(result, ancestorModel, 'getAncestorContext resolves with the ancestor enter result');
+  assert.equal(result, ancestorModel, 'getAncestorPromise resolves with the ancestor enter result');
 });
 
 QUnit.test(
@@ -356,7 +356,7 @@ QUnit.test(
   }
 );
 
-QUnit.test('getAncestorContext only matches true ancestors', async function (assert) {
+QUnit.test('getAncestorPromise only matches true ancestors', async function (assert) {
   assert.expect(2);
 
   let router = new TestRouter();
@@ -377,7 +377,7 @@ QUnit.test('getAncestorContext only matches true ancestors', async function (ass
 
   let captured: ((routeInfo: any) => Promise<unknown>) | undefined;
   let handler = createNonGatingHandler('parent.child', (_bucket, args) => {
-    captured = args.getAncestorContext;
+    captured = args.getAncestorPromise;
     return resolve(undefined);
   });
   let childInfo = new UnresolvedRouteInfoByParam(router, 'parent.child', [], {}, handler);

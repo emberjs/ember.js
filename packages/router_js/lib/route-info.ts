@@ -285,7 +285,7 @@ export default class InternalRouteInfo<R extends BaseRoute> {
           to,
           cancel: () => transition.abort(),
           signal: transition.signal,
-          getAncestorContext: (ancestor: RouteInfo) => {
+          getAncestorPromise: (ancestor: RouteInfo) => {
             const routeInfos = transition[STATE_SYMBOL]?.routeInfos ?? [];
             // Only true ancestors count: searching the whole hierarchy would
             // hand a route its own (or a descendant's) pending enter promise —

@@ -81,7 +81,7 @@ interface NavigationArgs {
   internalRouteInfo?: any;
   cancel: () => void;
   signal?: AbortSignal;
-  getAncestorContext: (routeInfo: any) => Promise<unknown>;
+  getAncestorPromise: (routeInfo: any) => Promise<unknown>;
 }
 
 interface RouteManagerLike {
