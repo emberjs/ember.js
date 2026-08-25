@@ -46,15 +46,9 @@ export interface RouteCapabilitiesVersions {
     surface. It is not intended to be used by managers outside the
     framework-provided `ClassicRouteManager`.
    */
-  '1.0':
-    | {
-        classicInterop: true;
-        awaitEnter: boolean;
-      }
-    | {
-        classicInterop?: false;
-        awaitEnter?: boolean;
-      };
+  '1.0': {
+    classicInterop?: boolean;
+  };
 }
 
 /**
@@ -63,7 +57,6 @@ export interface RouteCapabilitiesVersions {
  */
 export interface RouteCapabilities {
   classicInterop: boolean;
-  awaitEnter: boolean;
 }
 
 /**
@@ -71,7 +64,7 @@ export interface RouteCapabilities {
   be assigned to `manager.capabilities`.
 
   ```ts
-  capabilities = routeCapabilities('1.0', { classicInterop: true, awaitEnter: true });
+  capabilities = routeCapabilities('1.0', { classicInterop: true });
   ```
 
   @param _managerAPI The version of the manager API the route manager targets.
@@ -83,7 +76,6 @@ export function routeCapabilities<Version extends keyof RouteCapabilitiesVersion
 ): RouteCapabilities {
   return {
     classicInterop: Boolean(options.classicInterop),
-    awaitEnter: Boolean(options.awaitEnter),
   };
 }
 

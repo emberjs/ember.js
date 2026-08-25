@@ -316,29 +316,15 @@ export default class InternalRouteInfo<R extends BaseRoute> {
           // Unobserved when a transition is abandoned before rendering.
         });
 
-        // Capture the entered context locally rather than writing it onto
-        // this route info: `shouldSupersede` treats an own `context` as
-        // meaningful when infos are reused across transitions, so the info
-        // must not gain one it never had. `becomeResolved` receives the
-        // value explicitly below.
-        let enteredContext: ModelFor<R> | undefined;
-        enterPromise.then(
-          (resolvedContext) => {
-            if (transition.isAborted) return;
-            enteredContext = resolvedContext as ModelFor<R> | undefined;
-          },
-          () => {
-            // Swallow rejections; transition-level error handling reports them.
-          }
-        );
-
-        const awaitEnter = manager.capabilities.awaitEnter ? enterPromise : Promise.resolve();
-        return awaitEnter.then(() => {
+        // A route becomes resolved once its `enter` has settled, so its
+        // context, serialized params, redirect and error handling all run with
+        // the model in hand. `enterPromise` is captured above rather than
+        // re-read off `this`: a superseding transition can overwrite the field
+        // while this chain is still pending.
+        return enterPromise.then((enteredContext) => {
           throwIfAborted(transition);
-          const resolvedContext = enteredContext ?? (this.context as ModelFor<R> | undefined);
-          const resolved = this.becomeResolved(transition, resolvedContext);
 
-          return resolved;
+          return this.becomeResolved(transition, enteredContext as ModelFor<R> | undefined);
         });
       });
   }
