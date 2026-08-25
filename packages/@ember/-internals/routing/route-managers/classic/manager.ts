@@ -38,12 +38,7 @@ import {
   finalizeQueryParamChange as finalizeClassicQueryParamChange,
   queryParamsDidChange as classicQueryParamsDidChange,
 } from './query-params';
-import {
-  type ActiveTransition,
-  enterErrorSubstate as enterClassicErrorSubstate,
-  enterLoadingSubstate as enterClassicLoadingSubstate,
-  fireLoadingEvent,
-} from './substates';
+import { type ActiveTransition, findSubstateName } from './substates';
 
 type TransitionLike = Transition & {
   isAborted?: boolean;
@@ -106,11 +101,11 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     // Schedule the classic `loading` event rather than entering the substate
     // directly: the event bubbles through `actions.loading` handlers first,
     // and only the router's default handler (dispatching back through
-    // `enterLoadingSubstate` below) enters the substate.
+    // `handleLoadingEvent` below) enters the substate.
     bucket.loadingSubstateTimer = scheduleOnce(
       'routerTransitions',
-      null,
-      fireLoadingEvent,
+      this,
+      this.triggerLoadingEvent,
       bucket,
       transition
     );
@@ -304,30 +299,56 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     bucket.route.redirect(context as never, transition);
   }
 
-  enterLoadingSubstate(
+  triggerLoadingEvent(bucket: ClassicRouteBucket, transition: Transition): void {
+    const active = transition as ActiveTransition;
+    if (!active.isActive) {
+      return;
+    }
+
+    active.trigger?.(true, 'loading', active, bucket.route);
+  }
+
+  triggerErrorEvent(
+    _bucket: ClassicRouteBucket,
+    transition: Transition,
+    error: Error,
+    route: unknown
+  ): void {
+    const active = transition as ActiveTransition;
+
+    active.trigger?.(false, 'error', error, active, route);
+  }
+
+  handleLoadingEvent(
     bucket: ClassicRouteBucket,
     transition: Transition,
     originRoute: unknown
   ): void {
-    enterClassicLoadingSubstate(
-      bucket.route._router,
-      originRoute as Route | undefined,
-      transition as ActiveTransition
-    );
+    const active = transition as ActiveTransition;
+    if (!active.isActive) {
+      return;
+    }
+
+    const substateName = findSubstateName(originRoute as Route | undefined, active, 'loading');
+    if (substateName) {
+      bucket.route._router.intermediateTransitionTo(substateName);
+    }
   }
 
-  enterErrorSubstate(
+  handleErrorEvent(
     bucket: ClassicRouteBucket,
     transition: Transition,
     error: Error,
     originRoute: unknown
   ): boolean {
-    return enterClassicErrorSubstate(
-      bucket.route._router,
-      originRoute as Route | undefined,
-      transition as ActiveTransition,
-      error
-    );
+    const active = transition as ActiveTransition;
+    const substateName = findSubstateName(originRoute as Route | undefined, active, 'error');
+    if (!substateName) {
+      return false;
+    }
+
+    bucket.route._router.intermediateTransitionTo(substateName, error);
+    return true;
   }
 
   getRouteInfoMetadata(bucket: ClassicRouteBucket): unknown {

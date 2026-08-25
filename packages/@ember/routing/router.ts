@@ -598,7 +598,13 @@ class EmberRouter extends EmberObject {
         } else {
           // Otherwise trigger the "error" event to attempt an intermediate
           // transition into an error substate
-          transition.trigger(false, 'error', error.error, transition, error.route);
+          let dispatch = dispatchRouteInfoFor(transition[STATE_SYMBOL]?.routeInfos);
+          let manager = dispatch?.manager;
+          let bucket = dispatch?.bucket;
+
+          if (manager && bucket && hasClassicInterop(manager)) {
+            manager.triggerErrorEvent(bucket, transition, error.error, error.route);
+          }
           if (router._isErrorHandled(error.error)) {
             // If we handled the error with a substate just roll the state back on
             // the transition and send the "routeDidChange" event for landing on
@@ -1665,17 +1671,12 @@ let defaultActionHandlers = {
   // the manager owns substate entry.
   loading(this: EmberRouter, routeInfos: InternalRouteInfo<Route>[], transition: Transition) {
     let originRoute = routeInfos[routeInfos.length - 1]?.route;
+    let dispatch = dispatchRouteInfoFor(routeInfos);
+    let manager = dispatch?.manager;
+    let bucket = dispatch?.bucket;
 
-    let dispatchRoute = originRoute;
-    for (let i = routeInfos.length - 2; dispatchRoute === undefined && i >= 0; i--) {
-      dispatchRoute = routeInfos[i]?.route;
-    }
-
-    if (dispatchRoute !== undefined) {
-      let managed = getRouteManagement(dispatchRoute);
-      if (managed !== undefined && hasClassicInterop(managed.manager)) {
-        managed.manager.enterLoadingSubstate(managed.bucket, transition, originRoute);
-      }
+    if (manager && bucket && hasClassicInterop(manager)) {
+      manager.handleLoadingEvent(bucket, transition, originRoute);
     }
   },
 
@@ -1691,25 +1692,37 @@ let defaultActionHandlers = {
     // routeInfos are sliced to end at the route that errored, so its leaf
     // is the origin of the substate walk. That route may never have been
     // created (e.g. across an engine's async boundary) — dispatch then
-    // falls to the deepest created route, and the manager walks from the
-    // transition's leaf.
+    // falls to the deepest route with a classic manager, and the manager
+    // walks from the transition's leaf.
     let originRoute = routeInfos[routeInfos.length - 1]?.route;
+    let dispatch = dispatchRouteInfoFor(routeInfos);
+    let manager = dispatch?.manager;
+    let bucket = dispatch?.bucket;
 
-    let dispatchRoute = originRoute;
-    for (let i = routeInfos.length - 2; dispatchRoute === undefined && i >= 0; i--) {
-      dispatchRoute = routeInfos[i]?.route;
-    }
-
-    if (dispatchRoute !== undefined) {
-      let managed = getRouteManagement(dispatchRoute);
-      if (managed !== undefined && hasClassicInterop(managed.manager)) {
-        managed.manager.enterErrorSubstate(managed.bucket, transition, error, originRoute);
+    if (manager && bucket && hasClassicInterop(manager)) {
+      if (manager.handleErrorEvent(bucket, transition, error, originRoute)) {
+        this._markErrorAsHandled(error);
       }
     }
 
     logError(error, `Error while processing route: ${transition.targetName}`);
   },
 };
+
+function dispatchRouteInfoFor(
+  routeInfos: InternalRouteInfo<Route>[] | undefined
+): InternalRouteInfo<Route> | undefined {
+  if (routeInfos === undefined) {
+    return undefined;
+  }
+
+  let i = routeInfos.length - 1;
+  while (i >= 0 && !routeInfos[i]?.route) {
+    i--;
+  }
+
+  return routeInfos[i];
+}
 
 function logError(_error: any, initialMessage: string) {
   let errorArgs = [];
