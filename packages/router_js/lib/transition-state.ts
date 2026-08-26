@@ -113,17 +113,13 @@ export default class TransitionState<R extends BaseRoute> {
     let params = this.params;
     forEach(this.routeInfos, (routeInfo) => {
       params[routeInfo.name] = routeInfo.params || {};
-      return true;
-    });
-
-    transition.resolveIndex = 0;
-
-    forEach(this.routeInfos, (routeInfo) => {
       routeInfo.beginEnter(transition, true).catch(() => {
         // Surfaced by the sequential pass below.
       });
       return true;
     });
+
+    transition.resolveIndex = 0;
 
     let callback = resolveOneRouteInfo.bind(null, this, transition);
     let errorHandler = handleError.bind(null, this, transition);
