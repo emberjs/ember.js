@@ -237,6 +237,8 @@ export default class InternalRouteInfo<R extends BaseRoute> {
   declare context?: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
   isResolved = false;
   enterPromise?: globalThis.Promise<unknown> = undefined;
+  private beginPromise?: Promise<unknown> = undefined;
+  private beginTransition?: InternalTransition<R> = undefined;
   getInvokablePromise?: globalThis.Promise<object> = undefined;
 
   constructor(router: Router<R>, name: string, paramNames: string[], route?: R) {
@@ -256,8 +258,22 @@ export default class InternalRouteInfo<R extends BaseRoute> {
     return this.params || {};
   }
 
-  resolve(transition: InternalTransition<R>): Promise<ResolvedRouteInfo<R>> {
-    return Promise.resolve(this.routePromise)
+  beginEnter(transition: InternalTransition<R>, eager = false): Promise<unknown> {
+    if (eager) {
+      const eagerManager = this._management?.manager;
+
+      // Classic keeps the sequential walk, so its legacy timings are exact.
+      if (this.isResolved || eagerManager === undefined || hasClassicInterop(eagerManager)) {
+        return Promise.resolve(undefined);
+      }
+    }
+
+    if (this.beginPromise !== undefined && this.beginTransition === transition) {
+      return this.beginPromise;
+    }
+
+    this.beginTransition = transition;
+    this.beginPromise = Promise.resolve(this.routePromise)
       .then((route: R) => {
         throwIfAborted(transition);
         return route;
@@ -316,17 +332,18 @@ export default class InternalRouteInfo<R extends BaseRoute> {
           // Unobserved when a transition is abandoned before rendering.
         });
 
-        // A route becomes resolved once its `enter` has settled, so its
-        // context, serialized params, redirect and error handling all run with
-        // the model in hand. `enterPromise` is captured above rather than
-        // re-read off `this`: a superseding transition can overwrite the field
-        // while this chain is still pending.
-        return enterPromise.then((enteredContext) => {
-          throwIfAborted(transition);
-
-          return this.becomeResolved(transition, enteredContext as ModelFor<R> | undefined);
-        });
+        return enterPromise;
       });
+
+    return this.beginPromise;
+  }
+
+  resolve(transition: InternalTransition<R>): Promise<ResolvedRouteInfo<R>> {
+    return this.beginEnter(transition).then((enteredContext) => {
+      throwIfAborted(transition);
+
+      return this.becomeResolved(transition, enteredContext as ModelFor<R> | undefined);
+    });
   }
 
   becomeResolved(

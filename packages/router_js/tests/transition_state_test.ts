@@ -8,6 +8,7 @@ import {
 import TransitionState, { type TransitionError } from '../lib/transition-state';
 import { Promise, resolve } from 'rsvp';
 import { createHandler, createHandlerInfo, TestRouter } from './test_helpers';
+import { associateRouteManagement } from '../lib/route-manager';
 
 QUnit.module('TransitionState');
 
@@ -112,4 +113,79 @@ QUnit.test('Integration w/ HandlerInfos', function (assert) {
     .catch(function (error: Error) {
       assert.ok(false, 'Caught error: ' + error);
     });
+});
+
+function createManagedHandler(name: string, enter: () => Promise<unknown>) {
+  let manager = {
+    capabilities: { classicInterop: false },
+    willEnter() {},
+    enter,
+    getInvokable() {
+      return resolve(undefined);
+    },
+  };
+
+  let handler = createHandler(name);
+  associateRouteManagement(handler, manager as never, { route: handler, invokable: undefined });
+  return handler;
+}
+
+QUnit.test('routes load in parallel while an ancestor is still pending', async function (assert) {
+  assert.expect(3);
+
+  let router = new TestRouter();
+  let order: string[] = [];
+
+  let settleParent!: (value: unknown) => void;
+  let parentEnter = new Promise<unknown>((res) => {
+    settleParent = res;
+  });
+  let committedParentAtChildEnter: boolean | undefined;
+  let transition = { isAborted: false } as unknown as Transition;
+
+  let state = new TransitionState();
+  state.routeInfos = [
+    new UnresolvedRouteInfoByParam(
+      router,
+      'parent',
+      [],
+      {},
+      createManagedHandler('parent', () => {
+        order.push('parent:enter');
+        return parentEnter;
+      })
+    ),
+    new UnresolvedRouteInfoByParam(
+      router,
+      'parent.child',
+      [],
+      {},
+      createManagedHandler('parent.child', () => {
+        order.push('child:enter');
+        committedParentAtChildEnter = 'parent' in (transition.resolvedModels ?? {});
+        return resolve('child-model');
+      })
+    ),
+  ];
+
+  let done = state.resolve(transition);
+
+  await resolve();
+  await resolve();
+  await resolve();
+
+  assert.deepEqual(
+    order.slice(),
+    ['parent:enter', 'child:enter'],
+    'the child starts loading while the parent is still pending'
+  );
+
+  settleParent('parent-model');
+  await done;
+
+  assert.deepEqual(order.slice(), ['parent:enter', 'child:enter'], 'both entered exactly once');
+  assert.false(
+    committedParentAtChildEnter,
+    'the parent had not been committed when the child began loading'
+  );
 });
