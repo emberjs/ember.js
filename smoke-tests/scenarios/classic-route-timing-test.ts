@@ -4,7 +4,7 @@ import * as QUnit from 'qunit';
 const { module: Qmodule, test } = QUnit;
 
 strictAppScenarios
-  .map('routing-timing', (project) => {
+  .map('classic-route-timing', (project) => {
     project.mergeFiles({
       app: {
         'app.js': `
@@ -117,12 +117,12 @@ strictAppScenarios
       },
       tests: {
         acceptance: {
-          'routing-timing-test.js': `
+          'classic-route-timing-test.js': `
             import { module, test } from 'qunit';
             import { settled, visit, waitUntil } from '@ember/test-helpers';
             import { setupApplicationTest } from 'v2-app-template/tests/helpers';
 
-            module('Acceptance | routing timing', function (hooks) {
+            module('Acceptance | classic route timing', function (hooks) {
               setupApplicationTest(hooks);
 
               test('a descendant model does not start while its ancestor model is pending', async function (assert) {
