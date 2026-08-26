@@ -115,11 +115,12 @@ QUnit.test('Integration w/ HandlerInfos', function (assert) {
     });
 });
 
-function createManagedHandler(name: string, enter: () => Promise<unknown>) {
+function createManagedHandler(name: string, enter: () => Promise<unknown>, classicInterop = false) {
   let manager = {
-    capabilities: { classicInterop: false },
+    capabilities: { classicInterop },
     willEnter() {},
     enter,
+    redirect() {},
     getInvokable() {
       return resolve(undefined);
     },
@@ -189,3 +190,76 @@ QUnit.test('routes load in parallel while an ancestor is still pending', async f
     'the parent had not been committed when the child began loading'
   );
 });
+
+QUnit.test(
+  'a classic route is not entered until its ancestor has published',
+  async function (assert) {
+    assert.expect(3);
+
+    let router = new TestRouter();
+    let published: string[] = [];
+    router.onRouteInvokableReady = (routeInfo) => {
+      published.push(routeInfo.name);
+    };
+
+    let order: string[] = [];
+    let publishedWhenChildEntered: string[] | undefined;
+
+    let settleParent!: (value: unknown) => void;
+    let parentEnter = new Promise<unknown>((res) => {
+      settleParent = res;
+    });
+
+    let state = new TransitionState();
+    state.routeInfos = [
+      new UnresolvedRouteInfoByParam(
+        router,
+        'parent',
+        [],
+        {},
+        createManagedHandler(
+          'parent',
+          () => {
+            order.push('parent:enter');
+            return parentEnter;
+          },
+          true
+        )
+      ),
+      new UnresolvedRouteInfoByParam(
+        router,
+        'parent.child',
+        [],
+        {},
+        createManagedHandler(
+          'parent.child',
+          () => {
+            order.push('child:enter');
+            publishedWhenChildEntered = published.slice();
+            return resolve('child-model');
+          },
+          true
+        )
+      ),
+    ];
+
+    let transition = { isAborted: false, router } as unknown as Transition;
+    let done = state.resolve(transition);
+
+    await resolve();
+    await resolve();
+    await resolve();
+
+    assert.deepEqual(order.slice(), ['parent:enter'], 'the child had not entered');
+
+    settleParent('parent-model');
+    await done;
+
+    assert.deepEqual(order.slice(), ['parent:enter', 'child:enter'], 'both entered in order');
+    assert.deepEqual(
+      publishedWhenChildEntered,
+      ['parent'],
+      'the ancestor had been published before the child entered'
+    );
+  }
+);
