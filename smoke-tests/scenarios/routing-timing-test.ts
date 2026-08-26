@@ -94,7 +94,7 @@ strictAppScenarios
 
                 async model() {
                   await this.flow.hold('child');
-                  return { name: 'child' };
+                  return { name: 'child', ancestor: this.modelFor('parent').name };
                 }
               }
             `,
@@ -110,6 +110,7 @@ strictAppScenarios
           parent: {
             'child.hbs': `
               <div data-test="child">{{@model.name}}</div>
+              <div data-test="child-ancestor">{{@model.ancestor}}</div>
             `,
           },
         },
@@ -146,6 +147,57 @@ strictAppScenarios
                   ['parent'],
                   'only the ancestor model had started'
                 );
+              });
+
+              test('a child route reads its ancestor model through modelFor', async function (assert) {
+                let flow = this.owner.lookup('service:flow');
+
+                visit('/parent/child');
+
+                await waitUntil(() => flow.starts.length >= 1, { timeout: 2000 });
+                assert
+                  .dom('[data-test="child"]')
+                  .doesNotExist('not rendered while the ancestor model is pending');
+
+                flow.release('parent');
+
+                await waitUntil(() => flow.starts.length === 2, { timeout: 2000 });
+                assert
+                  .dom('[data-test="child"]')
+                  .doesNotExist('not rendered while its own model is pending');
+
+                flow.release('child');
+                await settled();
+
+                assert
+                  .dom('[data-test="child-ancestor"]')
+                  .hasText('parent', 'modelFor returned the ancestor model');
+              });
+
+              test('a child route waits for its ancestor even when released first', async function (assert) {
+                let flow = this.owner.lookup('service:flow');
+
+                flow.release('child');
+
+                visit('/parent/child');
+
+                await waitUntil(() => flow.starts.length >= 1, { timeout: 2000 });
+
+                assert.deepEqual(
+                  flow.starts.slice(),
+                  ['parent'],
+                  'the child model had not started'
+                );
+                assert
+                  .dom('[data-test="child"]')
+                  .doesNotExist('not rendered while the ancestor model is pending');
+
+                flow.release('parent');
+                await settled();
+
+                assert
+                  .dom('[data-test="child-ancestor"]')
+                  .hasText('parent', 'modelFor returned the ancestor model');
               });
 
               test('a route does not render while its own model is pending', async function (assert) {
