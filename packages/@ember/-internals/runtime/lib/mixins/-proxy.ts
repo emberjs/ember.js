@@ -4,6 +4,7 @@
 
 import { meta } from '@ember/-internals/meta/lib/meta';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
@@ -90,7 +91,7 @@ interface ProxyMixin<T = unknown> {
   setUnknownProperty<V>(key: string, value: V): V;
 }
 
-const ProxyMixin = /*@__PURE__*/ Mixin.create({
+const ProxyMixin = /*@__PURE__*/ Mixin[INTERNAL_MIXIN_CREATE]({
   /**
     The object whose properties will be forwarded.
 

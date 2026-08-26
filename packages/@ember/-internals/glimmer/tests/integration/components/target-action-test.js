@@ -7,7 +7,6 @@ import {
 } from 'internal-test-helpers';
 
 import { action, set } from '@ember/object';
-import Mixin from '@ember/object/mixin';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
@@ -149,18 +148,16 @@ moduleFor(
         }
       };
 
-      let BarViewMixin = Mixin.create({
-        actions: {
-          bar(msg) {
-            assert.equal(msg, 'HELLO');
-            this._super(msg);
-          },
-        },
-      });
-
       this.owner.register(
         'component:x-index',
-        class extends SuperComponent.extend(BarViewMixin) {
+        class extends SuperComponent.extend({
+          actions: {
+            bar(msg) {
+              assert.equal(msg, 'HELLO');
+              this._super(msg);
+            },
+          },
+        }) {
           init() {
             super.init(...arguments);
             component = this;

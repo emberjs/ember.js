@@ -141,13 +141,13 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_MIXINS.isRemoved
     )} @test a listener can be added as part of a mixin`](assert) {
       let triggered = 0;
-      let MyMixin;
+      let props;
       expectDeprecation(
         () => {
-          MyMixin = Mixin.create({
+          props = {
             foo1: on('bar', function () {
               triggered++;
             }),
@@ -155,10 +155,19 @@ moduleFor(
             foo2: on('bar', function () {
               triggered++;
             }),
-          });
+          };
         },
         /`on\(\)` event decorator is deprecated/,
         DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
+
+      let MyMixin;
+      expectDeprecation(
+        () => {
+          MyMixin = Mixin.create(props);
+        },
+        /Using mixins is deprecated/,
+        DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
       );
 
       let obj = {};
@@ -197,17 +206,39 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
+      DEPRECATIONS.DEPRECATE_EVENTED.isRemoved || DEPRECATIONS.DEPRECATE_MIXINS.isRemoved
     )} @test a listener added as part of a mixin may be overridden`](assert) {
       let triggered = 0;
-      let FirstMixin;
+      let FirstProps;
       expectDeprecation(
         () => {
-          FirstMixin = Mixin.create({
+          FirstProps = {
             foo: on('bar', function () {
               triggered++;
             }),
-          });
+          };
+        },
+        /`on\(\)` event decorator is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
+
+      let FirstMixin;
+      expectDeprecation(
+        () => {
+          FirstMixin = Mixin.create(FirstProps);
+        },
+        /Using mixins is deprecated/,
+        DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+      );
+
+      let SecondProps;
+      expectDeprecation(
+        () => {
+          SecondProps = {
+            foo: on('baz', function () {
+              triggered++;
+            }),
+          };
         },
         /`on\(\)` event decorator is deprecated/,
         DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
@@ -216,14 +247,10 @@ moduleFor(
       let SecondMixin;
       expectDeprecation(
         () => {
-          SecondMixin = Mixin.create({
-            foo: on('baz', function () {
-              triggered++;
-            }),
-          });
+          SecondMixin = Mixin.create(SecondProps);
         },
-        /`on\(\)` event decorator is deprecated/,
-        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+        /Using mixins is deprecated/,
+        DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
       );
 
       let obj = {};
