@@ -7,7 +7,15 @@ import { computed, get, set } from '@ember/object';
 import { Promise } from 'rsvp';
 import { fn } from '@ember/helper';
 import { on } from '@ember/modifier';
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import Component from '@glimmer/component';
 import { Component as EmberComponent } from '../../utils/helpers';
@@ -96,8 +104,17 @@ moduleFor(
       this.assertText('max jackson | max jackson');
     }
 
-    '@test creating an array proxy inside a tracking context does not trigger backtracking assertion'() {
-      let PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isRemoved
+    )} @test creating an array proxy inside a tracking context does not trigger backtracking assertion`]() {
+      let PromiseArray;
+      expectDeprecation(
+        () => {
+          PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
+        },
+        /The `PromiseProxyMixin` is deprecated/,
+        DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isEnabled
+      );
 
       class LoaderComponent extends GlimmerishComponent {
         get data() {

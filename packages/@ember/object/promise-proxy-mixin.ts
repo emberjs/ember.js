@@ -3,6 +3,8 @@ import setProperties from '@ember/-internals/metal/lib/set_properties';
 import computed from '@ember/-internals/metal/lib/computed';
 import Mixin from '@ember/object/mixin';
 import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { deprecatedMixin } from '@ember/-internals/utils/lib/deprecated-mixin';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import type { AnyFn, MethodNamesOf } from '@ember/-internals/utility-types';
 import type RSVP from 'rsvp';
 import type CoreObject from '@ember/object/core';
@@ -108,6 +110,7 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
 
   @class PromiseProxyMixin
   @public
+  @deprecated Track the state of the promise on your own class instead.
 */
 interface PromiseProxyMixin<T> {
   /**
@@ -212,36 +215,44 @@ interface PromiseProxyMixin<T> {
   */
   finally: this['promise']['finally'];
 }
-const PromiseProxyMixin = Mixin[INTERNAL_MIXIN_CREATE]({
-  reason: null,
+const PromiseProxyMixin = deprecatedMixin(
+  Mixin[INTERNAL_MIXIN_CREATE]({
+    reason: null,
 
-  isPending: computed('isSettled', function () {
-    return !get(this, 'isSettled');
-  }).readOnly(),
+    isPending: computed('isSettled', function () {
+      return !get(this, 'isSettled');
+    }).readOnly(),
 
-  isSettled: computed('isRejected', 'isFulfilled', function () {
-    return get(this, 'isRejected') || get(this, 'isFulfilled');
-  }).readOnly(),
+    isSettled: computed('isRejected', 'isFulfilled', function () {
+      return get(this, 'isRejected') || get(this, 'isFulfilled');
+    }).readOnly(),
 
-  isRejected: false,
+    isRejected: false,
 
-  isFulfilled: false,
+    isFulfilled: false,
 
-  promise: computed({
-    get() {
-      throw new Error("PromiseProxy's promise must be set");
-    },
-    set(_key, promise: RSVP.Promise<unknown>) {
-      return tap(this, promise);
-    },
+    promise: computed({
+      get() {
+        throw new Error("PromiseProxy's promise must be set");
+      },
+      set(_key, promise: RSVP.Promise<unknown>) {
+        return tap(this, promise);
+      },
+    }),
+
+    then: promiseAlias('then'),
+
+    catch: promiseAlias('catch'),
+
+    finally: promiseAlias('finally'),
   }),
-
-  then: promiseAlias('then'),
-
-  catch: promiseAlias('catch'),
-
-  finally: promiseAlias('finally'),
-});
+  () => {
+    deprecateUntil(
+      'The `PromiseProxyMixin` is deprecated. Track the state of the promise on your own class instead.',
+      DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN
+    );
+  }
+);
 
 function promiseAlias<T, N extends MethodNamesOf<Promise<T>>>(name: N) {
   return function (this: PromiseProxyMixin<T>, ...args: Parameters<Promise<T>[N]>) {

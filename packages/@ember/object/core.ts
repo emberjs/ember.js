@@ -16,6 +16,7 @@ import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/met
 import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
 import Mixin, { applyMixin } from '@ember/object/mixin';
 import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { deprecateAppliedMixins } from '@ember/-internals/utils/lib/deprecated-mixin';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
@@ -311,6 +312,7 @@ class CoreObject {
   }
 
   reopen(...args: Array<Mixin | Record<string, unknown>>): this {
+    deprecateAppliedMixins(args);
     applyMixin(this, args);
     return this;
   }
@@ -713,6 +715,7 @@ class CoreObject {
     ...mixins: M
   ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
   static extend(...mixins: any[]) {
+    deprecateAppliedMixins(mixins);
     let Class = class extends this {};
     reopen.apply(Class.PrototypeMixin, mixins);
     return Class;
@@ -838,6 +841,7 @@ class CoreObject {
     @public
   */
   static reopen<C extends typeof CoreObject>(this: C, ...args: any[]): C {
+    deprecateAppliedMixins(args);
     this.willReopen();
     reopen.apply(this.PrototypeMixin, args);
     return this;
