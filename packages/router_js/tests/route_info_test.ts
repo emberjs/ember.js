@@ -236,11 +236,11 @@ QUnit.test('RouteInfo.find returns matched', function (assert) {
   assert.equal(childInfo!.name, 'child');
 });
 
-QUnit.module('RouteInfo - enter gating');
+QUnit.module('RouteInfo - non-gating manager');
 
-// Builds a handler whose `enter` is supplied per test, so a test can control
-// exactly when the model settles.
-function createEnterHandler(
+// Builds a handler whose manager mimics a manager that does not gate
+// getInvokable on enterPromise. The `enter` hook is supplied per test.
+function createNonGatingHandler(
   name: string,
   enter: (bucket: any, args: any) => Promise<unknown>
 ): ClassicRoute {
@@ -258,41 +258,44 @@ function createEnterHandler(
   return handler;
 }
 
-QUnit.test('resolve waits for enter and resolves with its context', async function (assert) {
-  assert.expect(3);
+QUnit.test(
+  'resolved routeInfo.context syncs with the enter result when getInvokable does not gate on enterPromise',
+  async function (assert) {
+    assert.expect(3);
 
-  let router = new TestRouter();
-  let model = { id: 'real-model' };
+    let router = new TestRouter();
+    let model = { id: 'real-model' };
 
-  let resolveEnter!: (value: unknown) => void;
-  let enterPromise = new Promise<unknown>((res) => {
-    resolveEnter = res;
-  });
+    let resolveEnter!: (value: unknown) => void;
+    let enterPromise = new Promise<unknown>((res) => {
+      resolveEnter = res;
+    });
 
-  let handler = createEnterHandler('async-parent', () => enterPromise);
-  let routeInfo = new UnresolvedRouteInfoByParam(router, 'async-parent', [], {}, handler);
+    let handler = createNonGatingHandler('async-parent', () => enterPromise);
+    let routeInfo = new UnresolvedRouteInfoByParam(router, 'async-parent', [], {}, handler);
 
-  let transition = { isAborted: false } as unknown as InternalTransition<ClassicRoute>;
+    let transition = { isAborted: false } as unknown as InternalTransition<ClassicRoute>;
 
-  let settled = false;
-  let pending = routeInfo.resolve(transition).then((resolvedRouteInfo) => {
-    settled = true;
-    return resolvedRouteInfo;
-  });
+    let settled = false;
+    let pending = routeInfo.resolve(transition).then((resolvedRouteInfo) => {
+      settled = true;
+      return resolvedRouteInfo;
+    });
 
-  await resolve();
-  assert.notOk(settled, 'resolve stays pending until enter settles');
+    await resolve();
+    assert.notOk(settled, 'resolve stays pending until enter settles');
 
-  resolveEnter(model);
-  let resolved = await pending;
+    resolveEnter(model);
+    let resolved = await pending;
 
-  assert.equal(resolved.context, model, 'resolved with the enter result');
-  assert.equal(
-    transition.resolvedModels!['async-parent'],
-    model,
-    'transition.resolvedModels is populated for modelFor'
-  );
-});
+    assert.equal(resolved.context, model, 'resolved context syncs once enter settles');
+    assert.equal(
+      transition.resolvedModels!['async-parent'],
+      model,
+      'transition.resolvedModels is kept in sync for modelFor'
+    );
+  }
+);
 
 QUnit.test('getAncestorPromise resolves with the ancestor enter result', async function (assert) {
   assert.expect(1);
@@ -309,7 +312,7 @@ QUnit.test('getAncestorPromise resolves with the ancestor enter result', async f
   };
 
   let captured: ((routeInfo: any) => Promise<unknown>) | undefined;
-  let handler = createEnterHandler('parent.child', (_bucket, args) => {
+  let handler = createNonGatingHandler('parent.child', (_bucket, args) => {
     captured = args.getAncestorPromise;
     return resolve(undefined);
   });
@@ -332,7 +335,7 @@ QUnit.test(
 
     let router = new TestRouter();
     let model = { id: 'the-model' };
-    let handler = createEnterHandler('thing', () => resolve(model));
+    let handler = createNonGatingHandler('thing', () => resolve(model));
     let routeInfo = new UnresolvedRouteInfoByParam(router, 'thing', [], {}, handler);
 
     assert.false('context' in routeInfo, 'a fresh by-param route info has no own context');
@@ -372,7 +375,7 @@ QUnit.test('getAncestorPromise only matches true ancestors', async function (ass
   };
 
   let captured: ((routeInfo: any) => Promise<unknown>) | undefined;
-  let handler = createEnterHandler('parent.child', (_bucket, args) => {
+  let handler = createNonGatingHandler('parent.child', (_bucket, args) => {
     captured = args.getAncestorPromise;
     return resolve(undefined);
   });
