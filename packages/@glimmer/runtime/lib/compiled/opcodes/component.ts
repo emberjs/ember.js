@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
-import { setDynamicAttribute } from '../../vm/attributes/dynamic';
+import { applyDynamicAttribute } from '../../vm/attributes/deferred';
 import type {
+  DynamicAttributeApplier,
   Bounds,
   CapabilityMask,
   CapturedArguments,
@@ -75,7 +76,7 @@ import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
 import { registerDestructor } from '@glimmer/destroyable';
 import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
-import { isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { valueForRef } from '@glimmer/reference/lib/reference';
 import { assign } from '@glimmer/util/lib/object-utils';
 import { dict } from '@glimmer/util/lib/collections';
 import { EMPTY_STRING_ARRAY, enumerate } from '@glimmer/util/lib/array-utils';
@@ -104,7 +105,6 @@ import {
   CheckInvocation,
   CheckReference,
 } from './-debug-strip';
-import { UpdateDynamicAttributeOpcode } from './dom';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -534,7 +534,8 @@ export const COMPONENT_ATTR_OP = /*#__PURE__*/ syscall(
       name,
       reference,
       trusting,
-      namespace
+      namespace,
+      applyDynamicAttribute
     );
   }
 );
@@ -564,9 +565,20 @@ export class ComponentElementOperations implements ElementOperations {
   private attributes = dict<DeferredAttribute>();
   private classes: (string | Reference)[] = [];
   private modifiers: ModifierInstance[] = [];
+  private applyDynamic: DynamicAttributeApplier | null = null;
 
-  setAttribute(name: string, value: Reference, trusting: boolean, namespace: Nullable<string>) {
+  setAttribute(
+    name: string,
+    value: Reference,
+    trusting: boolean,
+    namespace: Nullable<string>,
+    apply?: DynamicAttributeApplier
+  ) {
     let deferred = { value, namespace, trusting };
+
+    if (apply !== undefined) {
+      this.applyDynamic = apply;
+    }
 
     if (name === 'class') {
       this.classes.push(value);
@@ -639,17 +651,43 @@ export class ComponentElementOperations implements ElementOperations {
 
       let attr = unwrap(this.attributes[name]);
       if (name === 'class') {
-        setDeferredAttr(vm, 'class', mergeClasses(this.classes), attr.namespace, attr.trusting);
+        this.setDeferredAttr(
+          vm,
+          'class',
+          mergeClasses(this.classes),
+          attr.namespace,
+          attr.trusting
+        );
       } else {
-        setDeferredAttr(vm, name, attr.value, attr.namespace, attr.trusting);
+        this.setDeferredAttr(vm, name, attr.value, attr.namespace, attr.trusting);
       }
     }
 
     if (type !== undefined) {
-      setDeferredAttr(vm, 'type', type.value, type.namespace, type.trusting);
+      this.setDeferredAttr(vm, 'type', type.value, type.namespace, type.trusting);
     }
 
     return this.modifiers;
+  }
+
+  private setDeferredAttr(
+    vm: VM,
+    name: string,
+    value: string | Reference,
+    namespace: Nullable<string>,
+    trusting = false
+  ) {
+    if (typeof value === 'string') {
+      vm.tree().setStaticAttribute(name, value, namespace);
+    } else {
+      expect(this.applyDynamic, 'a dynamic attribute was set without an applier')(
+        vm,
+        name,
+        value,
+        namespace,
+        trusting
+      );
+    }
   }
 }
 
@@ -669,30 +707,6 @@ function mergeClasses(classes: (string | Reference)[]): string | Reference {
 
 function allStringClasses(classes: (string | Reference)[]): classes is string[] {
   return classes.every((c) => typeof c === 'string');
-}
-
-function setDeferredAttr(
-  vm: VM,
-  name: string,
-  value: string | Reference,
-  namespace: Nullable<string>,
-  trusting = false
-) {
-  if (typeof value === 'string') {
-    vm.tree().setStaticAttribute(name, value, namespace);
-  } else {
-    let attribute = setDynamicAttribute(
-      vm.tree(),
-      name,
-      valueForRef(value),
-      trusting,
-      namespace,
-      vm.env
-    );
-    if (!isConstRef(value)) {
-      vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute, vm.env));
-    }
-  }
 }
 
 export const DID_CREATE_ELEMENT_OP = /*#__PURE__*/ syscall(
