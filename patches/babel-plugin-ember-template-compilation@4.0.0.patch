@@ -1,0 +1,83 @@
+diff --git a/dist/src/plugin.js b/dist/src/plugin.js
+index 3b4d9862f026749bdca278b99fd4dc0a5e46395e..78c889238b7a4e63b332af97c9322dcb89b2d90c 100644
+--- a/dist/src/plugin.js
++++ b/dist/src/plugin.js
+@@ -251,6 +251,7 @@ function insertCompiledTemplate(babel, state, opts, template, target, userTypedO
+     let scopeLocals = buildScopeLocals(userTypedOptions, config, target, !backingClass);
+     let options = buildPrecompileOptions(babel, target, state, opts, template, userTypedOptions, config, scopeLocals);
+     let precompileResultString;
++    let precompiledModule = null;
+     // insertRuntimeErrors is legacy and not supported by the newer rfc931 form
+     if (options.insertRuntimeErrors && !config.rfc931Support) {
+         try {
+@@ -261,6 +262,13 @@ function insertCompiledTemplate(babel, state, opts, template, target, userTypedO
+             return;
+         }
+     }
++    else if (typeof opts.compiler.precompileModule === 'function') {
++        // The compiler can emit a block whose wire format opcodes are
++        // identifiers. Each identifier is bound to an import below, so the
++        // app bundle only keeps the opcodes its templates use.
++        precompiledModule = opts.compiler.precompileModule(template, options);
++        precompileResultString = precompiledModule.expression;
++    }
+     else {
+         precompileResultString = opts.compiler.precompile(template, options);
+     }
+@@ -268,7 +276,18 @@ function insertCompiledTemplate(babel, state, opts, template, target, userTypedO
+     t.addComment(templateExpression, 'leading', `\n  ${template.replace(/\*\//g, '*\\/')}\n`, 
+     /* line comment? */ false);
+     state.util.replaceWith(target, (i) => {
+-        let templateFactoryIdentifier = i.import(state.templateFactory.moduleName, state.templateFactory.exportName);
++        let templateFactoryIdentifier;
++        if (precompiledModule) {
++            let binders = new Map();
++            for (let imp of precompiledModule.imports) {
++                binders.set(imp.local, () => i.import(imp.module, imp.name));
++            }
++            bindOpIdentifiers(templateExpression, binders);
++            templateFactoryIdentifier = i.import('@ember/template-factory/modular', 'createTemplateFactory');
++        }
++        else {
++            templateFactoryIdentifier = i.import(state.templateFactory.moduleName, state.templateFactory.exportName);
++        }
+         let expression = t.callExpression(templateFactoryIdentifier, [templateExpression]);
+         if (config.rfc931Support) {
+             expression = t.callExpression(i.import('@ember/component', 'setComponentTemplate'), [
+@@ -340,6 +359,36 @@ function updateCallForm(target, transformed, formatOptions, scopeLocals, state,
+     // final AST.
+     updateScope(babel, target, scopeLocals);
+ }
++function bindOpIdentifiers(node, binders) {
++    if (node === null || typeof node !== 'object') {
++        return;
++    }
++    let visit = (container, key) => {
++        let child = container[key];
++        if (child === null || typeof child !== 'object') {
++            return;
++        }
++        if (child.type === 'Identifier' && binders.has(child.name)) {
++            // babel-import-util matches placeholder nodes by identity, so each
++            // occurrence gets its own node from i.import().
++            container[key] = binders.get(child.name)();
++            return;
++        }
++        bindOpIdentifiers(child, binders);
++    };
++    if (Array.isArray(node)) {
++        for (let index = 0; index < node.length; index++) {
++            visit(node, index);
++        }
++        return;
++    }
++    for (let key of Object.keys(node)) {
++        if (key === 'loc' || key === 'leadingComments' || key === 'trailingComments') {
++            continue;
++        }
++        visit(node, key);
++    }
++}
+ function templateFactoryConfig(opts) {
+     let moduleName = '@ember/template-factory';
+     let exportName = 'createTemplateFactory';
