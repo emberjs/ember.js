@@ -65,6 +65,10 @@ import {
   isGetFreeComponent,
   isGetFreeComponentOrHelper,
   isGetFreeModifier,
+  ResolveComponent,
+  ResolveComponentOrHelper,
+  ResolveModifier,
+  ResolveOptionalComponentOrHelper,
 } from '../opcode-builder/helpers/resolution';
 import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared';
 import {
@@ -78,7 +82,7 @@ import {
   DynamicScope,
   PushPrimitiveReference,
 } from '../opcode-builder/helpers/vm';
-import { HighLevelBuilderOpcodes, HighLevelResolutionOpcodes } from '../opcode-builder/opcodes';
+import { HighLevelBuilderOpcodes } from '../opcode-builder/opcodes';
 import { debugSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
 import { namedBlocks } from '../utils';
 import { defineStatement, headId } from './compilers';
@@ -112,7 +116,7 @@ export const ModifierOp = /*#__PURE__*/ defineStatement(
   SexpOpcodes.Modifier,
   (op, [, expression, positional, named]) => {
     if (isGetFreeModifier(expression)) {
-      op(HighLevelResolutionOpcodes.Modifier, expression, (handle: number) => {
+      op(ResolveModifier, expression, (handle: number) => {
         op(VM_PUSH_FRAME_OP);
         SimpleArgs(op, positional, named, false);
         op(MODIFIER_OP, handle);
@@ -194,7 +198,7 @@ export const ComponentOp = /*#__PURE__*/ defineStatement(
   SexpOpcodes.Component,
   (op, [, expr, elementBlock, named, blocks]) => {
     if (isGetFreeComponent(expr)) {
-      op(HighLevelResolutionOpcodes.Component, expr, (component: CompileTimeComponent) => {
+      op(ResolveComponent, expr, (component: CompileTimeComponent) => {
         InvokeComponent(op, component, elementBlock, null, named, blocks);
       });
     } else {
@@ -238,7 +242,7 @@ export const AppendOp = /*#__PURE__*/ defineStatement(SexpOpcodes.Append, (op, [
   if (!Array.isArray(value)) {
     op(TEXT_OP, value === null || value === undefined ? '' : String(value));
   } else if (isGetFreeComponentOrHelper(value)) {
-    op(HighLevelResolutionOpcodes.OptionalComponentOrHelper, value, {
+    op(ResolveOptionalComponentOrHelper, value, {
       ifComponent(component: CompileTimeComponent) {
         InvokeComponent(op, component, null, null, null, null);
       },
@@ -261,7 +265,7 @@ export const AppendOp = /*#__PURE__*/ defineStatement(SexpOpcodes.Append, (op, [
     let [, expression, positional, named] = value as WireFormat.Expressions.Helper;
 
     if (isGetFreeComponentOrHelper(expression)) {
-      op(HighLevelResolutionOpcodes.ComponentOrHelper, expression, {
+      op(ResolveComponentOrHelper, expression, {
         ifComponent(component: CompileTimeComponent) {
           InvokeComponent(op, component, null, positional, hashToArgs(named), null);
         },
@@ -328,7 +332,7 @@ export const BlockOp = /*#__PURE__*/ defineStatement(
   SexpOpcodes.Block,
   (op, [, expr, positional, named, blocks]) => {
     if (isGetFreeComponent(expr)) {
-      op(HighLevelResolutionOpcodes.Component, expr, (component: CompileTimeComponent) => {
+      op(ResolveComponent, expr, (component: CompileTimeComponent) => {
         InvokeComponent(op, component, null, positional, hashToArgs(named), blocks);
       });
     } else {
@@ -458,7 +462,7 @@ export const InvokeComponentOp = /*#__PURE__*/ defineStatement(
   SexpOpcodes.InvokeComponent,
   (op, [, expr, positional, named, blocks]) => {
     if (isGetFreeComponent(expr)) {
-      op(HighLevelResolutionOpcodes.Component, expr, (component: CompileTimeComponent) => {
+      op(ResolveComponent, expr, (component: CompileTimeComponent) => {
         InvokeComponent(op, component, null, positional, hashToArgs(named), blocks);
       });
     } else {

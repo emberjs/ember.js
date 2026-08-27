@@ -7,6 +7,7 @@ import type {
   Nullable,
   Owner,
   ProgramConstants,
+  ResolutionHandler,
   ResolutionTimeConstants,
   ResolveComponentOp,
   ResolveComponentOrHelperOp,
@@ -454,3 +455,14 @@ function lookupBuiltInHelper(
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
   return constants.helper(helper!, name);
 }
+
+export const ResolveComponent: ResolutionHandler<ResolveComponentOp> = {
+  resolve: resolveComponent,
+};
+export const ResolveHelper: ResolutionHandler<ResolveHelperOp> = { resolve: resolveHelper };
+export const ResolveModifier: ResolutionHandler<ResolveModifierOp> = { resolve: resolveModifier };
+export const ResolveComponentOrHelper: ResolutionHandler<ResolveComponentOrHelperOp> = {
+  resolve: resolveComponentOrHelper,
+};
+export const ResolveOptionalComponentOrHelper: ResolutionHandler<ResolveOptionalComponentOrHelperOp> =
+  { resolve: resolveOptionalComponentOrHelper };

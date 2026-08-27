@@ -1,5 +1,7 @@
 import type { Nullable, Optional } from '../core.js';
-import type { CompileTimeConstants } from '../program.js';
+import type { CompileTimeConstants, ProgramConstants } from '../program.js';
+import type { ClassicResolver } from '../program.js';
+import type { BlockMetadata } from '../template.js';
 import type { CompileTimeComponent } from '../serialize.js';
 import type { HandleResult, NamedBlocks } from '../template.js';
 import type { VmMachineOp as MachineOp, VmOp as Op } from '../vm-opcodes.js';
@@ -55,20 +57,34 @@ export type LabelOp = [op: HighLevelLabel, op1: string];
 
 export type HighLevelBuilderOp = StartLabelsOp | StopLabelsOp | LabelOp;
 
+/**
+ * Resolves a name to a handle at compile time. The loose mode ops push a
+ * handler object, so a build with only strict templates drops the
+ * resolution code with the ops that need it.
+ */
+export interface ResolutionHandler<Op extends HighLevelResolutionOp = HighLevelResolutionOp> {
+  readonly resolve: (
+    resolver: Nullable<ClassicResolver>,
+    constants: ProgramConstants,
+    meta: BlockMetadata,
+    op: Op
+  ) => void;
+}
+
 export type ResolveModifierOp = [
-  op: HighLevelResolveModifier,
+  op: ResolutionHandler<ResolveModifierOp>,
   op1: WireFormat.Expressions.Expression,
   op2: (handle: number) => void,
 ];
 
 export type ResolveComponentOp = [
-  op: HighLevelResolveComponent,
+  op: ResolutionHandler<ResolveComponentOp>,
   op1: WireFormat.Expressions.Expression,
   op2: (component: CompileTimeComponent) => void,
 ];
 
 export type ResolveComponentOrHelperOp = [
-  op: HighLevelResolveComponentOrHelper,
+  op: ResolutionHandler<ResolveComponentOrHelperOp>,
   op1: WireFormat.Expressions.Expression,
   op2: {
     ifComponent: (component: CompileTimeComponent) => void;
@@ -77,13 +93,13 @@ export type ResolveComponentOrHelperOp = [
 ];
 
 export type ResolveHelperOp = [
-  op: HighLevelResolveHelper,
+  op: ResolutionHandler<ResolveHelperOp>,
   op1: WireFormat.Expressions.Expression,
   op2: (handle: number) => void,
 ];
 
 export type ResolveOptionalComponentOrHelperOp = [
-  op: HighLevelResolveOptionalComponentOrHelper,
+  op: ResolutionHandler<ResolveOptionalComponentOrHelperOp>,
   op1: WireFormat.Expressions.Expression,
   op2: {
     ifComponent: (component: CompileTimeComponent) => void;

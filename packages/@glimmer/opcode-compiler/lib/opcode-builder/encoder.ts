@@ -10,6 +10,8 @@ import type {
   EvaluationContext,
   HandleResult,
   HighLevelOp,
+  HighLevelResolutionOp,
+  ResolutionHandler,
   InstructionEncoder,
   Operand,
   ProgramHeap,
@@ -30,13 +32,6 @@ import { ARG_SHIFT, MACHINE_MASK, TYPE_SIZE } from '@glimmer/vm/lib/flags';
 import { APPEND_OPCODES } from '@glimmer/runtime/lib/opcodes';
 
 import { compilableBlock } from '../compilable-template';
-import {
-  resolveComponent,
-  resolveComponentOrHelper,
-  resolveHelper,
-  resolveModifier,
-  resolveOptionalComponentOrHelper,
-} from './helpers/resolution';
 import { HighLevelBuilderOpcodes, HighLevelResolutionOpcodes } from './opcodes';
 import { HighLevelOperands } from './operands';
 
@@ -80,6 +75,11 @@ export function encodeOp(
   let head = op[0];
 
   if (typeof head === 'object') {
+    if ('resolve' in head) {
+      (head as ResolutionHandler).resolve(resolver, constants, meta, op as HighLevelResolutionOp);
+      return;
+    }
+
     let [, ...operands] = op;
     APPEND_OPCODES.register(head);
     encoder.push(constants, head.type, ...(operands as SingleBuilderOperand[]));
@@ -94,16 +94,6 @@ export function encodeOp(
         return encoder.startLabels();
       case HighLevelBuilderOpcodes.StopLabels:
         return encoder.stopLabels();
-      case HighLevelResolutionOpcodes.Component:
-        return resolveComponent(resolver, constants, meta, op);
-      case HighLevelResolutionOpcodes.Modifier:
-        return resolveModifier(resolver, constants, meta, op);
-      case HighLevelResolutionOpcodes.Helper:
-        return resolveHelper(resolver, constants, meta, op);
-      case HighLevelResolutionOpcodes.ComponentOrHelper:
-        return resolveComponentOrHelper(resolver, constants, meta, op);
-      case HighLevelResolutionOpcodes.OptionalComponentOrHelper:
-        return resolveOptionalComponentOrHelper(resolver, constants, meta, op);
 
       case HighLevelResolutionOpcodes.Local: {
         let [, freeVar, andThen] = op;

@@ -20,7 +20,7 @@ import { $v0 } from '@glimmer/vm/lib/registers';
 import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
 import { expr } from '../opcode-builder/helpers/expr';
-import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
+import { isGetFreeHelper, ResolveHelper } from '../opcode-builder/helpers/resolution';
 import { SimpleArgs } from '../opcode-builder/helpers/shared';
 import { Call, CallDynamic, Curry, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { HighLevelResolutionOpcodes } from '../opcode-builder/opcodes';
@@ -39,7 +39,7 @@ export const CallOp = /*#__PURE__*/ defineExpression(
   SexpOpcodes.Call,
   (op, [, expression, positional, named]) => {
     if (isGetFreeHelper(expression)) {
-      op(HighLevelResolutionOpcodes.Helper, expression, (handle: number) => {
+      op(ResolveHelper, expression, (handle: number) => {
         Call(op, handle, positional, named);
       });
     } else {
@@ -78,7 +78,7 @@ export const GetStrictKeywordOp = /*#__PURE__*/ defineExpression(
   SexpOpcodes.GetStrictKeyword,
   (op, expr) => {
     op(HighLevelResolutionOpcodes.Local, expr[1], (_name: string) => {
-      op(HighLevelResolutionOpcodes.Helper, expr, (handle: number) => {
+      op(ResolveHelper, expr, (handle: number) => {
         Call(op, handle, null, null);
       });
     });
@@ -89,7 +89,7 @@ export const GetFreeAsHelperHeadOp = /*#__PURE__*/ defineExpression(
   SexpOpcodes.GetFreeAsHelperHead,
   (op, expr) => {
     op(HighLevelResolutionOpcodes.Local, expr[1], (_name: string) => {
-      op(HighLevelResolutionOpcodes.Helper, expr, (handle: number) => {
+      op(ResolveHelper, expr, (handle: number) => {
         Call(op, handle, null, null);
       });
     });
