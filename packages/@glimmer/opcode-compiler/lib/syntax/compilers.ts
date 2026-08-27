@@ -1,6 +1,4 @@
 import type { BuilderOp, HighLevelOp, SexpOpcode, SexpOpcodeMap } from '@glimmer/interfaces';
-import assert from '@glimmer/debug-util/lib/assert';
-import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 
 export type PushExpressionOp = (...op: BuilderOp | HighLevelOp) => void;
 
@@ -15,27 +13,55 @@ export type CompilerFunction<PushOp extends PushExpressionOp, TSexp> = (
   sexp: TSexp
 ) => void;
 
-export class Compilers<PushOp extends PushExpressionOp, TSexpOpcodes extends SexpOpcode> {
-  private names: {
-    [name: number]: number;
-  } = {};
+/**
+ * A wire format opcode that a compiled template imports. The tuple head of a
+ * statement or expression is one of these objects. `id` is the numeric
+ * SexpOpcode, kept for debug output and for templates that still ship JSON.
+ */
+export interface SexpOp<TSexp = unknown> {
+  readonly id: SexpOpcode;
+  readonly compile: CompilerFunction<PushStatementOp, TSexp>;
+}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private funcs: CompilerFunction<PushOp, any>[] = [];
+export function defineStatement<T extends SexpOpcode>(
+  id: T,
+  compile: CompilerFunction<PushStatementOp, SexpOpcodeMap[T]>
+): SexpOp<SexpOpcodeMap[T]> {
+  return { id, compile };
+}
 
-  add<TSexpOpcode extends TSexpOpcodes>(
-    name: TSexpOpcode,
-    func: CompilerFunction<PushOp, SexpOpcodeMap[TSexpOpcode]>
-  ): void {
-    this.names[name] = this.funcs.push(func) - 1;
-  }
+export function defineExpression<T extends SexpOpcode>(
+  id: T,
+  compile: CompilerFunction<PushExpressionOp, SexpOpcodeMap[T]>
+): SexpOp<SexpOpcodeMap[T]> {
+  return { id, compile };
+}
 
-  compile(op: PushOp, sexp: SexpOpcodeMap[TSexpOpcodes]): void {
-    let name = sexp[0];
-    let index = unwrap(this.names[name]);
-    let func = this.funcs[index];
-    assert(func, `expected an implementation for ${sexp[0]}`);
+/**
+ * Templates that ship a JSON block have numeric heads. `./legacy` fills this
+ * table with every op. Templates that import their ops never need it.
+ */
+export const LEGACY_OPS: { [id: number]: SexpOp | undefined } = {};
 
-    func(op, sexp);
+export function headId(sexp: readonly unknown[]): SexpOpcode {
+  let head = sexp[0];
+  return typeof head === 'number' ? (head as SexpOpcode) : (head as SexpOp).id;
+}
+
+export function compileSexp(op: PushStatementOp, sexp: readonly unknown[]): void {
+  let head = sexp[0];
+
+  if (typeof head === 'number') {
+    let found = LEGACY_OPS[head];
+
+    if (found === undefined) {
+      throw new Error(
+        `No compiler for wire format opcode ${head}. A template with a JSON block must be created with the legacy template factory.`
+      );
+    }
+
+    found.compile(op, sexp);
+  } else {
+    (head as SexpOp).compile(op, sexp);
   }
 }

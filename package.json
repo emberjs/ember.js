@@ -329,6 +329,7 @@
       "@ember/template-compiler/lib/template.js": "ember-source/@ember/template-compiler/lib/template.js",
       "@ember/template-compiler/runtime.js": "ember-source/@ember/template-compiler/runtime.js",
       "@ember/template-factory/index.js": "ember-source/@ember/template-factory/index.js",
+      "@ember/template-factory/modular.js": "ember-source/@ember/template-factory/modular.js",
       "@ember/template/index.js": "ember-source/@ember/template/index.js",
       "@ember/test/adapter.js": "ember-source/@ember/test/adapter.js",
       "@ember/test/index.js": "ember-source/@ember/test/index.js",

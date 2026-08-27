@@ -20,6 +20,8 @@ import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
+import { headId } from '../../syntax/compilers';
+
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {
   return Array.isArray(opcode) && opcode.length === 2;
 }
@@ -30,7 +32,7 @@ function makeResolutionTypeVerifier(typeToVerify: SexpOpcode) {
   ): opcode is Expressions.GetFree | Expressions.GetLexicalSymbol => {
     if (!isGetLikeTuple(opcode)) return false;
 
-    let type = opcode[0];
+    let type = headId(opcode);
 
     return (
       type === SexpOpcodes.GetStrictKeyword ||
@@ -88,9 +90,9 @@ export function resolveComponent(
 ): void {
   assert(isGetFreeComponent(expr), 'Attempted to resolve a component with incorrect opcode');
 
-  let type = expr[0];
+  let type = headId(expr);
 
-  if (DEBUG && expr[0] === SexpOpcodes.GetStrictKeyword) {
+  if (DEBUG && headId(expr) === SexpOpcodes.GetStrictKeyword) {
     assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
     throw new Error(
@@ -153,7 +155,7 @@ export function resolveHelper(
 ): void {
   assert(isGetFreeHelper(expr), 'Attempted to resolve a helper with incorrect opcode');
 
-  let type = expr[0];
+  let type = headId(expr);
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
     let { scopeValues } = meta;
@@ -201,7 +203,7 @@ export function resolveModifier(
 ): void {
   assert(isGetFreeModifier(expr), 'Attempted to resolve a modifier with incorrect opcode');
 
-  let type = expr[0];
+  let type = headId(expr);
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
     let {
@@ -265,7 +267,7 @@ export function resolveComponentOrHelper(
     'Attempted to resolve a component or helper with incorrect opcode'
   );
 
-  let type = expr[0];
+  let type = headId(expr);
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
     let {
@@ -355,7 +357,7 @@ export function resolveOptionalComponentOrHelper(
     'Attempted to resolve an optional component or helper with incorrect opcode'
   );
 
-  let type = expr[0];
+  let type = headId(expr);
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
     let {

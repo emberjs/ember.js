@@ -20,7 +20,7 @@ import {
   getInternalHelperManager,
   getInternalModifierManager,
 } from '@glimmer/manager/lib/internal/api';
-import templateFactory from '@glimmer/opcode-compiler/lib/template';
+import templateFactory from '@glimmer/opcode-compiler/lib/template-core';
 import { enumerate } from '@glimmer/util/lib/array-utils';
 import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';
 
