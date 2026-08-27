@@ -4,7 +4,7 @@ import type { Nullable } from '@ember/-internals/utility-types';
 import type { IteratorDelegate } from '@glimmer/reference/lib/iterable';
 import { consumeTag, isTracking } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
-import { EachInWrapper } from '../helpers/each-in';
+import { EachInWrapper } from './each-in-wrapper';
 import type { NativeArray } from '@ember/array';
 import { hooks } from '../hooks';
 

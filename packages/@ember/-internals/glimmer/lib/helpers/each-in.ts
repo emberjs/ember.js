@@ -9,6 +9,7 @@ import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { internalHelper } from './internal-helper';
+import { EachInWrapper } from '../utils/each-in-wrapper';
 
 /**
   The `{{#each}}` keyword loops over elements in a collection. It is an extension
@@ -298,9 +299,7 @@ import { internalHelper } from './internal-helper';
   @public
   @since 2.1.0
 */
-export class EachInWrapper {
-  constructor(public inner: unknown) {}
-}
+export { EachInWrapper };
 
 export default internalHelper(({ positional }: CapturedArguments) => {
   const inner = positional[0];

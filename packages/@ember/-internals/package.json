@@ -18,6 +18,7 @@
     "./routing": "./routing/index.ts",
     "./runtime": "./runtime/index.ts",
     "./string": "./string/index.ts",
+    "./template-keywords": "./template-keywords/index.ts",
     "./utility-types": "./utility-types/index.ts",
     "./utils": "./utils/index.ts",
     "./views": "./views/index.ts",

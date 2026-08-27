@@ -68,3 +68,34 @@ QUnit.test('strict mode with lexical scope', (assert) => {
   assert.deepEqual(result.block, expected);
   assert.deepEqual(result.scope(), { Foo: 'foo', bar: 'bar', baz: 'baz' });
 });
+
+QUnit.test('strict keywords become lexical imports', (assert) => {
+  let source = '{{mut this.value}}';
+  let options = {
+    strictMode: true,
+    keywords: ['mut'],
+    lexicalScope: () => false,
+    lexicalKeywords: { mut: { module: '@app/keywords', name: 'mut' } },
+  };
+  let { imports, expression } = precompileModule(source, options);
+  let keyword = imports.find((imp) => imp.module === '@app/keywords');
+
+  assert.ok(keyword, 'the keyword is imported');
+  assert.strictEqual(keyword?.name, 'mut');
+
+  let MUT = {};
+  let evaluate = new Function(...imports.map((imp) => imp.local), `return (${expression});`) as (
+    ...args: unknown[]
+  ) => { block: SerializedTemplateBlock; scope: () => object };
+  let result = evaluate(...imports.map((imp) => (imp.id === -1 ? MUT : imp.id)));
+
+  let scope = result.scope();
+  let slot = Object.values(scope).indexOf(MUT);
+
+  assert.ok(slot >= 0, 'the keyword has a scope slot');
+  assert.true(
+    JSON.stringify(result.block).includes(`[32,${slot}]`),
+    'GetLexicalSymbol points at the slot'
+  );
+  assert.false(JSON.stringify(result.block).includes('[31,'), 'no GetStrictKeyword remains');
+});

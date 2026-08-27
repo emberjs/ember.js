@@ -1,5 +1,5 @@
 diff --git a/dist/src/plugin.js b/dist/src/plugin.js
-index 3b4d9862f026749bdca278b99fd4dc0a5e46395e..78c889238b7a4e63b332af97c9322dcb89b2d90c 100644
+index 3b4d9862f026749bdca278b99fd4dc0a5e46395e..87d57454e12f2f93525c93dafcc1abfbb5cbc3ef 100644
 --- a/dist/src/plugin.js
 +++ b/dist/src/plugin.js
 @@ -251,6 +251,7 @@ function insertCompiledTemplate(babel, state, opts, template, target, userTypedO
@@ -24,7 +24,7 @@ index 3b4d9862f026749bdca278b99fd4dc0a5e46395e..78c889238b7a4e63b332af97c9322dcb
      else {
          precompileResultString = opts.compiler.precompile(template, options);
      }
-@@ -268,7 +276,18 @@ function insertCompiledTemplate(babel, state, opts, template, target, userTypedO
+@@ -268,7 +276,19 @@ function insertCompiledTemplate(babel, state, opts, template, target, userTypedO
      t.addComment(templateExpression, 'leading', `\n  ${template.replace(/\*\//g, '*\\/')}\n`, 
      /* line comment? */ false);
      state.util.replaceWith(target, (i) => {
@@ -36,7 +36,8 @@ index 3b4d9862f026749bdca278b99fd4dc0a5e46395e..78c889238b7a4e63b332af97c9322dcb
 +                binders.set(imp.local, () => i.import(imp.module, imp.name));
 +            }
 +            bindOpIdentifiers(templateExpression, binders);
-+            templateFactoryIdentifier = i.import('@ember/template-factory/modular', 'createTemplateFactory');
++            let factory = precompiledModule.factory ?? { module: '@ember/template-factory/modular', name: 'createTemplateFactory' };
++            templateFactoryIdentifier = i.import(factory.module, factory.name);
 +        }
 +        else {
 +            templateFactoryIdentifier = i.import(state.templateFactory.moduleName, state.templateFactory.exportName);
@@ -44,7 +45,7 @@ index 3b4d9862f026749bdca278b99fd4dc0a5e46395e..78c889238b7a4e63b332af97c9322dcb
          let expression = t.callExpression(templateFactoryIdentifier, [templateExpression]);
          if (config.rfc931Support) {
              expression = t.callExpression(i.import('@ember/component', 'setComponentTemplate'), [
-@@ -340,6 +359,36 @@ function updateCallForm(target, transformed, formatOptions, scopeLocals, state,
+@@ -340,6 +360,36 @@ function updateCallForm(target, transformed, formatOptions, scopeLocals, state,
      // final AST.
      updateScope(babel, target, scopeLocals);
  }

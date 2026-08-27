@@ -11,7 +11,7 @@ import type {
 } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 
-import { type OpImport, WireFormatModulePrinter } from './wire-format-module';
+import { type LexicalKeyword, type OpImport, WireFormatModulePrinter } from './wire-format-module';
 import * as src from '@glimmer/syntax/lib/source/api';
 import { normalize } from '@glimmer/syntax/lib/v2/normalize';
 import { LOCAL_LOGGER } from '@glimmer/util';
@@ -165,6 +165,8 @@ export function precompile(
 export interface PrecompiledModule {
   /** Identifiers in `expression` that must be bound to imports. */
   imports: OpImport[];
+  /** The template factory the build tool must wrap `expression` in. */
+  factory: LexicalKeyword;
   /** A JavaScript expression that evaluates to a `SerializedTemplateWithOps`. */
   expression: string;
 }
@@ -174,16 +176,24 @@ export interface PrecompiledModule {
  * format opcodes by identifier instead of a JSON string. The caller adds an
  * import for each entry of `imports` and renames the identifier as needed.
  */
+export interface PrecompileModuleOptions extends PrecompileOptions {
+  /** Strict keywords to bind to imports instead of a runtime resolver. */
+  lexicalKeywords?: Record<string, LexicalKeyword>;
+}
+
 export function precompileModule(
   source: string,
-  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
+  options: PrecompileModuleOptions | PrecompileOptionsWithLexicalScope = defaultOptions
 ): PrecompiledModule {
   const [block, usedLocals] = precompileJSON(source, options);
 
   const moduleName = options.meta?.moduleName;
   const idFn = options.id || defaultId;
   const blockJSON = JSON.stringify(block);
-  const printer = new WireFormatModulePrinter();
+  const printer = new WireFormatModulePrinter({
+    lexicalKeywords: (options as PrecompileModuleOptions).lexicalKeywords,
+    scopeOffset: usedLocals.length,
+  });
   const blockSource = printer.block(block);
 
   const fields = [
@@ -193,12 +203,21 @@ export function precompileModule(
     `isStrictMode:${options.strictMode ?? false}`,
   ];
 
-  if (usedLocals.length > 0) {
-    const scopeEntries = usedLocals.map((name) => (name === 'this' ? `"this":this` : name));
+  const scopeEntries = usedLocals.map((name) => (name === 'this' ? `"this":this` : name));
+
+  for (const { name, local } of printer.keywordSlots) {
+    scopeEntries.push(`${JSON.stringify(name)}:${local}`);
+  }
+
+  if (scopeEntries.length > 0) {
     fields.push(`scope:()=>({${scopeEntries.join(',')}})`);
   }
 
-  return { imports: printer.imports, expression: `{${fields.join(',')}}` };
+  return {
+    imports: printer.imports,
+    factory: { module: '@glimmer/opcode-compiler/lib/template-core', name: 'default' },
+    expression: `{${fields.join(',')}}`,
+  };
 }
 
 export type { PrecompileOptions };

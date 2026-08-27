@@ -1,4 +1,5 @@
 import { privatize as P } from '@ember/-internals/container/lib/registry';
+import { ensureBuiltins } from './builtins';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
@@ -211,6 +212,7 @@ export class Renderer extends BaseRenderer {
     builder = clientBuilder,
     resolver = new RouterResolver()
   ) {
+    ensureBuiltins();
     super(owner, env, document, resolver, builder);
     this._rootTemplate = rootTemplate(owner);
     this._viewRegistry = viewRegistry || owner.lookup('-view-registry:main');

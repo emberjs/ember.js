@@ -601,7 +601,7 @@ export class BaseRenderer {
     owner: object,
     envOptions: { isInteractive: boolean; hasDOM: boolean },
     document: SimpleDocument,
-    resolver: Resolver,
+    resolver: Resolver | null,
     builder: IBuilder
   ) {
     let sharedArtifacts = artifacts();
