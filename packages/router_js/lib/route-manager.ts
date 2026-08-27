@@ -114,6 +114,20 @@ export function getRouteManagement(route: object): RouteManagement | undefined {
   return ROUTE_MANAGEMENT.get(route);
 }
 
+const INVOKABLES = new WeakMap<object, globalThis.Promise<object>>();
+export function invokableFor<B extends object>(
+  manager: { getInvokable(bucket: B): globalThis.Promise<object> },
+  bucket: B
+): globalThis.Promise<object> {
+  let invokable = INVOKABLES.get(bucket);
+  if (invokable === undefined) {
+    invokable = manager.getInvokable(bucket);
+    INVOKABLES.set(bucket, invokable);
+    invokable.catch(() => {});
+  }
+  return invokable;
+}
+
 // -- Navigation state ---------------------------------------------------------
 
 /**

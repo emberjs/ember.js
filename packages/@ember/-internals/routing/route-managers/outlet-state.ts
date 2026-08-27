@@ -1,4 +1,4 @@
-import type { BaseRoute, InternalRouteInfo } from 'router_js';
+import { invokableFor, type BaseRoute, type InternalRouteInfo } from 'router_js';
 import { tracked } from '@ember/-internals/metal/lib/tracked';
 
 /**
@@ -17,8 +17,6 @@ export interface OutletParent {
     main: OutletState | undefined;
   };
 }
-
-const INVOKABLES = new WeakMap<object, object>();
 
 /**
  * Represents one rendered instance of a route.
@@ -49,21 +47,14 @@ export class OutletState implements OutletParent {
   ) {
     this.context = routeInfo.context;
 
-    this.invokable = INVOKABLES.get(bucket);
-    if (this.invokable === undefined) {
-      // Substate routes never 'enter' and don't initialize `getInvokablePromise`
-      const invokablePromise = routeInfo.getInvokablePromise ?? manager.getInvokable(bucket);
-
-      invokablePromise.then(
-        (invokable) => {
-          INVOKABLES.set(bucket, invokable);
-          this.invokable = invokable;
-        },
-        () => {
-          // getInvokable rejected; this level renders nothing.
-        }
-      );
-    }
+    invokableFor(manager, bucket).then(
+      (invokable) => {
+        this.invokable = invokable;
+      },
+      () => {
+        // getInvokable rejected; this level renders nothing.
+      }
+    );
 
     routeInfo.enterPromise?.then(
       () => {

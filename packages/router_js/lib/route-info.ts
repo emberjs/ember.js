@@ -14,7 +14,7 @@ import {
 import { isParam, isPromise, merge } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
 import type { EnterState, RouteManagement, RouteManager, RouteStateBucket } from './route-manager';
-import { getRouteManagement, hasClassicInterop } from './route-manager';
+import { getRouteManagement, hasClassicInterop, invokableFor } from './route-manager';
 
 export type IModel = {} & {
   id?: string | number;
@@ -239,7 +239,6 @@ export default class InternalRouteInfo<R extends BaseRoute> {
   enterPromise?: globalThis.Promise<unknown> = undefined;
   private beginPromise?: Promise<unknown> = undefined;
   private beginTransition?: InternalTransition<R> = undefined;
-  getInvokablePromise?: globalThis.Promise<object> = undefined;
 
   constructor(router: Router<R>, name: string, paramNames: string[], route?: R) {
     this.name = name;
@@ -326,11 +325,7 @@ export default class InternalRouteInfo<R extends BaseRoute> {
         const enterPromise = manager.enter(bucket, navigationArgs);
         this.enterPromise = enterPromise;
 
-        const getInvokablePromise = manager.getInvokable(bucket);
-        this.getInvokablePromise = getInvokablePromise;
-        getInvokablePromise.catch(() => {
-          // Unobserved when a transition is abandoned before rendering.
-        });
+        invokableFor(manager, bucket);
 
         return enterPromise;
       });
@@ -376,8 +371,6 @@ export default class InternalRouteInfo<R extends BaseRoute> {
       context,
       this.enterPromise
     );
-
-    resolved.getInvokablePromise = this.getInvokablePromise;
 
     // Back-fill the model onto `resolved` once `enter` settles, but only for
     // managers that render before their model resolves. A manager whose
