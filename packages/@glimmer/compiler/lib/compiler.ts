@@ -10,6 +10,8 @@ import type {
   TemplateIdFn,
 } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
+
+import { type OpImport, WireFormatModulePrinter } from './wire-format-module';
 import * as src from '@glimmer/syntax/lib/source/api';
 import { normalize } from '@glimmer/syntax/lib/v2/normalize';
 import { LOCAL_LOGGER } from '@glimmer/util';
@@ -158,6 +160,45 @@ export function precompile(
   }
 
   return stringified;
+}
+
+export interface PrecompiledModule {
+  /** Identifiers in `expression` that must be bound to imports. */
+  imports: OpImport[];
+  /** A JavaScript expression that evaluates to a `SerializedTemplateWithOps`. */
+  expression: string;
+}
+
+/**
+ * Like `precompile`, but the block is JavaScript that references its wire
+ * format opcodes by identifier instead of a JSON string. The caller adds an
+ * import for each entry of `imports` and renames the identifier as needed.
+ */
+export function precompileModule(
+  source: string,
+  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
+): PrecompiledModule {
+  const [block, usedLocals] = precompileJSON(source, options);
+
+  const moduleName = options.meta?.moduleName;
+  const idFn = options.id || defaultId;
+  const blockJSON = JSON.stringify(block);
+  const printer = new WireFormatModulePrinter();
+  const blockSource = printer.block(block);
+
+  const fields = [
+    `id:${JSON.stringify(idFn(JSON.stringify(options.meta) + blockJSON))}`,
+    `block:${blockSource}`,
+    `moduleName:${JSON.stringify(moduleName ?? '(unknown template module)')}`,
+    `isStrictMode:${options.strictMode ?? false}`,
+  ];
+
+  if (usedLocals.length > 0) {
+    const scopeEntries = usedLocals.map((name) => (name === 'this' ? `"this":this` : name));
+    fields.push(`scope:()=>({${scopeEntries.join(',')}})`);
+  }
+
+  return { imports: printer.imports, expression: `{${fields.join(',')}}` };
 }
 
 export type { PrecompileOptions };

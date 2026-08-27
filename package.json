@@ -349,6 +349,7 @@
       "@glimmer/manager/index.js": "ember-source/@glimmer/manager/index.js",
       "@glimmer/node/index.js": "ember-source/@glimmer/node/index.js",
       "@glimmer/opcode-compiler/index.js": "ember-source/@glimmer/opcode-compiler/index.js",
+      "@glimmer/opcode-compiler/ops/index.js": "ember-source/@glimmer/opcode-compiler/ops/index.js",
       "@glimmer/owner/index.js": "ember-source/@glimmer/owner/index.js",
       "@glimmer/program/index.js": "ember-source/@glimmer/program/index.js",
       "@glimmer/reference/index.js": "ember-source/@glimmer/reference/index.js",

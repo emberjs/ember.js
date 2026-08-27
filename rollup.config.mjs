@@ -286,6 +286,10 @@ export function exposedDependencies() {
       '@glimmer/runtime',
       '@glimmer/validator',
     ]),
+    '@glimmer/opcode-compiler/ops': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/opcode-compiler/ops.ts'
+    ),
     '@glimmer/tracking': resolve(packageCache.appRoot, 'packages/@glimmer/tracking/index.ts'),
     '@glimmer/tracking/primitives/cache': resolve(
       packageCache.appRoot,
