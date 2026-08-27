@@ -1,17 +1,19 @@
 import type { Nullable, WireFormat } from '@glimmer/interfaces';
 import {
-  VM_CHILD_SCOPE_OP,
-  VM_COMPILE_BLOCK_OP,
-  VM_CONSTANT_OP,
-  VM_DUP_OP,
-  VM_GET_BLOCK_OP,
-  VM_INVOKE_YIELD_OP,
-  VM_POP_SCOPE_OP,
-  VM_PUSH_BLOCK_SCOPE_OP,
-  VM_PUSH_SYMBOL_TABLE_OP,
-  VM_SET_VARIABLE_OP,
-  VM_SPREAD_BLOCK_OP,
-} from '@glimmer/constants/lib/syscall-ops';
+  GET_BLOCK_OP,
+  SET_VARIABLE_OP,
+  SPREAD_BLOCK_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/expressions';
+import {
+  CHILD_SCOPE_OP,
+  COMPILE_BLOCK_OP,
+  CONSTANT_OP,
+  DUP_OP,
+  INVOKE_YIELD_OP,
+  POP_SCOPE_OP,
+  PUSH_BLOCK_SCOPE_OP,
+  PUSH_SYMBOL_TABLE_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/vm';
 import {
   VM_INVOKE_VIRTUAL_OP,
   VM_POP_FRAME_OP,
@@ -37,11 +39,11 @@ export function YieldBlock(
   positional: Nullable<WireFormat.Core.Params>
 ): void {
   SimpleArgs(op, positional, null, true);
-  op(VM_GET_BLOCK_OP, to);
-  op(VM_SPREAD_BLOCK_OP);
-  op(VM_COMPILE_BLOCK_OP);
-  op(VM_INVOKE_YIELD_OP);
-  op(VM_POP_SCOPE_OP);
+  op(GET_BLOCK_OP, to);
+  op(SPREAD_BLOCK_OP);
+  op(COMPILE_BLOCK_OP);
+  op(INVOKE_YIELD_OP);
+  op(POP_SCOPE_OP);
   op(VM_POP_FRAME_OP);
 }
 
@@ -56,7 +58,7 @@ export function PushYieldableBlock(
   block: Nullable<WireFormat.SerializedInlineBlock>
 ): void {
   PushSymbolTable(op, block && block[1]);
-  op(VM_PUSH_BLOCK_SCOPE_OP);
+  op(PUSH_BLOCK_SCOPE_OP);
   PushCompilable(op, block);
 }
 
@@ -71,7 +73,7 @@ export function InvokeStaticBlock(
 ): void {
   op(VM_PUSH_FRAME_OP);
   PushCompilable(op, block);
-  op(VM_COMPILE_BLOCK_OP);
+  op(COMPILE_BLOCK_OP);
   op(VM_INVOKE_VIRTUAL_OP);
   op(VM_POP_FRAME_OP);
 }
@@ -100,20 +102,20 @@ export function InvokeStaticBlockWithStack(
   op(VM_PUSH_FRAME_OP);
 
   if (count) {
-    op(VM_CHILD_SCOPE_OP);
+    op(CHILD_SCOPE_OP);
 
     for (let i = 0; i < count; i++) {
-      op(VM_DUP_OP, $fp, callerCount - i);
-      op(VM_SET_VARIABLE_OP, parameters[i]);
+      op(DUP_OP, $fp, callerCount - i);
+      op(SET_VARIABLE_OP, parameters[i]);
     }
   }
 
   PushCompilable(op, block);
-  op(VM_COMPILE_BLOCK_OP);
+  op(COMPILE_BLOCK_OP);
   op(VM_INVOKE_VIRTUAL_OP);
 
   if (count) {
-    op(VM_POP_SCOPE_OP);
+    op(POP_SCOPE_OP);
   }
 
   op(VM_POP_FRAME_OP);
@@ -121,7 +123,7 @@ export function InvokeStaticBlockWithStack(
 
 export function PushSymbolTable(op: PushExpressionOp, parameters: number[] | null): void {
   if (parameters !== null) {
-    op(VM_PUSH_SYMBOL_TABLE_OP, symbolTableOperand({ parameters }));
+    op(PUSH_SYMBOL_TABLE_OP, symbolTableOperand({ parameters }));
   } else {
     PushPrimitive(op, null);
   }
@@ -134,6 +136,6 @@ export function PushCompilable(
   if (_block === null) {
     PushPrimitive(op, null);
   } else {
-    op(VM_CONSTANT_OP, blockOperand(_block));
+    op(CONSTANT_OP, blockOperand(_block));
   }
 }
