@@ -8,6 +8,7 @@ import { createIteratorRef } from '@glimmer/reference/lib/iterable';
 import { valueForRef } from '@glimmer/reference/lib/reference';
 
 import { syscall } from '../../opcodes';
+import { enterItem, enterList, exitList, registerItem } from '../../vm/lists';
 import { CheckIterator, CheckReference } from './-debug-strip';
 import { AssertFilter } from './vm';
 
@@ -31,14 +32,14 @@ export const ENTER_LIST_OP = /*#__PURE__*/ syscall(
       // TODO: Fix this offset, should be accurate
       vm.lowlevel.goto(elseTarget + 1);
     } else {
-      vm.enterList(iteratorRef, relativeStart);
+      enterList(vm, iteratorRef, relativeStart);
       vm.stack.push(iterator);
     }
   }
 );
 
 export const EXIT_LIST_OP = /*#__PURE__*/ syscall(VM_EXIT_LIST_OP, (vm) => {
-  vm.exitList();
+  exitList(vm);
 });
 
 export const ITERATE_OP = /*#__PURE__*/ syscall(VM_ITERATE_OP, (vm, { op1: breaks }) => {
@@ -47,7 +48,7 @@ export const ITERATE_OP = /*#__PURE__*/ syscall(VM_ITERATE_OP, (vm, { op1: break
   let item = iterator.next();
 
   if (item !== null) {
-    vm.registerItem(vm.enterItem(item));
+    registerItem(vm, enterItem(vm, item));
   } else {
     vm.lowlevel.goto(breaks);
   }
