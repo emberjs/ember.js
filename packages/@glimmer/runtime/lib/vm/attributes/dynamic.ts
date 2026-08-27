@@ -1,8 +1,8 @@
 import { DEBUG } from '@glimmer/env';
 import type {
+  AttrNamespace,
   AttributeCursor,
   AttributeOperation,
-  AttrNamespace,
   Dict,
   Environment,
   Nullable,
@@ -18,6 +18,26 @@ import type { MutableKey } from '../element-builder';
 import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
+
+/**
+ * Sets an attribute whose value can change. Lives here rather than on the
+ * tree builder so that a bundle without dynamic attributes drops the
+ * sanitization and property normalization code.
+ */
+export function setDynamicAttribute(
+  tree: TreeBuilder,
+  name: string,
+  value: unknown,
+  trusting: boolean,
+  namespace: Nullable<string>,
+  env: Environment
+): DynamicAttribute {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+  let element = tree.constructing!;
+  let attribute = dynamicAttribute(element, name, namespace as Nullable<AttrNamespace>, trusting);
+  attribute.set(tree, value, env);
+  return attribute;
+}
 
 export function dynamicAttribute(
   element: SimpleElement,

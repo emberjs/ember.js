@@ -10,6 +10,8 @@ import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference'
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { internalHelper } from './internal-helper';
 import { EachInWrapper } from '../utils/each-in-wrapper';
+import { toEachInIterator } from '../utils/each-in-iterator';
+import { extendToIterator } from '../hooks';
 
 /**
   The `{{#each}}` keyword loops over elements in a collection. It is an extension
@@ -300,6 +302,10 @@ import { EachInWrapper } from '../utils/each-in-wrapper';
   @since 2.1.0
 */
 export { EachInWrapper };
+
+extendToIterator((value) =>
+  value instanceof EachInWrapper ? toEachInIterator(value.inner) : undefined
+);
 
 export default internalHelper(({ positional }: CapturedArguments) => {
   const inner = positional[0];

@@ -66,13 +66,6 @@ export interface DOMStack {
   appendDynamicNode(value: SimpleNode): void;
 
   setStaticAttribute(name: string, value: string, namespace: Nullable<string>): void;
-  setDynamicAttribute(
-    name: string,
-    value: unknown,
-    isTrusting: boolean,
-    namespace: Nullable<string>
-  ): AttributeOperation;
-
   closeElement(): Nullable<ModifierInstance[]>;
 }
 

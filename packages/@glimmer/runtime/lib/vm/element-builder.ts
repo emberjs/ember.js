@@ -26,10 +26,7 @@ import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
-import type { DynamicAttribute } from './attributes/dynamic';
-
 import { clear, ConcreteBounds, CursorImpl } from '../bounds';
-import { dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
   debug?: { first: () => Nullable<SimpleNode> };
@@ -380,19 +377,6 @@ export class NewTreeBuilder implements TreeBuilder {
 
   setStaticAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
     this.__setAttribute(name, value, namespace);
-  }
-
-  setDynamicAttribute(
-    name: string,
-    value: unknown,
-    trusting: boolean,
-    namespace: Nullable<AttrNamespace>
-  ): DynamicAttribute {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    let element = this.constructing!;
-    let attribute = dynamicAttribute(element, name, namespace, trusting);
-    attribute.set(this, value, this.env);
-    return attribute;
   }
 }
 

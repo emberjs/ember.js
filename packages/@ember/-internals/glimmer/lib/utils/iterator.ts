@@ -2,34 +2,19 @@ import type EmberArray from '@ember/array';
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { IteratorDelegate } from '@glimmer/reference/lib/iterable';
-import { consumeTag, isTracking } from '@glimmer/validator/lib/tracking';
-import { tagFor } from '@glimmer/validator/lib/meta';
-import { EachInWrapper } from './each-in-wrapper';
 import type { NativeArray } from '@ember/array';
-import { hooks } from '../hooks';
+import { hooks, iteratorExtensions } from '../hooks';
 
 export default function toIterator(iterable: unknown): Nullable<IteratorDelegate> {
-  if (iterable instanceof EachInWrapper) {
-    return toEachInIterator(iterable.inner);
-  } else {
-    return toEachIterator(iterable);
-  }
-}
+  for (let extension of iteratorExtensions) {
+    let result = extension(iterable);
 
-function toEachInIterator(iterable: unknown) {
-  if (!isIndexable(iterable)) {
-    return null;
+    if (result !== undefined) {
+      return result;
+    }
   }
 
-  if (Array.isArray(iterable) || hooks.isEmberArray(iterable)) {
-    return ObjectIterator.fromIndexable(iterable);
-  } else if (isNativeIterable(iterable)) {
-    return MapLikeNativeIterator.from(iterable as Iterable<[unknown, unknown]>);
-  } else if (hasForEach(iterable)) {
-    return ObjectIterator.fromForEachable(iterable);
-  } else {
-    return ObjectIterator.fromIndexable(iterable);
-  }
+  return toEachIterator(iterable);
 }
 
 function toEachIterator(iterable: unknown) {
@@ -50,7 +35,7 @@ function toEachIterator(iterable: unknown) {
   }
 }
 
-abstract class BoundedIterator implements IteratorDelegate {
+export abstract class BoundedIterator implements IteratorDelegate {
   private position = 0;
 
   constructor(private length: number) {}
@@ -81,7 +66,7 @@ abstract class BoundedIterator implements IteratorDelegate {
   }
 }
 
-class ArrayIterator extends BoundedIterator {
+export class ArrayIterator extends BoundedIterator {
   static from(iterable: unknown[]) {
     return iterable.length > 0 ? new this(iterable) : null;
   }
@@ -115,83 +100,11 @@ class EmberArrayIterator extends BoundedIterator {
   }
 }
 
-class ObjectIterator extends BoundedIterator {
-  static fromIndexable(obj: Indexable) {
-    let keys = Object.keys(obj);
-
-    if (keys.length === 0) {
-      return null;
-    } else {
-      let values: unknown[] = [];
-      for (let key of keys) {
-        let value: any;
-
-        value = obj[key];
-
-        // Add the tag of the returned value if it is an array, since arrays
-        // should always cause updates if they are consumed and then changed
-        if (isTracking()) {
-          consumeTag(tagFor(obj, key));
-
-          if (Array.isArray(value)) {
-            consumeTag(tagFor(value, '[]'));
-          }
-        }
-
-        values.push(value);
-      }
-      return new this(keys, values);
-    }
-  }
-
-  static fromForEachable(obj: ForEachable) {
-    let keys: unknown[] = [];
-    let values: unknown[] = [];
-    let length = 0;
-    let isMapLike = false;
-
-    // Not using an arrow function here so we can get an accurate `arguments`
-    obj.forEach(function (value: unknown, key: unknown) {
-      isMapLike = isMapLike || arguments.length >= 2;
-
-      if (isMapLike) {
-        keys.push(key);
-      }
-      values.push(value);
-
-      length++;
-    });
-
-    if (length === 0) {
-      return null;
-    } else if (isMapLike) {
-      return new this(keys, values);
-    } else {
-      return new ArrayIterator(values);
-    }
-  }
-
-  constructor(
-    private keys: unknown[],
-    private values: unknown[]
-  ) {
-    super(values.length);
-  }
-
-  valueFor(position: number): unknown {
-    return this.values[position];
-  }
-
-  memoFor(position: number): unknown {
-    return this.keys[position];
-  }
-}
-
 interface NativeIteratorConstructor<T = unknown> {
   new (iterable: Iterator<T>, result: IteratorResult<T>): NativeIterator<T>;
 }
 
-abstract class NativeIterator<T = unknown> implements IteratorDelegate {
+export abstract class NativeIterator<T = unknown> implements IteratorDelegate {
   static from<T>(this: NativeIteratorConstructor<T>, iterable: Iterable<T>) {
     let iterator = iterable[Symbol.iterator]();
     let result = iterator.next();
@@ -245,32 +158,14 @@ class ArrayLikeNativeIterator extends NativeIterator {
   }
 }
 
-class MapLikeNativeIterator extends NativeIterator<[unknown, unknown]> {
-  valueFor(result: IteratorResult<[unknown, unknown]>): unknown {
-    return result.value[1];
-  }
-
-  memoFor(result: IteratorResult<[unknown, unknown]>): unknown {
-    return result.value[0];
-  }
-}
-
-interface ForEachable {
+export interface ForEachable {
   forEach(callback: (item: unknown, key: unknown) => void): void;
 }
 
-function hasForEach(value: unknown): value is ForEachable {
+export function hasForEach(value: unknown): value is ForEachable {
   return value != null && typeof (value as ForEachable)['forEach'] === 'function';
 }
 
-function isNativeIterable(value: unknown): value is Iterable<unknown> {
+export function isNativeIterable(value: unknown): value is Iterable<unknown> {
   return value != null && typeof (value as Iterable<unknown>)[Symbol.iterator] === 'function';
-}
-
-interface Indexable {
-  readonly [key: string]: unknown;
-}
-
-function isIndexable(value: unknown): value is Indexable {
-  return value !== null && (typeof value === 'object' || typeof value === 'function');
 }

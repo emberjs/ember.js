@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+import { setDynamicAttribute } from '../../vm/attributes/dynamic';
 import type {
   CapturedPositionalArguments,
   Environment,
@@ -398,7 +399,7 @@ export const DYNAMIC_ATTR_OP = /*#__PURE__*/ syscall(
     let value = valueForRef(reference);
     let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
 
-    let attribute = vm.tree().setDynamicAttribute(name, value, trusting, namespace);
+    let attribute = setDynamicAttribute(vm.tree(), name, value, trusting, namespace, vm.env);
 
     if (!isConstRef(reference)) {
       vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute, vm.env));

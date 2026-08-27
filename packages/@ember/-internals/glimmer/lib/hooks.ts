@@ -96,6 +96,18 @@ export function registerEnvironmentHooks(overrides: Partial<EnvironmentHooks>): 
   Object.assign(hooks, overrides);
 }
 
+export type IteratorExtension = (value: unknown) => IteratorDelegate | null | undefined;
+
+/**
+ * Extra ways to iterate a value, tried before the defaults. A helper that
+ * produces its own iterable wrapper registers one when it loads.
+ */
+export const iteratorExtensions: IteratorExtension[] = [];
+
+export function extendToIterator(extension: IteratorExtension): void {
+  iteratorExtensions.push(extension);
+}
+
 type Queue = Array<() => void>;
 
 interface OnceEntry {

@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+import { setDynamicAttribute } from '../../vm/attributes/dynamic';
 import type {
   Bounds,
   CapabilityMask,
@@ -680,7 +681,14 @@ function setDeferredAttr(
   if (typeof value === 'string') {
     vm.tree().setStaticAttribute(name, value, namespace);
   } else {
-    let attribute = vm.tree().setDynamicAttribute(name, valueForRef(value), trusting, namespace);
+    let attribute = setDynamicAttribute(
+      vm.tree(),
+      name,
+      valueForRef(value),
+      trusting,
+      namespace,
+      vm.env
+    );
     if (!isConstRef(value)) {
       vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute, vm.env));
     }
