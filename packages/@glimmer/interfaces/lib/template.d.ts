@@ -1,5 +1,5 @@
 import type { PresentArray } from './array.js';
-import type { EncoderError } from './compile/encoder.js';
+import type { BuilderOp, EncoderError, HighLevelOp } from './compile/encoder.js';
 import type { Operand, SerializedInlineBlock, SerializedTemplateBlock } from './compile/index.js';
 import type { Nullable, Optional } from './core.js';
 import type { InternalComponentCapabilities } from './managers/internal/component.js';
@@ -57,17 +57,23 @@ export type Template = TemplateOk | TemplateError;
 
 export type TemplateFactory = (owner?: Owner) => Template;
 
+/**
+ * A standard library routine. The encoder compiles it the first time a
+ * template references it, so a routine that no template needs is never
+ * compiled and can be dropped by a bundler.
+ */
+export interface StdlibBuilder {
+  readonly name: string;
+  build(op: (...op: BuilderOp | HighLevelOp) => void, stdlib: STDLib): void;
+}
+
 export interface STDLib {
-  main: number;
-  'cautious-append': number;
-  'trusting-append': number;
-  'cautious-non-dynamic-append': number;
-  'trusting-non-dynamic-append': number;
+  /** The routine that invokes the root component. */
+  readonly main: number;
+  handle(builder: StdlibBuilder): number;
 }
 
 export type SerializedStdlib = [number, number, number];
-
-export type STDLibName = keyof STDLib;
 
 export type CompilerBuffer = Array<Operand>;
 

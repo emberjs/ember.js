@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-implied-eval -- the test evaluates printed source */
 import type { SerializedTemplateBlock } from '@glimmer/interfaces';
 import { precompileJSON, precompileModule } from '@glimmer/compiler';
-import { SexpOpcodes } from '@glimmer/wire-format';
 
 QUnit.module('@glimmer/compiler - precompileModule');
 
@@ -14,7 +13,7 @@ function roundTrip(source: string, strictMode = false): SerializedTemplateBlock 
   let names = imports.map((imp) => imp.local);
   let values = imports.map((imp) => {
     QUnit.assert.strictEqual(imp.module, '@glimmer/opcode-compiler/ops');
-    return SexpOpcodes[imp.name as keyof typeof SexpOpcodes];
+    return imp.id;
   });
 
   let evaluate = new Function(...names, `return (${expression});`) as (...args: number[]) => {
@@ -64,12 +63,7 @@ QUnit.test('strict mode with lexical scope', (assert) => {
     `return (${expression});`
   ) as (...args: unknown[]) => { block: SerializedTemplateBlock; scope: () => object };
 
-  let result = evaluate(
-    'foo',
-    'bar',
-    'baz',
-    ...imports.map((imp) => SexpOpcodes[imp.name as keyof typeof SexpOpcodes])
-  );
+  let result = evaluate('foo', 'bar', 'baz', ...imports.map((imp) => imp.id));
 
   assert.deepEqual(result.block, expected);
   assert.deepEqual(result.scope(), { Foo: 'foo', bar: 'bar', baz: 'baz' });

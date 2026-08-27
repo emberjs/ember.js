@@ -15,6 +15,7 @@ import type {
   ProgramHeap,
   SingleBuilderOperand,
   STDLib,
+  StdlibBuilder,
 } from '@glimmer/interfaces';
 import { encodeHandle } from '@glimmer/constants/lib/immediate';
 import { isMachineOp, VM_RETURN_OP } from '@glimmer/constants/lib/vm-ops';
@@ -140,6 +141,7 @@ export class EncoderImpl implements Encoder {
   private encoder: InstructionEncoder = new InstructionEncoderImpl([]);
   private errors: EncoderError[] = [];
   private handle: number;
+  private stdlibFixups: Array<{ at: number; builder: StdlibBuilder }> = [];
 
   constructor(
     private heap: ProgramHeap,
@@ -159,6 +161,16 @@ export class EncoderImpl implements Encoder {
 
     this.heap.pushMachine(VM_RETURN_OP);
     this.heap.finishMalloc(handle, size);
+
+    // A stdlib routine compiles into its own heap region, so it must wait
+    // until this program's region is closed.
+    for (let { at, builder } of this.stdlibFixups) {
+      let stdlib = expect(
+        this.stdlib,
+        `attempted to encode a stdlib operand (${builder.name}), but the encoder did not have a stdlib`
+      );
+      this.heap.setbyaddr(at, stdlib.handle(builder));
+    }
 
     if (isPresentArray(this.errors)) {
       return { errors: this.errors, handle };
@@ -213,10 +225,8 @@ export class EncoderImpl implements Encoder {
             return encodeHandle(constants.value(compilableBlock(operand.value, this.meta)));
 
           case HighLevelOperands.StdLib:
-            return expect(
-              this.stdlib,
-              'attempted to encode a stdlib operand, but the encoder did not have a stdlib. Are you currently building the stdlib?'
-            )[operand.value];
+            this.stdlibFixups.push({ at: this.heap.offset, builder: operand.value });
+            return -1;
 
           case HighLevelOperands.NonSmallInt:
           case HighLevelOperands.SymbolTable:

@@ -68,6 +68,11 @@ import {
 } from '../opcode-builder/helpers/resolution';
 import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared';
 import {
+  CAUTIOUS_APPEND,
+  CAUTIOUS_NON_DYNAMIC_APPEND,
+  TRUSTING_APPEND,
+} from '../opcode-builder/helpers/stdlib';
+import {
   Call,
   CallDynamic,
   DynamicScope,
@@ -215,6 +220,19 @@ export const DebuggerOp = /*#__PURE__*/ defineStatement(
   }
 );
 
+/**
+ * `{{"literal"}}` or `{{123}}`. The printer picks this op when the appended
+ * value is a primitive, so a template with only static content does not pull
+ * in the dynamic append routines.
+ */
+export const AppendStaticOp = /*#__PURE__*/ defineStatement(
+  SexpOpcodes.Append,
+  (op, [, value]) => {
+    op(TEXT_OP, value === null || value === undefined ? '' : String(value));
+  },
+  { variant: true }
+);
+
 export const AppendOp = /*#__PURE__*/ defineStatement(SexpOpcodes.Append, (op, [, value]) => {
   // Special case for static values
   if (!Array.isArray(value)) {
@@ -228,14 +246,14 @@ export const AppendOp = /*#__PURE__*/ defineStatement(SexpOpcodes.Append, (op, [
       ifHelper(handle: number) {
         op(VM_PUSH_FRAME_OP);
         Call(op, handle, null, null);
-        op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-non-dynamic-append'));
+        op(VM_INVOKE_STATIC_OP, stdlibOperand(CAUTIOUS_NON_DYNAMIC_APPEND));
         op(VM_POP_FRAME_OP);
       },
 
       ifValue(handle: number) {
         op(VM_PUSH_FRAME_OP);
         op(CONSTANT_REFERENCE_OP, handle);
-        op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-non-dynamic-append'));
+        op(VM_INVOKE_STATIC_OP, stdlibOperand(CAUTIOUS_NON_DYNAMIC_APPEND));
         op(VM_POP_FRAME_OP);
       },
     });
@@ -250,7 +268,7 @@ export const AppendOp = /*#__PURE__*/ defineStatement(SexpOpcodes.Append, (op, [
         ifHelper(handle: number) {
           op(VM_PUSH_FRAME_OP);
           Call(op, handle, positional, named);
-          op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-non-dynamic-append'));
+          op(VM_INVOKE_STATIC_OP, stdlibOperand(CAUTIOUS_NON_DYNAMIC_APPEND));
           op(VM_POP_FRAME_OP);
         },
       });
@@ -278,7 +296,7 @@ export const AppendOp = /*#__PURE__*/ defineStatement(SexpOpcodes.Append, (op, [
 
           when(ContentType.Helper, () => {
             CallDynamic(op, positional, named, () => {
-              op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-non-dynamic-append'));
+              op(VM_INVOKE_STATIC_OP, stdlibOperand(CAUTIOUS_NON_DYNAMIC_APPEND));
             });
           });
         }
@@ -287,7 +305,7 @@ export const AppendOp = /*#__PURE__*/ defineStatement(SexpOpcodes.Append, (op, [
   } else {
     op(VM_PUSH_FRAME_OP);
     expr(op, value);
-    op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-append'));
+    op(VM_INVOKE_STATIC_OP, stdlibOperand(CAUTIOUS_APPEND));
     op(VM_POP_FRAME_OP);
   }
 });
@@ -300,7 +318,7 @@ export const TrustingAppendOp = /*#__PURE__*/ defineStatement(
     } else {
       op(VM_PUSH_FRAME_OP);
       expr(op, value);
-      op(VM_INVOKE_STATIC_OP, stdlibOperand('trusting-append'));
+      op(VM_INVOKE_STATIC_OP, stdlibOperand(TRUSTING_APPEND));
       op(VM_POP_FRAME_OP);
     }
   }

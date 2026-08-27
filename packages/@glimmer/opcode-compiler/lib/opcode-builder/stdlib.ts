@@ -1,29 +1,57 @@
-export class StdLib {
-  constructor(
-    public main: number,
-    private trustingGuardedAppend: number,
-    private cautiousGuardedAppend: number,
-    private trustingNonDynamicAppend: number,
-    private cautiousNonDynamicAppend: number
-  ) {}
+import type {
+  BuilderOp,
+  EvaluationContext,
+  HandleResult,
+  HighLevelOp,
+  STDLib,
+  StdlibBuilder,
+} from '@glimmer/interfaces';
 
-  get 'trusting-append'() {
-    return this.trustingGuardedAppend;
+import { encodeOp, EncoderImpl } from './encoder';
+import { MAIN, STDLIB_META } from './helpers/stdlib';
+
+/**
+ * Compiles each standard library routine the first time a template asks
+ * for it, once per evaluation context. Compilation happens after the
+ * template that asked has committed its own heap region, so the routine
+ * never lands inside another program.
+ */
+export class StdlibImpl implements STDLib {
+  private handles = new Map<StdlibBuilder, number>();
+
+  constructor(private evaluation: EvaluationContext) {}
+
+  get main(): number {
+    return this.handle(MAIN);
   }
 
-  get 'cautious-append'() {
-    return this.cautiousGuardedAppend;
+  handle(builder: StdlibBuilder): number {
+    let handle = this.handles.get(builder);
+
+    if (handle === undefined) {
+      handle = this.compile(builder);
+      this.handles.set(builder, handle);
+    }
+
+    return handle;
   }
 
-  get 'trusting-non-dynamic-append'() {
-    return this.trustingNonDynamicAppend;
-  }
+  private compile(builder: StdlibBuilder): number {
+    let { evaluation } = this;
+    let encoder = new EncoderImpl(evaluation.program.heap, STDLIB_META, this);
 
-  get 'cautious-non-dynamic-append'() {
-    return this.cautiousNonDynamicAppend;
-  }
+    let pushOp = (...op: BuilderOp | HighLevelOp) => {
+      encodeOp(encoder, evaluation, STDLIB_META, op);
+    };
 
-  getAppend(trusting: boolean) {
-    return trusting ? this.trustingGuardedAppend : this.cautiousGuardedAppend;
+    builder.build(pushOp, this);
+
+    let result: HandleResult = encoder.commit(0);
+
+    if (typeof result !== 'number') {
+      throw new Error(`Unexpected errors compiling stdlib routine ${builder.name}`);
+    }
+
+    return result;
   }
 }

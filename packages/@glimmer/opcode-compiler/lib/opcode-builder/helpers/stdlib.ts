@@ -1,4 +1,4 @@
-import type { BlockMetadata, BuilderOp, EvaluationContext, HighLevelOp } from '@glimmer/interfaces';
+import type { BlockMetadata, StdlibBuilder } from '@glimmer/interfaces';
 import {
   MAIN_OP,
   PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
@@ -17,10 +17,9 @@ import { VM_INVOKE_STATIC_OP } from '@glimmer/constants/lib/vm-ops';
 import { $s0 } from '@glimmer/vm/lib/registers';
 import { ContentType } from '@glimmer/vm/lib/content';
 
-import type { HighLevelStatementOp, PushStatementOp } from '../../syntax/compilers';
+import type { PushStatementOp } from '../../syntax/compilers';
 
-import { encodeOp, EncoderImpl } from '../encoder';
-import { StdLib } from '../stdlib';
+import { stdlibOperand } from '../operands';
 import { InvokeBareComponent, invokePreparedComponent } from './components';
 import { SwitchCases } from './conditional';
 import { CallDynamic } from './vm';
@@ -41,7 +40,7 @@ export function main(op: PushStatementOp): void {
 export function StdAppend(
   op: PushStatementOp,
   trusting: boolean,
-  nonDynamicAppend: number | null
+  nonDynamicAppend: StdlibBuilder | null
 ): void {
   SwitchCases(
     op,
@@ -56,7 +55,7 @@ export function StdAppend(
         }
       });
 
-      if (typeof nonDynamicAppend === 'number') {
+      if (nonDynamicAppend !== null) {
         when(ContentType.Component, () => {
           op(ASSERT_SAME_OP);
           op(RESOLVE_CURRIED_COMPONENT_OP);
@@ -66,7 +65,7 @@ export function StdAppend(
 
         when(ContentType.Helper, () => {
           CallDynamic(op, null, null, () => {
-            op(VM_INVOKE_STATIC_OP, nonDynamicAppend);
+            op(VM_INVOKE_STATIC_OP, stdlibOperand(nonDynamicAppend));
           });
         });
       } else {
@@ -99,26 +98,30 @@ export function StdAppend(
   );
 }
 
-export function compileStd(context: EvaluationContext): StdLib {
-  let mainHandle = build(context, (op) => main(op));
-  let trustingGuardedNonDynamicAppend = build(context, (op) => StdAppend(op, true, null));
-  let cautiousGuardedNonDynamicAppend = build(context, (op) => StdAppend(op, false, null));
+export const MAIN: StdlibBuilder = {
+  name: 'main',
+  build: (op) => main(op as PushStatementOp),
+};
 
-  let trustingGuardedDynamicAppend = build(context, (op) =>
-    StdAppend(op, true, trustingGuardedNonDynamicAppend)
-  );
-  let cautiousGuardedDynamicAppend = build(context, (op) =>
-    StdAppend(op, false, cautiousGuardedNonDynamicAppend)
-  );
+export const TRUSTING_NON_DYNAMIC_APPEND: StdlibBuilder = {
+  name: 'trusting-non-dynamic-append',
+  build: (op) => StdAppend(op as PushStatementOp, true, null),
+};
 
-  return new StdLib(
-    mainHandle,
-    trustingGuardedDynamicAppend,
-    cautiousGuardedDynamicAppend,
-    trustingGuardedNonDynamicAppend,
-    cautiousGuardedNonDynamicAppend
-  );
-}
+export const CAUTIOUS_NON_DYNAMIC_APPEND: StdlibBuilder = {
+  name: 'cautious-non-dynamic-append',
+  build: (op) => StdAppend(op as PushStatementOp, false, null),
+};
+
+export const TRUSTING_APPEND: StdlibBuilder = {
+  name: 'trusting-append',
+  build: (op) => StdAppend(op as PushStatementOp, true, TRUSTING_NON_DYNAMIC_APPEND),
+};
+
+export const CAUTIOUS_APPEND: StdlibBuilder = {
+  name: 'cautious-append',
+  build: (op) => StdAppend(op as PushStatementOp, false, CAUTIOUS_NON_DYNAMIC_APPEND),
+};
 
 export const STDLIB_META: BlockMetadata = {
   symbols: {
@@ -133,22 +136,3 @@ export const STDLIB_META: BlockMetadata = {
   owner: null,
   size: 0,
 };
-
-function build(evaluation: EvaluationContext, builder: (op: PushStatementOp) => void): number {
-  let encoder = new EncoderImpl(evaluation.program.heap, STDLIB_META);
-
-  function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
-    encodeOp(encoder, evaluation, STDLIB_META, op as BuilderOp | HighLevelOp);
-  }
-
-  builder(pushOp);
-
-  let result = encoder.commit(0);
-
-  if (typeof result !== 'number') {
-    // This shouldn't be possible
-    throw new Error(`Unexpected errors compiling std`);
-  } else {
-    return result;
-  }
-}

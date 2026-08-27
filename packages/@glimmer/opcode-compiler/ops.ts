@@ -21,6 +21,7 @@ export {
   AttrSplatOp as AttrSplat,
   DebuggerOp as Debugger,
   AppendOp as Append,
+  AppendStaticOp as AppendStatic,
   TrustingAppendOp as TrustingAppend,
   BlockOp as Block,
   InElementOp as InElement,

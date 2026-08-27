@@ -12,6 +12,8 @@ export interface OpImport {
   local: string;
   module: string;
   name: string;
+  /** The numeric SexpOpcode the export compiles. */
+  id: number;
 }
 
 const NAMES: Record<number, string> = {};
@@ -33,8 +35,8 @@ export class WireFormatModulePrinter {
     return `[${this.statements(statements)},${lit(locals)},${lit(upvars)}]`;
   }
 
-  private head(op: number): string {
-    let name = NAMES[op];
+  private head(op: number, variant?: string): string {
+    let name = variant ?? NAMES[op];
 
     if (name === undefined) {
       throw new Error(`Unknown wire format opcode ${op}`);
@@ -44,7 +46,7 @@ export class WireFormatModulePrinter {
 
     if (!this.seen.has(local)) {
       this.seen.add(local);
-      this.imports.push({ local, module: OPS_MODULE, name });
+      this.imports.push({ local, module: OPS_MODULE, name, id: op });
     }
 
     return local;
@@ -59,6 +61,11 @@ export class WireFormatModulePrinter {
 
     switch (s[0]) {
       case Op.Append:
+        if (!Array.isArray(s[1])) {
+          return `[${this.head(s[0], 'AppendStatic')},${lit(s[1])}]`;
+        }
+        tail = [this.expr(s[1])];
+        break;
       case Op.TrustingAppend:
         tail = [this.expr(s[1])];
         break;

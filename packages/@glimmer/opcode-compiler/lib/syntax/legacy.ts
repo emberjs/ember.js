@@ -15,6 +15,8 @@ export function ensureLegacyOps(): void {
   filled = true;
 
   for (let op of Object.values(ops) as SexpOp[]) {
-    LEGACY_OPS[op.id] = op;
+    if (!op.variant) {
+      LEGACY_OPS[op.id] = op;
+    }
   }
 }

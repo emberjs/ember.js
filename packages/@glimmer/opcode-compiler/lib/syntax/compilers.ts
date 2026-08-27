@@ -21,13 +21,19 @@ export type CompilerFunction<PushOp extends PushExpressionOp, TSexp> = (
 export interface SexpOp<TSexp = unknown> {
   readonly id: SexpOpcode;
   readonly compile: CompilerFunction<PushStatementOp, TSexp>;
+  /**
+   * A variant compiles a narrower shape of the same numeric opcode. Only the
+   * module printer emits it, so the legacy table for JSON blocks skips it.
+   */
+  readonly variant?: boolean;
 }
 
 export function defineStatement<T extends SexpOpcode>(
   id: T,
-  compile: CompilerFunction<PushStatementOp, SexpOpcodeMap[T]>
+  compile: CompilerFunction<PushStatementOp, SexpOpcodeMap[T]>,
+  options?: { variant: boolean }
 ): SexpOp<SexpOpcodeMap[T]> {
-  return { id, compile };
+  return { id, compile, variant: options?.variant };
 }
 
 export function defineExpression<T extends SexpOpcode>(
