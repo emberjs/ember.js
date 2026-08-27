@@ -21,6 +21,7 @@ import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-interna
 import type { ComputedPropertyCallback } from '@ember/-internals/metal/lib/computed';
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
 import isArray from './lib/is-array';
+import { registerEnvironmentHooks } from '@ember/-internals/glimmer/lib/hooks';
 
 export { default as makeArray } from './make';
 
@@ -2070,3 +2071,7 @@ A = function <T>(this: unknown, arr?: Array<T>) {
 export { A, NativeArray, MutableArray };
 
 export default EmberArray;
+
+// Ember arrays exist only once this module is loaded, so templates learn
+// to iterate and test them here.
+registerEnvironmentHooks({ isEmberArray, objectAt });

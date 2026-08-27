@@ -3,6 +3,7 @@ import { setWithMandatorySetter } from '@ember/-internals/utils/lib/mandatory-se
 import toString from '@ember/-internals/utils/lib/to-string';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { registerEnvironmentHooks } from '@ember/-internals/glimmer/lib/hooks';
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
@@ -145,3 +146,5 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
 export function trySet<T>(root: object, path: string, value: T): T | undefined {
   return set(root, path, value, true);
 }
+
+registerEnvironmentHooks({ setProp: _setProp, setPath: set });

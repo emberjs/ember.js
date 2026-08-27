@@ -1,6 +1,4 @@
-import { objectAt } from '@ember/-internals/metal/lib/object-at';
 import type EmberArray from '@ember/array';
-import { isEmberArray } from '@ember/array/-internals';
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { IteratorDelegate } from '@glimmer/reference/lib/iterable';
@@ -8,6 +6,7 @@ import { consumeTag, isTracking } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import { EachInWrapper } from '../helpers/each-in';
 import type { NativeArray } from '@ember/array';
+import { hooks } from '../hooks';
 
 export default function toIterator(iterable: unknown): Nullable<IteratorDelegate> {
   if (iterable instanceof EachInWrapper) {
@@ -22,7 +21,7 @@ function toEachInIterator(iterable: unknown) {
     return null;
   }
 
-  if (Array.isArray(iterable) || isEmberArray(iterable)) {
+  if (Array.isArray(iterable) || hooks.isEmberArray(iterable)) {
     return ObjectIterator.fromIndexable(iterable);
   } else if (isNativeIterable(iterable)) {
     return MapLikeNativeIterator.from(iterable as Iterable<[unknown, unknown]>);
@@ -40,8 +39,8 @@ function toEachIterator(iterable: unknown) {
 
   if (Array.isArray(iterable)) {
     return ArrayIterator.from(iterable);
-  } else if (isEmberArray(iterable)) {
-    return EmberArrayIterator.from(iterable);
+  } else if (hooks.isEmberArray(iterable)) {
+    return EmberArrayIterator.from(iterable as EmberArray<unknown>);
   } else if (isNativeIterable(iterable)) {
     return ArrayLikeNativeIterator.from(iterable);
   } else if (hasForEach(iterable)) {
@@ -112,7 +111,7 @@ class EmberArrayIterator extends BoundedIterator {
   }
 
   valueFor(position: number): unknown {
-    return objectAt(this.array as any, position);
+    return hooks.objectAt(this.array, position);
   }
 }
 

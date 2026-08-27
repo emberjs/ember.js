@@ -1,43 +1,42 @@
 import { ENV } from '@ember/-internals/environment/lib/env';
-import { get, _getProp } from '@ember/-internals/metal/lib/property_get';
-import { set, _setProp } from '@ember/-internals/metal/lib/property_set';
 import type { InternalOwner } from '@ember/-internals/owner';
 import getDebugName from '@ember/-internals/utils/lib/get-debug-name';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views/lib/system/utils';
 import { assert, deprecate, warn } from '@ember/debug';
 import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
-import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
 import type { EnvironmentDelegate } from '@glimmer/runtime/lib/environment';
 import { debug } from '@glimmer/validator/lib/debug';
+import { hooks, runloop, toBool } from './hooks';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
-import toBool from './utils/to-bool';
 
 ///////////
 
 // Setup global context
 
+// Every entry delegates at call time, so a module that registers its
+// hooks after this one is evaluated still takes effect.
 setGlobalContext({
   scheduleRevalidate() {
-    _backburner.ensureInstance();
+    runloop.ensureInstance();
   },
 
   toBool,
   toIterator,
 
-  getProp: _getProp,
-  setProp: _setProp,
-  getPath: get,
-  setPath: set,
+  getProp: (obj, key) => hooks.getProp(obj, key),
+  setProp: (obj, key, value) => hooks.setProp(obj, key, value),
+  getPath: (obj, path) => hooks.getPath(obj, path),
+  setPath: (obj, path, value) => hooks.setPath(obj, path, value),
 
   scheduleDestroy(destroyable, destructor) {
-    schedule('actions', null, destructor, destroyable);
+    runloop.scheduleActions(() => destructor(destroyable));
   },
 
   scheduleDestroyed(finalizeDestructor) {
-    schedule('destroy', null, finalizeDestructor);
+    runloop.scheduleDestroy(finalizeDestructor);
   },
 
   warnIfStyleNotTrusted(value: unknown) {

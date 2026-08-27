@@ -1,7 +1,6 @@
 import { ENV } from '@ember/-internals/environment/lib/env';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
   associateDestroyableChild,
   destroy,
@@ -29,6 +28,7 @@ import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/va
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
+import { runloop } from './hooks';
 import ResolverImpl from './resolver';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
@@ -179,9 +179,9 @@ export function renderSettled() {
     renderSettledDeferred = { promise, resolve };
     // if there is no current runloop, the promise created above will not have
     // a chance to resolve (because its resolved in backburner's "end" event)
-    if (!_getCurrentRunLoop()) {
+    if (!runloop.hasCurrentRunLoop()) {
       // ensure a runloop has been kicked off
-      _backburner.schedule('actions', null, NO_OP);
+      runloop.scheduleActions(NO_OP);
     }
   }
 
@@ -193,7 +193,7 @@ function resolveRenderPromise() {
     let resolve = renderSettledDeferred.resolve;
     renderSettledDeferred = null;
 
-    _backburner.join(null, resolve);
+    runloop.join(resolve);
   }
 }
 
@@ -208,15 +208,15 @@ function loopEnd() {
         throw new Error('infinite rendering invalidation detected');
       }
       loops++;
-      return _backburner.join(null, NO_OP);
+      return runloop.join(NO_OP);
     }
   }
   loops = 0;
   resolveRenderPromise();
 }
 
-_backburner.on('begin', loopBegin);
-_backburner.on('end', loopEnd);
+runloop.on('begin', loopBegin);
+runloop.on('end', loopEnd);
 
 type Resolver = ClassicResolver;
 
@@ -369,7 +369,7 @@ export class RendererState {
   }
 
   scheduleRevalidate(renderer: BaseRenderer): void {
-    _backburner.scheduleOnce('render', this, this.revalidate, renderer);
+    runloop.scheduleOnceRender(this, this.revalidate, renderer);
   }
 
   isValid(): boolean {

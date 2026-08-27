@@ -4,6 +4,7 @@ import toString from '@ember/-internals/utils/lib/to-string';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
+import { registerEnvironmentHooks } from '@ember/-internals/glimmer/lib/hooks';
 import { getCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
 import type { Tag } from '@glimmer/interfaces';
 import type { TagMeta } from '@glimmer/validator/lib/meta';
@@ -63,3 +64,5 @@ export function markObjectAsDirty(obj: object, propertyKey: string): void {
   dirtyTagFor(obj, propertyKey);
   dirtyTagFor(obj, SELF_TAG);
 }
+
+registerEnvironmentHooks({ tagForProperty: (obj, key) => tagForProperty(obj, key) });

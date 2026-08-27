@@ -13,6 +13,7 @@ import computed from '@ember/-internals/metal/lib/computed';
 import { setProxy, isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { setupMandatorySetter } from '@ember/-internals/utils/lib/mandatory-setter';
 import { isObject } from '@ember/-internals/utils/lib/spec';
+import { registerEnvironmentHooks } from '@ember/-internals/glimmer/lib/hooks';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
@@ -146,3 +147,5 @@ const ProxyMixin = /*@__PURE__*/ Mixin[INTERNAL_MIXIN_CREATE]({
 });
 
 export default ProxyMixin;
+
+registerEnvironmentHooks({ isProxy });
