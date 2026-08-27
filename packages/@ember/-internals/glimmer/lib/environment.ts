@@ -6,11 +6,19 @@ import { assert, deprecate, warn } from '@ember/debug';
 import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
+import DebugRenderTreeImpl from '@glimmer/runtime/lib/debug-render-tree';
+import type { DebugRenderTree } from '@glimmer/interfaces';
 import type { EnvironmentDelegate } from '@glimmer/runtime/lib/environment';
 import { debug } from '@glimmer/validator/lib/debug';
 import { hooks, runloop, toBool } from './hooks';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
+
+declare global {
+  interface ImportMetaEnv {
+    VITE_NO_DEBUG_RENDER_TREE?: string;
+  }
+}
 
 ///////////
 
@@ -126,6 +134,19 @@ const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];
 
 export class EmberEnvironmentDelegate implements EnvironmentDelegate {
   public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
+
+  /**
+   * The Ember Inspector reads this tree. An app that never uses the
+   * inspector in a given build can leave it out by setting
+   * `VITE_NO_DEBUG_RENDER_TREE=true` for its Vite build, which drops the
+   * implementation from the bundle.
+   */
+  public debugRenderTree: DebugRenderTree<object> | undefined =
+    import.meta.env?.VITE_NO_DEBUG_RENDER_TREE === 'true'
+      ? undefined
+      : ENV._DEBUG_RENDER_TREE
+        ? new DebugRenderTreeImpl()
+        : undefined;
 
   constructor(
     public owner: InternalOwner,
