@@ -51,7 +51,12 @@ export default class IsTransitioningOutHelper extends Helper {
     const isCurrentlyActive =
       !isMissing(current) &&
       this.routing.isActiveForRoute(castedModels, queryParams, routeName, current);
-    const willBeActive = this.routing.isActiveForRoute(castedModels, queryParams, routeName, target);
+    const willBeActive = this.routing.isActiveForRoute(
+      castedModels,
+      queryParams,
+      routeName,
+      target
+    );
 
     return isCurrentlyActive && !willBeActive;
   }

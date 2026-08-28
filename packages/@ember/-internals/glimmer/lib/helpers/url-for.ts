@@ -39,8 +39,7 @@ export default class UrlForHelper extends Helper {
       return undefined;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const args: any[] = queryParams ? [...models, { queryParams }] : [...models];
+    const args = queryParams ? [...models, { queryParams }] : [...models];
     return this.router.urlFor(routeName, ...args);
   }
 }
