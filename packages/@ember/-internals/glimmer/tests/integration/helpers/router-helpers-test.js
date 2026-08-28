@@ -258,7 +258,7 @@ moduleFor(
       assert.equal(this.$('#result').text(), 'false', 'false for different model id');
     }
 
-    async ['@test stays false during loading substate (URL unchanged, route name changes)'](
+    async ['@test recomputes across the loading-substate boundary (URL stable, route name changes)'](
       assert
     ) {
       let aboutDefer = RSVP.defer();
@@ -272,34 +272,47 @@ moduleFor(
         }
       );
 
+      // Application-level loading substate: it renders while a slow top-level
+      // route resolves. Crucially, the URL is already at the destination
+      // ('/about') during this substate, so when the model finally resolves
+      // only `currentRouteName` changes (loading -> about), not `currentURL`.
       this.add(
-        'template:about-loading',
-        precompileTemplate(`<div id="loading-spinner"></div>`, { strictMode: true, scope: () => ({}) })
+        'template:loading',
+        precompileTemplate(`<div id="loading-spinner"></div>`, {
+          strictMode: true,
+          scope: () => ({}),
+        })
       );
 
       this.add(
         'template:application',
-        precompileTemplate(
-          `{{outlet}}<span id="about-active">{{isActive "about"}}</span>`,
-          { strictMode: true, scope: () => ({ isActive }) }
-        )
+        precompileTemplate(`{{outlet}}<span id="about-active">{{isActive "about"}}</span>`, {
+          strictMode: true,
+          scope: () => ({ isActive }),
+        })
       );
 
       await this.visit('/');
       assert.equal(this.$('#about-active').text(), 'false', 'false before navigation');
 
-      let visitPromise = this.visit('/about');
-      // While in the loading substate, currentURL is still '/' but
-      // currentRouteName has changed — isActive must still return false.
+      // Flush into the loading substate while the model is still pending.
+      let visitPromise;
+      runTask(() => (visitPromise = this.visit('/about')));
+      assert.ok(this.$('#loading-spinner').length, 'loading substate is rendered');
+      assert.equal(this.$('#about-active').text(), 'false', 'false while about is still loading');
+
+      // Resolving leaves the URL at '/about' (unchanged) but changes the route
+      // name from the loading substate to 'about'. isActive must recompute even
+      // though currentURL did not change — this is the regression guard for the
+      // `void this.router.currentRouteName` entanglement in the helper.
+      runTask(() => aboutDefer.resolve());
       assert.equal(
         this.$('#about-active').text(),
-        'false',
-        'false during loading substate'
+        'true',
+        'true after model resolves (route name changed, URL unchanged)'
       );
 
-      aboutDefer.resolve();
       await visitPromise;
-      assert.equal(this.$('#about-active').text(), 'true', 'true after model resolves');
     }
   }
 );

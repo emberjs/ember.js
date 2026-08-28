@@ -45,9 +45,12 @@ export default class IsActiveHelper extends Helper {
       return false;
     }
 
-    // Also track currentRouteName: during loading/error substates the URL
-    // doesn't change but the active route name does, so isActive() alone
-    // (which only consumes currentURL) would miss those transitions.
+    // Also entangle with currentRouteName. `isActive()` only consumes the
+    // `currentURL` tag (see emberjs/ember.js#19004), but a transition out of a
+    // loading/error substate keeps the URL at the destination while only the
+    // route name changes (e.g. `loading` -> `about`, with the URL already at
+    // `/about`). Without consuming currentRouteName the helper wouldn't
+    // recompute across that boundary and would render a stale value.
     void this.router.currentRouteName;
 
     const args = queryParams ? [...models, { queryParams }] : [...models];
