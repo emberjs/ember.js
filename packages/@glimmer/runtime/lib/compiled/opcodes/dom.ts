@@ -56,6 +56,7 @@ import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { syscall } from '../../opcodes';
 import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
 import { Assert } from './vm';
+import { scheduleInstallModifier, scheduleUpdateModifier } from '../../vm/modifiers';
 
 export const TEXT_OP = /*#__PURE__*/ syscall(VM_TEXT_OP, (vm, { op1: text }) => {
   vm.tree().appendText(vm.constants.getValue(text));
@@ -121,7 +122,7 @@ export const CLOSE_ELEMENT_OP = /*#__PURE__*/ syscall(VM_CLOSE_ELEMENT_OP, (vm) 
 
   if (modifiers !== null) {
     modifiers.forEach((modifier) => {
-      vm.env.scheduleInstallModifier(modifier);
+      scheduleInstallModifier(vm.env, modifier);
       const d = modifier.manager.getDestroyable(modifier.state);
 
       if (d !== null) {
@@ -297,7 +298,7 @@ export class UpdateModifierOpcode implements UpdatingOpcode {
     consumeTag(tag);
 
     if (!validateTag(tag, lastUpdated)) {
-      vm.env.scheduleUpdateModifier(modifier);
+      scheduleUpdateModifier(vm.env, modifier);
       this.lastUpdated = valueForTag(tag);
     }
   }
@@ -343,13 +344,13 @@ export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
         }
 
         this.tag = tag;
-        vm.env.scheduleInstallModifier(newInstance);
+        scheduleInstallModifier(vm.env, newInstance);
       }
 
       this.instance = newInstance;
     } else if (tag !== null && !validateTag(tag, lastUpdated)) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      vm.env.scheduleUpdateModifier(instance!);
+      scheduleUpdateModifier(vm.env, instance!);
       this.lastUpdated = valueForTag(tag);
     }
 
