@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+import { debugTree } from '../../debug-render-tree';
 import { setDynamicAttribute } from '../../vm/attributes/dynamic';
 import type {
   CapturedPositionalArguments,
@@ -39,7 +40,7 @@ import {
 } from '@glimmer/debug/lib/stack-check';
 import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
-import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
+import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager/lib/internal/api';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { isIndexable } from '@glimmer/util/lib/collections';
@@ -52,7 +53,6 @@ import type { DynamicAttribute } from '../../vm/attributes/dynamic';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { syscall } from '../../opcodes';
-import { createCapturedArgs } from '../../vm/arguments';
 import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
 import { Assert } from './vm';
 
@@ -93,35 +93,14 @@ export const PUSH_REMOTE_ELEMENT_OP = /*#__PURE__*/ syscall(VM_PUSH_REMOTE_ELEME
   let block = vm.tree().pushRemoteElement(element, guid, insertBefore);
   vm.associateDestroyable(block);
 
-  if (vm.env.debugRenderTree !== undefined) {
-    // Note that there is nothing to update – when the args for an
-    // {{#in-element}} changes it gets torn down and a new one is
-    // re-created/rendered in its place (see the `Assert`s above)
-    let args = createCapturedArgs(
-      insertBefore === undefined ? {} : { insertBefore: insertBeforeRef },
-      [elementRef]
-    );
-
-    vm.env.debugRenderTree.create(block, {
-      type: 'keyword',
-      name: 'in-element',
-      args,
-      instance: null,
-    });
-
-    registerDestructor(block, () => {
-      vm.env.debugRenderTree?.willDestroy(block);
-    });
-  }
+  debugTree(vm.env)?.remoteElementDidPush(block, elementRef, insertBeforeRef, insertBefore);
 });
 
 export const POP_REMOTE_ELEMENT_OP = /*#__PURE__*/ syscall(VM_POP_REMOTE_ELEMENT_OP, (vm) => {
   let bounds = vm.tree().popRemoteElement();
 
-  if (vm.env.debugRenderTree !== undefined) {
-    // The RemoteBlock is also its bounds
-    vm.env.debugRenderTree.didRender(bounds, bounds);
-  }
+  // The RemoteBlock is also its bounds
+  vm.env.debugRenderTree?.didRender(bounds, bounds);
 });
 
 export const FLUSH_ELEMENT_OP = /*#__PURE__*/ syscall(VM_FLUSH_ELEMENT_OP, (vm) => {

@@ -5,7 +5,6 @@ import type {
   Bounds,
   CapabilityMask,
   CapturedArguments,
-  CompilableProgram,
   ComponentDefinition,
   ComponentDefinitionState,
   ComponentInstance,
@@ -73,7 +72,6 @@ import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
-import { registerDestructor } from '@glimmer/destroyable';
 import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
 import { valueForRef } from '@glimmer/reference/lib/reference';
@@ -88,14 +86,12 @@ import type { UpdatingVM } from '../../vm';
 import type { VM } from '../../vm/append';
 import type { BlockArgumentsImpl } from '../../vm/arguments';
 
-import { ConcreteBounds } from '../../bounds';
-import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
 import { resolveComponent } from '../../component/resolve';
 import { isCurriedType, isCurriedValue, resolveCurriedValue } from '../../curried-value';
-import { getDebugName } from '../../debug-render-tree';
+import { debugTree, getDebugName } from '../../debug-render-tree';
 import { syscall } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
-import { EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';
+import { VMArgumentsImpl } from '../../vm/arguments';
 import {
   CheckArguments,
   CheckComponentDefinition,
@@ -600,43 +596,7 @@ export class ComponentElementOperations implements ElementOperations {
   addModifier(vm: VM, modifier: ModifierInstance, capturedArgs: CapturedArguments): void {
     this.modifiers.push(modifier);
 
-    if (vm.env.debugRenderTree !== undefined) {
-      const { manager, definition, state } = modifier;
-
-      // TODO: we need a stable object for the debugRenderTree as the key, add support for
-      // the case where the state is a primitive, or if in practice we always have/require
-      // an object, then change the internal types to reflect that
-      if (state === null || (typeof state !== 'object' && typeof state !== 'function')) {
-        return;
-      }
-
-      let { element, constructing } = vm.tree();
-      let name = definition.resolvedName ?? manager.getDebugName(definition.state);
-      let instance = manager.getDebugInstance(state);
-
-      assert(constructing, `Expected a constructing element in addModifier`);
-
-      let bounds = new ConcreteBounds(element, constructing, constructing);
-
-      vm.env.debugRenderTree.create(state, {
-        type: 'modifier',
-        name,
-        args: capturedArgs,
-        instance,
-      });
-
-      vm.env.debugRenderTree.didRender(state, bounds);
-
-      // For tearing down the debugRenderTree
-      vm.associateDestroyable(state);
-
-      vm.updateWith(new DebugRenderTreeUpdateOpcode(state));
-      vm.updateWith(new DebugRenderTreeDidRenderOpcode(state, bounds));
-
-      registerDestructor(state, () => {
-        vm.env.debugRenderTree?.willDestroy(state);
-      });
-    }
+    debugTree(vm.env)?.modifierDidAdd(vm, modifier, capturedArgs);
   }
 
   flush(vm: VM): ModifierInstance[] {
@@ -736,74 +696,7 @@ export const GET_COMPONENT_SELF_OP = /*#__PURE__*/ syscall(
     let { manager } = definition;
     let selfRef = manager.getSelf(state);
 
-    if (vm.env.debugRenderTree !== undefined) {
-      let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
-      let { definition, manager } = instance;
-
-      let args: CapturedArguments;
-
-      if (vm.stack.peek() === vm.args) {
-        args = vm.args.capture();
-      } else {
-        let names = vm.constants.getArray<string>(_names);
-        vm.args.setup(vm.stack, names, [], 0, true);
-        args = vm.args.capture();
-      }
-
-      let compilable: CompilableProgram | null = definition.compilable;
-
-      if (compilable === null) {
-        assert(
-          managerHasCapability(
-            manager,
-            instance.capabilities,
-            InternalComponentCapabilities.dynamicLayout
-          ),
-          'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
-        );
-
-        let resolver = vm.context.resolver;
-        compilable = resolver === null ? null : manager.getDynamicLayout(state, resolver);
-      }
-
-      // For tearing down the debugRenderTree
-      vm.associateDestroyable(instance);
-
-      if (hasCustomDebugRenderTreeLifecycle(manager)) {
-        let nodes = manager.getDebugCustomRenderTree(
-          instance.definition.state,
-          instance.state,
-          args
-        );
-
-        nodes.forEach((node) => {
-          let { bucket } = node;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-          vm.env.debugRenderTree!.create(bucket, node);
-
-          registerDestructor(instance, () => {
-            vm.env.debugRenderTree?.willDestroy(bucket);
-          });
-
-          vm.updateWith(new DebugRenderTreeUpdateOpcode(bucket));
-        });
-      } else {
-        let name = getDebugName(definition, manager);
-
-        vm.env.debugRenderTree.create(instance, {
-          type: 'component',
-          name,
-          args,
-          instance: valueForRef(selfRef),
-        });
-
-        registerDestructor(instance, () => {
-          vm.env.debugRenderTree?.willDestroy(instance);
-        });
-
-        vm.updateWith(new DebugRenderTreeUpdateOpcode(instance));
-      }
-    }
+    debugTree(vm.env)?.componentDidGetSelf(vm, instance, selfRef, _names);
 
     vm.stack.push(selfRef);
   }
@@ -999,24 +892,7 @@ export const DID_RENDER_LAYOUT_OP = /*#__PURE__*/ syscall(
     let { manager, state, capabilities } = instance;
     let bounds = vm.tree().popBlock();
 
-    if (vm.env.debugRenderTree !== undefined) {
-      if (hasCustomDebugRenderTreeLifecycle(manager)) {
-        let nodes = manager.getDebugCustomRenderTree(instance.definition.state, state, EMPTY_ARGS);
-
-        nodes.reverse().forEach((node) => {
-          let { bucket } = node;
-
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-          vm.env.debugRenderTree!.didRender(bucket, bounds);
-
-          vm.updateWith(new DebugRenderTreeDidRenderOpcode(bucket, bounds));
-        });
-      } else {
-        vm.env.debugRenderTree.didRender(instance, bounds);
-
-        vm.updateWith(new DebugRenderTreeDidRenderOpcode(instance, bounds));
-      }
-    }
+    debugTree(vm.env)?.componentDidRenderLayout(vm, instance, bounds);
 
     if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.createInstance)) {
       let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
@@ -1063,24 +939,5 @@ export class DidUpdateLayoutOpcode implements UpdatingOpcode {
     manager.didUpdateLayout(state, bounds);
 
     vm.env.didUpdate(component);
-  }
-}
-
-class DebugRenderTreeUpdateOpcode implements UpdatingOpcode {
-  constructor(private bucket: object) {}
-
-  evaluate(vm: UpdatingVM) {
-    vm.env.debugRenderTree?.update(this.bucket);
-  }
-}
-
-class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
-  constructor(
-    private bucket: object,
-    private bounds: Bounds
-  ) {}
-
-  evaluate(vm: UpdatingVM) {
-    vm.env.debugRenderTree?.didRender(this.bucket, this.bounds);
   }
 }
