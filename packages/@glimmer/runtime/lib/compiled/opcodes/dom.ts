@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+import { popRemoteElement, pushRemoteElement } from '../../vm/remote-element';
 import { debugTree } from '../../debug-render-tree';
 import { setDynamicAttribute } from '../../vm/attributes/dynamic';
 import type {
@@ -90,14 +91,14 @@ export const PUSH_REMOTE_ELEMENT_OP = /*#__PURE__*/ syscall(VM_PUSH_REMOTE_ELEME
     vm.updateWith(new Assert(insertBeforeRef));
   }
 
-  let block = vm.tree().pushRemoteElement(element, guid, insertBefore);
+  let block = pushRemoteElement(vm.tree(), element, guid, insertBefore);
   vm.associateDestroyable(block);
 
   debugTree(vm.env)?.remoteElementDidPush(block, elementRef, insertBeforeRef, insertBefore);
 });
 
 export const POP_REMOTE_ELEMENT_OP = /*#__PURE__*/ syscall(VM_POP_REMOTE_ELEMENT_OP, (vm) => {
-  let bounds = vm.tree().popRemoteElement();
+  let bounds = popRemoteElement(vm.tree());
 
   // The RemoteBlock is also its bounds
   vm.env.debugRenderTree?.didRender(bounds, bounds);

@@ -18,7 +18,8 @@ import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 
 import { ConcreteBounds, CursorImpl } from '../bounds';
-import { NewTreeBuilder, RemoteBlock } from './element-builder';
+import { NewTreeBuilder } from './element-builder';
+import { RemoteBlock } from './remote-element';
 
 export const SERIALIZATION_FIRST_NODE_STRING = '%+b:0%';
 
@@ -465,7 +466,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     return null;
   }
 
-  override __pushRemoteElement(
+  __pushRemoteElement(
     element: SimpleElement,
     cursorId: string,
     insertBefore: Maybe<SimpleNode>

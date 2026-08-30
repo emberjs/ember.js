@@ -27,7 +27,7 @@ import { debug } from '@glimmer/validator/lib/debug';
 import { resetTracking } from '@glimmer/validator/lib/tracking';
 
 import type { Closure } from './append';
-import type { AppendingBlockList } from './element-builder';
+import type { AppendingBlockList } from './lists';
 
 import { clear, move as moveBounds } from '../bounds';
 import { NewTreeBuilder } from './element-builder';

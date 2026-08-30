@@ -1,4 +1,9 @@
 import { DEBUG } from '@glimmer/env';
+import {
+  appendDynamicFragment,
+  appendDynamicHTML,
+  appendDynamicNode,
+} from '../../vm/dynamic-content';
 import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants/lib/curried';
 import {
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
@@ -94,7 +99,7 @@ export const APPEND_HTML_OP = /*#__PURE__*/ syscall(VM_APPEND_HTML_OP, (vm) => {
   let rawValue = valueForRef(reference);
   let value = isEmpty(rawValue) ? '' : String(rawValue);
 
-  vm.tree().appendDynamicHTML(value);
+  appendDynamicHTML(vm.tree(), value);
 });
 
 export const APPEND_SAFE_HTML_OP = /*#__PURE__*/ syscall(VM_APPEND_SAFE_HTML_OP, (vm) => {
@@ -103,7 +108,7 @@ export const APPEND_SAFE_HTML_OP = /*#__PURE__*/ syscall(VM_APPEND_SAFE_HTML_OP,
   let rawValue = check(valueForRef(reference), CheckSafeString).toHTML();
   let value = isEmpty(rawValue) ? '' : check(rawValue, CheckString);
 
-  vm.tree().appendDynamicHTML(value);
+  appendDynamicHTML(vm.tree(), value);
 });
 
 export const APPEND_TEXT_OP = /*#__PURE__*/ syscall(VM_APPEND_TEXT_OP, (vm) => {
@@ -126,7 +131,7 @@ export const APPEND_DOCUMENT_FRAGMENT_OP = /*#__PURE__*/ syscall(
 
     let value = check(valueForRef(reference), CheckDocumentFragment);
 
-    vm.tree().appendDynamicFragment(value);
+    appendDynamicFragment(vm.tree(), value);
   }
 );
 
@@ -135,5 +140,5 @@ export const APPEND_NODE_OP = /*#__PURE__*/ syscall(VM_APPEND_NODE_OP, (vm) => {
 
   let value = check(valueForRef(reference), CheckNode);
 
-  vm.tree().appendDynamicNode(value);
+  appendDynamicNode(vm.tree(), value);
 });
