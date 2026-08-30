@@ -10,7 +10,9 @@ import {
   BUILTIN_KEYWORD_HELPERS,
   BUILTIN_KEYWORD_MODIFIERS,
   BUILTIN_MODIFIERS,
+  registerResolver,
 } from './builtins-registry';
+import ResolverImpl from './resolver';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -76,4 +78,5 @@ export function ensureBuiltins(): void {
   Object.assign(BUILTIN_HELPERS, HELPERS);
   Object.assign(BUILTIN_KEYWORD_MODIFIERS, KEYWORD_MODIFIERS);
   Object.assign(BUILTIN_MODIFIERS, MODIFIERS);
+  registerResolver(new ResolverImpl());
 }

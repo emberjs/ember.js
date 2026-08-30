@@ -29,7 +29,7 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
 import { runloop } from './hooks';
-import ResolverImpl from './resolver';
+import { LazyResolver } from './builtins-registry';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
@@ -590,7 +590,7 @@ export class BaseRenderer {
       owner,
       { hasDOM: hasDOM, ...options },
       document as SimpleDocument,
-      new ResolverImpl(),
+      new LazyResolver(),
       clientBuilder
     );
   }
