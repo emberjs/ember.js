@@ -1,4 +1,9 @@
 import { DEBUG } from '@glimmer/env';
+import {
+  helperHandle,
+  modifierHandle,
+  resolvedComponentDefinition,
+} from '@glimmer/program/lib/definitions';
 import type {
   BlockMetadata,
   BlockSymbolNames,
@@ -8,7 +13,6 @@ import type {
   Owner,
   ProgramConstants,
   ResolutionHandler,
-  ResolutionTimeConstants,
   ResolveComponentOp,
   ResolveComponentOrHelperOp,
   ResolveHelperOp,
@@ -140,7 +144,7 @@ export function resolveComponent(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    then(constants.resolvedComponent(definition!, name));
+    then(resolvedComponentDefinition(constants, definition!, name));
   }
 }
 
@@ -164,7 +168,7 @@ export function resolveHelper(
       expr[1]
     ];
 
-    then(constants.helper(definition as object));
+    then(helperHandle(constants, definition as object));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     then(
       lookupBuiltInHelper(expr as Expressions.GetStrictFree, resolver, meta, constants, 'helper')
@@ -187,7 +191,7 @@ export function resolveHelper(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    then(constants.helper(helper!, name));
+    then(helperHandle(constants, helper!, name));
   }
 }
 
@@ -215,7 +219,7 @@ export function resolveModifier(
       expr[1]
     ];
 
-    then(constants.modifier(definition as object, lexical?.at(expr[1]) ?? undefined));
+    then(modifierHandle(constants, definition as object, lexical?.at(expr[1]) ?? undefined));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     let {
       symbols: { upvars },
@@ -232,7 +236,7 @@ export function resolveModifier(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    then(constants.modifier(modifier!, name));
+    then(modifierHandle(constants, modifier!, name));
   } else {
     let {
       symbols: { upvars },
@@ -250,7 +254,7 @@ export function resolveModifier(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    then(constants.modifier(modifier!));
+    then(modifierHandle(constants, modifier!));
   }
 }
 
@@ -292,7 +296,7 @@ export function resolveComponentOrHelper(
       return;
     }
 
-    let helper = constants.helper(definition as object, null, true);
+    let helper = helperHandle(constants, definition as object, null, true);
 
     if (DEBUG && helper === null) {
       assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
@@ -326,7 +330,7 @@ export function resolveComponentOrHelper(
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (definition !== null) {
-      ifComponent(constants.resolvedComponent(definition, name));
+      ifComponent(resolvedComponentDefinition(constants, definition, name));
     } else {
       let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
@@ -339,7 +343,7 @@ export function resolveComponentOrHelper(
       }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      ifHelper(constants.helper(helper!, name));
+      ifHelper(helperHandle(constants, helper!, name));
     }
   }
 }
@@ -391,7 +395,7 @@ export function resolveOptionalComponentOrHelper(
       return;
     }
 
-    let helper = constants.helper(definition, null, true);
+    let helper = helperHandle(constants, definition, null, true);
 
     if (helper !== null) {
       ifHelper(helper);
@@ -413,14 +417,14 @@ export function resolveOptionalComponentOrHelper(
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (definition !== null) {
-      ifComponent(constants.resolvedComponent(definition, name));
+      ifComponent(resolvedComponentDefinition(constants, definition, name));
       return;
     }
 
     let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
     if (helper !== null) {
-      ifHelper(constants.helper(helper, name));
+      ifHelper(helperHandle(constants, helper, name));
     }
   }
 }
@@ -429,7 +433,7 @@ function lookupBuiltInHelper(
   expr: Expressions.GetStrictFree,
   resolver: Nullable<ClassicResolver>,
   meta: BlockMetadata,
-  constants: ResolutionTimeConstants,
+  constants: ProgramConstants,
   type: string
 ): number {
   let {
@@ -453,7 +457,7 @@ function lookupBuiltInHelper(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-  return constants.helper(helper!, name);
+  return helperHandle(constants, helper!, name);
 }
 
 export const ResolveComponent: ResolutionHandler<ResolveComponentOp> = {

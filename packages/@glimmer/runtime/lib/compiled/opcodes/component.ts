@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+import { resolvedComponentDefinition } from '@glimmer/program/lib/definitions';
 import { applyDynamicAttribute } from '../../vm/attributes/deferred';
 import type {
   DynamicAttributeApplier,
@@ -345,7 +346,8 @@ export const PREPARE_ARGS_OP = /*#__PURE__*/ syscall(
         let resolvedValue =
           vm.context.resolver?.lookupComponent?.(resolvedDefinition, owner) ?? null;
 
-        definition = constants.resolvedComponent(
+        definition = resolvedComponentDefinition(
+          constants,
           expect(resolvedValue, 'BUG: expected resolved component'),
           resolvedDefinition
         );

@@ -2,24 +2,17 @@ import type {
   ComponentDefinition,
   ComponentDefinitionState,
   ConstantPool,
-  HelperDefinitionState,
-  ModifierDefinitionState,
   Optional,
   ProgramConstants,
   ResolvedComponentDefinition,
   Template,
 } from '@glimmer/interfaces';
 import { constants } from '@glimmer/constants/lib/immediate';
-import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
 import { capabilityFlagsFrom, managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
 import { getComponentTemplate } from '@glimmer/manager/lib/public/template';
-import {
-  getInternalComponentManager,
-  getInternalHelperManager,
-  getInternalModifierManager,
-} from '@glimmer/manager/lib/internal/api';
+import { getInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import templateFactory from '@glimmer/opcode-compiler/lib/template-core';
 import { enumerate } from '@glimmer/util/lib/array-utils';
 import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';
@@ -39,18 +32,15 @@ export class ConstantsImpl implements ProgramConstants {
 
   // Used for tests and debugging purposes, and to be able to analyze large apps
   // This is why it's enabled even in production
+  componentDefinitionCount = 0;
+  // Incremented by `./definitions` for the same debugging purpose.
   helperDefinitionCount = 0;
   modifierDefinitionCount = 0;
-  componentDefinitionCount = 0;
 
   private values: unknown[] = STARTER_CONSTANTS.slice();
   private indexMap: Map<unknown, number> = new Map(
     this.values.map((value, index) => [value, index])
   );
-
-  private helperDefinitionCache = new WeakMap<HelperDefinitionState, number | null>();
-
-  private modifierDefinitionCache = new WeakMap<ModifierDefinitionState, number | null>();
 
   private componentDefinitionCache = new WeakMap<
     ComponentDefinitionState | ResolvedComponentDefinition,
@@ -89,88 +79,6 @@ export class ConstantsImpl implements ProgramConstants {
 
   hasHandle(handle: number): boolean {
     return this.values.length > handle;
-  }
-
-  helper(
-    definitionState: HelperDefinitionState,
-
-    // TODO: Add a way to expose resolved name for debugging
-    _resolvedName: string | null,
-    isOptional: true
-  ): number | null;
-  helper(
-    definitionState: HelperDefinitionState,
-
-    // TODO: Add a way to expose resolved name for debugging
-    _resolvedName?: string | null
-  ): number;
-  helper(
-    definitionState: HelperDefinitionState,
-
-    // TODO: Add a way to expose resolved name for debugging
-    _resolvedName: string | null = null,
-    isOptional?: true
-  ): number | null {
-    let handle = this.helperDefinitionCache.get(definitionState);
-
-    if (handle === undefined) {
-      let managerOrHelper = getInternalHelperManager(definitionState, isOptional);
-
-      if (managerOrHelper === null) {
-        this.helperDefinitionCache.set(definitionState, null);
-        return null;
-      }
-
-      assert(managerOrHelper, 'BUG: expected manager or helper');
-
-      let helper =
-        typeof managerOrHelper === 'function'
-          ? managerOrHelper
-          : managerOrHelper.getHelper(definitionState);
-
-      handle = this.value(helper);
-
-      this.helperDefinitionCache.set(definitionState, handle);
-      this.helperDefinitionCount++;
-    }
-
-    return handle;
-  }
-
-  modifier(
-    definitionState: ModifierDefinitionState,
-    resolvedName: string | null,
-    isOptional: true
-  ): number | null;
-  modifier(definitionState: ModifierDefinitionState, resolvedName?: string | null): number;
-  modifier(
-    definitionState: ModifierDefinitionState,
-    resolvedName: string | null = null,
-    isOptional?: true
-  ): number | null {
-    let handle = this.modifierDefinitionCache.get(definitionState);
-
-    if (handle === undefined) {
-      let manager = getInternalModifierManager(definitionState, isOptional);
-
-      if (manager === null) {
-        this.modifierDefinitionCache.set(definitionState, null);
-        return null;
-      }
-
-      let definition = {
-        resolvedName,
-        manager,
-        state: definitionState,
-      };
-
-      handle = this.value(definition);
-
-      this.modifierDefinitionCache.set(definitionState, handle);
-      this.modifierDefinitionCount++;
-    }
-
-    return handle;
   }
 
   component(definitionState: ComponentDefinitionState, owner: object): ComponentDefinition;
@@ -239,53 +147,6 @@ export class ConstantsImpl implements ProgramConstants {
     }
 
     return definition;
-  }
-
-  resolvedComponent(
-    resolvedDefinition: ResolvedComponentDefinition,
-    resolvedName: string
-  ): ComponentDefinition {
-    let definition = this.componentDefinitionCache.get(resolvedDefinition);
-
-    if (definition === undefined) {
-      let { manager, state, template } = resolvedDefinition;
-      let capabilities = capabilityFlagsFrom(manager.getCapabilities(resolvedDefinition));
-
-      let compilable = null;
-
-      if (
-        !managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout)
-      ) {
-        template = template ?? this.defaultTemplate;
-      }
-
-      if (template !== null) {
-        template = unwrapTemplate(template);
-
-        compilable = managerHasCapability(
-          manager,
-          capabilities,
-          InternalComponentCapabilities.wrapped
-        )
-          ? template.asWrappedLayout()
-          : template.asLayout();
-      }
-
-      definition = {
-        resolvedName,
-        handle: -1, // replaced momentarily
-        manager,
-        capabilities,
-        state,
-        compilable,
-      };
-
-      definition.handle = this.value(definition);
-      this.componentDefinitionCache.set(resolvedDefinition, definition);
-      this.componentDefinitionCount++;
-    }
-
-    return expect(definition, 'BUG: resolved component definitions cannot be null');
   }
 
   getValue<T>(index: number) {

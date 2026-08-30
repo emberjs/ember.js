@@ -1939,6 +1939,9 @@ importers:
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../manager
+      '@glimmer/program':
+        specifier: workspace:*
+        version: link:../program
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../runtime
