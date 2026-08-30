@@ -22,6 +22,7 @@ import type { ComputedPropertyCallback } from '@ember/-internals/metal/lib/compu
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
 import isArray from './lib/is-array';
 import { registerEnvironmentHooks } from '@ember/-internals/glimmer/lib/hooks';
+import './lib/iterator-extension';
 
 export { default as makeArray } from './make';
 

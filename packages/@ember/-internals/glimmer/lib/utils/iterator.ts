@@ -1,9 +1,7 @@
-import type EmberArray from '@ember/array';
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { IteratorDelegate } from '@glimmer/reference/lib/iterable';
-import type { NativeArray } from '@ember/array';
-import { hooks, iteratorExtensions } from '../hooks';
+import { iteratorExtensions } from '../hooks';
 
 export default function toIterator(iterable: unknown): Nullable<IteratorDelegate> {
   for (let extension of iteratorExtensions) {
@@ -24,12 +22,8 @@ function toEachIterator(iterable: unknown) {
 
   if (Array.isArray(iterable)) {
     return ArrayIterator.from(iterable);
-  } else if (hooks.isEmberArray(iterable)) {
-    return EmberArrayIterator.from(iterable as EmberArray<unknown>);
   } else if (isNativeIterable(iterable)) {
     return ArrayLikeNativeIterator.from(iterable);
-  } else if (hasForEach(iterable)) {
-    return ArrayIterator.fromForEachable(iterable);
   } else {
     return null;
   }
@@ -83,20 +77,6 @@ export class ArrayIterator extends BoundedIterator {
 
   valueFor(position: number): unknown {
     return this.array[position];
-  }
-}
-
-class EmberArrayIterator extends BoundedIterator {
-  static from(iterable: EmberArray<unknown> | NativeArray<unknown>) {
-    return iterable.length > 0 ? new this(iterable) : null;
-  }
-
-  constructor(private array: EmberArray<unknown> | NativeArray<unknown>) {
-    super(array.length);
-  }
-
-  valueFor(position: number): unknown {
-    return hooks.objectAt(this.array, position);
   }
 }
 
