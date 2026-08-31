@@ -3,6 +3,7 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import type { Revision } from '@glimmer/validator/lib/validators';
 import type { Tag } from '@glimmer/interfaces';
 import { decodeHandle, decodeImmediate, isHandle } from '@glimmer/constants/lib/immediate';
+import { DEBUG } from '@glimmer/env';
 import {
   VM_ASSERT_SAME_OP,
   VM_BIND_DYNAMIC_SCOPE_OP,
@@ -79,12 +80,17 @@ export const CONSTANT_OP = /*#__PURE__*/ syscall(VM_CONSTANT_OP, (vm, { op1: oth
   vm.stack.push(vm.constants.getValue(decodeHandle(other)));
 });
 
-export const CONSTANT_REFERENCE_OP = /*#__PURE__*/ syscall(
-  VM_CONSTANT_REFERENCE_OP,
-  (vm, { op1: other }) => {
-    vm.stack.push(createConstRef(vm.constants.getValue(decodeHandle(other)), false));
+export const CONSTANT_REFERENCE_OP = /*#__PURE__*/ syscall(VM_CONSTANT_REFERENCE_OP, (vm, op) => {
+  let value = vm.constants.getValue(decodeHandle(op.op1));
+  let label: string | false = false;
+
+  // A second operand, present in debug builds, names the value.
+  if (DEBUG && op.size > 2) {
+    label = vm.constants.getValue<string>(decodeHandle(op.op2));
   }
-);
+
+  vm.stack.push(createConstRef(value, label));
+});
 
 export const PRIMITIVE_OP = /*#__PURE__*/ syscall(VM_PRIMITIVE_OP, (vm, { op1: primitive }) => {
   let stack = vm.stack;

@@ -67,8 +67,18 @@ export const GetSymbolOp = /*#__PURE__*/ defineExpression(
 export const GetLexicalSymbolOp = /*#__PURE__*/ defineExpression(
   SexpOpcodes.GetLexicalSymbol,
   (op, [, sym, path]) => {
-    op(HighLevelResolutionOpcodes.TemplateLocal, sym, (handle: number) => {
-      op(CONSTANT_REFERENCE_OP, handle);
+    op(HighLevelResolutionOpcodes.TemplateLocal, sym, (handle: number, name?: string) => {
+      // The name labels the reference, so the debug render tree can name a
+      // component that resolves from this value at runtime. A build tool
+      // compiles with the production compiler even for a development app,
+      // so the compiler cannot decide by its own DEBUG flag; the runtime
+      // reads the label only in debug builds.
+      if (name !== undefined) {
+        op(CONSTANT_REFERENCE_OP, handle, name);
+      } else {
+        op(CONSTANT_REFERENCE_OP, handle);
+      }
+
       withPath(op, path);
     });
   }

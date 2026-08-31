@@ -30,6 +30,7 @@
     "@glimmer/env": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
+    "@glimmer/opcode-compiler": "workspace:*",
     "@glimmer/runtime": "workspace:*",
     "@glimmer/syntax": "workspace:*",
     "@glimmer/validator": "workspace:*",

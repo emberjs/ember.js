@@ -37,6 +37,7 @@
     "test:publint": "publint"
   },
   "dependencies": {
+    "@glimmer/compiler": "workspace:*",
     "@glimmer/encoder": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",

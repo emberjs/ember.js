@@ -290,6 +290,43 @@ export function exposedDependencies() {
       packageCache.appRoot,
       'packages/@glimmer/opcode-compiler/ops.ts'
     ),
+    // Templates compiled ahead of time import handlers and stdlib routines directly.
+    '@glimmer/opcode-compiler/lib/aot/template': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/opcode-compiler/lib/aot/template.ts'
+    ),
+    '@glimmer/opcode-compiler/lib/opcode-builder/stdlib-data': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/opcode-compiler/lib/opcode-builder/stdlib-data.ts'
+    ),
+    '@glimmer/runtime/lib/compiled/opcodes/component': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/runtime/lib/compiled/opcodes/component.ts'
+    ),
+    '@glimmer/runtime/lib/compiled/opcodes/content': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/runtime/lib/compiled/opcodes/content.ts'
+    ),
+    '@glimmer/runtime/lib/compiled/opcodes/debugger': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/runtime/lib/compiled/opcodes/debugger.ts'
+    ),
+    '@glimmer/runtime/lib/compiled/opcodes/dom': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts'
+    ),
+    '@glimmer/runtime/lib/compiled/opcodes/expressions': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/runtime/lib/compiled/opcodes/expressions.ts'
+    ),
+    '@glimmer/runtime/lib/compiled/opcodes/lists': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/runtime/lib/compiled/opcodes/lists.ts'
+    ),
+    '@glimmer/runtime/lib/compiled/opcodes/vm': resolve(
+      packageCache.appRoot,
+      'packages/@glimmer/runtime/lib/compiled/opcodes/vm.ts'
+    ),
     '@glimmer/tracking': resolve(packageCache.appRoot, 'packages/@glimmer/tracking/index.ts'),
     '@glimmer/tracking/primitives/cache': resolve(
       packageCache.appRoot,

@@ -12,3 +12,5 @@ export { default as trackArray } from '@ember/-internals/glimmer/lib/helpers/-tr
 export { default as normalizeClass } from '@ember/-internals/glimmer/lib/helpers/-normalize-class';
 export { default as resolve } from '@ember/-internals/glimmer/lib/helpers/-resolve';
 export { hash } from '@glimmer/runtime/lib/helpers/hash';
+export { outletHelper as outlet } from '@ember/-internals/glimmer/lib/syntax/outlet';
+export { mountHelper as mount } from '@ember/-internals/glimmer/lib/syntax/mount';

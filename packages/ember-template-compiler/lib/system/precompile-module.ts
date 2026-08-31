@@ -3,6 +3,7 @@ import {
   type PrecompiledModule,
   precompileModule as glimmerPrecompileModule,
 } from '@glimmer/compiler';
+import { precompileAot } from '@glimmer/opcode-compiler/lib/aot/precompile';
 import type { EmberPrecompileOptions } from '../types';
 import compileOptions from './compile-options';
 
@@ -22,11 +23,15 @@ const LEXICAL_KEYWORDS: Record<string, LexicalKeyword> = {
   '-normalize-class': { module: KEYWORDS_MODULE, name: 'normalizeClass' },
   '-resolve': { module: KEYWORDS_MODULE, name: 'resolve' },
   '-hash': { module: KEYWORDS_MODULE, name: 'hash' },
+  '-outlet': { module: KEYWORDS_MODULE, name: 'outlet' },
+  '-mount': { module: KEYWORDS_MODULE, name: 'mount' },
 };
 
 /**
-  Compiles a template into a JavaScript expression whose wire format opcodes
-  are identifiers. The build tool binds each identifier to an import.
+  Compiles a template into a JavaScript expression plus the imports it
+  needs. A strict template compiles all the way to VM words, so no compiler
+  ships to the browser for it. A loose template keeps its wire format
+  opcodes as imported objects and resolves names at runtime.
 
   @private
   @method precompileModule
@@ -37,18 +42,18 @@ export default function precompileModule(
 ): PrecompiledModule {
   let compiled = compileOptions(options);
 
-  let result = glimmerPrecompileModule(templateString, {
-    ...compiled,
-    lexicalKeywords: compiled.strictMode ? LEXICAL_KEYWORDS : undefined,
-  });
+  if (compiled.strictMode) {
+    return precompileAot(templateString, {
+      ...compiled,
+      lexicalKeywords: LEXICAL_KEYWORDS,
+      factory: { module: '@ember/template-factory/aot', name: 'createTemplateFactory' },
+    });
+  }
+
+  let result = glimmerPrecompileModule(templateString, compiled);
 
   return {
     ...result,
-    factory: {
-      module: compiled.strictMode
-        ? '@ember/template-factory/modular'
-        : '@ember/template-factory/loose',
-      name: 'createTemplateFactory',
-    },
+    factory: { module: '@ember/template-factory/loose', name: 'createTemplateFactory' },
   };
 }

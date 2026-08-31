@@ -115,7 +115,7 @@ export function encodeOp(
           'BUG: Attempted to get a template local, but template does not have any'
         )[valueIndex];
 
-        then(constants.value(value));
+        then(constants.value(value), meta.symbols.lexical?.[valueIndex]);
 
         break;
       }
