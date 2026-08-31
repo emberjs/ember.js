@@ -1,21 +1,35 @@
 import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
+  CapturedArguments,
   CapturedRenderNode,
+  CapturedRenderNodeArgReactivity,
+  CapturedRenderNodeReactivity,
   ComponentDefinition,
   DebugRenderTree,
   Nullable,
+  Reference,
   RenderNode,
+  Revision,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import { lastRevisionForRef } from '@glimmer/reference/lib/reference';
 import { assign } from '@glimmer/util/lib/object-utils';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
+import { CURRENT_TAG, valueForTag } from '@glimmer/validator/lib/validators';
 
 import { reifyArgsDebug } from './vm/arguments';
+
+interface RenderNodeUpdates {
+  count: number;
+  revision: Revision;
+  previousRevision: Nullable<Revision>;
+}
 
 interface InternalRenderNode<T extends object> extends RenderNode {
   bounds: Nullable<Bounds>;
   refs: Set<Ref<T>>;
+  updates: RenderNodeUpdates;
   parent?: InternalRenderNode<T>;
 }
 
@@ -74,6 +88,11 @@ export default class DebugRenderTreeImpl<
     let internalNode: InternalRenderNode<TBucket> = assign({}, node, {
       bounds: null,
       refs: new Set<Ref<TBucket>>(),
+      updates: {
+        count: 0,
+        revision: valueForTag(CURRENT_TAG),
+        previousRevision: null,
+      },
     });
     this.nodes.set(state, internalNode);
     this.appendChild(internalNode, state);
@@ -81,10 +100,15 @@ export default class DebugRenderTreeImpl<
   }
 
   update(state: TBucket): void {
+    let updates = this.nodeFor(state).updates;
+    updates.previousRevision = updates.revision;
+    updates.revision = valueForTag(CURRENT_TAG);
+    updates.count++;
+
     this.enter(state);
   }
 
-  didRender(state: TBucket, bounds: Bounds): void {
+  didRender(state: TBucket, bounds: Nullable<Bounds>): void {
     if (DEBUG && this.stack.current !== state) {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       throw new Error(`BUG: expecting ${this.stack.current}, got ${state}`);
@@ -184,18 +208,64 @@ export default class DebugRenderTreeImpl<
   private captureNode(id: string, state: TBucket): CapturedRenderNode {
     let node = this.nodeFor(state);
     let { type, name, args, instance, refs } = node;
+    // Reify before capturing reactivity so the argument references carry
+    // their current revisions.
+    let reifiedArgs = reifyArgsDebug(args);
+    let reactivity = captureReactivity(node.updates, args);
     let bounds = this.captureBounds(node);
     let children = this.captureRefs(refs);
-    return { id, type, name, args: reifyArgsDebug(args), instance, bounds, children };
+    return { id, type, name, args: reifiedArgs, instance, bounds, reactivity, children };
   }
 
   private captureBounds(node: InternalRenderNode<TBucket>): CapturedRenderNode['bounds'] {
+    // Helper nodes are not rendered into the DOM and legitimately have no
+    // bounds; everything else must have rendered by capture time.
+    if (node.type === 'helper' && node.bounds === null) {
+      return null;
+    }
+
     let bounds = expect(node.bounds, 'BUG: missing bounds');
     let parentElement = bounds.parentElement();
     let firstNode = bounds.firstNode();
     let lastNode = bounds.lastNode();
     return { parentElement, firstNode, lastNode };
   }
+}
+
+function captureArgReactivity(
+  ref: Reference,
+  previousRevision: Nullable<Revision>
+): CapturedRenderNodeArgReactivity {
+  let revision = lastRevisionForRef(ref);
+
+  return {
+    debugLabel: typeof ref.debugLabel === 'string' ? ref.debugLabel : undefined,
+    revision,
+    // Arguments whose value was invalidated after the node's previous
+    // render are what caused its most recent re-render.
+    changed: previousRevision !== null && revision > previousRevision,
+  };
+}
+
+function captureReactivity(
+  updates: RenderNodeUpdates,
+  args: CapturedArguments
+): CapturedRenderNodeReactivity {
+  let { count, revision, previousRevision } = updates;
+
+  let positional = args.positional.map((ref) => captureArgReactivity(ref, previousRevision));
+
+  let named: Record<string, CapturedRenderNodeArgReactivity> = {};
+  for (let [key, ref] of Object.entries(args.named)) {
+    named[key] = captureArgReactivity(ref, previousRevision);
+  }
+
+  return {
+    updateCount: count,
+    revision,
+    previousRevision,
+    args: { positional, named },
+  };
 }
 
 export function getDebugName(
