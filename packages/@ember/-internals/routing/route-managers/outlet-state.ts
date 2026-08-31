@@ -1,6 +1,10 @@
 import { invokableFor, type BaseRoute, type InternalRouteInfo } from 'router_js';
 import { tracked } from '@ember/-internals/metal/lib/tracked';
 
+function isPromise(value: object): value is Promise<object> {
+  return 'then' in value && typeof value.then === 'function';
+}
+
 /**
  * What the outlet walk descends from.
  */
@@ -47,14 +51,19 @@ export class OutletState implements OutletParent {
   ) {
     this.context = routeInfo.context;
 
-    invokableFor(manager, bucket).then(
-      (invokable) => {
-        this.invokable = invokable;
-      },
-      () => {
-        // getInvokable rejected; this level renders nothing.
-      }
-    );
+    let invokable = invokableFor(manager, bucket);
+    if (isPromise(invokable)) {
+      invokable.then(
+        (invokable) => {
+          this.invokable = invokable;
+        },
+        () => {
+          // getInvokable rejected; this level renders nothing.
+        }
+      );
+    } else {
+      this.invokable = invokable;
+    }
 
     routeInfo.enterPromise?.then(
       () => {
