@@ -111,7 +111,8 @@
  @public
  */
 
-export { default as template, templateCacheCounters } from '@glimmer/opcode-compiler/lib/template';
+export { default as template } from './lib/legacy-template';
+export { templateCacheCounters } from '@glimmer/opcode-compiler/lib/template';
 
 export { default as RootTemplate } from './lib/templates/root';
 export { default as Input } from './lib/components/input';

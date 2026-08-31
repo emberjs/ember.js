@@ -1,15 +1,28 @@
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { IteratorDelegate } from '@glimmer/reference/lib/iterable';
-import { iteratorExtensions } from '../hooks';
+import { hooks } from '../hooks';
+
+/**
+ * A value can bring its own iteration by implementing this method, the
+ * way the `-each-in` wrapper does. That keeps the value's iterator out of
+ * every bundle that never renders such a value.
+ */
+export const CUSTOM_ITERATE: unique symbol = Symbol('ember custom iterate');
+
+export interface CustomIterable {
+  [CUSTOM_ITERATE](): Nullable<IteratorDelegate>;
+}
 
 export default function toIterator(iterable: unknown): Nullable<IteratorDelegate> {
-  for (let extension of iteratorExtensions) {
-    let result = extension(iterable);
+  if (isObject(iterable) && CUSTOM_ITERATE in (iterable as object)) {
+    return (iterable as CustomIterable)[CUSTOM_ITERATE]();
+  }
 
-    if (result !== undefined) {
-      return result;
-    }
+  let extended = hooks.toIteratorExtension(iterable);
+
+  if (extended !== undefined) {
+    return extended;
   }
 
   return toEachIterator(iterable);

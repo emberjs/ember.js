@@ -20,15 +20,19 @@ export function bindKeyword(
     node.original = env.meta.jsutils.bindImport(moduleSpecifier, exportName, node, {
       nameHint: `__keyword__${exportName}`,
     });
-  } else if (env.meta?.emberRuntime) {
+  } else if (env.strictMode && env.meta?.emberRuntime) {
+    // The runtime compiler binds through a dotted path on its keywords
+    // object, which only strict mode can invoke. A loose template keeps
+    // the name and resolves it through the built-in tables.
     node.original = env.meta.emberRuntime.lookupKeyword(exportName);
   }
 }
 
 /**
  * A path for an internal keyword that a transform inserts, such as
- * `-track-array`. A strict template binds the implementation directly. A
- * loose template keeps the name for the resolver.
+ * `-track-array`. With a build tool or the runtime compiler, the path
+ * binds the implementation directly. Otherwise the name stays for the
+ * resolver, which serves templates compiled before this change.
  */
 export function keywordPath(
   env: EmberASTPluginEnvironment,
@@ -37,11 +41,7 @@ export function keywordPath(
   loc?: AST.SourceLocation
 ): AST.PathExpression {
   let path = env.syntax.builders.path(keyword, loc);
-
-  if (env.strictMode) {
-    bindKeyword(env, path, exportName);
-  }
-
+  bindKeyword(env, path, exportName);
   return path;
 }
 

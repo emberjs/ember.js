@@ -1,7 +1,7 @@
 import type EmberArray from '@ember/array';
 import type { NativeArray } from '@ember/array';
 import { objectAt } from '@ember/-internals/metal/lib/object-at';
-import { extendToIterator } from '@ember/-internals/glimmer/lib/hooks';
+import { registerEnvironmentHooks } from '@ember/-internals/glimmer/lib/hooks';
 import {
   ArrayIterator,
   BoundedIterator,
@@ -26,18 +26,20 @@ class EmberArrayIterator extends BoundedIterator {
 
 // Ember arrays and `forEach`-able objects iterate only once `@ember/array`
 // is loaded. Native arrays and iterables stay with the default iterator.
-extendToIterator((value) => {
-  if (Array.isArray(value) || isNativeIterable(value)) {
+registerEnvironmentHooks({
+  toIteratorExtension: (value) => {
+    if (Array.isArray(value) || isNativeIterable(value)) {
+      return undefined;
+    }
+
+    if (isEmberArray(value)) {
+      return EmberArrayIterator.from(value);
+    }
+
+    if (hasForEach(value)) {
+      return ArrayIterator.fromForEachable(value);
+    }
+
     return undefined;
-  }
-
-  if (isEmberArray(value)) {
-    return EmberArrayIterator.from(value);
-  }
-
-  if (hasForEach(value)) {
-    return ArrayIterator.fromForEachable(value);
-  }
-
-  return undefined;
+  },
 });

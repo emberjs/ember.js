@@ -1,5 +1,8 @@
 import { and } from '@glimmer/runtime/lib/helpers/and';
 import { array } from '@glimmer/runtime/lib/helpers/array';
+import { concat } from '@glimmer/runtime/lib/helpers/concat';
+import { get } from '@glimmer/runtime/lib/helpers/get';
+import { default as uniqueId } from '@ember/-internals/glimmer/lib/helpers/unique-id';
 import element from '@ember/-internals/glimmer/lib/helpers/element';
 import { eq } from '@glimmer/runtime/lib/helpers/eq';
 import { fn } from '@glimmer/runtime/lib/helpers/fn';
@@ -55,6 +58,9 @@ export const keywords: Record<string, unknown> = {
   not,
   on,
   or,
+  concat,
+  get,
+  uniqueId,
   mut,
   readonly,
   unbound,

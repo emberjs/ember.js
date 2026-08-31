@@ -3,7 +3,7 @@
 */
 import { precompileJSON } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
-import { templateFactory } from '@glimmer/opcode-compiler';
+import { template } from '@ember/-internals/glimmer';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import { compileOptions } from 'ember-template-compiler';
 
@@ -36,5 +36,5 @@ export default function compile(
     isStrictMode: options.strictMode ?? false,
   };
 
-  return templateFactory(templateBlock);
+  return template(templateBlock);
 }

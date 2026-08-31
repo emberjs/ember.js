@@ -3,6 +3,7 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler/lib/compiler'
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import templateFactory from '@glimmer/opcode-compiler/lib/template';
+import { ensureBuiltins } from '@ember/-internals/glimmer/lib/builtins';
 import compileOptions, { keywords, RUNTIME_KEYWORDS_NAME } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 
@@ -238,6 +239,11 @@ export function template(
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
   const options = { strictMode: true, ...providedOptions };
+
+  if (!options.strictMode) {
+    // A loose template resolves built-ins by name at runtime.
+    ensureBuiltins();
+  }
 
   const evaluate = buildEvaluator(options);
   const normalizedOptions = compileOptions(options);

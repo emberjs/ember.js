@@ -23,6 +23,12 @@ export interface EnvironmentHooks {
   isEmberArray(value: unknown): boolean;
   objectAt(array: object, index: number): unknown;
   isProxy(value: unknown): boolean;
+  /**
+   * A chance to iterate a value the default iterator does not know, such
+   * as an `EmberArray`. `undefined` means "not mine"; `null` means "not
+   * iterable".
+   */
+  toIteratorExtension(value: unknown): IteratorDelegate | null | undefined;
 }
 
 export interface RunloopHooks {
@@ -90,22 +96,11 @@ export const hooks: EnvironmentHooks = {
   isEmberArray: () => false,
   objectAt: (array, index) => (array as unknown[])[index],
   isProxy: () => false,
+  toIteratorExtension: () => undefined,
 };
 
 export function registerEnvironmentHooks(overrides: Partial<EnvironmentHooks>): void {
   Object.assign(hooks, overrides);
-}
-
-export type IteratorExtension = (value: unknown) => IteratorDelegate | null | undefined;
-
-/**
- * Extra ways to iterate a value, tried before the defaults. A helper that
- * produces its own iterable wrapper registers one when it loads.
- */
-export const iteratorExtensions: IteratorExtension[] = [];
-
-export function extendToIterator(extension: IteratorExtension): void {
-  iteratorExtensions.push(extension);
 }
 
 type Queue = Array<() => void>;

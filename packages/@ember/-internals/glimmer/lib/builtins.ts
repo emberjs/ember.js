@@ -52,17 +52,31 @@ const MODIFIERS: Record<string, object> = {
   on,
 };
 
+let registered = false;
+
+/**
+ * Registers the classic resolver, so a renderer that started without one
+ * can resolve user helpers and components by name.
+ */
+export function ensureResolver(): void {
+  if (registered) return;
+  registered = true;
+
+  registerResolver(new ResolverImpl());
+}
+
 let filled = false;
 
 /**
- * Fills the resolver's built-in tables. Call it from any code path that
- * resolves helpers or modifiers by name.
+ * Fills the built-in name tables. Call it from any code path that runs a
+ * template compiled before importable opcodes, which resolves built-ins
+ * by name.
  */
 export function ensureBuiltins(): void {
   if (filled) return;
   filled = true;
 
+  ensureResolver();
   Object.assign(BUILTIN_HELPERS, HELPERS);
   Object.assign(BUILTIN_MODIFIERS, MODIFIERS);
-  registerResolver(new ResolverImpl());
 }

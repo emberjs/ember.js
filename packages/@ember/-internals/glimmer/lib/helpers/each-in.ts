@@ -9,9 +9,10 @@ import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { internalHelper } from './internal-helper';
-import { EachInWrapper } from '../utils/each-in-wrapper';
+import type { Nullable } from '@ember/-internals/utility-types';
+import type { IteratorDelegate } from '@glimmer/reference/lib/iterable';
 import { toEachInIterator } from '../utils/each-in-iterator';
-import { extendToIterator } from '../hooks';
+import { CUSTOM_ITERATE, type CustomIterable } from '../utils/iterator';
 
 /**
   The `{{#each}}` keyword loops over elements in a collection. It is an extension
@@ -301,11 +302,14 @@ import { extendToIterator } from '../hooks';
   @public
   @since 2.1.0
 */
-export { EachInWrapper };
+/** Marks a value so the iterator yields keys and values. */
+export class EachInWrapper implements CustomIterable {
+  constructor(public inner: unknown) {}
 
-extendToIterator((value) =>
-  value instanceof EachInWrapper ? toEachInIterator(value.inner) : undefined
-);
+  [CUSTOM_ITERATE](): Nullable<IteratorDelegate> {
+    return toEachInIterator(this.inner);
+  }
+}
 
 export default internalHelper(({ positional }: CapturedArguments) => {
   const inner = positional[0];

@@ -22,6 +22,7 @@ import type {
 import { artifacts } from '@glimmer/program/lib/helpers';
 import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
+import { LazyResolver } from './builtins-registry';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
@@ -29,7 +30,6 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 import { EmberEnvironmentDelegate } from './environment';
 import { runloop } from './hooks';
-import { LazyResolver } from './builtins-registry';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
