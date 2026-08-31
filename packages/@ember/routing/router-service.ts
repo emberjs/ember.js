@@ -2,7 +2,6 @@
  * @module @ember/routing/router-service
  */
 import { getOwner } from '@ember/-internals/owner';
-import Evented from '@ember/object/evented';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
@@ -14,6 +13,12 @@ import EmberRouter from '@ember/routing/router';
 import type { RouteInfo, RouteInfoWithAttributes } from './lib/route-info';
 import type { RouteArgs, RouteOptions } from './lib/utils';
 import { extractRouteArgs, resemblesURL, shallowEqual } from './lib/utils';
+import {
+  addListener,
+  hasListeners,
+  removeListener,
+  sendEvent,
+} from '@ember/-internals/metal/lib/events';
 
 export const ROUTER = Symbol('ROUTER');
 
@@ -25,6 +30,8 @@ function cleanURL(url: string, rootURL: string) {
   return url.substring(rootURL.length);
 }
 
+type EventName = 'routeWillChange' | 'routeDidChange';
+
 /**
    The Router service is the public API that provides access to the router.
 
@@ -35,7 +42,7 @@ function cleanURL(url: string, rootURL: string) {
    In this example, the Router service is injected into a component to initiate a transition
    to a dedicated route:
 
-   ```app/components/example.gjs
+   ```gjs {data-filename="app/components/example.gjs"}
    import Component from '@glimmer/component';
    import { action } from '@ember/object';
    import { service } from '@ember/service';
@@ -56,14 +63,108 @@ function cleanURL(url: string, rootURL: string) {
    @extends Service
    @class RouterService
  */
-interface RouterService extends Evented {
-  on(
-    eventName: 'routeWillChange' | 'routeDidChange',
-    callback: (transition: Transition) => void
-  ): this;
-}
-class RouterService extends Service.extend(Evented) {
+class RouterService extends Service {
   [ROUTER]?: EmberRouter;
+
+  /**
+    Subscribes to a named event with given function.
+
+    @method on
+    @param {String} name The name of the event
+    @param {Object} [target] The "this" binding for the callback
+    @param {Function|String} method A function or the name of a function to be called on `target`
+    @return this
+  */
+  on(name: 'routeWillChange' | 'routeDidChange', callback: (transition: Transition) => void): this;
+  on<Target>(
+    name: EventName,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  on(name: EventName, method: ((...args: any[]) => void) | string): this;
+  on(
+    name: EventName,
+    target: object | ((...args: any[]) => void) | string,
+    method?: string | ((...args: any[]) => void)
+  ) {
+    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
+    addListener(this, name, target as object | Function, method as any);
+    return this;
+  }
+
+  /**
+    Subscribes a function to a named event and then cancels the subscription
+    after the first time the event is triggered.
+
+    @method one
+    @param {String} name The name of the event
+    @param {Object} [target] The "this" binding for the callback
+    @param {Function|String} method A function or the name of a function to be called on `target`
+    @return this
+  */
+  one<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  one(name: string, method: string | ((...args: any[]) => void)): this;
+  one(
+    name: string,
+    target: object | string | ((...args: any[]) => void),
+    method?: string | Function
+  ) {
+    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
+    addListener(this, name, target as object | Function, method as any, true);
+    return this;
+  }
+
+  /**
+    Triggers a named event for the object.
+
+    @method trigger
+    @param {String} name The name of the event
+    @param {Object...} args Optional arguments to pass on
+    @return {boolean} true if listeners were notified, false otherwise
+  */
+  trigger(name: string, ...args: any[]): boolean {
+    return sendEvent(this, name, args);
+  }
+
+  /**
+    Cancels subscription for given name, target, and method.
+
+    @method off
+    @param {String} name The name of the event
+    @param {Object} target The target of the subscription
+    @param {Function|String} method The function or the name of a function of the subscription
+    @return this
+  */
+  off<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  off(name: string, method: string | ((...args: any[]) => void)): this;
+  off(
+    name: string,
+    target: object | string | ((...args: any[]) => void),
+    method?: string | Function
+  ) {
+    // SAFETY: The types are not actually correct, but it's not worth the effort to fix them, since we'll be deprecating this API soon.
+    removeListener(this, name, target as any, method as any);
+    return this;
+  }
+
+  /**
+    Checks to see if object has any subscriptions for named event.
+
+    @method has
+    @param {String} name The name of the event
+    @return {Boolean} does the object have a subscription for event
+   */
+  has(name: string) {
+    return hasListeners(this, name);
+  }
 
   get _router(): EmberRouter {
     let router = this[ROUTER];
@@ -99,7 +200,7 @@ class RouterService extends Service.extend(Evented) {
      specific model from a Component in the first action, and in the second we trigger
      a query-params only transition.
 
-     ```app/components/example.gjs
+     ```gjs {data-filename="app/components/example.gjs"}
      import Component from '@glimmer/component';
      import { action } from '@ember/object';
      import { service } from '@ember/service';
@@ -194,7 +295,7 @@ class RouterService extends Service.extend(Evented) {
     In this example, the URL for the `author.books` route for a given author
     is copied to the clipboard.
 
-    ```app/templates/application.gjs
+    ```gjs {data-filename="app/templates/application.gjs"}
     import CopyLink from '../components/copy-link';
       
     <template>
@@ -202,7 +303,7 @@ class RouterService extends Service.extend(Evented) {
     </template>
     ```
 
-    ```app/components/copy-link.gjs
+    ```gjs {data-filename="app/components/copy-link.gjs"}
     import Component from '@glimmer/component';
     import { service } from '@ember/service';
     import { action } from '@ember/object';
@@ -225,7 +326,7 @@ class RouterService extends Service.extend(Evented) {
     Just like with `transitionTo` and `replaceWith`, `urlFor` can also handle
     query parameters.
 
-    ```app/templates/application.gjs
+    ```gjs {data-filename="app/templates/application.gjs"}
     import CopyLink from '../components/copy-link';
 
     <template>
@@ -233,7 +334,7 @@ class RouterService extends Service.extend(Evented) {
     </template>
     ```
 
-    ```app/components/copy-link.gjs
+    ```gjs {data-filename="app/components/copy-link.gjs"}
     import Component from '@glimmer/component';
     import { service } from '@ember/service';
     import { action } from '@ember/object';
@@ -278,7 +379,7 @@ class RouterService extends Service.extend(Evented) {
 
      In the following example, `isActive` will return `true` if the current route is `/posts`.
 
-     ```app/components/posts.gjs
+     ```gjs {data-filename="app/components/posts.gjs"}
      import Component from '@glimmer/component';
      import { service } from '@ember/service';
 
@@ -294,7 +395,7 @@ class RouterService extends Service.extend(Evented) {
      The next example includes a dynamic segment, and will return `true` if the current route is `/posts/1`,
      assuming the post has an id of 1:
 
-     ```app/components/posts.gjs
+     ```gjs {data-filename="app/components/posts.gjs"}
      import Component from '@glimmer/component';
      import { service } from '@ember/service';
 
@@ -741,7 +842,7 @@ class RouterService extends Service.extend(Evented) {
     and doesn't change the active route).
 
     Usage example:
-    ```app/components/header.gjs
+    ```gjs {data-filename="app/components/header.gjs"}
       import Component from '@glimmer/component';
       import { service } from '@ember/service';
       import { notEmpty } from '@ember/object/computed';

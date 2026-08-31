@@ -2,6 +2,7 @@
   "name": "@glimmer/owner",
   "version": "0.93.4",
   "license": "MIT",
+  "private": true,
   "description": "Implementation for the owner in Glimmer apps",
   "repository": {
     "type": "git",

@@ -1,5 +1,5 @@
 /**
-@module ember
+@module @ember/helper
 */
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
@@ -21,7 +21,7 @@ import { internalHelper } from '../helpers/internal-helper';
 
   For example, the following template mounts the `ember-chat` engine:
 
-  ```app/templates/application.gjs
+  ```gjs {data-filename="app/templates/application.gjs"}
   {{mount "ember-chat"}}
   ```
 
@@ -55,7 +55,9 @@ import { internalHelper } from '../helpers/internal-helper';
   @param {String} name Name of the engine to mount.
   @param {Object} [model] Object that will be set as
                           the model of the engine.
-  @for Ember.Templates.helpers
+  @for Keywords
+  @static
+  @noimport
   @public
 */
 export const mountHelper = /*@__PURE__*/ internalHelper(

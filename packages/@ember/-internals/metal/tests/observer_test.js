@@ -11,7 +11,7 @@ import {
   set,
 } from '..';
 import { observer } from '@ember/object';
-import Mixin, { mixin } from '@ember/object/mixin';
+import { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 import { meta as metaFor } from '@ember/-internals/meta';
@@ -436,18 +436,18 @@ moduleFor(
     async ['@test local observers can be removed'](assert) {
       let barObserved = 0;
 
-      let MyMixin = Mixin.create({
-        foo1: observer('bar', function () {
-          barObserved++;
-        }),
+      obj = mixin(
+        {},
+        {
+          foo1: observer('bar', function () {
+            barObserved++;
+          }),
 
-        foo2: observer('bar', function () {
-          barObserved++;
-        }),
-      });
-
-      obj = {};
-      MyMixin.apply(obj);
+          foo2: observer('bar', function () {
+            barObserved++;
+          }),
+        }
+      );
 
       set(obj, 'bar', 'HI!');
       await runLoopSettled();

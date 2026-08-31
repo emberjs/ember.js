@@ -63,6 +63,7 @@ moduleFor(
       class Inner {}
       class Example {
         inner = new Inner();
+        klass = Inner;
       }
       let example = new Example();
 
@@ -85,6 +86,11 @@ moduleFor(
         set(example, 'inner.constructor.ohNo', 'polluted');
       }, /Property set failed: object in path "inner.constructor" could not be found./);
       assert.equal(Inner.ohNo, undefined, 'check for prototype pollution');
+
+      assert.throws(() => {
+        set(example, 'klass.prototype.ohNo', 'polluted');
+      }, /Property set failed: object in path "klass.prototype" could not be found./);
+      assert.equal(Inner.prototype.ohNo, undefined, 'check for prototype pollution');
     }
   }
 );

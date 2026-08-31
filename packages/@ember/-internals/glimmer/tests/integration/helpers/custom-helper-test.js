@@ -7,7 +7,8 @@ import {
   runTask,
   defineSimpleHelper,
 } from 'internal-test-helpers';
-import { Helper, Component } from '@ember/-internals/glimmer';
+import { Helper } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';

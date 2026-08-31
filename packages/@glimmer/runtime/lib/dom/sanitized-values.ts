@@ -19,20 +19,28 @@ function has(array: Array<string>, item: string): boolean {
 function checkURI(tagName: Nullable<string>, attribute: string): boolean {
   // SVG tagNames are case-preserved, so the SVG `<a>` element comes through as
   // lowercase `a` and never matches the uppercase `badTags` entries unless we
-  // normalize first.
-  return (tagName === null || has(badTags, tagName.toUpperCase())) && has(badAttributes, attribute);
+  // normalize first. The attribute name can likewise arrive camelCased (e.g.
+  // `formAction`) when the template author writes it that way and it resolves to
+  // a DOM property, so lower-case it before matching the lowercase lists.
+  return (
+    (tagName === null || has(badTags, tagName.toUpperCase())) &&
+    has(badAttributes, attribute.toLowerCase())
+  );
 }
 
 function checkDataURI(tagName: Nullable<string>, attribute: string): boolean {
   if (tagName === null) return false;
-  return has(badTagsForDataURI, tagName.toUpperCase()) && has(badAttributesForDataURI, attribute);
+  return (
+    has(badTagsForDataURI, tagName.toUpperCase()) &&
+    has(badAttributesForDataURI, attribute.toLowerCase())
+  );
 }
 
 function checkDataProtocol(tagName: Nullable<string>, attribute: string): boolean {
   if (tagName === null) return false;
   return (
     has(badTagsForDataProtocol, tagName.toUpperCase()) &&
-    has(badAttributesForDataProtocol, attribute)
+    has(badAttributesForDataProtocol, attribute.toLowerCase())
   );
 }
 

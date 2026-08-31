@@ -4,7 +4,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
+    "url": "git+https://github.com/emberjs/ember.js.git",
     "directory": "packages/@glimmer/syntax"
   },
   "type": "module",
@@ -35,16 +35,16 @@
     "test:publint": "publint"
   },
   "dependencies": {
-    "@glimmer/interfaces": "workspace:*",
-    "@glimmer/util": "workspace:*",
-    "@glimmer/wire-format": "workspace:*",
-    "@handlebars/parser": "workspace:*",
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",
     "@glimmer/env": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/util": "workspace:*",
+    "@glimmer/wire-format": "workspace:*",
+    "@handlebars/parser": "workspace:*",
     "eslint": "^9.20.1",
     "publint": "^0.3.2",
     "rollup": "^4.57.1",

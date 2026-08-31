@@ -1,6 +1,6 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { setComponentTemplate } from '@glimmer/manager';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { set } from '@ember/object';
 import { action } from '@ember/object';

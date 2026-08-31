@@ -19,8 +19,7 @@ Options:
      --no-headless            run Chrome without headless mode (opens visible browser windows)
 
 Notes:
-	- This script runs \`pnpm install\` and \`node ./bin/build-for-publishing.cjs\` in both repos.
-	- build-for-publishing updates files in-place; it will modify your working tree.
+	- This script runs \`pnpm install\`, \`pnpm build\`, and \`pnpm pack\` in both repos.
 	- Benchmark apps are built with \`vite build\` and served using \`vite preview\`.
 `);
   process.exit(0);

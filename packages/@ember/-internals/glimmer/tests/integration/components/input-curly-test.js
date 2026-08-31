@@ -1,7 +1,7 @@
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
 import { action, set } from '@ember/object';
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -250,7 +250,7 @@ moduleFor(
       this.owner.register(
         'component:my-input',
         setComponentTemplate(
-          precompileTemplate(`{{input type=this.inputType}}`),
+          precompileTemplate(`{{input type=@inputType}}`),
           class extends Component {}
         )
       );

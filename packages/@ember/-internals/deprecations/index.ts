@@ -119,6 +119,27 @@ export const DEPRECATIONS = {
     until: '7.5.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-comparable-mixin',
   }),
+  DEPRECATE_TARGET_ACTION_SUPPORT: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-target-action-support',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-target-action-support',
+  }),
+  DEPRECATE_EVENTED: deprecation({
+    id: 'deprecate-evented',
+    for: 'ember-source',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-evented',
+  }),
+  DEPRECATE_MIXINS: deprecation({
+    id: 'deprecate-mixins',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-mixins',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

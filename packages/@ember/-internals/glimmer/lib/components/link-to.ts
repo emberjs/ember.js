@@ -46,6 +46,10 @@ function isQueryParams(value: unknown): value is QueryParams {
 }
 
 /**
+ @module @ember/routing
+ */
+
+/**
   The `LinkTo` component renders a link to the supplied `routeName` passing an optionally
   supplied model to the route as its `model` context of the route. The block for `LinkTo`
   becomes the contents of the rendered element:
@@ -252,35 +256,11 @@ function isQueryParams(value: unknown): value is QueryParams {
   </a>
   ```
 
-  @for Ember.Templates.components
-  @method LinkTo
-  @public
-*/
-
-/**
-  @module @ember/routing
-*/
-
-/**
-  See [Ember.Templates.components.LinkTo](/ember/release/classes/Ember.Templates.components/methods/input?anchor=LinkTo).
-
-  @for Ember.Templates.helpers
-  @method link-to
-  @see {Ember.Templates.components.LinkTo}
-  @public
-**/
-
-/**
-  An opaque interface which can be imported and used in strict-mode
-  templates to call <LinkTo>.
-
-  See [Ember.Templates.components.LinkTo](/ember/release/classes/Ember.Templates.components/methods/input?anchor=LinkTo).
-
   @for @ember/routing
   @method LinkTo
-  @see {Ember.Templates.components.LinkTo}
+  @static
   @public
-**/
+*/
 
 class _LinkTo extends InternalComponent {
   static toString(): string {
@@ -469,9 +449,13 @@ class _LinkTo extends InternalComponent {
     if ('query' in this.args.named) {
       let query = this.named('query');
 
+      if (query === null || query === undefined) {
+        return EMPTY_QUERY_PARAMS;
+      }
+
       assert(
         'The `@query` argument to the <LinkTo> component must be an object.',
-        query !== null && typeof query === 'object'
+        typeof query === 'object'
       );
 
       return { ...query };

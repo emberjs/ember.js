@@ -145,7 +145,7 @@ export function _getPath(obj: unknown, path: string | string[], forSet?: boolean
       return undefined;
     }
 
-    if (forSet && (part === '__proto__' || part === 'constructor')) {
+    if (forSet && (part === '__proto__' || part === 'constructor' || part === 'prototype')) {
       return;
     }
 

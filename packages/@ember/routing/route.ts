@@ -2,6 +2,14 @@ import { privatize as P } from '@ember/-internals/container/lib/registry';
 import { addObserver, flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty } from '@ember/-internals/metal/lib/decorator';
+import { sendEvent } from '@ember/-internals/metal/lib/events';
+import {
+  eventedOn,
+  eventedOne,
+  eventedTrigger,
+  eventedOff,
+  eventedHas,
+} from '@ember/-internals/metal/lib/evented-methods';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
@@ -12,6 +20,7 @@ import getProperties from '@ember/-internals/metal/lib/get_properties';
 import setProperties from '@ember/-internals/metal/lib/set_properties';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
+import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import { A as emberA } from '@ember/array';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import typeOf from '@ember/utils/lib/type-of';
@@ -82,7 +91,7 @@ const RENDER_STATE = Symbol('render-state');
   @since 1.0.0
   @public
 */
-interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
+interface Route<Model = unknown> extends IRoute<Model>, ActionHandler {
   /**
     The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
@@ -256,7 +265,13 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) implements IRoute {
+class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implements IRoute {
+  static {
+    // The deprecated Evented mixin is no longer applied, but instances still
+    // provide its methods, so `Evented.detect` must keep returning true.
+    metaFor(this.prototype).addMixin(Evented);
+  }
+
   static isRouteFactory = true;
 
   // These properties will end up appearing in the public interface because we
@@ -773,8 +788,49 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   */
   exit(transition?: Transition) {
     this.deactivate(transition);
-    this.trigger('deactivate', transition);
+    sendEvent(this, 'deactivate', [transition]);
     this.teardownViews();
+  }
+
+  on<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  on(name: string, method: ((...args: any[]) => void) | string): this;
+  on(name: string, target: any, method?: any) {
+    eventedOn(this, name, target, method);
+    return this;
+  }
+
+  one<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  one(name: string, method: string | ((...args: any[]) => void)): this;
+  one(name: string, target: any, method?: any) {
+    eventedOne(this, name, target, method);
+    return this;
+  }
+
+  trigger(name: string, ...args: any[]): void {
+    eventedTrigger(this, name, args);
+  }
+
+  off<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  off(name: string, method: string | ((...args: any[]) => void)): this;
+  off(name: string, target: any, method?: any) {
+    eventedOff(this, name, target, method);
+    return this;
+  }
+
+  has(name: string): boolean {
+    return eventedHas(this, name);
   }
 
   /**
@@ -799,7 +855,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   enter(transition: Transition) {
     this[RENDER_STATE] = undefined;
     this.activate(transition);
-    this.trigger('activate', transition);
+    sendEvent(this, 'activate', [transition]);
   }
 
   /**
@@ -2114,6 +2170,17 @@ Route.reopen({
           let options = this._optionsForQueryParam(qp);
           assert('options exists', options && typeof options === 'object');
           if ((get(options, 'refreshModel') as boolean) && this._router.currentState) {
+            // `changed` is computed from router state query params, where default values
+            // may have been pruned during finalization. A later transition can reintroduce
+            // the same serialized value via sticky QP hydration or URL parsing, making the
+            // QP appear changed even though its finalized value is unchanged. Only refresh
+            // the model when the serialized value differs from the last finalized value.
+            if (change in changed) {
+              let newSerializedValue = (changed as Record<string, unknown>)[change];
+              if (newSerializedValue === qp.serializedValue) {
+                continue;
+              }
+            }
             this.refresh();
             break;
           }

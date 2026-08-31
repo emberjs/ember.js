@@ -3,8 +3,10 @@
 */
 import { get } from '@ember/-internals/metal/lib/property_get';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 /**
  @class ActionSupport
@@ -14,8 +16,13 @@ import { assert } from '@ember/debug';
 interface ActionSupport {
   send(actionName: string, ...args: unknown[]): void;
 }
-const ActionSupport = Mixin.create({
+const ActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
   send(actionName: string, ...args: unknown[]) {
+    deprecateUntil(
+      `Calling \`.send()\` on ${this} is deprecated. Invoke the corresponding method directly.`,
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT
+    );
+
     assert(
       `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
       !this.isDestroying && !this.isDestroyed

@@ -3,7 +3,7 @@ import { setComponentTemplate } from '@glimmer/manager';
 import { precompileTemplate } from '@ember/template-compilation';
 import { template } from '@ember/template-compiler/runtime';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 
 import { set, computed } from '@ember/object';
 
@@ -133,8 +133,8 @@ moduleFor(
     ['@test should yield hash of internal properties']() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           fooBarInstance = this;
           this.model = { firstName: 'Chad' };
         }
@@ -168,8 +168,8 @@ moduleFor(
     ['@test should yield hash of internal and external properties']() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           fooBarInstance = this;
           this.model = { firstName: 'Chad' };
         }
@@ -178,9 +178,7 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate(
-            `{{yield (hash firstName=this.model.firstName lastName=this.lastName)}}`
-          ),
+          precompileTemplate(`{{yield (hash firstName=this.model.firstName lastName=@lastName)}}`),
           FooBarComponent
         )
       );
@@ -215,9 +213,9 @@ moduleFor(
 
     ['@test works with computeds']() {
       let FooBarComponent = class extends Component {
-        @computed('hash.firstName', 'hash.lastName')
+        @computed('args.hash.firstName', 'args.hash.lastName')
         get fullName() {
-          return `${this.hash.firstName} ${this.hash.lastName}`;
+          return `${this.args.hash.firstName} ${this.args.hash.lastName}`;
         }
       };
 

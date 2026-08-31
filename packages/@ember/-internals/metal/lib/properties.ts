@@ -95,17 +95,10 @@ export function defineDecorator(
   desc: ExtendedMethodDecorator,
   meta: Meta
 ) {
-  let propertyDesc;
-
-  if (DEBUG) {
-    propertyDesc = desc(obj, keyName, undefined, meta, true);
-  } else {
-    propertyDesc = desc(obj, keyName, undefined, meta);
-  }
+  let propertyDesc = desc(obj, keyName, undefined, meta, true);
 
   Object.defineProperty(obj, keyName, propertyDesc as PropertyDescriptor);
 
-  // pass the decorator function forward for backwards compat
   return desc;
 }
 

@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { notifyPropertyChange, on } from '@ember/-internals/metal';
+import { notifyPropertyChange } from '@ember/-internals/metal';
 import { get, set, computed } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
@@ -8,7 +8,8 @@ import { RSVP } from '@ember/-internals/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component, htmlSafe } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent, htmlSafe } from '../../utils/helpers';
 import {
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,
@@ -506,7 +507,7 @@ class EachTest extends AbstractEachTest {
   [`@test updating and setting within #each`]() {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
-    let FooBarComponent = class extends Component {
+    let FooBarComponent = class extends EmberComponent {
       init() {
         super.init(...arguments);
         this.isEven = true;
@@ -1115,9 +1116,11 @@ moduleFor(
     createList(items) {
       let wrapped = emberA(items);
       let proxy = ArrayProxy.extend({
-        setup: on('init', function () {
+        init: function () {
+          this._super(...arguments);
+
           this.set('content', emberA(wrapped));
-        }),
+        },
       }).create();
 
       return { list: proxy, delegate: wrapped };

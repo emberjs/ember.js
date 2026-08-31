@@ -5,7 +5,8 @@ import { isEmpty } from '@ember/utils';
 import { action } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -34,7 +35,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['name'];
           }
         )
@@ -55,7 +56,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = 'params';
           }
         )
@@ -93,7 +94,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = 'params';
           }
         )
@@ -133,7 +134,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = 'params';
           }
         )
@@ -173,7 +174,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = 'params';
           }
         )
@@ -213,7 +214,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['name'];
           }
         )
@@ -265,7 +266,7 @@ moduleFor(
     ['@test updates when curried hash argument is bound']() {
       this.owner.register(
         'component:-looked-up',
-        setComponentTemplate(precompileTemplate('{{this.greeting}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{@greeting}}'), class extends Component {})
       );
 
       this.render(`{{component (component "-looked-up" greeting=this.model.greeting)}}`, {
@@ -292,7 +293,7 @@ moduleFor(
     ['@test updates when curried hash arguments is bound in block form']() {
       this.owner.register(
         'component:-looked-up',
-        setComponentTemplate(precompileTemplate('{{this.greeting}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{@greeting}}'), class extends Component {})
       );
 
       this.render(
@@ -327,7 +328,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -349,7 +350,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.greeting}} {{this.name}} {{this.age}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['greeting', 'name', 'age'];
           }
         )
@@ -368,7 +369,7 @@ moduleFor(
       this.owner.register(
         'component:-looked-up',
         setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}} {{this.age}}'),
+          precompileTemplate('{{@greeting}} {{@name}} {{@age}}'),
           class extends Component {}
         )
       );
@@ -407,7 +408,7 @@ moduleFor(
         'component:-inner-component',
         setComponentTemplate(
           precompileTemplate('{{component this.comp "Inner"}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['comp'];
           }
         )
@@ -417,7 +418,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -462,7 +463,7 @@ moduleFor(
         'component:-inner-component',
         setComponentTemplate(
           precompileTemplate('{{component this.comp name="Inner"}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['comp'];
           }
         )
@@ -470,10 +471,7 @@ moduleFor(
 
       this.owner.register(
         'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends Component {}
-        )
+        setComponentTemplate(precompileTemplate('{{@name}} {{@age}}'), class extends Component {})
       );
 
       this.render(
@@ -517,7 +515,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['name'];
           }
         )
@@ -547,7 +545,7 @@ moduleFor(
     ['@test component with dynamic component name resolving to undefined, then an existing component']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello {{@name}}'), class extends Component {})
       );
 
       this.render('{{component (component this.componentName name=this.name)}}', {
@@ -573,7 +571,7 @@ moduleFor(
     ['@test component with dynamic component name resolving to a component, then undefined']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello {{@name}}'), class extends Component {})
       );
 
       this.render('{{component (component this.componentName name=this.name)}}', {
@@ -599,7 +597,7 @@ moduleFor(
     ['@test component with dynamic component name resolving to null, then an existing component']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello {{@name}}'), class extends Component {})
       );
 
       this.render('{{component (component this.componentName name=this.name)}}', {
@@ -625,7 +623,7 @@ moduleFor(
     ['@test component with dynamic component name resolving to a component, then null']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello {{this.name}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello {{@name}}'), class extends Component {})
       );
 
       this.render('{{component (component this.componentName name=this.name)}}', {
@@ -695,10 +693,7 @@ moduleFor(
       let expectedText = 'Hodi';
       this.owner.register(
         'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.expectedText}}'),
-          class extends Component {}
-        )
+        setComponentTemplate(precompileTemplate('{{@expectedText}}'), class extends Component {})
       );
 
       this.render(
@@ -732,10 +727,7 @@ moduleFor(
       let expectedText = 'Hodi';
       this.owner.register(
         'component:-looked-up',
-        setComponentTemplate(
-          precompileTemplate('{{this.expectedText}}'),
-          class extends Component {}
-        )
+        setComponentTemplate(precompileTemplate('{{@expectedText}}'), class extends Component {})
       );
 
       this.render(
@@ -770,7 +762,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.params}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = 'params';
           }
         )
@@ -813,7 +805,7 @@ moduleFor(
 
       this.owner.register(
         'component:my-component',
-        class extends Component {
+        class extends EmberComponent {
           static positionalParams = ['value'];
 
           didReceiveAttrs() {
@@ -838,7 +830,7 @@ moduleFor(
         'component:my-nested-component',
         setComponentTemplate(
           precompileTemplate('<span id="nested-prop">{{this.myProp}}</span>'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['my-parent-attr'];
 
             didReceiveAttrs() {
@@ -852,7 +844,7 @@ moduleFor(
         'component:my-component',
         setComponentTemplate(
           precompileTemplate(
-            '{{yield (hash my-nested-component=(component "my-nested-component" my-parent-attr=this.my-attr))}}'
+            '{{yield (hash my-nested-component=(component "my-nested-component" my-parent-attr=@my-attr))}}'
           ),
           class extends Component {}
         )
@@ -864,7 +856,7 @@ moduleFor(
           precompileTemplate(
             '{{#my-component my-attr=this.myProp as |api|}}{{api.my-nested-component}}{{/my-component}}<br><button onclick={{this.changeValue}}>Change value</button>'
           ),
-          class extends Component {
+          class extends EmberComponent {
             @action
             changeValue() {
               this.incrementProperty('myProp');
@@ -911,7 +903,7 @@ moduleFor(
 
       this.owner.register(
         'component:select-box-option',
-        setComponentTemplate(precompileTemplate('{{this.label}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{@label}}'), class extends Component {})
       );
 
       this.render(strip`
@@ -936,7 +928,7 @@ moduleFor(
           precompileTemplate(
             '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
           ),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = ['val'];
           }
         )
@@ -971,7 +963,7 @@ moduleFor(
     ['@test tagless blockless components render'](assert) {
       this.owner.register(
         'component:my-comp',
-        class extends Component {
+        class extends EmberComponent {
           tagName = '';
         }
       );
@@ -990,7 +982,7 @@ moduleFor(
           precompileTemplate(
             'message: {{this.message}}{{inner-component message=this.message}}<button onclick={{this.change}} />'
           ),
-          class extends Component {
+          class extends EmberComponent {
             message = 'hello';
             @action
             change() {
@@ -1002,7 +994,7 @@ moduleFor(
 
       this.owner.register(
         'component:inner-component',
-        class extends Component {
+        class extends EmberComponent {
           tagName = '';
         }
       );
@@ -1031,15 +1023,14 @@ moduleFor(
       this.owner.register(
         'component:my-comp',
         setComponentTemplate(
-          precompileTemplate('{{if this.isOpen "open" "closed"}}'),
+          precompileTemplate('{{if @isOpen "open" "closed"}}'),
           class extends Component {
-            init() {
-              super.init();
+            constructor(owner, args) {
+              super(owner, args);
               previousInstance = instance;
               instance = this;
               initCount++;
             }
-            isOpen = undefined;
           }
         )
       );
@@ -1098,15 +1089,14 @@ moduleFor(
       this.owner.register(
         'component:my-comp',
         setComponentTemplate(
-          precompileTemplate('{{if this.isOpen "open" "closed"}}'),
+          precompileTemplate('{{if @isOpen "open" "closed"}}'),
           class extends Component {
-            init() {
-              super.init();
+            constructor(owner, args) {
+              super(owner, args);
               previousInstance = instance;
               instance = this;
               initCount++;
             }
-            isOpen = undefined;
           }
         )
       );
@@ -1166,15 +1156,14 @@ moduleFor(
       this.owner.register(
         'component:my-comp',
         setComponentTemplate(
-          precompileTemplate('my-comp: {{if this.isOpen "open" "closed"}}'),
+          precompileTemplate('my-comp: {{if @isOpen "open" "closed"}}'),
           class extends Component {
-            init() {
-              super.init();
+            constructor(owner, args) {
+              super(owner, args);
               previousInstance = instance;
               instance = this;
               initCount++;
             }
-            isOpen = undefined;
           }
         )
       );
@@ -1182,15 +1171,14 @@ moduleFor(
       this.owner.register(
         'component:your-comp',
         setComponentTemplate(
-          precompileTemplate('your-comp: {{if this.isOpen "open" "closed"}}'),
+          precompileTemplate('your-comp: {{if @isOpen "open" "closed"}}'),
           class extends Component {
-            init() {
-              super.init();
+            constructor(owner, args) {
+              super(owner, args);
               previousInstance = instance;
               instance = this;
               initCount++;
             }
-            isOpen = undefined;
           }
         )
       );
@@ -1264,7 +1252,7 @@ moduleFor(
         'component:my-link',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends Component {
+          class extends EmberComponent {
             positionalParams = 'params';
           }
         )
@@ -1306,7 +1294,7 @@ moduleFor(
         'component:my-link',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends Component {
+          class extends EmberComponent {
             positionalParams = 'params';
           }
         )
@@ -1425,7 +1413,7 @@ moduleFor(
           precompileTemplate(
             'foo-bar component:{{#each this.params as |param|}} {{param}}{{/each}}'
           ),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = 'params';
           }
         )
@@ -1469,7 +1457,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('inner:{{#each this.params as |param|}} {{param}}{{/each}}'),
-          class extends Component {
+          class extends EmberComponent {
             static positionalParams = 'params';
           }
         )
@@ -1623,7 +1611,7 @@ class MutableParamTestGenerator {
             precompileTemplate(
               '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
             ),
-            class extends Component {
+            class extends EmberComponent {
               static positionalParams = ['val'];
             }
           )
@@ -1666,7 +1654,7 @@ applyMixins(
           'component:my-comp',
           setComponentTemplate(
             precompileTemplate('{{component this.components.comp}}'),
-            class extends Component {
+            class extends EmberComponent {
               static positionalParams = ['components'];
             }
           )
@@ -1682,7 +1670,7 @@ applyMixins(
         this.owner.register(
           'component:my-comp',
           setComponentTemplate(
-            precompileTemplate('{{component this.component}}'),
+            precompileTemplate('{{component @component}}'),
             class extends Component {}
           )
         );
@@ -1697,7 +1685,7 @@ applyMixins(
         this.owner.register(
           'component:my-comp',
           setComponentTemplate(
-            precompileTemplate('{{component this.components.button}}'),
+            precompileTemplate('{{component @components.button}}'),
             class extends Component {}
           )
         );

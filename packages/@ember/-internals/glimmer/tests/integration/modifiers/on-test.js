@@ -5,7 +5,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 
 import { DEBUG } from '@glimmer/env';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 
 moduleFor(
   '{{on}} Modifier',
@@ -269,6 +269,33 @@ moduleFor(
         assert.expect(0);
       }
     }
+
+    '@test it does not clobber a static spellcheck attribute, before or after the modifier (GH#18758)'(
+      assert
+    ) {
+      this.render(
+        '<input spellcheck="false" {{on "click" this.callback}} /><input {{on "click" this.callback}} spellcheck="false" />',
+        {
+          callback() {},
+        }
+      );
+
+      let [attrFirst, attrLast] = this.element.querySelectorAll('input');
+
+      assert.strictEqual(
+        attrFirst.getAttribute('spellcheck'),
+        'false',
+        'attribute before modifier renders as authored'
+      );
+      assert.strictEqual(
+        attrLast.getAttribute('spellcheck'),
+        'false',
+        'attribute after modifier renders as authored'
+      );
+
+      this.assertStableRerender();
+      this.assertCounts({ adds: 2, removes: 0 });
+    }
   }
 );
 
@@ -309,7 +336,6 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate(`<button {{on 'click' this.fire}}>Fire!</button>`),
           class extends Component {
-            tagName = '';
             fire() {
               assert.ok(false);
             }

@@ -2,6 +2,12 @@ import { DEBUG } from '@glimmer/env';
 import type { Destroyable, Destructor } from '@glimmer/interfaces';
 import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
+import {
+  DESTROYABLE_META_KEY,
+  type HasDestroyableMetaSlot,
+} from '@glimmer/util/lib/destroyable-key';
+
+export { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 
 const LIVE_STATE = 0;
 const DESTROYING_STATE = 1;
@@ -78,22 +84,45 @@ function remove<T extends object>(collection: OneOrMany<T>, item: T, message: st
   }
 }
 
+function createMeta<T extends Destroyable>(destroyable: T): DestroyableMeta<T> {
+  let meta: DestroyableMeta<Destroyable> = {
+    parents: null,
+    children: null,
+    eagerDestructors: null,
+    destructors: null,
+    state: LIVE_STATE,
+  };
+
+  if (DEBUG) {
+    meta.source = destroyable;
+  }
+
+  return meta as unknown as DestroyableMeta<T>;
+}
+
 function getDestroyableMeta<T extends Destroyable>(destroyable: T): DestroyableMeta<T> {
+  let slotted = destroyable as HasDestroyableMetaSlot;
+  let own = slotted[DESTROYABLE_META_KEY];
+
+  if (own !== undefined) return own as DestroyableMeta<T>;
+
+  // `in` rather than a write, so this stays a read for everything else.
+  if (DESTROYABLE_META_KEY in slotted) {
+    let meta = createMeta(destroyable);
+
+    slotted[DESTROYABLE_META_KEY] = meta;
+
+    if (DEBUG && DESTROYABLE_META instanceof Map) {
+      DESTROYABLE_META.set(destroyable, meta as unknown as DestroyableMeta<Destroyable>);
+    }
+
+    return meta;
+  }
+
   let meta = DESTROYABLE_META.get(destroyable);
 
   if (meta === undefined) {
-    meta = {
-      parents: null,
-      children: null,
-      eagerDestructors: null,
-      destructors: null,
-      state: LIVE_STATE,
-    };
-
-    if (DEBUG) {
-      meta.source = destroyable;
-    }
-
+    meta = createMeta(destroyable) as unknown as DestroyableMeta<Destroyable>;
     DESTROYABLE_META.set(destroyable, meta);
   }
 
@@ -209,20 +238,33 @@ export function destroyChildren(destroyable: Destroyable) {
   iterate(children, destroy);
 }
 
+/** Meta if there is any, without creating it. Mirrors `getDestroyableMeta`. */
+function peekDestroyableMeta(destroyable: Destroyable): DestroyableMeta<Destroyable> | undefined {
+  let slotted = destroyable as HasDestroyableMetaSlot;
+  let own = slotted[DESTROYABLE_META_KEY];
+
+  if (own !== undefined) return own as DestroyableMeta<Destroyable>;
+
+  // An empty slot is proof there is no meta, so the map can be skipped.
+  if (DESTROYABLE_META_KEY in slotted) return undefined;
+
+  return DESTROYABLE_META.get(destroyable);
+}
+
 export function _hasDestroyableChildren(destroyable: Destroyable) {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = peekDestroyableMeta(destroyable);
 
   return meta === undefined ? false : meta.children !== null;
 }
 
 export function isDestroying(destroyable: Destroyable) {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = peekDestroyableMeta(destroyable);
 
   return meta === undefined ? false : meta.state >= DESTROYING_STATE;
 }
 
 export function isDestroyed(destroyable: Destroyable) {
-  let meta = DESTROYABLE_META.get(destroyable);
+  let meta = peekDestroyableMeta(destroyable);
 
   return meta === undefined ? false : meta.state >= DESTROYED_STATE;
 }

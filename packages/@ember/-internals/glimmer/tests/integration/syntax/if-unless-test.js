@@ -5,7 +5,7 @@ import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
 
 moduleFor(
@@ -46,7 +46,7 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('{{this.number}}'),
+          precompileTemplate('{{@number}}'),
           class extends Component {
             willDestroy() {
               super.willDestroy();

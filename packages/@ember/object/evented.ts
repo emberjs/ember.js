@@ -1,10 +1,12 @@
 import {
-  addListener,
-  removeListener,
-  hasListeners,
-  sendEvent,
-} from '@ember/-internals/metal/lib/events';
+  eventedOn,
+  eventedOne,
+  eventedTrigger,
+  eventedOff,
+  eventedHas,
+} from '@ember/-internals/metal/lib/evented-methods';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 
 export { on } from '@ember/-internals/metal/lib/events';
 
@@ -51,6 +53,7 @@ export { on } from '@ember/-internals/metal/lib/events';
 
   @class Evented
   @public
+  @deprecated Use native JavaScript events or a dedicated event library instead.
  */
 interface Evented {
   /**
@@ -68,6 +71,7 @@ interface Evented {
     parameter is used the callback method becomes the third argument.
 
     @method on
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @param {Object} [target] The "this" binding for the callback
     @param {Function|String} method A function or the name of a function to be called on `target`
@@ -90,6 +94,7 @@ interface Evented {
     becomes the third argument.
 
     @method one
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @param {Object} [target] The "this" binding for the callback
     @param {Function|String} method A function or the name of a function to be called on `target`
@@ -118,6 +123,7 @@ interface Evented {
     ```
 
     @method trigger
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @param {Object...} args Optional arguments to pass on
     @public
@@ -127,6 +133,7 @@ interface Evented {
     Cancels subscription for given name, target, and method.
 
     @method off
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @param {Object} target The target of the subscription
     @param {Function|String} method The function or the name of a function of the subscription
@@ -143,34 +150,35 @@ interface Evented {
     Checks to see if object has any subscriptions for named event.
 
     @method has
+    @deprecated Use native JavaScript events or a dedicated event library instead.
     @param {String} name The name of the event
     @return {Boolean} does the object have a subscription for event
     @public
    */
   has(name: string): boolean;
 }
-const Evented = Mixin.create({
+const Evented = Mixin[INTERNAL_MIXIN_CREATE]({
   on(name: string, target: object, method?: string | Function) {
-    addListener(this, name, target, method);
+    eventedOn(this, name, target, method);
     return this;
   },
 
   one(name: string, target: object, method?: string | Function) {
-    addListener(this, name, target, method, true);
+    eventedOne(this, name, target, method);
     return this;
   },
 
   trigger(name: string, ...args: any[]) {
-    sendEvent(this, name, args);
+    eventedTrigger(this, name, args);
   },
 
   off(name: string, target: object, method?: string | Function) {
-    removeListener(this, name, target, method);
+    eventedOff(this, name, target, method);
     return this;
   },
 
   has(name: string) {
-    return hasListeners(this, name);
+    return eventedHas(this, name);
   },
 });
 

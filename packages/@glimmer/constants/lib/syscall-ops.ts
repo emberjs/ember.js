@@ -49,7 +49,6 @@ import type {
   VmInvokeYield,
   VmIterate,
   VmJumpEq,
-  VmJumpIf,
   VmJumpUnless,
   VmLoad,
   VmLog,
@@ -60,7 +59,6 @@ import type {
   VmOpenDynamicElement,
   VmOpenElement,
   VmPop,
-  VmPopArgs,
   VmPopDynamicScope,
   VmPopRemoteElement,
   VmPopScope,
@@ -144,7 +142,6 @@ export const VM_COMPILE_BLOCK_OP = 61 satisfies VmCompileBlock;
 export const VM_PUSH_BLOCK_SCOPE_OP = 62 satisfies VmPushBlockScope;
 export const VM_PUSH_SYMBOL_TABLE_OP = 63 satisfies VmPushSymbolTable;
 export const VM_INVOKE_YIELD_OP = 64 satisfies VmInvokeYield;
-export const VM_JUMP_IF_OP = 65 satisfies VmJumpIf;
 export const VM_JUMP_UNLESS_OP = 66 satisfies VmJumpUnless;
 export const VM_JUMP_EQ_OP = 67 satisfies VmJumpEq;
 export const VM_ASSERT_SAME_OP = 68 satisfies VmAssertSame;
@@ -163,7 +160,6 @@ export const VM_RESOLVE_DYNAMIC_COMPONENT_OP = 80 satisfies VmResolveDynamicComp
 export const VM_RESOLVE_CURRIED_COMPONENT_OP = 81 satisfies VmResolveCurriedComponent;
 export const VM_PUSH_ARGS_OP = 82 satisfies VmPushArgs;
 export const VM_PUSH_EMPTY_ARGS_OP = 83 satisfies VmPushEmptyArgs;
-export const VM_POP_ARGS_OP = 84 satisfies VmPopArgs;
 export const VM_PREPARE_ARGS_OP = 85 satisfies VmPrepareArgs;
 export const VM_CAPTURE_ARGS_OP = 86 satisfies VmCaptureArgs;
 export const VM_CREATE_COMPONENT_OP = 87 satisfies VmCreateComponent;
