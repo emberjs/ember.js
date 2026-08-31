@@ -13,9 +13,7 @@ import type {
  * resolve by name (loose mode templates, JSON blocks, the classic
  * renderer) call that, so a strict app never loads the helpers behind it.
  */
-export const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {};
 export const BUILTIN_HELPERS: Record<string, object> = {};
-export const BUILTIN_KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {};
 export const BUILTIN_MODIFIERS: Record<string, object> = {};
 
 export type { HelperDefinitionState };
@@ -46,13 +44,5 @@ export class LazyResolver implements ClassicResolver<InternalOwner> {
 
   lookupComponent(name: string, owner: InternalOwner): Nullable<ResolvedComponentDefinition> {
     return resolver?.lookupComponent?.(name, owner) ?? null;
-  }
-
-  lookupBuiltInHelper(name: string): Nullable<HelperDefinitionState> {
-    return resolver?.lookupBuiltInHelper?.(name) ?? null;
-  }
-
-  lookupBuiltInModifier(name: string): Nullable<ModifierDefinitionState> {
-    return resolver?.lookupBuiltInModifier?.(name) ?? null;
   }
 }

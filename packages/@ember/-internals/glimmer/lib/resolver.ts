@@ -24,12 +24,7 @@ import {
 } from '@glimmer/runtime/lib/component/template-only';
 import { isCurlyManager } from './component-managers/curly-brand';
 import { isClassicHelper } from './helper-brand';
-import {
-  BUILTIN_HELPERS,
-  BUILTIN_KEYWORD_HELPERS,
-  BUILTIN_KEYWORD_MODIFIERS,
-  BUILTIN_MODIFIERS,
-} from './builtins-registry';
+import { BUILTIN_HELPERS, BUILTIN_MODIFIERS } from './builtins-registry';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -135,16 +130,6 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
     return definition;
   }
 
-  lookupBuiltInHelper(name: string): HelperDefinitionState | null {
-    assert(
-      `The \`{{${name.slice(1)}}}\` keyword requires the router, which is not available here. ` +
-        `It is only supported in templates rendered by an Ember application (e.g. not via \`renderComponent\`).`,
-      name !== '-outlet' && name !== '-mount'
-    );
-
-    return BUILTIN_KEYWORD_HELPERS[name] ?? null;
-  }
-
   lookupModifier(name: string, owner: InternalOwner): Nullable<ModifierDefinitionState> {
     let builtin = BUILTIN_MODIFIERS[name];
 
@@ -159,14 +144,6 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
     }
 
     return modifier.class || null;
-  }
-
-  lookupBuiltInModifier<K extends keyof typeof BUILTIN_KEYWORD_MODIFIERS>(
-    name: K
-  ): (typeof BUILTIN_KEYWORD_MODIFIERS)[K];
-  lookupBuiltInModifier(name: string): null;
-  lookupBuiltInModifier(name: string): ModifierDefinitionState | null {
-    return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
   }
 
   lookupComponent(name: string, owner: InternalOwner): ResolvedComponentDefinition | null {

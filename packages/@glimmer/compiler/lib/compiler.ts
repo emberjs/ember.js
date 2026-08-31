@@ -11,7 +11,7 @@ import type {
 } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 
-import { type LexicalKeyword, type OpImport, WireFormatModulePrinter } from './wire-format-module';
+import { type ModuleExport, type OpImport, WireFormatModulePrinter } from './wire-format-module';
 import * as src from '@glimmer/syntax/lib/source/api';
 import { normalize } from '@glimmer/syntax/lib/v2/normalize';
 import { LOCAL_LOGGER } from '@glimmer/util';
@@ -166,7 +166,7 @@ export interface PrecompiledModule {
   /** Identifiers in `expression` that must be bound to imports. */
   imports: OpImport[];
   /** The template factory the build tool must wrap `expression` in. */
-  factory: LexicalKeyword;
+  factory: ModuleExport;
   /** A JavaScript expression that evaluates to a `SerializedTemplateWithOps`. */
   expression: string;
 }
@@ -176,24 +176,16 @@ export interface PrecompiledModule {
  * format opcodes by identifier instead of a JSON string. The caller adds an
  * import for each entry of `imports` and renames the identifier as needed.
  */
-export interface PrecompileModuleOptions extends PrecompileOptions {
-  /** Strict keywords to bind to imports instead of a runtime resolver. */
-  lexicalKeywords?: Record<string, LexicalKeyword>;
-}
-
 export function precompileModule(
   source: string,
-  options: PrecompileModuleOptions | PrecompileOptionsWithLexicalScope = defaultOptions
+  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
 ): PrecompiledModule {
   const [block, usedLocals] = precompileJSON(source, options);
 
   const moduleName = options.meta?.moduleName;
   const idFn = options.id || defaultId;
   const blockJSON = JSON.stringify(block);
-  const printer = new WireFormatModulePrinter({
-    lexicalKeywords: (options as PrecompileModuleOptions).lexicalKeywords,
-    scopeOffset: usedLocals.length,
-  });
+  const printer = new WireFormatModulePrinter();
   const blockSource = printer.block(block);
 
   const fields = [
@@ -204,10 +196,6 @@ export function precompileModule(
   ];
 
   const scopeEntries = usedLocals.map((name) => (name === 'this' ? `"this":this` : name));
-
-  for (const { name, local } of printer.keywordSlots) {
-    scopeEntries.push(`${JSON.stringify(name)}:${local}`);
-  }
 
   if (scopeEntries.length > 0) {
     fields.push(`scope:()=>({${scopeEntries.join(',')}})`);

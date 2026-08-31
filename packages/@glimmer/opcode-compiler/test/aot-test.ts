@@ -18,8 +18,6 @@ import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
 
 QUnit.module('@glimmer/opcode-compiler - precompileAot');
 
-const KEYWORDS = { mut: { keyword: 'mut' } };
-
 const MODULES: Record<string, Record<string, unknown>> = {
   '@glimmer/opcode-compiler/lib/aot/template': aotTemplate,
   '@glimmer/opcode-compiler/lib/opcode-builder/stdlib-data': stdlibData,
@@ -29,15 +27,12 @@ const MODULES: Record<string, Record<string, unknown>> = {
   '@glimmer/runtime/lib/compiled/opcodes/expressions': expressionOps,
   '@glimmer/runtime/lib/compiled/opcodes/lists': listOps,
   '@glimmer/runtime/lib/compiled/opcodes/vm': vmOps,
-  '@test/keywords': KEYWORDS,
 };
 
 function evaluate(source: string, scope: Record<string, unknown> = {}) {
   let { imports, expression, factory } = precompileAot(source, {
     strictMode: true,
     lexicalScope: (name: string) => name in scope,
-    keywords: ['mut'],
-    lexicalKeywords: { mut: { module: '@test/keywords', name: 'mut' } },
   });
 
   let names = [...imports.map((imp) => imp.local), ...Object.keys(scope)];
@@ -100,9 +95,10 @@ QUnit.test('nested blocks become block constants that load before their parent',
   assert.strictEqual(typeof handle, 'number');
 });
 
-QUnit.test('lexical scope and strict keywords are scope entries', (assert) => {
+QUnit.test('lexical scope values are scope entries', (assert) => {
   let Foo = {};
-  let { aot, imports } = evaluate('<Foo @x={{mut this.y}} />', { Foo });
+  let helper = () => 1;
+  let { aot } = evaluate('<Foo @x={{helper this.y}} />', { Foo, helper });
   let constants = aot.block[3];
   let scope = aot.scope?.() ?? {};
 
@@ -114,12 +110,8 @@ QUnit.test('lexical scope and strict keywords are scope entries', (assert) => {
     ],
     'the scope entries are referenced by position'
   );
-  assert.strictEqual(scope['Foo'], Foo, 'the scope value is in scope');
-  assert.strictEqual(scope['mut'], KEYWORDS.mut, 'the keyword is bound to its import');
-  assert.true(
-    imports.some((imp) => imp.module === '@test/keywords' && imp.name === 'mut'),
-    'the keyword import is listed'
-  );
+  assert.strictEqual(scope['Foo'], Foo, 'the component is in scope');
+  assert.strictEqual(scope['helper'], helper, 'the helper is in scope');
 });
 
 QUnit.test('a scope value that is an array stays one constant', (assert) => {

@@ -1,6 +1,58 @@
 import type * as AST from '@glimmer/syntax/lib/v1/api';
 import type { EmberASTPluginEnvironment } from '../types';
 
+/** The module that exports the implementation behind each keyword. */
+export const KEYWORDS_MODULE = '@ember/-internals/template-keywords';
+
+/**
+ * Points a path at a keyword's implementation. With a build tool, the
+ * path becomes an import binding; with the runtime compiler, it becomes an
+ * entry of the runtime keywords object. Otherwise the name stays as it is
+ * and a resolver looks it up.
+ */
+export function bindKeyword(
+  env: EmberASTPluginEnvironment,
+  node: AST.PathExpression,
+  exportName: string,
+  moduleSpecifier: string = KEYWORDS_MODULE
+): void {
+  if (env.meta?.jsutils) {
+    node.original = env.meta.jsutils.bindImport(moduleSpecifier, exportName, node, {
+      nameHint: `__keyword__${exportName}`,
+    });
+  } else if (env.meta?.emberRuntime) {
+    node.original = env.meta.emberRuntime.lookupKeyword(exportName);
+  }
+}
+
+/**
+ * A path for an internal keyword that a transform inserts, such as
+ * `-track-array`. A strict template binds the implementation directly. A
+ * loose template keeps the name for the resolver.
+ */
+export function keywordPath(
+  env: EmberASTPluginEnvironment,
+  keyword: string,
+  exportName: string,
+  loc?: AST.SourceLocation
+): AST.PathExpression {
+  let path = env.syntax.builders.path(keyword, loc);
+
+  if (env.strictMode) {
+    bindKeyword(env, path, exportName);
+  }
+
+  return path;
+}
+
+/**
+ * Expressions a transform produced. A transform that returns a new block
+ * sees that block again, so it checks here before it wraps a parameter a
+ * second time.
+ */
+export const EACH_IN_EXPRESSIONS = new WeakSet<AST.SubExpression>();
+export const TRACK_ARRAY_EXPRESSIONS = new WeakSet<AST.SubExpression>();
+
 export function isPath(node: AST.Node): node is AST.PathExpression {
   return node.type === 'PathExpression';
 }

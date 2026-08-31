@@ -12,25 +12,14 @@ export interface OpImport {
   local: string;
   module: string;
   name: string;
-  /** The numeric SexpOpcode the export compiles, or -1 for a keyword value. */
+  /** The numeric SexpOpcode the export compiles. */
   id: number;
 }
 
-export interface LexicalKeyword {
+/** An export of a module, as a build tool imports it. */
+export interface ModuleExport {
   module: string;
   name: string;
-}
-
-export interface PrinterOptions {
-  /**
-   * Strict keywords to turn into lexical scope entries. A keyword in this
-   * map is printed as `GetLexicalSymbol` with a slot after the template's
-   * own locals, and its import is added to `imports`. The runtime then
-   * needs no resolver for it.
-   */
-  lexicalKeywords?: Record<string, LexicalKeyword>;
-  /** How many lexical scope entries the template has before keywords. */
-  scopeOffset?: number;
 }
 
 const NAMES: Record<number, string> = {};
@@ -45,41 +34,11 @@ for (let [name, value] of Object.entries(Op)) {
  */
 export class WireFormatModulePrinter {
   readonly imports: OpImport[] = [];
-  /** Keyword name to the identifier bound to its import, in slot order. */
-  readonly keywordSlots: Array<{ name: string; local: string }> = [];
   private seen = new Set<string>();
-  private upvars: string[] = [];
-  private lexicalKeywords: Record<string, LexicalKeyword>;
-  private scopeOffset: number;
-
-  constructor(options: PrinterOptions = {}) {
-    this.lexicalKeywords = options.lexicalKeywords ?? {};
-    this.scopeOffset = options.scopeOffset ?? 0;
-  }
 
   block(block: SerializedTemplateBlock): string {
     let [statements, locals, upvars] = block;
-    this.upvars = upvars;
     return `[${this.statements(statements)},${lit(locals)},${lit(upvars)}]`;
-  }
-
-  private keywordSlot(upvar: number): string | null {
-    let name = this.upvars[upvar];
-    let keyword = name === undefined ? undefined : this.lexicalKeywords[name];
-
-    if (name === undefined || keyword === undefined) {
-      return null;
-    }
-
-    let slot = this.keywordSlots.findIndex((entry) => entry.name === name);
-
-    if (slot === -1) {
-      let local = `__kw_${name.replace(/[^A-Za-z0-9_$]/g, '_')}`;
-      slot = this.keywordSlots.push({ name, local }) - 1;
-      this.imports.push({ local, module: keyword.module, name: keyword.name, id: -1 });
-    }
-
-    return `[${this.head(Op.GetLexicalSymbol)},${this.scopeOffset + slot}]`;
   }
 
   private head(op: number, variant?: string): string {
@@ -190,12 +149,7 @@ export class WireFormatModulePrinter {
     let tail: string[];
 
     switch (e[0]) {
-      case Op.GetStrictKeyword: {
-        let lexical = this.keywordSlot(e[1]);
-        if (lexical !== null) return lexical;
-        tail = [lit(e[1])];
-        break;
-      }
+      case Op.GetStrictKeyword:
       case Op.GetSymbol:
       case Op.GetLexicalSymbol:
       case Op.GetFreeAsComponentOrHelperHead:

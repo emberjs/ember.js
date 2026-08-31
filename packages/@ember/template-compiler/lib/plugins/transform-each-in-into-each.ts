@@ -1,7 +1,7 @@
 import type * as AST from '@glimmer/syntax/lib/v1/api';
 import type { ASTPlugin } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import type { EmberASTPluginEnvironment } from '../types';
-import { isPath } from './utils';
+import { EACH_IN_EXPRESSIONS, isPath, keywordPath } from './utils';
 
 /**
  @module ember
@@ -32,7 +32,9 @@ export default function transformEachInIntoEach(env: EmberASTPluginEnvironment):
     visitor: {
       BlockStatement(node: AST.BlockStatement): AST.Node | void {
         if (isPath(node.path) && node.path.original === 'each-in') {
-          node.params[0] = b.sexpr(b.path('-each-in'), [node.params[0]!]);
+          let eachIn = b.sexpr(keywordPath(env, '-each-in', 'eachIn'), [node.params[0]!]);
+          EACH_IN_EXPRESSIONS.add(eachIn);
+          node.params[0] = eachIn;
 
           let blockParams = node.program.blockParams;
 

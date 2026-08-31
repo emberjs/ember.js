@@ -12,12 +12,16 @@ import { gt } from '@glimmer/runtime/lib/helpers/gt';
 import { gte } from '@glimmer/runtime/lib/helpers/gte';
 import { or } from '@glimmer/runtime/lib/helpers/or';
 import { on } from '@ember/modifier/on';
+import eachIn from '@ember/-internals/glimmer/lib/helpers/each-in';
+import inElementNullCheck from '@ember/-internals/glimmer/lib/helpers/-in-element-null-check';
+import { mountHelper as mount } from '@ember/-internals/glimmer/lib/syntax/mount';
+import mut from '@ember/-internals/glimmer/lib/helpers/mut';
+import { outletHelper as outlet } from '@ember/-internals/glimmer/lib/syntax/outlet';
+import readonly from '@ember/-internals/glimmer/lib/helpers/readonly';
+import trackArray from '@ember/-internals/glimmer/lib/helpers/-track-array';
+import unbound from '@ember/-internals/glimmer/lib/helpers/unbound';
 import { assert } from '@ember/debug';
-import {
-  RESOLUTION_MODE_TRANSFORMS,
-  STRICT_MODE_KEYWORDS,
-  STRICT_MODE_TRANSFORMS,
-} from './plugins/index';
+import { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './plugins/index';
 import { ALLOWED_GLOBALS } from './plugins/allowed-globals';
 import type { EmberPrecompileOptions, PluginFunc } from './types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
@@ -51,6 +55,14 @@ export const keywords: Record<string, unknown> = {
   not,
   on,
   or,
+  mut,
+  readonly,
+  unbound,
+  eachIn,
+  inElementNullCheck,
+  trackArray,
+  outlet,
+  mount,
 };
 
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
@@ -139,10 +151,6 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     let meta = options.meta;
     assert('has meta', meta); // We just set it
     meta.moduleName = options.moduleName;
-  }
-
-  if (options.strictMode) {
-    options.keywords = STRICT_MODE_KEYWORDS;
   }
 
   return options;

@@ -1,7 +1,7 @@
 import type * as AST from '@glimmer/syntax/lib/v1/api';
 import type { ASTPlugin } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import type { EmberASTPluginEnvironment } from '../types';
-import { isPath, trackLocals } from './utils';
+import { isPath, keywordPath, trackLocals } from './utils';
 
 /**
  @module ember
@@ -52,8 +52,9 @@ export default function transformWrapMountAndOutlet(env: EmberASTPluginEnvironme
           (node.path.original === 'mount' || node.path.original === 'outlet') &&
           !hasLocal(node.path.original)
         ) {
+          let keyword = node.path.original;
           let subexpression = b.sexpr(
-            b.path(`-${node.path.original}`),
+            keywordPath(env, `-${keyword}`, keyword),
             node.params,
             node.hash,
             node.loc

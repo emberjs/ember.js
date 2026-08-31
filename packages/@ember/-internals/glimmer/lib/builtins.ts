@@ -1,17 +1,10 @@
-import type { ModifierDefinitionState } from '@glimmer/interfaces';
 import { array } from '@glimmer/runtime/lib/helpers/array';
 import { concat } from '@glimmer/runtime/lib/helpers/concat';
 import { fn } from '@glimmer/runtime/lib/helpers/fn';
 import { get } from '@glimmer/runtime/lib/helpers/get';
 import { hash } from '@glimmer/runtime/lib/helpers/hash';
 import { on } from '@glimmer/runtime/lib/modifiers/on';
-import {
-  BUILTIN_HELPERS,
-  BUILTIN_KEYWORD_HELPERS,
-  BUILTIN_KEYWORD_MODIFIERS,
-  BUILTIN_MODIFIERS,
-  registerResolver,
-} from './builtins-registry';
+import { BUILTIN_HELPERS, BUILTIN_MODIFIERS, registerResolver } from './builtins-registry';
 import ResolverImpl from './resolver';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
@@ -24,7 +17,11 @@ import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as uniqueId } from './helpers/unique-id';
 
-const KEYWORD_HELPERS: Record<string, object> = {
+/**
+ * Everything a loose mode template resolves by name. Strict templates bind
+ * their keywords to imports at build time and never look here.
+ */
+const HELPERS: Record<string, object> = {
   mut,
   readonly,
   unbound,
@@ -34,10 +31,6 @@ const KEYWORD_HELPERS: Record<string, object> = {
   '-resolve': resolve,
   '-track-array': trackArray,
   '-in-el-null': inElementNullCheckHelper,
-};
-
-const HELPERS: Record<string, object> = {
-  ...KEYWORD_HELPERS,
   array,
   concat,
   fn,
@@ -55,12 +48,7 @@ const HELPERS: Record<string, object> = {
   '-disallow-dynamic-resolution': disallowDynamicResolution,
 };
 
-// With the implementation of RFC #1006(https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper), the `action` modifer was removed. It was the
-// only built-in keyword modifier, so this object is currently empty.
-const KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {};
-
 const MODIFIERS: Record<string, object> = {
-  ...KEYWORD_MODIFIERS,
   on,
 };
 
@@ -74,9 +62,7 @@ export function ensureBuiltins(): void {
   if (filled) return;
   filled = true;
 
-  Object.assign(BUILTIN_KEYWORD_HELPERS, KEYWORD_HELPERS);
   Object.assign(BUILTIN_HELPERS, HELPERS);
-  Object.assign(BUILTIN_KEYWORD_MODIFIERS, KEYWORD_MODIFIERS);
   Object.assign(BUILTIN_MODIFIERS, MODIFIERS);
   registerResolver(new ResolverImpl());
 }

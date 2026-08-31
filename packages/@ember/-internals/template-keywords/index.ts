@@ -1,7 +1,7 @@
 /**
- * The helpers behind strict mode keywords, as importable values. The
- * template compiler binds a keyword such as `mut` to one of these exports
- * in build output, so the strict render path needs no resolver.
+ * The implementations behind template keywords, as importable values. A
+ * strict template binds `mut` or `{{outlet}}` to one of these exports at
+ * build time, so the strict render path needs no resolver.
  */
 export { default as mut } from '@ember/-internals/glimmer/lib/helpers/mut';
 export { default as readonly } from '@ember/-internals/glimmer/lib/helpers/readonly';
@@ -9,8 +9,5 @@ export { default as unbound } from '@ember/-internals/glimmer/lib/helpers/unboun
 export { default as eachIn } from '@ember/-internals/glimmer/lib/helpers/each-in';
 export { default as inElementNullCheck } from '@ember/-internals/glimmer/lib/helpers/-in-element-null-check';
 export { default as trackArray } from '@ember/-internals/glimmer/lib/helpers/-track-array';
-export { default as normalizeClass } from '@ember/-internals/glimmer/lib/helpers/-normalize-class';
-export { default as resolve } from '@ember/-internals/glimmer/lib/helpers/-resolve';
-export { hash } from '@glimmer/runtime/lib/helpers/hash';
 export { outletHelper as outlet } from '@ember/-internals/glimmer/lib/syntax/outlet';
 export { mountHelper as mount } from '@ember/-internals/glimmer/lib/syntax/mount';

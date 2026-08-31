@@ -1,18 +1,15 @@
 import type { BlockMetadata, Nullable } from '@glimmer/interfaces';
 import type { PrecompiledModule, PrecompileOptions } from '@glimmer/compiler/lib/compiler';
-import type { LexicalKeyword, OpImport } from '@glimmer/compiler/lib/wire-format-module';
+import type { ModuleExport, OpImport } from '@glimmer/compiler/lib/wire-format-module';
 import { defaultId, precompileJSON } from '@glimmer/compiler/lib/compiler';
-import { bindStrictKeywords } from '@glimmer/compiler/lib/wire-format-keywords';
 
 import { printBlock, TEMPLATE_MODULE } from './print';
 import { aotRef, type RecordedProgram, RecordingConstants, recordStatements } from './record';
 
 export interface PrecompileAotOptions extends PrecompileOptions {
   lexicalScope?: (variable: string) => boolean;
-  /** Strict keywords to bind to imports instead of a runtime resolver. */
-  lexicalKeywords?: Record<string, LexicalKeyword>;
   /** The template factory the build tool wraps the expression in. */
-  factory?: LexicalKeyword;
+  factory?: ModuleExport;
 }
 
 function lit(value: unknown): string {
@@ -33,8 +30,7 @@ export function precompileAot(source: string, options: PrecompileAotOptions): Pr
     throw new Error('precompileAot compiles strict mode templates only');
   }
 
-  let { block, slots } = bindStrictKeywords(json, options.lexicalKeywords ?? {}, usedLocals.length);
-  let [statements, locals, upvars] = block;
+  let [statements, locals, upvars] = json;
 
   let imports: OpImport[] = [];
   let seen = new Set<string>();
@@ -51,22 +47,12 @@ export function precompileAot(source: string, options: PrecompileAotOptions): Pr
   let scopeEntries = usedLocals.map((name) => (name === 'this' ? `"this":this` : name));
   let scopeValues: unknown[] = usedLocals.map((_, index) => aotRef({ index }));
 
-  for (const slot of slots) {
-    let local = bind(
-      `__kw_${slot.name.replace(/[^A-Za-z0-9_$]/g, '_')}`,
-      slot.keyword.module,
-      slot.keyword.name
-    );
-    scopeEntries.push(`${lit(slot.name)}:${local}`);
-    scopeValues.push(aotRef({ index: scopeValues.length }));
-  }
-
   let moduleName = options.meta?.moduleName;
   let meta: BlockMetadata = {
     symbols: {
       locals,
       upvars,
-      lexical: [...usedLocals, ...slots.map((slot) => slot.name)],
+      lexical: usedLocals,
     },
     scopeValues,
     isStrictMode: true,
