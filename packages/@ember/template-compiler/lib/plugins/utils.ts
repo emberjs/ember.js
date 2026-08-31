@@ -20,10 +20,7 @@ export function bindKeyword(
     node.original = env.meta.jsutils.bindImport(moduleSpecifier, exportName, node, {
       nameHint: `__keyword__${exportName}`,
     });
-  } else if (env.strictMode && env.meta?.emberRuntime) {
-    // The runtime compiler binds through a dotted path on its keywords
-    // object, which only strict mode can invoke. A loose template keeps
-    // the name and resolves it through the built-in tables.
+  } else if (env.meta?.emberRuntime) {
     node.original = env.meta.emberRuntime.lookupKeyword(exportName);
   }
 }

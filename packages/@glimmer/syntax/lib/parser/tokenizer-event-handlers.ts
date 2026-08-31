@@ -709,6 +709,10 @@ export interface PreprocessOptions {
             opts?: { nameHint?: string }
           ): string;
         };
+        /** Binds a keyword to a bare local that the evaluator supplies. */
+        emberRuntime?: {
+          lookupKeyword(name: string): string;
+        };
       }
     | undefined;
   plugins?:

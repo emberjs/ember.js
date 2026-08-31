@@ -11,3 +11,5 @@ export { default as inElementNullCheck } from '@ember/-internals/glimmer/lib/hel
 export { default as trackArray } from '@ember/-internals/glimmer/lib/helpers/-track-array';
 export { outletHelper as outlet } from '@ember/-internals/glimmer/lib/syntax/outlet';
 export { mountHelper as mount } from '@ember/-internals/glimmer/lib/syntax/mount';
+export { default as resolve } from '@ember/-internals/glimmer/lib/helpers/-resolve';
+export { default as disallowDynamicResolution } from '@ember/-internals/glimmer/lib/helpers/-disallow-dynamic-resolution';

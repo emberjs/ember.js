@@ -3,6 +3,8 @@ import { array } from '@glimmer/runtime/lib/helpers/array';
 import { concat } from '@glimmer/runtime/lib/helpers/concat';
 import { get } from '@glimmer/runtime/lib/helpers/get';
 import { default as uniqueId } from '@ember/-internals/glimmer/lib/helpers/unique-id';
+import { default as resolve } from '@ember/-internals/glimmer/lib/helpers/-resolve';
+import { default as disallowDynamicResolution } from '@ember/-internals/glimmer/lib/helpers/-disallow-dynamic-resolution';
 import element from '@ember/-internals/glimmer/lib/helpers/element';
 import { eq } from '@glimmer/runtime/lib/helpers/eq';
 import { fn } from '@glimmer/runtime/lib/helpers/fn';
@@ -35,15 +37,9 @@ function malformedComponentLookup(string: string) {
   return string.indexOf('::') === -1 && string.indexOf(':') > -1;
 }
 
-/**
- * The variable name used to inject the keywords object into the
- * template's evaluation scope. auto-import-builtins rewrites bare
- * keyword references (e.g. `on`) to property accesses on this
- * variable (e.g. `__ember_keywords__.on`).
- */
-export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
-
 export const keywords: Record<string, unknown> = {
+  resolve,
+  disallowDynamicResolution,
   array,
   eq,
   element,
@@ -71,6 +67,25 @@ export const keywords: Record<string, unknown> = {
   mount,
 };
 
+/**
+ * The compilers bind a keyword to a bare local name, which loose and
+ * strict templates can both invoke. The evaluators supply these names.
+ */
+export const RUNTIME_KEYWORD_LOCALS: Record<string, unknown> = {};
+
+for (let [name, value] of Object.entries(keywords)) {
+  RUNTIME_KEYWORD_LOCALS[`__ember_kw_${name}`] = value;
+}
+
+export function lookupRuntimeKeyword(name: string): string {
+  assert(
+    `${name} is not a known keyword. Available keywords: ${Object.keys(keywords).join(', ')}`,
+    name in keywords
+  );
+
+  return `__ember_kw_${name}`;
+}
+
 function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
   let moduleName = _options.moduleName;
 
@@ -93,14 +108,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
 
   options.meta ||= {};
   options.meta.emberRuntime ||= {
-    lookupKeyword(name: string): string {
-      assert(
-        `${name} is not a known keyword. Available keywords: ${Object.keys(keywords).join(', ')}`,
-        name in keywords
-      );
-
-      return `${RUNTIME_KEYWORDS_NAME}.${name}`;
-    },
+    lookupKeyword: lookupRuntimeKeyword,
   };
 
   if ('eval' in options && options.eval) {
@@ -108,9 +116,8 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
     options.lexicalScope = (variable: string) => {
-      // The keywords container variable is always "in scope" —
-      // we inject it via the evaluator in template.ts.
-      if (variable === RUNTIME_KEYWORDS_NAME) {
+      // The evaluator in template.ts supplies every bound keyword local.
+      if (variable in RUNTIME_KEYWORD_LOCALS) {
         return true;
       }
 
@@ -132,7 +139,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     const scope = (options.scope as () => Record<string, unknown>)();
 
     options.lexicalScope = (variable: string) =>
-      variable in scope || variable === RUNTIME_KEYWORDS_NAME;
+      variable in scope || variable in RUNTIME_KEYWORD_LOCALS;
 
     delete options.scope;
   }
@@ -140,7 +147,7 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   // When neither eval nor scope is provided, the keywords container
   // still needs to be visible to the compiler.
   if (!options.lexicalScope) {
-    options.lexicalScope = (variable: string) => variable === RUNTIME_KEYWORDS_NAME;
+    options.lexicalScope = (variable: string) => variable in RUNTIME_KEYWORD_LOCALS;
   }
 
   if ('locals' in options && !options.locals) {

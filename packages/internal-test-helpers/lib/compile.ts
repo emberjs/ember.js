@@ -5,7 +5,11 @@ import { precompileJSON } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
 import { template } from '@ember/-internals/glimmer';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compileOptions } from 'ember-template-compiler';
+import {
+  compileOptions,
+  RUNTIME_KEYWORD_LOCALS,
+  withRuntimeKeywords,
+} from 'ember-template-compiler';
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.
@@ -23,10 +27,13 @@ export default function compile(
   scopeValues: Record<string, unknown> = {}
 ): TemplateFactory {
   options.locals = options.locals ?? Object.keys(scopeValues ?? {});
-  let [block, usedLocals] = precompileJSON(templateSource, compileOptions(options));
+  let [block, usedLocals] = precompileJSON(
+    templateSource,
+    compileOptions(withRuntimeKeywords(options))
+  );
   let reifiedScope: Record<string, unknown> = {};
   for (let key of usedLocals) {
-    reifiedScope[key] = scopeValues[key];
+    reifiedScope[key] = key in scopeValues ? scopeValues[key] : RUNTIME_KEYWORD_LOCALS[key];
   }
 
   let templateBlock: SerializedTemplateWithLazyBlock = {

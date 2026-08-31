@@ -3,8 +3,7 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler/lib/compiler'
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import templateFactory from '@glimmer/opcode-compiler/lib/template';
-import { ensureBuiltins } from '@ember/-internals/glimmer/lib/builtins';
-import compileOptions, { keywords, RUNTIME_KEYWORDS_NAME } from './compile-options';
+import compileOptions, { RUNTIME_KEYWORD_LOCALS } from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 
 type ComponentClass = abstract new (...args: any[]) => object;
@@ -240,11 +239,6 @@ export function template(
 ): object {
   const options = { strictMode: true, ...providedOptions };
 
-  if (!options.strictMode) {
-    // A loose template resolves built-ins by name at runtime.
-    ensureBuiltins();
-  }
-
   const evaluate = buildEvaluator(options);
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
@@ -269,27 +263,32 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
   if (options.eval) {
     const userEval = options.eval;
 
-    // Wrap the compiled source in a function that receives the keywords
-    // container as a parameter. The user's eval evaluates this in the
+    // Wrap the compiled source in a function that receives the bound
+    // keyword locals as parameters. The user's eval evaluates this in the
     // caller's scope, so local variables (like `handleClick`) are captured
-    // via closure, while `__keywords__` comes from the function parameter.
+    // via closure, while the keyword locals come from the parameters.
+    let names = Object.keys(RUNTIME_KEYWORD_LOCALS);
+    let values = Object.values(RUNTIME_KEYWORD_LOCALS);
+
     return (source: string) => {
-      let wrapperFn = userEval(`(function(${RUNTIME_KEYWORDS_NAME}){ return (${source}); })`) as (
+      let wrapperFn = userEval(`(function(${names.join(',')}){ return (${source}); })`) as (
         ...args: unknown[]
       ) => unknown;
 
-      return wrapperFn(keywords);
+      return wrapperFn(...values);
     };
   } else {
     let scope = options.scope?.();
 
     if (!scope) {
       return (source: string) => {
-        return new Function(RUNTIME_KEYWORDS_NAME, `return (${source})`)(keywords);
+        return new Function(...Object.keys(RUNTIME_KEYWORD_LOCALS), `return (${source})`)(
+          ...Object.values(RUNTIME_KEYWORD_LOCALS)
+        );
       };
     }
 
-    scope = Object.assign({ [RUNTIME_KEYWORDS_NAME]: keywords }, scope);
+    scope = Object.assign({}, RUNTIME_KEYWORD_LOCALS, scope);
 
     return (source: string) => {
       let hasThis = Object.prototype.hasOwnProperty.call(scope, 'this');
