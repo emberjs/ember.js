@@ -46,15 +46,9 @@ export interface RouteCapabilitiesVersions {
     surface. It is not intended to be used by managers outside the
     framework-provided `ClassicRouteManager`.
    */
-  '1.0':
-    | {
-        classicInterop: true;
-        awaitEnter: boolean;
-      }
-    | {
-        classicInterop?: false;
-        awaitEnter?: boolean;
-      };
+  '1.0': {
+    classicInterop?: boolean;
+  };
 }
 
 /**
@@ -63,7 +57,6 @@ export interface RouteCapabilitiesVersions {
  */
 export interface RouteCapabilities {
   classicInterop: boolean;
-  awaitEnter: boolean;
 }
 
 /**
@@ -71,7 +64,7 @@ export interface RouteCapabilities {
   be assigned to `manager.capabilities`.
 
   ```ts
-  capabilities = routeCapabilities('1.0', { classicInterop: true, awaitEnter: true });
+  capabilities = routeCapabilities('1.0', { classicInterop: true });
   ```
 
   @param _managerAPI The version of the manager API the route manager targets.
@@ -83,7 +76,6 @@ export function routeCapabilities<Version extends keyof RouteCapabilitiesVersion
 ): RouteCapabilities {
   return {
     classicInterop: Boolean(options.classicInterop),
-    awaitEnter: Boolean(options.awaitEnter),
   };
 }
 
@@ -120,6 +112,20 @@ export function associateRouteManagement(
 
 export function getRouteManagement(route: object): RouteManagement | undefined {
   return ROUTE_MANAGEMENT.get(route);
+}
+
+const INVOKABLES = new WeakMap<object, globalThis.Promise<object>>();
+export function invokableFor<B extends object>(
+  manager: { getInvokable(bucket: B): globalThis.Promise<object> },
+  bucket: B
+): globalThis.Promise<object> {
+  let invokable = INVOKABLES.get(bucket);
+  if (invokable === undefined) {
+    invokable = manager.getInvokable(bucket);
+    INVOKABLES.set(bucket, invokable);
+    invokable.catch(() => {});
+  }
+  return invokable;
 }
 
 // -- Navigation state ---------------------------------------------------------

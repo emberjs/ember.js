@@ -14,7 +14,7 @@ import {
 import { isParam, isPromise, merge } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
 import type { EnterState, RouteManagement, RouteManager, RouteStateBucket } from './route-manager';
-import { getRouteManagement, hasClassicInterop } from './route-manager';
+import { getRouteManagement, hasClassicInterop, invokableFor } from './route-manager';
 
 export type IModel = {} & {
   id?: string | number;
@@ -237,7 +237,8 @@ export default class InternalRouteInfo<R extends BaseRoute> {
   declare context?: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
   isResolved = false;
   enterPromise?: globalThis.Promise<unknown> = undefined;
-  getInvokablePromise?: globalThis.Promise<object> = undefined;
+  private beginPromise?: Promise<unknown> = undefined;
+  private beginTransition?: InternalTransition<R> = undefined;
 
   constructor(router: Router<R>, name: string, paramNames: string[], route?: R) {
     this.name = name;
@@ -256,8 +257,22 @@ export default class InternalRouteInfo<R extends BaseRoute> {
     return this.params || {};
   }
 
-  resolve(transition: InternalTransition<R>): Promise<ResolvedRouteInfo<R>> {
-    return Promise.resolve(this.routePromise)
+  beginEnter(transition: InternalTransition<R>, eager = false): Promise<unknown> {
+    if (eager) {
+      const eagerManager = this._management?.manager;
+
+      // Classic keeps the sequential walk, so its legacy timings are exact.
+      if (this.isResolved || eagerManager === undefined || hasClassicInterop(eagerManager)) {
+        return Promise.resolve(undefined);
+      }
+    }
+
+    if (this.beginPromise !== undefined && this.beginTransition === transition) {
+      return this.beginPromise;
+    }
+
+    this.beginTransition = transition;
+    this.beginPromise = Promise.resolve(this.routePromise)
       .then((route: R) => {
         throwIfAborted(transition);
         return route;
@@ -310,37 +325,20 @@ export default class InternalRouteInfo<R extends BaseRoute> {
         const enterPromise = manager.enter(bucket, navigationArgs);
         this.enterPromise = enterPromise;
 
-        const getInvokablePromise = manager.getInvokable(bucket);
-        this.getInvokablePromise = getInvokablePromise;
-        getInvokablePromise.catch(() => {
-          // Unobserved when a transition is abandoned before rendering.
-        });
+        invokableFor(manager, bucket);
 
-        // Capture the entered context locally rather than writing it onto
-        // this route info: `shouldSupersede` treats an own `context` as
-        // meaningful when infos are reused across transitions, so the info
-        // must not gain one it never had. `becomeResolved` receives the
-        // value explicitly below.
-        let enteredContext: ModelFor<R> | undefined;
-        enterPromise.then(
-          (resolvedContext) => {
-            if (transition.isAborted) return;
-            enteredContext = resolvedContext as ModelFor<R> | undefined;
-          },
-          () => {
-            // Swallow rejections; transition-level error handling reports them.
-          }
-        );
-
-        const awaitEnter = manager.capabilities.awaitEnter ? enterPromise : Promise.resolve();
-        return awaitEnter.then(() => {
-          throwIfAborted(transition);
-          const resolvedContext = enteredContext ?? (this.context as ModelFor<R> | undefined);
-          const resolved = this.becomeResolved(transition, resolvedContext);
-
-          return resolved;
-        });
+        return enterPromise;
       });
+
+    return this.beginPromise;
+  }
+
+  resolve(transition: InternalTransition<R>): Promise<ResolvedRouteInfo<R>> {
+    return this.beginEnter(transition).then((enteredContext) => {
+      throwIfAborted(transition);
+
+      return this.becomeResolved(transition, enteredContext as ModelFor<R> | undefined);
+    });
   }
 
   becomeResolved(
@@ -373,8 +371,6 @@ export default class InternalRouteInfo<R extends BaseRoute> {
       context,
       this.enterPromise
     );
-
-    resolved.getInvokablePromise = this.getInvokablePromise;
 
     // Back-fill the model onto `resolved` once `enter` settles, but only for
     // managers that render before their model resolves. A manager whose

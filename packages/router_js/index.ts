@@ -25,6 +25,7 @@ export {
   hasClassicInterop,
   associateRouteManagement,
   getRouteManagement,
+  invokableFor,
 } from './lib/route-manager';
 export type {
   RouteManager,

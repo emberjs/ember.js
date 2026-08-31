@@ -113,6 +113,9 @@ export default class TransitionState<R extends BaseRoute> {
     let params = this.params;
     forEach(this.routeInfos, (routeInfo) => {
       params[routeInfo.name] = routeInfo.params || {};
+      routeInfo.beginEnter(transition, true).catch(() => {
+        // Surfaced by the sequential pass below.
+      });
       return true;
     });
 

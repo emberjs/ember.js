@@ -562,6 +562,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
       routes: {
         'reactive-context.js': `
           import ReactiveRoute from '${appName}/routes/reactive';
+          import { modelStarts } from '${appName}/router';
 
           let resolve;
           export function resolveModel(value) {
@@ -570,6 +571,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
           export default class extends ReactiveRoute {
             model() {
+              modelStarts.push('reactive-context');
               return new Promise((r) => (resolve = r));
             }
           }
@@ -577,6 +579,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
         'reactive-context': {
           'child.js': `
             import ReactiveRoute from '${appName}/routes/reactive';
+            import { modelStarts } from '${appName}/router';
 
             let resolve;
             export function resolveModel(value) {
@@ -585,6 +588,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
             export default class extends ReactiveRoute {
               model() {
+                modelStarts.push('reactive-context.child');
                 return new Promise((r) => (resolve = r));
               }
             }
@@ -687,6 +691,8 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
           'router.js': `
             import EmberRouter from '@ember/routing/router';
             import config from '${appName}/config/environment';
+
+            export const modelStarts = [];
 
             export default class Router extends EmberRouter {
               location = config.locationType;
@@ -1140,6 +1146,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               import { module, test } from 'qunit';
               import { click, findAll, settled, visit, waitUntil } from '@ember/test-helpers';
               import { setupApplicationTest } from '${appName}/tests/helpers';
+              import { modelStarts } from '${appName}/router';
               import { resolveModel as resolveParentModel } from '${appName}/routes/reactive-context';
               import { resolveModel as resolveChildModel } from '${appName}/routes/reactive-context/child';
               import {
@@ -1329,51 +1336,40 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   );
                 });
 
-                test('a manager that renders before its model resolves has its context filled in', async function (assert) {
-                  // Not awaited: both levels mount while their models are pending.
+                test('a non-classic manager loads ancestor and descendant models in parallel', async function (assert) {
+                  modelStarts.length = 0;
+
                   visit('/reactive-context/child');
-                  await waitUntil(() =>
-                    document.querySelector('[data-test-reactive-route="reactive-context.child"]')
-                  );
 
-                  assert
-                    .dom('[data-test-reactive-route="reactive-context"] > [data-test-route-model]')
-                    .hasText('');
-                  assert
-                    .dom('[data-test-reactive-route="reactive-context.child"] > [data-test-route-model]')
-                    .hasText('');
+                  try {
+                    await waitUntil(() => modelStarts.length === 2, { timeout: 2000 });
+                  } catch (e) {
+                    // Fall through: the snapshot below reports what did start.
+                  }
 
-                  // Parent only: the child's pending model keeps the transition
-                  // unsettled, so no outlet pass can explain what renders next.
+                  let startedWhilePending = modelStarts.slice();
+
                   resolveParentModel('PARENT-CTX');
-                  await waitUntil(
-                    () =>
-                      document.querySelector(
-                        '[data-test-reactive-route="reactive-context"] > [data-test-route-model]'
-                      ).textContent.trim() === 'PARENT-CTX'
-                  );
-
-                  assert
-                    .dom('[data-test-reactive-route="reactive-context.child"] > [data-test-route-model]')
-                    .hasText('');
-
                   resolveChildModel('CHILD-CTX');
                   await settled();
 
-                  assert
-                    .dom('[data-test-reactive-route="reactive-context.child"] > [data-test-route-model]')
-                    .hasText('CHILD-CTX');
+                  assert.deepEqual(
+                    startedWhilePending,
+                    ['reactive-context', 'reactive-context.child'],
+                    'the child model started while the parent model was still pending'
+                  );
                 });
 
                 test('a filled-in context survives a transition that keeps the route mounted', async function (assert) {
-                  visit('/reactive-context/child');
-                  await waitUntil(() =>
-                    document.querySelector('[data-test-reactive-route="reactive-context.child"]')
-                  );
+                  modelStarts.length = 0;
+
+                  let visitPromise = visit('/reactive-context/child');
+
+                  await waitUntil(() => modelStarts.length === 2, { timeout: 2000 });
 
                   resolveParentModel('PARENT-CTX');
                   resolveChildModel('CHILD-CTX');
-                  await settled();
+                  await visitPromise;
 
                   assert
                     .dom('[data-test-reactive-route="reactive-context"] > [data-test-route-model]')

@@ -58,7 +58,6 @@ function isTransitionObject(value: unknown): boolean {
 export class ClassicRouteManager implements RouteManagerWithClassicInterop<ClassicRouteBucket> {
   capabilities: RouteCapabilities = routeCapabilities('1.0', {
     classicInterop: true,
-    awaitEnter: true,
   });
 
   #owner: Owner;
