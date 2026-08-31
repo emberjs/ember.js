@@ -5,7 +5,8 @@ import type {
 } from '@glimmer/interfaces';
 
 import { ensureLegacyOps } from './syntax/legacy';
-import createTemplateFactory, { type SerializedTemplateWithOps } from './template-core';
+import type { SerializedTemplateWithOps } from './template-core';
+import createTemplateFactory from './template-jit';
 
 export {
   templateCacheCounters,

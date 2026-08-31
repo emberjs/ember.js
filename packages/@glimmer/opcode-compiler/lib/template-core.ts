@@ -10,9 +10,6 @@ import type {
 } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util/lib/object-utils';
 
-import { compilable } from './compilable-template';
-import { WrappedBuilder } from './wrapped-component';
-
 let clientId = 0;
 
 export let templateCacheCounters = {
@@ -34,9 +31,9 @@ export interface TemplateWithIdAndReferrer extends TemplateOk {
   };
 }
 
-export interface SerializedTemplateWithOps {
+export interface SerializedTemplateWithOps<B = SerializedTemplateBlock> {
   id?: Nullable<string>;
-  block: SerializedTemplateBlock;
+  block: B;
   moduleName: string;
   scope?: (() => Record<string, unknown>) | undefined | null;
   isStrictMode: boolean;
@@ -47,13 +44,22 @@ export interface SerializedTemplateWithOps {
  * Compiled templates import this through `@ember/template-factory/modular`.
  * The factory creates per owner singletons of the template.
  */
-export default function templateFactory({
-  id: templateId,
-  moduleName,
-  block: parsedBlock,
-  scope,
-  isStrictMode,
-}: SerializedTemplateWithOps): TemplateFactory {
+/** How a template turns into a compilable program. */
+export interface TemplateLayouts<B = SerializedTemplateBlock> {
+  asLayout(layout: LayoutWithContext<B>, moduleName: string): CompilableProgram;
+  asWrappedLayout(layout: LayoutWithContext<B>, moduleName: string): CompilableProgram;
+}
+
+export default function templateFactory<B = SerializedTemplateBlock>(
+  {
+    id: templateId,
+    moduleName,
+    block: parsedBlock,
+    scope,
+    isStrictMode,
+  }: SerializedTemplateWithOps<B>,
+  layouts: TemplateLayouts<B>
+): TemplateFactory {
   // TODO(template-refactors): This should be removed in the near future, as it
   // appears that id is unused. It is currently kept for backwards compat reasons.
   let id = templateId || `client-${clientId++}`;
@@ -65,14 +71,10 @@ export default function templateFactory({
     if (owner === undefined) {
       if (ownerlessTemplate === null) {
         templateCacheCounters.cacheMiss++;
-        ownerlessTemplate = new TemplateImpl({
-          id,
-          block: parsedBlock,
-          moduleName,
-          owner: null,
-          scope,
-          isStrictMode,
-        });
+        ownerlessTemplate = new TemplateImpl(
+          { id, block: parsedBlock, moduleName, owner: null, scope, isStrictMode },
+          layouts
+        );
       } else {
         templateCacheCounters.cacheHit++;
       }
@@ -84,7 +86,10 @@ export default function templateFactory({
 
     if (result === undefined) {
       templateCacheCounters.cacheMiss++;
-      result = new TemplateImpl({ id, block: parsedBlock, moduleName, owner, scope, isStrictMode });
+      result = new TemplateImpl(
+        { id, block: parsedBlock, moduleName, owner, scope, isStrictMode },
+        layouts
+      );
       templateCache.set(owner, result);
     } else {
       templateCacheCounters.cacheHit++;
@@ -99,13 +104,16 @@ export default function templateFactory({
   return factory;
 }
 
-class TemplateImpl implements TemplateWithIdAndReferrer {
+class TemplateImpl<B> implements TemplateWithIdAndReferrer {
   readonly result = 'ok';
 
   private layout: Nullable<CompilableProgram> = null;
   private wrappedLayout: Nullable<CompilableProgram> = null;
 
-  constructor(private parsedLayout: LayoutWithContext) {}
+  constructor(
+    private parsedLayout: LayoutWithContext<B>,
+    private layouts: TemplateLayouts<B>
+  ) {}
 
   get moduleName() {
     return this.parsedLayout.moduleName;
@@ -126,12 +134,12 @@ class TemplateImpl implements TemplateWithIdAndReferrer {
 
   asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
-    return (this.layout = compilable(assign({}, this.parsedLayout), this.moduleName));
+    return (this.layout = this.layouts.asLayout(assign({}, this.parsedLayout), this.moduleName));
   }
 
   asWrappedLayout(): CompilableProgram {
     if (this.wrappedLayout) return this.wrappedLayout;
-    return (this.wrappedLayout = new WrappedBuilder(
+    return (this.wrappedLayout = this.layouts.asWrappedLayout(
       assign({}, this.parsedLayout),
       this.moduleName
     ));

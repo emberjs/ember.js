@@ -99,6 +99,9 @@ export const DYNAMIC_HELPER_OP = /*#__PURE__*/ syscall(VM_DYNAMIC_HELPER_OP, (vm
 
   let helperRef: Initializable<Reference>;
   let initialOwner = vm.getOwner();
+  // A helper reached by value gets the same dynamic scope a resolved one
+  // does, so keywords such as `{{outlet}}` work from lexical scope.
+  let dynamicScope = vm.dynamicScope();
 
   let helperInstanceRef = createComputeRef(() => {
     if (helperRef !== undefined) {
@@ -121,12 +124,12 @@ export const DYNAMIC_HELPER_OP = /*#__PURE__*/ syscall(VM_DYNAMIC_HELPER_OP, (vm
         args.positional = positional.concat(args.positional) as CapturedPositionalArguments;
       }
 
-      helperRef = helper(args, owner);
+      helperRef = helper(args, owner, dynamicScope);
 
       associateDestroyableChild(helperInstanceRef, helperRef);
     } else if (isIndexable(definition)) {
       let helper = resolveHelper(definition, ref);
-      helperRef = helper(args, initialOwner);
+      helperRef = helper(args, initialOwner, dynamicScope);
 
       if (_hasDestroyableChildren(helperRef)) {
         associateDestroyableChild(helperInstanceRef, helperRef);

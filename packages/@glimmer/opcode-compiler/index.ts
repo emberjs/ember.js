@@ -13,7 +13,7 @@ export {
   MAIN,
   TRUSTING_APPEND,
   TRUSTING_NON_DYNAMIC_APPEND,
-} from './lib/opcode-builder/helpers/stdlib';
+} from './lib/opcode-builder/stdlib-data';
 export { StdlibImpl } from './lib/opcode-builder/stdlib';
 export * from './lib/program-context';
 export {

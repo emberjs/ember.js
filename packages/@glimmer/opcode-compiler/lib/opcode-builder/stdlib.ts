@@ -1,23 +1,15 @@
-import type {
-  BuilderOp,
-  EvaluationContext,
-  HandleResult,
-  HighLevelOp,
-  STDLib,
-  StdlibBuilder,
-} from '@glimmer/interfaces';
+import type { EvaluationContext, STDLib, StdlibRoutine } from '@glimmer/interfaces';
+import { APPEND_OPCODES } from '@glimmer/runtime/lib/opcodes';
 
-import { encodeOp, EncoderImpl } from './encoder';
-import { MAIN, STDLIB_META } from './helpers/stdlib';
+import { MAIN } from './stdlib-data';
 
 /**
- * Compiles each standard library routine the first time a template asks
- * for it, once per evaluation context. Compilation happens after the
- * template that asked has committed its own heap region, so the routine
- * never lands inside another program.
+ * Loads each standard library routine into the heap the first time a
+ * program asks for it, once per evaluation context. Routines are compiled
+ * ahead of time by `bin/build-aot-stdlib.mjs`, so no compiler runs here.
  */
 export class StdlibImpl implements STDLib {
-  private handles = new Map<StdlibBuilder, number>();
+  private handles = new Map<StdlibRoutine, number>();
 
   constructor(private evaluation: EvaluationContext) {}
 
@@ -25,33 +17,37 @@ export class StdlibImpl implements STDLib {
     return this.handle(MAIN);
   }
 
-  handle(builder: StdlibBuilder): number {
-    let handle = this.handles.get(builder);
+  handle(routine: StdlibRoutine): number {
+    let handle = this.handles.get(routine);
 
     if (handle === undefined) {
-      handle = this.compile(builder);
-      this.handles.set(builder, handle);
+      handle = this.load(routine);
+      this.handles.set(routine, handle);
     }
 
     return handle;
   }
 
-  private compile(builder: StdlibBuilder): number {
-    let { evaluation } = this;
-    let encoder = new EncoderImpl(evaluation.program.heap, STDLIB_META, this);
-
-    let pushOp = (...op: BuilderOp | HighLevelOp) => {
-      encodeOp(encoder, evaluation, STDLIB_META, op);
-    };
-
-    builder.build(pushOp, this);
-
-    let result: HandleResult = encoder.commit(0);
-
-    if (typeof result !== 'number') {
-      throw new Error(`Unexpected errors compiling stdlib routine ${builder.name}`);
+  private load(routine: StdlibRoutine): number {
+    for (const handler of routine.handlers) {
+      APPEND_OPCODES.register(handler);
     }
 
-    return result;
+    let words = routine.words.slice();
+
+    // A routine this one calls loads into its own heap region first.
+    for (const [at, target] of routine.fixups) {
+      words[at] = this.handle(target());
+    }
+
+    let { heap } = this.evaluation.program;
+    let handle = heap.malloc();
+
+    for (const word of words) {
+      heap.pushRaw(word);
+    }
+
+    heap.finishMalloc(handle, routine.size);
+    return handle;
   }
 }

@@ -75,7 +75,7 @@ import {
   CAUTIOUS_APPEND,
   CAUTIOUS_NON_DYNAMIC_APPEND,
   TRUSTING_APPEND,
-} from '../opcode-builder/helpers/stdlib';
+} from '../opcode-builder/stdlib-data';
 import {
   Call,
   CallDynamic,

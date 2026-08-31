@@ -1,4 +1,4 @@
-import type { BlockMetadata, StdlibBuilder } from '@glimmer/interfaces';
+import type { BlockMetadata, StdlibRef, StdlibSource } from '@glimmer/interfaces';
 import {
   MAIN_OP,
   PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
@@ -40,7 +40,7 @@ export function main(op: PushStatementOp): void {
 export function StdAppend(
   op: PushStatementOp,
   trusting: boolean,
-  nonDynamicAppend: StdlibBuilder | null
+  nonDynamicAppend: StdlibRef | null
 ): void {
   SwitchCases(
     op,
@@ -98,27 +98,32 @@ export function StdAppend(
   );
 }
 
-export const MAIN: StdlibBuilder = {
+/*
+ * The sources below are the input of `bin/build-aot-stdlib.mjs`, which
+ * writes the compiled words to `../stdlib-data.ts`. Runtime code imports
+ * the data module, never this one.
+ */
+export const MAIN: StdlibSource = {
   name: 'main',
   build: (op) => main(op as PushStatementOp),
 };
 
-export const TRUSTING_NON_DYNAMIC_APPEND: StdlibBuilder = {
+export const TRUSTING_NON_DYNAMIC_APPEND: StdlibSource = {
   name: 'trusting-non-dynamic-append',
   build: (op) => StdAppend(op as PushStatementOp, true, null),
 };
 
-export const CAUTIOUS_NON_DYNAMIC_APPEND: StdlibBuilder = {
+export const CAUTIOUS_NON_DYNAMIC_APPEND: StdlibSource = {
   name: 'cautious-non-dynamic-append',
   build: (op) => StdAppend(op as PushStatementOp, false, null),
 };
 
-export const TRUSTING_APPEND: StdlibBuilder = {
+export const TRUSTING_APPEND: StdlibSource = {
   name: 'trusting-append',
   build: (op) => StdAppend(op as PushStatementOp, true, TRUSTING_NON_DYNAMIC_APPEND),
 };
 
-export const CAUTIOUS_APPEND: StdlibBuilder = {
+export const CAUTIOUS_APPEND: StdlibSource = {
   name: 'cautious-append',
   build: (op) => StdAppend(op as PushStatementOp, false, CAUTIOUS_NON_DYNAMIC_APPEND),
 };

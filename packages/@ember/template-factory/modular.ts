@@ -1,1 +1,1 @@
-export { default as createTemplateFactory } from '@glimmer/opcode-compiler/lib/template-core';
+export { default as createTemplateFactory } from '@glimmer/opcode-compiler/lib/template-jit';

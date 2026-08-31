@@ -14,7 +14,7 @@ import type {
   NonSmallIntOperandType,
   SerializedBlock,
   SerializedInlineBlock,
-  StdlibBuilder,
+  StdlibRef,
   StdLibOperand,
   StdLibOperandType,
   SymbolTable,
@@ -55,7 +55,7 @@ export function blockOperand(value: SerializedInlineBlock | SerializedBlock): Bl
   return { type: HighLevelOperands.Block, value };
 }
 
-export function stdlibOperand(value: StdlibBuilder): StdLibOperand {
+export function stdlibOperand(value: StdlibRef): StdLibOperand {
   return { type: HighLevelOperands.StdLib, value };
 }
 

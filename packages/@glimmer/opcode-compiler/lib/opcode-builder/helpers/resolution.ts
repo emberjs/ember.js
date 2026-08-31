@@ -31,6 +31,25 @@ function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.T
   return Array.isArray(opcode) && opcode.length === 2;
 }
 
+let lexicalScopeAtRuntime = false;
+
+/**
+ * Ahead-of-time compilation has no lexical scope values, so a component,
+ * helper, or modifier from lexical scope resolves at runtime the way a
+ * dynamic value does. The compiler in the browser resolves it while
+ * compiling, which saves a dispatch per render.
+ */
+export function withLexicalScopeAtRuntime<T>(fn: () => T): T {
+  let previous = lexicalScopeAtRuntime;
+  lexicalScopeAtRuntime = true;
+
+  try {
+    return fn();
+  } finally {
+    lexicalScopeAtRuntime = previous;
+  }
+}
+
 function makeResolutionTypeVerifier(typeToVerify: SexpOpcode) {
   return (
     opcode: Expressions.Expression
@@ -41,7 +60,7 @@ function makeResolutionTypeVerifier(typeToVerify: SexpOpcode) {
 
     return (
       type === SexpOpcodes.GetStrictKeyword ||
-      type === SexpOpcodes.GetLexicalSymbol ||
+      (type === SexpOpcodes.GetLexicalSymbol && !lexicalScopeAtRuntime) ||
       type === typeToVerify
     );
   };

@@ -13,11 +13,11 @@ import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
 import { capabilityFlagsFrom, managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
 import { getComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { getInternalComponentManager } from '@glimmer/manager/lib/internal/api';
-import templateFactory from '@glimmer/opcode-compiler/lib/template-core';
+import createAotTemplateFactory from '@glimmer/opcode-compiler/lib/aot/template';
 import { enumerate } from '@glimmer/util/lib/array-utils';
 import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';
 
-import { DEFAULT_TEMPLATE } from './util/default-template';
+import { DEFAULT_TEMPLATE, DEFAULT_TEMPLATE_WRAPPED } from './util/default-template';
 
 const WELL_KNOWN_EMPTY_ARRAY: unknown = Object.freeze([]);
 const STARTER_CONSTANTS = constants(WELL_KNOWN_EMPTY_ARRAY);
@@ -28,7 +28,10 @@ export class ConstantsImpl implements ProgramConstants {
     [WELL_KNOWN_EMPTY_ARRAY_POSITION]: WELL_KNOWN_EMPTY_ARRAY as unknown[],
   };
 
-  defaultTemplate: Template = templateFactory(DEFAULT_TEMPLATE)();
+  defaultTemplate: Template = createAotTemplateFactory(
+    DEFAULT_TEMPLATE,
+    DEFAULT_TEMPLATE_WRAPPED
+  )();
 
   // Used for tests and debugging purposes, and to be able to analyze large apps
   // This is why it's enabled even in production

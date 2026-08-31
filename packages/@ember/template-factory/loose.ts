@@ -1,8 +1,7 @@
 import type { TemplateFactory } from '@glimmer/interfaces';
 import { ensureBuiltins } from '@ember/-internals/glimmer/lib/builtins';
-import modularTemplateFactory, {
-  type SerializedTemplateWithOps,
-} from '@glimmer/opcode-compiler/lib/template-core';
+import type { SerializedTemplateWithOps } from '@glimmer/opcode-compiler/lib/template-core';
+import modularTemplateFactory from '@glimmer/opcode-compiler/lib/template-jit';
 
 /**
  * The template factory for loose mode templates whose opcodes are
