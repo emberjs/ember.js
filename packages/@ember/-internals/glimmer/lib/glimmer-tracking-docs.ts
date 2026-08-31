@@ -305,6 +305,32 @@
   or as the result of a user action. Setting tracked data during render
   (such as in a getter), is not supported.
 
+  ### Standalone usage
+
+  Calling `cached` with a function creates a standalone cached reactive
+  value, usable outside of classes:
+
+  ```js
+  import { tracked, cached } from '@glimmer/tracking';
+
+  const count = tracked(0);
+  const doubled = cached(() => count.value * 2);
+
+  doubled.value; // read the cached value, entangling with any tracking context
+  doubled.get(); // function shorthand for reading
+  ```
+
+  The function is only re-invoked when tracked state it previously read has
+  changed; reading `value` in a template (or in a getter used by a template)
+  will rerender just like a `@cached` getter.
+
+  This form accepts an options object containing a `description` used for
+  debugging:
+
+  ```js
+  const doubled = cached(() => count.value * 2, { description: 'doubled' });
+  ```
+
   @method cached
   @static
   @for @glimmer/tracking

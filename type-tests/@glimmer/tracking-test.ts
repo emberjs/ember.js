@@ -1,4 +1,4 @@
-import { tracked } from '@glimmer/tracking';
+import { cached, tracked } from '@glimmer/tracking';
 import type { Reactive, ReadOnlyReactive, TrackedValue } from '@glimmer/tracking';
 import { expectTypeOf } from 'expect-type';
 
@@ -49,3 +49,33 @@ expectTypeOf(tracked({ equals: (a: number, b: number) => a === b })).toMatchType
 
 // specifying the options gets you a Reactive
 expectTypeOf(tracked({ value: 'Zoey' }, {})).toMatchTypeOf<Reactive<Record<string, unknown>>>();
+
+// ------- cached: standalone form -------
+const doubled = cached(() => count.value * 2);
+
+expectTypeOf(doubled).toEqualTypeOf<ReadOnlyReactive<number>>();
+expectTypeOf(doubled.value).toEqualTypeOf<number>();
+expectTypeOf(doubled.get()).toEqualTypeOf<number>();
+
+// @ts-expect-error -- the returned value is read-only
+doubled.value = 4;
+
+// ------- cached: standalone form with options -------
+const sorted = cached(() => ['a', 'b'], { description: 'sorted letters' });
+
+expectTypeOf(sorted.value).toEqualTypeOf<string[]>();
+
+// @ts-expect-error -- description must be a string
+cached(() => 0, { description: 123 });
+
+// ------- cached: decorator form -------
+class Person {
+  @tracked first = 'Tom';
+
+  @cached
+  get greeting(): string {
+    return `hello, ${this.first}`;
+  }
+}
+
+expectTypeOf(new Person().greeting).toEqualTypeOf<string>();
