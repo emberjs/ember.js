@@ -11,7 +11,12 @@ import type {
 } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 
-import { type ModuleExport, type OpImport, WireFormatModulePrinter } from './wire-format-module';
+import {
+  makeBinder,
+  type ModuleExport,
+  type OpImport,
+  WireFormatModulePrinter,
+} from './wire-format-module';
 import * as src from '@glimmer/syntax/lib/source/api';
 import { normalize } from '@glimmer/syntax/lib/v2/normalize';
 import { LOCAL_LOGGER } from '@glimmer/util';
@@ -185,7 +190,8 @@ export function precompileModule(
   const moduleName = options.meta?.moduleName;
   const idFn = options.id || defaultId;
   const blockJSON = JSON.stringify(block);
-  const printer = new WireFormatModulePrinter();
+  const { bind, imports } = makeBinder(options.meta);
+  const printer = new WireFormatModulePrinter(bind);
   const blockSource = printer.block(block);
 
   const fields = [
@@ -202,7 +208,7 @@ export function precompileModule(
   }
 
   return {
-    imports: printer.imports,
+    imports,
     factory: { module: '@glimmer/opcode-compiler/lib/template-core', name: 'default' },
     expression: `{${fields.join(',')}}`,
   };

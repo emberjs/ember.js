@@ -22,6 +22,57 @@ export interface ModuleExport {
   name: string;
 }
 
+/**
+ * The part of `babel-plugin-ember-template-compilation`'s `jsutils` that
+ * the compiler uses: it adds an import to the host module and returns the
+ * local name. The target is `null` because nothing in template scope can
+ * shadow a compiler-generated reference.
+ */
+export interface ImportBinder {
+  bindImport(
+    moduleSpecifier: string,
+    exportedName: string,
+    target: null,
+    opts?: { nameHint?: string }
+  ): string;
+}
+
+/** Adds an import on first use and returns its local name. */
+export type Bind = (local: string, module: string, name: string, id?: number) => string;
+
+/**
+ * A `Bind` for the compile output. With `jsutils` from the build tool, the
+ * import goes straight into the host module. Without it, the import lands
+ * on the `imports` list for the caller to add, under the hinted name.
+ */
+export function makeBinder(meta: object | undefined): { bind: Bind; imports: OpImport[] } {
+  let imports: OpImport[] = [];
+  let seen = new Map<string, string>();
+  let jsutils = (meta as { jsutils?: ImportBinder } | undefined)?.jsutils;
+
+  let bind: Bind = (local, module, name, id = -1) => {
+    let key = `${module}#${name}`;
+    let found = seen.get(key);
+
+    if (found !== undefined) {
+      return found;
+    }
+
+    let bound = local;
+
+    if (jsutils) {
+      bound = jsutils.bindImport(module, name, null, { nameHint: local });
+    } else {
+      imports.push({ local, module, name, id });
+    }
+
+    seen.set(key, bound);
+    return bound;
+  };
+
+  return { bind, imports };
+}
+
 const NAMES: Record<number, string> = {};
 for (let [name, value] of Object.entries(Op)) {
   NAMES[value] = name;
@@ -33,8 +84,7 @@ for (let [name, value] of Object.entries(Op)) {
  * `@glimmer/opcode-compiler/ops`. Everything else stays JSON.
  */
 export class WireFormatModulePrinter {
-  readonly imports: OpImport[] = [];
-  private seen = new Set<string>();
+  constructor(private bind: Bind) {}
 
   block(block: SerializedTemplateBlock): string {
     let [statements, locals, upvars] = block;
@@ -48,14 +98,7 @@ export class WireFormatModulePrinter {
       throw new Error(`Unknown wire format opcode ${op}`);
     }
 
-    let local = `__wf_${name}`;
-
-    if (!this.seen.has(local)) {
-      this.seen.add(local);
-      this.imports.push({ local, module: OPS_MODULE, name, id: op });
-    }
-
-    return local;
+    return this.bind(`__wf_${name}`, OPS_MODULE, name, op);
   }
 
   private statements(statements: WireFormat.Statement[]): string {

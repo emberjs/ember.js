@@ -1,6 +1,7 @@
 import type { BlockMetadata, Nullable } from '@glimmer/interfaces';
 import type { PrecompiledModule, PrecompileOptions } from '@glimmer/compiler/lib/compiler';
-import type { ModuleExport, OpImport } from '@glimmer/compiler/lib/wire-format-module';
+import type { ModuleExport } from '@glimmer/compiler/lib/wire-format-module';
+import { makeBinder } from '@glimmer/compiler/lib/wire-format-module';
 import { defaultId, precompileJSON } from '@glimmer/compiler/lib/compiler';
 
 import { printBlock, TEMPLATE_MODULE } from './print';
@@ -32,17 +33,7 @@ export function precompileAot(source: string, options: PrecompileAotOptions): Pr
 
   let [statements, locals, upvars] = json;
 
-  let imports: OpImport[] = [];
-  let seen = new Set<string>();
-
-  function bind(local: string, module: string, name: string): string {
-    if (!seen.has(local)) {
-      seen.add(local);
-      imports.push({ local, module, name, id: -1 });
-    }
-
-    return local;
-  }
+  let { bind, imports } = makeBinder(options.meta);
 
   let scopeEntries = usedLocals.map((name) => (name === 'this' ? `"this":this` : name));
   let scopeValues: unknown[] = usedLocals.map((_, index) => aotRef({ index }));

@@ -68,3 +68,23 @@ QUnit.test('strict mode with lexical scope', (assert) => {
   assert.deepEqual(result.block, expected);
   assert.deepEqual(result.scope(), { Foo: 'foo', bar: 'bar', baz: 'baz' });
 });
+
+QUnit.test('with jsutils, imports bind through the build tool', (assert) => {
+  let bound: string[] = [];
+  let jsutils = {
+    bindImport(module: string, name: string, target: null, opts?: { nameHint?: string }) {
+      assert.strictEqual(target, null, 'a generated reference has no shadow target');
+      bound.push(`${module}#${name}`);
+      return `${opts?.nameHint ?? name}0`;
+    },
+  };
+
+  let { imports, expression } = precompileModule('hi ', {
+    strictMode: false,
+    meta: { jsutils },
+  });
+
+  assert.strictEqual(imports.length, 0, 'nothing is left for the caller to bind');
+  assert.true(bound.includes('@glimmer/opcode-compiler/ops#AppendStatic'), 'the sexp op is bound');
+  assert.true(expression.includes('__wf_AppendStatic0'), 'the expression uses the returned name');
+});
