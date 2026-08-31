@@ -15,7 +15,10 @@ import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
 import Mixin, { applyMixin } from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import {
+  INTERNAL_MIXIN_CREATE,
+  INTERNAL_MIXIN_EXTEND,
+} from '@ember/-internals/utils/lib/internal-mixin-create';
 import { deprecateAppliedMixins } from '@ember/-internals/utils/lib/deprecated-mixin';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import makeArray from '@ember/array/make';
@@ -716,6 +719,15 @@ class CoreObject {
   ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
   static extend(...mixins: any[]) {
     deprecateAppliedMixins(mixins);
+    return this[INTERNAL_MIXIN_EXTEND](...mixins);
+  }
+
+  /** @internal */
+  static [INTERNAL_MIXIN_EXTEND]<Statics, Instance, M extends Array<unknown>>(
+    this: Statics & EmberClassConstructor<Instance>,
+    ...mixins: M
+  ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
+  static [INTERNAL_MIXIN_EXTEND](...mixins: any[]) {
     let Class = class extends this {};
     reopen.apply(Class.PrototypeMixin, mixins);
     return Class;

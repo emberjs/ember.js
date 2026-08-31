@@ -8,6 +8,7 @@ import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/meta
 import expandProperties from '@ember/-internals/metal/lib/expand_properties';
 import { getFactoryFor } from '@ember/-internals/container/lib/container';
 import { setObservers } from '@ember/-internals/utils/lib/super';
+import { INTERNAL_MIXIN_EXTEND } from '@ember/-internals/utils/lib/internal-mixin-create';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
 import Observable from '@ember/object/observable';
@@ -36,12 +37,8 @@ export { default as computed } from '@ember/-internals/metal/lib/computed';
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface EmberObject extends Observable {}
-class EmberObject extends CoreObject {
-  static {
-    // `extend(Observable)` would fire the Observable deprecation for every app.
-    this.PrototypeMixin.reopen(Observable);
-  }
-
+// `extend(Observable)` would fire the Observable deprecation for every app.
+class EmberObject extends CoreObject[INTERNAL_MIXIN_EXTEND](Observable) {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;
