@@ -189,7 +189,7 @@ export class ContentEncoder {
     if (nameChars === 'inverse') {
       nameChars = 'else';
     }
-    return [nameChars, [CONTENT.list(body), scope.slots]];
+    return [nameChars, inlineBlock(CONTENT.list(body), scope.slots)];
   }
 
   If({ condition, block, inverse }: mir.If): WireFormat.Statements.If {
@@ -285,4 +285,12 @@ function dynamicAttrOp(
   } else {
     return kind.trusting ? SexpOpcodes.TrustingDynamicAttr : SexpOpcodes.DynamicAttr;
   }
+}
+
+/** An empty parameter list carries no information, so leave it out. */
+function inlineBlock(
+  statements: WireFormat.Statement[],
+  parameters: number[]
+): WireFormat.SerializedInlineBlock {
+  return parameters.length === 0 ? [statements] : [statements, parameters];
 }

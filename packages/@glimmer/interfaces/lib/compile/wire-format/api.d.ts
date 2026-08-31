@@ -356,15 +356,15 @@ export type SyntaxWithInternal =
  */
 export type SerializedBlock = [statements: Statements.Statement[]];
 
-export type SerializedInlineBlock = [statements: Statements.Statement[], parameters: number[]];
+export type SerializedInlineBlock = [statements: Statements.Statement[], parameters?: number[]];
 
 /**
  * A JSON object that the compiled TemplateBlock was serialized into.
  */
 export type SerializedTemplateBlock = [
   statements: Statements.Statement[],
-  locals: string[],
-  upvars: string[],
+  locals?: string[],
+  upvars?: string[],
 ];
 
 /**

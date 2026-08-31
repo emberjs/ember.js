@@ -1,4 +1,5 @@
 import type { Nullable, WireFormat } from '@glimmer/interfaces';
+import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 import {
   VM_CHILD_SCOPE_OP,
   VM_COMPILE_BLOCK_OP,
@@ -55,7 +56,7 @@ export function PushYieldableBlock(
   op: PushStatementOp,
   block: Nullable<WireFormat.SerializedInlineBlock>
 ): void {
-  PushSymbolTable(op, block && block[1]);
+  PushSymbolTable(op, block ? (block[1] ?? (EMPTY_ARRAY as number[])) : null);
   op(VM_PUSH_BLOCK_SCOPE_OP);
   PushCompilable(op, block);
 }
@@ -88,7 +89,7 @@ export function InvokeStaticBlockWithStack(
   block: WireFormat.SerializedInlineBlock,
   callerCount: number
 ): void {
-  let parameters = block[1];
+  let parameters = block[1] ?? (EMPTY_ARRAY as number[]);
   let calleeCount = parameters.length;
   let count = Math.min(callerCount, calleeCount);
 

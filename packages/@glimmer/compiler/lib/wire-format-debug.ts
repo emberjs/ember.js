@@ -20,7 +20,7 @@ export default class WireFormatDebugger {
   private upvars: string[];
   private symbols: string[];
 
-  constructor([_statements, symbols, upvars]: SerializedTemplateBlock) {
+  constructor([_statements, symbols = [], upvars = []]: SerializedTemplateBlock) {
     this.upvars = upvars;
     this.symbols = symbols;
   }
@@ -290,7 +290,7 @@ export default class WireFormatDebugger {
   private formatBlock(block: SerializedInlineBlock): object {
     return {
       statements: block[0].map((s) => this.formatOpcode(s)),
-      parameters: block[1],
+      parameters: block[1] ?? [],
     };
   }
 }

@@ -12,6 +12,16 @@ export function visit(template: mir.Template): WireFormat.SerializedTemplateBloc
   let scope = template.scope;
   let block: WireFormat.SerializedTemplateBlock = [statements, scope.symbols, scope.upvars];
 
+  // Trailing empty arrays carry no information, so leave them out of the
+  // wire format. Readers default the missing entries.
+  if (scope.upvars.length === 0) {
+    block.pop();
+
+    if (scope.symbols.length === 0) {
+      block.pop();
+    }
+  }
+
   if (LOCAL_TRACE_LOGGING) {
     let debug = new WireFormatDebugger(block);
     LOCAL_LOGGER.debug(

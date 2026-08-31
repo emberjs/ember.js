@@ -30,7 +30,7 @@ export class WrappedBuilder implements CompilableProgram {
     public moduleName: string
   ) {
     let { block } = layout;
-    let [, symbols] = block;
+    let [, symbols = []] = block;
 
     symbols = symbols.slice();
 

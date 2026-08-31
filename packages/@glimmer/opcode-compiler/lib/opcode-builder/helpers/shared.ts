@@ -106,7 +106,7 @@ export function CompilePositional(
 }
 
 export function meta(layout: LayoutWithContext): BlockMetadata {
-  let [, locals, upvars] = layout.block;
+  let [, locals = EMPTY_ARRAY as string[], upvars = EMPTY_ARRAY as string[]] = layout.block;
   let scopeRecord = layout.scope?.() ?? null;
 
   return {

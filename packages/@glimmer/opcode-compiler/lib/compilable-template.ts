@@ -54,7 +54,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
 }
 
 export function compilable(layout: LayoutWithContext, moduleName: string): CompilableProgram {
-  let [statements, symbols] = layout.block;
+  let [statements, symbols = EMPTY_ARRAY as string[]] = layout.block;
   return new CompilableTemplateImpl(
     statements,
     meta(layout),
