@@ -17,6 +17,8 @@ import setProperties from '@ember/-internals/metal/lib/set_properties';
 
 import Mixin from '@ember/object/mixin';
 import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { deprecatedMixin } from '@ember/-internals/utils/lib/deprecated-mixin';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import { assert } from '@ember/debug';
 
 export type ObserverMethod<Target, Sender> =
@@ -92,6 +94,7 @@ export type ObserverMethod<Target, Sender> =
 
   @class Observable
   @public
+  @deprecated Use `@tracked` from `@glimmer/tracking`, instead of applying this mixin.
 */
 interface Observable {
   /**
@@ -421,24 +424,25 @@ interface Observable {
   */
   cacheFor<K extends keyof this>(key: K): unknown;
 }
-const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
-  get(keyName: string) {
-    return get(this, keyName);
-  },
+const Observable = deprecatedMixin(
+  Mixin[INTERNAL_MIXIN_CREATE]({
+    get(keyName: string) {
+      return get(this, keyName);
+    },
 
-  getProperties(...args: string[]) {
-    return getProperties(this, ...args);
-  },
+    getProperties(...args: string[]) {
+      return getProperties(this, ...args);
+    },
 
-  set(keyName: string, value: unknown) {
-    return set(this, keyName, value);
-  },
+    set(keyName: string, value: unknown) {
+      return set(this, keyName, value);
+    },
 
-  setProperties(hash: object) {
-    return setProperties(this, hash);
-  },
+    setProperties(hash: object) {
+      return setProperties(this, hash);
+    },
 
-  /**
+    /**
     Begins a grouping of property changes.
 
     You can use this method to group property changes so that notifications
@@ -453,12 +457,12 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
     @return {Observable}
     @private
   */
-  beginPropertyChanges() {
-    beginPropertyChanges();
-    return this;
-  },
+    beginPropertyChanges() {
+      beginPropertyChanges();
+      return this;
+    },
 
-  /**
+    /**
     Ends a grouping of property changes.
 
     You can use this method to group property changes so that notifications
@@ -472,37 +476,37 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
     @return {Observable}
     @private
   */
-  endPropertyChanges() {
-    endPropertyChanges();
-    return this;
-  },
+    endPropertyChanges() {
+      endPropertyChanges();
+      return this;
+    },
 
-  notifyPropertyChange(keyName: string) {
-    notifyPropertyChange(this, keyName);
-    return this;
-  },
+    notifyPropertyChange(keyName: string) {
+      notifyPropertyChange(this, keyName);
+      return this;
+    },
 
-  addObserver(
-    key: string,
-    target: object | Function | null,
-    method?: string | Function,
-    sync?: boolean
-  ) {
-    addObserver(this, key, target, method, sync);
-    return this;
-  },
+    addObserver(
+      key: string,
+      target: object | Function | null,
+      method?: string | Function,
+      sync?: boolean
+    ) {
+      addObserver(this, key, target, method, sync);
+      return this;
+    },
 
-  removeObserver(
-    key: string,
-    target: object | Function | null,
-    method?: string | Function,
-    sync?: boolean
-  ) {
-    removeObserver(this, key, target, method, sync);
-    return this;
-  },
+    removeObserver(
+      key: string,
+      target: object | Function | null,
+      method?: string | Function,
+      sync?: boolean
+    ) {
+      removeObserver(this, key, target, method, sync);
+      return this;
+    },
 
-  /**
+    /**
     Returns `true` if the object currently has observers registered for a
     particular key. You can use this method to potentially defer performing
     an expensive action until someone begins observing a particular property
@@ -513,34 +517,41 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
     @return {Boolean}
     @private
   */
-  hasObserverFor(key: string) {
-    return hasListeners(this, `${key}:change`);
-  },
+    hasObserverFor(key: string) {
+      return hasListeners(this, `${key}:change`);
+    },
 
-  incrementProperty(keyName: string, increment = 1) {
-    assert(
-      'Must pass a numeric value to incrementProperty',
-      !isNaN(parseFloat(String(increment))) && isFinite(increment)
+    incrementProperty(keyName: string, increment = 1) {
+      assert(
+        'Must pass a numeric value to incrementProperty',
+        !isNaN(parseFloat(String(increment))) && isFinite(increment)
+      );
+      return set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
+    },
+
+    decrementProperty(keyName: string, decrement = 1) {
+      assert(
+        'Must pass a numeric value to decrementProperty',
+        (typeof decrement === 'number' || !isNaN(parseFloat(decrement))) && isFinite(decrement)
+      );
+      return set(this, keyName, (get(this, keyName) || 0) - decrement);
+    },
+
+    toggleProperty(keyName: string) {
+      return set(this, keyName, !get(this, keyName));
+    },
+
+    cacheFor(keyName: string) {
+      let meta = peekMeta(this);
+      return meta !== null ? meta.valueFor(keyName) : undefined;
+    },
+  }),
+  () => {
+    deprecateUntil(
+      'The `Observable` mixin is deprecated. Use `get` and `set` from `@ember/object`, and `@tracked` from `@glimmer/tracking`, instead.',
+      DEPRECATIONS.DEPRECATE_OBSERVABLE
     );
-    return set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
-  },
-
-  decrementProperty(keyName: string, decrement = 1) {
-    assert(
-      'Must pass a numeric value to decrementProperty',
-      (typeof decrement === 'number' || !isNaN(parseFloat(decrement))) && isFinite(decrement)
-    );
-    return set(this, keyName, (get(this, keyName) || 0) - decrement);
-  },
-
-  toggleProperty(keyName: string) {
-    return set(this, keyName, !get(this, keyName));
-  },
-
-  cacheFor(keyName: string) {
-    let meta = peekMeta(this);
-    return meta !== null ? meta.valueFor(keyName) : undefined;
-  },
-});
+  }
+);
 
 export default Observable;

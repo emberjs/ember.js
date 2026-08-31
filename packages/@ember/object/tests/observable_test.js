@@ -2,7 +2,6 @@ import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, computed } from '@ember/object';
 import EmberObject, { observer } from '@ember/object';
-import Observable from '@ember/object/observable';
 import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -33,7 +32,8 @@ import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpe
 
 let object, objectA, objectB, objectC, objectD, objectE, objectF, lookup;
 
-const ObservableObject = EmberObject.extend(Observable);
+// `EmberObject` already applies `Observable`. Applying it again is deprecated.
+const ObservableObject = EmberObject.extend();
 const originalLookup = context.lookup;
 
 class ObservableTestCase extends AbstractTestCase {
@@ -58,7 +58,7 @@ moduleFor(
   'object.get()',
   class extends ObservableTestCase {
     beforeEach() {
-      object = ObservableObject.extend(Observable, {
+      object = ObservableObject.extend({
         computed: computed(function () {
           return 'value';
         }),
