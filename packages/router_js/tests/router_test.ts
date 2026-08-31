@@ -117,6 +117,10 @@ scenarios.forEach(function (scenario) {
         return scenario.getRoute(name);
       }
 
+      isRouteInaccessibleByURL(name: string) {
+        return Boolean(routes[name]?.inaccessibleByURL);
+      }
+
       getSerializer(name: string) {
         return scenario.getSerializer(name);
       }

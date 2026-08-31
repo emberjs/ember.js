@@ -85,6 +85,22 @@ moduleFor(
       await assert.rejects(this.visit('/what-is-this-i-dont-even'), /\/what-is-this-i-dont-even/);
     }
 
+    async ['@test a classic route marked inaccessibleByURL cannot be entered by URL'](assert) {
+      this.router.map(function () {
+        this.route('secret');
+      });
+      this.add(
+        'route:secret',
+        class extends Route {
+          inaccessibleByURL = true;
+        }
+      );
+
+      await this.visit('/');
+
+      await assert.rejects(this.visit('/secret'), /\/secret/);
+    }
+
     ['@test The Homepage'](assert) {
       return this.visit('/').then(() => {
         assert.equal(this.appRouter.currentPath, 'home', 'currently on the home route');

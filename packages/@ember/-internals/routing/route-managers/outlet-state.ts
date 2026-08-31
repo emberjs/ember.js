@@ -1,5 +1,9 @@
-import type { BaseRoute, InternalRouteInfo } from 'router_js';
+import { invokableFor, type BaseRoute, type InternalRouteInfo } from 'router_js';
 import { tracked } from '@ember/-internals/metal/lib/tracked';
+
+function isPromise(value: object): value is Promise<object> {
+  return 'then' in value && typeof value.then === 'function';
+}
 
 /**
  * What the outlet walk descends from.
@@ -25,6 +29,8 @@ export interface OutletParent {
 export class OutletState implements OutletParent {
   @tracked context: unknown;
 
+  @tracked invokable: object | undefined;
+
   readonly outlets: {
     main: OutletState | undefined;
   } = {
@@ -36,11 +42,28 @@ export class OutletState implements OutletParent {
   }
 
   constructor(
-    readonly manager: { getRouteWrapper(): object; getInvokable(bucket: object): object },
+    readonly manager: {
+      getRouteWrapper(): object;
+      getInvokable(bucket: object): Promise<object>;
+    },
     readonly bucket: object,
     readonly routeInfo: InternalRouteInfo<BaseRoute>
   ) {
     this.context = routeInfo.context;
+
+    let invokable = invokableFor(manager, bucket);
+    if (isPromise(invokable)) {
+      invokable.then(
+        (invokable) => {
+          this.invokable = invokable;
+        },
+        () => {
+          // getInvokable rejected; this level renders nothing.
+        }
+      );
+    } else {
+      this.invokable = invokable;
+    }
 
     routeInfo.enterPromise?.then(
       () => {

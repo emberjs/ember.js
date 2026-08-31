@@ -239,19 +239,15 @@ QUnit.test('RouteInfo.find returns matched', function (assert) {
 QUnit.module('RouteInfo - non-gating manager');
 
 // Builds a handler whose manager mimics a manager that does not gate
-// getInvokable on enterPromise, so a route becomes resolved and renders
-// (e.g. a loading substate) before its `enter` settles with the context.
-// The `enter` hook is supplied per test.
+// getInvokable on enterPromise. The `enter` hook is supplied per test.
 function createNonGatingHandler(
   name: string,
   enter: (bucket: any, args: any) => Promise<unknown>
 ): ClassicRoute {
   let manager = {
-    capabilities: { classicInterop: false, awaitEnter: false },
+    capabilities: { classicInterop: false },
     willEnter() {},
     enter,
-    // Resolves immediately, without awaiting enterPromise. This is the
-    // behaviour that makes the context unavailable at becomeResolved time.
     getInvokable() {
       return resolve(undefined);
     },
@@ -280,14 +276,17 @@ QUnit.test(
 
     let transition = { isAborted: false } as unknown as InternalTransition<ClassicRoute>;
 
-    let resolved = await routeInfo.resolve(transition);
+    let settled = false;
+    let pending = routeInfo.resolve(transition).then((resolvedRouteInfo) => {
+      settled = true;
+      return resolvedRouteInfo;
+    });
 
-    // becomeResolved ran before `enter` settled, so the snapshot is empty.
-    assert.equal(resolved.context, undefined, 'context is undefined until enter settles');
+    await resolve();
+    assert.notOk(settled, 'resolve stays pending until enter settles');
 
     resolveEnter(model);
-    await enterPromise;
-    await resolve();
+    let resolved = await pending;
 
     assert.equal(resolved.context, model, 'resolved context syncs once enter settles');
     assert.equal(
@@ -298,7 +297,7 @@ QUnit.test(
   }
 );
 
-QUnit.test('getAncestorContext resolves with the ancestor enter result', async function (assert) {
+QUnit.test('getAncestorPromise resolves with the ancestor enter result', async function (assert) {
   assert.expect(1);
 
   let router = new TestRouter();
@@ -314,19 +313,19 @@ QUnit.test('getAncestorContext resolves with the ancestor enter result', async f
 
   let captured: ((routeInfo: any) => Promise<unknown>) | undefined;
   let handler = createNonGatingHandler('parent.child', (_bucket, args) => {
-    captured = args.getAncestorContext;
+    captured = args.getAncestorPromise;
     return resolve(undefined);
   });
   let childInfo = new UnresolvedRouteInfoByParam(router, 'parent.child', [], {}, handler);
 
   let transition = { isAborted: false } as unknown as InternalTransition<ClassicRoute>;
-  // Seed the transition state so getAncestorContext can find the ancestor.
+  // Seed the transition state so getAncestorPromise can find the ancestor.
   transition[STATE_SYMBOL] = { routeInfos: [ancestorInfo] } as never;
 
   await childInfo.resolve(transition);
 
   let result = await captured!({ name: 'parent' });
-  assert.equal(result, ancestorModel, 'getAncestorContext resolves with the ancestor enter result');
+  assert.equal(result, ancestorModel, 'getAncestorPromise resolves with the ancestor enter result');
 });
 
 QUnit.test(
@@ -356,7 +355,7 @@ QUnit.test(
   }
 );
 
-QUnit.test('getAncestorContext only matches true ancestors', async function (assert) {
+QUnit.test('getAncestorPromise only matches true ancestors', async function (assert) {
   assert.expect(2);
 
   let router = new TestRouter();
@@ -377,7 +376,7 @@ QUnit.test('getAncestorContext only matches true ancestors', async function (ass
 
   let captured: ((routeInfo: any) => Promise<unknown>) | undefined;
   let handler = createNonGatingHandler('parent.child', (_bucket, args) => {
-    captured = args.getAncestorContext;
+    captured = args.getAncestorPromise;
     return resolve(undefined);
   });
   let childInfo = new UnresolvedRouteInfoByParam(router, 'parent.child', [], {}, handler);

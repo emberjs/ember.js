@@ -13,8 +13,8 @@ import {
 } from './transition';
 import { isParam, isPromise, merge } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
-import type { EnterState, RouteManager, RouteStateBucket } from './route-manager';
-import { getRouteManagement, hasClassicInterop } from './route-manager';
+import type { EnterState, RouteManagement, RouteManager, RouteStateBucket } from './route-manager';
+import { getRouteManagement, hasClassicInterop, invokableFor } from './route-manager';
 
 export type IModel = {} & {
   id?: string | number;
@@ -24,21 +24,12 @@ export type ModelFor<T> = T extends BaseRoute<infer V> ? V : never;
 
 export interface BaseRoute<T = unknown> {
   context: T | undefined;
-
-  // this is used to identify the route in router_js machinery, and is not the same as the
-  // routeName property on classic ember routes. It is totally internal to router_js, and
-  // not to be confused with the routeName property on classic ember routes
-  _internalName?: string;
-
-  // I think this could potentially be deleted
-  // it's not mentioned in any ember docs that I can find, and is only
-  // used in a couple of places in router_js
-  inaccessibleByURL?: boolean;
 }
 
 // used by old router_js tests that expect to be working with the classic ember routes
 export interface ClassicRoute<T = unknown> extends BaseRoute<T> {
   routeName: string;
+  inaccessibleByURL?: boolean;
   events?: Dict<(...args: unknown[]) => unknown>;
   model?(params: Dict<unknown>, transition: Transition): PromiseLike<T> | undefined | T;
   deserialize?(params: Dict<unknown>, transition: Transition): T | PromiseLike<T> | undefined;
@@ -237,6 +228,7 @@ function attachMetadata(info: InternalRouteInfo<BaseRoute>, routeInfo: RouteInfo
 export default class InternalRouteInfo<R extends BaseRoute> {
   private _routePromise?: Promise<R> = undefined;
   private _route?: Option<R> = null;
+  private _management?: RouteManagement = undefined;
   protected router: Router<R>;
   declare paramNames: string[];
   declare name: string;
@@ -245,6 +237,8 @@ export default class InternalRouteInfo<R extends BaseRoute> {
   declare context?: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
   isResolved = false;
   enterPromise?: globalThis.Promise<unknown> = undefined;
+  private beginPromise?: Promise<unknown> = undefined;
+  private beginTransition?: InternalTransition<R> = undefined;
 
   constructor(router: Router<R>, name: string, paramNames: string[], route?: R) {
     this.name = name;
@@ -263,8 +257,22 @@ export default class InternalRouteInfo<R extends BaseRoute> {
     return this.params || {};
   }
 
-  resolve(transition: InternalTransition<R>): Promise<ResolvedRouteInfo<R>> {
-    return Promise.resolve(this.routePromise)
+  beginEnter(transition: InternalTransition<R>, eager = false): Promise<unknown> {
+    if (eager) {
+      const eagerManager = this._management?.manager;
+
+      // Classic keeps the sequential walk, so its legacy timings are exact.
+      if (this.isResolved || eagerManager === undefined || hasClassicInterop(eagerManager)) {
+        return Promise.resolve(undefined);
+      }
+    }
+
+    if (this.beginPromise !== undefined && this.beginTransition === transition) {
+      return this.beginPromise;
+    }
+
+    this.beginTransition = transition;
+    this.beginPromise = Promise.resolve(this.routePromise)
       .then((route: R) => {
         throwIfAborted(transition);
         return route;
@@ -292,7 +300,7 @@ export default class InternalRouteInfo<R extends BaseRoute> {
           to,
           cancel: () => transition.abort(),
           signal: transition.signal,
-          getAncestorContext: (ancestor: RouteInfo) => {
+          getAncestorPromise: (ancestor: RouteInfo) => {
             const routeInfos = transition[STATE_SYMBOL]?.routeInfos ?? [];
             // Only true ancestors count: searching the whole hierarchy would
             // hand a route its own (or a descendant's) pending enter promise —
@@ -317,31 +325,20 @@ export default class InternalRouteInfo<R extends BaseRoute> {
         const enterPromise = manager.enter(bucket, navigationArgs);
         this.enterPromise = enterPromise;
 
-        // Capture the entered context locally rather than writing it onto
-        // this route info: `shouldSupersede` treats an own `context` as
-        // meaningful when infos are reused across transitions, so the info
-        // must not gain one it never had. `becomeResolved` receives the
-        // value explicitly below.
-        let enteredContext: ModelFor<R> | undefined;
-        enterPromise.then(
-          (resolvedContext) => {
-            if (transition.isAborted) return;
-            enteredContext = resolvedContext as ModelFor<R> | undefined;
-          },
-          () => {
-            // Swallow rejections; transition-level error handling reports them.
-          }
-        );
+        invokableFor(manager, bucket);
 
-        const awaitEnter = manager.capabilities.awaitEnter ? enterPromise : Promise.resolve();
-        return awaitEnter.then(() => {
-          throwIfAborted(transition);
-          const resolvedContext = enteredContext ?? (this.context as ModelFor<R> | undefined);
-          const resolved = this.becomeResolved(transition, resolvedContext);
-
-          return resolved;
-        });
+        return enterPromise;
       });
+
+    return this.beginPromise;
+  }
+
+  resolve(transition: InternalTransition<R>): Promise<ResolvedRouteInfo<R>> {
+    return this.beginEnter(transition).then((enteredContext) => {
+      throwIfAborted(transition);
+
+      return this.becomeResolved(transition, enteredContext as ModelFor<R> | undefined);
+    });
   }
 
   becomeResolved(
@@ -439,20 +436,28 @@ export default class InternalRouteInfo<R extends BaseRoute> {
     return this.fetchRoute();
   }
 
-  /**
-    The manager driving this route's lifecycle, read from the association the
-    framework router registered via `associateRouteManagement` when it resolved
-    the route. `undefined` until the route has loaded.
-   */
-  get manager(): RouteManager | undefined {
-    let route = this.route;
-    return route === undefined ? undefined : getRouteManagement(route)?.manager;
+  // Reading before the route has loaded forces the load, matching `route`.
+  private get management(): RouteManagement | undefined {
+    if (this._management === undefined) {
+      let route = this.route;
+      if (route !== undefined) {
+        this._management = getRouteManagement(route);
+      }
+    }
+
+    return this._management;
   }
 
-  /** The manager's bucket for this route. `undefined` until the route has loaded. */
+  get manager(): RouteManager | undefined {
+    return this.management?.manager;
+  }
+
   get bucket(): RouteStateBucket | undefined {
-    let route = this.route;
-    return route === undefined ? undefined : getRouteManagement(route)?.bucket;
+    return this.management?.bucket;
+  }
+
+  get inaccessibleByURL(): boolean {
+    return this.router.isRouteInaccessibleByURL(this.name);
   }
 
   set route(route: R | undefined) {
@@ -480,7 +485,7 @@ export default class InternalRouteInfo<R extends BaseRoute> {
   }
 
   private updateRoute(route: R) {
-    route._internalName = this.name;
+    this._management = getRouteManagement(route);
     return (this.route = route);
   }
 

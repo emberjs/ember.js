@@ -217,6 +217,8 @@ class EmberRouter extends EmberObject {
   #routeManagement = new WeakMap<Owner, Map<string, RouteManagement>>();
   #routeManagerInstances = new WeakMap<Owner, WeakMap<object, RouteManager>>();
 
+  #inaccessibleByURL = new Map<string, boolean>();
+
   private namespace: any;
 
   // Begin Evented
@@ -464,9 +466,11 @@ class EmberRouter extends EmberObject {
       ownerRouteManagement.set(routeName, managed);
     }
 
-    const route = managed.manager.getRoute(managed.bucket);
+    const route = hasClassicInterop(managed.manager)
+      ? managed.manager.getRoute(managed.bucket)
+      : managed.bucket;
 
-    // Register the route → {manager, bucket} association that router_js
+    // Register the handle → {manager, bucket} association that router_js
     // dispatches lifecycle hooks through. Owned by the router so managers
     // don't have to stamp anything onto their route objects. Registered on
     // every call (cheap WeakMap set) because a manager may instantiate its
@@ -475,7 +479,18 @@ class EmberRouter extends EmberObject {
       associateRouteManagement(route, managed.manager, managed.bucket);
     }
 
+    if (hasClassicInterop(managed.manager)) {
+      this.#inaccessibleByURL.set(
+        name,
+        Boolean((route as { inaccessibleByURL?: boolean } | undefined)?.inaccessibleByURL)
+      );
+    }
+
     return route;
+  }
+
+  isRouteInaccessibleByURL(name: string): boolean {
+    return this.#inaccessibleByURL.get(name) ?? false;
   }
 
   _initRouterJs(): void {
@@ -496,6 +511,10 @@ class EmberRouter extends EmberObject {
         // manager/bucket dispatch goes through the routeInfo association, so
         // nothing downstream depends on the route's actual shape.
         return route as BaseRoute;
+      }
+
+      isRouteInaccessibleByURL(name: string) {
+        return router.isRouteInaccessibleByURL(name);
       }
 
       getSerializer(name: string) {
@@ -579,7 +598,13 @@ class EmberRouter extends EmberObject {
         } else {
           // Otherwise trigger the "error" event to attempt an intermediate
           // transition into an error substate
-          transition.trigger(false, 'error', error.error, transition, error.route);
+          let dispatch = dispatchRouteInfoFor(transition[STATE_SYMBOL]?.routeInfos);
+          let manager = dispatch?.manager;
+          let bucket = dispatch?.bucket;
+
+          if (manager && bucket && hasClassicInterop(manager)) {
+            manager.triggerErrorEvent(bucket, transition, error.error, error.route);
+          }
           if (router._isErrorHandled(error.error)) {
             // If we handled the error with a substate just roll the state back on
             // the transition and send the "routeDidChange" event for landing on
@@ -801,15 +826,6 @@ class EmberRouter extends EmberObject {
       let { manager, bucket } = routeInfo;
       assert('Expected active route to have a manager and bucket', manager && bucket);
 
-      // @TODO: could be cached here but currently OutletState is rebuilt each `_setOutletPass`.
-      // So we save on the `bucket` instead
-      // @TODO: bucket is otherwise opaque and it feels weird to mutate a manager owned object.
-      // But invokable caching is ultimately not the managers' concern right now
-      let mutableBucket = bucket as any;
-      if (!mutableBucket.invokable) {
-        const invokable = manager.getInvokable(bucket);
-        mutableBucket.invokable = invokable;
-      }
       let state = new OutletState(manager, bucket, routeInfo);
 
       if (parent) {
@@ -1655,17 +1671,12 @@ let defaultActionHandlers = {
   // the manager owns substate entry.
   loading(this: EmberRouter, routeInfos: InternalRouteInfo<Route>[], transition: Transition) {
     let originRoute = routeInfos[routeInfos.length - 1]?.route;
+    let dispatch = dispatchRouteInfoFor(routeInfos);
+    let manager = dispatch?.manager;
+    let bucket = dispatch?.bucket;
 
-    let dispatchRoute = originRoute;
-    for (let i = routeInfos.length - 2; dispatchRoute === undefined && i >= 0; i--) {
-      dispatchRoute = routeInfos[i]?.route;
-    }
-
-    if (dispatchRoute !== undefined) {
-      let managed = getRouteManagement(dispatchRoute);
-      if (managed !== undefined && hasClassicInterop(managed.manager)) {
-        managed.manager.enterLoadingSubstate(managed.bucket, transition, originRoute);
-      }
+    if (manager && bucket && hasClassicInterop(manager)) {
+      manager.handleLoadingEvent(bucket, transition, originRoute);
     }
   },
 
@@ -1681,25 +1692,37 @@ let defaultActionHandlers = {
     // routeInfos are sliced to end at the route that errored, so its leaf
     // is the origin of the substate walk. That route may never have been
     // created (e.g. across an engine's async boundary) — dispatch then
-    // falls to the deepest created route, and the manager walks from the
-    // transition's leaf.
+    // falls to the deepest route with a classic manager, and the manager
+    // walks from the transition's leaf.
     let originRoute = routeInfos[routeInfos.length - 1]?.route;
+    let dispatch = dispatchRouteInfoFor(routeInfos);
+    let manager = dispatch?.manager;
+    let bucket = dispatch?.bucket;
 
-    let dispatchRoute = originRoute;
-    for (let i = routeInfos.length - 2; dispatchRoute === undefined && i >= 0; i--) {
-      dispatchRoute = routeInfos[i]?.route;
-    }
-
-    if (dispatchRoute !== undefined) {
-      let managed = getRouteManagement(dispatchRoute);
-      if (managed !== undefined && hasClassicInterop(managed.manager)) {
-        managed.manager.enterErrorSubstate(managed.bucket, transition, error, originRoute);
+    if (manager && bucket && hasClassicInterop(manager)) {
+      if (manager.handleErrorEvent(bucket, transition, error, originRoute)) {
+        this._markErrorAsHandled(error);
       }
     }
 
     logError(error, `Error while processing route: ${transition.targetName}`);
   },
 };
+
+function dispatchRouteInfoFor(
+  routeInfos: InternalRouteInfo<Route>[] | undefined
+): InternalRouteInfo<Route> | undefined {
+  if (routeInfos === undefined) {
+    return undefined;
+  }
+
+  let i = routeInfos.length - 1;
+  while (i >= 0 && !routeInfos[i]?.route) {
+    i--;
+  }
+
+  return routeInfos[i];
+}
 
 function logError(_error: any, initialMessage: string) {
   let errorArgs = [];

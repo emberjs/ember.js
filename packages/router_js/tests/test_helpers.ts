@@ -72,7 +72,6 @@ export {
 
 interface RouteCapabilities {
   classicInterop: boolean;
-  awaitEnter: boolean;
 }
 
 interface NavigationArgs {
@@ -81,12 +80,13 @@ interface NavigationArgs {
   internalRouteInfo?: any;
   cancel: () => void;
   signal?: AbortSignal;
-  getAncestorContext: (routeInfo: any) => Promise<unknown>;
+  getAncestorPromise: (routeInfo: any) => Promise<unknown>;
 }
 
 interface RouteManagerLike {
   capabilities: RouteCapabilities;
   createRoute(definition: any, args: { name: string }): TestRouteBucket;
+  getRoute(bucket: TestRouteBucket): unknown;
   willEnter(bucket: TestRouteBucket, args: NavigationArgs): void;
   enter(bucket: TestRouteBucket, args: NavigationArgs): Promise<unknown>;
   didEnter(bucket: TestRouteBucket, args: NavigationArgs & { enter?: boolean }): void;
@@ -131,7 +131,7 @@ const isTransitionLike = (value: unknown): boolean =>
   (no EmberObject, no DI container) so the manager dispatches directly.
  */
 class TestRouteManager implements RouteManagerLike {
-  capabilities: RouteCapabilities = { classicInterop: true, awaitEnter: true };
+  capabilities: RouteCapabilities = { classicInterop: true };
 
   createRoute(handler: ClassicRoute, args: { name: string }): TestRouteBucket {
     const bucket = new TestRouteBucket(handler, args);
@@ -144,6 +144,12 @@ class TestRouteManager implements RouteManagerLike {
       bucket as unknown as RouteStateBucket
     );
     return bucket;
+  }
+
+  // Classic-interop only: these tests drive plain handler objects through the
+  // classic surface, so the router still hands them back to callers.
+  getRoute(bucket: TestRouteBucket): unknown {
+    return bucket.route;
   }
 
   willEnter(_bucket: TestRouteBucket, _args: NavigationArgs): void {}
@@ -279,14 +285,8 @@ class TestRouteManager implements RouteManagerLike {
     return route.buildRouteInfoMetadata ? route.buildRouteInfoMetadata() : null;
   }
 
-  // Gate on enterPromise so resolution stays sequential, matching the
-  // classic expectation that a parent's model resolves before a child's
-  // model starts.
-  getInvokable(
-    _bucket: TestRouteBucket,
-    enterPromise: Promise<unknown>
-  ): Promise<object | undefined> {
-    return (enterPromise ?? Promise.resolve()).then(() => undefined);
+  getInvokable(_bucket: TestRouteBucket): Promise<object | undefined> {
+    return Promise.resolve(undefined);
   }
 }
 
@@ -297,7 +297,7 @@ export function createHandler<T extends IModel>(
   options?: Dict<unknown>
 ): ClassicRoute<T> {
   const handler = Object.assign(
-    { name, routeName: name, context: {}, names: [], handler: name, _internalName: name },
+    { name, routeName: name, context: {}, names: [], handler: name },
     options
   ) as unknown as ClassicRoute<T>;
   // Attach the shared test manager + bucket so the resolve path has something

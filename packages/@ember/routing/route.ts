@@ -303,9 +303,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
 
   /** @internal */
   _bucketCache!: BucketCache;
-  /** @internal */
-  _internalName!: string;
-
   private _names: unknown;
 
   _router!: EmberRouter;

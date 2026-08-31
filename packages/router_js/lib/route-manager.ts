@@ -46,15 +46,9 @@ export interface RouteCapabilitiesVersions {
     surface. It is not intended to be used by managers outside the
     framework-provided `ClassicRouteManager`.
    */
-  '1.0':
-    | {
-        classicInterop: true;
-        awaitEnter: boolean;
-      }
-    | {
-        classicInterop?: false;
-        awaitEnter?: boolean;
-      };
+  '1.0': {
+    classicInterop?: boolean;
+  };
 }
 
 /**
@@ -63,7 +57,6 @@ export interface RouteCapabilitiesVersions {
  */
 export interface RouteCapabilities {
   classicInterop: boolean;
-  awaitEnter: boolean;
 }
 
 /**
@@ -71,7 +64,7 @@ export interface RouteCapabilities {
   be assigned to `manager.capabilities`.
 
   ```ts
-  capabilities = routeCapabilities('1.0', { classicInterop: true, awaitEnter: true });
+  capabilities = routeCapabilities('1.0', { classicInterop: true });
   ```
 
   @param _managerAPI The version of the manager API the route manager targets.
@@ -83,7 +76,6 @@ export function routeCapabilities<Version extends keyof RouteCapabilitiesVersion
 ): RouteCapabilities {
   return {
     classicInterop: Boolean(options.classicInterop),
-    awaitEnter: Boolean(options.awaitEnter),
   };
 }
 
@@ -120,6 +112,26 @@ export function associateRouteManagement(
 
 export function getRouteManagement(route: object): RouteManagement | undefined {
   return ROUTE_MANAGEMENT.get(route);
+}
+
+type Invokable = globalThis.Promise<object> | object;
+
+const INVOKABLES = new WeakMap<object, Invokable>();
+export function invokableFor<B extends object>(
+  manager: { getInvokable(bucket: B): globalThis.Promise<object> },
+  bucket: B
+): Invokable {
+  let invokable = INVOKABLES.get(bucket);
+  if (invokable === undefined) {
+    let promise = manager.getInvokable(bucket);
+    invokable = promise;
+    INVOKABLES.set(bucket, invokable);
+    promise.then(
+      (value) => INVOKABLES.set(bucket, value),
+      () => {}
+    );
+  }
+  return invokable;
 }
 
 // -- Navigation state ---------------------------------------------------------
@@ -163,7 +175,7 @@ export interface AsyncNavigationState {
 
     A `RouteInfo` for the desired ancestor must always be passed explicitly.
    */
-  getAncestorContext(routeInfo: RouteInfo): Promise<unknown>;
+  getAncestorPromise(routeInfo: RouteInfo): Promise<unknown>;
 }
 
 /**
@@ -265,6 +277,7 @@ export interface CreateRouteArgs {
   The contract every route base class implements via its manager. The router
   drives this interface; nothing else in user code should.
 
+
   @template Bucket The shape of the bucket the manager returns from
     `createRoute`. Defaults to the empty marker, override for a concrete
     manager implementation.
@@ -284,11 +297,6 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   createRoute(factory: object, args: CreateRouteArgs): Bucket;
 
   /**
-    Returns a route associated with a bucket
-   */
-  getRoute(bucket: Bucket): unknown;
-
-  /**
     Returns the destroyable (if any) associated with the bucket. When a
     manager creates route state that is not otherwise owner-managed, the
     framework associates the returned destroyable with the owner so it is
@@ -306,7 +314,7 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   /**
     Asynchronous entry point. The returned promise resolves with the route's
     context. The router stores the promise on the matching `RouteInfo` so
-    descendant routes can await it via `getAncestorContext`.
+    descendant routes can await it via `getAncestorPromise`.
    */
   enter(bucket: Bucket, state: EnterState): Promise<unknown>;
 
@@ -343,10 +351,9 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   getRouteWrapper(): object;
 
   /**
-    Returns the renderable for the route: the component the outlet should
-    render.
+    Returns the renderable for the route. Async to support lazily loaded modules
    */
-  getInvokable(bucket: Bucket): object;
+  getInvokable(bucket: Bucket): Promise<object>;
 }
 
 /**
@@ -358,6 +365,12 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
 export interface RouteManagerWithClassicInterop<
   Bucket extends RouteStateBucket = RouteStateBucket,
 > extends RouteManager<Bucket> {
+  /**
+    Returns the classic `Route` instance backing a bucket, for the legacy APIs
+    that still surface one (transition promise value, transition error route).
+   */
+  getRoute(bucket: Bucket): unknown;
+
   // Lifecycle hooks, widened with the capability-gated interop state. The
   // router narrows via `hasClassicInterop` before dispatching these shapes.
   willEnter(bucket: Bucket, state: ClassicWillEnterState): void;
@@ -457,31 +470,13 @@ export interface RouteManagerWithClassicInterop<
    */
   redirect(bucket: Bucket, routeInfo: RouteInfo, context: unknown, transition: Transition): void;
 
-  /**
-    Enters the classic `loading` substate for a slow transition: looks up
-    the nearest `*.loading`/`*_loading` route (stopping at the transition's
-    pivot) and intermediate-transitions into it. Called by the router's
-    default `loading` action handler once the loading event has bubbled
-    unhandled above the application route.
+  triggerLoadingEvent(bucket: Bucket, transition: Transition): void;
 
-    `originRoute` is the route whose model is slow, or `undefined` when that
-    route was never created; typed `unknown` because router_js never
-    inspects route shapes.
-   */
-  enterLoadingSubstate(bucket: Bucket, transition: Transition, originRoute: unknown): void;
+  triggerErrorEvent(bucket: Bucket, transition: Transition, error: Error, route: unknown): void;
 
-  /**
-    Enters the classic `error` substate for an error that bubbled unhandled
-    above the application route: looks up the nearest `*.error`/`*_error`
-    route and intermediate-transitions into it, passing the error as its
-    model. Returns `true` when a substate was entered and the error should
-    be treated as handled.
+  handleLoadingEvent(bucket: Bucket, transition: Transition, originRoute: unknown): void;
 
-    `originRoute` is the route whose `enter` failed, or `undefined` when
-    that route was never created (e.g. across an engine's async boundary);
-    typed `unknown` because router_js never inspects route shapes.
-   */
-  enterErrorSubstate(
+  handleErrorEvent(
     bucket: Bucket,
     transition: Transition,
     error: Error,
