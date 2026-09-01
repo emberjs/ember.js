@@ -9,8 +9,10 @@ import type {
   GlimmerTreeChanges,
   Nullable,
   ResettableBlock,
+  Revision,
   Scope,
   SimpleComment,
+  Tag,
   UpdatingOpcode,
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
@@ -24,7 +26,16 @@ import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { debug } from '@glimmer/validator/lib/debug';
-import { resetTracking } from '@glimmer/validator/lib/tracking';
+import {
+  beginTrackFrame,
+  beginUntrackFrame,
+  consumeTag,
+  endTrackFrame,
+  endUntrackFrame,
+  resetTracking,
+  trackFrameDepth,
+} from '@glimmer/validator/lib/tracking';
+import { INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
@@ -65,7 +76,20 @@ export class UpdatingVM implements IUpdatingVM {
         }
       }
     } else {
-      this._execute(opcodes, handler);
+      let hasErrored = true;
+      try {
+        this._execute(opcodes, handler);
+        hasErrored = false;
+      } finally {
+        // `{{#each}}` items open a tracking frame that is closed when their
+        // frame is popped, so an exception that escapes the loop leaves it
+        // open: `CURRENT_TRACKER` would keep pointing at a dead item and
+        // the next balanced `endTrackFrame` (a component's, say) would pop
+        // the wrong one, corrupting every tag computed afterwards. Only the
+        // DEBUG branch above used to reset, so in production a single
+        // render error poisoned autotracking for the rest of the page.
+        if (hasErrored) resetTracking();
+      }
     }
   }
 
@@ -78,7 +102,9 @@ export class UpdatingVM implements IUpdatingVM {
       let opcode = this.frame.nextStatement();
 
       if (opcode === undefined) {
-        frameStack.pop();
+        let frame = expect(frameStack.pop(), 'bug: expected a frame');
+
+        frame.finalize(false);
         continue;
       }
 
@@ -94,13 +120,20 @@ export class UpdatingVM implements IUpdatingVM {
     this.frame.goto(index);
   }
 
-  try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>) {
-    this.frameStack.push(new UpdatingVMFrame(ops, handler));
+  try(
+    ops: UpdatingOpcode[],
+    handler: Nullable<ExceptionHandler>,
+    finalizer?: (didError: boolean) => void
+  ) {
+    this.frameStack.push(new UpdatingVMFrame(ops, handler, finalizer));
   }
 
   throw() {
     this.frame.handleException();
-    this.frameStack.pop();
+
+    let frame = expect(this.frameStack.pop(), 'bug: expected a frame');
+
+    frame.finalize(true);
   }
 }
 
@@ -181,6 +214,14 @@ export class ListItemOpcode extends TryOpcode {
   public retained = false;
   public index = -1;
 
+  /**
+   * Everything this item's subtree consumed during its last update,
+   * combined. When still valid, the whole subtree is skipped -- one tag
+   * validation instead of walking every opcode in the item.
+   */
+  private subtreeTag: Nullable<Tag> = null;
+  private subtreeRevision: Revision = INITIAL;
+
   constructor(
     state: Closure,
     context: EvaluationContext,
@@ -190,6 +231,70 @@ export class ListItemOpcode extends TryOpcode {
     public value: Reference
   ) {
     super(state, context, bounds, []);
+  }
+
+  override evaluate(vm: UpdatingVM) {
+    let { subtreeTag } = this;
+
+    if (
+      subtreeTag !== null &&
+      !vm.alwaysRevalidate &&
+      validateTag(subtreeTag, this.subtreeRevision)
+    ) {
+      if (LOCAL_DEBUG) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+        logStep!('list-item-subtrees', ['skip', this.key]);
+      }
+
+      // propagate this item's dependencies to any enclosing tracking
+      // frame, exactly as executing the children would have
+      consumeTag(subtreeTag);
+      return;
+    }
+
+    if (LOCAL_DEBUG) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+      logStep!('list-item-subtrees', ['walk', this.key]);
+    }
+
+    // The frame opened here is closed from the finalizer below, once the
+    // children have run -- so by then it is not necessarily the innermost
+    // one. `vm.throw()` unwinds a single frame, and a component's
+    // `BeginTrackFrameOpcode`/`EndTrackFrameOpcode` pair lives in the same
+    // ops array as the rest of this item's children, so an `Assert` that
+    // fires between the two leaves the component's frame open. Closing
+    // blindly would hand us that frame's partial tag and then skip this
+    // item forever against it. Recording the depth lets us tell that case
+    // apart and fall back to "no tag", which only costs a re-render.
+    let depth = trackFrameDepth();
+
+    beginTrackFrame();
+    vm.try(this.children, this, (didError) => {
+      let unbalanced = trackFrameDepth() > depth + 1;
+      let tag: Nullable<Tag> = null;
+
+      // always balance, even when unwinding; the last frame closed is ours
+      while (trackFrameDepth() > depth) {
+        tag = endTrackFrame();
+      }
+
+      if (didError || unbalanced || tag === null) return;
+
+      this.subtreeTag = tag;
+      this.subtreeRevision = valueForTag(tag);
+      consumeTag(tag);
+    });
+  }
+
+  override handleException() {
+    // The children are about to be replaced, so the collected tag no longer
+    // describes them. Belt and braces rather than load-bearing: whatever
+    // threw did so because a ref this item's tag already covers changed, so
+    // the tag is invalid regardless and the item would be walked anyway.
+    // Kept because that reasoning holds for today's `Assert`s, not for any
+    // future opcode that might unwind on something the tag never saw.
+    this.subtreeTag = null;
+    super.handleException();
   }
 
   shouldRemove(): boolean {
@@ -231,25 +336,109 @@ export class ListBlockOpcode extends BlockOpcode {
     let iterator = valueForRef(this.iterableRef);
 
     if (this.lastIterator !== iterator) {
-      let { bounds } = this;
-      let { dom } = vm;
+      // Deriving a fresh array from tracked state is the idiomatic pattern,
+      // so the iterator's identity changes on every update even when none
+      // of the list's keys did. When the new iteration turns out to match
+      // the existing children one-for-one, the item refs can be updated in
+      // place -- no marker node, no diff bookkeeping, no children rebuild.
+      let replay = this.tryFastSync(iterator);
 
-      let marker = (this.marker = dom.createComment(''));
-      dom.insertAfter(
-        bounds.parentElement(),
-        marker,
-        expect(bounds.lastNode(), "can't insert after an empty bounds")
-      );
+      if (replay !== null) {
+        let { bounds } = this;
+        let { dom } = vm;
 
-      this.sync(iterator);
+        let marker = (this.marker = dom.createComment(''));
+        dom.insertAfter(
+          bounds.parentElement(),
+          marker,
+          expect(bounds.lastNode(), "can't insert after an empty bounds")
+        );
 
-      this.parentElement().removeChild(marker);
-      this.marker = null;
+        this.sync(new PrefixedIterator(replay, iterator));
+
+        this.parentElement().removeChild(marker);
+        this.marker = null;
+      }
+
       this.lastIterator = iterator;
     }
 
     // Run now-updated updating opcodes
     super.evaluate(vm);
+  }
+
+  /**
+   * Walks the new iteration against the existing children, applying it in
+   * place for as long as it matches. Returns null when everything matched
+   * in order and in count, which means the update is already complete.
+   *
+   * Otherwise the items consumed so far still have to reach the full
+   * `sync`, which needs the iteration from the beginning -- so the matched
+   * prefix is rebuilt (from the opcodes, whose refs were just updated)
+   * along with the item that mismatched.
+   */
+  private tryFastSync(iterator: OpaqueIterator): Nullable<OpaqueIterationItem[]> {
+    let { children } = this;
+    let matched = 0;
+
+    for (;;) {
+      let item = iterator.next();
+
+      if (item === null) {
+        // ran out of items: either an exact match, or the list shrank
+        return matched === children.length ? null : this.replayPrefix(matched, null);
+      }
+
+      let opcode = children[matched];
+
+      if (opcode === undefined || opcode.key !== item.key) {
+        return this.replayPrefix(matched, item);
+      }
+
+      updateRef(opcode.memo, item.memo);
+      updateRef(opcode.value, item.value);
+      matched++;
+    }
+  }
+
+  /**
+   * The matched prefix was already applied to the item refs, so those items
+   * can be read back off the opcodes.
+   *
+   * The reads are untracked deliberately. This runs inside whatever
+   * tracking frame happens to be open -- an enclosing `{{#each}}` item's,
+   * or a component's cache group -- and `valueForRef` consumes. Letting
+   * these escape would make that frame depend on every item ref in the
+   * list, so any list mutation would invalidate the enclosing component
+   * and re-run its update hooks for no reason.
+   */
+  private replayPrefix(
+    matched: number,
+    mismatch: Nullable<OpaqueIterationItem>
+  ): OpaqueIterationItem[] {
+    let { children } = this;
+    let prefix: OpaqueIterationItem[] = [];
+
+    beginUntrackFrame();
+
+    try {
+      for (let i = 0; i < matched; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+        let opcode = children[i]!;
+
+        prefix.push({
+          key: opcode.key,
+          value: valueForRef(opcode.value),
+          memo: valueForRef(opcode.memo),
+        });
+      }
+    } finally {
+      endUntrackFrame();
+    }
+
+    if (mismatch !== null) prefix.push(mismatch);
+
+    return prefix;
   }
 
   private sync(iterator: OpaqueIterator) {
@@ -431,7 +620,8 @@ class UpdatingVMFrame {
 
   constructor(
     private ops: UpdatingOpcode[],
-    private exceptionHandler: Nullable<ExceptionHandler>
+    private exceptionHandler: Nullable<ExceptionHandler>,
+    private finalizer?: (didError: boolean) => void
   ) {}
 
   goto(index: number) {
@@ -446,5 +636,40 @@ class UpdatingVMFrame {
     if (this.exceptionHandler) {
       this.exceptionHandler.handleException();
     }
+  }
+
+  finalize(didError: boolean) {
+    this.finalizer?.(didError);
+  }
+}
+
+/**
+ * Replays items the fast path already pulled off an iterator, then drains
+ * the rest of it, so `sync` can see an iteration from the beginning that
+ * has in fact been partly consumed.
+ */
+class PrefixedIterator implements OpaqueIterator {
+  private index = 0;
+
+  constructor(
+    private prefix: OpaqueIterationItem[],
+    private inner: OpaqueIterator
+  ) {}
+
+  /**
+   * Only meaningful before the inner iterator has been advanced, which is
+   * all `sync` needs -- it drives iteration with `next` alone.
+   */
+  isEmpty(): boolean {
+    return this.index >= this.prefix.length && this.inner.isEmpty();
+  }
+
+  next(): Nullable<OpaqueIterationItem> {
+    if (this.index < this.prefix.length) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked
+      return this.prefix[this.index++]!;
+    }
+
+    return this.inner.next();
   }
 }
