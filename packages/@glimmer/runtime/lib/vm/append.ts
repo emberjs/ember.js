@@ -20,7 +20,7 @@ import type {
   TreeBuilder,
   UpdatingOpcode,
 } from '@glimmer/interfaces';
-import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib/iterable';
+import type { OpaqueIterationItem } from '@glimmer/reference/lib/iterable';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm/lib/registers';
 import { dev, expect } from '@glimmer/debug-util/lib/platform-utils';
@@ -38,7 +38,6 @@ import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validato
 import { $pc, isLowLevelRegister } from '@glimmer/vm/lib/registers';
 
 import type { ScopeOptions } from '../scope';
-import type { AppendingBlockList } from './element-builder';
 import type { EvaluationStack } from './stack';
 import type { BlockOpcode } from './update';
 
@@ -53,7 +52,8 @@ import { VMArgumentsImpl } from './arguments';
 import { LowLevelVM } from './low-level';
 import RenderResultImpl from './render-result';
 import EvaluationStackImpl from './stack';
-import { ListBlockOpcode, ListItemOpcode, TryOpcode } from './update';
+import type { ListBlockOpcode } from './update';
+import { ListItemOpcode, TryOpcode } from './update';
 
 /*
  * The VM's own root destroyable, on the fast path like the block opcodes.
@@ -453,10 +453,6 @@ export class VM {
     return opcode;
   }
 
-  registerItem(opcode: ListItemOpcode) {
-    this.listBlock().initializeChild(opcode);
-  }
-
   /**
    * ## Opcodes
    *
@@ -476,19 +472,6 @@ export class VM {
    * [!] push Updating List <- `list`
    * [!] push Updating Stack <- `list.children`
    */
-  enterList(iterableRef: Reference<OpaqueIterator>, offset: number) {
-    let updating: ListItemOpcode[] = [];
-
-    let addr = this.lowlevel.target(offset);
-    let state = this.capture(0, addr);
-    let list = this.tree().pushBlockList(updating) as AppendingBlockList;
-
-    let opcode = new ListBlockOpcode(state, this.context, list, updating, iterableRef);
-
-    this.#stacks.list.push(opcode);
-
-    this.didEnter(opcode);
-  }
 
   /**
    * ## Opcodes
@@ -506,7 +489,7 @@ export class VM {
    * [!] push Updating Stack <- `opcode.children`
    *
    */
-  private didEnter(opcode: BlockOpcode) {
+  didEnter(opcode: BlockOpcode) {
     this.associateDestroyable(opcode);
     this.#stacks.destroyable.push(opcode);
     this.updateWith(opcode);
@@ -545,9 +528,8 @@ export class VM {
    *
    * [!] pop List Stack
    */
-  exitList() {
-    this.exit();
-    this.#stacks.list.pop();
+  get listStack(): Stack<ListBlockOpcode> {
+    return this.#stacks.list;
   }
 
   /**
@@ -668,10 +650,6 @@ export class VM {
    */
   updateWith(opcode: UpdatingOpcode) {
     this.updating().push(opcode);
-  }
-
-  private listBlock(): ListBlockOpcode {
-    return expect(this.#stacks.list.current, 'expected a list block');
   }
 
   /**

@@ -1,16 +1,16 @@
 import type { WireFormat } from '@glimmer/interfaces';
-import { VM_PRIMITIVE_REFERENCE_OP } from '@glimmer/constants/lib/syscall-ops';
+import { PRIMITIVE_REFERENCE_OP } from '@glimmer/runtime/lib/compiled/opcodes/vm';
 
-import type { PushExpressionOp } from '../../syntax/compilers';
+import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 
-import { EXPRESSIONS } from '../../syntax/expressions';
+import { compileSexp } from '../../syntax/compilers';
 import { PushPrimitive } from './vm';
 
 export function expr(op: PushExpressionOp, expression: WireFormat.Expression): void {
   if (Array.isArray(expression)) {
-    EXPRESSIONS.compile(op, expression);
+    compileSexp(op as PushStatementOp, expression);
   } else {
     PushPrimitive(op, expression);
-    op(VM_PRIMITIVE_REFERENCE_OP);
+    op(PRIMITIVE_REFERENCE_OP);
   }
 }

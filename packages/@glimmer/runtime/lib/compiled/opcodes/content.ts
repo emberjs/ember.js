@@ -1,4 +1,9 @@
 import { DEBUG } from '@glimmer/env';
+import {
+  appendDynamicFragment,
+  appendDynamicHTML,
+  appendDynamicNode,
+} from '../../vm/dynamic-content';
 import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants/lib/curried';
 import {
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
@@ -26,7 +31,7 @@ import { ContentType } from '@glimmer/vm/lib/content';
 
 import { isCurriedType } from '../../curried-value';
 import { isEmpty, isFragment, isNode, isSafeString, shouldCoerce } from '../../dom/normalize';
-import { APPEND_OPCODES } from '../../opcodes';
+import { syscall } from '../../opcodes';
 import DynamicTextContent from '../../vm/content/text';
 import { CheckReference } from './-debug-strip';
 import { AssertFilter } from './vm';
@@ -68,7 +73,7 @@ function toDynamicContentType(value: unknown) {
   }
 }
 
-APPEND_OPCODES.add(VM_CONTENT_TYPE_OP, (vm) => {
+export const CONTENT_TYPE_OP = /*#__PURE__*/ syscall(VM_CONTENT_TYPE_OP, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
   vm.stack.push(toContentType(valueForRef(reference)));
@@ -78,7 +83,7 @@ APPEND_OPCODES.add(VM_CONTENT_TYPE_OP, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(VM_DYNAMIC_CONTENT_TYPE_OP, (vm) => {
+export const DYNAMIC_CONTENT_TYPE_OP = /*#__PURE__*/ syscall(VM_DYNAMIC_CONTENT_TYPE_OP, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
   vm.stack.push(toDynamicContentType(valueForRef(reference)));
@@ -88,25 +93,25 @@ APPEND_OPCODES.add(VM_DYNAMIC_CONTENT_TYPE_OP, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(VM_APPEND_HTML_OP, (vm) => {
+export const APPEND_HTML_OP = /*#__PURE__*/ syscall(VM_APPEND_HTML_OP, (vm) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
   let rawValue = valueForRef(reference);
   let value = isEmpty(rawValue) ? '' : String(rawValue);
 
-  vm.tree().appendDynamicHTML(value);
+  appendDynamicHTML(vm.tree(), value);
 });
 
-APPEND_OPCODES.add(VM_APPEND_SAFE_HTML_OP, (vm) => {
+export const APPEND_SAFE_HTML_OP = /*#__PURE__*/ syscall(VM_APPEND_SAFE_HTML_OP, (vm) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
   let rawValue = check(valueForRef(reference), CheckSafeString).toHTML();
   let value = isEmpty(rawValue) ? '' : check(rawValue, CheckString);
 
-  vm.tree().appendDynamicHTML(value);
+  appendDynamicHTML(vm.tree(), value);
 });
 
-APPEND_OPCODES.add(VM_APPEND_TEXT_OP, (vm) => {
+export const APPEND_TEXT_OP = /*#__PURE__*/ syscall(VM_APPEND_TEXT_OP, (vm) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
   let rawValue = valueForRef(reference);
@@ -119,18 +124,21 @@ APPEND_OPCODES.add(VM_APPEND_TEXT_OP, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(VM_APPEND_DOCUMENT_FRAGMENT_OP, (vm) => {
-  let reference = check(vm.stack.pop(), CheckReference);
+export const APPEND_DOCUMENT_FRAGMENT_OP = /*#__PURE__*/ syscall(
+  VM_APPEND_DOCUMENT_FRAGMENT_OP,
+  (vm) => {
+    let reference = check(vm.stack.pop(), CheckReference);
 
-  let value = check(valueForRef(reference), CheckDocumentFragment);
+    let value = check(valueForRef(reference), CheckDocumentFragment);
 
-  vm.tree().appendDynamicFragment(value);
-});
+    appendDynamicFragment(vm.tree(), value);
+  }
+);
 
-APPEND_OPCODES.add(VM_APPEND_NODE_OP, (vm) => {
+export const APPEND_NODE_OP = /*#__PURE__*/ syscall(VM_APPEND_NODE_OP, (vm) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
   let value = check(valueForRef(reference), CheckNode);
 
-  vm.tree().appendDynamicNode(value);
+  appendDynamicNode(vm.tree(), value);
 });

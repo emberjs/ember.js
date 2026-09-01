@@ -3,6 +3,7 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import type { Revision } from '@glimmer/validator/lib/validators';
 import type { Tag } from '@glimmer/interfaces';
 import { decodeHandle, decodeImmediate, isHandle } from '@glimmer/constants/lib/immediate';
+import { DEBUG } from '@glimmer/env';
 import {
   VM_ASSERT_SAME_OP,
   VM_BIND_DYNAMIC_SCOPE_OP,
@@ -59,27 +60,39 @@ import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/valida
 import type { UpdatingVM } from '../../vm';
 import type { VM } from '../../vm/append';
 
-import { APPEND_OPCODES } from '../../opcodes';
+import { syscall } from '../../opcodes';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
 
-APPEND_OPCODES.add(VM_CHILD_SCOPE_OP, (vm) => vm.pushChildScope());
+export const CHILD_SCOPE_OP = /*#__PURE__*/ syscall(VM_CHILD_SCOPE_OP, (vm) => vm.pushChildScope());
 
-APPEND_OPCODES.add(VM_POP_SCOPE_OP, (vm) => vm.popScope());
+export const POP_SCOPE_OP = /*#__PURE__*/ syscall(VM_POP_SCOPE_OP, (vm) => vm.popScope());
 
-APPEND_OPCODES.add(VM_PUSH_DYNAMIC_SCOPE_OP, (vm) => vm.pushDynamicScope());
+export const PUSH_DYNAMIC_SCOPE_OP = /*#__PURE__*/ syscall(VM_PUSH_DYNAMIC_SCOPE_OP, (vm) =>
+  vm.pushDynamicScope()
+);
 
-APPEND_OPCODES.add(VM_POP_DYNAMIC_SCOPE_OP, (vm) => vm.popDynamicScope());
+export const POP_DYNAMIC_SCOPE_OP = /*#__PURE__*/ syscall(VM_POP_DYNAMIC_SCOPE_OP, (vm) =>
+  vm.popDynamicScope()
+);
 
-APPEND_OPCODES.add(VM_CONSTANT_OP, (vm, { op1: other }) => {
+export const CONSTANT_OP = /*#__PURE__*/ syscall(VM_CONSTANT_OP, (vm, { op1: other }) => {
   vm.stack.push(vm.constants.getValue(decodeHandle(other)));
 });
 
-APPEND_OPCODES.add(VM_CONSTANT_REFERENCE_OP, (vm, { op1: other }) => {
-  vm.stack.push(createConstRef(vm.constants.getValue(decodeHandle(other)), false));
+export const CONSTANT_REFERENCE_OP = /*#__PURE__*/ syscall(VM_CONSTANT_REFERENCE_OP, (vm, op) => {
+  let value = vm.constants.getValue(decodeHandle(op.op1));
+  let label: string | false = false;
+
+  // A second operand, present in debug builds, names the value.
+  if (DEBUG && op.size > 2) {
+    label = vm.constants.getValue<string>(decodeHandle(op.op2));
+  }
+
+  vm.stack.push(createConstRef(value, label));
 });
 
-APPEND_OPCODES.add(VM_PRIMITIVE_OP, (vm, { op1: primitive }) => {
+export const PRIMITIVE_OP = /*#__PURE__*/ syscall(VM_PRIMITIVE_OP, (vm, { op1: primitive }) => {
   let stack = vm.stack;
 
   if (isHandle(primitive)) {
@@ -92,7 +105,7 @@ APPEND_OPCODES.add(VM_PRIMITIVE_OP, (vm, { op1: primitive }) => {
   }
 });
 
-APPEND_OPCODES.add(VM_PRIMITIVE_REFERENCE_OP, (vm) => {
+export const PRIMITIVE_REFERENCE_OP = /*#__PURE__*/ syscall(VM_PRIMITIVE_REFERENCE_OP, (vm) => {
   let stack = vm.stack;
   let value = check(stack.pop(), CheckPrimitive);
   let ref;
@@ -112,47 +125,53 @@ APPEND_OPCODES.add(VM_PRIMITIVE_REFERENCE_OP, (vm) => {
   stack.push(ref);
 });
 
-APPEND_OPCODES.add(VM_DUP_OP, (vm, { op1: register, op2: offset }) => {
+export const DUP_OP = /*#__PURE__*/ syscall(VM_DUP_OP, (vm, { op1: register, op2: offset }) => {
   let position = check(vm.fetchValue(check(register, CheckRegister)), CheckNumber) - offset;
   vm.stack.dup(position);
 });
 
-APPEND_OPCODES.add(VM_POP_OP, (vm, { op1: count }) => {
+export const POP_OP = /*#__PURE__*/ syscall(VM_POP_OP, (vm, { op1: count }) => {
   vm.stack.pop(count);
 });
 
-APPEND_OPCODES.add(VM_LOAD_OP, (vm, { op1: register }) => {
+export const LOAD_OP = /*#__PURE__*/ syscall(VM_LOAD_OP, (vm, { op1: register }) => {
   vm.load(check(register, CheckSyscallRegister));
 });
 
-APPEND_OPCODES.add(VM_FETCH_OP, (vm, { op1: register }) => {
+export const FETCH_OP = /*#__PURE__*/ syscall(VM_FETCH_OP, (vm, { op1: register }) => {
   vm.fetch(check(register, CheckSyscallRegister));
 });
 
-APPEND_OPCODES.add(VM_BIND_DYNAMIC_SCOPE_OP, (vm, { op1: _names }) => {
-  let names = vm.constants.getArray<string>(_names);
-  vm.bindDynamicScope(names);
-});
+export const BIND_DYNAMIC_SCOPE_OP = /*#__PURE__*/ syscall(
+  VM_BIND_DYNAMIC_SCOPE_OP,
+  (vm, { op1: _names }) => {
+    let names = vm.constants.getArray<string>(_names);
+    vm.bindDynamicScope(names);
+  }
+);
 
-APPEND_OPCODES.add(VM_ENTER_OP, (vm, { op1: args }) => {
+export const ENTER_OP = /*#__PURE__*/ syscall(VM_ENTER_OP, (vm, { op1: args }) => {
   vm.enter(args);
 });
 
-APPEND_OPCODES.add(VM_EXIT_OP, (vm) => {
+export const EXIT_OP = /*#__PURE__*/ syscall(VM_EXIT_OP, (vm) => {
   vm.exit();
 });
 
-APPEND_OPCODES.add(VM_PUSH_SYMBOL_TABLE_OP, (vm, { op1: _table }) => {
-  let stack = vm.stack;
-  stack.push(vm.constants.getValue(_table));
-});
+export const PUSH_SYMBOL_TABLE_OP = /*#__PURE__*/ syscall(
+  VM_PUSH_SYMBOL_TABLE_OP,
+  (vm, { op1: _table }) => {
+    let stack = vm.stack;
+    stack.push(vm.constants.getValue(_table));
+  }
+);
 
-APPEND_OPCODES.add(VM_PUSH_BLOCK_SCOPE_OP, (vm) => {
+export const PUSH_BLOCK_SCOPE_OP = /*#__PURE__*/ syscall(VM_PUSH_BLOCK_SCOPE_OP, (vm) => {
   let stack = vm.stack;
   stack.push(vm.scope());
 });
 
-APPEND_OPCODES.add(VM_COMPILE_BLOCK_OP, (vm: VM) => {
+export const COMPILE_BLOCK_OP = /*#__PURE__*/ syscall(VM_COMPILE_BLOCK_OP, (vm: VM) => {
   let stack = vm.stack;
   let block = stack.pop<Nullable<CompilableTemplate> | 0>();
 
@@ -163,7 +182,7 @@ APPEND_OPCODES.add(VM_COMPILE_BLOCK_OP, (vm: VM) => {
   }
 });
 
-APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
+export const INVOKE_YIELD_OP = /*#__PURE__*/ syscall(VM_INVOKE_YIELD_OP, (vm) => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckNullable(CheckHandle));
@@ -206,7 +225,7 @@ APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
   vm.call(handle);
 });
 
-APPEND_OPCODES.add(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {
+export const JUMP_UNLESS_OP = /*#__PURE__*/ syscall(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {
   let reference = check(vm.stack.pop(), CheckReference);
   let value = Boolean(valueForRef(reference));
 
@@ -223,15 +242,18 @@ APPEND_OPCODES.add(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {
   }
 });
 
-APPEND_OPCODES.add(VM_JUMP_EQ_OP, (vm, { op1: target, op2: comparison }) => {
-  let other = check(vm.stack.peek(), CheckNumber);
+export const JUMP_EQ_OP = /*#__PURE__*/ syscall(
+  VM_JUMP_EQ_OP,
+  (vm, { op1: target, op2: comparison }) => {
+    let other = check(vm.stack.peek(), CheckNumber);
 
-  if (other === comparison) {
-    vm.lowlevel.goto(target);
+    if (other === comparison) {
+      vm.lowlevel.goto(target);
+    }
   }
-});
+);
 
-APPEND_OPCODES.add(VM_ASSERT_SAME_OP, (vm) => {
+export const ASSERT_SAME_OP = /*#__PURE__*/ syscall(VM_ASSERT_SAME_OP, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
   if (!isConstRef(reference)) {
@@ -239,7 +261,7 @@ APPEND_OPCODES.add(VM_ASSERT_SAME_OP, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(VM_TO_BOOLEAN_OP, (vm) => {
+export const TO_BOOLEAN_OP = /*#__PURE__*/ syscall(VM_TO_BOOLEAN_OP, (vm) => {
   let { stack } = vm;
   let valueRef = check(stack.pop(), CheckReference);
 

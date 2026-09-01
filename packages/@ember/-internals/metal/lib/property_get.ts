@@ -6,6 +6,7 @@ import { setProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { registerEnvironmentHooks } from '@ember/-internals/glimmer/lib/hooks';
 import { consumeTag, isTracking, track } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
 import { isPath } from './path_cache';
@@ -175,3 +176,7 @@ track(() => _getProp({}, 'a'));
 track(() => _getProp({}, 1 as any));
 track(() => _getProp({ a: [] }, 'a'));
 track(() => _getProp({ a: fakeProxy }, 'a'));
+
+// Templates read through these once this module is loaded, so computed
+// properties, `unknownProperty`, and proxies work in templates.
+registerEnvironmentHooks({ getProp: _getProp, getPath: get });

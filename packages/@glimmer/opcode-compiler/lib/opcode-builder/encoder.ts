@@ -10,11 +10,14 @@ import type {
   EvaluationContext,
   HandleResult,
   HighLevelOp,
+  HighLevelResolutionOp,
+  ResolutionHandler,
   InstructionEncoder,
   Operand,
   ProgramHeap,
   SingleBuilderOperand,
   STDLib,
+  StdlibRoutine,
 } from '@glimmer/interfaces';
 import { encodeHandle } from '@glimmer/constants/lib/immediate';
 import { isMachineOp, VM_RETURN_OP } from '@glimmer/constants/lib/vm-ops';
@@ -26,14 +29,9 @@ import { InstructionEncoderImpl } from '@glimmer/encoder/lib/encoder';
 import { dict, StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { ARG_SHIFT, MACHINE_MASK, TYPE_SIZE } from '@glimmer/vm/lib/flags';
 
+import { APPEND_OPCODES } from '@glimmer/runtime/lib/opcodes';
+
 import { compilableBlock } from '../compilable-template';
-import {
-  resolveComponent,
-  resolveComponentOrHelper,
-  resolveHelper,
-  resolveModifier,
-  resolveOptionalComponentOrHelper,
-} from './helpers/resolution';
 import { HighLevelBuilderOpcodes, HighLevelResolutionOpcodes } from './opcodes';
 import { HighLevelOperands } from './operands';
 
@@ -74,9 +72,20 @@ export function encodeOp(
     resolver,
   } = context;
 
-  if (isBuilderOpcode(op[0])) {
-    let [type, ...operands] = op;
-    encoder.push(constants, type, ...(operands as SingleBuilderOperand[]));
+  let head = op[0];
+
+  if (typeof head === 'object') {
+    if ('resolve' in head) {
+      (head as ResolutionHandler).resolve(resolver, constants, meta, op as HighLevelResolutionOp);
+      return;
+    }
+
+    let [, ...operands] = op;
+    APPEND_OPCODES.register(head);
+    encoder.push(constants, head.type, ...(operands as SingleBuilderOperand[]));
+  } else if (isBuilderOpcode(head)) {
+    let [, ...operands] = op;
+    encoder.push(constants, head, ...(operands as SingleBuilderOperand[]));
   } else {
     switch (op[0]) {
       case HighLevelBuilderOpcodes.Label:
@@ -85,16 +94,6 @@ export function encodeOp(
         return encoder.startLabels();
       case HighLevelBuilderOpcodes.StopLabels:
         return encoder.stopLabels();
-      case HighLevelResolutionOpcodes.Component:
-        return resolveComponent(resolver, constants, meta, op);
-      case HighLevelResolutionOpcodes.Modifier:
-        return resolveModifier(resolver, constants, meta, op);
-      case HighLevelResolutionOpcodes.Helper:
-        return resolveHelper(resolver, constants, meta, op);
-      case HighLevelResolutionOpcodes.ComponentOrHelper:
-        return resolveComponentOrHelper(resolver, constants, meta, op);
-      case HighLevelResolutionOpcodes.OptionalComponentOrHelper:
-        return resolveOptionalComponentOrHelper(resolver, constants, meta, op);
 
       case HighLevelResolutionOpcodes.Local: {
         let [, freeVar, andThen] = op;
@@ -116,13 +115,13 @@ export function encodeOp(
           'BUG: Attempted to get a template local, but template does not have any'
         )[valueIndex];
 
-        then(constants.value(value));
+        then(constants.value(value), meta.symbols.lexical?.[valueIndex]);
 
         break;
       }
 
       default:
-        throw new Error(`Unexpected high level opcode ${op[0]}`);
+        throw new Error(`Unexpected high level opcode ${head as number}`);
     }
   }
 }
@@ -132,6 +131,7 @@ export class EncoderImpl implements Encoder {
   private encoder: InstructionEncoder = new InstructionEncoderImpl([]);
   private errors: EncoderError[] = [];
   private handle: number;
+  private stdlibFixups: Array<{ at: number; routine: StdlibRoutine }> = [];
 
   constructor(
     private heap: ProgramHeap,
@@ -151,6 +151,16 @@ export class EncoderImpl implements Encoder {
 
     this.heap.pushMachine(VM_RETURN_OP);
     this.heap.finishMalloc(handle, size);
+
+    // A stdlib routine compiles into its own heap region, so it must wait
+    // until this program's region is closed.
+    for (let { at, routine } of this.stdlibFixups) {
+      let stdlib = expect(
+        this.stdlib,
+        `attempted to encode a stdlib operand (${routine.name}), but the encoder did not have a stdlib`
+      );
+      this.heap.setbyaddr(at, stdlib.handle(routine));
+    }
 
     if (isPresentArray(this.errors)) {
       return { errors: this.errors, handle };
@@ -205,10 +215,11 @@ export class EncoderImpl implements Encoder {
             return encodeHandle(constants.value(compilableBlock(operand.value, this.meta)));
 
           case HighLevelOperands.StdLib:
-            return expect(
-              this.stdlib,
-              'attempted to encode a stdlib operand, but the encoder did not have a stdlib. Are you currently building the stdlib?'
-            )[operand.value];
+            this.stdlibFixups.push({
+              at: this.heap.offset,
+              routine: operand.value as StdlibRoutine,
+            });
+            return -1;
 
           case HighLevelOperands.NonSmallInt:
           case HighLevelOperands.SymbolTable:

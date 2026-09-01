@@ -11,6 +11,7 @@ import {
   valueForRef,
 } from '@glimmer/reference/lib/reference';
 import type Component from '../component';
+import { applyDynamicAttribute } from '@glimmer/runtime/lib/vm/attributes/deferred';
 
 function referenceForParts(rootRef: Reference<Component>, parts: string[]): Reference {
   let isAttrs = parts[0] === 'attrs';
@@ -65,7 +66,7 @@ export function installAttributeBinding(
       elementId = component.elementId;
     }
     let elementIdRef = createPrimitiveRef(elementId);
-    operations.setAttribute('id', elementIdRef, true, null);
+    operations.setAttribute('id', elementIdRef, true, null, applyDynamicAttribute);
     return;
   }
 
@@ -77,7 +78,7 @@ export function installAttributeBinding(
     !(isSimple && isPath)
   );
 
-  operations.setAttribute(attribute, reference, false, null);
+  operations.setAttribute(attribute, reference, false, null, applyDynamicAttribute);
 }
 
 export function createClassNameBindingRef(
@@ -93,7 +94,7 @@ export function createClassNameBindingRef(
   let isStatic = prop === '';
 
   if (isStatic) {
-    operations.setAttribute('class', createPrimitiveRef(truthy), true, null);
+    operations.setAttribute('class', createPrimitiveRef(truthy), true, null, applyDynamicAttribute);
   } else {
     let isPath = prop.indexOf('.') > -1;
     let parts = isPath ? prop.split('.') : [];
@@ -106,7 +107,7 @@ export function createClassNameBindingRef(
       ref = createColonClassNameBindingRef(value, truthy, falsy);
     }
 
-    operations.setAttribute('class', ref, false, null);
+    operations.setAttribute('class', ref, false, null, applyDynamicAttribute);
   }
 }
 

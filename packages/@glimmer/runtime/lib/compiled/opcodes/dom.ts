@@ -1,4 +1,7 @@
 import { DEBUG } from '@glimmer/env';
+import { popRemoteElement, pushRemoteElement } from '../../vm/remote-element';
+import { debugTree } from '../../debug-render-tree';
+import { setDynamicAttribute } from '../../vm/attributes/dynamic';
 import type {
   CapturedPositionalArguments,
   Environment,
@@ -38,7 +41,7 @@ import {
 } from '@glimmer/debug/lib/stack-check';
 import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
-import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
+import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager/lib/internal/api';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { isIndexable } from '@glimmer/util/lib/collections';
@@ -50,29 +53,29 @@ import type { CurriedValue } from '../../curried-value';
 import type { DynamicAttribute } from '../../vm/attributes/dynamic';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
-import { APPEND_OPCODES } from '../../opcodes';
-import { createCapturedArgs } from '../../vm/arguments';
+import { syscall } from '../../opcodes';
 import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
 import { Assert } from './vm';
+import { scheduleInstallModifier, scheduleUpdateModifier } from '../../vm/modifiers';
 
-APPEND_OPCODES.add(VM_TEXT_OP, (vm, { op1: text }) => {
+export const TEXT_OP = /*#__PURE__*/ syscall(VM_TEXT_OP, (vm, { op1: text }) => {
   vm.tree().appendText(vm.constants.getValue(text));
 });
 
-APPEND_OPCODES.add(VM_COMMENT_OP, (vm, { op1: text }) => {
+export const COMMENT_OP = /*#__PURE__*/ syscall(VM_COMMENT_OP, (vm, { op1: text }) => {
   vm.tree().appendComment(vm.constants.getValue(text));
 });
 
-APPEND_OPCODES.add(VM_OPEN_ELEMENT_OP, (vm, { op1: tag }) => {
+export const OPEN_ELEMENT_OP = /*#__PURE__*/ syscall(VM_OPEN_ELEMENT_OP, (vm, { op1: tag }) => {
   vm.tree().openElement(vm.constants.getValue(tag));
 });
 
-APPEND_OPCODES.add(VM_OPEN_DYNAMIC_ELEMENT_OP, (vm) => {
+export const OPEN_DYNAMIC_ELEMENT_OP = /*#__PURE__*/ syscall(VM_OPEN_DYNAMIC_ELEMENT_OP, (vm) => {
   let tagName = check(valueForRef(check(vm.stack.pop(), CheckReference)), CheckString);
   vm.tree().openElement(tagName);
 });
 
-APPEND_OPCODES.add(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
+export const PUSH_REMOTE_ELEMENT_OP = /*#__PURE__*/ syscall(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
   let elementRef = check(vm.stack.pop(), CheckReference);
   let insertBeforeRef = check(vm.stack.pop(), CheckReference);
   let guidRef = check(vm.stack.pop(), CheckReference);
@@ -89,41 +92,20 @@ APPEND_OPCODES.add(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
     vm.updateWith(new Assert(insertBeforeRef));
   }
 
-  let block = vm.tree().pushRemoteElement(element, guid, insertBefore);
+  let block = pushRemoteElement(vm.tree(), element, guid, insertBefore);
   vm.associateDestroyable(block);
 
-  if (vm.env.debugRenderTree !== undefined) {
-    // Note that there is nothing to update – when the args for an
-    // {{#in-element}} changes it gets torn down and a new one is
-    // re-created/rendered in its place (see the `Assert`s above)
-    let args = createCapturedArgs(
-      insertBefore === undefined ? {} : { insertBefore: insertBeforeRef },
-      [elementRef]
-    );
-
-    vm.env.debugRenderTree.create(block, {
-      type: 'keyword',
-      name: 'in-element',
-      args,
-      instance: null,
-    });
-
-    registerDestructor(block, () => {
-      vm.env.debugRenderTree?.willDestroy(block);
-    });
-  }
+  debugTree(vm.env)?.remoteElementDidPush(block, elementRef, insertBeforeRef, insertBefore);
 });
 
-APPEND_OPCODES.add(VM_POP_REMOTE_ELEMENT_OP, (vm) => {
-  let bounds = vm.tree().popRemoteElement();
+export const POP_REMOTE_ELEMENT_OP = /*#__PURE__*/ syscall(VM_POP_REMOTE_ELEMENT_OP, (vm) => {
+  let bounds = popRemoteElement(vm.tree());
 
-  if (vm.env.debugRenderTree !== undefined) {
-    // The RemoteBlock is also its bounds
-    vm.env.debugRenderTree.didRender(bounds, bounds);
-  }
+  // The RemoteBlock is also its bounds
+  vm.env.debugRenderTree?.didRender(bounds, bounds);
 });
 
-APPEND_OPCODES.add(VM_FLUSH_ELEMENT_OP, (vm) => {
+export const FLUSH_ELEMENT_OP = /*#__PURE__*/ syscall(VM_FLUSH_ELEMENT_OP, (vm) => {
   let operations = check(vm.fetchValue($t0), CheckOperations);
   let modifiers: Nullable<ModifierInstance[]> = null;
 
@@ -135,12 +117,12 @@ APPEND_OPCODES.add(VM_FLUSH_ELEMENT_OP, (vm) => {
   vm.tree().flushElement(modifiers);
 });
 
-APPEND_OPCODES.add(VM_CLOSE_ELEMENT_OP, (vm) => {
+export const CLOSE_ELEMENT_OP = /*#__PURE__*/ syscall(VM_CLOSE_ELEMENT_OP, (vm) => {
   let modifiers = vm.tree().closeElement();
 
   if (modifiers !== null) {
     modifiers.forEach((modifier) => {
-      vm.env.scheduleInstallModifier(modifier);
+      scheduleInstallModifier(vm.env, modifier);
       const d = modifier.manager.getDestroyable(modifier.state);
 
       if (d !== null) {
@@ -150,7 +132,7 @@ APPEND_OPCODES.add(VM_CLOSE_ELEMENT_OP, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
+export const MODIFIER_OP = /*#__PURE__*/ syscall(VM_MODIFIER_OP, (vm, { op1: handle }) => {
   let args = check(vm.stack.pop(), CheckArguments);
   if (!vm.env.isInteractive) {
     return;
@@ -191,7 +173,7 @@ APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
   }
 });
 
-APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
+export const DYNAMIC_MODIFIER_OP = /*#__PURE__*/ syscall(VM_DYNAMIC_MODIFIER_OP, (vm) => {
   let { stack } = vm;
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments);
@@ -316,7 +298,7 @@ export class UpdateModifierOpcode implements UpdatingOpcode {
     consumeTag(tag);
 
     if (!validateTag(tag, lastUpdated)) {
-      vm.env.scheduleUpdateModifier(modifier);
+      scheduleUpdateModifier(vm.env, modifier);
       this.lastUpdated = valueForTag(tag);
     }
   }
@@ -362,13 +344,13 @@ export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
         }
 
         this.tag = tag;
-        vm.env.scheduleInstallModifier(newInstance);
+        scheduleInstallModifier(vm.env, newInstance);
       }
 
       this.instance = newInstance;
     } else if (tag !== null && !validateTag(tag, lastUpdated)) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      vm.env.scheduleUpdateModifier(instance!);
+      scheduleUpdateModifier(vm.env, instance!);
       this.lastUpdated = valueForTag(tag);
     }
 
@@ -378,27 +360,33 @@ export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
   }
 }
 
-APPEND_OPCODES.add(VM_STATIC_ATTR_OP, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
-  let name = vm.constants.getValue<string>(_name);
-  let value = vm.constants.getValue<string>(_value);
-  let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
+export const STATIC_ATTR_OP = /*#__PURE__*/ syscall(
+  VM_STATIC_ATTR_OP,
+  (vm, { op1: _name, op2: _value, op3: _namespace }) => {
+    let name = vm.constants.getValue<string>(_name);
+    let value = vm.constants.getValue<string>(_value);
+    let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
 
-  vm.tree().setStaticAttribute(name, value, namespace);
-});
-
-APPEND_OPCODES.add(VM_DYNAMIC_ATTR_OP, (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
-  let name = vm.constants.getValue<string>(_name);
-  let trusting = vm.constants.getValue<boolean>(_trusting);
-  let reference = check(vm.stack.pop(), CheckReference);
-  let value = valueForRef(reference);
-  let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
-
-  let attribute = vm.tree().setDynamicAttribute(name, value, trusting, namespace);
-
-  if (!isConstRef(reference)) {
-    vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute, vm.env));
+    vm.tree().setStaticAttribute(name, value, namespace);
   }
-});
+);
+
+export const DYNAMIC_ATTR_OP = /*#__PURE__*/ syscall(
+  VM_DYNAMIC_ATTR_OP,
+  (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
+    let name = vm.constants.getValue<string>(_name);
+    let trusting = vm.constants.getValue<boolean>(_trusting);
+    let reference = check(vm.stack.pop(), CheckReference);
+    let value = valueForRef(reference);
+    let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
+
+    let attribute = setDynamicAttribute(vm.tree(), name, value, trusting, namespace, vm.env);
+
+    if (!isConstRef(reference)) {
+      vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute, vm.env));
+    }
+  }
+);
 
 export class UpdateDynamicAttributeOpcode implements UpdatingOpcode {
   private updateRef: Reference;

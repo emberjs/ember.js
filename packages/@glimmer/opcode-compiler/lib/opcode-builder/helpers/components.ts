@@ -9,47 +9,53 @@ import type {
 } from '@glimmer/interfaces';
 import type { SavedRegister } from '@glimmer/vm/lib/registers';
 import {
-  VM_BEGIN_COMPONENT_TRANSACTION_OP,
-  VM_CLOSE_ELEMENT_OP,
-  VM_COMMIT_COMPONENT_TRANSACTION_OP,
-  VM_COMPILE_BLOCK_OP,
-  VM_CONSTANT_OP,
-  VM_CREATE_COMPONENT_OP,
-  VM_DID_CREATE_ELEMENT_OP,
-  VM_DID_RENDER_LAYOUT_OP,
-  VM_DUP_OP,
-  VM_FETCH_OP,
-  VM_FLUSH_ELEMENT_OP,
-  VM_GET_COMPONENT_LAYOUT_OP,
-  VM_GET_COMPONENT_SELF_OP,
-  VM_GET_COMPONENT_TAG_NAME_OP,
-  VM_INVOKE_COMPONENT_LAYOUT_OP,
-  VM_JUMP_UNLESS_OP,
-  VM_LOAD_OP,
-  VM_OPEN_DYNAMIC_ELEMENT_OP,
-  VM_POP_DYNAMIC_SCOPE_OP,
-  VM_POP_OP,
-  VM_POP_SCOPE_OP,
-  VM_POPULATE_LAYOUT_OP,
-  VM_PREPARE_ARGS_OP,
-  VM_PRIMITIVE_REFERENCE_OP,
-  VM_PUSH_ARGS_OP,
-  VM_PUSH_COMPONENT_DEFINITION_OP,
-  VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
-  VM_PUSH_DYNAMIC_SCOPE_OP,
-  VM_PUSH_EMPTY_ARGS_OP,
-  VM_PUSH_SYMBOL_TABLE_OP,
-  VM_PUT_COMPONENT_OPERATIONS_OP,
-  VM_REGISTER_COMPONENT_DESTRUCTOR_OP,
-  VM_RESOLVE_CURRIED_COMPONENT_OP,
-  VM_RESOLVE_DYNAMIC_COMPONENT_OP,
-  VM_ROOT_SCOPE_OP,
-  VM_SET_BLOCK_OP,
-  VM_SET_BLOCKS_OP,
-  VM_SET_NAMED_VARIABLES_OP,
-  VM_SET_VARIABLE_OP,
-  VM_VIRTUAL_ROOT_SCOPE_OP,
-} from '@glimmer/constants/lib/syscall-ops';
+  BEGIN_COMPONENT_TRANSACTION_OP,
+  COMMIT_COMPONENT_TRANSACTION_OP,
+  CREATE_COMPONENT_OP,
+  DID_CREATE_ELEMENT_OP,
+  DID_RENDER_LAYOUT_OP,
+  GET_COMPONENT_LAYOUT_OP,
+  GET_COMPONENT_SELF_OP,
+  GET_COMPONENT_TAG_NAME_OP,
+  INVOKE_COMPONENT_LAYOUT_OP,
+  POPULATE_LAYOUT_OP,
+  PREPARE_ARGS_OP,
+  PUSH_ARGS_OP,
+  PUSH_COMPONENT_DEFINITION_OP,
+  PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
+  PUSH_EMPTY_ARGS_OP,
+  PUT_COMPONENT_OPERATIONS_OP,
+  REGISTER_COMPONENT_DESTRUCTOR_OP,
+  RESOLVE_CURRIED_COMPONENT_OP,
+  RESOLVE_DYNAMIC_COMPONENT_OP,
+  SET_BLOCKS_OP,
+  SET_NAMED_VARIABLES_OP,
+  VIRTUAL_ROOT_SCOPE_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/component';
+import {
+  CLOSE_ELEMENT_OP,
+  FLUSH_ELEMENT_OP,
+  OPEN_DYNAMIC_ELEMENT_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/dom';
+import {
+  ROOT_SCOPE_OP,
+  SET_BLOCK_OP,
+  SET_VARIABLE_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/expressions';
+import {
+  COMPILE_BLOCK_OP,
+  CONSTANT_OP,
+  DUP_OP,
+  FETCH_OP,
+  JUMP_UNLESS_OP,
+  LOAD_OP,
+  POP_DYNAMIC_SCOPE_OP,
+  POP_OP,
+  POP_SCOPE_OP,
+  PRIMITIVE_REFERENCE_OP,
+  PUSH_DYNAMIC_SCOPE_OP,
+  PUSH_SYMBOL_TABLE_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/vm';
 import {
   VM_INVOKE_VIRTUAL_OP,
   VM_POP_FRAME_OP,
@@ -122,7 +128,7 @@ export function InvokeComponent(
   let blocks = namedBlocks(_blocks);
 
   if (compilable) {
-    op(VM_PUSH_COMPONENT_DEFINITION_OP, handle);
+    op(PUSH_COMPONENT_DEFINITION_OP, handle);
     InvokeStaticComponent(op, {
       capabilities: capabilities,
       layout: compilable,
@@ -132,7 +138,7 @@ export function InvokeComponent(
       blocks,
     });
   } else {
-    op(VM_PUSH_COMPONENT_DEFINITION_OP, handle);
+    op(PUSH_COMPONENT_DEFINITION_OP, handle);
     InvokeNonStaticComponent(op, {
       capabilities: capabilities,
       elementBlock,
@@ -164,20 +170,20 @@ export function InvokeDynamicComponent(
 
     () => {
       expr(op, definition);
-      op(VM_DUP_OP, $sp, 0);
+      op(DUP_OP, $sp, 0);
       return 2;
     },
 
     () => {
-      op(VM_JUMP_UNLESS_OP, labelOperand('ELSE'));
+      op(JUMP_UNLESS_OP, labelOperand('ELSE'));
 
       if (curried) {
-        op(VM_RESOLVE_CURRIED_COMPONENT_OP);
+        op(RESOLVE_CURRIED_COMPONENT_OP);
       } else {
-        op(VM_RESOLVE_DYNAMIC_COMPONENT_OP, isStrictMode());
+        op(RESOLVE_DYNAMIC_COMPONENT_OP, isStrictMode());
       }
 
-      op(VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP);
+      op(PUSH_DYNAMIC_COMPONENT_INSTANCE_OP);
       InvokeNonStaticComponent(op, {
         capabilities: true,
         elementBlock,
@@ -213,9 +219,9 @@ function InvokeStaticComponent(
     return;
   }
 
-  op(VM_FETCH_OP, $s0);
-  op(VM_DUP_OP, $sp, 1);
-  op(VM_LOAD_OP, $s0);
+  op(FETCH_OP, $s0);
+  op(DUP_OP, $sp, 1);
+  op(LOAD_OP, $s0);
   op(VM_PUSH_FRAME_OP);
 
   // Setup arguments
@@ -284,7 +290,7 @@ function InvokeStaticComponent(
     // Finally, push the VM arguments themselves. These args won't need access
     // to blocks (they aren't accessible from userland anyways), so we push an
     // empty array instead of the actual block names.
-    op(VM_PUSH_ARGS_OP, names, EMPTY_STRING_ARRAY, flags);
+    op(PUSH_ARGS_OP, names, EMPTY_STRING_ARRAY, flags);
 
     // And push an extra pop operation to remove the args before we begin setting
     // variables on the local context
@@ -308,31 +314,31 @@ function InvokeStaticComponent(
     }
   }
 
-  op(VM_BEGIN_COMPONENT_TRANSACTION_OP, $s0);
+  op(BEGIN_COMPONENT_TRANSACTION_OP, $s0);
 
   if (hasCapability(capabilities, InternalComponentCapabilities.dynamicScope)) {
-    op(VM_PUSH_DYNAMIC_SCOPE_OP);
+    op(PUSH_DYNAMIC_SCOPE_OP);
   }
 
   if (hasCapability(capabilities, InternalComponentCapabilities.createInstance)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    op(VM_CREATE_COMPONENT_OP, (blocks.has('default') as any) | 0);
+    op(CREATE_COMPONENT_OP, (blocks.has('default') as any) | 0);
   }
 
-  op(VM_REGISTER_COMPONENT_DESTRUCTOR_OP, $s0);
+  op(REGISTER_COMPONENT_DESTRUCTOR_OP, $s0);
 
   if (hasCapability(capabilities, InternalComponentCapabilities.createArgs)) {
-    op(VM_GET_COMPONENT_SELF_OP, $s0);
+    op(GET_COMPONENT_SELF_OP, $s0);
   } else {
-    op(VM_GET_COMPONENT_SELF_OP, $s0, argNames);
+    op(GET_COMPONENT_SELF_OP, $s0, argNames);
   }
 
   // Setup the new root scope for the component
-  op(VM_ROOT_SCOPE_OP, symbols.length + 1, Object.keys(blocks).length > 0 ? 1 : 0);
+  op(ROOT_SCOPE_OP, symbols.length + 1, Object.keys(blocks).length > 0 ? 1 : 0);
 
   // Pop the self reference off the stack and set it to the symbol for `this`
   // in the new scope. This is why all subsequent symbols are increased by one.
-  op(VM_SET_VARIABLE_OP, 0);
+  op(SET_VARIABLE_OP, 0);
 
   // Going in reverse, now we pop the args/blocks off the stack, starting with
   // arguments, and assign them to their symbols in the new scope.
@@ -343,36 +349,36 @@ function InvokeStaticComponent(
     if (symbol === -1) {
       // The expression was not bound to a local symbol, it was only pushed to be
       // used with VM args in the javascript side
-      op(VM_POP_OP, 1);
+      op(POP_OP, 1);
     } else {
-      op(VM_SET_VARIABLE_OP, symbol + 1);
+      op(SET_VARIABLE_OP, symbol + 1);
     }
   }
 
   // if any positional params exist, pop them off the stack as well
   if (positional !== null) {
-    op(VM_POP_OP, positional.length);
+    op(POP_OP, positional.length);
   }
 
   // Finish up by popping off and assigning blocks
   for (const symbol of reverse(blockSymbols)) {
-    op(VM_SET_BLOCK_OP, symbol + 1);
+    op(SET_BLOCK_OP, symbol + 1);
   }
 
-  op(VM_CONSTANT_OP, layoutOperand(layout));
-  op(VM_COMPILE_BLOCK_OP);
+  op(CONSTANT_OP, layoutOperand(layout));
+  op(COMPILE_BLOCK_OP);
   op(VM_INVOKE_VIRTUAL_OP);
-  op(VM_DID_RENDER_LAYOUT_OP, $s0);
+  op(DID_RENDER_LAYOUT_OP, $s0);
 
   op(VM_POP_FRAME_OP);
-  op(VM_POP_SCOPE_OP);
+  op(POP_SCOPE_OP);
 
   if (hasCapability(capabilities, InternalComponentCapabilities.dynamicScope)) {
-    op(VM_POP_DYNAMIC_SCOPE_OP);
+    op(POP_DYNAMIC_SCOPE_OP);
   }
 
-  op(VM_COMMIT_COMPONENT_TRANSACTION_OP);
-  op(VM_LOAD_OP, $s0);
+  op(COMMIT_COMPONENT_TRANSACTION_OP);
+  op(LOAD_OP, $s0);
 }
 
 export function InvokeNonStaticComponent(
@@ -387,27 +393,27 @@ export function InvokeNonStaticComponent(
 
   let blocks = namedBlocks.with('attrs', elementBlock);
 
-  op(VM_FETCH_OP, $s0);
-  op(VM_DUP_OP, $sp, 1);
-  op(VM_LOAD_OP, $s0);
+  op(FETCH_OP, $s0);
+  op(DUP_OP, $sp, 1);
+  op(LOAD_OP, $s0);
 
   op(VM_PUSH_FRAME_OP);
   CompileArgs(op, positional, named, blocks, atNames);
-  op(VM_PREPARE_ARGS_OP, $s0);
+  op(PREPARE_ARGS_OP, $s0);
 
   invokePreparedComponent(op, blocks.has('default'), bindableBlocks, bindableAtNames, () => {
     if (layout) {
-      op(VM_PUSH_SYMBOL_TABLE_OP, symbolTableOperand(layout.symbolTable));
-      op(VM_CONSTANT_OP, layoutOperand(layout));
-      op(VM_COMPILE_BLOCK_OP);
+      op(PUSH_SYMBOL_TABLE_OP, symbolTableOperand(layout.symbolTable));
+      op(CONSTANT_OP, layoutOperand(layout));
+      op(COMPILE_BLOCK_OP);
     } else {
-      op(VM_GET_COMPONENT_LAYOUT_OP, $s0);
+      op(GET_COMPONENT_LAYOUT_OP, $s0);
     }
 
-    op(VM_POPULATE_LAYOUT_OP, $s0);
+    op(POPULATE_LAYOUT_OP, $s0);
   });
 
-  op(VM_LOAD_OP, $s0);
+  op(LOAD_OP, $s0);
 }
 
 export function WrappedComponent(
@@ -417,24 +423,24 @@ export function WrappedComponent(
 ): void {
   op(HighLevelBuilderOpcodes.StartLabels);
   WithSavedRegister(op, $s1, () => {
-    op(VM_GET_COMPONENT_TAG_NAME_OP, $s0);
-    op(VM_PRIMITIVE_REFERENCE_OP);
-    op(VM_DUP_OP, $sp, 0);
+    op(GET_COMPONENT_TAG_NAME_OP, $s0);
+    op(PRIMITIVE_REFERENCE_OP);
+    op(DUP_OP, $sp, 0);
   });
-  op(VM_JUMP_UNLESS_OP, labelOperand('BODY'));
-  op(VM_FETCH_OP, $s1);
-  op(VM_PUT_COMPONENT_OPERATIONS_OP);
-  op(VM_OPEN_DYNAMIC_ELEMENT_OP);
-  op(VM_DID_CREATE_ELEMENT_OP, $s0);
+  op(JUMP_UNLESS_OP, labelOperand('BODY'));
+  op(FETCH_OP, $s1);
+  op(PUT_COMPONENT_OPERATIONS_OP);
+  op(OPEN_DYNAMIC_ELEMENT_OP);
+  op(DID_CREATE_ELEMENT_OP, $s0);
   YieldBlock(op, attrsBlockNumber, null);
-  op(VM_FLUSH_ELEMENT_OP);
+  op(FLUSH_ELEMENT_OP);
   op(HighLevelBuilderOpcodes.Label, 'BODY');
   InvokeStaticBlock(op, [layout.block[0], []]);
-  op(VM_FETCH_OP, $s1);
-  op(VM_JUMP_UNLESS_OP, labelOperand('END'));
-  op(VM_CLOSE_ELEMENT_OP);
+  op(FETCH_OP, $s1);
+  op(JUMP_UNLESS_OP, labelOperand('END'));
+  op(CLOSE_ELEMENT_OP);
   op(HighLevelBuilderOpcodes.Label, 'END');
-  op(VM_LOAD_OP, $s1);
+  op(LOAD_OP, $s1);
   op(HighLevelBuilderOpcodes.StopLabels);
 }
 
@@ -445,11 +451,11 @@ export function invokePreparedComponent(
   bindableAtNames: boolean,
   populateLayout: Nullable<() => void> = null
 ): void {
-  op(VM_BEGIN_COMPONENT_TRANSACTION_OP, $s0);
-  op(VM_PUSH_DYNAMIC_SCOPE_OP);
+  op(BEGIN_COMPONENT_TRANSACTION_OP, $s0);
+  op(PUSH_DYNAMIC_SCOPE_OP);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  op(VM_CREATE_COMPONENT_OP, (hasBlock as any) | 0);
+  op(CREATE_COMPONENT_OP, (hasBlock as any) | 0);
 
   // this has to run after createComponent to allow
   // for late-bound layouts, but a caller is free
@@ -459,38 +465,38 @@ export function invokePreparedComponent(
     populateLayout();
   }
 
-  op(VM_REGISTER_COMPONENT_DESTRUCTOR_OP, $s0);
-  op(VM_GET_COMPONENT_SELF_OP, $s0);
+  op(REGISTER_COMPONENT_DESTRUCTOR_OP, $s0);
+  op(GET_COMPONENT_SELF_OP, $s0);
 
-  op(VM_VIRTUAL_ROOT_SCOPE_OP, $s0);
-  op(VM_SET_VARIABLE_OP, 0);
+  op(VIRTUAL_ROOT_SCOPE_OP, $s0);
+  op(SET_VARIABLE_OP, 0);
 
-  if (bindableAtNames) op(VM_SET_NAMED_VARIABLES_OP, $s0);
-  if (bindableBlocks) op(VM_SET_BLOCKS_OP, $s0);
+  if (bindableAtNames) op(SET_NAMED_VARIABLES_OP, $s0);
+  if (bindableBlocks) op(SET_BLOCKS_OP, $s0);
 
-  op(VM_POP_OP, 1);
-  op(VM_INVOKE_COMPONENT_LAYOUT_OP, $s0);
-  op(VM_DID_RENDER_LAYOUT_OP, $s0);
+  op(POP_OP, 1);
+  op(INVOKE_COMPONENT_LAYOUT_OP, $s0);
+  op(DID_RENDER_LAYOUT_OP, $s0);
   op(VM_POP_FRAME_OP);
 
-  op(VM_POP_SCOPE_OP);
-  op(VM_POP_DYNAMIC_SCOPE_OP);
-  op(VM_COMMIT_COMPONENT_TRANSACTION_OP);
+  op(POP_SCOPE_OP);
+  op(POP_DYNAMIC_SCOPE_OP);
+  op(COMMIT_COMPONENT_TRANSACTION_OP);
 }
 
 export function InvokeBareComponent(op: PushStatementOp): void {
-  op(VM_FETCH_OP, $s0);
-  op(VM_DUP_OP, $sp, 1);
-  op(VM_LOAD_OP, $s0);
+  op(FETCH_OP, $s0);
+  op(DUP_OP, $sp, 1);
+  op(LOAD_OP, $s0);
 
   op(VM_PUSH_FRAME_OP);
-  op(VM_PUSH_EMPTY_ARGS_OP);
-  op(VM_PREPARE_ARGS_OP, $s0);
+  op(PUSH_EMPTY_ARGS_OP);
+  op(PREPARE_ARGS_OP, $s0);
   invokePreparedComponent(op, false, false, true, () => {
-    op(VM_GET_COMPONENT_LAYOUT_OP, $s0);
-    op(VM_POPULATE_LAYOUT_OP, $s0);
+    op(GET_COMPONENT_LAYOUT_OP, $s0);
+    op(POPULATE_LAYOUT_OP, $s0);
   });
-  op(VM_LOAD_OP, $s0);
+  op(LOAD_OP, $s0);
 }
 
 export function WithSavedRegister(
@@ -498,7 +504,7 @@ export function WithSavedRegister(
   register: SavedRegister,
   block: () => void
 ): void {
-  op(VM_FETCH_OP, register);
+  op(FETCH_OP, register);
   block();
-  op(VM_LOAD_OP, register);
+  op(LOAD_OP, register);
 }

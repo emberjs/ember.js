@@ -62,6 +62,7 @@ import {
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 import { CURLY_MANAGER_BRAND } from './curly-brand';
+import { applyDynamicAttribute } from '@glimmer/runtime/lib/vm/attributes/deferred';
 
 const COMPONENT_ARGS_MAP = new WeakMap<object, CapturedArguments['named']>();
 
@@ -115,7 +116,7 @@ function applyAttributeBindings(
 
   if (seen.indexOf('id') === -1) {
     let id = component.elementId ? component.elementId : guidFor(component);
-    operations.setAttribute('id', createPrimitiveRef(id), false, null);
+    operations.setAttribute('id', createPrimitiveRef(id), false, null, applyDynamicAttribute);
   }
 }
 
@@ -392,17 +393,23 @@ export default class CurlyComponentManager
       applyAttributeBindings(attributeBindings, component, rootRef, operations);
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
-      operations.setAttribute('id', createPrimitiveRef(id), false, null);
+      operations.setAttribute('id', createPrimitiveRef(id), false, null, applyDynamicAttribute);
     }
 
     if (classRef) {
       const ref = createSimpleClassNameBindingRef(classRef);
-      operations.setAttribute('class', ref, false, null);
+      operations.setAttribute('class', ref, false, null, applyDynamicAttribute);
     }
 
     if (classNames && classNames.length) {
       classNames.forEach((name: string) => {
-        operations.setAttribute('class', createPrimitiveRef(name), false, null);
+        operations.setAttribute(
+          'class',
+          createPrimitiveRef(name),
+          false,
+          null,
+          applyDynamicAttribute
+        );
       });
     }
 
@@ -411,10 +418,16 @@ export default class CurlyComponentManager
         createClassNameBindingRef(rootRef, binding, operations);
       });
     }
-    operations.setAttribute('class', EMBER_VIEW_REF, false, null);
+    operations.setAttribute('class', EMBER_VIEW_REF, false, null, applyDynamicAttribute);
 
     if ('ariaRole' in component) {
-      operations.setAttribute('role', childRefFor(rootRef, 'ariaRole'), false, null);
+      operations.setAttribute(
+        'role',
+        childRefFor(rootRef, 'ariaRole'),
+        false,
+        null,
+        applyDynamicAttribute
+      );
     }
 
     component._transitionTo('hasElement');

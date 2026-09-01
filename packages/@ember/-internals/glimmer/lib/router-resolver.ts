@@ -18,14 +18,9 @@ const ROUTER_KEYWORD_HELPERS: Record<string, object> = {
  * do not pull the outlet/engine machinery into the build.
  */
 export default class RouterResolver extends ResolverImpl {
-  override lookupBuiltInHelper(name: string): Nullable<HelperDefinitionState> {
-    return ROUTER_KEYWORD_HELPERS[name] ?? super.lookupBuiltInHelper(name);
-  }
-
   // Loose-mode templates resolve the wrapped `{{outlet}}` / `{{mount}}`
-  // keywords (`{{component (-outlet)}}`) through `lookupHelper`, not
-  // `lookupBuiltInHelper`, so the router keywords have to be added to both
-  // lookup paths.
+  // keywords (`{{component (-outlet)}}`) by name. Strict templates bind the
+  // helpers as imports and never reach the resolver.
   override lookupHelper(name: string, owner: InternalOwner): Nullable<HelperDefinitionState> {
     return ROUTER_KEYWORD_HELPERS[name] ?? super.lookupHelper(name, owner);
   }

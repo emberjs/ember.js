@@ -4,5 +4,5 @@ import '@swc-node/register/esm-register';
 // effect yet.
 const minimal = await import('../packages/ember-template-compiler/minimal.ts');
 
-const { precompile, _buildCompileOptions, _preprocess, _print } = minimal;
-export { precompile, _buildCompileOptions, _preprocess, _print };
+const { precompile, precompileModule, _buildCompileOptions, _preprocess, _print } = minimal;
+export { precompile, precompileModule, _buildCompileOptions, _preprocess, _print };

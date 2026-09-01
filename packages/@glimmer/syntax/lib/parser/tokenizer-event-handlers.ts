@@ -696,6 +696,23 @@ export interface PreprocessOptions {
   meta?:
     | {
         moduleName?: string | undefined;
+        /**
+         * The build tool's import binder. When present, compilers that
+         * print JavaScript bind their imports through it instead of
+         * returning an import list.
+         */
+        jsutils?: {
+          bindImport(
+            moduleSpecifier: string,
+            exportedName: string,
+            target: unknown,
+            opts?: { nameHint?: string }
+          ): string;
+        };
+        /** Binds a keyword to a bare local that the evaluator supplies. */
+        emberRuntime?: {
+          lookupKeyword(name: string): string;
+        };
       }
     | undefined;
   plugins?:

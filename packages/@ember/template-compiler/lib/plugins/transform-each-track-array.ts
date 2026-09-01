@@ -2,7 +2,13 @@ import type * as AST from '@glimmer/syntax/lib/v1/api';
 import type { ASTPlugin } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import { assert } from '@ember/debug';
 import type { EmberASTPluginEnvironment } from '../types';
-import { isPath, trackLocals } from './utils';
+import {
+  EACH_IN_EXPRESSIONS,
+  isPath,
+  keywordPath,
+  TRACK_ARRAY_EXPRESSIONS,
+  trackLocals,
+} from './utils';
 
 /**
  @module ember
@@ -40,13 +46,14 @@ export default function transformEachTrackArray(env: EmberASTPluginEnvironment):
 
           if (
             firstParam.type === 'SubExpression' &&
-            firstParam.path.type === 'PathExpression' &&
-            firstParam.path.original === '-each-in'
+            (EACH_IN_EXPRESSIONS.has(firstParam) || TRACK_ARRAY_EXPRESSIONS.has(firstParam))
           ) {
             return;
           }
 
-          node.params[0] = b.sexpr(b.path('-track-array'), [firstParam]);
+          let tracked = b.sexpr(keywordPath(env, '-track-array', 'trackArray'), [firstParam]);
+          TRACK_ARRAY_EXPRESSIONS.add(tracked);
+          node.params[0] = tracked;
 
           return b.block(
             b.path('each'),

@@ -37,9 +37,12 @@
     "test:publint": "publint"
   },
   "dependencies": {
+    "@glimmer/compiler": "workspace:*",
     "@glimmer/encoder": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
+    "@glimmer/program": "workspace:*",
+    "@glimmer/runtime": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/vm": "workspace:*",
     "@glimmer/wire-format": "workspace:*"

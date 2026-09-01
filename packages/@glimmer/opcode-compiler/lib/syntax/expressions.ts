@@ -1,128 +1,165 @@
-import type { ExpressionSexpOpcode } from '@glimmer/interfaces';
 import {
-  VM_COMPILE_BLOCK_OP,
-  VM_CONCAT_OP,
-  VM_CONSTANT_REFERENCE_OP,
-  VM_FETCH_OP,
-  VM_GET_DYNAMIC_VAR_OP,
-  VM_GET_PROPERTY_OP,
-  VM_GET_VARIABLE_OP,
-  VM_HAS_BLOCK_OP,
-  VM_HAS_BLOCK_PARAMS_OP,
-  VM_IF_INLINE_OP,
-  VM_LOG_OP,
-  VM_NOT_OP,
-  VM_SPREAD_BLOCK_OP,
-} from '@glimmer/constants/lib/syscall-ops';
+  CONCAT_OP,
+  GET_DYNAMIC_VAR_OP,
+  GET_PROPERTY_OP,
+  GET_VARIABLE_OP,
+  HAS_BLOCK_OP,
+  HAS_BLOCK_PARAMS_OP,
+  IF_INLINE_OP,
+  LOG_OP,
+  NOT_OP,
+  SPREAD_BLOCK_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/expressions';
+import {
+  COMPILE_BLOCK_OP,
+  CONSTANT_REFERENCE_OP,
+  FETCH_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/vm';
 import { VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants/lib/vm-ops';
 import { $v0 } from '@glimmer/vm/lib/registers';
 import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
-import type { PushExpressionOp } from './compilers';
-
 import { expr } from '../opcode-builder/helpers/expr';
-import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
+import { isGetFreeHelper, ResolveHelper } from '../opcode-builder/helpers/resolution';
 import { SimpleArgs } from '../opcode-builder/helpers/shared';
 import { Call, CallDynamic, Curry, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { HighLevelResolutionOpcodes } from '../opcode-builder/opcodes';
-import { Compilers } from './compilers';
+import { defineExpression } from './compilers';
+import type { PushExpressionOp } from './compilers';
 
-export const EXPRESSIONS = new Compilers<PushExpressionOp, ExpressionSexpOpcode>();
-
-EXPRESSIONS.add(SexpOpcodes.Concat, (op, [, parts]) => {
+export const ConcatOp = /*#__PURE__*/ defineExpression(SexpOpcodes.Concat, (op, [, parts]) => {
   for (let part of parts) {
     expr(op, part);
   }
 
-  op(VM_CONCAT_OP, parts.length);
+  op(CONCAT_OP, parts.length);
 });
 
-EXPRESSIONS.add(SexpOpcodes.Call, (op, [, expression, positional, named]) => {
-  if (isGetFreeHelper(expression)) {
-    op(HighLevelResolutionOpcodes.Helper, expression, (handle: number) => {
-      Call(op, handle, positional, named);
-    });
-  } else {
-    expr(op, expression);
-    CallDynamic(op, positional, named);
+export const CallOp = /*#__PURE__*/ defineExpression(
+  SexpOpcodes.Call,
+  (op, [, expression, positional, named]) => {
+    if (isGetFreeHelper(expression)) {
+      op(ResolveHelper, expression, (handle: number) => {
+        Call(op, handle, positional, named);
+      });
+    } else {
+      expr(op, expression);
+      CallDynamic(op, positional, named);
+    }
   }
-});
+);
 
-EXPRESSIONS.add(SexpOpcodes.Curry, (op, [, expr, type, positional, named]) => {
-  Curry(op, type, expr, positional, named);
-});
+export const CurryOp = /*#__PURE__*/ defineExpression(
+  SexpOpcodes.Curry,
+  (op, [, expr, type, positional, named]) => {
+    Curry(op, type, expr, positional, named);
+  }
+);
 
-EXPRESSIONS.add(SexpOpcodes.GetSymbol, (op, [, sym, path]) => {
-  op(VM_GET_VARIABLE_OP, sym);
-  withPath(op, path);
-});
-
-EXPRESSIONS.add(SexpOpcodes.GetLexicalSymbol, (op, [, sym, path]) => {
-  op(HighLevelResolutionOpcodes.TemplateLocal, sym, (handle: number) => {
-    op(VM_CONSTANT_REFERENCE_OP, handle);
+export const GetSymbolOp = /*#__PURE__*/ defineExpression(
+  SexpOpcodes.GetSymbol,
+  (op, [, sym, path]) => {
+    op(GET_VARIABLE_OP, sym);
     withPath(op, path);
-  });
-});
+  }
+);
 
-EXPRESSIONS.add(SexpOpcodes.GetStrictKeyword, (op, expr) => {
-  op(HighLevelResolutionOpcodes.Local, expr[1], (_name: string) => {
-    op(HighLevelResolutionOpcodes.Helper, expr, (handle: number) => {
-      Call(op, handle, null, null);
-    });
-  });
-});
+export const GetLexicalSymbolOp = /*#__PURE__*/ defineExpression(
+  SexpOpcodes.GetLexicalSymbol,
+  (op, [, sym, path]) => {
+    op(HighLevelResolutionOpcodes.TemplateLocal, sym, (handle: number, name?: string) => {
+      // The name labels the reference, so the debug render tree can name a
+      // component that resolves from this value at runtime. A build tool
+      // compiles with the production compiler even for a development app,
+      // so the compiler cannot decide by its own DEBUG flag; the runtime
+      // reads the label only in debug builds.
+      if (name !== undefined) {
+        op(CONSTANT_REFERENCE_OP, handle, name);
+      } else {
+        op(CONSTANT_REFERENCE_OP, handle);
+      }
 
-EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHead, (op, expr) => {
-  op(HighLevelResolutionOpcodes.Local, expr[1], (_name: string) => {
-    op(HighLevelResolutionOpcodes.Helper, expr, (handle: number) => {
-      Call(op, handle, null, null);
+      withPath(op, path);
     });
-  });
-});
+  }
+);
+
+export const GetStrictKeywordOp = /*#__PURE__*/ defineExpression(
+  SexpOpcodes.GetStrictKeyword,
+  (op, expr) => {
+    op(HighLevelResolutionOpcodes.Local, expr[1], (_name: string) => {
+      op(ResolveHelper, expr, (handle: number) => {
+        Call(op, handle, null, null);
+      });
+    });
+  }
+);
+
+export const GetFreeAsHelperHeadOp = /*#__PURE__*/ defineExpression(
+  SexpOpcodes.GetFreeAsHelperHead,
+  (op, expr) => {
+    op(HighLevelResolutionOpcodes.Local, expr[1], (_name: string) => {
+      op(ResolveHelper, expr, (handle: number) => {
+        Call(op, handle, null, null);
+      });
+    });
+  }
+);
 
 function withPath(op: PushExpressionOp, path?: string[]) {
   if (path === undefined || path.length === 0) return;
 
   for (let i = 0; i < path.length; i++) {
-    op(VM_GET_PROPERTY_OP, path[i]);
+    op(GET_PROPERTY_OP, path[i]);
   }
 }
 
-EXPRESSIONS.add(SexpOpcodes.Undefined, (op) => PushPrimitiveReference(op, undefined));
-EXPRESSIONS.add(SexpOpcodes.HasBlock, (op, [, block]) => {
+export const UndefinedOp = /*#__PURE__*/ defineExpression(SexpOpcodes.Undefined, (op) =>
+  PushPrimitiveReference(op, undefined)
+);
+export const HasBlockOp = /*#__PURE__*/ defineExpression(SexpOpcodes.HasBlock, (op, [, block]) => {
   expr(op, block);
-  op(VM_HAS_BLOCK_OP);
+  op(HAS_BLOCK_OP);
 });
 
-EXPRESSIONS.add(SexpOpcodes.HasBlockParams, (op, [, block]) => {
-  expr(op, block);
-  op(VM_SPREAD_BLOCK_OP);
-  op(VM_COMPILE_BLOCK_OP);
-  op(VM_HAS_BLOCK_PARAMS_OP);
-});
+export const HasBlockParamsOp = /*#__PURE__*/ defineExpression(
+  SexpOpcodes.HasBlockParams,
+  (op, [, block]) => {
+    expr(op, block);
+    op(SPREAD_BLOCK_OP);
+    op(COMPILE_BLOCK_OP);
+    op(HAS_BLOCK_PARAMS_OP);
+  }
+);
 
-EXPRESSIONS.add(SexpOpcodes.IfInline, (op, [, condition, truthy, falsy]) => {
-  // Push in reverse order
-  expr(op, falsy);
-  expr(op, truthy);
-  expr(op, condition);
-  op(VM_IF_INLINE_OP);
-});
+export const IfInlineOp = /*#__PURE__*/ defineExpression(
+  SexpOpcodes.IfInline,
+  (op, [, condition, truthy, falsy]) => {
+    // Push in reverse order
+    expr(op, falsy);
+    expr(op, truthy);
+    expr(op, condition);
+    op(IF_INLINE_OP);
+  }
+);
 
-EXPRESSIONS.add(SexpOpcodes.Not, (op, [, value]) => {
+export const NotOp = /*#__PURE__*/ defineExpression(SexpOpcodes.Not, (op, [, value]) => {
   expr(op, value);
-  op(VM_NOT_OP);
+  op(NOT_OP);
 });
 
-EXPRESSIONS.add(SexpOpcodes.GetDynamicVar, (op, [, expression]) => {
-  expr(op, expression);
-  op(VM_GET_DYNAMIC_VAR_OP);
-});
+export const GetDynamicVarOp = /*#__PURE__*/ defineExpression(
+  SexpOpcodes.GetDynamicVar,
+  (op, [, expression]) => {
+    expr(op, expression);
+    op(GET_DYNAMIC_VAR_OP);
+  }
+);
 
-EXPRESSIONS.add(SexpOpcodes.Log, (op, [, positional]) => {
+export const LogOp = /*#__PURE__*/ defineExpression(SexpOpcodes.Log, (op, [, positional]) => {
   op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, null, false);
-  op(VM_LOG_OP);
+  op(LOG_OP);
   op(VM_POP_FRAME_OP);
-  op(VM_FETCH_OP, $v0);
+  op(FETCH_OP, $v0);
 });

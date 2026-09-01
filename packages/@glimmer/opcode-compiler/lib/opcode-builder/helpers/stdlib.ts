@@ -1,30 +1,31 @@
-import type { BlockMetadata, BuilderOp, EvaluationContext, HighLevelOp } from '@glimmer/interfaces';
+import type { BlockMetadata, StdlibRef, StdlibSource } from '@glimmer/interfaces';
 import {
-  VM_APPEND_DOCUMENT_FRAGMENT_OP,
-  VM_APPEND_HTML_OP,
-  VM_APPEND_NODE_OP,
-  VM_APPEND_SAFE_HTML_OP,
-  VM_APPEND_TEXT_OP,
-  VM_ASSERT_SAME_OP,
-  VM_CONTENT_TYPE_OP,
-  VM_MAIN_OP,
-  VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
-  VM_RESOLVE_CURRIED_COMPONENT_OP,
-} from '@glimmer/constants/lib/syscall-ops';
+  MAIN_OP,
+  PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
+  RESOLVE_CURRIED_COMPONENT_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/component';
+import {
+  APPEND_DOCUMENT_FRAGMENT_OP,
+  APPEND_HTML_OP,
+  APPEND_NODE_OP,
+  APPEND_SAFE_HTML_OP,
+  APPEND_TEXT_OP,
+  CONTENT_TYPE_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/content';
+import { ASSERT_SAME_OP } from '@glimmer/runtime/lib/compiled/opcodes/vm';
 import { VM_INVOKE_STATIC_OP } from '@glimmer/constants/lib/vm-ops';
 import { $s0 } from '@glimmer/vm/lib/registers';
 import { ContentType } from '@glimmer/vm/lib/content';
 
-import type { HighLevelStatementOp, PushStatementOp } from '../../syntax/compilers';
+import type { PushStatementOp } from '../../syntax/compilers';
 
-import { encodeOp, EncoderImpl } from '../encoder';
-import { StdLib } from '../stdlib';
+import { stdlibOperand } from '../operands';
 import { InvokeBareComponent, invokePreparedComponent } from './components';
 import { SwitchCases } from './conditional';
 import { CallDynamic } from './vm';
 
 export function main(op: PushStatementOp): void {
-  op(VM_MAIN_OP, $s0);
+  op(MAIN_OP, $s0);
   invokePreparedComponent(op, false, false, true);
 }
 
@@ -39,84 +40,93 @@ export function main(op: PushStatementOp): void {
 export function StdAppend(
   op: PushStatementOp,
   trusting: boolean,
-  nonDynamicAppend: number | null
+  nonDynamicAppend: StdlibRef | null
 ): void {
   SwitchCases(
     op,
-    () => op(VM_CONTENT_TYPE_OP),
+    () => op(CONTENT_TYPE_OP),
     (when) => {
       when(ContentType.String, () => {
         if (trusting) {
-          op(VM_ASSERT_SAME_OP);
-          op(VM_APPEND_HTML_OP);
+          op(ASSERT_SAME_OP);
+          op(APPEND_HTML_OP);
         } else {
-          op(VM_APPEND_TEXT_OP);
+          op(APPEND_TEXT_OP);
         }
       });
 
-      if (typeof nonDynamicAppend === 'number') {
+      if (nonDynamicAppend !== null) {
         when(ContentType.Component, () => {
-          op(VM_ASSERT_SAME_OP);
-          op(VM_RESOLVE_CURRIED_COMPONENT_OP);
-          op(VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP);
+          op(ASSERT_SAME_OP);
+          op(RESOLVE_CURRIED_COMPONENT_OP);
+          op(PUSH_DYNAMIC_COMPONENT_INSTANCE_OP);
           InvokeBareComponent(op);
         });
 
         when(ContentType.Helper, () => {
           CallDynamic(op, null, null, () => {
-            op(VM_INVOKE_STATIC_OP, nonDynamicAppend);
+            op(VM_INVOKE_STATIC_OP, stdlibOperand(nonDynamicAppend));
           });
         });
       } else {
         // when non-dynamic, we can no longer call the value (potentially because we've already called it)
         // this prevents infinite loops. We instead coerce the value, whatever it is, into the DOM.
         when(ContentType.Component, () => {
-          op(VM_APPEND_TEXT_OP);
+          op(APPEND_TEXT_OP);
         });
 
         when(ContentType.Helper, () => {
-          op(VM_APPEND_TEXT_OP);
+          op(APPEND_TEXT_OP);
         });
       }
 
       when(ContentType.SafeString, () => {
-        op(VM_ASSERT_SAME_OP);
-        op(VM_APPEND_SAFE_HTML_OP);
+        op(ASSERT_SAME_OP);
+        op(APPEND_SAFE_HTML_OP);
       });
 
       when(ContentType.Fragment, () => {
-        op(VM_ASSERT_SAME_OP);
-        op(VM_APPEND_DOCUMENT_FRAGMENT_OP);
+        op(ASSERT_SAME_OP);
+        op(APPEND_DOCUMENT_FRAGMENT_OP);
       });
 
       when(ContentType.Node, () => {
-        op(VM_ASSERT_SAME_OP);
-        op(VM_APPEND_NODE_OP);
+        op(ASSERT_SAME_OP);
+        op(APPEND_NODE_OP);
       });
     }
   );
 }
 
-export function compileStd(context: EvaluationContext): StdLib {
-  let mainHandle = build(context, (op) => main(op));
-  let trustingGuardedNonDynamicAppend = build(context, (op) => StdAppend(op, true, null));
-  let cautiousGuardedNonDynamicAppend = build(context, (op) => StdAppend(op, false, null));
+/*
+ * The sources below are the input of `bin/build-aot-stdlib.mjs`, which
+ * writes the compiled words to `../stdlib-data.ts`. Runtime code imports
+ * the data module, never this one.
+ */
+export const MAIN: StdlibSource = {
+  name: 'main',
+  build: (op) => main(op as PushStatementOp),
+};
 
-  let trustingGuardedDynamicAppend = build(context, (op) =>
-    StdAppend(op, true, trustingGuardedNonDynamicAppend)
-  );
-  let cautiousGuardedDynamicAppend = build(context, (op) =>
-    StdAppend(op, false, cautiousGuardedNonDynamicAppend)
-  );
+export const TRUSTING_NON_DYNAMIC_APPEND: StdlibSource = {
+  name: 'trusting-non-dynamic-append',
+  build: (op) => StdAppend(op as PushStatementOp, true, null),
+};
 
-  return new StdLib(
-    mainHandle,
-    trustingGuardedDynamicAppend,
-    cautiousGuardedDynamicAppend,
-    trustingGuardedNonDynamicAppend,
-    cautiousGuardedNonDynamicAppend
-  );
-}
+export const CAUTIOUS_NON_DYNAMIC_APPEND: StdlibSource = {
+  name: 'cautious-non-dynamic-append',
+  build: (op) => StdAppend(op as PushStatementOp, false, null),
+};
+
+export const TRUSTING_APPEND: StdlibSource = {
+  name: 'trusting-append',
+  build: (op) => StdAppend(op as PushStatementOp, true, TRUSTING_NON_DYNAMIC_APPEND),
+};
+
+export const CAUTIOUS_APPEND: StdlibSource = {
+  name: 'cautious-append',
+  build: (op) => StdAppend(op as PushStatementOp, false, CAUTIOUS_NON_DYNAMIC_APPEND),
+};
 
 export const STDLIB_META: BlockMetadata = {
   symbols: {
@@ -131,22 +141,3 @@ export const STDLIB_META: BlockMetadata = {
   owner: null,
   size: 0,
 };
-
-function build(evaluation: EvaluationContext, builder: (op: PushStatementOp) => void): number {
-  let encoder = new EncoderImpl(evaluation.program.heap, STDLIB_META);
-
-  function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
-    encodeOp(encoder, evaluation, STDLIB_META, op as BuilderOp | HighLevelOp);
-  }
-
-  builder(pushOp);
-
-  let result = encoder.commit(0);
-
-  if (typeof result !== 'number') {
-    // This shouldn't be possible
-    throw new Error(`Unexpected errors compiling std`);
-  } else {
-    return result;
-  }
-}

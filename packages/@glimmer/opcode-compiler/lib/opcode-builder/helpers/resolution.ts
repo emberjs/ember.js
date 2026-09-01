@@ -1,4 +1,9 @@
 import { DEBUG } from '@glimmer/env';
+import {
+  helperHandle,
+  modifierHandle,
+  resolvedComponentDefinition,
+} from '@glimmer/program/lib/definitions';
 import type {
   BlockMetadata,
   BlockSymbolNames,
@@ -7,7 +12,7 @@ import type {
   Nullable,
   Owner,
   ProgramConstants,
-  ResolutionTimeConstants,
+  ResolutionHandler,
   ResolveComponentOp,
   ResolveComponentOrHelperOp,
   ResolveHelperOp,
@@ -20,8 +25,29 @@ import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
+import { headId } from '../../syntax/compilers';
+
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {
   return Array.isArray(opcode) && opcode.length === 2;
+}
+
+let lexicalScopeAtRuntime = false;
+
+/**
+ * Ahead-of-time compilation has no lexical scope values, so a component,
+ * helper, or modifier from lexical scope resolves at runtime the way a
+ * dynamic value does. The compiler in the browser resolves it while
+ * compiling, which saves a dispatch per render.
+ */
+export function withLexicalScopeAtRuntime<T>(fn: () => T): T {
+  let previous = lexicalScopeAtRuntime;
+  lexicalScopeAtRuntime = true;
+
+  try {
+    return fn();
+  } finally {
+    lexicalScopeAtRuntime = previous;
+  }
 }
 
 function makeResolutionTypeVerifier(typeToVerify: SexpOpcode) {
@@ -30,11 +56,11 @@ function makeResolutionTypeVerifier(typeToVerify: SexpOpcode) {
   ): opcode is Expressions.GetFree | Expressions.GetLexicalSymbol => {
     if (!isGetLikeTuple(opcode)) return false;
 
-    let type = opcode[0];
+    let type = headId(opcode);
 
     return (
       type === SexpOpcodes.GetStrictKeyword ||
-      type === SexpOpcodes.GetLexicalSymbol ||
+      (type === SexpOpcodes.GetLexicalSymbol && !lexicalScopeAtRuntime) ||
       type === typeToVerify
     );
   };
@@ -88,9 +114,9 @@ export function resolveComponent(
 ): void {
   assert(isGetFreeComponent(expr), 'Attempted to resolve a component with incorrect opcode');
 
-  let type = expr[0];
+  let type = headId(expr);
 
-  if (DEBUG && expr[0] === SexpOpcodes.GetStrictKeyword) {
+  if (DEBUG && headId(expr) === SexpOpcodes.GetStrictKeyword) {
     assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
     throw new Error(
@@ -137,7 +163,7 @@ export function resolveComponent(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    then(constants.resolvedComponent(definition!, name));
+    then(resolvedComponentDefinition(constants, definition!, name));
   }
 }
 
@@ -153,7 +179,7 @@ export function resolveHelper(
 ): void {
   assert(isGetFreeHelper(expr), 'Attempted to resolve a helper with incorrect opcode');
 
-  let type = expr[0];
+  let type = headId(expr);
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
     let { scopeValues } = meta;
@@ -161,7 +187,7 @@ export function resolveHelper(
       expr[1]
     ];
 
-    then(constants.helper(definition as object));
+    then(helperHandle(constants, definition as object));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     then(
       lookupBuiltInHelper(expr as Expressions.GetStrictFree, resolver, meta, constants, 'helper')
@@ -184,7 +210,7 @@ export function resolveHelper(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    then(constants.helper(helper!, name));
+    then(helperHandle(constants, helper!, name));
   }
 }
 
@@ -201,7 +227,7 @@ export function resolveModifier(
 ): void {
   assert(isGetFreeModifier(expr), 'Attempted to resolve a modifier with incorrect opcode');
 
-  let type = expr[0];
+  let type = headId(expr);
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
     let {
@@ -212,7 +238,7 @@ export function resolveModifier(
       expr[1]
     ];
 
-    then(constants.modifier(definition as object, lexical?.at(expr[1]) ?? undefined));
+    then(modifierHandle(constants, definition as object, lexical?.at(expr[1]) ?? undefined));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     let {
       symbols: { upvars },
@@ -229,7 +255,7 @@ export function resolveModifier(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    then(constants.modifier(modifier!, name));
+    then(modifierHandle(constants, modifier!, name));
   } else {
     let {
       symbols: { upvars },
@@ -247,7 +273,7 @@ export function resolveModifier(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    then(constants.modifier(modifier!));
+    then(modifierHandle(constants, modifier!));
   }
 }
 
@@ -265,7 +291,7 @@ export function resolveComponentOrHelper(
     'Attempted to resolve a component or helper with incorrect opcode'
   );
 
-  let type = expr[0];
+  let type = headId(expr);
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
     let {
@@ -289,7 +315,7 @@ export function resolveComponentOrHelper(
       return;
     }
 
-    let helper = constants.helper(definition as object, null, true);
+    let helper = helperHandle(constants, definition as object, null, true);
 
     if (DEBUG && helper === null) {
       assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
@@ -323,7 +349,7 @@ export function resolveComponentOrHelper(
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (definition !== null) {
-      ifComponent(constants.resolvedComponent(definition, name));
+      ifComponent(resolvedComponentDefinition(constants, definition, name));
     } else {
       let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
@@ -336,7 +362,7 @@ export function resolveComponentOrHelper(
       }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      ifHelper(constants.helper(helper!, name));
+      ifHelper(helperHandle(constants, helper!, name));
     }
   }
 }
@@ -355,7 +381,7 @@ export function resolveOptionalComponentOrHelper(
     'Attempted to resolve an optional component or helper with incorrect opcode'
   );
 
-  let type = expr[0];
+  let type = headId(expr);
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
     let {
@@ -388,7 +414,7 @@ export function resolveOptionalComponentOrHelper(
       return;
     }
 
-    let helper = constants.helper(definition, null, true);
+    let helper = helperHandle(constants, definition, null, true);
 
     if (helper !== null) {
       ifHelper(helper);
@@ -410,14 +436,14 @@ export function resolveOptionalComponentOrHelper(
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (definition !== null) {
-      ifComponent(constants.resolvedComponent(definition, name));
+      ifComponent(resolvedComponentDefinition(constants, definition, name));
       return;
     }
 
     let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
     if (helper !== null) {
-      ifHelper(constants.helper(helper, name));
+      ifHelper(helperHandle(constants, helper, name));
     }
   }
 }
@@ -426,7 +452,7 @@ function lookupBuiltInHelper(
   expr: Expressions.GetStrictFree,
   resolver: Nullable<ClassicResolver>,
   meta: BlockMetadata,
-  constants: ResolutionTimeConstants,
+  constants: ProgramConstants,
   type: string
 ): number {
   let {
@@ -450,5 +476,16 @@ function lookupBuiltInHelper(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-  return constants.helper(helper!, name);
+  return helperHandle(constants, helper!, name);
 }
+
+export const ResolveComponent: ResolutionHandler<ResolveComponentOp> = {
+  resolve: resolveComponent,
+};
+export const ResolveHelper: ResolutionHandler<ResolveHelperOp> = { resolve: resolveHelper };
+export const ResolveModifier: ResolutionHandler<ResolveModifierOp> = { resolve: resolveModifier };
+export const ResolveComponentOrHelper: ResolutionHandler<ResolveComponentOrHelperOp> = {
+  resolve: resolveComponentOrHelper,
+};
+export const ResolveOptionalComponentOrHelper: ResolutionHandler<ResolveOptionalComponentOrHelperOp> =
+  { resolve: resolveOptionalComponentOrHelper };

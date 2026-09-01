@@ -9,7 +9,9 @@ import TransformInElement from './transform-in-element';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 import TransformResolutions from './transform-resolutions';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
-import AutoImportBuiltins from './auto-import-builtins';
+import AutoImportBuiltins, {
+  autoImportLooseBuiltins as AutoImportLooseBuiltins,
+} from './auto-import-builtins';
 
 export const INTERNAL_PLUGINS = {
   AutoImportBuiltins,
@@ -28,6 +30,7 @@ export const INTERNAL_PLUGINS = {
 
 // order of plugins is important
 export const RESOLUTION_MODE_TRANSFORMS = Object.freeze([
+  AutoImportLooseBuiltins,
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
   TransformActionSyntax,
@@ -51,21 +54,4 @@ export const STRICT_MODE_TRANSFORMS = Object.freeze([
   TransformEachTrackArray,
   AssertAgainstNamedOutlets,
   TransformWrapMountAndOutlet,
-]);
-
-export const STRICT_MODE_KEYWORDS = Object.freeze([
-  'action',
-  'mut',
-  'readonly',
-  'unbound',
-
-  // TransformEachInIntoEach
-  '-each-in',
-  // TransformInElement
-  '-in-el-null',
-  // TransformEachTrackArray
-  '-track-array',
-  // TransformWrapMountAndOutlet
-  '-mount',
-  '-outlet',
 ]);
