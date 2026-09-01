@@ -2,6 +2,7 @@
 import type { MatchCallback } from 'route-recognizer';
 import type { Transition } from '../index';
 import type Router from '../index';
+import { associateRouteManagement } from '../index';
 import type { Dict, Maybe } from '../lib/core';
 import type {
   ClassicRoute,
@@ -3425,6 +3426,44 @@ scenarios.forEach(function (scenario) {
       );
     }
   );
+
+  QUnit.test('getInvokable rejection aborts the transition', async function (assert) {
+    assert.expect(4);
+
+    map(assert, function (match) {
+      match('/broken-invokable').to('brokenInvokable');
+    });
+
+    let error = new Error('invokable failed');
+    let route = createHandler('brokenInvokable', {
+      events: {
+        error(reason: Error) {
+          assert.strictEqual(reason, error, 'the error event receives the original rejection');
+        },
+      },
+    });
+    let manager = {
+      capabilities: { classicInterop: false },
+      willEnter() {},
+      enter() {
+        return Promise.resolve(undefined);
+      },
+      getInvokable() {
+        return reject(error);
+      },
+    };
+
+    associateRouteManagement(route, manager as never, { route, invokable: undefined });
+    routes = { brokenInvokable: route };
+
+    let transition = router.handleURL('/broken-invokable');
+    assert.false(transition.isAborted, 'the transition starts active');
+
+    let rejection = await transition.catch((reason) => reason);
+
+    assert.strictEqual(rejection, error, 'the original rejection propagates');
+    assert.true(transition.isAborted, 'the failed transition is aborted');
+  });
 
   QUnit.test('error handler gets called for errors in validation hooks', function (assert) {
     assert.expect(25);
