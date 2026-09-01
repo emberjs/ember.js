@@ -248,6 +248,7 @@ export default class InternalRouteInfo<R extends Route> {
         throwIfAborted(transition);
         return route;
       })
+      .then(() => transition._pausingPromise || Promise.resolve(null))
       .then(() => this.runBeforeModelHook(transition))
       .then(() => throwIfAborted(transition))
       .then(() => this.getModel(transition))
