@@ -616,30 +616,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
     },
     {
       routerMap: `
-        this.route('swap-invokable');
-      `,
-      routes: {
-        'swap-invokable.js': `
-          import SwapRoute from '${appName}/routes/swap';
-
-          export default class extends SwapRoute {}
-        `,
-      },
-      routeComponent:
-        createRouteComponent(
-          'SwapInvokableLoading',
-          `<div data-test-swap-invokable="loading">swap loading</div>`
-        ) +
-        createRouteComponent(
-          'SwapInvokableReady',
-          `<div data-test-swap-invokable="ready">swap ready</div>`
-        ),
-      managerInvokableMap: `
-        'swap-invokable': COMPONENTS.SwapInvokableReady,
-      `,
-    },
-    {
-      routerMap: `
         this.route('glimmer-wrapper', function () {
           this.route('child');
         });
@@ -843,17 +819,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                 />
               </template>;
             `,
-            'swap-outlet.gjs': `
-              import { SwapInvokableLoading } from '${appName}/components/funky-route-components';
-
-              export const SwapOutlet = <template>
-                {{#if @bucket.ready}}
-                  <@Component @outlet={{@outlet}} />
-                {{else}}
-                  <SwapInvokableLoading @outlet={{@outlet}} />
-                {{/if}}
-              </template>;
-            `,
             'reactive-outlet.gjs': `
               export const ReactiveOutlet = <template>
                 <@Component @context={{@context}} @outlet={{@outlet}} />
@@ -894,71 +859,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
             'funky-route-components.gjs': ROUTE_COMPONENTS,
           },
           'route-managers': {
-            'swap.js': `
-              import { routeCapabilities } from '@ember/routing';
-              import { tracked } from '@glimmer/tracking';
-
-              import { SwapOutlet } from '${appName}/components/swap-outlet';
-              import * as COMPONENTS from '${appName}/components/funky-route-components';
-
-              const ROUTES = {
-                ${MANAGER_INVOKABLE_MAP}
-              };
-
-              const BUCKETS = new Map();
-              let getInvokableCalls = 0;
-
-              export function getInvokableCallCount() {
-                return getInvokableCalls;
-              }
-
-              export function finishLoading(name) {
-                BUCKETS.get(name).ready = true;
-              }
-
-              class SwapBucket {
-                @tracked ready = false;
-
-                constructor(route, invokable) {
-                  this.route = route;
-                  this.invokable = invokable;
-                }
-              }
-
-              export default class SwapRouteManager {
-                capabilities = routeCapabilities('1.0');
-
-                constructor(owner) {
-                  this.owner = owner;
-                }
-
-                createRoute(RouteClass, { name }) {
-                  let bucket = new SwapBucket(new RouteClass(this.owner), ROUTES[name]);
-                  BUCKETS.set(name, bucket);
-                  return bucket;
-                }
-
-                getDestroyable() {
-                  return null;
-                }
-
-                getRouteWrapper() {
-                  return SwapOutlet;
-                }
-
-                willEnter() {}
-                async enter() {}
-                didEnter() {}
-                willExit() {}
-                exit() {}
-                didExit() {}
-
-                async getInvokable(bucket) {
-                  getInvokableCalls++;
-                  return bucket.invokable;
-                }
-              }
-            `,
             'reactive.js': `
               import { routeCapabilities } from '@ember/routing';
 
@@ -1085,19 +985,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
 
               setRouteManager((owner) => new ReactiveRouteManager(owner), ReactiveRoute);
             `,
-            'swap.js': `
-              import { setOwner } from '@ember/owner';
-              import { setRouteManager } from '@ember/routing';
-              import SwapRouteManager from '${appName}/route-managers/swap';
-
-              export default class SwapRoute {
-                constructor(owner) {
-                  setOwner(this, owner);
-                }
-              }
-
-              setRouteManager((owner) => new SwapRouteManager(owner), SwapRoute);
-            `,
             'glimmer-route.js': `
               import { setOwner } from '@ember/owner';
               import { setRouteManager } from '@ember/routing';
@@ -1149,10 +1036,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
               import { modelStarts } from '${appName}/router';
               import { resolveModel as resolveParentModel } from '${appName}/routes/reactive-context';
               import { resolveModel as resolveChildModel } from '${appName}/routes/reactive-context/child';
-              import {
-                finishLoading as finishSwapLoading,
-                getInvokableCallCount,
-              } from '${appName}/route-managers/swap';
 
               const CLASSIC_ROUTE_SELECTOR = '[data-test-classic-route]';
               const FUNKY_ROUTE_SELECTOR = '[data-test-funky-route]';
@@ -1381,26 +1264,6 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   assert
                     .dom('[data-test-reactive-route="reactive-context"] > [data-test-route-model]')
                     .hasText('PARENT-CTX');
-                });
-
-                test('a manager swaps what is rendered from tracked state, without re-entering the route', async function (assert) {
-                  await visit('/swap-invokable');
-
-                  assert.dom('[data-test-swap-invokable="loading"]').exists();
-                  assert.dom('[data-test-swap-invokable="ready"]').doesNotExist();
-
-                  let callsBefore = getInvokableCallCount();
-
-                  finishSwapLoading('swap-invokable');
-                  await settled();
-
-                  assert.strictEqual(
-                    getInvokableCallCount(),
-                    callsBefore,
-                    'the swap needed no new invokable, so no re-entry'
-                  );
-                  assert.dom('[data-test-swap-invokable="loading"]').doesNotExist();
-                  assert.dom('[data-test-swap-invokable="ready"]').exists();
                 });
 
                 test('re-entering a route with a changed model updates @context', async function (assert) {

@@ -21,7 +21,9 @@ v1AppScenarios
 
           Router.map(function () {
             this.route('parent', function () {
-              this.route('child');
+              this.route('child', function () {
+                this.route('grandchild');
+              });
             });
           });
         `,
@@ -31,6 +33,7 @@ v1AppScenarios
 
             export default class FlowService extends Service {
               starts = [];
+              settles = [];
               _resolvers = {};
               _released = {};
 
@@ -39,12 +42,14 @@ v1AppScenarios
 
                 if (this._released[key]) {
                   delete this._released[key];
-                  return Promise.resolve();
+                  return Promise.resolve().then(() => this.settles.push(key));
                 }
 
-                return new Promise((resolve) => {
+                let pending = new Promise((resolve) => {
                   this._resolvers[key] = resolve;
                 });
+
+                return pending.then(() => this.settles.push(key));
               }
 
               release(key) {
@@ -57,13 +62,31 @@ v1AppScenarios
                   this._released[key] = true;
                 }
               }
+
+              reset() {
+                this.starts.length = 0;
+                this.settles.length = 0;
+                this._resolvers = {};
+                this._released = {};
+              }
             }
           `,
         },
         components: {
           'pioneer-components.gjs': `
+            import { LinkTo } from '@ember/routing';
+
             export const PioneerOutlet = <template>
               <@Component @context={{@context}} @outlet={{@outlet}} />
+            </template>;
+
+            export const ApplicationComponent = <template>
+              <LinkTo
+                @route="parent.child.grandchild"
+                data-test-deep-link
+              >Deep route</LinkTo>
+              <div data-test="application">{{@context.name}}</div>
+              {{outlet}}
             </template>;
 
             export const ParentComponent = <template>
@@ -73,6 +96,11 @@ v1AppScenarios
 
             export const ChildComponent = <template>
               <div data-test="child">{{@context.name}}</div>
+              {{outlet}}
+            </template>;
+
+            export const GrandchildComponent = <template>
+              <div data-test="grandchild">{{@context.name}}</div>
             </template>;
           `,
         },
@@ -80,14 +108,18 @@ v1AppScenarios
           'pioneer.js': `
             import { routeCapabilities } from '@ember/routing';
             import {
+              ApplicationComponent,
               ChildComponent,
+              GrandchildComponent,
               ParentComponent,
               PioneerOutlet,
             } from '${appName}/components/pioneer-components';
 
             const ROUTES = {
+              application: ApplicationComponent,
               parent: ParentComponent,
               'parent.child': ChildComponent,
+              'parent.child.grandchild': GrandchildComponent,
             };
 
             class PioneerBucket {
@@ -119,8 +151,14 @@ v1AppScenarios
 
               willEnter() {}
 
-              async enter(bucket) {
-                return bucket.route.model();
+              async enter(bucket, state) {
+                let self = state.to.find((routeInfo) => routeInfo.name === bucket.name);
+                let parent = self?.parent ?? null;
+                let parentPromise = parent
+                  ? state.getAncestorPromise(parent)
+                  : Promise.resolve(undefined);
+
+                return bucket.route.model(parentPromise);
               }
 
               didEnter() {}
@@ -147,6 +185,19 @@ v1AppScenarios
             }
 
             setRouteManager((owner) => new PioneerRouteManager(owner), PioneerRoute);
+          `,
+          'application.js': `
+            import { service } from '@ember/service';
+            import PioneerRoute from '${appName}/routes/pioneer';
+
+            export default class extends PioneerRoute {
+              @service flow;
+
+              async model() {
+                await this.flow.hold('application');
+                return { name: 'application' };
+              }
+            }
           `,
           'parent.js': `
             import { service } from '@ember/service';
@@ -175,6 +226,22 @@ v1AppScenarios
                 }
               }
             `,
+            child: {
+              'grandchild.js': `
+                import { service } from '@ember/service';
+                import PioneerRoute from '${appName}/routes/pioneer';
+
+                export default class extends PioneerRoute {
+                  @service flow;
+
+                  async model(parentPromise) {
+                    await parentPromise;
+                    await this.flow.hold('grandchild');
+                    return { name: 'grandchild' };
+                  }
+                }
+              `,
+            },
           },
         },
       },
@@ -182,52 +249,121 @@ v1AppScenarios
         acceptance: {
           'pioneer-route-timing-test.js': `
             import { module, test } from 'qunit';
-            import { settled, visit, waitUntil } from '@ember/test-helpers';
+            import { click, settled, visit, waitUntil } from '@ember/test-helpers';
             import { setupApplicationTest } from '${appName}/tests/helpers';
+
+            async function assertLoadingOrder(assert, flow, expected, navigate) {
+              let navigation = navigate();
+
+              await waitUntil(() => flow.starts.length === expected.length, { timeout: 2000 });
+
+              assert.deepEqual(
+                flow.starts.slice(),
+                expected,
+                'independent models started together'
+              );
+              assert.false(
+                flow.starts.includes('grandchild'),
+                'the dependent model waited for its parent'
+              );
+
+              flow.release('child');
+              await waitUntil(() => flow.starts.includes('grandchild'), { timeout: 2000 });
+
+              assert.true(
+                flow.starts.includes('grandchild'),
+                'the dependent model started after its parent settled'
+              );
+              assert.false(
+                flow.settles.includes('parent'),
+                'the dependent model did not wait for an unrelated route'
+              );
+
+              flow.release('application');
+              flow.release('parent');
+              flow.release('grandchild');
+              await navigation;
+              await settled();
+            }
 
             module('Acceptance | pioneer route timing', function (hooks) {
               setupApplicationTest(hooks);
 
-              test('a descendant model starts while its ancestor model is pending', async function (assert) {
+              hooks.afterEach(async function () {
                 let flow = this.owner.lookup('service:flow');
 
-                visit('/parent/child');
-
-                try {
-                  await waitUntil(() => flow.starts.length === 2, { timeout: 2000 });
-                } catch (e) {
-                  // Fall through: the snapshot below reports what did start.
-                }
-
-                let startedWhilePending = flow.starts.slice();
-
+                flow.release('application');
                 flow.release('parent');
                 flow.release('child');
+                flow.release('grandchild');
                 await settled();
+              });
 
-                assert.deepEqual(
-                  startedWhilePending,
-                  ['parent', 'child'],
-                  'the descendant loaded alongside its ancestor'
+              test('direct visits preserve model loading dependencies', async function (assert) {
+                await assertLoadingOrder(
+                  assert,
+                  this.owner.lookup('service:flow'),
+                  ['application', 'parent', 'child'],
+                  () => visit('/parent/child/grandchild')
                 );
               });
 
-              test('a route does not render while its own model is pending', async function (assert) {
+              test('LinkTo transitions preserve model loading dependencies', async function (assert) {
                 let flow = this.owner.lookup('service:flow');
+                let initialVisit = visit('/');
 
-                visit('/parent/child');
+                await waitUntil(() => flow.starts.includes('application'));
+                flow.release('application');
+                await initialVisit;
+                flow.reset();
 
-                await waitUntil(() => flow.starts.length >= 1, { timeout: 2000 });
+                await assertLoadingOrder(
+                  assert,
+                  flow,
+                  ['parent', 'child'],
+                  () => click('[data-test-deep-link]')
+                );
+              });
+
+              test('direct visits render a wrapper only after its route resolves', async function (assert) {
+                let flow = this.owner.lookup('service:flow');
+                let navigation = visit('/parent/child/grandchild');
+
+                await waitUntil(() => flow.starts.length === 3, { timeout: 2000 });
 
                 assert
+                  .dom('[data-test="application"]')
+                  .doesNotExist('the unresolved root route has no wrapper');
+
+                flow.release('application');
+                await waitUntil(() => document.querySelector('[data-test="application"]'));
+
+                assert.dom('[data-test="application"]').hasText('application');
+                assert
                   .dom('[data-test="parent"]')
-                  .doesNotExist('the ancestor had not rendered');
+                  .doesNotExist('the unresolved parent route has no wrapper');
 
                 flow.release('parent');
+                await waitUntil(() => document.querySelector('[data-test="parent"]'));
+
+                assert.dom('[data-test="parent"]').hasText('parent');
+                assert
+                  .dom('[data-test="child"]')
+                  .doesNotExist('the unresolved child route has no wrapper');
+
                 flow.release('child');
-                await settled();
+                await waitUntil(() => document.querySelector('[data-test="child"]'));
 
                 assert.dom('[data-test="child"]').hasText('child');
+                assert
+                  .dom('[data-test="grandchild"]')
+                  .doesNotExist('the unresolved grandchild route has no wrapper');
+
+                flow.release('grandchild');
+                await navigation;
+                await settled();
+
+                assert.dom('[data-test="grandchild"]').hasText('grandchild');
               });
             });
           `,

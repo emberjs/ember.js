@@ -94,14 +94,20 @@ export default abstract class Router<R extends BaseRoute> {
     entered.
 
     Called with `immediate: false` for the incremental updates fired as each
-    route in an in-flight transition becomes ready. These are an optimization
+    route in an in-flight transition resolves. These are an optimization
     (render parent routes while a child's model is still loading), and a host
-    is free to delay or batch them. Batching matters: each readiness event
-    arrives in its own run loop, so rendering one pass per event walks the
-    outlet tree once per route — 12 renders for a single 9-route transition,
-    measured, where 2 suffice.
+    is free to delay or batch them.
    */
   protected scheduleOutletUpdate(_immediate = false): void {}
+
+  // Publishes each route after it resolves. This lets a resolved parent render
+  // while its descendant is still loading.
+  onRouteResolved(routeInfo: InternalRouteInfo<R>, routeIndex: number): void {
+    const currentRouteInfos = this.currentRouteInfos ?? [];
+    currentRouteInfos[routeIndex] = routeInfo;
+    this.currentRouteInfos = currentRouteInfos;
+    this.scheduleOutletUpdate(false);
+  }
 
   /**
     Handles an error thrown synchronously by a `didEnter` hook (classic
@@ -122,21 +128,6 @@ export default abstract class Router<R extends BaseRoute> {
       activeTransition
     );
     throw reason;
-  }
-
-  // Called once per route in parent-to-child order as each route's
-  // `getInvokable` resolves. Writes the route into `currentRouteInfos` at its
-  // slot and schedules a render so the outlet tree builds up incrementally
-  // instead of waiting for the whole transition to settle.
-  onRouteInvokableReady(
-    routeInfo: InternalRouteInfo<R>,
-    _transition: InternalTransition<R>,
-    routeIndex: number
-  ): void {
-    const currentRouteInfos = this.currentRouteInfos ?? [];
-    currentRouteInfos[routeIndex] = routeInfo;
-    this.currentRouteInfos = currentRouteInfos;
-    this.scheduleOutletUpdate(false);
   }
 
   // Called when `intermediateTransitionTo` fires (a classic loading or error
@@ -230,8 +221,8 @@ export default abstract class Router<R extends BaseRoute> {
     }
 
     // Filter exited routes out of currentRouteInfos. Truncating to
-    // `unchanged.length` would lose entering routes that
-    // `onRouteInvokableReady` already wrote at higher indices.
+    // `unchanged.length` would lose entering routes that `onRouteResolved`
+    // already wrote at higher indices.
     const exitedBuckets = new Set(partition.exited.map((ri) => ri.bucket));
     if (this.currentRouteInfos) {
       this.currentRouteInfos = this.currentRouteInfos.filter(

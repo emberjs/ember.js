@@ -78,10 +78,7 @@ function proceed<R extends BaseRoute>(
     }
   }
 
-  // a couple of tests have no router instance
-  // so we use optional chaining here to avoid
-  // throwing an error in those tests
-  transition.router?.onRouteInvokableReady(resolvedRouteInfo, transition, routeIndex);
+  transition.router?.onRouteResolved(resolvedRouteInfo, routeIndex);
 
   // Proceed after ensuring that the redirect hook
   // didn't abort this transition by transitioning elsewhere.

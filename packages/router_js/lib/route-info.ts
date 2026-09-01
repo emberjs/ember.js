@@ -262,8 +262,19 @@ export default class InternalRouteInfo<R extends BaseRoute> {
       const eagerManager = this._management?.manager;
 
       // Classic keeps the sequential walk, so its legacy timings are exact.
-      if (this.isResolved || eagerManager === undefined || hasClassicInterop(eagerManager)) {
+      if (this.isResolved || (eagerManager && hasClassicInterop(eagerManager))) {
         return Promise.resolve(undefined);
+      } else if (!eagerManager) {
+        // LinkTo may load routes later than direct visit navigation.
+        return Promise.resolve(this.routePromise).then(() => {
+          const loadedManager = this._management?.manager;
+
+          if (loadedManager && hasClassicInterop(loadedManager)) {
+            return undefined;
+          }
+
+          return this.beginEnter(transition);
+        });
       }
     }
 
@@ -325,9 +336,11 @@ export default class InternalRouteInfo<R extends BaseRoute> {
         const enterPromise = manager.enter(bucket, navigationArgs);
         this.enterPromise = enterPromise;
 
-        invokableFor(manager, bucket);
+        const invokablePromise = Promise.resolve(invokableFor(manager, bucket));
 
-        return enterPromise;
+        return Promise.all([enterPromise, invokablePromise]).then(([enteredContext]) => {
+          return enteredContext;
+        });
       });
 
     return this.beginPromise;
@@ -371,33 +384,6 @@ export default class InternalRouteInfo<R extends BaseRoute> {
       context,
       this.enterPromise
     );
-
-    // Back-fill the model onto `resolved` once `enter` settles, but only for
-    // managers that render before their model resolves. A manager whose
-    // `getInvokable` gates on `enter` (e.g. the classic manager) reaches here
-    // with `resolvedContext` already set, so `resolved` was built with its final
-    // `context` and there is nothing to wait for. A manager whose `getInvokable`
-    // resolves *before* `enter` (e.g. a manager which renders
-    // immediately and shows a loading state) reaches here while `enterPromise`
-    // is still pending and `resolvedContext` is undefined; the resolve()-level
-    // `.then` only updates the now-replaced unresolved info, so this is the
-    // subscription that writes the model onto the live `resolved` info (and the
-    // transition's resolved models) when it finally arrives.
-    if (resolvedContext === undefined && this.enterPromise !== undefined) {
-      this.enterPromise.then(
-        (enteredContext) => {
-          if (transition && transition.isAborted) return;
-          resolved.context = enteredContext as ModelFor<R> | undefined;
-          if (transition) {
-            transition.resolvedModels = transition.resolvedModels || {};
-            transition.resolvedModels[resolved.name] = enteredContext as ModelFor<R> | undefined;
-          }
-        },
-        () => {
-          // enter rejected; transition-level error handling reports it.
-        }
-      );
-    }
 
     if (cached !== undefined) {
       // SAFETY: This is potentially a bit risker, but for what we're doing, it should be ok.

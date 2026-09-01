@@ -242,15 +242,14 @@ QUnit.module('RouteInfo - non-gating manager');
 // getInvokable on enterPromise. The `enter` hook is supplied per test.
 function createNonGatingHandler(
   name: string,
-  enter: (bucket: any, args: any) => Promise<unknown>
+  enter: (bucket: any, args: any) => Promise<unknown>,
+  getInvokable: () => Promise<unknown> = () => resolve(undefined)
 ): ClassicRoute {
   let manager = {
     capabilities: { classicInterop: false },
     willEnter() {},
     enter,
-    getInvokable() {
-      return resolve(undefined);
-    },
+    getInvokable,
   };
 
   let handler = createHandler(name);
@@ -296,6 +295,47 @@ QUnit.test(
     );
   }
 );
+
+QUnit.test('route resolution waits for getInvokable', async function (assert) {
+  assert.expect(3);
+
+  let router = new TestRouter();
+  let model = { id: 'real-model' };
+
+  let resolveInvokable!: (value: object) => void;
+  let invokablePromise = new Promise<object>((resolve) => {
+    resolveInvokable = resolve;
+  });
+
+  let handler = createNonGatingHandler(
+    'async-component',
+    () => resolve(model),
+    () => invokablePromise
+  );
+  let routeInfo = new UnresolvedRouteInfoByParam(router, 'async-component', [], {}, handler);
+  let transition = {
+    isAborted: false,
+    router,
+    resolvedModels: {},
+  } as unknown as InternalTransition<ClassicRoute>;
+
+  let settled = false;
+  let pending = routeInfo.resolve(transition).then((resolvedRouteInfo) => {
+    settled = true;
+    return resolvedRouteInfo;
+  });
+
+  await resolve();
+  await resolve();
+
+  assert.false(settled, 'the route remains unresolved while getInvokable is pending');
+
+  resolveInvokable({});
+  let resolved = await pending;
+
+  assert.true(settled, 'the route resolves after getInvokable settles');
+  assert.strictEqual(resolved.context, model, 'the entered context is published with the route');
+});
 
 QUnit.test('getAncestorPromise resolves with the ancestor enter result', async function (assert) {
   assert.expect(1);
