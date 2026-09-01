@@ -26,6 +26,8 @@ import { InstructionEncoderImpl } from '@glimmer/encoder/lib/encoder';
 import { dict, StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { ARG_SHIFT, MACHINE_MASK, TYPE_SIZE } from '@glimmer/vm/lib/flags';
 
+import { APPEND_OPCODES } from '@glimmer/runtime/lib/opcodes';
+
 import { compilableBlock } from '../compilable-template';
 import {
   resolveComponent,
@@ -74,9 +76,15 @@ export function encodeOp(
     resolver,
   } = context;
 
-  if (isBuilderOpcode(op[0])) {
-    let [type, ...operands] = op;
-    encoder.push(constants, type, ...(operands as SingleBuilderOperand[]));
+  let head = op[0];
+
+  if (typeof head === 'object') {
+    let [, ...operands] = op;
+    APPEND_OPCODES.register(head);
+    encoder.push(constants, head.type, ...(operands as SingleBuilderOperand[]));
+  } else if (isBuilderOpcode(head)) {
+    let [, ...operands] = op;
+    encoder.push(constants, head, ...(operands as SingleBuilderOperand[]));
   } else {
     switch (op[0]) {
       case HighLevelBuilderOpcodes.Label:
@@ -122,7 +130,7 @@ export function encodeOp(
       }
 
       default:
-        throw new Error(`Unexpected high level opcode ${op[0]}`);
+        throw new Error(`Unexpected high level opcode ${head as number}`);
     }
   }
 }

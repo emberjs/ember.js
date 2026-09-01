@@ -42,7 +42,8 @@
     "@glimmer/manager": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/vm": "workspace:*",
-    "@glimmer/wire-format": "workspace:*"
+    "@glimmer/wire-format": "workspace:*",
+    "@glimmer/runtime": "workspace:*"
   },
   "devDependencies": {
     "@glimmer/constants": "workspace:*",
