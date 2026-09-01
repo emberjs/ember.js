@@ -2,14 +2,28 @@ import ArrayProxy from '@ember/array/proxy';
 import EmberObject, { observer } from '@ember/object';
 import { oneWay as reads, not } from '@ember/object/computed';
 import { A as a } from '@ember/array';
-import { moduleFor, AbstractTestCase, runTask, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runTask,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
 import { set, get } from '@ember/object';
 import { createCache, getValue } from '@glimmer/validator';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 moduleFor(
   'Ember.ArrayProxy - content change (length)',
   class extends AbstractTestCase {
-    ['@test should update length for null content'](assert) {
+    beforeEach() {
+      expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+    }
+
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test should update length for null content`](
+      assert
+    ) {
       let proxy = ArrayProxy.create({
         content: a([1, 2, 3]),
       });
@@ -21,7 +35,7 @@ moduleFor(
       assert.equal(proxy.get('length'), 0, 'length updates');
     }
 
-    ['@test should update length for null content when there is a computed property watching length'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test should update length for null content when there is a computed property watching length`](
       assert
     ) {
       let proxy = class extends ArrayProxy {
@@ -42,7 +56,9 @@ moduleFor(
       assert.equal(proxy.get('length'), 0, 'length updates');
     }
 
-    ['@test getting length does not recompute the object cache'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test getting length does not recompute the object cache`](
+      assert
+    ) {
       let indexes = [];
 
       let proxy = class extends ArrayProxy {
@@ -68,7 +84,9 @@ moduleFor(
       assert.deepEqual(indexes, []);
     }
 
-    '@test accessing length after content set to null'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test accessing length after content set to null`](
+      assert
+    ) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -79,7 +97,9 @@ moduleFor(
       assert.deepEqual(obj.content, null, 'content was updated');
     }
 
-    '@test accessing length after content set to null in willDestroy'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test accessing length after content set to null in willDestroy`](
+      assert
+    ) {
       let obj = class extends ArrayProxy {
         willDestroy() {
           this.set('content', null);
@@ -97,7 +117,9 @@ moduleFor(
       assert.deepEqual(obj.content, null, 'content was updated');
     }
 
-    '@test setting length to 0'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length to 0`](
+      assert
+    ) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -108,7 +130,9 @@ moduleFor(
       assert.deepEqual(obj.content, [], 'content length was truncated');
     }
 
-    '@test setting length to smaller value'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length to smaller value`](
+      assert
+    ) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -119,7 +143,9 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
-    '@test setting length to larger value'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length to larger value`](
+      assert
+    ) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -130,7 +156,9 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo', 'bar', undefined], 'content length was updated');
     }
 
-    '@test setting length after content set to null'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length after content set to null`](
+      assert
+    ) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -142,7 +170,9 @@ moduleFor(
       assert.equal(obj.length, 0, 'length is still updated');
     }
 
-    '@test setting length to greater than zero'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting length to greater than zero`](
+      assert
+    ) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
       assert.equal(obj.length, 2, 'precond');
@@ -153,7 +183,9 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
-    async ['@test array proxy + aliasedProperty complex test'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy + aliasedProperty complex test`](
+      assert
+    ) {
       let aCalled, bCalled, cCalled, dCalled, eCalled;
 
       aCalled = bCalled = cCalled = dCalled = eCalled = 0;
@@ -207,7 +239,9 @@ moduleFor(
       obj.destroy();
     }
 
-    async ['@test array proxy length is reactive when accessed normally'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy length is reactive when accessed normally`](
+      assert
+    ) {
       let proxy = ArrayProxy.create({
         content: a([1, 2, 3]),
       });
@@ -229,7 +263,9 @@ moduleFor(
       assert.equal(getValue(lengthCache), 0, 'length is correct');
     }
 
-    async ['@test array proxy length is reactive when accessed using get'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy length is reactive when accessed using get`](
+      assert
+    ) {
       let proxy = ArrayProxy.create({
         content: a([1, 2, 3]),
       });

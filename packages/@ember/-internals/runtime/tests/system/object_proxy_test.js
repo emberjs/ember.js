@@ -2,12 +2,33 @@ import { DEBUG } from '@glimmer/env';
 import { addObserver, removeObserver } from '@ember/-internals/metal';
 import { computed, get, set, observer } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 moduleFor(
   'ObjectProxy',
   class extends AbstractTestCase {
-    ['@test should not proxy properties passed to create'](assert) {
+    beforeEach() {
+      // `deprecate` is stripped from production builds, so there is nothing to
+      // expect there -- and a couple of tests below assert an exact count of
+      // zero assertions when running against a production build.
+      if (DEBUG) {
+        expectDeprecation(
+          /`ObjectProxy` is deprecated/,
+          DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled
+        );
+      }
+    }
+
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should not proxy properties passed to create`](
+      assert
+    ) {
       let Proxy = class extends ObjectProxy {
         get cp() {
           return this._cp;
@@ -25,7 +46,9 @@ moduleFor(
       assert.equal(proxy._cp, 'Bar', 'should use CP setter');
     }
 
-    ['@test should proxy properties to content'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should proxy properties to content`](
+      assert
+    ) {
       let content = {
         firstName: 'Tom',
         lastName: 'Dale',
@@ -77,7 +100,9 @@ moduleFor(
       assert.equal(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
     }
 
-    ['@test getting proxied properties with Ember.get should work'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test getting proxied properties with Ember.get should work`](
+      assert
+    ) {
       let proxy = ObjectProxy.create({
         content: {
           foo: 'FOO',
@@ -87,7 +112,9 @@ moduleFor(
       assert.equal(get(proxy, 'foo'), 'FOO');
     }
 
-    [`@test JSON.stringify doens't assert`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test JSON.stringify doens't assert`](
+      assert
+    ) {
       let proxy = ObjectProxy.create({
         content: {
           foo: 'FOO',
@@ -97,7 +124,9 @@ moduleFor(
       assert.equal(JSON.stringify(proxy), JSON.stringify({ content: { foo: 'FOO' } }));
     }
 
-    ['@test calling a function on the proxy avoids the assertion'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test calling a function on the proxy avoids the assertion`](
+      assert
+    ) {
       if (DEBUG) {
         let proxy = class extends ObjectProxy {
           init() {
@@ -123,7 +152,9 @@ moduleFor(
       }
     }
 
-    [`@test setting a property on the proxy avoids the assertion`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test setting a property on the proxy avoids the assertion`](
+      assert
+    ) {
       let proxy = ObjectProxy.create({
         toJSON: undefined,
         content: {
@@ -136,7 +167,9 @@ moduleFor(
       assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
     }
 
-    [`@test setting a property on the proxy's prototype avoids the assertion`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test setting a property on the proxy's prototype avoids the assertion`](
+      assert
+    ) {
       let proxy = ObjectProxy.extend({
         toJSON: null,
       }).create({
@@ -150,7 +183,9 @@ moduleFor(
       assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
     }
 
-    ['@test getting proxied properties with [] should be an error'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test getting proxied properties with [] should be an error`](
+      assert
+    ) {
       if (DEBUG) {
         let proxy = ObjectProxy.create({
           content: {
@@ -164,7 +199,9 @@ moduleFor(
       }
     }
 
-    async ['@test should work with watched properties'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should work with watched properties`](
+      assert
+    ) {
       let content1 = { firstName: 'Tom', lastName: 'Dale' };
       let content2 = { firstName: 'Yehuda', lastName: 'Katz' };
       let count = 0;
@@ -243,7 +280,9 @@ moduleFor(
       proxy.destroy();
     }
 
-    async ['@test set and get should work with paths'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test set and get should work with paths`](
+      assert
+    ) {
       let content = { foo: { bar: 'baz' } };
       let proxy = ObjectProxy.create({ content });
       let count = 0;
@@ -266,7 +305,9 @@ moduleFor(
       proxy.destroy();
     }
 
-    async ['@test should transition between watched and unwatched strategies'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should transition between watched and unwatched strategies`](
+      assert
+    ) {
       let content = { foo: 'foo' };
       let proxy = ObjectProxy.create({ content: content });
       let count = 0;
@@ -316,7 +357,7 @@ moduleFor(
       assert.equal(get(proxy, 'foo'), 'foo');
     }
 
-    ['@test setting `undefined` to a proxied content property should override its existing value'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test setting \`undefined\` to a proxied content property should override its existing value`](
       assert
     ) {
       let proxyObject = ObjectProxy.create({
@@ -332,19 +373,21 @@ moduleFor(
       );
     }
 
-    ['@test should not throw or deprecate when adding an observer to an ObjectProxy based class'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test should not throw or deprecate when adding an observer to an ObjectProxy based class`](
       assert
     ) {
-      assert.expect(0);
-
       let obj = ObjectProxy.extend({
         observe: observer('foo', function () {}),
       }).create();
 
+      assert.ok(obj, 'the proxy was created without throwing');
+
       obj.destroy();
     }
 
-    async '@test custom proxies should be able to notify property changes manually'(assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test custom proxies should be able to notify property changes manually`](
+      assert
+    ) {
       let proxy = class extends ObjectProxy {
         locals = { foo: 123 };
 
