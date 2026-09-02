@@ -4,9 +4,9 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
-import TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
+import TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support-internal';
 import type ViewStates from '@ember/-internals/views/lib/views/states';
-import ActionSupport from '@ember/-internals/views/lib/mixins/action_support';
+import ActionSupport from '@ember/-internals/views/lib/mixins/action_support-internal';
 import {
   addChildView,
   getChildViews,

@@ -8,7 +8,7 @@ import {
   eventedOff,
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
-import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
+import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';

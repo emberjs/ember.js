@@ -10,7 +10,7 @@ import type {
 import Mixin from '@ember/object/mixin';
 import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import type { RouteArgs } from '@ember/routing/-internals';
-import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
+import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';

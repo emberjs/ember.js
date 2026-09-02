@@ -22,7 +22,7 @@ import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import { A as emberA } from '@ember/array';
-import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
+import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 import typeOf from '@ember/utils/lib/type-of';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import lookupDescriptor from '@ember/-internals/utils/lib/lookup-descriptor';

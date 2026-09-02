@@ -16,7 +16,7 @@ import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/met
 import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
 import Mixin, { applyMixin } from '@ember/object/mixin';
 import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
-import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
+import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';

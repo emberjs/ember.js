@@ -3,7 +3,7 @@
 */
 
 import { FrameworkObject } from '@ember/object/-internals';
-import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
+import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy-internal';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 /**

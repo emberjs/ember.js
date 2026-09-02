@@ -2,7 +2,7 @@
 @module @ember/helper
 */
 import { tagForObject } from '@ember/-internals/metal/lib/tags';
-import { contentFor as _contentFor } from '@ember/-internals/runtime/lib/mixins/-proxy';
+import { contentFor as _contentFor } from '@ember/-internals/runtime/lib/mixins/-proxy-internal';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
