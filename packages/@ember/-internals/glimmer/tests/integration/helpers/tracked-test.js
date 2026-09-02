@@ -1,7 +1,7 @@
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
-import MutableArray from '@ember/array/mutable';
 import { tracked, notifyPropertyChange } from '@ember/-internals/metal';
+import { InternalMutableArray as MutableArray } from '@ember/array/index-internal';
 import Service, { service } from '@ember/service';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
