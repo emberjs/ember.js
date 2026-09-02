@@ -133,6 +133,34 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-evented',
   }),
+  DEPRECATE_MIXINS: deprecation({
+    id: 'deprecate-mixins',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-mixins',
+  }),
+  DEPRECATE_ARRAY_PROXY: deprecation({
+    id: 'deprecate-array-proxy',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-array-proxy',
+  }),
+  DEPRECATE_OBJECT_PROXY: deprecation({
+    id: 'deprecate-object-proxy',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-object-proxy',
+  }),
+  DEPRECATE_PROMISE_PROXY_MIXIN: deprecation({
+    id: 'deprecate-promise-proxy-mixin',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-promise-proxy-mixin',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

@@ -3,7 +3,7 @@ import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
 import Controller from '@ember/controller';
 import Route from '@ember/routing/route';
 import { service } from '@ember/service';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import { tracked } from '@ember/-internals/metal';
 import { set } from '@ember/object';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
@@ -509,11 +509,11 @@ moduleFor(
       this.add(
         'component:foo',
         setComponentTemplate(
-          precompileTemplate('Hi {{this.person.name}} from component'),
+          precompileTemplate('Hi {{@person.name}} from component'),
           class extends Component {
-            init() {
-              super.init(...arguments);
-              this.set('person.name', 'Ben');
+            constructor(owner, args) {
+              super(owner, args);
+              set(this.args.person, 'name', 'Ben');
             }
           }
         )

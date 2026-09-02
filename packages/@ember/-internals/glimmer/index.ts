@@ -105,7 +105,7 @@
 
  ## Looking for template keywords and helpers? 
    
- See [@ember/helper](../modules/@ember%2Fhelper).
+ See [@ember/helper](../../modules/@ember%2Fhelper).
  
  @class Ember.Templates.helpers
  @public

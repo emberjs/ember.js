@@ -1,6 +1,5 @@
 import Controller from '@ember/controller';
 import Route from '@ember/routing/route';
-import Mixin from '@ember/object/mixin';
 import { QueryParamTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
@@ -147,22 +146,22 @@ moduleFor(
       );
     }
 
-    async ['@test Support shared but overridable mixin pattern'](assert) {
+    async ['@test Support shared but overridable query param defaults'](assert) {
       assert.expect(7);
 
-      let HasPage = Mixin.create({
+      let hasPage = {
         queryParams: 'page',
         page: 1,
-      });
+      };
 
       this.add(
         'controller:parent',
-        Controller.extend(HasPage, {
+        Controller.extend(hasPage, {
           queryParams: { page: 'yespage' },
         })
       );
 
-      this.add('controller:parent.child', Controller.extend(HasPage));
+      this.add('controller:parent.child', Controller.extend(hasPage));
 
       await this.setupBase();
       this.assertCurrentPath('/parent/child');

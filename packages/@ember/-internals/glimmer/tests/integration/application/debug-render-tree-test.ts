@@ -1,7 +1,8 @@
 import { ApplicationTestCase, ModuleBasedTestResolver, moduleFor } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
-import { Component, setComponentManager } from '@ember/-internals/glimmer';
+import { Component as EmberComponent, setComponentManager } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import type { InternalOwner } from '@ember/-internals/owner';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
@@ -991,7 +992,7 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         this.add(
           'component:hello-world',
-          setComponentTemplate(precompileTemplate('Hello World'), class extends Component {})
+          setComponentTemplate(precompileTemplate('Hello World'), class extends EmberComponent {})
         );
 
         await this.visit('/');
@@ -1723,8 +1724,8 @@ if (ENV._DEBUG_RENDER_TREE) {
           setComponentTemplate(
             precompileTemplate('{{@name}}'),
             class extends Component {
-              constructor(owner: InternalOwner) {
-                super(owner);
+              constructor(owner: InternalOwner, args: object) {
+                super(owner, args);
                 throw new Error('oops!');
               }
             }

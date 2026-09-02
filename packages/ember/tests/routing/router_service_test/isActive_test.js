@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -192,8 +192,8 @@ moduleFor(
             @service('router')
             routerService;
 
-            init() {
-              super.init();
+            constructor(owner, args) {
+              super(owner, args);
               componentInstance = this;
             }
 

@@ -18,6 +18,7 @@ import type { OpaqueIterationItem, OpaqueIterator } from '@glimmer/reference/lib
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
+import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
@@ -111,6 +112,8 @@ export interface VMState {
 }
 
 export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
+  [DESTROYABLE_META_KEY]: object | undefined;
+
   public children: UpdatingOpcode[];
 
   protected readonly bounds: AppendingBlock;

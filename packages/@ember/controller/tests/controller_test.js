@@ -1,7 +1,6 @@
 import Controller, { inject as injectController } from '@ember/controller';
 import Service, { service } from '@ember/service';
 import EmberObject, { get } from '@ember/object';
-import Mixin from '@ember/object/mixin';
 import { setOwner } from '@ember/-internals/owner';
 import {
   runDestroy,
@@ -170,22 +169,23 @@ moduleFor(
         },
       });
 
-      let BarControllerMixin = Mixin.create({
-        actions: {
-          bar(msg) {
-            assert.equal(msg, 'HELLO');
-            this._super(msg);
+      let IndexController = SuperController.extend(
+        {
+          actions: {
+            bar(msg) {
+              assert.equal(msg, 'HELLO');
+              this._super(msg);
+            },
           },
         },
-      });
-
-      let IndexController = SuperController.extend(BarControllerMixin, {
-        actions: {
-          baz() {
-            assert.ok(true, 'baz');
+        {
+          actions: {
+            baz() {
+              assert.ok(true, 'baz');
+            },
           },
-        },
-      });
+        }
+      );
 
       let controller = IndexController.create({});
       controller.send('foo');

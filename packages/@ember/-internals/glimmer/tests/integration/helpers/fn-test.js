@@ -2,7 +2,7 @@ import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { template } from '@ember/template-compiler/runtime';
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 
 moduleFor(
   'Helpers test: {{fn}}',
@@ -16,9 +16,9 @@ moduleFor(
       this.owner.register(
         'component:stash',
         class extends Component {
-          init() {
-            super.init(...arguments);
-            testContext.stashedFn = this.stashedFn;
+          constructor(owner, args) {
+            super(owner, args);
+            testContext.stashedFn = this.args.stashedFn;
           }
         }
       );

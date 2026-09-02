@@ -5,7 +5,7 @@ import templateOnly from '@ember/component/template-only';
 
 import { set } from '@ember/object';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 
 moduleFor(
   'Helpers test: {{array}}',
@@ -155,8 +155,8 @@ moduleFor(
     ['@test should yield hash of an array of internal properties']() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init();
+        constructor(owner, args) {
+          super(owner, args);
           fooBarInstance = this;
           this.model = { personOne: 'Chad' };
         }
@@ -197,8 +197,8 @@ moduleFor(
     ['@test should yield hash of an array of internal and external properties']() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init();
+        constructor(owner, args) {
+          super(owner, args);
           fooBarInstance = this;
           this.model = { personOne: 'Chad' };
         }
@@ -207,7 +207,7 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate(`{{yield (hash people=(array this.model.personOne this.personTwo))}}`),
+          precompileTemplate(`{{yield (hash people=(array this.model.personOne @personTwo))}}`),
           FooBarComponent
         )
       );
@@ -249,7 +249,7 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('{{#each this.people as |personName|}}{{personName}},{{/each}}'),
+          precompileTemplate('{{#each @people as |personName|}}{{personName}},{{/each}}'),
           FooBarComponent
         )
       );
@@ -272,8 +272,8 @@ moduleFor(
     ['@test should return an entirely new array when any argument change']() {
       let fooBarInstance;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init();
+        constructor(owner, args) {
+          super(owner, args);
           fooBarInstance = this;
         }
       };
@@ -281,19 +281,19 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('{{#each this.people as |personName|}}{{personName}},{{/each}}'),
+          precompileTemplate('{{#each @people as |personName|}}{{personName}},{{/each}}'),
           FooBarComponent
         )
       );
 
       this.render(strip`{{foo-bar people=(array "Tom" this.personTwo)}}`, { personTwo: 'Chad' });
 
-      let firstArray = fooBarInstance.people;
+      let firstArray = fooBarInstance.args.people;
 
       runTask(() => set(this.context, 'personTwo', 'Godfrey'));
 
       this.assert.ok(
-        firstArray !== fooBarInstance.people,
+        firstArray !== fooBarInstance.args.people,
         'should have created an entirely new array'
       );
     }

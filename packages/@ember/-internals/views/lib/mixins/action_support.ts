@@ -3,6 +3,7 @@
 */
 import { get } from '@ember/-internals/metal/lib/property_get';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
@@ -15,7 +16,7 @@ import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 interface ActionSupport {
   send(actionName: string, ...args: unknown[]): void;
 }
-const ActionSupport = Mixin.create({
+const ActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
   send(actionName: string, ...args: unknown[]) {
     deprecateUntil(
       `Calling \`.send()\` on ${this} is deprecated. Invoke the corresponding method directly.`,

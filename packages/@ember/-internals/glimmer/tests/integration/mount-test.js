@@ -14,7 +14,7 @@ import Engine, { getEngineParent } from '@ember/engine';
 import { precompileTemplate } from '@ember/template-compilation';
 
 import { backtrackingMessageFor } from '../utils/debug-stack';
-import { Component } from '../utils/helpers';
+import Component from '@glimmer/component';
 import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
@@ -138,14 +138,14 @@ moduleFor(
       };
 
       let ComponentWithBacktrackingSet = class extends Component {
-        init() {
-          super.init(...arguments);
-          this.set('person.name', 'Ben');
+        constructor(owner, args) {
+          super(owner, args);
+          set(this.args.person, 'name', 'Ben');
         }
       };
 
       setComponentTemplate(
-        precompileTemplate('[component {{this.person.name}}]'),
+        precompileTemplate('[component {{@person.name}}]'),
         ComponentWithBacktrackingSet
       );
 
@@ -277,10 +277,8 @@ moduleFor(
               setComponentTemplate(
                 precompileTemplate('Tagless Component'),
                 class extends Component {
-                  tagName = '';
-
-                  init() {
-                    super.init(...arguments);
+                  constructor(owner, args) {
+                    super(owner, args);
                     component = this;
                   }
                 }
@@ -408,9 +406,7 @@ moduleFor(
         'component:app-bar-component',
         setComponentTemplate(
           precompileTemplate('rendered app-bar-component from the app'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.add(
@@ -433,9 +429,7 @@ moduleFor(
       );
 
       return this.visit('/engine-params-contextual-component').then(() => {
-        this.assertComponentElement(this.firstChild, {
-          content: 'foo-component rendered! - rendered app-bar-component from the app',
-        });
+        this.assertText('foo-component rendered! - rendered app-bar-component from the app');
       });
     }
   }

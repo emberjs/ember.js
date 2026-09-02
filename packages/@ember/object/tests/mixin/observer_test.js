@@ -1,6 +1,13 @@
 import { set, get, observer } from '@ember/object';
 import Mixin, { mixin } from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 import { destroy } from '@glimmer/destroyable';
 
 let obj;
@@ -16,7 +23,11 @@ moduleFor(
       }
     }
 
-    async ['@test global observer helper'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test global observer helper`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MyMixin = Mixin.create({
         count: 0,
 
@@ -34,7 +45,11 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async ['@test global observer helper takes multiple params'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test global observer helper takes multiple params`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MyMixin = Mixin.create({
         count: 0,
 
@@ -58,7 +73,11 @@ moduleFor(
       await runLoopSettled();
     }
 
-    async ['@test replacing observer should remove old observer'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test replacing observer should remove old observer`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MyMixin = Mixin.create({
         count: 0,
 
@@ -87,7 +106,11 @@ moduleFor(
       assert.equal(get(obj, 'count'), 10, 'should invoke observer after change');
     }
 
-    async ['@test observing chain with property before'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property before`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let obj2 = { baz: 'baz' };
 
       let MyMixin = Mixin.create({
@@ -107,7 +130,11 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async ['@test observing chain with property after'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property after`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let obj2 = { baz: 'baz' };
 
       let MyMixin = Mixin.create({
@@ -127,7 +154,11 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async ['@test observing chain with property in mixin applied later'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property in mixin applied later`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let obj2 = { baz: 'baz' };
 
       let MyMixin = Mixin.create({
@@ -151,7 +182,11 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async ['@test observing chain with existing property'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with existing property`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let obj2 = { baz: 'baz' };
 
       let MyMixin = Mixin.create({
@@ -170,7 +205,11 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async ['@test observing chain with property in mixin before'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property in mixin before`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let obj2 = { baz: 'baz' };
       let MyMixin2 = Mixin.create({ bar: obj2 });
 
@@ -190,7 +229,11 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async ['@test observing chain with property in mixin after'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with property in mixin after`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let obj2 = { baz: 'baz' };
       let MyMixin2 = Mixin.create({ bar: obj2 });
 
@@ -210,7 +253,11 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
-    async ['@test observing chain with overridden property'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test observing chain with overridden property`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let obj2 = { baz: 'baz' };
       let obj3 = { baz: 'foo' };
 
