@@ -15,7 +15,13 @@ moduleFor(
       };
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /The `Evented` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -56,7 +62,13 @@ moduleFor(
       };
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /The `Evented` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -93,7 +105,13 @@ moduleFor(
       let self, args;
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /The `Evented` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -125,7 +143,13 @@ moduleFor(
       let count = 0;
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /The `Evented` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -170,7 +194,13 @@ moduleFor(
       let self, args;
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /The `Evented` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
       let target = {};
 
       expectDeprecation(
@@ -208,7 +238,13 @@ moduleFor(
       };
 
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /The `Evented` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       expectDeprecation(
         () => {
@@ -243,9 +279,15 @@ moduleFor(
       DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
     )} @test a listener registered with one can be removed with off`](assert) {
       let obj;
-      obj = class extends EmberObject.extend(Evented) {
-        F() {}
-      }.create();
+      expectDeprecation(
+        () => {
+          obj = class extends EmberObject.extend(Evented) {
+            F() {}
+          }.create();
+        },
+        /The `Evented` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
       let F = function () {};
 
       expectDeprecation(
@@ -305,7 +347,13 @@ moduleFor(
       DEPRECATIONS.DEPRECATE_EVENTED.isRemoved
     )} @test adding and removing listeners should be chainable`](assert) {
       let obj;
-      obj = EmberObject.extend(Evented).create();
+      expectDeprecation(
+        () => {
+          obj = EmberObject.extend(Evented).create();
+        },
+        /The `Evented` mixin is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
       let F = function () {};
 
       let ret;

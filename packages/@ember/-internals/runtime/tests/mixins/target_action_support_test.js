@@ -1,6 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import EmberObject from '@ember/object';
-import TargetActionSupport from '../../lib/mixins/target_action_support';
+import TargetActionSupport from '../../lib/mixins/target_action_support-internal';
 import { expectDeprecation, moduleFor, AbstractTestCase, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
 

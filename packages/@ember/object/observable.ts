@@ -2,26 +2,12 @@
 @module @ember/object/observable
 */
 
-import { peekMeta } from '@ember/-internals/meta/lib/meta';
-import { hasListeners } from '@ember/-internals/metal/lib/events';
-import {
-  beginPropertyChanges,
-  notifyPropertyChange,
-  endPropertyChanges,
-} from '@ember/-internals/metal/lib/property_events';
-import { addObserver, removeObserver } from '@ember/-internals/metal/lib/observer';
-import { get } from '@ember/-internals/metal/lib/property_get';
-import { set } from '@ember/-internals/metal/lib/property_set';
-import getProperties from '@ember/-internals/metal/lib/get_properties';
-import setProperties from '@ember/-internals/metal/lib/set_properties';
+import { DeprecatedMixin } from '@ember/object/mixin-internal';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
+import InternalObservable from '@ember/object/observable-internal';
+import type { ObserverMethod } from '@ember/object/observable-internal';
 
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
-import { assert } from '@ember/debug';
-
-export type ObserverMethod<Target, Sender> =
-  | keyof Target
-  | ((this: Target, sender: Sender, key: string, value: any, rev: number) => void);
+export type { ObserverMethod } from '@ember/object/observable-internal';
 
 /**
   ## Overview
@@ -93,7 +79,7 @@ export type ObserverMethod<Target, Sender> =
   @class Observable
   @public
 */
-interface Observable {
+interface Observable extends InternalObservable {
   /**
     Retrieves the value of a property from the object.
 
@@ -421,125 +407,13 @@ interface Observable {
   */
   cacheFor<K extends keyof this>(key: K): unknown;
 }
-const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
-  get(keyName: string) {
-    return get(this, keyName);
-  },
-
-  getProperties(...args: string[]) {
-    return getProperties(this, ...args);
-  },
-
-  set(keyName: string, value: unknown) {
-    return set(this, keyName, value);
-  },
-
-  setProperties(hash: object) {
-    return setProperties(this, hash);
-  },
-
-  /**
-    Begins a grouping of property changes.
-
-    You can use this method to group property changes so that notifications
-    will not be sent until the changes are finished. If you plan to make a
-    large number of changes to an object at one time, you should call this
-    method at the beginning of the changes to begin deferring change
-    notifications. When you are done making changes, call
-    `endPropertyChanges()` to deliver the deferred change notifications and end
-    deferring.
-
-    @method beginPropertyChanges
-    @return {Observable}
-    @private
-  */
-  beginPropertyChanges() {
-    beginPropertyChanges();
-    return this;
-  },
-
-  /**
-    Ends a grouping of property changes.
-
-    You can use this method to group property changes so that notifications
-    will not be sent until the changes are finished. If you plan to make a
-    large number of changes to an object at one time, you should call
-    `beginPropertyChanges()` at the beginning of the changes to defer change
-    notifications. When you are done making changes, call this method to
-    deliver the deferred change notifications and end deferring.
-
-    @method endPropertyChanges
-    @return {Observable}
-    @private
-  */
-  endPropertyChanges() {
-    endPropertyChanges();
-    return this;
-  },
-
-  notifyPropertyChange(keyName: string) {
-    notifyPropertyChange(this, keyName);
-    return this;
-  },
-
-  addObserver(
-    key: string,
-    target: object | Function | null,
-    method?: string | Function,
-    sync?: boolean
-  ) {
-    addObserver(this, key, target, method, sync);
-    return this;
-  },
-
-  removeObserver(
-    key: string,
-    target: object | Function | null,
-    method?: string | Function,
-    sync?: boolean
-  ) {
-    removeObserver(this, key, target, method, sync);
-    return this;
-  },
-
-  /**
-    Returns `true` if the object currently has observers registered for a
-    particular key. You can use this method to potentially defer performing
-    an expensive action until someone begins observing a particular property
-    on the object.
-
-    @method hasObserverFor
-    @param {String} key Key to check
-    @return {Boolean}
-    @private
-  */
-  hasObserverFor(key: string) {
-    return hasListeners(this, `${key}:change`);
-  },
-
-  incrementProperty(keyName: string, increment = 1) {
-    assert(
-      'Must pass a numeric value to incrementProperty',
-      !isNaN(parseFloat(String(increment))) && isFinite(increment)
+const Observable = DeprecatedMixin.create(InternalObservable, {
+  init() {
+    this._super(...arguments);
+    deprecateUntil(
+      'The `Observable` mixin is deprecated. Use native classes with tracked properties and native property access instead.',
+      DEPRECATIONS.DEPRECATE_OBSERVABLE_MIXIN
     );
-    return set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
-  },
-
-  decrementProperty(keyName: string, decrement = 1) {
-    assert(
-      'Must pass a numeric value to decrementProperty',
-      (typeof decrement === 'number' || !isNaN(parseFloat(decrement))) && isFinite(decrement)
-    );
-    return set(this, keyName, (get(this, keyName) || 0) - decrement);
-  },
-
-  toggleProperty(keyName: string) {
-    return set(this, keyName, !get(this, keyName));
-  },
-
-  cacheFor(keyName: string) {
-    let meta = peekMeta(this);
-    return meta !== null ? meta.valueFor(keyName) : undefined;
   },
 });
 
