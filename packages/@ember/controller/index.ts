@@ -1,16 +1,14 @@
-import { getOwner } from '@ember/-internals/owner'; // This is imported from -internals to avoid circularity
-import computed from '@ember/-internals/metal/lib/computed';
-import { get } from '@ember/-internals/metal/lib/property_get';
 import { FrameworkObject } from '@ember/object/-internals';
 import metalInject from '@ember/-internals/metal/lib/injected_property';
 import type {
   DecoratorPropertyDescriptor,
   ElementDescriptor,
 } from '@ember/-internals/metal/lib/decorator';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { DeprecatedMixin } from '@ember/object/mixin-internal';
 import type { RouteArgs } from '@ember/routing/-internals';
-import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
+import type InternalActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
+import InternalControllerMixin from '@ember/controller/controller-internal';
 import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
@@ -18,8 +16,6 @@ export type ControllerQueryParam =
   | string
   | Record<string, { type: ControllerQueryParamType }>
   | Record<string, string>;
-
-const MODEL = Symbol('MODEL');
 
 /**
 @module @ember/controller
@@ -31,7 +27,7 @@ const MODEL = Symbol('MODEL');
   @uses Ember.ActionHandler
   @private
 */
-interface ControllerMixin<T> extends ActionHandler {
+interface ControllerMixin<T> extends InternalActionHandler {
   /** @internal */
   _qpDelegate: unknown | null;
 
@@ -234,77 +230,13 @@ interface ControllerMixin<T> extends ActionHandler {
   */
   replaceRoute(...args: RouteArgs): Transition;
 }
-const ControllerMixin = Mixin[INTERNAL_MIXIN_CREATE](ActionHandler, {
-  /* ducktype as a controller */
-  isController: true,
-
-  concatenatedProperties: ['queryParams'],
-
-  target: null,
-
-  store: null,
-
+const ControllerMixin = DeprecatedMixin.create(InternalControllerMixin, {
   init() {
     this._super(...arguments);
-    let owner = getOwner(this);
-    if (owner) {
-      this.namespace = owner.lookup('application:main');
-      this.target = owner.lookup('router:main');
-    }
-  },
-
-  model: computed({
-    get() {
-      return this[MODEL];
-    },
-
-    set(_key, value) {
-      return (this[MODEL] = value);
-    },
-  }),
-
-  queryParams: null,
-
-  /**
-   This property is updated to various different callback functions depending on
-   the current "state" of the backing route. It is used by
-   `Controller.prototype._qpChanged`.
-
-   The methods backing each state can be found in the `Route.prototype._qp` computed
-   property return value (the `.states` property). The current values are listed here for
-   the sanity of future travelers:
-
-   * `inactive` - This state is used when this controller instance is not part of the active
-     route hierarchy. Set in `Route.prototype._reset` (a `router.js` microlib hook) and
-     `Route.prototype.actions.finalizeQueryParamChange`.
-   * `active` - This state is used when this controller instance is part of the active
-     route hierarchy. Set in `Route.prototype.actions.finalizeQueryParamChange`.
-   * `allowOverrides` - This state is used in `Route.prototype.setup` (`route.js` microlib hook).
-
-    @method _qpDelegate
-    @private
-  */
-  _qpDelegate: null, // set by route
-
-  /**
-   During `Route#setup` observers are created to invoke this method
-   when any of the query params declared in `Controller#queryParams` property
-   are changed.
-
-   When invoked this method uses the currently active query param update delegate
-   (see `Controller.prototype._qpDelegate` for details) and invokes it with
-   the QP key/value being changed.
-
-    @method _qpChanged
-    @private
-  */
-  _qpChanged(controller: any, _prop: string) {
-    let dotIndex = _prop.indexOf('.[]');
-    let prop = dotIndex === -1 ? _prop : _prop.slice(0, dotIndex);
-
-    let delegate = controller._qpDelegate;
-    let value = get(controller, prop);
-    delegate(prop, value);
+    deprecateUntil(
+      'The `ControllerMixin` mixin is deprecated. Extend `Controller` from `@ember/controller` instead.',
+      DEPRECATIONS.DEPRECATE_CONTROLLER_MIXIN
+    );
   },
 });
 
@@ -316,7 +248,7 @@ const ControllerMixin = Mixin[INTERNAL_MIXIN_CREATE](ActionHandler, {
   @public
 */
 interface Controller<_T = unknown> extends FrameworkObject, ControllerMixin<_T> {}
-class Controller<_T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
+class Controller<_T = unknown> extends FrameworkObject.extend(InternalControllerMixin) {}
 
 /**
   Creates a property that lazily looks up another controller in the container.

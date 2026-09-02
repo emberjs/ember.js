@@ -3,26 +3,19 @@
 */
 
 import type Registry from '@ember/-internals/container/lib/registry';
-import type { RegistryProxy } from '@ember/-internals/owner';
 import type { AnyFn } from '@ember/-internals/utility-types';
 
 import { assert } from '@ember/debug';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { InternalMixin } from '@ember/object/mixin-internal';
 
 /**
-  RegistryProxyMixin is used to provide public access to specific
-  registry functionality.
+  The internal counterpart to the public `RegistryProxyMixin`. Ember's own
+  internals apply this so that they do not trigger the deprecation that the
+  public mixin emits. The public API documentation lives on the public copy.
 
-  @class RegistryProxyMixin
-  @extends RegistryProxy
-  @private
+  @internal
 */
-interface RegistryProxyMixin extends RegistryProxy {
-  /** @internal */
-  __registry__: Registry;
-}
-const RegistryProxyMixin = Mixin[INTERNAL_MIXIN_CREATE]({
+const InternalRegistryProxyMixin = InternalMixin.create({
   __registry__: null,
 
   resolveRegistration(fullName: string) {
@@ -51,7 +44,7 @@ type AliasMethods =
   | 'getOptionsForType';
 
 function registryAlias<N extends AliasMethods>(name: N) {
-  return function (this: RegistryProxyMixin, ...args: Parameters<Registry[N]>) {
+  return function (this: { __registry__: Registry }, ...args: Parameters<Registry[N]>) {
     // We need this cast because `Parameters` is deferred so that it is not
     // possible for TS to see it will always produce the right type. However,
     // since `AnyFn` has a rest type, it is allowed. See discussion on [this
@@ -60,4 +53,4 @@ function registryAlias<N extends AliasMethods>(name: N) {
   };
 }
 
-export default RegistryProxyMixin;
+export default InternalRegistryProxyMixin;

@@ -10,7 +10,7 @@ import { getFactoryFor } from '@ember/-internals/container/lib/container';
 import { setObservers } from '@ember/-internals/utils/lib/super';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
-import Observable from '@ember/object/observable';
+import InternalObservable from '@ember/object/observable-internal';
 
 export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
 export { defineProperty } from '@ember/-internals/metal/lib/properties';
@@ -35,8 +35,8 @@ export { default as computed } from '@ember/-internals/metal/lib/computed';
   @public
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface EmberObject extends Observable {}
-class EmberObject extends CoreObject.extend(Observable) {
+interface EmberObject extends InternalObservable {}
+class EmberObject extends CoreObject.extend(InternalObservable) {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;

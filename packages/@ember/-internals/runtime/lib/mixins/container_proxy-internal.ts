@@ -2,33 +2,16 @@ import { schedule, join } from '@ember/runloop';
 /**
 @module ember
 */
-import type Container from '@ember/-internals/container/lib/container';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
-import type { ContainerProxy } from '@ember/-internals/owner';
-
-// This is defined as a separate interface so that it can be used in the definition of
-// `Owner` without also including the `__container__` property.
+import { InternalMixin } from '@ember/object/mixin-internal';
 
 /**
-  ContainerProxyMixin is used to provide public access to specific
-  container functionality.
+  The internal counterpart to the public `ContainerProxyMixin`. Ember's own
+  internals apply this so that they do not trigger the deprecation that the
+  public mixin emits. The public API documentation lives on the public copy.
 
-  @class ContainerProxyMixin
-  @extends ContainerProxy
-  @private
+  @internal
 */
-interface ContainerProxyMixin extends ContainerProxy {
-  /** @internal */
-  __container__: Container;
-}
-const ContainerProxyMixin = Mixin[INTERNAL_MIXIN_CREATE]({
-  /**
-   The container stores state.
-
-   @private
-   @property {Ember.Container} __container__
-   */
+const InternalContainerProxyMixin = InternalMixin.create({
   __container__: null,
 
   ownerInjection() {
@@ -57,4 +40,4 @@ const ContainerProxyMixin = Mixin[INTERNAL_MIXIN_CREATE]({
   },
 });
 
-export default ContainerProxyMixin;
+export default InternalContainerProxyMixin;

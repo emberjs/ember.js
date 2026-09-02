@@ -3,8 +3,7 @@
 */
 
 import { meta } from '@ember/-internals/meta/lib/meta';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { InternalMixin } from '@ember/object/mixin-internal';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { set } from '@ember/-internals/metal/lib/property_set';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
@@ -20,7 +19,7 @@ import type { UpdatableTag, Tag } from '@glimmer/interfaces';
 import { combine, UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
 
-export function contentFor<T>(proxy: ProxyMixin<T>): T | null {
+export function contentFor<T>(proxy: { content: T | null }): T | null {
   let content = get(proxy, 'content');
   // SAFETY: Ideally we'd assert instead of casting, but @glimmer/validator doesn't give us
   // sufficient public types for this. Previously this code was .js and worked correctly so
@@ -62,36 +61,13 @@ function customTagForProxy(proxy: object, key: string, addMandatorySetter?: bool
 }
 
 /**
-  `ProxyMixin` forwards all properties not defined by the proxy itself
-  to a proxied `content` object.  See ObjectProxy for more details.
+  The internal counterpart to the public `ProxyMixin`. Ember's own internals
+  apply this so that they do not trigger the deprecation that the public
+  mixin emits. The public API documentation lives on the public copy.
 
-  @class ProxyMixin
-  @namespace Ember
-  @private
+  @internal
 */
-interface ProxyMixin<T = unknown> {
-  /**
-    The object whose properties will be forwarded.
-
-    @property content
-    @type {unknown}
-    @default null
-    @public
-  */
-  content: T | null;
-
-  willDestroy(): void;
-
-  isTruthy: boolean;
-
-  unknownProperty<K extends keyof T>(key: K): T[K] | undefined;
-  unknownProperty(key: string): unknown;
-
-  setUnknownProperty<K extends keyof T>(key: K, value: T[K]): T[K];
-  setUnknownProperty<V>(key: string, value: V): V;
-}
-
-const ProxyMixin = /*@__PURE__*/ Mixin[INTERNAL_MIXIN_CREATE]({
+const InternalProxyMixin = /*@__PURE__*/ InternalMixin.create({
   /**
     The object whose properties will be forwarded.
 
@@ -145,4 +121,4 @@ const ProxyMixin = /*@__PURE__*/ Mixin[INTERNAL_MIXIN_CREATE]({
   },
 });
 
-export default ProxyMixin;
+export default InternalProxyMixin;

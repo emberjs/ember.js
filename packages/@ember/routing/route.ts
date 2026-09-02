@@ -22,7 +22,7 @@ import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import { A as emberA } from '@ember/array';
-import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
+import InternalActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 import typeOf from '@ember/utils/lib/type-of';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import lookupDescriptor from '@ember/-internals/utils/lib/lookup-descriptor';
@@ -91,7 +91,7 @@ const RENDER_STATE = Symbol('render-state');
   @since 1.0.0
   @public
 */
-interface Route<Model = unknown> extends IRoute<Model>, ActionHandler {
+interface Route<Model = unknown> extends IRoute<Model>, InternalActionHandler {
   /**
     The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
@@ -265,7 +265,7 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implements IRoute {
+class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) implements IRoute {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.

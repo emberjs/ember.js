@@ -2,21 +2,19 @@
  @module ember
 */
 import { get } from '@ember/-internals/metal/lib/property_get';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { InternalMixin } from '@ember/object/mixin-internal';
 import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 /**
- @class ActionSupport
- @namespace Ember
- @private
+  The internal counterpart to the public `ActionSupport` mixin. Ember's own
+  internals apply this so that they do not trigger the deprecation that the
+  public mixin emits. The public API documentation lives on the public copy.
+
+  @internal
 */
-interface ActionSupport {
-  send(actionName: string, ...args: unknown[]): void;
-}
-const ActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
+const InternalActionSupport = InternalMixin.create({
   send(actionName: string, ...args: unknown[]) {
     deprecateUntil(
       `Calling \`.send()\` on ${this} is deprecated. Invoke the corresponding method directly.`,
@@ -50,4 +48,4 @@ const ActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
   },
 });
 
-export default ActionSupport;
+export default InternalActionSupport;

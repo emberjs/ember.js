@@ -5,35 +5,20 @@
 import { context } from '@ember/-internals/environment/lib/context';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import computed from '@ember/-internals/metal/lib/computed';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { InternalMixin } from '@ember/object/mixin-internal';
 import { assert } from '@ember/debug';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import { DEBUG } from '@glimmer/env';
 
 /**
-`TargetActionSupport` is a mixin that can be included in a class
-to add a `triggerAction` method with semantics similar to the
-`{{action}}` helper. In normal Ember usage, the `{{action}}` helper is
-usually the best choice. This mixin is most often useful when you are
-doing more complex event handling in Components.
+  The internal counterpart to the public `TargetActionSupport` mixin. Ember's
+  own internals apply this so that they do not trigger the deprecation that
+  the public mixin emits. The public API documentation lives on the public
+  copy.
 
-@class TargetActionSupport
-@namespace Ember
-@extends Mixin
-@private
+  @internal
 */
-interface TargetActionSupport {
-  target: unknown;
-  action: string | null;
-  actionContext: unknown;
-  actionContextObject: unknown;
-  triggerAction(opts?: object): unknown;
-
-  /** @internal */
-  _target?: unknown;
-}
-const TargetActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
+const InternalTargetActionSupport = InternalMixin.create({
   target: null,
   action: null,
   actionContext: null,
@@ -52,65 +37,6 @@ const TargetActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
     }
   }),
 
-  /**
-  The following is private and vestigial.
-  Send an `action` with an `actionContext` to a `target`. The action, actionContext
-  and target will be retrieved from properties of the object. For example:
-
-  ```javascript
-  import { alias } from '@ember/object/computed';
-
-  App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
-    target: alias('controller'),
-    action: 'save',
-    actionContext: alias('context'),
-    click() {
-      this.triggerAction(); // Sends the `save` action, along with the current context
-                            // to the current controller
-    }
-  });
-  ```
-
-  The `target`, `action`, and `actionContext` can be provided as properties of
-  an optional object argument to `triggerAction` as well.
-
-  ```javascript
-  App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
-    click() {
-      this.triggerAction({
-        action: 'save',
-        target: this.get('controller'),
-        actionContext: this.get('context')
-      }); // Sends the `save` action, along with the current context
-          // to the current controller
-    }
-  });
-  ```
-
-  The `actionContext` defaults to the object you are mixing `TargetActionSupport` into.
-  But `target` and `action` must be specified either as properties or with the argument
-  to `triggerAction`, or a combination:
-
-  ```javascript
-  import { alias } from '@ember/object/computed';
-
-  App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
-    target: alias('controller'),
-    click() {
-      this.triggerAction({
-        action: 'save'
-      }); // Sends the `save` action, along with a reference to `this`,
-          // to the current controller
-    }
-  });
-  ```
-
-  @method triggerAction
-  @deprecated Use a direct method call or closure action instead.
-  @param opts {Object} (optional, with the optional keys action, target and/or actionContext)
-  @return {Boolean} true if the action was sent successfully and did not return false
-  @private
-  */
   triggerAction(opts: { action?: string; target?: unknown; actionContext?: unknown } = {}) {
     deprecateUntil(
       `Calling \`triggerAction\` on ${this} is deprecated. Invoke the target method directly.`,
@@ -157,7 +83,7 @@ function isSendable(obj: unknown): obj is Sendable {
   return obj != null && typeof obj === 'object' && typeof (obj as Sendable).send === 'function';
 }
 
-function getTarget(instance: TargetActionSupport) {
+function getTarget(instance: { _target?: unknown }) {
   let target = get(instance, 'target');
   if (target) {
     if (typeof target === 'string') {
@@ -180,7 +106,7 @@ function getTarget(instance: TargetActionSupport) {
 }
 
 if (DEBUG) {
-  Object.seal(TargetActionSupport);
+  Object.seal(InternalTargetActionSupport);
 }
 
-export default TargetActionSupport;
+export default InternalTargetActionSupport;

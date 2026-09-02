@@ -14,7 +14,8 @@ import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
 import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
-import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy-internal';
+import type RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
+import InternalRegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy-internal';
 import { StrictResolver } from './lib/strict-resolver';
 
 function props(obj: object) {
@@ -56,7 +57,7 @@ export interface Initializer<T> {
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Engine extends RegistryProxyMixin {}
-class Engine extends Namespace.extend(RegistryProxyMixin) {
+class Engine extends Namespace.extend(InternalRegistryProxyMixin) {
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
   static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
 

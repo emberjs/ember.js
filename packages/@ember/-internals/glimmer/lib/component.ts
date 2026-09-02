@@ -4,9 +4,11 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
-import TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support-internal';
+import type TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
+import InternalTargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support-internal';
 import type ViewStates from '@ember/-internals/views/lib/views/states';
-import ActionSupport from '@ember/-internals/views/lib/mixins/action_support-internal';
+import type ActionSupport from '@ember/-internals/views/lib/mixins/action_support';
+import InternalActionSupport from '@ember/-internals/views/lib/mixins/action_support-internal';
 import {
   addChildView,
   getChildViews,
@@ -803,8 +805,8 @@ interface Component<S = unknown>
 
 class Component<S = unknown>
   extends CoreView.extend(
-    TargetActionSupport,
-    ActionSupport,
+    InternalTargetActionSupport,
+    InternalActionSupport,
     {
       // These need to be overridable via extend/create but should still
       // have a default. Defining them here is the best way to achieve that.

@@ -8,7 +8,7 @@ import {
   eventedOff,
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
-import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
+import InternalActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
@@ -31,8 +31,8 @@ import states from './states';
   @private
 */
 
-interface CoreView extends ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(ActionHandler) {
+interface CoreView extends InternalActionHandler, View {}
+class CoreView extends FrameworkObject.extend(InternalActionHandler) {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.
