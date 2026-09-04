@@ -296,7 +296,12 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
   }
 
   if (!isConstRef(ref) || tag) {
-    return vm.updateWith(new UpdateDynamicModifierOpcode(tag, instance, instanceRef));
+    let updateOpcode = new UpdateDynamicModifierOpcode(tag, instance, instanceRef);
+
+    // The block must own this opcode, or instances created on update are never destroyed.
+    vm.associateDestroyable(updateOpcode);
+
+    return vm.updateWith(updateOpcode);
   }
 });
 
