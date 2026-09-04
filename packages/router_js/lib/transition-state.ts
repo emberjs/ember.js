@@ -1,16 +1,17 @@
 import { Promise } from 'rsvp';
 import type { Dict } from './core';
-import type { Route, ResolvedRouteInfo } from './route-info';
+import type { BaseRoute, ResolvedRouteInfo, RouteInfo } from './route-info';
 import type InternalRouteInfo from './route-info';
 import type Transition from './transition';
 import { forEach, promiseLabel } from './utils';
 import { throwIfAborted } from './transition-aborted-error';
+import { hasClassicInterop } from './route-manager';
 
 interface IParams {
   [key: string]: unknown;
 }
 
-function handleError<R extends Route>(
+function handleError<R extends BaseRoute>(
   currentState: TransitionState<R>,
   transition: Transition<R>,
   error: Error
@@ -31,7 +32,7 @@ function handleError<R extends Route>(
   );
 }
 
-function resolveOneRouteInfo<R extends Route>(
+function resolveOneRouteInfo<R extends BaseRoute>(
   currentState: TransitionState<R>,
   transition: Transition<R>
 ): void | Promise<void> {
@@ -50,13 +51,13 @@ function resolveOneRouteInfo<R extends Route>(
   return routeInfo.resolve(transition).then(callback, null, currentState.promiseLabel('Proceed'));
 }
 
-function proceed<R extends Route>(
+function proceed<R extends BaseRoute>(
   currentState: TransitionState<R>,
   transition: Transition<R>,
   resolvedRouteInfo: ResolvedRouteInfo<R>
 ): void | Promise<void> {
   let wasAlreadyResolved = currentState.routeInfos[transition.resolveIndex]!.isResolved;
-
+  const routeIndex = transition.resolveIndex;
   // Swap the previously unresolved routeInfo with
   // the resolved routeInfo
   currentState.routeInfos[transition.resolveIndex++] = resolvedRouteInfo;
@@ -66,13 +67,18 @@ function proceed<R extends Route>(
     // vs. afterModel is so that redirects into child
     // routes don't re-run the model hooks for this
     // already-resolved route.
-    let { route } = resolvedRouteInfo;
-    if (route !== undefined) {
-      if (route.redirect) {
-        route.redirect(resolvedRouteInfo.context, transition);
-      }
+    let { manager, bucket } = resolvedRouteInfo;
+    if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
+      manager.redirect(
+        bucket,
+        resolvedRouteInfo as unknown as RouteInfo,
+        resolvedRouteInfo.context,
+        transition
+      );
     }
   }
+
+  transition.router?.onRouteResolved(resolvedRouteInfo, routeIndex);
 
   // Proceed after ensuring that the redirect hook
   // didn't abort this transition by transitioning elsewhere.
@@ -81,7 +87,7 @@ function proceed<R extends Route>(
   return resolveOneRouteInfo(currentState, transition);
 }
 
-export default class TransitionState<R extends Route> {
+export default class TransitionState<R extends BaseRoute> {
   routeInfos: InternalRouteInfo<R>[] = [];
   queryParams: Dict<unknown> = {};
   params: IParams = {};
@@ -104,6 +110,9 @@ export default class TransitionState<R extends Route> {
     let params = this.params;
     forEach(this.routeInfos, (routeInfo) => {
       params[routeInfo.name] = routeInfo.params || {};
+      routeInfo.beginEnter(transition, true).catch(() => {
+        // Surfaced by the sequential pass below.
+      });
       return true;
     });
 
@@ -123,7 +132,7 @@ export default class TransitionState<R extends Route> {
 export class TransitionError {
   constructor(
     public error: Error,
-    public route: Route,
+    public route: BaseRoute,
     public wasAborted: boolean,
     public state: TransitionState<any>
   ) {}

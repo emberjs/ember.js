@@ -3,11 +3,8 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import type { Nullable } from '@ember/-internals/utility-types';
 import ResolverImpl from './resolver';
 import { mountHelper } from './syntax/mount';
-import { outletHelper } from './syntax/outlet';
-
 const ROUTER_KEYWORD_HELPERS: Record<string, object> = {
   '-mount': mountHelper,
-  '-outlet': outletHelper,
 };
 
 /**

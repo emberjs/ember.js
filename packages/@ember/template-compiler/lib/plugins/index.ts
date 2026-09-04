@@ -67,5 +67,4 @@ export const STRICT_MODE_KEYWORDS = Object.freeze([
   '-track-array',
   // TransformWrapMountAndOutlet
   '-mount',
-  '-outlet',
 ]);

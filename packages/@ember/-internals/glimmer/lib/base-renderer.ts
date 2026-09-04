@@ -462,11 +462,17 @@ export function renderComponent(
     env,
     into,
     args,
+    appendIntoTarget = false,
   }: {
     /**
      * The element to render the component in to.
      */
     into: IntoTarget;
+
+    /**
+     * Appends `into` without clearing the target first. Mimics the `appendTo` behavior for classic components.
+     */
+    appendIntoTarget?: boolean;
 
     /**
      * Optional owner. Defaults to `{}`, can be any object, but will need to implement the [Owner](https://api.emberjs.com/ember/release/classes/Owner) API for components within this render tree to access services.
@@ -534,7 +540,7 @@ export function renderComponent(
    * Because destruction is async, it won't be safe to
    * do this again, and we'll have to rely on the above destroy.
    */
-  if (!existing && into instanceof Element) {
+  if (!(appendIntoTarget || existing) && into instanceof Element) {
     into.innerHTML = '';
   }
 
@@ -562,6 +568,11 @@ export function renderComponent(
 
   if (innerResult) {
     associateDestroyableChild(owner, innerResult);
+    registerDestructor(innerResult, () => {
+      if (RENDER_CACHE.get(into)?.glimmerResult === innerResult) {
+        RENDER_CACHE.delete(into);
+      }
+    });
   }
 
   let result: RenderResult = {
@@ -579,6 +590,14 @@ export function renderComponent(
 
 const RENDER_CACHE = new WeakMap<IntoTarget, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
+
+/**
+ * The application seeds its `renderer:-dom` service which allows for
+ * router-aware resolver to resolve {{mount}}
+ */
+export function setRenderer(owner: object, renderer: BaseRenderer): void {
+  RENDERER_CACHE.set(owner, renderer);
+}
 
 export class BaseRenderer {
   static strict(

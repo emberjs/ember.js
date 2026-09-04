@@ -29,11 +29,11 @@ import { isPath, trackLocals } from './utils';
   with
 
   ```handlebars
-  {{component (-outlet)}}
+  <@outlet />
   ```
 
   @private
-  @class TransformHasBlockSyntax
+  @class TransformWrapMountAndOutlet
 */
 export default function transformWrapMountAndOutlet(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
@@ -47,19 +47,21 @@ export default function transformWrapMountAndOutlet(env: EmberASTPluginEnvironme
       ...visitor,
 
       MustacheStatement(node: AST.MustacheStatement): AST.Node | void {
-        if (
-          isPath(node.path) &&
-          (node.path.original === 'mount' || node.path.original === 'outlet') &&
-          !hasLocal(node.path.original)
-        ) {
-          let subexpression = b.sexpr(
-            b.path(`-${node.path.original}`),
-            node.params,
-            node.hash,
-            node.loc
-          );
+        if (!isPath(node.path) || hasLocal(node.path.original)) {
+          return;
+        }
+
+        if (node.path.original === 'mount') {
+          let subexpression = b.sexpr(b.path('-mount'), node.params, node.hash, node.loc);
 
           return b.mustache(b.path('component'), [subexpression], b.hash(), undefined, node.loc);
+        }
+
+        if (node.path.original === 'outlet') {
+          return b.element(
+            { path: b.fullPath(b.at('@outlet')), selfClosing: true },
+            { loc: node.loc }
+          );
         }
       },
     },

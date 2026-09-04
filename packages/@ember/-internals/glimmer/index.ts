@@ -17,7 +17,7 @@
   The documentation for `@ember/component` still refers to the older authoring format. To read about
   the new authoring format, see the
   [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
-    
+
   ### Showing a property
 
   Templates manage the flow of an application's UI, and display state (through
@@ -118,6 +118,7 @@ export { default as Input } from './lib/components/input';
 export { default as LinkTo } from './lib/components/link-to';
 export { default as Textarea } from './lib/components/textarea';
 export { default as Component } from './lib/component';
+export { makeRouteTemplate } from './lib/component-managers/route-template';
 export {
   default as Helper,
   helper,
@@ -139,6 +140,7 @@ export {
   _resetRenderers,
   renderSettled,
   renderComponent,
+  setRenderer,
   type View,
 } from './lib/renderer';
 export {
@@ -156,8 +158,7 @@ export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/
 // TODO just test these through public API
 // a lot of these are testing how a problem was solved
 // rather than the problem was solved
-export { default as OutletView, type BootEnvironment } from './lib/views/outlet';
-export type { OutletState, RenderState } from './lib/utils/outlet';
+export type { BootEnvironment } from '@ember/engine/instance';
 export {
   componentCapabilities,
   modifierCapabilities,

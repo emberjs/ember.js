@@ -1,6 +1,6 @@
 import { Promise } from 'rsvp';
 import type { Dict, Maybe, Option } from './core';
-import type { ModelFor, Route, RouteInfo, RouteInfoWithAttributes } from './route-info';
+import type { ModelFor, BaseRoute, RouteInfo, RouteInfoWithAttributes } from './route-info';
 import type InternalRouteInfo from './route-info';
 import type Router from './router';
 import type { TransitionAbortedError } from './transition-aborted-error';
@@ -43,7 +43,7 @@ export const REDIRECT_DESTINATION_SYMBOL = `__RDS__-2619863929824844-32323`;
   @param {Object} error
   @private
  */
-export default class Transition<R extends Route> implements Partial<Promise<R>> {
+export default class Transition<R extends BaseRoute> implements Partial<Promise<R>> {
   [STATE_SYMBOL]: TransitionState<R>;
   from: Maybe<RouteInfoWithAttributes> = null;
   to?: RouteInfo | RouteInfoWithAttributes = undefined;
@@ -57,7 +57,18 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
   [PARAMS_SYMBOL]: Dict<unknown>;
   routeInfos: InternalRouteInfo<R>[];
   targetName: Maybe<string>;
-  pivotHandler: Maybe<object>;
+  pivotBucket: Maybe<object>;
+
+  // The route behind `pivotBucket`.
+  get pivotHandler(): Maybe<object> {
+    let bucket = this.pivotBucket;
+
+    if (bucket === undefined) {
+      return undefined;
+    }
+
+    return this.routeInfos.find((routeInfo) => routeInfo.bucket === bucket)?.route;
+  }
   sequence: number;
   isAborted = false;
   isActive = true;
@@ -71,6 +82,14 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
   _visibleQueryParams: Dict<unknown> = {};
   isIntermediate = false;
   [REDIRECT_DESTINATION_SYMBOL]?: Transition<R>;
+
+  // AbortController for the navigation. Managers receive its `signal` via
+  // `AsyncNavigationState` and can pass it to `fetch()` or any other
+  // AbortSignal consumer. The signal aborts whenever the transition is no
+  // longer the active one (explicit cancel or superseded by a newer
+  // transition).
+  abortController = new AbortController();
+  signal: AbortSignal = this.abortController.signal;
 
   /**
     In non-production builds, this function will return the stack that this Transition was
@@ -119,7 +138,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
     this[PARAMS_SYMBOL] = {};
     this.routeInfos = [];
     this.targetName = undefined;
-    this.pivotHandler = undefined;
+    this.pivotBucket = undefined;
     this.sequence = -1;
 
     if (DEBUG) {
@@ -171,7 +190,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
         if (!handlerInfo.isResolved) {
           break;
         }
-        this.pivotHandler = handlerInfo.route;
+        this.pivotBucket = handlerInfo.bucket;
       }
 
       this.sequence = router.currentSequence++;
@@ -292,6 +311,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
   rollback() {
     if (!this.isAborted) {
       log(this.router, this.sequence, this.targetName + ': transition was aborted');
+      this.abortController.abort();
 
       if (DEBUG) {
         let error = new Error(`Transition aborted stack`);
@@ -375,7 +395,7 @@ export default class Transition<R extends Route> implements Partial<Promise<R>> 
     _name: string,
     err?: Error,
     transition?: Transition<R>,
-    handler?: Route
+    handler?: BaseRoute
   ) {
     this.trigger(ignoreFailure, _name, err, transition, handler);
   }

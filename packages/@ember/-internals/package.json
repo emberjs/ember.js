@@ -16,6 +16,7 @@
     "./metal": "./metal/index.ts",
     "./owner": "./owner/index.ts",
     "./routing": "./routing/index.ts",
+    "./routing/route-managers": "./routing/route-managers/index.ts",
     "./runtime": "./runtime/index.ts",
     "./string": "./string/index.ts",
     "./utility-types": "./utility-types/index.ts",

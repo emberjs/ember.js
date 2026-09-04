@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 import type { Dict } from '../core';
-import type { ModelFor, ResolvedRouteInfo, Route } from '../route-info';
+import type { ModelFor, ResolvedRouteInfo, BaseRoute } from '../route-info';
 import type InternalRouteInfo from '../route-info';
 import { UnresolvedRouteInfoByObject, UnresolvedRouteInfoByParam } from '../route-info';
 import type { ParsedHandler } from '../router';
@@ -9,9 +9,9 @@ import { TransitionIntent } from '../transition-intent';
 import TransitionState from '../transition-state';
 import { isParam, merge } from '../utils';
 
-export default class NamedTransitionIntent<R extends Route> extends TransitionIntent<R> {
+export default class NamedTransitionIntent<R extends BaseRoute> extends TransitionIntent<R> {
   name: string;
-  pivotHandler?: Route;
+  pivotName?: string;
   contexts: ModelFor<R>[];
   queryParams: Dict<unknown>;
   preTransitionState?: TransitionState<R> = undefined;
@@ -19,14 +19,14 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
   constructor(
     router: Router<R>,
     name: string,
-    pivotHandler: Route | undefined,
+    pivotName: string | undefined,
     contexts: ModelFor<R>[] = [],
     queryParams: Dict<unknown> = {},
     data?: object
   ) {
     super(router, data);
     this.name = name;
-    this.pivotHandler = pivotHandler;
+    this.pivotName = pivotName;
     this.contexts = contexts;
     this.queryParams = queryParams;
   }
@@ -52,10 +52,10 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
 
     let invalidateIndex = parsedHandlers.length;
 
-    // Pivot handlers are provided for refresh transitions
-    if (this.pivotHandler) {
+    // Pivot names are provided for refresh transitions
+    if (this.pivotName !== undefined) {
       for (i = 0, len = parsedHandlers.length; i < len; ++i) {
-        if (parsedHandlers[i]!.handler === this.pivotHandler._internalName) {
+        if (parsedHandlers[i]!.handler === this.pivotName) {
           invalidateIndex = i;
           break;
         }

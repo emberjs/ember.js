@@ -3,7 +3,7 @@ import URLTransitionIntent from '../lib/transition-intent/url-transition-intent'
 import TransitionState from '../lib/transition-state';
 import { createHandler, TestRouter } from './test_helpers';
 
-import type { default as Router, Route } from '../index';
+import type { default as Router, BaseRoute } from '../index';
 import type { Dict } from '../lib/core';
 import {
   type default as InternalRouteInfo,
@@ -13,7 +13,7 @@ import {
 } from '../lib/route-info';
 import { Promise } from 'rsvp';
 
-let handlers: Dict<Route>, recognizer: any;
+let handlers: Dict<BaseRoute>, recognizer: any;
 
 let scenarios = [
   {
@@ -39,14 +39,14 @@ scenarios.forEach(function (scenario) {
     }
   }
 
-  let router: Router<Route>;
+  let router: Router<BaseRoute>;
 
   // Asserts that a handler from a handlerInfo equals an expected valued.
   // Returns a promise during async scenarios to wait until the handler is ready.
   function assertHandlerEquals(
     assert: Assert,
-    handlerInfo: InternalRouteInfo<Route>,
-    expected: Route
+    handlerInfo: InternalRouteInfo<BaseRoute>,
+    expected: BaseRoute
   ) {
     if (!scenario.async) {
       return assert.equal(handlerInfo.route, expected);
@@ -120,7 +120,7 @@ scenarios.forEach(function (scenario) {
         },
       };
 
-      router = new TransitionRouter();
+      router = new TransitionRouter() as Router<BaseRoute>;
       router.recognizer = recognizer;
     },
   });

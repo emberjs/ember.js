@@ -695,11 +695,7 @@ class RouterService extends Service {
     assert(`The route "${pivotRouteName}" was not found`, this._router.hasRoute(pivotRouteName));
     assert(`The route "${pivotRouteName}" is currently not active`, this.isActive(pivotRouteName));
 
-    let owner = getOwner(this);
-    assert('RouterService is unexpectedly missing an owner', owner);
-    let pivotRoute = owner.lookup(`route:${pivotRouteName}`) as Route;
-
-    return this._router._routerMicrolib.refresh(pivotRoute);
+    return this._router._routerMicrolib.refresh(pivotRouteName);
   }
 
   /**
