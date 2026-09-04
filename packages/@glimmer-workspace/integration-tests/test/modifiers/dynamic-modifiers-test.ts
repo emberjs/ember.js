@@ -7,6 +7,7 @@ import {
   RenderTest,
   syntaxErrorFor,
   test,
+  trackedObj,
 } from '@glimmer-workspace/integration-tests';
 
 class DynamicModifiersResolutionModeTest extends RenderTest {
@@ -198,6 +199,55 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
     this.renderComponent(Bar);
     this.assertHTML('<div>Hello, world!</div>');
     this.assertStableRerender();
+  }
+
+  @test
+  'Destroys a dynamic modifier that was set after the initial render when its block is removed'(
+    assert: Assert
+  ) {
+    const foo = defineSimpleModifier(() => {
+      assert.step('install');
+
+      return () => assert.step('destroy');
+    });
+
+    const Bar = defineComponent({}, '{{#if @show}}<div {{@foo}}></div>{{/if}}');
+    const args = trackedObj({ show: true, foo: undefined });
+
+    this.renderComponent(Bar, args);
+    assert.verifySteps([]);
+
+    args['foo'] = foo;
+    this.rerender();
+    assert.verifySteps(['install']);
+
+    args['show'] = false;
+    this.rerender();
+    assert.verifySteps(['destroy']);
+  }
+
+  @test
+  'Destroys a dynamic modifier that was set after the initial render when the render result is destroyed'(
+    assert: Assert
+  ) {
+    const foo = defineSimpleModifier(() => {
+      assert.step('install');
+
+      return () => assert.step('destroy');
+    });
+
+    const Bar = defineComponent({}, '<div {{@foo}}></div>');
+    const args = trackedObj({ foo: undefined });
+
+    this.renderComponent(Bar, args);
+    assert.verifySteps([]);
+
+    args['foo'] = foo;
+    this.rerender();
+    assert.verifySteps(['install']);
+
+    this.destroy();
+    assert.verifySteps(['destroy']);
   }
 }
 
