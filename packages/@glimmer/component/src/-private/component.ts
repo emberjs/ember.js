@@ -265,11 +265,11 @@ export default class GlimmerComponent<S = unknown> {
   readonly args: Readonly<Args<S>>;
 
   get isDestroying(): boolean {
-    return this[IS_DESTROYING_KEY] || false;
+    return this[IS_DESTROYING_KEY];
   }
 
   get isDestroyed(): boolean {
-    return this[IS_DESTROYED_KEY] || false;
+    return this[IS_DESTROYED_KEY];
   }
 
   /**
