@@ -105,6 +105,35 @@ class ModifierManagerTest extends RenderingTestCase {
     runTask(() => set(this.context, 'truthy', true));
   }
 
+  '@test destroys a dynamic modifier that was set after the initial render'(assert) {
+    let ModifierClass = setModifierManager(
+      (owner) => {
+        return new this.CustomModifierManager(owner);
+      },
+      class extends EmberObject {
+        didInsertElement() {
+          assert.step('didInsertElement');
+        }
+        didUpdate() {}
+        willDestroyElement() {
+          assert.step('willDestroyElement');
+        }
+      }
+    );
+
+    this.render('{{#if this.show}}<div {{this.dyn}}></div>{{/if}}', {
+      show: true,
+      dyn: undefined,
+    });
+    assert.verifySteps([]);
+
+    runTask(() => set(this.context, 'dyn', ModifierClass));
+    assert.verifySteps(['didInsertElement']);
+
+    runTask(() => set(this.context, 'show', false));
+    assert.verifySteps(['willDestroyElement']);
+  }
+
   '@test associates manager even through an inheritance structure'(assert) {
     assert.expect(5);
     let ModifierClass = setModifierManager(
