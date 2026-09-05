@@ -28,6 +28,7 @@ export { isObject } from './lib/spec';
 export { isProxy, setProxy } from './lib/is_proxy';
 export { default as Cache } from './lib/cache';
 export {
+  MANDATORY_SETTER_SYMBOL,
   setupMandatorySetter,
   teardownMandatorySetter,
   setWithMandatorySetter,
