@@ -1,52 +1,35 @@
 /**
  @module ember
 */
-import { get } from '@ember/-internals/metal/lib/property_get';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
-import inspect from '@ember/debug/lib/inspect';
-import { assert } from '@ember/debug';
+import { DeprecatedMixin } from '@ember/object/mixin-internal';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
+import InternalActionSupport from '@ember/-internals/views/lib/mixins/action_support-internal';
 
 /**
  @class ActionSupport
  @namespace Ember
  @private
+ @deprecated Invoke the corresponding method directly instead.
 */
 interface ActionSupport {
+  /**
+    Calls an action passed to a component.
+
+    @method send
+    @deprecated Invoke the corresponding method directly instead.
+    @param {String} actionName The action to trigger
+    @param {*} args Arguments to pass on with the action
+    @private
+  */
   send(actionName: string, ...args: unknown[]): void;
 }
-const ActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
-  send(actionName: string, ...args: unknown[]) {
+const ActionSupport = DeprecatedMixin.create(InternalActionSupport, {
+  init() {
+    this._super(...arguments);
     deprecateUntil(
-      `Calling \`.send()\` on ${this} is deprecated. Invoke the corresponding method directly.`,
+      'The `ActionSupport` mixin is deprecated. Invoke the corresponding method directly instead.',
       DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT
     );
-
-    assert(
-      `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
-      !this.isDestroying && !this.isDestroyed
-    );
-
-    let action = this.actions && this.actions[actionName];
-
-    if (action) {
-      let shouldBubble = action.apply(this, args) === true;
-      if (!shouldBubble) {
-        return;
-      }
-    }
-
-    let target = get(this, 'target');
-    if (target) {
-      assert(
-        `The \`target\` for ${this} (${target}) does not have a \`send\` method`,
-        typeof target.send === 'function'
-      );
-      target.send(...arguments);
-    } else {
-      assert(`${inspect(this)} had no action handler for: ${actionName}`, action);
-    }
   },
 });
 

@@ -2,11 +2,9 @@
 @module ember
 */
 
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
-import { get } from '@ember/-internals/metal/lib/property_get';
-import { assert } from '@ember/debug';
+import { DeprecatedMixin } from '@ember/object/mixin-internal';
 import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
+import InternalActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 
 /**
   `ActionHandler` is available on some familiar classes including
@@ -19,12 +17,16 @@ import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
   @namespace Ember
   @private
 */
-interface ActionHandler {
-  actions?: Record<string, (...args: any[]) => unknown>;
-  send(actionName: string, ...args: unknown[]): void;
-}
-const ActionHandler = Mixin[INTERNAL_MIXIN_CREATE]({
-  mergedProperties: ['actions'],
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface ActionHandler extends InternalActionHandler {}
+const ActionHandler = DeprecatedMixin.create(InternalActionHandler, {
+  init() {
+    this._super(...arguments);
+    deprecateUntil(
+      'The `ActionHandler` mixin is deprecated. Use the `@action` decorator and direct method calls instead.',
+      DEPRECATIONS.DEPRECATE_ACTION_HANDLER_MIXIN
+    );
+  },
 
   /**
     The collection of functions, keyed by name, available on this
@@ -205,31 +207,6 @@ const ActionHandler = Mixin[INTERNAL_MIXIN_CREATE]({
     @param {*} context a context to send with the action
     @public
   */
-  send(actionName: string, ...args: any[]) {
-    deprecateUntil(
-      `Calling \`.send()\` on ${this} is deprecated. Invoke the corresponding method directly.`,
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT
-    );
-    assert(
-      `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
-      !this.isDestroying && !this.isDestroyed
-    );
-    if (this.actions && this.actions[actionName]) {
-      let shouldBubble = this.actions[actionName].apply(this, args) === true;
-      if (!shouldBubble) {
-        return;
-      }
-    }
-
-    let target = get(this, 'target');
-    if (target) {
-      assert(
-        `The \`target\` for ${this} (${target}) does not have a \`send\` method`,
-        typeof target.send === 'function'
-      );
-      target.send(...arguments);
-    }
-  },
 });
 
 export default ActionHandler;

@@ -8,11 +8,16 @@ import { isElementDescriptor } from '@ember/-internals/metal/lib/decorator';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import compare from '@ember/utils/lib/compare';
-import EmberArray, { A as emberA, uniqBy as uniqByArray } from '@ember/array';
+import type EmberArray from '@ember/array';
 import type { NativeArray } from '@ember/array';
+import {
+  A as emberA,
+  uniqBy as uniqByArray,
+  InternalEmberArray,
+} from '@ember/array/index-internal';
 
 function isNativeOrEmberArray(obj: unknown): obj is unknown[] | EmberArray<unknown> {
-  return Array.isArray(obj) || EmberArray.detect(obj);
+  return Array.isArray(obj) || InternalEmberArray.detect(obj);
 }
 
 function reduceMacro(

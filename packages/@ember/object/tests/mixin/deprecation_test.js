@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object';
 import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { InternalMixin } from '@ember/object/mixin-internal';
 import {
   moduleFor,
   AbstractTestCase,
@@ -42,7 +42,7 @@ moduleFor(
       let MixinA;
 
       expectNoDeprecation(() => {
-        MixinA = Mixin[INTERNAL_MIXIN_CREATE]({
+        MixinA = InternalMixin.create({
           foo: 'FOO',
         });
       });
