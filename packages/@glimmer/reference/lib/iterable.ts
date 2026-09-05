@@ -75,51 +75,18 @@ function makeKeyFor(key: string) {
   }
 }
 
-class WeakMapWithPrimitives<T> {
-  private _weakMap?: WeakMap<object, T>;
-  private _primitiveMap?: Map<unknown, T>;
-
-  private get weakMap() {
-    if (this._weakMap === undefined) {
-      this._weakMap = new WeakMap();
-    }
-
-    return this._weakMap;
-  }
-
-  private get primitiveMap() {
-    if (this._primitiveMap === undefined) {
-      this._primitiveMap = new Map();
-    }
-
-    return this._primitiveMap;
-  }
-
-  set(key: unknown, value: T) {
-    if (isIndexable(key)) {
-      this.weakMap.set(key, value);
-    } else {
-      this.primitiveMap.set(key, value);
-    }
-  }
-
-  get(key: unknown): T | undefined {
-    if (isIndexable(key)) {
-      return this.weakMap.get(key);
-    } else {
-      return this.primitiveMap.get(key);
-    }
-  }
-}
-
-const IDENTITIES = new WeakMapWithPrimitives<object[]>();
+const OBJECT_IDENTITIES = new WeakMap<object, object[]>();
+const PRIMITIVE_IDENTITIES = new Map<unknown, object[]>();
 
 function identityForNthOccurence(value: unknown, count: number) {
-  let identities = IDENTITIES.get(value);
+  let identities: object[] | undefined;
 
-  if (identities === undefined) {
-    identities = [];
-    IDENTITIES.set(value, identities);
+  if (isIndexable(value)) {
+    identities = OBJECT_IDENTITIES.get(value);
+    if (identities === undefined) OBJECT_IDENTITIES.set(value, (identities = []));
+  } else {
+    identities = PRIMITIVE_IDENTITIES.get(value);
+    if (identities === undefined) PRIMITIVE_IDENTITIES.set(value, (identities = []));
   }
 
   let identity = identities[count];
@@ -148,19 +115,26 @@ function identityForNthOccurence(value: unknown, count: number) {
  * Glimmer know that it should reuse the DOM for the previous nth occurence.
  */
 function uniqueKeyFor(keyFor: KeyFor) {
-  let seen = new WeakMapWithPrimitives<number>();
+  // Two maps rather than a wrapper object: this runs for every item on every
+  // pass over a list, and duplicate keys are the rare case.
+  let seenObjects: WeakMap<object, number> | undefined;
+  let seenPrimitives: Map<unknown, number> | undefined;
 
   return (value: unknown, memo: unknown) => {
     let key = keyFor(value, memo);
-    let count = seen.get(key) || 0;
+    let count: number | undefined;
 
-    seen.set(key, count + 1);
-
-    if (count === 0) {
-      return key;
+    if (isIndexable(key)) {
+      seenObjects ??= new WeakMap();
+      count = seenObjects.get(key);
+      seenObjects.set(key, count === undefined ? 1 : count + 1);
+    } else {
+      seenPrimitives ??= new Map();
+      count = seenPrimitives.get(key);
+      seenPrimitives.set(key, count === undefined ? 1 : count + 1);
     }
 
-    return identityForNthOccurence(key, count);
+    return count === undefined ? key : identityForNthOccurence(key, count);
   };
 }
 
@@ -225,42 +199,31 @@ class IteratorWrapper implements OpaqueIterator {
 }
 
 class ArrayIterator implements OpaqueIterator {
-  private current: { kind: 'empty' } | { kind: 'first'; value: unknown } | { kind: 'progress' };
-  private pos = 0;
+  private pos = -1;
+
+  // The constructor runs inside the iterator reference's tracking frame, so
+  // reading `length` here is what attributes a tracked collection's tag to that
+  // reference. Read it from `next()` instead and the list stops revalidating.
+  private length: number;
 
   constructor(
     private iterator: unknown[] | readonly unknown[],
     private keyFor: KeyFor
   ) {
-    if (iterator.length === 0) {
-      this.current = { kind: 'empty' };
-    } else {
-      this.current = { kind: 'first', value: iterator[this.pos] };
-    }
+    this.length = iterator.length;
   }
 
   isEmpty(): boolean {
-    return this.current.kind === 'empty';
+    return this.length === 0;
   }
 
   next(): Nullable<IterationItem<unknown, number>> {
-    let value: unknown;
+    let memo = ++this.pos;
 
-    let current = this.current;
-    if (current.kind === 'first') {
-      this.current = { kind: 'progress' };
-      value = current.value;
-    } else if (this.pos >= this.iterator.length - 1) {
-      return null;
-    } else {
-      value = this.iterator[++this.pos];
-    }
+    if (memo >= this.length) return null;
 
-    let { keyFor } = this;
+    let value = this.iterator[memo];
 
-    let key = keyFor(value, this.pos);
-    let memo = this.pos;
-
-    return { key, value, memo };
+    return { key: this.keyFor(value, memo), value, memo };
   }
 }

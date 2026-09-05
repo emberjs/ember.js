@@ -22,7 +22,6 @@ import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
-import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { debug } from '@glimmer/validator/lib/debug';
 import { resetTracking } from '@glimmer/validator/lib/tracking';
 
@@ -37,7 +36,11 @@ export class UpdatingVM implements IUpdatingVM {
   public dom: GlimmerTreeChanges;
   public alwaysRevalidate: boolean;
 
-  private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
+  // Revalidation pushes a frame for every block in the tree, one per
+  // `{{#each}}` item, so the frame objects are the allocation worth avoiding.
+  readonly #ops: UpdatingOpcode[][] = [];
+  readonly #handlers: Nullable<ExceptionHandler>[] = [];
+  readonly #pcs: number[] = [];
 
   constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
@@ -70,15 +73,18 @@ export class UpdatingVM implements IUpdatingVM {
   }
 
   private _execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
-    let { frameStack } = this;
+    let ops = this.#ops;
+    let pcs = this.#pcs;
 
     this.try(opcodes, handler);
 
-    while (!frameStack.isEmpty()) {
-      let opcode = this.frame.nextStatement();
+    while (ops.length > 0) {
+      let frame = ops.length - 1;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds-checked above
+      let opcode = ops[frame]![pcs[frame]!++];
 
       if (opcode === undefined) {
-        frameStack.pop();
+        this.#pop();
         continue;
       }
 
@@ -86,21 +92,25 @@ export class UpdatingVM implements IUpdatingVM {
     }
   }
 
-  private get frame() {
-    return expect(this.frameStack.current, 'bug: expected a frame');
+  #pop() {
+    this.#ops.pop();
+    this.#handlers.pop();
+    this.#pcs.pop();
   }
 
   goto(index: number) {
-    this.frame.goto(index);
+    this.#pcs[this.#pcs.length - 1] = index;
   }
 
   try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>) {
-    this.frameStack.push(new UpdatingVMFrame(ops, handler));
+    this.#ops.push(ops);
+    this.#handlers.push(handler);
+    this.#pcs.push(0);
   }
 
   throw() {
-    this.frame.handleException();
-    this.frameStack.pop();
+    this.#handlers[this.#handlers.length - 1]?.handleException();
+    this.#pop();
   }
 }
 
@@ -255,6 +265,10 @@ export class ListBlockOpcode extends BlockOpcode {
   private sync(iterator: OpaqueIterator) {
     let { opcodeMap: itemMap, children } = this;
 
+    // Both loops below walk off the end of `children` when a list grows.
+    // Reading past the end leaves the load generic for the rest of the process.
+    let childCount = children.length;
+
     let currentOpcodeIndex = 0;
     let seenIndex = 0;
 
@@ -265,13 +279,13 @@ export class ListBlockOpcode extends BlockOpcode {
 
       if (item === null) break;
 
-      let opcode = children[currentOpcodeIndex];
+      let opcode = currentOpcodeIndex < childCount ? children[currentOpcodeIndex] : undefined;
       let { key } = item;
 
       // Items that have already been found and moved will already be retained,
       // we can continue until we find the next unretained item
       while (opcode !== undefined && opcode.retained) {
-        opcode = children[++currentOpcodeIndex];
+        opcode = ++currentOpcodeIndex < childCount ? children[currentOpcodeIndex] : undefined;
       }
 
       if (opcode !== undefined && opcode.key === key) {
@@ -423,28 +437,5 @@ export class ListBlockOpcode extends BlockOpcode {
     destroy(opcode);
     clear(opcode);
     this.opcodeMap.delete(opcode.key);
-  }
-}
-
-class UpdatingVMFrame {
-  private current = 0;
-
-  constructor(
-    private ops: UpdatingOpcode[],
-    private exceptionHandler: Nullable<ExceptionHandler>
-  ) {}
-
-  goto(index: number) {
-    this.current = index;
-  }
-
-  nextStatement(): UpdatingOpcode | undefined {
-    return this.ops[this.current++];
-  }
-
-  handleException() {
-    if (this.exceptionHandler) {
-      this.exceptionHandler.handleException();
-    }
   }
 }

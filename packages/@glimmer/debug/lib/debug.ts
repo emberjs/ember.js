@@ -50,14 +50,14 @@ export function logOpcodeSlice(context: CompilationContext, start: number, end: 
 
     let _size = 0;
     for (let i = start; i <= end; i = i + _size) {
-      opcode.offset = i;
+      opcode.seek(i);
       const op = describeOp(opcode, program, context.meta);
 
       logger.log(frag`${i}. ${op}`);
 
       _size = opcode.size;
     }
-    opcode.offset = -_size;
+    opcode.seek(-_size);
     LOCAL_LOGGER.groupEnd();
   }
 }

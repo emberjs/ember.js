@@ -29,14 +29,15 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
     return { fn, args };
   }
 
-  getValue({ fn, args }: State): unknown {
-    if (Object.keys(args.named).length > 0) {
-      let argsForFn: FnArgs = [...args.positional, args.named];
+  getValue({ fn, args: { named, positional } }: State): unknown {
+    // `for..in` tests for named args without allocating a key array per call.
+    for (const _ in named) {
+      let argsForFn: FnArgs = [...positional, named];
 
       return fn(...argsForFn);
     }
 
-    return fn(...args.positional);
+    return fn(...positional);
   }
 
   getDebugName(fn: AnyFunction): string {

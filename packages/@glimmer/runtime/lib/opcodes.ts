@@ -6,7 +6,6 @@ import type {
   Nullable,
   Optional,
   RuntimeOp,
-  SomeVmOp,
   VmMachineOp,
   VmOp,
 } from '@glimmer/interfaces';
@@ -18,12 +17,11 @@ import { opcodeMetadata } from '@glimmer/debug/lib/opcode-metadata';
 import { recordStackSize } from '@glimmer/debug/lib/stack-check';
 import { VmSnapshot } from '@glimmer/debug/lib/vm/snapshot';
 import { dev, unwrap } from '@glimmer/debug-util/lib/platform-utils';
-import assert from '@glimmer/debug-util/lib/assert';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
 import { $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm/lib/registers';
 
-import type { LowLevelVM, VM } from './vm';
+import type { VM } from './vm';
 import type { Externs } from './vm/low-level';
 
 export interface OpcodeJSON {
@@ -40,11 +38,6 @@ export type Operand2 = number;
 export type Operand3 = number;
 
 export type Syscall = (vm: VM, opcode: RuntimeOp) => void;
-export type MachineOpcode = (vm: LowLevelVM, opcode: RuntimeOp) => void;
-
-export type Evaluate =
-  | { syscall: true; evaluate: Syscall }
-  | { syscall: false; evaluate: MachineOpcode };
 
 export type DebugState = {
   opcode: {
@@ -63,7 +56,7 @@ export class AppendOpcodes {
   // This code is intentionally putting unsafe `null`s into the array that it
   // will intentionally overwrite before anyone can see them.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  private evaluateOpcode: Evaluate[] = new Array(VM_SYSCALL_SIZE).fill(null);
+  private evaluateOpcode: Syscall[] = new Array(VM_SYSCALL_SIZE).fill(null);
 
   declare debugBefore?: (vm: DebugVmSnapshot, opcode: RuntimeOp) => DebugState;
   declare debugAfter?: (debug: DebugVmSnapshot, pre: DebugState) => void;
@@ -170,35 +163,12 @@ export class AppendOpcodes {
     }
   }
 
-  add<Name extends VmOp>(name: Name, evaluate: Syscall): void;
-  add<Name extends VmMachineOp>(name: Name, evaluate: MachineOpcode, kind: 'machine'): void;
-  add<Name extends SomeVmOp>(
-    name: Name,
-    evaluate: Syscall | MachineOpcode,
-    kind = 'syscall'
-  ): void {
-    this.evaluateOpcode[name as number] = {
-      syscall: kind !== 'machine',
-      evaluate,
-    } as Evaluate;
+  add<Name extends VmOp>(name: Name, evaluate: Syscall): void {
+    this.evaluateOpcode[name as number] = evaluate;
   }
 
   evaluate(vm: VM, opcode: RuntimeOp, type: number) {
-    let operation = unwrap(this.evaluateOpcode[type]);
-
-    if (operation.syscall) {
-      assert(
-        !opcode.isMachine,
-        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
-      );
-      operation.evaluate(vm, opcode);
-    } else {
-      assert(
-        opcode.isMachine,
-        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
-      );
-      operation.evaluate(vm.lowlevel, opcode);
-    }
+    unwrap(this.evaluateOpcode[type])(vm, opcode);
   }
 }
 
