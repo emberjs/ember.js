@@ -6,6 +6,7 @@ import type {
   Nullable,
   SimpleAttr,
   SimpleComment,
+  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
@@ -17,7 +18,15 @@ import { castToBrowser, castToSimple } from '@glimmer/debug-util/lib/simple-cast
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 
+import type { FragmentRegion } from '../dom/fragment-region';
+
 import { ConcreteBounds, CursorImpl } from '../bounds';
+import {
+  FRAGMENT_REGION_CLOSE,
+  FRAGMENT_REGION_OPEN,
+  fragmentRegionFor,
+  makeFragmentRegion,
+} from '../dom/fragment-region';
 import { NewTreeBuilder, RemoteBlock } from './element-builder';
 
 export const SERIALIZATION_FIRST_NODE_STRING = '%+b:0%';
@@ -31,7 +40,7 @@ export class RehydratingCursor extends CursorImpl {
   openBlockDepth: number;
   injectedOmittedNode = false;
   constructor(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     nextSibling: Nullable<SimpleNode>,
     public readonly startingBlockDepth: number
   ) {
@@ -198,15 +207,18 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     const { candidate } = currentCursor;
     if (candidate === null) return;
 
-    const { tagName } = currentCursor.element;
-
     if (
       isOpenBlock(candidate) &&
       getBlockDepthWithOffset(candidate, this.startingBlockOffset) === blockDepth
     ) {
       this.candidate = this.remove(candidate);
       currentCursor.openBlockDepth = blockDepth;
-    } else if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
+    } else if (
+      'tagName' in currentCursor.element &&
+      currentCursor.element.tagName !== 'TITLE' &&
+      currentCursor.element.tagName !== 'SCRIPT' &&
+      currentCursor.element.tagName !== 'STYLE'
+    ) {
       this.clearMismatch(candidate);
     }
   }
@@ -306,6 +318,46 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     } else {
       return super.__appendHTML(html);
     }
+  }
+
+  /**
+   * A serialized region is a pair of named comments around the content that was
+   * rendered for the fragment. Claim both markers and leave the content in
+   * place, so that an `{{#in-element}}` into the same fragment can claim it.
+   */
+  override __appendFragment(fragment: SimpleDocumentFragment): Bounds {
+    const open = this.candidate;
+
+    if (open === null || !isFragmentOpen(open)) {
+      return super.__appendFragment(fragment);
+    }
+
+    const close = findFragmentClose(open);
+
+    if (close === null) {
+      this.clearMismatch(open);
+      return super.__appendFragment(fragment);
+    }
+
+    // The markers are empty comments once they are on the client.
+    open.nodeValue = '';
+    close.nodeValue = '';
+
+    // A fragment that already holds content on the client wins over what the
+    // server put in the region, because the client nodes are the live ones.
+    if (fragment.firstChild) {
+      let node = open.nextSibling;
+
+      while (node !== null && node !== close) {
+        node = this.remove(node);
+      }
+
+      this.dom.insertBefore(this.element, fragment, close);
+    }
+
+    this.candidate = close.nextSibling;
+
+    return makeFragmentRegion(fragment, this.element, open, close);
   }
 
   protected remove(node: SimpleNode): Nullable<SimpleNode> {
@@ -466,11 +518,17 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
-    const marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
+    const region = fragmentRegionFor(element);
+
+    if (region) {
+      return this.__pushRegion(region, cursorId, insertBefore);
+    }
+
+    const marker = this.getMarker(castToBrowser(element as SimpleElement, 'HTML'), cursorId);
 
     assert(
       !marker || marker.parentNode === element,
@@ -496,6 +554,43 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
 
     const block = new RemoteBlock(element);
     return this.pushBlock(block, true);
+  }
+
+  /**
+   * The destination fragment is empty, because its content is in the region.
+   * Rehydrate against the region instead.
+   */
+  private __pushRegion(
+    region: FragmentRegion,
+    cursorId: string,
+    insertBefore: Maybe<SimpleNode>
+  ): RemoteBlock {
+    const parent = region.parentNode();
+    const marker = findRegionMarker(region, cursorId);
+
+    // when insertBefore is not present, we clear the region
+    if (insertBefore === undefined) {
+      let node = region.firstNode().nextSibling;
+
+      while (node !== null && node !== marker && node !== region.lastNode()) {
+        node = this.remove(node);
+      }
+
+      insertBefore = null;
+    }
+
+    const nextSibling = insertBefore ?? region.insertionPoint();
+    const cursor = new RehydratingCursor(parent, nextSibling, this.blockDepth);
+
+    this.cursors.push(cursor);
+
+    if (marker === null) {
+      this.disableRehydration(nextSibling);
+    } else {
+      this.candidate = this.remove(marker);
+    }
+
+    return this.pushBlock(new RemoteBlock(parent), true);
   }
 
   override didAppendBounds(bounds: Bounds): Bounds {
@@ -534,6 +629,54 @@ function getBlockDepthWithOffset(node: SimpleComment, offset: number): number {
 
 function isElement(node: SimpleNode): node is SimpleElement {
   return node.nodeType === ELEMENT_NODE;
+}
+
+function isFragmentOpen(node: SimpleNode): node is SimpleComment {
+  return node.nodeType === COMMENT_NODE && node.nodeValue === FRAGMENT_REGION_OPEN;
+}
+
+function isFragmentClose(node: SimpleNode): node is SimpleComment {
+  return node.nodeType === COMMENT_NODE && node.nodeValue === FRAGMENT_REGION_CLOSE;
+}
+
+/**
+ * Regions nest, so count the openings that are passed on the way to the close.
+ */
+function findFragmentClose(open: SimpleNode): Nullable<SimpleComment> {
+  let depth = 0;
+  let node = open.nextSibling;
+
+  while (node !== null) {
+    if (isFragmentOpen(node)) {
+      depth++;
+    } else if (isFragmentClose(node)) {
+      if (depth === 0) return node;
+      depth--;
+    }
+
+    node = node.nextSibling;
+  }
+
+  return null;
+}
+
+/**
+ * Serialization puts the marker for an `{{#in-element}}` directly in the region,
+ * so a walk of the region's own nodes finds it.
+ */
+function findRegionMarker(region: FragmentRegion, cursorId: string): Nullable<SimpleNode> {
+  const close = region.lastNode();
+  let node = region.firstNode().nextSibling;
+
+  while (node !== null && node !== close) {
+    if (isElement(node) && node.tagName === 'SCRIPT' && node.getAttribute('glmr') === cursorId) {
+      return node;
+    }
+
+    node = node.nextSibling;
+  }
+
+  return null;
 }
 
 function isMarker(node: SimpleNode): boolean {

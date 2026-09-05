@@ -29,7 +29,7 @@ import { resetTracking } from '@glimmer/validator/lib/tracking';
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
 
-import { clear, move as moveBounds } from '../bounds';
+import { clear, move as moveBounds, parentOf } from '../bounds';
 import { NewTreeBuilder } from './element-builder';
 
 export class UpdatingVM implements IUpdatingVM {
@@ -128,8 +128,8 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
     this.bounds = bounds;
   }
 
-  parentElement() {
-    return this.bounds.parentElement();
+  parentNode() {
+    return this.bounds.parentNode();
   }
 
   firstNode() {
@@ -235,15 +235,12 @@ export class ListBlockOpcode extends BlockOpcode {
       let { dom } = vm;
 
       let marker = (this.marker = dom.createComment(''));
-      dom.insertAfter(
-        bounds.parentElement(),
-        marker,
-        expect(bounds.lastNode(), "can't insert after an empty bounds")
-      );
+      let lastNode = expect(bounds.lastNode(), "can't insert after an empty bounds");
+      dom.insertAfter(parentOf(lastNode) ?? bounds.parentNode(), marker, lastNode);
 
       this.sync(iterator);
 
-      this.parentElement().removeChild(marker);
+      marker.parentNode?.removeChild(marker);
       this.marker = null;
       this.lastIterator = iterator;
     }
@@ -360,7 +357,7 @@ export class ListBlockOpcode extends BlockOpcode {
     let nextSibling = before === undefined ? this.marker : before.firstNode();
 
     let elementStack = NewTreeBuilder.forInitialRender(env, {
-      element: bounds.parentElement(),
+      element: parentOf(nextSibling) ?? bounds.parentNode(),
       nextSibling,
     });
 
