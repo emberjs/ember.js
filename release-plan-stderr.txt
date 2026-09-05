@@ -1,0 +1,7 @@
+# Unlabeled Changes
+
+* `@glimmer/component`
+  * [#21575](https://github.com/emberjs/ember.js/pull/21575) Manage destruction with symbol-properties, rather than weakmap ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+
+*Cannot plan release until the above changes are labeled*.
