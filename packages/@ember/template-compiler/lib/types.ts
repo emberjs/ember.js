@@ -37,7 +37,14 @@ export interface EmberPrecompileOptions extends Omit<PrecompileOptions, 'meta'> 
     /**
      * Not available at runtime
      */
-    jsutils?: { bindImport: (...args: unknown[]) => string };
+    jsutils?: {
+      bindImport(
+        moduleSpecifier: string,
+        exportedName: string,
+        target: unknown,
+        opts?: { nameHint?: string }
+      ): string;
+    };
 
     /**
      * Utils unique to the runtime compiler

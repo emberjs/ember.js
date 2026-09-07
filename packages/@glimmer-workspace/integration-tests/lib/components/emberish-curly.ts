@@ -35,6 +35,7 @@ import { consumeTag, createTag, dirtyTag, dirtyTagFor } from '@glimmer/validator
 
 import type { TestJitRuntimeResolver } from '../modes/jit/resolver';
 import type { TestComponentConstructor } from './types';
+import { applyDynamicAttribute } from '@glimmer/runtime/lib/vm/attributes/deferred';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Nullable<Attrs>; newAttrs: Attrs };
@@ -269,8 +270,20 @@ export class EmberishCurlyComponentManager
   ): void {
     component.element = element;
 
-    operations.setAttribute('id', createPrimitiveRef(`ember${component._guid}`), false, null);
-    operations.setAttribute('class', createPrimitiveRef('ember-view'), false, null);
+    operations.setAttribute(
+      'id',
+      createPrimitiveRef(`ember${component._guid}`),
+      false,
+      null,
+      applyDynamicAttribute
+    );
+    operations.setAttribute(
+      'class',
+      createPrimitiveRef('ember-view'),
+      false,
+      null,
+      applyDynamicAttribute
+    );
 
     let bindings = component.attributeBindings;
 
@@ -278,7 +291,7 @@ export class EmberishCurlyComponentManager
       for (const attribute of bindings) {
         let reference = childRefFor(selfRef, attribute);
 
-        operations.setAttribute(attribute, reference, false, null);
+        operations.setAttribute(attribute, reference, false, null, applyDynamicAttribute);
       }
     }
   }

@@ -131,7 +131,9 @@ export function setInternalHelperManager<T extends object, O extends Owner>(
   return setManager(HELPER_MANAGERS, manager, definition);
 }
 
-const DEFAULT_MANAGER = new CustomHelperManager(() => new FunctionHelperManager());
+// Created on first use so a build that never invokes a plain function as a
+// helper does not carry the custom helper manager.
+let DEFAULT_MANAGER: CustomHelperManager | undefined;
 
 export function getInternalHelperManager(definition: object): CustomHelperManager | Helper;
 export function getInternalHelperManager(
@@ -154,7 +156,7 @@ export function getInternalHelperManager(
   // Functions are special-cased because functions are defined
   // as the "default" helper, per: https://github.com/emberjs/rfcs/pull/756
   if (manager === undefined && typeof definition === 'function') {
-    manager = DEFAULT_MANAGER;
+    manager = DEFAULT_MANAGER ??= new CustomHelperManager(() => new FunctionHelperManager());
   }
 
   if (manager) {

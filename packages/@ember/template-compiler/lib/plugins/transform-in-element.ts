@@ -2,7 +2,7 @@ import { assert } from '@ember/debug';
 import type * as AST from '@glimmer/syntax/lib/v1/api';
 import type { ASTPlugin } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
 import type { EmberASTPluginEnvironment } from '../types';
-import { isPath } from './utils';
+import { isPath, keywordPath } from './utils';
 
 /**
  @module ember
@@ -36,7 +36,9 @@ export default function transformInElement(env: EmberASTPluginEnvironment): ASTP
           let originalValue = node.params[0];
 
           if (originalValue && !env.isProduction) {
-            let subExpr = b.sexpr('-in-el-null', [originalValue]);
+            let subExpr = b.sexpr(keywordPath(env, '-in-el-null', 'inElementNullCheck'), [
+              originalValue,
+            ]);
 
             node.params.shift();
             node.params.unshift(subExpr);

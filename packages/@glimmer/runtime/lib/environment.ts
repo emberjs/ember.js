@@ -1,12 +1,13 @@
 import { DEBUG } from '@glimmer/env';
 import type {
   ClassicResolver,
+  CommitHook,
   ComponentInstanceWithCreate,
+  DebugRenderTree,
   Environment,
   EnvironmentOptions,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
-  ModifierInstance,
   Nullable,
   RuntimeArtifacts,
   RuntimeOptions,
@@ -16,20 +17,17 @@ import type {
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { ProgramImpl } from '@glimmer/program/lib/program';
-import { track } from '@glimmer/validator/lib/tracking';
-import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 
-import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { isArgumentError } from './vm/arguments';
 
 export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
 
 class TransactionImpl implements Transaction {
-  public scheduledInstallModifiers: ModifierInstance[] = [];
-  public scheduledUpdateModifiers: ModifierInstance[] = [];
   public createdComponents: ComponentInstanceWithCreate[] = [];
   public updatedComponents: ComponentInstanceWithCreate[] = [];
+  private hooks: CommitHook<unknown>[] = [];
+  private items = new Map<CommitHook<unknown>, unknown[]>();
 
   didCreate(component: ComponentInstanceWithCreate) {
     this.createdComponents.push(component);
@@ -39,12 +37,16 @@ class TransactionImpl implements Transaction {
     this.updatedComponents.push(component);
   }
 
-  scheduleInstallModifier(modifier: ModifierInstance) {
-    this.scheduledInstallModifiers.push(modifier);
-  }
+  schedule<T>(hook: CommitHook<T>, item: T): void {
+    let items = this.items.get(hook as CommitHook<unknown>);
 
-  scheduleUpdateModifier(modifier: ModifierInstance) {
-    this.scheduledUpdateModifiers.push(modifier);
+    if (items === undefined) {
+      items = [];
+      this.items.set(hook as CommitHook<unknown>, items);
+      this.hooks.push(hook as CommitHook<unknown>);
+    }
+
+    items.push(item);
   }
 
   commit() {
@@ -58,40 +60,8 @@ class TransactionImpl implements Transaction {
       manager.didUpdate(state);
     }
 
-    let { scheduledInstallModifiers, scheduledUpdateModifiers } = this;
-
-    for (const { manager, state, definition } of scheduledInstallModifiers) {
-      let modifierTag = manager.getTag(state);
-
-      if (modifierTag !== null) {
-        let tag = track(
-          () => manager.install(state),
-          DEBUG &&
-            `- While rendering:\n  (instance of a \`${
-              definition.resolvedName || manager.getDebugName(definition.state)
-            }\` modifier)`
-        );
-        updateTag(modifierTag, tag);
-      } else {
-        manager.install(state);
-      }
-    }
-
-    for (const { manager, state, definition } of scheduledUpdateModifiers) {
-      let modifierTag = manager.getTag(state);
-
-      if (modifierTag !== null) {
-        let tag = track(
-          () => manager.update(state),
-          DEBUG &&
-            `- While rendering:\n  (instance of a \`${
-              definition.resolvedName || manager.getDebugName(definition.state)
-            }\` modifier)`
-        );
-        updateTag(modifierTag, tag);
-      } else {
-        manager.update(state);
-      }
+    for (const hook of this.hooks) {
+      hook(this.items.get(hook) as unknown[]);
     }
   }
 }
@@ -107,14 +77,14 @@ export class EnvironmentImpl implements Environment {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError: ((error: any) => boolean) | undefined;
-  debugRenderTree: DebugRenderTree<object> | undefined;
+  debugRenderTree: DebugRenderTree | undefined;
 
   constructor(
     options: EnvironmentOptions,
     private delegate: EnvironmentDelegate
   ) {
     this.isInteractive = delegate.isInteractive;
-    this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
+    this.debugRenderTree = delegate.debugRenderTree;
     this.isArgumentCaptureError = this.delegate.enableDebugTooling ? isArgumentError : undefined;
     if (options.appendOperations) {
       this.appendOperations = options.appendOperations;
@@ -161,16 +131,14 @@ export class EnvironmentImpl implements Environment {
     this.transaction.didUpdate(component);
   }
 
-  scheduleInstallModifier(modifier: ModifierInstance) {
-    if (this.isInteractive) {
-      this.transaction.scheduleInstallModifier(modifier);
-    }
-  }
-
-  scheduleUpdateModifier(modifier: ModifierInstance) {
-    if (this.isInteractive) {
-      this.transaction.scheduleUpdateModifier(modifier);
-    }
+  /**
+   * Queues work for the end of the current transaction. The hook runs once
+   * per transaction with everything queued under it, so the code behind a
+   * kind of work (modifier installs, for example) lives with the opcode
+   * that queues it instead of here.
+   */
+  schedule<T>(hook: CommitHook<T>, item: T): void {
+    this.transaction.schedule(hook, item);
   }
 
   commit() {
@@ -195,6 +163,13 @@ export interface EnvironmentDelegate {
    * Used to enable debug tooling
    */
   enableDebugTooling: boolean;
+
+  /**
+   * The render tree for debug tooling, if the host wants one. The host
+   * constructs it, so a build that never wants one does not carry the
+   * implementation.
+   */
+  debugRenderTree?: DebugRenderTree | undefined;
 
   /**
    * Callback to be called when an environment transaction commits

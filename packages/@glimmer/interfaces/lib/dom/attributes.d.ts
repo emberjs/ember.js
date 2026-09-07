@@ -1,4 +1,4 @@
-import type { Maybe, Nullable } from '../core.js';
+import type { Nullable } from '../core.js';
 import type { ElementOperations, Environment, ModifierInstance } from '../runtime.js';
 import type { Stack } from '../stack.js';
 import type { Bounds, Cursor } from './bounds.js';
@@ -6,7 +6,6 @@ import type { GlimmerTreeChanges, GlimmerTreeConstruction } from './changes.js';
 import type {
   AttrNamespace,
   SimpleComment,
-  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
@@ -48,31 +47,15 @@ export interface ResettableBlock extends FixedBlock {
 }
 
 export interface DOMStack {
-  pushRemoteElement(
-    element: SimpleElement,
-    guid: string,
-    insertBefore: Maybe<SimpleNode>
-  ): FixedBlock;
-  popRemoteElement(): FixedBlock;
   popElement(): void;
   openElement(tag: string, _operations?: ElementOperations): SimpleElement;
   flushElement(modifiers: Nullable<ModifierInstance[]>): void;
   appendText(string: string): SimpleText;
   appendComment(string: string): SimpleComment;
 
-  appendDynamicHTML(value: string): void;
   appendDynamicText(value: string): SimpleText;
-  appendDynamicFragment(value: SimpleDocumentFragment): void;
-  appendDynamicNode(value: SimpleNode): void;
 
   setStaticAttribute(name: string, value: string, namespace: Nullable<string>): void;
-  setDynamicAttribute(
-    name: string,
-    value: unknown,
-    isTrusting: boolean,
-    namespace: Nullable<string>
-  ): AttributeOperation;
-
   closeElement(): Nullable<ModifierInstance[]>;
 }
 
@@ -108,7 +91,6 @@ export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
 
   pushAppendingBlock(): AppendingBlock;
   pushResettableBlock(): ResettableBlock;
-  pushBlockList(list: Bounds[]): AppendingBlock;
   popBlock(): AppendingBlock;
 
   didAppendBounds(bounds: Bounds): void;

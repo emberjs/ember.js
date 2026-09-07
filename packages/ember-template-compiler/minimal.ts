@@ -8,5 +8,6 @@
 // directly evaluted in node because it doesn't try to pull in the whole kitchen
 // sink.
 export { default as precompile } from './lib/system/precompile';
+export { default as precompileModule } from './lib/system/precompile-module';
 export { buildCompileOptions as _buildCompileOptions } from './lib/system/compile-options';
 export { preprocess as _preprocess, print as _print } from '@glimmer/syntax';

@@ -10,7 +10,6 @@ import type { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes
 import type { WithCreateInstance } from '../managers.js';
 import type { ClassicResolver } from '../program.js';
 import type { DebugRenderTree } from './debug-render-tree.js';
-import type { ModifierInstance } from './modifier.js';
 import type { Program } from './runtime.js';
 
 export interface EnvironmentOptions {
@@ -30,14 +29,16 @@ export type ComponentInstanceWithCreate = ComponentInstance<
   WithCreateInstance
 >;
 
+/** Work queued during a transaction and run once when it commits. */
+export type CommitHook<T> = (items: T[]) => void;
+
 export interface Environment {
   [TransactionSymbol]: Nullable<Transaction>;
 
   didCreate(component: ComponentInstanceWithCreate): void;
   didUpdate(component: ComponentInstanceWithCreate): void;
 
-  scheduleInstallModifier(modifier: ModifierInstance): void;
-  scheduleUpdateModifier(modifier: ModifierInstance): void;
+  schedule<T>(hook: CommitHook<T>, item: T): void;
 
   begin(): void;
   commit(): void;

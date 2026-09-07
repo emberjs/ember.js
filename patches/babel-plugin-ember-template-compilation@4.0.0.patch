@@ -1,0 +1,59 @@
+diff --git a/dist/src/js-utils.js b/dist/src/js-utils.js
+index 561d7dc5b87646c0d02f4607d843f2b334b76b4f..43278d4d786a6dd1a5c4743aa6e7b566efd20d1d 100644
+--- a/dist/src/js-utils.js
++++ b/dist/src/js-utils.js
+@@ -82,7 +82,9 @@ export class JSUtils {
+         let importedIdentifier = __classPrivateFieldGet(this, _JSUtils_importer, "f").import(__classPrivateFieldGet(this, _JSUtils_template, "f"), moduleSpecifier, exportedName, opts?.nameHint);
+         // Simple base case: the JS name that's available is also unused at our spot
+         // in HBS, so just use it.
+-        if (!astNodeHasBinding(target, importedIdentifier.name)) {
++        // A null target means the caller generated the reference itself, so
++        // nothing in template scope can shadow it.
++        if (target === null || !astNodeHasBinding(target, importedIdentifier.name)) {
+             __classPrivateFieldGet(this, _JSUtils_addedBinding, "f").call(this, importedIdentifier.name);
+             return importedIdentifier.name;
+         }
+diff --git a/dist/src/plugin.js b/dist/src/plugin.js
+index 3b4d9862f026749bdca278b99fd4dc0a5e46395e..715340337aded7da322e604642fd38a641891a8c 100644
+--- a/dist/src/plugin.js
++++ b/dist/src/plugin.js
+@@ -251,6 +251,7 @@ function insertCompiledTemplate(babel, state, opts, template, target, userTypedO
+     let scopeLocals = buildScopeLocals(userTypedOptions, config, target, !backingClass);
+     let options = buildPrecompileOptions(babel, target, state, opts, template, userTypedOptions, config, scopeLocals);
+     let precompileResultString;
++    let precompiledModule = null;
+     // insertRuntimeErrors is legacy and not supported by the newer rfc931 form
+     if (options.insertRuntimeErrors && !config.rfc931Support) {
+         try {
+@@ -261,6 +262,13 @@ function insertCompiledTemplate(babel, state, opts, template, target, userTypedO
+             return;
+         }
+     }
++    else if (typeof opts.compiler.precompileModule === 'function') {
++        // The compiler can emit a block whose wire format opcodes are
++        // identifiers. Each identifier is bound to an import below, so the
++        // app bundle only keeps the opcodes its templates use.
++        precompiledModule = opts.compiler.precompileModule(template, options);
++        precompileResultString = precompiledModule.expression;
++    }
+     else {
+         precompileResultString = opts.compiler.precompile(template, options);
+     }
+@@ -268,7 +276,16 @@ function insertCompiledTemplate(babel, state, opts, template, target, userTypedO
+     t.addComment(templateExpression, 'leading', `\n  ${template.replace(/\*\//g, '*\\/')}\n`, 
+     /* line comment? */ false);
+     state.util.replaceWith(target, (i) => {
+-        let templateFactoryIdentifier = i.import(state.templateFactory.moduleName, state.templateFactory.exportName);
++        let templateFactoryIdentifier;
++        if (precompiledModule) {
++            // The compiler bound every identifier in the expression through
++            // jsutils.bindImport, so only the factory is left to import.
++            let factory = precompiledModule.factory ?? { module: '@ember/template-factory/modular', name: 'createTemplateFactory' };
++            templateFactoryIdentifier = i.import(factory.module, factory.name);
++        }
++        else {
++            templateFactoryIdentifier = i.import(state.templateFactory.moduleName, state.templateFactory.exportName);
++        }
+         let expression = t.callExpression(templateFactoryIdentifier, [templateExpression]);
+         if (config.rfc931Support) {
+             expression = t.callExpression(i.import('@ember/component', 'setComponentTemplate'), [

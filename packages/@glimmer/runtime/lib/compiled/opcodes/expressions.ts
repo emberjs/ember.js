@@ -55,7 +55,7 @@ import { isIndexable } from '@glimmer/util/lib/collections';
 import { $v0 } from '@glimmer/vm/lib/registers';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
-import { APPEND_OPCODES } from '../../opcodes';
+import { syscall } from '../../opcodes';
 import createCurryRef from '../../references/curry-value';
 import { reifyPositional } from '../../vm/arguments';
 import { createConcatRef } from '../expressions/concat';
@@ -70,7 +70,7 @@ import {
   CheckUndefinedReference,
 } from './-debug-strip';
 
-APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
+export const CURRY_OP = /*#__PURE__*/ syscall(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
   let stack = vm.stack;
 
   let definition = check(stack.pop(), CheckReference);
@@ -92,13 +92,16 @@ APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
   );
 });
 
-APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
+export const DYNAMIC_HELPER_OP = /*#__PURE__*/ syscall(VM_DYNAMIC_HELPER_OP, (vm) => {
   let stack = vm.stack;
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments).capture();
 
   let helperRef: Initializable<Reference>;
   let initialOwner = vm.getOwner();
+  // A helper reached by value gets the same dynamic scope a resolved one
+  // does, so keywords such as `{{outlet}}` work from lexical scope.
+  let dynamicScope = vm.dynamicScope();
 
   let helperInstanceRef = createComputeRef(() => {
     if (helperRef !== undefined) {
@@ -121,12 +124,12 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
         args.positional = positional.concat(args.positional) as CapturedPositionalArguments;
       }
 
-      helperRef = helper(args, owner);
+      helperRef = helper(args, owner, dynamicScope);
 
       associateDestroyableChild(helperInstanceRef, helperRef);
     } else if (isIndexable(definition)) {
       let helper = resolveHelper(definition, ref);
-      helperRef = helper(args, initialOwner);
+      helperRef = helper(args, initialOwner, dynamicScope);
 
       if (_hasDestroyableChildren(helperRef)) {
         associateDestroyableChild(helperInstanceRef, helperRef);
@@ -172,7 +175,7 @@ function resolveHelper(definition: HelperDefinitionState, ref: Reference): Helpe
   return helper;
 }
 
-APPEND_OPCODES.add(VM_HELPER_OP, (vm, { op1: handle }) => {
+export const HELPER_OP = /*#__PURE__*/ syscall(VM_HELPER_OP, (vm, { op1: handle }) => {
   let stack = vm.stack;
   let helper = check(vm.constants.getValue(handle), CheckHelper);
   let args = check(stack.pop(), CheckArguments);
@@ -185,18 +188,18 @@ APPEND_OPCODES.add(VM_HELPER_OP, (vm, { op1: handle }) => {
   vm.loadValue($v0, value);
 });
 
-APPEND_OPCODES.add(VM_GET_VARIABLE_OP, (vm, { op1: symbol }) => {
+export const GET_VARIABLE_OP = /*#__PURE__*/ syscall(VM_GET_VARIABLE_OP, (vm, { op1: symbol }) => {
   let expr = vm.referenceForSymbol(symbol);
 
   vm.stack.push(expr);
 });
 
-APPEND_OPCODES.add(VM_SET_VARIABLE_OP, (vm, { op1: symbol }) => {
+export const SET_VARIABLE_OP = /*#__PURE__*/ syscall(VM_SET_VARIABLE_OP, (vm, { op1: symbol }) => {
   let expr = check(vm.stack.pop(), CheckReference);
   vm.scope().bindSymbol(symbol, expr);
 });
 
-APPEND_OPCODES.add(VM_SET_BLOCK_OP, (vm, { op1: symbol }) => {
+export const SET_BLOCK_OP = /*#__PURE__*/ syscall(VM_SET_BLOCK_OP, (vm, { op1: symbol }) => {
   let handle = check(vm.stack.pop(), CheckCompilableBlock);
   let scope = check(vm.stack.pop(), CheckScope);
   let table = check(vm.stack.pop(), CheckBlockSymbolTable);
@@ -204,24 +207,24 @@ APPEND_OPCODES.add(VM_SET_BLOCK_OP, (vm, { op1: symbol }) => {
   vm.scope().bindBlock(symbol, [handle, scope, table]);
 });
 
-APPEND_OPCODES.add(VM_ROOT_SCOPE_OP, (vm, { op1: size }) => {
+export const ROOT_SCOPE_OP = /*#__PURE__*/ syscall(VM_ROOT_SCOPE_OP, (vm, { op1: size }) => {
   vm.pushRootScope(size, vm.getOwner());
 });
 
-APPEND_OPCODES.add(VM_GET_PROPERTY_OP, (vm, { op1: _key }) => {
+export const GET_PROPERTY_OP = /*#__PURE__*/ syscall(VM_GET_PROPERTY_OP, (vm, { op1: _key }) => {
   let key = vm.constants.getValue<string>(_key);
   let expr = check(vm.stack.pop(), CheckReference);
   vm.stack.push(childRefFor(expr, key));
 });
 
-APPEND_OPCODES.add(VM_GET_BLOCK_OP, (vm, { op1: _block }) => {
+export const GET_BLOCK_OP = /*#__PURE__*/ syscall(VM_GET_BLOCK_OP, (vm, { op1: _block }) => {
   let { stack } = vm;
   let block = vm.scope().getBlock(_block);
 
   stack.push(block);
 });
 
-APPEND_OPCODES.add(VM_SPREAD_BLOCK_OP, (vm) => {
+export const SPREAD_BLOCK_OP = /*#__PURE__*/ syscall(VM_SPREAD_BLOCK_OP, (vm) => {
   let { stack } = vm;
   let block = check(stack.pop(), CheckNullable(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
@@ -246,7 +249,7 @@ function isUndefinedReference(input: ScopeBlock | Reference): input is Reference
   return input === UNDEFINED_REFERENCE;
 }
 
-APPEND_OPCODES.add(VM_HAS_BLOCK_OP, (vm) => {
+export const HAS_BLOCK_OP = /*#__PURE__*/ syscall(VM_HAS_BLOCK_OP, (vm) => {
   let { stack } = vm;
   let block = check(stack.pop(), CheckNullable(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
@@ -257,7 +260,7 @@ APPEND_OPCODES.add(VM_HAS_BLOCK_OP, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(VM_HAS_BLOCK_PARAMS_OP, (vm) => {
+export const HAS_BLOCK_PARAMS_OP = /*#__PURE__*/ syscall(VM_HAS_BLOCK_PARAMS_OP, (vm) => {
   // FIXME(mmun): should only need to push the symbol table
   let block = vm.stack.pop();
   let scope = vm.stack.pop();
@@ -270,7 +273,7 @@ APPEND_OPCODES.add(VM_HAS_BLOCK_PARAMS_OP, (vm) => {
   vm.stack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 
-APPEND_OPCODES.add(VM_CONCAT_OP, (vm, { op1: count }) => {
+export const CONCAT_OP = /*#__PURE__*/ syscall(VM_CONCAT_OP, (vm, { op1: count }) => {
   let out = new Array<Reference>(count);
 
   for (let i = count; i > 0; i--) {
@@ -281,7 +284,7 @@ APPEND_OPCODES.add(VM_CONCAT_OP, (vm, { op1: count }) => {
   vm.stack.push(createConcatRef(out));
 });
 
-APPEND_OPCODES.add(VM_IF_INLINE_OP, (vm) => {
+export const IF_INLINE_OP = /*#__PURE__*/ syscall(VM_IF_INLINE_OP, (vm) => {
   let condition = check(vm.stack.pop(), CheckReference);
   let truthy = check(vm.stack.pop(), CheckReference);
   let falsy = check(vm.stack.pop(), CheckReference);
@@ -297,7 +300,7 @@ APPEND_OPCODES.add(VM_IF_INLINE_OP, (vm) => {
   );
 });
 
-APPEND_OPCODES.add(VM_NOT_OP, (vm) => {
+export const NOT_OP = /*#__PURE__*/ syscall(VM_NOT_OP, (vm) => {
   let ref = check(vm.stack.pop(), CheckReference);
 
   vm.stack.push(
@@ -307,7 +310,7 @@ APPEND_OPCODES.add(VM_NOT_OP, (vm) => {
   );
 });
 
-APPEND_OPCODES.add(VM_GET_DYNAMIC_VAR_OP, (vm) => {
+export const GET_DYNAMIC_VAR_OP = /*#__PURE__*/ syscall(VM_GET_DYNAMIC_VAR_OP, (vm) => {
   let scope = vm.dynamicScope();
   let stack = vm.stack;
   let nameRef = check(stack.pop(), CheckReference);
@@ -320,7 +323,7 @@ APPEND_OPCODES.add(VM_GET_DYNAMIC_VAR_OP, (vm) => {
   );
 });
 
-APPEND_OPCODES.add(VM_LOG_OP, (vm) => {
+export const LOG_OP = /*#__PURE__*/ syscall(VM_LOG_OP, (vm) => {
   let { positional } = check(vm.stack.pop(), CheckArguments).capture();
 
   vm.loadValue(

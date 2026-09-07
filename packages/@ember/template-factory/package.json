@@ -7,6 +7,8 @@
     "./*": "./*.ts"
   },
   "dependencies": {
-    "@glimmer/opcode-compiler": "workspace:*"
+    "@glimmer/opcode-compiler": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
+    "@ember/-internals": "workspace:*"
   }
 }

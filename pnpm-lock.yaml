@@ -6,10 +6,10 @@ settings:
 
 overrides:
   socket.io: ^4.7.0
-  rollup: ^4.2.0
-  ember-cli-htmlbars: ^7.0.0
   babel-plugin-ember-template-compilation: ^4.0.0
   ember-cli-babel: ^8.3.1
+  ember-cli-htmlbars: ^7.0.0
+  rollup: ^4.2.0
   testem: ^3.20.1
 
 patchedDependencies:
@@ -19,6 +19,9 @@ patchedDependencies:
   agadoo:
     hash: c1058fc9952e79cd32c4681e029134a3dce79fd43dcd50a3dde1cda5d7e0e802
     path: patches/agadoo.patch
+  babel-plugin-ember-template-compilation@4.0.0:
+    hash: 47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad
+    path: patches/babel-plugin-ember-template-compilation@4.0.0.patch
 
 importers:
 
@@ -141,7 +144,7 @@ importers:
         version: 1.0.2(@babel/core@7.29.7)
       babel-plugin-ember-template-compilation:
         specifier: ^4.0.0
-        version: 4.0.0
+        version: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       dag-map:
         specifier: ^2.0.2
         version: 2.0.2
@@ -1200,6 +1203,12 @@ importers:
 
   packages/@ember/template-factory:
     dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../@glimmer/interfaces
       '@glimmer/opcode-compiler':
         specifier: workspace:*
         version: link:../../@glimmer/opcode-compiler
@@ -1921,6 +1930,9 @@ importers:
 
   packages/@glimmer/opcode-compiler:
     dependencies:
+      '@glimmer/compiler':
+        specifier: workspace:*
+        version: link:../compiler
       '@glimmer/encoder':
         specifier: workspace:*
         version: link:../encoder
@@ -1930,6 +1942,12 @@ importers:
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../manager
+      '@glimmer/program':
+        specifier: workspace:*
+        version: link:../program
+      '@glimmer/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@glimmer/util':
         specifier: workspace:*
         version: link:../util
@@ -2558,6 +2576,9 @@ importers:
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../@glimmer/manager
+      '@glimmer/opcode-compiler':
+        specifier: workspace:*
+        version: link:../@glimmer/opcode-compiler
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../@glimmer/runtime
@@ -2951,7 +2972,7 @@ importers:
         version: 6.1.0(@babel/core@7.29.7)(rollup@4.61.0)
       babel-plugin-ember-template-compilation:
         specifier: ^4.0.0
-        version: 4.0.0
+        version: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       decorator-transforms:
         specifier: ^2.3.1
         version: 2.3.2(@babel/core@7.29.7)
@@ -3047,7 +3068,7 @@ importers:
         version: 7.1.0(@babel/core@7.29.7)(rollup@4.61.0)
       babel-plugin-ember-template-compilation:
         specifier: ^4.0.0
-        version: 4.0.0
+        version: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       decorator-transforms:
         specifier: ^2.3.2
         version: 2.3.2(@babel/core@7.29.7)
@@ -3122,7 +3143,7 @@ importers:
         version: 7.1.0(@babel/core@7.29.7)(rollup@4.61.0)
       babel-plugin-ember-template-compilation:
         specifier: ^4.0.0
-        version: 4.0.0
+        version: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       concurrently:
         specifier: ^9.2.3
         version: 9.2.4
@@ -14064,7 +14085,7 @@ snapshots:
       assert-never: 1.4.0
       babel-import-util: 3.0.1
       babel-plugin-debug-macros: 2.0.0(@babel/core@7.29.7)
-      babel-plugin-ember-template-compilation: 4.0.0
+      babel-plugin-ember-template-compilation: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       babel-plugin-ember-template-compilation-2: babel-plugin-ember-template-compilation@2.4.1
       babel-plugin-syntax-dynamic-import: 6.18.0
       babylon: 6.18.0
@@ -14117,7 +14138,7 @@ snapshots:
       assert-never: 1.4.0
       babel-import-util: 3.0.1
       babel-plugin-debug-macros: 2.0.0(@babel/core@7.29.7)
-      babel-plugin-ember-template-compilation: 4.0.0
+      babel-plugin-ember-template-compilation: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       babel-plugin-ember-template-compilation-2: babel-plugin-ember-template-compilation@2.4.1
       babel-plugin-syntax-dynamic-import: 6.18.0
       babylon: 6.18.0
@@ -14164,7 +14185,7 @@ snapshots:
       '@embroider/reverse-exports': 0.2.0
       '@embroider/shared-internals': 3.1.0
       assert-never: 1.4.0
-      babel-plugin-ember-template-compilation: 4.0.0
+      babel-plugin-ember-template-compilation: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       broccoli-node-api: 1.7.0
       broccoli-persistent-filter: 3.1.3
       broccoli-plugin: 4.0.7
@@ -14200,7 +14221,7 @@ snapshots:
       '@embroider/reverse-exports': 0.2.0
       '@embroider/shared-internals': 3.1.1
       assert-never: 1.4.0
-      babel-plugin-ember-template-compilation: 4.0.0
+      babel-plugin-ember-template-compilation: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       broccoli-node-api: 1.7.0
       broccoli-persistent-filter: 3.1.3
       broccoli-plugin: 4.0.7
@@ -16840,7 +16861,7 @@ snapshots:
       '@glimmer/syntax': 0.95.0
       babel-import-util: 3.0.1
 
-  babel-plugin-ember-template-compilation@4.0.0:
+  babel-plugin-ember-template-compilation@4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad):
     dependencies:
       '@glimmer/syntax': 0.95.0
       babel-import-util: 3.0.1
@@ -18301,7 +18322,7 @@ snapshots:
       '@embroider/shared-internals': 2.9.2(supports-color@8.1.1)
       babel-loader: 8.4.1(@babel/core@7.29.7)(webpack@5.107.2)
       babel-plugin-ember-modules-api-polyfill: 3.5.0
-      babel-plugin-ember-template-compilation: 4.0.0
+      babel-plugin-ember-template-compilation: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       babel-plugin-htmlbars-inline-precompile: 5.3.1
       babel-plugin-syntax-dynamic-import: 6.18.0
       broccoli-debug: 0.6.5
@@ -18442,7 +18463,7 @@ snapshots:
   ember-cli-htmlbars@6.3.0:
     dependencies:
       '@ember/edition-utils': 1.2.0
-      babel-plugin-ember-template-compilation: 4.0.0
+      babel-plugin-ember-template-compilation: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       babel-plugin-htmlbars-inline-precompile: 5.3.1
       broccoli-debug: 0.6.5
       broccoli-persistent-filter: 3.1.3
@@ -18462,7 +18483,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
       '@ember/edition-utils': 1.2.0
-      babel-plugin-ember-template-compilation: 4.0.0
+      babel-plugin-ember-template-compilation: 4.0.0(patch_hash=47ddeed032390066a07f150d13bdd46a2a2a4e5a74f78b00858943f7d81d8cad)
       broccoli-debug: 0.6.5
       broccoli-persistent-filter: 3.1.3
       broccoli-plugin: 4.0.7

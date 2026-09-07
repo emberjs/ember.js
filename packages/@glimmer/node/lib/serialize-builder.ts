@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type {
+  AppendingBlock,
   Bounds,
   Environment,
   Maybe,
@@ -10,7 +11,7 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import type { RemoteBlock } from '@glimmer/runtime/lib/vm/element-builder';
+import { defaultPushRemoteElement } from '@glimmer/runtime/lib/vm/remote-element';
 import { ConcreteBounds } from '@glimmer/runtime/lib/bounds';
 import { NewTreeBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 
@@ -129,16 +130,16 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     return super.openElement(tag);
   }
 
-  override pushRemoteElement(
+  __pushRemoteElement(
     element: SimpleElement,
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null
-  ): RemoteBlock {
+  ): AppendingBlock {
     let { dom } = this;
     let script = dom.createElement('script');
     script.setAttribute('glmr', cursorId);
     dom.insertBefore(element, script, insertBefore);
-    return super.pushRemoteElement(element, cursorId, insertBefore);
+    return defaultPushRemoteElement(this, element, insertBefore);
   }
 }
 

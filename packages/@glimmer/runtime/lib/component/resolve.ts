@@ -1,16 +1,17 @@
 import { DEBUG } from '@glimmer/env';
+import { resolvedComponentDefinition } from '@glimmer/program/lib/definitions';
 import type {
   ClassicResolver,
   ComponentDefinition,
   Nullable,
   Owner,
-  ResolutionTimeConstants,
+  ProgramConstants,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 
 export function resolveComponent(
   resolver: Nullable<ClassicResolver>,
-  constants: ResolutionTimeConstants,
+  constants: ProgramConstants,
   name: string,
   owner: Owner | null
 ): Nullable<ComponentDefinition> {
@@ -27,5 +28,5 @@ export function resolveComponent(
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-  return constants.resolvedComponent(definition!, name);
+  return resolvedComponentDefinition(constants, definition!, name);
 }
