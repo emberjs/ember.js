@@ -71,7 +71,7 @@ export {
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { tagForProperty, tagForObject, markObjectAsDirty } from './lib/tags';
 export { tracked, TrackedDescriptor } from './lib/tracked';
-export { cached } from './lib/cached';
+export { cached, CACHED_GETTER_SYMBOL } from './lib/cached';
 export { createCache, getValue, isConst } from './lib/cache';
 
 export {
