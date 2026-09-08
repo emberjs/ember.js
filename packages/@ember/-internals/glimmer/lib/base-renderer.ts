@@ -26,7 +26,7 @@ import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
-import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import type { SimpleDocument, SimpleDocumentFragment, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
@@ -668,7 +668,10 @@ const RENDERER_FOR_OWNER = new WeakMap<object, BaseRenderer>();
  * The key is the element, also when the caller passes a `Cursor`.
  * A `Cursor` is a new object on each call, and it fails during application teardown.
  */
-const LAST_RENDER_INTO = new WeakMap<Element | SimpleElement, LastRender>();
+const LAST_RENDER_INTO = new WeakMap<
+  Element | SimpleElement | SimpleDocumentFragment,
+  LastRender
+>();
 
 /**
  * The application seeds its `renderer:-dom` service which allows for
@@ -734,13 +737,19 @@ function toCursor(into: IntoTarget): Cursor {
  * That render clears the element.
  * A `Cursor` target is never cleared.
  */
-function replaceLastRender(into: IntoTarget, element: Element | SimpleElement): IntoTarget {
+function replaceLastRender(
+  into: IntoTarget,
+  element: Element | SimpleElement | SimpleDocumentFragment
+): IntoTarget {
   let last = LAST_RENDER_INTO.get(element);
 
   if (last?.glimmerResult) {
     last.result.destroy();
 
-    return { element: element as SimpleElement, nextSibling: last.glimmerResult.firstNode() };
+    return {
+      element: element as SimpleElement | SimpleDocumentFragment,
+      nextSibling: last.glimmerResult.firstNode(),
+    };
   }
 
   if (!last && isDOMElement(into)) {
