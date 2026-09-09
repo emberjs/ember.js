@@ -1,19 +1,21 @@
 import type { CurriedType, NonSmallIntOperand, Nullable, WireFormat } from '@glimmer/interfaces';
 import { encodeImmediate, isSmallInt } from '@glimmer/constants/lib/immediate';
+import { CAPTURE_ARGS_OP } from '@glimmer/runtime/lib/compiled/opcodes/component';
 import {
-  VM_BIND_DYNAMIC_SCOPE_OP,
-  VM_CAPTURE_ARGS_OP,
-  VM_CURRY_OP,
-  VM_DUP_OP,
-  VM_DYNAMIC_HELPER_OP,
-  VM_FETCH_OP,
-  VM_HELPER_OP,
-  VM_POP_DYNAMIC_SCOPE_OP,
-  VM_POP_OP,
-  VM_PRIMITIVE_OP,
-  VM_PRIMITIVE_REFERENCE_OP,
-  VM_PUSH_DYNAMIC_SCOPE_OP,
-} from '@glimmer/constants/lib/syscall-ops';
+  CURRY_OP,
+  DYNAMIC_HELPER_OP,
+  HELPER_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/expressions';
+import {
+  BIND_DYNAMIC_SCOPE_OP,
+  DUP_OP,
+  FETCH_OP,
+  POP_DYNAMIC_SCOPE_OP,
+  POP_OP,
+  PRIMITIVE_OP,
+  PRIMITIVE_REFERENCE_OP,
+  PUSH_DYNAMIC_SCOPE_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/vm';
 import { VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants/lib/vm-ops';
 import { $fp, $v0 } from '@glimmer/vm/lib/registers';
 
@@ -37,7 +39,7 @@ export interface CompileHelper {
  */
 export function PushPrimitiveReference(op: PushExpressionOp, value: Primitive): void {
   PushPrimitive(op, value);
-  op(VM_PRIMITIVE_REFERENCE_OP);
+  op(PRIMITIVE_REFERENCE_OP);
 }
 
 /**
@@ -52,7 +54,7 @@ export function PushPrimitive(op: PushExpressionOp, primitive: Primitive): void 
     p = isSmallInt(p) ? encodeImmediate(p) : nonSmallIntOperand(p);
   }
 
-  op(VM_PRIMITIVE_OP, p);
+  op(PRIMITIVE_OP, p);
 }
 
 /**
@@ -71,9 +73,9 @@ export function Call(
 ): void {
   op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
-  op(VM_HELPER_OP, handle);
+  op(HELPER_OP, handle);
   op(VM_POP_FRAME_OP);
-  op(VM_FETCH_OP, $v0);
+  op(FETCH_OP, $v0);
 }
 
 /**
@@ -91,17 +93,17 @@ export function CallDynamic(
 ): void {
   op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
-  op(VM_DUP_OP, $fp, 1);
-  op(VM_DYNAMIC_HELPER_OP);
+  op(DUP_OP, $fp, 1);
+  op(DYNAMIC_HELPER_OP);
   if (append) {
-    op(VM_FETCH_OP, $v0);
+    op(FETCH_OP, $v0);
     append();
     op(VM_POP_FRAME_OP);
-    op(VM_POP_OP, 1);
+    op(POP_OP, 1);
   } else {
     op(VM_POP_FRAME_OP);
-    op(VM_POP_OP, 1);
-    op(VM_FETCH_OP, $v0);
+    op(POP_OP, 1);
+    op(FETCH_OP, $v0);
   }
 }
 
@@ -114,10 +116,10 @@ export function CallDynamic(
  * @param block a function that returns a list of statements to evaluate
  */
 export function DynamicScope(op: PushStatementOp, names: string[], block: () => void): void {
-  op(VM_PUSH_DYNAMIC_SCOPE_OP);
-  op(VM_BIND_DYNAMIC_SCOPE_OP, names);
+  op(PUSH_DYNAMIC_SCOPE_OP);
+  op(BIND_DYNAMIC_SCOPE_OP, names);
   block();
-  op(VM_POP_DYNAMIC_SCOPE_OP);
+  op(POP_DYNAMIC_SCOPE_OP);
 }
 
 export function Curry(
@@ -129,9 +131,9 @@ export function Curry(
 ): void {
   op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
-  op(VM_CAPTURE_ARGS_OP);
+  op(CAPTURE_ARGS_OP);
   expr(op, definition);
-  op(VM_CURRY_OP, type, isStrictMode());
+  op(CURRY_OP, type, isStrictMode());
   op(VM_POP_FRAME_OP);
-  op(VM_FETCH_OP, $v0);
+  op(FETCH_OP, $v0);
 }

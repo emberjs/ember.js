@@ -6,7 +6,6 @@ import type {
   Nullable,
   Optional,
   RuntimeOp,
-  SomeVmOp,
   VmMachineOp,
   VmOp,
 } from '@glimmer/interfaces';
@@ -42,6 +41,20 @@ export type Operand3 = number;
 export type Syscall = (vm: VM, opcode: RuntimeOp) => void;
 export type MachineOpcode = (vm: LowLevelVM, opcode: RuntimeOp) => void;
 
+export interface SyscallHandler<Name extends VmOp = VmOp> {
+  readonly type: Name;
+  readonly evaluate: Syscall;
+}
+
+/**
+ * Wraps a syscall handler with its opcode number. Nothing is registered here.
+ * The encoder registers the handler when a template pushes it, so an opcode
+ * that no template uses is dropped by the bundler.
+ */
+export function syscall<Name extends VmOp>(type: Name, evaluate: Syscall): SyscallHandler<Name> {
+  return { type, evaluate };
+}
+
 export type Evaluate =
   | { syscall: true; evaluate: Syscall }
   | { syscall: false; evaluate: MachineOpcode };
@@ -63,7 +76,7 @@ export class AppendOpcodes {
   // This code is intentionally putting unsafe `null`s into the array that it
   // will intentionally overwrite before anyone can see them.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  private evaluateOpcode: Evaluate[] = new Array(VM_SYSCALL_SIZE).fill(null);
+  private evaluateOpcode: Array<Evaluate | null> = new Array(VM_SYSCALL_SIZE).fill(null);
 
   declare debugBefore?: (vm: DebugVmSnapshot, opcode: RuntimeOp) => DebugState;
   declare debugAfter?: (debug: DebugVmSnapshot, pre: DebugState) => void;
@@ -170,21 +183,24 @@ export class AppendOpcodes {
     }
   }
 
-  add<Name extends VmOp>(name: Name, evaluate: Syscall): void;
-  add<Name extends VmMachineOp>(name: Name, evaluate: MachineOpcode, kind: 'machine'): void;
-  add<Name extends SomeVmOp>(
-    name: Name,
-    evaluate: Syscall | MachineOpcode,
-    kind = 'syscall'
-  ): void {
-    this.evaluateOpcode[name as number] = {
-      syscall: kind !== 'machine',
-      evaluate,
-    } as Evaluate;
+  /**
+   * Registers a handler the first time an encoder pushes its opcode. Later
+   * calls for the same opcode are no-ops, so import order does not matter.
+   */
+  register(handler: SyscallHandler): void {
+    if (this.evaluateOpcode[handler.type] === null) {
+      this.evaluateOpcode[handler.type] = { syscall: true, evaluate: handler.evaluate };
+    }
   }
 
   evaluate(vm: VM, opcode: RuntimeOp, type: number) {
-    let operation = unwrap(this.evaluateOpcode[type]);
+    let operation = this.evaluateOpcode[type];
+
+    if (!operation) {
+      throw new Error(
+        `BUG: no handler registered for opcode ${type}. The compile-time code that emitted this opcode must push its SyscallHandler instead of a bare number.`
+      );
+    }
 
     if (operation.syscall) {
       assert(
