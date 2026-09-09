@@ -245,6 +245,44 @@ export class RenderDocumentFragmentSuite extends RenderTest {
   }
 
   @test
+  'nodes added to the fragment while it is rendered join the content when the region is removed'() {
+    const fragment = document.createDocumentFragment();
+
+    this.render(
+      '<div>{{#if this.show}}{{this.fragment}}{{/if}}</div>' +
+        '{{#in-element this.fragment}}[{{this.foo}}]{{/in-element}}',
+      { fragment, show: true, foo: 'kept' }
+    );
+
+    this.assertHTML('<div><!---->[kept]<!----></div><!---->');
+
+    // A user should not do this 🙈
+    fragment.appendChild(paragraph('added'));
+
+    this.assertHTML('<div><!---->[kept]<!----></div><!---->');
+    this.assert.strictEqual(
+      fragment.childNodes.length,
+      1,
+      'the user-added node stays in the fragment'
+    );
+
+    this.rerender({ show: false });
+    this.assertHTML('<div><!----></div><!---->');
+    this.assert.strictEqual(
+      fragment.textContent,
+      'added[kept]',
+      'the rendered content is returned after the added node'
+    );
+
+    this.rerender({ show: true });
+    this.assertHTML('<div><!----><p>added</p>[kept]<!----></div><!---->');
+    this.assert.strictEqual(fragment.childNodes.length, 0, 'the fragment is empty again');
+
+    this.rerender({ foo: 'updated' });
+    this.assertHTML('<div><!----><p>added</p>[updated]<!----></div><!---->');
+  }
+
+  @test
   'the same nodes come back after the region is removed and rendered again'() {
     const fragment = document.createDocumentFragment();
 
