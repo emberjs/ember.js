@@ -39,6 +39,12 @@ export class RehydratingCursor extends CursorImpl {
   candidate: Nullable<SimpleNode> = null;
   openBlockDepth: number;
   injectedOmittedNode = false;
+  /**
+   * The node where this cursor's container ends. It is `null` for an element,
+   * whose children end at the end of the element. A fragment region shares its
+   * parent with the nodes after it, so its container ends at its close marker.
+   */
+  boundary: Nullable<SimpleNode> = null;
   constructor(
     element: SimpleElement | SimpleDocumentFragment,
     nextSibling: Nullable<SimpleNode>,
@@ -174,9 +180,9 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     let current: Nullable<SimpleNode> = candidate;
     const currentCursor = this.currentCursor;
     if (currentCursor !== null) {
-      const openBlockDepth = currentCursor.openBlockDepth;
+      const { openBlockDepth, boundary } = currentCursor;
       if (openBlockDepth >= currentCursor.startingBlockDepth) {
-        while (current) {
+        while (current !== null && current !== boundary) {
           if (isCloseBlock(current)) {
             const closeBlockDepth = getBlockDepthWithOffset(current, this.startingBlockOffset);
             if (openBlockDepth >= closeBlockDepth) {
@@ -186,7 +192,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
           current = this.remove(current);
         }
       } else {
-        while (current !== null) {
+        while (current !== null && current !== boundary) {
           current = this.remove(current);
         }
       }
@@ -582,6 +588,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     const nextSibling = insertBefore ?? region.insertionPoint();
     const cursor = new RehydratingCursor(parent, nextSibling, this.blockDepth);
 
+    cursor.boundary = region.lastNode();
     this.cursors.push(cursor);
 
     if (marker === null) {
