@@ -41,20 +41,15 @@ export interface LastNode {
   lastNode(): SimpleNode;
 }
 
-class First {
-  constructor(private node: SimpleNode) {}
-
-  firstNode(): SimpleNode {
-    return this.node;
-  }
-}
-
-class Last {
-  constructor(private node: SimpleNode) {}
-
-  lastNode(): SimpleNode {
-    return this.node;
-  }
+/** Resolve a block edge for debug output without throwing mid-build. */
+function debugEdge(
+  node: Nullable<SimpleNode>,
+  block: Nullable<Bounds>,
+  which: 'first' | 'last'
+): Nullable<SimpleNode> {
+  if (node !== null) return node;
+  if (block === null) return null;
+  return (block as FirstNode & LastNode).debug?.[which]() ?? null;
 }
 
 export class Fragment implements Bounds {
@@ -401,8 +396,13 @@ export class AppendingBlockImpl implements AppendingBlock {
 
   [DESTROYABLE_META_KEY]: object | undefined;
 
-  protected first: Nullable<FirstNode> = null;
-  protected last: Nullable<LastNode> = null;
+  // A block's edge is either a node it appended, or a nested block whose own
+  // edges are not known until it finishes building. Keeping the two apart keeps
+  // both fields monomorphic; `clear` reads them for every bounds it removes.
+  protected first: Nullable<SimpleNode> = null;
+  protected firstBlock: Nullable<Bounds> = null;
+  protected last: Nullable<SimpleNode> = null;
+  protected lastBlock: Nullable<Bounds> = null;
   protected nesting = 0;
 
   constructor(private parent: SimpleElement) {
@@ -410,8 +410,8 @@ export class AppendingBlockImpl implements AppendingBlock {
 
     if (LOCAL_DEBUG) {
       this.debug = {
-        first: () => this.first?.debug?.first() ?? null,
-        last: () => this.last?.debug?.last() ?? null,
+        first: () => debugEdge(this.first, this.firstBlock, 'first'),
+        last: () => debugEdge(this.last, this.lastBlock, 'last'),
       };
     }
   }
@@ -421,21 +421,25 @@ export class AppendingBlockImpl implements AppendingBlock {
   }
 
   firstNode(): SimpleNode {
-    let first = expect(
-      this.first,
-      'cannot call `firstNode()` while `AppendingBlock` is still initializing'
-    );
+    let first = this.first;
 
-    return first.firstNode();
+    if (first !== null) return first;
+
+    return expect(
+      this.firstBlock,
+      'cannot call `firstNode()` while `AppendingBlock` is still initializing'
+    ).firstNode();
   }
 
   lastNode(): SimpleNode {
-    let last = expect(
-      this.last,
-      'cannot call `lastNode()` while `AppendingBlock` is still initializing'
-    );
+    let last = this.last;
 
-    return last.lastNode();
+    if (last !== null) return last;
+
+    return expect(
+      this.lastBlock,
+      'cannot call `lastNode()` while `AppendingBlock` is still initializing'
+    ).lastNode();
   }
 
   openElement(element: SimpleElement) {
@@ -450,25 +454,27 @@ export class AppendingBlockImpl implements AppendingBlock {
   didAppendNode(node: SimpleNode) {
     if (this.nesting !== 0) return;
 
-    if (!this.first) {
-      this.first = new First(node);
+    if (this.first === null && this.firstBlock === null) {
+      this.first = node;
     }
 
-    this.last = new Last(node);
+    this.last = node;
+    this.lastBlock = null;
   }
 
   didAppendBounds(bounds: Bounds) {
     if (this.nesting !== 0) return;
 
-    if (!this.first) {
-      this.first = bounds;
+    if (this.first === null && this.firstBlock === null) {
+      this.firstBlock = bounds;
     }
 
-    this.last = bounds;
+    this.lastBlock = bounds;
+    this.last = null;
   }
 
   finalize(stack: TreeBuilder) {
-    if (this.first === null) {
+    if (this.first === null && this.firstBlock === null) {
       stack.appendComment('');
     }
   }
@@ -523,7 +529,9 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
     let nextSibling = clear(this);
 
     this.first = null;
+    this.firstBlock = null;
     this.last = null;
+    this.lastBlock = null;
     this.nesting = 0;
 
     return nextSibling;
