@@ -24,7 +24,6 @@ import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
 import type { DynamicAttribute } from './attributes/dynamic';
 
@@ -90,9 +89,13 @@ export class NewTreeBuilder implements TreeBuilder {
   public operations: Nullable<ElementOperations> = null;
   private env: Environment;
 
-  readonly cursors = new Stack<Cursor>();
-  private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
-  private blockStack = new Stack<AppendingBlock>();
+  // Slots above `cursorDepth` are retained and reused, because opening an
+  // element is one of the most frequent operations the VM performs. Subclasses
+  // that need a richer cursor push their own through `pushCursor`.
+  readonly cursors: CursorImpl[] = [];
+  protected cursorDepth = -1;
+  private modifierStack: Nullable<ModifierInstance[]>[] = [];
+  private blockStack: AppendingBlock[] = [];
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
@@ -116,9 +119,9 @@ export class NewTreeBuilder implements TreeBuilder {
 
     if (LOCAL_DEBUG) {
       this.debug = () => ({
-        blocks: this.blockStack.snapshot(),
+        blocks: [...this.blockStack],
         constructing: this.constructing,
-        cursors: this.cursors.snapshot(),
+        cursors: this.cursors.slice(0, this.cursorDepth + 1),
       });
     }
   }
@@ -129,30 +132,34 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   debugBlocks(): AppendingBlock[] {
-    return this.blockStack.toArray();
+    return this.blockStack;
   }
 
   get element(): SimpleElement {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    return this.cursors.current!.element;
+    return this.cursors[this.cursorDepth]!.element;
   }
 
   get nextSibling(): Nullable<SimpleNode> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    return this.cursors.current!.nextSibling;
+    return this.cursors[this.cursorDepth]!.nextSibling;
+  }
+
+  protected get currentCursor(): Nullable<CursorImpl> {
+    return this.cursors[this.cursorDepth] ?? null;
   }
 
   get hasBlocks() {
-    return this.blockStack.size > 0;
+    return this.blockStack.length > 0;
   }
 
   protected block(): AppendingBlock {
-    return expect(this.blockStack.current, 'Expected a current live block');
+    return expect(this.blockStack.at(-1), 'Expected a current live block');
   }
 
   popElement() {
-    this.cursors.pop();
-    expect(this.cursors.current, "can't pop past the last element");
+    this.cursorDepth--;
+    assert(this.cursorDepth >= 0, "can't pop past the last element");
   }
 
   pushAppendingBlock(): AppendingBlock {
@@ -168,9 +175,9 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   protected pushBlock<T extends AppendingBlock>(block: T, isRemote = false): T {
-    let current = this.blockStack.current;
+    let current = this.blockStack.at(-1);
 
-    if (current !== null) {
+    if (current !== undefined) {
       if (!isRemote) {
         current.didAppendBounds(block);
       }
@@ -263,7 +270,20 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
-    this.cursors.push(new CursorImpl(element, nextSibling));
+    let depth = ++this.cursorDepth;
+    let existing = this.cursors[depth];
+
+    if (existing === undefined) {
+      this.cursors[depth] = new CursorImpl(element, nextSibling);
+    } else {
+      existing.element = element;
+      existing.nextSibling = nextSibling ?? null;
+    }
+  }
+
+  /** Store a subclass-built cursor. Unlike `pushElement`, this cannot reuse a slot. */
+  pushCursor(cursor: CursorImpl): void {
+    this.cursors[++this.cursorDepth] = cursor;
   }
 
   private pushModifiers(modifiers: Nullable<ModifierInstance[]>): void {
@@ -271,7 +291,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   private popModifiers(): Nullable<ModifierInstance[]> {
-    return this.modifierStack.pop();
+    return this.modifierStack.pop() ?? null;
   }
 
   didAppendBounds(bounds: Bounds): Bounds {

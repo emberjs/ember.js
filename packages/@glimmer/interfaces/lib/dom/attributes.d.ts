@@ -1,6 +1,5 @@
 import type { Maybe, Nullable } from '../core.js';
 import type { ElementOperations, Environment, ModifierInstance } from '../runtime.js';
-import type { Stack } from '../stack.js';
 import type { Bounds, Cursor } from './bounds.js';
 import type { GlimmerTreeChanges, GlimmerTreeConstruction } from './changes.js';
 import type {
@@ -90,7 +89,7 @@ export interface TreeOperations {
 }
 
 export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
-  readonly cursors: Stack<Cursor>;
+  readonly cursors: readonly Cursor[];
   readonly debug?: () => {
     blocks: AppendingBlock[];
     constructing: Nullable<SimpleElement>;
