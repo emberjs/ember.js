@@ -11,6 +11,7 @@ import type {
   ResettableBlock,
   Scope,
   SimpleComment,
+  Tag,
   UpdatingOpcode,
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
@@ -24,7 +25,13 @@ import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { debug } from '@glimmer/validator/lib/debug';
-import { resetTracking } from '@glimmer/validator/lib/tracking';
+import {
+  beginTrackFrame,
+  consumeTag,
+  endTrackFrame,
+  resetTracking,
+} from '@glimmer/validator/lib/tracking';
+import { INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
@@ -75,10 +82,12 @@ export class UpdatingVM implements IUpdatingVM {
     this.try(opcodes, handler);
 
     while (!frameStack.isEmpty()) {
-      let opcode = this.frame.nextStatement();
+      let frame = this.frame;
+      let opcode = frame.nextStatement();
 
       if (opcode === undefined) {
         frameStack.pop();
+        frame.finish();
         continue;
       }
 
@@ -94,10 +103,19 @@ export class UpdatingVM implements IUpdatingVM {
     this.frame.goto(index);
   }
 
-  try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>) {
-    this.frameStack.push(new UpdatingVMFrame(ops, handler));
+  try(
+    ops: UpdatingOpcode[],
+    handler: Nullable<ExceptionHandler>,
+    block: Nullable<BlockOpcode> = null
+  ) {
+    this.frameStack.push(new UpdatingVMFrame(ops, handler, block));
   }
 
+  /*
+   * The handler re-renders its block with the append VM, and that render ends
+   * the block's tracking frame itself when it exits the block. So the frame is
+   * popped without `finish()`.
+   */
   throw() {
     this.frame.handleException();
     this.frameStack.pop();
@@ -111,10 +129,22 @@ export interface VMState {
   readonly stack: unknown[];
 }
 
+/*
+ * Every block records the combined tag of what its render consumed, the same
+ * way a component cache group does. While that tag validates, the updating VM
+ * skips the block's children, so a list of unchanged rows costs one validation
+ * per row instead of one per dynamic reference.
+ *
+ * Introduction and background in https://github.com/emberjs/ember.js/pull/21596
+ */
 export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   [DESTROYABLE_META_KEY]: object | undefined;
 
   public children: UpdatingOpcode[];
+
+  /** Combined tag of everything consumed during the last render or update of this block. */
+  private tag: Tag | null = null;
+  private lastRevision = INITIAL;
 
   protected readonly bounds: AppendingBlock;
 
@@ -141,7 +171,31 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   }
 
   evaluate(vm: UpdatingVM) {
-    vm.try(this.children, null);
+    let { tag } = this;
+
+    if (tag !== null && !vm.alwaysRevalidate && validateTag(tag, this.lastRevision)) {
+      consumeTag(tag);
+      return;
+    }
+
+    beginTrackFrame();
+    this.evaluateChildren(vm);
+  }
+
+  protected evaluateChildren(vm: UpdatingVM) {
+    vm.try(this.children, null, this);
+  }
+
+  /**
+   * Called when the block's tracking frame ends: from the append VM when the
+   * block exits, and from the updating VM when the block's frame finishes.
+   */
+  didExit() {
+    let tag = endTrackFrame();
+
+    this.tag = tag;
+    this.lastRevision = valueForTag(tag);
+    consumeTag(tag);
   }
 }
 
@@ -150,8 +204,8 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   declare protected bounds: ResettableBlock; // Shadows property on base class
 
-  override evaluate(vm: UpdatingVM) {
-    vm.try(this.children, this);
+  protected override evaluateChildren(vm: UpdatingVM) {
+    vm.try(this.children, this, this);
   }
 
   handleException() {
@@ -170,7 +224,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
     let result = vm.execute((vm) => {
       vm.updateWith(this);
-      vm.pushUpdating(children);
+      vm.resumeBlock(this, children);
     });
 
     associateDestroyableChild(this, result.drop);
@@ -227,7 +281,7 @@ export class ListBlockOpcode extends BlockOpcode {
     this.opcodeMap.set(opcode.key, opcode);
   }
 
-  override evaluate(vm: UpdatingVM) {
+  protected override evaluateChildren(vm: UpdatingVM) {
     let iterator = valueForRef(this.iterableRef);
 
     if (this.lastIterator !== iterator) {
@@ -249,7 +303,7 @@ export class ListBlockOpcode extends BlockOpcode {
     }
 
     // Run now-updated updating opcodes
-    super.evaluate(vm);
+    super.evaluateChildren(vm);
   }
 
   private sync(iterator: OpaqueIterator) {
@@ -431,8 +485,15 @@ class UpdatingVMFrame {
 
   constructor(
     private ops: UpdatingOpcode[],
-    private exceptionHandler: Nullable<ExceptionHandler>
+    private exceptionHandler: Nullable<ExceptionHandler>,
+    private block: Nullable<BlockOpcode>
   ) {}
+
+  finish() {
+    if (this.block !== null) {
+      this.block.didExit();
+    }
+  }
 
   goto(index: number) {
     this.current = index;
