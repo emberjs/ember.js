@@ -278,6 +278,14 @@ export const CURRENT_TAG = new CurrentTag();
 
 export const combine = MonomorphicTagImpl.combine;
 
+/** How many tags `tag` combines: 0 for the constant tag, 1 for a plain tag. */
+export function combinationSize(tag: Tag): number {
+  if (tag === CONSTANT_TAG) return 0;
+  if (tag[TYPE] !== COMBINATOR_TAG_ID) return 1;
+
+  return ((tag as MonomorphicTagImpl).subtag as Tag[]).length;
+}
+
 /**
  * Whether `tag` is the combination of exactly `tags`, in order. Used to reuse
  * a combinator tag when a tracking frame consumed the same tags again, which

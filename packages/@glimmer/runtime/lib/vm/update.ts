@@ -31,7 +31,12 @@ import {
   endTrackFrame,
   resetTracking,
 } from '@glimmer/validator/lib/tracking';
-import { INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import {
+  combinationSize,
+  INITIAL,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator/lib/validators';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
@@ -130,12 +135,15 @@ export interface VMState {
 }
 
 /*
- * A block with two or more updating opcodes records the combined tag of what
- * its render consumed, the same way a component cache group does. While that
- * tag validates, the updating VM skips the block's children, so a list of
- * unchanged rows costs one validation per row instead of one per dynamic
- * reference. A block with fewer opcodes is not guarded: skipping one opcode
- * never saves more than the validation it costs.
+ * A block records the combined tag of what its render consumed, the same way
+ * a component cache group does. While that tag validates, the updating VM
+ * skips the block's children, so a list of unchanged rows costs one
+ * validation per row instead of one per dynamic reference.
+ *
+ * A guard only pays when it skips more work than its own validation. A block
+ * with one opcode, or with fewer than three consumed tags, is not guarded: a
+ * condition plus one component cache group is the common two-tag shape, and
+ * the group already guards itself.
  *
  * Introduction and background in https://github.com/emberjs/ember.js/pull/21596
  */
@@ -218,16 +226,22 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   didExit() {
     let tag = endTrackFrame(this.tag);
 
-    if (this.children.length < 2) {
-      this.tag = null;
-    } else {
+    if (this.shouldGuard(tag)) {
       this.tag = tag;
       this.lastRevision = valueForTag(tag);
+    } else {
+      this.tag = null;
     }
 
     consumeTag(tag);
   }
+
+  protected shouldGuard(tag: Tag): boolean {
+    return this.children.length >= 2 && combinationSize(tag) >= GUARD_MIN_TAGS;
+  }
 }
+
+const GUARD_MIN_TAGS = 3;
 
 export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   public type = 'try';
@@ -310,6 +324,15 @@ export class ListBlockOpcode extends BlockOpcode {
   ) {
     super(state, context, bounds, children);
     this.lastIterator = valueForRef(iterableRef);
+  }
+
+  /**
+   * The list re-syncs whenever its iterable changes, and each item guards
+   * itself, so a guard on the whole list would walk every item's tag for no
+   * gain when the iterable changed.
+   */
+  protected override shouldGuard(): boolean {
+    return false;
   }
 
   initializeChild(opcode: ListItemOpcode) {
