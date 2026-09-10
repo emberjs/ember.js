@@ -284,7 +284,7 @@ export class AssertFilter<T, U> implements UpdatingOpcode {
 }
 
 export class JumpIfNotModifiedOpcode implements UpdatingOpcode {
-  private tag: Tag = CONSTANT_TAG;
+  tag: Tag = CONSTANT_TAG;
   private lastRevision: Revision = INITIAL;
   private target?: number;
 
@@ -321,7 +321,8 @@ export class EndTrackFrameOpcode implements UpdatingOpcode {
   constructor(private target: JumpIfNotModifiedOpcode) {}
 
   evaluate() {
-    let tag = endTrackFrame();
-    this.target.didModify(tag);
+    let { target } = this;
+    let tag = endTrackFrame(target.tag);
+    target.didModify(tag);
   }
 }
