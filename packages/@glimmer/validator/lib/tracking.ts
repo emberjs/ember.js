@@ -5,7 +5,14 @@ import type { Revision } from './validators';
 
 import { debug } from './debug';
 import { unwrap } from './utils';
-import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './validators';
+import {
+  combine,
+  CONSTANT_TAG,
+  isCombinationOf,
+  isConstTag,
+  validateTag,
+  valueForTag,
+} from './validators';
 
 /**
  * An object that tracks @tracked properties that were consumed.
@@ -57,11 +64,21 @@ class Tracker {
     }
   }
 
-  combine(): Tag {
+  /**
+   * `previous` is the tag this frame produced last time. When the frame
+   * consumed the same tags again, it is returned as is.
+   */
+  combine(previous: Tag | null): Tag {
     let { set } = this;
 
     if (set !== null) {
-      return combine(Array.from(set));
+      let tags = Array.from(set);
+
+      if (previous !== null && isCombinationOf(previous, tags)) {
+        return previous;
+      }
+
+      return combine(tags);
     }
 
     let { tags } = this;
@@ -70,6 +87,8 @@ class Tracker {
       return CONSTANT_TAG;
     } else if (tags.length === 1) {
       return this.last as Tag;
+    } else if (previous !== null && isCombinationOf(previous, tags)) {
+      return previous;
     } else {
       return combine(tags.slice());
     }
@@ -122,7 +141,12 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
   }
 }
 
-export function endTrackFrame(): Tag {
+/**
+ * Close the current frame and return its combined tag. Pass the tag the same
+ * frame produced last time to get it back unchanged when the consumed tags
+ * did not change.
+ */
+export function endTrackFrame(previous: Tag | null = null): Tag {
   let current = CURRENT_TRACKER;
 
   if (DEBUG) {
@@ -135,7 +159,7 @@ export function endTrackFrame(): Tag {
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  return unwrap(current).combine();
+  return unwrap(current).combine(previous);
 }
 
 export function beginUntrackFrame(): void {

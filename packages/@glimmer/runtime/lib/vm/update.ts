@@ -130,10 +130,12 @@ export interface VMState {
 }
 
 /*
- * Every block records the combined tag of what its render consumed, the same
- * way a component cache group does. While that tag validates, the updating VM
- * skips the block's children, so a list of unchanged rows costs one validation
- * per row instead of one per dynamic reference.
+ * A block with two or more updating opcodes records the combined tag of what
+ * its render consumed, the same way a component cache group does. While that
+ * tag validates, the updating VM skips the block's children, so a list of
+ * unchanged rows costs one validation per row instead of one per dynamic
+ * reference. A block with fewer opcodes is not guarded: skipping one opcode
+ * never saves more than the validation it costs.
  *
  * Introduction and background in https://github.com/emberjs/ember.js/pull/21596
  */
@@ -142,7 +144,10 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
 
   public children: UpdatingOpcode[];
 
-  /** Combined tag of everything consumed during the last render or update of this block. */
+  /**
+   * Combined tag of everything consumed during the last render or update of
+   * this block, or null when the block is not guarded.
+   */
   private tag: Tag | null = null;
   private lastRevision = INITIAL;
 
@@ -173,28 +178,53 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   evaluate(vm: UpdatingVM) {
     let { tag } = this;
 
-    if (tag !== null && !vm.alwaysRevalidate && validateTag(tag, this.lastRevision)) {
+    if (tag === null) {
+      this.evaluateChildren(vm, null);
+      return;
+    }
+
+    if (!vm.alwaysRevalidate && validateTag(tag, this.lastRevision)) {
       consumeTag(tag);
       return;
     }
 
     beginTrackFrame();
-    this.evaluateChildren(vm);
+    this.evaluateChildren(vm, this);
   }
 
-  protected evaluateChildren(vm: UpdatingVM) {
-    vm.try(this.children, null, this);
+  /**
+   * `framed` is this block when a tracking frame is open for it, and the
+   * updating VM then closes the frame through `didExit` when the block's
+   * opcodes are done.
+   */
+  protected evaluateChildren(vm: UpdatingVM, framed: Nullable<BlockOpcode>) {
+    vm.try(this.children, null, framed);
+  }
+
+  /**
+   * Whether the block's tracking frame is open. The append VM always opens one
+   * before it enters a block; the updating VM opens one only for a guarded
+   * block, and a re-render of an unguarded block opens its own.
+   */
+  protected get framed(): boolean {
+    return this.tag !== null;
   }
 
   /**
    * Called when the block's tracking frame ends: from the append VM when the
-   * block exits, and from the updating VM when the block's frame finishes.
+   * block exits, and from the updating VM when a guarded block's frame
+   * finishes. Decides whether the block stays guarded.
    */
   didExit() {
-    let tag = endTrackFrame();
+    let tag = endTrackFrame(this.tag);
 
-    this.tag = tag;
-    this.lastRevision = valueForTag(tag);
+    if (this.children.length < 2) {
+      this.tag = null;
+    } else {
+      this.tag = tag;
+      this.lastRevision = valueForTag(tag);
+    }
+
     consumeTag(tag);
   }
 }
@@ -204,8 +234,8 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   declare protected bounds: ResettableBlock; // Shadows property on base class
 
-  protected override evaluateChildren(vm: UpdatingVM) {
-    vm.try(this.children, this, this);
+  protected override evaluateChildren(vm: UpdatingVM, framed: Nullable<BlockOpcode>) {
+    vm.try(this.children, this, framed);
   }
 
   handleException() {
@@ -214,6 +244,12 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
       bounds,
       context: { env },
     } = this;
+
+    // The re-render exits the block through the append VM, which closes one
+    // frame; an unguarded block has none open yet.
+    if (!this.framed) {
+      beginTrackFrame();
+    }
 
     destroyChildren(this);
 
@@ -281,7 +317,7 @@ export class ListBlockOpcode extends BlockOpcode {
     this.opcodeMap.set(opcode.key, opcode);
   }
 
-  protected override evaluateChildren(vm: UpdatingVM) {
+  protected override evaluateChildren(vm: UpdatingVM, framed: Nullable<BlockOpcode>) {
     let iterator = valueForRef(this.iterableRef);
 
     if (this.lastIterator !== iterator) {
@@ -303,7 +339,7 @@ export class ListBlockOpcode extends BlockOpcode {
     }
 
     // Run now-updated updating opcodes
-    super.evaluateChildren(vm);
+    super.evaluateChildren(vm, framed);
   }
 
   private sync(iterator: OpaqueIterator) {
