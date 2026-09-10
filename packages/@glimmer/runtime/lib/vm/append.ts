@@ -85,19 +85,15 @@ class Stacks {
 
     if (LOCAL_DEBUG) {
       this.debug = (): DebugStacks => ({
-        scope: [...this.scope],
-        dynamicScope: [...this.dynamicScope],
-        updating: [...this.updating],
-        cache: [...this.cache],
-        list: [...this.list],
-        destroyable: [...this.destroyable],
+        scope: Array.from(this.scope),
+        dynamicScope: Array.from(this.dynamicScope),
+        updating: Array.from(this.updating),
+        cache: Array.from(this.cache),
+        list: Array.from(this.list),
+        destroyable: Array.from(this.destroyable),
       });
     }
   }
-}
-
-function top<T>(stack: T[]): T | undefined {
-  return stack[stack.length - 1];
 }
 
 type Handle = number;
@@ -676,7 +672,7 @@ export class VM {
   }
 
   private listBlock(): ListBlockOpcode {
-    return expect(top(this.#stacks.list), 'expected a list block');
+    return expect(this.#stacks.list.at(-1), 'expected a list block');
   }
 
   /**
@@ -687,13 +683,13 @@ export class VM {
    * @utility
    */
   associateDestroyable(child: Destroyable): void {
-    let parent = expect(top(this.#stacks.destroyable), 'Expected destructor parent');
+    let parent = expect(this.#stacks.destroyable.at(-1), 'Expected destructor parent');
     associateDestroyableChild(parent, child);
   }
 
   private updating(): UpdatingOpcode[] {
     return expect(
-      top(this.#stacks.updating),
+      this.#stacks.updating.at(-1),
       'expected updating opcode on the updating opcode stack'
     );
   }
@@ -709,7 +705,7 @@ export class VM {
    * Get current Scope
    */
   scope(): Scope {
-    return expect(top(this.#stacks.scope), 'expected scope on the scope stack');
+    return expect(this.#stacks.scope.at(-1), 'expected scope on the scope stack');
   }
 
   /**
@@ -717,7 +713,7 @@ export class VM {
    */
   dynamicScope(): DynamicScope {
     return expect(
-      top(this.#stacks.dynamicScope),
+      this.#stacks.dynamicScope.at(-1),
       'expected dynamic scope on the dynamic scope stack'
     );
   }
