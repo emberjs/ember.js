@@ -8,36 +8,75 @@ import { unwrap } from './utils';
 import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './validators';
 
 /**
- * An object that that tracks @tracked properties that were consumed.
+ * An object that tracks @tracked properties that were consumed.
+ *
+ * Trackers are pooled by frame depth (see `beginTrackFrame`), so a tracker
+ * must not keep any reference to a previous frame's tags after `reset()`, and
+ * `combine()` must copy its list before handing it to a tag.
  */
 class Tracker {
-  private tags = new Set<Tag>();
+  /** Consumed tags, deduplicated by a linear scan while the frame is small. */
+  private tags: Tag[] = [];
+  /** Takes over from `tags` once a frame consumes more than a handful of tags. */
+  private set: Set<Tag> | null = null;
   private last: Tag | null = null;
+
+  reset(): void {
+    this.tags.length = 0;
+    this.set = null;
+    this.last = null;
+  }
 
   add(tag: Tag) {
     if (tag === CONSTANT_TAG) return;
-
-    this.tags.add(tag);
 
     if (DEBUG) {
       unwrap(debug.markTagAsConsumed)(tag);
     }
 
     this.last = tag;
+
+    let { set } = this;
+
+    if (set !== null) {
+      set.add(tag);
+      return;
+    }
+
+    let { tags } = this;
+
+    for (let i = 0; i < tags.length; i++) {
+      if (tags[i] === tag) return;
+    }
+
+    if (tags.length < SMALL_FRAME) {
+      tags.push(tag);
+    } else {
+      set = this.set = new Set(tags);
+      set.add(tag);
+    }
   }
 
   combine(): Tag {
+    let { set } = this;
+
+    if (set !== null) {
+      return combine(Array.from(set));
+    }
+
     let { tags } = this;
 
-    if (tags.size === 0) {
+    if (tags.length === 0) {
       return CONSTANT_TAG;
-    } else if (tags.size === 1) {
+    } else if (tags.length === 1) {
       return this.last as Tag;
     } else {
-      return combine(Array.from(this.tags));
+      return combine(tags.slice());
     }
   }
 }
+
+const SMALL_FRAME = 16;
 
 /**
  * Whenever a tracked computed property is entered, the current tracker is
@@ -56,10 +95,27 @@ let CURRENT_TRACKER: Tracker | null = null;
 
 const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 
+/**
+ * Frames are strictly nested, so the tracker for a frame at depth `n` is free
+ * again as soon as that frame ends. One tracker per depth is enough, and no
+ * frame allocates a tracker after the first time its depth is reached.
+ */
+const TRACKER_POOL: Tracker[] = [];
+
 export function beginTrackFrame(debuggingContext?: string | false): void {
+  let depth = OPEN_TRACK_FRAMES.length;
+
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
 
-  CURRENT_TRACKER = new Tracker();
+  let tracker = TRACKER_POOL[depth];
+
+  if (tracker === undefined) {
+    tracker = TRACKER_POOL[depth] = new Tracker();
+  } else {
+    tracker.reset();
+  }
+
+  CURRENT_TRACKER = tracker;
 
   if (DEBUG) {
     unwrap(debug.beginTrackingTransaction)(debuggingContext);
