@@ -87,7 +87,11 @@ export class UpdatingVM implements IUpdatingVM {
 
       if (opcode === undefined) {
         frameStack.pop();
-        frame.finish();
+
+        if (frame.block !== null) {
+          frame.block.didExit();
+        }
+
         continue;
       }
 
@@ -130,10 +134,15 @@ export interface VMState {
 }
 
 /*
- * Every block records the combined tag of what its render consumed, the same
- * way a component cache group does. While that tag validates, the updating VM
- * skips the block's children, so a list of unchanged rows costs one validation
- * per row instead of one per dynamic reference.
+ * A block records the combined tag of what its render consumed, the same way
+ * a component cache group does. While that tag validates, the updating VM
+ * skips the block's children, so a list of unchanged rows costs one
+ * validation per row instead of one per dynamic reference.
+ *
+ * A guard only pays when it skips more work than its own validation. A block
+ * with one opcode, or with fewer than three consumed tags, is not guarded: a
+ * condition plus one component cache group is the common two-tag shape, and
+ * the group already guards itself.
  *
  * Introduction and background in https://github.com/emberjs/ember.js/pull/21596
  */
@@ -142,9 +151,14 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
 
   public children: UpdatingOpcode[];
 
-  /** Combined tag of everything consumed during the last render or update of this block. */
-  private tag: Tag | null = null;
-  private lastRevision = INITIAL;
+  /**
+   * Combined tag of everything consumed during the last render or update of
+   * this block, or null when the block is not guarded.
+   */
+  protected tag: Tag | null = null;
+  protected lastRevision = INITIAL;
+  /** Updates evaluated without a guard since the guard was dropped. */
+  protected unguarded = 0;
 
   protected readonly bounds: AppendingBlock;
 
@@ -170,29 +184,65 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
     return this.bounds.lastNode();
   }
 
+  /**
+   * An unguarded block costs what it did before guards existed: one frame
+   * push. A guarded block validates first, and opens a tracking frame that
+   * the updating VM closes through `didExit` when the block's opcodes are done.
+   */
   evaluate(vm: UpdatingVM) {
     let { tag } = this;
 
-    if (tag !== null && !vm.alwaysRevalidate && validateTag(tag, this.lastRevision)) {
+    if (tag === null) {
+      if (this.rearm()) {
+        beginTrackFrame();
+        vm.try(this.children, null, this);
+      } else {
+        vm.try(this.children, null, null);
+      }
+      return;
+    }
+
+    if (!vm.alwaysRevalidate && validateTag(tag, this.lastRevision)) {
       consumeTag(tag);
       return;
     }
 
-    beginTrackFrame();
-    this.evaluateChildren(vm);
+    // A block that changed is likely to change again, and a guard on it only
+    // costs. Drop it without a frame; `rearm` opens one later.
+    this.tag = null;
+    vm.try(this.children, null, null);
   }
 
-  protected evaluateChildren(vm: UpdatingVM) {
-    vm.try(this.children, null, this);
+  /**
+   * A dropped guard comes back after a few unguarded updates, so a block
+   * that changed once and then stayed still is skipped again, while a block
+   * that changes on every update pays for one frame in every few.
+   */
+  protected rearm(): boolean {
+    if (++this.unguarded < REARM_AFTER) return false;
+
+    this.unguarded = 0;
+    return true;
+  }
+
+  /**
+   * Whether the block's tracking frame is open. The append VM always opens one
+   * before it enters a block; the updating VM opens one when it validates a
+   * guard or re-arms one, and a re-render of a dropped block opens its own.
+   */
+  protected get framed(): boolean {
+    return this.tag !== null;
   }
 
   /**
    * Called when the block's tracking frame ends: from the append VM when the
-   * block exits, and from the updating VM when the block's frame finishes.
+   * block exits, and from the updating VM when a guarded block's frame
+   * finishes. Decides whether the block stays guarded.
    */
   didExit() {
-    let tag = endTrackFrame();
+    let tag = endTrackFrame(this.tag);
 
+    this.unguarded = 0;
     this.tag = tag;
     this.lastRevision = valueForTag(tag);
     consumeTag(tag);
@@ -204,8 +254,26 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   declare protected bounds: ResettableBlock; // Shadows property on base class
 
-  protected override evaluateChildren(vm: UpdatingVM) {
-    vm.try(this.children, this, this);
+  override evaluate(vm: UpdatingVM) {
+    let { tag } = this;
+
+    if (tag === null) {
+      if (this.rearm()) {
+        beginTrackFrame();
+        vm.try(this.children, this, this);
+      } else {
+        vm.try(this.children, this, null);
+      }
+      return;
+    }
+
+    if (!vm.alwaysRevalidate && validateTag(tag, this.lastRevision)) {
+      consumeTag(tag);
+      return;
+    }
+
+    this.tag = null;
+    vm.try(this.children, this, null);
   }
 
   handleException() {
@@ -214,6 +282,12 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
       bounds,
       context: { env },
     } = this;
+
+    // The re-render exits the block through the append VM, which closes one
+    // frame; a dropped guard has none open.
+    if (!this.framed) {
+      beginTrackFrame();
+    }
 
     destroyChildren(this);
 
@@ -281,7 +355,7 @@ export class ListBlockOpcode extends BlockOpcode {
     this.opcodeMap.set(opcode.key, opcode);
   }
 
-  protected override evaluateChildren(vm: UpdatingVM) {
+  override evaluate(vm: UpdatingVM) {
     let iterator = valueForRef(this.iterableRef);
 
     if (this.lastIterator !== iterator) {
@@ -303,7 +377,7 @@ export class ListBlockOpcode extends BlockOpcode {
     }
 
     // Run now-updated updating opcodes
-    super.evaluateChildren(vm);
+    vm.try(this.children, null, null);
   }
 
   private sync(iterator: OpaqueIterator) {
@@ -480,20 +554,16 @@ export class ListBlockOpcode extends BlockOpcode {
   }
 }
 
+const REARM_AFTER = 8;
+
 class UpdatingVMFrame {
   private current = 0;
 
   constructor(
     private ops: UpdatingOpcode[],
     private exceptionHandler: Nullable<ExceptionHandler>,
-    private block: Nullable<BlockOpcode>
+    readonly block: Nullable<BlockOpcode>
   ) {}
-
-  finish() {
-    if (this.block !== null) {
-      this.block.didExit();
-    }
-  }
 
   goto(index: number) {
     this.current = index;

@@ -283,14 +283,14 @@ export const combine = MonomorphicTagImpl.combine;
  * a combinator tag when a tracking frame consumed the same tags again, which
  * keeps its memoized revision and avoids the allocation.
  */
-export function isCombinationOf(tag: Tag, tags: Tag[]): boolean {
+export function isCombinationOf(tag: Tag, tags: (Tag | null)[], size: number): boolean {
   if (tag[TYPE] !== COMBINATOR_TAG_ID) return false;
 
   let subtags = (tag as MonomorphicTagImpl).subtag as Tag[];
 
-  if (subtags.length !== tags.length) return false;
+  if (subtags.length !== size) return false;
 
-  for (let i = 0; i < tags.length; i++) {
+  for (let i = 0; i < size; i++) {
     if (subtags[i] !== tags[i]) return false;
   }
 

@@ -86,7 +86,7 @@ class Tracker {
     if (set !== null) {
       let tags = Array.from(set);
 
-      if (previous !== null && isCombinationOf(previous, tags)) {
+      if (previous !== null && isCombinationOf(previous, tags, tags.length)) {
         return previous;
       }
 
@@ -101,13 +101,11 @@ class Tracker {
       return this.last as Tag;
     }
 
-    let live = tags.slice(0, size) as Tag[];
-
-    if (previous !== null && isCombinationOf(previous, live)) {
+    if (previous !== null && isCombinationOf(previous, tags, size)) {
       return previous;
     }
 
-    return combine(live);
+    return combine(tags.slice(0, size) as Tag[]);
   }
 }
 
