@@ -4,7 +4,8 @@ import { set, get, computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component, htmlSafe } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent, htmlSafe } from '../../utils/helpers';
 
 moduleFor(
   'Helpers test: {{mut}}',
@@ -16,7 +17,7 @@ moduleFor(
         'component:bottom-mut',
         setComponentTemplate(
           precompileTemplate('{{this.setMe}}'),
-          class extends Component {
+          class extends EmberComponent {
             didInsertElement() {
               bottom = this;
             }
@@ -28,7 +29,7 @@ moduleFor(
         'component:middle-mut',
         setComponentTemplate(
           precompileTemplate('{{bottom-mut setMe=this.value}}'),
-          class extends Component {}
+          class extends EmberComponent {}
         )
       );
 
@@ -66,7 +67,7 @@ moduleFor(
         'component:bottom-mut',
         setComponentTemplate(
           precompileTemplate('{{this.setMe}}'),
-          class extends Component {
+          class extends EmberComponent {
             didInsertElement() {
               bottom = this;
             }
@@ -78,7 +79,7 @@ moduleFor(
         'component:middle-mut',
         setComponentTemplate(
           precompileTemplate('{{bottom-mut setMe=(mut this.value)}}'),
-          class extends Component {
+          class extends EmberComponent {
             didInsertElement() {
               middle = this;
             }
@@ -120,7 +121,7 @@ moduleFor(
     ['@test passing a literal results in a assertion']() {
       this.owner.register(
         'component:bottom-mut',
-        setComponentTemplate(precompileTemplate('{{this.setMe}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{@setMe}}'), class extends Component {})
       );
 
       expectAssertion(() => {
@@ -131,7 +132,7 @@ moduleFor(
     ['@test passing the result of a helper invocation results in an assertion']() {
       this.owner.register(
         'component:bottom-mut',
-        setComponentTemplate(precompileTemplate('{{this.setMe}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{@setMe}}'), class extends Component {})
       );
 
       expectAssertion(() => {
@@ -147,7 +148,7 @@ moduleFor(
         'component:bottom-mut',
         setComponentTemplate(
           precompileTemplate('{{this.stuff}}'),
-          class extends Component {
+          class extends EmberComponent {
             didInsertElement() {
               bottom = this;
             }
@@ -159,7 +160,7 @@ moduleFor(
         'component:middle-mut',
         setComponentTemplate(
           precompileTemplate('{{bottom-mut stuff=this.value}}'),
-          class extends Component {}
+          class extends EmberComponent {}
         )
       );
 
@@ -180,7 +181,7 @@ moduleFor(
         'component:bottom-mut',
         setComponentTemplate(
           precompileTemplate('{{this.setMe}}'),
-          class extends Component {
+          class extends EmberComponent {
             didInsertElement() {
               bottom = this;
             }
@@ -192,7 +193,7 @@ moduleFor(
         'component:middle-mut',
         setComponentTemplate(
           precompileTemplate('{{bottom-mut setMe=(readonly this.value)}}'),
-          class extends Component {
+          class extends EmberComponent {
             didInsertElement() {
               middle = this;
             }
@@ -270,7 +271,7 @@ moduleFor(
         'component:bottom-mut',
         setComponentTemplate(
           precompileTemplate('{{this.setMe}}'),
-          class extends Component {
+          class extends EmberComponent {
             willRender() {
               willRender.push(get(this, 'setMe'));
             }
@@ -286,7 +287,7 @@ moduleFor(
         'component:middle-mut',
         setComponentTemplate(
           precompileTemplate('{{bottom-mut setMe=(mut this.value)}}'),
-          class extends Component {}
+          class extends EmberComponent {}
         )
       );
 
@@ -328,7 +329,7 @@ moduleFor(
         'component:bottom-mut',
         setComponentTemplate(
           precompileTemplate('{{this.thingy}}'),
-          class extends Component {
+          class extends EmberComponent {
             thingy = null;
             didInsertElement() {
               bottom = this;
@@ -341,7 +342,7 @@ moduleFor(
         'component:middle-mut',
         setComponentTemplate(
           precompileTemplate('{{bottom-mut thingy=(mut this.val)}}'),
-          class extends Component {
+          class extends EmberComponent {
             baseValue = 12;
             @computed('baseValue')
             get val() {
@@ -388,7 +389,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('{{this.foo}}'),
-          class extends Component {
+          class extends EmberComponent {
             didInsertElement() {
               inner = this;
             }
@@ -400,7 +401,7 @@ moduleFor(
         'component:x-outer',
         setComponentTemplate(
           precompileTemplate('{{x-inner foo=this.bar}}'),
-          class extends Component {}
+          class extends EmberComponent {}
         )
       );
 
@@ -428,7 +429,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('{{@model}}'),
-          class extends Component {
+          class extends EmberComponent {
             didInsertElement() {
               inner = this;
             }
@@ -440,7 +441,7 @@ moduleFor(
         'component:x-outer',
         setComponentTemplate(
           precompileTemplate('{{x-inner model=this.nonexistent}}'),
-          class extends Component {}
+          class extends EmberComponent {}
         )
       );
 
@@ -468,7 +469,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('hello{{@model}}'),
-          class extends Component {
+          class extends EmberComponent {
             didInsertElement() {
               inner = this;
             }
@@ -485,7 +486,7 @@ moduleFor(
             // course immutable.
             '{{x-inner model=this.x}}'
           ),
-          class extends Component {}
+          class extends EmberComponent {}
         )
       );
 
@@ -516,7 +517,7 @@ moduleFor(
 
       this.owner.register(
         'component:x-input',
-        class extends Component {
+        class extends EmberComponent {
           didInsertElement() {
             input = this;
           }
@@ -527,7 +528,7 @@ moduleFor(
         'component:x-output',
         setComponentTemplate(
           precompileTemplate('{{this.height}}'),
-          class extends Component {
+          class extends EmberComponent {
             attributeBindings = ['style'];
             didInsertElement() {
               output = this;
@@ -589,7 +590,7 @@ moduleFor(
 
       this.owner.register(
         'component:x-input',
-        class extends Component {
+        class extends EmberComponent {
           didInsertElement() {
             input = this;
           }
@@ -600,7 +601,7 @@ moduleFor(
         'component:x-output',
         setComponentTemplate(
           precompileTemplate('{{this.width}}x{{this.height}}'),
-          class extends Component {
+          class extends EmberComponent {
             attributeBindings = ['style'];
             didInsertElement() {
               output = this;
