@@ -33,7 +33,12 @@ import { inTransaction } from '@glimmer/runtime/lib/environment';
 import { renderMain } from '@glimmer/runtime/lib/render';
 import { dict } from '@glimmer/util/lib/collections';
 import { unwrapTemplate } from './component-managers/unwrap-template';
-import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type {
+  SimpleDocument,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+} from '@simple-dom/interface';
 import type Component from './component';
 import type ClassicComponent from './component';
 import { BOUNDS } from './component-managers/curly';
@@ -354,7 +359,7 @@ export class Renderer extends BaseRenderer {
   }
 
   getBounds(component: View): {
-    parentElement: SimpleElement;
+    parentElement: SimpleElement | SimpleDocumentFragment;
     firstNode: SimpleNode;
     lastNode: SimpleNode;
   } {
@@ -362,7 +367,7 @@ export class Renderer extends BaseRenderer {
 
     assert('object passed to getBounds must have the BOUNDS symbol as a property', bounds);
 
-    let parentElement = bounds.parentElement();
+    let parentElement = bounds.parentNode();
     let firstNode = bounds.firstNode();
     let lastNode = bounds.lastNode();
 

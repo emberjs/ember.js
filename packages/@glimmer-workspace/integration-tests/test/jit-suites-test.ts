@@ -5,9 +5,11 @@ import {
   GlimmerishComponents,
   HasBlockParamsHelperSuite,
   HasBlockSuite,
+  InElementDocumentFragmentSuite,
   InElementSuite,
   jitComponentSuite,
   jitSuite,
+  RenderDocumentFragmentSuite,
   ScopeSuite,
   ShadowingSuite,
   TemplateOnlyComponents,
@@ -18,6 +20,8 @@ import {
 jitComponentSuite(DebuggerSuite);
 jitSuite(EachSuite);
 jitSuite(InElementSuite);
+jitSuite(InElementDocumentFragmentSuite);
+jitSuite(RenderDocumentFragmentSuite);
 
 jitComponentSuite(GlimmerishComponents);
 jitComponentSuite(TemplateOnlyComponents);
