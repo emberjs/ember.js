@@ -32,7 +32,6 @@ import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { createIteratorItemRef } from '@glimmer/reference/lib/iterable';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
 import { reverse } from '@glimmer/util/lib/array-utils';
-import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { LOCAL_LOGGER } from '@glimmer/util';
 import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
 import { $pc, isLowLevelRegister } from '@glimmer/vm/lib/registers';
@@ -64,16 +63,20 @@ class Drop {
   [DESTROYABLE_META_KEY]: object | undefined;
 }
 
+/**
+ * A VM is constructed for every block that re-renders independently, one per
+ * `{{#each}}` item included, so these are arrays rather than wrapper objects.
+ */
 class Stacks {
   declare debug?: () => DebugStacks;
   readonly drop: object = new Drop();
 
-  readonly scope = new Stack<Scope>();
-  readonly dynamicScope = new Stack<DynamicScope>();
-  readonly updating = new Stack<UpdatingOpcode[]>();
-  readonly cache = new Stack<JumpIfNotModifiedOpcode>();
-  readonly list = new Stack<ListBlockOpcode>();
-  readonly destroyable = new Stack<object>();
+  readonly scope: Scope[] = [];
+  readonly dynamicScope: DynamicScope[] = [];
+  readonly updating: UpdatingOpcode[][] = [];
+  readonly cache: JumpIfNotModifiedOpcode[] = [];
+  readonly list: ListBlockOpcode[] = [];
+  readonly destroyable: object[] = [];
 
   constructor(scope: Scope, dynamicScope: DynamicScope) {
     this.scope.push(scope);
@@ -81,16 +84,14 @@ class Stacks {
     this.destroyable.push(this.drop);
 
     if (LOCAL_DEBUG) {
-      this.debug = (): DebugStacks => {
-        return {
-          scope: this.scope.snapshot(),
-          dynamicScope: this.dynamicScope.snapshot(),
-          updating: this.updating.snapshot(),
-          cache: this.cache.snapshot(),
-          list: this.list.snapshot(),
-          destroyable: this.destroyable.snapshot(),
-        };
-      };
+      this.debug = (): DebugStacks => ({
+        scope: Array.from(this.scope),
+        dynamicScope: Array.from(this.dynamicScope),
+        updating: Array.from(this.updating),
+        cache: Array.from(this.cache),
+        list: Array.from(this.list),
+        destroyable: Array.from(this.destroyable),
+      });
     }
   }
 }
@@ -671,7 +672,7 @@ export class VM {
   }
 
   private listBlock(): ListBlockOpcode {
-    return expect(this.#stacks.list.current, 'expected a list block');
+    return expect(this.#stacks.list.at(-1), 'expected a list block');
   }
 
   /**
@@ -682,13 +683,13 @@ export class VM {
    * @utility
    */
   associateDestroyable(child: Destroyable): void {
-    let parent = expect(this.#stacks.destroyable.current, 'Expected destructor parent');
+    let parent = expect(this.#stacks.destroyable.at(-1), 'Expected destructor parent');
     associateDestroyableChild(parent, child);
   }
 
   private updating(): UpdatingOpcode[] {
     return expect(
-      this.#stacks.updating.current,
+      this.#stacks.updating.at(-1),
       'expected updating opcode on the updating opcode stack'
     );
   }
@@ -704,7 +705,7 @@ export class VM {
    * Get current Scope
    */
   scope(): Scope {
-    return expect(this.#stacks.scope.current, 'expected scope on the scope stack');
+    return expect(this.#stacks.scope.at(-1), 'expected scope on the scope stack');
   }
 
   /**
@@ -712,7 +713,7 @@ export class VM {
    */
   dynamicScope(): DynamicScope {
     return expect(
-      this.#stacks.dynamicScope.current,
+      this.#stacks.dynamicScope.at(-1),
       'expected dynamic scope on the dynamic scope stack'
     );
   }
@@ -775,38 +776,42 @@ export class VM {
 
     if (initialize) initialize(this);
 
-    let result: RichIteratorResult<null, RenderResult>;
+    let { lowlevel } = this;
 
-    do result = this.next();
-    while (!result.done);
+    for (
+      let opcode = lowlevel.nextStatement();
+      opcode !== null;
+      opcode = lowlevel.nextStatement()
+    ) {
+      lowlevel.evaluateOuter(opcode, this);
+    }
 
-    return result.value;
+    return this.#finish();
   }
 
   next(): RichIteratorResult<null, RenderResult> {
-    let { env } = this;
     let opcode = this.lowlevel.nextStatement();
-    let result: RichIteratorResult<null, RenderResult>;
-    if (opcode !== null) {
-      this.lowlevel.evaluateOuter(opcode, this);
-      result = { done: false, value: null };
-    } else {
-      // Unload the stack
-      this.stack.reset();
 
-      result = {
-        done: true,
-        value: new RenderResultImpl(
-          env,
-          this.popUpdating(),
-          this.#tree.popBlock(),
-          this.#stacks.drop
-        ),
-      };
-    }
-    return result;
+    if (opcode === null) return { done: true, value: this.#finish() };
+
+    this.lowlevel.evaluateOuter(opcode, this);
+    return NOT_DONE;
+  }
+
+  #finish(): RenderResult {
+    // Unload the stack
+    this.stack.reset();
+
+    return new RenderResultImpl(
+      this.env,
+      this.popUpdating(),
+      this.#tree.popBlock(),
+      this.#stacks.drop
+    );
   }
 }
+
+const NOT_DONE: RichIteratorResult<null, never> = { done: false, value: null };
 
 function closureState(pc: number, scope: Scope, dynamicScope: DynamicScope): ClosureState {
   return {
