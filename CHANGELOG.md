@@ -1,5 +1,11 @@
 # Ember Changelog
 
+## v7.4.0-beta.1 (September 14, 2026)
+
+- [#21586](https://github.com/emberjs/ember.js/pull/21586) Update browser support per Ember's browser support policy (RFC #685). Support is now Support is now Chrome >= 109, Edge >= 149 Firefox >= 121, Safari >= 16.6, ChromeAndroid >= 151, FirefoxAndroid >= 153
+- [#21536](https://github.com/emberjs/ember.js/pull/21536) [DOC] Document the `key` option for `{{#each-in}}`
+- [#21571](https://github.com/emberjs/ember.js/pull/21571) Improve batch rendering performance by moving VM blocks out of the DESTRYABLE_META
+
 ## v7.3.0 (September 14, 2026)
 
 - [#21471](https://github.com/emberjs/ember.js/pull/21471) [FEATURE] Overload tracked to be able to work outside of classes per [RFC #1071](https://rfcs.emberjs.com/id/1071-overload-tracked-for-non-class-use/).
