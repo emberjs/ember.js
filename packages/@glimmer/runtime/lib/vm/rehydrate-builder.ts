@@ -11,7 +11,6 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import type { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants/lib/dom';
 import { castToBrowser, castToSimple } from '@glimmer/debug-util/lib/simple-cast';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
@@ -42,7 +41,7 @@ export class RehydratingCursor extends CursorImpl {
 
 export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   private unmatchedAttributes: Nullable<SimpleAttr[]> = null;
-  declare cursors: Stack<RehydratingCursor>; // Hides property on base class
+  declare cursors: RehydratingCursor[]; // Narrows property on base class
   blockDepth = 0;
   startingBlockOffset: number;
 
@@ -91,8 +90,8 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     }
   }
 
-  get currentCursor(): Nullable<RehydratingCursor> {
-    return this.cursors.current;
+  override get currentCursor(): Nullable<RehydratingCursor> {
+    return this.cursors[this.cursorDepth] ?? null;
   }
 
   get candidate(): Nullable<SimpleNode> {
@@ -156,7 +155,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       this.candidate = element.nextSibling;
     }
 
-    this.cursors.push(cursor);
+    this.pushCursor(cursor);
   }
 
   // clears until the end of the current container
@@ -486,7 +485,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     }
 
     const cursor = new RehydratingCursor(element, null, this.blockDepth);
-    this.cursors.push(cursor);
+    this.pushCursor(cursor);
 
     if (marker === null) {
       this.disableRehydration(insertBefore);
