@@ -112,6 +112,21 @@ export function isTracking(): boolean {
   return CURRENT_TRACKER !== null;
 }
 
+/**
+ * How many tracking frames are currently open.
+ *
+ * A caller that opens a frame and closes it somewhere else -- rather than
+ * in the same function -- cannot assume the frame it opened is still the
+ * innermost one by the time it gets to close it, because an unwind in
+ * between can leave frames open. Recording this before `beginTrackFrame`
+ * lets such a caller tell "my frame is on top" from "something in between
+ * leaked", and unwind to a known depth instead of closing a frame that
+ * belongs to somebody else.
+ */
+export function trackFrameDepth(): number {
+  return OPEN_TRACK_FRAMES.length;
+}
+
 export function consumeTag(tag: Tag): void {
   if (CURRENT_TRACKER !== null) {
     CURRENT_TRACKER.add(tag);
