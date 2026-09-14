@@ -225,42 +225,31 @@ class IteratorWrapper implements OpaqueIterator {
 }
 
 class ArrayIterator implements OpaqueIterator {
-  private current: { kind: 'empty' } | { kind: 'first'; value: unknown } | { kind: 'progress' };
-  private pos = 0;
+  private pos = -1;
+
+  // The constructor runs inside the iterator reference's tracking frame, so
+  // reading `length` here is what attributes a tracked collection's tag to that
+  // reference. Read it from `next()` instead and the list stops revalidating.
+  private length: number;
 
   constructor(
     private iterator: unknown[] | readonly unknown[],
     private keyFor: KeyFor
   ) {
-    if (iterator.length === 0) {
-      this.current = { kind: 'empty' };
-    } else {
-      this.current = { kind: 'first', value: iterator[this.pos] };
-    }
+    this.length = iterator.length;
   }
 
   isEmpty(): boolean {
-    return this.current.kind === 'empty';
+    return this.length === 0;
   }
 
   next(): Nullable<IterationItem<unknown, number>> {
-    let value: unknown;
+    let memo = ++this.pos;
 
-    let current = this.current;
-    if (current.kind === 'first') {
-      this.current = { kind: 'progress' };
-      value = current.value;
-    } else if (this.pos >= this.iterator.length - 1) {
-      return null;
-    } else {
-      value = this.iterator[++this.pos];
-    }
+    if (memo >= this.length) return null;
 
-    let { keyFor } = this;
+    let value = this.iterator[memo];
 
-    let key = keyFor(value, this.pos);
-    let memo = this.pos;
-
-    return { key, value, memo };
+    return { key: this.keyFor(value, memo), value, memo };
   }
 }
