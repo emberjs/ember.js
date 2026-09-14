@@ -1,6 +1,7 @@
-import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleNode } from '@simple-dom/interface';
 
 import type { Bounds } from '../dom/bounds.js';
+import type { SimpleParentNode } from '../dom/simple.js';
 import type { Arguments, CapturedArguments } from './arguments.js';
 
 export type RenderNodeType =
@@ -25,7 +26,7 @@ export interface CapturedRenderNode {
   args: Arguments;
   instance: unknown;
   bounds: null | {
-    parentElement: SimpleElement;
+    parentElement: SimpleParentNode;
     firstNode: SimpleNode;
     lastNode: SimpleNode;
   };
