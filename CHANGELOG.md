@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v7.3.0-beta.1 (August 9, 2026)
+## v7.3.0 (September 14, 2026)
 
 - [#21471](https://github.com/emberjs/ember.js/pull/21471) [FEATURE] Overload tracked to be able to work outside of classes per [RFC #1071](https://rfcs.emberjs.com/id/1071-overload-tracked-for-non-class-use/).
 - [#21203](https://github.com/emberjs/ember.js/pull/21203) [BUGFIX] Fix `@model` becomes `undefined` or changes to the wrong route's model during Glimmer component willDestroy
@@ -10,7 +10,9 @@
 - [#21410](https://github.com/emberjs/ember.js/pull/21410) [BUGFIX] Fix query param redirects during active transitions
 - [#21521](https://github.com/emberjs/ember.js/pull/21521) [BUGFIX] Treat nullish LinkTo @query as an empty query object
 - [#21524](https://github.com/emberjs/ember.js/pull/21524) [BUGFIX] Allow CoreObject#init to be called with no arguments
+- [#21591](https://github.com/emberjs/ember.js/pull/21591) [BUGFIX] Destroy dynamic modifiers that were set after the initial render to fix a memory leak.
 - [#21523](https://github.com/emberjs/ember.js/pull/21523) [DOC] Document Set and Map support for {{each}} and {{each-in}}
+- [#21573](https://github.com/emberjs/ember.js/pull/21573) [DOC] Fix link to @ember/helper from Ember.Templates.helpers docs
 - [#21451](https://github.com/emberjs/ember.js/pull/21451) Block prototype traversal in set-path pollution guard
 - [#21456](https://github.com/emberjs/ember.js/pull/21456) Set sideEffects: false in package.json so that tree-shaking optimizes away unused ember-source code (hello-world is 42.5% smaller)
 - [#21462](https://github.com/emberjs/ember.js/pull/21462) Refactor so that small apps don't pull in the old renderer as well as some classic things
