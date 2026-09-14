@@ -15,8 +15,10 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import EmberObject from '@ember/object';
-import EmberArray, { type NativeArray } from '@ember/array';
-import MutableArray from '@ember/array/mutable';
+import type EmberArray from '@ember/array';
+import type { NativeArray } from '@ember/array';
+import type MutableArray from '@ember/array/mutable';
+import { InternalEmberArray, InternalMutableArray } from '@ember/array/index-internal';
 import { assert } from '@ember/debug';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
@@ -330,7 +332,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
       assert(
         `ArrayProxy expects a native Array, EmberArray, or ArrayProxy, but you passed ${typeof arrangedContent}`,
         (function (arr: unknown): arr is EmberArray<unknown> {
-          return Array.isArray(arr) || EmberArray.detect(arr);
+          return Array.isArray(arr) || InternalEmberArray.detect(arr);
         })(arrangedContent)
       );
       assert(
@@ -412,7 +414,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   }
 }
 
-ArrayProxy.reopen(MutableArray, {
+ArrayProxy.reopen(InternalMutableArray, {
   arrangedContent: alias('content'),
 });
 

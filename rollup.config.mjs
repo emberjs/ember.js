@@ -525,6 +525,16 @@ function pruneEmptyBundles() {
   };
 }
 
+// Mixins that Ember deprecates but still uses internally exist twice: a public
+// copy that emits the deprecation, and an internal copy that applies silently.
+// The internal copies are an implementation detail, so they are kept out of
+// `renamed-modules` rather than being advertised as importable module paths.
+// Matches `foo-internal.js` and `-internal.js`, but deliberately not the
+// long-standing `-internals.js` modules, which stay listed.
+function isInternalCopy(name) {
+  return /(^|\/|-)internal\.js$/.test(name);
+}
+
 function packageMeta() {
   return {
     name: 'package-meta',
@@ -535,7 +545,8 @@ function packageMeta() {
             (name) =>
               name.startsWith('packages/') &&
               !name.startsWith('packages/shared-chunks/') &&
-              name.endsWith('.js')
+              name.endsWith('.js') &&
+              !isInternalCopy(name)
           )
           .sort()
           .map((name) => {

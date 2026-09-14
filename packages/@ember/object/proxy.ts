@@ -3,7 +3,8 @@
 */
 
 import { FrameworkObject } from '@ember/object/-internals';
-import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
+import type _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
+import InternalProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy-internal';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 /**
@@ -132,6 +133,6 @@ class ObjectProxy<Content = unknown> extends FrameworkObject {
     );
   }
 }
-ObjectProxy.PrototypeMixin.reopen(_ProxyMixin);
+ObjectProxy.PrototypeMixin.reopen(InternalProxyMixin);
 
 export default ObjectProxy;
