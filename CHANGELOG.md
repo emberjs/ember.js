@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v7.2.1 (September 14, 2026)
+
+- [#21591](https://github.com/emberjs/ember.js/pull/21591) [BUGFIX] Destroy dynamic modifiers that were set after the initial render to fix a memory leak. 
+
 ## v7.2.0 (August 9, 2026)
 
 - [#21303](https://github.com/emberjs/ember.js/pull/21303) [FEATURE] Build in a default Strict Resolver, an opt-in replacement for `ember-resolver` per [RFC #1132](https://rfcs.emberjs.com/id/1132-default-strict-resolver).
