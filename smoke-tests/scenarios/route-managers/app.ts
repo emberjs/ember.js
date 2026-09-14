@@ -136,10 +136,9 @@ __ROUTES__
   };
 
   class ReactiveBucket {
-    constructor(name, route, invokable) {
+    constructor(name, route) {
       this.name = name;
       this.route = route;
-      this.invokable = invokable;
     }
   }
 
@@ -151,7 +150,7 @@ __ROUTES__
     }
 
     createRoute(RouteClass, { name }) {
-      return new ReactiveBucket(name, new RouteClass(this.owner), ROUTES[name]);
+      return new ReactiveBucket(name, new RouteClass(this.owner));
     }
 
     getDestroyable() {
@@ -174,7 +173,7 @@ __ROUTES__
     didExit() {}
 
     async getInvokable(bucket) {
-      return bucket.invokable;
+      return ROUTES[bucket.name];
     }
   }
 `;
@@ -196,7 +195,7 @@ __ROUTES__
     }
 
     createRoute(RouteClass, { name }) {
-      return new FunkyBucket(name, new RouteClass(this.owner), ROUTES[name]);
+      return new FunkyBucket(name, new RouteClass(this.owner));
     }
 
     getDestroyable() {
@@ -220,7 +219,7 @@ __ROUTES__
     didExit() {}
 
     async getInvokable(bucket) {
-      return bucket.invokable;
+      return ROUTES[bucket.name];
     }
   }
 `;
@@ -231,10 +230,9 @@ const FUNKY_OUTLET = `
   import { on } from '@ember/modifier';
 
   export class FunkyBucket {
-    constructor(name, route, invokable) {
+    constructor(name, route) {
       this.name = name;
       this.route = route;
-      this.invokable = invokable;
     }
   }
 

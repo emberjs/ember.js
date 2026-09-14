@@ -123,10 +123,9 @@ v1AppScenarios
             };
 
             class PioneerBucket {
-              constructor(name, route, invokable) {
+              constructor(name, route) {
                 this.name = name;
                 this.route = route;
-                this.invokable = invokable;
               }
             }
 
@@ -138,7 +137,7 @@ v1AppScenarios
               }
 
               createRoute(RouteClass, { name }) {
-                return new PioneerBucket(name, new RouteClass(this.owner), ROUTES[name]);
+                return new PioneerBucket(name, new RouteClass(this.owner));
               }
 
               getDestroyable() {
@@ -167,7 +166,7 @@ v1AppScenarios
               didExit() {}
 
               async getInvokable(bucket) {
-                return bucket.invokable;
+                return ROUTES[bucket.name];
               }
             }
           `,
