@@ -1,8 +1,7 @@
-import type { DebugOp, SomeDisassembledOperand } from '@glimmer/debug/lib/debug';
+import type { DebugOp } from '@glimmer/debug/lib/debug';
 import type {
   DebugVmSnapshot,
   Dict,
-  Maybe,
   Nullable,
   Optional,
   RuntimeOp,
@@ -12,7 +11,7 @@ import type {
 } from '@glimmer/interfaces';
 import { VM_SYSCALL_SIZE } from '@glimmer/constants/lib/syscall-ops';
 import { DebugLogger } from '@glimmer/debug/lib/render/logger';
-import { debugOp, describeOp, describeOpcode } from '@glimmer/debug/lib/debug';
+import { debugOp, describeOp } from '@glimmer/debug/lib/debug';
 import { frag } from '@glimmer/debug/lib/render/fragment';
 import { opcodeMetadata } from '@glimmer/debug/lib/opcode-metadata';
 import { recordStackSize } from '@glimmer/debug/lib/stack-check';
@@ -53,7 +52,6 @@ export type DebugState = {
     size: number;
   };
   closeGroup?: undefined | (() => void);
-  params?: Optional<Dict<SomeDisassembledOperand>>;
   op?: Optional<DebugOp>;
   debug: DebugVmSnapshot;
   snapshot: VmSnapshot;
@@ -78,7 +76,6 @@ export class AppendOpcodes {
         } as const;
 
         let snapshot = new VmSnapshot(opcodeSnapshot, debug);
-        let params: Maybe<Dict<SomeDisassembledOperand>> = undefined;
         let op: DebugOp | undefined = undefined;
         let closeGroup: (() => void) | undefined;
 
@@ -107,7 +104,6 @@ export class AppendOpcodes {
         return {
           op,
           closeGroup,
-          params,
           opcode: opcodeSnapshot,
           debug,
           snapshot,
@@ -134,7 +130,7 @@ export class AppendOpcodes {
         ) {
           throw new Error(
             `Error in ${pre.op?.name}:\n\n${pre.debug.registers[$pc]}. ${
-              pre.op ? describeOpcode(pre.op.name, pre.params) : unwrap(opcodeMetadata(type)).name
+              pre.op?.name ?? unwrap(opcodeMetadata(type)).name
             }\n\nStack changed by ${actualChange}, expected ${meta.stackChange}`
           );
         }

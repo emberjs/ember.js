@@ -3,11 +3,10 @@ import type {
   CompilationContext,
   Dict,
   Nullable,
-  Optional,
   Program,
   RuntimeOp,
 } from '@glimmer/interfaces';
-import { exhausted, expect, unreachable } from '@glimmer/debug-util/lib/platform-utils';
+import { expect, unreachable } from '@glimmer/debug-util/lib/platform-utils';
 import { LOCAL_DEBUG, LOCAL_SUBTLE_LOGGING, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { enumerate } from '@glimmer/util/lib/array-utils';
 import { LOCAL_LOGGER } from '@glimmer/util';
@@ -59,123 +58,6 @@ export function logOpcodeSlice(context: CompilationContext, start: number, end: 
     }
     opcode.offset = -_size;
     LOCAL_LOGGER.groupEnd();
-  }
-}
-
-export function describeOpcode(
-  type: string,
-  params: Optional<Dict<SomeDisassembledOperand>>
-): string | void {
-  if (LOCAL_DEBUG) {
-    let out = type;
-
-    if (params) {
-      let args = Object.entries(params)
-        .map(([p, v]) => ` ${p}=${jsonify(v)}`)
-        .join('');
-      out += args;
-    }
-    return `(${out})`;
-  }
-}
-
-function stringify(value: number, type: 'constant' | 'variable' | 'pc'): string;
-function stringify(value: RegisterName, type: 'register'): string;
-function stringify(value: DisassembledOperand['value'], type: 'stringify' | 'unknown'): string;
-function stringify(
-  value: unknown,
-  type: 'stringify' | 'constant' | 'register' | 'variable' | 'pc' | 'unknown'
-) {
-  switch (type) {
-    case 'stringify':
-      return JSON.stringify(value);
-    case 'constant':
-      return stringify(value, 'unknown');
-    case 'register':
-      return value;
-    case 'variable':
-      return `{$fp+${value}}`;
-    case 'pc':
-      return `@${value}`;
-    case 'unknown': {
-      switch (typeof value) {
-        case 'function':
-          return '<function>';
-        case 'number':
-        case 'string':
-        case 'bigint':
-        case 'boolean':
-          return JSON.stringify(value);
-        case 'symbol':
-          return String(value);
-        case 'undefined':
-          return 'undefined';
-        case 'object': {
-          if (value === null) return 'null';
-          if (Array.isArray(value)) return `<array[${value.length}]>`;
-
-          let name = value.constructor.name;
-
-          switch (name) {
-            case 'Error':
-            case 'RangeError':
-            case 'ReferenceError':
-            case 'SyntaxError':
-            case 'TypeError':
-            case 'WeakMap':
-            case 'WeakSet':
-              return `<${name}>`;
-            case 'Object':
-              return `<${name}>`;
-          }
-
-          if (value instanceof Map) {
-            return `<Map[${value.size}]>`;
-          } else if (value instanceof Set) {
-            return `<Set[${value.size}]>`;
-          } else {
-            return `<${name}>`;
-          }
-        }
-      }
-    }
-  }
-}
-
-function jsonify(param: SomeDisassembledOperand): string | string[] | null {
-  const result = json(param);
-
-  return Array.isArray(result) ? JSON.stringify(result) : (result ?? 'null');
-}
-
-function json(param: SomeDisassembledOperand): string | string[] | null {
-  switch (param.type) {
-    case 'number':
-    case 'boolean':
-    case 'string':
-    case 'primitive':
-      return stringify(param.value, 'stringify');
-    case 'array':
-      return '<array>';
-    case 'dynamic':
-      return stringify(param.value, 'unknown');
-    case 'constant':
-      return stringify(param.value, 'constant');
-    case 'register':
-      return stringify(param.value, 'register');
-    case 'instruction':
-      return stringify(param.value, 'pc');
-    case 'variable':
-      return stringify(param.value, 'variable');
-    case 'error:opcode':
-      return `{raw:${param.value}}`;
-    case 'error:operand':
-      return `{err:${param.options.label.name}=${param.value}}`;
-    case 'enum<curry>':
-      return `<curry:${param.value}>`;
-
-    default:
-      exhausted(param);
   }
 }
 
