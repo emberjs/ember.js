@@ -40,7 +40,7 @@ import {
   finalizeQueryParamChange as finalizeClassicQueryParamChange,
   queryParamsDidChange as classicQueryParamsDidChange,
 } from './query-params';
-import { type ActiveTransition, findSubstateName } from './substates';
+import { type ActiveTransition, ancestorRouteInfos, findSubstateName } from './substates';
 
 type TransitionLike = Transition & {
   isAborted?: boolean;
@@ -126,7 +126,16 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     // router): observable via route `actions.willResolveModel` handlers.
     transition.trigger?.(true, 'willResolveModel', transition, route);
 
-    return RSVPPromise.resolve()
+    const ancestorPromises: unknown[] = [];
+    ancestorRouteInfos(transition as ActiveTransition, bucket, (routeInfo) => {
+      ancestorPromises.push(routeInfo.enterPromise);
+      return false;
+    });
+
+    return RSVPPromise.all(ancestorPromises)
+      .then(() => {
+        throwIfAborted(transition);
+      })
       .then(() => {
         let result: unknown;
         if (route.beforeModel !== undefined) {

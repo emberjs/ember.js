@@ -5,6 +5,20 @@ const { module: Qmodule, test } = QUnit;
 
 const appName = 'ember-test-app';
 
+const pioneerRoute = (name: string, { awaitParent = false } = {}) => `
+  import { service } from '@ember/service';
+  import PioneerRoute from '${appName}/routes/pioneer';
+
+  export default class extends PioneerRoute {
+    @service flow;
+
+    async model(parentPromise) {${awaitParent ? '\n      await parentPromise;' : ''}
+      await this.flow.hold('${name}');
+      return { name: '${name}' };
+    }
+  }
+`;
+
 v1AppScenarios
   .only('classic')
   .map('pioneer-route-timing', (project) => {
@@ -23,6 +37,12 @@ v1AppScenarios
             this.route('parent', function () {
               this.route('child', function () {
                 this.route('grandchild');
+              });
+            });
+
+            this.route('chain', function () {
+              this.route('middle', function () {
+                this.route('leaf');
               });
             });
           });
@@ -80,27 +100,18 @@ v1AppScenarios
               <@Component @context={{@context}} @outlet={{@outlet}} />
             </template>;
 
+            export const RouteComponent = <template>
+              <div data-test={{@context.name}}>{{@context.name}}</div>
+              {{outlet}}
+            </template>;
+
             export const ApplicationComponent = <template>
               <LinkTo
                 @route="parent.child.grandchild"
                 data-test-deep-link
               >Deep route</LinkTo>
-              <div data-test="application">{{@context.name}}</div>
+              <div data-test={{@context.name}}>{{@context.name}}</div>
               {{outlet}}
-            </template>;
-
-            export const ParentComponent = <template>
-              <div data-test="parent">{{@context.name}}</div>
-              {{outlet}}
-            </template>;
-
-            export const ChildComponent = <template>
-              <div data-test="child">{{@context.name}}</div>
-              {{outlet}}
-            </template>;
-
-            export const GrandchildComponent = <template>
-              <div data-test="grandchild">{{@context.name}}</div>
             </template>;
           `,
         },
@@ -109,17 +120,12 @@ v1AppScenarios
             import { routeCapabilities } from '@ember/routing';
             import {
               ApplicationComponent,
-              ChildComponent,
-              GrandchildComponent,
-              ParentComponent,
               PioneerOutlet,
+              RouteComponent,
             } from '${appName}/components/pioneer-components';
 
             const ROUTES = {
               application: ApplicationComponent,
-              parent: ParentComponent,
-              'parent.child': ChildComponent,
-              'parent.child.grandchild': GrandchildComponent,
             };
 
             class PioneerBucket {
@@ -166,7 +172,7 @@ v1AppScenarios
               didExit() {}
 
               async getInvokable(bucket) {
-                return ROUTES[bucket.name];
+                return ROUTES[bucket.name] ?? RouteComponent;
               }
             }
           `,
@@ -185,61 +191,19 @@ v1AppScenarios
 
             setRouteManager((owner) => new PioneerRouteManager(owner), PioneerRoute);
           `,
-          'application.js': `
-            import { service } from '@ember/service';
-            import PioneerRoute from '${appName}/routes/pioneer';
-
-            export default class extends PioneerRoute {
-              @service flow;
-
-              async model() {
-                await this.flow.hold('application');
-                return { name: 'application' };
-              }
-            }
-          `,
-          'parent.js': `
-            import { service } from '@ember/service';
-            import PioneerRoute from '${appName}/routes/pioneer';
-
-            export default class extends PioneerRoute {
-              @service flow;
-
-              async model() {
-                await this.flow.hold('parent');
-                return { name: 'parent' };
-              }
-            }
-          `,
+          'application.js': pioneerRoute('application'),
+          'parent.js': pioneerRoute('parent'),
+          'chain.js': pioneerRoute('chain'),
           parent: {
-            'child.js': `
-              import { service } from '@ember/service';
-              import PioneerRoute from '${appName}/routes/pioneer';
-
-              export default class extends PioneerRoute {
-                @service flow;
-
-                async model() {
-                  await this.flow.hold('child');
-                  return { name: 'child' };
-                }
-              }
-            `,
+            'child.js': pioneerRoute('child'),
             child: {
-              'grandchild.js': `
-                import { service } from '@ember/service';
-                import PioneerRoute from '${appName}/routes/pioneer';
-
-                export default class extends PioneerRoute {
-                  @service flow;
-
-                  async model(parentPromise) {
-                    await parentPromise;
-                    await this.flow.hold('grandchild');
-                    return { name: 'grandchild' };
-                  }
-                }
-              `,
+              'grandchild.js': pioneerRoute('grandchild', { awaitParent: true }),
+            },
+          },
+          chain: {
+            'middle.js': pioneerRoute('middle'),
+            middle: {
+              'leaf.js': pioneerRoute('leaf', { awaitParent: true }),
             },
           },
         },
@@ -295,6 +259,9 @@ v1AppScenarios
                 flow.release('parent');
                 flow.release('child');
                 flow.release('grandchild');
+                flow.release('chain');
+                flow.release('middle');
+                flow.release('leaf');
                 await settled();
               });
 
@@ -322,6 +289,37 @@ v1AppScenarios
                   ['parent', 'child'],
                   () => click('[data-test-deep-link]')
                 );
+              });
+
+              test('a route entering awaits every ancestor, not just its parent', async function (assert) {
+                let flow = this.owner.lookup('service:flow');
+                let navigation = visit('/chain/middle/leaf');
+
+                await waitUntil(() => flow.starts.length === 3, { timeout: 2000 });
+
+                assert.deepEqual(
+                  flow.starts.slice(),
+                  ['application', 'chain', 'middle'],
+                  'the ancestors started together'
+                );
+
+                flow.release('middle');
+
+                await waitUntil(() => flow.starts.includes('leaf'), { timeout: 2000 });
+
+                assert.deepEqual(
+                  flow.settles.slice().sort(),
+                  ['application', 'chain', 'middle'],
+                  'every ancestor had settled before the leaf entered'
+                );
+
+                flow.release('application');
+                flow.release('chain');
+                flow.release('leaf');
+                await navigation;
+                await settled();
+
+                assert.dom('[data-test="leaf"]').hasText('leaf');
               });
 
               test('direct visits render a wrapper only after its route resolves', async function (assert) {
