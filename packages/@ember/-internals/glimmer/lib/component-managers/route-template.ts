@@ -1,10 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import { _instrumentStart } from '@ember/instrumentation';
 import type {
   CapturedArguments,
   CompilableProgram,
-  ComponentDefinition,
-  CurriedComponent,
   CustomRenderNode,
   Destroyable,
   InternalComponentCapabilities,
@@ -12,26 +9,26 @@ import type {
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
+  WithDynamicLayout,
+  WithSubOwner,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { DEBUG } from '@glimmer/env';
-import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
+import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import { createDebugAliasRef, valueForRef } from '@glimmer/reference/lib/reference';
-import { curry, type CurriedValue } from '@glimmer/runtime/lib/curried-value';
+import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
 import { unwrapTemplate } from './unwrap-template';
+import type RuntimeResolver from '../resolver';
 
 interface RouteTemplateInstanceState {
   self: Reference;
-  controller: unknown;
-}
-
-export interface RouteTemplateDefinitionState {
-  name: string;
+  // `getDynamicLayout` and `getOwner` only receive the instance state.
+  template: Template;
+  owner: InternalOwner;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
-  dynamicLayout: false,
+  // Every route has its own template; `getDynamicLayout` supplies it.
+  dynamicLayout: true,
   dynamicTag: false,
   prepareArgs: false,
   createArgs: true,
@@ -43,42 +40,48 @@ const CAPABILITIES: InternalComponentCapabilities = {
   createInstance: true,
   wrapped: false,
   willDestroy: false,
-  hasSubOwner: false,
+  hasSubOwner: true,
 };
-
-const CAPABILITIES_MASK = /*@__PURE__*/ capabilityFlagsFrom(CAPABILITIES);
 
 class RouteTemplateManager
   implements
-    WithCreateInstance<RouteTemplateInstanceState, RouteTemplateDefinitionState>,
-    WithCustomDebugRenderTree<RouteTemplateInstanceState, RouteTemplateDefinitionState>
+    WithCreateInstance<RouteTemplateInstanceState, RouteTemplate>,
+    WithCustomDebugRenderTree<RouteTemplateInstanceState, RouteTemplate>,
+    WithDynamicLayout<RouteTemplateInstanceState, Nullable<RuntimeResolver>>,
+    WithSubOwner<RouteTemplateInstanceState, RouteTemplate>
 {
   create(
     _owner: InternalOwner,
-    _definition: RouteTemplateDefinitionState,
-    args: VMArguments
+    definition: RouteTemplate,
+    _args: VMArguments
   ): RouteTemplateInstanceState {
-    let self = args.named.get('controller');
+    return {
+      self: definition.self,
+      template: definition.template,
+      owner: definition.owner,
+    };
+  }
 
-    if (DEBUG) {
-      self = createDebugAliasRef!('this', self);
-    }
+  getDynamicLayout({ template }: RouteTemplateInstanceState): CompilableProgram {
+    // `asLayout()` memoizes, so this compiles once per route.
+    return unwrapTemplate(template).asLayout();
+  }
 
-    let controller = valueForRef(self);
-
-    return { self, controller };
+  // The owner `makeRouteTemplate` was handed, not the call site's.
+  getOwner({ owner }: RouteTemplateInstanceState): InternalOwner {
+    return owner;
   }
 
   getSelf({ self }: RouteTemplateInstanceState): Reference {
     return self;
   }
 
-  getDebugName({ name }: RouteTemplateDefinitionState) {
+  getDebugName({ name }: RouteTemplate) {
     return `route-template (${name})`;
   }
 
   getDebugCustomRenderTree(
-    { name }: RouteTemplateDefinitionState,
+    { name }: RouteTemplate,
     state: RouteTemplateInstanceState,
     args: CapturedArguments
   ): CustomRenderNode[] {
@@ -88,7 +91,7 @@ class RouteTemplateManager
         type: 'route-template',
         name,
         args,
-        instance: state.controller,
+        instance: valueForRef(state.self),
       },
     ];
   }
@@ -111,47 +114,30 @@ class RouteTemplateManager
 const ROUTE_TEMPLATE_MANAGER = /*@__PURE__*/ new RouteTemplateManager();
 
 /**
- * This "upgrades" a route template into a invocable component. Conceptually
- * it can be 1:1 for each unique `Template`, but it's also cheap to construct,
- * so unless the stability is desirable for other reasons, it's probably not
- * worth caching this.
+ * This "upgrades" a route template into an invokable component. A
+ * `RouteTemplate` *is* its own definition state; the VM turns it into a
+ * `ComponentDefinition` via the manager on the prototype below.
+ *
+ * Conceptually it can be 1:1 for each unique `Template`, but it's also cheap
+ * to construct, so unless the stability is desirable for other reasons, it's
+ * probably not worth caching this.
  */
-export class RouteTemplate implements ComponentDefinition<
-  RouteTemplateDefinitionState,
-  RouteTemplateInstanceState,
-  RouteTemplateManager
-> {
-  // handle is not used by this custom definition
-  public handle = -1;
-  public resolvedName: string;
-  public state: RouteTemplateDefinitionState;
-  public manager = ROUTE_TEMPLATE_MANAGER;
-  public capabilities = CAPABILITIES_MASK;
-  public compilable: CompilableProgram;
-
-  constructor(name: string, template: Template) {
-    let unwrapped = unwrapTemplate(template);
-    // TODO This actually seems inaccurate – it ultimately came from the
-    // outlet's name. Also, setting this overrides `getDebugName()` in that
-    // message. Is that desirable?
-    this.resolvedName = name;
-    this.state = { name };
-    this.compilable = unwrapped.asLayout();
-  }
+export class RouteTemplate {
+  constructor(
+    readonly owner: InternalOwner,
+    readonly name: string,
+    readonly template: Template,
+    readonly self: Reference
+  ) {}
 }
 
-// TODO a lot these fields are copied from the adjacent existing components
-// implementation, haven't looked into who cares about `ComponentDefinition`
-// and if it is appropriate here. It seems like this version is intended to
-// be used with `curry` which probably isn't necessary here. It could be the
-// case that we just want to do something more similar to `InternalComponent`
-// (the one we used to implement `Input` and `LinkTo`). For now it follows
-// the same pattern to get things going.
+setInternalComponentManager(ROUTE_TEMPLATE_MANAGER, RouteTemplate.prototype);
+
 export function makeRouteTemplate(
   owner: InternalOwner,
   name: string,
-  template: Template
-): CurriedValue {
-  let routeTemplate = new RouteTemplate(name, template);
-  return curry(0 as CurriedComponent, routeTemplate, owner, null, true);
+  template: Template,
+  self: Reference = UNDEFINED_REFERENCE
+): RouteTemplate {
+  return new RouteTemplate(owner, name, template, self);
 }

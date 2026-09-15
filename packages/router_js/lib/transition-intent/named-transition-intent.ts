@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 import type { Dict } from '../core';
-import type { ModelFor, ResolvedRouteInfo, Route } from '../route-info';
+import type { ResolvedRouteInfo } from '../route-info';
 import type InternalRouteInfo from '../route-info';
 import { UnresolvedRouteInfoByObject, UnresolvedRouteInfoByParam } from '../route-info';
 import type { ParsedHandler } from '../router';
@@ -9,24 +9,24 @@ import { TransitionIntent } from '../transition-intent';
 import TransitionState from '../transition-state';
 import { isParam, merge } from '../utils';
 
-export default class NamedTransitionIntent<R extends Route> extends TransitionIntent<R> {
+export default class NamedTransitionIntent<R = unknown> extends TransitionIntent<R> {
   name: string;
-  pivotHandler?: Route;
-  contexts: ModelFor<R>[];
+  pivotName?: string;
+  contexts: R[];
   queryParams: Dict<unknown>;
   preTransitionState?: TransitionState<R> = undefined;
 
   constructor(
     router: Router<R>,
     name: string,
-    pivotHandler: Route | undefined,
-    contexts: ModelFor<R>[] = [],
+    pivotName: string | undefined,
+    contexts: R[] = [],
     queryParams: Dict<unknown> = {},
     data?: object
   ) {
     super(router, data);
     this.name = name;
-    this.pivotHandler = pivotHandler;
+    this.pivotName = pivotName;
     this.contexts = contexts;
     this.queryParams = queryParams;
   }
@@ -52,10 +52,10 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
 
     let invalidateIndex = parsedHandlers.length;
 
-    // Pivot handlers are provided for refresh transitions
-    if (this.pivotHandler) {
+    // Pivot names are provided for refresh transitions
+    if (this.pivotName !== undefined) {
       for (i = 0, len = parsedHandlers.length; i < len; ++i) {
-        if (parsedHandlers[i]!.handler === this.pivotHandler._internalName) {
+        if (parsedHandlers[i]!.handler === this.pivotName) {
           invalidateIndex = i;
           break;
         }
@@ -131,7 +131,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
         handlerToUse = handlerToUse.becomeResolved(
           null,
           // SAFETY: This seems to imply that it would be resolved, but it's unclear if that's actually the case.
-          handlerToUse.context as ModelFor<R>
+          handlerToUse.context as R
         );
       }
 
@@ -161,13 +161,13 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
     for (let i = invalidateIndex, l = handlerInfos.length; i < l; ++i) {
       let handlerInfo = handlerInfos[i]!;
       if (handlerInfo.isResolved) {
-        let { name, params, route, paramNames } = handlerInfos[i]!;
-        handlerInfos[i] = new UnresolvedRouteInfoByParam(
+        let { name, params, management, paramNames } = handlerInfos[i]!;
+        handlerInfos[i] = new UnresolvedRouteInfoByParam<R>(
           this.router,
           name,
           paramNames,
           params,
-          route
+          management
         );
       }
     }
@@ -176,12 +176,12 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
   getHandlerInfoForDynamicSegment(
     name: string,
     names: string[],
-    objects: ModelFor<R>[],
+    objects: R[],
     oldHandlerInfo: InternalRouteInfo<R>,
     _targetRouteName: string,
     i: number
   ): UnresolvedRouteInfoByObject<R> {
-    let objectToUse: ModelFor<R> | PromiseLike<ModelFor<R>> | undefined;
+    let objectToUse: R | PromiseLike<R> | undefined;
     if (objects.length > 0) {
       // Use the objects provided for this transition.
       objectToUse = objects[objects.length - 1];
@@ -211,7 +211,7 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
       }
     }
 
-    return new UnresolvedRouteInfoByObject(this.router, name, names, objectToUse);
+    return new UnresolvedRouteInfoByObject<R>(this.router, name, names, objectToUse);
   }
 
   createParamHandlerInfo(
@@ -252,6 +252,6 @@ export default class NamedTransitionIntent<R extends Route> extends TransitionIn
       );
     }
 
-    return new UnresolvedRouteInfoByParam(this.router, name, names, params);
+    return new UnresolvedRouteInfoByParam<R>(this.router, name, names, params);
   }
 }

@@ -1,0 +1,219 @@
+diff --git a/dist/setup-rendering-context.js b/dist/setup-rendering-context.js
+index 28a899ef8a6754f6b18aad4c557ecd048b817451..f05c2eb0c3dc378df493f4a05d7e249c905d211f 100644
+--- a/dist/setup-rendering-context.js
++++ b/dist/setup-rendering-context.js
+@@ -6,6 +6,9 @@ import getTestMetadata from './test-metadata.js';
+ import { runHooks } from './helper-hooks.js';
+ import isComponent from './-internal/is-component.js';
+ import { precompileTemplate } from '@ember/template-compilation';
++import { setComponentTemplate } from '@glimmer/manager';
++import { capabilities, setComponentManager } from '@ember/component';
++import { renderComponent } from '@ember/-internals/glimmer';
+ 
+ const OUTLET_TEMPLATE = precompileTemplate("{{outlet}}", {
+   strictMode: false
+@@ -28,6 +31,12 @@ function prepare(context) {
+ function isRenderingTestContext(context) {
+   return isTestContext(context) && hasCalledSetupRenderingContext in context;
+ }
++function supportsRenderRootComponent(owner) {
++  return typeof owner.renderRootComponent === 'function';
++}
++function supportsRenderComponent() {
++  return typeof renderComponent === 'function';
++}
+ 
+ /**
+   @private
+@@ -55,6 +64,108 @@ function lookupOutletTemplate(owner) {
+   return OutletTemplate;
+ }
+ let templateId = 0;
++const RENDER_CONTEXT_CAPABILITIES = capabilities('3.13', {
++  destructor: false,
++  asyncLifecycleCallbacks: false
++});
++// Provides the `this` for `render(hbs`{{this.foo}}`)
++const renderContextManager = {
++  capabilities: RENDER_CONTEXT_CAPABILITIES,
++  createComponent(definition) {
++    return definition.context;
++  },
++  getContext(context) {
++    return context;
++  }
++};
++function contextComponentFor(templateFactoryOrComponent, context) {
++  const definition = {
++    context
++  };
++  setComponentManager(() => renderContextManager, definition);
++  setComponentTemplate(templateFactoryOrComponent, definition);
++  return definition;
++}
++
++/**
++  Render `component` into the testing root element using the `renderComponent`
++*/
++function renderViaRenderComponent(owner, context, templateFactoryOrComponent, options) {
++  let component;
++  if (isComponent(templateFactoryOrComponent)) {
++    component = templateFactoryOrComponent;
++  } else {
++    component = contextComponentFor(templateFactoryOrComponent, context);
++  }
++  const ownerToRenderFrom = options?.owner || owner;
++
++  // wrapping in `run` enables `setupOnerror` hook
++  if (ownerToRenderFrom === owner && typeof owner.renderRootComponent === 'function') {
++    run(() => owner.renderRootComponent(component));
++  } else {
++    // @TODO: Evaluate if `renderRootComponent` should allow an alternative owner
++    // as per `RenderOptions.owner` comment
++    run(() => renderComponent(component, {
++      into: getRootElement(),
++      owner: ownerToRenderFrom,
++      appendIntoTarget: true
++    }));
++  }
++}
++
++/**
++  Renders using the private, legacy `view:-outlet`
++*/
++function renderLegacyOutlet(owner, context, templateFactoryOrComponent, options) {
++  // SAFETY: this is all wildly unsafe, because it is all using private API.
++  // At some point we should define a path forward for this kind of internal
++  // API. For now, just flagging it as *NOT* being safe!
++  const toplevelView = owner.lookup('-top-level-view:main');
++  const OutletTemplate = lookupOutletTemplate(owner);
++  const ownerToRenderFrom = options?.owner || owner;
++  let renderContext = context;
++  let toRender = templateFactoryOrComponent;
++  if (isComponent(toRender)) {
++    renderContext = {
++      ProvidedComponent: toRender
++    };
++    toRender = INVOKE_PROVIDED_COMPONENT;
++  }
++  templateId += 1;
++  const templateFullName = `template:-undertest-${templateId}`;
++  ownerToRenderFrom.register(templateFullName, toRender);
++  const template = lookupTemplate(ownerToRenderFrom, templateFullName);
++  const outletState = {
++    render: {
++      owner,
++      // always use the host app owner for application outlet
++      into: undefined,
++      outlet: 'main',
++      name: 'application',
++      controller: undefined,
++      ViewClass: undefined,
++      template: OutletTemplate
++    },
++    outlets: {
++      main: {
++        render: {
++          owner: ownerToRenderFrom,
++          // the actual owner to be used for any lookups
++          into: undefined,
++          outlet: 'main',
++          name: 'index',
++          controller: renderContext,
++          ViewClass: undefined,
++          template,
++          outlets: {}
++        },
++        outlets: {}
++      }
++    }
++  };
++  toplevelView.setOutletState(outletState);
++}
++
+ /**
+   Renders the provided template and appends it to the DOM.
+ 
+@@ -70,7 +181,7 @@ let templateId = 0;
+   await render(hbs`<div class="container"></div>`);
+ */
+ function render(templateFactoryOrComponent, options) {
+-  let context = getContext();
++  const context = getContext();
+   if (!templateFactoryOrComponent) {
+     throw new Error('you must pass a template to `render()`');
+   }
+@@ -83,52 +194,13 @@ function render(templateFactoryOrComponent, options) {
+     } = context;
+     const testMetadata = getTestMetadata(context);
+     testMetadata.usedHelpers.push('render');
+-
+-    // SAFETY: this is all wildly unsafe, because it is all using private API.
+-    // At some point we should define a path forward for this kind of internal
+-    // API. For now, just flagging it as *NOT* being safe!
+-    const toplevelView = owner.lookup('-top-level-view:main');
+-    const OutletTemplate = lookupOutletTemplate(owner);
+-    const ownerToRenderFrom = options?.owner || owner;
+-    if (isComponent(templateFactoryOrComponent)) {
+-      context = {
+-        ProvidedComponent: templateFactoryOrComponent
+-      };
+-      templateFactoryOrComponent = INVOKE_PROVIDED_COMPONENT;
++    if (supportsRenderComponent()) {
++      // modern `renderComponent` path
++      renderViaRenderComponent(owner, context, templateFactoryOrComponent, options);
++    } else {
++      // Legacy `view:-outlet` lookup path
++      renderLegacyOutlet(owner, context, templateFactoryOrComponent, options);
+     }
+-    templateId += 1;
+-    const templateFullName = `template:-undertest-${templateId}`;
+-    ownerToRenderFrom.register(templateFullName, templateFactoryOrComponent);
+-    const template = lookupTemplate(ownerToRenderFrom, templateFullName);
+-    const outletState = {
+-      render: {
+-        owner,
+-        // always use the host app owner for application outlet
+-        into: undefined,
+-        outlet: 'main',
+-        name: 'application',
+-        controller: undefined,
+-        ViewClass: undefined,
+-        template: OutletTemplate
+-      },
+-      outlets: {
+-        main: {
+-          render: {
+-            owner: ownerToRenderFrom,
+-            // the actual owner to be used for any lookups
+-            into: undefined,
+-            outlet: 'main',
+-            name: 'index',
+-            controller: context,
+-            ViewClass: undefined,
+-            template,
+-            outlets: {}
+-          },
+-          outlets: {}
+-        }
+-      }
+-    };
+-    toplevelView.setOutletState(outletState);
+ 
+     // returning settled here because the actual rendering does not happen until
+     // the renderer detects it is dirty (which happens on backburner's end
+@@ -203,6 +275,14 @@ function setupRenderingContext(context) {
+       const dispatcher = owner.lookup('event_dispatcher:main') || EventDispatcher.create();
+       dispatcher.setup({}, '#ember-testing');
+     }
++    if (supportsRenderComponent()) {
++      if (supportsRenderRootComponent(owner)) {
++        owner.rootElement = getRootElement();
++      }
++      return render(EMPTY_TEMPLATE);
++    }
++
++    // Classic `-outlet` fallback for older Ember versions.
+     const OutletView = owner.factoryFor ? owner.factoryFor('view:-outlet') : owner._lookupFactory('view:-outlet');
+     const environment = owner.lookup('-environment:main');
+     const template = owner.lookup('template:-outlet');

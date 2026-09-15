@@ -7,7 +7,8 @@ import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { tagFor } from '@glimmer/validator/lib/meta';
-import type { ModelFor, Transition } from 'router_js';
+import type { Transition } from 'router_js';
+import type { ModelFor } from '@ember/routing/route';
 import type Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
 import type { RouteInfo, RouteInfoWithAttributes } from './lib/route-info';
@@ -695,11 +696,7 @@ class RouterService extends Service {
     assert(`The route "${pivotRouteName}" was not found`, this._router.hasRoute(pivotRouteName));
     assert(`The route "${pivotRouteName}" is currently not active`, this.isActive(pivotRouteName));
 
-    let owner = getOwner(this);
-    assert('RouterService is unexpectedly missing an owner', owner);
-    let pivotRoute = owner.lookup(`route:${pivotRouteName}`) as Route;
-
-    return this._router._routerMicrolib.refresh(pivotRoute);
+    return this._router._routerMicrolib.refresh(pivotRouteName);
   }
 
   /**
