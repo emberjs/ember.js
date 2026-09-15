@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal/lib/property_get';
-import typeOf from '@ember/utils/lib/type-of';
+import typeOf from '@ember/-internals/utils/lib/type-of';
 import { isEmberArray } from '@ember/array/-internals';
 import type EmberArray from '@ember/array';
 

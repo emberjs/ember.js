@@ -29,7 +29,7 @@ import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
-import typeOf from '@ember/utils/lib/type-of';
+import typeOf from '@ember/-internals/utils/lib/type-of';
 import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
