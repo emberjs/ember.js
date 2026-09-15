@@ -4,7 +4,8 @@ import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
 import { template, templateCacheCounters } from '@ember/-internals/glimmer';
 import { precompile } from 'ember-template-compiler';
 
-import { Component } from '../utils/helpers';
+import Component from '@glimmer/component';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'Template factory test',
@@ -17,13 +18,13 @@ moduleFor(
 
       let options = { moduleName: 'my-app/templates/some-module.hbs' };
 
-      let spec = precompile('Hello {{this.name}}', options);
+      let spec = precompile('Hello {{@name}}', options);
       let body = `exports.default = template(${spec});`;
       let module = new Function('exports', 'template', body);
       let exports = {};
       module(exports, template);
       let Precompiled = exports['default'];
-      let Compiled = this.compile('Hello {{this.name}}', options);
+      let Compiled = this.compile('Hello {{@name}}', options);
 
       assert.equal(typeof Precompiled, 'function', 'precompiled is a factory');
       assert.equal(typeof Compiled, 'function', 'compiled is a factory');
@@ -53,23 +54,19 @@ moduleFor(
 
       this.owner.register(
         'component:x-precompiled',
-        class extends Component {
-          layout = Precompiled;
-        }
+        setComponentTemplate(Precompiled, class extends Component {})
       );
 
       this.owner.register(
         'component:x-compiled',
-        class extends Component {
-          layout = Compiled;
-        }
+        setComponentTemplate(Compiled, class extends Component {})
       );
 
       this.render('{{x-precompiled name="precompiled"}} {{x-compiled name="compiled"}}');
 
       this.expectCacheChanges(
         {
-          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 5 : 2,
+          templateCacheHits: ENV._DEBUG_RENDER_TREE ? 3 : 2,
           // from this.render
           templateCacheMisses: 1,
         },

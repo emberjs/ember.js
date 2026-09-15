@@ -5,7 +5,9 @@ import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '@ember/-internals/glimmer';
+import { setComponentTemplate } from '@glimmer/manager';
 import { service } from '@ember/service';
 import { precompileTemplate } from '@ember/template-compilation';
 
@@ -236,11 +238,15 @@ moduleFor(
       let insertionCount = 0;
       this.add(
         'component:foo-bar',
-        class extends Component {
-          didInsertElement() {
-            insertionCount += 1;
+        setComponentTemplate(
+          precompileTemplate(''),
+          class extends Component {
+            constructor(owner, args) {
+              super(owner, args);
+              insertionCount += 1;
+            }
           }
-        }
+        )
       );
 
       this.add('template:page', precompileTemplate('<p>{{@model.name}}{{foo-bar}}</p>'));
@@ -332,7 +338,7 @@ moduleFor(
 
       this.add(
         'component:my-component',
-        class extends Component {
+        class extends EmberComponent {
           didInsertElement() {
             myComponentCounter++;
           }
@@ -341,7 +347,7 @@ moduleFor(
 
       this.add(
         'component:other-component',
-        class extends Component {
+        class extends EmberComponent {
           didInsertElement() {
             otherComponentCounter++;
           }

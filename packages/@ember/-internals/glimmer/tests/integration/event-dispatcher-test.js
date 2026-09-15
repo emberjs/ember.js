@@ -7,7 +7,8 @@ import {
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
 
-import { Component } from '../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../utils/helpers';
 import { _getCurrentRunLoop } from '@ember/runloop';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -65,7 +66,7 @@ moduleFor(
 
       this.owner.register(
         'component:x-button',
-        class extends Component {
+        class extends EmberComponent {
           tagName = 'button';
 
           touchMove(event) {
@@ -164,7 +165,7 @@ moduleFor(
 
       this.owner.register(
         'component:x-button',
-        class extends Component {
+        class extends EmberComponent {
           tagName = 'button';
           init() {
             super.init();
@@ -201,7 +202,7 @@ moduleFor(
         'component:x-foo',
         setComponentTemplate(
           precompileTemplate(`<input id="is-done" type="checkbox">`),
-          class extends Component {
+          class extends EmberComponent {
             change(event) {
               receivedEvent = event;
             }
@@ -267,7 +268,7 @@ moduleFor(
         'component:x-foo',
         setComponentTemplate(
           precompileTemplate(`{{yield}}`),
-          class extends Component {
+          class extends EmberComponent {
             change(event) {
               receivedEvent = event;
             }
@@ -279,7 +280,7 @@ moduleFor(
         'component:x-bar',
         setComponentTemplate(
           precompileTemplate(`<input id="is-done" type="checkbox">`),
-          class extends Component {
+          class extends EmberComponent {
             change() {}
           }
         )
@@ -299,7 +300,7 @@ moduleFor(
         'component:x-foo',
         setComponentTemplate(
           precompileTemplate(`{{yield}}`),
-          class extends Component {
+          class extends EmberComponent {
             change() {
               hasReceivedEvent = true;
             }
@@ -311,7 +312,7 @@ moduleFor(
         'component:x-bar',
         setComponentTemplate(
           precompileTemplate(`<input id="is-done" type="checkbox">`),
-          class extends Component {
+          class extends EmberComponent {
             change() {
               return false;
             }
@@ -332,7 +333,7 @@ moduleFor(
         'component:x-foo',
         setComponentTemplate(
           precompileTemplate(`{{yield}}`),
-          class extends Component {
+          class extends EmberComponent {
             change() {
               hasReceivedEvent = true;
             }
@@ -344,7 +345,7 @@ moduleFor(
         'component:x-bar',
         setComponentTemplate(
           precompileTemplate(`<input id="is-done" type="checkbox">`),
-          class extends Component {
+          class extends EmberComponent {
             change(e) {
               e.stopPropagation();
             }
@@ -363,7 +364,7 @@ moduleFor(
         'component:x-foo',
         setComponentTemplate(
           precompileTemplate(`<input id="is-done" type="checkbox">`),
-          class extends Component {
+          class extends EmberComponent {
             change() {
               assert.ok(_getCurrentRunLoop(), 'a run loop should have started');
             }
@@ -400,7 +401,7 @@ moduleFor(
         'component:x-foo',
         setComponentTemplate(
           precompileTemplate(`<p>Hello!</p>`),
-          class extends Component {
+          class extends EmberComponent {
             myEvent() {
               assert.ok(true, 'custom event was triggered');
             }
@@ -429,7 +430,7 @@ moduleFor(
         'component:x-foo',
         setComponentTemplate(
           precompileTemplate(`<p>Hello!</p>`),
-          class extends Component {
+          class extends EmberComponent {
             click() {
               assert.ok(false, 'click method was called');
             }
@@ -466,7 +467,7 @@ moduleFor(
       let receivedEvent;
       this.owner.register(
         'component:x-foo',
-        class extends Component {
+        class extends EmberComponent {
           drop(event) {
             receivedEvent = event;
           }
