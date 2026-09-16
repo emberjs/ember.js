@@ -34,8 +34,13 @@ const classicTemplate = (markup: string) => `
 `;
 
 const routeComponent = (componentName: string, markup: string) => `
-  export const ${componentName} = <template>${markup}
-  </template>;
+  export class ${componentName} extends Component {
+    @service router;
+
+    <template>${markup}
+      <span data-test-current-route-name>{{this.router.currentRouteName}}</span>
+    </template>
+  }
 `;
 
 const classicRoute = (name: string) => `

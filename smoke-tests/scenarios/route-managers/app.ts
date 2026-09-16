@@ -36,6 +36,8 @@ export function appFiles(appName: string): FileTree {
         'reactive-outlet.gjs': REACTIVE_OUTLET,
         'outlet-with-service.gjs': OUTLET_WITH_SERVICE,
         'funky-route-components.gjs': `
+        import Component from '@glimmer/component';
+        import { service } from '@ember/service';
         import { LinkTo } from '@ember/routing';
 ${SCENARIOS.map((scenario) => scenario.routeComponent ?? '').join('')}      `,
       },

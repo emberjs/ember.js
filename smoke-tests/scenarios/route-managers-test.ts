@@ -315,7 +315,7 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   ]);
                 });
 
-                test('a non-classic manager loads ancestor and descendant models in parallel', async function (assert) {
+                test('a non-classic manager loads parallel route models with current router state', async function (assert) {
                   resetModelStarts();
 
                   visit('/reactive-context/child');
@@ -327,6 +327,17 @@ function routeManagerTests(scenarios: Scenarios, appName: string) {
                   let startedWhilePending = modelStarts.slice();
 
                   resolveParentModel('PARENT-CTX');
+                  await waitUntil(() => document.querySelector(routeSelector('reactive-context')), {
+                    timeout: 2000,
+                  });
+
+                  assert
+                    .dom('[data-test-current-route-name]')
+                    .hasText(
+                      'reactive-context',
+                      'currentRouteName reflects the deepest progressively rendered route'
+                    );
+
                   resolveChildModel('CHILD-CTX');
                   await settled();
 

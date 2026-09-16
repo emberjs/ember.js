@@ -649,6 +649,7 @@ class EmberRouter extends EmberObject {
           if (router.isDestroying || router.isDestroyed) {
             return;
           }
+          updatePaths(router);
           router._setOutlets();
         }, 0);
       }
