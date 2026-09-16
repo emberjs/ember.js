@@ -8,7 +8,6 @@ import type {
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
-  WithSubOwner,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
@@ -18,7 +17,6 @@ import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/referen
 
 interface RouteTemplateInstanceState {
   self: Reference;
-  owner: InternalOwner;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
@@ -34,14 +32,13 @@ const CAPABILITIES: InternalComponentCapabilities = {
   createInstance: true,
   wrapped: false,
   willDestroy: false,
-  hasSubOwner: true,
+  hasSubOwner: false,
 };
 
 class RouteTemplateManager
   implements
     WithCreateInstance<RouteTemplateInstanceState, RouteTemplate>,
-    WithCustomDebugRenderTree<RouteTemplateInstanceState, RouteTemplate>,
-    WithSubOwner<RouteTemplateInstanceState, RouteTemplate>
+    WithCustomDebugRenderTree<RouteTemplateInstanceState, RouteTemplate>
 {
   create(
     _owner: InternalOwner,
@@ -50,13 +47,7 @@ class RouteTemplateManager
   ): RouteTemplateInstanceState {
     return {
       self: definition.self,
-      owner: definition.owner,
     };
-  }
-
-  // The owner `makeRouteTemplate` was handed, not the call site's.
-  getOwner({ owner }: RouteTemplateInstanceState): InternalOwner {
-    return owner;
   }
 
   getSelf({ self }: RouteTemplateInstanceState): Reference {
@@ -111,7 +102,6 @@ const ROUTE_TEMPLATE_MANAGER = /*@__PURE__*/ new RouteTemplateManager();
  */
 export class RouteTemplate {
   constructor(
-    readonly owner: InternalOwner,
     readonly name: string,
     readonly self: Reference
   ) {}
@@ -120,12 +110,11 @@ export class RouteTemplate {
 setInternalComponentManager(ROUTE_TEMPLATE_MANAGER, RouteTemplate.prototype);
 
 export function makeRouteTemplate(
-  owner: InternalOwner,
   name: string,
   template: Template,
   self: Reference = UNDEFINED_REFERENCE
 ): RouteTemplate {
-  let routeTemplate = new RouteTemplate(owner, name, self);
+  let routeTemplate = new RouteTemplate(name, self);
 
   setComponentTemplate(() => template, routeTemplate);
 

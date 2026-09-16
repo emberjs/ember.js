@@ -440,7 +440,7 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
       }
 
       const template = (templateFactoryOrComponent as TemplateFactory)(owner);
-      invokable = makeRouteTemplate(owner, name, template as Template, self);
+      invokable = makeRouteTemplate(name, template as Template, self);
     }
   } else {
     if (DEBUG) {
@@ -452,7 +452,7 @@ function buildClassicInvokable(bucket: ClassicRouteBucket): object {
       }
     }
     const template = OutletTemplate(owner);
-    invokable = makeRouteTemplate(owner, name, template as Template, self);
+    invokable = makeRouteTemplate(name, template as Template, self);
   }
   return invokable;
 }
