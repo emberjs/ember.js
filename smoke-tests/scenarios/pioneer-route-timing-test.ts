@@ -5,6 +5,42 @@ const { module: Qmodule, test } = QUnit;
 
 const appName = 'ember-test-app';
 
+const classicRoute = (className: string, name: string) => `
+  import Route from '@ember/routing/route';
+  import { service } from '@ember/service';
+
+  export default class ${className} extends Route {
+    @service flow;
+
+    async beforeModel() {
+      await this.flow.hold('${name}:beforeModel');
+    }
+
+    async model() {
+      await this.flow.hold('${name}:model');
+      return { name: '${name}' };
+    }
+
+    async afterModel() {
+      await this.flow.hold('${name}:afterModel');
+    }
+  }
+`;
+
+const pioneerRoute = (name: string, { awaitParent = false } = {}) => `
+  import { service } from '@ember/service';
+  import PioneerRoute from '${appName}/routes/pioneer';
+
+  export default class extends PioneerRoute {
+    @service flow;
+
+    async model(parentPromise) {${awaitParent ? '\n      await parentPromise;' : ''}
+      await this.flow.hold('${name}');
+      return { name: '${name}' };
+    }
+  }
+`;
+
 v1AppScenarios
   .only('classic')
   .map('pioneer-route-timing', (project) => {
@@ -24,6 +60,16 @@ v1AppScenarios
               this.route('child', function () {
                 this.route('grandchild');
               });
+            });
+
+            this.route('chain', function () {
+              this.route('middle', function () {
+                this.route('leaf');
+              });
+            });
+
+            this.route('zebra', function () {
+              this.route('classic');
             });
           });
         `,
@@ -80,46 +126,42 @@ v1AppScenarios
               <@Component @context={{@context}} @outlet={{@outlet}} />
             </template>;
 
+            export const RouteComponent = <template>
+              <div data-test={{@context.name}}>{{@context.name}}</div>
+              {{outlet}}
+            </template>;
+
             export const ApplicationComponent = <template>
               <LinkTo
                 @route="parent.child.grandchild"
                 data-test-deep-link
               >Deep route</LinkTo>
-              <div data-test="application">{{@context.name}}</div>
+              <div data-test={{@context.name}}>{{@context.name}}</div>
               {{outlet}}
-            </template>;
-
-            export const ParentComponent = <template>
-              <div data-test="parent">{{@context.name}}</div>
-              {{outlet}}
-            </template>;
-
-            export const ChildComponent = <template>
-              <div data-test="child">{{@context.name}}</div>
-              {{outlet}}
-            </template>;
-
-            export const GrandchildComponent = <template>
-              <div data-test="grandchild">{{@context.name}}</div>
             </template>;
           `,
+        },
+
+        templates: {
+          zebra: {
+            'classic.gjs': `
+              <template>
+                <div data-test={{@model.name}}>{{@model.name}}</div>
+              </template>
+            `,
+          },
         },
         'route-managers': {
           'pioneer.js': `
             import { routeCapabilities } from '@ember/routing';
             import {
               ApplicationComponent,
-              ChildComponent,
-              GrandchildComponent,
-              ParentComponent,
               PioneerOutlet,
+              RouteComponent,
             } from '${appName}/components/pioneer-components';
 
             const ROUTES = {
               application: ApplicationComponent,
-              parent: ParentComponent,
-              'parent.child': ChildComponent,
-              'parent.child.grandchild': GrandchildComponent,
             };
 
             class PioneerBucket {
@@ -166,7 +208,7 @@ v1AppScenarios
               didExit() {}
 
               async getInvokable(bucket) {
-                return ROUTES[bucket.name];
+                return ROUTES[bucket.name] ?? RouteComponent;
               }
             }
           `,
@@ -185,61 +227,23 @@ v1AppScenarios
 
             setRouteManager((owner) => new PioneerRouteManager(owner), PioneerRoute);
           `,
-          'application.js': `
-            import { service } from '@ember/service';
-            import PioneerRoute from '${appName}/routes/pioneer';
-
-            export default class extends PioneerRoute {
-              @service flow;
-
-              async model() {
-                await this.flow.hold('application');
-                return { name: 'application' };
-              }
-            }
-          `,
-          'parent.js': `
-            import { service } from '@ember/service';
-            import PioneerRoute from '${appName}/routes/pioneer';
-
-            export default class extends PioneerRoute {
-              @service flow;
-
-              async model() {
-                await this.flow.hold('parent');
-                return { name: 'parent' };
-              }
-            }
-          `,
+          'application.js': pioneerRoute('application'),
+          'chain.js': pioneerRoute('chain'),
+          chain: {
+            'middle.js': pioneerRoute('middle'),
+            middle: {
+              'leaf.js': pioneerRoute('leaf', { awaitParent: true }),
+            },
+          },
+          'zebra.js': pioneerRoute('zebra'),
+          zebra: {
+            'classic.js': classicRoute('ZebraClassicRoute', 'zebra.classic'),
+          },
+          'parent.js': pioneerRoute('parent'),
           parent: {
-            'child.js': `
-              import { service } from '@ember/service';
-              import PioneerRoute from '${appName}/routes/pioneer';
-
-              export default class extends PioneerRoute {
-                @service flow;
-
-                async model() {
-                  await this.flow.hold('child');
-                  return { name: 'child' };
-                }
-              }
-            `,
+            'child.js': pioneerRoute('child'),
             child: {
-              'grandchild.js': `
-                import { service } from '@ember/service';
-                import PioneerRoute from '${appName}/routes/pioneer';
-
-                export default class extends PioneerRoute {
-                  @service flow;
-
-                  async model(parentPromise) {
-                    await parentPromise;
-                    await this.flow.hold('grandchild');
-                    return { name: 'grandchild' };
-                  }
-                }
-              `,
+              'grandchild.js': pioneerRoute('grandchild', { awaitParent: true }),
             },
           },
         },
@@ -295,6 +299,13 @@ v1AppScenarios
                 flow.release('parent');
                 flow.release('child');
                 flow.release('grandchild');
+                flow.release('chain');
+                flow.release('middle');
+                flow.release('leaf');
+                flow.release('zebra');
+                flow.release('zebra.classic:beforeModel');
+                flow.release('zebra.classic:model');
+                flow.release('zebra.classic:afterModel');
                 await settled();
               });
 
@@ -322,6 +333,64 @@ v1AppScenarios
                   ['parent', 'child'],
                   () => click('[data-test-deep-link]')
                 );
+              });
+
+              test('a route waits only for the ancestor it asked for', async function (assert) {
+                let flow = this.owner.lookup('service:flow');
+                let navigation = visit('/chain/middle/leaf');
+
+                await waitUntil(() => flow.starts.length === 3, { timeout: 2000 });
+                assert.deepEqual(flow.starts.slice(), ['application', 'chain', 'middle']);
+
+                flow.release('middle');
+                await waitUntil(() => flow.starts.includes('leaf'), { timeout: 2000 });
+
+                assert.deepEqual(flow.settles.slice(), ['middle']);
+
+                flow.release('application');
+                flow.release('chain');
+                flow.release('leaf');
+
+                await navigation;
+
+                assert.dom('[data-test="leaf"]').hasText('leaf');
+              });
+
+              test('a classic route waits for its pioneer ancestor', async function (assert) {
+                let flow = this.owner.lookup('service:flow');
+                let navigation = visit('/zebra/classic');
+
+                await waitUntil(() => flow.starts.length === 2, { timeout: 2000 });
+                assert.deepEqual(flow.starts.slice(), ['application', 'zebra']);
+
+                flow.release('application');
+                await waitUntil(() => flow.settles.includes('application'), { timeout: 2000 });
+                await new Promise((resolve) => setTimeout(resolve, 50));
+
+                assert.deepEqual(flow.starts.slice(), ['application', 'zebra']);
+
+                flow.release('zebra');
+                await waitUntil(() => flow.starts.includes('zebra.classic:beforeModel'), {
+                  timeout: 2000,
+                });
+
+                assert.deepEqual(flow.settles.slice().sort(), ['application', 'zebra']);
+
+                flow.release('zebra.classic:beforeModel');
+                flow.release('zebra.classic:model');
+                flow.release('zebra.classic:afterModel');
+
+                await navigation;
+
+                assert.deepEqual(flow.settles.slice(), [
+                  'application',
+                  'zebra',
+                  'zebra.classic:beforeModel',
+                  'zebra.classic:model',
+                  'zebra.classic:afterModel',
+                ]);
+                assert.dom('[data-test="zebra"]').hasText('zebra');
+                assert.dom('[data-test="zebra.classic"]').hasText('zebra.classic');
               });
 
               test('direct visits render a wrapper only after its route resolves', async function (assert) {

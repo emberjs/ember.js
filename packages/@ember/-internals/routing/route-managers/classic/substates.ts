@@ -31,6 +31,26 @@ export type ActiveTransition = {
   [STATE_SYMBOL]?: { routeInfos: InternalRouteInfo[] };
 };
 
+export function ancestorRouteInfos(
+  transition: ActiveTransition,
+  bucket: RouteStateBucket | undefined,
+  callback: (routeInfo: InternalRouteInfo) => boolean
+): void {
+  const routeInfos = transition[STATE_SYMBOL]?.routeInfos ?? [];
+  const originIndex = bucket
+    ? routeInfos.findIndex((candidate) => candidate?.bucket === bucket)
+    : routeInfos.length;
+
+  for (let i = originIndex - 1; i >= 0; i--) {
+    const routeInfo = routeInfos[i];
+    const done = routeInfo && callback(routeInfo);
+
+    if (done) {
+      return;
+    }
+  }
+}
+
 /**
   Finds the name of the substate route if it exists for the given route. A
   substate route is of the form `route_state`, such as `foo_loading`.
@@ -123,36 +143,32 @@ export function findSubstateName(
 ): string {
   const routeInfos = transition[STATE_SYMBOL]?.routeInfos ?? [];
   const pivotBucket = transition.pivotBucket;
+  const originRouteInfo =
+    originBucket && routeInfos.find((candidate) => candidate?.bucket === originBucket);
 
-  const originIndex =
-    originBucket === undefined
-      ? -1
-      : routeInfos.findIndex((candidate) => candidate?.bucket === originBucket);
-  const originRouteInfo = originIndex >= 0 ? routeInfos[originIndex] : undefined;
-  const startIndex = originIndex >= 0 ? originIndex : routeInfos.length - 1;
+  let found = '';
 
-  for (let i = startIndex; i >= 0; i--) {
-    const ancestorRouteInfo = routeInfos[i];
-    if (ancestorRouteInfo === undefined) continue;
+  const visitRouteInfo = (routeInfo: InternalRouteInfo): boolean => {
+    const route = classicRouteFor(routeInfo);
 
-    const ancestorRoute = classicRouteFor(ancestorRouteInfo);
-    if (!ancestorRoute) continue;
-
-    if (ancestorRouteInfo !== originRouteInfo) {
-      const stateName = findRouteStateName(ancestorRoute, state);
-      if (stateName) return stateName;
+    if (!route) {
+      return false;
     }
 
-    const substateName = findRouteSubstateName(ancestorRoute, state);
-    if (substateName) return substateName;
+    const atPivot = pivotBucket && pivotBucket === routeInfo.bucket;
 
-    if (
-      state === 'loading' &&
-      pivotBucket !== undefined &&
-      pivotBucket === ancestorRouteInfo.bucket
-    )
-      break;
+    found =
+      (routeInfo === originRouteInfo ? '' : findRouteStateName(route, state)) ||
+      findRouteSubstateName(route, state);
+
+    return Boolean(found || (state === 'loading' && atPivot));
+  };
+
+  if (originRouteInfo && visitRouteInfo(originRouteInfo)) {
+    return found;
   }
 
-  return '';
+  ancestorRouteInfos(transition, originRouteInfo && originBucket, visitRouteInfo);
+
+  return found;
 }
