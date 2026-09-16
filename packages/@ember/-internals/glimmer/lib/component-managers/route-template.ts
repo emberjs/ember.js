@@ -1,7 +1,6 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import type {
   CapturedArguments,
-  CompilableProgram,
   CustomRenderNode,
   Destroyable,
   InternalComponentCapabilities,
@@ -9,26 +8,21 @@ import type {
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
-  WithDynamicLayout,
   WithSubOwner,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference/lib/reference';
-import { unwrapTemplate } from './unwrap-template';
-import type RuntimeResolver from '../resolver';
 
 interface RouteTemplateInstanceState {
   self: Reference;
-  // `getDynamicLayout` and `getOwner` only receive the instance state.
-  template: Template;
   owner: InternalOwner;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
-  // Every route has its own template; `getDynamicLayout` supplies it.
-  dynamicLayout: true,
+  dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
   createArgs: true,
@@ -47,7 +41,6 @@ class RouteTemplateManager
   implements
     WithCreateInstance<RouteTemplateInstanceState, RouteTemplate>,
     WithCustomDebugRenderTree<RouteTemplateInstanceState, RouteTemplate>,
-    WithDynamicLayout<RouteTemplateInstanceState, Nullable<RuntimeResolver>>,
     WithSubOwner<RouteTemplateInstanceState, RouteTemplate>
 {
   create(
@@ -57,14 +50,8 @@ class RouteTemplateManager
   ): RouteTemplateInstanceState {
     return {
       self: definition.self,
-      template: definition.template,
       owner: definition.owner,
     };
-  }
-
-  getDynamicLayout({ template }: RouteTemplateInstanceState): CompilableProgram {
-    // `asLayout()` memoizes, so this compiles once per route.
-    return unwrapTemplate(template).asLayout();
   }
 
   // The owner `makeRouteTemplate` was handed, not the call site's.
@@ -126,7 +113,6 @@ export class RouteTemplate {
   constructor(
     readonly owner: InternalOwner,
     readonly name: string,
-    readonly template: Template,
     readonly self: Reference
   ) {}
 }
@@ -139,5 +125,9 @@ export function makeRouteTemplate(
   template: Template,
   self: Reference = UNDEFINED_REFERENCE
 ): RouteTemplate {
-  return new RouteTemplate(owner, name, template, self);
+  let routeTemplate = new RouteTemplate(owner, name, self);
+
+  setComponentTemplate(() => template, routeTemplate);
+
+  return routeTemplate;
 }
