@@ -1,4 +1,4 @@
-import type { CompilableTemplate } from '../template.js';
+import type { CompilableTemplate, StdlibRef } from '../template.js';
 import type { SymbolTable } from '../tier1/symbol-table.js';
 import type * as WireFormat from './wire-format/api.js';
 
@@ -47,12 +47,7 @@ export interface BlockOperand {
 
 export interface StdLibOperand {
   type: StdLibOperandType;
-  value:
-    | 'main'
-    | 'trusting-append'
-    | 'cautious-append'
-    | 'trusting-non-dynamic-append'
-    | 'cautious-non-dynamic-append';
+  value: StdlibRef;
 }
 
 export interface NonSmallIntOperand {

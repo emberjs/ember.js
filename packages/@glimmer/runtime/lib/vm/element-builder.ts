@@ -12,24 +12,19 @@ import type {
   Nullable,
   ResettableBlock,
   SimpleComment,
-  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
-import assert from '@glimmer/debug-util/lib/assert';
 import { setLocalDebugType } from '@glimmer/debug-util/lib/debug-brand';
-import { destroy, registerDestructor } from '@glimmer/destroyable';
+import { destroy } from '@glimmer/destroyable';
 import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
-import type { DynamicAttribute } from './attributes/dynamic';
-
-import { clear, ConcreteBounds, CursorImpl } from '../bounds';
-import { dynamicAttribute } from './attributes/dynamic';
+import { clear, CursorImpl } from '../bounds';
 
 export interface FirstNode {
   debug?: { first: () => Nullable<SimpleNode> };
@@ -163,11 +158,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return this.pushBlock(new ResettableBlockImpl(this.element));
   }
 
-  pushBlockList(list: AppendingBlock[]): AppendingBlockList {
-    return this.pushBlock(new AppendingBlockList(this.element, list));
-  }
-
-  protected pushBlock<T extends AppendingBlock>(block: T, isRemote = false): T {
+  pushBlock<T extends AppendingBlock>(block: T, isRemote = false): T {
     let current = this.blockStack.current;
 
     if (current !== null) {
@@ -189,6 +180,16 @@ export class NewTreeBuilder implements TreeBuilder {
 
   __openBlock(): void {}
   __closeBlock(): void {}
+
+  /**
+   * Rehydration and serialization override this. The default lives in
+   * `./remote-element`, so a build without `{{#in-element}}` drops it.
+   */
+  __pushRemoteElement?(
+    element: SimpleElement,
+    guid: string,
+    insertBefore: Maybe<SimpleNode>
+  ): AppendingBlock;
 
   // todo return seems unused
   openElement(tag: string): SimpleElement {
@@ -229,40 +230,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return this.popModifiers();
   }
 
-  pushRemoteElement(
-    element: SimpleElement,
-    guid: string,
-    insertBefore: Maybe<SimpleNode>
-  ): RemoteBlock {
-    return this.__pushRemoteElement(element, guid, insertBefore);
-  }
-
-  __pushRemoteElement(
-    element: SimpleElement,
-    _guid: string,
-    insertBefore: Maybe<SimpleNode>
-  ): RemoteBlock {
-    this.pushElement(element, insertBefore);
-
-    if (insertBefore === undefined) {
-      while (element.lastChild) {
-        element.removeChild(element.lastChild);
-      }
-    }
-
-    let block = new RemoteBlock(element);
-
-    return this.pushBlock(block, true);
-  }
-
-  popRemoteElement(): RemoteBlock {
-    const block = this.popBlock();
-    assert(block instanceof RemoteBlock, '[BUG] expecting a RemoteBlock');
-    this.popElement();
-    return block;
-  }
-
-  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
+  pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
     this.cursors.push(new CursorImpl(element, nextSibling));
   }
 
@@ -309,48 +277,14 @@ export class NewTreeBuilder implements TreeBuilder {
     return node;
   }
 
-  __appendFragment(fragment: SimpleDocumentFragment): Bounds {
-    let first = fragment.firstChild;
-
-    if (first) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      let ret = new ConcreteBounds(this.element, first, fragment.lastChild!);
-      this.dom.insertBefore(this.element, fragment, this.nextSibling);
-      return ret;
-    } else {
-      const comment = this.__appendComment('');
-      return new ConcreteBounds(this.element, comment, comment);
-    }
-  }
-
   __appendHTML(html: string): Bounds {
     return this.dom.insertHTMLBefore(this.element, this.nextSibling, html);
-  }
-
-  appendDynamicHTML(value: string): void {
-    let bounds = this.trustedContent(value);
-    this.didAppendBounds(bounds);
   }
 
   appendDynamicText(value: string): SimpleText {
     let node = this.untrustedContent(value);
     this.didAppendNode(node);
     return node;
-  }
-
-  appendDynamicFragment(value: SimpleDocumentFragment): void {
-    let bounds = this.__appendFragment(value);
-    this.didAppendBounds(bounds);
-  }
-
-  appendDynamicNode(value: SimpleNode): void {
-    let node = this.__appendNode(value);
-    let bounds = new ConcreteBounds(this.element, node, node);
-    this.didAppendBounds(bounds);
-  }
-
-  private trustedContent(value: string): Bounds {
-    return this.__appendHTML(value);
   }
 
   private untrustedContent(value: string): SimpleText {
@@ -380,19 +314,6 @@ export class NewTreeBuilder implements TreeBuilder {
 
   setStaticAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
     this.__setAttribute(name, value, namespace);
-  }
-
-  setDynamicAttribute(
-    name: string,
-    value: unknown,
-    trusting: boolean,
-    namespace: Nullable<AttrNamespace>
-  ): DynamicAttribute {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-    let element = this.constructing!;
-    let attribute = dynamicAttribute(element, name, namespace, trusting);
-    attribute.set(this, value, this.env);
-    return attribute;
   }
 }
 
@@ -474,44 +395,6 @@ export class AppendingBlockImpl implements AppendingBlock {
   }
 }
 
-export class RemoteBlock extends AppendingBlockImpl {
-  constructor(parent: SimpleElement) {
-    super(parent);
-
-    setLocalDebugType('block:remote', this);
-
-    registerDestructor(this, () => {
-      // In general, you only need to clear the root of a hierarchy, and should never
-      // need to clear any child nodes. This is an important constraint that gives us
-      // a strong guarantee that clearing a subtree is a single DOM operation.
-      //
-      // Because remote blocks are not normally physically nested inside of the tree
-      // that they are logically nested inside, we manually clear remote blocks when
-      // a logical parent is cleared.
-      //
-      // HOWEVER, it is currently possible for a remote block to be physically nested
-      // inside of the block it is logically contained inside of. This happens when
-      // the remote block is appended to the end of the application's entire element.
-      //
-      // The problem with that scenario is that Glimmer believes that it owns more of
-      // the DOM than it actually does. The code is attempting to write past the end
-      // of the Glimmer-managed root, but Glimmer isn't aware of that.
-      //
-      // The correct solution to that problem is for Glimmer to be aware of the end
-      // of the bounds that it owns, and once we make that change, this check could
-      // be removed.
-      //
-      // For now, a more targeted fix is to check whether the node was already removed
-      // and avoid clearing the node if it was. In most cases this shouldn't happen,
-      // so this might hide bugs where the code clears nested nodes unnecessarily,
-      // so we should eventually try to do the correct fix.
-      if (this.parentElement() === this.firstNode().parentNode) {
-        clear(this);
-      }
-    });
-  }
-}
-
 export class ResettableBlockImpl extends AppendingBlockImpl implements ResettableBlock {
   constructor(parent: SimpleElement) {
     super(parent);
@@ -531,58 +414,6 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
 }
 
 // FIXME: All the noops in here indicate a modelling problem
-export class AppendingBlockList implements AppendingBlock {
-  constructor(
-    private readonly parent: SimpleElement,
-    public boundList: AppendingBlock[]
-  ) {
-    this.parent = parent;
-    this.boundList = boundList;
-  }
-
-  parentElement() {
-    return this.parent;
-  }
-
-  firstNode(): SimpleNode {
-    let head = expect(
-      this.boundList[0],
-      'cannot call `firstNode()` while `AppendingBlockList` is still initializing'
-    );
-
-    return head.firstNode();
-  }
-
-  lastNode(): SimpleNode {
-    let boundList = this.boundList;
-
-    let tail = expect(
-      boundList[boundList.length - 1],
-      'cannot call `lastNode()` while `AppendingBlockList` is still initializing'
-    );
-
-    return tail.lastNode();
-  }
-
-  openElement(_element: SimpleElement) {
-    assert(false, 'Cannot openElement directly inside a block list');
-  }
-
-  closeElement() {
-    assert(false, 'Cannot closeElement directly inside a block list');
-  }
-
-  didAppendNode(_node: SimpleNode) {
-    assert(false, 'Cannot create a new node directly inside a block list');
-  }
-
-  didAppendBounds(_bounds: Bounds) {}
-
-  finalize(_stack: TreeBuilder) {
-    assert(this.boundList.length > 0, 'boundsList cannot be empty');
-  }
-}
-
 export function clientBuilder(env: Environment, cursor: CursorImpl): TreeBuilder {
   return NewTreeBuilder.forInitialRender(env, cursor);
 }

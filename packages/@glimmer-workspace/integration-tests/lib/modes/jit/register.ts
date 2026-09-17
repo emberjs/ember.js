@@ -2,7 +2,7 @@ import type {
   Helper as GlimmerHelper,
   InternalModifierManager,
   Nullable,
-  ResolutionTimeConstants,
+  ProgramConstants,
   TemplateFactory,
 } from '@glimmer/interfaces';
 import type { CurriedValue } from '@glimmer/runtime';
@@ -25,6 +25,7 @@ import { EmberishCurlyComponent } from '../../components/emberish-curly';
 import { GlimmerishComponent } from '../../components/emberish-glimmer';
 import { createHelperRef } from '../../helpers';
 import { TestModifierDefinitionState, TestModifierManager } from '../../modifiers';
+import { resolvedComponentDefinition } from '@glimmer/program/lib/definitions';
 
 export function registerTemplateOnlyComponent(
   registry: TestJitRegistry,
@@ -162,11 +163,17 @@ function registerSomeComponent(
 export function componentHelper(
   registry: TestJitRegistry,
   name: string,
-  constants: ResolutionTimeConstants
+  constants: ProgramConstants
 ): CurriedValue | null {
   let definition = registry.lookupComponent(name);
 
   if (definition === null) return null;
 
-  return curry(CURRIED_COMPONENT, constants.resolvedComponent(definition, name), {}, null, true);
+  return curry(
+    CURRIED_COMPONENT,
+    resolvedComponentDefinition(constants, definition, name),
+    {},
+    null,
+    true
+  );
 }

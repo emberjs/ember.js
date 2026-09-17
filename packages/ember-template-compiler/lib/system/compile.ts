@@ -3,7 +3,9 @@
 */
 import type { EmberPrecompileOptions } from '../types';
 import precompile from './precompile';
+import { withRuntimeKeywords } from './runtime-keywords';
 import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
+import { RUNTIME_KEYWORD_LOCALS } from '@ember/template-compiler/-internal-primitives';
 import { template } from '@ember/-internals/glimmer';
 
 /**
@@ -24,9 +26,11 @@ export default function compile(
     );
   }
 
-  return template(evaluate(precompile(templateString, options)));
+  return template(evaluate(precompile(templateString, withRuntimeKeywords(options))));
 }
 
 function evaluate(precompiled: string): SerializedTemplateWithLazyBlock {
-  return new Function(`return ${precompiled}`)();
+  return new Function(...Object.keys(RUNTIME_KEYWORD_LOCALS), `return ${precompiled}`)(
+    ...Object.values(RUNTIME_KEYWORD_LOCALS)
+  );
 }

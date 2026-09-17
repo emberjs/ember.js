@@ -52,20 +52,3 @@ export const STRICT_MODE_TRANSFORMS: readonly ASTPluginBuilder[] = Object.freeze
   AssertAgainstNamedOutlets,
   TransformWrapMountAndOutlet,
 ]);
-
-export const STRICT_MODE_KEYWORDS = Object.freeze([
-  'action',
-  'mut',
-  'readonly',
-  'unbound',
-
-  // TransformEachInIntoEach
-  '-each-in',
-  // TransformInElement
-  '-in-el-null',
-  // TransformEachTrackArray
-  '-track-array',
-  // TransformWrapMountAndOutlet
-  '-mount',
-  '-outlet',
-]);

@@ -3,6 +3,7 @@ import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
 import Backburner, { type Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
+import { registerRunloop } from '@ember/-internals/glimmer/lib/hooks';
 
 export type { Timer };
 
@@ -941,3 +942,15 @@ export function throttle(...args: any[]): Timer {
   // @ts-expect-error TS doesn't like the rest args here
   return _backburner.throttle(...args);
 }
+
+// The renderer schedules through the run loop once this module is loaded.
+registerRunloop({
+  ensureInstance: () => _backburner.ensureInstance(),
+  hasCurrentRunLoop: () => _getCurrentRunLoop() !== null,
+  join: (fn) => _backburner.join(null, fn),
+  scheduleActions: (fn) => _backburner.schedule('actions', null, fn),
+  scheduleDestroy: (fn) => _backburner.schedule('destroy', null, fn),
+  scheduleOnceRender: (target, method, arg) =>
+    _backburner.scheduleOnce('render', target, method, arg),
+  on: (event, fn) => _backburner.on(event, fn),
+});

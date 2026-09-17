@@ -7,8 +7,14 @@ export {
   InvokeStaticBlockWithStack as invokeStaticBlockWithStack,
 } from './lib/opcode-builder/helpers/blocks';
 export { meta } from './lib/opcode-builder/helpers/shared';
-export { compileStd } from './lib/opcode-builder/helpers/stdlib';
-export { StdLib } from './lib/opcode-builder/stdlib';
+export {
+  CAUTIOUS_APPEND,
+  CAUTIOUS_NON_DYNAMIC_APPEND,
+  MAIN,
+  TRUSTING_APPEND,
+  TRUSTING_NON_DYNAMIC_APPEND,
+} from './lib/opcode-builder/stdlib-data';
+export { StdlibImpl } from './lib/opcode-builder/stdlib';
 export * from './lib/program-context';
 export {
   templateCacheCounters,

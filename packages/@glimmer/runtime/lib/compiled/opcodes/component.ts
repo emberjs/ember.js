@@ -1,9 +1,11 @@
 import { DEBUG } from '@glimmer/env';
+import { resolvedComponentDefinition } from '@glimmer/program/lib/definitions';
+import { applyDynamicAttribute } from '../../vm/attributes/deferred';
 import type {
+  DynamicAttributeApplier,
   Bounds,
   CapabilityMask,
   CapturedArguments,
-  CompilableProgram,
   ComponentDefinition,
   ComponentDefinitionState,
   ComponentInstance,
@@ -71,10 +73,9 @@ import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
-import { registerDestructor } from '@glimmer/destroyable';
 import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
-import { isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { valueForRef } from '@glimmer/reference/lib/reference';
 import { assign } from '@glimmer/util/lib/object-utils';
 import { dict } from '@glimmer/util/lib/collections';
 import { EMPTY_STRING_ARRAY, enumerate } from '@glimmer/util/lib/array-utils';
@@ -86,14 +87,12 @@ import type { UpdatingVM } from '../../vm';
 import type { VM } from '../../vm/append';
 import type { BlockArgumentsImpl } from '../../vm/arguments';
 
-import { ConcreteBounds } from '../../bounds';
-import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
 import { resolveComponent } from '../../component/resolve';
 import { isCurriedType, isCurriedValue, resolveCurriedValue } from '../../curried-value';
-import { getDebugName } from '../../debug-render-tree';
-import { APPEND_OPCODES } from '../../opcodes';
+import { debugTree, getDebugName } from '../../debug-render-tree';
+import { syscall } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
-import { EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';
+import { VMArgumentsImpl } from '../../vm/arguments';
 import {
   CheckArguments,
   CheckComponentDefinition,
@@ -103,7 +102,6 @@ import {
   CheckInvocation,
   CheckReference,
 } from './-debug-strip';
-import { UpdateDynamicAttributeOpcode } from './dom';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -140,160 +138,176 @@ export interface PartialComponentDefinition {
   manager: InternalComponentManager;
 }
 
-APPEND_OPCODES.add(VM_PUSH_COMPONENT_DEFINITION_OP, (vm, { op1: handle }) => {
-  let definition = vm.constants.getValue<ComponentDefinition>(handle);
-  assert(!!definition, `Missing component for ${handle}`);
+export const PUSH_COMPONENT_DEFINITION_OP = /*#__PURE__*/ syscall(
+  VM_PUSH_COMPONENT_DEFINITION_OP,
+  (vm, { op1: handle }) => {
+    let definition = vm.constants.getValue<ComponentDefinition>(handle);
+    assert(!!definition, `Missing component for ${handle}`);
 
-  let { manager, capabilities } = definition;
+    let { manager, capabilities } = definition;
 
-  let instance: InitialComponentInstance = {
-    definition,
-    manager,
-    capabilities,
-    state: null,
-    handle: null,
-    table: null,
-    lookup: null,
-  };
+    let instance: InitialComponentInstance = {
+      definition,
+      manager,
+      capabilities,
+      state: null,
+      handle: null,
+      table: null,
+      lookup: null,
+    };
 
-  vm.stack.push(instance);
-});
-
-APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => {
-  let stack = vm.stack;
-  let ref = check(stack.pop(), CheckReference);
-  let component = check(valueForRef(ref), CheckOr(CheckString, CheckCurriedComponentDefinition));
-  let constants = vm.constants;
-  let owner = vm.getOwner();
-  let isStrict = constants.getValue<boolean>(_isStrict);
-
-  vm.loadValue($t1, null); // Clear the temp register
-
-  if (DEBUG) {
-    assert(
-      component === null ||
-        component === undefined ||
-        typeof component === 'string' ||
-        isCurriedValue(component) ||
-        ((typeof component === 'object' || typeof component === 'function') &&
-          hasInternalComponentManager(component)),
-      isStrict
-        ? 'The `{{component}}` helper received an invalid value. In strict mode, it expects a component definition.'
-        : 'The `{{component}}` helper received an invalid value. It expects a component definition or a string component name.'
-    );
+    vm.stack.push(instance);
   }
+);
 
-  let definition: ComponentDefinition | CurriedValue;
+export const RESOLVE_DYNAMIC_COMPONENT_OP = /*#__PURE__*/ syscall(
+  VM_RESOLVE_DYNAMIC_COMPONENT_OP,
+  (vm, { op1: _isStrict }) => {
+    let stack = vm.stack;
+    let ref = check(stack.pop(), CheckReference);
+    let component = check(valueForRef(ref), CheckOr(CheckString, CheckCurriedComponentDefinition));
+    let constants = vm.constants;
+    let owner = vm.getOwner();
+    let isStrict = constants.getValue<boolean>(_isStrict);
 
-  if (typeof component === 'string') {
-    if (DEBUG && isStrict) {
-      throw new Error(
-        `Attempted to resolve a dynamic component with a string definition, \`${component}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`
+    vm.loadValue($t1, null); // Clear the temp register
+
+    if (DEBUG) {
+      assert(
+        component === null ||
+          component === undefined ||
+          typeof component === 'string' ||
+          isCurriedValue(component) ||
+          ((typeof component === 'object' || typeof component === 'function') &&
+            hasInternalComponentManager(component)),
+        isStrict
+          ? 'The `{{component}}` helper received an invalid value. In strict mode, it expects a component definition.'
+          : 'The `{{component}}` helper received an invalid value. It expects a component definition or a string component name.'
       );
     }
 
-    let resolvedDefinition = resolveComponent(vm.context.resolver, constants, component, owner);
+    let definition: ComponentDefinition | CurriedValue;
 
-    definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
-  } else if (isCurriedValue(component)) {
-    definition = component;
-  } else {
-    definition = constants.component(component, owner);
-  }
+    if (typeof component === 'string') {
+      if (DEBUG && isStrict) {
+        throw new Error(
+          `Attempted to resolve a dynamic component with a string definition, \`${component}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`
+        );
+      }
 
-  if (DEBUG && !isCurriedValue(definition) && !definition.resolvedName && !definition.debugName) {
-    let debugLabel = ref.debugLabel;
-    if (debugLabel) {
-      definition.debugName = debugLabel;
+      let resolvedDefinition = resolveComponent(vm.context.resolver, constants, component, owner);
+
+      definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
+    } else if (isCurriedValue(component)) {
+      definition = component;
+    } else {
+      definition = constants.component(component, owner);
     }
+
+    if (DEBUG && !isCurriedValue(definition) && !definition.resolvedName && !definition.debugName) {
+      let debugLabel = ref.debugLabel;
+      if (debugLabel) {
+        definition.debugName = debugLabel;
+      }
+    }
+
+    stack.push(definition);
   }
+);
 
-  stack.push(definition);
-});
+export const RESOLVE_CURRIED_COMPONENT_OP = /*#__PURE__*/ syscall(
+  VM_RESOLVE_CURRIED_COMPONENT_OP,
+  (vm) => {
+    let stack = vm.stack;
+    let ref = check(stack.pop(), CheckReference);
+    let value = valueForRef(ref);
+    let constants = vm.constants;
 
-APPEND_OPCODES.add(VM_RESOLVE_CURRIED_COMPONENT_OP, (vm) => {
-  let stack = vm.stack;
-  let ref = check(stack.pop(), CheckReference);
-  let value = valueForRef(ref);
-  let constants = vm.constants;
+    let definition: CurriedValue | ComponentDefinition | null;
 
-  let definition: CurriedValue | ComponentDefinition | null;
-
-  if (DEBUG && !(typeof value === 'function' || (typeof value === 'object' && value !== null))) {
-    throw new Error(
-      `Expected a component definition, but received ${value}. You may have accidentally done <${ref.debugLabel}>, where "${ref.debugLabel}" was a string instead of a curried component definition. You must either use the component definition directly, or use the {{component}} helper to create a curried component definition when invoking dynamically.`
-    );
-  }
-
-  if (isCurriedValue(value)) {
-    definition = value;
-  } else {
-    definition = constants.component(value as object, vm.getOwner(), true);
-
-    if (DEBUG && definition === null) {
+    if (DEBUG && !(typeof value === 'function' || (typeof value === 'object' && value !== null))) {
       throw new Error(
-        `Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was \`<${
-          ref.debugLabel
-        }>\` or \`{{${
-          ref.debugLabel
-        }}}\`, and the incorrect definition is the value at the path \`${
-          ref.debugLabel
-        }\`, which was: ${debugToString?.(value) ?? value}`
+        `Expected a component definition, but received ${value}. You may have accidentally done <${ref.debugLabel}>, where "${ref.debugLabel}" was a string instead of a curried component definition. You must either use the component definition directly, or use the {{component}} helper to create a curried component definition when invoking dynamically.`
       );
     }
-  }
 
-  if (
-    DEBUG &&
-    definition &&
-    !isCurriedValue(definition) &&
-    !definition.resolvedName &&
-    !definition.debugName
-  ) {
-    let debugLabel = ref.debugLabel;
-    if (debugLabel) {
-      definition.debugName = debugLabel;
+    if (isCurriedValue(value)) {
+      definition = value;
+    } else {
+      definition = constants.component(value as object, vm.getOwner(), true);
+
+      if (DEBUG && definition === null) {
+        throw new Error(
+          `Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was \`<${
+            ref.debugLabel
+          }>\` or \`{{${
+            ref.debugLabel
+          }}}\`, and the incorrect definition is the value at the path \`${
+            ref.debugLabel
+          }\`, which was: ${debugToString?.(value) ?? value}`
+        );
+      }
     }
+
+    if (
+      DEBUG &&
+      definition &&
+      !isCurriedValue(definition) &&
+      !definition.resolvedName &&
+      !definition.debugName
+    ) {
+      let debugLabel = ref.debugLabel;
+      if (debugLabel) {
+        definition.debugName = debugLabel;
+      }
+    }
+
+    stack.push(definition);
   }
+);
 
-  stack.push(definition);
-});
+export const PUSH_DYNAMIC_COMPONENT_INSTANCE_OP = /*#__PURE__*/ syscall(
+  VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
+  (vm) => {
+    let { stack } = vm;
+    let definition = stack.pop<ComponentDefinition>();
 
-APPEND_OPCODES.add(VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP, (vm) => {
-  let { stack } = vm;
-  let definition = stack.pop<ComponentDefinition>();
+    let capabilities, manager;
 
-  let capabilities, manager;
+    if (isCurriedValue(definition)) {
+      manager = capabilities = null;
+    } else {
+      manager = definition.manager;
+      capabilities = definition.capabilities;
+    }
 
-  if (isCurriedValue(definition)) {
-    manager = capabilities = null;
-  } else {
-    manager = definition.manager;
-    capabilities = definition.capabilities;
+    stack.push({ definition, capabilities, manager, state: null, handle: null, table: null });
   }
+);
 
-  stack.push({ definition, capabilities, manager, state: null, handle: null, table: null });
-});
+export const PUSH_ARGS_OP = /*#__PURE__*/ syscall(
+  VM_PUSH_ARGS_OP,
+  (vm, { op1: _names, op2: _blockNames, op3: flags }) => {
+    let stack = vm.stack;
+    let names = vm.constants.getArray<string>(_names);
 
-APPEND_OPCODES.add(VM_PUSH_ARGS_OP, (vm, { op1: _names, op2: _blockNames, op3: flags }) => {
-  let stack = vm.stack;
-  let names = vm.constants.getArray<string>(_names);
+    let positionalCount = flags >> 4;
+    let atNames = flags & 0b1000;
+    let blockNames =
+      flags & 0b0111 ? vm.constants.getArray<string>(_blockNames) : EMPTY_STRING_ARRAY;
 
-  let positionalCount = flags >> 4;
-  let atNames = flags & 0b1000;
-  let blockNames = flags & 0b0111 ? vm.constants.getArray<string>(_blockNames) : EMPTY_STRING_ARRAY;
+    vm.args.setup(stack, names, blockNames, positionalCount, !!atNames);
+    stack.push(vm.args);
+  }
+);
 
-  vm.args.setup(stack, names, blockNames, positionalCount, !!atNames);
-  stack.push(vm.args);
-});
-
-APPEND_OPCODES.add(VM_PUSH_EMPTY_ARGS_OP, (vm) => {
+export const PUSH_EMPTY_ARGS_OP = /*#__PURE__*/ syscall(VM_PUSH_EMPTY_ARGS_OP, (vm) => {
   let { stack } = vm;
 
   stack.push(vm.args.empty(stack));
 });
 
-APPEND_OPCODES.add(VM_CAPTURE_ARGS_OP, (vm) => {
+export const CAPTURE_ARGS_OP = /*#__PURE__*/ syscall(VM_CAPTURE_ARGS_OP, (vm) => {
   let stack = vm.stack;
 
   let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
@@ -301,207 +315,230 @@ APPEND_OPCODES.add(VM_CAPTURE_ARGS_OP, (vm) => {
   stack.push(capturedArgs);
 });
 
-APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
-  let stack = vm.stack;
-  let instance = vm.fetchValue<ComponentInstance>(check(register, CheckRegister));
-  let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
+export const PREPARE_ARGS_OP = /*#__PURE__*/ syscall(
+  VM_PREPARE_ARGS_OP,
+  (vm, { op1: register }) => {
+    let stack = vm.stack;
+    let instance = vm.fetchValue<ComponentInstance>(check(register, CheckRegister));
+    let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
 
-  let { definition } = instance;
+    let { definition } = instance;
 
-  if (isCurriedType(definition, CURRIED_COMPONENT)) {
-    assert(
-      !definition.manager,
-      "If the component definition was curried, we don't yet have a manager"
-    );
-
-    let constants = vm.constants;
-
-    let {
-      definition: resolvedDefinition,
-      owner,
-      resolved,
-      positional,
-      named,
-    } = resolveCurriedValue(definition);
-
-    if (resolved) {
-      definition = resolvedDefinition as ComponentDefinition;
-    } else if (typeof resolvedDefinition === 'string') {
-      let resolvedValue = vm.context.resolver?.lookupComponent?.(resolvedDefinition, owner) ?? null;
-
-      definition = constants.resolvedComponent(
-        expect(resolvedValue, 'BUG: expected resolved component'),
-        resolvedDefinition
+    if (isCurriedType(definition, CURRIED_COMPONENT)) {
+      assert(
+        !definition.manager,
+        "If the component definition was curried, we don't yet have a manager"
       );
-    } else {
-      definition = constants.component(resolvedDefinition, owner);
+
+      let constants = vm.constants;
+
+      let {
+        definition: resolvedDefinition,
+        owner,
+        resolved,
+        positional,
+        named,
+      } = resolveCurriedValue(definition);
+
+      if (resolved) {
+        definition = resolvedDefinition as ComponentDefinition;
+      } else if (typeof resolvedDefinition === 'string') {
+        let resolvedValue =
+          vm.context.resolver?.lookupComponent?.(resolvedDefinition, owner) ?? null;
+
+        definition = resolvedComponentDefinition(
+          constants,
+          expect(resolvedValue, 'BUG: expected resolved component'),
+          resolvedDefinition
+        );
+      } else {
+        definition = constants.component(resolvedDefinition, owner);
+      }
+
+      if (named !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        args.named.merge(assign({}, ...named));
+      }
+
+      if (positional !== undefined) {
+        args.realloc(positional.length);
+        args.positional.prepend(positional);
+      }
+
+      let { manager } = definition;
+
+      instance.definition = definition;
+      instance.manager = manager;
+      instance.capabilities = definition.capabilities;
+
+      // Save off the owner that this component was curried with. Later on,
+      // we'll fetch the value of this register and set it as the owner on the
+      // new root scope.
+      vm.loadValue($t1, owner);
     }
 
-    if (named !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      args.named.merge(assign({}, ...named));
+    let { manager, state } = definition;
+    let capabilities = instance.capabilities;
+
+    if (!managerHasCapability(manager, capabilities, InternalComponentCapabilities.prepareArgs)) {
+      stack.push(args);
+      return;
     }
 
-    if (positional !== undefined) {
-      args.realloc(positional.length);
-      args.positional.prepend(positional);
+    let blocks = args.blocks.values;
+    let blockNames = args.blocks.names;
+    let preparedArgs = manager.prepareArgs(state, args);
+
+    if (preparedArgs) {
+      args.clear();
+
+      for (let i = 0; i < blocks.length; i++) {
+        stack.push(blocks[i]);
+      }
+
+      let { positional, named } = preparedArgs;
+
+      let positionalCount = positional.length;
+
+      for (let i = 0; i < positionalCount; i++) {
+        stack.push(positional[i]);
+      }
+
+      let names = Object.keys(named);
+
+      for (let i = 0; i < names.length; i++) {
+        stack.push(named[unwrap(names[i])]);
+      }
+
+      args.setup(stack, names, blockNames, positionalCount, false);
     }
 
-    let { manager } = definition;
-
-    instance.definition = definition;
-    instance.manager = manager;
-    instance.capabilities = definition.capabilities;
-
-    // Save off the owner that this component was curried with. Later on,
-    // we'll fetch the value of this register and set it as the owner on the
-    // new root scope.
-    vm.loadValue($t1, owner);
-  }
-
-  let { manager, state } = definition;
-  let capabilities = instance.capabilities;
-
-  if (!managerHasCapability(manager, capabilities, InternalComponentCapabilities.prepareArgs)) {
     stack.push(args);
-    return;
   }
+);
 
-  let blocks = args.blocks.values;
-  let blockNames = args.blocks.names;
-  let preparedArgs = manager.prepareArgs(state, args);
+export const CREATE_COMPONENT_OP = /*#__PURE__*/ syscall(
+  VM_CREATE_COMPONENT_OP,
+  (vm, { op1: flags }) => {
+    let instance = check(vm.fetchValue($s0), CheckComponentInstance);
+    let { definition, manager, capabilities } = instance;
 
-  if (preparedArgs) {
-    args.clear();
-
-    for (let i = 0; i < blocks.length; i++) {
-      stack.push(blocks[i]);
+    if (
+      !managerHasCapability(manager, capabilities, InternalComponentCapabilities.createInstance)
+    ) {
+      // TODO: Closure and Main components are always invoked dynamically, so this
+      // opcode may run even if this capability is not enabled. In the future we
+      // should handle this in a better way.
+      return;
     }
 
-    let { positional, named } = preparedArgs;
-
-    let positionalCount = positional.length;
-
-    for (let i = 0; i < positionalCount; i++) {
-      stack.push(positional[i]);
+    let dynamicScope: Nullable<DynamicScope> = null;
+    if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicScope)) {
+      dynamicScope = vm.dynamicScope();
     }
 
-    let names = Object.keys(named);
+    let hasDefaultBlock = flags & 1;
+    let args: Nullable<VMArguments> = null;
 
-    for (let i = 0; i < names.length; i++) {
-      stack.push(named[unwrap(names[i])]);
+    if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.createArgs)) {
+      args = check(vm.stack.peek(), CheckArguments);
     }
 
-    args.setup(stack, names, blockNames, positionalCount, false);
-  }
+    let self: Nullable<Reference> = null;
+    if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.createCaller)) {
+      self = vm.getSelf();
+    }
 
-  stack.push(args);
-});
-
-APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
-  let instance = check(vm.fetchValue($s0), CheckComponentInstance);
-  let { definition, manager, capabilities } = instance;
-
-  if (!managerHasCapability(manager, capabilities, InternalComponentCapabilities.createInstance)) {
-    // TODO: Closure and Main components are always invoked dynamically, so this
-    // opcode may run even if this capability is not enabled. In the future we
-    // should handle this in a better way.
-    return;
-  }
-
-  let dynamicScope: Nullable<DynamicScope> = null;
-  if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicScope)) {
-    dynamicScope = vm.dynamicScope();
-  }
-
-  let hasDefaultBlock = flags & 1;
-  let args: Nullable<VMArguments> = null;
-
-  if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.createArgs)) {
-    args = check(vm.stack.peek(), CheckArguments);
-  }
-
-  let self: Nullable<Reference> = null;
-  if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.createCaller)) {
-    self = vm.getSelf();
-  }
-
-  let state = manager.create(
-    vm.getOwner(),
-    definition.state,
-    args,
-    vm.env,
-    dynamicScope,
-    self,
-    !!hasDefaultBlock
-  );
-
-  // We want to reuse the `state` POJO here, because we know that the opcodes
-  // only transition at exactly one place.
-  instance.state = state;
-
-  if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.updateHook)) {
-    vm.updateWith(new UpdateComponentOpcode(state, manager, dynamicScope));
-  }
-});
-
-APPEND_OPCODES.add(VM_REGISTER_COMPONENT_DESTRUCTOR_OP, (vm, { op1: register }) => {
-  let { manager, state, capabilities } = check(
-    vm.fetchValue(check(register, CheckRegister)),
-    CheckComponentInstance
-  );
-
-  let d = manager.getDestroyable(state);
-
-  if (
-    DEBUG &&
-    !managerHasCapability(manager, capabilities, InternalComponentCapabilities.willDestroy) &&
-    d !== null &&
-    (typeof 'willDestroy') in d
-  ) {
-    throw new Error(
-      'BUG: Destructor has willDestroy, but the willDestroy capability was not enabled for this component. Pre-destruction hooks must be explicitly opted into'
+    let state = manager.create(
+      vm.getOwner(),
+      definition.state,
+      args,
+      vm.env,
+      dynamicScope,
+      self,
+      !!hasDefaultBlock
     );
+
+    // We want to reuse the `state` POJO here, because we know that the opcodes
+    // only transition at exactly one place.
+    instance.state = state;
+
+    if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.updateHook)) {
+      vm.updateWith(new UpdateComponentOpcode(state, manager, dynamicScope));
+    }
   }
+);
 
-  if (d) vm.associateDestroyable(d);
-});
-
-APPEND_OPCODES.add(VM_BEGIN_COMPONENT_TRANSACTION_OP, (vm, { op1: register }) => {
-  let name;
-
-  if (DEBUG) {
-    let { definition, manager } = check(
+export const REGISTER_COMPONENT_DESTRUCTOR_OP = /*#__PURE__*/ syscall(
+  VM_REGISTER_COMPONENT_DESTRUCTOR_OP,
+  (vm, { op1: register }) => {
+    let { manager, state, capabilities } = check(
       vm.fetchValue(check(register, CheckRegister)),
       CheckComponentInstance
     );
 
-    name = getDebugName(definition, manager);
+    let d = manager.getDestroyable(state);
+
+    if (
+      DEBUG &&
+      !managerHasCapability(manager, capabilities, InternalComponentCapabilities.willDestroy) &&
+      d !== null &&
+      (typeof 'willDestroy') in d
+    ) {
+      throw new Error(
+        'BUG: Destructor has willDestroy, but the willDestroy capability was not enabled for this component. Pre-destruction hooks must be explicitly opted into'
+      );
+    }
+
+    if (d) vm.associateDestroyable(d);
   }
+);
 
-  vm.beginCacheGroup(name);
-  vm.tree().pushAppendingBlock();
-});
+export const BEGIN_COMPONENT_TRANSACTION_OP = /*#__PURE__*/ syscall(
+  VM_BEGIN_COMPONENT_TRANSACTION_OP,
+  (vm, { op1: register }) => {
+    let name;
 
-APPEND_OPCODES.add(VM_PUT_COMPONENT_OPERATIONS_OP, (vm) => {
-  vm.loadValue($t0, new ComponentElementOperations());
-});
+    if (DEBUG) {
+      let { definition, manager } = check(
+        vm.fetchValue(check(register, CheckRegister)),
+        CheckComponentInstance
+      );
 
-APPEND_OPCODES.add(VM_COMPONENT_ATTR_OP, (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
-  let name = vm.constants.getValue<string>(_name);
-  let trusting = vm.constants.getValue<boolean>(_trusting);
-  let reference = check(vm.stack.pop(), CheckReference);
-  let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
+      name = getDebugName(definition, manager);
+    }
 
-  check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations)).setAttribute(
-    name,
-    reference,
-    trusting,
-    namespace
-  );
-});
+    vm.beginCacheGroup(name);
+    vm.tree().pushAppendingBlock();
+  }
+);
 
-APPEND_OPCODES.add(
+export const PUT_COMPONENT_OPERATIONS_OP = /*#__PURE__*/ syscall(
+  VM_PUT_COMPONENT_OPERATIONS_OP,
+  (vm) => {
+    vm.loadValue($t0, new ComponentElementOperations());
+  }
+);
+
+export const COMPONENT_ATTR_OP = /*#__PURE__*/ syscall(
+  VM_COMPONENT_ATTR_OP,
+  (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
+    let name = vm.constants.getValue<string>(_name);
+    let trusting = vm.constants.getValue<boolean>(_trusting);
+    let reference = check(vm.stack.pop(), CheckReference);
+    let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
+
+    check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations)).setAttribute(
+      name,
+      reference,
+      trusting,
+      namespace,
+      applyDynamicAttribute
+    );
+  }
+);
+
+export const STATIC_COMPONENT_ATTR_OP = /*#__PURE__*/ syscall(
   VM_STATIC_COMPONENT_ATTR_OP,
   (vm, { op1: _name, op2: _value, op3: _namespace }) => {
     let name = vm.constants.getValue<string>(_name);
@@ -526,9 +563,20 @@ export class ComponentElementOperations implements ElementOperations {
   private attributes = dict<DeferredAttribute>();
   private classes: (string | Reference)[] = [];
   private modifiers: ModifierInstance[] = [];
+  private applyDynamic: DynamicAttributeApplier | null = null;
 
-  setAttribute(name: string, value: Reference, trusting: boolean, namespace: Nullable<string>) {
+  setAttribute(
+    name: string,
+    value: Reference,
+    trusting: boolean,
+    namespace: Nullable<string>,
+    apply?: DynamicAttributeApplier
+  ) {
     let deferred = { value, namespace, trusting };
+
+    if (apply !== undefined) {
+      this.applyDynamic = apply;
+    }
 
     if (name === 'class') {
       this.classes.push(value);
@@ -550,43 +598,7 @@ export class ComponentElementOperations implements ElementOperations {
   addModifier(vm: VM, modifier: ModifierInstance, capturedArgs: CapturedArguments): void {
     this.modifiers.push(modifier);
 
-    if (vm.env.debugRenderTree !== undefined) {
-      const { manager, definition, state } = modifier;
-
-      // TODO: we need a stable object for the debugRenderTree as the key, add support for
-      // the case where the state is a primitive, or if in practice we always have/require
-      // an object, then change the internal types to reflect that
-      if (state === null || (typeof state !== 'object' && typeof state !== 'function')) {
-        return;
-      }
-
-      let { element, constructing } = vm.tree();
-      let name = definition.resolvedName ?? manager.getDebugName(definition.state);
-      let instance = manager.getDebugInstance(state);
-
-      assert(constructing, `Expected a constructing element in addModifier`);
-
-      let bounds = new ConcreteBounds(element, constructing, constructing);
-
-      vm.env.debugRenderTree.create(state, {
-        type: 'modifier',
-        name,
-        args: capturedArgs,
-        instance,
-      });
-
-      vm.env.debugRenderTree.didRender(state, bounds);
-
-      // For tearing down the debugRenderTree
-      vm.associateDestroyable(state);
-
-      vm.updateWith(new DebugRenderTreeUpdateOpcode(state));
-      vm.updateWith(new DebugRenderTreeDidRenderOpcode(state, bounds));
-
-      registerDestructor(state, () => {
-        vm.env.debugRenderTree?.willDestroy(state);
-      });
-    }
+    debugTree(vm.env)?.modifierDidAdd(vm, modifier, capturedArgs);
   }
 
   flush(vm: VM): ModifierInstance[] {
@@ -601,17 +613,43 @@ export class ComponentElementOperations implements ElementOperations {
 
       let attr = unwrap(this.attributes[name]);
       if (name === 'class') {
-        setDeferredAttr(vm, 'class', mergeClasses(this.classes), attr.namespace, attr.trusting);
+        this.setDeferredAttr(
+          vm,
+          'class',
+          mergeClasses(this.classes),
+          attr.namespace,
+          attr.trusting
+        );
       } else {
-        setDeferredAttr(vm, name, attr.value, attr.namespace, attr.trusting);
+        this.setDeferredAttr(vm, name, attr.value, attr.namespace, attr.trusting);
       }
     }
 
     if (type !== undefined) {
-      setDeferredAttr(vm, 'type', type.value, type.namespace, type.trusting);
+      this.setDeferredAttr(vm, 'type', type.value, type.namespace, type.trusting);
     }
 
     return this.modifiers;
+  }
+
+  private setDeferredAttr(
+    vm: VM,
+    name: string,
+    value: string | Reference,
+    namespace: Nullable<string>,
+    trusting = false
+  ) {
+    if (typeof value === 'string') {
+      vm.tree().setStaticAttribute(name, value, namespace);
+    } else {
+      expect(this.applyDynamic, 'a dynamic attribute was set without an applier')(
+        vm,
+        name,
+        value,
+        namespace,
+        trusting
+      );
+    }
   }
 }
 
@@ -633,164 +671,96 @@ function allStringClasses(classes: (string | Reference)[]): classes is string[] 
   return classes.every((c) => typeof c === 'string');
 }
 
-function setDeferredAttr(
-  vm: VM,
-  name: string,
-  value: string | Reference,
-  namespace: Nullable<string>,
-  trusting = false
-) {
-  if (typeof value === 'string') {
-    vm.tree().setStaticAttribute(name, value, namespace);
-  } else {
-    let attribute = vm.tree().setDynamicAttribute(name, valueForRef(value), trusting, namespace);
-    if (!isConstRef(value)) {
-      vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute, vm.env));
-    }
+export const DID_CREATE_ELEMENT_OP = /*#__PURE__*/ syscall(
+  VM_DID_CREATE_ELEMENT_OP,
+  (vm, { op1: register }) => {
+    let { definition, state } = check(
+      vm.fetchValue(check(register, CheckRegister)),
+      CheckComponentInstance
+    );
+    let { manager } = definition;
+
+    let operations = check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations));
+
+    (manager as WithElementHook<unknown>).didCreateElement(
+      state,
+      expect(vm.tree().constructing, `Expected a constructing element in DidCreateOpcode`),
+      operations
+    );
   }
-}
+);
 
-APPEND_OPCODES.add(VM_DID_CREATE_ELEMENT_OP, (vm, { op1: register }) => {
-  let { definition, state } = check(
-    vm.fetchValue(check(register, CheckRegister)),
-    CheckComponentInstance
-  );
-  let { manager } = definition;
-
-  let operations = check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations));
-
-  (manager as WithElementHook<unknown>).didCreateElement(
-    state,
-    expect(vm.tree().constructing, `Expected a constructing element in DidCreateOpcode`),
-    operations
-  );
-});
-
-APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }) => {
-  let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
-  let { definition, state } = instance;
-  let { manager } = definition;
-  let selfRef = manager.getSelf(state);
-
-  if (vm.env.debugRenderTree !== undefined) {
+export const GET_COMPONENT_SELF_OP = /*#__PURE__*/ syscall(
+  VM_GET_COMPONENT_SELF_OP,
+  (vm, { op1: register, op2: _names }) => {
     let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
-    let { definition, manager } = instance;
+    let { definition, state } = instance;
+    let { manager } = definition;
+    let selfRef = manager.getSelf(state);
 
-    let args: CapturedArguments;
+    debugTree(vm.env)?.componentDidGetSelf(vm, instance, selfRef, _names);
 
-    if (vm.stack.peek() === vm.args) {
-      args = vm.args.capture();
-    } else {
-      let names = vm.constants.getArray<string>(_names);
-      vm.args.setup(vm.stack, names, [], 0, true);
-      args = vm.args.capture();
-    }
+    vm.stack.push(selfRef);
+  }
+);
 
-    let compilable: CompilableProgram | null = definition.compilable;
+export const GET_COMPONENT_TAG_NAME_OP = /*#__PURE__*/ syscall(
+  VM_GET_COMPONENT_TAG_NAME_OP,
+  (vm, { op1: register }) => {
+    let { definition, state } = check(
+      vm.fetchValue(check(register, CheckRegister)),
+      CheckComponentInstance
+    );
+    let { manager } = definition;
+
+    let tagName = (
+      manager as Recast<InternalComponentManager, WithDynamicTagName<unknown>>
+    ).getTagName(state);
+
+    // User provided value from JS, so we don't bother to encode
+    vm.stack.push(tagName);
+  }
+);
+
+// Dynamic Invocation Only
+export const GET_COMPONENT_LAYOUT_OP = /*#__PURE__*/ syscall(
+  VM_GET_COMPONENT_LAYOUT_OP,
+  (vm, { op1: register }) => {
+    let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
+
+    let { manager, definition } = instance;
+    let { stack } = vm;
+
+    let { compilable } = definition;
 
     if (compilable === null) {
+      let { capabilities } = instance;
+
       assert(
-        managerHasCapability(
-          manager,
-          instance.capabilities,
-          InternalComponentCapabilities.dynamicLayout
-        ),
+        managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout),
         'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
       );
 
       let resolver = vm.context.resolver;
-      compilable = resolver === null ? null : manager.getDynamicLayout(state, resolver);
-    }
+      compilable = resolver === null ? null : manager.getDynamicLayout(instance.state, resolver);
 
-    // For tearing down the debugRenderTree
-    vm.associateDestroyable(instance);
-
-    if (hasCustomDebugRenderTreeLifecycle(manager)) {
-      let nodes = manager.getDebugCustomRenderTree(instance.definition.state, instance.state, args);
-
-      nodes.forEach((node) => {
-        let { bucket } = node;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-        vm.env.debugRenderTree!.create(bucket, node);
-
-        registerDestructor(instance, () => {
-          vm.env.debugRenderTree?.willDestroy(bucket);
-        });
-
-        vm.updateWith(new DebugRenderTreeUpdateOpcode(bucket));
-      });
-    } else {
-      let name = getDebugName(definition, manager);
-
-      vm.env.debugRenderTree.create(instance, {
-        type: 'component',
-        name,
-        args,
-        instance: valueForRef(selfRef),
-      });
-
-      registerDestructor(instance, () => {
-        vm.env.debugRenderTree?.willDestroy(instance);
-      });
-
-      vm.updateWith(new DebugRenderTreeUpdateOpcode(instance));
-    }
-  }
-
-  vm.stack.push(selfRef);
-});
-
-APPEND_OPCODES.add(VM_GET_COMPONENT_TAG_NAME_OP, (vm, { op1: register }) => {
-  let { definition, state } = check(
-    vm.fetchValue(check(register, CheckRegister)),
-    CheckComponentInstance
-  );
-  let { manager } = definition;
-
-  let tagName = (
-    manager as Recast<InternalComponentManager, WithDynamicTagName<unknown>>
-  ).getTagName(state);
-
-  // User provided value from JS, so we don't bother to encode
-  vm.stack.push(tagName);
-});
-
-// Dynamic Invocation Only
-APPEND_OPCODES.add(VM_GET_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
-  let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
-
-  let { manager, definition } = instance;
-  let { stack } = vm;
-
-  let { compilable } = definition;
-
-  if (compilable === null) {
-    let { capabilities } = instance;
-
-    assert(
-      managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout),
-      'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
-    );
-
-    let resolver = vm.context.resolver;
-    compilable = resolver === null ? null : manager.getDynamicLayout(instance.state, resolver);
-
-    if (compilable === null) {
-      if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.wrapped)) {
-        compilable = unwrapTemplate(vm.constants.defaultTemplate).asWrappedLayout();
-      } else {
-        compilable = unwrapTemplate(vm.constants.defaultTemplate).asLayout();
+      if (compilable === null) {
+        if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.wrapped)) {
+          compilable = unwrapTemplate(vm.constants.defaultTemplate).asWrappedLayout();
+        } else {
+          compilable = unwrapTemplate(vm.constants.defaultTemplate).asLayout();
+        }
       }
     }
+
+    let handle = compilable.compile(vm.context);
+
+    stack.push(compilable.symbolTable);
+    stack.push(handle);
   }
+);
 
-  let handle = compilable.compile(vm.context);
-
-  stack.push(compilable.symbolTable);
-  stack.push(handle);
-});
-
-APPEND_OPCODES.add(VM_MAIN_OP, (vm, { op1: register }) => {
+export const MAIN_OP = /*#__PURE__*/ syscall(VM_MAIN_OP, (vm, { op1: register }) => {
   let definition = check(vm.stack.pop(), CheckComponentDefinition);
   let invocation = check(vm.stack.pop(), CheckInvocation);
 
@@ -809,65 +779,77 @@ APPEND_OPCODES.add(VM_MAIN_OP, (vm, { op1: register }) => {
   vm.loadValue(check(register, CheckSyscallRegister), state);
 });
 
-APPEND_OPCODES.add(VM_POPULATE_LAYOUT_OP, (vm, { op1: register }) => {
-  let { stack } = vm;
+export const POPULATE_LAYOUT_OP = /*#__PURE__*/ syscall(
+  VM_POPULATE_LAYOUT_OP,
+  (vm, { op1: register }) => {
+    let { stack } = vm;
 
-  // In import.meta.env.DEV handles could be ErrHandle objects
-  let handle = check(stack.pop(), CheckHandle);
-  let table = check(stack.pop(), CheckProgramSymbolTable);
+    // In import.meta.env.DEV handles could be ErrHandle objects
+    let handle = check(stack.pop(), CheckHandle);
+    let table = check(stack.pop(), CheckProgramSymbolTable);
 
-  let state = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
+    let state = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
 
-  state.handle = handle;
-  state.table = table;
-});
+    state.handle = handle;
+    state.table = table;
+  }
+);
 
-APPEND_OPCODES.add(VM_VIRTUAL_ROOT_SCOPE_OP, (vm, { op1: register }) => {
-  let { table, manager, capabilities, state } = check(
-    vm.fetchValue(check(register, CheckRegister)),
-    CheckFinishedComponentInstance
-  );
+export const VIRTUAL_ROOT_SCOPE_OP = /*#__PURE__*/ syscall(
+  VM_VIRTUAL_ROOT_SCOPE_OP,
+  (vm, { op1: register }) => {
+    let { table, manager, capabilities, state } = check(
+      vm.fetchValue(check(register, CheckRegister)),
+      CheckFinishedComponentInstance
+    );
 
-  let owner;
+    let owner;
 
-  if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.hasSubOwner)) {
-    owner = manager.getOwner(state);
-    vm.loadValue($t1, null); // Clear the temp register
-  } else {
-    // Check the temp register to see if an owner was resolved from currying
-    owner = vm.fetchValue<Owner | null>($t1);
-
-    if (owner === null) {
-      // If an owner wasn't found, default to using the current owner. This
-      // will happen for normal dynamic component invocation,
-      // e.g. <SomeClassicEmberComponent/>
-      owner = vm.getOwner();
+    if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.hasSubOwner)) {
+      owner = manager.getOwner(state);
+      vm.loadValue($t1, null); // Clear the temp register
     } else {
-      // Else the owner was found, so clear the temp register. This will happen
-      // if we are loading a curried component, e.g. <@someCurriedComponent/>
-      vm.loadValue($t1, null);
+      // Check the temp register to see if an owner was resolved from currying
+      owner = vm.fetchValue<Owner | null>($t1);
+
+      if (owner === null) {
+        // If an owner wasn't found, default to using the current owner. This
+        // will happen for normal dynamic component invocation,
+        // e.g. <SomeClassicEmberComponent/>
+        owner = vm.getOwner();
+      } else {
+        // Else the owner was found, so clear the temp register. This will happen
+        // if we are loading a curried component, e.g. <@someCurriedComponent/>
+        vm.loadValue($t1, null);
+      }
+    }
+
+    vm.pushRootScope(table.symbols.length + 1, owner);
+  }
+);
+
+export const SET_NAMED_VARIABLES_OP = /*#__PURE__*/ syscall(
+  VM_SET_NAMED_VARIABLES_OP,
+  (vm, { op1: register }) => {
+    let state = check(
+      vm.fetchValue(check(register, CheckRegister)),
+      CheckFinishedComponentInstance
+    );
+    let scope = vm.scope();
+
+    let args = check(vm.stack.peek(), CheckArguments);
+    let callerNames = args.named.atNames;
+
+    for (let i = callerNames.length - 1; i >= 0; i--) {
+      let atName = unwrap(callerNames[i]);
+      let symbol = state.table.symbols.indexOf(atName);
+      let value = args.named.get(atName, true);
+
+      if (symbol !== -1) scope.bindSymbol(symbol + 1, value);
+      if (state.lookup) state.lookup[atName] = value;
     }
   }
-
-  vm.pushRootScope(table.symbols.length + 1, owner);
-});
-
-APPEND_OPCODES.add(VM_SET_NAMED_VARIABLES_OP, (vm, { op1: register }) => {
-  let state = check(vm.fetchValue(check(register, CheckRegister)), CheckFinishedComponentInstance);
-  let scope = vm.scope();
-
-  let args = check(vm.stack.peek(), CheckArguments);
-  let callerNames = args.named.atNames;
-
-  for (let i = callerNames.length - 1; i >= 0; i--) {
-    let atName = unwrap(callerNames[i]);
-    let symbol = state.table.symbols.indexOf(atName);
-    let value = args.named.get(atName, true);
-
-    if (symbol !== -1) scope.bindSymbol(symbol + 1, value);
-    if (state.lookup) state.lookup[atName] = value;
-  }
-});
+);
 
 function bindBlock(
   symbolName: string,
@@ -883,7 +865,7 @@ function bindBlock(
   if (state.lookup) state.lookup[symbolName] = block;
 }
 
-APPEND_OPCODES.add(VM_SET_BLOCKS_OP, (vm, { op1: register }) => {
+export const SET_BLOCKS_OP = /*#__PURE__*/ syscall(VM_SET_BLOCKS_OP, (vm, { op1: register }) => {
   let state = check(vm.fetchValue(check(register, CheckRegister)), CheckFinishedComponentInstance);
   let { blocks } = check(vm.stack.peek(), CheckArguments);
 
@@ -893,49 +875,44 @@ APPEND_OPCODES.add(VM_SET_BLOCKS_OP, (vm, { op1: register }) => {
 });
 
 // Dynamic Invocation Only
-APPEND_OPCODES.add(VM_INVOKE_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
-  let state = check(vm.fetchValue(check(register, CheckRegister)), CheckFinishedComponentInstance);
+export const INVOKE_COMPONENT_LAYOUT_OP = /*#__PURE__*/ syscall(
+  VM_INVOKE_COMPONENT_LAYOUT_OP,
+  (vm, { op1: register }) => {
+    let state = check(
+      vm.fetchValue(check(register, CheckRegister)),
+      CheckFinishedComponentInstance
+    );
 
-  vm.call(state.handle);
-});
+    vm.call(state.handle);
+  }
+);
 
-APPEND_OPCODES.add(VM_DID_RENDER_LAYOUT_OP, (vm, { op1: register }) => {
-  let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
-  let { manager, state, capabilities } = instance;
-  let bounds = vm.tree().popBlock();
+export const DID_RENDER_LAYOUT_OP = /*#__PURE__*/ syscall(
+  VM_DID_RENDER_LAYOUT_OP,
+  (vm, { op1: register }) => {
+    let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
+    let { manager, state, capabilities } = instance;
+    let bounds = vm.tree().popBlock();
 
-  if (vm.env.debugRenderTree !== undefined) {
-    if (hasCustomDebugRenderTreeLifecycle(manager)) {
-      let nodes = manager.getDebugCustomRenderTree(instance.definition.state, state, EMPTY_ARGS);
+    debugTree(vm.env)?.componentDidRenderLayout(vm, instance, bounds);
 
-      nodes.reverse().forEach((node) => {
-        let { bucket } = node;
+    if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.createInstance)) {
+      let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- @fixme
+      mgr.didRenderLayout(state, bounds);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-        vm.env.debugRenderTree!.didRender(bucket, bounds);
-
-        vm.updateWith(new DebugRenderTreeDidRenderOpcode(bucket, bounds));
-      });
-    } else {
-      vm.env.debugRenderTree.didRender(instance, bounds);
-
-      vm.updateWith(new DebugRenderTreeDidRenderOpcode(instance, bounds));
+      vm.env.didCreate(instance as ComponentInstanceWithCreate);
+      vm.updateWith(new DidUpdateLayoutOpcode(instance as ComponentInstanceWithCreate, bounds));
     }
   }
+);
 
-  if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.createInstance)) {
-    let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- @fixme
-    mgr.didRenderLayout(state, bounds);
-
-    vm.env.didCreate(instance as ComponentInstanceWithCreate);
-    vm.updateWith(new DidUpdateLayoutOpcode(instance as ComponentInstanceWithCreate, bounds));
+export const COMMIT_COMPONENT_TRANSACTION_OP = /*#__PURE__*/ syscall(
+  VM_COMMIT_COMPONENT_TRANSACTION_OP,
+  (vm) => {
+    vm.commitCacheGroup();
   }
-});
-
-APPEND_OPCODES.add(VM_COMMIT_COMPONENT_TRANSACTION_OP, (vm) => {
-  vm.commitCacheGroup();
-});
+);
 
 export class UpdateComponentOpcode implements UpdatingOpcode {
   constructor(
@@ -964,24 +941,5 @@ export class DidUpdateLayoutOpcode implements UpdatingOpcode {
     manager.didUpdateLayout(state, bounds);
 
     vm.env.didUpdate(component);
-  }
-}
-
-class DebugRenderTreeUpdateOpcode implements UpdatingOpcode {
-  constructor(private bucket: object) {}
-
-  evaluate(vm: UpdatingVM) {
-    vm.env.debugRenderTree?.update(this.bucket);
-  }
-}
-
-class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
-  constructor(
-    private bucket: object,
-    private bounds: Bounds
-  ) {}
-
-  evaluate(vm: UpdatingVM) {
-    vm.env.debugRenderTree?.didRender(this.bucket, this.bounds);
   }
 }

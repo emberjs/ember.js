@@ -116,20 +116,6 @@ export interface ResolutionTimeConstants {
   // currently.
   defaultTemplate: Template;
 
-  helper(
-    definitionState: HelperDefinitionState,
-    resolvedName: string | null,
-    isOptional: true
-  ): number | null;
-  helper(definitionState: HelperDefinitionState, resolvedName?: string | null): number;
-
-  modifier(
-    definitionState: ModifierDefinitionState,
-    resolvedName: string | null,
-    isOptional: true
-  ): number | null;
-  modifier(definitionState: ModifierDefinitionState, resolvedName?: string | null): number;
-
   component(
     definitionState: ComponentDefinitionState,
     owner: object,
@@ -142,11 +128,6 @@ export interface ResolutionTimeConstants {
     isOptional?: boolean,
     debugName?: string
   ): ComponentDefinition | null;
-
-  resolvedComponent(
-    definitionState: ResolvedComponentDefinition,
-    resolvedName: string
-  ): ComponentDefinition;
 }
 
 export interface RuntimeConstants {

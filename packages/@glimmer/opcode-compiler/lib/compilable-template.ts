@@ -21,11 +21,12 @@ import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 
 import type { HighLevelStatementOp } from './syntax/compilers';
 
+import { compileSexp } from './syntax/compilers';
+
 import { debugCompiler } from './compiler';
 import { templateCompilationContext } from './opcode-builder/context';
 import { encodeOp } from './opcode-builder/encoder';
 import { meta } from './opcode-builder/helpers/shared';
-import { STATEMENTS } from './syntax/statements';
 
 export const PLACEHOLDER_HANDLE = -1;
 
@@ -88,7 +89,6 @@ export function compileStatements(
   meta: BlockMetadata,
   syntaxContext: EvaluationContext
 ): HandleResult {
-  let sCompiler = STATEMENTS;
   let context = templateCompilationContext(syntaxContext, meta);
 
   let { encoder, evaluation } = context;
@@ -98,7 +98,7 @@ export function compileStatements(
   }
 
   for (const statement of statements) {
-    sCompiler.compile(pushOp, statement);
+    compileSexp(pushOp, statement);
   }
 
   let handle = context.encoder.commit(meta.size);

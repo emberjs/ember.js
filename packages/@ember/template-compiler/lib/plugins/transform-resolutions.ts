@@ -5,7 +5,7 @@ import type { ASTPlugin } from '@glimmer/syntax/lib/parser/tokenizer-event-handl
 import print from '@glimmer/syntax/lib/generation/print';
 import calculateLocationDisplay from '../system/calculate-location-display';
 import type { EmberASTPluginEnvironment } from '../types';
-import { isPath, isStringLiteral, trackLocals } from './utils';
+import { isPath, isStringLiteral, keywordPath, trackLocals } from './utils';
 
 /**
  @module ember
@@ -107,7 +107,7 @@ export default function transformResolutions(env: EmberASTPluginEnvironment): AS
         ) {
           let result = b.mustache(
             node.path,
-            transformParams(b, node.params, node.path.original, moduleName, node.loc),
+            transformParams(env, b, node.params, node.path.original, moduleName, node.loc),
             node.hash,
             node.trusting,
             node.loc,
@@ -134,7 +134,7 @@ export default function transformResolutions(env: EmberASTPluginEnvironment): AS
         ) {
           let result = b.sexpr(
             node.path,
-            transformParams(b, node.params, node.path.original, moduleName, node.loc),
+            transformParams(env, b, node.params, node.path.original, moduleName, node.loc),
             node.hash,
             node.loc
           );
@@ -154,6 +154,7 @@ function isLocalVariable(node: AST.PathExpression, hasLocal: (k: string) => bool
 }
 
 function transformParams(
+  env: EmberASTPluginEnvironment,
   b: EmberASTPluginEnvironment['syntax']['builders'],
   params: AST.Expression[],
   type: string,
@@ -173,7 +174,7 @@ function transformParams(
   if (isStringLiteral(first)) {
     return [
       b.sexpr(
-        b.path('-resolve', first.loc),
+        keywordPath(env, '-resolve', 'resolve', first.loc),
         [b.string(`${type}:${first.value}`)],
         undefined,
         first.loc
@@ -183,7 +184,7 @@ function transformParams(
   } else if (DEBUG) {
     return [
       b.sexpr(
-        b.path('-disallow-dynamic-resolution', first.loc),
+        keywordPath(env, '-disallow-dynamic-resolution', 'disallowDynamicResolution', first.loc),
         [first],
         b.hash([
           b.pair('type', b.string(type), first.loc),

@@ -12,7 +12,7 @@ import type {
   STDLib,
 } from '@glimmer/interfaces';
 
-import { compileStd } from './opcode-builder/helpers/stdlib';
+import { StdlibImpl } from './opcode-builder/stdlib';
 
 export class EvaluationContextImpl implements EvaluationContext {
   readonly constants: ProgramConstants;
@@ -35,6 +35,6 @@ export class EvaluationContextImpl implements EvaluationContext {
     this.env = runtime.env;
     this.program = runtime.program;
 
-    this.stdlib = compileStd(this);
+    this.stdlib = new StdlibImpl(this);
   }
 }

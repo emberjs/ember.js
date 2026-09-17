@@ -171,10 +171,19 @@ class OutletComponentManager
 
 const OUTLET_MANAGER = /*@__PURE__*/ new OutletComponentManager();
 
-const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
-  '<@Component @controller={{@controller}} @model={{@model}} />',
-  { strictMode: true }
-);
+let outletComponentTemplate: ReturnType<typeof precompileTemplate> | undefined;
+
+/**
+ * Compiled on first use. This module loads in Node during the build,
+ * before the template compilation plugin has run, so the call cannot sit
+ * at module scope.
+ */
+function getOutletComponentTemplate(): ReturnType<typeof precompileTemplate> {
+  return (outletComponentTemplate ??= precompileTemplate(
+    '<@Component @controller={{@controller}} @model={{@model}} />',
+    { strictMode: true }
+  ));
+}
 
 export class OutletComponent implements ComponentDefinition<
   OutletDefinitionState,
@@ -192,7 +201,7 @@ export class OutletComponent implements ComponentDefinition<
     owner: InternalOwner,
     public state: OutletDefinitionState
   ) {
-    this.compilable = unwrapTemplate(OUTLET_COMPONENT_TEMPLATE(owner)).asLayout();
+    this.compilable = unwrapTemplate(getOutletComponentTemplate()(owner)).asLayout();
   }
 }
 

@@ -60,12 +60,8 @@ export {
   dynamicAttribute,
   SimpleDynamicAttribute,
 } from './lib/vm/attributes/dynamic';
-export {
-  clientBuilder,
-  NewTreeBuilder,
-  RemoteBlock,
-  ResettableBlockImpl,
-} from './lib/vm/element-builder';
+export { clientBuilder, NewTreeBuilder, ResettableBlockImpl } from './lib/vm/element-builder';
+export { RemoteBlock } from './lib/vm/remote-element';
 export { LowLevelVM } from './lib/vm/low-level';
 export {
   isSerializationFirstNode,

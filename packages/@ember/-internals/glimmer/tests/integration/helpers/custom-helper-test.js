@@ -17,10 +17,13 @@ moduleFor(
   'Helpers test: custom helpers',
   class extends RenderingTestCase {
     ['@test it cannot override built-in syntax']() {
+      // The compiler binds `array` to the built-in, so a registered helper
+      // with the same name never resolves. Templates that still resolve by
+      // name (JSON blocks from published addons) keep the assertion in
+      // `ResolverImpl.lookupHelper`.
       this.registerHelper('array', () => 'Nope');
-      expectAssertion(() => {
-        this.render(`{{array this.foo 'LOL'}}`, { foo: true });
-      }, /You attempted to overwrite the built-in helper "array" which is not allowed. Please rename the helper./);
+      this.render(`{{array this.foo 'LOL'}}`, { foo: true });
+      this.assertText('true,LOL');
     }
 
     ['@test it can resolve custom simple helpers with or without dashes']() {

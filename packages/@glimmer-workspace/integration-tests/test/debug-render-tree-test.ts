@@ -14,7 +14,7 @@ import { expect } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
 import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
 import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
-import { assign } from '@glimmer/util';
+import DebugRenderTreeImpl from '@glimmer/runtime/lib/debug-render-tree';
 import {
   BaseEnv,
   createTemplate,
@@ -906,7 +906,12 @@ class DebugRenderTreeTest extends RenderTest {
 }
 
 suite(DebugRenderTreeTest, DebugRenderTreeDelegate, {
-  env: assign({}, BaseEnv, {
+  env: {
+    ...BaseEnv,
     enableDebugTooling: true,
-  }),
+    // The delegate copies this object per test, so each test gets its own tree.
+    get debugRenderTree() {
+      return new DebugRenderTreeImpl();
+    },
+  },
 });

@@ -1,16 +1,19 @@
-import type { SerializedTemplateBlock, SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
-import { opcodes as op } from '@glimmer/wire-format/lib/opcodes';
+import type { AotTemplate } from '@glimmer/opcode-compiler/lib/aot/template';
+import {
+  DEFAULT_TEMPLATE as BLOCK,
+  DEFAULT_TEMPLATE_WRAPPED,
+} from '@glimmer/opcode-compiler/lib/opcode-builder/stdlib-data';
 
 /**
- * Default component template, which is a plain yield
+ * Default component template, which is a plain yield. Compiled ahead of
+ * time by `bin/build-aot-stdlib.mjs`, in both plain and wrapped forms.
  */
-const DEFAULT_TEMPLATE_BLOCK: SerializedTemplateBlock = [[[op.Yield, 1, null]], ['&default'], []];
-
-export const DEFAULT_TEMPLATE: SerializedTemplateWithLazyBlock = {
+export const DEFAULT_TEMPLATE: AotTemplate = {
   // random uuid
   id: '1b32f5c2-7623-43d6-a0ad-9672898920a1',
+  block: BLOCK,
   moduleName: '__default__.hbs',
-  block: JSON.stringify(DEFAULT_TEMPLATE_BLOCK),
-  scope: null,
   isStrictMode: true,
 };
+
+export { DEFAULT_TEMPLATE_WRAPPED };

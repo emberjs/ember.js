@@ -1,5 +1,5 @@
 import type { PresentArray } from './array.js';
-import type { EncoderError } from './compile/encoder.js';
+import type { BuilderOp, EncoderError, HighLevelOp, SyscallHandler } from './compile/encoder.js';
 import type { Operand, SerializedInlineBlock, SerializedTemplateBlock } from './compile/index.js';
 import type { Nullable, Optional } from './core.js';
 import type { InternalComponentCapabilities } from './managers/internal/component.js';
@@ -13,9 +13,9 @@ export interface CompilableProgram extends CompilableTemplate<ProgramSymbolTable
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
-export interface LayoutWithContext {
+export interface LayoutWithContext<B = SerializedTemplateBlock> {
   readonly id: string;
-  readonly block: SerializedTemplateBlock;
+  readonly block: B;
   readonly moduleName: string;
   readonly owner: Owner | null;
   readonly scope: (() => Record<string, unknown>) | undefined | null;
@@ -57,17 +57,43 @@ export type Template = TemplateOk | TemplateError;
 
 export type TemplateFactory = (owner?: Owner) => Template;
 
+/**
+ * A standard library routine. The encoder compiles it the first time a
+ * template references it, so a routine that no template needs is never
+ * compiled and can be dropped by a bundler.
+ */
+/** Names a standard library routine. */
+export interface StdlibRef {
+  readonly name: string;
+}
+
+/**
+ * The source of a routine: the ops it pushes. Only the generator in
+ * `bin/build-aot-stdlib.mjs` and its test run these.
+ */
+export interface StdlibSource extends StdlibRef {
+  build(op: (...op: BuilderOp | HighLevelOp) => void): void;
+}
+
+/**
+ * A routine compiled ahead of time. `fixups` are word positions that hold
+ * another routine's handle; the thunk avoids declaration order problems in
+ * the generated module.
+ */
+export interface StdlibRoutine extends StdlibRef {
+  readonly size: number;
+  readonly words: readonly number[];
+  readonly handlers: readonly SyscallHandler[];
+  readonly fixups: ReadonlyArray<readonly [position: number, routine: () => StdlibRoutine]>;
+}
+
 export interface STDLib {
-  main: number;
-  'cautious-append': number;
-  'trusting-append': number;
-  'cautious-non-dynamic-append': number;
-  'trusting-non-dynamic-append': number;
+  /** The routine that invokes the root component. */
+  readonly main: number;
+  handle(routine: StdlibRoutine): number;
 }
 
 export type SerializedStdlib = [number, number, number];
-
-export type STDLibName = keyof STDLib;
 
 export type CompilerBuffer = Array<Operand>;
 
