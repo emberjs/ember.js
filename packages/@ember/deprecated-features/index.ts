@@ -14,3 +14,9 @@ export const DEPRECATE_COMPARABLE_MIXIN = true;
 
 /** id: importing-inject-from-ember-service, since: 6.2.0/6.3.0, until: 7.0.0 */
 export const DEPRECATE_IMPORT_INJECT = true;
+
+/** id: deprecate-object-proxy, since: 7.4.0, until: 8.0.0 */
+export const DEPRECATE_OBJECT_PROXY = true;
+
+/** id: deprecate-promise-proxy-mixin, since: 7.4.0, until: 8.0.0 */
+export const DEPRECATE_PROMISE_PROXY_MIXIN = true;

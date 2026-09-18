@@ -203,6 +203,13 @@ export function inject(...args) {
 }
 ```
 
+A deprecated public class takes the entrypoint shape: the class survives
+shaking as a stub whose `init` throws the removal error, and the behavior it
+composes is guarded (`ObjectProxy` keeps its class; its `ProxyMixin` is
+shaken away). A deprecated public value export takes the value shape but
+keeps its published type with a cast, since TypeScript does not narrow a
+`const X = true` flag in a conditional (`PromiseProxyMixin`).
+
 The registry entry is linked to the flag, so when the flag is `false` the
 deprecation reports itself as *removed*: any unguarded reach of the API
 throws the same "has been removed" error that shipping past `until` would

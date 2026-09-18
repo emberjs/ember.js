@@ -882,6 +882,9 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
+      '@ember/deprecated-features':
+        specifier: workspace:*
+        version: link:../deprecated-features
       '@ember/enumerable':
         specifier: workspace:*
         version: link:../enumerable

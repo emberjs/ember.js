@@ -15,6 +15,16 @@ const FLAGS = Object.freeze({
     since: Object.freeze({ available: '6.2.0', enabled: '6.3.0' }),
     until: '7.0.0',
   }),
+  DEPRECATE_OBJECT_PROXY: Object.freeze({
+    id: 'deprecate-object-proxy',
+    since: Object.freeze({ available: '7.4.0' }),
+    until: '8.0.0',
+  }),
+  DEPRECATE_PROMISE_PROXY_MIXIN: Object.freeze({
+    id: 'deprecate-promise-proxy-mixin',
+    since: Object.freeze({ available: '7.4.0' }),
+    until: '8.0.0',
+  }),
 });
 
 const DEFAULT_FLAGS = Object.freeze(

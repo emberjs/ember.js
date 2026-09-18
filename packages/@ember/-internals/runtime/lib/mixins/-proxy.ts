@@ -14,6 +14,7 @@ import { setProxy, isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { setupMandatorySetter } from '@ember/-internals/utils/lib/mandatory-setter';
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import { assert } from '@ember/debug';
+import { DEPRECATE_OBJECT_PROXY } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
 import type { UpdatableTag, Tag } from '@glimmer/interfaces';
@@ -91,58 +92,64 @@ interface ProxyMixin<T = unknown> {
   setUnknownProperty<V>(key: string, value: V): V;
 }
 
-const ProxyMixin = /*@__PURE__*/ Mixin[INTERNAL_MIXIN_CREATE]({
-  /**
-    The object whose properties will be forwarded.
+// SAFETY: ObjectProxy is ProxyMixin's only consumer, so the mixin shakes
+// with it; a shaken build exports undefined.
+const ProxyMixin = (
+  DEPRECATE_OBJECT_PROXY
+    ? /*@__PURE__*/ Mixin[INTERNAL_MIXIN_CREATE]({
+        /**
+        The object whose properties will be forwarded.
 
-    @property content
-    @type {unknown}
-    @default null
-    @public
-  */
-  content: null,
+        @property content
+        @type {unknown}
+        @default null
+        @public
+      */
+        content: null,
 
-  init() {
-    this._super(...arguments);
-    setProxy(this);
-    tagForObject(this);
-    setCustomTagFor(this, customTagForProxy);
-  },
+        init() {
+          this._super(...arguments);
+          setProxy(this);
+          tagForObject(this);
+          setCustomTagFor(this, customTagForProxy);
+        },
 
-  willDestroy() {
-    this.set('content', null);
-    this._super(...arguments);
-  },
+        willDestroy() {
+          this.set('content', null);
+          this._super(...arguments);
+        },
 
-  isTruthy: computed('content', function () {
-    return Boolean(get(this, 'content'));
-  }),
+        isTruthy: computed('content', function () {
+          return Boolean(get(this, 'content'));
+        }),
 
-  unknownProperty(key: string) {
-    let content = contentFor(this);
-    return content ? get(content, key) : undefined;
-  },
+        unknownProperty(key: string) {
+          let content = contentFor(this);
+          return content ? get(content, key) : undefined;
+        },
 
-  setUnknownProperty(key: string, value: unknown) {
-    let m = meta(this);
+        setUnknownProperty(key: string, value: unknown) {
+          let m = meta(this);
 
-    if (m.isInitializing() || m.isPrototypeMeta(this)) {
-      // if marked as prototype or object is initializing then just
-      // defineProperty rather than delegate
-      defineProperty(this, key, null, value);
-      return value;
-    }
+          if (m.isInitializing() || m.isPrototypeMeta(this)) {
+            // if marked as prototype or object is initializing then just
+            // defineProperty rather than delegate
+            defineProperty(this, key, null, value);
+            return value;
+          }
 
-    let content = contentFor(this);
+          let content = contentFor(this);
 
-    assert(
-      `Cannot delegate set('${key}', ${value}) to the 'content' property of object proxy ${this}: its 'content' is undefined.`,
-      content
-    );
+          assert(
+            `Cannot delegate set('${key}', ${value}) to the 'content' property of object proxy ${this}: its 'content' is undefined.`,
+            content
+          );
 
-    // SAFETY: We don't actually guarantee that this is an object, so this isn't necessarily safe :(
-    return set(content as object, key, value);
-  },
-});
+          // SAFETY: We don't actually guarantee that this is an object, so this isn't necessarily safe :(
+          return set(content as object, key, value);
+        },
+      })
+    : undefined
+) as Mixin;
 
 export default ProxyMixin;

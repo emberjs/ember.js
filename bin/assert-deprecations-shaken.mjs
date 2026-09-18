@@ -35,6 +35,11 @@ const CONTENT_MARKERS = {
   // intentionally survives shaking as the throwing stub. The flag identifier
   // check still proves the guarded implementation was folded away.
   DEPRECATE_IMPORT_INJECT: [],
+  // DEPRECATE_OBJECT_PROXY has no content marker: ObjectProxy's deprecateUntil
+  // message survives as the throwing stub, and ProxyMixin has no runtime
+  // string that is unique to it.
+  DEPRECATE_OBJECT_PROXY: [],
+  DEPRECATE_PROMISE_PROXY_MIXIN: ['`PromiseProxyMixin` is deprecated'],
 };
 
 const FLAGS_MODULE_SUFFIX = 'packages/@ember/deprecated-features/index.js';
