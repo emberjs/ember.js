@@ -40,13 +40,14 @@ export interface DeprecationStagesConfig {
 
   /**
     Ids this configuration should treat as unconfigured: exempted from
-    `compliance`/`assert` throwing and from `enable` (including
-    `enable: true`).
+    `compliance`/`assert` throwing, from `enable` (including `enable: true`),
+    and from the removal simulation of `_OVERRIDE_DEPRECATION_VERSION`.
    */
   except?: string[];
 }
 
 let isDeprecationEnabledByConfig: (id: string) => boolean = () => false;
+let isDeprecationExceptedByConfig: (id: string) => boolean = () => false;
 let shouldThrowForDeprecation: (options: DeprecationOptions) => boolean = () => false;
 let setDeprecationStagesConfig: (config: DeprecationStagesConfig | null) => void = () => {};
 
@@ -156,10 +157,13 @@ if (DEBUG) {
     return normalized;
   };
 
-  let current = normalize(ENV.DEPRECATION_STAGES as DeprecationStagesConfig | null);
+  let bootConfig = ENV.DEPRECATION_STAGES as DeprecationStagesConfig | null;
+  let current = normalize(bootConfig);
 
   isDeprecationEnabledByConfig = (id) =>
     (current.enableAll || current.enabledIds.has(id)) && !current.exceptIds.has(id);
+
+  isDeprecationExceptedByConfig = (id) => current.exceptIds.has(id);
 
   shouldThrowForDeprecation = (options) => {
     if (current.exceptIds.has(options.id)) {
@@ -175,9 +179,16 @@ if (DEBUG) {
     return false;
   };
 
+  // null restores the boot (EmberENV) configuration — the correct teardown
+  // for tests that swapped it — while `{}` is an explicitly empty config.
   setDeprecationStagesConfig = (config) => {
-    current = normalize(config);
+    current = normalize(config ?? bootConfig);
   };
 }
 
-export { isDeprecationEnabledByConfig, shouldThrowForDeprecation, setDeprecationStagesConfig };
+export {
+  isDeprecationEnabledByConfig,
+  isDeprecationExceptedByConfig,
+  shouldThrowForDeprecation,
+  setDeprecationStagesConfig,
+};
