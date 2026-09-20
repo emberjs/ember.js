@@ -3,6 +3,7 @@ import type { CompileTimeConstants } from '../program.js';
 import type { CompileTimeComponent } from '../serialize.js';
 import type { HandleResult, NamedBlocks } from '../template.js';
 import type { VmMachineOp as MachineOp, VmOp as Op } from '../vm-opcodes.js';
+import type { RuntimeOp } from '../program.js';
 import type { SingleBuilderOperand } from './operands.js';
 import type * as WireFormat from './wire-format/api.js';
 
@@ -116,8 +117,19 @@ export type HighLevelOp = HighLevelBuilderOp | HighLevelResolutionOp;
 
 export type BuilderOpcode = Op | MachineOp;
 
+/**
+ * A runtime opcode handler paired with its opcode number. Compile-time code
+ * pushes the handler object, so importing the compile-time code also imports
+ * the runtime handler it needs.
+ */
+export interface SyscallHandler<Name extends Op = Op> {
+  readonly type: Name;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly evaluate: (vm: any, opcode: RuntimeOp) => void;
+}
+
 export type BuilderOp = [
-  op: BuilderOpcode,
+  op: BuilderOpcode | SyscallHandler,
   op1?: SingleBuilderOperand,
   op1?: SingleBuilderOperand,
   op1?: SingleBuilderOperand,

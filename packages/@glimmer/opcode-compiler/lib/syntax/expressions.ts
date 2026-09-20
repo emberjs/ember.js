@@ -1,19 +1,21 @@
 import type { ExpressionSexpOpcode } from '@glimmer/interfaces';
 import {
-  VM_COMPILE_BLOCK_OP,
-  VM_CONCAT_OP,
-  VM_CONSTANT_REFERENCE_OP,
-  VM_FETCH_OP,
-  VM_GET_DYNAMIC_VAR_OP,
-  VM_GET_PROPERTY_OP,
-  VM_GET_VARIABLE_OP,
-  VM_HAS_BLOCK_OP,
-  VM_HAS_BLOCK_PARAMS_OP,
-  VM_IF_INLINE_OP,
-  VM_LOG_OP,
-  VM_NOT_OP,
-  VM_SPREAD_BLOCK_OP,
-} from '@glimmer/constants/lib/syscall-ops';
+  CONCAT_OP,
+  GET_DYNAMIC_VAR_OP,
+  GET_PROPERTY_OP,
+  GET_VARIABLE_OP,
+  HAS_BLOCK_OP,
+  HAS_BLOCK_PARAMS_OP,
+  IF_INLINE_OP,
+  LOG_OP,
+  NOT_OP,
+  SPREAD_BLOCK_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/expressions';
+import {
+  COMPILE_BLOCK_OP,
+  CONSTANT_REFERENCE_OP,
+  FETCH_OP,
+} from '@glimmer/runtime/lib/compiled/opcodes/vm';
 import { VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants/lib/vm-ops';
 import { $v0 } from '@glimmer/vm/lib/registers';
 import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
@@ -34,7 +36,7 @@ EXPRESSIONS.add(SexpOpcodes.Concat, (op, [, parts]) => {
     expr(op, part);
   }
 
-  op(VM_CONCAT_OP, parts.length);
+  op(CONCAT_OP, parts.length);
 });
 
 EXPRESSIONS.add(SexpOpcodes.Call, (op, [, expression, positional, named]) => {
@@ -53,13 +55,13 @@ EXPRESSIONS.add(SexpOpcodes.Curry, (op, [, expr, type, positional, named]) => {
 });
 
 EXPRESSIONS.add(SexpOpcodes.GetSymbol, (op, [, sym, path]) => {
-  op(VM_GET_VARIABLE_OP, sym);
+  op(GET_VARIABLE_OP, sym);
   withPath(op, path);
 });
 
 EXPRESSIONS.add(SexpOpcodes.GetLexicalSymbol, (op, [, sym, path]) => {
   op(HighLevelResolutionOpcodes.TemplateLocal, sym, (handle: number) => {
-    op(VM_CONSTANT_REFERENCE_OP, handle);
+    op(CONSTANT_REFERENCE_OP, handle);
     withPath(op, path);
   });
 });
@@ -84,21 +86,21 @@ function withPath(op: PushExpressionOp, path?: string[]) {
   if (path === undefined || path.length === 0) return;
 
   for (let i = 0; i < path.length; i++) {
-    op(VM_GET_PROPERTY_OP, path[i]);
+    op(GET_PROPERTY_OP, path[i]);
   }
 }
 
 EXPRESSIONS.add(SexpOpcodes.Undefined, (op) => PushPrimitiveReference(op, undefined));
 EXPRESSIONS.add(SexpOpcodes.HasBlock, (op, [, block]) => {
   expr(op, block);
-  op(VM_HAS_BLOCK_OP);
+  op(HAS_BLOCK_OP);
 });
 
 EXPRESSIONS.add(SexpOpcodes.HasBlockParams, (op, [, block]) => {
   expr(op, block);
-  op(VM_SPREAD_BLOCK_OP);
-  op(VM_COMPILE_BLOCK_OP);
-  op(VM_HAS_BLOCK_PARAMS_OP);
+  op(SPREAD_BLOCK_OP);
+  op(COMPILE_BLOCK_OP);
+  op(HAS_BLOCK_PARAMS_OP);
 });
 
 EXPRESSIONS.add(SexpOpcodes.IfInline, (op, [, condition, truthy, falsy]) => {
@@ -106,23 +108,23 @@ EXPRESSIONS.add(SexpOpcodes.IfInline, (op, [, condition, truthy, falsy]) => {
   expr(op, falsy);
   expr(op, truthy);
   expr(op, condition);
-  op(VM_IF_INLINE_OP);
+  op(IF_INLINE_OP);
 });
 
 EXPRESSIONS.add(SexpOpcodes.Not, (op, [, value]) => {
   expr(op, value);
-  op(VM_NOT_OP);
+  op(NOT_OP);
 });
 
 EXPRESSIONS.add(SexpOpcodes.GetDynamicVar, (op, [, expression]) => {
   expr(op, expression);
-  op(VM_GET_DYNAMIC_VAR_OP);
+  op(GET_DYNAMIC_VAR_OP);
 });
 
 EXPRESSIONS.add(SexpOpcodes.Log, (op, [, positional]) => {
   op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, null, false);
-  op(VM_LOG_OP);
+  op(LOG_OP);
   op(VM_POP_FRAME_OP);
-  op(VM_FETCH_OP, $v0);
+  op(FETCH_OP, $v0);
 });

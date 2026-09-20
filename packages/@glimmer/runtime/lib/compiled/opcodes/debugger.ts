@@ -7,7 +7,7 @@ import { VM_DEBUGGER_OP } from '@glimmer/constants/lib/syscall-ops';
 import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 import { childRefFor, valueForRef } from '@glimmer/reference/lib/reference';
 
-import { APPEND_OPCODES } from '../../opcodes';
+import { syscall } from '../../opcodes';
 
 export type DebugGet = (path: string) => unknown;
 
@@ -76,7 +76,7 @@ class ScopeInspector {
   }
 }
 
-APPEND_OPCODES.add(VM_DEBUGGER_OP, (vm, { op1: _debugInfo }) => {
+export const DEBUGGER_OP = /*#__PURE__*/ syscall(VM_DEBUGGER_OP, (vm, { op1: _debugInfo }) => {
   let debuggerInfo = vm.constants.getValue<DebuggerInfo>(decodeHandle(_debugInfo));
   let inspector = new ScopeInspector(vm.scope(), debuggerInfo);
   callback(valueForRef(vm.getSelf()), (path) => valueForRef(inspector.get(path)));
