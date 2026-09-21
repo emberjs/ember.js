@@ -23,7 +23,6 @@ import type { VM } from './append';
 import '../bootstrap';
 import { APPEND_OPCODES } from '../opcodes';
 
-// Positional order matches the register constants: $pc=0, $ra=1, $fp=2, $sp=3.
 export type LowLevelRegisters = [$pc: number, $ra: number, $fp: number, $sp: number];
 
 export interface VmStack {
