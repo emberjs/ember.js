@@ -121,11 +121,15 @@ interface TrackedDecoratorOptions {
   description?: string;
 }
 
+// `PropertyDecorator` covers the `(target, key)` call TypeScript emits for
+// native class fields; `ExtendedMethodDecorator` covers the classic-class call.
+export type TrackedDecorator = ExtendedMethodDecorator & PropertyDecorator;
+
 /**
  * `tracked` as a decorator factory: `@tracked({ equals })`, or on classic
  * classes `tracked({ value })` / `tracked({ initializer })`.
  */
-export function tracked(propertyDesc: TrackedDecoratorOptions): ExtendedMethodDecorator;
+export function tracked(propertyDesc: TrackedDecoratorOptions): TrackedDecorator;
 /**
  * `tracked` as a bare decorator: `@tracked foo = 1`.
  */
@@ -145,7 +149,7 @@ export function tracked<Value>(
 ): TrackedValue<Value>;
 export function tracked(
   ...args: any[]
-): ExtendedMethodDecorator | DecoratorPropertyDescriptor | TrackedValue<any> {
+): TrackedDecorator | DecoratorPropertyDescriptor | TrackedValue<any> {
   assert(
     `@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()`,
     !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && args[4] === true)
@@ -225,7 +229,7 @@ function isDecoratorOptions(value: unknown): value is TrackedDecoratorOptions {
   return Object.keys(value).every((key) => DECORATOR_OPTION_KEYS.includes(key));
 }
 
-function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): ExtendedMethodDecorator {
+function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): TrackedDecorator {
   if (DEBUG && propertyDesc) {
     assert(
       `The options object passed to tracked() may only contain a 'value' or an 'initializer' property, not both. Received: [${Object.keys(
@@ -275,7 +279,7 @@ function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): ExtendedM
 
   setClassicDecorator(decorator);
 
-  return decorator;
+  return decorator as TrackedDecorator;
 }
 
 if (DEBUG) {

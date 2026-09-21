@@ -38,9 +38,12 @@ tracked(0, { equals: (a: string, b: string) => a === b });
 // ------- decorator forms -------
 class Counter {
   @tracked count = 0;
+
+  @tracked({ equals: Object.is }) another = 0;
 }
 
 expectTypeOf(new Counter().count).toEqualTypeOf<number>();
+expectTypeOf(new Counter().another).toEqualTypeOf<number>();
 
 // classic class form returns a decorator
 expectTypeOf(tracked({ value: 'Zoey' })).toMatchTypeOf<Function>();
