@@ -2,6 +2,7 @@
   @module @ember/object/core
 */
 
+import { InternalMixin } from '@ember/object/mixin-internal';
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container/lib/container';
 import { type default as Owner, getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
@@ -14,9 +15,9 @@ import { activateObserver } from '@ember/-internals/metal/lib/observer';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
-import Mixin, { applyMixin } from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
-import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
+import type Mixin from '@ember/object/mixin';
+import { applyMixin } from '@ember/object/mixin';
+import InternalActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -52,7 +53,7 @@ function hasToStringExtension(val: unknown): val is HasToStringExtension {
     typeof (val as HasToStringExtension).toStringExtension === 'function'
   );
 }
-const reopen = Mixin.prototype.reopen;
+const reopen = InternalMixin.prototype.reopen;
 
 const wasApplied = new WeakSet();
 const prototypeMixinMap = new WeakMap();
@@ -79,7 +80,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
     assert(
       'EmberObject.create no longer supports mixing in other ' +
         'definitions, use .extend & .create separately instead.',
-      !(properties instanceof Mixin)
+      !(properties instanceof InternalMixin)
     );
 
     let concatenatedProperties = obj.concatenatedProperties;
@@ -106,7 +107,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
       assert(
         '`actions` must be provided at extend time, not at create time, ' +
           'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
-        !(keyName === 'actions' && ActionHandler.detect(obj))
+        !(keyName === 'actions' && InternalActionHandler.detect(obj))
       );
 
       let possibleDesc = descriptorForProperty(obj, keyName, m);
@@ -852,7 +853,7 @@ class CoreObject {
       // make sure that it gets properly applied. Reusing the same mixin after
       // the first `proto` call will cause it to get skipped.
       if (prototypeMixinMap.has(this)) {
-        prototypeMixinMap.set(this, Mixin[INTERNAL_MIXIN_CREATE](this.PrototypeMixin));
+        prototypeMixinMap.set(this, InternalMixin.create(this.PrototypeMixin));
       }
     }
   }
@@ -1011,7 +1012,7 @@ class CoreObject {
   static get PrototypeMixin() {
     let prototypeMixin = prototypeMixinMap.get(this);
     if (prototypeMixin === undefined) {
-      prototypeMixin = Mixin[INTERNAL_MIXIN_CREATE]();
+      prototypeMixin = InternalMixin.create();
       prototypeMixin.ownerConstructor = this;
       prototypeMixinMap.set(this, prototypeMixin);
     }
@@ -1062,7 +1063,7 @@ function flattenProps(this: typeof CoreObject, ...props: Array<Record<string, un
     assert(
       'EmberObject.create no longer supports mixing in other ' +
         'definitions, use .extend & .create separately instead.',
-      !(properties instanceof Mixin)
+      !(properties instanceof InternalMixin)
     );
 
     let keyNames = Object.keys(properties);

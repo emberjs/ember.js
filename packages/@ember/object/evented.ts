@@ -5,8 +5,8 @@ import {
   eventedOff,
   eventedHas,
 } from '@ember/-internals/metal/lib/evented-methods';
-import Mixin from '@ember/object/mixin';
-import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
+import { InternalMixin } from '@ember/object/mixin-internal';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 export { on } from '@ember/-internals/metal/lib/events';
 
@@ -157,7 +157,15 @@ interface Evented {
    */
   has(name: string): boolean;
 }
-const Evented = Mixin[INTERNAL_MIXIN_CREATE]({
+const Evented = InternalMixin.create({
+  init() {
+    this._super(...arguments);
+    deprecateUntil(
+      'The `Evented` mixin is deprecated. Use native JavaScript events or a dedicated event library instead.',
+      DEPRECATIONS.DEPRECATE_EVENTED
+    );
+  },
+
   on(name: string, target: object, method?: string | Function) {
     eventedOn(this, name, target, method);
     return this;
