@@ -227,26 +227,19 @@ class IteratorWrapper implements OpaqueIterator {
 class ArrayIterator implements OpaqueIterator {
   private pos = -1;
 
-  // The constructor runs inside the iterator reference's tracking frame, so
-  // reading `length` here is what attributes a tracked collection's tag to that
-  // reference. Read it from `next()` instead and the list stops revalidating.
-  private length: number;
-
   constructor(
     private iterator: unknown[] | readonly unknown[],
     private keyFor: KeyFor
-  ) {
-    this.length = iterator.length;
-  }
+  ) {}
 
   isEmpty(): boolean {
-    return this.length === 0;
+    return this.iterator.length === 0;
   }
 
   next(): Nullable<IterationItem<unknown, number>> {
     let memo = ++this.pos;
 
-    if (memo >= this.length) return null;
+    if (memo >= this.iterator.length) return null;
 
     let value = this.iterator[memo];
 
