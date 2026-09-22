@@ -47,6 +47,46 @@ export class EachSuite extends RenderTest {
   }
 
   @test
+  'a plain array that shrinks during iteration stops the iteration'() {
+    let list: Item[] = [];
+
+    // The getter is on the prototype so that `JSON.stringify` in `render` does not call it.
+    class Item {
+      constructor(private index: number) {}
+
+      get name() {
+        if (this.index === 0) list.length = 1;
+        return `item-${this.index}`;
+      }
+    }
+
+    for (let i = 0; i < 4; i++) list.push(new Item(i));
+
+    this.render('{{#each this.list key="@index" as |item|}}[{{item.name}}]{{/each}}', { list });
+    this.assertHTML('[item-0]');
+  }
+
+  @test
+  'a plain array that grows during iteration renders the new items'() {
+    let list: Item[] = [];
+
+    // The getter is on the prototype so that `JSON.stringify` in `render` does not call it.
+    class Item {
+      constructor(private index: number) {}
+
+      get name() {
+        if (this.index === 0) list.push(new Item(1));
+        return `item-${this.index}`;
+      }
+    }
+
+    list.push(new Item(0));
+
+    this.render('{{#each this.list key="@index" as |item|}}[{{item.name}}]{{/each}}', { list });
+    this.assertHTML('[item-0][item-1]');
+  }
+
+  @test
   'autotracked custom iterable'() {
     if (typeof Symbol !== 'function') {
       QUnit.assert.ok(true, 'skipping platform without iterable');
