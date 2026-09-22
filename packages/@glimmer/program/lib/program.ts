@@ -171,8 +171,7 @@ export class ProgramImpl implements Program {
   }
 
   opcode(offset: number): RuntimeOpImpl {
-    this._opcode.offset = offset;
-    return this._opcode;
+    return this._opcode.seek(offset);
   }
 }
 
