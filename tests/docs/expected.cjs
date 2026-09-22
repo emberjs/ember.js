@@ -1,6 +1,7 @@
 module.exports = {
   classitems: [
     'A',
+    'DEPRECATION_STAGES',
     'EXTEND_PROTOTYPES',
     'GUID_KEY',
     'GUID_PREFIX',
