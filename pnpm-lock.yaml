@@ -6,10 +6,10 @@ settings:
 
 overrides:
   socket.io: ^4.7.0
-  rollup: ^4.2.0
-  ember-cli-htmlbars: ^7.0.0
   babel-plugin-ember-template-compilation: ^4.0.0
   ember-cli-babel: ^8.3.1
+  ember-cli-htmlbars: ^7.0.0
+  rollup: ^4.2.0
   testem: ^3.20.1
 
 patchedDependencies:
@@ -2797,8 +2797,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0(@types/node@22.19.19)
       '@ember/test-helpers':
-        specifier: ^5.4.3
-        version: 5.4.3(@babel/core@7.29.7)
+        specifier: ^5.5.0
+        version: 5.5.0(@babel/core@7.29.7)
       '@embroider/macros':
         specifier: ^1.20.4
         version: 1.20.5(@babel/core@7.29.7)
@@ -2861,7 +2861,7 @@ importers:
         version: 9.0.3
       ember-qunit:
         specifier: ^9.1.0
-        version: 9.1.0(@ember/test-helpers@5.4.3(@babel/core@7.29.7))(qunit@2.26.0)
+        version: 9.1.0(@ember/test-helpers@5.5.0(@babel/core@7.29.7))(qunit@2.26.0)
       ember-resolver:
         specifier: ^13.2.0
         version: 13.2.0
@@ -3085,8 +3085,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
       '@ember/test-helpers':
-        specifier: ^5.4.3
-        version: 5.4.3(@babel/core@7.29.7)
+        specifier: ^5.5.0
+        version: 5.5.0(@babel/core@7.29.7)
       '@ember/test-waiters':
         specifier: ^4.1.2
         version: 4.1.2
@@ -3149,7 +3149,7 @@ importers:
         version: 9.0.3
       ember-qunit:
         specifier: ^9.1.0
-        version: 9.1.0(@ember/test-helpers@5.4.3(@babel/core@7.29.7))(qunit@2.26.0)
+        version: 9.1.0(@ember/test-helpers@5.5.0(@babel/core@7.29.7))(qunit@2.26.0)
       ember-resolver:
         specifier: ^13.2.0
         version: 13.2.0
@@ -4088,8 +4088,8 @@ packages:
   '@ember/string@4.0.1':
     resolution: {integrity: sha512-VWeng8BSWrIsdPfffOQt/bKwNKJL7+37gPFh/6iZZ9bke+S83kKqkS30poo4bTGfRcMnvAE0ie7txom+iDu81Q==}
 
-  '@ember/test-helpers@5.4.3':
-    resolution: {integrity: sha512-WeNABJsXBidEXP87AH5gaI/KAyb0zEUYJxWa31A/Us5lqg85E3tPlHjBwCrlReOrJbSgvvArMnrdCwt7TRpjPQ==}
+  '@ember/test-helpers@5.5.0':
+    resolution: {integrity: sha512-yTg0YqLQvPIy0rGGVa+Tnwis20orfsE5Mz2zphv4qtfZ9w5NbTdxNKed9CrrCANFQdLo7eXj9lmQ8ST8K/GBHw==}
 
   '@ember/test-waiters@4.1.1':
     resolution: {integrity: sha512-HbK70JYCDJcGI0CrwcbjeL2QHAn0HLwa3oGep7mr6l/yO95U7JYA8VN+/9VTsWJTmKueLtWayUqEmGS3a3mVOg==}
@@ -10851,7 +10851,6 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qified@0.10.1:
@@ -14003,7 +14002,7 @@ snapshots:
 
   '@ember/string@4.0.1': {}
 
-  '@ember/test-helpers@5.4.3(@babel/core@7.29.7)':
+  '@ember/test-helpers@5.5.0(@babel/core@7.29.7)':
     dependencies:
       '@ember/test-waiters': 4.1.2
       '@embroider/addon-shim': 1.10.2
@@ -18873,9 +18872,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ember-qunit@9.1.0(@ember/test-helpers@5.4.3(@babel/core@7.29.7))(qunit@2.26.0):
+  ember-qunit@9.1.0(@ember/test-helpers@5.5.0(@babel/core@7.29.7))(qunit@2.26.0):
     dependencies:
-      '@ember/test-helpers': 5.4.3(@babel/core@7.29.7)
+      '@ember/test-helpers': 5.5.0(@babel/core@7.29.7)
       '@embroider/addon-shim': 1.10.2
       qunit: 2.26.0
       qunit-theme-ember: 1.0.0

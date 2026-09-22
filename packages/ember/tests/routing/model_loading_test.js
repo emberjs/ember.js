@@ -933,3 +933,38 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'Route - model loading (afterModel model swapping)',
+  class extends ApplicationTestCase {
+    ['@test afterModel can swap the resolved model via transition.resolvedModels'](assert) {
+      assert.expect(2);
+      let swapped = { name: 'swapped' };
+
+      this.router.map(function () {
+        this.route('post');
+      });
+
+      this.add(
+        'route:post',
+        class extends Route {
+          model() {
+            return { name: 'original' };
+          }
+          afterModel(resolvedModel, transition) {
+            assert.equal(resolvedModel.name, 'original', 'afterModel received the resolved model');
+            // Classic router.js contract: `model()`'s result is stashed in
+            // `transition.resolvedModels` before afterModel runs, and re-read
+            // afterwards — so afterModel may swap the model out.
+            transition.resolvedModels['post'] = swapped;
+          }
+          setupController(controller, model) {
+            assert.strictEqual(model, swapped, 'setupController received the swapped model');
+          }
+        }
+      );
+
+      return this.visit('/post');
+    }
+  }
+);

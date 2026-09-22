@@ -426,6 +426,15 @@ interface RenderCacheEntry {
   glimmerResult: GlimmerRenderResult | undefined;
 }
 
+// Cursor descriptor isn't a stable enough reference.
+// Cursor fails during application teardown
+type RendererCacheKey = Element | SimpleElement;
+
+const isDOMElement = (into: IntoTarget): into is Element => 'innerHTML' in into;
+
+const cacheKey = (into: IntoTarget): RendererCacheKey =>
+  'element' in into ? (into as Cursor).element : (into as RendererCacheKey);
+
 function intoTarget(into: IntoTarget): Cursor {
   if ('element' in into) {
     return into;
@@ -527,14 +536,15 @@ export function renderComponent(
    *
    * NOTE: destruction is async
    */
-  let existing = RENDER_CACHE.get(into);
+  let key = cacheKey(into);
+  let existing = RENDER_CACHE.get(key);
   existing?.result.destroy();
   /**
    * We can only replace the inner HTML the first time.
    * Because destruction is async, it won't be safe to
    * do this again, and we'll have to rely on the above destroy.
    */
-  if (!existing && into instanceof Element) {
+  if (!existing && isDOMElement(into)) {
     into.innerHTML = '';
   }
 
@@ -552,16 +562,19 @@ export function renderComponent(
    */
   let renderTarget: IntoTarget = into;
   if (existing?.glimmerResult) {
-    let parentElement =
-      into instanceof Element ? (into as unknown as SimpleElement) : (into as Cursor).element;
     let firstNode = existing.glimmerResult.firstNode();
-    renderTarget = { element: parentElement, nextSibling: firstNode };
+    renderTarget = { element: key as SimpleElement, nextSibling: firstNode };
   }
 
   let innerResult = renderer.render(component, { into: renderTarget, args }).result;
 
   if (innerResult) {
     associateDestroyableChild(owner, innerResult);
+    registerDestructor(innerResult, () => {
+      if (RENDER_CACHE.get(key)?.glimmerResult === innerResult) {
+        RENDER_CACHE.delete(key);
+      }
+    });
   }
 
   let result: RenderResult = {
@@ -572,13 +585,21 @@ export function renderComponent(
     },
   };
 
-  RENDER_CACHE.set(into, { result, glimmerResult: innerResult });
+  RENDER_CACHE.set(key, { result, glimmerResult: innerResult });
 
   return result;
 }
 
-const RENDER_CACHE = new WeakMap<IntoTarget, RenderCacheEntry>();
+const RENDER_CACHE = new WeakMap<RendererCacheKey, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
+
+/**
+ * The application seeds its `renderer:-dom` service which allows for
+ * router-aware resolver to resolve {{mount}}
+ */
+export function setRenderer(owner: object, renderer: BaseRenderer): void {
+  RENDERER_CACHE.set(owner, renderer);
+}
 
 export class BaseRenderer {
   static strict(

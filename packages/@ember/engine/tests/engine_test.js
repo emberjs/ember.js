@@ -70,8 +70,6 @@ moduleFor(
       verifyRegistration(assert, engine, 'resolver-for-debugging:main');
       verifyRegistration(assert, engine, 'container-debug-adapter:main');
 
-      verifyRegistration(assert, engine, 'view:-outlet');
-      verifyRegistration(assert, engine, 'template:-outlet');
       assert.deepEqual(
         engine.registeredOptionsForType('helper'),
         { instantiate: false },

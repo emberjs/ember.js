@@ -36,7 +36,7 @@
     "@babel/runtime": "^7.29.7",
     "@ember/optional-features": "^3.0.0",
     "@ember/string": "^4.0.1",
-    "@ember/test-helpers": "^5.4.3",
+    "@ember/test-helpers": "^5.5.0",
     "@ember/test-waiters": "^4.1.2",
     "@embroider/compat": "^4.1.20",
     "@embroider/config-meta-loader": "^1.0.0",

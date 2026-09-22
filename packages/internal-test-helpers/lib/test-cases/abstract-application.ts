@@ -65,7 +65,7 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
 
   get applicationOptions() {
     return {
-      rootElement: '#qunit-fixture',
+      rootElement: document.querySelector('#qunit-fixture')!,
     };
   }
 

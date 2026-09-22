@@ -497,9 +497,9 @@ moduleFor(
         includeTopLevel: 'outlet',
         renderTree: [
           '{{outlet}} for application',
-          'application',
+          '@Component',
           '{{outlet}} for routeWithError',
-          'routeWithError',
+          '@Component',
           '@model.name',
         ],
       });

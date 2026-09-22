@@ -85,6 +85,22 @@ moduleFor(
       await assert.rejects(this.visit('/what-is-this-i-dont-even'), /\/what-is-this-i-dont-even/);
     }
 
+    async ['@test a classic route marked inaccessibleByURL cannot be entered by URL'](assert) {
+      this.router.map(function () {
+        this.route('secret');
+      });
+      this.add(
+        'route:secret',
+        class extends Route {
+          inaccessibleByURL = true;
+        }
+      );
+
+      await this.visit('/');
+
+      await assert.rejects(this.visit('/secret'), /\/secret/);
+    }
+
     ['@test The Homepage'](assert) {
       return this.visit('/').then(() => {
         assert.equal(this.appRouter.currentPath, 'home', 'currently on the home route');
@@ -1585,13 +1601,21 @@ moduleFor(
           let router = this.applicationInstance.lookup('router:main');
 
           run(router, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
+          assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
           run(route, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+          assert.equal(
+            router._updatableRootOutletState,
+            null,
+            'the root outlet was not re-rendered'
+          );
 
           run(this.applicationInstance, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+          assert.equal(
+            router._updatableRootOutletState,
+            null,
+            'the root outlet was not re-rendered'
+          );
         });
     }
 

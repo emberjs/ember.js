@@ -189,7 +189,7 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
     assert(
       `The \`{{${name.slice(1)}}}\` keyword requires the router, which is not available here. ` +
         `It is only supported in templates rendered by an Ember application (e.g. not via \`renderComponent\`).`,
-      name !== '-outlet' && name !== '-mount'
+      name !== '-mount'
     );
 
     return BUILTIN_KEYWORD_HELPERS[name] ?? null;
