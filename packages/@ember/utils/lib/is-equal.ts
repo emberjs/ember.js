@@ -1,6 +1,9 @@
 /**
  @module @ember/utils
 */
+
+import { deprecate } from '@ember/debug';
+
 /**
   Compares two objects, returning true if they are equal.
 
@@ -48,6 +51,13 @@
   @public
 */
 export default function isEqual(a: unknown, b: unknown): boolean {
+  deprecate('isEqual is deprecated. Use @ember/legacy-utils instead.', false, {
+    for: 'ember-source',
+    id: 'ember-utils.deprecate-isEqual',
+    since: { available: '6.8.0' },
+    until: '7.0.0',
+  });
+
   if (a && typeof (a as IsEqual).isEqual === 'function') {
     return (a as IsEqual).isEqual(b);
   }
