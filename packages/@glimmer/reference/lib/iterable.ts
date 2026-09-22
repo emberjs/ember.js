@@ -226,19 +226,24 @@ class IteratorWrapper implements OpaqueIterator {
 
 class ArrayIterator implements OpaqueIterator {
   private pos = -1;
+  private empty: boolean;
 
   constructor(
     private iterator: unknown[] | readonly unknown[],
     private keyFor: KeyFor
-  ) {}
+  ) {
+    // Only this read runs in the tracking frame of the iterator reference.
+    this.empty = iterator.length === 0;
+  }
 
   isEmpty(): boolean {
-    return this.iterator.length === 0;
+    return this.empty;
   }
 
   next(): Nullable<IterationItem<unknown, number>> {
     let memo = ++this.pos;
 
+    // The length is live because code in the block can change a plain array.
     if (memo >= this.iterator.length) return null;
 
     let value = this.iterator[memo];

@@ -448,14 +448,16 @@ export class RenderTest implements IRenderTest {
   private assertEachCompareResults(
     items: (number | string | [string | number, string | number])[]
   ) {
-    [...(this.element as unknown as HTMLElement).querySelectorAll('.test-item')].forEach(
-      (el, index) => {
-        let key = Array.isArray(items[index]) ? items[index][0] : index;
-        let value = Array.isArray(items[index]) ? items[index][1] : items[index];
+    let rendered = (this.element as unknown as HTMLElement).querySelectorAll('.test-item');
 
-        QUnit.assert.equal(el.textContent, `${key}.${value}`, `Comparing the rendered key.value`);
-      }
-    );
+    QUnit.assert.strictEqual(rendered.length, items.length, `Comparing the rendered item count`);
+
+    rendered.forEach((el, index) => {
+      let key = Array.isArray(items[index]) ? items[index][0] : index;
+      let value = Array.isArray(items[index]) ? items[index][1] : items[index];
+
+      QUnit.assert.equal(el.textContent, `${key}.${value}`, `Comparing the rendered key.value`);
+    });
   }
 
   protected assertReactivity<T>(
