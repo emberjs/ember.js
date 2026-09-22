@@ -1,0 +1,13 @@
+# Unlabeled Changes
+
+* [#21460](https://github.com/emberjs/ember.js/pull/21460) Implement the Route Manager API (RFC #1169) ([@evoactivity](https://github.com/evoactivity))
+* [#21601](https://github.com/emberjs/ember.js/pull/21601) Skip Object.keys allocation in FunctionHelperManager.getValue ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* [#11](https://github.com/emberjs/ember.js/pull/11) Fix SC.Button form submission issues by adding a configurable type property ([@ebryn](https://github.com/ebryn))
+* [#13](https://github.com/emberjs/ember.js/pull/13) Added build instructions to readme. ([@ebryn](https://github.com/ebryn))
+* [#9](https://github.com/emberjs/ember.js/pull/9) Fix spelling of META_DESC.configurable ([@mgood](https://github.com/mgood))
+* [#5](https://github.com/emberjs/ember.js/pull/5) SproutCore 2 doesn't have themes; update comments in SC.View#init() to reflect this. ([@erichocean](https://github.com/erichocean))
+* Instructions in README.md for running unit tests is incorrect ([@ebryn](https://github.com/ebryn))
+* SC.Buttons inside of form tags trigger form submission ([@ebryn](https://github.com/ebryn))
+
+
+*Cannot plan release until the above changes are labeled*.
