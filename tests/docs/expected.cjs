@@ -131,6 +131,7 @@ module.exports = {
     'controllerName',
     'create',
     'createCache',
+    'createContext',
     'currentRoute',
     'currentRouteName',
     'currentURL',
