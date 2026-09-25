@@ -1,6 +1,7 @@
 import { ENV } from '@ember/-internals/environment/lib/env';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
+import { registerComponentRenderer } from '@ember/debug/lib/capture-render-tree';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import {
   associateDestroyableChild,
@@ -525,6 +526,7 @@ export function renderComponent(
       hasDOM: env && 'hasDOM' in env ? Boolean(env?.['hasDOM']) : true,
     });
     RENDERER_CACHE.set(owner, renderer);
+    registerComponentRenderer(owner, renderer);
   }
 
   /**
