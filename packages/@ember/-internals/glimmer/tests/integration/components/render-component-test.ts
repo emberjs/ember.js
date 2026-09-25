@@ -27,6 +27,9 @@ import { trackedObject } from '@ember/reactive/collections';
 import { cached, tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
 import type Owner from '@ember/owner';
+import { ENV } from '@ember/-internals/environment';
+import { captureRenderTree } from '@ember/debug';
+import type { CapturedRenderNode } from '@glimmer/interfaces';
 
 class RenderComponentTestCase extends AbstractStrictTestCase {
   declare component: (RenderResult & { rerender: () => void }) | undefined;
@@ -119,8 +122,74 @@ moduleFor(
 
       assertHTML('');
     }
+
+    '@test captureRenderTree includes the rendered components'(assert: QUnit['assert']) {
+      let HelloWorld = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<HelloWorld/>', { strictMode: true, scope: () => ({ HelloWorld }) }),
+        templateOnly()
+      );
+
+      this.renderComponent(Root, { expect: 'Hello, world!' });
+
+      if (!ENV._DEBUG_RENDER_TREE) return;
+
+      assert.deepEqual(renderTreeNames(this.owner), ['{ROOT}', 'HelloWorld']);
+    }
+
+    '@test captureRenderTree includes components rendered with any owner'(assert: QUnit['assert']) {
+      let Owned = setComponentTemplate(precompileTemplate('owned'), templateOnly());
+      let Ownerless = setComponentTemplate(precompileTemplate('ownerless'), templateOnly());
+      let OwnedRoot = setComponentTemplate(
+        precompileTemplate('<Owned/>', { strictMode: true, scope: () => ({ Owned }) }),
+        templateOnly()
+      );
+      let OwnerlessRoot = setComponentTemplate(
+        precompileTemplate('<Ownerless/>', { strictMode: true, scope: () => ({ Ownerless }) }),
+        templateOnly()
+      );
+
+      let ownedElement = document.createElement('div');
+      let ownerlessElement = document.createElement('div');
+      this.element.append(ownedElement, ownerlessElement);
+
+      let results = run(() => [
+        renderComponent(OwnedRoot, { owner: this.owner, into: ownedElement }),
+        renderComponent(OwnerlessRoot, { into: ownerlessElement }),
+      ]);
+
+      assertHTML('<div>owned</div><div>ownerless</div>');
+
+      if (ENV._DEBUG_RENDER_TREE) {
+        assert.deepEqual(renderTreeNames(this.owner), ['{ROOT}', 'Owned', '{ROOT}', 'Ownerless']);
+      }
+
+      run(() => {
+        for (let result of results) {
+          result.destroy();
+        }
+      });
+
+      if (ENV._DEBUG_RENDER_TREE) {
+        assert.deepEqual(renderTreeNames(this.owner), [], 'destroyed renders are gone');
+      }
+
+      run(() => destroy(this));
+    }
   }
 );
+
+function renderTreeNames(owner: Owner): string[] {
+  let names: string[] = [];
+  let collect = (nodes: CapturedRenderNode[]) => {
+    for (let node of nodes) {
+      names.push(node.name);
+      collect(node.children);
+    }
+  };
+  collect(captureRenderTree(owner));
+  return names;
+}
 
 moduleFor(
   'Strict Mode - renderComponent (direct)',
