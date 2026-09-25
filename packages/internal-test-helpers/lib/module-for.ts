@@ -163,6 +163,10 @@ export function setupTestClass<T extends TestCase, G extends Generator>(
       QUnit.skip(name.slice(5), function (this: TestContext<T>, assert) {
         return (this.instance![name] as any)(assert);
       });
+    } else if (name.indexOf('@todo ') === 0) {
+      QUnit.todo(name.slice(5), function (this: TestContext<T>, assert) {
+        return (this.instance![name] as any)(assert);
+      });
     } else {
       let match = /^@feature\(([A-Z_a-z-! ,]+)\) /.exec(name);
 
