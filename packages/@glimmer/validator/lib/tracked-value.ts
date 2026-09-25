@@ -20,6 +20,11 @@ export interface Reactive<Value> {
  */
 export interface ReadOnlyReactive<Value> extends Reactive<Value> {
   readonly value: Value;
+
+  /**
+   * Function short-hand for reading `value`.
+   */
+  get: () => Value;
 }
 
 export class TrackedValue<Value = unknown> implements Reactive<Value> {
