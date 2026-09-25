@@ -11,6 +11,8 @@ import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
 import type { EnvironmentDelegate } from '@glimmer/runtime/lib/environment';
 import { debug } from '@glimmer/validator/lib/debug';
+import { createDebugRenderTree } from './debug-render-tree-factory';
+import { enableDebugRenderTree } from './setup-debug-render-tree';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';
@@ -125,8 +127,17 @@ const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];
 
 // Define environment delegate
 
+if (DEBUG) {
+  // In debug builds the render tree is always available (`_DEBUG_RENDER_TREE`
+  // defaults to on in development). In production builds this block is
+  // stripped, so the `DebugRenderTree` implementation is only included if
+  // something else imports it — notably `@ember/debug/lib/capture-render-tree`,
+  // which registers it for the `EmberENV._DEBUG_RENDER_TREE` opt-in.
+  enableDebugRenderTree();
+}
+
 export class EmberEnvironmentDelegate implements EnvironmentDelegate {
-  public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
+  public debugRenderTree = ENV._DEBUG_RENDER_TREE ? createDebugRenderTree() : undefined;
 
   constructor(
     public owner: InternalOwner,
