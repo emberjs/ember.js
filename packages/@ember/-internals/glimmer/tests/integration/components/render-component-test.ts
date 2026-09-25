@@ -134,19 +134,59 @@ moduleFor(
 
       if (!ENV._DEBUG_RENDER_TREE) return;
 
-      let names: string[] = [];
-      let collect = (nodes: CapturedRenderNode[]) => {
-        for (let node of nodes) {
-          names.push(node.name);
-          collect(node.children);
-        }
-      };
-      collect(captureRenderTree(this.owner));
+      assert.deepEqual(renderTreeNames(this.owner), ['{ROOT}', 'HelloWorld']);
+    }
 
-      assert.deepEqual(names, ['{ROOT}', 'HelloWorld']);
+    '@test captureRenderTree leaves out components rendered without an owner'(
+      assert: QUnit['assert']
+    ) {
+      let Owned = setComponentTemplate(precompileTemplate('owned'), templateOnly());
+      let Ownerless = setComponentTemplate(precompileTemplate('ownerless'), templateOnly());
+      let OwnedRoot = setComponentTemplate(
+        precompileTemplate('<Owned/>', { strictMode: true, scope: () => ({ Owned }) }),
+        templateOnly()
+      );
+      let OwnerlessRoot = setComponentTemplate(
+        precompileTemplate('<Ownerless/>', { strictMode: true, scope: () => ({ Ownerless }) }),
+        templateOnly()
+      );
+
+      let ownedElement = document.createElement('div');
+      let ownerlessElement = document.createElement('div');
+      this.element.append(ownedElement, ownerlessElement);
+
+      let results = run(() => [
+        renderComponent(OwnedRoot, { owner: this.owner, into: ownedElement }),
+        renderComponent(OwnerlessRoot, { into: ownerlessElement }),
+      ]);
+
+      assertHTML('<div>owned</div><div>ownerless</div>');
+
+      if (ENV._DEBUG_RENDER_TREE) {
+        assert.deepEqual(renderTreeNames(this.owner), ['{ROOT}', 'Owned']);
+      }
+
+      run(() => {
+        for (let result of results) {
+          result.destroy();
+        }
+        destroy(this);
+      });
     }
   }
 );
+
+function renderTreeNames(owner: Owner): string[] {
+  let names: string[] = [];
+  let collect = (nodes: CapturedRenderNode[]) => {
+    for (let node of nodes) {
+      names.push(node.name);
+      collect(node.children);
+    }
+  };
+  collect(captureRenderTree(owner));
+  return names;
+}
 
 moduleFor(
   'Strict Mode - renderComponent (direct)',
