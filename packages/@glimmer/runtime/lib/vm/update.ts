@@ -11,6 +11,7 @@ import type {
   ResettableBlock,
   Scope,
   SimpleComment,
+  Tag,
   UpdatingOpcode,
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
@@ -24,7 +25,13 @@ import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { debug } from '@glimmer/validator/lib/debug';
-import { resetTracking } from '@glimmer/validator/lib/tracking';
+import {
+  beginTrackFrame,
+  consumeTag,
+  endTrackFrame,
+  resetTracking,
+} from '@glimmer/validator/lib/tracking';
+import { INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';
@@ -75,10 +82,16 @@ export class UpdatingVM implements IUpdatingVM {
     this.try(opcodes, handler);
 
     while (!frameStack.isEmpty()) {
-      let opcode = this.frame.nextStatement();
+      let frame = this.frame;
+      let opcode = frame.nextStatement();
 
       if (opcode === undefined) {
         frameStack.pop();
+
+        if (frame.block !== null) {
+          frame.block.didExit();
+        }
+
         continue;
       }
 
@@ -94,10 +107,19 @@ export class UpdatingVM implements IUpdatingVM {
     this.frame.goto(index);
   }
 
-  try(ops: UpdatingOpcode[], handler: Nullable<ExceptionHandler>) {
-    this.frameStack.push(new UpdatingVMFrame(ops, handler));
+  try(
+    ops: UpdatingOpcode[],
+    handler: Nullable<ExceptionHandler>,
+    block: Nullable<BlockOpcode> = null
+  ) {
+    this.frameStack.push(new UpdatingVMFrame(ops, handler, block));
   }
 
+  /*
+   * The handler re-renders its block with the append VM, and that render ends
+   * the block's tracking frame itself when it exits the block. So the frame is
+   * popped without `finish()`.
+   */
   throw() {
     this.frame.handleException();
     this.frameStack.pop();
@@ -111,10 +133,32 @@ export interface VMState {
   readonly stack: unknown[];
 }
 
+/*
+ * A block records the combined tag of what its render consumed, the same way
+ * a component cache group does. While that tag validates, the updating VM
+ * skips the block's children, so a list of unchanged rows costs one
+ * validation per row instead of one per dynamic reference.
+ *
+ * A guard only pays when it skips more work than its own validation. A block
+ * with one opcode, or with fewer than three consumed tags, is not guarded: a
+ * condition plus one component cache group is the common two-tag shape, and
+ * the group already guards itself.
+ *
+ * Introduction and background in https://github.com/emberjs/ember.js/pull/21596
+ */
 export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   [DESTROYABLE_META_KEY]: object | undefined;
 
   public children: UpdatingOpcode[];
+
+  /**
+   * Combined tag of everything consumed during the last render or update of
+   * this block, or null when the block is not guarded.
+   */
+  protected tag: Tag | null = null;
+  protected lastRevision = INITIAL;
+  /** Updates evaluated without a guard since the guard was dropped. */
+  protected unguarded = 0;
 
   protected readonly bounds: AppendingBlock;
 
@@ -140,8 +184,68 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
     return this.bounds.lastNode();
   }
 
+  /**
+   * An unguarded block costs what it did before guards existed: one frame
+   * push. A guarded block validates first, and opens a tracking frame that
+   * the updating VM closes through `didExit` when the block's opcodes are done.
+   */
   evaluate(vm: UpdatingVM) {
-    vm.try(this.children, null);
+    let { tag } = this;
+
+    if (tag === null) {
+      if (this.rearm()) {
+        beginTrackFrame();
+        vm.try(this.children, null, this);
+      } else {
+        vm.try(this.children, null, null);
+      }
+      return;
+    }
+
+    if (!vm.alwaysRevalidate && validateTag(tag, this.lastRevision)) {
+      consumeTag(tag);
+      return;
+    }
+
+    // A block that changed is likely to change again, and a guard on it only
+    // costs. Drop it without a frame; `rearm` opens one later.
+    this.tag = null;
+    vm.try(this.children, null, null);
+  }
+
+  /**
+   * A dropped guard comes back after a few unguarded updates, so a block
+   * that changed once and then stayed still is skipped again, while a block
+   * that changes on every update pays for one frame in every few.
+   */
+  protected rearm(): boolean {
+    if (++this.unguarded < REARM_AFTER) return false;
+
+    this.unguarded = 0;
+    return true;
+  }
+
+  /**
+   * Whether the block's tracking frame is open. The append VM always opens one
+   * before it enters a block; the updating VM opens one when it validates a
+   * guard or re-arms one, and a re-render of a dropped block opens its own.
+   */
+  protected get framed(): boolean {
+    return this.tag !== null;
+  }
+
+  /**
+   * Called when the block's tracking frame ends: from the append VM when the
+   * block exits, and from the updating VM when a guarded block's frame
+   * finishes. Decides whether the block stays guarded.
+   */
+  didExit() {
+    let tag = endTrackFrame(this.tag);
+
+    this.unguarded = 0;
+    this.tag = tag;
+    this.lastRevision = valueForTag(tag);
+    consumeTag(tag);
   }
 }
 
@@ -151,7 +255,25 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   declare protected bounds: ResettableBlock; // Shadows property on base class
 
   override evaluate(vm: UpdatingVM) {
-    vm.try(this.children, this);
+    let { tag } = this;
+
+    if (tag === null) {
+      if (this.rearm()) {
+        beginTrackFrame();
+        vm.try(this.children, this, this);
+      } else {
+        vm.try(this.children, this, null);
+      }
+      return;
+    }
+
+    if (!vm.alwaysRevalidate && validateTag(tag, this.lastRevision)) {
+      consumeTag(tag);
+      return;
+    }
+
+    this.tag = null;
+    vm.try(this.children, this, null);
   }
 
   handleException() {
@@ -160,6 +282,12 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
       bounds,
       context: { env },
     } = this;
+
+    // The re-render exits the block through the append VM, which closes one
+    // frame; a dropped guard has none open.
+    if (!this.framed) {
+      beginTrackFrame();
+    }
 
     destroyChildren(this);
 
@@ -170,7 +298,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
     let result = vm.execute((vm) => {
       vm.updateWith(this);
-      vm.pushUpdating(children);
+      vm.resumeBlock(this, children);
     });
 
     associateDestroyableChild(this, result.drop);
@@ -249,7 +377,7 @@ export class ListBlockOpcode extends BlockOpcode {
     }
 
     // Run now-updated updating opcodes
-    super.evaluate(vm);
+    vm.try(this.children, null, null);
   }
 
   private sync(iterator: OpaqueIterator) {
@@ -426,12 +554,15 @@ export class ListBlockOpcode extends BlockOpcode {
   }
 }
 
+const REARM_AFTER = 8;
+
 class UpdatingVMFrame {
   private current = 0;
 
   constructor(
     private ops: UpdatingOpcode[],
-    private exceptionHandler: Nullable<ExceptionHandler>
+    private exceptionHandler: Nullable<ExceptionHandler>,
+    readonly block: Nullable<BlockOpcode>
   ) {}
 
   goto(index: number) {
