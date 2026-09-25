@@ -30,6 +30,7 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
+import { renderers } from './renderers';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler/lib/program-context';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
@@ -133,8 +134,6 @@ export class ComponentRootState implements RendererRoot {
     return this.#result;
   }
 }
-
-const renderers: BaseRenderer[] = [];
 
 export function _resetRenderers() {
   renderers.length = 0;
