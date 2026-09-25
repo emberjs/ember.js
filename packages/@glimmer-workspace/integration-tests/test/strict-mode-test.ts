@@ -1440,7 +1440,166 @@ class BuiltInsStrictModeTest extends RenderTest {
   }
 }
 
+class AttributeStrictModeTest extends RenderTest {
+  static suiteName = 'strict mode: attribute position';
+
+  @test
+  'Can use a helper in attribute position (without args)'() {
+    const works = defineSimpleHelper(() => 'works');
+    const Foo = defineComponent({ works }, '<div class={{works}}></div>');
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div class="works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a helper in attribute interpolation (without args)'() {
+    const works = defineSimpleHelper(() => 'works');
+    const Foo = defineComponent({ works }, '<div class="it {{works}}"></div>');
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a plain function in attribute position (without args)'() {
+    const works = () => 'works';
+    const Foo = defineComponent({ works }, '<div class="it {{works}}"></div>');
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a helper in attribute position on a component (without args)'() {
+    const works = defineSimpleHelper(() => 'works');
+    const Foo = defineComponent({}, '<div ...attributes></div>');
+    const Bar = defineComponent({ works, Foo }, '<Foo class="it {{works}}"/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('<div class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Helpers in attribute position update when their dependencies change'() {
+    const obj = trackedObj({ value: 'red' });
+    const color = defineSimpleHelper(() => obj['value']);
+    const Foo = defineComponent({ color }, '<div class="it {{color}}"></div>');
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div class="it red"></div>');
+    this.assertStableRerender();
+
+    obj['value'] = 'blue';
+
+    this.rerender();
+    this.assertHTML('<div class="it blue"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Non-helper values in attribute position are used directly'() {
+    const value = 'works';
+    const Foo = defineComponent({ value }, '<div data-foo={{value}} class="it {{value}}"></div>');
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div data-foo="works" class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test({ skip: !DEBUG })
+  'Component definitions in attribute position are an error'() {
+    const Foo = defineComponent({}, 'Hello, world!');
+    const Bar = defineComponent({ Foo }, '<div data-foo={{Foo}}></div>');
+
+    this.assert.throws(() => {
+      this.renderComponent(Bar);
+    }, /Attempted to use a component as the value of an attribute, but only values and helpers are valid in attribute position./u);
+  }
+
+  @test
+  'Paths on lexical variables in attribute position are used as values'() {
+    const styles = { works: 'works' };
+    const Foo = defineComponent(
+      { styles },
+      '<div data-foo={{styles.works}} class="it {{styles.works}}"></div>'
+    );
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div data-foo="works" class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can call a helper in attribute position (with args)'() {
+    const echo = defineSimpleHelper((value: string) => value);
+    const Foo = defineComponent(
+      { echo },
+      '<div data-foo={{echo "works"}} class="it {{echo "works"}}"></div>'
+    );
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div data-foo="works" class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can call a helper in attribute position as a subexpression (without args)'() {
+    const works = defineSimpleHelper(() => 'works');
+    const Foo = defineComponent(
+      { works },
+      '<div data-foo={{(works)}} class="it {{(works)}}"></div>'
+    );
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div data-foo="works" class="it works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use a helper in trusting attribute position (without args)'() {
+    const works = defineSimpleHelper(() => 'works');
+    const Foo = defineComponent({ works }, '<div data-foo={{{works}}}></div>');
+
+    this.renderComponent(Foo);
+    this.assertHTML('<div data-foo="works"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Helpers in argument position (without parens) are passed by value'(assert: Assert) {
+    const works = defineSimpleHelper(() => 'works');
+    const Foo = defineComponent({}, '{{this.receivedFunction}}', {
+      definition: class extends GlimmerishComponent {
+        get receivedFunction() {
+          assert.strictEqual(
+            typeof this.args['value'],
+            'function',
+            'the argument is a function, not an invoked result'
+          );
+          assert.strictEqual(
+            (this.args as { value: unknown })['value'],
+            works,
+            'the helper itself was passed as the argument'
+          );
+          return String(typeof this.args['value'] === 'function');
+        }
+      },
+    });
+    const Bar = defineComponent({ works, Foo }, '<Foo @value={{works}}/>');
+
+    this.renderComponent(Bar);
+    this.assertHTML('true');
+    this.assertStableRerender();
+  }
+}
+
 jitSuite(GeneralStrictModeTest);
 jitSuite(StaticStrictModeTest);
 jitSuite(DynamicStrictModeTest);
 jitSuite(BuiltInsStrictModeTest);
+jitSuite(AttributeStrictModeTest);

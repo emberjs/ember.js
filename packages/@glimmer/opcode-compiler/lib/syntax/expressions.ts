@@ -23,7 +23,13 @@ import type { PushExpressionOp } from './compilers';
 import { expr } from '../opcode-builder/helpers/expr';
 import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
 import { SimpleArgs } from '../opcode-builder/helpers/shared';
-import { Call, CallDynamic, Curry, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
+import {
+  Call,
+  CallDynamic,
+  Curry,
+  DynamicAttrValue,
+  PushPrimitiveReference,
+} from '../opcode-builder/helpers/vm';
 import { HighLevelResolutionOpcodes } from '../opcode-builder/opcodes';
 import { Compilers } from './compilers';
 
@@ -31,7 +37,7 @@ export const EXPRESSIONS = new Compilers<PushExpressionOp, ExpressionSexpOpcode>
 
 EXPRESSIONS.add(SexpOpcodes.Concat, (op, [, parts]) => {
   for (let part of parts) {
-    expr(op, part);
+    DynamicAttrValue(op, part);
   }
 
   op(VM_CONCAT_OP, parts.length);
