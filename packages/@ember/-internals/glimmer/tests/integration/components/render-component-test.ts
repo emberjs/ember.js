@@ -27,6 +27,9 @@ import { trackedObject } from '@ember/reactive/collections';
 import { cached, tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
 import type Owner from '@ember/owner';
+import { ENV } from '@ember/-internals/environment';
+import { captureRenderTree } from '@ember/debug';
+import type { CapturedRenderNode } from '@glimmer/interfaces';
 
 class RenderComponentTestCase extends AbstractStrictTestCase {
   declare component: (RenderResult & { rerender: () => void }) | undefined;
@@ -118,6 +121,29 @@ moduleFor(
       run(() => destroy(this.owner));
 
       assertHTML('');
+    }
+
+    '@test captureRenderTree includes the rendered components'(assert: QUnit['assert']) {
+      let HelloWorld = setComponentTemplate(precompileTemplate('Hello, world!'), templateOnly());
+      let Root = setComponentTemplate(
+        precompileTemplate('<HelloWorld/>', { strictMode: true, scope: () => ({ HelloWorld }) }),
+        templateOnly()
+      );
+
+      this.renderComponent(Root, { expect: 'Hello, world!' });
+
+      if (!ENV._DEBUG_RENDER_TREE) return;
+
+      let names: string[] = [];
+      let collect = (nodes: CapturedRenderNode[]) => {
+        for (let node of nodes) {
+          names.push(node.name);
+          collect(node.children);
+        }
+      };
+      collect(captureRenderTree(this.owner));
+
+      assert.deepEqual(names, ['{ROOT}', 'HelloWorld']);
     }
   }
 );
