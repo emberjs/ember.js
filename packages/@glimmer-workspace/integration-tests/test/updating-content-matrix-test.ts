@@ -237,8 +237,12 @@ generateContentTestCase(ContentTest, {
           ]);
         }
       },
+      // A rendered fragment is bracketed by comment markers so that its place in
+      // the DOM stays addressable after the fragment itself is emptied.
       expected: (_test, isHTML) =>
-        isHTML ? '<p>one</p><p>two</p>' : '<text>one</text><text>two</text>',
+        isHTML
+          ? '<!----><p>one</p><p>two</p><!---->'
+          : '<!----><text>one</text><text>two</text><!---->',
       description: 'DOM fragment containing multiple nodes',
     },
     {
@@ -344,8 +348,12 @@ generateContentTestCase(ContentTest, {
           ]);
         }
       },
+      // A rendered fragment is bracketed by comment markers so that its place in
+      // the DOM stays addressable after the fragment itself is emptied.
       expected: (_test, isHTML) =>
-        isHTML ? '<p>one</p><p>two</p>' : '<text>one</text><text>two</text>',
+        isHTML
+          ? '<!----><p>one</p><p>two</p><!---->'
+          : '<!----><text>one</text><text>two</text><!---->',
       description: 'DOM fragment containing multiple nodes',
     },
     {

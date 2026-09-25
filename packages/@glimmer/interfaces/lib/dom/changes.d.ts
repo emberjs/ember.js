@@ -1,11 +1,26 @@
 import type { Nullable } from '../core.js';
 import type { Bounds } from './bounds.js';
-import type { Namespace, SimpleComment, SimpleElement, SimpleNode, SimpleText } from './simple.js';
+import type {
+  Namespace,
+  SimpleComment,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
+} from './simple.js';
 
 export interface GlimmerDOMOperations {
-  createElement(tag: string, context?: SimpleElement): SimpleElement;
-  insertBefore(parent: SimpleElement, node: SimpleNode, reference: Nullable<SimpleNode>): void;
-  insertHTMLBefore(parent: SimpleElement, nextSibling: Nullable<SimpleNode>, html: string): Bounds;
+  createElement(tag: string, context?: SimpleElement | SimpleDocumentFragment): SimpleElement;
+  insertBefore(
+    parent: SimpleElement | SimpleDocumentFragment,
+    node: SimpleNode,
+    reference: Nullable<SimpleNode>
+  ): void;
+  insertHTMLBefore(
+    parent: SimpleElement | SimpleDocumentFragment,
+    nextSibling: Nullable<SimpleNode>,
+    html: string
+  ): Bounds;
   createTextNode(text: string): SimpleText;
   createComment(data: string): SimpleComment;
 }
@@ -13,7 +28,11 @@ export interface GlimmerDOMOperations {
 export interface GlimmerTreeChanges extends GlimmerDOMOperations {
   setAttribute(element: SimpleElement, name: string, value: string): void;
   removeAttribute(element: SimpleElement, name: string): void;
-  insertAfter(element: SimpleElement, node: SimpleNode, reference: SimpleNode): void;
+  insertAfter(
+    element: SimpleElement | SimpleDocumentFragment,
+    node: SimpleNode,
+    reference: SimpleNode
+  ): void;
 }
 
 export interface GlimmerTreeConstruction extends GlimmerDOMOperations {

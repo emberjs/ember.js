@@ -5,6 +5,7 @@ import type {
   Maybe,
   ModifierInstance,
   Nullable,
+  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
@@ -12,6 +13,11 @@ import type {
 } from '@glimmer/interfaces';
 import type { RemoteBlock } from '@glimmer/runtime/lib/vm/element-builder';
 import { ConcreteBounds } from '@glimmer/runtime/lib/bounds';
+import {
+  FRAGMENT_REGION_CLOSE,
+  FRAGMENT_REGION_OPEN,
+  fragmentRegionFor,
+} from '@glimmer/runtime/lib/dom/fragment-region';
 import { NewTreeBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 
 const TEXT_NODE = 3;
@@ -19,7 +25,7 @@ const TEXT_NODE = 3;
 const NEEDS_EXTRA_CLOSE = new WeakMap<SimpleNode>();
 
 function currentNode(
-  cursor: TreeBuilder | { element: SimpleElement; nextSibling: SimpleNode }
+  cursor: TreeBuilder | { element: SimpleElement | SimpleDocumentFragment; nextSibling: SimpleNode }
 ): Nullable<SimpleNode> {
   let { element, nextSibling } = cursor;
 
@@ -34,9 +40,12 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   private serializeBlockDepth = 0;
 
   override __openBlock(): void {
-    let { tagName } = this.element;
-
-    if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
+    if (
+      'tagName' in this.element &&
+      this.element.tagName !== 'TITLE' &&
+      this.element.tagName !== 'SCRIPT' &&
+      this.element.tagName !== 'STYLE'
+    ) {
       let depth = this.serializeBlockDepth++;
       this.__appendComment(`%+b:${depth}%`);
     }
@@ -45,26 +54,32 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __closeBlock(): void {
-    let { tagName } = this.element;
-
     super.__closeBlock();
 
-    if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
+    if (
+      'tagName' in this.element &&
+      this.element.tagName !== 'TITLE' &&
+      this.element.tagName !== 'SCRIPT' &&
+      this.element.tagName !== 'STYLE'
+    ) {
       let depth = --this.serializeBlockDepth;
       this.__appendComment(`%-b:${depth}%`);
     }
   }
 
   override __appendHTML(html: string): Bounds {
-    let { tagName } = this.element;
-
-    if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
+    if (
+      'tagName' in this.element &&
+      (this.element.tagName === 'TITLE' ||
+        this.element.tagName === 'SCRIPT' ||
+        this.element.tagName === 'STYLE')
+    ) {
       return super.__appendHTML(html);
     }
 
     // Do we need to run the html tokenizer here?
     let first = this.__appendComment('%glmr%');
-    if (tagName === 'TABLE') {
+    if ('tagName' in this.element && this.element.tagName === 'TABLE') {
       let openIndex = html.indexOf('<');
       if (openIndex > -1) {
         let tr = html.slice(openIndex + 1, openIndex + 3);
@@ -84,10 +99,14 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   override __appendText(string: string): SimpleText {
-    let { tagName } = this.element;
     let current = currentNode(this);
 
-    if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
+    if (
+      'tagName' in this.element &&
+      (this.element.tagName === 'TITLE' ||
+        this.element.tagName === 'SCRIPT' ||
+        this.element.tagName === 'STYLE')
+    ) {
       return super.__appendText(string);
     } else if (string === '') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,6 +130,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   override openElement(tag: string) {
     if (tag === 'tr') {
       if (
+        'tagName' in this.element &&
         this.element.tagName !== 'TBODY' &&
         this.element.tagName !== 'THEAD' &&
         this.element.tagName !== 'TFOOT'
@@ -129,22 +149,36 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     return super.openElement(tag);
   }
 
+  protected override fragmentMarker(position: 'open' | 'close'): string {
+    return position === 'open' ? FRAGMENT_REGION_OPEN : FRAGMENT_REGION_CLOSE;
+  }
+
   override pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null
   ): RemoteBlock {
     let { dom } = this;
     let script = dom.createElement('script');
     script.setAttribute('glmr', cursorId);
-    dom.insertBefore(element, script, insertBefore);
+
+    // A fragment that already rendered is empty. Its marker belongs in the
+    // region, which is the part of the document that gets serialized.
+    let region = fragmentRegionFor(element);
+
+    if (region) {
+      dom.insertBefore(region.parentNode(), script, insertBefore ?? region.insertionPoint());
+    } else {
+      dom.insertBefore(element, script, insertBefore);
+    }
+
     return super.pushRemoteElement(element, cursorId, insertBefore);
   }
 }
 
 export function serializeBuilder(
   env: Environment,
-  cursor: { element: SimpleElement; nextSibling: Nullable<SimpleNode> }
+  cursor: { element: SimpleElement | SimpleDocumentFragment; nextSibling: Nullable<SimpleNode> }
 ): TreeBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }
