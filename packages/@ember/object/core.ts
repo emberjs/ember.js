@@ -14,6 +14,7 @@ import { activateObserver } from '@ember/-internals/metal/lib/observer';
 import { defineProperty } from '@ember/-internals/metal/lib/properties';
 import { descriptorForProperty, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
 import { DEBUG_INJECTION_FUNCTIONS } from '@ember/-internals/metal/lib/injected_property';
+import { finalizeDecoratedClass } from '@ember/-internals/metal/lib/decorator-util';
 import Mixin, { applyMixin } from '@ember/object/mixin';
 import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
@@ -1037,6 +1038,9 @@ class CoreObject {
       if (prototypeMixinMap.has(this)) {
         this.PrototypeMixin.apply(p);
       }
+
+      // Apply any per-class setup from stage 3 decorators.
+      finalizeDecoratedClass(this);
     }
     return p;
   }

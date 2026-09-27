@@ -91,10 +91,8 @@ export function suite<D extends RenderDelegate>(
       },
     });
 
-    for (let prop in klass.prototype) {
-      const test = klass.prototype[prop];
-
-      if (isTestFunction(test) && shouldRunTest<D>(Delegate)) {
+    for (let [prop, test] of testFunctions(klass.prototype)) {
+      if (shouldRunTest<D>(Delegate)) {
         if (isSkippedTest(test)) {
           QUnit.skip(prop, (assert) => {
             test.call(instance!, assert, instance!.count);
@@ -141,59 +139,56 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
     };
   }
 
-  for (let prop in klass.prototype) {
-    const test = klass.prototype[prop];
-    if (isTestFunction(test)) {
-      if (test['kind'] === undefined) {
-        let skip = test['skip'];
-        switch (skip) {
-          case 'glimmer':
-            tests.curly.push(createTest(prop, test));
-            tests.dynamic.push(createTest(prop, test));
-            tests.glimmer.push(createTest(prop, test, true));
-            break;
-          case 'curly':
-            tests.glimmer.push(createTest(prop, test));
-            tests.dynamic.push(createTest(prop, test));
-            tests.curly.push(createTest(prop, test, true));
-            break;
-          case 'dynamic':
-            tests.glimmer.push(createTest(prop, test));
-            tests.curly.push(createTest(prop, test));
-            tests.dynamic.push(createTest(prop, test, true));
-            break;
-          case true:
-            ['glimmer', 'curly', 'dynamic'].forEach((kind) => {
-              tests[kind as DeclaredComponentKind].push(createTest(prop, test, true));
-            });
-            break;
-          default:
-            tests.glimmer.push(createTest(prop, test));
-            tests.curly.push(createTest(prop, test));
-            tests.dynamic.push(createTest(prop, test));
-        }
-        continue;
+  for (let [prop, test] of testFunctions(klass.prototype)) {
+    if (test['kind'] === undefined) {
+      let skip = test['skip'];
+      switch (skip) {
+        case 'glimmer':
+          tests.curly.push(createTest(prop, test));
+          tests.dynamic.push(createTest(prop, test));
+          tests.glimmer.push(createTest(prop, test, true));
+          break;
+        case 'curly':
+          tests.glimmer.push(createTest(prop, test));
+          tests.dynamic.push(createTest(prop, test));
+          tests.curly.push(createTest(prop, test, true));
+          break;
+        case 'dynamic':
+          tests.glimmer.push(createTest(prop, test));
+          tests.curly.push(createTest(prop, test));
+          tests.dynamic.push(createTest(prop, test, true));
+          break;
+        case true:
+          ['glimmer', 'curly', 'dynamic'].forEach((kind) => {
+            tests[kind as DeclaredComponentKind].push(createTest(prop, test, true));
+          });
+          break;
+        default:
+          tests.glimmer.push(createTest(prop, test));
+          tests.curly.push(createTest(prop, test));
+          tests.dynamic.push(createTest(prop, test));
       }
+      continue;
+    }
 
-      let kind = test['kind'];
+    let kind = test['kind'];
 
-      if (kind === 'curly') {
-        tests.curly.push(createTest(prop, test));
-        tests.dynamic.push(createTest(prop, test));
-      }
+    if (kind === 'curly') {
+      tests.curly.push(createTest(prop, test));
+      tests.dynamic.push(createTest(prop, test));
+    }
 
-      if (kind === 'glimmer') {
-        tests.glimmer.push(createTest(prop, test));
-      }
+    if (kind === 'glimmer') {
+      tests.glimmer.push(createTest(prop, test));
+    }
 
-      if (kind === 'dynamic') {
-        tests.curly.push(createTest(prop, test));
-        tests.dynamic.push(createTest(prop, test));
-      }
+    if (kind === 'dynamic') {
+      tests.curly.push(createTest(prop, test));
+      tests.dynamic.push(createTest(prop, test));
+    }
 
-      if (kind === 'templateOnly') {
-        tests.templateOnly.push(createTest(prop, test));
-      }
+    if (kind === 'templateOnly') {
+      tests.templateOnly.push(createTest(prop, test));
     }
   }
   QUnit.module(`[integration] ${name}`, () => {
@@ -256,6 +251,32 @@ interface TestFunction {
   (this: IRenderTest, assert: typeof QUnit.assert, count?: Count): void;
   kind?: DeclaredComponentKind;
   skip?: boolean | DeclaredComponentKind;
+}
+
+/*
+  Finds the test methods on a suite's prototype chain, in the same order a
+  `for...in` loop would visit them. We don't use `for...in` itself because
+  methods marked with `@test` under stable (2023-11) decorators remain
+  non-enumerable: those decorators can only tag the function, not change the
+  property descriptor.
+*/
+function testFunctions(proto: object): Array<[string, TestFunction]> {
+  let seen = new Set<string>();
+  let result: Array<[string, TestFunction]> = [];
+
+  for (let obj = proto; obj && obj !== Object.prototype; obj = Object.getPrototypeOf(obj)) {
+    for (let prop of Object.getOwnPropertyNames(obj)) {
+      if (seen.has(prop)) continue;
+      seen.add(prop);
+
+      let desc = Object.getOwnPropertyDescriptor(obj, prop);
+      if (desc && 'value' in desc && isTestFunction(desc.value)) {
+        result.push([prop, desc.value]);
+      }
+    }
+  }
+
+  return result;
 }
 
 function isTestFunction(value: any): value is TestFunction {

@@ -6,8 +6,8 @@ import {
   type Decorator,
   identifyModernDecoratorArgs,
   isModernDecoratorArgs,
+  onClassFinalized,
 } from './decorator-util';
-import { findDescriptor } from '@ember/-internals/utils/lib/lookup-descriptor';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
 
@@ -49,7 +49,11 @@ export function isDecoratorCall(
 }
 
 export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
-  let decorator = function () {
+  let decorator = function (...args: unknown[]): DecoratorPropertyDescriptor {
+    if (isModernDecoratorArgs(args)) {
+      nativeDescDecorator2023(args, propertyDesc);
+      return undefined;
+    }
     return propertyDesc;
   };
 
@@ -174,58 +178,29 @@ function makeDescriptor(
   return computedDesc;
 }
 
-function once() {
-  let needsToRun = true;
-  return function (fn: () => void): void {
-    if (needsToRun) {
-      fn();
-      needsToRun = false;
-    }
-  };
-}
-
 function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescriptor) {
   const dec = identifyModernDecoratorArgs(args);
-  let setup = once();
 
   switch (dec.kind) {
-    case 'field':
+    case 'field': {
+      let key = dec.context.name as string;
+      onClassFinalized(dec.context, (proto) => {
+        desc.setup(proto, key, undefined, metaFor(proto));
+        Object.defineProperty(proto, key, makeDescriptor(desc, key));
+      });
+      // The class field itself would otherwise shadow the prototype's accessor.
       dec.context.addInitializer(function (this: any) {
-        setup(() => {
-          desc.setup(
-            this.constructor.prototype,
-            dec.context.name as string,
-            undefined,
-            metaFor(this.constructor.prototype)
-          );
-        });
-        Object.defineProperty(
-          this,
-          dec.context.name,
-          makeDescriptor(desc, dec.context.name as string)
-        );
+        Object.defineProperty(this, key, makeDescriptor(desc, key));
       });
       return undefined;
+    }
     case 'setter':
     case 'getter': {
-      dec.context.addInitializer(function (this: any) {
-        setup(() => {
-          let found = findDescriptor(this, dec.context.name);
-          if (!found) {
-            return;
-          }
-          desc.setup(
-            found.object,
-            dec.context.name as string,
-            found.descriptor,
-            metaFor(found.object)
-          );
-          Object.defineProperty(
-            found.object,
-            dec.context.name,
-            makeDescriptor(desc, dec.context.name as string, found.descriptor)
-          );
-        });
+      let key = dec.context.name as string;
+      onClassFinalized(dec.context, (proto) => {
+        let propertyDesc = Object.getOwnPropertyDescriptor(proto, key);
+        desc.setup(proto, key, propertyDesc, metaFor(proto));
+        Object.defineProperty(proto, key, makeDescriptor(desc, key, propertyDesc));
       });
       return undefined;
     }
@@ -242,6 +217,21 @@ function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescri
         `unimplemented: computedDecorator on ${dec.kind} ${dec.context.name?.toString()}`
       );
   }
+}
+
+// Under legacy decorators, the descriptor returned by `nativeDescDecorator` gets
+// passed to `Object.defineProperty` on the prototype, which merges it into the
+// existing descriptor (e.g. keeping a getter while making it non-enumerable).
+// Stage 3 decorators can't return descriptors, so we apply it ourselves.
+function nativeDescDecorator2023(args: Parameters<Decorator>, propertyDesc: PropertyDescriptor) {
+  const dec = identifyModernDecoratorArgs(args);
+  assert(
+    `nativeDescDecorator can only be used on methods and accessors, attempted to use it with ${dec.context.name?.toString()} which is a ${dec.kind}`,
+    dec.kind === 'method' || dec.kind === 'getter' || dec.kind === 'setter'
+  );
+  onClassFinalized(dec.context, (proto) => {
+    Object.defineProperty(proto, dec.context.name, propertyDesc);
+  });
 }
 
 /////////////

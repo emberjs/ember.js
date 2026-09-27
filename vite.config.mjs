@@ -73,7 +73,7 @@ export default defineConfig(({ mode }) => {
     // the stock esbuild support for typescript is horribly broken. For example,
     // it will simply remove your decorators.
     esbuild: false,
-    envPrefix: 'VM_',
+    envPrefix: ['VM_', 'VITE_'],
   };
 });
 

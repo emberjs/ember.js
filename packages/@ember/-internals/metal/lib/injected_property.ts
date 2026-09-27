@@ -52,13 +52,16 @@ function inject(
 ): PropertyDecorator | DecoratorPropertyDescriptor | void {
   assert('a string type must be provided to inject', typeof type === 'string');
   let elementDescriptor;
+  let modernArgs: Parameters<Decorator> | undefined;
   let name: string | undefined;
 
   if (isModernDecoratorArgs(args)) {
-    return inject2023(type, undefined, args);
-  }
-
-  if (isElementDescriptor(args)) {
+    let dec = identifyModernDecoratorArgs(args);
+    if (dec.kind !== 'field') {
+      return inject2023(type, undefined, args);
+    }
+    modernArgs = args;
+  } else if (isElementDescriptor(args)) {
     elementDescriptor = args;
   } else if (typeof args[0] === 'string') {
     name = args[0];
@@ -92,11 +95,16 @@ function inject(
 
   if (elementDescriptor) {
     return decorator(elementDescriptor[0], elementDescriptor[1], elementDescriptor[2]);
+  } else if (modernArgs) {
+    // TODO: cast is a lie, keeping the public types unchanged for now
+    return (decorator as unknown as (...args: unknown[]) => undefined)(...modernArgs);
   } else {
     return decorator;
   }
 }
 
+// Fields go through the same computed-based path as legacy decorators; this
+// handles `@service accessor foo` and errors on unsupported kinds.
 function inject2023(type: string, name: string | undefined, args: Parameters<Decorator>) {
   const dec = identifyModernDecoratorArgs(args);
 
@@ -119,16 +127,6 @@ function inject2023(type: string, name: string | undefined, args: Parameters<Dec
   }
 
   switch (dec.kind) {
-    case 'field':
-      dec.context.addInitializer(function (this: any) {
-        Object.defineProperty(this, dec.context.name, {
-          get: getInjection,
-          set(this: object, value: unknown) {
-            Object.defineProperty(this, dec.context.name, { value });
-          },
-        });
-      });
-      return;
     case 'accessor':
       return {
         get: getInjection,

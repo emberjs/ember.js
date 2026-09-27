@@ -84,3 +84,84 @@ export function identifyModernDecoratorArgs(args: Parameters<Decorator>):
     context: args[1],
   } as ReturnType<typeof identifyModernDecoratorArgs>;
 }
+
+/*
+  Stage 3 decorators on non-static class elements never see the class or its
+  prototype: their `addInitializer` callbacks only run once per instance, at
+  construction. But much of Ember's decorator machinery (computed property
+  setup, `metaForProperty`, injection validation, etc) needs to happen once per
+  class, against the prototype, and must be available before any instance
+  exists.
+
+  So we queue that per-class work on the decorator metadata object, which ends
+  up as `Class[Symbol.metadata]`, and flush it the first time we encounter the
+  class: either when Ember inspects it (see `CoreObject.proto()`) or when an
+  instance is constructed.
+*/
+const METADATA: symbol =
+  (Symbol as unknown as { metadata?: symbol }).metadata ?? Symbol.for('Symbol.metadata');
+
+const pendingClassSetups = new WeakMap<object, Array<(proto: object) => void>>();
+const finalizedClasses = new WeakSet<object>();
+
+interface DecoratorContextWithMetadata {
+  readonly static?: boolean;
+  readonly metadata: DecoratorMetadataObject;
+  addInitializer(initializer: (this: any) => void): void;
+}
+
+export function onClassFinalized(
+  context: DecoratorContextWithMetadata,
+  setup: (target: object) => void
+): void {
+  if (context.static) {
+    // Static initializers run once, at class definition, with the class itself
+    // as `this`, which is exactly the target we need.
+    context.addInitializer(function (this: object) {
+      setup(this);
+    });
+    return;
+  }
+
+  let pending = pendingClassSetups.get(context.metadata);
+  if (!pending) {
+    pending = [];
+    pendingClassSetups.set(context.metadata, pending);
+  }
+  pending.push(setup);
+  context.addInitializer(function (this: object) {
+    finalizeDecoratedClass(this.constructor);
+  });
+}
+
+// Runs any pending per-class decorator setup for `klass` and its superclasses,
+// superclasses first.
+export function finalizeDecoratedClass(klass: Function): void {
+  if (finalizedClasses.has(klass)) {
+    return;
+  }
+
+  let chain: Function[] = [];
+  for (
+    let current: Function | null = klass;
+    current && current !== Function.prototype && !finalizedClasses.has(current);
+    current = Object.getPrototypeOf(current)
+  ) {
+    chain.unshift(current);
+  }
+
+  for (let current of chain) {
+    finalizedClasses.add(current);
+    if (!Object.prototype.hasOwnProperty.call(current, METADATA)) {
+      continue;
+    }
+    let metadata = (current as unknown as Record<symbol, object>)[METADATA]!;
+    let pending = pendingClassSetups.get(metadata);
+    if (pending) {
+      pendingClassSetups.delete(metadata);
+      for (let setup of pending) {
+        setup(current.prototype);
+      }
+    }
+  }
+}

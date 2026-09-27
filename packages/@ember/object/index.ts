@@ -15,8 +15,8 @@ import {
   type Decorator,
   identifyModernDecoratorArgs,
   isModernDecoratorArgs,
+  onClassFinalized,
 } from '@ember/-internals/metal/lib/decorator-util';
-import { findDescriptor } from '@ember/-internals/utils/lib/lookup-descriptor';
 
 export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
 export { defineProperty } from '@ember/-internals/metal/lib/properties';
@@ -328,18 +328,7 @@ function action2023(args: Parameters<Decorator>) {
     'The @action decorator must be applied to methods when used in native classes',
     dec.kind === 'method'
   );
-  let needsSetup = true;
-  dec.context.addInitializer(function (this: any) {
-    if (needsSetup) {
-      let found = findDescriptor(this, dec.context.name);
-      if (found?.object) {
-        Object.defineProperty(
-          found.object,
-          dec.context.name,
-          setupAction(found.object, dec.context.name, dec.value)
-        );
-      }
-      needsSetup = false;
-    }
+  onClassFinalized(dec.context, (proto) => {
+    Object.defineProperty(proto, dec.context.name, setupAction(proto, dec.context.name, dec.value));
   });
 }
