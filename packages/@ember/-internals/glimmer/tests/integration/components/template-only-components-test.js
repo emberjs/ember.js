@@ -4,7 +4,7 @@ import { templateOnlyComponent } from '@glimmer/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
 import templateOnly from '@ember/component/template-only';
 import EmberObject from '@ember/object';
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 class TemplateOnlyComponentsTest extends RenderingTestCase {}
@@ -154,10 +154,10 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate('<div id="inner-value">{{this.wrapper.content}}</div>'),
           class extends Component {
-            didReceiveAttrs() {
-              this.get('wrapper').set('content', this.get('value'));
+            constructor(owner, args) {
+              super(owner, args);
+              this.args.wrapper.set('content', this.args.value);
             }
-            value = null;
           }
         )
       );

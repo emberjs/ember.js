@@ -6,6 +6,7 @@ import { action } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 import { Component as EmberComponent } from '../../utils/helpers';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -982,11 +983,11 @@ moduleFor(
           precompileTemplate(
             'message: {{this.message}}{{inner-component message=this.message}}<button onclick={{this.change}} />'
           ),
-          class extends EmberComponent {
-            message = 'hello';
+          class extends Component {
+            @tracked message = 'hello';
             @action
             change() {
-              this.set('message', 'goodbye');
+              this.message = 'goodbye';
             }
           }
         )
