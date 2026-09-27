@@ -1,4 +1,6 @@
-import { lookupDescriptor, setWithMandatorySetter, toString } from '@ember/-internals/utils';
+import lookupDescriptor from '@ember/-internals/utils/lib/lookup-descriptor';
+import { setWithMandatorySetter } from '@ember/-internals/utils/lib/mandatory-setter';
+import toString from '@ember/-internals/utils/lib/to-string';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { COMPUTED_SETTERS } from './decorator';

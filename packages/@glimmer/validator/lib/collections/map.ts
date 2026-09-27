@@ -1,16 +1,30 @@
-import type { ReactiveOptions } from './types';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Using a Proxy-based approach so that any new methods added to the Map
+// interface (like getOrInsert, getOrInsertComputed, etc.) are automatically
+// supported without needing to manually re-implement each one.
 
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
-class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
-  #options: ReactiveOptions<V>;
-  #collection = createUpdatableTag();
-  #storages = new Map<K, ReturnType<typeof createUpdatableTag>>();
-  #vals: Map<K, V>;
+type Tag = ReturnType<typeof createUpdatableTag>;
 
-  #storageFor(key: K): ReturnType<typeof createUpdatableTag> {
-    const storages = this.#storages;
+export function trackedMap<Key = any, Value = any>(
+  data?:
+    | Map<Key, Value>
+    | Iterable<readonly [Key, Value]>
+    | readonly (readonly [Key, Value])[]
+    | null,
+  options?: { equals?: (a: Value, b: Value) => boolean; description?: string }
+): Map<Key, Value> {
+  const equals = options?.equals ?? Object.is;
+  // TypeScript doesn't correctly resolve the overloads for calling the `Map`
+  // constructor for the no-value constructor. This resolves that.
+  const target: Map<Key, Value> =
+    data instanceof Map ? new Map(data.entries()) : new Map(data ?? []);
+  const collection = createUpdatableTag();
+  const storages = new Map<Key, Tag>();
+
+  function storageFor(key: Key): Tag {
     let storage = storages.get(key);
 
     if (storage === undefined) {
@@ -20,152 +34,100 @@ class TrackedMap<K = unknown, V = unknown> implements Map<K, V> {
 
     return storage;
   }
-  #dirtyStorageFor(key: K): void {
-    const storage = this.#storages.get(key);
+
+  function dirtyStorageFor(key: Key): void {
+    const storage = storages.get(key);
 
     if (storage) {
       DIRTY_TAG(storage);
     }
   }
 
-  constructor(
-    existing: readonly (readonly [K, V])[] | Iterable<readonly [K, V]> | null | Map<K, V>,
-    options: ReactiveOptions<V>
-  ) {
-    // TypeScript doesn't correctly resolve the overloads for calling the `Map`
-    // constructor for the no-value constructor. This resolves that.
-    this.#vals = existing instanceof Map ? new Map(existing.entries()) : new Map(existing);
-    this.#options = options;
-  }
+  const proxy: Map<Key, Value> = new Proxy(target, {
+    get(target, prop, receiver) {
+      if (prop === 'set') {
+        return function (key: Key, value: Value): Map<Key, Value> {
+          const hasExisting = target.has(key);
 
-  get(key: K): V | undefined {
-    consumeTag(this.#storageFor(key));
+          if (hasExisting) {
+            // TS doesn't know about the relationship between has and get
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const isUnchanged = equals(target.get(key)!, value);
 
-    return this.#vals.get(key);
-  }
+            if (isUnchanged) return proxy;
+          }
 
-  has(key: K): boolean {
-    consumeTag(this.#storageFor(key));
+          dirtyStorageFor(key);
+          DIRTY_TAG(collection);
 
-    return this.#vals.has(key);
-  }
+          target.set(key, value);
 
-  // **** ALL GETTERS ****
-  entries() {
-    consumeTag(this.#collection);
-
-    return this.#vals.entries();
-  }
-
-  keys() {
-    consumeTag(this.#collection);
-
-    return this.#vals.keys();
-  }
-
-  values() {
-    consumeTag(this.#collection);
-
-    return this.#vals.values();
-  }
-
-  forEach(fn: (value: V, key: K, map: Map<K, V>) => void): void {
-    consumeTag(this.#collection);
-
-    this.#vals.forEach(fn);
-  }
-
-  get size(): number {
-    consumeTag(this.#collection);
-
-    return this.#vals.size;
-  }
-
-  /**
-   * When iterating:
-   * - we entangle with the collection (as we iterate over the whole thing
-   * - for each individual item, we entangle with the item as well
-   */
-  [Symbol.iterator]() {
-    let keys = this.keys();
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let self = this;
-
-    return {
-      next() {
-        let next = keys.next();
-        let currentKey = next.value;
-
-        if (next.done) {
-          return { value: [undefined, undefined], done: true };
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return { value: [currentKey, self.get(currentKey!)], done: false };
-      },
-    } as MapIterator<[K, V]>;
-  }
-
-  get [Symbol.toStringTag](): string {
-    return this.#vals[Symbol.toStringTag];
-  }
-
-  set(key: K, value: V): this {
-    let existing = this.#vals.get(key);
-
-    if (existing) {
-      let isUnchanged = this.#options.equals(existing, value);
-
-      if (isUnchanged) {
-        return this;
+          return proxy;
+        };
       }
-    }
 
-    this.#dirtyStorageFor(key);
+      if (prop === 'delete') {
+        return function (key: Key): boolean {
+          if (!target.has(key)) return false;
 
-    if (!existing) {
-      DIRTY_TAG(this.#collection);
-    }
+          dirtyStorageFor(key);
+          DIRTY_TAG(collection);
 
-    this.#vals.set(key, value);
+          storages.delete(key);
+          return target.delete(key);
+        };
+      }
 
-    return this;
-  }
+      if (prop === 'clear') {
+        return function (): void {
+          if (target.size === 0) return;
 
-  delete(key: K): boolean {
-    if (!this.#vals.has(key)) return true;
+          storages.forEach((s) => DIRTY_TAG(s));
+          storages.clear();
 
-    this.#dirtyStorageFor(key);
-    DIRTY_TAG(this.#collection);
+          DIRTY_TAG(collection);
+          target.clear();
+        };
+      }
 
-    this.#storages.delete(key);
-    return this.#vals.delete(key);
-  }
+      if (prop === 'get') {
+        return function (key: Key): Value | undefined {
+          consumeTag(storageFor(key));
 
-  clear(): void {
-    if (this.#vals.size === 0) return;
+          return target.get(key);
+        };
+      }
 
-    this.#storages.forEach((s) => DIRTY_TAG(s));
-    this.#storages.clear();
+      if (prop === 'has') {
+        return function (key: Key): boolean {
+          consumeTag(storageFor(key));
 
-    DIRTY_TAG(this.#collection);
-    this.#vals.clear();
-  }
-}
+          return target.has(key);
+        };
+      }
 
-// So instanceof works
-Object.setPrototypeOf(TrackedMap.prototype, Map.prototype);
+      if (prop === 'size') {
+        consumeTag(collection);
 
-export function trackedMap<Key = unknown, Value = unknown>(
-  data?:
-    | Map<Key, Value>
-    | Iterable<readonly [Key, Value]>
-    | readonly (readonly [Key, Value])[]
-    | null,
-  options?: { equals?: (a: Value, b: Value) => boolean; description?: string }
-): Map<Key, Value> {
-  return new TrackedMap(data ?? [], {
-    equals: options?.equals ?? Object.is,
-    description: options?.description,
+        return target.size;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const value = Reflect.get(target, prop, receiver);
+
+      if (typeof value === 'function') {
+        return function (this: any, ...args: any[]) {
+          consumeTag(collection);
+
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+          return value.apply(target, args);
+        };
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return value;
+    },
   });
+
+  return proxy;
 }

@@ -1,13 +1,10 @@
-import {
-  moduleFor,
-  AutobootApplicationTestCase,
-  runTask,
-  defineComponent,
-} from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '@ember/application';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import { Component } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
@@ -104,26 +101,24 @@ moduleFor(
       return application;
     }
 
-    [`@test Destroying a route after the router does create an undestroyed 'toplevelView'`](
-      assert
-    ) {
+    [`@test Destroying a route after the router does not re-render the root outlet`](assert) {
       runTask(() => {
         this.createApplication();
-        this.addTemplate('index', `Index!`);
-        this.addTemplate('application', `Application! {{outlet}}`);
+        this.add('template:index', precompileTemplate(`Index!`));
+        this.add('template:application', precompileTemplate(`Application! {{outlet}}`));
       });
 
       let router = this.applicationInstance.lookup('router:main');
       let route = this.applicationInstance.lookup('route:index');
 
       runTask(() => router.destroy());
-      assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
+      assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
       runTask(() => route.destroy());
-      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+      assert.equal(router._updatableRootOutletState, null, 'the root outlet was not re-rendered');
 
       runTask(() => this.application.destroy());
-      assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+      assert.equal(router._updatableRootOutletState, null, 'the root outlet was not re-rendered');
     }
 
     [`@test initializers can augment an applications customEvents hash`](assert) {
@@ -145,9 +140,8 @@ moduleFor(
 
         this.add(
           'component:foo-bar',
-          defineComponent(
-            {},
-            `<div id='wowza-thingy'></div>`,
+          setComponentTemplate(
+            precompileTemplate(`<div id='wowza-thingy'></div>`),
             class extends Component {
               wowza() {
                 assert.ok(true, 'fired the event!');
@@ -156,7 +150,7 @@ moduleFor(
           )
         );
 
-        this.addTemplate('application', `{{foo-bar}}`);
+        this.add('template:application', precompileTemplate(`{{foo-bar}}`));
       });
 
       this.$('#wowza-thingy').trigger('wowza');
@@ -180,9 +174,8 @@ moduleFor(
 
         this.add(
           'component:foo-bar',
-          defineComponent(
-            {},
-            `<div id='herky-thingy'></div>`,
+          setComponentTemplate(
+            precompileTemplate(`<div id='herky-thingy'></div>`),
             class extends Component {
               jerky() {
                 assert.ok(true, 'fired the event!');
@@ -191,7 +184,7 @@ moduleFor(
           )
         );
 
-        this.addTemplate('application', `{{foo-bar}}`);
+        this.add('template:application', precompileTemplate(`{{foo-bar}}`));
       });
 
       this.$('#herky-thingy').trigger('herky');

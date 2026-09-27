@@ -8,11 +8,11 @@ import type {
   Nullable,
   Owner,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { CURRIED_COMPONENT } from '@glimmer/constants';
-import { expect } from '@glimmer/debug-util';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
-import { isIndexable } from '@glimmer/util';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { CURRIED_COMPONENT } from '@glimmer/constants/lib/curried';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { isIndexable } from '@glimmer/util/lib/collections';
 
 import { curry, isCurriedType } from '../curried-value';
 

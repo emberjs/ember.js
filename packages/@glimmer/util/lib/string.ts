@@ -1,4 +1,4 @@
-import { getFirst, getLast, isPresentArray } from '@glimmer/debug-util';
+import { getFirst, getLast, isPresentArray } from '@glimmer/debug-util/lib/present';
 
 import { enumerate } from './array-utils';
 

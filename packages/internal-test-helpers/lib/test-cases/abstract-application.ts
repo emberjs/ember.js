@@ -1,5 +1,5 @@
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compile } from 'ember-template-compiler';
+import compile from '../compile';
 import AbstractTestCase from './abstract';
 import { runDestroy, runTask, runLoopSettled } from '../run';
 import type { BootOptions } from '@ember/engine/instance';
@@ -65,7 +65,7 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
 
   get applicationOptions() {
     return {
-      rootElement: '#qunit-fixture',
+      rootElement: document.querySelector('#qunit-fixture')!,
     };
   }
 

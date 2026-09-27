@@ -1,0 +1,32 @@
+name: Package Size Report
+
+on:
+  pull_request: {}
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  pkg-size-report:
+    name: Package Size Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - uses: wyvox/pkg-size@c8fab09d60fb237b3ddadbc8abef9d850b00a729
+        with:
+          build-command: "./bin/build-size-comparison-dists.sh"
+          display-size: uncompressed, brotli
+          unchanged-files: hide
+          paths: |
+            dist/dev
+            dist/prod
+            smoke-tests/v2-app-template/dist
+            smoke-tests/v2-app-hello-world-template/dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

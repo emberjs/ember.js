@@ -1,6 +1,8 @@
-import type { ASTv2, KeywordType } from '@glimmer/syntax';
-import { exhausted } from '@glimmer/debug-util';
-import { generateSyntaxError, isKeyword, KEYWORDS_TYPES } from '@glimmer/syntax';
+import type * as ASTv2 from '@glimmer/syntax/lib/v2/api';
+import type { KeywordType } from '@glimmer/syntax/lib/keywords';
+import { exhausted } from '@glimmer/debug-util/lib/platform-utils';
+import { generateSyntaxError } from '@glimmer/syntax/lib/syntax-error';
+import { isKeyword, KEYWORDS_TYPES } from '@glimmer/syntax/lib/keywords';
 
 import type { Result } from '../../../shared/result';
 import type { NormalizationState } from '../context';
@@ -138,9 +140,10 @@ function getCalleeExpression(
   }
 }
 
-export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = never>
-  implements Keyword<K, OutFor<KeywordList>>
-{
+export class Keywords<
+  K extends KeywordType,
+  KeywordList extends Keyword<K> = never,
+> implements Keyword<K, OutFor<KeywordList>> {
   _keywords: Keyword[] = [];
   _type: K;
 

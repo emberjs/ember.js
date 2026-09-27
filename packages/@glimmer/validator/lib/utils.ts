@@ -10,5 +10,5 @@ export type Indexable = Record<AnyKey, unknown>;
 
 export function unwrap<T>(val: T | null | undefined): T {
   if (val === null || val === undefined) throw new Error(`Expected value to be present`);
-  return val as T;
+  return val;
 }

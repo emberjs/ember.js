@@ -1,4 +1,4 @@
-import { on as glimmerOn } from '@glimmer/runtime';
+import { on as glimmerOn } from '@glimmer/runtime/lib/modifiers/on';
 
 import type { Opaque } from '@ember/-internals/utility-types';
 

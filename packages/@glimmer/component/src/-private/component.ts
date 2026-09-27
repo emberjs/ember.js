@@ -1,14 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 
-const DESTROYING = new WeakMap<GlimmerComponent<object>, boolean>();
-const DESTROYED = new WeakMap<GlimmerComponent<object>, boolean>();
-
-export function setDestroying(component: GlimmerComponent<object>): void {
-  DESTROYING.set(component, true);
-}
-export function setDestroyed(component: GlimmerComponent<object>): void {
-  DESTROYED.set(component, true);
-}
+export const IS_DESTROYING_KEY = Symbol('__is_destroying__');
+export const IS_DESTROYED_KEY = Symbol('__is_destroyed__');
 
 // This provides a type-safe `WeakMap`: the getter and setter link the key to a
 // specific value. This is how `WeakMap`s actually behave, but the TS type
@@ -224,6 +217,9 @@ export type Args<S> = ExpandSignature<S>['Args']['Named'];
  * inside the component `this.args.firstName` would also be `Tom`.
  */
 export default class GlimmerComponent<S = unknown> {
+  [IS_DESTROYING_KEY] = false;
+  [IS_DESTROYED_KEY] = false;
+
   /**
    * Constructs a new component and assigns itself the passed properties. You
    * should not construct new components yourself. Instead, Glimmer will
@@ -240,9 +236,6 @@ export default class GlimmerComponent<S = unknown> {
     }
 
     this.args = args;
-
-    DESTROYING.set(this, false);
-    DESTROYED.set(this, false);
   }
 
   /**
@@ -272,11 +265,11 @@ export default class GlimmerComponent<S = unknown> {
   readonly args: Readonly<Args<S>>;
 
   get isDestroying(): boolean {
-    return DESTROYING.get(this) || false;
+    return this[IS_DESTROYING_KEY];
   }
 
   get isDestroyed(): boolean {
-    return DESTROYED.get(this) || false;
+    return this[IS_DESTROYED_KEY];
   }
 
   /**

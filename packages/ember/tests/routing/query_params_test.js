@@ -10,6 +10,7 @@ import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
 import { service } from '@ember/service';
 
+import { precompileTemplate } from '@ember/template-compilation';
 import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
@@ -262,6 +263,28 @@ moduleFor(
 
       await this.setAndFlush(controller, 'funTimes', 'woot');
       this.assertCurrentPath('/?fun-times=woot');
+    }
+
+    async ['@test Routes can override serializeQueryParam to customize serialization (GH#11288)'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.add(
+        'route:index',
+        class extends Route {
+          serializeQueryParam(value) {
+            return 'v' + value;
+          }
+        }
+      );
+
+      this.setSingleQPController('index', 'foo', 1);
+
+      await this.visitAndAssert('/');
+
+      await this.setAndFlush(this.getController('index'), 'foo', 5);
+      this.assertCurrentPath('/?foo=v5');
     }
 
     async ['@test Can override inherited QP behavior by specifying queryParams as a computed property'](
@@ -743,27 +766,22 @@ moduleFor(
     async ['@test queryParams are updated when a controller property is set and the route is refreshed. Issue #13263  '](
       assert
     ) {
-      this.addTemplate(
-        'application',
-        '<button id="test-button" {{on "click" this.increment}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
+      this.add(
+        'template:application',
+        precompileTemplate(
+          '<button id="test-button" {{on "click" this.increment}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
+        )
       );
 
       this.setSingleQPController('application', 'foo', 1, {
+        router: service(),
         increment: action(function () {
           this.incrementProperty('foo');
-          this.send('refreshRoute');
+          this.router.refresh();
         }),
       });
 
-      this.add(
-        'route:application',
-        class extends Route {
-          @action
-          refreshRoute() {
-            this.refresh();
-          }
-        }
-      );
+      this.add('route:application', Route);
 
       await this.visitAndAssert('/');
       assert.equal(getTextOf(document.getElementById('test-value')), '1');
@@ -967,10 +985,12 @@ moduleFor(
     async ['@test can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent'](
       assert
     ) {
-      this.addTemplate('parent', '{{outlet}}');
-      this.addTemplate(
-        'parent.child',
-        "<LinkTo @route='parent' @query={{hash foo='change'}} id='parent-link'>Parent</LinkTo>"
+      this.add('template:parent', precompileTemplate('{{outlet}}'));
+      this.add(
+        'template:parent.child',
+        precompileTemplate(
+          "<LinkTo @route='parent' @query={{hash foo='change'}} id='parent-link'>Parent</LinkTo>"
+        )
       );
 
       this.router.map(function () {
@@ -1108,13 +1128,15 @@ moduleFor(
         });
       });
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         <LinkTo @route='abc.def' @query={{hash foo='123'}} id='one'>A</LinkTo>
         <LinkTo @route='abc.def.zoo' @query={{hash foo='123' bar='456'}} id='two'>B</LinkTo>
         {{outlet}}
         `
+        )
       );
 
       this.setSingleQPController('abc.def', 'foo', 'lol');
@@ -1441,12 +1463,14 @@ moduleFor(
     }
 
     async ['@test <LinkTo> with null or undefined QPs does not get serialized into url'](assert) {
-      this.addTemplate(
-        'home',
-        `
+      this.add(
+        'template:home',
+        precompileTemplate(
+          `
         <LinkTo @route='home' @query={{hash foo=this.nullValue}} id='null-link'>Home</LinkTo>
         <LinkTo @route='home' @query={{hash foo=this.undefinedValue}} id='undefined-link'>Home</LinkTo>
         `
+        )
       );
 
       this.router.map(function () {
@@ -1499,14 +1523,16 @@ moduleFor(
     }
 
     async ['@test opting into replace does not affect transitions between routes']() {
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         <LinkTo @route='foo' id='foo-link'>Foo</LinkTo>
         <LinkTo @route='bar' id='bar-no-qp-link'>Bar</LinkTo>
         <LinkTo @route='bar' @query={{hash raytiley='isthebest'}} id='bar-link'>Bar</LinkTo>
         {{outlet}}
         `
+        )
       );
 
       this.router.map(function () {
@@ -1551,9 +1577,11 @@ moduleFor(
         this.route('example');
       });
 
-      this.addTemplate(
-        'application',
-        "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
+      this.add(
+        'template:application',
+        precompileTemplate(
+          "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
+        )
       );
 
       this.setSingleQPController('example', 'foo', undefined, {
@@ -1677,9 +1705,10 @@ moduleFor(
     ) {
       assert.expect(3);
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
           <LinkTo @route="application" id="the-link">
             Home
           </LinkTo>
@@ -1690,6 +1719,7 @@ moduleFor(
           <!-- this log caused a failure previously, so we leave it to make sure this case is tested -->
           {{log this.foo}}
         `
+        )
       );
 
       this.add(
@@ -1761,7 +1791,7 @@ moduleFor(
         });
       });
 
-      this.addTemplate('grandparent.parent.loading', 'Loading...');
+      this.add('template:grandparent.parent.loading', precompileTemplate('Loading...'));
 
       this.add(
         'route:index',

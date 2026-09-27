@@ -1,7 +1,9 @@
-const { dasherize } = require('ember-cli-string-utils');
-const { EOL } = require('os');
+import { EOL } from 'node:os';
+import stringUtil from 'ember-cli-string-utils';
 
-function generateComponentSignature(componentName) {
+const { dasherize } = stringUtil;
+
+export function generateComponentSignature(componentName) {
   let args = `  // The arguments accepted by the component${EOL}  Args: {};`;
 
   let blocks =
@@ -23,11 +25,6 @@ function generateComponentSignature(componentName) {
   );
 }
 
-function modulePrefixForProject(project) {
+export function modulePrefixForProject(project) {
   return dasherize(project.config().modulePrefix);
 }
-
-module.exports = {
-  generateComponentSignature,
-  modulePrefixForProject,
-};

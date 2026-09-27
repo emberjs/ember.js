@@ -6,13 +6,16 @@ import type {
   SimpleNode,
   UpdatingOpcode,
 } from '@glimmer/interfaces';
-import { unreachable } from '@glimmer/debug-util';
+import { unreachable } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
+import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 
 import { clear } from '../bounds';
 import { UpdatingVM } from './update';
 
 export default class RenderResultImpl implements RenderResult {
+  [DESTROYABLE_META_KEY]: object | undefined;
+
   constructor(
     public env: Environment,
     private updating: UpdatingOpcode[],

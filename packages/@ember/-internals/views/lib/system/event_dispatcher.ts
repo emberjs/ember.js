@@ -1,10 +1,11 @@
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { get, set } from '@ember/-internals/metal';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
 import EmberObject from '@ember/object';
 import { getElementView } from './utils';
-import type { BootEnvironment } from '@ember/-internals/glimmer';
-import type Component from '@ember/component';
+import type { BootEnvironment } from '@ember/engine/instance';
+import type Component from '@ember/-internals/glimmer/lib/component';
 
 /**
 @module ember
@@ -14,9 +15,9 @@ const ROOT_ELEMENT_CLASS = 'ember-application';
 const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
 
 /**
-  `Ember.EventDispatcher` handles delegating browser events to their
+  `EventDispatcher` handles delegating browser events to their
   corresponding `Ember.Views.` For example, when you click on a view,
-  `Ember.EventDispatcher` ensures that that view's `mouseDown` method gets
+  `EventDispatcher` ensures that that view's `mouseDown` method gets
   called.
 
   @class EventDispatcher

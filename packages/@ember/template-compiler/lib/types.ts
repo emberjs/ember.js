@@ -1,9 +1,10 @@
 import type {
+  ASTPluginBuilder,
   ASTPluginEnvironment,
-  builders,
   PrecompileOptions,
   PrecompileOptionsWithLexicalScope,
-} from '@glimmer/syntax';
+} from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
+import type builders from '@glimmer/syntax/lib/v1/public-builders';
 
 export type Builders = typeof builders;
 
@@ -13,9 +14,7 @@ export type Builders = typeof builders;
  * typing. Here export the interface subclass with no modification.
  */
 
-export type PluginFunc = NonNullable<
-  NonNullable<PrecompileOptionsWithLexicalScope['plugins']>['ast']
->[number];
+export type PluginFunc = ASTPluginBuilder<EmberASTPluginEnvironment>;
 
 export type LexicalScope = NonNullable<PrecompileOptionsWithLexicalScope['lexicalScope']>;
 
@@ -23,11 +22,31 @@ interface Plugins {
   ast: PluginFunc[];
 }
 
-export interface EmberPrecompileOptions extends PrecompileOptions {
+export interface EmberPrecompileOptions extends Omit<PrecompileOptions, 'meta'> {
   isProduction?: boolean;
   moduleName?: string;
   plugins?: Plugins;
   lexicalScope?: LexicalScope;
+  meta?: {
+    /**
+     * Exists for historical reasons, should not be in new code, as
+     * the module name does not correspond to anything meaningful at runtime.
+     */
+    moduleName?: string | undefined;
+
+    /**
+     * Not available at runtime
+     */
+    jsutils?: { bindImport: (...args: unknown[]) => string };
+
+    /**
+     * Utils unique to the runtime compiler
+     */
+    emberRuntime?: {
+      lookupKeyword(name: string): string;
+    };
+  };
+
   /**
    * This supports template blocks defined in class bodies.
    *

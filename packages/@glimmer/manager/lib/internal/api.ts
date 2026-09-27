@@ -5,7 +5,7 @@ import type {
   InternalModifierManager,
   Owner,
 } from '@glimmer/interfaces';
-import { debugToString } from '@glimmer/debug-util';
+import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { debugAssert } from '@glimmer/global-context';
 
 import { CustomHelperManager } from '../public/helper';

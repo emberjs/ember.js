@@ -1,1 +1,1 @@
-export { isSerializationFirstNode } from '@glimmer/runtime';
+export { isSerializationFirstNode } from '@glimmer/runtime/lib/vm/rehydrate-builder';

@@ -1,15 +1,13 @@
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import chalk from 'chalk';
+import stringUtil from 'ember-cli-string-utils';
+import EmberRouterGenerator from 'ember-router-generator';
+import SilentError from 'silent-error';
 
-const fs = require('fs');
-const path = require('path');
-const chalk = require('chalk');
-const stringUtil = require('ember-cli-string-utils');
-const EmberRouterGenerator = require('ember-router-generator');
-const SilentError = require('silent-error');
+import typescriptBlueprintPolyfill from 'ember-cli-typescript-blueprint-polyfill';
 
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-
-module.exports = {
+export default {
   description: 'Generates a route and a template, and registers the route with the router.',
 
   shouldTransformTypeScript: true,

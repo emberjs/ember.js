@@ -32,7 +32,7 @@
   @packageDocumentation
  */
 
-import glob from 'glob';
+import { globSync } from 'glob';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -104,13 +104,6 @@ async function main() {
 
   doOrDie(() => spawnSync('pnpm', ['tsc', '--project', 'tsconfig/publish-types.json']));
 
-  // We're deprecating the barrel file, so this is temporary. The Ember global is a namespace,
-  // and namespaces can't be both exported and used as a type with the same semantics and
-  // capabilities as when defined in the original file -- so we're going to LIE and
-  // pretend that the barrel file is the index file (which is the same behavior as
-  // prior to the deprecation)
-  await fs.cp(path.join(TYPES_DIR, 'ember/barrel.d.ts'), path.join(TYPES_DIR, 'ember/index.d.ts'));
-
   let remappedLocationExcludes = await doOrDie(() => copyHandwrittenDefinitions('packages'));
 
   let sideEffectExcludes = await doOrDie(copyRemappedLocationModules);
@@ -122,7 +115,7 @@ async function main() {
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
   // the modules, as generated directly from the tsconfig above. These must
   // *all* appear in the final set of `/// <reference ...>`s we emit.
-  let allModules = glob.sync('**/*.d.ts', {
+  let allModules = globSync('**/*.d.ts', {
     ignore: 'index.d.ts', // ignore the root file itself if it somehow exists
     cwd: TYPES_DIR,
   });
@@ -161,12 +154,7 @@ async function main() {
   process.exit(status === 'success' ? 0 : 1);
 }
 
-const REMAPPED_LOCATION_MODULES = [
-  {
-    input: 'packages/loader/lib/index.d.ts',
-    output: 'require.d.ts',
-  },
-];
+const REMAPPED_LOCATION_MODULES = [];
 
 /**
   "Emit" hand-authored `.d.ts` modules for modules which need to live in a
@@ -203,11 +191,10 @@ function copyRemappedLocationModules() {
   @returns {Promise<Array<string>>} The modules copied over by hand.
 */
 async function copyHandwrittenDefinitions(inputDir) {
-  let definitionModules = glob
-    .sync('**/*.d.ts', {
-      cwd: inputDir,
-      ignore: ['**/node_modules/**'],
-    })
+  let definitionModules = globSync('**/*.d.ts', {
+    cwd: inputDir,
+    ignore: ['**/node_modules/**', '**/@types/js-reporters/**'],
+  })
     .filter((moduleName) => !REMAPPED_LOCATION_MODULES.some(({ input }) => input === moduleName));
 
   await doOrDie(() =>

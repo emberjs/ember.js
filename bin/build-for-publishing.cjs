@@ -1,0 +1,96 @@
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const buildInfo = require('../broccoli/build-info.cjs').buildInfo();
+
+async function exec(command, args) {
+  const { execa } = await import('execa');
+  // eslint-disable-next-line
+  console.log(`\n\tRunning: \`${command} ${args.join(' ')}\``);
+  return execa(command, args, { stdout: 'inherit', stderr: 'inherit' });
+}
+
+/*
+  Updates the `package.json`'s `version` string to be the same value that
+  the built assets will have as `Ember.VERSION`.
+*/
+function updatePackageJSONVersion() {
+  let packageJSONPath = path.join(__dirname, '..', 'package.json');
+
+  let pkgContents = fs.readFileSync(packageJSONPath, { encoding: 'utf-8' });
+  let pkg = JSON.parse(pkgContents);
+  if (!pkg._originalVersion) {
+    pkg._originalVersion = pkg.version;
+  }
+  pkg._versionPreviouslyCalculated = true;
+  pkg.version = buildInfo.version;
+  fs.writeFileSync(packageJSONPath, JSON.stringify(pkg, null, 2), {
+    encoding: 'utf-8',
+  });
+}
+
+/*
+  Updates the version number listed within the docs/data.json file to match
+  `Ember.VERSION` and `package.json` version.
+
+  This is needed because ember-cli-yuidoc automatically sets the version string
+  property in the generated `docs/data.json` to
+`${packageJsonVersion}.${gitSha}`.
+*/
+function updateDocumentationVersion() {
+  let docsPath = path.join(__dirname, '..', 'docs', 'data.json');
+
+  let contents = fs.readFileSync(docsPath, { encoding: 'utf-8' });
+  let docs = JSON.parse(contents);
+  docs.project.version = buildInfo.version;
+  fs.writeFileSync(docsPath, JSON.stringify(docs, null, 2), {
+    encoding: 'utf-8',
+  });
+}
+
+Promise.resolve()
+  .then(() => {
+    updatePackageJSONVersion();
+    // ensures that we tag this correctly
+    return exec('node_modules/.bin/auto-dist-tag', ['--write']);
+  })
+  .then(() => {
+    // do a production build
+    return exec('pnpm', ['build']);
+  })
+  .then(() => {
+    // generate docs
+    return exec('pnpm', ['run', 'docs']).then(() => {
+      updateDocumentationVersion();
+    });
+  })
+  .then(() => {
+    // generate build-metadata.json
+    const metadata = {
+      version: buildInfo.version,
+      buildType: buildInfo.channel,
+      SHA: buildInfo.sha,
+      assetPath: `/${buildInfo.channel}/shas/${buildInfo.sha}.tgz`,
+    };
+    fs.writeFileSync('build-metadata.json', JSON.stringify(metadata, null, 2), {
+      encoding: 'utf-8',
+    });
+
+    // using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
+    // property properly, and therefore the tarball generated is quite large (~7MB).
+    return exec('npm', ['pack']);
+  })
+  .then(
+    // eslint-disable-next-line
+    () => console.log('build-for-publishing completed successfully!'),
+    (error) => {
+      // eslint-disable-next-line
+      console.error(error);
+      // eslint-disable-next-line
+      console.log('build-for-publishing failed');
+      // failure, must manually exit non-zero
+      // eslint-disable-next-line n/no-process-exit
+      process.exit(1);
+    }
+  );

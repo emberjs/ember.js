@@ -1,3 +1,3 @@
-'use strict';
+import addonImport from '../-addon-import.js';
 
-module.exports = require('../-addon-import');
+export default addonImport;

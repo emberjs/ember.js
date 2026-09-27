@@ -1,5 +1,6 @@
 import type { Dict, Nullable, Stack } from '@glimmer/interfaces';
-import { getLast, unwrap } from '@glimmer/debug-util';
+import { getLast } from '@glimmer/debug-util/lib/present';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 
 export function dict<T = unknown>(): Dict<T> {
   return Object.create(null) as Dict<T>;

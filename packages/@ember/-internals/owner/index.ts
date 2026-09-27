@@ -489,8 +489,10 @@ export interface FactoryClass {
   @class InternalFactory
   @private
  */
-export interface InternalFactory<T extends object, C extends FactoryClass | object = FactoryClass>
-  extends Factory<T> {
+export interface InternalFactory<
+  T extends object,
+  C extends FactoryClass | object = FactoryClass,
+> extends Factory<T> {
   /**
     @property class
     @optional

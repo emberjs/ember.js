@@ -29,14 +29,24 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
     return { fn, args };
   }
 
-  getValue({ fn, args }: State): unknown {
-    if (Object.keys(args.named).length > 0) {
-      let argsForFn: FnArgs = [...args.positional, args.named];
+  getValue({ fn, args: { named, positional } }: State): unknown {
+    /**
+     * This is an untraditional use of for loop,
+     *   but note~
+     *     the immediate return within its body.
+     *
+     * This is done so that we don't need to allocate an array in order to
+     * check that `named` has contents
+     *   (and that array would be wasted
+     *    for all function calls with no named args)
+     */
+    for (const _ in named) {
+      let argsForFn: FnArgs = [...positional, named];
 
       return fn(...argsForFn);
     }
 
-    return fn(...args.positional);
+    return fn(...positional);
   }
 
   getDebugName(fn: AnyFunction): string {

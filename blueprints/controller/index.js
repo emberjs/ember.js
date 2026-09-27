@@ -1,8 +1,6 @@
-'use strict';
+import typescriptBlueprintPolyfill from 'ember-cli-typescript-blueprint-polyfill';
 
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-
-module.exports = {
+export default {
   description: 'Generates a controller.',
 
   shouldTransformTypeScript: true,

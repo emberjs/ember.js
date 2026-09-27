@@ -4,7 +4,7 @@ import config from '<%= modulePrefix %>/config/environment';
 import { initialize } from '<%= modulePrefix %>/instance-initializers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';
 import Resolver from 'ember-resolver';
-<% if (destroyAppExists) { %>import destroyApp from '../../helpers/destroy-app';<% } else { %>import { run } from '@ember/runloop';<% } %>
+<% if (destroyAppExists) { %>import destroyApp from '../../helpers/destroy-app';<% } %>
 
 module('<%= friendlyTestName %>', function (hooks) {
   hooks.beforeEach(function () {
@@ -26,8 +26,8 @@ module('<%= friendlyTestName %>', function (hooks) {
     this.instance = this.application.buildInstance();
   });
   hooks.afterEach(function () {
-    <% if (destroyAppExists) { %>destroyApp(this.instance);<% } else { %>run(this.instance, 'destroy');<% } %>
-    <% if (destroyAppExists) { %>destroyApp(this.application);<% } else { %>run(this.application, 'destroy');<% } %>
+    <% if (destroyAppExists) { %>destroyApp(this.instance);<% } else { %>this.instance.destroy();<% } %>
+    <% if (destroyAppExists) { %>destroyApp(this.application);<% } else { %>this.application.destroy();<% } %>
   });
 
   // TODO: Replace this with your real tests.

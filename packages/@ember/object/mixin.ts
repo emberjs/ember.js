@@ -1,33 +1,35 @@
 /**
 @module @ember/object/mixin
 */
-import { INIT_FACTORY } from '@ember/-internals/container';
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
+import { INIT_FACTORY } from '@ember/-internals/container/lib/container';
+import type { Meta } from '@ember/-internals/meta/lib/meta';
+import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
+import { observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils/lib/super';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import type {
+  ComputedDecorator,
+  ComputedPropertyGetter,
+  ComputedPropertyObj,
+  ComputedPropertySetter,
+} from '@ember/-internals/metal/lib/computed';
+import { type ComputedDescriptor, isClassicDecorator } from '@ember/-internals/metal/lib/decorator';
+import { ComputedProperty } from '@ember/-internals/metal/lib/computed';
 import {
-  type ComputedDecorator,
-  type ComputedPropertyGetter,
-  type ComputedPropertyObj,
-  type ComputedPropertySetter,
-  type ComputedDescriptor,
-  isClassicDecorator,
-} from '@ember/-internals/metal';
-import {
-  ComputedProperty,
   descriptorForDecorator,
   makeComputedDecorator,
   nativeDescDecorator,
-  setUnprocessedMixins,
+} from '@ember/-internals/metal/lib/decorator';
+import { setUnprocessedMixins } from '@ember/-internals/metal/lib/namespace_search';
+import {
   addObserver,
   removeObserver,
   revalidateObservers,
-  defineDecorator,
-  defineValue,
-} from '@ember/-internals/metal';
-import { addListener, removeListener } from '@ember/object/events';
+} from '@ember/-internals/metal/lib/observer';
+import { defineDecorator, defineValue } from '@ember/-internals/metal/lib/properties';
+import { addListener, removeListener } from '@ember/-internals/metal/lib/events';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
@@ -562,14 +564,6 @@ export default class Mixin {
     if (DEBUG) {
       // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
       this[INIT_FACTORY] = null;
-      /*
-        In debug builds, we seal mixins to help avoid performance pitfalls.
-
-        In IE11 there is a quirk that prevents sealed objects from being added
-        to a WeakMap. Unfortunately, the mixin system currently relies on
-        weak maps in `guidFor`, so we need to prime the guid cache weak map.
-      */
-      guidFor(this);
 
       if (Mixin._disableDebugSeal !== true) {
         Object.seal(this);
@@ -585,6 +579,15 @@ export default class Mixin {
     @public
   */
   static create<M extends typeof Mixin>(...args: any[]): InstanceType<M> {
+    deprecateUntil(
+      `Using mixins is deprecated. Refactor to composition patterns or class decorators.`,
+      DEPRECATIONS.DEPRECATE_MIXINS
+    );
+    return this[INTERNAL_MIXIN_CREATE]<M>(...args);
+  }
+
+  /** @internal */
+  static [INTERNAL_MIXIN_CREATE]<M extends typeof Mixin>(...args: any[]): InstanceType<M> {
     setUnprocessedMixins();
     let M = this;
     return new M(args, undefined) as InstanceType<M>;

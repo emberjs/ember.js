@@ -1,7 +1,8 @@
 import { peekMeta } from '@ember/-internals/meta';
 import ArrayProxy from '@ember/array/proxy';
 import { A } from '@ember/array';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 function sortedListenersFor(obj, eventName) {
   let listeners = peekMeta(obj).matchingListeners(eventName) || [];
@@ -16,7 +17,13 @@ function sortedListenersFor(obj, eventName) {
 moduleFor(
   'ArrayProxy - watching and listening',
   class extends AbstractTestCase {
-    [`@test setting 'content' adds listeners correctly`](assert) {
+    beforeEach() {
+      expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+    }
+
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test setting 'content' adds listeners correctly`](
+      assert
+    ) {
       let content = A();
       let proxy = ArrayProxy.create();
 
@@ -33,7 +40,9 @@ moduleFor(
       ]);
     }
 
-    [`@test changing 'content' adds and removes listeners correctly`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test changing 'content' adds and removes listeners correctly`](
+      assert
+    ) {
       let content1 = A();
       let content2 = A();
       let proxy = ArrayProxy.create({ content: content1 });

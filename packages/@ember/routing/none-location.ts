@@ -1,6 +1,7 @@
 import EmberObject from '@ember/object';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
+import { escapeRegExp } from './lib/location-utils';
 
 /**
 @module @ember/routing/none-location
@@ -13,8 +14,7 @@ import type { default as EmberLocation, UpdateCallback } from '@ember/routing/lo
   application in a larger page).
 
   Using `NoneLocation` causes Ember to not store the applications URL state
-  in the actual URL. This is generally used for testing purposes, and is one
-  of the changes made when calling `App.setupForTesting()`.
+  in the actual URL. This is generally used for testing purposes.
 
   @class NoneLocation
   @extends EmberObject
@@ -64,7 +64,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     rootURL = rootURL.replace(/\/$/, '');
 
     // remove rootURL from url
-    return path.replace(new RegExp(`^${rootURL}(?=/|$)`), '');
+    return path.replace(new RegExp(`^${escapeRegExp(rootURL)}(?=/|$)`), '');
   }
 
   /**

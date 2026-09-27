@@ -16,11 +16,13 @@
     "./metal": "./metal/index.ts",
     "./owner": "./owner/index.ts",
     "./routing": "./routing/index.ts",
+    "./routing/route-managers": "./routing/route-managers/index.ts",
     "./runtime": "./runtime/index.ts",
     "./string": "./string/index.ts",
     "./utility-types": "./utility-types/index.ts",
     "./utils": "./utils/index.ts",
-    "./views": "./views/index.ts"
+    "./views": "./views/index.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/application": "workspace:*",
@@ -69,7 +71,7 @@
     "ember-template-compiler": "workspace:*",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
-    "router_js": "^8.0.5",
+    "router_js": "workspace:*",
     "rsvp": "^4.8.5"
   },
   "devDependencies": {

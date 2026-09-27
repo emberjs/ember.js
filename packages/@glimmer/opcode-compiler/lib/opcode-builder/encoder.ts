@@ -16,11 +16,15 @@ import type {
   SingleBuilderOperand,
   STDLib,
 } from '@glimmer/interfaces';
-import { encodeHandle, isMachineOp, VM_PRIMITIVE_OP, VM_RETURN_OP } from '@glimmer/constants';
-import { expect, isPresentArray, localAssert } from '@glimmer/debug-util';
-import { InstructionEncoderImpl } from '@glimmer/encoder';
-import { dict, Stack } from '@glimmer/util';
-import { ARG_SHIFT, MACHINE_MASK, TYPE_SIZE } from '@glimmer/vm';
+import { encodeHandle } from '@glimmer/constants/lib/immediate';
+import { isMachineOp, VM_RETURN_OP } from '@glimmer/constants/lib/vm-ops';
+import { VM_PRIMITIVE_OP } from '@glimmer/constants/lib/syscall-ops';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import { isPresentArray } from '@glimmer/debug-util/lib/present';
+import assert from '@glimmer/debug-util/lib/assert';
+import { InstructionEncoderImpl } from '@glimmer/encoder/lib/encoder';
+import { dict, StackImpl as Stack } from '@glimmer/util/lib/collections';
+import { ARG_SHIFT, MACHINE_MASK, TYPE_SIZE } from '@glimmer/vm/lib/flags';
 
 import { compilableBlock } from '../compilable-template';
 import {
@@ -52,10 +56,7 @@ export class Labels {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       let address = labels[target]! - at;
 
-      localAssert(
-        heap.getbyaddr(at) === -1,
-        'Expected heap to contain a placeholder, but it did not'
-      );
+      assert(heap.getbyaddr(at) === -1, 'Expected heap to contain a placeholder, but it did not');
 
       heap.setbyaddr(at, address);
     }

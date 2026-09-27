@@ -1,12 +1,12 @@
 import type { PresentArray, WireFormat } from '@glimmer/interfaces';
-import type { ASTv2 } from '@glimmer/syntax';
+import type * as ASTv2 from '@glimmer/syntax/lib/v2/api';
 import {
   assertPresentArray,
   isPresentArray,
-  localAssert,
   mapPresentArray,
-} from '@glimmer/debug-util';
-import { SexpOpcodes } from '@glimmer/wire-format';
+} from '@glimmer/debug-util/lib/present';
+import assert from '@glimmer/debug-util/lib/assert';
+import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
 import type * as mir from './mir';
 
@@ -99,7 +99,7 @@ export class ExpressionEncoder {
 
   PathExpression({ head, tail }: mir.PathExpression): WireFormat.Expressions.GetPath {
     let getOp = EXPR.expr(head) as WireFormat.Expressions.GetVar;
-    localAssert(getOp[0] !== SexpOpcodes.GetStrictKeyword, '[BUG] keyword in a PathExpression');
+    assert(getOp[0] !== SexpOpcodes.GetStrictKeyword, '[BUG] keyword in a PathExpression');
     return [...getOp, EXPR.Tail(tail)];
   }
 

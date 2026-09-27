@@ -1,4 +1,4 @@
-import { ENV } from '@ember/-internals/environment';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import { DEBUG } from '@glimmer/env';
 
 import { assert } from './assert';

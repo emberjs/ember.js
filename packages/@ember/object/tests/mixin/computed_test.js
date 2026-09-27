@@ -1,6 +1,7 @@
 import { get, set, computed, defineProperty } from '@ember/object';
 import Mixin from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 function K() {
   return this;
@@ -9,7 +10,11 @@ function K() {
 moduleFor(
   'Mixin Computed Properties',
   class extends AbstractTestCase {
-    ['@test overriding computed properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test overriding computed properties`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA, MixinB, MixinC, MixinD;
       let obj;
 
@@ -65,7 +70,11 @@ moduleFor(
       assert.equal(get(obj, 'aProp'), 'objD', 'should preserve original computed property');
     }
 
-    ['@test calling set on overridden computed properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test calling set on overridden computed properties`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let SuperMixin, SubMixin;
       let obj;
 
@@ -112,7 +121,11 @@ moduleFor(
       assert.ok(superSetOccurred, 'should pass set to _super after getting');
     }
 
-    ['@test setter behavior asserts when overriding computed properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test setter behavior asserts when overriding computed properties`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let obj = {};
 
       let MixinA = Mixin.create({

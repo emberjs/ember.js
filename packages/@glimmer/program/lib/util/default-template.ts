@@ -1,5 +1,5 @@
 import type { SerializedTemplateBlock, SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
-import { SexpOpcodes as op } from '@glimmer/wire-format';
+import { opcodes as op } from '@glimmer/wire-format/lib/opcodes';
 
 /**
  * Default component template, which is a plain yield

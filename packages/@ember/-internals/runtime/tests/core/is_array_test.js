@@ -2,7 +2,8 @@ import { A as emberA, isArray } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import EmberObject from '@ember/object';
 import { window } from '@ember/-internals/browser-environment';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 const global = this;
 
@@ -19,7 +20,6 @@ moduleFor(
       let strangeLength = { length: 'yes' };
       let fn = function () {};
       let asyncFn = async function () {};
-      let arrayProxy = ArrayProxy.create({ content: emberA() });
 
       assert.equal(isArray(numarray), true, '[1,2,3]');
       assert.equal(isArray(number), false, '23');
@@ -31,7 +31,16 @@ moduleFor(
       assert.equal(isArray(global), false, 'global');
       assert.equal(isArray(fn), false, 'function() {}');
       assert.equal(isArray(asyncFn), false, 'async function() {}');
-      assert.equal(isArray(arrayProxy), true, '[]');
+    }
+
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved
+    )} @test Ember.isArray with an ArrayProxy`](assert) {
+      expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+
+      let arrayProxy = ArrayProxy.create({ content: emberA() });
+
+      assert.equal(isArray(arrayProxy), true, 'ArrayProxy');
     }
 
     '@test Ember.isArray does not trigger proxy assertion when probing for length GH#16495'(

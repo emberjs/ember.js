@@ -1,22 +1,36 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  expectDeprecation,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
 
 import { action, set } from '@ember/object';
-import Mixin from '@ember/object/mixin';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Components test: send',
   class extends RenderingTestCase {
-    ['@test sending to undefined actions triggers an error'](assert) {
-      assert.expect(2);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test sending to undefined actions triggers an error`](assert) {
+      assert.expect(3);
+
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
 
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
           init() {
             super.init();
             component = this;
@@ -26,8 +40,8 @@ moduleFor(
           foo(message) {
             assert.equal('bar', message);
           }
-        },
-      });
+        }
+      );
 
       this.render('{{foo-bar}}');
 
@@ -38,7 +52,14 @@ moduleFor(
       }, /had no action handler for: baz/);
     }
 
-    ['@test `send` will call send from a target if it is defined']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test \`send\` will call send from a target if it is defined`]() {
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
+
       let component;
       let target = {
         send: (message, payload) => {
@@ -47,28 +68,37 @@ moduleFor(
         },
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
           init() {
             super.init(...arguments);
             component = this;
           }
           target = target;
-        },
-      });
+        }
+      );
 
       this.render('{{foo-bar}}');
 
       runTask(() => component.send('foo', 'baz'));
     }
 
-    ['@test a handled action can be bubbled to the target for continued processing']() {
-      this.assert.expect(2);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test a handled action can be bubbled to the target for continued processing`]() {
+      this.assert.expect(3);
+
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
 
       let component;
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
+      this.owner.register(
+        'component:foo-bar',
+        Component.extend({
           init() {
             this._super(...arguments);
             component = this;
@@ -86,16 +116,23 @@ moduleFor(
               },
             },
           }).create(),
-        }),
-      });
+        })
+      );
 
       this.render('{{foo-bar poke="poke"}}');
 
       runTask(() => component.send('poke'));
     }
 
-    ["@test action can be handled by a superclass' actions object"](assert) {
-      this.assert.expect(4);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test action can be handled by a superclass' actions object`](assert) {
+      this.assert.expect(5);
+
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
 
       let component;
 
@@ -111,17 +148,16 @@ moduleFor(
         }
       };
 
-      let BarViewMixin = Mixin.create({
-        actions: {
-          bar(msg) {
-            assert.equal(msg, 'HELLO');
-            this._super(msg);
+      this.owner.register(
+        'component:x-index',
+        class extends SuperComponent.extend({
+          actions: {
+            bar(msg) {
+              assert.equal(msg, 'HELLO');
+              this._super(msg);
+            },
           },
-        },
-      });
-
-      this.registerComponent('x-index', {
-        ComponentClass: class extends SuperComponent.extend(BarViewMixin) {
+        }) {
           init() {
             super.init(...arguments);
             component = this;
@@ -131,8 +167,8 @@ moduleFor(
           baz() {
             assert.ok(true, 'baz');
           }
-        },
-      });
+        }
+      );
 
       this.render('{{x-index}}');
 
@@ -144,7 +180,7 @@ moduleFor(
     }
 
     ['@test actions cannot be provided at create time'](assert) {
-      this.registerComponent('foo-bar', class extends Component {});
+      this.owner.register('component:foo-bar', class extends Component {});
       let ComponentFactory = this.owner.factoryFor('component:foo-bar');
 
       expectAssertion(() => {
@@ -162,11 +198,19 @@ moduleFor(
       });
     }
 
-    ['@test asserts if called on a destroyed component']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+    )} @test asserts if called on a destroyed component`]() {
+      expectDeprecation(
+        /Calling `\.send\(\)` on/,
+        DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
+      );
+
       let component;
 
-      this.registerComponent('rip-alley', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:rip-alley',
+        class extends Component {
           init() {
             super.init(...arguments);
             component = this;
@@ -175,8 +219,8 @@ moduleFor(
           toString() {
             return 'component:rip-alley';
           }
-        },
-      });
+        }
+      );
 
       this.render('{{#if this.shouldRender}}{{rip-alley}}{{/if}}', {
         shouldRender: true,

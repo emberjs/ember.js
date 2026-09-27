@@ -1,5 +1,3 @@
-import { compile } from 'ember-template-compiler';
-
 import type { InternalFactory, Resolver as IResolver } from '@ember/-internals/owner';
 
 const DELIMITER = '%';
@@ -42,17 +40,6 @@ class Resolver implements IResolver {
     }
 
     return (this._registered[key] = factory);
-  }
-  addTemplate(templateName: string, template: string) {
-    let templateType = typeof template;
-    if (templateType !== 'string') {
-      throw new Error(
-        `You called addTemplate for "${templateName}" with a template argument of type of '${templateType}'. addTemplate expects an argument of an uncompiled template as a string.`
-      );
-    }
-    return (this._registered[serializeKey(`template:${templateName}`)] = compile(template, {
-      moduleName: `my-app/templates/${templateName}.hbs`,
-    }));
   }
   static create() {
     return new this();

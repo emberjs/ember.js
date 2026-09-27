@@ -2,27 +2,45 @@ name: Setup node and pnpm
 description: Setup node and install dependencies using pnpm
 inputs:
   use_lockfile:
-    description: 'Whether to use the lockfile vs latest floating dependencies'
+    description: "Whether to use the lockfile vs latest floating dependencies"
     required: false
-    default: true
+    default: "true"
 
   node-version:
-    description: 'The node version to use'
+    description: "The node version to use"
     required: false
-    default: 20
-runs:
-  using: 'composite'
-  steps:
-    - uses: pnpm/action-setup@v4
-      name: Install pnpm
-      with:
-        run_install: false
-    - name: Install Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '${{ inputs.node-version }}'
-        registry-url: 'https://registry.npmjs.org'
-        cache: pnpm
+    default: "20"
 
-    - run: pnpm install ${{ fromJSON('{"false":"--no-lockfile", "true":"--frozen-lockfile"}')[inputs.use_lockfile] }}
+  use-node-modules-cache:
+    description: "Whether to use the node-modules cache"
+    required: false
+    default: "false" # We don't want to use the cache. It causes false passes of CI when updating actions and workflows.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@91ab88e2619ed1f46221f0ba42d1492c02baf788 # v6.0.6
+      with:
+        cache: false
+        version: 10.33.2
+        run_install: false
+    - name: Install Node.js (WITH cache)
+      if: ${{ inputs.use-node-modules-cache == 'true' }}
+      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      with:
+        node-version: "${{ inputs.node-version }}"
+        registry-url: "https://registry.npmjs.org"
+        cache: pnpm
+    - name: Install Node.js (NO cache)
+      if: ${{ inputs.use-node-modules-cache != 'true' }}
+      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      with:
+        package-manager-cache: false
+        node-version: "${{ inputs.node-version }}"
+        registry-url: "https://registry.npmjs.org"
+
+    - run: pnpm install ${INSTALL_OPTIONS}
+      env:
+        INSTALL_OPTIONS: ${{ fromJSON('{"false":"--no-lockfile", "true":"--frozen-lockfile"}')[inputs.use_lockfile] }}
       shell: bash

@@ -1,4 +1,4 @@
-import type { _ProxyMixin as ProxyMixin } from '@ember/-internals/runtime';
+import type ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
 import { isObject } from './spec';
 
 const PROXIES = new WeakSet();

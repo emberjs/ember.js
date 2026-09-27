@@ -1,4 +1,4 @@
-import { peekMeta } from '@ember/-internals/meta';
+import { peekMeta } from '@ember/-internals/meta/lib/meta';
 
 export function getCachedValueFor<T, K extends keyof T>(obj: T, key: K): T[K] | undefined;
 export function getCachedValueFor(obj: object, key: string): unknown;

@@ -9,7 +9,14 @@ import {
   sendEvent,
 } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../-internals/deprecations';
 
 moduleFor(
   'EmberObject ES Compatibility',
@@ -167,7 +174,9 @@ moduleFor(
       });
     }
 
-    ['@test using mixins'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test using mixins`](assert) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let Mixin1 = Mixin.create({
         property1: 'data-1',
       });
@@ -276,37 +285,48 @@ moduleFor(
       SubEmberObject.metaForProperty('foo');
     }
 
-    '@test observes / removeObserver on / removeListener interop'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test observes / removeObserver on / removeListener interop`](
+      assert
+    ) {
       let fooDidChangeBase = 0;
       let fooDidChangeA = 0;
       let fooDidChangeB = 0;
       let someEventBase = 0;
       let someEventA = 0;
       let someEventB = 0;
-      class A extends EmberObject.extend({
-        fooDidChange: observer('foo', function () {
-          fooDidChangeBase++;
-        }),
+      let A;
+      expectDeprecation(
+        () => {
+          A = class extends (
+            EmberObject.extend({
+              fooDidChange: observer('foo', function () {
+                fooDidChangeBase++;
+              }),
 
-        onSomeEvent: on('someEvent', function () {
-          someEventBase++;
-        }),
-      }) {
-        init() {
-          super.init();
-          this.foo = 'bar';
-        }
+              onSomeEvent: on('someEvent', function () {
+                someEventBase++;
+              }),
+            })
+          ) {
+            init() {
+              super.init();
+              this.foo = 'bar';
+            }
 
-        fooDidChange() {
-          super.fooDidChange();
-          fooDidChangeA++;
-        }
+            fooDidChange() {
+              super.fooDidChange();
+              fooDidChangeA++;
+            }
 
-        onSomeEvent() {
-          super.onSomeEvent();
-          someEventA++;
-        }
-      }
+            onSomeEvent() {
+              super.onSomeEvent();
+              someEventA++;
+            }
+          };
+        },
+        /`on\(\)` event decorator is deprecated/,
+        DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+      );
 
       class B extends A {
         fooDidChange() {
@@ -376,23 +396,23 @@ moduleFor(
         }
       }
 
-      let Mixin1 = Mixin.create({
+      let classicProps1 = {
         init() {
           calls.push('Mixin1 init before _super');
           this._super(...arguments);
           calls.push('Mixin1 init after _super');
         },
-      });
+      };
 
-      let Mixin2 = Mixin.create({
+      let classicProps2 = {
         init() {
           calls.push('Mixin2 init before _super');
           this._super(...arguments);
           calls.push('Mixin2 init after _super');
         },
-      });
+      };
 
-      class B extends A.extend(Mixin1, Mixin2) {
+      class B extends A.extend(classicProps1, classicProps2) {
         init() {
           calls.push('B init before super.init');
           super.init(...arguments);

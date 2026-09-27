@@ -1,5 +1,5 @@
-import type { DeprecationOptions } from '@ember/debug';
-import { ENV } from '@ember/-internals/environment';
+import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import { VERSION } from '@ember/version';
 import { deprecate, assert } from '@ember/debug';
 import { dasherize } from '../string/index';
@@ -112,15 +112,54 @@ export const DEPRECATIONS = {
     until: '7.0.0',
     url: 'https://deprecations.emberjs.com/id/importing-inject-from-ember-service',
   }),
-  DEPRECATE_AMD_BUNDLES: deprecation({
+  DEPRECATE_COMPARABLE_MIXIN: deprecation({
     for: 'ember-source',
-    id: 'using-amd-bundles',
-    since: {
-      available: '6.10.0',
-      enabled: '6.10.0',
-    },
-    until: '7.0.0',
-    url: 'https://deprecations.emberjs.com/id/using-amd-bundles',
+    id: 'deprecate-comparable-mixin',
+    since: { available: '7.2.0', enabled: '7.2.0' },
+    until: '7.5.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-comparable-mixin',
+  }),
+  DEPRECATE_TARGET_ACTION_SUPPORT: deprecation({
+    for: 'ember-source',
+    id: 'deprecate-target-action-support',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-target-action-support',
+  }),
+  DEPRECATE_EVENTED: deprecation({
+    id: 'deprecate-evented',
+    for: 'ember-source',
+    since: { available: '7.3.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-evented',
+  }),
+  DEPRECATE_MIXINS: deprecation({
+    id: 'deprecate-mixins',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-mixins',
+  }),
+  DEPRECATE_ARRAY_PROXY: deprecation({
+    id: 'deprecate-array-proxy',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-array-proxy',
+  }),
+  DEPRECATE_OBJECT_PROXY: deprecation({
+    id: 'deprecate-object-proxy',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-object-proxy',
+  }),
+  DEPRECATE_PROMISE_PROXY_MIXIN: deprecation({
+    id: 'deprecate-promise-proxy-mixin',
+    for: 'ember-source',
+    since: { available: '7.4.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-promise-proxy-mixin',
   }),
 };
 

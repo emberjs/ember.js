@@ -41,23 +41,28 @@ export function normalizePropertyValue(value: unknown): unknown {
   return value;
 }
 
-// properties that MUST be set as attributes, due to:
-// * browser bug
-// * strange spec outlier
+// Properties that MUST be set as attributes because the DOM properties
+// are read-only or have type mismatches with the HTML attributes.
+//
+// element.form is a read-only DOM property on all form-associated elements
+// that returns the owning HTMLFormElement (or null). The HTML `form` attribute
+// (set via setAttribute) associates the element with a form by ID.
+// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/form
+//      https://developer.mozilla.org/en-US/docs/Web/API/HTMLSelectElement/form
 const ATTR_OVERRIDES: Dict<Dict> = {
   INPUT: {
     form: true,
-    // Chrome 46.0.2464.0: 'autocorrect' in document.createElement('input') === false
-    // Safari 8.0.7: 'autocorrect' in document.createElement('input') === false
-    // Mobile Safari (iOS 8.4 simulator): 'autocorrect' in document.createElement('input') === true
+    // HTMLElement.autocorrect is a boolean DOM property, but the HTML attribute
+    // uses "on"/"off" strings. Setting `element.autocorrect = "off"` coerces to
+    // `true` (truthy string). Must use setAttribute for correct "on"/"off" behavior.
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/autocorrect
     autocorrect: true,
-    // Chrome 54.0.2840.98: 'list' in document.createElement('input') === true
-    // Safari 9.1.3: 'list' in document.createElement('input') === false
+    // HTMLInputElement.list is a read-only DOM property that returns the associated
+    // HTMLDataListElement (or null). Must use setAttribute to set the datalist ID.
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/list
     list: true,
   },
 
-  // element.form is actually a legitimate readOnly property, that is to be
-  // mutated, but must be mutated by setAttribute...
   SELECT: { form: true },
   OPTION: { form: true },
   TEXTAREA: { form: true },

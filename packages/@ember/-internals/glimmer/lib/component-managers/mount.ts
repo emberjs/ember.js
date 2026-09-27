@@ -1,7 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import { generateControllerFactory } from '@ember/routing/-internals';
+import { generateControllerFactory } from '@ember/routing/lib/generate_controller';
 import { assert } from '@ember/debug';
-import EngineInstance from '@ember/engine/instance';
+import type EngineInstance from '@ember/engine/instance';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import type {
   CapturedArguments,
@@ -18,9 +18,9 @@ import type {
   WithSubOwner,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { capabilityFlagsFrom } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, valueForRef } from '@glimmer/reference';
+import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { createConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { unwrapTemplate } from './unwrap-template';
 import type RuntimeResolver from '../resolver';
 
@@ -82,8 +82,8 @@ class MountManager
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
-    assert('Expected owner to be an EngineInstance', owner instanceof EngineInstance);
-    let engine = owner.buildChildEngineInstance(name);
+    assert('Expected owner to be an EngineInstance', 'buildChildEngineInstance' in owner);
+    let engine = (owner as EngineInstance).buildChildEngineInstance(name);
 
     engine.boot();
 
@@ -123,8 +123,7 @@ class MountManager
   getDebugCustomRenderTree(
     definition: EngineDefinitionState,
     state: EngineState,
-    args: CapturedArguments,
-    templateModuleName?: string
+    args: CapturedArguments
   ): CustomRenderNode[] {
     return [
       {
@@ -140,7 +139,6 @@ class MountManager
         type: 'route-template',
         name: 'application',
         args,
-        template: templateModuleName,
       },
     ];
   }
@@ -168,7 +166,7 @@ class MountManager
   }
 }
 
-const MOUNT_MANAGER = new MountManager();
+const MOUNT_MANAGER = /*@__PURE__*/ new MountManager();
 
 export class MountDefinition implements ComponentDefinition {
   // handle is not used by this custom definition

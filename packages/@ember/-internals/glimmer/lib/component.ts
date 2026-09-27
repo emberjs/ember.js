@@ -1,40 +1,37 @@
-import type { View } from '@ember/-internals/glimmer';
-import {
-  descriptorForProperty,
-  get,
-  nativeDescDecorator,
-  PROPERTY_DID_CHANGE,
-} from '@ember/-internals/metal';
-import type { PropertyDidChange } from '@ember/-internals/metal';
+import type { View } from './renderer';
+import { descriptorForProperty, nativeDescDecorator } from '@ember/-internals/metal/lib/decorator';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
+import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
-import { TargetActionSupport } from '@ember/-internals/runtime';
-import type { ViewStates } from '@ember/-internals/views';
+import TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
+import type ViewStates from '@ember/-internals/views/lib/views/states';
+import ActionSupport from '@ember/-internals/views/lib/mixins/action_support';
 import {
-  ActionSupport,
   addChildView,
-  CoreView,
-  EventDispatcher,
   getChildViews,
   getViewElement,
-} from '@ember/-internals/views';
-import { guidFor } from '@ember/-internals/utils';
+} from '@ember/-internals/views/lib/system/utils';
+import CoreView from '@ember/-internals/views/lib/views/core_view';
+import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
+import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
-import { setInternalComponentManager } from '@glimmer/manager';
-import { isUpdatableRef, updateRef } from '@glimmer/reference';
-import { normalizeProperty } from '@glimmer/runtime';
-import type { DirtyableTag } from '@glimmer/validator';
-import { createTag, dirtyTag } from '@glimmer/validator';
+import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+import { isUpdatableRef, updateRef } from '@glimmer/reference/lib/reference';
+import { normalizeProperty } from '@glimmer/runtime/lib/dom/props';
+import type { DirtyableTag } from '@glimmer/interfaces';
+import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 import type { SimpleElement } from '@simple-dom/interface';
 import {
-  ARGS,
   BOUNDS,
   CURLY_COMPONENT_MANAGER,
   DIRTY_TAG,
   IS_DISPATCHING_ATTRS,
+  getComponentCapturedArgs,
 } from './component-managers/curly';
-import { hasDOM } from '@ember/-internals/browser-environment';
+import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
@@ -233,6 +230,12 @@ declare const SIGNATURE: unique symbol;
   API documentation for Template-only or Glimmer components, it is [available
   here](/ember/release/modules/@glimmer%2Fcomponent).
 
+  Note: Prior to Ember 6.8, by default, components were authored in paired `.hbs` and `.js`
+  files. This is still supported, but the default authoring format is now `.gjs` or "template tag".
+  The documentation for `@ember/component` still refers to the older authoring format. To read about
+  the new authoring format, see the 
+  [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
+    
   ## Defining a Classic Component
 
   If you want to customize the component in order to handle events, transform
@@ -259,7 +262,7 @@ declare const SIGNATURE: unique symbol;
 
   And then use it in the component's template:
 
-  ```app/templates/components/person-profile.hbs
+  ```app/components/person-profile.hbs
   <h1>{{this.displayName}}</h1>
   {{yield}}
   ```
@@ -647,7 +650,7 @@ declare const SIGNATURE: unique symbol;
   The `layout` property should be set to the default export of a template
   module, which is the name of a template file without the `.hbs` extension.
 
-  ```app/templates/components/person-profile.hbs
+  ```app/components/person-profile.hbs
   <h1>Person's Title</h1>
   <div class='details'>{{yield}}</div>
   ```
@@ -716,7 +719,7 @@ declare const SIGNATURE: unique symbol;
 
   See the [Guide on Component event
   handlers](https://guides.emberjs.com/release/components/component-state-and-actions/#toc_html-modifiers-and-actions)
-  and the [API docs for `on`](../Ember.Templates.helpers/methods/on?anchor=on)
+  and the [API docs for `on`](../functions/Keywords/on)
   for more details.
 
   ### Event Handler Methods
@@ -796,10 +799,7 @@ declare const SIGNATURE: unique symbol;
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Component<S = unknown>
-  extends CoreView,
-    TargetActionSupport,
-    ActionSupport,
-    ComponentMethods {}
+  extends CoreView, TargetActionSupport, ActionSupport, ComponentMethods {}
 
 class Component<S = unknown>
   extends CoreView.extend(
@@ -1041,7 +1041,7 @@ class Component<S = unknown>
       return;
     }
 
-    let args = (this as any)[ARGS];
+    let args = getComponentCapturedArgs(this);
     let reference = args !== undefined ? args[key] : undefined;
 
     if (reference !== undefined && isUpdatableRef(reference)) {

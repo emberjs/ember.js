@@ -1,13 +1,19 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  expectDeprecation,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../deprecations';
 
 import { Component } from '../utils/helpers';
 import { _getCurrentRunLoop } from '@ember/runloop';
-
-let canDataTransfer = Boolean(document.createEvent('HTMLEvents').dataTransfer);
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 function fireNativeWithDataTransfer(node, type, dataTransfer) {
-  let event = document.createEvent('HTMLEvents');
-  event.initEvent(type, true, true);
+  let event = new Event(type, { bubbles: true, cancelable: true });
   event.dataTransfer = dataTransfer;
   node.dispatchEvent(event);
 }
@@ -57,8 +63,9 @@ moduleFor(
       let receivedEvent;
       let browserEvent;
 
-      this.registerComponent('x-button', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:x-button',
+        class extends Component {
           tagName = 'button';
 
           touchMove(event) {
@@ -133,8 +140,8 @@ moduleFor(
           dragEnd(event) {
             receivedEvent = event;
           }
-        },
-      });
+        }
+      );
 
       this.render(`{{x-button}}`);
 
@@ -149,21 +156,30 @@ moduleFor(
       }
     }
 
-    ['@test event listeners are called when event is triggered'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test event listeners are called when event is triggered`](
+      assert
+    ) {
       let receivedEvent;
       let browserEvent;
 
-      this.registerComponent('x-button', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:x-button',
+        class extends Component {
           tagName = 'button';
           init() {
             super.init();
             Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
-              this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
+              expectDeprecation(
+                () => {
+                  this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
+                },
+                /Evented#on` is deprecated/,
+                DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+              );
             });
           }
-        },
-      });
+        }
+      );
 
       this.render(`{{x-button}}`);
 
@@ -181,14 +197,17 @@ moduleFor(
     ['@test events bubble view hierarchy for form elements'](assert) {
       let receivedEvent;
 
-      this.registerComponent('x-foo', {
-        ComponentClass: class extends Component {
-          change(event) {
-            receivedEvent = event;
+      this.owner.register(
+        'component:x-foo',
+        setComponentTemplate(
+          precompileTemplate(`<input id="is-done" type="checkbox">`),
+          class extends Component {
+            change(event) {
+              receivedEvent = event;
+            }
           }
-        },
-        template: `<input id="is-done" type="checkbox">`,
-      });
+        )
+      );
 
       this.render(`{{x-foo}}`);
 
@@ -200,14 +219,17 @@ moduleFor(
     ['@test case insensitive events'](assert) {
       let receivedEvent;
 
-      this.registerComponent('x-bar', {
-        ComponentClass: class extends Component {
-          clicked(event) {
-            receivedEvent = event;
+      this.owner.register(
+        'component:x-bar',
+        setComponentTemplate(
+          precompileTemplate(`<button id="is-done" onclick={{this.clicked}}>my button</button>`),
+          class extends Component {
+            clicked(event) {
+              receivedEvent = event;
+            }
           }
-        },
-        template: `<button id="is-done" onclick={{this.clicked}}>my button</button>`,
-      });
+        )
+      );
 
       this.render(`{{x-bar}}`);
 
@@ -219,14 +241,17 @@ moduleFor(
     ['@test case sensitive events'](assert) {
       let receivedEvent;
 
-      this.registerComponent('x-bar', {
-        ComponentClass: class extends Component {
-          clicked(event) {
-            receivedEvent = event;
+      this.owner.register(
+        'component:x-bar',
+        setComponentTemplate(
+          precompileTemplate(`<button id="is-done" onClick={{this.clicked}}>my button</button>`),
+          class extends Component {
+            clicked(event) {
+              receivedEvent = event;
+            }
           }
-        },
-        template: `<button id="is-done" onClick={{this.clicked}}>my button</button>`,
-      });
+        )
+      );
 
       this.render(`{{x-bar}}`);
 
@@ -238,21 +263,27 @@ moduleFor(
     ['@test events bubble to parent view'](assert) {
       let receivedEvent;
 
-      this.registerComponent('x-foo', {
-        ComponentClass: class extends Component {
-          change(event) {
-            receivedEvent = event;
+      this.owner.register(
+        'component:x-foo',
+        setComponentTemplate(
+          precompileTemplate(`{{yield}}`),
+          class extends Component {
+            change(event) {
+              receivedEvent = event;
+            }
           }
-        },
-        template: `{{yield}}`,
-      });
+        )
+      );
 
-      this.registerComponent('x-bar', {
-        ComponentClass: class extends Component {
-          change() {}
-        },
-        template: `<input id="is-done" type="checkbox">`,
-      });
+      this.owner.register(
+        'component:x-bar',
+        setComponentTemplate(
+          precompileTemplate(`<input id="is-done" type="checkbox">`),
+          class extends Component {
+            change() {}
+          }
+        )
+      );
 
       this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
 
@@ -264,23 +295,29 @@ moduleFor(
     ['@test events bubbling up can be prevented by returning false'](assert) {
       let hasReceivedEvent;
 
-      this.registerComponent('x-foo', {
-        ComponentClass: class extends Component {
-          change() {
-            hasReceivedEvent = true;
+      this.owner.register(
+        'component:x-foo',
+        setComponentTemplate(
+          precompileTemplate(`{{yield}}`),
+          class extends Component {
+            change() {
+              hasReceivedEvent = true;
+            }
           }
-        },
-        template: `{{yield}}`,
-      });
+        )
+      );
 
-      this.registerComponent('x-bar', {
-        ComponentClass: class extends Component {
-          change() {
-            return false;
+      this.owner.register(
+        'component:x-bar',
+        setComponentTemplate(
+          precompileTemplate(`<input id="is-done" type="checkbox">`),
+          class extends Component {
+            change() {
+              return false;
+            }
           }
-        },
-        template: `<input id="is-done" type="checkbox">`,
-      });
+        )
+      );
 
       this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
 
@@ -291,23 +328,29 @@ moduleFor(
     ['@test events bubbling up can be prevented by calling stopPropagation()'](assert) {
       let hasReceivedEvent;
 
-      this.registerComponent('x-foo', {
-        ComponentClass: class extends Component {
-          change() {
-            hasReceivedEvent = true;
+      this.owner.register(
+        'component:x-foo',
+        setComponentTemplate(
+          precompileTemplate(`{{yield}}`),
+          class extends Component {
+            change() {
+              hasReceivedEvent = true;
+            }
           }
-        },
-        template: `{{yield}}`,
-      });
+        )
+      );
 
-      this.registerComponent('x-bar', {
-        ComponentClass: class extends Component {
-          change(e) {
-            e.stopPropagation();
+      this.owner.register(
+        'component:x-bar',
+        setComponentTemplate(
+          precompileTemplate(`<input id="is-done" type="checkbox">`),
+          class extends Component {
+            change(e) {
+              e.stopPropagation();
+            }
           }
-        },
-        template: `<input id="is-done" type="checkbox">`,
-      });
+        )
+      );
 
       this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
 
@@ -316,14 +359,17 @@ moduleFor(
     }
 
     ['@test event handlers are wrapped in a run loop'](assert) {
-      this.registerComponent('x-foo', {
-        ComponentClass: class extends Component {
-          change() {
-            assert.ok(_getCurrentRunLoop(), 'a run loop should have started');
+      this.owner.register(
+        'component:x-foo',
+        setComponentTemplate(
+          precompileTemplate(`<input id="is-done" type="checkbox">`),
+          class extends Component {
+            change() {
+              assert.ok(_getCurrentRunLoop(), 'a run loop should have started');
+            }
           }
-        },
-        template: `<input id="is-done" type="checkbox">`,
-      });
+        )
+      );
 
       this.render(`{{x-foo}}`);
 
@@ -350,14 +396,17 @@ moduleFor(
     ['@test additional events can be specified'](assert) {
       this.dispatcher.setup({ myevent: 'myEvent' });
 
-      this.registerComponent('x-foo', {
-        ComponentClass: class extends Component {
-          myEvent() {
-            assert.ok(true, 'custom event was triggered');
+      this.owner.register(
+        'component:x-foo',
+        setComponentTemplate(
+          precompileTemplate(`<p>Hello!</p>`),
+          class extends Component {
+            myEvent() {
+              assert.ok(true, 'custom event was triggered');
+            }
           }
-        },
-        template: `<p>Hello!</p>`,
-      });
+        )
+      );
 
       this.render(`{{x-foo}}`);
 
@@ -376,23 +425,25 @@ moduleFor(
     ['@test default events can be disabled via `customEvents`'](assert) {
       this.dispatcher.setup({ click: null });
 
-      this.registerComponent('x-foo', {
-        ComponentClass: class extends Component {
-          click() {
-            assert.ok(false, 'click method was called');
-          }
+      this.owner.register(
+        'component:x-foo',
+        setComponentTemplate(
+          precompileTemplate(`<p>Hello!</p>`),
+          class extends Component {
+            click() {
+              assert.ok(false, 'click method was called');
+            }
 
-          null() {
-            assert.ok(false, 'null method was called');
-          }
+            null() {
+              assert.ok(false, 'null method was called');
+            }
 
-          doubleClick() {
-            assert.ok(true, 'a non-disabled event is still handled properly');
+            doubleClick() {
+              assert.ok(true, 'a non-disabled event is still handled properly');
+            }
           }
-        },
-
-        template: `<p>Hello!</p>`,
-      });
+        )
+      );
 
       this.render(`{{x-foo}}`);
 
@@ -408,25 +459,24 @@ moduleFor(
   }
 );
 
-if (canDataTransfer) {
-  moduleFor(
-    'EventDispatcher - Event Properties',
-    class extends RenderingTestCase {
-      ['@test dataTransfer property is added to drop event'](assert) {
-        let receivedEvent;
-        this.registerComponent('x-foo', {
-          ComponentClass: class extends Component {
-            drop(event) {
-              receivedEvent = event;
-            }
-          },
-        });
+moduleFor(
+  'EventDispatcher - Event Properties',
+  class extends RenderingTestCase {
+    ['@test dataTransfer property is added to drop event'](assert) {
+      let receivedEvent;
+      this.owner.register(
+        'component:x-foo',
+        class extends Component {
+          drop(event) {
+            receivedEvent = event;
+          }
+        }
+      );
 
-        this.render(`{{x-foo}}`);
+      this.render(`{{x-foo}}`);
 
-        fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
-        assert.equal(receivedEvent.dataTransfer, 'success');
-      }
+      fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
+      assert.equal(receivedEvent.dataTransfer, 'success');
     }
-  );
-}
+  }
+);

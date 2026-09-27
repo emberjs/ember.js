@@ -9,16 +9,15 @@ import type {
   HandleResult,
   HighLevelOp,
   LayoutWithContext,
-  Nullable,
   SerializedBlock,
   SerializedInlineBlock,
   Statement,
   SymbolTable,
   WireFormat,
 } from '@glimmer/interfaces';
-import { IS_COMPILABLE_TEMPLATE } from '@glimmer/constants';
+import { IS_COMPILABLE_TEMPLATE } from '@glimmer/constants/lib/brand';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
-import { EMPTY_ARRAY } from '@glimmer/util';
+import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 
 import type { HighLevelStatementOp } from './syntax/compilers';
 
@@ -37,7 +36,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
     }
   }
 
-  compiled: Nullable<HandleResult> = null;
+  compiled: WeakMap<EvaluationContext, HandleResult> = new WeakMap();
 
   constructor(
     readonly statements: WireFormat.Statement[],
@@ -70,14 +69,16 @@ function maybeCompile(
   compilable: CompilableTemplateImpl<SymbolTable>,
   context: EvaluationContext
 ): HandleResult {
-  if (compilable.compiled !== null) return compilable.compiled;
+  if (compilable.compiled.has(context)) {
+    return compilable.compiled.get(context) as HandleResult;
+  }
 
-  compilable.compiled = PLACEHOLDER_HANDLE;
+  compilable.compiled.set(context, PLACEHOLDER_HANDLE);
 
   let { statements, meta } = compilable;
 
   let result = compileStatements(statements, meta, context);
-  compilable.compiled = result;
+  compilable.compiled.set(context, result);
 
   return result;
 }

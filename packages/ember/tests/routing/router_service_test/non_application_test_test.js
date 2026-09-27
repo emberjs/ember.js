@@ -1,10 +1,12 @@
 import { service } from '@ember/service';
 import Router from '@ember/routing/router';
 import NoneLocation from '@ember/routing/none-location';
-import { action, get } from '@ember/object';
+import { action } from '@ember/object';
 import { run } from '@ember/runloop';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
+import { setComponentTemplate } from '@glimmer/manager';
 import { RouterNonApplicationTestCase, moduleFor } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Router Service - non application test',
@@ -85,32 +87,32 @@ moduleFor(
       let router = this.owner.lookup('router:main');
       router.setupRouter();
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
 
       let self = this;
 
-      let FooBar = class extends Component {
-        @service('router')
-        routerService;
-        layout = self.compile('foo-bar');
-        init() {
-          super.init(...arguments);
-          componentInstance = this;
+      let FooBar = setComponentTemplate(
+        self.compile('foo-bar'),
+        class extends Component {
+          @service('router')
+          routerService;
+          constructor(owner, args) {
+            super(owner, args);
+            componentInstance = this;
+          }
+          @action
+          transitionToSister() {
+            this.routerService.transitionTo('parent.sister');
+          }
         }
-        @action
-        transitionToSister() {
-          get(this, 'routerService').transitionTo('parent.sister');
-        }
-      };
+      );
 
-      this.addComponent('foo-bar', {
-        ComponentClass: FooBar,
-      });
+      this.add('component:foo-bar', FooBar);
 
       this.render('{{foo-bar}}');
 
       run(function () {
-        componentInstance.send('transitionToSister');
+        componentInstance.transitionToSister();
       });
 
       assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');

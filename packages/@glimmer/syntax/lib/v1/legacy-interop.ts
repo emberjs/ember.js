@@ -1,5 +1,6 @@
 import type { PresentArray } from '@glimmer/interfaces';
-import { asPresentArray, deprecate } from '@glimmer/debug-util';
+import { asPresentArray } from '@glimmer/debug-util/lib/present';
+import { deprecate } from '@glimmer/debug-util/lib/assert';
 
 import type * as ASTv1 from './nodes-v1';
 
@@ -48,7 +49,8 @@ export function buildLegacyPath({ head, tail, loc }: PathExpressionParams): ASTv
     head,
     tail,
     get original() {
-      return [this.head.original, ...this.tail].join('.');
+      const head = this.head.original;
+      return this.tail.length === 0 ? head : `${head}.${this.tail.join('.')}`;
     },
     set original(value: string) {
       let [head, ...tail] = asPresentArray(value.split('.'));

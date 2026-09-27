@@ -43,7 +43,6 @@ const CONSTANT_TAG_ID: ICONSTANT_TAG_ID = 3;
 //////////
 
 export const COMPUTE: TagComputeSymbol = Symbol('TAG_COMPUTE') as TagComputeSymbol;
-Reflect.set(globalThis, 'COMPUTE_SYMBOL', COMPUTE);
 
 //////////
 

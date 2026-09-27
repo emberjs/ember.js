@@ -5,6 +5,8 @@ import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
 } from '@ember/instrumentation';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -65,20 +67,29 @@ moduleFor(
         }
       };
 
-      this.registerComponent('x-bar', {
-        template: '[x-bar: {{this.bar}}] {{yield}}',
-        ComponentClass: class extends BaseClass {},
-      });
+      this.owner.register(
+        'component:x-bar',
+        setComponentTemplate(
+          precompileTemplate('[x-bar: {{this.bar}}] {{yield}}'),
+          class extends BaseClass {}
+        )
+      );
 
-      this.registerComponent('x-baz', {
-        template: '[x-baz: {{this.baz}}]',
-        ComponentClass: class extends BaseClass {},
-      });
+      this.owner.register(
+        'component:x-baz',
+        setComponentTemplate(
+          precompileTemplate('[x-baz: {{this.baz}}]'),
+          class extends BaseClass {}
+        )
+      );
 
-      this.registerComponent('x-bat', {
-        template: '[x-bat: {{this.bat}}]',
-        ComponentClass: class extends BaseClass {},
-      });
+      this.owner.register(
+        'component:x-bat',
+        setComponentTemplate(
+          precompileTemplate('[x-bat: {{this.bat}}]'),
+          class extends BaseClass {}
+        )
+      );
 
       this.render(
         `[-top-level: {{this.foo}}] {{#x-bar bar=this.bar}}{{x-baz baz=this.baz}}{{/x-bar}} {{x-bat bat=this.bat}}`,

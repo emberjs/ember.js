@@ -2,7 +2,7 @@
 @module @ember/template
 */
 
-import type { SafeString as GlimmerSafeString } from '@glimmer/runtime';
+import type { SafeString as GlimmerSafeString } from '@glimmer/runtime/lib/upsert';
 
 /**
   A wrapper around a string that has been marked as "trusted". **When

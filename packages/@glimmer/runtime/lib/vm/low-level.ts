@@ -1,5 +1,5 @@
 import type { EvaluationContext, Nullable, RuntimeOp } from '@glimmer/interfaces';
-import type { MachineRegister } from '@glimmer/vm';
+import type { MachineRegister } from '@glimmer/vm/lib/registers';
 import {
   VM_INVOKE_STATIC_OP,
   VM_INVOKE_VIRTUAL_OP,
@@ -8,14 +8,19 @@ import {
   VM_PUSH_FRAME_OP,
   VM_RETURN_OP,
   VM_RETURN_TO_OP,
-} from '@glimmer/constants';
-import { localAssert } from '@glimmer/debug-util';
+} from '@glimmer/constants/lib/vm-ops';
+import assert from '@glimmer/debug-util/lib/assert';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
+import { $fp, $pc, $ra, $sp } from '@glimmer/vm/lib/registers';
 
 import type { DebugState } from '../opcodes';
 import type { VM } from './append';
 
+// Loading the VM is what creates the demand for opcode handlers — its
+// `evaluateSyscall` calls `APPEND_OPCODES.evaluate(...)`. Pull bootstrap in
+// here (rather than at the package barrel) so consumers using deep imports
+// still get every opcode handler registered before the VM runs.
+import '../bootstrap';
 import { APPEND_OPCODES } from '../opcodes';
 
 export type LowLevelRegisters = [$pc: number, $ra: number, $sp: number, $fp: number];
@@ -75,7 +80,7 @@ export class LowLevelVM {
   }
 
   setPc(pc: number): void {
-    localAssert(typeof pc === 'number' && !isNaN(pc), 'pc is set to a number');
+    assert(typeof pc === 'number' && !isNaN(pc), 'pc is set to a number');
     this.registers[$pc] = pc;
   }
 
@@ -112,7 +117,7 @@ export class LowLevelVM {
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
   call(handle: number) {
-    localAssert(handle < 0xffffffff, `Jumping to placeholder address`);
+    assert(handle < 0xffffffff, `Jumping to placeholder address`);
 
     this.registers[$ra] = this.registers[$pc];
     this.setPc(this.context.program.heap.getaddr(handle));
@@ -133,7 +138,7 @@ export class LowLevelVM {
 
     let pc = registers[$pc];
 
-    localAssert(typeof pc === 'number', 'pc is a number');
+    assert(typeof pc === 'number', 'pc is a number');
 
     if (pc === -1) {
       return null;

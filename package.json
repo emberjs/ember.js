@@ -1,89 +1,99 @@
 {
   "name": "ember-source",
-  "version": "6.12.0-alpha.1",
+  "version": "7.5.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
   ],
-  "exports": {
-    "./*": "./dist/packages/*",
-    "./types": {
-      "types": "./types/stable/index.d.ts"
-    },
-    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
-    "./package.json": "./package.json"
-  },
   "homepage": "https://emberjs.com/",
   "bugs": {
     "url": "https://github.com/emberjs/ember.js/issues"
   },
-  "license": "MIT",
-  "main": "lib/index.js",
-  "files": [
-    "build-metadata.json",
-    "blueprints",
-    "dist/packages",
-    "dist/dependencies",
-    "dist/ember-template-compiler.js",
-    "dist/ember-template-compiler.js.map",
-    "dist/ember.debug.js",
-    "dist/ember.debug.js.map",
-    "dist/ember.prod.js",
-    "dist/ember.prod.js.map",
-    "dist/ember-testing.js",
-    "dist/ember-testing.js.map",
-    "docs/data.json",
-    "lib",
-    "types/stable"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/emberjs/ember.js.git"
   },
+  "license": "MIT",
+  "sideEffects": [
+    "./dist/*/packages/ember-testing/index.js",
+    "./dist/*/packages/@ember/-internals/runtime/lib/ext/rsvp.js"
+  ],
+  "type": "module",
+  "exports": {
+    "./*": {
+      "development": "./dist/dev/packages/*",
+      "production": "./dist/prod/packages/*",
+      "default": "./dist/prod/packages/*"
+    },
+    "./types": {
+      "types": "./types/stable/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "lib/index.cjs",
+  "typesVersions": {
+    "*": {
+      "types": [
+        "types/stable"
+      ],
+      "types/preview": [
+        "types/preview"
+      ]
+    }
+  },
+  "files": [
+    "build-metadata.json",
+    "blueprints",
+    "dist",
+    "docs/data.json",
+    "lib",
+    "types/stable"
+  ],
   "scripts": {
+    "actions-up": "pnpm dlx actions-up",
+    "bench": "node ./bin/benchmark.mjs",
+    "bench:precompile": "node --expose-gc bin/precompile.bench.mjs",
+    "build": "npm-run-all build:*",
     "build:js": "rollup --config",
     "build:types": "node types/publish.mjs",
-    "build": "npm-run-all build:*",
     "docs": "ember ember-cli-yuidoc",
-    "start": "vite dev",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
-    "lint:docs": "qunit tests/docs/coverage-test.js",
+    "lint:docs": "qunit tests/docs/coverage-test.cjs",
     "lint:eslint": "eslint --report-unused-disable-directives --cache .",
     "lint:eslint:fix": "npm-run-all \"lint:eslint --fix\"",
     "lint:fix": "npm-run-all lint:*:fix",
     "lint:format": "prettier --check .",
     "lint:format:fix": "prettier --write .",
-    "test": "testem ci -f testem.js --host 127.0.0.1 --port 13141",
-    "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
-    "test:node": "qunit tests/node/**/*-test.js",
-    "test:browserstack": "node bin/run-browserstack-tests.js",
+    "start": "vite dev",
+    "test": "testem ci -f testem.cjs --host 127.0.0.1 --port 13141",
+    "test:blueprints": "pnpm --filter ember-test-node-blueprints test:node",
+    "test:browserstack": "node bin/run-browserstack-tests.cjs",
+    "test:node": "qunit tests/node/**/*-test.cjs",
+    "test:node:vitest": "pnpm --filter ember-test-node-vitest test:node",
     "test:wip": "vite build --mode development --minify false && testem ci",
+    "type-check": "npm-run-all type-check:*",
+    "type-check:handlebars": "tsc --noEmit --project packages/@handlebars/parser/tsconfig.json",
     "type-check:internals": "tsc --noEmit",
-    "type-check:types": "tsc --noEmit --project type-tests",
-    "type-check": "npm-run-all type-check:*"
+    "type-check:types": "tsc --noEmit --project type-tests"
+  },
+  "resolutions": {
+    "socket.io": "^4.7.0"
   },
   "dependencies": {
     "@babel/core": "^7.24.4",
-    "@ember/edition-utils": "^1.2.0",
-    "@embroider/addon-shim": "^1.9.0",
+    "@embroider/addon-shim": "^1.10.2",
     "@simple-dom/interface": "^1.4.0",
     "backburner.js": "^2.8.0",
     "broccoli-file-creator": "^2.1.1",
-    "broccoli-funnel": "^3.0.8",
-    "broccoli-merge-trees": "^4.2.0",
     "chalk": "^4.0.0",
-    "ember-cli-babel": "^8.2.0",
     "ember-cli-get-component-path-option": "^1.0.0",
-    "ember-cli-is-package-missing": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
     "ember-cli-string-utils": "^1.1.0",
     "ember-cli-typescript-blueprint-polyfill": "^0.1.0",
-    "ember-cli-version-checker": "^5.1.2",
     "ember-router-generator": "^2.0.0",
     "inflection": "^2.0.1",
     "route-recognizer": "^0.3.4",
-    "router_js": "^8.0.5",
     "semver": "^7.5.2",
     "silent-error": "^1.1.1",
     "simple-html-tokenizer": "^0.5.11"
@@ -94,10 +104,12 @@
     "@babel/plugin-transform-typescript": "^7.26.8",
     "@babel/preset-env": "^7.16.11",
     "@babel/types": "^7.22.5",
-    "@embroider/macros": "^1.18.0",
-    "@embroider/shared-internals": "^2.5.0",
+    "@embroider/macros": "^1.20.2",
+    "@embroider/shared-internals": "^3.0.2",
+    "@embroider/vite": "^1.7.2",
     "@eslint/js": "^9.21.0",
     "@glimmer/component": "workspace:*",
+    "@octokit/rest": "^22.0.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@simple-dom/document": "^1.4.0",
     "@swc-node/register": "^1.6.8",
@@ -105,71 +117,78 @@
     "@tsconfig/ember": "3.0.8",
     "@types/qunit": "^2.19.4",
     "@types/rsvp": "^4.0.4",
+    "@typescript-eslint/typescript-estree": "^8.59.2",
     "ast-types": "^0.14.2",
     "auto-dist-tag": "^2.1.1",
-    "babel-plugin-debug-macros": "1.0.0",
-    "babel-plugin-ember-template-compilation": "3.0.0-alpha.4",
-    "brotli": "^1.3.3",
+    "babel-plugin-debug-macros": "1.0.2",
+    "babel-plugin-ember-template-compilation": "^4.0.0",
     "dag-map": "^2.0.2",
-    "decorator-transforms": "2.0.0",
-    "ember-cli": "^6.3.0",
+    "decorator-transforms": "2.3.2",
+    "ember-cli": "^7.0.1",
     "ember-cli-blueprint-test-helpers": "^0.19.2",
-    "ember-cli-browserstack": "^2.0.1",
+    "ember-cli-browserstack": "^4.0.0",
     "ember-cli-dependency-checker": "^3.3.1",
     "ember-cli-yuidoc": "^0.9.1",
     "eslint": "^9.21.0",
-    "eslint-import-resolver-node": "^0.3.7",
+    "eslint-import-resolver-node": "^0.3.10",
     "eslint-plugin-disable-features": "^0.1.3",
     "eslint-plugin-ember-internal": "^3.0.0",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-n": "^17.16.2",
+    "eslint-plugin-n": "^18.0.1",
     "eslint-plugin-qunit": "^8.1.2",
-    "execa": "^5.1.1",
+    "execa": "^9.0.0",
     "expect-type": "^0.15.0",
-    "filesize": "^10.1.6",
     "fs-extra": "^11.1.1",
     "git-repo-info": "^2.1.1",
-    "github": "^0.2.3",
-    "glob": "^8.0.3",
-    "globals": "^16.0.0",
-    "html-differ": "^1.4.0",
-    "mocha": "^10.2.0",
-    "node-gzip": "^1.1.2",
-    "npm-run-all2": "^6.0.6",
+    "glob": "^13.0.0",
+    "globals": "^17.0.0",
+    "kill-port-process": "^3.2.1",
+    "mitata": "^1.0.34",
+    "mocha": "^11.0.0",
+    "npm-run-all2": "^8.0.0",
     "prettier": "^3.5.3",
     "qunit": "^2.19.4",
     "recast": "^0.22.0",
+    "release-plan": "^0.19.0",
     "resolve.exports": "^2.0.3",
-    "rollup": "^4.2.0",
+    "rollup": "^4.57.1",
+    "router_js": "workspace:*",
     "rsvp": "^4.8.5",
-    "simple-dom": "^1.4.0",
-    "table": "^6.9.0",
     "terser": "^5.42.0",
-    "testem": "^3.10.1",
+    "testem": "^3.20.1",
     "testem-failure-only-reporter": "^1.0.0",
+    "tracerbench": "^8.0.1",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.26.0",
-    "vite": "^5.4.12"
-  },
-  "resolutions": {
-    "socket.io": "^4.7.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "rollup": "^4.2.0",
-      "ember-cli-htmlbars": "^7.0.0"
-    },
-    "onlyBuiltDependencies": [
-      "@swc/core",
-      "core-js",
-      "esbuild"
-    ]
+    "typescript-eslint": "^8.59.2",
+    "vite": "^7.0.0"
   },
   "peerDependencies": {
     "@glimmer/component": ">= 1.1.2"
   },
+  "packageManager": "pnpm@10.33.2",
   "engines": {
     "node": ">= 20.19"
+  },
+  "release-plan": {
+    "ignore": true
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "core-js",
+      "esbuild"
+    ],
+    "overrides": {
+      "babel-plugin-ember-template-compilation": "^4.0.0",
+      "ember-cli-babel": "^8.3.1",
+      "ember-cli-htmlbars": "^7.0.0",
+      "rollup": "^4.2.0",
+      "testem": "^3.20.1"
+    },
+    "patchedDependencies": {
+      "@tracerbench/core@8.0.1": "patches/@tracerbench__core@8.0.1.patch",
+      "agadoo": "patches/agadoo.patch"
+    }
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints",
@@ -187,6 +206,16 @@
       "@ember/-internals/metal/index.js": "ember-source/@ember/-internals/metal/index.js",
       "@ember/-internals/owner/index.js": "ember-source/@ember/-internals/owner/index.js",
       "@ember/-internals/routing/index.js": "ember-source/@ember/-internals/routing/index.js",
+      "@ember/-internals/routing/route-managers/api.js": "ember-source/@ember/-internals/routing/route-managers/api.js",
+      "@ember/-internals/routing/route-managers/classic/bucket.js": "ember-source/@ember/-internals/routing/route-managers/classic/bucket.js",
+      "@ember/-internals/routing/route-managers/classic/manager.js": "ember-source/@ember/-internals/routing/route-managers/classic/manager.js",
+      "@ember/-internals/routing/route-managers/classic/outlet-component.js": "ember-source/@ember/-internals/routing/route-managers/classic/outlet-component.js",
+      "@ember/-internals/routing/route-managers/classic/query-params.js": "ember-source/@ember/-internals/routing/route-managers/classic/query-params.js",
+      "@ember/-internals/routing/route-managers/classic/substates.js": "ember-source/@ember/-internals/routing/route-managers/classic/substates.js",
+      "@ember/-internals/routing/route-managers/management.js": "ember-source/@ember/-internals/routing/route-managers/management.js",
+      "@ember/-internals/routing/route-managers/outlet-state.js": "ember-source/@ember/-internals/routing/route-managers/outlet-state.js",
+      "@ember/-internals/routing/route-managers/registry.js": "ember-source/@ember/-internals/routing/route-managers/registry.js",
+      "@ember/-internals/routing/route-managers/root-outlet.js": "ember-source/@ember/-internals/routing/route-managers/root-outlet.js",
       "@ember/-internals/runtime/index.js": "ember-source/@ember/-internals/runtime/index.js",
       "@ember/-internals/runtime/lib/ext/rsvp.js": "ember-source/@ember/-internals/runtime/lib/ext/rsvp.js",
       "@ember/-internals/runtime/lib/mixins/-proxy.js": "ember-source/@ember/-internals/runtime/lib/mixins/-proxy.js",
@@ -201,18 +230,18 @@
       "@ember/-internals/views/index.js": "ember-source/@ember/-internals/views/index.js",
       "@ember/-internals/views/lib/compat/attrs.js": "ember-source/@ember/-internals/views/lib/compat/attrs.js",
       "@ember/-internals/views/lib/compat/fallback-view-registry.js": "ember-source/@ember/-internals/views/lib/compat/fallback-view-registry.js",
-      "@ember/-internals/views/lib/component_lookup.js": "ember-source/@ember/-internals/views/lib/component_lookup.js",
       "@ember/-internals/views/lib/mixins/action_support.js": "ember-source/@ember/-internals/views/lib/mixins/action_support.js",
       "@ember/-internals/views/lib/system/event_dispatcher.js": "ember-source/@ember/-internals/views/lib/system/event_dispatcher.js",
       "@ember/-internals/views/lib/system/utils.js": "ember-source/@ember/-internals/views/lib/system/utils.js",
+      "@ember/-internals/views/lib/views/core-view-utils.js": "ember-source/@ember/-internals/views/lib/views/core-view-utils.js",
       "@ember/-internals/views/lib/views/core_view.js": "ember-source/@ember/-internals/views/lib/views/core_view.js",
       "@ember/-internals/views/lib/views/states.js": "ember-source/@ember/-internals/views/lib/views/states.js",
       "@ember/application/index.js": "ember-source/@ember/application/index.js",
       "@ember/application/instance.js": "ember-source/@ember/application/instance.js",
-      "@ember/application/lib/lazy_load.js": "ember-source/@ember/application/lib/lazy_load.js",
       "@ember/application/namespace.js": "ember-source/@ember/application/namespace.js",
       "@ember/array/-internals.js": "ember-source/@ember/array/-internals.js",
       "@ember/array/index.js": "ember-source/@ember/array/index.js",
+      "@ember/array/lib/is-array.js": "ember-source/@ember/array/lib/is-array.js",
       "@ember/array/lib/make-array.js": "ember-source/@ember/array/lib/make-array.js",
       "@ember/array/make.js": "ember-source/@ember/array/make.js",
       "@ember/array/mutable.js": "ember-source/@ember/array/mutable.js",
@@ -237,6 +266,7 @@
       "@ember/engine/index.js": "ember-source/@ember/engine/index.js",
       "@ember/engine/instance.js": "ember-source/@ember/engine/instance.js",
       "@ember/engine/lib/engine-parent.js": "ember-source/@ember/engine/lib/engine-parent.js",
+      "@ember/engine/lib/strict-resolver.js": "ember-source/@ember/engine/lib/strict-resolver.js",
       "@ember/engine/parent.js": "ember-source/@ember/engine/parent.js",
       "@ember/enumerable/index.js": "ember-source/@ember/enumerable/index.js",
       "@ember/enumerable/mutable.js": "ember-source/@ember/enumerable/mutable.js",
@@ -289,10 +319,12 @@
       "@ember/template-compiler/lib/-internal/primitives.js": "ember-source/@ember/template-compiler/lib/-internal/primitives.js",
       "@ember/template-compiler/lib/compile-options.js": "ember-source/@ember/template-compiler/lib/compile-options.js",
       "@ember/template-compiler/lib/dasherize-component-name.js": "ember-source/@ember/template-compiler/lib/dasherize-component-name.js",
+      "@ember/template-compiler/lib/plugins/allowed-globals.js": "ember-source/@ember/template-compiler/lib/plugins/allowed-globals.js",
       "@ember/template-compiler/lib/plugins/assert-against-attrs.js": "ember-source/@ember/template-compiler/lib/plugins/assert-against-attrs.js",
       "@ember/template-compiler/lib/plugins/assert-against-named-outlets.js": "ember-source/@ember/template-compiler/lib/plugins/assert-against-named-outlets.js",
       "@ember/template-compiler/lib/plugins/assert-input-helper-without-block.js": "ember-source/@ember/template-compiler/lib/plugins/assert-input-helper-without-block.js",
       "@ember/template-compiler/lib/plugins/assert-reserved-named-arguments.js": "ember-source/@ember/template-compiler/lib/plugins/assert-reserved-named-arguments.js",
+      "@ember/template-compiler/lib/plugins/auto-import-builtins.js": "ember-source/@ember/template-compiler/lib/plugins/auto-import-builtins.js",
       "@ember/template-compiler/lib/plugins/index.js": "ember-source/@ember/template-compiler/lib/plugins/index.js",
       "@ember/template-compiler/lib/plugins/transform-action-syntax.js": "ember-source/@ember/template-compiler/lib/plugins/transform-action-syntax.js",
       "@ember/template-compiler/lib/plugins/transform-each-in-into-each.js": "ember-source/@ember/template-compiler/lib/plugins/transform-each-in-into-each.js",
@@ -343,45 +375,15 @@
       "ember-template-compiler/index.js": "ember-source/ember-template-compiler/index.js",
       "ember-testing/index.js": "ember-source/ember-testing/index.js",
       "ember-testing/lib/adapters/adapter.js": "ember-source/ember-testing/lib/adapters/adapter.js",
-      "ember-testing/lib/adapters/qunit.js": "ember-source/ember-testing/lib/adapters/qunit.js",
-      "ember-testing/lib/ext/application.js": "ember-source/ember-testing/lib/ext/application.js",
-      "ember-testing/lib/ext/rsvp.js": "ember-source/ember-testing/lib/ext/rsvp.js",
-      "ember-testing/lib/helpers.js": "ember-source/ember-testing/lib/helpers.js",
-      "ember-testing/lib/helpers/and_then.js": "ember-source/ember-testing/lib/helpers/and_then.js",
-      "ember-testing/lib/helpers/current_path.js": "ember-source/ember-testing/lib/helpers/current_path.js",
-      "ember-testing/lib/helpers/current_route_name.js": "ember-source/ember-testing/lib/helpers/current_route_name.js",
-      "ember-testing/lib/helpers/current_url.js": "ember-source/ember-testing/lib/helpers/current_url.js",
-      "ember-testing/lib/helpers/pause_test.js": "ember-source/ember-testing/lib/helpers/pause_test.js",
-      "ember-testing/lib/helpers/visit.js": "ember-source/ember-testing/lib/helpers/visit.js",
-      "ember-testing/lib/helpers/wait.js": "ember-source/ember-testing/lib/helpers/wait.js",
-      "ember-testing/lib/initializers.js": "ember-source/ember-testing/lib/initializers.js",
       "ember-testing/lib/public-api.js": "ember-source/ember-testing/lib/public-api.js",
-      "ember-testing/lib/setup_for_testing.js": "ember-source/ember-testing/lib/setup_for_testing.js",
       "ember-testing/lib/test.js": "ember-source/ember-testing/lib/test.js",
       "ember-testing/lib/test/adapter.js": "ember-source/ember-testing/lib/test/adapter.js",
-      "ember-testing/lib/test/helpers.js": "ember-source/ember-testing/lib/test/helpers.js",
-      "ember-testing/lib/test/on_inject_helpers.js": "ember-source/ember-testing/lib/test/on_inject_helpers.js",
       "ember-testing/lib/test/pending_requests.js": "ember-source/ember-testing/lib/test/pending_requests.js",
-      "ember-testing/lib/test/promise.js": "ember-source/ember-testing/lib/test/promise.js",
-      "ember-testing/lib/test/run.js": "ember-source/ember-testing/lib/test/run.js",
       "ember-testing/lib/test/waiters.js": "ember-source/ember-testing/lib/test/waiters.js",
-      "ember/barrel.js": "ember-source/ember/barrel.js",
-      "ember/index.js": "ember-source/ember/index.js",
       "ember/version.js": "ember-source/ember/version.js",
       "route-recognizer/index.js": "ember-source/route-recognizer/index.js",
       "router_js/index.js": "ember-source/router_js/index.js",
       "rsvp/index.js": "ember-source/rsvp/index.js"
     }
-  },
-  "typesVersions": {
-    "*": {
-      "types": [
-        "types/stable"
-      ],
-      "types/preview": [
-        "types/preview"
-      ]
-    }
-  },
-  "packageManager": "pnpm@10.5.0"
+  }
 }

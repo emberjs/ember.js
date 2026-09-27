@@ -1,4 +1,5 @@
 import { template } from '@ember/template-compiler/runtime';
+import { ALLOWED_GLOBALS } from '@ember/template-compiler';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { on } from '@ember/modifier/on';
@@ -462,6 +463,30 @@ moduleFor(
 
       this.assertText('[before]after');
       this.assertStableRerender();
+    }
+  }
+);
+
+moduleFor(
+  'Strict Mode - Runtime Template Compiler (implicit) - allowed globals from RFC#1070',
+  class AllowedGlobalsTest extends RenderingTestCase {
+    static {
+      for (let globalName of ALLOWED_GLOBALS) {
+        if (!(globalName in globalThis)) continue;
+
+        // @ts-expect-error - this *is* generally unsafe
+        AllowedGlobalsTest.prototype[`@test Can use ${globalName}`] = async function () {
+          await this.renderComponentModule(() => {
+            return template(`{{if ${globalName} "exists"}}`, {
+              eval() {
+                return eval(arguments[0]);
+              },
+            });
+          });
+
+          this.assertStableRerender();
+        };
+      }
     }
   }
 );

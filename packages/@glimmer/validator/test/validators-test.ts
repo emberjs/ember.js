@@ -114,7 +114,7 @@ module('@glimmer/validator: validators', () => {
       let snapshot = valueForTag(tag);
 
       // Now, we update the parent tag with the subtag, and revalidate it
-      updateTag(tag as unknown as UpdatableTag, subtag);
+      updateTag(tag, subtag);
 
       assert.ok(validateTag(tag, snapshot), 'tag is still valid after being updated');
 

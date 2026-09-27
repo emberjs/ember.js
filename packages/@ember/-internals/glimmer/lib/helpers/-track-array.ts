@@ -1,12 +1,12 @@
 /**
 @module ember
 */
-import { tagForProperty } from '@ember/-internals/metal';
-import { isObject } from '@ember/-internals/utils';
+import { tagForProperty } from '@ember/-internals/metal/lib/tags';
+import { isObject } from '@ember/-internals/utils/lib/spec';
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
-import { consumeTag } from '@glimmer/validator';
+import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { internalHelper } from './internal-helper';
 
 /**

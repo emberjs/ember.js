@@ -1,7 +1,7 @@
 /* eslint no-console:off */
 /* global console */
 
-import { ENV } from '@ember/-internals/environment';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import { assert } from '@ember/debug';
 
 export interface Listener<T> {
@@ -21,14 +21,6 @@ export interface PayloadWithException {
 
 export interface StructuredProfilePayload {
   object: string | object;
-}
-
-interface MaybePerf {
-  now?: () => number;
-  mozNow?: () => number;
-  webkitNow?: () => number;
-  msNow?: () => number;
-  oNow?: () => number;
 }
 
 /**
@@ -102,12 +94,7 @@ function populateListeners(name: string) {
   return listeners;
 }
 
-const time = ((): (() => number) => {
-  let perf: MaybePerf = 'undefined' !== typeof window ? window.performance || {} : {};
-  let fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
-
-  return fn ? fn.bind(perf) : Date.now;
-})();
+const time = (): number => performance.now();
 
 type InstrumentCallback<Binding, Result> = (this: Binding) => Result;
 

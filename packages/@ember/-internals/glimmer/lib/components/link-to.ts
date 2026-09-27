@@ -1,7 +1,8 @@
 import type Route from '@ember/routing/route';
 import type { RouterState, RoutingService } from '@ember/routing/-internals';
-import { isSimpleClick } from '@ember/-internals/views';
-import { assert, debugFreeze, inspect, warn } from '@ember/debug';
+import { isSimpleClick } from '@ember/-internals/views/lib/system/utils';
+import inspect from '@ember/debug/lib/inspect';
+import { assert, debugFreeze, warn } from '@ember/debug';
 import { getEngineParent } from '@ember/engine/parent';
 import type EngineInstance from '@ember/engine/instance';
 import { flaggedInstrument } from '@ember/instrumentation';
@@ -10,7 +11,8 @@ import { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import type { Maybe } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
+import { consumeTag, createCache, getValue, untrack } from '@glimmer/validator/lib/tracking';
+import { tagFor } from '@glimmer/validator/lib/meta';
 import type { Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
 import InternalComponent, { type OpaqueInternalComponentConstructor, opaquify } from './internal';
@@ -44,14 +46,22 @@ function isQueryParams(value: unknown): value is QueryParams {
 }
 
 /**
+ @module @ember/routing
+ */
+
+/**
   The `LinkTo` component renders a link to the supplied `routeName` passing an optionally
   supplied model to the route as its `model` context of the route. The block for `LinkTo`
   becomes the contents of the rendered element:
 
-  ```handlebars
-  <LinkTo @route='photoGallery'>
-    Great Hamster Photos
-  </LinkTo>
+  ```gjs
+  import { LinkTo } from '@ember/routing';
+    
+  <template>
+    <LinkTo @route='photoGallery'>
+      Great Hamster Photos
+    </LinkTo>
+  </template>
   ```
 
   This will result in:
@@ -246,35 +256,11 @@ function isQueryParams(value: unknown): value is QueryParams {
   </a>
   ```
 
-  @for Ember.Templates.components
-  @method LinkTo
-  @public
-*/
-
-/**
-  @module @ember/routing
-*/
-
-/**
-  See [Ember.Templates.components.LinkTo](/ember/release/classes/Ember.Templates.components/methods/input?anchor=LinkTo).
-
-  @for Ember.Templates.helpers
-  @method link-to
-  @see {Ember.Templates.components.LinkTo}
-  @public
-**/
-
-/**
-  An opaque interface which can be imported and used in strict-mode
-  templates to call <LinkTo>.
-
-  See [Ember.Templates.components.LinkTo](/ember/release/classes/Ember.Templates.components/methods/input?anchor=LinkTo).
-
   @for @ember/routing
   @method LinkTo
-  @see {Ember.Templates.components.LinkTo}
+  @static
   @public
-**/
+*/
 
 class _LinkTo extends InternalComponent {
   static toString(): string {
@@ -287,7 +273,7 @@ class _LinkTo extends InternalComponent {
     assert(
       'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
         'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
-        'See https://ember-engines.com/docs/links for more info.',
+        'See https://github.com/ember-engines/ember-engines for more info.',
       !this.isEngine || this.engineMountPoint !== undefined
     );
 
@@ -368,9 +354,13 @@ class _LinkTo extends InternalComponent {
     }
 
     let element = event.currentTarget;
-    assert('[BUG] must be an <a> element', element instanceof HTMLAnchorElement);
+    assert(
+      '[BUG] must be an <a> element',
+      element instanceof HTMLAnchorElement || element instanceof SVGAElement
+    );
 
-    let isSelf = element.target === '' || element.target === '_self';
+    let target = element instanceof SVGAElement ? element.target.baseVal : element.target;
+    let isSelf = target === '' || target === '_self';
 
     if (isSelf) {
       this.preventDefault(event);
@@ -459,9 +449,13 @@ class _LinkTo extends InternalComponent {
     if ('query' in this.args.named) {
       let query = this.named('query');
 
+      if (query === null || query === undefined) {
+        return EMPTY_QUERY_PARAMS;
+      }
+
       assert(
         'The `@query` argument to the <LinkTo> component must be an object.',
-        query !== null && typeof query === 'object'
+        typeof query === 'object'
       );
 
       return { ...query };
@@ -550,12 +544,12 @@ class _LinkTo extends InternalComponent {
     if (typeof currentWhen === 'boolean') {
       return currentWhen;
     } else if (typeof currentWhen === 'string') {
-      let { models, routing } = this;
+      let { routing } = this;
 
       return currentWhen
         .split(' ')
         .some((route) =>
-          routing.isActiveForRoute(models, undefined, this.namespaceRoute(route), state)
+          routing.isActiveForRoute([], undefined, this.namespaceRoute(route), state)
         );
     } else {
       let { route, models, query, routing } = this;

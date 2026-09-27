@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import type EngineInstance from '@ember/engine/instance';
+import EmberObject, { computed, get, notifyPropertyChange, set, setProperties } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
-class LifetimeHooks extends Ember.Object {
+class LifetimeHooks extends EmberObject {
   resource: {} | undefined;
 
   init() {
@@ -15,20 +16,20 @@ class LifetimeHooks extends Ember.Object {
   }
 }
 
-class MyObject30 extends Ember.Object {
+class MyObject30 extends EmberObject {
   constructor() {
     super();
   }
 }
 
-class MyObject31 extends Ember.Object {
-  constructor(owner: Ember.EngineInstance) {
+class MyObject31 extends EmberObject {
+  constructor(owner: EngineInstance) {
     super(owner);
   }
 }
 
-class Foo extends Ember.Object {
-  @Ember.computed()
+class Foo extends EmberObject {
+  @computed()
   get a() {
     return '';
   }
@@ -54,11 +55,11 @@ class Foo extends Ember.Object {
   }
 }
 
-export class Foo2 extends Ember.Object {
+export class Foo2 extends EmberObject {
   name = '';
 
   changeName(name: string) {
-    expectTypeOf(Ember.set(this, 'name', name)).toBeString();
+    expectTypeOf(set(this, 'name', name)).toBeString();
 
     // For some reason, `this` type lookup does not resolve correctly here. Used
     // outside a class, like `get(someFoo, 'name')`, this works correctly. Since
@@ -67,20 +68,20 @@ export class Foo2 extends Ember.Object {
     // castable.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const s: string = this.get('name');
-    expectTypeOf(Ember.get(this as Foo2, 'name')).toBeString();
+    expectTypeOf(get(this as Foo2, 'name')).toBeString();
     expectTypeOf((this as Foo2).get('name')).toBeString();
 
     expectTypeOf(this.setProperties({ name })).toEqualTypeOf<{ name: string }>();
-    expectTypeOf(Ember.setProperties(this, { name })).toEqualTypeOf<{ name: string }>();
+    expectTypeOf(setProperties(this, { name })).toEqualTypeOf<{ name: string }>();
   }
 
   bar() {
-    Ember.notifyPropertyChange(this, 'name');
+    notifyPropertyChange(this, 'name');
     // @ts-expect-error
-    Ember.notifyPropertyChange(this);
+    notifyPropertyChange(this);
     // @ts-expect-error
-    Ember.notifyPropertyChange('name');
+    notifyPropertyChange('name');
     // @ts-expect-error
-    Ember.notifyPropertyChange(this, 'name', 'bar');
+    notifyPropertyChange(this, 'name', 'bar');
   }
 }

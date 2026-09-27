@@ -1,4 +1,4 @@
-import { ASTv2 } from '@glimmer/syntax';
+import * as ASTv2 from '@glimmer/syntax/lib/v2/api';
 
 import type { NormalizationState } from '../context';
 

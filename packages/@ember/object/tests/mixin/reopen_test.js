@@ -1,12 +1,17 @@
 import EmberObject, { get } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { run } from '@ember/runloop';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 moduleFor(
   'Mixin#reopen',
   class extends AbstractTestCase {
-    ['@test using reopen() to add more properties to a simple'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test using reopen() to add more properties to a simple`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({ foo: 'FOO', baz: 'BAZ' });
       MixinA.reopen({ bar: 'BAR', foo: 'FOO2' });
       let obj = {};

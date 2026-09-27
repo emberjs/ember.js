@@ -5,9 +5,22 @@ import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
 import { Promise } from 'rsvp';
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import { fn } from '@ember/helper';
+import { on } from '@ember/modifier';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import GlimmerishComponent from '../../utils/glimmerish-component';
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'Component Tracked Properties',
@@ -25,7 +38,7 @@ moduleFor(
         }
       }
 
-      class PersonComponent extends Component {
+      class PersonComponent extends EmberComponent {
         @tracked first;
         @tracked last;
 
@@ -34,10 +47,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('person-wrapper', {
-        ComponentClass: PersonComponent,
-        template: '{{@first}} {{@last}} | {{this.person.first}} {{this.person.last}}',
-      });
+      this.owner.register(
+        'component:person-wrapper',
+        setComponentTemplate(
+          precompileTemplate('{{@first}} {{@last}} | {{this.person.first}} {{this.person.last}}'),
+          PersonComponent
+        )
+      );
 
       this.render('<PersonWrapper @first={{this.first}} @last={{this.last}} />', {
         first: 'robert',
@@ -69,10 +85,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('person-wrapper', {
-        ComponentClass: PersonComponent,
-        template: '{{@first}} {{@last}} | {{this.person.first}} {{this.person.last}}',
-      });
+      this.owner.register(
+        'component:person-wrapper',
+        setComponentTemplate(
+          precompileTemplate('{{@first}} {{@last}} | {{this.person.first}} {{this.person.last}}'),
+          PersonComponent
+        )
+      );
 
       this.render('<PersonWrapper @first={{this.first}} @last={{this.last}} />', {
         first: 'robert',
@@ -85,7 +104,15 @@ moduleFor(
       this.assertText('max jackson | max jackson');
     }
 
-    '@test creating an array proxy inside a tracking context does not trigger backtracking assertion'() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved
+    )} @test creating an array proxy inside a tracking context does not trigger backtracking assertion`]() {
+      expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+      expectDeprecation(
+        /`PromiseProxyMixin` is deprecated/,
+        DEPRECATIONS.DEPRECATE_PROMISE_PROXY_MIXIN.isEnabled
+      );
+
       let PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
 
       class LoaderComponent extends GlimmerishComponent {
@@ -100,17 +127,24 @@ moduleFor(
         }
       }
 
-      this.registerComponent('loader', {
-        ComponentClass: LoaderComponent,
-        template: '{{#each this.data as |item|}}{{item}}{{/each}}',
-      });
+      this.owner.register(
+        'component:loader',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.data as |item|}}{{item}}{{/each}}'),
+          LoaderComponent
+        )
+      );
 
       this.render('<Loader/>');
 
       this.assertText('123');
     }
 
-    '@test creating an array proxy inside a tracking context and immediately updating its content before usage does not trigger backtracking assertion'() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved
+    )} @test creating an array proxy inside a tracking context and immediately updating its content before usage does not trigger backtracking assertion`]() {
+      expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
+
       class LoaderComponent extends GlimmerishComponent {
         get data() {
           if (!this._data) {
@@ -125,10 +159,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('loader', {
-        ComponentClass: LoaderComponent,
-        template: '{{#each this.data as |item|}}{{item}}{{/each}}',
-      });
+      this.owner.register(
+        'component:loader',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.data as |item|}}{{item}}{{/each}}'),
+          LoaderComponent
+        )
+      );
 
       this.render('<Loader/>');
 
@@ -147,10 +184,13 @@ moduleFor(
         };
       }
 
-      this.registerComponent('counter', {
-        ComponentClass: CountComponent,
-        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
-      });
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate('<button {{on "click" this.increment}}>{{this.count}}</button>'),
+          CountComponent
+        )
+      );
 
       this.render('<Counter />');
 
@@ -170,10 +210,119 @@ moduleFor(
         };
       }
 
-      this.registerComponent('counter', {
-        ComponentClass: CountComponent,
-        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
-      });
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate('<button {{on "click" this.increment}}>{{this.count}}</button>'),
+          CountComponent
+        )
+      );
+
+      this.render('<Counter />');
+
+      this.assertText('0');
+
+      runTask(() => this.$('button').click());
+
+      this.assertText('1');
+    }
+
+    '@test standalone tracked values rerender when updated'() {
+      class CountComponent extends Component {
+        count = tracked(0);
+
+        increment = () => {
+          this.count.value++;
+        };
+      }
+
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate('<button {{on "click" this.increment}}>{{this.count.value}}</button>'),
+          CountComponent
+        )
+      );
+
+      this.render('<Counter />');
+
+      this.assertText('0');
+
+      runTask(() => this.$('button').click());
+
+      this.assertText('1');
+    }
+
+    '@test standalone tracked values in module scope rerender when updated'() {
+      let count = tracked(0);
+
+      class CountComponent extends Component {
+        count = count;
+      }
+
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(precompileTemplate('{{this.count.value}}'), CountComponent)
+      );
+
+      this.render('<Counter />');
+
+      this.assertText('0');
+
+      runTask(() => count.set(1));
+
+      this.assertText('1');
+
+      runTask(() => count.update((value) => value + 1));
+
+      this.assertText('2');
+    }
+
+    '@test standalone tracked values do not rerender when set to an equal value'(assert) {
+      let count = tracked(0);
+      let evaluations = 0;
+
+      class CountComponent extends Component {
+        get count() {
+          evaluations++;
+          return count.value;
+        }
+      }
+
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(precompileTemplate('{{this.count}}'), CountComponent)
+      );
+
+      this.render('<Counter />');
+
+      this.assertText('0');
+      assert.strictEqual(evaluations, 1, 'rendered once');
+
+      runTask(() => count.set(0));
+
+      this.assertText('0');
+      assert.strictEqual(evaluations, 1, 'setting an equal value does not rerender');
+
+      runTask(() => count.set(1));
+
+      this.assertText('1');
+      assert.strictEqual(evaluations, 2, 'setting a new value rerenders');
+    }
+
+    '@test tracked can be used as a helper in templates'() {
+      let increment = (count) => count.value++;
+
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#let (tracked 0) as |count|}}<button {{on "click" (fn increment count)}}>{{count.value}}</button>{{/let}}',
+            { strictMode: true, scope: () => ({ tracked, on, fn, increment }) }
+          ),
+          class extends GlimmerishComponent {}
+        )
+      );
 
       this.render('<Counter />');
 
@@ -197,10 +346,13 @@ moduleFor(
         };
       }
 
-      this.registerComponent('counter', {
-        ComponentClass: CountComponent,
-        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
-      });
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate('<button {{on "click" this.increment}}>{{this.count}}</button>'),
+          CountComponent
+        )
+      );
 
       this.render('<Counter />');
 
@@ -226,10 +378,15 @@ moduleFor(
         increment = () => this.counter.count++;
       }
 
-      this.registerComponent('counter', {
-        ComponentClass: CountComponent,
-        template: '<button {{on "click" this.increment}}>{{this.counter.count}}</button>',
-      });
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button {{on "click" this.increment}}>{{this.counter.count}}</button>'
+          ),
+          CountComponent
+        )
+      );
 
       this.render('<Counter />');
 
@@ -247,14 +404,15 @@ moduleFor(
         addNumber = () => this.numbers.pushObject(4);
       }
 
-      this.registerComponent('num-list', {
-        ComponentClass: NumListComponent,
-        template: strip`
-            <button {{on "click" this.addNumber}}>
-              {{#each this.numbers as |num|}}{{num}}{{/each}}
-            </button>
-          `,
-      });
+      this.owner.register(
+        'component:num-list',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button {{on "click" this.addNumber}}>{{#each this.numbers as |num|}}{{num}}{{/each}}</button>'
+          ),
+          NumListComponent
+        )
+      );
 
       this.render('<NumList />');
 
@@ -276,10 +434,13 @@ moduleFor(
         increment = () => this.count++;
       }
 
-      this.registerComponent('counter', {
-        ComponentClass: CountComponent,
-        template: '<button {{on "click" this.increment}}>{{this.countAlias}}</button>',
-      });
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate('<button {{on "click" this.increment}}>{{this.countAlias}}</button>'),
+          CountComponent
+        )
+      );
 
       this.render('<Counter />');
 
@@ -307,13 +468,16 @@ moduleFor(
         get countAlias() {
           return this.count;
         }
-        increment = () => this.set('count', this.count + 1);
+        increment = () => set(this, 'count', this.count + 1);
       }
 
-      this.registerComponent('counter', {
-        ComponentClass: CountComponent,
-        template: '<button {{on "click" this.increment}}>{{this.countAlias}}</button>',
-      });
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate('<button {{on "click" this.increment}}>{{this.countAlias}}</button>'),
+          CountComponent
+        )
+      );
 
       this.render('<Counter />');
 
@@ -343,10 +507,15 @@ moduleFor(
         increment = () => this.counter.count++;
       }
 
-      this.registerComponent('counter', {
-        ComponentClass: CountComponent,
-        template: '<button {{on "click" this.increment}}>{{this.counter.countAlias}}</button>',
-      });
+      this.owner.register(
+        'component:counter',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button {{on "click" this.increment}}>{{this.counter.countAlias}}</button>'
+          ),
+          CountComponent
+        )
+      );
 
       this.render('<Counter />');
 
@@ -373,26 +542,30 @@ moduleFor(
 
       class ChildComponent extends Component {
         updatePerson = () => {
-          this.person.first = 'Kris';
-          this.person.last = 'Selden';
+          this.args.person.first = 'Kris';
+          this.args.person.last = 'Selden';
         };
       }
 
-      this.registerComponent('parent', {
-        ComponentClass: ParentComponent,
-        template: strip`
-            <div id="parent">{{this.person.full}}</div>
-            <Child @person={{this.person}}/>
-          `,
-      });
+      this.owner.register(
+        'component:parent',
+        setComponentTemplate(
+          precompileTemplate(
+            '<div id="parent">{{this.person.full}}</div><Child @person={{this.person}}/>'
+          ),
+          ParentComponent
+        )
+      );
 
-      this.registerComponent('child', {
-        ComponentClass: ChildComponent,
-        template: strip`
-            <div id="child">{{this.person.full}}</div>
-            <button onclick={{this.updatePerson}}></button>
-          `,
-      });
+      this.owner.register(
+        'component:child',
+        setComponentTemplate(
+          precompileTemplate(
+            '<div id="child">{{@person.full}}</div><button onclick={{this.updatePerson}}></button>'
+          ),
+          ChildComponent
+        )
+      );
 
       this.render('<Parent />');
 
@@ -419,12 +592,13 @@ moduleFor(
         };
       }
 
-      this.registerComponent('person', {
-        ComponentClass: PersonComponent,
-        template: strip`
-            {{yield this.full this.updatePerson}}
-          `,
-      });
+      this.owner.register(
+        'component:person',
+        setComponentTemplate(
+          precompileTemplate('{{yield this.full this.updatePerson}}'),
+          PersonComponent
+        )
+      );
 
       this.render(strip`
           <Person as |name update|>
@@ -459,12 +633,13 @@ moduleFor(
         };
       }
 
-      this.registerComponent('person', {
-        ComponentClass: PersonComponent,
-        template: strip`
-            {{yield this.person this.updatePerson}}
-          `,
-      });
+      this.owner.register(
+        'component:person',
+        setComponentTemplate(
+          precompileTemplate('{{yield this.person this.updatePerson}}'),
+          PersonComponent
+        )
+      );
 
       this.render(strip`
           <Person as |p update|>
@@ -496,10 +671,13 @@ moduleFor(
         person = new Person(this.args.first, this.args.last);
       }
 
-      this.registerComponent('person-wrapper', {
-        ComponentClass: PersonComponent,
-        template: '{{this.person.first}} {{this.person.last}}',
-      });
+      this.owner.register(
+        'component:person-wrapper',
+        setComponentTemplate(
+          precompileTemplate('{{this.person.first}} {{this.person.last}}'),
+          PersonComponent
+        )
+      );
 
       this.render('<PersonWrapper @first={{this.first}} @last={{this.last}} />', {
         first: 'robert',
@@ -513,10 +691,13 @@ moduleFor(
     }
 
     '@test works when EmberObject created during render'() {
-      this.registerComponent('test', {
-        ComponentClass: class extends GlimmerishComponent {},
-        template: '{{@data.length}}',
-      });
+      this.owner.register(
+        'component:test',
+        setComponentTemplate(
+          precompileTemplate('{{@data.length}}'),
+          class extends GlimmerishComponent {}
+        )
+      );
 
       let RecordMeta = new WeakMap();
       function getRecordMeta(record) {
@@ -587,15 +768,20 @@ moduleFor(
         };
       }
 
-      this.registerComponent('outer', {
-        ComponentClass: OuterComponent,
-        template: '<Inner @count={{this.count}}/>',
-      });
+      this.owner.register(
+        'component:outer',
+        setComponentTemplate(precompileTemplate('<Inner @count={{this.count}}/>'), OuterComponent)
+      );
 
-      this.registerComponent('inner', {
-        ComponentClass: InnerComponent,
-        template: '<button {{on "click" this.updateInnerCount}}>{{this.combinedCounts}}</button>',
-      });
+      this.owner.register(
+        'component:inner',
+        setComponentTemplate(
+          precompileTemplate(
+            '<button {{on "click" this.updateInnerCount}}>{{this.combinedCounts}}</button>'
+          ),
+          InnerComponent
+        )
+      );
 
       this.render('<Outer @count={{this.count}}/>', {
         count: 0,
@@ -637,10 +823,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('test', {
-        ComponentClass: TestComponent,
-        template: '<p>{{this.text}}</p>',
-      });
+      this.owner.register(
+        'component:test',
+        setComponentTemplate(precompileTemplate('<p>{{this.text}}</p>'), TestComponent)
+      );
 
       this.render('<Test @text={{this.text}}/>', {
         text: 'hello!',
@@ -667,10 +853,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('test', {
-        ComponentClass: TestComponent,
-        template: '<p>{{this.text}}</p>',
-      });
+      this.owner.register(
+        'component:test',
+        setComponentTemplate(precompileTemplate('<p>{{this.text}}</p>'), TestComponent)
+      );
 
       this.render('<Test @foo={{this.foo}}/>', {
         foo: foo,
@@ -692,10 +878,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('test', {
-        ComponentClass: TestComponent,
-        template: '<p>{{this.text}}</p>',
-      });
+      this.owner.register(
+        'component:test',
+        setComponentTemplate(precompileTemplate('<p>{{this.text}}</p>'), TestComponent)
+      );
 
       this.render('<Test @text={{this.text}}/>', {
         text: 'hello!',
@@ -717,10 +903,10 @@ moduleFor(
         }
       }
 
-      this.registerComponent('test', {
-        ComponentClass: TestComponent,
-        template: '<p>{{this.text}}</p>',
-      });
+      this.owner.register(
+        'component:test',
+        setComponentTemplate(precompileTemplate('<p>{{this.text}}</p>'), TestComponent)
+      );
 
       this.render('<Test/>', {
         text: 'hello!',
@@ -740,10 +926,13 @@ moduleFor(
         }
       }
 
-      this.registerComponent('test', {
-        ComponentClass: TestComponent,
-        template: '<p>{{this.objectKeys}} {{this.hasArg}}</p>',
-      });
+      this.owner.register(
+        'component:test',
+        setComponentTemplate(
+          precompileTemplate('<p>{{this.objectKeys}} {{this.hasArg}}</p>'),
+          TestComponent
+        )
+      );
 
       this.render('<Test @text={{this.text}}/>', {
         text: 'hello!',
@@ -753,10 +942,13 @@ moduleFor(
     }
 
     '@test each-in works with args'() {
-      this.registerComponent('test', {
-        ComponentClass: class extends GlimmerishComponent {},
-        template: '{{#each-in this.args as |key value|}}{{key}}:{{value}}{{/each-in}}',
-      });
+      this.owner.register(
+        'component:test',
+        setComponentTemplate(
+          precompileTemplate('{{#each-in this.args as |key value|}}{{key}}:{{value}}{{/each-in}}'),
+          class extends GlimmerishComponent {}
+        )
+      );
 
       this.render('<Test @text={{this.text}}/>', {
         text: 'hello!',

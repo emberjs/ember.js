@@ -1,10 +1,13 @@
 import Mixin from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 moduleFor(
   'Mixin Accessors',
   class extends AbstractTestCase {
-    ['@test works with getters'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test works with getters`](assert) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let count = 0;
 
       let MixinA = Mixin.create({
@@ -20,7 +23,9 @@ moduleFor(
       assert.equal(obj.prop, 1, 'getter defined correctly');
     }
 
-    ['@test works with setters'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test works with setters`](assert) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         set prop(value) {
           this._prop = value + 1;

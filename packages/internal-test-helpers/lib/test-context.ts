@@ -14,7 +14,7 @@ export function setContext(context: BaseContext): void {
 }
 
 /**
- * Retrive the "global testing context" as stored by `setContext`.
+ * Retrieve the "global testing context" as stored by `setContext`.
  *
  * @returns {Object} the previously stored testing context
  */

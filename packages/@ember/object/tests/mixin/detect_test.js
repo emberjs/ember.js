@@ -1,10 +1,15 @@
 import Mixin from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 moduleFor(
   'Mixin.detect',
   class extends AbstractTestCase {
-    ['@test detect() finds a directly applied mixin'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test detect() finds a directly applied mixin`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create();
       let obj = {};
 
@@ -14,7 +19,11 @@ moduleFor(
       assert.equal(MixinA.detect(obj), true, 'MixinA.detect(obj) after apply()');
     }
 
-    ['@test detect() finds nested mixins'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test detect() finds nested mixins`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({});
       let MixinB = Mixin.create(MixinA);
       let obj = {};
@@ -25,14 +34,22 @@ moduleFor(
       assert.equal(MixinA.detect(obj), true, 'MixinA.detect(obj) after apply()');
     }
 
-    ['@test detect() finds mixins on other mixins'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test detect() finds mixins on other mixins`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({});
       let MixinB = Mixin.create(MixinA);
       assert.equal(MixinA.detect(MixinB), true, 'MixinA is part of MixinB');
       assert.equal(MixinB.detect(MixinA), false, 'MixinB is not part of MixinA');
     }
 
-    ['@test detect handles null values'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test detect handles null values`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create();
       assert.equal(MixinA.detect(null), false);
     }

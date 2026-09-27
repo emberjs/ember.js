@@ -1,12 +1,12 @@
 /**
 @module @ember/component
 */
-import { hasDOM } from '@ember/-internals/browser-environment';
+import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 import { type Opaque } from '@ember/-internals/utility-types';
 import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
-import { valueForRef } from '@glimmer/reference';
-import { untrack } from '@glimmer/validator';
+import { valueForRef } from '@glimmer/reference/lib/reference';
+import { untrack } from '@glimmer/validator/lib/tracking';
 import InputTemplate from '../templates/input';
 import AbstractInput, { valueFrom } from './abstract-input';
 import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
@@ -44,31 +44,14 @@ if (hasDOM) {
 }
 
 /**
-  See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
-
-  @method input
-  @for Ember.Templates.helpers
-  @param {Hash} options
-  @public
-  */
-
-/**
-  An opaque interface which can be imported and used in strict-mode
-  templates to call <Input>.
-
-  See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
-
-  @for @ember/component
-  @method Input
-  @see {Ember.Templates.components.Input}
-  @public
-**/
-
-/**
   The `Input` component lets you create an HTML `<input>` element.
 
-  ```handlebars
-  <Input @value="987" />
+  ```gjs
+  import { Input } from '@ember/component';
+    
+  <template>
+    <Input @value="987" />
+  </template>
   ```
 
   creates an `<input>` element with `type="text"` and value set to 987.
@@ -155,7 +138,8 @@ if (hasDOM) {
   changes, it will be reflected in the other.
 
   @method Input
-  @for Ember.Templates.components
+  @for @ember/component
+  @static
   @param {Hash} options
   @public
 */

@@ -17,12 +17,14 @@ const component1 = Component.extend({
   },
 });
 
-class AnotherComponent extends Component {
-  name = '';
-
-  init() {
+class ClassicComponent extends Component {
+  override init(): void {
     super.init();
   }
+}
+
+class AnotherComponent extends Component {
+  name = '';
 
   hello(name: string) {
     this.set('name', name);

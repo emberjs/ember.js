@@ -6,7 +6,15 @@ import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberObject, { computed, observer } from '@ember/object';
 import { alias } from '@ember/object/computed';
-import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
+import {
+  buildOwner,
+  moduleFor,
+  runDestroy,
+  AbstractTestCase,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../-internals/deprecations';
 import { destroy } from '@glimmer/destroyable';
 
 moduleFor(
@@ -196,7 +204,9 @@ moduleFor(
       }, 'EmberObject.create no longer supports defining methods that call _super.');
     }
 
-    ["@test throws if you try to 'mixin' a definition"]() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test throws if you try to 'mixin' a definition`]() {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let myMixin = Mixin.create({
         adder(arg1, arg2) {
           return arg1 + arg2;

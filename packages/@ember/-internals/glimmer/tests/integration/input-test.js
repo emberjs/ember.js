@@ -201,6 +201,30 @@ moduleFor(
       this.assertValue('hola', 'Value is used');
     }
 
+    ['@test GH19219 input[type=radio] value attribute is rendered when bound to empty string']() {
+      this.render(`<input type="radio" value={{this.value}}>`, { value: '' });
+
+      this.assert.strictEqual(
+        this.inputElement().getAttribute('value'),
+        '',
+        'value attribute is present and empty on initial render'
+      );
+      this.assertPropertyHasValue('value', '', 'value property is empty string on initial render');
+
+      runTask(() => this.rerender());
+
+      this.assert.strictEqual(
+        this.inputElement().getAttribute('value'),
+        '',
+        'value attribute is present after no-op rerender'
+      );
+      this.assertPropertyHasValue(
+        'value',
+        '',
+        'value property is empty string after no-op rerender'
+      );
+    }
+
     ['@test GH18211 input checked attribute, without a value, works with attributes with values']() {
       this.render(`<input type="checkbox" checked>`, {});
       this.assertPropertyHasValue('checked', true);

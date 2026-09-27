@@ -1,29 +1,31 @@
-import Ember from 'ember';
+import Component from '@ember/component';
+import EmberObject, { computed, get, getProperties, set, setProperties } from '@ember/object';
+import { addObserver, removeObserver } from '@ember/object/observers';
 import { expectTypeOf } from 'expect-type';
 
-class MyComponent extends Ember.Component {
+class MyComponent extends Component {
   foo = 'bar';
 
   init() {
     this._super();
     this.addObserver('foo', this, 'fooDidChange');
     this.addObserver('foo', this, this.fooDidChange);
-    Ember.addObserver(this, 'foo', this, 'fooDidChange');
-    Ember.addObserver(this, 'foo', this, this.fooDidChange);
+    addObserver(this, 'foo', this, 'fooDidChange');
+    addObserver(this, 'foo', this, this.fooDidChange);
     this.removeObserver('foo', this, 'fooDidChange');
     this.removeObserver('foo', this, this.fooDidChange);
-    Ember.removeObserver(this, 'foo', this, 'fooDidChange');
-    Ember.removeObserver(this, 'foo', this, this.fooDidChange);
+    removeObserver(this, 'foo', this, 'fooDidChange');
+    removeObserver(this, 'foo', this, this.fooDidChange);
     const lambda = () => {
       this.fooDidChange(this, 'foo');
     };
     this.addObserver('foo', lambda);
     this.removeObserver('foo', lambda);
-    Ember.addObserver(this, 'foo', lambda);
-    Ember.removeObserver(this, 'foo', lambda);
+    addObserver(this, 'foo', lambda);
+    removeObserver(this, 'foo', lambda);
   }
 
-  @Ember.computed('foo')
+  @computed('foo')
   get bar(): string {
     return this.foo;
   }
@@ -38,11 +40,11 @@ myComponent.addObserver('foo', null, () => {});
 myComponent.set('foo', 'baz');
 expectTypeOf(myComponent.get('foo')).toEqualTypeOf<string>();
 
-class Person extends Ember.Object {
+class Person extends EmberObject {
   name = '';
   age = 0;
 
-  @Ember.computed()
+  @computed()
   get capitalized() {
     return this.get('name').toUpperCase();
   }
@@ -55,26 +57,26 @@ const person = Person.create({
 const pojo = { name: 'Fred', age: 29 };
 
 function testGet() {
-  expectTypeOf(Ember.get(person, 'name')).toEqualTypeOf<string>();
-  expectTypeOf(Ember.get(person, 'age')).toEqualTypeOf<number>();
-  expectTypeOf(Ember.get(person, 'capitalized')).toEqualTypeOf<string>();
+  expectTypeOf(get(person, 'name')).toEqualTypeOf<string>();
+  expectTypeOf(get(person, 'age')).toEqualTypeOf<number>();
+  expectTypeOf(get(person, 'capitalized')).toEqualTypeOf<string>();
   expectTypeOf(person.get('name')).toEqualTypeOf<string>();
   expectTypeOf(person.get('age')).toEqualTypeOf<number>();
   expectTypeOf(person.get('capitalized')).toEqualTypeOf<string>();
-  expectTypeOf(Ember.get(pojo, 'name')).toEqualTypeOf<string>();
+  expectTypeOf(get(pojo, 'name')).toEqualTypeOf<string>();
 }
 
 function testGetProperties() {
-  expectTypeOf(Ember.getProperties(person, 'name')).toEqualTypeOf<{ name: string }>();
-  expectTypeOf(Ember.getProperties(person, 'name', 'age')).toEqualTypeOf<{
+  expectTypeOf(getProperties(person, 'name')).toEqualTypeOf<{ name: string }>();
+  expectTypeOf(getProperties(person, 'name', 'age')).toEqualTypeOf<{
     name: string;
     age: number;
   }>();
-  expectTypeOf(Ember.getProperties(person, ['name', 'age'])).toEqualTypeOf<{
+  expectTypeOf(getProperties(person, ['name', 'age'])).toEqualTypeOf<{
     name: string;
     age: number;
   }>();
-  expectTypeOf(Ember.getProperties(person, 'name', 'age', 'capitalized')).toEqualTypeOf<
+  expectTypeOf(getProperties(person, 'name', 'age', 'capitalized')).toEqualTypeOf<
     Pick<Person, 'name' | 'age' | 'capitalized'>
   >();
   expectTypeOf(person.getProperties('name')).toEqualTypeOf<{ name: string }>();
@@ -88,28 +90,28 @@ function testGetProperties() {
     age: number;
     capitalized: string;
   }>();
-  expectTypeOf(Ember.getProperties(pojo, 'name', 'age')).toEqualTypeOf<
+  expectTypeOf(getProperties(pojo, 'name', 'age')).toEqualTypeOf<
     Pick<typeof pojo, 'name' | 'age'>
   >();
 }
 
 function testSet() {
-  expectTypeOf(Ember.set(person, 'name', 'Joe')).toBeString();
-  expectTypeOf(Ember.set(person, 'age', 35)).toBeNumber();
-  expectTypeOf(Ember.set(person, 'capitalized', 'JOE')).toBeString();
+  expectTypeOf(set(person, 'name', 'Joe')).toBeString();
+  expectTypeOf(set(person, 'age', 35)).toBeNumber();
+  expectTypeOf(set(person, 'capitalized', 'JOE')).toBeString();
   expectTypeOf(person.set('name', 'Joe')).toBeString();
   expectTypeOf(person.set('age', 35)).toBeNumber();
   expectTypeOf(person.set('capitalized', 'JOE')).toBeString();
-  expectTypeOf(Ember.set(pojo, 'name', 'Joe')).toBeString();
+  expectTypeOf(set(pojo, 'name', 'Joe')).toBeString();
 }
 
 function testSetProperties() {
-  expectTypeOf(Ember.setProperties(person, { name: 'Joe' })).toEqualTypeOf<{ name: string }>();
-  expectTypeOf(Ember.setProperties(person, { name: 'Joe', age: 35 })).toEqualTypeOf<{
+  expectTypeOf(setProperties(person, { name: 'Joe' })).toEqualTypeOf<{ name: string }>();
+  expectTypeOf(setProperties(person, { name: 'Joe', age: 35 })).toEqualTypeOf<{
     name: string;
     age: number;
   }>();
-  expectTypeOf(Ember.setProperties(person, { name: 'Joe', capitalized: 'JOE' })).toEqualTypeOf<
+  expectTypeOf(setProperties(person, { name: 'Joe', capitalized: 'JOE' })).toEqualTypeOf<
     Pick<Person, 'name' | 'capitalized'>
   >();
   expectTypeOf(person.setProperties({ name: 'Joe' })).toEqualTypeOf<Pick<Person, 'name'>>();
@@ -120,7 +122,7 @@ function testSetProperties() {
     name: string;
     capitalized: string;
   }>();
-  expectTypeOf(Ember.setProperties(pojo, { name: 'Joe', age: 35 })).toEqualTypeOf<
+  expectTypeOf(setProperties(pojo, { name: 'Joe', age: 35 })).toEqualTypeOf<
     Pick<typeof pojo, 'name' | 'age'>
   >();
 }
@@ -133,18 +135,18 @@ function testDynamic() {
   // never properly supported that flag, and there is no path to doing so. If
   // someone wants that support, they should switch to using direct property
   // access instead of using `get` (which has many other advantages).
-  expectTypeOf(Ember.get(obj, 'dummy')).toEqualTypeOf<string>();
-  expectTypeOf(Ember.get(obj, dynamicKey)).toEqualTypeOf<string>();
-  expectTypeOf(Ember.getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: string }>();
-  expectTypeOf(Ember.getProperties(obj, ['dummy'])).toEqualTypeOf<{ dummy: string }>();
-  expectTypeOf(Ember.getProperties(obj, dynamicKey)).toEqualTypeOf<Record<string, string>>();
-  expectTypeOf(Ember.getProperties(obj, [dynamicKey])).toEqualTypeOf<Record<string, string>>();
-  expectTypeOf(Ember.set(obj, 'dummy', 'value')).toBeString();
-  expectTypeOf(Ember.set(obj, dynamicKey, 'value')).toBeString();
-  expectTypeOf(Ember.setProperties(obj, { dummy: 'value ' })).toEqualTypeOf<
+  expectTypeOf(get(obj, 'dummy')).toEqualTypeOf<string>();
+  expectTypeOf(get(obj, dynamicKey)).toEqualTypeOf<string>();
+  expectTypeOf(getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: string }>();
+  expectTypeOf(getProperties(obj, ['dummy'])).toEqualTypeOf<{ dummy: string }>();
+  expectTypeOf(getProperties(obj, dynamicKey)).toEqualTypeOf<Record<string, string>>();
+  expectTypeOf(getProperties(obj, [dynamicKey])).toEqualTypeOf<Record<string, string>>();
+  expectTypeOf(set(obj, 'dummy', 'value')).toBeString();
+  expectTypeOf(set(obj, dynamicKey, 'value')).toBeString();
+  expectTypeOf(setProperties(obj, { dummy: 'value ' })).toEqualTypeOf<
     Record<'dummy', string>
   >();
-  expectTypeOf(Ember.setProperties(obj, { [dynamicKey]: 'value' })).toEqualTypeOf<
+  expectTypeOf(setProperties(obj, { [dynamicKey]: 'value' })).toEqualTypeOf<
     Record<string, string>
   >();
 }

@@ -7,10 +7,10 @@ import type {
   Initializable,
   ScopeBlock,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { CURRIED_HELPER } from '@glimmer/constants/lib/curried';
+import { decodeHandle } from '@glimmer/constants/lib/immediate';
 import {
-  CURRIED_HELPER,
-  decodeHandle,
   VM_CONCAT_OP,
   VM_CURRY_OP,
   VM_DYNAMIC_HELPER_OP,
@@ -28,7 +28,7 @@ import {
   VM_SET_BLOCK_OP,
   VM_SET_VARIABLE_OP,
   VM_SPREAD_BLOCK_OP,
-} from '@glimmer/constants';
+} from '@glimmer/constants/lib/syscall-ops';
 import {
   check,
   CheckBlockSymbolTable,
@@ -36,11 +36,12 @@ import {
   CheckMaybe,
   CheckNullable,
   CheckOr,
-} from '@glimmer/debug';
-import { debugToString, localAssert } from '@glimmer/debug-util';
+} from '@glimmer/debug/lib/stack-check';
+import debugToString from '@glimmer/debug-util/lib/debug-to-string';
+import assert from '@glimmer/debug-util/lib/assert';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { debugAssert, toBool } from '@glimmer/global-context';
-import { getInternalHelperManager } from '@glimmer/manager';
+import { getInternalHelperManager } from '@glimmer/manager/lib/internal/api';
 import {
   childRefFor,
   createComputeRef,
@@ -48,9 +49,10 @@ import {
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
   valueForRef,
-} from '@glimmer/reference';
-import { assign, isIndexable } from '@glimmer/util';
-import { $v0 } from '@glimmer/vm';
+} from '@glimmer/reference/lib/reference';
+import { assign } from '@glimmer/util/lib/object-utils';
+import { isIndexable } from '@glimmer/util/lib/collections';
+import { $v0 } from '@glimmer/vm/lib/registers';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
@@ -154,7 +156,7 @@ function resolveHelper(definition: HelperDefinitionState, ref: Reference): Helpe
       typeof managerOrHelper === 'function'
         ? managerOrHelper
         : managerOrHelper.getHelper(definition);
-    localAssert(managerOrHelper, 'BUG: expected manager or helper');
+    assert(managerOrHelper, 'BUG: expected manager or helper');
   }
 
   debugAssert(
@@ -237,7 +239,7 @@ APPEND_OPCODES.add(VM_SPREAD_BLOCK_OP, (vm) => {
 });
 
 function isUndefinedReference(input: ScopeBlock | Reference): input is Reference {
-  localAssert(
+  assert(
     Array.isArray(input) || input === UNDEFINED_REFERENCE,
     'a reference other than UNDEFINED_REFERENCE is illegal here'
   );

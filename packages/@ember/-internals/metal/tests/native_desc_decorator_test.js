@@ -1,7 +1,8 @@
 import EmberObject from '@ember/object';
 import { defineProperty, nativeDescDecorator } from '..';
 import Mixin from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../deprecations';
 
 let classes = [
   class {
@@ -97,6 +98,8 @@ let classes = [
       return `${title}: in EmberObject.extend() through a mixin`;
     }
 
+    static usesMixins = true;
+
     constructor() {
       this.klass = null;
       this.props = {};
@@ -149,221 +152,290 @@ let classes = [
   },
 ];
 
-classes.forEach((TestClass) => {
-  moduleFor(
-    TestClass.module('@ember/-internals/metal/nativeDescDecorator'),
-    class extends AbstractTestCase {
-      ['@test defining a configurable property'](assert) {
-        let factory = new TestClass(assert);
+classes
+  .filter((TestClass) => !TestClass.usesMixins || !DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)
+  .forEach((TestClass) => {
+    moduleFor(
+      TestClass.module('@ember/-internals/metal/nativeDescDecorator'),
+      class extends AbstractTestCase {
+        ['@test defining a configurable property'](assert) {
+          if (TestClass.usesMixins) {
+            expectDeprecation(
+              /Using mixins is deprecated/,
+              DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+            );
+          }
 
-        factory.install('foo', nativeDescDecorator({ configurable: true, value: 'bar' }), assert);
+          let factory = new TestClass(assert);
 
-        let obj = factory.finalize();
+          factory.install('foo', nativeDescDecorator({ configurable: true, value: 'bar' }), assert);
 
-        assert.equal(obj.foo, 'bar');
+          let obj = factory.finalize();
 
-        let source = factory.source();
+          assert.equal(obj.foo, 'bar');
 
-        delete source.foo;
+          let source = factory.source();
 
-        assert.strictEqual(obj.foo, undefined);
+          delete source.foo;
 
-        Object.defineProperty(source, 'foo', { configurable: true, value: 'baz' });
+          assert.strictEqual(obj.foo, undefined);
 
-        assert.equal(obj.foo, 'baz');
-      }
+          Object.defineProperty(source, 'foo', { configurable: true, value: 'baz' });
 
-      ['@test defining a non-configurable property'](assert) {
-        let factory = new TestClass(assert);
-        factory.install('foo', nativeDescDecorator({ configurable: false, value: 'bar' }), assert);
+          assert.equal(obj.foo, 'baz');
+        }
 
-        let obj = factory.finalize();
+        ['@test defining a non-configurable property'](assert) {
+          if (TestClass.usesMixins) {
+            expectDeprecation(
+              /Using mixins is deprecated/,
+              DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+            );
+          }
 
-        assert.equal(obj.foo, 'bar');
+          let factory = new TestClass(assert);
+          factory.install(
+            'foo',
+            nativeDescDecorator({ configurable: false, value: 'bar' }),
+            assert
+          );
 
-        let source = factory.source();
+          let obj = factory.finalize();
 
-        assert.throws(() => delete source.foo, TypeError);
+          assert.equal(obj.foo, 'bar');
 
-        assert.throws(
-          () =>
-            Object.defineProperty(source, 'foo', {
-              configurable: true,
-              value: 'baz',
+          let source = factory.source();
+
+          assert.throws(() => delete source.foo, TypeError);
+
+          assert.throws(
+            () =>
+              Object.defineProperty(source, 'foo', {
+                configurable: true,
+                value: 'baz',
+              }),
+            TypeError
+          );
+
+          assert.equal(obj.foo, 'bar');
+        }
+
+        ['@test defining an enumerable property'](assert) {
+          if (TestClass.usesMixins) {
+            expectDeprecation(
+              /Using mixins is deprecated/,
+              DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+            );
+          }
+
+          let factory = new TestClass(assert);
+          factory.install('foo', nativeDescDecorator({ enumerable: true, value: 'bar' }), assert);
+
+          let obj = factory.finalize();
+
+          assert.equal(obj.foo, 'bar');
+
+          let source = factory.source();
+
+          assert.ok(Object.keys(source).indexOf('foo') !== -1);
+        }
+
+        ['@test defining a non-enumerable property'](assert) {
+          if (TestClass.usesMixins) {
+            expectDeprecation(
+              /Using mixins is deprecated/,
+              DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+            );
+          }
+
+          let factory = new TestClass(assert);
+          factory.install('foo', nativeDescDecorator({ enumerable: false, value: 'bar' }), assert);
+
+          let obj = factory.finalize();
+
+          assert.equal(obj.foo, 'bar');
+
+          let source = factory.source();
+
+          assert.ok(Object.keys(source).indexOf('foo') === -1);
+        }
+
+        ['@test defining a writable property'](assert) {
+          if (TestClass.usesMixins) {
+            expectDeprecation(
+              /Using mixins is deprecated/,
+              DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+            );
+          }
+
+          let factory = new TestClass(assert);
+          factory.install('foo', nativeDescDecorator({ writable: true, value: 'bar' }), assert);
+
+          let obj = factory.finalize();
+
+          assert.equal(obj.foo, 'bar');
+
+          let source = factory.source();
+
+          source.foo = 'baz';
+
+          assert.equal(obj.foo, 'baz');
+
+          obj.foo = 'bat';
+
+          assert.equal(obj.foo, 'bat');
+        }
+
+        ['@test defining a non-writable property'](assert) {
+          if (TestClass.usesMixins) {
+            expectDeprecation(
+              /Using mixins is deprecated/,
+              DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+            );
+          }
+
+          let factory = new TestClass(assert);
+          factory.install('foo', nativeDescDecorator({ writable: false, value: 'bar' }), assert);
+
+          let obj = factory.finalize();
+
+          assert.equal(obj.foo, 'bar');
+
+          let source = factory.source();
+
+          assert.throws(() => (source.foo = 'baz'), TypeError);
+          assert.throws(() => (obj.foo = 'baz'), TypeError);
+
+          assert.equal(obj.foo, 'bar');
+        }
+
+        ['@test defining a getter'](assert) {
+          if (TestClass.usesMixins) {
+            expectDeprecation(
+              /Using mixins is deprecated/,
+              DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+            );
+          }
+
+          let factory = new TestClass(assert);
+          factory.install(
+            'foo',
+            nativeDescDecorator({
+              get: function () {
+                return this.__foo__;
+              },
             }),
-          TypeError
-        );
+            assert
+          );
 
-        assert.equal(obj.foo, 'bar');
+          factory.set('__foo__', 'bar');
+
+          let obj = factory.finalize();
+
+          assert.equal(obj.foo, 'bar');
+
+          obj.__foo__ = 'baz';
+
+          assert.equal(obj.foo, 'baz');
+        }
+
+        ['@test defining a setter'](assert) {
+          if (TestClass.usesMixins) {
+            expectDeprecation(
+              /Using mixins is deprecated/,
+              DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+            );
+          }
+
+          let factory = new TestClass(assert);
+          factory.install(
+            'foo',
+            nativeDescDecorator({
+              set: function (value) {
+                this.__foo__ = value;
+              },
+            }),
+            assert
+          );
+
+          factory.set('__foo__', 'bar');
+
+          let obj = factory.finalize();
+
+          assert.equal(obj.__foo__, 'bar');
+
+          obj.foo = 'baz';
+
+          assert.equal(obj.__foo__, 'baz');
+        }
+
+        ['@test combining multiple setter and getters'](assert) {
+          if (TestClass.usesMixins) {
+            expectDeprecation(
+              /Using mixins is deprecated/,
+              DEPRECATIONS.DEPRECATE_MIXINS.isEnabled
+            );
+          }
+
+          let factory = new TestClass(assert);
+          factory.install(
+            'foo',
+            nativeDescDecorator({
+              get: function () {
+                return this.__foo__;
+              },
+
+              set: function (value) {
+                this.__foo__ = value;
+              },
+            }),
+            assert
+          );
+
+          factory.set('__foo__', 'foo');
+
+          factory.install(
+            'bar',
+            nativeDescDecorator({
+              get: function () {
+                return this.__bar__;
+              },
+
+              set: function (value) {
+                this.__bar__ = value;
+              },
+            }),
+            assert
+          );
+
+          factory.set('__bar__', 'bar');
+
+          factory.install(
+            'fooBar',
+            nativeDescDecorator({
+              get: function () {
+                return this.foo + '-' + this.bar;
+              },
+            }),
+            assert
+          );
+
+          let obj = factory.finalize();
+
+          assert.equal(obj.fooBar, 'foo-bar');
+
+          obj.foo = 'FOO';
+
+          assert.equal(obj.fooBar, 'FOO-bar');
+
+          obj.__bar__ = 'BAR';
+
+          assert.equal(obj.fooBar, 'FOO-BAR');
+
+          assert.throws(() => (obj.fooBar = 'foobar'), TypeError);
+
+          assert.equal(obj.fooBar, 'FOO-BAR');
+        }
       }
-
-      ['@test defining an enumerable property'](assert) {
-        let factory = new TestClass(assert);
-        factory.install('foo', nativeDescDecorator({ enumerable: true, value: 'bar' }), assert);
-
-        let obj = factory.finalize();
-
-        assert.equal(obj.foo, 'bar');
-
-        let source = factory.source();
-
-        assert.ok(Object.keys(source).indexOf('foo') !== -1);
-      }
-
-      ['@test defining a non-enumerable property'](assert) {
-        let factory = new TestClass(assert);
-        factory.install('foo', nativeDescDecorator({ enumerable: false, value: 'bar' }), assert);
-
-        let obj = factory.finalize();
-
-        assert.equal(obj.foo, 'bar');
-
-        let source = factory.source();
-
-        assert.ok(Object.keys(source).indexOf('foo') === -1);
-      }
-
-      ['@test defining a writable property'](assert) {
-        let factory = new TestClass(assert);
-        factory.install('foo', nativeDescDecorator({ writable: true, value: 'bar' }), assert);
-
-        let obj = factory.finalize();
-
-        assert.equal(obj.foo, 'bar');
-
-        let source = factory.source();
-
-        source.foo = 'baz';
-
-        assert.equal(obj.foo, 'baz');
-
-        obj.foo = 'bat';
-
-        assert.equal(obj.foo, 'bat');
-      }
-
-      ['@test defining a non-writable property'](assert) {
-        let factory = new TestClass(assert);
-        factory.install('foo', nativeDescDecorator({ writable: false, value: 'bar' }), assert);
-
-        let obj = factory.finalize();
-
-        assert.equal(obj.foo, 'bar');
-
-        let source = factory.source();
-
-        assert.throws(() => (source.foo = 'baz'), TypeError);
-        assert.throws(() => (obj.foo = 'baz'), TypeError);
-
-        assert.equal(obj.foo, 'bar');
-      }
-
-      ['@test defining a getter'](assert) {
-        let factory = new TestClass(assert);
-        factory.install(
-          'foo',
-          nativeDescDecorator({
-            get: function () {
-              return this.__foo__;
-            },
-          }),
-          assert
-        );
-
-        factory.set('__foo__', 'bar');
-
-        let obj = factory.finalize();
-
-        assert.equal(obj.foo, 'bar');
-
-        obj.__foo__ = 'baz';
-
-        assert.equal(obj.foo, 'baz');
-      }
-
-      ['@test defining a setter'](assert) {
-        let factory = new TestClass(assert);
-        factory.install(
-          'foo',
-          nativeDescDecorator({
-            set: function (value) {
-              this.__foo__ = value;
-            },
-          }),
-          assert
-        );
-
-        factory.set('__foo__', 'bar');
-
-        let obj = factory.finalize();
-
-        assert.equal(obj.__foo__, 'bar');
-
-        obj.foo = 'baz';
-
-        assert.equal(obj.__foo__, 'baz');
-      }
-
-      ['@test combining multiple setter and getters'](assert) {
-        let factory = new TestClass(assert);
-        factory.install(
-          'foo',
-          nativeDescDecorator({
-            get: function () {
-              return this.__foo__;
-            },
-
-            set: function (value) {
-              this.__foo__ = value;
-            },
-          }),
-          assert
-        );
-
-        factory.set('__foo__', 'foo');
-
-        factory.install(
-          'bar',
-          nativeDescDecorator({
-            get: function () {
-              return this.__bar__;
-            },
-
-            set: function (value) {
-              this.__bar__ = value;
-            },
-          }),
-          assert
-        );
-
-        factory.set('__bar__', 'bar');
-
-        factory.install(
-          'fooBar',
-          nativeDescDecorator({
-            get: function () {
-              return this.foo + '-' + this.bar;
-            },
-          }),
-          assert
-        );
-
-        let obj = factory.finalize();
-
-        assert.equal(obj.fooBar, 'foo-bar');
-
-        obj.foo = 'FOO';
-
-        assert.equal(obj.fooBar, 'FOO-bar');
-
-        obj.__bar__ = 'BAR';
-
-        assert.equal(obj.fooBar, 'FOO-BAR');
-
-        assert.throws(() => (obj.fooBar = 'foobar'), TypeError);
-
-        assert.equal(obj.fooBar, 'FOO-BAR');
-      }
-    }
-  );
-});
+    );
+  });

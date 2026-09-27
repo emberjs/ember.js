@@ -1,5 +1,5 @@
 import type { AnyFn, SimpleNode } from '@glimmer/interfaces';
-import { assertNever } from '@glimmer/debug-util';
+import { assertNever } from '@glimmer/debug-util/lib/assert';
 
 import type { Loggable } from './entry';
 import type { IntoFormat } from './format';

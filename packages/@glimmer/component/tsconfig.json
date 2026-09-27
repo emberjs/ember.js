@@ -9,7 +9,8 @@
       "@ember/owner": ["../../../types/stable/@ember/owner/index.d.ts"],
       "@ember/destroyable": ["../../../types/stable/@ember/destroyable/index.d.ts"],
       "@ember/component": ["../../../types/stable/@ember/component/index.d.ts"],
-      "@ember/runloop": ["../../../types/stable/@ember/runloop/index.d.ts"]
+      "@ember/runloop": ["../../../types/stable/@ember/runloop/index.d.ts"],
+      "@glimmer/env": ["../env/index.ts"]
     },
     "target": "esnext",
     "module": "esnext",

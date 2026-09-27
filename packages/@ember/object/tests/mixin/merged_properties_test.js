@@ -1,11 +1,16 @@
 import EmberObject, { get } from '@ember/object';
 import Mixin, { mixin } from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 moduleFor(
   'Mixin mergedProperties',
   class extends AbstractTestCase {
-    ['@test defining mergedProperties should merge future version'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test defining mergedProperties should merge future version`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
         foo: { a: true, b: true, c: true },
@@ -26,7 +31,11 @@ moduleFor(
       });
     }
 
-    ['@test defining mergedProperties on future mixin should merged into past'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test defining mergedProperties on future mixin should merged into past`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         foo: { a: true, b: true, c: true },
       });
@@ -47,7 +56,11 @@ moduleFor(
       });
     }
 
-    ['@test defining mergedProperties with null properties should keep properties null'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test defining mergedProperties with null properties should keep properties null`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
         foo: null,
@@ -61,7 +74,11 @@ moduleFor(
       assert.equal(get(obj, 'foo'), null);
     }
 
-    ["@test mergedProperties' properties can get overwritten"](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test mergedProperties' properties can get overwritten`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
         foo: { a: 1 },
@@ -75,7 +92,11 @@ moduleFor(
       assert.deepEqual(get(obj, 'foo'), { a: 2 });
     }
 
-    ['@test mergedProperties should be concatenated'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test mergedProperties should be concatenated`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
         foo: { a: true, b: true, c: true },
@@ -145,8 +166,12 @@ moduleFor(
       assert.equal(get(objB, 'options').a, 3);
     }
 
-    ["@test mergedProperties' overwriting methods can call _super"](assert) {
-      assert.expect(4);
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test mergedProperties' overwriting methods can call _super`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
+      assert.expect(5);
 
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],
@@ -180,8 +205,12 @@ moduleFor(
       assert.equal(obj.foo.meth('WOOT'), 'WAT');
     }
 
-    ['@test Merging an Array should raise an error'](assert) {
-      assert.expect(1);
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test Merging an Array should raise an error`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
+      assert.expect(2);
 
       let MixinA = Mixin.create({
         mergedProperties: ['foo'],

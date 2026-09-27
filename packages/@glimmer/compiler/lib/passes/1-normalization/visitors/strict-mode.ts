@@ -1,6 +1,7 @@
-import type { HasSourceSpan } from '@glimmer/syntax';
-import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants';
-import { generateSyntaxError, loc } from '@glimmer/syntax';
+import type { HasSourceSpan } from '@glimmer/syntax/lib/source/span-list';
+import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants/lib/curried';
+import { generateSyntaxError } from '@glimmer/syntax/lib/syntax-error';
+import { loc } from '@glimmer/syntax/lib/source/span-list';
 
 import type { Result } from '../../../shared/result';
 import type * as mir from '../../2-encoding/mir';

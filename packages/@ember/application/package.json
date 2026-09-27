@@ -5,7 +5,8 @@
   "exports": {
     ".": "./index.ts",
     "./instance": "./instance.ts",
-    "./namespace": "./namespace.ts"
+    "./namespace": "./namespace.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
@@ -30,6 +31,6 @@
     "ember-template-compiler": "workspace:*",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
-    "router_js": "^8.0.5"
+    "router_js": "workspace:*"
   }
 }

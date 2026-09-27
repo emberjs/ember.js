@@ -2,7 +2,9 @@ function debugStackMessage(message, renderTree, includeTopLevel) {
   let topLevel = '';
 
   if (includeTopLevel === 'outlet') {
-    topLevel = '{{outlet}} for -top-level\n {4}-top-level\n {6}';
+    // The application root renders through `renderComponent`, whose root
+    // component (the root outlet) is labeled `{ROOT}` in the render stack.
+    topLevel = '{ROOT}\n {4}';
   } else if (includeTopLevel) {
     topLevel = '-top-level\n {4}';
   }

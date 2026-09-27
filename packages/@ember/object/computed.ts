@@ -1,4 +1,6 @@
-export { ComputedProperty as default, expandProperties, alias } from '@ember/-internals/metal';
+export { ComputedProperty as default } from '@ember/-internals/metal/lib/computed';
+export { default as expandProperties } from '@ember/-internals/metal/lib/expand_properties';
+export { default as alias } from '@ember/-internals/metal/lib/alias';
 
 export {
   empty,

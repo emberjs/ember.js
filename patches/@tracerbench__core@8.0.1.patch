@@ -1,0 +1,118 @@
+diff --git a/dist/create-trace-benchmark.js b/dist/create-trace-benchmark.js
+index 5918e8f7665b3e796ef88283fc40c2b3286a564f..b9927ba8f639c0a9ecc70144362da439468f1b3a 100644
+--- a/dist/create-trace-benchmark.js
++++ b/dist/create-trace-benchmark.js
+@@ -45,35 +45,27 @@ function createTraceBenchmark(group, sampleTrace, options = {}) {
+ }
+ exports.default = createTraceBenchmark;
+ function getCategories(isTrial, options) {
+-    const categories = ['-*', ...defaultCategories];
+-    if (isTrial) {
+-        categories.push(...captureAllDevtoolsTimelineCategories, ...captureCpuProfileCategories, captureCpuProfilesHiresCategory, captureFilmStripCategory, ...capturePaintProfileCategories);
+-        if (options.additionalTrialCategories) {
+-            categories.push(...options.additionalTrialCategories);
+-        }
++    const categories = [...defaultCategories];
++    // include the basic disabled by default devtools categories
++    if (options.captureDevtoolsTimeline) {
++        categories.push(...captureDevtoolsTimelineCategories);
+     }
+-    else {
+-        // include the basic disabled by default devtools categories
+-        if (options.captureDevtoolsTimeline) {
+-            categories.push(...captureDevtoolsTimelineCategories);
+-        }
+-        if (options.captureV8RuntimeStats) {
+-            // this breaks devtools display of CPU profile in dev tools
+-            categories.push(...captureV8RuntimeStatsCategories);
+-        }
+-        if (options.captureCpuProfile) {
+-            // includes runtime samples
+-            categories.push(...captureCpuProfileCategories);
+-        }
+-        if (options.captureFilmStrip) {
+-            categories.push(captureFilmStripCategory);
+-        }
+-        if (options.capturePaintProfile) {
+-            categories.push(...capturePaintProfileCategories);
+-        }
+-        if (options.additionalCategories) {
+-            categories.push(...options.additionalCategories);
+-        }
++    if (options.captureV8RuntimeStats) {
++        // this breaks devtools display of CPU profile in dev tools
++        categories.push(...captureV8RuntimeStatsCategories);
++    }
++    if (options.captureCpuProfile) {
++        // includes runtime samples
++        categories.push(...captureCpuProfileCategories);
++    }
++    if (options.captureFilmStrip) {
++        categories.push(captureFilmStripCategory);
++    }
++    if (options.capturePaintProfile) {
++        categories.push(...capturePaintProfileCategories);
++    }
++    if (options.additionalCategories) {
++        categories.push(...options.additionalCategories);
+     }
+     return categories;
+ }
+diff --git a/dist/metrics/extract-navigation-sample.js b/dist/metrics/extract-navigation-sample.js
+index 58a0330d018d00223d9cfe0cc353ee3903837df1..fa75690cd7c0f951a9106a9926caa288f6110143 100644
+--- a/dist/metrics/extract-navigation-sample.js
++++ b/dist/metrics/extract-navigation-sample.js
+@@ -40,6 +40,13 @@ function findPhases(events, markers) {
+                     }
+                 }
+                 else {
++                    // In headless Chrome on macOS, an initial navigationStart with an empty
++                    // documentLoaderURL may precede the real page navigation. Update
++                    // navigationStartArgs if we encounter a navigationStart with a real URL
++                    // so subsequent markers match the correct navigationId.
++                    if (event.name === 'navigationStart' && event.args?.data?.documentLoaderURL) {
++                        navigationStartArgs = event.args;
++                    }
+                     if (event.name === marker.start) {
+                         const { args } = event;
+                         // ensure this belongs to this navigation
+diff --git a/dist/util/inject-mark-observer.js b/dist/util/inject-mark-observer.js
+index 0444c9911387202e156d3901e16e1ff092399f75..f7385765297aff2ff6ece7c6164dd1d3de2b0047 100644
+--- a/dist/util/inject-mark-observer.js
++++ b/dist/util/inject-mark-observer.js
+@@ -54,8 +54,6 @@ function lcpObserver(variable, priorMarker) {
+ function markObserver(mark, variable) {
+     return `"use strict";
+     var ${variable} =
+-      self === top &&
+-      opener === null &&
+       new Promise((resolve) =>
+         new PerformanceObserver((records, observer) => {
+           if (records.getEntriesByName(${JSON.stringify(mark)}).length > 0) {
+@@ -66,7 +64,7 @@ function markObserver(mark, variable) {
+             });
+             observer.disconnect();
+           }
+-        }).observe({ type: 'mark' })
++        }).observe({ type: 'mark', buffered: true })
+       );`;
+ }
+ function navigationObserver(variable) {
+diff --git a/dist/util/run-trace.js b/dist/util/run-trace.js
+index 0f49cd51cf789117dd3ad9aea8754293f50a51ff..e428000306cc6553d094441ad5e17660962e06d6 100644
+--- a/dist/util/run-trace.js
++++ b/dist/util/run-trace.js
+@@ -10,7 +10,12 @@ async function runTrace(page, categories, raceCancellation, usingTracing, path)
+     page.on('Tracing.tracingComplete', complete);
+     try {
+         await performTrace(page, {
+-            categories: categories.join(','),
++            // Use traceConfig instead of deprecated categories string; use
++            // recordAsMuchAsPossible to avoid dropping events on ring-buffer overflow.
++            traceConfig: {
++                recordMode: 'recordAsMuchAsPossible',
++                includedCategories: categories,
++            },
+             transferMode: 'ReturnAsStream'
+         }, usingTracing, (0, race_cancellation_1.combineRaceCancellation)(raceEarlyComplete, raceCancellation));
+         stream = await waitForTraceStream(completed, raceCancellation);

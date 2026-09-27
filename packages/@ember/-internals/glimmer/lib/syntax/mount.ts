@@ -1,15 +1,16 @@
 /**
-@module ember
+@module @ember/helper
 */
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { CapturedArguments, CurriedComponent } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
-import type { CurriedValue } from '@glimmer/runtime';
-import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
+import type { CurriedValue } from '@glimmer/runtime/lib/curried-value';
+import { createCapturedArgs, EMPTY_POSITIONAL } from '@glimmer/runtime/lib/vm/arguments';
+import { curry } from '@glimmer/runtime/lib/curried-value';
 import { MountDefinition } from '../component-managers/mount';
 import { internalHelper } from '../helpers/internal-helper';
 
@@ -20,15 +21,14 @@ import { internalHelper } from '../helpers/internal-helper';
 
   For example, the following template mounts the `ember-chat` engine:
 
-  ```handlebars
-  {{! application.hbs }}
+  ```gjs {data-filename="app/templates/application.gjs"}
   {{mount "ember-chat"}}
   ```
 
   Additionally, you can also pass in a `model` argument that will be
   set as the engines model. This can be an existing object:
 
-  ```
+  ```hbs
   <div>
     {{mount 'admin' model=userSettings}}
   </div>
@@ -36,24 +36,31 @@ import { internalHelper } from '../helpers/internal-helper';
 
   Or an inline `hash`, and you can even pass components:
 
+  ```gjs
+  import SignInButton from '../components/sign-in-button';
+  <template>
+    <div>
+      <h1>Application template!</h1>
+      {{mount 'admin' model=(hash
+          title='Secret Admin'
+          signInButton=SignInButton
+      )}}
+    </div>
+  </template>
   ```
-  <div>
-    <h1>Application template!</h1>
-    {{mount 'admin' model=(hash
-        title='Secret Admin'
-        signInButton=(component 'sign-in-button')
-    )}}
-  </div>
-  ```
+ 
+ `mount` is built-in and does not need to be imported.
 
   @method mount
   @param {String} name Name of the engine to mount.
   @param {Object} [model] Object that will be set as
                           the model of the engine.
-  @for Ember.Templates.helpers
+  @for Keywords
+  @static
+  @noimport
   @public
 */
-export const mountHelper = internalHelper(
+export const mountHelper = /*@__PURE__*/ internalHelper(
   (args: CapturedArguments, owner?: InternalOwner): Reference<CurriedValue | null> => {
     assert('{{mount}} must be used within a component that has an owner', owner);
     let nameRef = args.positional[0] as Reference<Nullable<string>>;

@@ -13,12 +13,12 @@ import {
   CheckOr,
   CheckString,
   CheckUndefined,
-} from '@glimmer/debug';
-import { buildUntouchableThis, localAssert } from '@glimmer/debug-util';
+} from '@glimmer/debug/lib/stack-check';
+import buildUntouchableThis from '@glimmer/debug-util/lib/untouchable-this';
 import { registerDestructor } from '@glimmer/destroyable';
-import { setInternalModifierManager } from '@glimmer/manager';
-import { valueForRef } from '@glimmer/reference';
-import { createUpdatableTag } from '@glimmer/validator';
+import { setInternalModifierManager } from '@glimmer/manager/lib/internal/api';
+import { valueForRef } from '@glimmer/reference/lib/reference';
+import { createUpdatableTag } from '@glimmer/validator/lib/validators';
 
 import { reifyNamed } from '../vm/arguments';
 
@@ -57,31 +57,52 @@ export class OnModifierState {
   updateListener(): void {
     let { element, args, listener } = this;
 
-    localAssert(
-      args.positional[0],
-      'You must pass a valid DOM event name as the first argument to the `on` modifier'
-    );
+    let selector: string | undefined;
+    if (DEBUG) {
+      const el = this.element;
+      selector =
+        el.tagName.toLowerCase() +
+        (el.id ? `#${el.id}` : '') +
+        Array.from(el.classList)
+          .map((c) => `.${c}`)
+          .join('');
+    }
 
+    let arg0 = args.positional[0];
     let eventName = check(
-      valueForRef(args.positional[0]),
+      arg0 ? valueForRef(arg0) : undefined,
       CheckString,
       () => 'You must pass a valid DOM event name as the first argument to the `on` modifier'
     );
 
-    localAssert(
-      args.positional[1],
-      'You must pass a function as the second argument to the `on` modifier'
-    );
+    if (DEBUG && !eventName) {
+      throw new Error(
+        `You must pass a valid DOM event name as the first argument to the \`on\` modifier on ${selector}`
+      );
+    }
 
-    let userProvidedCallback = check(valueForRef(args.positional[1]), CheckFunction, (actual) => {
-      return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
-        actual === null ? 'null' : typeof actual
-      }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`;
-    }) as EventListener;
+    let arg1 = args.positional[1];
+    let userProvidedCallback = check(
+      arg1 ? valueForRef(arg1) : undefined,
+      CheckFunction,
+      (actual) => {
+        return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+          actual === null ? 'null' : typeof actual
+        }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`;
+      }
+    ) as EventListener;
+
+    if (DEBUG && typeof userProvidedCallback !== 'function') {
+      throw new Error(
+        `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+          userProvidedCallback === null ? 'null' : typeof userProvidedCallback
+        }. While rendering:\n\n${args.positional[1]?.debugLabel ?? '(unknown)'} on ${selector}`
+      );
+    }
 
     if (DEBUG && args.positional.length !== 2) {
       throw new Error(
-        `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${args.positional.length}. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback.`
+        `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${args.positional.length}. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback on ${selector}`
       );
     }
 
@@ -117,7 +138,7 @@ export class OnModifierState {
         throw new Error(
           `You can only \`once\`, \`passive\` or \`capture\` named arguments to the \`on\` modifier, but you provided ${Object.keys(
             extra
-          ).join(', ')}.`
+          ).join(', ')} on ${selector}`
         );
       }
     } else {
@@ -155,7 +176,7 @@ export class OnModifierState {
     // https://bugs.chromium.org/p/chromium/issues/detail?id=770208
     if (shouldUpdate) {
       if (once !== undefined || passive !== undefined || capture !== undefined) {
-        options = { once, passive, capture } as AddEventListenerOptions;
+        options = { once, passive, capture };
       }
     }
 
@@ -226,6 +247,10 @@ function addEventListener(
 }
 
 /**
+ @module @ember/helper
+ */
+
+/**
   The `{{on}}` modifier lets you easily add event listeners (it uses
   [EventTarget.addEventListener](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
   internally).
@@ -233,19 +258,20 @@ function addEventListener(
   For example, if you'd like to run a function on your component when a `<button>`
   in the components template is clicked you might do something like:
 
-  ```app/components/like-post.hbs
-  <button {{on 'click' this.saveLike}}>Like this post!</button>
-  ```
-
-  ```app/components/like-post.js
+  ```gjs {data-filename="app/components/like-post.gjs"}
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
-  export default class LikePostComponent extends Component {
-    saveLike = () => {
+  export default class LikePost extends Component {
+    @action
+    saveLike() {
       // someone likes your post!
       // better send a request off to your server...
     }
+    
+    <template>
+      <button {{on 'click' this.saveLike}}>Like this post!</button>
+    </template>
   }
   ```
 
@@ -280,7 +306,7 @@ function addEventListener(
   For example, in our example case above if you'd like to pass in the post that
   was being liked when the button is clicked you could do something like:
 
-  ```app/components/like-post.hbs
+  ```hbs
   <button {{on 'click' (fn this.saveLike @post)}}>Like this post!</button>
   ```
 
@@ -289,14 +315,14 @@ function addEventListener(
 
   ### Function Context
 
-  In the example above, we used an arrow function to ensure that `likePost` is
-  properly bound to the `items-list`, but let's explore what happens if we
-  left out the arrow function:
+  In the example above, we used `@action` to ensure that `likePost` is
+  properly bound to the `LikePost` Component, but let's explore what happens if we
+  left out `@action`:
 
-  ```app/components/like-post.js
+  ```gjs {data-filename="app/components/like-post.gjs"}
   import Component from '@glimmer/component';
 
-  export default class LikePostComponent extends Component {
+  export default class LikePost extends Component {
     saveLike() {
       // ...snip...
     }
@@ -306,10 +332,16 @@ function addEventListener(
   In this example, when the button is clicked `saveLike` will be invoked,
   it will **not** have access to the component instance. In other
   words, it will have no `this` context, so please make sure your functions
-  are bound (via an arrow function or other means) before passing into `on`!
+  are bound (via `@action` or other means) before passing into `on`!
+
+  The `on` modifier is a keyword and does not need to be imported.
 
   @method on
+  @static
+  @for Keywords
+  @noimport
   @public
+  @since 3.11.0
 */
 class OnModifierManager implements InternalModifierManager<OnModifierState> {
   getDebugName(): string {

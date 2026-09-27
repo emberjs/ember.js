@@ -637,6 +637,91 @@ class DynamicStrictModeTest extends RenderTest {
   }
 
   @test
+  'Can use a dynamic component with a changing definition (append position)'(assert: Assert) {
+    const Foo = defineComponent({}, 'Hello, world!', {
+      definition: class extends GlimmerishComponent {
+        override willDestroy() {
+          assert.step('willDestroy 1 called');
+        }
+      },
+    });
+
+    const Bar = defineComponent({}, 'Hello, earth!', {
+      definition: class extends GlimmerishComponent {
+        override willDestroy() {
+          assert.step('willDestroy 2 called');
+        }
+      },
+    });
+
+    const Baz = defineComponent({}, '{{@Foo}}');
+
+    let args = trackedObj({ Foo });
+
+    this.renderComponent(Baz, args);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+
+    args['Foo'] = Bar;
+
+    this.rerender();
+    this.assertHTML('Hello, earth!');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 1 called']);
+
+    args['Foo'] = undefined;
+
+    this.rerender();
+    this.assertHTML('');
+    this.assertStableRerender();
+    assert.verifySteps(['willDestroy 2 called']);
+  }
+
+  @test
+  'Can use a dynamic component with a changing definition (append position, with args)'() {
+    const Foo = defineComponent({}, 'Hello, {{@value}}!');
+    const Bar = defineComponent({}, 'Goodbye, {{@value}}!');
+    const Baz = defineComponent({}, '{{@Foo value="world"}}');
+
+    let args = trackedObj({ Foo });
+
+    this.renderComponent(Baz, args);
+    this.assertHTML('Hello, world!');
+    this.assertStableRerender();
+
+    args['Foo'] = Bar;
+
+    this.rerender();
+    this.assertHTML('Goodbye, world!');
+    this.assertStableRerender();
+  }
+
+  @test
+  'Can use an inline if to swap components in append position'() {
+    const Ok = defineComponent({}, 'Ok');
+    const Ko = defineComponent({}, 'Ko');
+    const Foo = defineComponent({ Ok, Ko }, '{{if @isOk Ok Ko}}');
+
+    let args = trackedObj({ isOk: true });
+
+    this.renderComponent(Foo, args);
+    this.assertHTML('Ok');
+    this.assertStableRerender();
+
+    args['isOk'] = false;
+
+    this.rerender();
+    this.assertHTML('Ko');
+    this.assertStableRerender();
+
+    args['isOk'] = true;
+
+    this.rerender();
+    this.assertHTML('Ok');
+    this.assertStableRerender();
+  }
+
+  @test
   'Can use a dynamic component in block position'() {
     const Foo = defineComponent({}, 'Hello, {{yield}}');
     const Bar = defineComponent({}, '{{#this.Foo}}world!{{/this.Foo}}', {

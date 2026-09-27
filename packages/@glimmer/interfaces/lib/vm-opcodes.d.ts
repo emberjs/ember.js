@@ -68,7 +68,6 @@ export type VmCompileBlock = 61;
 export type VmPushBlockScope = 62;
 export type VmPushSymbolTable = 63;
 export type VmInvokeYield = 64;
-export type VmJumpIf = 65;
 export type VmJumpUnless = 66;
 export type VmJumpEq = 67;
 export type VmAssertSame = 68;
@@ -87,7 +86,6 @@ export type VmResolveDynamicComponent = 80;
 export type VmResolveCurriedComponent = 81;
 export type VmPushArgs = 82;
 export type VmPushEmptyArgs = 83;
-export type VmPopArgs = 84;
 export type VmPrepareArgs = 85;
 export type VmCaptureArgs = 86;
 export type VmCreateComponent = 87;
@@ -163,7 +161,6 @@ export type VmOp =
   | VmPushBlockScope
   | VmPushSymbolTable
   | VmInvokeYield
-  | VmJumpIf
   | VmJumpUnless
   | VmJumpEq
   | VmAssertSame
@@ -182,7 +179,6 @@ export type VmOp =
   | VmResolveCurriedComponent
   | VmPushArgs
   | VmPushEmptyArgs
-  | VmPopArgs
   | VmPrepareArgs
   | VmCaptureArgs
   | VmCreateComponent

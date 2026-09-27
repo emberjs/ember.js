@@ -1,4 +1,12 @@
-import { applyMixins, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
+import {
+  applyMixins,
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  strip,
+  ignoreDeprecation,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { get, set } from '@ember/object';
 import EmberObject from '@ember/object';
@@ -36,6 +44,14 @@ class BasicSyntaxTest extends BasicEachInTest {
 
 class EachInProxyTest extends TogglingEachInTest {}
 
+// `ObjectProxy` is deprecated; the deprecation itself is asserted by the
+// dedicated `ObjectProxy` tests, so it is silenced in these rendering fixtures.
+const OBJECT_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved;
+
+function objectProxy(props) {
+  return ignoreDeprecation(() => ObjectProxy.create(props));
+}
+
 applyMixins(
   BasicEachInTest,
   new TruthyGenerator([
@@ -63,35 +79,37 @@ applyMixins(
   ])
 );
 
-applyMixins(
-  EachInProxyTest,
+if (!OBJECT_PROXY_REMOVED) {
+  applyMixins(
+    EachInProxyTest,
 
-  new TruthyGenerator([ObjectProxy.create({ content: { 'Not empty': 1 } })]),
+    new TruthyGenerator([objectProxy({ content: { 'Not empty': 1 } })]),
 
-  new FalsyGenerator([
-    ObjectProxy.create(),
-    ObjectProxy.create({ content: null }),
-    ObjectProxy.create({ content: {} }),
-    ObjectProxy.create({ content: Object.create(null) }),
-    ObjectProxy.create({ content: Object.create({}) }),
-    ObjectProxy.create({ content: Object.create({ 'Not Empty': 1 }) }),
-    ObjectProxy.create({ content: EmberObject.create() }),
-  ])
-);
+    new FalsyGenerator([
+      objectProxy(),
+      objectProxy({ content: null }),
+      objectProxy({ content: {} }),
+      objectProxy({ content: Object.create(null) }),
+      objectProxy({ content: Object.create({}) }),
+      objectProxy({ content: Object.create({ 'Not Empty': 1 }) }),
+      objectProxy({ content: EmberObject.create() }),
+    ])
+  );
 
-// Truthy/Falsy tests
-moduleFor(
-  'Syntax test: {{#each-in}} with `ObjectProxy`',
-  class extends EachInProxyTest {
-    get truthyValue() {
-      return ObjectProxy.create({ content: { 'Not Empty': 1 } });
+  // Truthy/Falsy tests
+  moduleFor(
+    'Syntax test: {{#each-in}} with `ObjectProxy`',
+    class extends EachInProxyTest {
+      get truthyValue() {
+        return objectProxy({ content: { 'Not Empty': 1 } });
+      }
+
+      get falsyValue() {
+        return objectProxy({ content: null });
+      }
     }
-
-    get falsyValue() {
-      return ObjectProxy.create({ content: null });
-    }
-  }
-);
+  );
+}
 
 moduleFor('Syntax test: {{#each-in}}', BasicSyntaxTest);
 
@@ -515,109 +533,111 @@ moduleFor(
   }
 );
 
-moduleFor(
-  'Syntax test: {{#each-in}} with object proxies',
-  class extends EachInTest {
-    constructor() {
-      super(...arguments);
-      this.allowsSetProp = true;
-    }
-    createHash(pojo) {
-      let hash = ObjectProxy.create({ content: pojo });
-      return {
-        hash,
-        delegate: {
-          setProp(context, key, value) {
-            set(context, `hash.${key}`, value);
-          },
-          updateNestedValue(context, key, innerKey, value) {
-            let target = get(context.hash, key);
-            set(target, innerKey, value);
-          },
-        },
-      };
-    }
-
-    ['@test it iterates over the content, not the proxy']() {
-      let content = {
-        Smartphones: 8203,
-        'JavaScript Frameworks': Infinity,
-      };
-
-      let proxy = ObjectProxy.create({
-        content,
-        foo: 'bar',
-      });
-
-      this.render(
-        strip`
-      <ul>
-        {{#each-in this.categories as |category count|}}
-          <li>{{category}}: {{count}}</li>
-        {{/each-in}}
-      </ul>
-    `,
-        { categories: proxy }
-      );
-
-      this.assertHTML(strip`
-      <ul>
-        <li>Smartphones: 8203</li>
-        <li>JavaScript Frameworks: Infinity</li>
-      </ul>
-    `);
-
-      this.assertStableRerender();
-
-      runTask(() => {
-        set(proxy, 'content.Smartphones', 100);
-        set(proxy, 'content.Tweets', 443115);
-      });
-
-      this.assertHTML(strip`
-      <ul>
-        <li>Smartphones: 100</li>
-        <li>JavaScript Frameworks: Infinity</li>
-        <li>Tweets: 443115</li>
-      </ul>
-    `);
-
-      runTask(() => {
-        set(proxy, 'content', {
-          Smartphones: 100,
-          Tablets: 20,
-        });
-      });
-
-      this.assertHTML(strip`
-      <ul>
-        <li>Smartphones: 100</li>
-        <li>Tablets: 20</li>
-      </ul>
-    `);
-
-      runTask(() =>
-        set(
-          this.context,
-          'categories',
-          ObjectProxy.create({
-            content: {
-              Smartphones: 8203,
-              'JavaScript Frameworks': Infinity,
+if (!OBJECT_PROXY_REMOVED) {
+  moduleFor(
+    'Syntax test: {{#each-in}} with object proxies',
+    class extends EachInTest {
+      constructor() {
+        super(...arguments);
+        this.allowsSetProp = true;
+      }
+      createHash(pojo) {
+        let hash = objectProxy({ content: pojo });
+        return {
+          hash,
+          delegate: {
+            setProp(context, key, value) {
+              set(context, `hash.${key}`, value);
             },
-          })
-        )
-      );
+            updateNestedValue(context, key, innerKey, value) {
+              let target = get(context.hash, key);
+              set(target, innerKey, value);
+            },
+          },
+        };
+      }
 
-      this.assertHTML(strip`
-      <ul>
-        <li>Smartphones: 8203</li>
-        <li>JavaScript Frameworks: Infinity</li>
-      </ul>
-    `);
+      ['@test it iterates over the content, not the proxy']() {
+        let content = {
+          Smartphones: 8203,
+          'JavaScript Frameworks': Infinity,
+        };
+
+        let proxy = objectProxy({
+          content,
+          foo: 'bar',
+        });
+
+        this.render(
+          strip`
+        <ul>
+          {{#each-in this.categories as |category count|}}
+            <li>{{category}}: {{count}}</li>
+          {{/each-in}}
+        </ul>
+      `,
+          { categories: proxy }
+        );
+
+        this.assertHTML(strip`
+        <ul>
+          <li>Smartphones: 8203</li>
+          <li>JavaScript Frameworks: Infinity</li>
+        </ul>
+      `);
+
+        this.assertStableRerender();
+
+        runTask(() => {
+          set(proxy, 'content.Smartphones', 100);
+          set(proxy, 'content.Tweets', 443115);
+        });
+
+        this.assertHTML(strip`
+        <ul>
+          <li>Smartphones: 100</li>
+          <li>JavaScript Frameworks: Infinity</li>
+          <li>Tweets: 443115</li>
+        </ul>
+      `);
+
+        runTask(() => {
+          set(proxy, 'content', {
+            Smartphones: 100,
+            Tablets: 20,
+          });
+        });
+
+        this.assertHTML(strip`
+        <ul>
+          <li>Smartphones: 100</li>
+          <li>Tablets: 20</li>
+        </ul>
+      `);
+
+        runTask(() =>
+          set(
+            this.context,
+            'categories',
+            objectProxy({
+              content: {
+                Smartphones: 8203,
+                'JavaScript Frameworks': Infinity,
+              },
+            })
+          )
+        );
+
+        this.assertHTML(strip`
+        <ul>
+          <li>Smartphones: 8203</li>
+          <li>JavaScript Frameworks: Infinity</li>
+        </ul>
+      `);
+      }
     }
-  }
-);
+  );
+}
 
 moduleFor(
   'Syntax test: {{#each-in}} with ES6 Maps',
@@ -697,6 +717,128 @@ moduleFor(
           },
         },
       };
+    }
+  }
+);
+
+moduleFor(
+  'Syntax test: {{#each-in}} with the key option',
+  class extends RenderingTestCase {
+    items() {
+      let items = Array.from(this.element.querySelectorAll('li'));
+      this.assert.strictEqual(items.length, 2, 'both entries rendered');
+      return items;
+    }
+
+    [`@test by default the entry's value is the key, so changing a value replaces its DOM`]() {
+      this.render(
+        `<ul>{{#each-in this.hash as |name value|}}<li>{{name}}: {{value}}</li>{{/each-in}}</ul>`,
+        { hash: { a: 1, b: 2 } }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      runTask(() => set(this.context, 'hash', { a: 1, b: 3 }));
+      this.assertText('a: 1b: 3');
+
+      let after = this.items();
+      this.assert.strictEqual(after[0], before[0], 'unchanged entry keeps its node');
+      this.assert.notStrictEqual(after[1], before[1], 'changed entry gets a new node');
+    }
+
+    [`@test key="@key" uses the property name, so a changed value updates in place`]() {
+      this.render(
+        `<ul>{{#each-in this.hash key="@key" as |name value|}}<li>{{name}}: {{value}}</li>{{/each-in}}</ul>`,
+        { hash: { a: 1, b: 2 } }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      runTask(() => set(this.context, 'hash', { a: 1, b: 3 }));
+      this.assertText('a: 1b: 3');
+
+      let after = this.items();
+      this.assert.strictEqual(after[0], before[0], 'unchanged entry keeps its node');
+      this.assert.strictEqual(after[1], before[1], 'changed entry keeps its node');
+    }
+
+    // `@index` is accepted here and #16719 calls it public API, though docs omit it and
+    // rfc #321 was never accepted. These two record what it resolves to, ensuring a
+    // future change is deliberate.
+    [`@test key="@index" keys on the property name, not the position or the value`]() {
+      this.render(
+        `<ul>{{#each-in this.hash key="@index" as |name value|}}<li>{{name}}: {{value}}</li>{{/each-in}}</ul>`,
+        { hash: { a: 1, b: 2 } }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      // reordering while changing a value: keying by name moves both nodes, a
+      // position would keep them put, and the value would replace the changed one
+      runTask(() => set(this.context, 'hash', { b: 2, a: 9 }));
+      this.assertText('b: 2a: 9');
+
+      let after = this.items();
+      this.assert.strictEqual(after[0], before[1], `b's node moves with its name`);
+      this.assert.strictEqual(after[1], before[0], `a's node moves and survives its new value`);
+    }
+
+    [`@test a path key is looked up on the entry's value`]() {
+      this.render(
+        `<ul>{{#each-in this.hash key="id" as |name value|}}<li>{{name}}: {{value.id}}</li>{{/each-in}}</ul>`,
+        { hash: { a: { id: 1 }, b: { id: 2 } } }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      runTask(() => set(this.context, 'hash', { a: { id: 9 }, b: { id: 2 } }));
+      this.assertText('a: 9b: 2');
+
+      let after = this.items();
+      this.assert.notStrictEqual(after[0], before[0], 'a changed value.id gets a new node');
+      this.assert.strictEqual(after[1], before[1], 'an unchanged value.id keeps its node');
+    }
+
+    [`@test key="@index" collides when a Map is keyed by objects`]() {
+      let a = { name: 'a' };
+      let b = { name: 'b' };
+
+      this.render(
+        `<ul>{{#each-in this.map key="@index" as |name value|}}<li>{{name.name}}: {{value}}</li>{{/each-in}}</ul>`,
+        {
+          map: new Map([
+            [a, 1],
+            [b, 2],
+          ]),
+        }
+      );
+      this.assertText('a: 1b: 2');
+
+      let before = this.items();
+
+      runTask(() =>
+        set(
+          this.context,
+          'map',
+          new Map([
+            [b, 2],
+            [a, 1],
+          ])
+        )
+      );
+      this.assertText('b: 2a: 1');
+
+      let after = this.items();
+      this.assert.strictEqual(
+        after[0],
+        before[0],
+        'every object key stringifies alike, so nodes are reused by position rather than moved'
+      );
+      this.assert.strictEqual(after[1], before[1], 'likewise for the second entry');
     }
   }
 );

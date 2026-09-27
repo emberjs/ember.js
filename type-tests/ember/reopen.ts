@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import Mixin from '@ember/object/mixin';
 import { expectTypeOf } from 'expect-type';
 
-class Person extends Ember.Object {
+class Person extends EmberObject {
   name = '';
 
   sayHello() {
@@ -66,10 +67,10 @@ person3.sayGoodbye();
 interface AutoResizeMixin {
   resizable: true;
 }
-const AutoResizeMixin = Ember.Mixin.create({ resizable: true });
+const AutoResizeMixin = Mixin.create({ resizable: true });
 
 // And the same here.
-const Reopened = Ember.Object.reopenClass({ a: 1 }, { b: 2 }, { c: 3 });
+const Reopened = EmberObject.reopenClass({ a: 1 }, { b: 2 }, { c: 3 });
 // @ts-expect-error
 Reopened.a;
 // @ts-expect-error

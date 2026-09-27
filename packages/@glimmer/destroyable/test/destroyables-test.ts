@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
-import type { GlobalContext } from '@glimmer/global-context';
 import { unwrap } from '@glimmer/debug-util';
 import {
+  _hasDestroyableChildren,
   assertDestroyablesDestroyed,
   associateDestroyableChild,
   destroy,
@@ -235,6 +235,16 @@ module('Destroyables', (hooks) => {
     assert.verifySteps(['parent'], 'parent destructor run');
   });
 
+  test('parent can be an array', (assert) => {
+    const parent: unknown[] = ['a'];
+    const child = {};
+    associateDestroyableChild(parent, child);
+    registerDestructor(child, () => assert.step('child'));
+    destroy(child);
+    flush();
+    assert.verifySteps(['child'], 'child destructor run');
+  });
+
   test('children can have multiple parents, but only destroy once', (assert) => {
     const parent1 = {};
     const parent2 = {};
@@ -372,6 +382,23 @@ module('Destroyables', (hooks) => {
     flush();
 
     assert.verifySteps(['child destructor', 'parent destructor'], 'destructors run bottom up');
+  });
+
+  test('parent no longer references child after cascaded destruction', (assert) => {
+    const parent = {};
+    const child = {};
+
+    associateDestroyableChild(parent, child);
+
+    assert.true(_hasDestroyableChildren(parent), 'parent has children before destruction');
+
+    destroy(parent);
+    flush();
+
+    assert.false(
+      _hasDestroyableChildren(parent),
+      'parent metadata releases child reference during cascaded destruction, allowing GC to reclaim the tree'
+    );
   });
 
   if (DEBUG) {

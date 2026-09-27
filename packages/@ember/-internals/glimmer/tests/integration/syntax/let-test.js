@@ -1,4 +1,12 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { get, set } from '@ember/object';
 import { A as emberA, removeAt } from '@ember/array';
@@ -122,7 +130,12 @@ moduleFor(
       this.assertText('-Yehuda-');
     }
 
-    ['@test can access alias of a proxy']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved)} @test can access alias of a proxy`]() {
+      expectDeprecation(
+        /`ObjectProxy` is deprecated/,
+        DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled
+      );
+
       this.render(`{{#let this.proxy as |person|}}{{person.name}}{{/let}}`, {
         proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
       });

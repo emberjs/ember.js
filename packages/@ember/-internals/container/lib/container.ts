@@ -7,7 +7,7 @@ import type {
   FullName,
 } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
-import { dictionary } from '@ember/-internals/utils';
+import dictionary from '@ember/-internals/utils/lib/dictionary';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { DebugRegistry } from './registry';
@@ -459,8 +459,10 @@ export interface LazyInjection {
   specifier: string;
 }
 
-declare interface DebugFactory<T extends object, C extends FactoryClass | object = FactoryClass>
-  extends InternalFactory<T, C> {
+declare interface DebugFactory<
+  T extends object,
+  C extends FactoryClass | object = FactoryClass,
+> extends InternalFactory<T, C> {
   _onLookup?: (fullName: string) => void;
   _lazyInjections?: () => { [key: string]: LazyInjection };
   _initFactory?: (factoryManager: InternalFactoryManager<T, C>) => void;
@@ -494,8 +496,7 @@ export function setFactoryFor<T extends object, C extends FactoryClass | object>
 export class InternalFactoryManager<
   T extends object,
   C extends FactoryClass | object = FactoryClass,
-> implements FactoryManager<T>
-{
+> implements FactoryManager<T> {
   readonly container: Container;
   readonly owner: InternalOwner | null;
   readonly class: DebugFactory<T, C>;

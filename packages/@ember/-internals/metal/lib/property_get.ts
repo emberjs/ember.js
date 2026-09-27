@@ -1,15 +1,16 @@
 /**
 @module @ember/object
 */
-import type { _ProxyMixin as ProxyMixin } from '@ember/-internals/runtime';
-import { setProxy, symbol } from '@ember/-internals/utils';
+import type ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
+import { setProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag, isTracking, tagFor, track } from '@glimmer/validator';
+import { consumeTag, isTracking, track } from '@glimmer/validator/lib/tracking';
+import { tagFor } from '@glimmer/validator/lib/meta';
 import { isPath } from './path_cache';
 
-export const PROXY_CONTENT = symbol('PROXY_CONTENT');
+export const PROXY_CONTENT = Symbol('PROXY_CONTENT');
 
 export let getPossibleMandatoryProxyValue: (obj: object, keyName: string) => any;
 
@@ -58,15 +59,9 @@ interface MaybeHasIsDestroyed {
   get(obj, "name");
   ```
 
-  If you plan to run on IE8 and older browsers then you should use this
-  method anytime you want to retrieve a property on an object that you don't
-  know for sure is private. (Properties beginning with an underscore '_'
-  are considered private.)
-
-  On all newer browsers, you only need to use this method to retrieve
-  properties if the property might not be defined on the object and you want
-  to respect the `unknownProperty` handler. Otherwise you can ignore this
-  method.
+  You only need to use this method to retrieve properties if the property
+  might not be defined on the object and you want to respect the
+  `unknownProperty` handler. Otherwise you can access the property directly.
 
   Note that if the object itself is `undefined`, this method will throw
   an error.
@@ -150,7 +145,7 @@ export function _getPath(obj: unknown, path: string | string[], forSet?: boolean
       return undefined;
     }
 
-    if (forSet && (part === '__proto__' || part === 'constructor')) {
+    if (forSet && (part === '__proto__' || part === 'constructor' || part === 'prototype')) {
       return;
     }
 

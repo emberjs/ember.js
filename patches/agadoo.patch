@@ -1,0 +1,22 @@
+diff --git a/index.js b/index.js
+index 53354a5de59bb26283bb2cedb6ff5ff0ca6a1fa1..28777e32a9960785fcc31d79ade2a14b200f0cfe 100644
+--- a/index.js
++++ b/index.js
+@@ -25,7 +25,7 @@ export async function check(input) {
+ 	const { code } = result.output[0];
+ 
+ 	const ast = acorn.parse(code, {
+-		ecmaVersion: 11,
++		ecmaVersion: 'latest',
+ 		sourceType: 'module'
+ 	});
+ 
+@@ -33,7 +33,7 @@ export async function check(input) {
+ 		return node.type !== 'ImportDeclaration';
+ 	});
+ 
+-	console.log(code);
++// console.log removed by patch
+ 
+ 	return {
+ 		shaken: nodes.length === 0

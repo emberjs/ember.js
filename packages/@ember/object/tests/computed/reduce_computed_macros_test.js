@@ -26,7 +26,14 @@ import {
   intersect,
   collect,
 } from '@ember/object/computed';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  expectDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 let obj;
 moduleFor(
@@ -1168,9 +1175,13 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     );
   }
 
-  ['@test guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys'](
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+  )} @test guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys`](
     assert
   ) {
+    expectDeprecation(/`ObjectProxy` is deprecated/, DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled);
+
     let tyrion = {
       fname: 'Tyrion',
       lname: 'Lannister',
@@ -1773,9 +1784,16 @@ moduleFor(
       );
     }
 
-    ['@test guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved
+    )} @test guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys`](
       assert
     ) {
+      expectDeprecation(
+        /`ObjectProxy` is deprecated/,
+        DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isEnabled
+      );
+
       let tyrion = {
         fname: 'Tyrion',
         lname: 'Lannister',

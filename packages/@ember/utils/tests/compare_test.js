@@ -1,10 +1,9 @@
 import { compare, typeOf } from '@ember/utils';
 import EmberObject from '@ember/object';
-import { Comparable } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let data = [];
-let Comp = EmberObject.extend(Comparable);
+let Comp = EmberObject.extend();
 
 Comp.reopenClass({
   compare(obj) {
@@ -83,6 +82,13 @@ moduleFor(
       assert.equal(compare('a', negOne), 1, 'Second item comparable - returns -1 (negated)');
       assert.equal(compare('b', zero), 0, 'Second item comparable - returns  0 (negated)');
       assert.equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
+    }
+
+    ['@test non-function compare does not make an object comparable'](assert) {
+      let obj = EmberObject.create({ compare: null });
+      let other = EmberObject.create({ compare: 'not a function' });
+
+      assert.equal(compare(obj, other), 0, 'objects with non-function compare are not comparable');
     }
   }
 );

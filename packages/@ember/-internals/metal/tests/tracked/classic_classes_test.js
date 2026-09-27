@@ -82,25 +82,7 @@ moduleFor(
       }, "@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()");
     }
 
-    [`@test errors on any keys besides 'value', 'get', or 'set' being passed`]() {
-      expectAssertion(() => {
-        class Tracked {
-          get full() {
-            return `${this.first} ${this.last}`;
-          }
-        }
-
-        defineProperty(
-          Tracked.prototype,
-          'first',
-          tracked({
-            foo() {},
-          })
-        );
-      }, "The options object passed to tracked() may only contain a 'value' or 'initializer' property, not both. Received: [foo]");
-    }
-
-    [`@test errors if 'value' and 'get'/'set' are passed together`]() {
+    [`@test errors if 'value' and 'initializer' are passed together`]() {
       expectAssertion(() => {
         class Tracked {
           get full() {
@@ -116,19 +98,30 @@ moduleFor(
             initializer: () => 123,
           })
         );
-      }, "The options object passed to tracked() may only contain a 'value' or 'initializer' property, not both. Received: [value,initializer]");
+      }, "The options object passed to tracked() may only contain a 'value' or an 'initializer' property, not both. Received: [value,initializer]");
     }
 
-    [`@test errors on anything besides an options object being passed`]() {
-      expectAssertion(() => {
-        class Tracked {
-          get full() {
-            return `${this.first} ${this.last}`;
-          }
-        }
+    [`@test can pass an 'equals' option alongside a default value`](assert) {
+      class Tracked {}
 
-        defineProperty(Tracked.prototype, 'first', tracked(null));
-      }, "tracked() may only receive an options object containing 'value' or 'initializer', received null");
+      defineProperty(
+        Tracked.prototype,
+        'first',
+        tracked({ value: 'Tom', equals: (a, b) => a === b })
+      );
+
+      let obj = new Tracked();
+
+      let tag = track(() => obj.first);
+      let snapshot = valueForTag(tag);
+
+      assert.equal(obj.first, 'Tom', 'default value is assigned');
+
+      obj.first = 'Tom';
+      assert.equal(validateTag(tag, snapshot), true, 'setting an equal value does not invalidate');
+
+      obj.first = 'Thomas';
+      assert.equal(validateTag(tag, snapshot), false, 'setting a new value invalidates');
     }
   }
 );
@@ -136,10 +129,10 @@ moduleFor(
 moduleFor(
   '@tracked decorator - native decorator behavior',
   class extends AbstractTestCase {
-    [`@test errors if options are passed to native decorator`]() {
+    [`@test errors if a default value is passed to native decorator`]() {
       expectAssertion(() => {
         class Tracked {
-          @tracked() first;
+          @tracked({ value: 'default' }) first;
 
           get full() {
             return `${this.first} ${this.last}`;
@@ -148,6 +141,24 @@ moduleFor(
 
         new Tracked();
       }, "You attempted to set a default value for first with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';");
+    }
+
+    [`@test @tracked() with no options works as a native decorator`](assert) {
+      class Tracked {
+        @tracked() value = 1;
+      }
+
+      let obj = new Tracked();
+
+      let tag = track(() => obj.value);
+      let snapshot = valueForTag(tag);
+
+      assert.equal(obj.value, 1, 'initial value is assigned');
+
+      obj.value = 2;
+
+      assert.equal(validateTag(tag, snapshot), false, 'setting a value invalidates');
+      assert.equal(obj.value, 2);
     }
 
     [`@test errors if options are passed to native decorator (GH#17764)`](assert) {

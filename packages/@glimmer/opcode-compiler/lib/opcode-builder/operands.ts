@@ -20,8 +20,8 @@ import type {
   SymbolTableOperand,
   SymbolTableOperandType,
 } from '@glimmer/interfaces';
-import { isSmallInt } from '@glimmer/constants';
-import { localAssert } from '@glimmer/debug-util';
+import { isSmallInt } from '@glimmer/constants/lib/immediate';
+import assert from '@glimmer/debug-util/lib/assert';
 
 export const HighLevelOperands = {
   Label: 1 satisfies LabelOperandType,
@@ -66,7 +66,7 @@ export function stdlibOperand(
 }
 
 export function nonSmallIntOperand(value: number): NonSmallIntOperand {
-  localAssert(
+  assert(
     !isSmallInt(value),
     'Attempted to make a operand for an int that was not a small int, you should encode this as an immediate'
   );

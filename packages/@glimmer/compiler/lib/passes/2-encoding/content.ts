@@ -9,10 +9,10 @@ import type {
   WellKnownAttrName,
   WireFormat,
 } from '@glimmer/interfaces';
-import { exhausted } from '@glimmer/debug-util';
+import { exhausted } from '@glimmer/debug-util/lib/platform-utils';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
-import { SexpOpcodes } from '@glimmer/wire-format';
+import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
 
 import type { OptionalList } from '../../shared/list';
 import type * as mir from './mir';
@@ -128,7 +128,7 @@ export class ContentEncoder {
 
   SimpleElement({ tag, params, body, dynamicFeatures }: mir.SimpleElement): WireStatements {
     let op = dynamicFeatures ? SexpOpcodes.OpenElementWithSplat : SexpOpcodes.OpenElement;
-    return new WireStatements<WireFormat.Statement | WireFormat.ElementParameter>([
+    return new WireStatements([
       [op, deflateTagName(tag.chars)],
       ...CONTENT.ElementParameters(params).toArray(),
       [SexpOpcodes.FlushElement],

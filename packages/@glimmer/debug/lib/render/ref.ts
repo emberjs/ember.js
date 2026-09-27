@@ -1,5 +1,5 @@
 import type { Reference } from '@glimmer/interfaces';
-import { valueForRef } from '@glimmer/reference';
+import { valueForRef } from '@glimmer/reference/lib/reference';
 
 import type { Fragment } from './fragment';
 

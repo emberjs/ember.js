@@ -1,7 +1,7 @@
 import type { InternalComponentCapabilities, InternalComponentManager } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { setInternalComponentManager } from '@glimmer/manager';
-import { NULL_REFERENCE } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+import { NULL_REFERENCE } from '@glimmer/reference/lib/reference';
 
 const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
@@ -66,8 +66,6 @@ setInternalComponentManager(
   at times it may be useful to use directly to leverage the "outer HTML" semantics mentioned above. For example, if an addon would like
   to use these semantics for its templates but cannot be certain it will only be consumed by applications that have enabled the
   `template-only-glimmer-components` optional feature.
-
-  @example
 
   ```js
   import { templateOnlyComponent } from '@glimmer/runtime';

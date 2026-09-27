@@ -1,8 +1,7 @@
-import type { DebugOp, SomeDisassembledOperand } from '@glimmer/debug';
+import type { DebugOp } from '@glimmer/debug/lib/debug';
 import type {
   DebugVmSnapshot,
   Dict,
-  Maybe,
   Nullable,
   Optional,
   RuntimeOp,
@@ -10,21 +9,18 @@ import type {
   VmMachineOp,
   VmOp,
 } from '@glimmer/interfaces';
-import { VM_SYSCALL_SIZE } from '@glimmer/constants';
-import {
-  DebugLogger,
-  debugOp,
-  describeOp,
-  describeOpcode,
-  frag,
-  opcodeMetadata,
-  recordStackSize,
-  VmSnapshot,
-} from '@glimmer/debug';
-import { dev, localAssert, unwrap } from '@glimmer/debug-util';
+import { VM_SYSCALL_SIZE } from '@glimmer/constants/lib/syscall-ops';
+import { DebugLogger } from '@glimmer/debug/lib/render/logger';
+import { debugOp, describeOp } from '@glimmer/debug/lib/debug';
+import { frag } from '@glimmer/debug/lib/render/fragment';
+import { opcodeMetadata } from '@glimmer/debug/lib/opcode-metadata';
+import { recordStackSize } from '@glimmer/debug/lib/stack-check';
+import { VmSnapshot } from '@glimmer/debug/lib/vm/snapshot';
+import { dev, unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
-import { $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
+import { $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm/lib/registers';
 
 import type { LowLevelVM, VM } from './vm';
 import type { Externs } from './vm/low-level';
@@ -56,7 +52,6 @@ export type DebugState = {
     size: number;
   };
   closeGroup?: undefined | (() => void);
-  params?: Optional<Dict<SomeDisassembledOperand>>;
   op?: Optional<DebugOp>;
   debug: DebugVmSnapshot;
   snapshot: VmSnapshot;
@@ -81,7 +76,6 @@ export class AppendOpcodes {
         } as const;
 
         let snapshot = new VmSnapshot(opcodeSnapshot, debug);
-        let params: Maybe<Dict<SomeDisassembledOperand>> = undefined;
         let op: DebugOp | undefined = undefined;
         let closeGroup: (() => void) | undefined;
 
@@ -110,7 +104,6 @@ export class AppendOpcodes {
         return {
           op,
           closeGroup,
-          params,
           opcode: opcodeSnapshot,
           debug,
           snapshot,
@@ -137,7 +130,7 @@ export class AppendOpcodes {
         ) {
           throw new Error(
             `Error in ${pre.op?.name}:\n\n${pre.debug.registers[$pc]}. ${
-              pre.op ? describeOpcode(pre.op.name, pre.params) : unwrap(opcodeMetadata(type)).name
+              pre.op?.name ?? unwrap(opcodeMetadata(type)).name
             }\n\nStack changed by ${actualChange}, expected ${meta.stackChange}`
           );
         }
@@ -190,13 +183,13 @@ export class AppendOpcodes {
     let operation = unwrap(this.evaluateOpcode[type]);
 
     if (operation.syscall) {
-      localAssert(
+      assert(
         !opcode.isMachine,
         `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
       );
       operation.evaluate(vm, opcode);
     } else {
-      localAssert(
+      assert(
         opcode.isMachine,
         `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
       );

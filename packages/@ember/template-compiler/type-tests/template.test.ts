@@ -1,4 +1,4 @@
-import { template, type EmberPrecompileOptions } from '@ember/template-compiler';
+import { template } from '@ember/template-compiler';
 import type { TemplateOnlyComponent } from '@ember/component/template-only';
 import { expectTypeOf } from 'expect-type';
 

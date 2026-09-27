@@ -5,10 +5,14 @@ import type {
   SerializedTemplateBlock,
   WireFormat,
 } from '@glimmer/interfaces';
-import { CURRIED_COMPONENT, CURRIED_HELPER, CURRIED_MODIFIER } from '@glimmer/constants';
-import { exhausted } from '@glimmer/debug-util';
-import { dict } from '@glimmer/util';
-import { SexpOpcodes as Op } from '@glimmer/wire-format';
+import {
+  CURRIED_COMPONENT,
+  CURRIED_HELPER,
+  CURRIED_MODIFIER,
+} from '@glimmer/constants/lib/curried';
+import { exhausted } from '@glimmer/debug-util/lib/platform-utils';
+import { dict } from '@glimmer/util/lib/collections';
+import { opcodes as Op } from '@glimmer/wire-format/lib/opcodes';
 
 import { inflateAttrName, inflateTagName } from './utils';
 
@@ -96,12 +100,6 @@ export default class WireFormatDebugger {
         case Op.Yield:
           return ['yield', opcode[1], this.formatParams(opcode[2])];
 
-        case Op.DynamicArg:
-          return ['dynamic-arg', opcode[1], this.formatOpcode(opcode[2])];
-
-        case Op.StaticArg:
-          return ['static-arg', opcode[1], this.formatOpcode(opcode[2])];
-
         case Op.TrustingDynamicAttr:
           return [
             'trusting-dynamic-attr',
@@ -168,7 +166,7 @@ export default class WireFormatDebugger {
           ];
 
         case Op.Concat:
-          return ['concat', this.formatParams(opcode[1] as WireFormat.Core.Params)];
+          return ['concat', this.formatParams(opcode[1])];
 
         case Op.GetStrictKeyword:
           return ['get-strict-free', this.upvars[opcode[1]]];

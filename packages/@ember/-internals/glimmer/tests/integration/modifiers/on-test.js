@@ -1,8 +1,11 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
-import { getInternalModifierManager } from '@glimmer/manager';
+import { getInternalModifierManager, setComponentTemplate } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
+import { precompileTemplate } from '@ember/template-compilation';
 
-import { Component } from '../../utils/helpers';
+import { DEBUG } from '@glimmer/env';
+
+import Component from '@glimmer/component';
 
 moduleFor(
   '{{on}} Modifier',
@@ -31,7 +34,7 @@ moduleFor(
       );
     }
 
-    ['@test it adds an event listener'](assert) {
+    [`@test it adds an event listener`](assert) {
       let count = 0;
 
       this.render('<button {{on "click" this.callback}}>Click Me</button>', {
@@ -242,6 +245,57 @@ moduleFor(
 
       this.assertCounts({ adds: 1, removes: 1 });
     }
+
+    [`@test it throws a helpful error when callback is undefined`](assert) {
+      if (DEBUG) {
+        let expectedMessage =
+          /You must pass a function as the second argument to the `on` modifier/;
+        assert.throws(() => {
+          this.render('<button {{on "click" undefined}}>Click Me</button>');
+        }, expectedMessage);
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    [`@test it throws a helpful error when callback is null`](assert) {
+      if (DEBUG) {
+        let expectedMessage =
+          /You must pass a function as the second argument to the `on` modifier/;
+        assert.throws(() => {
+          this.render('<button {{on "click" null}}>Click Me</button>');
+        }, expectedMessage);
+      } else {
+        assert.expect(0);
+      }
+    }
+
+    '@test it does not clobber a static spellcheck attribute, before or after the modifier (GH#18758)'(
+      assert
+    ) {
+      this.render(
+        '<input spellcheck="false" {{on "click" this.callback}} /><input {{on "click" this.callback}} spellcheck="false" />',
+        {
+          callback() {},
+        }
+      );
+
+      let [attrFirst, attrLast] = this.element.querySelectorAll('input');
+
+      assert.strictEqual(
+        attrFirst.getAttribute('spellcheck'),
+        'false',
+        'attribute before modifier renders as authored'
+      );
+      assert.strictEqual(
+        attrLast.getAttribute('spellcheck'),
+        'false',
+        'attribute after modifier renders as authored'
+      );
+
+      this.assertStableRerender();
+      this.assertCounts({ adds: 2, removes: 0 });
+    }
   }
 );
 
@@ -277,15 +331,17 @@ moduleFor(
     }
 
     [`@test doesn't trigger lifecycle hooks when non-interactive`](assert) {
-      this.registerComponent('foo-bar2', {
-        ComponentClass: class extends Component {
-          tagName = '';
-          fire() {
-            assert.ok(false);
+      this.owner.register(
+        'component:foo-bar2',
+        setComponentTemplate(
+          precompileTemplate(`<button {{on 'click' this.fire}}>Fire!</button>`),
+          class extends Component {
+            fire() {
+              assert.ok(false);
+            }
           }
-        },
-        template: `<button {{on 'click' this.fire}}>Fire!</button>`,
-      });
+        )
+      );
 
       this.render('{{#if this.showButton}}<FooBar2 />{{/if}}', {
         showButton: true,

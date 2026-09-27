@@ -2,9 +2,9 @@
 @module @ember/object
 */
 
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor } from '@ember/-internals/meta';
-import { setWithMandatorySetter } from '@ember/-internals/utils';
+import type { Meta } from '@ember/-internals/meta/lib/meta';
+import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
+import { setWithMandatorySetter } from '@ember/-internals/utils/lib/mandatory-setter';
 import { DEBUG } from '@glimmer/env';
 import type { ExtendedMethodDecorator } from './decorator';
 import { descriptorForProperty, isClassicDecorator } from './decorator';
@@ -95,17 +95,10 @@ export function defineDecorator(
   desc: ExtendedMethodDecorator,
   meta: Meta
 ) {
-  let propertyDesc;
-
-  if (DEBUG) {
-    propertyDesc = desc(obj, keyName, undefined, meta, true);
-  } else {
-    propertyDesc = desc(obj, keyName, undefined, meta);
-  }
+  let propertyDesc = desc(obj, keyName, undefined, meta, true);
 
   Object.defineProperty(obj, keyName, propertyDesc as PropertyDescriptor);
 
-  // pass the decorator function forward for backwards compat
   return desc;
 }
 

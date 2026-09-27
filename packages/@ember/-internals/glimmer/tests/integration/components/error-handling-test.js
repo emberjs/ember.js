@@ -3,8 +3,11 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
 
 moduleFor(
   'Errors thrown during render',
@@ -14,18 +17,18 @@ moduleFor(
     ) {
       let shouldThrow = true;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           if (shouldThrow) {
             throw new Error('silly mistake in init!');
           }
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       assert.throws(() => {
         this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
@@ -59,18 +62,18 @@ moduleFor(
     ) {
       let shouldThrow = false;
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           if (shouldThrow) {
             throw new Error('silly mistake in init!');
           }
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
         switch: true,
@@ -110,7 +113,7 @@ moduleFor(
       assert
     ) {
       let shouldThrow = true;
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         didInsertElement() {
           super.didInsertElement(...arguments);
           if (shouldThrow) {
@@ -119,10 +122,10 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       assert.throws(() => {
         this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
@@ -145,7 +148,7 @@ moduleFor(
 
     ['@test it can recover resets the transaction when an error is thrown during destroy'](assert) {
       let shouldThrow = true;
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         destroy() {
           super.destroy(...arguments);
           if (shouldThrow) {
@@ -154,10 +157,10 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
         switch: true,

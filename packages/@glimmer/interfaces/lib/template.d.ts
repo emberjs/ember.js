@@ -18,7 +18,7 @@ export interface LayoutWithContext {
   readonly block: SerializedTemplateBlock;
   readonly moduleName: string;
   readonly owner: Owner | null;
-  readonly scope: (() => unknown[]) | undefined | null;
+  readonly scope: (() => Record<string, unknown>) | undefined | null;
   readonly isStrictMode: boolean;
 }
 

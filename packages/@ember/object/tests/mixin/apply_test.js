@@ -1,13 +1,18 @@
 import { get } from '@ember/object';
 import Mixin, { mixin } from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 function K() {}
 
 moduleFor(
   'Mixin.apply',
   class extends AbstractTestCase {
-    ['@test using apply() should apply properties'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test using apply() should apply properties`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({ foo: 'FOO', baz: K });
       let obj = {};
       mixin(obj, MixinA);

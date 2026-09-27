@@ -1,5 +1,7 @@
-import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants';
-import { ASTv2, generateSyntaxError, src } from '@glimmer/syntax';
+import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants/lib/curried';
+import * as ASTv2 from '@glimmer/syntax/lib/v2/api';
+import * as src from '@glimmer/syntax/lib/source/api';
+import { generateSyntaxError } from '@glimmer/syntax/lib/syntax-error';
 
 import type { NormalizationState } from '../context';
 

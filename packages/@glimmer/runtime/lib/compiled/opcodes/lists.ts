@@ -1,6 +1,11 @@
-import { VM_ENTER_LIST_OP, VM_EXIT_LIST_OP, VM_ITERATE_OP } from '@glimmer/constants';
-import { check } from '@glimmer/debug';
-import { createIteratorRef, valueForRef } from '@glimmer/reference';
+import {
+  VM_ENTER_LIST_OP,
+  VM_EXIT_LIST_OP,
+  VM_ITERATE_OP,
+} from '@glimmer/constants/lib/syscall-ops';
+import { check } from '@glimmer/debug/lib/stack-check';
+import { createIteratorRef } from '@glimmer/reference/lib/iterable';
+import { valueForRef } from '@glimmer/reference/lib/reference';
 
 import { APPEND_OPCODES } from '../../opcodes';
 import { CheckIterator, CheckReference } from './-debug-strip';

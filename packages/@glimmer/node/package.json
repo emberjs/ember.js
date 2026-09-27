@@ -2,13 +2,17 @@
   "name": "@glimmer/node",
   "version": "0.94.10",
   "license": "MIT",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
     "directory": "packages/@glimmer/node"
   },
   "type": "module",
-  "exports": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*.ts"
+  },
   "publishConfig": {
     "access": "public",
     "exports": {
@@ -43,7 +47,7 @@
     "@types/qunit": "^2.19.12",
     "eslint": "^9.20.1",
     "publint": "^0.3.2",
-    "rollup": "^4.34.8",
+    "rollup": "^4.57.1",
     "typescript": "^5.7.3"
   }
 }

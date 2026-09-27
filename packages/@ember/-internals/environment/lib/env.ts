@@ -1,5 +1,4 @@
 import { DEBUG } from '@glimmer/env';
-import global from './global';
 
 /**
   The hash of environment variables used to control various configuration
@@ -56,6 +55,18 @@ export const ENV = {
     @public
   */
   LOG_VERSION: true,
+
+  /**
+    The `LOG_INSPECTOR_HINT` property, when true, tells Ember to log a hint
+    suggesting the Ember Inspector browser extension when it is not detected.
+
+    @property LOG_INSPECTOR_HINT
+    @type Boolean
+    @default true
+    @for EmberENV
+    @public
+  */
+  LOG_INSPECTOR_HINT: true,
 
   RAISE_ON_DEPRECATION: false,
 
@@ -145,24 +156,20 @@ export const ENV = {
    */
   _RERENDER_LOOP_LIMIT: 1000,
 
-  EMBER_LOAD_HOOKS: {} as {
-    [hook: string]: Function[];
-  },
-
   FEATURES: {} as {
     [feature: string]: boolean;
   },
 };
 
-((
-  EmberENV: Record<string, unknown> & {
-    EXTEND_PROTOTYPES?: boolean;
-    EMBER_LOAD_HOOKS?: Record<string, unknown>;
-    FEATURES?: Record<string, unknown>;
-  }
-) => {
-  if (typeof EmberENV !== 'object' || EmberENV === null) return;
+interface EmberENVConfig extends Record<string, unknown> {
+  EXTEND_PROTOTYPES?: boolean;
+  EMBER_LOAD_HOOKS?: Record<string, unknown>;
+  FEATURES?: Record<string, unknown>;
+}
 
+const EmberENV = (globalThis as { EmberENV?: EmberENVConfig }).EmberENV;
+
+if (typeof EmberENV === 'object' && EmberENV !== null) {
   for (let flag in EmberENV) {
     if (
       !Object.prototype.hasOwnProperty.call(EmberENV, flag) ||
@@ -180,18 +187,6 @@ export const ENV = {
     }
   }
 
-  // TODO this does not seem to be used by anything,
-  //      can we remove it? do we need to deprecate it?
-  let { EMBER_LOAD_HOOKS } = EmberENV;
-  if (typeof EMBER_LOAD_HOOKS === 'object' && EMBER_LOAD_HOOKS !== null) {
-    for (let hookName in EMBER_LOAD_HOOKS) {
-      if (!Object.prototype.hasOwnProperty.call(EMBER_LOAD_HOOKS, hookName)) continue;
-      let hooks = EMBER_LOAD_HOOKS[hookName];
-      if (Array.isArray(hooks)) {
-        ENV.EMBER_LOAD_HOOKS[hookName] = hooks.filter((hook) => typeof hook === 'function');
-      }
-    }
-  }
   let { FEATURES } = EmberENV;
   if (typeof FEATURES === 'object' && FEATURES !== null) {
     for (let feature in FEATURES) {
@@ -203,7 +198,7 @@ export const ENV = {
   if (DEBUG) {
     ENV._DEBUG_RENDER_TREE = true;
   }
-})(global.EmberENV);
+}
 
 export function getENV(): object {
   return ENV;

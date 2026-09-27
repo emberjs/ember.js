@@ -3,18 +3,18 @@
 */
 
 import EmberObject from '@ember/object';
-import { RSVP } from '@ember/-internals/runtime';
+import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
 import { assert } from '@ember/debug';
-import { Registry, privatize as P } from '@ember/-internals/container';
-import { guidFor } from '@ember/-internals/utils';
+import { default as Registry, privatize as P } from '@ember/-internals/container/lib/registry';
+import { guidFor } from '@ember/-internals/utils/lib/guid';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './parent';
-import { ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
+import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
+import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 import type { InternalOwner } from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
 import { type FullName, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
 import type Application from '@ember/application';
-import type { BootEnvironment } from '@ember/-internals/glimmer';
 import type { SimpleElement } from '@simple-dom/interface';
 
 export interface BootOptions {
@@ -26,6 +26,13 @@ export interface BootOptions {
   // Private?
   isInteractive?: boolean;
   _renderMode?: string;
+}
+
+export interface BootEnvironment {
+  hasDOM: boolean;
+  isInteractive: boolean;
+  _renderMode?: string;
+  options: BootOptions;
 }
 
 export interface EngineInstanceOptions {

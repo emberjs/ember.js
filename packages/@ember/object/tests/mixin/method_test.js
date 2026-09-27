@@ -1,10 +1,15 @@
 import Mixin, { mixin } from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 moduleFor(
   'Mixin Methods',
   class extends AbstractTestCase {
-    ['@test defining simple methods'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test defining simple methods`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA, obj, props;
 
       props = {
@@ -25,7 +30,11 @@ moduleFor(
       assert.equal(props._privateMethod(), 'privateMethod', 'privateMethod is func');
     }
 
-    ['@test overriding public methods'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test overriding public methods`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA, MixinB, MixinD, MixinF, obj;
 
       MixinA = Mixin.create({
@@ -74,7 +83,11 @@ moduleFor(
       assert.equal(obj.publicMethod(), 'objF', 'should define super for F');
     }
 
-    ['@test overriding inherited objects'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test overriding inherited objects`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let cnt = 0;
       let MixinA = Mixin.create({
         foo() {
@@ -104,7 +117,11 @@ moduleFor(
       assert.equal(cnt, 1, 'should not screw w/ parent obj');
     }
 
-    ['@test Including the same mixin more than once will only run once'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test Including the same mixin more than once will only run once`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let cnt = 0;
       let MixinA = Mixin.create({
         foo() {
@@ -140,7 +157,11 @@ moduleFor(
       assert.equal(cnt, 1, 'should invoke MixinA.foo one time');
     }
 
-    ['@test _super from a single mixin with no superclass does not error'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test _super from a single mixin with no superclass does not error`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         foo() {
           this._super(...arguments);
@@ -154,7 +175,11 @@ moduleFor(
       assert.ok(true);
     }
 
-    ['@test _super from a first-of-two mixins with no superclass function does not error'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test _super from a first-of-two mixins with no superclass function does not error`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       // _super was previously calling itself in the second assertion.
       // Use remaining count of calls to ensure it doesn't loop indefinitely.
       let remaining = 3;
@@ -188,7 +213,9 @@ moduleFor(
 moduleFor(
   'Method Conflicts',
   class extends AbstractTestCase {
-    ['@test overriding toString'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test overriding toString`](assert) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         toString() {
           return 'FOO';
@@ -216,9 +243,11 @@ moduleFor(
 moduleFor(
   'system/mixin/method_test BUGS',
   class extends AbstractTestCase {
-    ['@test applying several mixins at once with sup already defined causes infinite loop'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test applying several mixins at once with sup already defined causes infinite loop`](
       assert
     ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let cnt = 0;
       let MixinA = Mixin.create({
         foo() {

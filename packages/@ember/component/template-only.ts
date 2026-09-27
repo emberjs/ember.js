@@ -14,9 +14,7 @@
 
   Addons may want to use this method directly to ensure that a template-only component is treated consistently in all Ember versions (Ember versions
   before 4.0 have a "template-only-glimmer-components" optional feature that causes a standalone `.hbs` file to be interpreted differently).
-
-  @example
-
+    
   ```js
   import templateOnly from '@ember/component/template-only';
 
@@ -31,7 +29,7 @@
   @category EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
 */
 import { type Opaque } from '@ember/-internals/utility-types';
-import { templateOnlyComponent as glimmerTemplateOnlyComponent } from '@glimmer/runtime';
+import { templateOnlyComponent as glimmerTemplateOnlyComponent } from '@glimmer/runtime/lib/component/template-only';
 
 /**
  * Template-only components have no backing class instance, so `this` in their

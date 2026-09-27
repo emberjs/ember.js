@@ -1,12 +1,16 @@
 import { getOwner } from '@ember/-internals/owner'; // This is imported from -internals to avoid circularity
-import { computed, get } from '@ember/object';
+import computed from '@ember/-internals/metal/lib/computed';
+import { get } from '@ember/-internals/metal/lib/property_get';
 import { FrameworkObject } from '@ember/object/-internals';
-import { inject as metalInject } from '@ember/-internals/metal';
-import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
+import metalInject from '@ember/-internals/metal/lib/injected_property';
+import type {
+  DecoratorPropertyDescriptor,
+  ElementDescriptor,
+} from '@ember/-internals/metal/lib/decorator';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import type { RouteArgs } from '@ember/routing/-internals';
-import { ActionHandler } from '@ember/-internals/runtime';
-import { symbol } from '@ember/-internals/utils';
+import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
@@ -15,7 +19,7 @@ export type ControllerQueryParam =
   | Record<string, { type: ControllerQueryParamType }>
   | Record<string, string>;
 
-const MODEL = symbol('MODEL');
+const MODEL = Symbol('MODEL');
 
 /**
 @module @ember/controller
@@ -36,7 +40,7 @@ interface ControllerMixin<T> extends ActionHandler {
   /**
     The object to which actions from the view should be sent.
 
-    For example, when a Handlebars template uses the `{{action}}` helper,
+    For example, when a template uses the `{{action}}` helper,
     it will attempt to send the action to the view's controller's `target`.
 
     By default, the value of the target property is set to the router, and
@@ -230,7 +234,7 @@ interface ControllerMixin<T> extends ActionHandler {
   */
   replaceRoute(...args: RouteArgs): Transition;
 }
-const ControllerMixin = Mixin.create(ActionHandler, {
+const ControllerMixin = Mixin[INTERNAL_MIXIN_CREATE](ActionHandler, {
   /* ducktype as a controller */
   isController: true,
 

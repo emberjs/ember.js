@@ -1,5 +1,8 @@
 import Controller from '@ember/controller';
-import { Component } from '@ember/-internals/glimmer';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '@ember/-internals/glimmer';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 
 moduleFor(
@@ -8,13 +11,15 @@ moduleFor(
     ['@test Components with a block should have the proper content when a template is provided'](
       assert
     ) {
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
       <div id='wrapper'>
         {{#my-component}}{{this.text}}{{/my-component}}
       </div>
     `
+        )
       );
 
       this.add(
@@ -23,12 +28,15 @@ moduleFor(
           text = 'outer';
         }
       );
-      this.addComponent('my-component', {
-        ComponentClass: class extends Component {
-          text = 'inner';
-        },
-        template: `{{this.text}}-{{yield}}`,
-      });
+      this.add(
+        'component:my-component',
+        setComponentTemplate(
+          precompileTemplate(`{{this.text}}-{{yield}}`),
+          class extends Component {
+            text = 'inner';
+          }
+        )
+      );
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
@@ -39,13 +47,15 @@ moduleFor(
     ['@test Components with a block should yield the proper content without a template provided'](
       assert
     ) {
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
       <div id='wrapper'>
         {{#my-component}}{{this.text}}{{/my-component}}
       </div>
     `
+        )
       );
 
       this.add(
@@ -54,11 +64,12 @@ moduleFor(
           text = 'outer';
         }
       );
-      this.addComponent('my-component', {
-        ComponentClass: class extends Component {
+      this.add(
+        'component:my-component',
+        class extends EmberComponent {
           text = 'inner';
-        },
-      });
+        }
+      );
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
@@ -68,11 +79,13 @@ moduleFor(
     ['@test Components without a block should have the proper content when a template is provided'](
       assert
     ) {
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
       <div id='wrapper'>{{my-component}}</div>
     `
+        )
       );
 
       this.add(
@@ -81,12 +94,15 @@ moduleFor(
           text = 'outer';
         }
       );
-      this.addComponent('my-component', {
-        ComponentClass: class extends Component {
-          text = 'inner';
-        },
-        template: '{{this.text}}',
-      });
+      this.add(
+        'component:my-component',
+        setComponentTemplate(
+          precompileTemplate('{{this.text}}'),
+          class extends Component {
+            text = 'inner';
+          }
+        )
+      );
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
@@ -95,11 +111,13 @@ moduleFor(
     }
 
     ['@test Components without a block should have the proper content'](assert) {
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
       <div id='wrapper'>{{my-component}}</div>
     `
+        )
       );
 
       this.add(
@@ -108,13 +126,14 @@ moduleFor(
           text = 'outer';
         }
       );
-      this.addComponent('my-component', {
-        ComponentClass: class extends Component {
+      this.add(
+        'component:my-component',
+        class extends EmberComponent {
           didInsertElement() {
             this.element.innerHTML = 'Some text inserted';
           }
-        },
-      });
+        }
+      );
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
@@ -125,10 +144,12 @@ moduleFor(
     ['@test properties of a component without a template should not collide with internal structures [DEPRECATED]'](
       assert
     ) {
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
       <div id='wrapper'>{{my-component data=this.foo}}</div>`
+        )
       );
 
       this.add(
@@ -138,13 +159,14 @@ moduleFor(
           foo = 'Some text inserted';
         }
       );
-      this.addComponent('my-component', {
-        ComponentClass: class extends Component {
+      this.add(
+        'component:my-component',
+        class extends EmberComponent {
           didInsertElement() {
             this.element.innerHTML = this.get('data');
           }
-        },
-      });
+        }
+      );
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
@@ -155,11 +177,13 @@ moduleFor(
     ['@test attrs property of a component without a template should not collide with internal structures'](
       assert
     ) {
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
       <div id='wrapper'>{{my-component attrs=this.foo}}</div>
     `
+        )
       );
 
       this.add(
@@ -169,13 +193,14 @@ moduleFor(
           foo = 'Some text inserted';
         }
       );
-      this.addComponent('my-component', {
-        ComponentClass: class extends Component {
+      this.add(
+        'component:my-component',
+        class extends EmberComponent {
           didInsertElement() {
             this.element.innerHTML = this.get('attrs.attrs.value');
           }
-        },
-      });
+        }
+      );
 
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));

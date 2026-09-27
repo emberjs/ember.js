@@ -25,9 +25,9 @@ import type {
   WithElementHook,
   WithUpdateHook,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { CURRIED_COMPONENT } from '@glimmer/constants/lib/curried';
 import {
-  CURRIED_COMPONENT,
   VM_BEGIN_COMPONENT_TRANSACTION_OP,
   VM_CAPTURE_ARGS_OP,
   VM_COMMIT_COMPONENT_TRANSACTION_OP,
@@ -54,7 +54,7 @@ import {
   VM_SET_NAMED_VARIABLES_OP,
   VM_STATIC_COMPONENT_ATTR_OP,
   VM_VIRTUAL_ROOT_SCOPE_OP,
-} from '@glimmer/constants';
+} from '@glimmer/constants/lib/syscall-ops';
 import {
   check,
   CheckFunction,
@@ -66,13 +66,20 @@ import {
   CheckRegister,
   CheckString,
   CheckSyscallRegister,
-} from '@glimmer/debug';
-import { debugToString, expect, localAssert, unwrap, unwrapTemplate } from '@glimmer/debug-util';
+} from '@glimmer/debug/lib/stack-check';
+import debugToString from '@glimmer/debug-util/lib/debug-to-string';
+import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
+import { unwrapTemplate } from '@glimmer/debug-util/lib/template';
 import { registerDestructor } from '@glimmer/destroyable';
-import { managerHasCapability } from '@glimmer/manager';
-import { isConstRef, valueForRef } from '@glimmer/reference';
-import { assign, dict, EMPTY_STRING_ARRAY, enumerate } from '@glimmer/util';
-import { $s0, $t0, $t1, InternalComponentCapabilities } from '@glimmer/vm';
+import { hasInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+import { managerHasCapability } from '@glimmer/manager/lib/util/capabilities';
+import { isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { assign } from '@glimmer/util/lib/object-utils';
+import { dict } from '@glimmer/util/lib/collections';
+import { EMPTY_STRING_ARRAY, enumerate } from '@glimmer/util/lib/array-utils';
+import { $s0, $t0, $t1 } from '@glimmer/vm/lib/registers';
+import { InternalComponentCapabilities } from '@glimmer/vm/lib/flags';
 
 import type { CurriedValue } from '../../curried-value';
 import type { UpdatingVM } from '../../vm';
@@ -135,7 +142,7 @@ export interface PartialComponentDefinition {
 
 APPEND_OPCODES.add(VM_PUSH_COMPONENT_DEFINITION_OP, (vm, { op1: handle }) => {
   let definition = vm.constants.getValue<ComponentDefinition>(handle);
-  localAssert(!!definition, `Missing component for ${handle}`);
+  assert(!!definition, `Missing component for ${handle}`);
 
   let { manager, capabilities } = definition;
 
@@ -154,15 +161,27 @@ APPEND_OPCODES.add(VM_PUSH_COMPONENT_DEFINITION_OP, (vm, { op1: handle }) => {
 
 APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => {
   let stack = vm.stack;
-  let component = check(
-    valueForRef(check(stack.pop(), CheckReference)),
-    CheckOr(CheckString, CheckCurriedComponentDefinition)
-  );
+  let ref = check(stack.pop(), CheckReference);
+  let component = check(valueForRef(ref), CheckOr(CheckString, CheckCurriedComponentDefinition));
   let constants = vm.constants;
   let owner = vm.getOwner();
   let isStrict = constants.getValue<boolean>(_isStrict);
 
   vm.loadValue($t1, null); // Clear the temp register
+
+  if (DEBUG) {
+    assert(
+      component === null ||
+        component === undefined ||
+        typeof component === 'string' ||
+        isCurriedValue(component) ||
+        ((typeof component === 'object' || typeof component === 'function') &&
+          hasInternalComponentManager(component)),
+      isStrict
+        ? 'The `{{component}}` helper received an invalid value. In strict mode, it expects a component definition.'
+        : 'The `{{component}}` helper received an invalid value. It expects a component definition or a string component name.'
+    );
+  }
 
   let definition: ComponentDefinition | CurriedValue;
 
@@ -180,6 +199,13 @@ APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => 
     definition = component;
   } else {
     definition = constants.component(component, owner);
+  }
+
+  if (DEBUG && !isCurriedValue(definition) && !definition.resolvedName && !definition.debugName) {
+    let debugLabel = ref.debugLabel;
+    if (debugLabel) {
+      definition.debugName = debugLabel;
+    }
   }
 
   stack.push(definition);
@@ -214,6 +240,19 @@ APPEND_OPCODES.add(VM_RESOLVE_CURRIED_COMPONENT_OP, (vm) => {
           ref.debugLabel
         }\`, which was: ${debugToString?.(value) ?? value}`
       );
+    }
+  }
+
+  if (
+    DEBUG &&
+    definition &&
+    !isCurriedValue(definition) &&
+    !definition.resolvedName &&
+    !definition.debugName
+  ) {
+    let debugLabel = ref.debugLabel;
+    if (debugLabel) {
+      definition.debugName = debugLabel;
     }
   }
 
@@ -270,7 +309,7 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
   let { definition } = instance;
 
   if (isCurriedType(definition, CURRIED_COMPONENT)) {
-    localAssert(
+    assert(
       !definition.manager,
       "If the component definition was curried, we don't yet have a manager"
     );
@@ -525,7 +564,7 @@ export class ComponentElementOperations implements ElementOperations {
       let name = definition.resolvedName ?? manager.getDebugName(definition.state);
       let instance = manager.getDebugInstance(state);
 
-      localAssert(constructing, `Expected a constructing element in addModifier`);
+      assert(constructing, `Expected a constructing element in addModifier`);
 
       let bounds = new ConcreteBounds(element, constructing, constructing);
 
@@ -647,11 +686,10 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
       args = vm.args.capture();
     }
 
-    let moduleName: string;
     let compilable: CompilableProgram | null = definition.compilable;
 
     if (compilable === null) {
-      localAssert(
+      assert(
         managerHasCapability(
           manager,
           instance.capabilities,
@@ -662,26 +700,13 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
 
       let resolver = vm.context.resolver;
       compilable = resolver === null ? null : manager.getDynamicLayout(state, resolver);
-
-      if (compilable !== null) {
-        moduleName = compilable.moduleName;
-      } else {
-        moduleName = '__default__.hbs';
-      }
-    } else {
-      moduleName = compilable.moduleName;
     }
 
     // For tearing down the debugRenderTree
     vm.associateDestroyable(instance);
 
     if (hasCustomDebugRenderTreeLifecycle(manager)) {
-      let nodes = manager.getDebugCustomRenderTree(
-        instance.definition.state,
-        instance.state,
-        args,
-        moduleName
-      );
+      let nodes = manager.getDebugCustomRenderTree(instance.definition.state, instance.state, args);
 
       nodes.forEach((node) => {
         let { bucket } = node;
@@ -701,7 +726,6 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
         type: 'component',
         name,
         args,
-        template: moduleName,
         instance: valueForRef(selfRef),
       });
 
@@ -743,7 +767,7 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
   if (compilable === null) {
     let { capabilities } = instance;
 
-    localAssert(
+    assert(
       managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout),
       'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
     );

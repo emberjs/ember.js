@@ -3,6 +3,8 @@ import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-help
 import { set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   'Attribute bindings integration',
@@ -12,10 +14,10 @@ moduleFor(
         attributeBindings = ['foo:data-foo', 'bar:data-bar'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo bar=this.bar}}', { foo: 'foo', bar: 'bar' });
 
@@ -61,10 +63,10 @@ moduleFor(
         attributeBindings = ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.model.foo baz=this.model.baz}}', {
         model: { foo: undefined, baz: { bar: 'bar' } },
@@ -114,10 +116,10 @@ moduleFor(
         attributeBindings = ['foo.bar:data-foo-bar'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo}}', { foo: { bar: 'foo-bar' } });
 
@@ -173,10 +175,10 @@ moduleFor(
         attributeBindings = ['type'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar type=this.submit}}', {
         submit: 'submit',
@@ -226,10 +228,10 @@ moduleFor(
         attributeBindings = ['foo.bar'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar foo=this.foo}}', { foo: { bar: 'foo-bar' } });
@@ -241,10 +243,10 @@ moduleFor(
         attributeBindings = ['tiTLe'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar tiTLe=this.name}}', {
         name: 'qux',
@@ -280,10 +282,10 @@ moduleFor(
         attributeBindings = ['foo:data-FOO'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo}}', {
         foo: 'qux',
@@ -320,10 +322,10 @@ moduleFor(
         attributeBindings = ['viewBox'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: '',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate(''), FooBarComponent)
+      );
 
       this.render('{{foo-bar viewBox=this.foo}}', {
         foo: '0 0 100 100',
@@ -355,10 +357,10 @@ moduleFor(
         attributeBindings = ['fizz', 'bar'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar fizz=this.fizz bar=this.bar}}', {
         fizz: null,
@@ -407,10 +409,10 @@ moduleFor(
         attributeBindings = ['size'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar size=this.size}}', {
         size: 21,
@@ -458,10 +460,10 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar}}');
 
@@ -502,7 +504,7 @@ moduleFor(
         attributeBindings = ['type', 'isDisabled:disabled'];
       };
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render('{{foo-bar type=this.type isDisabled=this.disabled}}', {
         type: 'password',
@@ -547,7 +549,7 @@ moduleFor(
         attributeBindings = ['xlinkHref:xlink:href'];
       };
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render('{{foo-bar type=this.type xlinkHref=this.xlinkHref}}', {
         xlinkHref: '/foo.png',
@@ -588,7 +590,7 @@ moduleFor(
         attributeBindings = ['foo'];
       };
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render('{{foo-bar foo=this.foo}}', {
         foo: function () {
@@ -644,7 +646,7 @@ moduleFor(
         attributeBindings = ['specialSauce:id'];
       };
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render('{{foo-bar specialSauce=this.sauce}}', {
         sauce: 'special-sauce',
@@ -687,7 +689,7 @@ moduleFor(
         attributeBindings = ['newHref:href'];
       };
 
-      this.registerComponent('fizz-bar', { ComponentClass: FizzBarComponent });
+      this.owner.register('component:fizz-bar', FizzBarComponent);
 
       this.render('{{fizz-bar newHref=this.href}}', {
         href: 'dog.html',
@@ -732,10 +734,10 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render(
         strip`
@@ -872,10 +874,10 @@ moduleFor(
         attributeBindings = ['class'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
@@ -888,10 +890,10 @@ moduleFor(
         attributeBindings = ['href'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar href=this.xss}}', {
         xss: "javascript:alert('foo')",
@@ -908,10 +910,10 @@ moduleFor(
         attributeBindings = ['role'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar role=this.role}}', { role: 'button' });
 
@@ -940,21 +942,23 @@ moduleFor(
     }
 
     ['@test component with an `id` attribute binding of undefined']() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
           attributeBindings = ['id'];
 
           id = undefined;
-        },
-      });
+        }
+      );
 
-      this.registerComponent('baz-qux', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:baz-qux',
+        class extends Component {
           attributeBindings = ['somethingUndefined:id'];
 
           somethingUndefined = undefined;
-        },
-      });
+        }
+      );
       this.render(`{{foo-bar}}{{baz-qux}}`);
 
       this.assertComponentElement(this.nthChild(0), { content: '' });
@@ -965,21 +969,23 @@ moduleFor(
     }
 
     ['@test component with an `id` attribute binding of null']() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:foo-bar',
+        class extends Component {
           attributeBindings = ['id'];
 
           id = null;
-        },
-      });
+        }
+      );
 
-      this.registerComponent('baz-qux', {
-        ComponentClass: class extends Component {
+      this.owner.register(
+        'component:baz-qux',
+        class extends Component {
           attributeBindings = ['somethingNull:id'];
 
           somethingNull = null;
-        },
-      });
+        }
+      );
       this.render(`{{foo-bar}}{{baz-qux}}`);
 
       this.assertComponentElement(this.nthChild(0), { content: '' });

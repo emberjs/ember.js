@@ -1,5 +1,5 @@
 import type { BlockMetadata, ProgramConstants, ProgramHeap } from '@glimmer/interfaces';
-import { decodeHandle } from '@glimmer/constants';
+import { decodeHandle } from '@glimmer/constants/lib/immediate';
 
 import type { RawDisassembledOperand } from '../debug';
 import type {
@@ -34,7 +34,7 @@ class Disassembler<in out Added extends OperandType> {
   static build(
     builder: (disassembler: Disassembler<never>) => Disassembler<AllOperands>
   ): Record<OperandType, OperandDisassembler> {
-    return builder(new Disassembler()).#disms as Record<OperandType, OperandDisassembler>;
+    return builder(new Disassembler()).#disms;
   }
 
   readonly #disms: Record<string, OperandDisassembler>;

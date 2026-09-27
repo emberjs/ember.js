@@ -3,10 +3,9 @@ import {
   CURRIED_COMPONENT,
   CURRIED_HELPER,
   CURRIED_MODIFIER,
-  decodeHandle,
-  decodeImmediate,
-} from '@glimmer/constants';
-import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
+} from '@glimmer/constants/lib/curried';
+import { decodeHandle, decodeImmediate } from '@glimmer/constants/lib/immediate';
+import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm/lib/registers';
 
 import type { Primitive, RegisterName } from './dism/dism';
 

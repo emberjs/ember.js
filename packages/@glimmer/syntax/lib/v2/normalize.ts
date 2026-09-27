@@ -1,6 +1,7 @@
 import type { PresentArray } from '@glimmer/interfaces';
-import { asPresentArray, isPresentArray, localAssert } from '@glimmer/debug-util';
-import { assign } from '@glimmer/util';
+import { asPresentArray, isPresentArray } from '@glimmer/debug-util/lib/present';
+import assert from '@glimmer/debug-util/lib/assert';
+import { assign } from '@glimmer/util/lib/object-utils';
 
 import type {
   PrecompileOptions,
@@ -191,7 +192,7 @@ class ExpressionNormalizer {
       case 'UndefinedLiteral':
         return this.block.builder.literal(expr.value, this.block.loc(expr.loc));
       case 'PathExpression':
-        localAssert(resolution, '[BUG] resolution is required');
+        assert(resolution, '[BUG] resolution is required');
         return this.path(expr, resolution);
       case 'SubExpression': {
         // expr.path used to incorrectly have the type ASTv1.Expression
@@ -267,10 +268,7 @@ class ExpressionNormalizer {
     let namedLoc = this.block.loc(hash.loc);
     let argsLoc = SpanList.range([paramLoc, namedLoc]);
 
-    let positional = this.block.builder.positional(
-      params.map((p) => this.normalize(p, ASTv2.STRICT_RESOLUTION)),
-      paramLoc
-    );
+    let positional = this.block.builder.positional(paramList, paramLoc);
 
     let named = this.block.builder.named(
       hash.pairs.map((p) => this.namedArgument(p)),
@@ -408,7 +406,7 @@ class StatementNormalizer {
     let span = loc;
 
     if (node.value.startsWith('-')) {
-      localAssert(
+      assert(
         /^\{\{~?!---/u.test(source),
         `to start a comment's content with a '-', it must have started with {{!--`
       );
@@ -417,7 +415,7 @@ class StatementNormalizer {
         chars: node.value.length,
       });
     } else if (node.value.endsWith('-')) {
-      localAssert(
+      assert(
         /--~?\}\}/u.test(source),
         `to end a comment's content with a '-', it must have ended with --}}`
       );
@@ -709,7 +707,7 @@ class ElementNormalizer {
   }
 
   private attr(m: ASTv1.AttrNode): ASTv2.HtmlOrSplatAttr {
-    localAssert(m.name[0] !== '@', 'An attr name must not start with `@`');
+    assert(m.name[0] !== '@', 'An attr name must not start with `@`');
 
     if (m.name === '...attributes') {
       return this.ctx.builder.splatAttr(this.ctx.table.allocateBlock('attrs'), this.ctx.loc(m.loc));
@@ -767,7 +765,7 @@ class ElementNormalizer {
   }
 
   private arg(arg: ASTv1.AttrNode): ASTv2.ComponentArg {
-    localAssert(arg.name[0] === '@', 'An arg name must start with `@`');
+    assert(arg.name[0] === '@', 'An arg name must start with `@`');
     this.checkArgCall(arg);
 
     let offsets = this.ctx.loc(arg.loc);

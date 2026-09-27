@@ -5,9 +5,9 @@ import type {
   CapturedNamedArguments,
   CapturedPositionalArguments,
 } from '@glimmer/interfaces';
-import type { Tag } from '@glimmer/validator';
-import { valueForRef } from '@glimmer/reference';
-import { track } from '@glimmer/validator';
+import type { Tag } from '@glimmer/interfaces';
+import { valueForRef } from '@glimmer/reference/lib/reference';
+import { track } from '@glimmer/validator/lib/tracking';
 
 const CUSTOM_TAG_FOR = new WeakMap<object, (obj: object, key: string) => Tag>();
 
@@ -47,7 +47,7 @@ function tagForPositionalArg(positionalArgs: CapturedPositionalArguments, key: s
 
     const parsed = convertToInt(key);
 
-    if (parsed !== null && parsed < positionalArgs.length) {
+    if (parsed !== null && parsed >= 0 && parsed < positionalArgs.length) {
       // consume the tag of the referenced index
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       valueForRef(positionalArgs[parsed]!);
@@ -116,7 +116,7 @@ class PositionalArgsProxy implements ProxyHandler<[]> {
 
     const parsed = convertToInt(prop);
 
-    if (parsed !== null && parsed < positional.length) {
+    if (parsed !== null && parsed >= 0 && parsed < positional.length) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       return valueForRef(positional[parsed]!);
     }
@@ -132,7 +132,7 @@ class PositionalArgsProxy implements ProxyHandler<[]> {
   has(_target: [], prop: string | number | symbol) {
     const parsed = convertToInt(prop);
 
-    return parsed !== null && parsed < this.positional.length;
+    return parsed !== null && parsed >= 0 && parsed < this.positional.length;
   }
 }
 

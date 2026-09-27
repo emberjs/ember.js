@@ -1,4 +1,4 @@
-import type { AST } from '@glimmer/syntax';
+import type * as AST from '@glimmer/syntax/lib/v1/api';
 import type { EmberASTPluginEnvironment } from '../types';
 
 export function isPath(node: AST.Node): node is AST.PathExpression {

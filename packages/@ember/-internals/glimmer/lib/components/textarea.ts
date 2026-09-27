@@ -15,7 +15,11 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   This template:
 
   ```handlebars
-  <Textarea @value="A bunch of text" />
+  import { Textarea } from '@ember/component';
+
+  <template>
+    <Textarea @value="A bunch of text" />
+  </template>
   ```
 
   Would result in the following HTML:
@@ -32,17 +36,17 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   In the following example, the `writtenWords` property on the component will be updated as the user
   types 'Lots of text' into the text area of their browser's window.
 
-  ```app/components/word-editor.js
+  ```gjs {data-filename="app/components/word-editor.gjs"}
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
   export default class WordEditorComponent extends Component {
     @tracked writtenWords = "Lots of text that IS bound";
+    
+    <template>
+      <Textarea @value={{writtenWords}} />
+    </template>
   }
-  ```
-
-  ```handlebars
-  <Textarea @value={{writtenWords}} />
   ```
 
   Would result in the following HTML:
@@ -116,30 +120,10 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   `layoutName` properties will not be applied.
 
   @method Textarea
-  @for Ember.Templates.components
-  @public
-*/
-
-/**
-  See [Ember.Templates.components.Textarea](/ember/release/classes/Ember.Templates.components/methods/Textarea?anchor=Textarea)
-
-  @method textarea
-  @for Ember.Templates.helpers
-  @see {Ember.Templates.components.Textarea}
-  @public
-*/
-
-/**
-  An opaque interface which can be imported and used in strict-mode
-  templates to call <Textarea>.
-
-  See [Ember.Templates.components.Textarea](/ember/release/classes/Ember.Templates.components/methods/Textarea?anchor=Textarea).
-
   @for @ember/component
-  @method Textarea
-  @see {Ember.Templates.components.Textarea}
+  @static
   @public
-**/
+*/
 class _Textarea extends AbstractInput {
   static toString(): string {
     return 'Textarea';

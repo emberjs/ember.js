@@ -11,7 +11,8 @@
     "./location": "./location.ts",
     "./route": "./route.ts",
     "./-internals": "./-internals.ts",
-    "./router-service": "./router-service.ts"
+    "./router-service": "./router-service.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
@@ -37,6 +38,6 @@
     "dag-map": "^2.0.2",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
-    "router_js": "^8.0.5"
+    "router_js": "workspace:*"
   }
 }

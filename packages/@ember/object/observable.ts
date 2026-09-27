@@ -2,21 +2,21 @@
 @module @ember/object/observable
 */
 
-import { peekMeta } from '@ember/-internals/meta';
+import { peekMeta } from '@ember/-internals/meta/lib/meta';
+import { hasListeners } from '@ember/-internals/metal/lib/events';
 import {
-  hasListeners,
   beginPropertyChanges,
   notifyPropertyChange,
   endPropertyChanges,
-  addObserver,
-  removeObserver,
-  get,
-  set,
-  getProperties,
-  setProperties,
-} from '@ember/-internals/metal';
+} from '@ember/-internals/metal/lib/property_events';
+import { addObserver, removeObserver } from '@ember/-internals/metal/lib/observer';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { set } from '@ember/-internals/metal/lib/property_set';
+import getProperties from '@ember/-internals/metal/lib/get_properties';
+import setProperties from '@ember/-internals/metal/lib/set_properties';
 
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import { assert } from '@ember/debug';
 
 export type ObserverMethod<Target, Sender> =
@@ -323,6 +323,10 @@ interface Observable {
     only a sender and key value as parameters or, if you aren't interested in
     any of these values, to write an observer that has no parameters at all.
 
+    While observers are still supported, there are [plans to deprecate them](https://github.com/emberjs/rfcs/pull/1115)
+    See the [in-progress deprecation guide](https://github.com/ember-learn/deprecation-app/pull/1407)
+    for guidance on how to avoid using observers.
+
     @method addObserver
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
@@ -417,7 +421,7 @@ interface Observable {
   */
   cacheFor<K extends keyof this>(key: K): unknown;
 }
-const Observable = Mixin.create({
+const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
   get(keyName: string) {
     return get(this, keyName);
   },

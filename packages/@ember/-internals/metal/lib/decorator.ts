@@ -1,5 +1,5 @@
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import type { Meta } from '@ember/-internals/meta/lib/meta';
+import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -88,7 +88,7 @@ export abstract class ComputedDescriptor {
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
 }
 
-export let COMPUTED_GETTERS: WeakSet<() => unknown>;
+let COMPUTED_GETTERS: WeakSet<() => unknown>;
 
 if (DEBUG) {
   COMPUTED_GETTERS = new WeakSet();

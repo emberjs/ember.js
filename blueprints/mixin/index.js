@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = {
+export default {
   description: 'Generates a mixin.',
   normalizeEntityName: function (entityName) {
     return entityName.replace(/\.js$/, ''); //Prevent generation of ".js.js" files

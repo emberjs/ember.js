@@ -1,11 +1,23 @@
 /**
   @private
 
-  Returns the current `location.pathname`, normalized for IE inconsistencies.
+  Escapes any regular-expression metacharacters in `str` so it can be safely
+  interpolated into a `RegExp` and matched as a literal.
+
+  TODO: delete this in favor of `RegExp.escape` once our minimum supported
+  browsers all include it (https://caniuse.com/mdn-javascript_builtins_regexp_escape).
+*/
+export function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+  @private
+
+  Returns the current `location.pathname`, ensuring it has a leading slash.
 */
 export function getPath(location: Location): string {
   let pathname = location.pathname;
-  // Various versions of IE/Opera don't always return a leading slash
   if (pathname[0] !== '/') {
     pathname = `/${pathname}`;
   }
@@ -37,29 +49,4 @@ export function getHash(location: Location): string {
 
 export function getFullPath(location: Location): string {
   return getPath(location) + getQuery(location) + getHash(location);
-}
-
-export function getOrigin(location: Location): string {
-  let origin = location.origin;
-
-  // Older browsers, especially IE, don't have origin
-  if (!origin) {
-    origin = `${location.protocol}//${location.hostname}`;
-
-    if (location.port) {
-      origin += `:${location.port}`;
-    }
-  }
-
-  return origin;
-}
-
-/**
-  Replaces the current location, making sure we explicitly include the origin
-  to prevent redirecting to a different origin.
-
-  @private
-*/
-export function replacePath(location: Location, path: string): void {
-  location.replace(getOrigin(location) + path);
 }

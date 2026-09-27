@@ -1,4 +1,4 @@
-export const EACH_PROXIES = new WeakMap();
+const EACH_PROXIES = new WeakMap();
 
 export function eachProxyArrayWillChange(
   array: any,

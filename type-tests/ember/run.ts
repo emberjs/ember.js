@@ -1,16 +1,17 @@
-import Ember from 'ember';
+import type Application from '@ember/application';
+import { run } from '@ember/runloop';
 import { expectTypeOf } from 'expect-type';
 
 function testRun() {
-  const r = Ember.run(() => {
+  const r = run(() => {
     // code to be executed within a RunLoop
     return 123;
   });
   expectTypeOf(r).toEqualTypeOf<number>();
 
-  function destroyApp(application: Ember.Application) {
-    Ember.run(application, 'destroy');
-    Ember.run(application, function () {
+  function destroyApp(application: Application) {
+    run(application, 'destroy');
+    run(application, function () {
       this.destroy();
     });
   }

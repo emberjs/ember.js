@@ -55,13 +55,13 @@ export function asPresentArray<T>(list: T[], message = `unexpected empty list`):
 export function getLast<T>(list: PresentArray<T>): T;
 export function getLast<T>(list: T[]): T | undefined;
 export function getLast<T>(list: T[]): T | undefined {
-  return list.length === 0 ? undefined : (list[list.length - 1] as T);
+  return list.length === 0 ? undefined : list[list.length - 1];
 }
 
 export function getFirst<T>(list: PresentArray<T>): T;
 export function getFirst<T>(list: T[]): T | undefined;
 export function getFirst<T>(list: T[]): T | undefined {
-  return list.length === 0 ? undefined : (list[0] as T);
+  return list.length === 0 ? undefined : list[0];
 }
 
 export function mapPresentArray<T, U>(

@@ -1,6 +1,6 @@
 import type { CompilationContext, HandleResult } from '@glimmer/interfaces';
-import { logOpcodeSlice } from '@glimmer/debug';
-import { extractHandle } from '@glimmer/debug-util';
+import { logOpcodeSlice } from '@glimmer/debug/lib/debug';
+import { extractHandle } from '@glimmer/debug-util/lib/template';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 
 export let debugCompiler: (context: CompilationContext, handle: HandleResult) => void;

@@ -2,6 +2,7 @@ import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
 import { run } from '@ember/runloop';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Query Params - shared service state',
@@ -42,15 +43,17 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'application',
-        `<LinkTo @route="home">Home</LinkTo> <div> {{outlet}} </div>`
+      this.add(
+        'template:application',
+        precompileTemplate(`<LinkTo @route="home">Home</LinkTo> <div> {{outlet}} </div>`)
       );
-      this.addTemplate(
-        'home',
-        `<LinkTo @route='dashboard'>Dashboard</LinkTo><Input @type="checkbox" id='filters-checkbox' checked={{mut this.filters.shared}} />`
+      this.add(
+        'template:home',
+        precompileTemplate(
+          `<LinkTo @route='dashboard'>Dashboard</LinkTo><Input @type="checkbox" id='filters-checkbox' checked={{mut this.filters.shared}} />`
+        )
       );
-      this.addTemplate('dashboard', `<LinkTo @route="home">Home</LinkTo>`);
+      this.add('template:dashboard', precompileTemplate(`<LinkTo @route="home">Home</LinkTo>`));
     }
     visitApplication() {
       return this.visit('/');

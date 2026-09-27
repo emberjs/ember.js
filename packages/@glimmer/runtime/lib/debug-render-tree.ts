@@ -7,8 +7,9 @@ import type {
   Nullable,
   RenderNode,
 } from '@glimmer/interfaces';
-import { expect } from '@glimmer/debug-util';
-import { assign, Stack } from '@glimmer/util';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import { assign } from '@glimmer/util/lib/object-utils';
+import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
 import { reifyArgsDebug } from './vm/arguments';
 
@@ -56,9 +57,9 @@ export class Ref<T extends object> {
   }
 }
 
-export default class DebugRenderTreeImpl<TBucket extends object>
-  implements DebugRenderTree<TBucket>
-{
+export default class DebugRenderTreeImpl<
+  TBucket extends object,
+> implements DebugRenderTree<TBucket> {
   private stack = new Stack<TBucket>();
 
   private refs = new WeakMap<TBucket, Ref<TBucket>>();
@@ -183,14 +184,9 @@ export default class DebugRenderTreeImpl<TBucket extends object>
   private captureNode(id: string, state: TBucket): CapturedRenderNode {
     let node = this.nodeFor(state);
     let { type, name, args, instance, refs } = node;
-    let template = this.captureTemplate(node);
     let bounds = this.captureBounds(node);
     let children = this.captureRefs(refs);
-    return { id, type, name, args: reifyArgsDebug(args), instance, template, bounds, children };
-  }
-
-  private captureTemplate({ template }: InternalRenderNode<TBucket>): Nullable<string> {
-    return template || null;
+    return { id, type, name, args: reifyArgsDebug(args), instance, bounds, children };
   }
 
   private captureBounds(node: InternalRenderNode<TBucket>): CapturedRenderNode['bounds'] {
@@ -206,5 +202,13 @@ export function getDebugName(
   definition: ComponentDefinition,
   manager = definition.manager
 ): string {
-  return definition.resolvedName ?? definition.debugName ?? manager.getDebugName(definition.state);
+  if (definition.resolvedName != null) return definition.resolvedName;
+
+  // An empty name is a manager declining to appear in the render stack (falsy
+  // names are dropped by `logTrackingStack`). Otherwise `debugName` wins, as
+  // it always has.
+  const managerName = manager.getDebugName(definition.state);
+  if (managerName === '') return '';
+
+  return definition.debugName ?? managerName;
 }

@@ -16,7 +16,6 @@
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
  *
- * @example
  * ```javascript
  * import { trackedArray } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -46,7 +45,7 @@
  * @returns {Array} A tracked array that updates reactively
  * @public
  */
-export { trackedArray } from '@glimmer/validator';
+export { trackedArray } from '@glimmer/validator/lib/collections/array';
 
 /**
  * A utility for creating tracked objects, copying the original data so that
@@ -59,7 +58,6 @@ export { trackedArray } from '@glimmer/validator';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)
  *
- * @example
  * ```gjs
  * import { trackedObject } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -89,7 +87,7 @@ export { trackedArray } from '@glimmer/validator';
  * @returns {Object} A tracked object that updates reactively
  * @public
  */
-export { trackedObject } from '@glimmer/validator';
+export { trackedObject } from '@glimmer/validator/lib/collections/object';
 
 /**
  * A utility for creating tracked sets, copying the original data so that
@@ -102,7 +100,6 @@ export { trackedObject } from '@glimmer/validator';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)
  *
- * @example
  * ```gjs
  * import { trackedSet } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -133,7 +130,7 @@ export { trackedObject } from '@glimmer/validator';
  * @returns {Set} A tracked Set that updates reactively
  * @public
  */
-export { trackedSet } from '@glimmer/validator';
+export { trackedSet } from '@glimmer/validator/lib/collections/set';
 
 /**
  * A utility for creating tracked weak sets, copying the original data so that
@@ -149,7 +146,6 @@ export { trackedSet } from '@glimmer/validator';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet)
  *
- * @example
  * ```gjs
  * import { trackedWeakSet } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -174,7 +170,7 @@ export { trackedSet } from '@glimmer/validator';
  * @returns {WeakSet} A tracked WeakSet that updates reactively
  * @public
  */
-export { trackedWeakSet } from '@glimmer/validator';
+export { trackedWeakSet } from '@glimmer/validator/lib/collections/weak-set';
 
 /**
  * A utility for creating tracked maps, copying the original data so that
@@ -187,7 +183,6 @@ export { trackedWeakSet } from '@glimmer/validator';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
  *
- * @example
  * ```gjs
  * import { trackedMap } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -218,7 +213,7 @@ export { trackedWeakSet } from '@glimmer/validator';
  * @returns {Map} A tracked Map that updates reactively
  * @public
  */
-export { trackedMap } from '@glimmer/validator';
+export { trackedMap } from '@glimmer/validator/lib/collections/map';
 
 /**
  * A utility for creating tracked weak maps, copying the original data so that
@@ -234,7 +229,6 @@ export { trackedMap } from '@glimmer/validator';
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap)
  *
- * @example
  * ```gjs
  * import { trackedWeakMap } from '@ember/reactive/collections';
  * import { on } from '@ember/modifier';
@@ -259,4 +253,4 @@ export { trackedMap } from '@glimmer/validator';
  * @returns {WeakMap} A tracked WeakMap that updates reactively
  * @public
  */
-export { trackedWeakMap } from '@glimmer/validator';
+export { trackedWeakMap } from '@glimmer/validator/lib/collections/weak-map';

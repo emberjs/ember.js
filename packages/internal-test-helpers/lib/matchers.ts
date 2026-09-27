@@ -75,8 +75,6 @@ export function styles(expected: string) {
     [MATCHER_BRAND]: true,
 
     match(actual: string) {
-      // coerce `null` or `undefined` to an empty string
-      // needed for matching empty styles on IE9 - IE11
       actual = actual || '';
       actual = actual.trim();
 

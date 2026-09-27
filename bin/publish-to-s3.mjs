@@ -1,8 +1,8 @@
 import { join } from 'node:path';
 import { existsSync, realpathSync, readFileSync } from 'node:fs';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { buildInfo as buildBuildInfo } from '../broccoli/build-info.js';
-import projectFileMap from '../config/s3ProjectConfig.js';
+import { buildInfo as buildBuildInfo } from '../broccoli/build-info.cjs';
+import projectFileMap from '../config/s3ProjectConfig.cjs';
 
 const buildInfo = buildBuildInfo();
 

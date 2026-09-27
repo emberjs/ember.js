@@ -1,4 +1,5 @@
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import { DEBUG } from '@glimmer/env';
 import type { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
@@ -197,7 +198,7 @@ if (DEBUG) {
     ```javascript
     import { deprecateFunc } from '@ember/debug';
 
-    Ember.oldMethod = deprecateFunc('Please use the new, updated method', options, Ember.newMethod);
+    oldMethod = deprecateFunc('Please use the new, updated method', options, newMethod);
     ```
 
     @method deprecateFunc
@@ -265,13 +266,7 @@ if (DEBUG) {
   });
 
   setDebugFunction('debugFreeze', function debugFreeze(obj) {
-    // re-freezing an already frozen object introduces a significant
-    // performance penalty on Chrome (tested through 59).
-    //
-    // See: https://bugs.chromium.org/p/v8/issues/detail?id=6450
-    if (!Object.isFrozen(obj)) {
-      Object.freeze(obj);
-    }
+    Object.freeze(obj);
   });
 
   setDebugFunction('warn', _warn);
@@ -279,7 +274,7 @@ if (DEBUG) {
 
 let _warnIfUsingStrippedFeatureFlags;
 
-if (DEBUG && !isTesting()) {
+if (DEBUG && !isTesting() && ENV.LOG_INSPECTOR_HINT) {
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener(
       'load',

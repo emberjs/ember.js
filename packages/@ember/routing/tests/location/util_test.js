@@ -1,5 +1,9 @@
-import { replacePath, getPath, getQuery, getFullPath } from '../../lib/location-utils';
+import { getPath, getQuery, getFullPath } from '../../lib/location-utils';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+
+export function replacePath(location, path) {
+  location.replace(location.origin + path);
+}
 
 function mockBrowserLocation(overrides, assert) {
   return Object.assign(
@@ -25,9 +29,7 @@ moduleFor(
       let expectedURL;
 
       let location = {
-        protocol: 'http:',
-        hostname: 'emberjs.com',
-        port: '1337',
+        origin: 'http://emberjs.com:1337',
 
         replace(url) {
           assert.equal(url, expectedURL);

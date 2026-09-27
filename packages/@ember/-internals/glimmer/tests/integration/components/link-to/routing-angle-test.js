@@ -2,6 +2,7 @@ import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
   moduleFor,
+  runLoopSettled,
   runTask,
 } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
@@ -12,12 +13,8 @@ import NoneLocation from '@ember/routing/none-location';
 import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
-import { compile } from '../../../utils/helpers';
 
-// IE includes the host name
-function normalizeUrl(url) {
-  return url.replace(/https?:\/\/[^/]+/, '');
-}
+import { precompileTemplate } from '@ember/template-compilation';
 
 function shouldNotBeActive(assert, element) {
   checkActive(assert, element, false);
@@ -42,21 +39,21 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo @route='about' id='about-link'>About</LinkTo>
         <LinkTo @route='index' id='self-link'>Self</LinkTo>
-        `
+        `)
       );
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(`
         <h3 class="about">About</h3>
         <LinkTo @route='index' id='home-link'>Home</LinkTo>
         <LinkTo @route='about' id='self-link'>Self</LinkTo>
-        `
+        `)
       );
     }
 
@@ -93,13 +90,13 @@ moduleFor(
     async ['@test [GH#19546] it navigates into the named route when containing other elements'](
       assert
     ) {
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(`
         <h3 class="about">About</h3>
         <LinkTo @route='index' id='home-link'><span id='inside'>Home</span></LinkTo>
         <LinkTo @route='about' id='self-link'>Self</LinkTo>
-        `
+        `)
       );
 
       await this.visit('/about');
@@ -131,13 +128,39 @@ moduleFor(
       );
     }
 
+    async ['@test [GH#19891] it navigates into the named route when inside an inline SVG'](assert) {
+      this.add(
+        'template:index',
+        precompileTemplate(`
+        <h3 class="home">Home</h3>
+        <svg xmlns="http://www.w3.org/2000/svg">
+          <LinkTo @route='about' id='svg-about-link'>
+            <rect x="0" y="0" width="200" height="100"></rect>
+          </LinkTo>
+        </svg>
+        `)
+      );
+
+      await this.visit('/');
+
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
+
+      // SVGAElement does not have a .click() method like HTMLElement,
+      // so we dispatch a click event manually.
+      let svgLink = document.querySelector('#svg-about-link');
+      svgLink.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await runLoopSettled();
+
+      assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
+    }
+
     async [`@test it applies a 'disabled' class when disabled`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <LinkTo id="about-link-static" @route="about" @disabled="truthy">About</LinkTo>
         <LinkTo id="about-link-dynamic" @route="about" @disabled={{this.dynamicDisabled}}>About</LinkTo>
-        `
+        `)
       );
 
       let controller;
@@ -182,7 +205,10 @@ moduleFor(
     }
 
     async [`@test it doesn't apply a 'disabled' class when not disabled`](assert) {
-      this.addTemplate('index', `<LinkTo id="about-link" @route="about">About</LinkTo>`);
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo id="about-link" @route="about">About</LinkTo>`)
+      );
 
       await this.visit('/');
 
@@ -193,12 +219,12 @@ moduleFor(
     }
 
     async [`@test it supports a custom disabledClass`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <LinkTo id="about-link-static" @route="about" @disabledClass="do-not-want" @disabled={{true}}>About</LinkTo>
         <LinkTo id="about-link-dynamic" @route="about" @disabledClass="do-not-want" @disabled={{this.dynamicDisabled}}>About</LinkTo>
-        `
+        `)
       );
 
       let controller;
@@ -263,9 +289,11 @@ moduleFor(
     }
 
     async [`@test it supports a custom disabledClass set via bound param`](assert) {
-      this.addTemplate(
-        'index',
-        `<LinkTo id="about-link" @route="about" @disabledClass={{this.disabledClass}} @disabled={{true}}>About</LinkTo>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<LinkTo id="about-link" @route="about" @disabledClass={{this.disabledClass}} @disabled={{true}}>About</LinkTo>`
+        )
       );
 
       let controller;
@@ -311,9 +339,11 @@ moduleFor(
     }
 
     async [`@test it does not respond to clicks when disabled`](assert) {
-      this.addTemplate(
-        'index',
-        `<LinkTo id="about-link" @route="about" @disabled={{true}}>About</LinkTo>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<LinkTo id="about-link" @route="about" @disabled={{true}}>About</LinkTo>`
+        )
       );
 
       await this.visit('/');
@@ -324,9 +354,11 @@ moduleFor(
     }
 
     async [`@test it responds to clicks according to its disabled bound param`](assert) {
-      this.addTemplate(
-        'index',
-        `<LinkTo id="about-link" @route="about" @disabled={{this.dynamicDisabled}}>About</LinkTo>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<LinkTo id="about-link" @route="about" @disabled={{this.dynamicDisabled}}>About</LinkTo>`
+        )
       );
 
       let controller;
@@ -361,13 +393,13 @@ moduleFor(
     }
 
     async [`@test it supports a custom activeClass`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='about-link' @route='about' @activeClass='zomg-active'>About</LinkTo>
         <LinkTo id='self-link' @route='index' @activeClass='zomg-active'>Self</LinkTo>
-        `
+        `)
       );
 
       await this.visit('/');
@@ -396,13 +428,13 @@ moduleFor(
     }
 
     async [`@test it supports a custom activeClass from a bound param`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='about-link' @route='about' @activeClass={{this.activeClass}}>About</LinkTo>
         <LinkTo id='self-link' @route='index' @activeClass={{this.activeClass}}>Self</LinkTo>
-        `
+        `)
       );
 
       let controller;
@@ -482,21 +514,19 @@ moduleFor(
             super.init(...arguments);
             this.register(
               'template:application',
-              compile(`<LinkTo @route='about'>About</LinkTo>`, {
-                moduleName: 'non-routable/templates/application.hbs',
-              })
+              precompileTemplate(`<LinkTo @route='about'>About</LinkTo>`)
             );
           }
         }
       );
 
-      this.addTemplate('index', `{{mount 'not-routable'}}`);
+      this.add('template:index', precompileTemplate(`{{mount 'not-routable'}}`));
 
       await assert.rejectsAssertion(
         this.visit('/'),
         'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
           'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
-          'See https://ember-engines.com/docs/links for more info.'
+          'See https://github.com/ember-engines/ember-engines for more info.'
       );
     }
 
@@ -510,42 +540,27 @@ moduleFor(
             super.init(...arguments);
             this.register(
               'template:application',
-              compile(
-                `
+              precompileTemplate(`
                 <h2 id='engine-layout'>Routable Engine</h2>
                 {{outlet}}
                 <LinkTo @route='application' id='engine-application-link'>Engine Appliction</LinkTo>
-                `,
-                {
-                  moduleName: 'routable/templates/application.hbs',
-                }
-              )
+                `)
             );
             this.register(
               'template:index',
-              compile(
-                `
+              precompileTemplate(`
                 <h3 class='engine-home'>Engine Home</h3>
                 <LinkTo @route='about' id='engine-about-link'>Engine About</LinkTo>
                 <LinkTo @route='index' id='engine-self-link'>Engine Self</LinkTo>
-                `,
-                {
-                  moduleName: 'routable/templates/index.hbs',
-                }
-              )
+                `)
             );
             this.register(
               'template:about',
-              compile(
-                `
+              precompileTemplate(`
                 <h3 class='engine-about'>Engine About</h3>
                 <LinkTo @route='index' id='engine-home-link'>Engine Home</LinkTo>
                 <LinkTo @route='about' id='engine-self-link'>Engine Self</LinkTo>
-                `,
-                {
-                  moduleName: 'routable/templates/about.hbs',
-                }
-              )
+                `)
             );
           }
         }
@@ -559,14 +574,14 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(`
         <h1 id='application-layout'>Application</h1>
         {{outlet}}
         <LinkTo @route='application' id='application-link'>Appliction</LinkTo>
         <LinkTo @route='routable' id='engine-link'>Engine</LinkTo>
-        `
+        `)
       );
 
       await this.visit('/');
@@ -706,21 +721,21 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='about-link' @route='about'>About</LinkTo>
         <LinkTo id='self-link' @route='index'>Self</LinkTo>
-        `
+        `)
       );
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(`
         <h3 class="about">About</h3>
         <LinkTo id='home-link' @route='index'>Home</LinkTo>
         <LinkTo id='self-link' @route='about'>Self</LinkTo>
-        `
+        `)
       );
     }
 
@@ -732,12 +747,12 @@ moduleFor(
     }
 
     async ['@test it supports URL replacement'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='about-link' @route='about' @replace={{true}}>About</LinkTo>
-        `
+        `)
       );
 
       await this.visit('/');
@@ -758,12 +773,12 @@ moduleFor(
     }
 
     async ['@test it supports URL replacement via replace=boundTruthyThing'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='about-link' @route='about' @replace={{this.boundTruthyThing}}>About</LinkTo>
-        `
+        `)
       );
 
       this.add(
@@ -791,12 +806,12 @@ moduleFor(
     }
 
     async ['@test it supports setting replace=boundFalseyThing'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='about-link' @route='about' replace={{this.boundFalseyThing}}>About</LinkTo>
-        `
+        `)
       );
 
       this.add(
@@ -835,13 +850,16 @@ moduleFor(
         });
       });
 
-      this.addTemplate('about', `<h1>About</h1>{{outlet}}`);
-      this.addTemplate('about.index', `<div id='index'>Index</div>`);
-      this.addTemplate('about.item', `<div id='item'><LinkTo @route='about'>About</LinkTo></div>`);
+      this.add('template:about', precompileTemplate(`<h1>About</h1>{{outlet}}`));
+      this.add('template:about.index', precompileTemplate(`<div id='index'>Index</div>`));
+      this.add(
+        'template:about.item',
+        precompileTemplate(`<div id='item'><LinkTo @route='about'>About</LinkTo></div>`)
+      );
 
       await this.visit('/about/item');
 
-      assert.equal(normalizeUrl(this.$('#item a').attr('href')), '/about');
+      assert.equal(this.$('#item a').attr('href'), '/about');
     }
 
     async [`@test it supports custom, nested, current-when`](assert) {
@@ -853,10 +871,12 @@ moduleFor(
         this.route('item');
       });
 
-      this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
-      this.addTemplate(
-        'index.about',
-        `<LinkTo id='other-link' @route='item' @current-when='index'>ITEM</LinkTo>`
+      this.add('template:index', precompileTemplate(`<h3 class="home">Home</h3>{{outlet}}`));
+      this.add(
+        'template:index.about',
+        precompileTemplate(
+          `<LinkTo id='other-link' @route='item' @current-when='index'>ITEM</LinkTo>`
+        )
       );
 
       await this.visit('/about');
@@ -881,10 +901,12 @@ moduleFor(
         });
       });
 
-      this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
-      this.addTemplate(
-        'index.about',
-        `<LinkTo id='other-link' @route='items' @current-when='index'>ITEM</LinkTo>`
+      this.add('template:index', precompileTemplate(`<h3 class="home">Home</h3>{{outlet}}`));
+      this.add(
+        'template:index.about',
+        precompileTemplate(
+          `<LinkTo id='other-link' @route='items' @current-when='index'>ITEM</LinkTo>`
+        )
       );
 
       await this.visit('/about');
@@ -893,6 +915,39 @@ moduleFor(
         this.$('#other-link.active').length,
         1,
         'The link is active when current-when is given for explicitly for a route'
+      );
+    }
+
+    async [`@test it supports custom, nested, current-when with route params`](assert) {
+      assert.expect(2);
+      this.router.map(function () {
+        this.route('index', { path: '/' });
+        this.route('foo', { path: '/foo/:fooId' }, function () {
+          this.route('bar', { path: '/bar/:barId' });
+        });
+      });
+
+      this.add('template:index', precompileTemplate(`{{outlet}}`));
+      this.add(
+        'template:foo',
+        precompileTemplate(
+          `<LinkTo @route='foo.index' @model={{1}} @current-when='foo.index foo.bar'>Foo Index</LinkTo> {{outlet}}`
+        )
+      );
+      this.add(
+        'template:foo.bar',
+        precompileTemplate(`<LinkTo @route='foo.bar' @models={{array 1 2}}>Foo Bar</LinkTo>`)
+      );
+
+      await this.visit('/foo/1/bar/2');
+
+      assert.ok(
+        this.$('a[href="/foo/1"]').is('.active'),
+        'The link to foo.index should be active when on foo.bar'
+      );
+      assert.ok(
+        this.$('a[href="/foo/1/bar/2"]').is('.active'),
+        'The link to foo.bar should be active when on foo.bar'
       );
     }
 
@@ -914,10 +969,12 @@ moduleFor(
         }
       );
 
-      this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
-      this.addTemplate(
-        'index.about',
-        `<LinkTo id='other-link' @route='items' @current-when={{this.currentWhen}}>ITEM</LinkTo>`
+      this.add('template:index', precompileTemplate(`<h3 class="home">Home</h3>{{outlet}}`));
+      this.add(
+        'template:index.about',
+        precompileTemplate(
+          `<LinkTo id='other-link' @route='items' @current-when={{this.currentWhen}}>ITEM</LinkTo>`
+        )
       );
 
       await this.visit('/about');
@@ -938,18 +995,24 @@ moduleFor(
         this.route('foo');
       });
 
-      this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
-      this.addTemplate(
-        'index.about',
-        `<LinkTo id='link1' @route='item' @current-when='item index'>ITEM</LinkTo>`
+      this.add('template:index', precompileTemplate(`<h3 class="home">Home</h3>{{outlet}}`));
+      this.add(
+        'template:index.about',
+        precompileTemplate(
+          `<LinkTo id='link1' @route='item' @current-when='item index'>ITEM</LinkTo>`
+        )
       );
-      this.addTemplate(
-        'item',
-        `<LinkTo id='link2' @route='item' @current-when='item index'>ITEM</LinkTo>`
+      this.add(
+        'template:item',
+        precompileTemplate(
+          `<LinkTo id='link2' @route='item' @current-when='item index'>ITEM</LinkTo>`
+        )
       );
-      this.addTemplate(
-        'foo',
-        `<LinkTo id='link3' @route='item' @current-when='item index'>ITEM</LinkTo>`
+      this.add(
+        'template:foo',
+        precompileTemplate(
+          `<LinkTo id='link3' @route='item' @current-when='item index'>ITEM</LinkTo>`
+        )
       );
 
       await this.visit('/about');
@@ -985,12 +1048,12 @@ moduleFor(
         this.route('item');
       });
 
-      this.addTemplate(
-        'index.about',
-        `
+      this.add(
+        'template:index.about',
+        precompileTemplate(`
         <LinkTo id='index-link' @route='index' @current-when={{this.isCurrent}}>ITEM</LinkTo>
         <LinkTo id='about-link' @route='item' @current-when={{true}}>ITEM</LinkTo>
-        `
+        `)
       );
 
       let controller;
@@ -1027,17 +1090,17 @@ moduleFor(
     }
 
     async ['@test it defaults to bubbling'](assert) {
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(`
         <div {{on "click" this.hide}}>
           <LinkTo id='about-contact' @route='about.contact'>About</LinkTo>
         </div>
         {{outlet}}
-        `
+        `)
       );
 
-      this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
+      this.add('template:about.contact', precompileTemplate(`<h1 id='contact'>Contact</h1>`));
 
       this.router.map(function () {
         this.route('about', function () {
@@ -1066,19 +1129,19 @@ moduleFor(
     }
 
     async [`The propagation of the click event can be stopped`](assert) {
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(`
         <div {{on 'click' this.hide}}>
           <LinkTo id='about-contact' @route='about.contact' {{on 'click' this.stopPropagation}}>
             About
           </LinkTo>
         </div>
         {{outlet}}
-        `
+        `)
       );
 
-      this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
+      this.add('template:about.contact', precompileTemplate(`<h1 id='contact'>Contact</h1>`));
 
       this.router.map(function () {
         this.route('about', function () {
@@ -1116,9 +1179,9 @@ moduleFor(
         this.route('item', { path: '/item/:id' });
       });
 
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(`
         <h3 class="list">List</h3>
         <ul>
           {{#each @model as |person|}}
@@ -1130,24 +1193,24 @@ moduleFor(
           {{/each}}
         </ul>
         <LinkTo id='home-link' @route='index'>Home</LinkTo>
-        `
+        `)
       );
 
-      this.addTemplate(
-        'item',
-        `
+      this.add(
+        'template:item',
+        precompileTemplate(`
         <h3 class="item">Item</h3>
         <p>{{@model.name}}</p>
         <LinkTo id='home-link' @route='index'>Home</LinkTo>
-        `
+        `)
       );
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='about-link' @route='about'>About</LinkTo>
-        `
+        `)
       );
 
       this.add(
@@ -1166,11 +1229,7 @@ moduleFor(
       await this.visit('/about');
 
       assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
-      assert.equal(
-        normalizeUrl(this.$('#home-link').attr('href')),
-        '/',
-        'The home link points back at /'
-      );
+      assert.equal(this.$('#home-link').attr('href'), '/', 'The home link points back at /');
 
       await this.click('#yehuda');
 
@@ -1181,9 +1240,9 @@ moduleFor(
 
       await this.click('#about-link');
 
-      assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
-      assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
-      assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
+      assert.equal(this.$('li a#yehuda').attr('href'), '/item/yehuda');
+      assert.equal(this.$('li a#tom').attr('href'), '/item/tom');
+      assert.equal(this.$('li a#erik').attr('href'), '/item/erik');
 
       await this.click('#erik');
 
@@ -1192,14 +1251,14 @@ moduleFor(
     }
 
     async [`@test it binds some anchor html tag common attributes`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='self-link' @route='index' title='title-attr' rel='rel-attr' tabindex='-1'>
           Self
         </LinkTo>
-        `
+        `)
       );
 
       await this.visit('/');
@@ -1211,12 +1270,12 @@ moduleFor(
     }
 
     async [`@test it supports 'target' attribute`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='self-link' @route='index' target='_blank'>Self</LinkTo>
-        `
+        `)
       );
 
       await this.visit('/');
@@ -1226,12 +1285,12 @@ moduleFor(
     }
 
     async [`@test it supports 'target' attribute specified as a bound param`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='self-link' @route='index' target={{this.boundLinkTarget}}>Self</LinkTo>
-        `
+        `)
       );
 
       let controller = this;
@@ -1263,7 +1322,10 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate('index', `<LinkTo @route='about' id='about-link'>About</LinkTo>`);
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo @route='about' id='about-link'>About</LinkTo>`)
+      );
 
       await this.visit('/');
 
@@ -1271,12 +1333,16 @@ moduleFor(
     }
 
     async [`@test it does not call preventDefault if 'target' attribute is provided`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      if (QUnit.urlParams.skip_tests_with_target_blank) {
+        assert.ok('skipped');
+        return;
+      }
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='self-link' @route='index' target='_blank'>Self</LinkTo>
-        `
+        `)
       );
 
       await this.visit('/');
@@ -1285,12 +1351,12 @@ moduleFor(
     }
 
     async [`@test it should preventDefault when 'target = _self'`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <h3 class="home">Home</h3>
         <LinkTo id='self-link' @route='index' target='_self'>Self</LinkTo>
-        `
+        `)
       );
 
       await this.visit('/');
@@ -1299,13 +1365,18 @@ moduleFor(
     }
 
     async [`@test it should not transition if target is not equal to _self or empty`](assert) {
-      this.addTemplate(
-        'index',
-        `
+      if (QUnit.urlParams.skip_tests_with_target_blank) {
+        assert.ok('skipped');
+        return;
+      }
+
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <LinkTo id='about-link' @route='about' @replace={{true}} target='_blank'>
           About
         </LinkTo>
-        `
+        `)
       );
 
       this.router.map(function () {
@@ -1339,25 +1410,25 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'filter',
-        `
+      this.add(
+        'template:filter',
+        precompileTemplate(`
         <p>{{this.filter}}</p>
         <LinkTo id="link" @route="filter" @model="unpopular">Unpopular</LinkTo>
         <LinkTo id="path-link" @route="filter" @model={{this.filter}}>Unpopular</LinkTo>
         <LinkTo id="post-path-link" @route="post" @model={{this.post_id}}>Post</LinkTo>
         <LinkTo id="post-number-link" @route="post" @model={{123}}>Post</LinkTo>
         <LinkTo id="repo-object-link" @route="repo" @model={{this.repo}}>Repo</LinkTo>
-        `
+        `)
       );
 
       await this.visit('/filters/popular');
 
-      assert.equal(normalizeUrl(this.$('#link').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#path-link').attr('href')), '/filters/unpopular');
-      assert.equal(normalizeUrl(this.$('#post-path-link').attr('href')), '/post/123');
-      assert.equal(normalizeUrl(this.$('#post-number-link').attr('href')), '/post/123');
-      assert.equal(normalizeUrl(this.$('#repo-object-link').attr('href')), '/repo/ember/ember.js');
+      assert.equal(this.$('#link').attr('href'), '/filters/unpopular');
+      assert.equal(this.$('#path-link').attr('href'), '/filters/unpopular');
+      assert.equal(this.$('#post-path-link').attr('href'), '/post/123');
+      assert.equal(this.$('#post-number-link').attr('href'), '/post/123');
+      assert.equal(this.$('#repo-object-link').attr('href'), '/repo/ember/ember.js');
     }
 
     async [`@test [GH#4201] Shorthand for route.index shouldn't throw errors about context arguments`](
@@ -1380,14 +1451,14 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'lobby.index',
-        `<LinkTo id='lobby-link' @route='lobby' @model='foobar'>Lobby</LinkTo>`
+      this.add(
+        'template:lobby.index',
+        precompileTemplate(`<LinkTo id='lobby-link' @route='lobby' @model='foobar'>Lobby</LinkTo>`)
       );
 
-      this.addTemplate(
-        'lobby.list',
-        `<LinkTo id='lobby-link' @route='lobby' @model='foobar'>Lobby</LinkTo>`
+      this.add(
+        'template:lobby.list',
+        precompileTemplate(`<LinkTo id='lobby-link' @route='lobby' @model='foobar'>Lobby</LinkTo>`)
       );
 
       await this.visit('/lobby/list');
@@ -1402,12 +1473,12 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <LinkTo id='string-link' @route='index'>string</LinkTo>
         <LinkTo id='path-link' @route={{this.foo}}>path</LinkTo>
-        `
+        `)
       );
 
       let controller;
@@ -1425,8 +1496,8 @@ moduleFor(
       );
 
       let assertEquality = (href) => {
-        assert.equal(normalizeUrl(this.$('#string-link').attr('href')), '/');
-        assert.equal(normalizeUrl(this.$('#path-link').attr('href')), href);
+        assert.equal(this.$('#string-link').attr('href'), '/');
+        assert.equal(this.$('#path-link').attr('href'), href);
       };
 
       await this.visit('/');
@@ -1446,9 +1517,9 @@ moduleFor(
       let post = { id: '1' };
       let secondPost = { id: '2' };
 
-      this.addTemplate(
-        'index',
-        `<LinkTo id="post" @route="post" @model={{this.post}}>post</LinkTo>`
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo id="post" @route="post" @model={{this.post}}>post</LinkTo>`)
       );
 
       let controller;
@@ -1468,7 +1539,7 @@ moduleFor(
       runTask(() => controller.set('post', post));
 
       assert.equal(
-        normalizeUrl(this.$('#post').attr('href')),
+        this.$('#post').attr('href'),
         '/posts/1',
         'precond - Link has rendered href attr properly'
       );
@@ -1497,15 +1568,15 @@ moduleFor(
         });
       });
 
-      this.addTemplate(
-        'about',
-        `
+      this.add(
+        'template:about',
+        precompileTemplate(`
         <div id='about'>
           <LinkTo id='about-link' @route='about'>About</LinkTo>
           <LinkTo id='item-link' @route='about.item'>Item</LinkTo>
           {{outlet}}
         </div>
-        `
+        `)
       );
 
       await this.visit('/about');
@@ -1542,9 +1613,9 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         {{#each this.routeNames as |routeName|}}
           <LinkTo @route={{routeName}}>{{routeName}}</LinkTo>
         {{/each}}
@@ -1553,7 +1624,7 @@ moduleFor(
         {{/each}}
         <LinkTo @route={{this.route1}}>a</LinkTo>
         <LinkTo @route={{this.route2}}>b</LinkTo>
-        `
+        `)
       );
 
       let linksEqual = (links, expected) => {
@@ -1562,9 +1633,8 @@ moduleFor(
         let idx;
         for (idx = 0; idx < links.length; idx++) {
           let href = this.$(links[idx]).attr('href');
-          // Old IE includes the whole hostname as well
           assert.equal(
-            href.slice(-expected[idx].length),
+            href,
             expected[idx],
             `Expected link to be '${expected[idx]}', but was '${href}'`
           );
@@ -1594,7 +1664,7 @@ moduleFor(
         this.route('post', { path: 'post/:post_id' });
       });
 
-      this.addTemplate('application', `<LinkTo @route='post'>Post</LinkTo>`);
+      this.add('template:application', precompileTemplate(`<LinkTo @route='post'>Post</LinkTo>`));
 
       return assert.rejectsAssertion(
         this.visit('/'),
@@ -1609,15 +1679,15 @@ moduleFor(
         this.route('post', { path: 'post/:post_id' });
       });
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(`
         <LinkTo id='home-link' @route='index'>Home</LinkTo>
         <LinkTo id='default-post-link' @route='post' @model={{this.defaultPost}}>Default Post</LinkTo>
         {{#if this.currentPost}}
           <LinkTo id='current-post-link' @route='post' @model={{this.currentPost}}>Current Post</LinkTo>
         {{/if}}
-        `
+        `)
       );
 
       this.add(
@@ -1661,12 +1731,12 @@ moduleFor(
         });
       });
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(`
         <LinkTo id='omg-link' @route='things' @model='omg'>OMG</LinkTo>
         <LinkTo id='lol-link' @route='things' @model='lol'>LOL</LinkTo>
-        `
+        `)
       );
 
       await this.visit('/things/omg');
@@ -1691,7 +1761,10 @@ moduleFor(
         }
       );
 
-      this.addTemplate('index', `<LinkTo id='the-link' @route='index'>Index</LinkTo>`);
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo id='the-link' @route='index'>Index</LinkTo>`)
+      );
 
       await this.visit('/');
 
@@ -1709,9 +1782,9 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'index',
-        `<LinkTo id='the-link' @route='index' @query={{(hash)}}>Index</LinkTo>`
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo id='the-link' @route='index' @query={{(hash)}}>Index</LinkTo>`)
       );
 
       await this.visit('/');
@@ -1733,9 +1806,11 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'application',
-        `<LinkTo id='the-link' @query={{hash foo='456' bar='NAW'}}>Index</LinkTo>`
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `<LinkTo id='the-link' @query={{hash foo='456' bar='NAW'}}>Index</LinkTo>`
+        )
       );
 
       await this.visit('/');
@@ -1767,12 +1842,14 @@ moduleFor(
         }
       );
 
-      this.addTemplate(
-        'index',
-        `<LinkTo @route='post' @model={{hash id="someId" user=@model.user}}>Post</LinkTo>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<LinkTo @route='post' @model={{hash id="someId" user=@model.user}}>Post</LinkTo>`
+        )
       );
 
-      this.addTemplate('post', 'Post: {{@model.user.name}}');
+      this.add('template:post', precompileTemplate('Post: {{@model.user.name}}'));
 
       await this.visit('/');
 
@@ -1806,7 +1883,10 @@ moduleFor(
         }
       );
 
-      this.addTemplate('application', `<LinkTo id='parent-link' @route='parent'>Parent</LinkTo>`);
+      this.add(
+        'template:application',
+        precompileTemplate(`<LinkTo id='parent-link' @route='parent'>Parent</LinkTo>`)
+      );
 
       await this.visit('/');
 
@@ -1831,16 +1911,16 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(`
         <LinkTo id='context-link' @route={{this.destinationRoute}} @model={{this.routeContext}} @loadingClass='i-am-loading'>
           string
         </LinkTo>
         <LinkTo id='static-link' @route={{this.secondRoute}} @loadingClass={{this.loadingClass}}>
           string
         </LinkTo>
-        `
+        `)
       );
 
       let controller;
@@ -1872,10 +1952,10 @@ moduleFor(
 
       function assertLinkStatus(link, url) {
         if (url) {
-          assert.equal(normalizeUrl(link.attr('href')), url, 'loaded link-to has expected href');
+          assert.equal(link.attr('href'), url, 'loaded link-to has expected href');
           assert.ok(!link.hasClass('i-am-loading'), 'loaded linkComponent has no loadingClass');
         } else {
-          assert.equal(normalizeUrl(link.attr('href')), '#', "unloaded link-to has href='#'");
+          assert.equal(link.attr('href'), '#', "unloaded link-to has href='#'");
           assert.ok(link.hasClass('i-am-loading'), 'loading linkComponent has loadingClass');
         }
       }

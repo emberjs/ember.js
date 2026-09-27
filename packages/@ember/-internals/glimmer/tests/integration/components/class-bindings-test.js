@@ -1,6 +1,8 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { Component } from '../../utils/helpers';
 
@@ -12,10 +14,10 @@ moduleFor(
         classNameBindings = ['foo', 'isEnabled:enabled', 'isHappy:happy:sad'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo isEnabled=this.isEnabled isHappy=this.isHappy}}', {
         foo: 'foo',
@@ -77,10 +79,10 @@ moduleFor(
         classNameBindings = ['attrs.joker:purple:green', 'attrs.batman.robin:black:red'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar joker=this.model.wat batman=this.model.super}}', {
         model: { wat: false, super: { robin: true } },
@@ -130,10 +132,10 @@ moduleFor(
         classNameBindings = ['foo.bar', 'is.enabled:enabled', 'is.happy:happy:sad'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar foo=this.foo is=this.is}}', {
         foo: { bar: 'foo-bar' },
@@ -204,10 +206,10 @@ moduleFor(
         classNameBindings = ['fooBar', 'nested.fooBarBaz'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar fooBar=this.fooBar nested=this.nested}}', {
         fooBar: true,
@@ -275,10 +277,10 @@ moduleFor(
         classNameBindings = ['isEnabled::not-enabled'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar isEnabled=this.enabled}}', {
         enabled: false,
@@ -312,10 +314,10 @@ moduleFor(
         classNameBindings = [':class-one', ':class-two'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{foo-bar}}', {
         enabled: false,
@@ -341,10 +343,10 @@ moduleFor(
         classNameBindings = ['i:think:i am:so:clever'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
@@ -358,10 +360,10 @@ moduleFor(
         classNameBindings = ['foo', , 'bar']; // eslint-disable-line no-sparse-arrays
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
@@ -375,10 +377,10 @@ moduleFor(
         classNameBindings = ['foo', '', 'bar'];
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');
@@ -404,10 +406,10 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render(
         strip`
@@ -551,10 +553,10 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       expectAssertion(() => {
         this.render('{{foo-bar}}');

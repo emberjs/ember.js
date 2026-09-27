@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
-class Person extends Ember.Object {
+class Person extends EmberObject {
   declare firstName: string;
   declare lastName: string;
 
@@ -25,7 +25,7 @@ const person = Person.create({
 expectTypeOf(person.fullName).toBeString();
 expectTypeOf(person.extra).toBeNumber();
 
-class PersonWithStatics extends Ember.Object {
+class PersonWithStatics extends EmberObject {
   static isPerson = true;
 }
 const PersonWithStatics2 = PersonWithStatics.extend({});

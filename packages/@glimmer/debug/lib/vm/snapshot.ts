@@ -8,10 +8,10 @@ import type {
   VmMachineOp,
   VmOp,
 } from '@glimmer/interfaces';
-import { exhausted } from '@glimmer/debug-util';
+import { exhausted } from '@glimmer/debug-util/lib/platform-utils';
 import { LOCAL_SUBTLE_LOGGING } from '@glimmer/local-debug-flags';
-import { zipArrays, zipTuples } from '@glimmer/util';
-import { $fp, $pc } from '@glimmer/vm';
+import { zipArrays, zipTuples } from '@glimmer/util/lib/array-utils';
+import { $fp, $pc } from '@glimmer/vm/lib/registers';
 
 import type { Fragment } from '../render/fragment';
 

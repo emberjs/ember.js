@@ -9,18 +9,14 @@ import type {
   ReferenceType,
   UnboundReference,
 } from '@glimmer/interfaces';
-import type { Revision, Tag } from '@glimmer/validator';
-import { expect } from '@glimmer/debug-util';
+import type { Revision } from '@glimmer/validator/lib/validators';
+import type { Tag } from '@glimmer/interfaces';
+import { expect } from '@glimmer/debug-util/lib/platform-utils';
+import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { getProp, setProp } from '@glimmer/global-context';
-import { isDict } from '@glimmer/util';
-import {
-  CONSTANT_TAG,
-  consumeTag,
-  INITIAL,
-  track,
-  validateTag,
-  valueForTag,
-} from '@glimmer/validator';
+import { isDict } from '@glimmer/util/lib/collections';
+import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import { consumeTag, track } from '@glimmer/validator/lib/tracking';
 
 export const REFERENCE: ReferenceSymbol = Symbol('REFERENCE') as ReferenceSymbol;
 
@@ -40,6 +36,7 @@ export interface ReferenceEnvironment {
 }
 
 class ReferenceImpl<T = unknown> implements Reference<T> {
+  [DESTROYABLE_META_KEY]: object | undefined;
   [REFERENCE]: ReferenceType;
   public tag: Nullable<Tag> = null;
   public lastRevision: Revision = INITIAL;
@@ -267,7 +264,7 @@ if (DEBUG) {
 
     ref[REFERENCE] = inner[REFERENCE];
 
-    ref.debugLabel = debugLabel;
+    ref.debugLabel = inner.debugLabel === false ? false : debugLabel;
 
     return ref;
   };

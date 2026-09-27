@@ -7,8 +7,9 @@ import {
   defineSimpleModifier,
 } from 'internal-test-helpers';
 
-import { Component } from '@ember/-internals/glimmer';
-import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
+import Component from '@glimmer/component';
+import { setModifierManager, modifierCapabilities, setComponentTemplate } from '@glimmer/manager';
+import { precompileTemplate } from '@ember/template-compilation';
 import EmberObject, { set } from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/debug-stack';
@@ -102,6 +103,35 @@ class ModifierManagerTest extends RenderingTestCase {
     runTask(() => set(this.context, 'truthy', false));
 
     runTask(() => set(this.context, 'truthy', true));
+  }
+
+  '@test destroys a dynamic modifier that was set after the initial render'(assert) {
+    let ModifierClass = setModifierManager(
+      (owner) => {
+        return new this.CustomModifierManager(owner);
+      },
+      class extends EmberObject {
+        didInsertElement() {
+          assert.step('didInsertElement');
+        }
+        didUpdate() {}
+        willDestroyElement() {
+          assert.step('willDestroyElement');
+        }
+      }
+    );
+
+    this.render('{{#if this.show}}<div {{this.dyn}}></div>{{/if}}', {
+      show: true,
+      dyn: undefined,
+    });
+    assert.verifySteps([]);
+
+    runTask(() => set(this.context, 'dyn', ModifierClass));
+    assert.verifySteps(['didInsertElement']);
+
+    runTask(() => set(this.context, 'show', false));
+    assert.verifySteps(['willDestroyElement']);
   }
 
   '@test associates manager even through an inheritance structure'(assert) {
@@ -502,16 +532,23 @@ moduleFor(
     '@test Can be curried'() {
       let val = defineSimpleModifier((element, [text]) => (element.innerHTML = text));
 
-      this.registerComponent('foo', {
-        template: '<div {{@value}}></div>',
-      });
+      this.owner.register(
+        'component:foo',
+        setComponentTemplate(
+          precompileTemplate('<div {{@value}}></div>'),
+          class extends Component {}
+        )
+      );
 
-      this.registerComponent('bar', {
-        template: '<Foo @value={{modifier this.val "Hello, world!"}}/>',
-        ComponentClass: class extends Component {
-          val = val;
-        },
-      });
+      this.owner.register(
+        'component:bar',
+        setComponentTemplate(
+          precompileTemplate('<Foo @value={{modifier this.val "Hello, world!"}}/>'),
+          class extends Component {
+            val = val;
+          }
+        )
+      );
 
       this.render('<Bar/>');
       this.assertText('Hello, world!');
@@ -522,14 +559,16 @@ moduleFor(
       let foo = defineSimpleHelper(() => 'Hello, world!');
       let bar = defineSimpleModifier((element, [value]) => (element.innerHTML = value));
 
-      this.registerComponent('baz', {
-        template: '<div {{this.bar (this.foo)}}></div>',
-        ComponentClass: class extends Component {
-          foo = foo;
-          bar = bar;
-          tagName = '';
-        },
-      });
+      this.owner.register(
+        'component:baz',
+        setComponentTemplate(
+          precompileTemplate('<div {{this.bar (this.foo)}}></div>'),
+          class extends Component {
+            foo = foo;
+            bar = bar;
+          }
+        )
+      );
 
       this.render('<Baz/>');
       this.assertHTML('<div>Hello, world!</div>');

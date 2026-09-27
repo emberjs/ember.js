@@ -1,14 +1,18 @@
 /**
-@module ember
+@module @ember/helper
 */
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createReadOnlyRef } from '@glimmer/reference';
+import { createReadOnlyRef } from '@glimmer/reference/lib/reference';
 import { assert } from '@ember/debug';
 import { internalHelper } from './internal-helper';
 
 /**
   The `readonly` helper let's you specify that a binding is one-way only,
   instead of two-way.
+  
+  This is a vestigial helper from the days of `@ember/component` and does not apply to
+  components extending from `@glimmer/component`.
+    
   When you pass a `readonly` binding from an outer context (e.g. parent component),
   to to an inner context (e.g. child component), you are saying that changing that
   property in the inner context does not change the value in the outer context.
@@ -19,14 +23,6 @@ import { internalHelper } from './internal-helper';
   export default class MyParent extends Component {
     totalClicks = 3;
   }
-  ```
-
-  ```app/templates/components/my-parent.hbs
-  {{log totalClicks}} // -> 3
-  <MyChild @childClickCount={{readonly totalClicks}} />
-  ```
-  ```
-  {{my-child childClickCount=(readonly totalClicks)}}
   ```
 
   Now, when you update `childClickCount`:
@@ -118,7 +114,9 @@ import { internalHelper } from './internal-helper';
 
   @method readonly
   @param {Object} [attr] the read-only attribute.
-  @for Ember.Templates.helpers
+  @for Keywords
+  @noimport
+  @static
   @private
 */
 export default internalHelper(({ positional }: CapturedArguments) => {

@@ -4,9 +4,11 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./primitives/cache": "./primitives/cache.ts"
+    "./primitives/cache": "./primitives/cache.ts",
+    "./*": "./*.ts"
   },
   "dependencies": {
-    "@ember/-internals": "workspace:*"
+    "@ember/-internals": "workspace:*",
+    "@glimmer/validator": "workspace:*"
   }
 }

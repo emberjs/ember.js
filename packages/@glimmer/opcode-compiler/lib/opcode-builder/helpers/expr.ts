@@ -1,5 +1,5 @@
 import type { WireFormat } from '@glimmer/interfaces';
-import { VM_PRIMITIVE_REFERENCE_OP } from '@glimmer/constants';
+import { VM_PRIMITIVE_REFERENCE_OP } from '@glimmer/constants/lib/syscall-ops';
 
 import type { PushExpressionOp } from '../../syntax/compilers';
 

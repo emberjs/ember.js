@@ -1,5 +1,6 @@
 import type { BuilderOp, HighLevelOp, SexpOpcode, SexpOpcodeMap } from '@glimmer/interfaces';
-import { localAssert, unwrap } from '@glimmer/debug-util';
+import assert from '@glimmer/debug-util/lib/assert';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 
 export type PushExpressionOp = (...op: BuilderOp | HighLevelOp) => void;
 
@@ -33,7 +34,7 @@ export class Compilers<PushOp extends PushExpressionOp, TSexpOpcodes extends Sex
     let name = sexp[0];
     let index = unwrap(this.names[name]);
     let func = this.funcs[index];
-    localAssert(func, `expected an implementation for ${sexp[0]}`);
+    assert(func, `expected an implementation for ${sexp[0]}`);
 
     func(op, sexp);
   }

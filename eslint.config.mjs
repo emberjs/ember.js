@@ -1,4 +1,5 @@
 import emberInternal from 'eslint-plugin-ember-internal';
+import emberLocal from './eslint-rules/index.cjs';
 import importPlugin from 'eslint-plugin-import';
 import qunitPluginRecommended from 'eslint-plugin-qunit/configs/recommended';
 import disableFeatures from 'eslint-plugin-disable-features';
@@ -17,22 +18,20 @@ export default [
     ignores: [
       'blueprints/*/*files/**/*.js',
       'blueprints/*/*files/**/*.ts',
-      'node-tests/fixtures/**/*.js',
+      'tests/node-blueprints/tests/fixtures/**/*.js',
       'docs/',
       '**/.*',
       '**/dist/',
+      '**/dist-prod/',
       '**/tmp/',
       '**/smoke-tests/',
       '**/types/',
       '**/type-tests/',
-      'glimmer-vm/repo-metadata/',
-      'glimmer-vm/**/rollup.config.mjs',
-      'glimmer-vm/packages/@glimmer/vm-babel-plugins/',
-      'glimmer-vm/bin/**',
-      'glimmer-vm/guides/**',
-      'glimmer-vm/benchmark/**',
-      'glimmer-vm/*.{js,ts}',
+      'internal-docs/guides/**',
       'packages/@glimmer-workspace/**',
+      'packages/@handlebars/parser/lib/parser.js',
+      'packages/@handlebars/parser/src/**',
+      'tracerbench-testing/',
     ],
   },
   pluginJs.configs.recommended,
@@ -42,6 +41,7 @@ export default [
   {
     plugins: {
       'ember-internal': emberInternal,
+      'ember-local': emberLocal,
       'disable-features': disableFeatures,
     },
 
@@ -76,7 +76,6 @@ export default [
       'qunit/no-commented-tests': 'off',
       'qunit/require-expect': 'off',
 
-      'disable-features/disable-async-await': 'error',
       'disable-features/disable-generator-functions': 'error',
       // Doesn't work with package.json#exports
       'import/no-unresolved': 'off',
@@ -139,17 +138,6 @@ export default [
     },
   },
   {
-    files: ['glimmer-vm/**/*.ts'],
-    languageOptions: {
-      ecmaVersion: 5,
-      sourceType: 'module',
-      parserOptions: {
-        project: './tsconfig-vm.json',
-        tsconfigRootDir: __dirname,
-      },
-    },
-  },
-  {
     // TODO: files: ['packages/**/*.[jt]s'],
     files: ['packages/**/*.js'],
 
@@ -168,6 +156,11 @@ export default [
         Symbol: true,
         WeakMap: true,
         Event: true,
+        MouseEvent: true,
+        KeyboardEvent: true,
+        DOMRect: true,
+        DOMRectList: true,
+        globalThis: true,
       },
 
       ecmaVersion: 2017,
@@ -177,6 +170,33 @@ export default [
     rules: {
       'ember-internal/require-yuidoc-access': 'error',
       'ember-internal/no-const-outside-module-scope': 'error',
+    },
+  },
+  {
+    files: ['packages/@handlebars/**/*.js'],
+
+    languageOptions: {
+      ecmaVersion: 2017,
+      sourceType: 'module',
+    },
+
+    rules: {
+      'ember-internal/require-yuidoc-access': 'off',
+      'ember-internal/no-const-outside-module-scope': 'off',
+      'disable-features/disable-async-await': 'off',
+      'disable-features/disable-generator-functions': 'off',
+      'no-implicit-coercion': 'off',
+      'no-unused-vars': 'off',
+      'import/namespace': 'off',
+    },
+  },
+  {
+    files: ['packages/@handlebars/parser/spec/**/*.js'],
+
+    languageOptions: {
+      globals: {
+        ...globals.mocha,
+      },
     },
   },
   {
@@ -212,26 +232,18 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
-      'node-tests/**/*.js',
-      'tests/node/**/*.js',
+      'tests/node-blueprints/**/*.js',
+      'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
-      'bin/**/*.js',
       'bin/**/*.mjs',
-      'tests/docs/*.js',
-      'config/**/*.js',
-      'lib/**/*.js',
       'server/**/*.js',
-      '**/testem.js',
-      '**/testem.ci-browsers.js',
-      '**/testem.browserstack.js',
-      'broccoli/**/*.js',
-      '**/ember-cli-build.js',
+      'broccoli/**/*.*',
+      '**/ember-cli-build.*',
       '**/*.cjs',
-      'glimmer-vm/server/**/*.js',
     ],
   },
   {
-    files: ['bin/changelog.js'],
+    files: ['bin/changelog.*'],
     rules: {
       'n/hashbang': 'off',
     },
@@ -241,20 +253,10 @@ export default [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
       '**/babel.test.config.mjs',
-      'node-tests/**/*.js',
-      'tests/node/**/*.js',
+      'tests/node-blueprints/**/*.js',
+      'smoke-tests/node-template/**/*.js',
       'blueprints/**/*.js',
-      'bin/**/*.js',
-      'bin/**/*.mjs',
-      'tests/docs/*.js',
-      'config/**/*.js',
-      'lib/**/*.js',
-      'server/**/*.js',
-      '**/testem.js',
-      '**/testem.ci-browsers.js',
-      '**/testem.browserstack.js',
-      'broccoli/**/*.js',
-      '**/ember-cli-build.js',
+      '**/ember-cli-build.*',
       '**/*.cjs',
     ],
 
@@ -274,7 +276,7 @@ export default [
     },
   },
   {
-    files: ['node-tests/**/*.js'],
+    files: ['tests/node-blueprints/**/*.js'],
 
     languageOptions: {
       globals: {
@@ -283,7 +285,7 @@ export default [
     },
   },
   {
-    files: ['tests/docs/**/*.js', 'tests/node/**/*.js'],
+    files: ['tests/docs/**/*.cjs', 'tests/node/**/*.cjs'],
 
     languageOptions: {
       globals: {
@@ -407,6 +409,8 @@ export default [
       '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
       '@typescript-eslint/naming-convention': 'off',
+      // TypeError: Cannot read properties of undefined (reading 'range')
+      '@typescript-eslint/no-unnecessary-type-arguments': 'off',
     },
   },
   {
@@ -493,6 +497,36 @@ export default [
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/naming-convention': 'off',
+    },
+  },
+  {
+    files: ['packages/@ember/**/*.{ts,js}', 'packages/@glimmer/**/*.{ts,js}'],
+    ignores: ['packages/@ember/**/tests/**', 'packages/@glimmer/**/test/**'],
+    rules: {
+      'ember-local/no-barrel-imports': 'error',
+    },
+  },
+  {
+    files: ['tests/node-blueprints/**/*'],
+    rules: {
+      // This package is not published, so we don't care about the extraneous check
+      'n/no-extraneous-require': 'off',
+    },
+  },
+  {
+    ...nodePlugin.configs['flat/recommended'],
+    files: ['tests/node-vitest/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      ecmaVersion: 2026,
+      sourceType: 'module',
+    },
+    rules: {
+      'no-throw-literal': 'error',
+      'disable-features/disable-async-await': 'off',
+      'disable-features/disable-generator-functions': 'off',
     },
   },
 ];

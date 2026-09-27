@@ -1,18 +1,23 @@
-import type { Meta } from '@ember/-internals/meta';
-import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from '@ember/-internals/metal';
+import type { Meta } from '@ember/-internals/meta/lib/meta';
+import type {
+  ExtendedMethodDecorator,
+  DecoratorPropertyDescriptor,
+} from '@ember/-internals/metal/lib/decorator';
 import {
   descriptorForProperty,
   isElementDescriptor,
   setClassicDecorator,
-} from '@ember/-internals/metal';
-import type { ElementDescriptor } from '@ember/-internals/metal';
+} from '@ember/-internals/metal/lib/decorator';
+import type { ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
 import {
   identifyModernDecoratorArgs,
   isModernDecoratorArgs,
 } from '@ember/-internals/metal/lib/decorator-util';
 import { assert } from '@ember/debug';
-import type { UpdatableTag } from '@glimmer/validator';
-import { consumeTag, tagFor, track, updateTag } from '@glimmer/validator';
+import type { UpdatableTag } from '@glimmer/interfaces';
+import { consumeTag, track } from '@glimmer/validator/lib/tracking';
+import { tagFor } from '@glimmer/validator/lib/meta';
+import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
 
 let wrapGetterSetter = function (target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;
@@ -75,38 +80,6 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
     }
   }
   ```
-
-  Classic Example:
-
-  ```js
-  import { tracked } from '@glimmer/tracking';
-  import { dependentKeyCompat } from '@ember/object/compat';
-  import EmberObject, { computed, observer, set } from '@ember/object';
-
-  const Person = EmberObject.extend({
-    firstName: tracked(),
-    lastName: tracked(),
-
-    fullName: dependentKeyCompat(function() {
-      return `${this.firstName} ${this.lastName}`;
-    }),
-  });
-
-  const Profile = EmberObject.extend({
-    person: null,
-
-    helloMessage: computed('person.fullName', function() {
-      return `Hello, ${this.person.fullName}!`;
-    }),
-
-    onNameUpdated: observer('person.fullName', function() {
-      console.log('person name updated!');
-    }),
-  });
-  ```
-
-  `dependentKeyCompat()` can receive a getter function or an object containing
-  `get`/`set` methods when used in classic classes, like computed properties.
 
   In general, only properties which you _expect_ to be watched by older,
   untracked clases should be marked as dependency compatible. The decorator is

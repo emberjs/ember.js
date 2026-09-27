@@ -22,7 +22,7 @@ module('@glimmer/validator: trackedWeakSet()', function () {
   test('does not work with built-ins', (assert) => {
     const set = trackedWeakSet();
     const pattern =
-      /(Invalid value used in weak set)|(WeakSet value must be an object)|(Attempted to add a non-object value to a WeakSet)/u;
+      /(Invalid value used in weak set)|(WeakSet value must be an object)|(Attempted to add a non-object value to a WeakSet)|(must be an object or an unregistered symbol)|(WeakSet values must be objects or non-registered symbols)/u;
 
     // @ts-expect-error -- point is testing constructor error
     assert.throws(() => set.add('aoeu'), pattern);
@@ -47,11 +47,12 @@ module('@glimmer/validator: trackedWeakSet()', function () {
     const set = trackedWeakSet();
 
     assert.false(set.has(obj));
+    assert.false(set.delete(obj), 'returns false when value does not exist');
 
     set.add(obj);
     assert.true(set.has(obj));
 
-    set.delete(obj);
+    assert.true(set.delete(obj), 'returns true when value exists');
     assert.false(set.has(obj));
   });
 });

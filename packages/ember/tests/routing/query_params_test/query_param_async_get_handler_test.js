@@ -1,8 +1,8 @@
-import { get } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
 
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
 
 // These tests mimic what happens with lazily loaded Engines.
 moduleFor(
@@ -49,9 +49,9 @@ moduleFor(
         },
 
         _getQPMeta(routeInfo) {
-          let handler = this._seenHandlers[routeInfo.name];
-          if (handler) {
-            return get(handler, '_qp');
+          let managed = this._seenHandlers[routeInfo.name];
+          if (managed) {
+            return managed.manager.qp(managed.bucket);
           }
         },
       };
@@ -67,13 +67,15 @@ moduleFor(
       this.setSingleQPController('post');
 
       let setupAppTemplate = () => {
-        this.addTemplate(
-          'application',
-          `
+        this.add(
+          'template:application',
+          precompileTemplate(
+            `
           <LinkTo @route='post' @model={{1337}} @query={{hash foo='bar'}} class='post-link is-1337'>Post</LinkTo>
           <LinkTo @route='post' @model={{7331}} @query={{hash foo='boo'}} class='post-link is-7331'>Post</LinkTo>
           {{outlet}}
           `
+          )
         );
       };
 
@@ -292,9 +294,11 @@ moduleFor(
         this.route('example');
       });
 
-      this.addTemplate(
-        'application',
-        "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
+      this.add(
+        'template:application',
+        precompileTemplate(
+          "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
+        )
       );
 
       this.setSingleQPController('example', 'foo', undefined, {

@@ -1,4 +1,5 @@
-import { isPresentArray, localAssert } from '@glimmer/debug-util';
+import { isPresentArray } from '@glimmer/debug-util/lib/present';
+import assert from '@glimmer/debug-util/lib/assert';
 
 import type { CharOffsetKind, HbsPositionKind, OffsetKind } from './kinds';
 import type { CharPosition, HbsPosition, InvisiblePosition, PositionData } from './offset';
@@ -119,14 +120,14 @@ class Matcher<Out, M extends Matches = Matches> {
   ): (left: PositionData, right: PositionData) => Out {
     const nesteds = this._whens.match(left);
 
-    localAssert(
+    assert(
       isPresentArray(nesteds),
       `no match defined for (${left}, ${right}) and no AnyMatch defined either`
     );
 
     const callback = new WhenList(nesteds).first(right);
 
-    localAssert(
+    assert(
       callback !== null,
       `no match defined for (${left}, ${right}) and no AnyMatch defined either`
     );

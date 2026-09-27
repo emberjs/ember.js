@@ -1,6 +1,6 @@
-import type { Container } from '@ember/-internals/container';
+import type Container from '@ember/-internals/container/lib/container';
 import type { FactoryClass, InternalFactory } from '@ember/-internals/owner';
-import type { RegisterOptions } from '@ember/owner';
+import type { RegisterOptions } from '@ember/-internals/owner';
 
 /**
   @module @ember/routing

@@ -1,12 +1,13 @@
-import Ember from 'ember';
+import { A, NativeArray } from '@ember/array';
+import EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
-class Person extends Ember.Object {
+class Person extends EmberObject {
   name = '';
   isHappy = false;
 }
 
-const people = Ember.A([
+const people = A([
   Person.create({ name: 'Yehuda', isHappy: true }),
   Person.create({ name: 'Majd', isHappy: false }),
 ]);
@@ -23,17 +24,17 @@ expectTypeOf(people.objectAt(0)).toEqualTypeOf<Person | undefined>();
 expectTypeOf(people.objectsAt([1, 2, 3])).toEqualTypeOf<Array<Person | undefined>>();
 
 expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Person[]>();
-expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Ember.NativeArray<Person>>();
+expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<NativeArray<Person>>();
 expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<Person[]>();
-expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<Ember.NativeArray<Person>>();
+expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<NativeArray<Person>>();
 expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<Person[]>();
 expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<Person[]>();
 
 expectTypeOf(people.get('[]')).toEqualTypeOf<typeof people>();
 expectTypeOf(people.get('[]').get('firstObject')).toEqualTypeOf<Person | undefined>();
 
-expectTypeOf(people.mapBy('isHappy')).toEqualTypeOf<Ember.NativeArray<boolean>>();
-expectTypeOf(people.mapBy('name.length')).toEqualTypeOf<Ember.NativeArray<unknown>>();
+expectTypeOf(people.mapBy('isHappy')).toEqualTypeOf<NativeArray<boolean>>();
+expectTypeOf(people.mapBy('name.length')).toEqualTypeOf<NativeArray<unknown>>();
 
 const last = people.get('lastObject');
 expectTypeOf(last).toEqualTypeOf<Person | undefined>();
@@ -46,7 +47,7 @@ if (first) {
   expectTypeOf(first.get('isHappy')).toBeBoolean();
 }
 
-const letters: Ember.NativeArray<string> = Ember.A(['a', 'b', 'c']);
+const letters: NativeArray<string> = A(['a', 'b', 'c']);
 const codes = letters.map((item, index, array) => {
   expectTypeOf(item).toBeString();
   expectTypeOf(index).toBeNumber();
@@ -56,11 +57,11 @@ const codes = letters.map((item, index, array) => {
 expectTypeOf(codes).toEqualTypeOf<number[]>();
 
 const value = '1,2,3';
-const filters = Ember.A(value.split(','));
+const filters = A(value.split(','));
 filters.push('4');
 filters.sort();
 
-const multiSortArr = Ember.A([
+const multiSortArr = A([
   { k: 'a', v: 'z' },
   { k: 'a', v: 'y' },
   { k: 'b', v: 'c' },

@@ -1,4 +1,5 @@
-import { deprecate, unwrap } from '@glimmer/debug-util';
+import { deprecate } from '@glimmer/debug-util/lib/assert';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 
 import type * as ASTv1 from '../v1/api';
 import type { VisitorKey, VisitorKeys } from '../v1/visitor-keys';
@@ -24,7 +25,7 @@ function getEnterFunction<N extends ASTv1.Node, K extends VisitorKey<N>>(
   if (typeof handler === 'function') {
     return handler;
   } else {
-    return handler.enter as NodeHandler<N> | KeyHandler<N, K>;
+    return handler.enter;
   }
 }
 
@@ -40,7 +41,7 @@ function getExitFunction<N extends ASTv1.Node, K extends VisitorKey<N>>(
   if (typeof handler === 'function') {
     return undefined;
   } else {
-    return handler.exit as NodeHandler<N> | KeyHandler<N, K>;
+    return handler.exit;
   }
 }
 

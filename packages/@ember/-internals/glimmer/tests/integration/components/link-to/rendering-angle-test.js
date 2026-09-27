@@ -9,13 +9,14 @@ import Router from '@ember/routing/router';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
 
 moduleFor(
   '<LinkTo /> component (rendering tests)',
   class extends ApplicationTestCase {
     async [`@test it throws a useful error if you invoke it wrong`](assert) {
-      this.addTemplate('application', `<LinkTo>Index</LinkTo>`);
+      this.add('template:application', precompileTemplate(`<LinkTo>Index</LinkTo>`));
 
       return assert.rejectsAssertion(
         this.visit('/'),
@@ -24,7 +25,10 @@ moduleFor(
     }
 
     async [`@test it throws a useful error if you pass the href argument`](assert) {
-      this.addTemplate('application', `<LinkTo @href="nope" @route="index">Index</LinkTo>`);
+      this.add(
+        'template:application',
+        precompileTemplate(`<LinkTo @href="nope" @route="index">Index</LinkTo>`)
+      );
 
       if (DEBUG) {
         await assert.rejects(
@@ -37,7 +41,10 @@ moduleFor(
     }
 
     async ['@test it should be able to be inserted in DOM when the router is not present']() {
-      this.addTemplate('application', `<LinkTo @route='index'>Go to Index</LinkTo>`);
+      this.add(
+        'template:application',
+        precompileTemplate(`<LinkTo @route='index'>Go to Index</LinkTo>`)
+      );
 
       await this.visit('/');
 
@@ -47,7 +54,10 @@ moduleFor(
     async ['@test it re-renders when title changes']() {
       let controller;
 
-      this.addTemplate('application', `<LinkTo @route='index'>{{this.title}}</LinkTo>`);
+      this.add(
+        'template:application',
+        precompileTemplate(`<LinkTo @route='index'>{{this.title}}</LinkTo>`)
+      );
 
       this.add(
         'controller:application',
@@ -73,7 +83,10 @@ moduleFor(
     async ['@test it re-computes active class when params change'](assert) {
       let controller;
 
-      this.addTemplate('application', '<LinkTo @route={{this.routeName}}>foo</LinkTo>');
+      this.add(
+        'template:application',
+        precompileTemplate('<LinkTo @route={{this.routeName}}>foo</LinkTo>')
+      );
 
       this.add(
         'controller:application',
@@ -101,18 +114,18 @@ moduleFor(
     }
 
     async ['@test able to popolate innermost dynamic segment when immediate parent route is active']() {
-      this.addTemplate('application', '{{outlet}}');
+      this.add('template:application', precompileTemplate('{{outlet}}'));
 
-      this.addTemplate('parents', '{{outlet}}');
+      this.add('template:parents', precompileTemplate('{{outlet}}'));
 
-      this.addTemplate(
-        'parents.parent',
-        '<LinkTo @route="parents.parent.child" @model=1>Link To Child</LinkTo>'
+      this.add(
+        'template:parents.parent',
+        precompileTemplate('<LinkTo @route="parents.parent.child" @model=1>Link To Child</LinkTo>')
       );
 
-      this.addTemplate(
-        'parents.parent.child',
-        '<LinkTo @route="parents.parent">Link To Parent</LinkTo>'
+      this.add(
+        'template:parents.parent.child',
+        precompileTemplate('<LinkTo @route="parents.parent">Link To Parent</LinkTo>')
       );
 
       this.add(

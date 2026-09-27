@@ -1,16 +1,23 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
 
 moduleFor(
   'Helpers test: {{yield}} helper',
   class extends RenderingTestCase {
     ['@test can yield to a default block']() {
-      this.registerComponent('yield-comp', {
-        template: '[In layout:] {{yield}}',
-      });
+      this.owner.register(
+        'component:yield-comp',
+        setComponentTemplate(
+          precompileTemplate('[In layout:] {{yield}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{#yield-comp}}[In Block:] {{this.object.title}}{{/yield-comp}}', {
         object: { title: 'Seattle' },
@@ -28,15 +35,13 @@ moduleFor(
 
     ['@test can yield to a named block']() {
       // This test fails when the default Ember component backing class is used:
-      this.registerComponent('yield-comp', {
-        template: '[In layout:] {{yield to="block"}}',
-
-        // It passes with no backing class:
-        // ComponentClass: null,
-
-        // And it passes using `GlimmerishComponent`:
-        // ComponentClass: require('../../utils/glimmerish-component').default,
-      });
+      this.owner.register(
+        'component:yield-comp',
+        setComponentTemplate(
+          precompileTemplate('[In layout:] {{yield to="block"}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('<YieldComp><:block>[In block:] {{this.object.title}}</:block></YieldComp>', {
         object: { title: 'Seattle' },
@@ -54,11 +59,15 @@ moduleFor(
     }
 
     ['@test <:else> and <:inverse> named blocks']() {
-      this.registerComponent('yielder', {
-        template:
-          '[:else][{{has-block "else"}}][{{yield to="else"}}]' +
-          '[:inverse][{{has-block "inverse"}}][{{yield to="inverse"}}]',
-      });
+      this.owner.register(
+        'component:yielder',
+        setComponentTemplate(
+          precompileTemplate(
+            '[:else][{{has-block "else"}}][{{yield to="else"}}][:inverse][{{has-block "inverse"}}][{{yield to="inverse"}}]'
+          ),
+          class extends Component {}
+        )
+      );
 
       this.render(
         '[<Yielder />]' +
@@ -76,12 +85,20 @@ moduleFor(
     }
 
     ['@test templates should yield to block inside a nested component']() {
-      this.registerComponent('outer-comp', {
-        template: '<div>[In layout:] {{yield}}</div>',
-      });
-      this.registerComponent('inner-comp', {
-        template: '{{#outer-comp}}[In Block:] {{this.object.title}}{{/outer-comp}}',
-      });
+      this.owner.register(
+        'component:outer-comp',
+        setComponentTemplate(
+          precompileTemplate('<div>[In layout:] {{yield}}</div>'),
+          class extends Component {}
+        )
+      );
+      this.owner.register(
+        'component:inner-comp',
+        setComponentTemplate(
+          precompileTemplate('{{#outer-comp}}[In Block:] {{@object.title}}{{/outer-comp}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{inner-comp object=this.object}}', {
         object: { title: 'Seattle' },
@@ -100,9 +117,13 @@ moduleFor(
     ['@test templates should yield to block, when the yield is embedded in a each helper']() {
       let list = [1, 2, 3];
 
-      this.registerComponent('outer-comp', {
-        template: '{{#each this.list as |item|}}{{yield}}{{/each}}',
-      });
+      this.owner.register(
+        'component:outer-comp',
+        setComponentTemplate(
+          precompileTemplate('{{#each @list as |item|}}{{yield}}{{/each}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{#outer-comp list=this.list}}Hello{{/outer-comp}}', {
         list: list,
@@ -119,9 +140,13 @@ moduleFor(
     }
 
     ['@test templates should yield to block, when the yield is embedded in a if helper']() {
-      this.registerComponent('outer-comp', {
-        template: '{{#if this.boolean}}{{yield}}{{/if}}',
-      });
+      this.owner.register(
+        'component:outer-comp',
+        setComponentTemplate(
+          precompileTemplate('{{#if @boolean}}{{yield}}{{/if}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{#outer-comp boolean=this.boolean}}Hello{{/outer-comp}}', {
         boolean: true,
@@ -138,9 +163,13 @@ moduleFor(
     }
 
     ['@test simple curlies inside of a yielded block should work when the yield is nested inside of another view']() {
-      this.registerComponent('kiwi-comp', {
-        template: '{{#if this.falsy}}{{else}}{{yield}}{{/if}}',
-      });
+      this.owner.register(
+        'component:kiwi-comp',
+        setComponentTemplate(
+          precompileTemplate('{{#if @falsy}}{{else}}{{yield}}{{/if}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{#kiwi-comp}}{{this.text}}{{/kiwi-comp}}', { text: 'ohai' });
       this.assertText('ohai');
@@ -155,12 +184,20 @@ moduleFor(
     }
 
     ['@test nested simple curlies inside of a yielded block should work when the yield is nested inside of another view']() {
-      this.registerComponent('parent-comp', {
-        template: '{{#if this.falsy}}{{else}}{{yield}}{{/if}}',
-      });
-      this.registerComponent('child-comp', {
-        template: '{{#if this.falsy}}{{else}}{{this.text}}{{/if}}',
-      });
+      this.owner.register(
+        'component:parent-comp',
+        setComponentTemplate(
+          precompileTemplate('{{#if @falsy}}{{else}}{{yield}}{{/if}}'),
+          class extends Component {}
+        )
+      );
+      this.owner.register(
+        'component:child-comp',
+        setComponentTemplate(
+          precompileTemplate('{{#if @falsy}}{{else}}{{@text}}{{/if}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{#parent-comp}}{{child-comp text=this.text}}{{/parent-comp}}', {
         text: 'ohai',
@@ -177,10 +214,17 @@ moduleFor(
     }
 
     ['@test yielding to a non-existent block is not an error']() {
-      this.registerComponent('yielding-comp', { template: 'Hello:{{yield}}' });
-      this.registerComponent('outer-comp', {
-        template: '{{yielding-comp}} {{this.title}}',
-      });
+      this.owner.register(
+        'component:yielding-comp',
+        setComponentTemplate(precompileTemplate('Hello:{{yield}}'), class extends Component {})
+      );
+      this.owner.register(
+        'component:outer-comp',
+        setComponentTemplate(
+          precompileTemplate('{{yielding-comp}} {{@title}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{outer-comp title=this.title}}', { title: 'Mr. Selden' });
 
@@ -200,10 +244,13 @@ moduleFor(
         boundText = 'Inner';
       };
 
-      this.registerComponent('kiwi-comp', {
-        ComponentClass: KiwiCompComponent,
-        template: '<p>{{this.boundText}}</p><p>{{yield}}</p>',
-      });
+      this.owner.register(
+        'component:kiwi-comp',
+        setComponentTemplate(
+          precompileTemplate('<p>{{this.boundText}}</p><p>{{yield}}</p>'),
+          KiwiCompComponent
+        )
+      );
 
       this.render('{{#kiwi-comp}}{{this.boundText}}{{/kiwi-comp}}', {
         boundText: 'Original',
@@ -224,10 +271,13 @@ moduleFor(
         boundText = 'Inner';
       };
 
-      this.registerComponent('kiwi-comp', {
-        ComponentClass: KiwiCompComponent,
-        template: '<p>{{this.boundText}}</p><p>{{yield}}</p>',
-      });
+      this.owner.register(
+        'component:kiwi-comp',
+        setComponentTemplate(
+          precompileTemplate('<p>{{this.boundText}}</p><p>{{yield}}</p>'),
+          KiwiCompComponent
+        )
+      );
 
       this.render('{{#let this.boundText as |item|}}{{#kiwi-comp}}{{item}}{{/kiwi-comp}}{{/let}}', {
         boundText: 'Outer',
@@ -248,10 +298,15 @@ moduleFor(
         boundText = 'Inner';
       };
 
-      this.registerComponent('kiwi-comp', {
-        ComponentClass: KiwiCompComponent,
-        template: '{{#let this.boundText as |item|}}<p>{{item}}</p><p>{{yield}}</p>{{/let}}',
-      });
+      this.owner.register(
+        'component:kiwi-comp',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#let this.boundText as |item|}}<p>{{item}}</p><p>{{yield}}</p>{{/let}}'
+          ),
+          KiwiCompComponent
+        )
+      );
 
       this.render('{{#kiwi-comp}}{{this.item}}{{/kiwi-comp}}', { item: 'Outer' });
       this.assertText('InnerOuter');
@@ -266,9 +321,13 @@ moduleFor(
     }
 
     ['@test can bind a block param to a component and use it in yield']() {
-      this.registerComponent('kiwi-comp', {
-        template: '<p>{{this.content}}</p><p>{{yield}}</p>',
-      });
+      this.owner.register(
+        'component:kiwi-comp',
+        setComponentTemplate(
+          precompileTemplate('<p>{{@content}}</p><p>{{yield}}</p>'),
+          class extends Component {}
+        )
+      );
 
       this.render(
         '{{#let this.boundText as |item|}}{{#kiwi-comp content=item}}{{item}}{{/kiwi-comp}}{{/let}}',
@@ -287,11 +346,11 @@ moduleFor(
 
     // INUR not need with no data update
     ['@test yield should not introduce a view'](assert) {
-      let ParentCompComponent = class extends Component {
+      let ParentCompComponent = class extends EmberComponent {
         isParentComponent = true;
       };
 
-      let ChildCompComponent = class extends Component {
+      let ChildCompComponent = class extends EmberComponent {
         didReceiveAttrs() {
           super.didReceiveAttrs();
           let parentView = this.get('parentView');
@@ -300,22 +359,27 @@ moduleFor(
         }
       };
 
-      this.registerComponent('parent-comp', {
-        ComponentClass: ParentCompComponent,
-        template: '{{yield}}',
-      });
-      this.registerComponent('child-comp', {
-        ComponentClass: ChildCompComponent,
-      });
+      this.owner.register(
+        'component:parent-comp',
+        setComponentTemplate(precompileTemplate('{{yield}}'), ParentCompComponent)
+      );
+      this.owner.register('component:child-comp', ChildCompComponent);
 
       this.render('{{#parent-comp}}{{child-comp}}{{/parent-comp}}');
     }
 
     ['@test yield with nested components (#3220)']() {
-      this.registerComponent('inner-component', { template: '{{yield}}' });
-      this.registerComponent('outer-component', {
-        template: '{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}',
-      });
+      this.owner.register(
+        'component:inner-component',
+        setComponentTemplate(precompileTemplate('{{yield}}'), class extends Component {})
+      );
+      this.owner.register(
+        'component:outer-component',
+        setComponentTemplate(
+          precompileTemplate('{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{#outer-component}}Hello {{this.boundText}}{{/outer-component}}', {
         boundText: 'world',

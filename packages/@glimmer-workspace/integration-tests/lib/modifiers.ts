@@ -27,9 +27,10 @@ export class TestModifierDefinitionState {
   constructor(public Klass?: TestModifierConstructor) {}
 }
 
-export class TestModifierManager
-  implements InternalModifierManager<TestModifier, TestModifierDefinitionState>
-{
+export class TestModifierManager implements InternalModifierManager<
+  TestModifier,
+  TestModifierDefinitionState
+> {
   create(
     _owner: Owner,
     element: SimpleElement,

@@ -2,15 +2,18 @@
 @module ember
 */
 
-import { context } from '@ember/-internals/environment';
-import { get, computed } from '@ember/-internals/metal';
+import { context } from '@ember/-internals/environment/lib/context';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import computed from '@ember/-internals/metal/lib/computed';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import { assert } from '@ember/debug';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 import { DEBUG } from '@glimmer/env';
 
 /**
-`Ember.TargetActionSupport` is a mixin that can be included in a class
-to add a `triggerAction` method with semantics similar to the Handlebars
+`TargetActionSupport` is a mixin that can be included in a class
+to add a `triggerAction` method with semantics similar to the
 `{{action}}` helper. In normal Ember usage, the `{{action}}` helper is
 usually the best choice. This mixin is most often useful when you are
 doing more complex event handling in Components.
@@ -30,7 +33,7 @@ interface TargetActionSupport {
   /** @internal */
   _target?: unknown;
 }
-const TargetActionSupport = Mixin.create({
+const TargetActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
   target: null,
   action: null,
   actionContext: null,
@@ -50,6 +53,7 @@ const TargetActionSupport = Mixin.create({
   }),
 
   /**
+  The following is private and vestigial.
   Send an `action` with an `actionContext` to a `target`. The action, actionContext
   and target will be retrieved from properties of the object. For example:
 
@@ -102,11 +106,17 @@ const TargetActionSupport = Mixin.create({
   ```
 
   @method triggerAction
+  @deprecated Use a direct method call or closure action instead.
   @param opts {Object} (optional, with the optional keys action, target and/or actionContext)
   @return {Boolean} true if the action was sent successfully and did not return false
   @private
   */
   triggerAction(opts: { action?: string; target?: unknown; actionContext?: unknown } = {}) {
+    deprecateUntil(
+      `Calling \`triggerAction\` on ${this} is deprecated. Invoke the target method directly.`,
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT
+    );
+
     let { action, target, actionContext } = opts;
     action = action || get(this, 'action');
     target = target || getTarget(this);

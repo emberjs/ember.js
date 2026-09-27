@@ -22,12 +22,14 @@ export interface HelperManager<HelperStateBucket> {
   getDebugName?(definition: object): string;
 }
 
-export interface HelperManagerWithValue<HelperStateBucket>
-  extends HelperManager<HelperStateBucket> {
+export interface HelperManagerWithValue<
+  HelperStateBucket,
+> extends HelperManager<HelperStateBucket> {
   getValue(bucket: HelperStateBucket): unknown;
 }
 
-export interface HelperManagerWithDestroyable<HelperStateBucket>
-  extends HelperManager<HelperStateBucket> {
+export interface HelperManagerWithDestroyable<
+  HelperStateBucket,
+> extends HelperManager<HelperStateBucket> {
   getDestroyable(bucket: HelperStateBucket): object;
 }

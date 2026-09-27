@@ -1,5 +1,9 @@
-import type { ASTv2, src } from '@glimmer/syntax';
-import { DebugLogger, frag, fragment, valueFragment } from '@glimmer/debug';
+import type * as ASTv2 from '@glimmer/syntax/lib/v2/api';
+import type * as src from '@glimmer/syntax/lib/source/api';
+import * as fragment from '@glimmer/debug/lib/render/combinators';
+import { DebugLogger } from '@glimmer/debug/lib/render/logger';
+import { frag } from '@glimmer/debug/lib/render/fragment';
+import { value as valueFragment } from '@glimmer/debug/lib/render/basic';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
 

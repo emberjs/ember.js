@@ -1,10 +1,17 @@
-import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
+import {
+  clearElementView,
+  clearViewElement,
+  getViewElement,
+} from '@ember/-internals/views/lib/system/utils';
+import { sendCoreViewEvent } from '@ember/-internals/views/lib/views/core-view-utils';
 import { registerDestructor } from '@glimmer/destroyable';
 import type { CapturedNamedArguments } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef } from '@glimmer/reference';
-import type { Revision, Tag } from '@glimmer/validator';
-import { beginUntrackFrame, endUntrackFrame, valueForTag } from '@glimmer/validator';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import { createConstRef } from '@glimmer/reference/lib/reference';
+import type { Revision } from '@glimmer/validator/lib/validators';
+import type { Tag } from '@glimmer/interfaces';
+import { beginUntrackFrame, endUntrackFrame } from '@glimmer/validator/lib/tracking';
+import { valueForTag } from '@glimmer/validator/lib/validators';
 import type Component from '../component';
 
 type Finalizer = () => void;
@@ -46,8 +53,8 @@ export default class ComponentStateBucket {
 
     if (isInteractive) {
       beginUntrackFrame();
-      component.trigger('willDestroyElement');
-      component.trigger('willClearRender');
+      sendCoreViewEvent(component, 'willDestroyElement');
+      sendCoreViewEvent(component, 'willClearRender');
       endUntrackFrame();
 
       let element = getViewElement(component);

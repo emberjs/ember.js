@@ -1,4 +1,4 @@
-import type { Renderer } from '@ember/-internals/glimmer';
+import type { Renderer } from '@ember/-internals/glimmer/lib/renderer';
 import type Owner from '@ember/owner';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
 

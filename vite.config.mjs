@@ -11,6 +11,7 @@ import {
   exposedDependencies,
   hiddenDependencies,
 } from './rollup.config.mjs';
+import { templateTag } from '@embroider/vite';
 
 const require = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
@@ -22,7 +23,7 @@ export default defineConfig(({ mode }) => {
   const build = {
     rollupOptions: {
       preserveEntrySignatures: 'strict',
-      input: ['index.html', 'glimmer-vm/index.html'],
+      input: ['index.html'],
       output: {
         preserveModules: true,
       },
@@ -33,18 +34,38 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      templateTag(),
       babel({
         babelHelpers: 'bundled',
-        extensions: ['.js', '.ts'],
+        extensions: ['.js', '.ts', '.gjs', '.gts'],
         configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
       }),
       resolvePackages(
-        { ...exposedDependencies(), ...hiddenDependencies() },
+        {
+          ...exposedDependencies(),
+          ...hiddenDependencies(),
+          // @glimmer/component is published separately and gets its own rollup
+          // build, so it's not part of ember-source's build graph. Point the
+          // test suite at its source, so tests exercise what's in git instead
+          // of whatever happens to be sitting in its dist/ directory.
+          '@glimmer/component': resolve(projectRoot, 'packages/@glimmer/component/src/index.ts'),
+        },
         { enableLocalDebug: true }
       ),
       viteResolverBug(),
       version(),
     ],
+    // `@glimmer/component` is published as its own v2 addon and is only built
+    // (into `dist/`) by `rollup.config.mjs`. Tests run straight off source, so
+    // point the bare specifier at the TypeScript entrypoint instead.
+    resolve: {
+      alias: [
+        {
+          find: /^@glimmer\/component$/,
+          replacement: resolve(projectRoot, 'packages/@glimmer/component/src/index.ts'),
+        },
+      ],
+    },
     optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
     publicDir: 'tests/public',
     build,

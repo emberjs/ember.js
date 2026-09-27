@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
+import { precompileTemplate } from '@ember/template-compilation';
 import {
   ApplicationTestCase,
   classes as classMatcher,
@@ -26,9 +27,11 @@ moduleFor(
     }
 
     async ['@test it populates href with fully supplied query param values']() {
-      this.addTemplate(
-        'index',
-        `<LinkTo @route='index' @query={{hash foo='456' bar='NAW'}}>Index</LinkTo>`
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `<LinkTo @route='index' @query={{hash foo='456' bar='NAW'}}>Index</LinkTo>`
+        )
       );
 
       await this.visit('/');
@@ -41,7 +44,10 @@ moduleFor(
     }
 
     async ['@test it populates href with fully supplied query param values, but without @route param']() {
-      this.addTemplate('index', `<LinkTo @query={{hash foo='2' bar='NAW'}}>QueryParams</LinkTo>`);
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo @query={{hash foo='2' bar='NAW'}}>QueryParams</LinkTo>`)
+      );
 
       await this.visit('/');
 
@@ -53,13 +59,58 @@ moduleFor(
     }
 
     async ['@test it populates href with partially supplied query param values, but omits if value is default value']() {
-      this.addTemplate('index', `<LinkTo @route='index' @query={{hash foo='123'}}>Index</LinkTo>`);
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo @route='index' @query={{hash foo='123'}}>Index</LinkTo>`)
+      );
 
       await this.visit('/');
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'a',
         attrs: { href: '/', class: classMatcher('ember-view active') },
+        content: 'Index',
+      });
+    }
+
+    async ['@test it treats a nullish @query value as an empty query object']() {
+      this.add(
+        'controller:index',
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = '123';
+          maybeQuery = undefined;
+        }
+      );
+
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo @route='index' @query={{this.maybeQuery}}>Index</LinkTo>`)
+      );
+
+      await this.visit('/');
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/', class: classMatcher('ember-view active') },
+        content: 'Index',
+      });
+
+      let indexController = this.controllerFor('index');
+
+      runTask(() => indexController.set('maybeQuery', null));
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/', class: classMatcher('ember-view active') },
+        content: 'Index',
+      });
+
+      runTask(() => indexController.set('maybeQuery', { foo: '456' }));
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'a',
+        attrs: { href: '/?foo=456' },
         content: 'Index',
       });
     }
@@ -124,7 +175,10 @@ moduleFor(
     async [`@test it doesn't update controller QP properties on current route when invoked`](
       assert
     ) {
-      this.addTemplate('index', `<LinkTo id='the-link' @route='index'>Index</LinkTo>`);
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo id='the-link' @route='index'>Index</LinkTo>`)
+      );
 
       await this.visit('/');
 
@@ -142,9 +196,9 @@ moduleFor(
     async [`@test it doesn't update controller QP properties on current route when invoked (empty query-params obj)`](
       assert
     ) {
-      this.addTemplate(
-        'index',
-        `<LinkTo id='the-link' @route='index' @query={{(hash)}}>Index</LinkTo>`
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo id='the-link' @route='index' @query={{(hash)}}>Index</LinkTo>`)
       );
 
       await this.visit('/');
@@ -163,7 +217,10 @@ moduleFor(
     async [`@test it doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)`](
       assert
     ) {
-      this.addTemplate('index', `<LinkTo id='the-link' @query={{(hash)}}>Index</LinkTo>`);
+      this.add(
+        'template:index',
+        precompileTemplate(`<LinkTo id='the-link' @query={{(hash)}}>Index</LinkTo>`)
+      );
 
       await this.visit('/');
 
@@ -179,13 +236,15 @@ moduleFor(
     }
 
     async ['@test it updates controller QP properties on current route when invoked'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo id="the-link" @route='index' @query={{hash foo='456'}}>
           Index
         </LinkTo>
         `
+        )
       );
 
       await this.visit('/');
@@ -204,13 +263,15 @@ moduleFor(
     async ['@test it updates controller QP properties on current route when invoked (inferred route)'](
       assert
     ) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo id="the-link" @query={{hash foo='456'}}>
           Index
         </LinkTo>
         `
+        )
       );
 
       await this.visit('/');
@@ -233,13 +294,15 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo id="the-link" @route="about" @query={{hash baz='lol'}}>
           About
         </LinkTo>
         `
+        )
       );
 
       await this.visit('/');
@@ -282,11 +345,12 @@ moduleFor(
         }
       );
 
-      this.addTemplate('error', `Error: {{@model.message}}`);
+      this.add('template:error', precompileTemplate(`Error: {{@model.message}}`));
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         <LinkTo id="bad-link" @route="bad">
           Bad
         </LinkTo>
@@ -297,6 +361,7 @@ moduleFor(
 
         {{outlet}}
         `
+        )
       );
 
       await this.visit('/');
@@ -329,13 +394,15 @@ moduleFor(
     }
 
     async ['@test supplied QP properties can be bound'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo id="the-link" @query={{hash foo=this.boundThing}}>
           Index
         </LinkTo>
         `
+        )
       );
 
       await this.visit('/');
@@ -351,13 +418,15 @@ moduleFor(
     }
 
     async ['@test supplied QP properties can be bound (booleans)'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo id="the-link" @query={{hash abool=this.boundThing}}>
           Index
         </LinkTo>
         `
+        )
       );
 
       await this.visit('/');
@@ -381,13 +450,15 @@ moduleFor(
     }
 
     async ['@test href updates when unsupplied controller QP props change'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo id="the-link" @query={{hash foo='lol'}}>
           Index
         </LinkTo>
         `
+        )
       );
 
       await this.visit('/');
@@ -411,18 +482,20 @@ moduleFor(
     async ['@test [GH#12033] with only query params, it always transitions to the current route with the query params applied'](
       assert
     ) {
-      this.addTemplate(
-        'cars',
-        `
+      this.add(
+        'template:cars',
+        precompileTemplate(
+          `
         <LinkTo id='create-link' @route='cars.create'>Create new car</LinkTo>
         <LinkTo id='page2-link' @query={{hash page='2'}}>Page 2</LinkTo>
         {{outlet}}
         `
+        )
       );
 
-      this.addTemplate(
-        'cars.create',
-        `<LinkTo id='close-link' @route='cars'>Close create form</LinkTo>`
+      this.add(
+        'template:cars.create',
+        precompileTemplate(`<LinkTo id='close-link' @route='cars'>Close create form</LinkTo>`)
       );
 
       this.router.map(function () {
@@ -460,18 +533,21 @@ moduleFor(
     }
 
     async ['@test it applies activeClass when query params are not changed'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo id='cat-link' @query={{hash foo='cat'}}>Index</LinkTo>
         <LinkTo id='dog-link' @query={{hash foo='dog'}}>Index</LinkTo>
         <LinkTo id='change-nothing' @route='index'>Index</LinkTo>
         `
+        )
       );
 
-      this.addTemplate(
-        'search',
-        `
+      this.add(
+        'template:search',
+        precompileTemplate(
+          `
         <LinkTo id='same-search' @query={{hash search='same'}}>Index</LinkTo>
         <LinkTo id='change-search' @query={{hash search='change'}}>Index</LinkTo>
         <LinkTo id='same-search-add-archive' @query={{hash search='same' archive=true}}>Index</LinkTo>
@@ -481,11 +557,13 @@ moduleFor(
         <LinkTo id='remove-one' @query={{hash search='different' archive=false}}>Index</LinkTo>
         {{outlet}}
         `
+        )
       );
 
-      this.addTemplate(
-        'search.results',
-        `
+      this.add(
+        'template:search.results',
+        precompileTemplate(
+          `
         <LinkTo id='same-sort-child-only' @query={{hash sort='title'}}>Index</LinkTo>
         <LinkTo id='same-search-parent-only' @query={{hash search='same'}}>Index</LinkTo>
         <LinkTo id='change-search-parent-only' @query={{hash search='change'}}>Index</LinkTo>
@@ -494,6 +572,7 @@ moduleFor(
         <LinkTo id='change-search-same-sort-child-and-parent' @query={{hash search='change' sort='title'}}>Index</LinkTo>
         <LinkTo id='dog-link' @query={{hash foo='dog'}}>Index</LinkTo>
         `
+        )
       );
 
       this.router.map(function () {
@@ -560,13 +639,15 @@ moduleFor(
     }
 
     async ['@test it applies active class when query-param is a number'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo id='page-link' @query={{hash page=this.pageNumber}}>
           Index
         </LinkTo>
         `
+        )
       );
 
       this.add(
@@ -588,13 +669,15 @@ moduleFor(
     }
 
     async ['@test it applies active class when query-param is an array'](assert) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo id='array-link' @query={{hash pages=this.pagesArray}}>Index</LinkTo>
         <LinkTo id='bigger-link' @query={{hash pages=this.biggerArray}}>Index</LinkTo>
         <LinkTo id='empty-link' @query={{hash pages=this.emptyArray}}>Index</LinkTo>
         `
+        )
       );
 
       this.add(
@@ -638,14 +721,16 @@ moduleFor(
         });
       });
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         <LinkTo id='parent-link' @route='parent'>Parent</LinkTo>
         <LinkTo id='parent-child-link' @route='parent.child'>Child</LinkTo>
         <LinkTo id='parent-link-qp' @route='parent' @query={{hash foo=this.cat}}>Parent</LinkTo>
         {{outlet}}
         `
+        )
       );
 
       this.add(
@@ -677,24 +762,28 @@ moduleFor(
         this.route('parent');
       });
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         <LinkTo id='app-link' @route='parent' @query={{hash page=1}} @current-when='parent'>
           Parent
         </LinkTo>
         {{outlet}}
         `
+        )
       );
 
-      this.addTemplate(
-        'parent',
-        `
+      this.add(
+        'template:parent',
+        precompileTemplate(
+          `
         <LinkTo id='parent-link' @route='parent' @query={{hash page=1}} @current-when='parent'>
           Parent
         </LinkTo>
         {{outlet}}
         `
+        )
       );
 
       this.add(
@@ -747,13 +836,15 @@ moduleFor(
       let foos = RSVP.defer();
       let bars = RSVP.defer();
 
-      this.addTemplate(
-        'application',
-        `
+      this.add(
+        'template:application',
+        precompileTemplate(
+          `
         <LinkTo id='foos-link' @route='foos'>Foos</LinkTo>
         <LinkTo id='baz-foos-link' @route='foos' @query={{hash baz=true}}>Baz Foos</LinkTo>
         <LinkTo id='bars-link' @route='bars' @query={{hash quux=true}}>Quux Bars</LinkTo>
         `
+        )
       );
 
       this.add(
@@ -820,13 +911,15 @@ moduleFor(
     async ['@test it does not throw an error if called without a @route argument, but with a @query argument'](
       assert
     ) {
-      this.addTemplate(
-        'index',
-        `
+      this.add(
+        'template:index',
+        precompileTemplate(
+          `
         <LinkTo @query={{hash page=this.pageNumber}} id="page-link">
           Index
         </LinkTo>
         `
+        )
       );
 
       this.add(
@@ -871,9 +964,12 @@ moduleFor(
         });
       });
 
-      this.addTemplate('foo.bar', `<LinkTo id='baz-link' @route='foo.bar.baz'>Baz</LinkTo>`);
+      this.add(
+        'template:foo.bar',
+        precompileTemplate(`<LinkTo id='baz-link' @route='foo.bar.baz'>Baz</LinkTo>`)
+      );
 
-      this.addTemplate('foo.bar.loading', 'Loading');
+      this.add('template:foo.bar.loading', precompileTemplate('Loading'));
 
       this.add(
         'controller:foo.bar',

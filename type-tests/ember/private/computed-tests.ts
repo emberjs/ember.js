@@ -1,16 +1,16 @@
-import Ember from 'ember';
+import EmberObject, { computed } from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
-class Example1 extends Ember.Object {
+class Example1 extends EmberObject {
   firstName = '';
   lastName = '';
 
-  @Ember.computed('fullName')
+  @computed('fullName')
   get allNames() {
     return [this.fullName];
   }
 
-  @Ember.computed('firstName', 'lastName')
+  @computed('firstName', 'lastName')
   get fullName() {
     return `${this.firstName} ${this.lastName}`;
   }

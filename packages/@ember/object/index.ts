@@ -1,13 +1,13 @@
 import { assert } from '@ember/debug';
-import { ENV } from '@ember/-internals/environment';
-import type { ElementDescriptor, ExtendedMethodDecorator } from '@ember/-internals/metal';
-import {
-  isElementDescriptor,
-  expandProperties,
-  setClassicDecorator,
-} from '@ember/-internals/metal';
-import { getFactoryFor } from '@ember/-internals/container';
-import { setObservers } from '@ember/-internals/utils';
+import { ENV } from '@ember/-internals/environment/lib/env';
+import type {
+  ElementDescriptor,
+  ExtendedMethodDecorator,
+} from '@ember/-internals/metal/lib/decorator';
+import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal/lib/decorator';
+import expandProperties from '@ember/-internals/metal/lib/expand_properties';
+import { getFactoryFor } from '@ember/-internals/container/lib/container';
+import { setObservers } from '@ember/-internals/utils/lib/super';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
 import Observable from '@ember/object/observable';
@@ -18,16 +18,13 @@ import {
 } from '@ember/-internals/metal/lib/decorator-util';
 import { findDescriptor } from '@ember/-internals/utils/lib/lookup-descriptor';
 
-export {
-  notifyPropertyChange,
-  defineProperty,
-  get,
-  set,
-  getProperties,
-  setProperties,
-  computed,
-  trySet,
-} from '@ember/-internals/metal';
+export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
+export { defineProperty } from '@ember/-internals/metal/lib/properties';
+export { get } from '@ember/-internals/metal/lib/property_get';
+export { set, trySet } from '@ember/-internals/metal/lib/property_set';
+export { default as getProperties } from '@ember/-internals/metal/lib/get_properties';
+export { default as setProperties } from '@ember/-internals/metal/lib/set_properties';
+export { default as computed } from '@ember/-internals/metal/lib/computed';
 
 /**
 @module @ember/object
@@ -58,8 +55,8 @@ export default EmberObject;
   Decorator that turns the target function into an Action which can be accessed
   directly by reference.
 
-  ```js
-  import Component from '@ember/component';
+  ```gjs
+  import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
   import { action } from '@ember/object';
 
@@ -70,24 +67,24 @@ export default EmberObject;
     toggleShowing() {
       this.isShowing = !this.isShowing;
     }
+    
+    <template>
+      <button {{on "click" this.toggleShowing}}>Show tooltip</button>
+    
+      {{#if isShowing}}
+        <div class="tooltip">
+          I'm a tooltip!
+        </div>
+      {{/if}}
+    </template>
   }
-  ```
-  ```hbs
-  <!-- template.hbs -->
-  <button {{on "click" this.toggleShowing}}>Show tooltip</button>
-
-  {{#if isShowing}}
-    <div class="tooltip">
-      I'm a tooltip!
-    </div>
-  {{/if}}
   ```
 
   It also binds the function directly to the instance, so it can be used in any
   context and will correctly refer to the class it came from:
 
-  ```js
-  import Component from '@ember/component';
+  ```gjs
+  import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
   import { action } from '@ember/object';
 
@@ -106,6 +103,10 @@ export default EmberObject;
     toggleShowing() {
       this.isShowing = !this.isShowing;
     }
+    
+    <template>
+      {{!-- ...--}}
+    </template>
   }
   ```
 
@@ -261,9 +262,10 @@ type ObserverDefinition<T extends AnyFn> = {
   });
   ```
 
-  Also available as `Function.prototype.observes` if prototype extensions are
-  enabled.
-
+  While observers are still supported, there are [plans to deprecate them](https://github.com/emberjs/rfcs/pull/1115)
+  See the [in-progress deprecation guide](https://github.com/ember-learn/deprecation-app/pull/1407) 
+  for guidance on how to avoid using observers.
+ 
   @method observer
   @for @ember/object
   @param {String} propertyNames*

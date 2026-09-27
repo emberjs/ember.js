@@ -24,12 +24,15 @@ export default function compile(
 ): TemplateFactory {
   options.locals = options.locals ?? Object.keys(scopeValues ?? {});
   let [block, usedLocals] = precompileJSON(templateSource, compileOptions(options));
-  let reifiedScopeValues = usedLocals.map((key) => scopeValues[key]);
+  let reifiedScope: Record<string, unknown> = {};
+  for (let key of usedLocals) {
+    reifiedScope[key] = scopeValues[key];
+  }
 
   let templateBlock: SerializedTemplateWithLazyBlock = {
     block: JSON.stringify(block),
     moduleName: options.moduleName ?? options.meta?.moduleName ?? '(unknown template module)',
-    scope: reifiedScopeValues.length > 0 ? () => reifiedScopeValues : null,
+    scope: usedLocals.length > 0 ? () => reifiedScope : null,
     isStrictMode: options.strictMode ?? false,
   };
 

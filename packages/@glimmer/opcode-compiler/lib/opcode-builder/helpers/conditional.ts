@@ -2,15 +2,17 @@ import {
   VM_ENTER_OP,
   VM_EXIT_OP,
   VM_JUMP_EQ_OP,
-  VM_JUMP_OP,
   VM_JUMP_UNLESS_OP,
-  VM_POP_FRAME_OP,
   VM_POP_OP,
+} from '@glimmer/constants/lib/syscall-ops';
+import {
+  VM_JUMP_OP,
+  VM_POP_FRAME_OP,
   VM_PUSH_FRAME_OP,
   VM_RETURN_OP,
   VM_RETURN_TO_OP,
-} from '@glimmer/constants';
-import { unwrap } from '@glimmer/debug-util';
+} from '@glimmer/constants/lib/vm-ops';
+import { unwrap } from '@glimmer/debug-util/lib/platform-utils';
 
 import type { PushStatementOp } from '../../syntax/compilers';
 
@@ -112,7 +114,7 @@ export function SwitchCases(
  * # Updating Execution
  *
  * Updating execution for this `replayable` occurs if the `body` added an
- * assertion, via one of the `JumpIf`, `JumpUnless` or `AssertSame` opcodes.
+ * assertion, via one of the `JumpUnless`, `JumpEq` or `AssertSame` opcodes.
  *
  * If, during updating executon, the assertion fails, the initial VM is
  * restored, and the stored arguments are pushed onto the stack. The DOM

@@ -2,12 +2,13 @@
 @module ember
 */
 
-import type { Registry } from '@ember/-internals/container';
+import type Registry from '@ember/-internals/container/lib/registry';
 import type { RegistryProxy } from '@ember/-internals/owner';
 import type { AnyFn } from '@ember/-internals/utility-types';
 
 import { assert } from '@ember/debug';
 import Mixin from '@ember/object/mixin';
+import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
@@ -21,7 +22,7 @@ interface RegistryProxyMixin extends RegistryProxy {
   /** @internal */
   __registry__: Registry;
 }
-const RegistryProxyMixin = Mixin.create({
+const RegistryProxyMixin = Mixin[INTERNAL_MIXIN_CREATE]({
   __registry__: null,
 
   resolveRegistration(fullName: string) {

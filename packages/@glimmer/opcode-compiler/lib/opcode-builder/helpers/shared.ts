@@ -5,8 +5,8 @@ import type {
   Nullable,
   WireFormat,
 } from '@glimmer/interfaces';
-import { VM_PUSH_ARGS_OP, VM_PUSH_EMPTY_ARGS_OP } from '@glimmer/constants';
-import { EMPTY_ARRAY, EMPTY_STRING_ARRAY } from '@glimmer/util';
+import { VM_PUSH_ARGS_OP, VM_PUSH_EMPTY_ARGS_OP } from '@glimmer/constants/lib/syscall-ops';
+import { EMPTY_ARRAY, EMPTY_STRING_ARRAY } from '@glimmer/util/lib/array-utils';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 
@@ -106,15 +106,16 @@ export function CompilePositional(
 }
 
 export function meta(layout: LayoutWithContext): BlockMetadata {
-  let [, locals, upvars, lexicalSymbols] = layout.block;
+  let [, locals, upvars] = layout.block;
+  let scopeRecord = layout.scope?.() ?? null;
 
   return {
     symbols: {
       locals,
       upvars,
-      lexical: lexicalSymbols,
+      lexical: scopeRecord ? Object.keys(scopeRecord) : undefined,
     },
-    scopeValues: layout.scope?.() ?? null,
+    scopeValues: scopeRecord ? Object.values(scopeRecord) : null,
     isStrictMode: layout.isStrictMode,
     moduleName: layout.moduleName,
     owner: layout.owner,

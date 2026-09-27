@@ -1,5 +1,6 @@
-import type { ASTv2, SourceSlice } from '@glimmer/syntax';
-import { generateSyntaxError } from '@glimmer/syntax';
+import type * as ASTv2 from '@glimmer/syntax/lib/v2/api';
+import type { SourceSlice } from '@glimmer/syntax/lib/source/slice';
+import { generateSyntaxError } from '@glimmer/syntax/lib/syntax-error';
 
 import type { Result } from '../../../../shared/result';
 import type { Classified, ClassifiedElement, PreparedArgs } from './classified';

@@ -1,10 +1,12 @@
-import { service } from '@ember/service';
-import { Component } from '@ember/-internals/glimmer';
+import Service, { service } from '@ember/service';
+import Component from '@glimmer/component';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
 import { action, get } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 
@@ -99,27 +101,30 @@ moduleFor(
 
       let componentInstance;
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
 
-      this.addComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          @service('router')
-          routerService;
-          init() {
-            super.init();
-            componentInstance = this;
+      this.add(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`foo-bar`),
+          class extends Component {
+            @service('router')
+            routerService;
+            constructor(owner, args) {
+              super(owner, args);
+              componentInstance = this;
+            }
+            @action
+            transitionToSister() {
+              get(this, 'routerService').transitionTo('parent.sister');
+            }
           }
-          @action
-          transitionToSister() {
-            get(this, 'routerService').transitionTo('parent.sister');
-          }
-        },
-        template: `foo-bar`,
-      });
+        )
+      );
 
       return this.visit('/').then(() => {
         run(function () {
-          componentInstance.send('transitionToSister');
+          componentInstance.transitionToSister();
         });
 
         assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
@@ -131,27 +136,30 @@ moduleFor(
 
       let componentInstance;
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
 
-      this.addComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          @service('router')
-          routerService;
-          init() {
-            super.init();
-            componentInstance = this;
+      this.add(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`foo-bar`),
+          class extends Component {
+            @service('router')
+            routerService;
+            constructor(owner, args) {
+              super(owner, args);
+              componentInstance = this;
+            }
+            @action
+            transitionToSister() {
+              get(this, 'routerService').transitionTo('/sister');
+            }
           }
-          @action
-          transitionToSister() {
-            get(this, 'routerService').transitionTo('/sister');
-          }
-        },
-        template: `foo-bar`,
-      });
+        )
+      );
 
       return this.visit('/').then(() => {
         run(function () {
-          componentInstance.send('transitionToSister');
+          componentInstance.transitionToSister();
         });
 
         assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
@@ -164,29 +172,32 @@ moduleFor(
       let componentInstance;
       let dynamicModel = { id: 1, contents: 'much dynamicism' };
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
-      this.addTemplate('dynamic', '{{@model.contents}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
+      this.add('template:dynamic', precompileTemplate('{{@model.contents}}'));
 
-      this.addComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          @service('router')
-          routerService;
-          init() {
-            super.init();
-            componentInstance = this;
+      this.add(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`foo-bar`),
+          class extends Component {
+            @service('router')
+            routerService;
+            constructor(owner, args) {
+              super(owner, args);
+              componentInstance = this;
+            }
+            @action
+            transitionToDynamic() {
+              get(this, 'routerService').transitionTo('dynamic', dynamicModel);
+            }
           }
-          @action
-          transitionToDynamic() {
-            get(this, 'routerService').transitionTo('dynamic', dynamicModel);
-          }
-        },
-        template: `foo-bar`,
-      });
+        )
+      );
 
       await this.visit('/');
 
       run(function () {
-        componentInstance.send('transitionToDynamic');
+        componentInstance.transitionToDynamic();
       });
 
       assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
@@ -209,29 +220,32 @@ moduleFor(
         }
       );
 
-      this.addTemplate('parent.index', '{{foo-bar}}');
-      this.addTemplate('dynamic', '{{@model.contents}}');
+      this.add('template:parent.index', precompileTemplate('{{foo-bar}}'));
+      this.add('template:dynamic', precompileTemplate('{{@model.contents}}'));
 
-      this.addComponent('foo-bar', {
-        ComponentClass: class extends Component {
-          @service('router')
-          routerService;
-          init() {
-            super.init();
-            componentInstance = this;
+      this.add(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`foo-bar`),
+          class extends Component {
+            @service('router')
+            routerService;
+            constructor(owner, args) {
+              super(owner, args);
+              componentInstance = this;
+            }
+            @action
+            transitionToDynamic() {
+              get(this, 'routerService').transitionTo('dynamic', 1);
+            }
           }
-          @action
-          transitionToDynamic() {
-            get(this, 'routerService').transitionTo('dynamic', 1);
-          }
-        },
-        template: `foo-bar`,
-      });
+        )
+      );
 
       await this.visit('/');
 
       run(function () {
-        componentInstance.send('transitionToDynamic');
+        componentInstance.transitionToDynamic();
       });
 
       assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
@@ -424,6 +438,269 @@ moduleFor(
       return this.visit('/child?url_sort=a').then(() => {
         assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
       });
+    }
+
+    async ['@test Redirecting to same route with query params from beforeModel works via transition'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.add(
+        'route:parent.child',
+        class extends Route {
+          @service
+          router;
+
+          beforeModel(transition) {
+            if (!transition.to.queryParams.bar) {
+              return this.router.transitionTo('parent.child', {
+                queryParams: { bar: '1' },
+              });
+            }
+          }
+        }
+      );
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['bar'],
+          bar: null,
+        })
+      );
+
+      await this.visit('/');
+      await this.routerService.transitionTo('parent.child').followRedirects();
+
+      assert.equal(
+        this.routerService.get('currentURL'),
+        '/child?bar=1',
+        'redirected to self with query param'
+      );
+
+      assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
+    }
+
+    async ['@test Redirecting to same route with query params from beforeModel works via direct visit'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.add(
+        'route:parent.child',
+        class extends Route {
+          @service
+          router;
+
+          beforeModel(transition) {
+            if (!transition.to.queryParams.bar) {
+              return this.router.transitionTo('parent.child', {
+                queryParams: { bar: '1' },
+              });
+            }
+          }
+        }
+      );
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['bar'],
+          bar: null,
+        })
+      );
+
+      await this.visit('/child');
+
+      assert.equal(
+        this.routerService.get('currentURL'),
+        '/child?bar=1',
+        'redirected to self with query param'
+      );
+
+      assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
+    }
+
+    async ['@test RouterService#transitionTo supports query params from a service during beforeModel'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let router = this.router;
+      router.dslCallbacks.length = 0;
+      router.map(function () {
+        this.route('parent');
+
+        this.route('child', function () {});
+      });
+
+      this.add(
+        'controller:parent',
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = null;
+        }
+      );
+
+      this.add(
+        'service:parent',
+        class extends Service {
+          @service
+          router;
+
+          transitionToParent() {
+            return this.router.transitionTo('parent', {
+              queryParams: {
+                foo: 'bar',
+              },
+            });
+          }
+        }
+      );
+
+      this.add(
+        'route:child.index',
+        class extends Route {
+          @service
+          parent;
+
+          beforeModel() {
+            return this.parent.transitionToParent();
+          }
+        }
+      );
+
+      await this.visit('/child');
+
+      assert.equal(
+        this.routerService.get('currentRouteName'),
+        'parent',
+        'redirects to the target route'
+      );
+
+      let currentURL = this.routerService.get('currentURL');
+
+      assert.equal(currentURL, '/parent?foo=bar', 'uses the query param in the final URL');
+
+      let controller = this.controllerFor('parent');
+
+      assert.equal(controller.get('foo'), 'bar', 'sets the controller query param');
+    }
+
+    async ['@test RouterService#transitionTo with route name and unchanged application query params does not abort or re-run application model hook'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let applicationModelHookCallCount = 0;
+
+      this.add(
+        'route:application',
+        class extends Route {
+          queryParams = {
+            filter: {
+              refreshModel: true,
+            },
+            sort: {
+              refreshModel: true,
+            },
+          };
+
+          model() {
+            applicationModelHookCallCount++;
+            return {};
+          }
+        }
+      );
+
+      this.add(
+        'controller:application',
+        Controller.extend({
+          queryParams: ['filter', 'sort'],
+          filter: '',
+          sort: '',
+        })
+      );
+
+      await this.visit('/?filter=&sort=');
+
+      assert.equal(
+        applicationModelHookCallCount,
+        1,
+        'application model hook called on initial visit'
+      );
+
+      await this.routerService.transitionTo('parent.child');
+
+      assert.equal(
+        this.routerService.get('currentRouteName'),
+        'parent.child',
+        'transitioned to child route'
+      );
+
+      assert.equal(
+        applicationModelHookCallCount,
+        1,
+        'application model hook not re-run when transitioning with unchanged sticky query params'
+      );
+    }
+
+    async ['@test RouterService#transitionTo with URL string and unchanged application query params does not abort or re-run application model hook'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let applicationModelHookCallCount = 0;
+
+      this.add(
+        'route:application',
+        class extends Route {
+          queryParams = {
+            filter: {
+              refreshModel: true,
+            },
+            sort: {
+              refreshModel: true,
+            },
+          };
+
+          model() {
+            applicationModelHookCallCount++;
+            return {};
+          }
+        }
+      );
+
+      this.add(
+        'controller:application',
+        Controller.extend({
+          queryParams: ['filter', 'sort'],
+          filter: '',
+          sort: '',
+        })
+      );
+
+      await this.visit('/?filter=&sort=');
+
+      assert.equal(
+        applicationModelHookCallCount,
+        1,
+        'application model hook called on initial visit'
+      );
+
+      await this.routerService.transitionTo('/child?filter=&sort=');
+
+      assert.equal(
+        this.routerService.get('currentRouteName'),
+        'parent.child',
+        'transitioned to child route'
+      );
+
+      assert.equal(
+        applicationModelHookCallCount,
+        1,
+        'application model hook not re-run when transitioning with unchanged query params'
+      );
     }
   }
 );

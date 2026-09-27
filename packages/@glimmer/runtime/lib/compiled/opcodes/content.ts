@@ -1,7 +1,6 @@
 import { DEBUG } from '@glimmer/env';
+import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants/lib/curried';
 import {
-  CURRIED_COMPONENT,
-  CURRIED_HELPER,
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
   VM_APPEND_HTML_OP,
   VM_APPEND_NODE_OP,
@@ -9,18 +8,21 @@ import {
   VM_APPEND_TEXT_OP,
   VM_CONTENT_TYPE_OP,
   VM_DYNAMIC_CONTENT_TYPE_OP,
-} from '@glimmer/constants';
+} from '@glimmer/constants/lib/syscall-ops';
 import {
   check,
   CheckDocumentFragment,
   CheckNode,
   CheckSafeString,
   CheckString,
-} from '@glimmer/debug';
-import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
-import { isConstRef, valueForRef } from '@glimmer/reference';
-import { isIndexable } from '@glimmer/util';
-import { ContentType } from '@glimmer/vm';
+} from '@glimmer/debug/lib/stack-check';
+import {
+  hasInternalComponentManager,
+  hasInternalHelperManager,
+} from '@glimmer/manager/lib/internal/api';
+import { isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import { isIndexable } from '@glimmer/util/lib/collections';
+import { ContentType } from '@glimmer/vm/lib/content';
 
 import { isCurriedType } from '../../curried-value';
 import { isEmpty, isFragment, isNode, isSafeString, shouldCoerce } from '../../dom/normalize';
@@ -32,12 +34,9 @@ import { AssertFilter } from './vm';
 function toContentType(value: unknown) {
   if (shouldCoerce(value)) {
     return ContentType.String;
-  } else if (
-    isCurriedType(value, CURRIED_COMPONENT) ||
-    hasInternalComponentManager(value as object)
-  ) {
+  } else if (isCurriedType(value, CURRIED_COMPONENT) || hasInternalComponentManager(value)) {
     return ContentType.Component;
-  } else if (isCurriedType(value, CURRIED_HELPER) || hasInternalHelperManager(value as object)) {
+  } else if (isCurriedType(value, CURRIED_HELPER) || hasInternalHelperManager(value)) {
     return ContentType.Helper;
   } else if (isSafeString(value)) {
     return ContentType.SafeString;

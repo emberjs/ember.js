@@ -1,4 +1,6 @@
 import { moduleFor, RenderingTestCase, styles, runTask } from 'internal-test-helpers';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
 import { set, computed } from '@ember/object';
 
@@ -8,7 +10,10 @@ moduleFor(
   'Components test: attrs lookup',
   class extends RenderingTestCase {
     ['@test it should be able to lookup attrs without `attrs.` - template access']() {
-      this.registerComponent('foo-bar', { template: '{{this.first}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.first}}'), class extends Component {})
+      );
 
       this.render(`{{foo-bar first=this.firstAttr}}`, {
         firstAttr: 'first attr',
@@ -38,10 +43,10 @@ moduleFor(
           instance = this;
         }
       };
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: '{{this.first}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.first}}'), FooBarComponent)
+      );
 
       this.render(`{{foo-bar first=this.firstAttr}}`, {
         firstAttr: 'first attr',
@@ -74,10 +79,10 @@ moduleFor(
           this.set('first', this.get('first').toUpperCase());
         }
       };
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: '{{this.first}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.first}}'), FooBarComponent)
+      );
 
       this.render(`{{foo-bar first="first attr"}}`);
 
@@ -111,7 +116,7 @@ moduleFor(
           assert.equal(this.get('woot'), wootVal, 'found attr in didReceiveAttrs');
         }
       };
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render(`{{foo-bar woot=this.woot}}`, {
         woot: wootVal,
@@ -170,7 +175,7 @@ moduleFor(
         positionalParams: ['firstPositional'],
       });
 
-      this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
+      this.owner.register('component:foo-bar', FooBarComponent);
 
       this.render(`{{foo-bar this.firstPositional first=this.first second=this.second}}`, {
         firstPositional: 'firstPositional',
@@ -244,8 +249,8 @@ moduleFor(
         color = 'yellow';
       };
 
-      this.registerComponent('x-foo', { ComponentClass: FooClass });
-      this.registerComponent('x-bar', { ComponentClass: BarClass });
+      this.owner.register('component:x-foo', FooClass);
+      this.owner.register('component:x-bar', BarClass);
 
       this.render('{{x-foo}}{{x-bar}}{{x-bar color="green"}}');
 

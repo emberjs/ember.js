@@ -1,11 +1,16 @@
 import { get } from '@ember/object';
 import Mixin, { mixin } from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 moduleFor(
   'Mixin concatenatedProperties',
   class extends AbstractTestCase {
-    ['@test defining concatenated properties should concat future version'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test defining concatenated properties should concat future version`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
         foo: ['a', 'b', 'c'],
@@ -19,7 +24,11 @@ moduleFor(
       assert.deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
     }
 
-    ['@test ensure we do not needlessly scan concatenatedProperties array'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test ensure we do not needlessly scan concatenatedProperties array`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         concatenatedProperties: null,
       });
@@ -33,7 +42,11 @@ moduleFor(
       assert.deepEqual(obj.concatenatedProperties, []);
     }
 
-    ['@test concatenatedProperties should be concatenated'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test concatenatedProperties should be concatenated`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
         foo: ['a', 'b', 'c'],
@@ -59,7 +72,11 @@ moduleFor(
       assert.deepEqual(get(obj, 'bar'), [1, 2, 3, 4, 5, 6], 'get bar');
     }
 
-    ['@test adding a prop that is a number should make array'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test adding a prop that is a number should make array`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
         foo: [1, 2, 3],
@@ -73,7 +90,11 @@ moduleFor(
       assert.deepEqual(get(obj, 'foo'), [1, 2, 3, 4]);
     }
 
-    ['@test adding a prop that is a string should make array'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test adding a prop that is a string should make array`](
+      assert
+    ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let MixinA = Mixin.create({
         concatenatedProperties: ['foo'],
         foo: 'bar',
@@ -83,9 +104,11 @@ moduleFor(
       assert.deepEqual(get(obj, 'foo'), ['bar']);
     }
 
-    ['@test adding a non-concatenable property that already has a defined value should result in an array with both values'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test adding a non-concatenable property that already has a defined value should result in an array with both values`](
       assert
     ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let mixinA = Mixin.create({
         foo: 1,
       });
@@ -99,9 +122,11 @@ moduleFor(
       assert.deepEqual(get(obj, 'foo'), [1, 2]);
     }
 
-    ['@test adding a concatenable property that already has a defined value should result in a concatenated value'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test adding a concatenable property that already has a defined value should result in a concatenated value`](
       assert
     ) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
+
       let mixinA = Mixin.create({
         foobar: 'foo',
       });

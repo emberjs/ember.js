@@ -2,92 +2,136 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { Component as EmberComponent } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
+import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
   'Components test: dynamic components',
   class extends RenderingTestCase {
     ['@test it can render a basic component with a static component name argument']() {
-      this.registerComponent('foo-bar', { template: 'hello {{this.name}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello {{@name}}'), class extends Component {})
+      );
 
       this.render('{{component "foo-bar" name=this.name}}', { name: 'Sarah' });
 
-      this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
+      this.assertText('hello Sarah');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
+      this.assertText('hello Sarah');
 
       runTask(() => set(this.context, 'name', 'Gavin'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello Gavin' });
+      this.assertText('hello Gavin');
 
       runTask(() => set(this.context, 'name', 'Sarah'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
+      this.assertText('hello Sarah');
     }
 
     ['@test it can render a basic component with a dynamic component name argument']() {
-      this.registerComponent('foo-bar', {
-        template: 'hello {{this.name}} from foo-bar',
-      });
-      this.registerComponent('foo-bar-baz', {
-        template: 'hello {{this.name}} from foo-bar-baz',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('hello {{@name}} from foo-bar'),
+          class extends Component {}
+        )
+      );
+      this.owner.register(
+        'component:foo-bar-baz',
+        setComponentTemplate(
+          precompileTemplate('hello {{@name}} from foo-bar-baz'),
+          class extends Component {}
+        )
+      );
 
       this.render('{{component this.componentName name=this.name}}', {
         componentName: 'foo-bar',
         name: 'Alex',
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex from foo-bar',
-      });
+      this.assertText('hello Alex from foo-bar');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex from foo-bar',
-      });
+      this.assertText('hello Alex from foo-bar');
 
       runTask(() => set(this.context, 'name', 'Ben'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben from foo-bar',
-      });
+      this.assertText('hello Ben from foo-bar');
 
       runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben from foo-bar-baz',
-      });
+      this.assertText('hello Ben from foo-bar-baz');
 
       runTask(() => {
         set(this.context, 'componentName', 'foo-bar');
         set(this.context, 'name', 'Alex');
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex from foo-bar',
-      });
+      this.assertText('hello Alex from foo-bar');
+    }
+
+    ['@test it throws a useful assertion for an invalid dynamic component value in non-strict mode'](
+      assert
+    ) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      assert.throws(() => {
+        this.render('{{component this.componentName}}', {
+          componentName: { name: 'not-a-component' },
+        });
+      }, /The `{{component}}` helper received an invalid value\. It expects a component definition or a string component name\./);
+    }
+
+    ['@test it throws a useful assertion for an invalid dynamic component value in strict mode'](
+      assert
+    ) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      let Bar = setComponentTemplate(
+        precompileTemplate('{{component this.componentName}}', {
+          strictMode: true,
+        }),
+        class extends GlimmerishComponent {
+          componentName = { name: 'not-a-component' };
+        }
+      );
+
+      this.owner.register('component:bar', Bar);
+
+      assert.throws(() => {
+        this.render('<Bar/>');
+      }, /The `{{component}}` helper received an invalid value\. In strict mode, it expects a component definition\./);
     }
 
     ['@test it has an element']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         init() {
           super.init();
           instance = this;
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'hello',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
 
       this.render('{{component "foo-bar"}}');
 
@@ -107,28 +151,28 @@ moduleFor(
     ['@test it has the right parentView and childViews'](assert) {
       let fooBarInstance, fooBarBazInstance;
 
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         init() {
           super.init();
           fooBarInstance = this;
         }
       };
 
-      let FooBarBazComponent = class extends Component {
+      let FooBarBazComponent = class extends EmberComponent {
         init() {
           super.init();
           fooBarBazInstance = this;
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: 'foo-bar {{foo-bar-baz}}',
-      });
-      this.registerComponent('foo-bar-baz', {
-        ComponentClass: FooBarBazComponent,
-        template: 'foo-bar-baz',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('foo-bar {{foo-bar-baz}}'), FooBarComponent)
+      );
+      this.owner.register(
+        'component:foo-bar-baz',
+        setComponentTemplate(precompileTemplate('foo-bar-baz'), FooBarBazComponent)
+      );
 
       this.render('{{component "foo-bar"}}');
       this.assertText('foo-bar foo-bar-baz');
@@ -150,21 +194,24 @@ moduleFor(
     }
 
     ['@test it can render a basic component with a block']() {
-      this.registerComponent('foo-bar', { template: '{{yield}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{yield}}'), class extends Component {})
+      );
 
       this.render('{{#component "foo-bar"}}hello{{/component}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     ['@test it renders the layout with the component instance as the context']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         init() {
           super.init();
           instance = this;
@@ -172,10 +219,10 @@ moduleFor(
         }
       };
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: '{{this.message}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.message}}'), FooBarComponent)
+      );
 
       this.render('{{component "foo-bar"}}');
 
@@ -195,39 +242,45 @@ moduleFor(
     }
 
     ['@test it preserves the outer context when yielding']() {
-      this.registerComponent('foo-bar', { template: '{{yield}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{yield}}'), class extends Component {})
+      );
 
       this.render('{{#component "foo-bar"}}{{this.message}}{{/component}}', {
         message: 'hello',
       });
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => set(this.context, 'message', 'goodbye'));
 
-      this.assertComponentElement(this.firstChild, { content: 'goodbye' });
+      this.assertText('goodbye');
 
       runTask(() => set(this.context, 'message', 'hello'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     ['@test the component and its child components are destroyed'](assert) {
       let destroyed = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
 
-      this.registerComponent('foo-bar', {
-        template: '{{this.id}} {{yield}}',
-        ComponentClass: class extends Component {
-          willDestroy() {
-            super.willDestroy();
-            destroyed[this.get('id')]++;
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('{{this.id}} {{yield}}'),
+          class extends EmberComponent {
+            willDestroy() {
+              super.willDestroy();
+              destroyed[this.get('id')]++;
+            }
           }
-        },
-      });
+        )
+      );
 
       this.render(
         strip`
@@ -329,33 +382,39 @@ moduleFor(
       let destroyed = { 'foo-bar': 0, 'foo-bar-baz': 0 };
       let testContext = this;
 
-      this.registerComponent('foo-bar', {
-        template: 'hello from foo-bar',
-        ComponentClass: class extends Component {
-          willDestroyElement() {
-            assert.equal(
-              testContext.$(`#${this.elementId}`).length,
-              1,
-              'element is still attached to the document'
-            );
-          }
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('hello from foo-bar'),
+          class extends EmberComponent {
+            willDestroyElement() {
+              assert.equal(
+                testContext.$(`#${this.elementId}`).length,
+                1,
+                'element is still attached to the document'
+              );
+            }
 
-          willDestroy() {
-            super.willDestroy();
-            destroyed['foo-bar']++;
+            willDestroy() {
+              super.willDestroy();
+              destroyed['foo-bar']++;
+            }
           }
-        },
-      });
+        )
+      );
 
-      this.registerComponent('foo-bar-baz', {
-        template: 'hello from foo-bar-baz',
-        ComponentClass: class extends Component {
-          willDestroy() {
-            super.willDestroy();
-            destroyed['foo-bar-baz']++;
+      this.owner.register(
+        'component:foo-bar-baz',
+        setComponentTemplate(
+          precompileTemplate('hello from foo-bar-baz'),
+          class extends EmberComponent {
+            willDestroy() {
+              super.willDestroy();
+              destroyed['foo-bar-baz']++;
+            }
           }
-        },
-      });
+        )
+      );
 
       this.render('{{component this.componentName name=this.name}}', {
         componentName: 'foo-bar',
@@ -377,39 +436,50 @@ moduleFor(
     }
 
     ['@test component helper with bound properties are updating correctly in init of component']() {
-      this.registerComponent('foo-bar', {
-        template: 'foo-bar {{this.location}} {{this.locationCopy}} {{yield}}',
-        ComponentClass: class extends Component {
-          init() {
-            super.init(...arguments);
-            this.set('locationCopy', this.get('location'));
-          }
-        },
-      });
-
-      this.registerComponent('foo-bar-baz', {
-        template: 'foo-bar-baz {{this.location}} {{this.locationCopy}} {{yield}}',
-        ComponentClass: class extends Component {
-          init() {
-            super.init(...arguments);
-            this.set('locationCopy', this.get('location'));
-          }
-        },
-      });
-
-      this.registerComponent('outer-component', {
-        template: '{{#component this.componentName location=this.location}}arepas!{{/component}}',
-        ComponentClass: class extends Component {
-          @computed('location')
-          get componentName() {
-            if (this.get('location') === 'Caracas') {
-              return 'foo-bar';
-            } else {
-              return 'foo-bar-baz';
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('foo-bar {{this.location}} {{this.locationCopy}} {{yield}}'),
+          class extends EmberComponent {
+            init() {
+              super.init(...arguments);
+              this.set('locationCopy', this.get('location'));
             }
           }
-        },
-      });
+        )
+      );
+
+      this.owner.register(
+        'component:foo-bar-baz',
+        setComponentTemplate(
+          precompileTemplate('foo-bar-baz {{this.location}} {{this.locationCopy}} {{yield}}'),
+          class extends EmberComponent {
+            init() {
+              super.init(...arguments);
+              this.set('locationCopy', this.get('location'));
+            }
+          }
+        )
+      );
+
+      this.owner.register(
+        'component:outer-component',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#component this.componentName location=this.location}}arepas!{{/component}}'
+          ),
+          class extends EmberComponent {
+            @computed('location')
+            get componentName() {
+              if (this.get('location') === 'Caracas') {
+                return 'foo-bar';
+              } else {
+                return 'foo-bar-baz';
+              }
+            }
+          }
+        )
+      );
 
       this.render('{{outer-component location=this.location}}', {
         location: 'Caracas',
@@ -431,15 +501,27 @@ moduleFor(
     }
 
     ['@test nested component helpers']() {
-      this.registerComponent('foo-bar', {
-        template: 'yippie! {{@location}} {{yield}}',
-      });
-      this.registerComponent('baz-qux', {
-        template: 'yummy {{@location}} {{yield}}',
-      });
-      this.registerComponent('corge-grault', {
-        template: 'delicious {{@location}} {{yield}}',
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('yippie! {{@location}} {{yield}}'),
+          class extends Component {}
+        )
+      );
+      this.owner.register(
+        'component:baz-qux',
+        setComponentTemplate(
+          precompileTemplate('yummy {{@location}} {{yield}}'),
+          class extends Component {}
+        )
+      );
+      this.owner.register(
+        'component:corge-grault',
+        setComponentTemplate(
+          precompileTemplate('delicious {{@location}} {{yield}}'),
+          class extends Component {}
+        )
+      );
 
       this.render(
         '{{#component this.componentName1 location=this.location}}{{#component this.componentName2 location=this.location}}arepas!{{/component}}{{/component}}',
@@ -497,7 +579,10 @@ moduleFor(
     }
 
     ['@test component with dynamic component name resolving to a component, then non-existent component']() {
-      this.registerComponent('foo-bar', { template: 'hello {{this.name}}' });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello {{@name}}'), class extends Component {})
+      );
 
       this.render('{{component this.componentName name=this.name}}', {
         componentName: 'foo-bar',
@@ -520,16 +605,19 @@ moduleFor(
     }
 
     ['@test component helper properly invalidates hash params inside an {{each}} invocation #11044']() {
-      this.registerComponent('foo-bar', {
-        template: '[{{this.internalName}} - {{this.name}}]',
-        ComponentClass: class extends Component {
-          willRender() {
-            // store internally available name to ensure that the name available in `this.attrs.name`
-            // matches the template lookup name
-            set(this, 'internalName', this.get('name'));
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('[{{this.internalName}} - {{this.name}}]'),
+          class extends EmberComponent {
+            willRender() {
+              // store internally available name to ensure that the name available in `this.attrs.name`
+              // matches the template lookup name
+              set(this, 'internalName', this.get('name'));
+            }
           }
-        },
-      });
+        )
+      );
 
       this.render('{{#each this.items as |item|}}{{component "foo-bar" name=item.name}}{{/each}}', {
         items: [{ name: 'Robert' }, { name: 'Jacquie' }],
@@ -551,19 +639,25 @@ moduleFor(
     }
 
     ['@test positional parameters does not clash when rendering different components']() {
-      this.registerComponent('foo-bar', {
-        template: 'hello {{this.name}} ({{this.age}}) from foo-bar',
-        ComponentClass: class extends Component {
-          static positionalParams = ['name', 'age'];
-        },
-      });
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar'),
+          class extends EmberComponent {
+            static positionalParams = ['name', 'age'];
+          }
+        )
+      );
 
-      this.registerComponent('foo-bar-baz', {
-        template: 'hello {{this.name}} ({{this.age}}) from foo-bar-baz',
-        ComponentClass: class extends Component {
-          static positionalParams = ['name', 'age'];
-        },
-      });
+      this.owner.register(
+        'component:foo-bar-baz',
+        setComponentTemplate(
+          precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar-baz'),
+          class extends EmberComponent {
+            static positionalParams = ['name', 'age'];
+          }
+        )
+      );
 
       this.render('{{component this.componentName this.name this.age}}', {
         componentName: 'foo-bar',
@@ -611,20 +705,26 @@ moduleFor(
     }
 
     ['@test positional parameters does not pollute the attributes when changing components']() {
-      this.registerComponent('normal-message', {
-        template: 'Normal: {{this.something}}!',
-        ComponentClass: class extends Component {
-          static positionalParams = ['something'];
-        },
-      });
+      this.owner.register(
+        'component:normal-message',
+        setComponentTemplate(
+          precompileTemplate('Normal: {{this.something}}!'),
+          class extends EmberComponent {
+            static positionalParams = ['something'];
+          }
+        )
+      );
 
-      this.registerComponent('alternative-message', {
-        template: 'Alternative: {{this.something}} {{this.somethingElse}}!',
-        ComponentClass: class extends Component {
-          static positionalParams = ['somethingElse'];
-          something = 'Another';
-        },
-      });
+      this.owner.register(
+        'component:alternative-message',
+        setComponentTemplate(
+          precompileTemplate('Alternative: {{this.something}} {{this.somethingElse}}!'),
+          class extends EmberComponent {
+            static positionalParams = ['somethingElse'];
+            something = 'Another';
+          }
+        )
+      );
 
       this.render('{{component this.componentName this.message}}', {
         componentName: 'normal-message',
@@ -664,15 +764,15 @@ moduleFor(
     }
 
     ['@test static arbitrary number of positional parameters']() {
-      this.registerComponent('sample-component', {
-        ComponentClass: class extends Component {
-          static positionalParams = 'names';
-        },
-        template: strip`
-        {{#each this.names as |name|}}
-          {{name}}
-        {{/each}}`,
-      });
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.names as |name|}}{{name}}{{/each}}'),
+          class extends EmberComponent {
+            static positionalParams = 'names';
+          }
+        )
+      );
 
       this.render(`{{component "sample-component" "Foo" 4 "Bar" 5 "Baz" elementId="helper"}}`);
 
@@ -684,15 +784,15 @@ moduleFor(
     }
 
     ['@test dynamic arbitrary number of positional parameters']() {
-      this.registerComponent('sample-component', {
-        ComponentClass: class extends Component {
-          static positionalParams = 'n';
-        },
-        template: strip`
-        {{#each this.n as |name|}}
-          {{name}}
-        {{/each}}`,
-      });
+      this.owner.register(
+        'component:sample-component',
+        setComponentTemplate(
+          precompileTemplate('{{#each this.n as |name|}}{{name}}{{/each}}'),
+          class extends EmberComponent {
+            static positionalParams = 'n';
+          }
+        )
+      );
 
       this.render(`{{component "sample-component" this.user1 this.user2}}`, {
         user1: 'Foo',
@@ -722,30 +822,38 @@ moduleFor(
     }
 
     ['@test component helper emits useful backtracking re-render assertion message']() {
-      this.registerComponent('outer-component', {
-        ComponentClass: class extends Component {
-          init() {
-            super.init(...arguments);
-            this.set('person', {
-              name: 'Alex',
-              toString() {
-                return `Person (${this.name})`;
-              },
-            });
+      this.owner.register(
+        'component:outer-component',
+        setComponentTemplate(
+          precompileTemplate(
+            `Hi {{this.person.name}}! {{component "error-component" person=this.person}}`
+          ),
+          class extends EmberComponent {
+            init() {
+              super.init(...arguments);
+              this.set('person', {
+                name: 'Alex',
+                toString() {
+                  return `Person (${this.name})`;
+                },
+              });
+            }
           }
-        },
-        template: `Hi {{this.person.name}}! {{component "error-component" person=this.person}}`,
-      });
+        )
+      );
 
-      this.registerComponent('error-component', {
-        ComponentClass: class extends Component {
-          init() {
-            super.init(...arguments);
-            this.set('person.name', 'Ben');
+      this.owner.register(
+        'component:error-component',
+        setComponentTemplate(
+          precompileTemplate('{{this.person.name}}'),
+          class extends EmberComponent {
+            init() {
+              super.init(...arguments);
+              this.set('person.name', 'Ben');
+            }
           }
-        },
-        template: '{{this.person.name}}',
-      });
+        )
+      );
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
         renderTree: ['outer-component', 'this.person.name'],

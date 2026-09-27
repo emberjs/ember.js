@@ -9,8 +9,8 @@ import type {
   SimpleElement,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import { NS_SVG } from '@glimmer/constants';
-import { castToBrowser } from '@glimmer/debug-util';
+import { NS_SVG } from '@glimmer/constants/lib/dom';
+import { castToBrowser } from '@glimmer/debug-util/lib/simple-cast';
 import { warnIfStyleNotTrusted } from '@glimmer/global-context';
 
 import type { MutableKey } from '../element-builder';
@@ -178,7 +178,15 @@ export class SafeDynamicAttribute extends SimpleDynamicAttribute {
 
 export class InputValueDynamicAttribute extends DefaultDynamicProperty {
   override set(dom: TreeBuilder, value: unknown) {
-    dom.__setProperty('value', normalizeStringValue(value));
+    const normalized = normalizeStringValue(value);
+    dom.__setProperty('value', normalized);
+
+    // GH#19219: Browsers don't reflect `input.value = ''` as a value attribute when
+    // type is later changed to "radio"/"checkbox". Explicitly set the attribute for <input>.
+    // Not needed for <textarea> (no value attribute).
+    if (value === '' && this.attribute.element.tagName === 'INPUT') {
+      dom.__setAttribute('value', '', null);
+    }
   }
 
   override update(value: unknown) {

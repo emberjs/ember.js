@@ -4,42 +4,41 @@
 
 import { guidFor } from '@ember/-internals/utils';
 import Mixin, { mixin } from '@ember/object/mixin';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-
-const PrivateProperty = Mixin.create({
-  _foo: '_FOO',
-});
-const PublicProperty = Mixin.create({
-  foo: 'FOO',
-});
-const PrivateMethod = Mixin.create({
-  _fooMethod() {},
-});
-const PublicMethod = Mixin.create({
-  fooMethod() {},
-});
-const BarProperties = Mixin.create({
-  _bar: '_BAR',
-  bar: 'bar',
-});
-const BarMethods = Mixin.create({
-  _barMethod() {},
-  barMethod() {},
-});
-
-const Combined = Mixin.create(BarProperties, BarMethods);
-
-let obj;
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../../-internals/deprecations';
 
 moduleFor(
   'Basic introspection',
   class extends AbstractTestCase {
-    beforeEach() {
-      obj = {};
-      mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
-    }
+    [`${testUnless(DEPRECATIONS.DEPRECATE_MIXINS.isRemoved)} @test Ember.mixins()`](assert) {
+      expectDeprecation(/Using mixins is deprecated/, DEPRECATIONS.DEPRECATE_MIXINS.isEnabled);
 
-    ['@test Ember.mixins()'](assert) {
+      let PrivateProperty = Mixin.create({
+        _foo: '_FOO',
+      });
+      let PublicProperty = Mixin.create({
+        foo: 'FOO',
+      });
+      let PrivateMethod = Mixin.create({
+        _fooMethod() {},
+      });
+      let PublicMethod = Mixin.create({
+        fooMethod() {},
+      });
+      let BarProperties = Mixin.create({
+        _bar: '_BAR',
+        bar: 'bar',
+      });
+      let BarMethods = Mixin.create({
+        _barMethod() {},
+        barMethod() {},
+      });
+
+      let Combined = Mixin.create(BarProperties, BarMethods);
+
+      let obj = {};
+      mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
+
       function mapGuids(ary) {
         return ary.map((x) => guidFor(x));
       }

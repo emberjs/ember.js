@@ -6,7 +6,7 @@ import type {
   CurriedType,
   Owner,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference/lib/reference';
 
 const TYPE: unique symbol = Symbol('TYPE');
 const INNER: unique symbol = Symbol('INNER');

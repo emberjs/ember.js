@@ -1,10 +1,8 @@
-'use strict';
+import path from 'node:path';
+import stringUtil from 'ember-cli-string-utils';
+import inflector from 'inflection';
 
-const stringUtil = require('ember-cli-string-utils');
-const path = require('path');
-const inflector = require('inflection');
-
-module.exports = {
+export default {
   description: 'Generates an import wrapper.',
 
   fileMapTokens: function () {

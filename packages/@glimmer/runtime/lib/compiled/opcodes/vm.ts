@@ -1,10 +1,9 @@
 import type { CompilableTemplate, Nullable, UpdatingOpcode } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import type { Revision, Tag } from '@glimmer/validator';
+import type { Reference } from '@glimmer/reference/lib/reference';
+import type { Revision } from '@glimmer/validator/lib/validators';
+import type { Tag } from '@glimmer/interfaces';
+import { decodeHandle, decodeImmediate, isHandle } from '@glimmer/constants/lib/immediate';
 import {
-  decodeHandle,
-  decodeImmediate,
-  isHandle,
   VM_ASSERT_SAME_OP,
   VM_BIND_DYNAMIC_SCOPE_OP,
   VM_CHILD_SCOPE_OP,
@@ -17,7 +16,6 @@ import {
   VM_FETCH_OP,
   VM_INVOKE_YIELD_OP,
   VM_JUMP_EQ_OP,
-  VM_JUMP_IF_OP,
   VM_JUMP_UNLESS_OP,
   VM_LOAD_OP,
   VM_POP_DYNAMIC_SCOPE_OP,
@@ -29,7 +27,7 @@ import {
   VM_PUSH_DYNAMIC_SCOPE_OP,
   VM_PUSH_SYMBOL_TABLE_OP,
   VM_TO_BOOLEAN_OP,
-} from '@glimmer/constants';
+} from '@glimmer/constants/lib/syscall-ops';
 import {
   check,
   CheckBlockSymbolTable,
@@ -40,8 +38,9 @@ import {
   CheckPrimitive,
   CheckRegister,
   CheckSyscallRegister,
-} from '@glimmer/debug';
-import { expect, localAssert, unwrap } from '@glimmer/debug-util';
+} from '@glimmer/debug/lib/stack-check';
+import { expect, unwrap } from '@glimmer/debug-util/lib/platform-utils';
+import assert from '@glimmer/debug-util/lib/assert';
 import { toBool } from '@glimmer/global-context';
 import {
   createComputeRef,
@@ -53,16 +52,9 @@ import {
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
   valueForRef,
-} from '@glimmer/reference';
-import {
-  beginTrackFrame,
-  CONSTANT_TAG,
-  consumeTag,
-  endTrackFrame,
-  INITIAL,
-  validateTag,
-  valueForTag,
-} from '@glimmer/validator';
+} from '@glimmer/reference/lib/reference';
+import { beginTrackFrame, consumeTag, endTrackFrame } from '@glimmer/validator/lib/tracking';
+import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { UpdatingVM } from '../../vm';
 import type { VM } from '../../vm/append';
@@ -93,7 +85,7 @@ APPEND_OPCODES.add(VM_PRIMITIVE_OP, (vm, { op1: primitive }) => {
   if (isHandle(primitive)) {
     // it is a handle which does not already exist on the stack
     let value = vm.constants.getValue(decodeHandle(primitive));
-    stack.push(value as object);
+    stack.push(value);
   } else {
     // is already an encoded immediate or primitive handle
     stack.push(decodeImmediate(primitive));
@@ -181,7 +173,7 @@ APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
   let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
 
   if (table === null || handle === null) {
-    localAssert(
+    assert(
       handle === null && table === null,
       `Expected both handle and table to be null if either is null`
     );
@@ -212,23 +204,6 @@ APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
   vm.pushScope(invokingScope);
 
   vm.call(handle);
-});
-
-APPEND_OPCODES.add(VM_JUMP_IF_OP, (vm, { op1: target }) => {
-  let reference = check(vm.stack.pop(), CheckReference);
-  let value = Boolean(valueForRef(reference));
-
-  if (isConstRef(reference)) {
-    if (value) {
-      vm.lowlevel.goto(target);
-    }
-  } else {
-    if (value) {
-      vm.lowlevel.goto(target);
-    }
-
-    vm.updateWith(new Assert(reference));
-  }
 });
 
 APPEND_OPCODES.add(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {

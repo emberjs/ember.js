@@ -1,5 +1,5 @@
-import { get } from '@ember/object';
-import { hasUnknownProperty } from '@ember/-internals/metal';
+import { get } from '@ember/-internals/metal/lib/property_get';
+import { hasUnknownProperty } from '@ember/-internals/metal/lib/property_get';
 /**
  @module @ember/utils
 */

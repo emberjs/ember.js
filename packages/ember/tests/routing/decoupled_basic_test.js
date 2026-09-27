@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
-import { compile } from 'ember-template-compiler';
+import { precompileTemplate } from '@ember/template-compilation';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
@@ -13,7 +13,9 @@ import {
   ModuleBasedTestResolver,
   runDestroy,
   runTask,
+  expectDeprecation,
 } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
 import { service } from '@ember/service';
@@ -38,9 +40,15 @@ moduleFor(
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
-      this.addTemplate('home', '<h3 class="hours">Hours</h3>');
-      this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
+      this.add('template:home', precompileTemplate('<h3 class="hours">Hours</h3>'));
+      this.add(
+        'template:camelot',
+        precompileTemplate('<section id="camelot"><h3>Is a silly place</h3></section>')
+      );
+      this.add(
+        'template:homepage',
+        precompileTemplate('<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>')
+      );
 
       this.router.map(function () {
         this.route('home', { path: '/' });
@@ -75,6 +83,22 @@ moduleFor(
       await this.visit('/');
 
       await assert.rejects(this.visit('/what-is-this-i-dont-even'), /\/what-is-this-i-dont-even/);
+    }
+
+    async ['@test a classic route marked inaccessibleByURL cannot be entered by URL'](assert) {
+      this.router.map(function () {
+        this.route('secret');
+      });
+      this.add(
+        'route:secret',
+        class extends Route {
+          inaccessibleByURL = true;
+        }
+      );
+
+      await this.visit('/');
+
+      await assert.rejects(this.visit('/secret'), /\/secret/);
     }
 
     ['@test The Homepage'](assert) {
@@ -136,8 +160,8 @@ moduleFor(
 
       this.add('route:special', SpecialRoute);
 
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING!</p>'));
 
       let promise;
       ignoreDeprecation(() => {
@@ -186,8 +210,8 @@ moduleFor(
         }
       );
 
-      this.addTemplate('special', '<p>{{@model.id}}</p>');
-      this.addTemplate('loading', '<p>LOADING!</p>');
+      this.add('template:special', precompileTemplate('<p>{{@model.id}}</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING!</p>'));
 
       return this.visit('/specials/1').then(() => {
         let text = this.$('p').text();
@@ -698,7 +722,11 @@ moduleFor(
         // if we transition in this test we will receive failures
         // if the tests are run from a static file
         _doURLTransition() {
-          return RSVP.resolve('');
+          return {
+            followRedirects() {
+              return RSVP.resolve('');
+            },
+          };
         },
       });
 
@@ -771,8 +799,8 @@ moduleFor(
         }
       );
 
-      this.addTemplate('index', '<p>INDEX</p>');
-      this.addTemplate('loading', '<p>LOADING</p>');
+      this.add('template:index', precompileTemplate('<p>INDEX</p>'));
+      this.add('template:loading', precompileTemplate('<p>LOADING</p>'));
 
       run(() => this.visit('/'));
       let rootElement = document.getElementById('qunit-fixture');
@@ -878,8 +906,12 @@ moduleFor(
       });
     }
 
-    ['@test `activate` event fires on the route'](assert) {
-      assert.expect(4);
+    [`@test \`activate\` event fires on the route`](assert) {
+      if (DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+        assert.expect(2);
+      } else {
+        assert.expect(5);
+      }
 
       let eventFired = 0;
 
@@ -893,10 +925,18 @@ moduleFor(
           init() {
             super.init(...arguments);
 
-            this.on('activate', function (transition) {
-              assert.equal(++eventFired, 1, 'activate event is fired once');
-              assert.ok(transition, 'transition is passed to activate event');
-            });
+            if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+              expectDeprecation(
+                () => {
+                  this.on('activate', function (transition) {
+                    assert.equal(++eventFired, 1, 'activate event is fired once');
+                    assert.ok(transition, 'transition is passed to activate event');
+                  });
+                },
+                /Evented#on` is deprecated/,
+                DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+              );
+            }
           }
 
           activate(transition) {
@@ -909,8 +949,12 @@ moduleFor(
       return this.visit('/nork');
     }
 
-    ['@test `deactivate` event fires on the route'](assert) {
-      assert.expect(4);
+    [`@test \`deactivate\` event fires on the route`](assert) {
+      if (DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+        assert.expect(2);
+      } else {
+        assert.expect(5);
+      }
 
       let eventFired = 0;
 
@@ -925,10 +969,18 @@ moduleFor(
           init() {
             super.init(...arguments);
 
-            this.on('deactivate', function (transition) {
-              assert.equal(++eventFired, 1, 'deactivate event is fired once');
-              assert.ok(transition, 'transition is passed');
-            });
+            if (!DEPRECATIONS.DEPRECATE_EVENTED.isRemoved) {
+              expectDeprecation(
+                () => {
+                  this.on('deactivate', function (transition) {
+                    assert.equal(++eventFired, 1, 'deactivate event is fired once');
+                    assert.ok(transition, 'transition is passed');
+                  });
+                },
+                /Evented#on` is deprecated/,
+                DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+              );
+            }
           }
 
           deactivate(transition) {
@@ -1284,7 +1336,7 @@ moduleFor(
     }
 
     ['@test Errors in transition show error template if available'](assert) {
-      this.addTemplate('error', "<div id='error'>Error!</div>");
+      this.add('template:error', precompileTemplate("<div id='error'>Error!</div>"));
 
       this.router.map(function () {
         this.route('yondo', { path: '/' });
@@ -1407,9 +1459,9 @@ moduleFor(
 
     async ['@test Doesnt swallow exception thrown from willTransition'](assert) {
       assert.expect(1);
-      this.addTemplate('application', '{{outlet}}');
-      this.addTemplate('index', 'index');
-      this.addTemplate('other', 'other');
+      this.add('template:application', precompileTemplate('{{outlet}}'));
+      this.add('template:index', precompileTemplate('index'));
+      this.add('template:other', precompileTemplate('other'));
 
       this.router.map(function () {
         this.route('index', { path: '/' });
@@ -1540,7 +1592,7 @@ moduleFor(
         .then(() => {
           let engine = this.applicationInstance.lookup('engine:blog');
           engine.register('route:index', EngineIndexRoute);
-          engine.register('template:index', compile('Engine Post!'));
+          engine.register('template:index', precompileTemplate('Engine Post!'));
           return this.visit('/blog');
         })
         .then(() => {
@@ -1549,13 +1601,21 @@ moduleFor(
           let router = this.applicationInstance.lookup('router:main');
 
           run(router, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
+          assert.equal(router._updatableRootOutletState, null, 'the root outlet state was cleared');
 
           run(route, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+          assert.equal(
+            router._updatableRootOutletState,
+            null,
+            'the root outlet was not re-rendered'
+          );
 
           run(this.applicationInstance, 'destroy');
-          assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
+          assert.equal(
+            router._updatableRootOutletState,
+            null,
+            'the root outlet was not re-rendered'
+          );
         });
     }
 

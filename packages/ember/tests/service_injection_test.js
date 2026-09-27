@@ -4,6 +4,7 @@ import Service, { service } from '@ember/service';
 import { _ProxyMixin } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { computed } from '@ember/object';
+import { precompileTemplate } from '@ember/template-compilation';
 
 moduleFor(
   'Service Injection',
@@ -18,7 +19,7 @@ moduleFor(
       );
       let MyService = class extends Service {};
       this.add('service:my-service', MyService);
-      this.addTemplate('application', '');
+      this.add('template:application', precompileTemplate(''));
 
       await this.visit('/');
 
@@ -44,7 +45,7 @@ moduleFor(
         }
       };
       this.add('service:my-service', MyService);
-      this.addTemplate('application', '');
+      this.add('template:application', precompileTemplate(''));
 
       let instance = await this.visit('/');
 
@@ -73,7 +74,7 @@ moduleFor(
         }
       };
       this.add('service:my-service', MyService);
-      this.addTemplate('application', '');
+      this.add('template:application', precompileTemplate(''));
 
       await this.visit('/');
 
