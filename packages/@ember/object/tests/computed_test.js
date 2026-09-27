@@ -312,19 +312,17 @@ moduleFor(
         });
       }
 
-      let MyClass = class extends EmberObject {
-        @computed
-        get foo() {
+      let MyClass = EmberObject.extend({
+        foo: computed(function () {
           return 'FOO';
-        }
-      };
+        }),
+      });
 
-      let SubClass = class extends MyClass {
-        @macro
-        get foo() {
-          return super.foo;
-        }
-      };
+      let SubClass = MyClass.extend({
+        foo: macro(function () {
+          return this._super();
+        }),
+      });
 
       assert.strictEqual(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
       assert.strictEqual(macroCalls, 1, "the macro's getter is used");
@@ -339,19 +337,17 @@ moduleFor(
         });
       }
 
-      let MyClass = class extends EmberObject {
-        @computed
-        get foo() {
+      let MyClass = EmberObject.extend({
+        foo: computed(function () {
           return 'FOO';
-        }
-      };
+        }),
+      });
 
-      let SubClass = class extends MyClass {
-        @macro
-        get foo() {
-          return super.foo;
-        }
-      };
+      let SubClass = MyClass.extend({
+        foo: macro(function () {
+          return this._super();
+        }),
+      });
 
       assert.strictEqual(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
       assert.strictEqual(macroCalls, 1, "the macro's getter is used");
