@@ -150,12 +150,12 @@ export function identifyModernDecoratorArgs(args: Parameters<Decorator>):
   This relies on `Symbol.metadata`, which browsers don't implement yet. Babel's
   decorator helpers fall back to `Symbol.for('Symbol.metadata')` when it's
   missing, but TypeScript's emit skips decorator metadata entirely unless
-  `Symbol.metadata` exists. So we define it, with the same fallback Babel uses
-  so that classes compiled by either one agree. This module is imported by
-  every Ember decorator, so it runs before any class using them is defined.
+  `Symbol.metadata` exists, so apps using TypeScript's emit must polyfill it
+  themselves. We look it up lazily, so we use whatever the app installed.
 */
-(Symbol as unknown as { metadata?: symbol }).metadata ??= Symbol.for('Symbol.metadata');
-const METADATA = (Symbol as unknown as { metadata: symbol }).metadata;
+function metadataKey(): symbol {
+  return (Symbol as unknown as { metadata?: symbol }).metadata ?? Symbol.for('Symbol.metadata');
+}
 
 const pendingClassSetups = new WeakMap<object, Array<(proto: object) => void>>();
 const finalizedClasses = new WeakSet<object>();
@@ -181,7 +181,7 @@ export function onClassFinalized(
   }
 
   assert(
-    `Ember's decorators need decorator metadata, but ${String(context.name)} has none. This happens when \`Symbol.metadata\` doesn't exist when the class is defined, e.g. with TypeScript's decorator emit if the class is defined before Ember is loaded.`,
+    `Ember's decorators need decorator metadata, but ${String(context.name)} has none. If you're compiling with TypeScript's decorator emit, you need to polyfill \`Symbol.metadata\` before any classes are defined, for example with \`Symbol.metadata ??= Symbol('Symbol.metadata')\`.`,
     context.metadata
   );
 
@@ -203,6 +203,7 @@ export function finalizeDecoratedClass(klass: Function): void {
     return;
   }
 
+  let key = metadataKey();
   let chain: Function[] = [];
   for (
     let current: Function | null = klass;
@@ -214,10 +215,10 @@ export function finalizeDecoratedClass(klass: Function): void {
 
   for (let current of chain) {
     finalizedClasses.add(current);
-    if (!Object.prototype.hasOwnProperty.call(current, METADATA)) {
+    if (!Object.prototype.hasOwnProperty.call(current, key)) {
       continue;
     }
-    let metadata = (current as unknown as Record<symbol, object>)[METADATA]!;
+    let metadata = (current as unknown as Record<symbol, object>)[key]!;
     let pending = pendingClassSetups.get(metadata);
     if (pending) {
       pendingClassSetups.delete(metadata);

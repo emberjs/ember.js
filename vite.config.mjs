@@ -85,6 +85,18 @@ function typescriptEmit() {
   const ts = require('typescript');
   return {
     name: 'typescript-emit',
+    // TypeScript's emit only provides decorator metadata if `Symbol.metadata`
+    // exists, which it doesn't in browsers yet. Ember relies on that metadata,
+    // so apps using TypeScript's emit must polyfill it, as we do here.
+    transformIndexHtml() {
+      return [
+        {
+          tag: 'script',
+          children: `Symbol.metadata ??= Symbol('Symbol.metadata');`,
+          injectTo: 'head-prepend',
+        },
+      ];
+    },
     transform(code, id) {
       let [file] = id.split('?');
       if (file.includes('/node_modules/') || !/\.(js|ts|gjs|gts)$/.test(file)) {
