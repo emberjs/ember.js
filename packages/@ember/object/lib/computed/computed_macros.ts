@@ -1,5 +1,6 @@
 import computed from '@ember/-internals/metal/lib/computed';
 import { isDecoratorCall } from '@ember/-internals/metal/lib/decorator';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 import alias from '@ember/-internals/metal/lib/alias';
 import expandProperties from '@ember/-internals/metal/lib/expand_properties';
 import { get } from '@ember/-internals/metal/lib/property_get';
@@ -731,7 +732,7 @@ export function oneWay(dependentKey: string) {
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
-  return alias(dependentKey).oneWay() as PropertyDecorator;
+  return alias(dependentKey).oneWay() as FieldDecorator;
 }
 
 /**
@@ -795,7 +796,7 @@ export function readOnly(dependentKey: string) {
     !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
-  return alias(dependentKey).readOnly() as PropertyDecorator;
+  return alias(dependentKey).readOnly() as FieldDecorator;
 }
 
 /**

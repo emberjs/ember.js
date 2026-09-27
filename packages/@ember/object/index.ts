@@ -180,22 +180,26 @@ function setupAction(
 }
 
 export function action(
+  value: (this: any, ...args: any[]) => any,
+  context: ClassMethodDecoratorContext
+): void;
+export function action(
   target: ElementDescriptor[0],
   key: ElementDescriptor[1],
   desc: ElementDescriptor[2]
 ): PropertyDescriptor;
 export function action(desc: PropertyDescriptor): ExtendedMethodDecorator;
 export function action(
-  ...args: ElementDescriptor | [PropertyDescriptor]
-): PropertyDescriptor | ExtendedMethodDecorator {
+  ...args: ElementDescriptor | [PropertyDescriptor] | [value: unknown, context: DecoratorContext]
+): PropertyDescriptor | ExtendedMethodDecorator | void {
   if (isModernDecoratorArgs(args)) {
-    return action2023(args) as unknown as PropertyDescriptor;
+    return action2023(args);
   }
 
   let actionFn: object | Function;
 
   if (!isElementDescriptor(args)) {
-    actionFn = args[0];
+    actionFn = (args as [PropertyDescriptor])[0];
 
     let decorator: ExtendedMethodDecorator = function (
       target,

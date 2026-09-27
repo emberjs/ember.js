@@ -5,6 +5,7 @@ import type {
   ElementDescriptor,
 } from '@ember/-internals/metal/lib/decorator';
 import metalInject from '@ember/-internals/metal/lib/injected_property';
+import type { InjectionDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
 /**
  @module @ember/service
@@ -22,13 +23,18 @@ import metalInject from '@ember/-internals/metal/lib/injected_property';
   @public
   @deprecated Please import `service` instead.
 */
-export function inject(name: string): PropertyDecorator;
+export function inject(name: string): InjectionDecorator;
 export function inject(...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
 export function inject(...args: ElementDescriptor): DecoratorPropertyDescriptor;
-export function inject(): PropertyDecorator;
+export function inject(): InjectionDecorator;
+export function inject(value: undefined, context: ClassFieldDecoratorContext): void;
+export function inject<This, Value>(
+  value: ClassAccessorDecoratorTarget<This, Value>,
+  context: ClassAccessorDecoratorContext<This, Value>
+): void;
 export function inject(
-  ...args: [] | [name: string] | ElementDescriptor
-): PropertyDecorator | DecoratorPropertyDescriptor | void {
+  ...args: [] | [name: string] | ElementDescriptor | [value: unknown, context: DecoratorContext]
+): InjectionDecorator | DecoratorPropertyDescriptor | void {
   deprecateUntil(
     'Importing `inject` from `@ember/service` is deprecated. Please import `service` instead.',
     DEPRECATIONS.DEPRECATE_IMPORT_INJECT
@@ -84,13 +90,18 @@ export function inject(
   @return {ComputedDecorator} injection decorator instance
   @public
 */
-export function service(name: string): PropertyDecorator;
+export function service(name: string): InjectionDecorator;
 export function service(...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
 export function service(...args: ElementDescriptor): DecoratorPropertyDescriptor;
-export function service(): PropertyDecorator;
+export function service(): InjectionDecorator;
+export function service(value: undefined, context: ClassFieldDecoratorContext): void;
+export function service<This, Value>(
+  value: ClassAccessorDecoratorTarget<This, Value>,
+  context: ClassAccessorDecoratorContext<This, Value>
+): void;
 export function service(
-  ...args: [] | [name: string] | ElementDescriptor
-): PropertyDecorator | DecoratorPropertyDescriptor | void {
+  ...args: [] | [name: string] | ElementDescriptor | [value: unknown, context: DecoratorContext]
+): InjectionDecorator | DecoratorPropertyDescriptor | void {
   return metalInject('service', ...args);
 }
 

@@ -7,6 +7,7 @@ import {
   type Decorator,
   identifyModernDecoratorArgs,
   isModernDecoratorArgs,
+  type StandardGetterDecorator,
 } from './decorator-util';
 
 /**
@@ -98,7 +99,7 @@ import {
   @for @glimmer/tracking
   @public
  */
-export const cached: MethodDecorator = (...args: any[]) => {
+export const cached: MethodDecorator & StandardGetterDecorator = (...args: any[]) => {
   if (isModernDecoratorArgs(args)) {
     return cached2023(args) as any;
   }

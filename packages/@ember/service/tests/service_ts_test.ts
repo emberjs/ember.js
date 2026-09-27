@@ -26,7 +26,7 @@ moduleFor(
       class MainService extends Service {}
 
       class Foo extends EmberObject {
-        @inject('main') declare main: MainService;
+        @inject('main') main!: MainService;
       }
 
       owner.register('service:main', MainService);
@@ -52,7 +52,7 @@ moduleFor(
       class MainService extends Service {}
 
       class Foo extends EmberObject {
-        @inject declare main: MainService;
+        @inject main!: MainService;
       }
 
       owner.register('service:main', MainService);
@@ -76,7 +76,7 @@ moduleFor(
       class MainService extends Service {}
 
       class Foo extends EmberObject {
-        @service('main') declare main: MainService;
+        @service('main') main!: MainService;
       }
 
       owner.register('service:main', MainService);
@@ -95,7 +95,7 @@ moduleFor(
       class MainService extends Service {}
 
       class Foo extends EmberObject {
-        @service declare main: MainService;
+        @service main!: MainService;
       }
 
       owner.register('service:main', MainService);

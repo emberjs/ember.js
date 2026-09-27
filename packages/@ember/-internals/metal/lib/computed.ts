@@ -38,7 +38,12 @@ import {
   notifyPropertyChange,
   PROPERTY_DID_CHANGE,
 } from './property_events';
-import { isModernDecoratorArgs } from './decorator-util';
+import {
+  isModernDecoratorArgs,
+  type StandardFieldDecorator,
+  type StandardGetterDecorator,
+  type StandardSetterDecorator,
+} from './decorator-util';
 
 export type ComputedPropertyGetterFunction = (this: any, key: string) => unknown;
 export type ComputedPropertySetterFunction = (
@@ -598,7 +603,12 @@ class AutoComputedProperty extends ComputedProperty {
   }
 }
 
-export type ComputedDecorator = ExtendedMethodDecorator & PropertyDecorator & ComputedDecoratorImpl;
+export type ComputedDecorator = ExtendedMethodDecorator &
+  PropertyDecorator &
+  StandardFieldDecorator &
+  StandardGetterDecorator &
+  StandardSetterDecorator &
+  ComputedDecoratorImpl;
 
 // TODO: This class can be svelted once `meta` has been deprecated
 class ComputedDecoratorImpl extends Function {
@@ -642,7 +652,7 @@ class ComputedDecoratorImpl extends Function {
     @chainable
     @public
   */
-  readOnly(this: ExtendedMethodDecorator) {
+  readOnly<T extends ExtendedMethodDecorator>(this: T): T {
     let desc = descriptorForDecorator(this) as ComputedProperty;
     assert(
       'Computed properties that define a setter using the new syntax cannot be read-only',
@@ -868,6 +878,13 @@ type ComputedDecoratorKeysAndConfig = [...keys: string[], config: ComputedProper
   @return {ComputedDecorator} property decorator instance
   @public
 */
+// @computed without parens, as a standard decorator
+export function computed(value: undefined, context: ClassFieldDecoratorContext): void;
+export function computed(value: (this: any) => any, context: ClassGetterDecoratorContext): void;
+export function computed(
+  value: (this: any, value: any) => void,
+  context: ClassSetterDecoratorContext
+): void;
 // @computed without parens or computed with descriptor args
 export function computed(
   target: object,
@@ -881,7 +898,11 @@ export function computed(...args: ComputedDecoratorKeysAndConfig): ComputedDecor
 // @computed with config only
 export function computed(callback: ComputedPropertyCallback): ComputedDecorator;
 export function computed(
-  ...args: ElementDescriptor | string[] | ComputedDecoratorKeysAndConfig
+  ...args:
+    | ElementDescriptor
+    | string[]
+    | ComputedDecoratorKeysAndConfig
+    | [value: unknown, context: DecoratorContext]
 ): ComputedDecorator | DecoratorPropertyDescriptor | void {
   if (isModernDecoratorArgs(args)) {
     let decorator = makeComputedDecorator(

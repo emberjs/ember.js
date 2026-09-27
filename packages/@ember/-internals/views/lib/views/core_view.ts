@@ -67,7 +67,7 @@ class CoreView extends FrameworkObject.extend(ActionHandler) {
   }
 
   @inject('renderer', '-dom')
-  declare renderer: Renderer;
+  renderer!: Renderer;
 
   instrumentDetails(hash: Record<string, unknown>) {
     hash['object'] = this.toString();

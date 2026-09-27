@@ -41,6 +41,53 @@ export type Decorator =
   | ClassDecorator
   | ClassAutoAccessorDecorator;
 
+/*
+  Public-facing signatures for Ember's decorators as TypeScript sees them when
+  `experimentalDecorators` is off (standard, stage 3 decorators). Our public
+  decorator types include these alongside their legacy signatures, so that
+  they type check under either mode.
+
+  These all return `void` because, from the caller's point of view, we never
+  replace the decorated element (any replacement is an implementation detail).
+*/
+export type StandardFieldDecorator = (
+  value: undefined,
+  context: ClassFieldDecoratorContext<any, any>
+) => void;
+
+export type StandardAccessorDecorator = <This, Value>(
+  value: ClassAccessorDecoratorTarget<This, Value>,
+  context: ClassAccessorDecoratorContext<This, Value>
+) => void;
+
+export type StandardGetterDecorator = (
+  value: (this: any) => any,
+  context: ClassGetterDecoratorContext<any, any>
+) => void;
+
+export type StandardSetterDecorator = (
+  value: (this: any, value: any) => void,
+  context: ClassSetterDecoratorContext<any, any>
+) => void;
+
+export type StandardMethodDecorator = (
+  value: (this: any, ...args: any[]) => any,
+  context: ClassMethodDecoratorContext<any, any>
+) => void;
+
+/**
+  A decorator for class fields, which works with both legacy
+  (`experimentalDecorators`) and standard decorators.
+*/
+export type FieldDecorator = PropertyDecorator & StandardFieldDecorator;
+
+/**
+  The decorator returned by `service()`, `inject()`, etc. Works on fields with
+  both legacy and standard decorators, and on auto-accessors with standard
+  decorators.
+*/
+export type InjectionDecorator = FieldDecorator & StandardAccessorDecorator;
+
 export function isModernDecoratorArgs(args: unknown[]): args is Parameters<Decorator> {
   return args.length === 2 && typeof args[1] === 'object' && args[1] != null && 'kind' in args[1];
 }

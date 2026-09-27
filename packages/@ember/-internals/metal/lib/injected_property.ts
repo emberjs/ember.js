@@ -8,6 +8,7 @@ import { defineProperty } from './properties';
 import {
   type Decorator,
   identifyModernDecoratorArgs,
+  type InjectionDecorator,
   isModernDecoratorArgs,
 } from './decorator-util';
 
@@ -35,21 +36,21 @@ if (DEBUG) {
 */
 // Decorator factory (with args)
 // (Also matches non-decorator form, types may be incorrect for this.)
-function inject(type: string, name: string): PropertyDecorator;
+function inject(type: string, name: string): InjectionDecorator;
 // Non-decorator
-function inject(type: string): PropertyDecorator;
+function inject(type: string): InjectionDecorator;
 // Decorator (without args)
 function inject(type: string, ...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
 function inject(type: string, ...args: ElementDescriptor): DecoratorPropertyDescriptor;
 // Catch-all for service and controller injections
 function inject(
   type: string,
-  ...args: [] | [name: string] | ElementDescriptor
-): PropertyDecorator | DecoratorPropertyDescriptor | void;
+  ...args: [] | [name: string] | ElementDescriptor | [value: unknown, context: DecoratorContext]
+): InjectionDecorator | DecoratorPropertyDescriptor | void;
 function inject(
   type: string,
-  ...args: [] | [name: string] | ElementDescriptor
-): PropertyDecorator | DecoratorPropertyDescriptor | void {
+  ...args: [] | [name: string] | ElementDescriptor | [value: unknown, context: DecoratorContext]
+): InjectionDecorator | DecoratorPropertyDescriptor | void {
   assert('a string type must be provided to inject', typeof type === 'string');
   let elementDescriptor;
   let modernArgs: Parameters<Decorator> | undefined;

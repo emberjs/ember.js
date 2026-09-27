@@ -37,10 +37,14 @@ jobs:
         run: pnpm build:types
       - name: Check internal types
         run: pnpm type-check:internals
+      - name: Check internal types with stable decorators
+        run: pnpm type-check:internals-stable-decorators
       - name: Check @handlebars/parser types
         run: pnpm type-check:handlebars
       - name: Check published types
         run: pnpm type-check:types
+      - name: Check published types with stable decorators
+        run: pnpm type-check:types-stable-decorators
 
   types-range:
     name: Type Checking (other supported versions)
@@ -61,6 +65,8 @@ jobs:
         run: pnpm add --save-dev --workspace-root typescript@${{ matrix.ts-version }}
       - name: Check published types
         run: pnpm type-check:types
+      - name: Check published types with stable decorators
+        run: pnpm type-check:types-stable-decorators
 
   build-test:
     name: package preparation test

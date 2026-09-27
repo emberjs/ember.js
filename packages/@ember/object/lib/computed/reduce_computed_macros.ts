@@ -5,6 +5,7 @@ import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
 import { autoComputed } from '@ember/-internals/metal/lib/computed';
 import { isDecoratorCall } from '@ember/-internals/metal/lib/decorator';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import compare from '@ember/utils/lib/compare';
@@ -32,7 +33,7 @@ function reduceMacro(
       return initialValue;
     }
     return arr.reduce(callback, initialValue, this);
-  }).readOnly() as PropertyDecorator;
+  }).readOnly() as FieldDecorator;
 }
 
 function arrayMacro(
@@ -56,14 +57,14 @@ function arrayMacro(
     } else {
       return emberA();
     }
-  }).readOnly() as PropertyDecorator;
+  }).readOnly() as FieldDecorator;
 }
 
 function multiArrayMacro(
   _dependentKeys: string[],
   callback: (dependentKeys: string[]) => unknown[],
   name: string
-): PropertyDecorator {
+): FieldDecorator {
   assert(
     `Dependent keys passed to \`${name}\` computed macro shouldn't contain brace expanding pattern.`,
     _dependentKeys.every((dependentKey) => !/[[\]{}]/g.test(dependentKey))
@@ -72,7 +73,7 @@ function multiArrayMacro(
 
   return computed(...dependentKeys, function () {
     return emberA(callback.call(this, _dependentKeys));
-  }).readOnly() as PropertyDecorator;
+  }).readOnly() as FieldDecorator;
 }
 
 /**
@@ -317,17 +318,17 @@ export function min(dependentKey: string) {
 export function map(
   dependentKey: string,
   callback: (value: unknown, index: number) => unknown
-): PropertyDecorator;
+): FieldDecorator;
 export function map(
   dependentKey: string,
   additionalDependentKeys: string[],
   callback: (value: unknown, index: number) => unknown
-): PropertyDecorator;
+): FieldDecorator;
 export function map(
   dependentKey: string,
   additionalDependentKeysOrCallback: string[] | ((value: unknown, index: number) => unknown),
   callback?: (value: unknown, index: number) => unknown
-): PropertyDecorator {
+): FieldDecorator {
   assert(
     'You attempted to use @map as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
@@ -541,19 +542,19 @@ export function mapBy(dependentKey: string, propertyKey: string) {
 export function filter(
   dependentKey: string,
   callback: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
-): PropertyDecorator;
+): FieldDecorator;
 export function filter(
   dependentKey: string,
   additionalDependentKeys: string[],
   callback: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
-): PropertyDecorator;
+): FieldDecorator;
 export function filter(
   dependentKey: string,
   additionalDependentKeysOrCallback:
     | string[]
     | ((value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown),
   callback?: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
-): PropertyDecorator {
+): FieldDecorator {
   assert(
     'You attempted to use @filter as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
@@ -692,10 +693,7 @@ export function filterBy(dependentKey: string, propertyKey: string, value?: unkn
   unique elements from the dependent array
   @public
 */
-export function uniq(
-  dependentKey: string,
-  ...additionalDependentKeys: string[]
-): PropertyDecorator {
+export function uniq(dependentKey: string, ...additionalDependentKeys: string[]): FieldDecorator {
   assert(
     'You attempted to use @uniq/@union as a decorator directly, but it requires atleast one dependent key parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
@@ -778,7 +776,7 @@ export function uniqBy(dependentKey: string, propertyKey: string) {
   return computed(`${dependentKey}.[]`, function () {
     let list = get(this, dependentKey);
     return isNativeOrEmberArray(list) ? uniqByArray(list, propertyKey) : emberA();
-  }).readOnly() as PropertyDecorator;
+  }).readOnly() as FieldDecorator;
 }
 
 /**
@@ -976,7 +974,7 @@ export function setDiff(setAProperty: string, setBProperty: string) {
     }
 
     return setA.filter((x) => setB.indexOf(x) === -1);
-  }).readOnly() as PropertyDecorator;
+  }).readOnly() as FieldDecorator;
 }
 
 /**
@@ -1177,17 +1175,17 @@ type SortDefinition = (itemA: any, itemB: any) => number;
   property array or callback function
   @public
 */
-export function sort(itemsKey: string, sortDefinition: SortDefinition | string): PropertyDecorator;
+export function sort(itemsKey: string, sortDefinition: SortDefinition | string): FieldDecorator;
 export function sort(
   itemsKey: string,
   additionalDependentKeys: string[],
   sortDefinition: SortDefinition
-): PropertyDecorator;
+): FieldDecorator;
 export function sort(
   itemsKey: string,
   additionalDependentKeysOrDefinition: SortDefinition | string | string[],
   sortDefinition?: SortDefinition
-): PropertyDecorator {
+): FieldDecorator {
   assert(
     'You attempted to use @sort as a decorator directly, but it requires atleast an `itemsKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
@@ -1246,7 +1244,7 @@ function customSort(
 
 // This one needs to dynamically set up and tear down observers on the itemsKey
 // depending on the sortProperties
-function propertySort(itemsKey: string, sortPropertiesKey: string): PropertyDecorator {
+function propertySort(itemsKey: string, sortPropertiesKey: string): FieldDecorator {
   let cp = autoComputed(function (this: unknown, key: string) {
     let sortProperties = get(this, sortPropertiesKey);
 
@@ -1272,7 +1270,7 @@ function propertySort(itemsKey: string, sortPropertiesKey: string): PropertyDeco
     }
   }).readOnly();
 
-  return cp as PropertyDecorator;
+  return cp as FieldDecorator;
 }
 
 function normalizeSortProperties(sortProperties: string[] | EmberArray<string>) {

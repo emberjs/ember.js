@@ -1,7 +1,8 @@
 import { mapBy } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(mapBy('foo', 'key')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(mapBy('foo', 'key')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @mapBy('foo', 'key')

@@ -74,7 +74,9 @@
     "type-check": "npm-run-all type-check:*",
     "type-check:handlebars": "tsc --noEmit --project packages/@handlebars/parser/tsconfig.json",
     "type-check:internals": "tsc --noEmit",
-    "type-check:types": "tsc --noEmit --project type-tests"
+    "type-check:internals-stable-decorators": "tsc --noEmit --project tsconfig.stable-decorators.json",
+    "type-check:types": "tsc --noEmit --project type-tests",
+    "type-check:types-stable-decorators": "tsc --noEmit --project type-tests/stable-decorators"
   },
   "resolutions": {
     "socket.io": "^4.7.0"

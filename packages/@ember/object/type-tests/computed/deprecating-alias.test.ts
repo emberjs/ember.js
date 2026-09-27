@@ -1,6 +1,7 @@
 import { deprecatingAlias } from '@ember/object/computed';
 
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
 expectTypeOf(
   deprecatingAlias('foo', {
@@ -9,7 +10,7 @@ expectTypeOf(
     for: 'testing',
     since: { available: '3.0.0', enabled: '3.0.0' },
   })
-).toEqualTypeOf<PropertyDecorator>();
+).toMatchTypeOf<FieldDecorator>();
 
 class Foo {
   @deprecatingAlias('foo', {

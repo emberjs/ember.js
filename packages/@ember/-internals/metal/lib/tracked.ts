@@ -15,6 +15,8 @@ import {
   type Decorator,
   identifyModernDecoratorArgs,
   isModernDecoratorArgs,
+  type StandardAccessorDecorator,
+  type StandardFieldDecorator,
 } from './decorator-util';
 
 /**
@@ -130,7 +132,9 @@ interface TrackedDecoratorOptions {
  * `tracked` as a decorator factory: `@tracked({ equals })`, or on classic
  * classes `tracked({ value })` / `tracked({ initializer })`.
  */
-export function tracked(propertyDesc: TrackedDecoratorOptions): ExtendedMethodDecorator;
+export function tracked(
+  propertyDesc: TrackedDecoratorOptions
+): ExtendedMethodDecorator & StandardFieldDecorator & StandardAccessorDecorator;
 /**
  * `tracked` as a bare decorator: `@tracked foo = 1`.
  */
@@ -140,6 +144,15 @@ export function tracked(
   key: string,
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
+/**
+ * `tracked` as a bare standard (stage 3) decorator: `@tracked foo = 1` or
+ * `@tracked accessor foo = 1`.
+ */
+export function tracked(value: undefined, context: ClassFieldDecoratorContext): void;
+export function tracked<This, Value>(
+  value: ClassAccessorDecoratorTarget<This, Value>,
+  context: ClassAccessorDecoratorContext<This, Value>
+): void;
 /**
  * `tracked` as a standalone reactive value, usable outside of classes:
  * `const count = tracked(0)`.

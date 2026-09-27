@@ -19,10 +19,14 @@ import {
   makeComputedDecorator,
 } from './decorator';
 import { defineProperty } from './properties';
+import type { StandardFieldDecorator } from './decorator-util';
 import { get } from './property_get';
 import { set } from './property_set';
 
-export type AliasDecorator = ExtendedMethodDecorator & PropertyDecorator & AliasDecoratorImpl;
+export type AliasDecorator = ExtendedMethodDecorator &
+  PropertyDecorator &
+  StandardFieldDecorator &
+  AliasDecoratorImpl;
 
 export default function alias(altKey: string): AliasDecorator {
   assert(
@@ -36,12 +40,12 @@ export default function alias(altKey: string): AliasDecorator {
 
 // TODO: This class can be svelted once `meta` has been deprecated
 class AliasDecoratorImpl extends Function {
-  readOnly(this: ExtendedMethodDecorator) {
+  readOnly<T extends ExtendedMethodDecorator>(this: T): T {
     (descriptorForDecorator(this) as AliasedProperty).readOnly();
     return this;
   }
 
-  oneWay(this: ExtendedMethodDecorator) {
+  oneWay<T extends ExtendedMethodDecorator>(this: T): T {
     (descriptorForDecorator(this) as AliasedProperty).oneWay();
     return this;
   }

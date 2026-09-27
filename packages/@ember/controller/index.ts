@@ -3,6 +3,7 @@ import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
 import { FrameworkObject } from '@ember/object/-internals';
 import metalInject from '@ember/-internals/metal/lib/injected_property';
+import type { InjectionDecorator } from '@ember/-internals/metal/lib/decorator-util';
 import type {
   DecoratorPropertyDescriptor,
   ElementDescriptor,
@@ -359,13 +360,18 @@ class Controller<_T = unknown> extends FrameworkObject.extend(ControllerMixin) {
   @return {ComputedDecorator} injection decorator instance
   @public
 */
-export function inject(name: string): PropertyDecorator;
+export function inject(name: string): InjectionDecorator;
 export function inject(...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
 export function inject(...args: ElementDescriptor): DecoratorPropertyDescriptor;
-export function inject(): PropertyDecorator;
+export function inject(): InjectionDecorator;
+export function inject(value: undefined, context: ClassFieldDecoratorContext): void;
+export function inject<This, Value>(
+  value: ClassAccessorDecoratorTarget<This, Value>,
+  context: ClassAccessorDecoratorContext<This, Value>
+): void;
 export function inject(
-  ...args: [] | [name: string] | ElementDescriptor
-): PropertyDecorator | DecoratorPropertyDescriptor | void {
+  ...args: [] | [name: string] | ElementDescriptor | [value: unknown, context: DecoratorContext]
+): InjectionDecorator | DecoratorPropertyDescriptor | void {
   return metalInject('controller', ...args);
 }
 

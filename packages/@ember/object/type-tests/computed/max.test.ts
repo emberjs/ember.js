@@ -1,7 +1,8 @@
 import { max } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(max('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(max('foo')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @max('foo') max: unknown;

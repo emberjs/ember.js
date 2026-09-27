@@ -99,14 +99,18 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
   @return {PropertyDecorator} property decorator instance
  */
 export function dependentKeyCompat(
+  value: (this: any) => any,
+  context: ClassGetterDecoratorContext
+): void;
+export function dependentKeyCompat(
   target: ElementDescriptor[0],
   key: ElementDescriptor[1],
   desc: ElementDescriptor[2]
 ): PropertyDescriptor;
 export function dependentKeyCompat(desc: PropertyDescriptor): ExtendedMethodDecorator;
 export function dependentKeyCompat(
-  ...args: ElementDescriptor | [PropertyDescriptor]
-): PropertyDescriptor | ExtendedMethodDecorator {
+  ...args: ElementDescriptor | [PropertyDescriptor] | [value: unknown, context: DecoratorContext]
+): PropertyDescriptor | ExtendedMethodDecorator | void {
   if (isElementDescriptor(args)) {
     let [target, key, desc] = args;
 

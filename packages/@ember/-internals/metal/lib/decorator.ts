@@ -7,6 +7,9 @@ import {
   identifyModernDecoratorArgs,
   isModernDecoratorArgs,
   onClassFinalized,
+  type StandardGetterDecorator,
+  type StandardMethodDecorator,
+  type StandardSetterDecorator,
 } from './decorator-util';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
@@ -48,7 +51,12 @@ export function isDecoratorCall(
   return isElementDescriptor(args) || isModernDecoratorArgs(args);
 }
 
-export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
+export function nativeDescDecorator(
+  propertyDesc: PropertyDescriptor
+): ExtendedMethodDecorator &
+  StandardGetterDecorator &
+  StandardSetterDecorator &
+  StandardMethodDecorator {
   let decorator = function (...args: unknown[]): DecoratorPropertyDescriptor {
     if (isModernDecoratorArgs(args)) {
       nativeDescDecorator2023(args, propertyDesc);
@@ -59,7 +67,8 @@ export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
 
   setClassicDecorator(decorator);
 
-  return decorator;
+  // SAFETY: the implementation handles both legacy and standard decorator args.
+  return decorator as unknown as ReturnType<typeof nativeDescDecorator>;
 }
 
 /**

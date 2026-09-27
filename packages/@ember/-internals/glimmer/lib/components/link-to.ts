@@ -267,7 +267,7 @@ class _LinkTo extends InternalComponent {
     return 'LinkTo';
   }
 
-  @service('-routing') declare private routing: RoutingService<Route>;
+  @service('-routing') private routing!: RoutingService<Route>;
 
   validateArguments(): void {
     assert(
