@@ -128,13 +128,20 @@ interface TrackedDecoratorOptions {
   description?: string;
 }
 
+// `PropertyDecorator` covers the `(target, key)` call TypeScript emits for
+// native class fields with legacy decorators; `ExtendedMethodDecorator` covers
+// the classic-class call; the standard decorator types cover fields and
+// auto-accessors with standard (stage 3) decorators.
+export type TrackedDecorator = ExtendedMethodDecorator &
+  PropertyDecorator &
+  StandardFieldDecorator &
+  StandardAccessorDecorator;
+
 /**
  * `tracked` as a decorator factory: `@tracked({ equals })`, or on classic
  * classes `tracked({ value })` / `tracked({ initializer })`.
  */
-export function tracked(
-  propertyDesc: TrackedDecoratorOptions
-): ExtendedMethodDecorator & StandardFieldDecorator & StandardAccessorDecorator;
+export function tracked(propertyDesc: TrackedDecoratorOptions): TrackedDecorator;
 /**
  * `tracked` as a bare decorator: `@tracked foo = 1`.
  */
@@ -163,7 +170,7 @@ export function tracked<Value>(
 ): TrackedValue<Value>;
 export function tracked(
   ...args: any[]
-): ExtendedMethodDecorator | DecoratorPropertyDescriptor | TrackedValue<any> {
+): TrackedDecorator | DecoratorPropertyDescriptor | TrackedValue<any> {
   if (isModernDecoratorArgs(args)) {
     // TODO: cast is a lie, keeping the public types unchanged for now
     return tracked2023(args) as unknown as DecoratorPropertyDescriptor;
@@ -248,7 +255,7 @@ function isDecoratorOptions(value: unknown): value is TrackedDecoratorOptions {
   return Object.keys(value).every((key) => DECORATOR_OPTION_KEYS.includes(key));
 }
 
-function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): ExtendedMethodDecorator {
+function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): TrackedDecorator {
   if (DEBUG && propertyDesc) {
     assert(
       `The options object passed to tracked() may only contain a 'value' or an 'initializer' property, not both. Received: [${Object.keys(
@@ -308,7 +315,7 @@ function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): ExtendedM
 
   setClassicDecorator(decorator);
 
-  return decorator;
+  return decorator as TrackedDecorator;
 }
 
 if (DEBUG) {

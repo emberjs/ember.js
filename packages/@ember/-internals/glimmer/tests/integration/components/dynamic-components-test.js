@@ -1,7 +1,8 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { set, computed } from '@ember/object';
+import { set } from '@ember/object';
+import { tracked } from '@glimmer/tracking';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -211,11 +212,12 @@ moduleFor(
     ['@test it renders the layout with the component instance as the context']() {
       let instance;
 
-      let FooBarComponent = class extends EmberComponent {
-        init() {
-          super.init();
+      let FooBarComponent = class extends Component {
+        @tracked message = 'hello';
+
+        constructor(owner, args) {
+          super(owner, args);
           instance = this;
-          this.set('message', 'hello');
         }
       };
 
@@ -226,19 +228,19 @@ moduleFor(
 
       this.render('{{component "foo-bar"}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => set(instance, 'message', 'goodbye'));
 
-      this.assertComponentElement(this.firstChild, { content: 'goodbye' });
+      this.assertText('goodbye');
 
       runTask(() => set(instance, 'message', 'hello'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     ['@test it preserves the outer context when yielding']() {
@@ -272,11 +274,11 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('{{this.id}} {{yield}}'),
-          class extends EmberComponent {
+          precompileTemplate('{{@id}} {{yield}}'),
+          class extends Component {
             willDestroy() {
               super.willDestroy();
-              destroyed[this.get('id')]++;
+              destroyed[this.args.id]++;
             }
           }
         )
@@ -439,11 +441,11 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('foo-bar {{this.location}} {{this.locationCopy}} {{yield}}'),
-          class extends EmberComponent {
-            init() {
-              super.init(...arguments);
-              this.set('locationCopy', this.get('location'));
+          precompileTemplate('foo-bar {{@location}} {{this.locationCopy}} {{yield}}'),
+          class extends Component {
+            constructor(owner, args) {
+              super(owner, args);
+              this.locationCopy = this.args.location;
             }
           }
         )
@@ -452,11 +454,11 @@ moduleFor(
       this.owner.register(
         'component:foo-bar-baz',
         setComponentTemplate(
-          precompileTemplate('foo-bar-baz {{this.location}} {{this.locationCopy}} {{yield}}'),
-          class extends EmberComponent {
-            init() {
-              super.init(...arguments);
-              this.set('locationCopy', this.get('location'));
+          precompileTemplate('foo-bar-baz {{@location}} {{this.locationCopy}} {{yield}}'),
+          class extends Component {
+            constructor(owner, args) {
+              super(owner, args);
+              this.locationCopy = this.args.location;
             }
           }
         )
@@ -466,12 +468,11 @@ moduleFor(
         'component:outer-component',
         setComponentTemplate(
           precompileTemplate(
-            '{{#component this.componentName location=this.location}}arepas!{{/component}}'
+            '{{#component this.componentName location=@location}}arepas!{{/component}}'
           ),
-          class extends EmberComponent {
-            @computed('location')
+          class extends Component {
             get componentName() {
-              if (this.get('location') === 'Caracas') {
+              if (this.args.location === 'Caracas') {
                 return 'foo-bar';
               } else {
                 return 'foo-bar-baz';

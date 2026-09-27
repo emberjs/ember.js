@@ -4,7 +4,9 @@ import EmberObject from '@ember/object';
 
 import { set, setProperties } from '@ember/object';
 
-import { Component } from '../../utils/helpers';
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { Component as EmberComponent } from '../../utils/helpers';
 import { template } from '@ember/template-compiler/runtime';
 import templateOnly from '@ember/component/template-only';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -56,11 +58,11 @@ moduleFor(
 
       this.render('<XBlah />');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     '@test it can resolve <X-Blah /> to x-blah'() {
@@ -71,11 +73,11 @@ moduleFor(
 
       this.render('<X-Blah />');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     '@test it can render a basic template only component'() {
@@ -86,11 +88,11 @@ moduleFor(
 
       this.render('<FooBar />');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     '@test it can render a basic component with template and javascript'() {
@@ -106,7 +108,7 @@ moduleFor(
 
       this.render('<FooBar />');
 
-      this.assertComponentElement(this.firstChild, { content: 'FIZZ BAR hey' });
+      this.assertText('FIZZ BAR hey');
     }
 
     '@test it can render a single word component name'() {
@@ -117,18 +119,19 @@ moduleFor(
 
       this.render('<Foo />');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
 
     '@test it can not render a component name without initial capital letter'(assert) {
       this.owner.register(
         'component:div',
         class extends Component {
-          init() {
+          constructor() {
+            super(...arguments);
             assert.ok(false, 'should not have created component');
           }
         }
@@ -144,7 +147,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{this.id}} {{this.elementId}}'),
-          class extends Component {}
+          class extends EmberComponent {}
         )
       );
 
@@ -180,7 +183,7 @@ moduleFor(
     '@test it can have a custom id attribute and it is bound'() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
       );
 
       this.render('<FooBar id={{this.customId}} />', {
@@ -217,7 +220,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('hello'),
-          class extends Component {
+          class extends EmberComponent {
             tagName = 'foo-bar';
           }
         )
@@ -241,7 +244,7 @@ moduleFor(
     '@test it can have a custom tagName from the invocation'() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
       );
 
       this.render('<FooBar @tagName="foo-bar" />');
@@ -264,7 +267,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('hello'),
-          class extends Component {
+          class extends EmberComponent {
             classNames = ['foo', 'bar'];
           }
         )
@@ -290,7 +293,7 @@ moduleFor(
     '@test class property on components can be dynamic'() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
       );
 
       this.render('<FooBar @class={{if this.fooBar "foo-bar"}} />', {
@@ -325,7 +328,7 @@ moduleFor(
     }
 
     '@test it can set custom classNames from the invocation'() {
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         classNames = ['foo'];
       };
 
@@ -378,7 +381,7 @@ moduleFor(
     '@test it has an element'() {
       let instance;
 
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         init() {
           super.init();
           instance = this;
@@ -408,14 +411,14 @@ moduleFor(
     '@test it has the right parentView and childViews'(assert) {
       let fooBarInstance, fooBarBazInstance;
 
-      let FooBarComponent = class extends Component {
+      let FooBarComponent = class extends EmberComponent {
         init() {
           super.init();
           fooBarInstance = this;
         }
       };
 
-      let FooBarBazComponent = class extends Component {
+      let FooBarBazComponent = class extends EmberComponent {
         init() {
           super.init();
           fooBarBazInstance = this;
@@ -480,7 +483,7 @@ moduleFor(
     '@test it reflects named arguments as properties'() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{this.foo}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{this.foo}}'), class extends EmberComponent {})
       );
 
       this.render('<FooBar @foo={{this.model.bar}} />', {
@@ -515,32 +518,28 @@ moduleFor(
 
       this.render('<FooBar>hello</FooBar>');
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello - In component',
-      });
+      this.assertText('hello - In component');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello - In component',
-      });
+      this.assertText('hello - In component');
     }
 
     '@test it can yield internal and external properties positionally'() {
       let instance;
 
       let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+        @tracked greeting = 'hello';
+        constructor() {
+          super(...arguments);
           instance = this;
         }
-        greeting = 'hello';
       };
 
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('{{yield this.greeting this.greetee.firstName}}'),
+          precompileTemplate('{{yield this.greeting @greetee.firstName}}'),
           FooBarComponent
         )
       );
@@ -555,15 +554,11 @@ moduleFor(
         }
       );
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello',
-      });
+      this.assertText('Joel Kang, hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello',
-      });
+      this.assertText('Joel Kang, hello');
 
       runTask(() =>
         set(this.context, 'person', {
@@ -572,31 +567,25 @@ moduleFor(
         })
       );
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Dora the Explorer, hello',
-      });
+      this.assertText('Dora the Explorer, hello');
 
-      runTask(() => set(instance, 'greeting', 'hola'));
+      runTask(() => (instance.greeting = 'hola'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Dora the Explorer, hola',
-      });
+      this.assertText('Dora the Explorer, hola');
 
       runTask(() => {
-        set(instance, 'greeting', 'hello');
+        instance.greeting = 'hello';
         set(this.context, 'person', {
           firstName: 'Joel',
           lastName: 'Kang',
         });
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello',
-      });
+      this.assertText('Joel Kang, hello');
     }
 
     '@test positional parameters are not allowed'() {
-      let TestComponent = class extends Component {
+      let TestComponent = class extends EmberComponent {
         static positionalParams = ['first', 'second'];
       };
 
@@ -625,11 +614,11 @@ moduleFor(
         {{/let}}
       `);
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       this.assertStableRerender();
     }
@@ -645,11 +634,11 @@ moduleFor(
       );
       this.render(strip`{{test-harness foo=(component 'foo-bar')}}`);
 
-      this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       this.assertStableRerender();
     }
@@ -661,15 +650,22 @@ moduleFor(
       );
       this.owner.register(
         'component:test-harness',
-        setComponentTemplate(precompileTemplate('<this.foo />'), class extends Component {})
+        setComponentTemplate(
+          precompileTemplate('<this.foo />'),
+          class extends Component {
+            get foo() {
+              return this.args.foo;
+            }
+          }
+        )
       );
       this.render(strip`{{test-harness foo=(component 'foo-bar')}}`);
 
-      this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       this.assertStableRerender();
     }
@@ -703,8 +699,7 @@ moduleFor(
         <CheckBlock />
         <CheckBlock></CheckBlock>`);
 
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
+      this.assertText('NoYes');
 
       this.assertStableRerender();
     }
@@ -712,7 +707,7 @@ moduleFor(
     '@test includes invocation specified attributes in root element ("splattributes")'() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello'), class extends EmberComponent {})
       );
 
       this.render('<FooBar data-foo={{this.foo}} data-bar={{this.bar}} />', {
@@ -762,9 +757,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('<div ...attributes>hello</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -784,9 +777,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('<div data-bar ...attributes>hello</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -806,9 +797,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('<div ...attributes>hello</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -861,11 +850,10 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate('<div data-derp={{this.localProp}} ...attributes>hello</div>'),
           class extends Component {
-            tagName = '';
-            init() {
+            @tracked localProp = 'qux';
+            constructor() {
+              super(...arguments);
               instance = this;
-              super.init(...arguments);
-              this.localProp = 'qux';
             }
           }
         )
@@ -893,7 +881,7 @@ moduleFor(
       runTask(() => {
         set(this.context, 'foo', 'FOO');
         set(this.context, 'bar', undefined);
-        set(instance, 'localProp', 'QUZ');
+        instance.localProp = 'QUZ';
       });
 
       this.assertElement(this.firstChild, {
@@ -905,7 +893,7 @@ moduleFor(
       runTask(() => {
         set(this.context, 'foo', 'foo');
         set(this.context, 'bar', 'bar');
-        set(instance, 'localProp', 'qux');
+        instance.localProp = 'qux';
       });
 
       this.assertElement(this.firstChild, {
@@ -922,11 +910,10 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate('<div class={{this.localProp}} ...attributes>hello</div>'),
           class extends Component {
-            tagName = '';
-            init() {
+            @tracked localProp = 'qux';
+            constructor() {
+              super(...arguments);
               instance = this;
-              super.init(...arguments);
-              this.localProp = 'qux';
             }
           }
         )
@@ -950,7 +937,7 @@ moduleFor(
 
       runTask(() => {
         set(this.context, 'bar', undefined);
-        set(instance, 'localProp', 'QUZ');
+        instance.localProp = 'QUZ';
       });
 
       this.assertElement(this.firstChild, {
@@ -961,7 +948,7 @@ moduleFor(
 
       runTask(() => {
         set(this.context, 'bar', 'bar');
-        set(instance, 'localProp', 'qux');
+        instance.localProp = 'qux';
       });
 
       this.assertElement(this.firstChild, {
@@ -978,11 +965,10 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate('<div ...attributes class={{this.localProp}}>hello</div>'),
           class extends Component {
-            tagName = '';
-            init() {
+            @tracked localProp = 'qux';
+            constructor() {
+              super(...arguments);
               instance = this;
-              super.init(...arguments);
-              this.localProp = 'qux';
             }
           }
         )
@@ -1006,7 +992,7 @@ moduleFor(
 
       runTask(() => {
         set(this.context, 'bar', undefined);
-        set(instance, 'localProp', 'QUZ');
+        instance.localProp = 'QUZ';
       });
 
       this.assertElement(this.firstChild, {
@@ -1017,7 +1003,7 @@ moduleFor(
 
       runTask(() => {
         set(this.context, 'bar', 'bar');
-        set(instance, 'localProp', 'qux');
+        instance.localProp = 'qux';
       });
 
       this.assertElement(this.firstChild, {
@@ -1032,18 +1018,14 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{yield (hash baz=(component "foo-bar/baz"))}}'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.owner.register(
         'component:foo-bar/baz',
         setComponentTemplate(
           precompileTemplate('<div class="default-class" ...attributes>hello</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1061,18 +1043,14 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{yield (hash baz=(component "foo-bar/baz"))}}'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.owner.register(
         'component:foo-bar/baz',
         setComponentTemplate(
           precompileTemplate('<div ...attributes class="default-class" >hello</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1090,18 +1068,14 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{yield (hash baz=(component "foo-bar/baz"))}}'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.owner.register(
         'component:foo-bar/baz',
         setComponentTemplate(
           precompileTemplate('<div title="bar" ...attributes>hello</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1119,9 +1093,7 @@ moduleFor(
         'component:x-outer',
         setComponentTemplate(
           precompileTemplate('<XInner ...attributes>{{yield}}</XInner>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1129,9 +1101,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('<div ...attributes>{{yield}}</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1155,9 +1125,7 @@ moduleFor(
           precompileTemplate(
             `{{#let (component 'x-inner') as |Thing|}}<Thing ...attributes>{{yield}}</Thing>{{/let}}`
           ),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1165,9 +1133,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('<div ...attributes>{{yield}}</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1185,9 +1151,7 @@ moduleFor(
         'component:x-outer',
         setComponentTemplate(
           precompileTemplate(`<XInner ...attributes>{{yield}}</XInner>`),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1195,9 +1159,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('<div ...attributes>{{yield}}</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1215,9 +1177,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('<div ...attributes>hello</div><p ...attributes>world</p>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
 
@@ -1288,9 +1248,7 @@ moduleFor(
         'component:foo-bar/inner',
         setComponentTemplate(
           precompileTemplate('<h1 ...attributes>{{yield}}</h1>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.owner.register(
@@ -1304,9 +1262,7 @@ moduleFor(
             <h3>Outside the let</h3>
           `,
           {
-            component: class extends Component {
-              tagName = '';
-            },
+            component: class extends Component {},
             strictMode: false,
           }
         )
@@ -1473,11 +1429,11 @@ moduleFor(
 
       this.render('<Foo::Bar::BazBing />');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertText('hello');
     }
   }
 );
@@ -1502,9 +1458,7 @@ moduleFor(
         'component:the-foo',
         setComponentTemplate(
           precompileTemplate('<div id="inner-div" ...attributes>Foo</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.registerModifier(
@@ -1535,9 +1489,7 @@ moduleFor(
           precompileTemplate(
             '<div id="inner-one" ...attributes>Foo</div><div id="inner-two" ...attributes>Bar</div>'
           ),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       let test = this;
@@ -1569,9 +1521,7 @@ moduleFor(
         'component:the-foo',
         setComponentTemplate(
           precompileTemplate('<div id="inner-div" ...attributes>Foo</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.registerModifier(
@@ -1622,9 +1572,7 @@ moduleFor(
         'component:the-foo',
         setComponentTemplate(
           precompileTemplate('<div id="inner-div" ...attributes>Foo</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.registerModifier(
@@ -1670,9 +1618,7 @@ moduleFor(
         'component:the-foo',
         setComponentTemplate(
           precompileTemplate('<div id="inner-div" ...attributes>Foo</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.registerModifier(
@@ -1723,9 +1669,7 @@ moduleFor(
         'component:the-inner',
         setComponentTemplate(
           precompileTemplate('<div id="inner-div" ...attributes>{{yield}}</div>'),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.owner.register(
@@ -1734,9 +1678,7 @@ moduleFor(
           precompileTemplate(
             '<div id="outer-div" ...attributes>Outer</div><TheInner ...attributes>Hello</TheInner>'
           ),
-          class extends Component {
-            tagName = '';
-          }
+          class extends Component {}
         )
       );
       this.registerModifier(
