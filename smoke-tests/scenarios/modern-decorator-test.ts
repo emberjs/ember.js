@@ -1,9 +1,9 @@
-import { appScenarios } from './scenarios';
+import { v1AppScenarios } from './scenarios';
 import type { PreparedApp } from 'scenario-tester';
 import * as QUnit from 'qunit';
 const { module: Qmodule, test } = QUnit;
 
-appScenarios
+v1AppScenarios
   .map('modern-decorators', (project) => {
     project.files['ember-cli-build.js'] = project.files['ember-cli-build.js'].replace(
       '/* SCENARIO_INSERTION_TARGET */',
