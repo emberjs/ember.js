@@ -6,6 +6,8 @@
   to do type discrimination against the `value` argument.
 */
 
+import { assert } from '@ember/debug';
+
 export type ClassMethodDecorator = (
   value: Function,
   context: ClassMethodDecoratorContext
@@ -144,14 +146,22 @@ export function identifyModernDecoratorArgs(args: Parameters<Decorator>):
   up as `Class[Symbol.metadata]`, and flush it the first time we encounter the
   class: either when Ember inspects it (see `CoreObject.proto()`) or when an
   instance is constructed.
+
+  This relies on `Symbol.metadata`, which browsers don't implement yet. Babel's
+  decorator helpers fall back to `Symbol.for('Symbol.metadata')` when it's
+  missing, but TypeScript's emit skips decorator metadata entirely unless
+  `Symbol.metadata` exists. So we define it, with the same fallback Babel uses
+  so that classes compiled by either one agree. This module is imported by
+  every Ember decorator, so it runs before any class using them is defined.
 */
-const METADATA: symbol =
-  (Symbol as unknown as { metadata?: symbol }).metadata ?? Symbol.for('Symbol.metadata');
+(Symbol as unknown as { metadata?: symbol }).metadata ??= Symbol.for('Symbol.metadata');
+const METADATA = (Symbol as unknown as { metadata: symbol }).metadata;
 
 const pendingClassSetups = new WeakMap<object, Array<(proto: object) => void>>();
 const finalizedClasses = new WeakSet<object>();
 
 interface DecoratorContextWithMetadata {
+  readonly name: string | symbol;
   readonly static?: boolean;
   readonly metadata: DecoratorMetadataObject;
   addInitializer(initializer: (this: any) => void): void;
@@ -169,6 +179,11 @@ export function onClassFinalized(
     });
     return;
   }
+
+  assert(
+    `Ember's decorators need decorator metadata, but ${String(context.name)} has none. This happens when \`Symbol.metadata\` doesn't exist when the class is defined, e.g. with TypeScript's decorator emit if the class is defined before Ember is loaded.`,
+    context.metadata
+  );
 
   let pending = pendingClassSetups.get(context.metadata);
   if (!pending) {

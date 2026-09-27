@@ -122,6 +122,8 @@ jobs:
             ENABLE_OPTIONAL_FEATURES: "true"
           - name: "Stable decorators"
             VITE_STABLE_DECORATORS: "true"
+          - name: "Stable decorators (TypeScript emit)"
+            VITE_STABLE_DECORATORS: "typescript"
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
