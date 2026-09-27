@@ -2349,11 +2349,13 @@ moduleFor(
         mapped;
         @max('mapped')
         max;
-        @observer('max', () => userFnCalls++)
-        maxDidChange;
-      }.create({
-        array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
-      });
+      }
+        .extend({
+          maxDidChange: observer('max', () => userFnCalls++),
+        })
+        .create({
+          array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
+        });
     }
 
     afterEach() {
@@ -2361,6 +2363,7 @@ moduleFor(
     }
 
     async ['@test it computes interdependent array computed properties'](assert) {
+      assert.equal(userFnCalls, 0, 'object defined observers have not fired yet');
       assert.equal(obj.get('max'), 3, 'sanity - it properly computes the maximum value');
 
       let calls = 0;
@@ -2373,6 +2376,13 @@ moduleFor(
       assert.equal(obj.get('max'), 5, 'maximum value is updated correctly');
       assert.equal(userFnCalls, 1, 'object defined observers fire');
       assert.equal(calls, 1, 'runtime created observers fire');
+
+      obj.get('array').pushObject({ v: 7 });
+      await runLoopSettled();
+
+      assert.equal(obj.get('max'), 7, 'maximum value is updated correctly again');
+      assert.equal(userFnCalls, 2, 'object defined observers fire again');
+      assert.equal(calls, 2, 'runtime created observers fire again');
     }
   }
 );

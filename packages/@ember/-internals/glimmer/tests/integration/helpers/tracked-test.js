@@ -1,11 +1,7 @@
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
-import {
-  tracked,
-  nativeDescDecorator as descriptor,
-  notifyPropertyChange,
-} from '@ember/-internals/metal';
+import { tracked, notifyPropertyChange } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -241,7 +237,6 @@ moduleFor(
         @tracked
         last = 'Jackson';
 
-        @descriptor
         get full() {
           return `${this.first} ${this.last}`;
         }

@@ -304,51 +304,53 @@ moduleFor(
     }
 
     ['@test Calling _super in call outside the immediate function of a CP getter works'](assert) {
+      let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
+          macroCalls++;
           return callback.call(this);
         });
       }
 
-      let MyClass = class extends EmberObject {
-        @computed
-        get foo() {
+      let MyClass = EmberObject.extend({
+        foo: computed(function () {
           return 'FOO';
-        }
-      };
+        }),
+      });
 
-      let SubClass = class extends MyClass {
-        @macro
-        get foo() {
-          return super.foo;
-        }
-      };
+      let SubClass = MyClass.extend({
+        foo: macro(function () {
+          return this._super();
+        }),
+      });
 
-      assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+      assert.strictEqual(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+      assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
     ['@test Calling _super in apply outside the immediate function of a CP getter works'](assert) {
+      let macroCalls = 0;
       function macro(callback) {
         return computed(function () {
+          macroCalls++;
           return callback.apply(this);
         });
       }
 
-      let MyClass = class extends EmberObject {
-        @computed
-        get foo() {
+      let MyClass = EmberObject.extend({
+        foo: computed(function () {
           return 'FOO';
-        }
-      };
+        }),
+      });
 
-      let SubClass = class extends MyClass {
-        @macro
-        get foo() {
-          return super.foo;
-        }
-      };
+      let SubClass = MyClass.extend({
+        foo: macro(function () {
+          return this._super();
+        }),
+      });
 
-      assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+      assert.strictEqual(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
+      assert.strictEqual(macroCalls, 1, "the macro's getter is used");
     }
 
     ['@test observing prop installed with computed macro reads and overriding it in create() works'](
