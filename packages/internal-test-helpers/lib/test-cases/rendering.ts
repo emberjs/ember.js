@@ -1,7 +1,7 @@
 import type { Renderer } from '@ember/-internals/glimmer';
 import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
 import { EventDispatcher } from '@ember/-internals/views';
-import Component from '@ember/component';
+import Component, { INTERNAL_COMPONENT_EXTEND } from '@ember/-internals/glimmer/lib/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import type Resolver from '../test-resolver';
@@ -111,7 +111,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       layoutName: '-top-level',
     });
 
-    owner.register('component:-top-level', Component.extend(attrs));
+    owner.register('component:-top-level', Component[INTERNAL_COMPONENT_EXTEND](attrs));
 
     this.component = owner.lookup('component:-top-level');
 
