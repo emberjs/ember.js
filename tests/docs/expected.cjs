@@ -1,7 +1,6 @@
 module.exports = {
   classitems: [
     'A',
-    'EXTEND_PROTOTYPES',
     'GUID_KEY',
     'GUID_PREFIX',
     'LOG_INSPECTOR_HINT',
