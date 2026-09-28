@@ -38,6 +38,4 @@ jobs:
         # Push in a way that WILL trigger other workflows
         env:
           PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-        run: |
-          credential_helper='!f() { echo "username=$GITHUB_ACTOR"; echo "password=$PERSONAL_TOKEN"; }; f'
-          git -c credential.helper= -c credential.helper="$credential_helper" push "https://github.com/${GITHUB_REPOSITORY}" "v${NEXT_ALPHA}-ember-source"
+        run: git push https://${GITHUB_ACTOR}:${PERSONAL_TOKEN}@github.com/${GITHUB_REPOSITORY} v${NEXT_ALPHA}-ember-source
