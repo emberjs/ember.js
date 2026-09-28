@@ -8,6 +8,7 @@ import { A as emberA } from '@ember/array';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { Component as EmberComponent } from '../../utils/helpers';
+import PositionalComponent from '../../utils/positional-component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -35,8 +36,8 @@ moduleFor(
       this.owner.register(
         'component:-looked-up',
         setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends EmberComponent {
+          precompileTemplate('{{@greeting}} {{this.name}}'),
+          class extends PositionalComponent {
             static positionalParams = ['name'];
           }
         )
@@ -57,7 +58,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -95,7 +96,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -135,7 +136,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -175,7 +176,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -214,8 +215,8 @@ moduleFor(
       this.owner.register(
         'component:-looked-up',
         setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends EmberComponent {
+          precompileTemplate('{{@greeting}} {{this.name}}'),
+          class extends PositionalComponent {
             static positionalParams = ['name'];
           }
         )
@@ -329,7 +330,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -351,7 +352,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.greeting}} {{this.name}} {{this.age}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['greeting', 'name', 'age'];
           }
         )
@@ -409,7 +410,7 @@ moduleFor(
         'component:-inner-component',
         setComponentTemplate(
           precompileTemplate('{{component this.comp "Inner"}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['comp'];
           }
         )
@@ -419,7 +420,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -761,7 +762,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.params}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -1412,7 +1413,7 @@ moduleFor(
           precompileTemplate(
             'foo-bar component:{{#each this.params as |param|}} {{param}}{{/each}}'
           ),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -1456,7 +1457,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('inner:{{#each this.params as |param|}} {{param}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )

@@ -23,6 +23,7 @@ import EmberObject, { set, get, computed, observer } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
 import { Component, htmlSafe } from '../../utils/helpers';
+import PositionalComponent from '../../utils/positional-component';
 import GlimmerComponent from '@glimmer/component';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -1748,7 +1749,7 @@ moduleFor(
             {{/each}}
           `,
           {
-            component: class extends Component {
+            component: class extends PositionalComponent {
               static positionalParams = 'names';
             },
             strictMode: false,
@@ -1757,8 +1758,8 @@ moduleFor(
       );
 
       this.render(strip`
-      {{sample-component "Foo" 4 "Bar" elementId="args-3"}}
-      {{sample-component "Foo" 4 "Bar" 5 "Baz" elementId="args-5"}}`);
+      <div id="args-3">{{sample-component "Foo" 4 "Bar"}}</div>
+      <div id="args-5">{{sample-component "Foo" 4 "Bar" 5 "Baz"}}</div>`);
 
       assert.equal(this.$('#args-3').text(), 'Foo4Bar');
       assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
@@ -1877,7 +1878,7 @@ moduleFor(
             {{/each}}
           `,
           {
-            component: class extends Component {
+            component: class extends PositionalComponent {
               static positionalParams = 'n';
             },
             strictMode: false,
@@ -2149,7 +2150,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{this.name}}{{this.age}}'),
-          class extends Component {
+          class extends PositionalComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -2169,7 +2170,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{this.name}}{{this.age}}'),
-          class extends Component {
+          class extends PositionalComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -3669,8 +3670,8 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate(`{{@things.length}}`),
-          class extends Component {
+          precompileTemplate(`{{this.things.length}}`),
+          class extends PositionalComponent {
             static positionalParams = 'things';
           }
         )

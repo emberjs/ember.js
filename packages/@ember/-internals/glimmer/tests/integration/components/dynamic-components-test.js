@@ -8,6 +8,7 @@ import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
 import { Component as EmberComponent } from '../../utils/helpers';
+import PositionalComponent from '../../utils/positional-component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
@@ -634,7 +635,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -644,7 +645,7 @@ moduleFor(
         'component:foo-bar-baz',
         setComponentTemplate(
           precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar-baz'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -656,33 +657,23 @@ moduleFor(
         age: 29,
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex (29) from foo-bar',
-      });
+      this.assertText('hello Alex (29) from foo-bar');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex (29) from foo-bar',
-      });
+      this.assertText('hello Alex (29) from foo-bar');
 
       runTask(() => set(this.context, 'name', 'Ben'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben (29) from foo-bar',
-      });
+      this.assertText('hello Ben (29) from foo-bar');
 
       runTask(() => set(this.context, 'age', 22));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben (22) from foo-bar',
-      });
+      this.assertText('hello Ben (22) from foo-bar');
 
       runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Ben (22) from foo-bar-baz',
-      });
+      this.assertText('hello Ben (22) from foo-bar-baz');
 
       runTask(() => {
         set(this.context, 'componentName', 'foo-bar');
@@ -690,9 +681,7 @@ moduleFor(
         set(this.context, 'age', 29);
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello Alex (29) from foo-bar',
-      });
+      this.assertText('hello Alex (29) from foo-bar');
     }
 
     ['@test positional parameters does not pollute the attributes when changing components']() {
@@ -700,7 +689,7 @@ moduleFor(
         'component:normal-message',
         setComponentTemplate(
           precompileTemplate('Normal: {{this.something}}!'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['something'];
           }
         )
@@ -710,7 +699,7 @@ moduleFor(
         'component:alternative-message',
         setComponentTemplate(
           precompileTemplate('Alternative: {{this.something}} {{this.somethingElse}}!'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['somethingElse'];
             something = 'Another';
           }
@@ -722,36 +711,26 @@ moduleFor(
         message: 'Hello',
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Normal: Hello!',
-      });
+      this.assertText('Normal: Hello!');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Normal: Hello!',
-      });
+      this.assertText('Normal: Hello!');
 
       runTask(() => set(this.context, 'componentName', 'alternative-message'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Alternative: Another Hello!',
-      });
+      this.assertText('Alternative: Another Hello!');
 
       runTask(() => set(this.context, 'message', 'Hi'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Alternative: Another Hi!',
-      });
+      this.assertText('Alternative: Another Hi!');
 
       runTask(() => {
         set(this.context, 'componentName', 'normal-message');
         set(this.context, 'message', 'Hello');
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Normal: Hello!',
-      });
+      this.assertText('Normal: Hello!');
     }
 
     ['@test static arbitrary number of positional parameters']() {
@@ -759,7 +738,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{#each this.names as |name|}}{{name}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'names';
           }
         )
@@ -779,7 +758,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{#each this.n as |name|}}{{name}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'n';
           }
         )
