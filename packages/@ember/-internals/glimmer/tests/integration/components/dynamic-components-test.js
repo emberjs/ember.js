@@ -382,21 +382,12 @@ moduleFor(
 
     ['@test component helper destroys underlying component when it is swapped out'](assert) {
       let destroyed = { 'foo-bar': 0, 'foo-bar-baz': 0 };
-      let testContext = this;
 
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('hello from foo-bar'),
-          class extends EmberComponent {
-            willDestroyElement() {
-              assert.equal(
-                testContext.$(`#${this.elementId}`).length,
-                1,
-                'element is still attached to the document'
-              );
-            }
-
+          class extends Component {
             willDestroy() {
               super.willDestroy();
               destroyed['foo-bar']++;
@@ -409,7 +400,7 @@ moduleFor(
         'component:foo-bar-baz',
         setComponentTemplate(
           precompileTemplate('hello from foo-bar-baz'),
-          class extends EmberComponent {
+          class extends Component {
             willDestroy() {
               super.willDestroy();
               destroyed['foo-bar-baz']++;
@@ -609,12 +600,11 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('[{{this.internalName}} - {{this.name}}]'),
-          class extends EmberComponent {
-            willRender() {
-              // store internally available name to ensure that the name available in `this.attrs.name`
-              // matches the template lookup name
-              set(this, 'internalName', this.get('name'));
+          precompileTemplate('[{{this.internalName}} - {{@name}}]'),
+          class extends Component {
+            // the name read through `this.args` must match the template lookup name
+            get internalName() {
+              return this.args.name;
             }
           }
         )
@@ -829,16 +819,13 @@ moduleFor(
           precompileTemplate(
             `Hi {{this.person.name}}! {{component "error-component" person=this.person}}`
           ),
-          class extends EmberComponent {
-            init() {
-              super.init(...arguments);
-              this.set('person', {
-                name: 'Alex',
-                toString() {
-                  return `Person (${this.name})`;
-                },
-              });
-            }
+          class extends Component {
+            person = {
+              name: 'Alex',
+              toString() {
+                return `Person (${this.name})`;
+              },
+            };
           }
         )
       );
@@ -846,11 +833,11 @@ moduleFor(
       this.owner.register(
         'component:error-component',
         setComponentTemplate(
-          precompileTemplate('{{this.person.name}}'),
-          class extends EmberComponent {
-            init() {
-              super.init(...arguments);
-              this.set('person.name', 'Ben');
+          precompileTemplate('{{@person.name}}'),
+          class extends Component {
+            constructor(owner, args) {
+              super(owner, args);
+              set(this.args.person, 'name', 'Ben');
             }
           }
         )
