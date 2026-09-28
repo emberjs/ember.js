@@ -463,10 +463,8 @@ moduleFor(
       this.owner.register(
         'component:-inner-component',
         setComponentTemplate(
-          precompileTemplate('{{component this.comp name="Inner"}}'),
-          class extends EmberComponent {
-            static positionalParams = ['comp'];
-          }
+          precompileTemplate('{{component @comp name="Inner"}}'),
+          class extends Component {}
         )
       );
 
@@ -476,7 +474,7 @@ moduleFor(
       );
 
       this.render(
-        '{{component "-inner-component" (component "-looked-up" name=this.model.outerName age=this.model.outerAge)}}',
+        '{{component "-inner-component" comp=(component "-looked-up" name=this.model.outerName age=this.model.outerAge)}}',
         {
           model: {
             outerName: 'Outer',
@@ -1603,20 +1601,32 @@ class MutableParamTestGenerator {
     this.cases = cases;
   }
 
-  generate({ title, setup }) {
+  generate({ title, positional, setup }) {
     return {
       [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
-        this.owner.register(
-          'component:change-button',
-          setComponentTemplate(
-            precompileTemplate(
-              '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
-            ),
-            class extends EmberComponent {
-              static positionalParams = ['val'];
-            }
-          )
-        );
+        if (positional) {
+          this.owner.register(
+            'component:change-button',
+            setComponentTemplate(
+              precompileTemplate(
+                '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
+              ),
+              class extends EmberComponent {
+                static positionalParams = ['val'];
+              }
+            )
+          );
+        } else {
+          this.owner.register(
+            'component:change-button',
+            setComponentTemplate(
+              precompileTemplate(
+                '<button {{on "click" (fn (mut @val) 10)}} class="my-button">Change to 10</button>'
+              ),
+              class extends Component {}
+            )
+          );
+        }
 
         setup.call(this, assert);
 
@@ -1643,6 +1653,7 @@ applyMixins(
   new MutableParamTestGenerator([
     {
       title: 'param',
+      positional: true,
       setup() {
         this.render('{{component (component "change-button" this.model.val2)}}');
       },
@@ -1650,6 +1661,7 @@ applyMixins(
 
     {
       title: 'nested param',
+      positional: true,
       setup() {
         this.owner.register(
           'component:my-comp',
