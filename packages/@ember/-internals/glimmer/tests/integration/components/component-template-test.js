@@ -65,18 +65,13 @@ moduleFor(
         return;
       }
 
-      let Thing = setComponentTemplate(
-        precompileTemplate('hello'),
-        EmberComponent.extend().reopenClass({
-          toString() {
-            return 'Thing';
-          },
-        })
-      );
+      class Thing extends Component {}
+
+      setComponentTemplate(precompileTemplate('hello'), Thing);
 
       assert.throws(() => {
         setComponentTemplate(precompileTemplate('foo'), Thing);
-      }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Class`\)/);
+      }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Thing`\)/);
     }
 
     '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
