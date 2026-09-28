@@ -76,7 +76,6 @@ moduleFor(
           fn() {
             count++;
           },
-          sync: false,
         }),
       });
 
@@ -91,39 +90,6 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(count, 1);
-
-      tom.destroy();
-    }
-
-    '@test it does not work with sync observers'(assert) {
-      let count = 0;
-
-      let Person = EmberObject.extend({
-        firstName: tracked({ value: 'Tom' }),
-        lastName: tracked({ value: 'Dale' }),
-
-        givenName: dependentKeyCompat({
-          get() {
-            return this.firstName;
-          },
-        }),
-
-        givenNameObserver: observer({
-          dependentKeys: ['givenName'],
-          fn() {
-            count++;
-          },
-          sync: true,
-        }),
-      });
-
-      let tom = Person.create();
-
-      assert.equal(count, 0);
-
-      tom.firstName = 'Thomas';
-
-      assert.equal(count, 0);
 
       tom.destroy();
     }

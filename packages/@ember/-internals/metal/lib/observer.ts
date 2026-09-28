@@ -37,8 +37,32 @@ export function addObserver(
   obj: any,
   path: string,
   target: object | Function | null,
-  method?: string | Function,
-  sync = false
+  method?: string | Function
+): void {
+  observe(obj, path, target, method, false);
+}
+
+/**
+  Sync observers are private. Only the two-way binding of classic component
+  computed setters needs one (GH#18147).
+
+  @private
+*/
+export function addSyncObserver(
+  obj: any,
+  path: string,
+  target: object | Function | null,
+  method?: string | Function
+): void {
+  observe(obj, path, target, method, true);
+}
+
+function observe(
+  obj: any,
+  path: string,
+  target: object | Function | null,
+  method: string | Function | undefined,
+  sync: boolean
 ): void {
   let eventName = changeEvent(path);
 
@@ -65,15 +89,14 @@ export function removeObserver(
   obj: any,
   path: string,
   target: object | Function | null,
-  method?: string | Function,
-  sync = false
+  method?: string | Function
 ): void {
   let eventName = changeEvent(path);
 
   let meta = peekMeta(obj);
 
   if (meta === null || !(meta.isPrototypeMeta(obj) || meta.isInitializing())) {
-    deactivateObserver(obj, eventName, sync);
+    deactivateObserver(obj, eventName);
   }
 
   removeListener(obj, eventName, target, method);
@@ -110,17 +133,15 @@ export function activateObserver(target: object, eventName: string, sync = false
 }
 
 let DEACTIVATE_SUSPENDED = false;
-let SCHEDULED_DEACTIVATE: [object, string, boolean][] = [];
+let SCHEDULED_DEACTIVATE: [object, string][] = [];
 
-function deactivateObserver(target: object, eventName: string, sync = false) {
+function deactivateObserver(target: object, eventName: string) {
   if (DEACTIVATE_SUSPENDED === true) {
-    SCHEDULED_DEACTIVATE.push([target, eventName, sync]);
+    SCHEDULED_DEACTIVATE.push([target, eventName]);
     return;
   }
 
-  let observerMap = sync === true ? SYNC_OBSERVERS : ASYNC_OBSERVERS;
-
-  let activeObservers = observerMap.get(target);
+  let activeObservers = ASYNC_OBSERVERS.get(target);
 
   if (activeObservers !== undefined) {
     let observer = activeObservers.get(eventName)!;
@@ -131,7 +152,7 @@ function deactivateObserver(target: object, eventName: string, sync = false) {
       activeObservers.delete(eventName);
 
       if (activeObservers.size === 0) {
-        observerMap.delete(target);
+        ASYNC_OBSERVERS.delete(target);
       }
     }
   }
@@ -144,8 +165,8 @@ export function suspendedObserverDeactivation() {
 export function resumeObserverDeactivation() {
   DEACTIVATE_SUSPENDED = false;
 
-  for (let [target, eventName, sync] of SCHEDULED_DEACTIVATE) {
-    deactivateObserver(target, eventName, sync);
+  for (let [target, eventName] of SCHEDULED_DEACTIVATE) {
+    deactivateObserver(target, eventName);
   }
 
   SCHEDULED_DEACTIVATE = [];

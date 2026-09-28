@@ -6,7 +6,6 @@ const definition = {
   dependentKeys: ['value1', 'value2', 'value3'],
 
   fn: () => {},
-  sync: true,
 };
 
 class Foo {

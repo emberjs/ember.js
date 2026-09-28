@@ -482,23 +482,13 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
     return this;
   },
 
-  addObserver(
-    key: string,
-    target: object | Function | null,
-    method?: string | Function,
-    sync?: boolean
-  ) {
-    addObserver(this, key, target, method, sync);
+  addObserver(key: string, target: object | Function | null, method?: string | Function) {
+    addObserver(this, key, target, method);
     return this;
   },
 
-  removeObserver(
-    key: string,
-    target: object | Function | null,
-    method?: string | Function,
-    sync?: boolean
-  ) {
-    removeObserver(this, key, target, method, sync);
+  removeObserver(key: string, target: object | Function | null, method?: string | Function) {
+    removeObserver(this, key, target, method);
     return this;
   },
 

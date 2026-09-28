@@ -1,5 +1,6 @@
 import { run } from '@ember/runloop';
 import { alias } from '@ember/-internals/metal';
+import { addSyncObserver } from '@ember/-internals/metal/lib/observer';
 import EmberObject, { get, set, observer } from '@ember/object';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -299,13 +300,12 @@ moduleFor(
         // Ensures we get `foo` eagerly when attempting to observe it
         fooAlias: alias('foo'),
 
-        parentOneTwoDidChange: observer({
-          dependentKeys: ['fooAlias'],
-          fn() {
+        init() {
+          this._super(...arguments);
+          addSyncObserver(this, 'fooAlias', () => {
             changed = true;
-          },
-          sync: true,
-        }),
+          });
+        },
       });
 
       let obj = Class.create();

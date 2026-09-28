@@ -10,8 +10,7 @@ export function addListener<Target>(
   eventName: string,
   target: Target,
   method: PropertyKey | ((this: Target, ...args: any[]) => void),
-  once?: boolean,
-  sync?: boolean
+  once?: boolean
 ): void;
 export function addListener(
   obj: object,
@@ -23,21 +22,13 @@ export function addListener(
   eventName: string,
   target: object | PropertyKey | ((...args: any[]) => void) | null,
   method?: PropertyKey | ((...args: any[]) => void),
-  once?: boolean,
-  sync?: boolean
+  once?: boolean
 ): void {
   deprecateUntil(
     'Importing `addListener` from `@ember/object/events` is deprecated. Use native JavaScript events or a dedicated event library instead.',
     DEPRECATIONS.DEPRECATE_EVENTED
   );
-  return originalAddListener(
-    obj,
-    eventName,
-    target as object | Function | null,
-    method,
-    once,
-    sync
-  );
+  return originalAddListener(obj, eventName, target as object | Function | null, method, once);
 }
 
 export function removeListener<Target>(
