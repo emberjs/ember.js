@@ -2,7 +2,7 @@ import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Renderer } from '@ember/-internals/glimmer';
-import Component, { INTERNAL_COMPONENT_EXTEND } from '@ember/-internals/glimmer/lib/component';
+import Component, { SKIP_DEPRECATION } from '@ember/-internals/glimmer/lib/component';
 import { _resetRenderers, renderComponent, setRenderer } from '@ember/-internals/glimmer';
 import type { SimpleElement } from '@simple-dom/interface';
 import type Resolver from '../test-resolver';
@@ -147,7 +147,10 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
       layoutName: '-top-level',
     });
 
-    owner.register('component:-top-level', Component[INTERNAL_COMPONENT_EXTEND](attrs));
+    let TopLevel = Component.extend(attrs);
+    TopLevel.prototype[SKIP_DEPRECATION] = true;
+
+    owner.register('component:-top-level', TopLevel);
 
     this.component = owner.lookup('component:-top-level');
 

@@ -24,8 +24,17 @@ const MESSAGE = /The classic `Component` class from `@ember\/component` is depre
 moduleFor(
   'Deprecation: ember-component',
   class extends RenderingTestCase {
-    [`${testUnless(isRemoved)} @test Component.extend() is deprecated`]() {
-      expectDeprecation(() => ClassicComponent.extend({ tagName: '' }), MESSAGE, isEnabled);
+    [`${testUnless(isRemoved)} @test rendering a Component.extend() subclass is deprecated`]() {
+      let Greeting = ClassicComponent.extend({ tagName: '' });
+
+      this.owner.register(
+        'component:greeting',
+        setComponentTemplate(precompileTemplate('hello'), Greeting)
+      );
+
+      expectDeprecation(() => this.render('<Greeting />'), MESSAGE, isEnabled);
+
+      this.assertText('hello');
     }
 
     [`${testUnless(isRemoved)} @test rendering a native subclass of Component is deprecated`]() {

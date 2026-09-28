@@ -4,7 +4,6 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
-import type Owner from '@ember/-internals/owner';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
 import type ViewStates from '@ember/-internals/views/lib/views/states';
@@ -44,8 +43,8 @@ const DEPRECATION_MESSAGE =
   'The classic `Component` class from `@ember/component` is deprecated. Use a Glimmer component from `@glimmer/component`, or a template-only component, instead.';
 
 /**
-  Key for a static method that subclasses `Component` without the
-  `ember-component` deprecation.
+  Set this key to `true` on a subclass prototype, and its instances do not
+  trigger the `ember-component` deprecation.
 
   The rendering test harness renders each test template through a classic
   top-level component. That is test infrastructure, not a use of the
@@ -55,9 +54,7 @@ const DEPRECATION_MESSAGE =
 
   @private
 */
-export const INTERNAL_COMPONENT_EXTEND = Symbol('__internal__component__extend__');
-
-const SKIP_DEPRECATION = Symbol('SKIP_DEPRECATION');
+export const SKIP_DEPRECATION = Symbol('SKIP_DEPRECATION');
 
 /**
   Determines if the element matches the specified selector.
@@ -1707,23 +1704,6 @@ class Component<S = unknown>
   // End ViewMixin
 
   static isComponentFactory = true;
-
-  static extend<Statics, Instance, M extends Array<unknown>>(
-    this: Statics & (new (owner?: Owner) => Instance),
-    ...mixins: M
-  ): ReturnType<typeof CoreView.extend<Statics, Instance, M>>;
-  static extend(...mixins: any[]) {
-    deprecateUntil(DEPRECATION_MESSAGE, DEPRECATIONS.DEPRECATE_EMBER_COMPONENT);
-
-    return super.extend.apply(this, mixins);
-  }
-
-  static [INTERNAL_COMPONENT_EXTEND](...mixins: any[]) {
-    let Class = super.extend.apply(this, mixins);
-    Class.prototype[SKIP_DEPRECATION] = true;
-
-    return Class;
-  }
 
   static toString() {
     return '@ember/component';
