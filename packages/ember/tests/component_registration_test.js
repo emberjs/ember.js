@@ -42,10 +42,8 @@ moduleFor(
           applicationInstance.register(
             'component:expand-it',
             setComponentTemplate(
-              precompileTemplate(`<p>hello {{yield}}</p>`),
-              class extends Component {
-                classNames = ['testing123'];
-              }
+              precompileTemplate(`<div class="testing123"><p>hello {{yield}}</p></div>`),
+              templateOnly()
             )
           );
         },
