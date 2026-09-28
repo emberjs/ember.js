@@ -23,6 +23,7 @@ import EmberObject, { set, get, computed, observer } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
 import { Component, htmlSafe } from '../../utils/helpers';
+import GlimmerComponent from '@glimmer/component';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
@@ -35,16 +36,16 @@ moduleFor(
     ['@test it can render a basic component']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), class extends Component {})
+        setComponentTemplate(precompileTemplate('hello'), templateOnly())
       );
 
       this.render('{{foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
     }
 
     ['@test it can have a custom id and it is not bound']() {
@@ -722,7 +723,7 @@ moduleFor(
     ['@test it renders passed named arguments']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{@foo}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{@foo}}'), templateOnly())
       );
 
       this.render('{{foo-bar foo=this.model.bar}}', {
@@ -776,33 +777,27 @@ moduleFor(
     ['@test it can render a basic component with a block']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('{{yield}} - In component'),
-          class extends Component {}
-        )
+        setComponentTemplate(precompileTemplate('{{yield}} - In component'), templateOnly())
       );
 
       this.render('{{#foo-bar}}hello{{/foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello - In component',
-      });
+      this.assertHTML('hello - In component');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'hello - In component',
-      });
+      this.assertHTML('hello - In component');
     }
 
     ['@test it renders the layout with the component instance as the context']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        @tracked message = 'hello';
+
+        constructor(owner, args) {
+          super(owner, args);
           instance = this;
-          this.set('message', 'hello');
         }
       };
 
@@ -813,54 +808,54 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => set(instance, 'message', 'goodbye'));
 
-      this.assertComponentElement(this.firstChild, { content: 'goodbye' });
+      this.assertHTML('goodbye');
 
       runTask(() => set(instance, 'message', 'hello'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
     }
 
     ['@test it preserves the outer context when yielding']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{yield}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{yield}}'), templateOnly())
       );
 
       this.render('{{#foo-bar}}{{this.message}}{{/foo-bar}}', { message: 'hello' });
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => set(this.context, 'message', 'goodbye'));
 
-      this.assertComponentElement(this.firstChild, { content: 'goodbye' });
+      this.assertHTML('goodbye');
 
       runTask(() => set(this.context, 'message', 'hello'));
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
     }
 
     ['@test it can yield a block param named for reserved words [GH#14096]']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           instance = this;
         }
 
-        name = 'foo-bar';
+        @tracked name = 'foo-bar';
       };
 
       this.owner.register(
@@ -870,35 +865,35 @@ moduleFor(
 
       this.render('{{#foo-bar as |component|}}{{component.name}}{{/foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'foo-bar' });
+      this.assertHTML('foo-bar');
 
       this.assertStableRerender();
 
       runTask(() => set(instance, 'name', 'derp-qux'));
 
-      this.assertComponentElement(this.firstChild, { content: 'derp-qux' });
+      this.assertHTML('derp-qux');
 
       runTask(() => set(instance, 'name', 'foo-bar'));
 
-      this.assertComponentElement(this.firstChild, { content: 'foo-bar' });
+      this.assertHTML('foo-bar');
     }
 
     ['@test it can yield internal and external properties positionally']() {
       let instance;
 
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           instance = this;
         }
 
-        greeting = 'hello';
+        @tracked greeting = 'hello';
       };
 
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('{{yield this.greeting this.greetee.firstName}}'),
+          precompileTemplate('{{yield this.greeting @greetee.firstName}}'),
           FooBarComponent
         )
       );
@@ -913,15 +908,11 @@ moduleFor(
         }
       );
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello',
-      });
+      this.assertHTML('Joel Kang, hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello',
-      });
+      this.assertHTML('Joel Kang, hello');
 
       runTask(() =>
         set(this.context, 'person', {
@@ -930,15 +921,11 @@ moduleFor(
         })
       );
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Dora the Explorer, hello',
-      });
+      this.assertHTML('Dora the Explorer, hello');
 
       runTask(() => set(instance, 'greeting', 'hola'));
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Dora the Explorer, hola',
-      });
+      this.assertHTML('Dora the Explorer, hola');
 
       runTask(() => {
         set(instance, 'greeting', 'hello');
@@ -948,20 +935,18 @@ moduleFor(
         });
       });
 
-      this.assertComponentElement(this.firstChild, {
-        content: 'Joel Kang, hello',
-      });
+      this.assertHTML('Joel Kang, hello');
     }
 
     ['@test #11519 - block param infinite loop']() {
       let instance;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           instance = this;
         }
 
-        danger = 0;
+        @tracked danger = 0;
       };
 
       this.owner.register(
@@ -1003,11 +988,11 @@ moduleFor(
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(
-          precompileTemplate('{{this.id}} {{yield}}'),
-          class extends Component {
+          precompileTemplate('{{@id}} {{yield}}'),
+          class extends GlimmerComponent {
             willDestroy() {
               super.willDestroy();
-              destroyed[this.id]++;
+              destroyed[this.args.id]++;
             }
           }
         )
@@ -1111,13 +1096,13 @@ moduleFor(
 
     ['@test should escape HTML in normal mustaches']() {
       let component;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           component = this;
         }
 
-        output = 'you need to be more <b>bold</b>';
+        @tracked output = 'you need to be more <b>bold</b>';
       };
 
       this.owner.register(
@@ -1144,13 +1129,13 @@ moduleFor(
       let expectedHtmlBold = 'you need to be more <b>bold</b>';
       let expectedHtmlItalic = 'you are so <i>super</i>';
       let component;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           component = this;
         }
 
-        output = expectedHtmlBold;
+        @tracked output = expectedHtmlBold;
       };
 
       this.owner.register(
@@ -1160,32 +1145,32 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
 
       runTask(() => this.rerender());
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
 
       runTask(() => set(component, 'output', expectedHtmlItalic));
 
-      equalTokens(this.firstChild, expectedHtmlItalic);
+      equalTokens(this.element, expectedHtmlItalic);
 
       runTask(() => set(component, 'output', expectedHtmlBold));
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
     }
 
     ['@test should not escape HTML if string is a htmlSafe']() {
       let expectedHtmlBold = 'you need to be more <b>bold</b>';
       let expectedHtmlItalic = 'you are so <i>super</i>';
       let component;
-      let FooBarComponent = class extends Component {
-        init() {
-          super.init(...arguments);
+      let FooBarComponent = class extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
           component = this;
         }
 
-        output = htmlSafe(expectedHtmlBold);
+        @tracked output = htmlSafe(expectedHtmlBold);
       };
 
       this.owner.register(
@@ -1195,19 +1180,19 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
 
       runTask(() => this.rerender());
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
 
       runTask(() => set(component, 'output', htmlSafe(expectedHtmlItalic)));
 
-      equalTokens(this.firstChild, expectedHtmlItalic);
+      equalTokens(this.element, expectedHtmlItalic);
 
       runTask(() => set(component, 'output', htmlSafe(expectedHtmlBold)));
 
-      equalTokens(this.firstChild, expectedHtmlBold);
+      equalTokens(this.element, expectedHtmlBold);
     }
 
     ['@test late bound layouts return the same definition'](assert) {
@@ -1246,11 +1231,11 @@ moduleFor(
 
     ['@test can use isStream property without conflict (#13271)']() {
       let component;
-      let FooBarComponent = class extends Component {
-        isStream = true;
+      let FooBarComponent = class extends GlimmerComponent {
+        @tracked isStream = true;
 
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           component = this;
         }
       };
@@ -1271,24 +1256,24 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'true' });
+      this.assertHTML('true');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'true' });
+      this.assertHTML('true');
 
       runTask(() => set(component, 'isStream', false));
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
+      this.assertHTML('false');
 
       runTask(() => set(component, 'isStream', true));
 
-      this.assertComponentElement(this.firstChild, { content: 'true' });
+      this.assertHTML('true');
     }
     ['@test lookup of component takes priority over property']() {
       this.owner.register(
         'component:some-component',
-        setComponentTemplate(precompileTemplate('some-component'), class extends Component {})
+        setComponentTemplate(precompileTemplate('some-component'), templateOnly())
       );
 
       this.render('{{this.some-prop}} {{some-component}}', {
@@ -1306,7 +1291,7 @@ moduleFor(
     ['@test component without dash is looked up']() {
       this.owner.register(
         'component:somecomponent',
-        setComponentTemplate(precompileTemplate('somecomponent'), class extends Component {})
+        setComponentTemplate(precompileTemplate('somecomponent'), templateOnly())
       );
 
       this.render('{{somecomponent}}', {
@@ -1331,7 +1316,7 @@ moduleFor(
         this.owner.register(
           'component:non-block',
           template('In layout - someProp: {{attrs.someProp}}', {
-            component: class extends Component {},
+            component: templateOnly(),
             strictMode: false,
           })
         );
@@ -1374,7 +1359,7 @@ moduleFor(
         'component:non-block',
         setComponentTemplate(
           precompileTemplate('In layout - someProp: {{@someProp}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -1675,7 +1660,7 @@ moduleFor(
         this.owner.register(
           'component:with-block',
           template('In layout - someProp: {{attrs.someProp}} - {{yield}}', {
-            component: class extends Component {},
+            component: templateOnly(),
             strictMode: false,
           })
         );
@@ -1724,7 +1709,7 @@ moduleFor(
         'component:with-block',
         setComponentTemplate(
           precompileTemplate('In layout - someProp: {{@someProp}} - {{yield}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2065,7 +2050,7 @@ moduleFor(
               No Block!
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2092,7 +2077,7 @@ moduleFor(
               No Block!
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2116,7 +2101,7 @@ moduleFor(
               {{yield}} No Block!
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: class extends GlimmerComponent {}, strictMode: false }
         )
       );
 
@@ -2143,7 +2128,7 @@ moduleFor(
               {{yield}} No Block Param!
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: class extends GlimmerComponent {}, strictMode: false }
         )
       );
 
@@ -2241,13 +2226,13 @@ moduleFor(
         'component:my-if',
         template(
           strip`
-            {{#if this.predicate}}
-              Yes:{{yield this.someValue}}
+            {{#if @predicate}}
+              Yes:{{yield @someValue}}
             {{else}}
               No:{{yield to="inverse"}}
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2289,7 +2274,7 @@ moduleFor(
               No
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2297,8 +2282,7 @@ moduleFor(
       {{#check-inverse}}{{/check-inverse}}
       {{#check-inverse}}{{else}}{{/check-inverse}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
+      this.assertHTML('NoYes');
 
       this.assertStableRerender();
     }
@@ -2314,7 +2298,7 @@ moduleFor(
               No
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2322,8 +2306,7 @@ moduleFor(
       {{check-block}}
       {{#check-block}}{{/check-block}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
+      this.assertHTML('NoYes');
 
       this.assertStableRerender();
     }
@@ -2339,7 +2322,7 @@ moduleFor(
               No
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2347,8 +2330,7 @@ moduleFor(
       {{#check-inverse}}{{/check-inverse}}
       {{#check-inverse as |something|}}{{/check-inverse}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'No' });
+      this.assertHTML('NoNo');
 
       this.assertStableRerender();
     }
@@ -2364,7 +2346,7 @@ moduleFor(
               No
             {{/if}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
@@ -2372,8 +2354,7 @@ moduleFor(
       {{#check-block}}{{/check-block}}
       {{#check-block as |something|}}{{/check-block}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
+      this.assertHTML('NoYes');
 
       this.assertStableRerender();
     }
@@ -2383,7 +2364,7 @@ moduleFor(
         'component:check-attr',
         setComponentTemplate(
           precompileTemplate('<button name={{(has-block)}}></button>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2402,7 +2383,7 @@ moduleFor(
         'component:check-attr',
         setComponentTemplate(
           precompileTemplate('<button name={{(has-block "inverse")}}></button>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2421,7 +2402,7 @@ moduleFor(
         'component:check-attr',
         setComponentTemplate(
           precompileTemplate('<button name={{(has-block-params)}}></button>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2440,7 +2421,7 @@ moduleFor(
         'component:check-attr',
         setComponentTemplate(
           precompileTemplate('<button name={{(has-block-params "inverse")}}></button>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2459,7 +2440,7 @@ moduleFor(
         'component:check-helper',
         setComponentTemplate(
           precompileTemplate('{{if (has-block) "true" "false"}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2467,8 +2448,7 @@ moduleFor(
       {{check-helper}}
       {{#check-helper}}{{/check-helper}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
+      this.assertHTML('falsetrue');
 
       this.assertStableRerender();
     }
@@ -2478,7 +2458,7 @@ moduleFor(
         'component:check-helper',
         setComponentTemplate(
           precompileTemplate('{{if (has-block "inverse") "true" "false"}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2486,8 +2466,7 @@ moduleFor(
       {{#check-helper}}{{/check-helper}}
       {{#check-helper}}{{else}}{{/check-helper}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
+      this.assertHTML('falsetrue');
 
       this.assertStableRerender();
     }
@@ -2497,7 +2476,7 @@ moduleFor(
         'component:check-helper',
         setComponentTemplate(
           precompileTemplate('{{if (has-block-params) "true" "false"}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2505,8 +2484,7 @@ moduleFor(
       {{#check-helper}}{{/check-helper}}
       {{#check-helper as |something|}}{{/check-helper}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
+      this.assertHTML('falsetrue');
 
       this.assertStableRerender();
     }
@@ -2516,7 +2494,7 @@ moduleFor(
         'component:check-helper',
         setComponentTemplate(
           precompileTemplate('{{if (has-block-params "inverse") "true" "false"}}'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -2524,8 +2502,7 @@ moduleFor(
       {{#check-helper}}{{/check-helper}}
       {{#check-helper as |something|}}{{/check-helper}}`);
 
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'false' });
+      this.assertHTML('falsefalse');
 
       this.assertStableRerender();
     }
@@ -2683,40 +2660,42 @@ moduleFor(
         'component:x-outer',
         setComponentTemplate(
           precompileTemplate('{{#x-middle}}{{x-inner value=this.value}}{{/x-middle}}'),
-          class extends Component {
+          class extends GlimmerComponent {
             value = 1;
           }
         )
       );
 
+      class MiddleComponent extends GlimmerComponent {
+        constructor(owner, args) {
+          super(owner, args);
+          middle = this;
+        }
+        @tracked value = null;
+      }
+
       this.owner.register(
         'component:x-middle',
         setComponentTemplate(
           precompileTemplate('<div id="middle-value">{{this.value}}</div>{{yield}}'),
-          class extends Component {
-            init() {
-              super.init(...arguments);
-              middle = this;
-            }
-            value = null;
-          }
+          MiddleComponent
         )
       );
 
       this.owner.register(
         'component:x-inner',
         setComponentTemplate(
-          precompileTemplate('<div id="inner-value">{{value}}</div>'),
-          class extends Component {
-            value = null;
-            didReceiveAttrs() {
-              middle.set('value', this.get('value'));
+          precompileTemplate('<div id="inner-value">{{@value}}</div>'),
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
+              middle.value = this.args.value;
             }
           }
         )
       );
 
-      let expectedBacktrackingMessage = backtrackingMessageFor('value', '<.+?>', {
+      let expectedBacktrackingMessage = backtrackingMessageFor('value', MiddleComponent.name, {
         renderTree: ['x-outer', 'x-middle', 'this.value'],
       });
 
@@ -2732,7 +2711,7 @@ moduleFor(
           precompileTemplate(
             '<div id="outer-value">{{this.wrapper.content}}</div> {{x-inner value=this.value wrapper=this.wrapper}}'
           ),
-          class extends Component {
+          class extends GlimmerComponent {
             value = 1;
             wrapper = EmberObject.create({ content: null });
           }
@@ -2742,12 +2721,12 @@ moduleFor(
       this.owner.register(
         'component:x-inner',
         setComponentTemplate(
-          precompileTemplate('<div id="inner-value">{{this.wrapper.content}}</div>'),
-          class extends Component {
-            didReceiveAttrs() {
-              this.get('wrapper').set('content', this.get('value'));
+          precompileTemplate('<div id="inner-value">{{@wrapper.content}}</div>'),
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
+              this.args.wrapper.set('content', this.args.value);
             }
-            value = null;
           }
         )
       );
@@ -2772,7 +2751,7 @@ moduleFor(
           precompileTemplate(
             '<div id="outer-value">{{this.wrapper.content}}</div> {{x-inner value=this.value wrapper=this.wrapper}}'
           ),
-          class extends Component {
+          class extends GlimmerComponent {
             value = 1;
             wrapper = new Wrapper();
           }
@@ -2782,12 +2761,12 @@ moduleFor(
       this.owner.register(
         'component:x-inner',
         setComponentTemplate(
-          precompileTemplate('<div id="inner-value">{{this.wrapper.content}}</div>'),
-          class extends Component {
-            didReceiveAttrs() {
-              this.get('wrapper').content = this.get('value');
+          precompileTemplate('<div id="inner-value">{{@wrapper.content}}</div>'),
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
+              this.args.wrapper.content = this.args.value;
             }
-            value = null;
           }
         )
       );
@@ -2806,20 +2785,17 @@ moduleFor(
         'component:non-block',
         template(
           strip`
-            In layout. {{#each this.items as |item|}}
+            In layout. {{#each @items as |item|}}
               [{{child-non-block item=item}}]
             {{/each}}
           `,
-          { component: class extends Component {}, strictMode: false }
+          { component: templateOnly(), strictMode: false }
         )
       );
 
       this.owner.register(
         'component:child-non-block',
-        setComponentTemplate(
-          precompileTemplate('Child: {{this.item}}.'),
-          class extends Component {}
-        )
+        setComponentTemplate(precompileTemplate('Child: {{@item}}.'), templateOnly())
       );
 
       let items = emberA(['Tom', 'Dick', 'Harry']);
@@ -3151,7 +3127,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{this.name.last}}'),
-          class extends Component {
+          class extends GlimmerComponent {
             @service
             name;
           }
@@ -3506,8 +3482,8 @@ moduleFor(
       this.owner.register(
         'component:list-items',
         setComponentTemplate(
-          precompileTemplate(`{{#each this.items as |item|}}{{yield item}}{{/each}}`),
-          class extends Component {}
+          precompileTemplate(`{{#each @items as |item|}}{{yield item}}{{/each}}`),
+          templateOnly()
         )
       );
 
@@ -3614,7 +3590,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{this}}'),
-          class extends Component {
+          class extends GlimmerComponent {
             toString() {
               return 'special sauce goes here!';
             }
@@ -3633,9 +3609,9 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('{{this.foo.bar.baz}}'),
-          class extends Component {
-            init() {
-              super.init(...arguments);
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
 
               instance = this;
             }
@@ -3667,10 +3643,7 @@ moduleFor(
     ['@test can use custom element in component layout']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(
-          precompileTemplate('<blah-zorz>Hi!</blah-zorz>'),
-          class extends Component {}
-        )
+        setComponentTemplate(precompileTemplate('<blah-zorz>Hi!</blah-zorz>'), templateOnly())
       );
 
       this.render('{{foo-bar}}');
@@ -3683,7 +3656,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('<blah-zorz><hows-it-going>Hi!</hows-it-going></blah-zorz>'),
-          class extends Component {}
+          templateOnly()
         )
       );
 
@@ -3729,14 +3702,14 @@ moduleFor(
     ['@test ensure aliases are watched properly [GH#17243]']() {
       let fooInstance, barInstance;
 
-      let FooComponent = class extends Component {
+      let FooComponent = class extends GlimmerComponent {
         source = 'first';
 
         @alias('source')
         foo;
 
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           fooInstance = this;
         }
       };
@@ -3746,11 +3719,11 @@ moduleFor(
         setComponentTemplate(precompileTemplate('{{this.foo}}'), FooComponent)
       );
 
-      let BarComponent = class extends Component {
+      let BarComponent = class extends GlimmerComponent {
         target = null;
 
-        init() {
-          super.init(...arguments);
+        constructor(owner, args) {
+          super(owner, args);
           barInstance = this;
         }
 
@@ -3797,9 +3770,9 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('hello'),
-          class extends Component {
-            constructor(owner) {
-              super(owner);
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
 
               assert.equal(owner, testContext.owner, 'owner was passed as a constructor argument');
             }
@@ -3809,26 +3782,26 @@ moduleFor(
 
       this.render('{{foo-bar}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+      this.assertHTML('hello');
     }
 
     ['@test can use `{{@component.foo}}` in a template GH#19313']() {
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('{{@component.foo}}'), class extends Component {})
+        setComponentTemplate(precompileTemplate('{{@component.foo}}'), templateOnly())
       );
 
       this.render('{{foo-bar component=(hash foo="bar")}}');
 
-      this.assertComponentElement(this.firstChild, { content: 'bar' });
+      this.assertHTML('bar');
 
       runTask(() => this.rerender());
 
-      this.assertComponentElement(this.firstChild, { content: 'bar' });
+      this.assertHTML('bar');
     }
 
     '@test lifecycle hooks are not tracked'() {
