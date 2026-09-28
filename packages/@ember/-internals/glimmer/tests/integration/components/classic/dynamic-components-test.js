@@ -1,84 +1,96 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  expectClassicComponentDeprecation,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { Component as EmberComponent } from '../../../utils/helpers';
 
-moduleFor(
-  'Components test: dynamic components (classic component)',
-  class extends RenderingTestCase {
-    ['@test it has an element']() {
-      let instance;
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    'Components test: dynamic components (classic component)',
+    class extends RenderingTestCase {
+      ['@test it has an element']() {
+        expectClassicComponentDeprecation();
 
-      let FooBarComponent = class extends EmberComponent {
-        init() {
-          super.init();
-          instance = this;
-        }
-      };
+        let instance;
 
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
+        let FooBarComponent = class extends EmberComponent {
+          init() {
+            super.init();
+            instance = this;
+          }
+        };
 
-      this.render('{{component "foo-bar"}}');
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        );
 
-      let element1 = instance.element;
+        this.render('{{component "foo-bar"}}');
 
-      this.assertComponentElement(element1, { content: 'hello' });
+        let element1 = instance.element;
 
-      runTask(() => this.rerender());
+        this.assertComponentElement(element1, { content: 'hello' });
 
-      let element2 = instance.element;
+        runTask(() => this.rerender());
 
-      this.assertComponentElement(element2, { content: 'hello' });
+        let element2 = instance.element;
 
-      this.assertSameNode(element2, element1);
+        this.assertComponentElement(element2, { content: 'hello' });
+
+        this.assertSameNode(element2, element1);
+      }
+
+      ['@test it has the right parentView and childViews'](assert) {
+        expectClassicComponentDeprecation();
+
+        let fooBarInstance, fooBarBazInstance;
+
+        let FooBarComponent = class extends EmberComponent {
+          init() {
+            super.init();
+            fooBarInstance = this;
+          }
+        };
+
+        let FooBarBazComponent = class extends EmberComponent {
+          init() {
+            super.init();
+            fooBarBazInstance = this;
+          }
+        };
+
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(precompileTemplate('foo-bar {{foo-bar-baz}}'), FooBarComponent)
+        );
+        this.owner.register(
+          'component:foo-bar-baz',
+          setComponentTemplate(precompileTemplate('foo-bar-baz'), FooBarBazComponent)
+        );
+
+        this.render('{{component "foo-bar"}}');
+        this.assertText('foo-bar foo-bar-baz');
+
+        assert.equal(fooBarInstance.parentView, this.component);
+        assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+        assert.deepEqual(this.component.childViews, [fooBarInstance]);
+        assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
+
+        runTask(() => this.rerender());
+        this.assertText('foo-bar foo-bar-baz');
+
+        assert.equal(fooBarInstance.parentView, this.component);
+        assert.equal(fooBarBazInstance.parentView, fooBarInstance);
+
+        assert.deepEqual(this.component.childViews, [fooBarInstance]);
+        assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
+      }
     }
-
-    ['@test it has the right parentView and childViews'](assert) {
-      let fooBarInstance, fooBarBazInstance;
-
-      let FooBarComponent = class extends EmberComponent {
-        init() {
-          super.init();
-          fooBarInstance = this;
-        }
-      };
-
-      let FooBarBazComponent = class extends EmberComponent {
-        init() {
-          super.init();
-          fooBarBazInstance = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('foo-bar {{foo-bar-baz}}'), FooBarComponent)
-      );
-      this.owner.register(
-        'component:foo-bar-baz',
-        setComponentTemplate(precompileTemplate('foo-bar-baz'), FooBarBazComponent)
-      );
-
-      this.render('{{component "foo-bar"}}');
-      this.assertText('foo-bar foo-bar-baz');
-
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
-      assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
-
-      runTask(() => this.rerender());
-      this.assertText('foo-bar foo-bar-baz');
-
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
-      assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
-    }
-  }
-);
+  );
+}

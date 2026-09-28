@@ -1,4 +1,11 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  expectClassicComponentDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -9,7 +16,11 @@ import { Component } from '../../utils/helpers';
 moduleFor(
   'Component willDestroyElement hook',
   class extends RenderingTestCase {
-    ['@test it calls willDestroyElement when removed by if'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it calls willDestroyElement when removed by if`](
+      assert
+    ) {
+      expectClassicComponentDeprecation();
+
       let didInsertElementCount = 0;
       let willDestroyElementCount = 0;
       let FooBarComponent = class extends Component {

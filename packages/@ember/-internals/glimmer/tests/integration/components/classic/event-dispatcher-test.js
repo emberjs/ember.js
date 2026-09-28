@@ -4,6 +4,7 @@ import {
   RenderingTestCase,
   runTask,
   testUnless,
+  expectClassicComponentDeprecation,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../../../deprecations';
 import { Component as EmberComponent } from '../../../utils/helpers';
@@ -11,412 +12,437 @@ import { _getCurrentRunLoop } from '@ember/runloop';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-function fireNativeWithDataTransfer(node, type, dataTransfer) {
-  let event = new Event(type, { bubbles: true, cancelable: true });
-  event.dataTransfer = dataTransfer;
-  node.dispatchEvent(event);
-}
-
-function triggerEvent(node, event) {
-  switch (event) {
-    case 'focusin':
-      return node.focus();
-    case 'focusout':
-      return node.blur();
-    default:
-      return node.trigger(event);
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  function fireNativeWithDataTransfer(node, type, dataTransfer) {
+    let event = new Event(type, { bubbles: true, cancelable: true });
+    event.dataTransfer = dataTransfer;
+    node.dispatchEvent(event);
   }
-}
 
-const SUPPORTED_EMBER_EVENTS = {
-  touchstart: 'touchStart',
-  touchmove: 'touchMove',
-  touchend: 'touchEnd',
-  touchcancel: 'touchCancel',
-  keydown: 'keyDown',
-  keyup: 'keyUp',
-  keypress: 'keyPress',
-  mousedown: 'mouseDown',
-  mouseup: 'mouseUp',
-  contextmenu: 'contextMenu',
-  click: 'click',
-  dblclick: 'doubleClick',
-  focusin: 'focusIn',
-  focusout: 'focusOut',
-  submit: 'submit',
-  input: 'input',
-  change: 'change',
-  dragstart: 'dragStart',
-  drag: 'drag',
-  dragenter: 'dragEnter',
-  dragleave: 'dragLeave',
-  dragover: 'dragOver',
-  drop: 'drop',
-  dragend: 'dragEnd',
-};
-
-moduleFor(
-  'EventDispatcher (classic component)',
-  class extends RenderingTestCase {
-    ['@test event handler methods are called when event is triggered'](assert) {
-      let receivedEvent;
-      let browserEvent;
-
-      this.owner.register(
-        'component:x-button',
-        class extends EmberComponent {
-          tagName = 'button';
-
-          touchMove(event) {
-            receivedEvent = event;
-          }
-          touchStart(event) {
-            receivedEvent = event;
-          }
-          touchEnd(event) {
-            receivedEvent = event;
-          }
-          touchCancel(event) {
-            receivedEvent = event;
-          }
-          keyDown(event) {
-            receivedEvent = event;
-          }
-          keyUp(event) {
-            receivedEvent = event;
-          }
-          keyPress(event) {
-            receivedEvent = event;
-          }
-          mouseDown(event) {
-            receivedEvent = event;
-          }
-          mouseUp(event) {
-            receivedEvent = event;
-          }
-          contextMenu(event) {
-            receivedEvent = event;
-          }
-          click(event) {
-            receivedEvent = event;
-          }
-          doubleClick(event) {
-            receivedEvent = event;
-          }
-          focusIn(event) {
-            receivedEvent = event;
-          }
-          focusOut(event) {
-            receivedEvent = event;
-          }
-          submit(event) {
-            receivedEvent = event;
-          }
-          input(event) {
-            receivedEvent = event;
-          }
-          change(event) {
-            receivedEvent = event;
-          }
-          dragStart(event) {
-            receivedEvent = event;
-          }
-          drag(event) {
-            receivedEvent = event;
-          }
-          dragEnter(event) {
-            receivedEvent = event;
-          }
-          dragLeave(event) {
-            receivedEvent = event;
-          }
-          dragOver(event) {
-            receivedEvent = event;
-          }
-          drop(event) {
-            receivedEvent = event;
-          }
-          dragEnd(event) {
-            receivedEvent = event;
-          }
-        }
-      );
-
-      this.render(`{{x-button}}`);
-
-      let elementNode = this.$('button');
-      let element = elementNode[0];
-
-      for (browserEvent in SUPPORTED_EMBER_EVENTS) {
-        receivedEvent = null;
-        runTask(() => triggerEvent(elementNode, browserEvent));
-        assert.ok(receivedEvent, `${browserEvent} event was triggered`);
-        assert.strictEqual(receivedEvent.target, element);
-      }
+  function triggerEvent(node, event) {
+    switch (event) {
+      case 'focusin':
+        return node.focus();
+      case 'focusout':
+        return node.blur();
+      default:
+        return node.trigger(event);
     }
+  }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test event listeners are called when event is triggered`](
-      assert
-    ) {
-      let receivedEvent;
-      let browserEvent;
+  let SUPPORTED_EMBER_EVENTS = {
+    touchstart: 'touchStart',
+    touchmove: 'touchMove',
+    touchend: 'touchEnd',
+    touchcancel: 'touchCancel',
+    keydown: 'keyDown',
+    keyup: 'keyUp',
+    keypress: 'keyPress',
+    mousedown: 'mouseDown',
+    mouseup: 'mouseUp',
+    contextmenu: 'contextMenu',
+    click: 'click',
+    dblclick: 'doubleClick',
+    focusin: 'focusIn',
+    focusout: 'focusOut',
+    submit: 'submit',
+    input: 'input',
+    change: 'change',
+    dragstart: 'dragStart',
+    drag: 'drag',
+    dragenter: 'dragEnter',
+    dragleave: 'dragLeave',
+    dragover: 'dragOver',
+    drop: 'drop',
+    dragend: 'dragEnd',
+  };
 
-      this.owner.register(
-        'component:x-button',
-        class extends EmberComponent {
-          tagName = 'button';
-          init() {
-            super.init();
-            Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
-              expectDeprecation(
-                () => {
-                  this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
-                },
-                /Evented#on` is deprecated/,
-                DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
-              );
-            });
-          }
-        }
-      );
+  moduleFor(
+    'EventDispatcher (classic component)',
+    class extends RenderingTestCase {
+      ['@test event handler methods are called when event is triggered'](assert) {
+        expectClassicComponentDeprecation();
 
-      this.render(`{{x-button}}`);
+        let receivedEvent;
+        let browserEvent;
 
-      let elementNode = this.$('button');
-      let element = elementNode[0];
-
-      for (browserEvent in SUPPORTED_EMBER_EVENTS) {
-        receivedEvent = null;
-        runTask(() => triggerEvent(elementNode, browserEvent));
-        assert.ok(receivedEvent, `${browserEvent} event was triggered`);
-        assert.strictEqual(receivedEvent.target, element);
-      }
-    }
-
-    ['@test events bubble view hierarchy for form elements'](assert) {
-      let receivedEvent;
-
-      this.owner.register(
-        'component:x-foo',
-        setComponentTemplate(
-          precompileTemplate(`<input id="is-done" type="checkbox">`),
+        this.owner.register(
+          'component:x-button',
           class extends EmberComponent {
+            tagName = 'button';
+
+            touchMove(event) {
+              receivedEvent = event;
+            }
+            touchStart(event) {
+              receivedEvent = event;
+            }
+            touchEnd(event) {
+              receivedEvent = event;
+            }
+            touchCancel(event) {
+              receivedEvent = event;
+            }
+            keyDown(event) {
+              receivedEvent = event;
+            }
+            keyUp(event) {
+              receivedEvent = event;
+            }
+            keyPress(event) {
+              receivedEvent = event;
+            }
+            mouseDown(event) {
+              receivedEvent = event;
+            }
+            mouseUp(event) {
+              receivedEvent = event;
+            }
+            contextMenu(event) {
+              receivedEvent = event;
+            }
+            click(event) {
+              receivedEvent = event;
+            }
+            doubleClick(event) {
+              receivedEvent = event;
+            }
+            focusIn(event) {
+              receivedEvent = event;
+            }
+            focusOut(event) {
+              receivedEvent = event;
+            }
+            submit(event) {
+              receivedEvent = event;
+            }
+            input(event) {
+              receivedEvent = event;
+            }
             change(event) {
               receivedEvent = event;
             }
-          }
-        )
-      );
-
-      this.render(`{{x-foo}}`);
-
-      runTask(() => this.$('#is-done').trigger('change'));
-      assert.ok(receivedEvent, 'change event was triggered');
-      assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
-    }
-
-    ['@test events bubble to parent view'](assert) {
-      let receivedEvent;
-
-      this.owner.register(
-        'component:x-foo',
-        setComponentTemplate(
-          precompileTemplate(`{{yield}}`),
-          class extends EmberComponent {
-            change(event) {
+            dragStart(event) {
+              receivedEvent = event;
+            }
+            drag(event) {
+              receivedEvent = event;
+            }
+            dragEnter(event) {
+              receivedEvent = event;
+            }
+            dragLeave(event) {
+              receivedEvent = event;
+            }
+            dragOver(event) {
+              receivedEvent = event;
+            }
+            drop(event) {
+              receivedEvent = event;
+            }
+            dragEnd(event) {
               receivedEvent = event;
             }
           }
-        )
-      );
+        );
 
-      this.owner.register(
-        'component:x-bar',
-        setComponentTemplate(
-          precompileTemplate(`<input id="is-done" type="checkbox">`),
-          class extends EmberComponent {
-            change() {}
-          }
-        )
-      );
+        this.render(`{{x-button}}`);
 
-      this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
+        let elementNode = this.$('button');
+        let element = elementNode[0];
 
-      runTask(() => this.$('#is-done').trigger('change'));
-      assert.ok(receivedEvent, 'change event was triggered');
-      assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
-    }
-
-    ['@test events bubbling up can be prevented by returning false'](assert) {
-      let hasReceivedEvent;
-
-      this.owner.register(
-        'component:x-foo',
-        setComponentTemplate(
-          precompileTemplate(`{{yield}}`),
-          class extends EmberComponent {
-            change() {
-              hasReceivedEvent = true;
-            }
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:x-bar',
-        setComponentTemplate(
-          precompileTemplate(`<input id="is-done" type="checkbox">`),
-          class extends EmberComponent {
-            change() {
-              return false;
-            }
-          }
-        )
-      );
-
-      this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
-
-      runTask(() => this.$('#is-done').trigger('change'));
-      assert.notOk(hasReceivedEvent, 'change event has not been received');
-    }
-
-    ['@test events bubbling up can be prevented by calling stopPropagation()'](assert) {
-      let hasReceivedEvent;
-
-      this.owner.register(
-        'component:x-foo',
-        setComponentTemplate(
-          precompileTemplate(`{{yield}}`),
-          class extends EmberComponent {
-            change() {
-              hasReceivedEvent = true;
-            }
-          }
-        )
-      );
-
-      this.owner.register(
-        'component:x-bar',
-        setComponentTemplate(
-          precompileTemplate(`<input id="is-done" type="checkbox">`),
-          class extends EmberComponent {
-            change(e) {
-              e.stopPropagation();
-            }
-          }
-        )
-      );
-
-      this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
-
-      runTask(() => this.$('#is-done').trigger('change'));
-      assert.notOk(hasReceivedEvent, 'change event has not been received');
-    }
-
-    ['@test event handlers are wrapped in a run loop'](assert) {
-      this.owner.register(
-        'component:x-foo',
-        setComponentTemplate(
-          precompileTemplate(`<input id="is-done" type="checkbox">`),
-          class extends EmberComponent {
-            change() {
-              assert.ok(_getCurrentRunLoop(), 'a run loop should have started');
-            }
-          }
-        )
-      );
-
-      this.render(`{{x-foo}}`);
-
-      this.$('#is-done').trigger('click');
-    }
-  }
-);
-
-moduleFor(
-  'EventDispatcher#setup (classic component)',
-  class extends RenderingTestCase {
-    constructor() {
-      super(...arguments);
-
-      this.dispatcher = this.owner.lookup('event_dispatcher:main');
-    }
-
-    getBootOptions() {
-      return {
-        skipEventDispatcher: true,
-      };
-    }
-
-    ['@test additional events can be specified'](assert) {
-      this.dispatcher.setup({ myevent: 'myEvent' });
-
-      this.owner.register(
-        'component:x-foo',
-        setComponentTemplate(
-          precompileTemplate(`<p>Hello!</p>`),
-          class extends EmberComponent {
-            myEvent() {
-              assert.ok(true, 'custom event was triggered');
-            }
-          }
-        )
-      );
-
-      this.render(`{{x-foo}}`);
-
-      this.$('div').trigger('myevent');
-    }
-
-    ['@test default events can be disabled via `customEvents`'](assert) {
-      this.dispatcher.setup({ click: null });
-
-      this.owner.register(
-        'component:x-foo',
-        setComponentTemplate(
-          precompileTemplate(`<p>Hello!</p>`),
-          class extends EmberComponent {
-            click() {
-              assert.ok(false, 'click method was called');
-            }
-
-            null() {
-              assert.ok(false, 'null method was called');
-            }
-
-            doubleClick() {
-              assert.ok(true, 'a non-disabled event is still handled properly');
-            }
-          }
-        )
-      );
-
-      this.render(`{{x-foo}}`);
-
-      this.$('div').trigger('click');
-      this.$('div').trigger('dblclick');
-    }
-  }
-);
-
-moduleFor(
-  'EventDispatcher - Event Properties (classic component)',
-  class extends RenderingTestCase {
-    ['@test dataTransfer property is added to drop event'](assert) {
-      let receivedEvent;
-      this.owner.register(
-        'component:x-foo',
-        class extends EmberComponent {
-          drop(event) {
-            receivedEvent = event;
-          }
+        for (browserEvent in SUPPORTED_EMBER_EVENTS) {
+          receivedEvent = null;
+          runTask(() => triggerEvent(elementNode, browserEvent));
+          assert.ok(receivedEvent, `${browserEvent} event was triggered`);
+          assert.strictEqual(receivedEvent.target, element);
         }
-      );
+      }
 
-      this.render(`{{x-foo}}`);
+      [`${testUnless(DEPRECATIONS.DEPRECATE_EVENTED.isRemoved)} @test event listeners are called when event is triggered`](
+        assert
+      ) {
+        expectClassicComponentDeprecation();
 
-      fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
-      assert.equal(receivedEvent.dataTransfer, 'success');
+        let receivedEvent;
+        let browserEvent;
+
+        this.owner.register(
+          'component:x-button',
+          class extends EmberComponent {
+            tagName = 'button';
+            init() {
+              super.init();
+              Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
+                expectDeprecation(
+                  () => {
+                    this.on(
+                      SUPPORTED_EMBER_EVENTS[browserEvent],
+                      (event) => (receivedEvent = event)
+                    );
+                  },
+                  /Evented#on` is deprecated/,
+                  DEPRECATIONS.DEPRECATE_EVENTED.isEnabled
+                );
+              });
+            }
+          }
+        );
+
+        this.render(`{{x-button}}`);
+
+        let elementNode = this.$('button');
+        let element = elementNode[0];
+
+        for (browserEvent in SUPPORTED_EMBER_EVENTS) {
+          receivedEvent = null;
+          runTask(() => triggerEvent(elementNode, browserEvent));
+          assert.ok(receivedEvent, `${browserEvent} event was triggered`);
+          assert.strictEqual(receivedEvent.target, element);
+        }
+      }
+
+      ['@test events bubble view hierarchy for form elements'](assert) {
+        expectClassicComponentDeprecation();
+
+        let receivedEvent;
+
+        this.owner.register(
+          'component:x-foo',
+          setComponentTemplate(
+            precompileTemplate(`<input id="is-done" type="checkbox">`),
+            class extends EmberComponent {
+              change(event) {
+                receivedEvent = event;
+              }
+            }
+          )
+        );
+
+        this.render(`{{x-foo}}`);
+
+        runTask(() => this.$('#is-done').trigger('change'));
+        assert.ok(receivedEvent, 'change event was triggered');
+        assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
+      }
+
+      ['@test events bubble to parent view'](assert) {
+        expectClassicComponentDeprecation();
+
+        let receivedEvent;
+
+        this.owner.register(
+          'component:x-foo',
+          setComponentTemplate(
+            precompileTemplate(`{{yield}}`),
+            class extends EmberComponent {
+              change(event) {
+                receivedEvent = event;
+              }
+            }
+          )
+        );
+
+        this.owner.register(
+          'component:x-bar',
+          setComponentTemplate(
+            precompileTemplate(`<input id="is-done" type="checkbox">`),
+            class extends EmberComponent {
+              change() {}
+            }
+          )
+        );
+
+        this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
+
+        runTask(() => this.$('#is-done').trigger('change'));
+        assert.ok(receivedEvent, 'change event was triggered');
+        assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
+      }
+
+      ['@test events bubbling up can be prevented by returning false'](assert) {
+        expectClassicComponentDeprecation();
+
+        let hasReceivedEvent;
+
+        this.owner.register(
+          'component:x-foo',
+          setComponentTemplate(
+            precompileTemplate(`{{yield}}`),
+            class extends EmberComponent {
+              change() {
+                hasReceivedEvent = true;
+              }
+            }
+          )
+        );
+
+        this.owner.register(
+          'component:x-bar',
+          setComponentTemplate(
+            precompileTemplate(`<input id="is-done" type="checkbox">`),
+            class extends EmberComponent {
+              change() {
+                return false;
+              }
+            }
+          )
+        );
+
+        this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
+
+        runTask(() => this.$('#is-done').trigger('change'));
+        assert.notOk(hasReceivedEvent, 'change event has not been received');
+      }
+
+      ['@test events bubbling up can be prevented by calling stopPropagation()'](assert) {
+        expectClassicComponentDeprecation();
+
+        let hasReceivedEvent;
+
+        this.owner.register(
+          'component:x-foo',
+          setComponentTemplate(
+            precompileTemplate(`{{yield}}`),
+            class extends EmberComponent {
+              change() {
+                hasReceivedEvent = true;
+              }
+            }
+          )
+        );
+
+        this.owner.register(
+          'component:x-bar',
+          setComponentTemplate(
+            precompileTemplate(`<input id="is-done" type="checkbox">`),
+            class extends EmberComponent {
+              change(e) {
+                e.stopPropagation();
+              }
+            }
+          )
+        );
+
+        this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
+
+        runTask(() => this.$('#is-done').trigger('change'));
+        assert.notOk(hasReceivedEvent, 'change event has not been received');
+      }
+
+      ['@test event handlers are wrapped in a run loop'](assert) {
+        expectClassicComponentDeprecation();
+
+        this.owner.register(
+          'component:x-foo',
+          setComponentTemplate(
+            precompileTemplate(`<input id="is-done" type="checkbox">`),
+            class extends EmberComponent {
+              change() {
+                assert.ok(_getCurrentRunLoop(), 'a run loop should have started');
+              }
+            }
+          )
+        );
+
+        this.render(`{{x-foo}}`);
+
+        this.$('#is-done').trigger('click');
+      }
     }
-  }
-);
+  );
+
+  moduleFor(
+    'EventDispatcher#setup (classic component)',
+    class extends RenderingTestCase {
+      constructor() {
+        super(...arguments);
+
+        this.dispatcher = this.owner.lookup('event_dispatcher:main');
+      }
+
+      getBootOptions() {
+        return {
+          skipEventDispatcher: true,
+        };
+      }
+
+      ['@test additional events can be specified'](assert) {
+        expectClassicComponentDeprecation();
+
+        this.dispatcher.setup({ myevent: 'myEvent' });
+
+        this.owner.register(
+          'component:x-foo',
+          setComponentTemplate(
+            precompileTemplate(`<p>Hello!</p>`),
+            class extends EmberComponent {
+              myEvent() {
+                assert.ok(true, 'custom event was triggered');
+              }
+            }
+          )
+        );
+
+        this.render(`{{x-foo}}`);
+
+        this.$('div').trigger('myevent');
+      }
+
+      ['@test default events can be disabled via `customEvents`'](assert) {
+        expectClassicComponentDeprecation();
+
+        this.dispatcher.setup({ click: null });
+
+        this.owner.register(
+          'component:x-foo',
+          setComponentTemplate(
+            precompileTemplate(`<p>Hello!</p>`),
+            class extends EmberComponent {
+              click() {
+                assert.ok(false, 'click method was called');
+              }
+
+              null() {
+                assert.ok(false, 'null method was called');
+              }
+
+              doubleClick() {
+                assert.ok(true, 'a non-disabled event is still handled properly');
+              }
+            }
+          )
+        );
+
+        this.render(`{{x-foo}}`);
+
+        this.$('div').trigger('click');
+        this.$('div').trigger('dblclick');
+      }
+    }
+  );
+
+  moduleFor(
+    'EventDispatcher - Event Properties (classic component)',
+    class extends RenderingTestCase {
+      ['@test dataTransfer property is added to drop event'](assert) {
+        expectClassicComponentDeprecation();
+
+        let receivedEvent;
+        this.owner.register(
+          'component:x-foo',
+          class extends EmberComponent {
+            drop(event) {
+              receivedEvent = event;
+            }
+          }
+        );
+
+        this.render(`{{x-foo}}`);
+
+        fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
+        assert.equal(receivedEvent.dataTransfer, 'success');
+      }
+    }
+  );
+}

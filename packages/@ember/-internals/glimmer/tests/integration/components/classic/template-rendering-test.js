@@ -1,90 +1,99 @@
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  expectClassicComponentDeprecation,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
 import { Component as EmberComponent } from '@ember/-internals/glimmer';
 import { precompileTemplate } from '@ember/template-compilation';
 
-moduleFor(
-  'Route - template rendering (classic component)',
-  class extends ApplicationTestCase {
-    ['@test Components inside an outlet have their didInsertElement hook invoked when the route is displayed'](
-      assert
-    ) {
-      this.add(
-        'template:index',
-        precompileTemplate(
-          '{{#if this.showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}'
-        )
-      );
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    'Route - template rendering (classic component)',
+    class extends ApplicationTestCase {
+      ['@test Components inside an outlet have their didInsertElement hook invoked when the route is displayed'](
+        assert
+      ) {
+        expectClassicComponentDeprecation();
 
-      let myComponentCounter = 0;
-      let otherComponentCounter = 0;
-      let indexController;
+        this.add(
+          'template:index',
+          precompileTemplate(
+            '{{#if this.showFirst}}{{my-component}}{{else}}{{other-component}}{{/if}}'
+          )
+        );
 
-      this.router.map(function () {
-        this.route('index', { path: '/' });
-      });
+        let myComponentCounter = 0;
+        let otherComponentCounter = 0;
+        let indexController;
 
-      this.add(
-        'controller:index',
-        class extends Controller {
-          showFirst = true;
-        }
-      );
+        this.router.map(function () {
+          this.route('index', { path: '/' });
+        });
 
-      this.add(
-        'route:index',
-        class extends Route {
-          setupController(controller) {
-            indexController = controller;
+        this.add(
+          'controller:index',
+          class extends Controller {
+            showFirst = true;
           }
-        }
-      );
+        );
 
-      this.add(
-        'component:my-component',
-        class extends EmberComponent {
-          didInsertElement() {
-            myComponentCounter++;
+        this.add(
+          'route:index',
+          class extends Route {
+            setupController(controller) {
+              indexController = controller;
+            }
           }
-        }
-      );
+        );
 
-      this.add(
-        'component:other-component',
-        class extends EmberComponent {
-          didInsertElement() {
-            otherComponentCounter++;
+        this.add(
+          'component:my-component',
+          class extends EmberComponent {
+            didInsertElement() {
+              myComponentCounter++;
+            }
           }
-        }
-      );
-
-      return this.visit('/').then(() => {
-        assert.strictEqual(
-          myComponentCounter,
-          1,
-          'didInsertElement invoked on displayed component'
-        );
-        assert.strictEqual(
-          otherComponentCounter,
-          0,
-          'didInsertElement not invoked on displayed component'
         );
 
-        run(() => indexController.set('showFirst', false));
+        this.add(
+          'component:other-component',
+          class extends EmberComponent {
+            didInsertElement() {
+              otherComponentCounter++;
+            }
+          }
+        );
 
-        assert.strictEqual(
-          myComponentCounter,
-          1,
-          'didInsertElement not invoked on displayed component'
-        );
-        assert.strictEqual(
-          otherComponentCounter,
-          1,
-          'didInsertElement invoked on displayed component'
-        );
-      });
+        return this.visit('/').then(() => {
+          assert.strictEqual(
+            myComponentCounter,
+            1,
+            'didInsertElement invoked on displayed component'
+          );
+          assert.strictEqual(
+            otherComponentCounter,
+            0,
+            'didInsertElement not invoked on displayed component'
+          );
+
+          run(() => indexController.set('showFirst', false));
+
+          assert.strictEqual(
+            myComponentCounter,
+            1,
+            'didInsertElement not invoked on displayed component'
+          );
+          assert.strictEqual(
+            otherComponentCounter,
+            1,
+            'didInsertElement invoked on displayed component'
+          );
+        });
+      }
     }
-  }
-);
+  );
+}

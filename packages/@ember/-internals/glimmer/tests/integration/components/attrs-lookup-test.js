@@ -1,4 +1,12 @@
-import { moduleFor, RenderingTestCase, styles, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  styles,
+  runTask,
+  expectClassicComponentDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -9,7 +17,9 @@ import { Component, htmlSafe } from '../../utils/helpers';
 moduleFor(
   'Components test: attrs lookup',
   class extends RenderingTestCase {
-    ['@test it should be able to lookup attrs without `attrs.` - template access']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it should be able to lookup attrs without \`attrs.\` - template access`]() {
+      expectClassicComponentDeprecation();
+
       this.owner.register(
         'component:foo-bar',
         setComponentTemplate(precompileTemplate('{{this.first}}'), class extends Component {})
@@ -34,7 +44,11 @@ moduleFor(
       this.assertText('first attr');
     }
 
-    ['@test it should be able to lookup attrs without `attrs.` - component access'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it should be able to lookup attrs without \`attrs.\` - component access`](
+      assert
+    ) {
+      expectClassicComponentDeprecation();
+
       let instance;
 
       let FooBarComponent = class extends Component {
@@ -67,7 +81,11 @@ moduleFor(
       this.assertText('first attr');
     }
 
-    ['@test should be able to modify a provided attr into local state #11571 / #11559'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test should be able to modify a provided attr into local state #11571 / #11559`](
+      assert
+    ) {
+      expectClassicComponentDeprecation();
+
       let instance;
       let FooBarComponent = class extends Component {
         init() {
@@ -102,7 +120,11 @@ moduleFor(
       // so there is no update step
     }
 
-    ['@test should be able to access unspecified attr #12035'](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test should be able to access unspecified attr #12035`](
+      assert
+    ) {
+      expectClassicComponentDeprecation();
+
       let instance;
       let wootVal = 'yes';
 
@@ -143,8 +165,12 @@ moduleFor(
       assert.equal(instance.get('woot'), 'yes', 'component found attr after reset');
     }
 
-    ['@test getAttr() should return the same value as get()'](assert) {
-      assert.expect(33);
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test getAttr() should return the same value as get()`](
+      assert
+    ) {
+      expectClassicComponentDeprecation();
+
+      assert.expect(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isEnabled ? 34 : 33);
 
       let instance;
       let FooBarComponent = class extends Component {
@@ -228,7 +254,9 @@ moduleFor(
       assert.equal(instance.get('second'), 'second', 'matches known value');
     }
 
-    ['@test bound computed properties can be overridden in extensions, set during init, and passed in as attrs']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test bound computed properties can be overridden in extensions, set during init, and passed in as attrs`]() {
+      expectClassicComponentDeprecation();
+
       let FooClass = class extends Component {
         attributeBindings = ['style'];
         @computed('height', 'color')

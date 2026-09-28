@@ -1,4 +1,13 @@
-import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  classes,
+  runTask,
+  expectClassicComponentDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { set, computed } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -9,7 +18,9 @@ import { Component } from '../../utils/helpers';
 moduleFor(
   'ClassNameBindings integration',
   class extends RenderingTestCase {
-    ['@test it can have class name bindings on the class definition']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it can have class name bindings on the class definition`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         classNameBindings = ['foo', 'isEnabled:enabled', 'isHappy:happy:sad'];
       };
@@ -74,7 +85,9 @@ moduleFor(
       });
     }
 
-    ['@test attrs in classNameBindings']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test attrs in classNameBindings`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         classNameBindings = ['attrs.joker:purple:green', 'attrs.batman.robin:black:red'];
       };
@@ -127,7 +140,9 @@ moduleFor(
       });
     }
 
-    ['@test it can have class name bindings with nested paths']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it can have class name bindings with nested paths`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         classNameBindings = ['foo.bar', 'is.enabled:enabled', 'is.happy:happy:sad'];
       };
@@ -201,7 +216,9 @@ moduleFor(
       });
     }
 
-    ['@test it should dasherize the path when the it resolves to true']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it should dasherize the path when the it resolves to true`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         classNameBindings = ['fooBar', 'nested.fooBarBaz'];
       };
@@ -272,7 +289,9 @@ moduleFor(
       });
     }
 
-    ['@test :: class name syntax works with an empty true class']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test :: class name syntax works with an empty true class`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         classNameBindings = ['isEnabled::not-enabled'];
       };
@@ -309,7 +328,9 @@ moduleFor(
       });
     }
 
-    ['@test uses all provided static class names (issue #11193)']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test uses all provided static class names (issue #11193)`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         classNameBindings = [':class-one', ':class-two'];
       };
@@ -338,7 +359,9 @@ moduleFor(
       });
     }
 
-    ['@test Providing a binding with a space in it asserts']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test Providing a binding with a space in it asserts`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         classNameBindings = ['i:think:i am:so:clever'];
       };
@@ -353,7 +376,9 @@ moduleFor(
       }, /classNameBindings must not have spaces in them/i);
     }
 
-    ['@test it asserts that items must be strings']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it asserts that items must be strings`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         foo = 'foo';
         bar = 'bar';
@@ -370,7 +395,9 @@ moduleFor(
       }, /classNameBindings must be non-empty strings/);
     }
 
-    ['@test it asserts that items must be non-empty strings']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it asserts that items must be non-empty strings`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         foo = 'foo';
         bar = 'bar';
@@ -387,7 +414,9 @@ moduleFor(
       }, /classNameBindings must be non-empty strings/);
     }
 
-    ['@test it can set class name bindings in the constructor']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it can set class name bindings in the constructor`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         classNameBindings = ['foo'];
 
@@ -545,7 +574,9 @@ moduleFor(
       });
     }
 
-    ['@test using a computed property for classNameBindings triggers an assertion']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test using a computed property for classNameBindings triggers an assertion`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         @computed
         get classNameBindings() {
