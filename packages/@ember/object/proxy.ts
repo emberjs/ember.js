@@ -5,6 +5,7 @@
 import { FrameworkObject } from '@ember/object/-internals';
 import _ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
+import { DEPRECATE_OBJECT_PROXY } from '@ember/deprecated-features';
 
 /**
   `ObjectProxy` forwards all properties not defined by the proxy itself
@@ -132,6 +133,10 @@ class ObjectProxy<Content = unknown> extends FrameworkObject {
     );
   }
 }
-ObjectProxy.PrototypeMixin.reopen(_ProxyMixin);
+// Entrypoint shape: the class survives shaking as a stub whose init throws the
+// removal error; the forwarding behavior in ProxyMixin is shaken away. The
+// guard sits inside the call because an `if` around a module-scope call makes
+// the whole module un-tree-shakable (tests/node-vitest/tree-shakability).
+ObjectProxy.PrototypeMixin.reopen(DEPRECATE_OBJECT_PROXY ? _ProxyMixin : {});
 
 export default ObjectProxy;

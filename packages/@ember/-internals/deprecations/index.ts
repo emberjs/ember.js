@@ -1,11 +1,25 @@
 import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
+import {
+  isDeprecationEnabledByConfig,
+  isDeprecationExceptedByConfig,
+} from '@ember/debug/lib/deprecation-stages';
 import { ENV } from '@ember/-internals/environment/lib/env';
 import { VERSION } from '@ember/version';
 import { deprecate, assert } from '@ember/debug';
+import {
+  DEPRECATE_COMPARABLE_MIXIN,
+  DEPRECATE_IMPORT_INJECT,
+  DEPRECATE_OBJECT_PROXY,
+  DEPRECATE_PROMISE_PROXY_MIXIN,
+} from '@ember/deprecated-features';
 import { dasherize } from '../string/index';
 
 function isEnabled(options: DeprecationOptions) {
-  return Object.hasOwnProperty.call(options.since, 'enabled') || ENV._ALL_DEPRECATIONS_ENABLED;
+  return (
+    Object.hasOwnProperty.call(options.since, 'enabled') ||
+    ENV._ALL_DEPRECATIONS_ENABLED ||
+    isDeprecationEnabledByConfig(options.id)
+  );
 }
 
 let numEmberVersion = parseFloat(ENV._OVERRIDE_DEPRECATION_VERSION ?? VERSION);
@@ -27,12 +41,31 @@ interface DeprecationObject {
   isRemoved: boolean;
 }
 
-function deprecation(options: DeprecationOptions) {
+// Getters rather than snapshots: registry entries are created at module
+// eval, but stage configuration can change afterwards (e.g. test harnesses
+// calling setDeprecationStagesConfig).
+//
+// `flag` links a shakable deprecation to its @ember/deprecated-features
+// constant: in a build where the flag is false the guarded implementation is
+// gone, so the deprecation reports itself as removed and unguarded reaches
+// throw via deprecateUntil.
+//
+// `except` also shields an id from the version-based removal computation,
+// including the _OVERRIDE_DEPRECATION_VERSION simulation, so a simulated
+// future version can run with known-noisy ids excluded. It does not shield a
+// false flag: in a shaken build the implementation is actually gone.
+export function deprecation(options: DeprecationOptions, flag?: boolean): DeprecationObject {
   return {
     options,
-    test: !isEnabled(options),
-    isEnabled: isEnabled(options) || isRemoved(options),
-    isRemoved: isRemoved(options),
+    get test() {
+      return !isEnabled(options);
+    },
+    get isEnabled() {
+      return isEnabled(options) || this.isRemoved;
+    },
+    get isRemoved() {
+      return (isRemoved(options) && !isDeprecationExceptedByConfig(options.id)) || flag === false;
+    },
   };
 }
 
@@ -89,6 +122,35 @@ function deprecation(options: DeprecationOptions) {
   When adding a deprecation, we need to guard all the code that will eventually be removed, including tests.
   For tests that are not specifically testing the deprecated feature, we need to figure out how to
   test the behavior without encountering the deprecated feature, just as users would.
+
+  ## Shakable deprecations
+
+  A deprecation whose implementation carries real code weight should also be
+  *shakable*: add an `export const MY_DEPRECATION = true` to
+  `@ember/deprecated-features` (same name as the registry key), pass it as the
+  second argument to `deprecation()`, and guard the deprecated code path with
+  it:
+
+  ```ts
+  import { MY_DEPRECATION } from '@ember/deprecated-features';
+
+  if (MY_DEPRECATION) {
+    // deprecated path, including the deprecateUntil call
+  } else {
+    // post-removal behavior
+  }
+  ```
+
+  Rules: reference the imported const directly (no destructuring, renaming, or
+  property access — babel-plugin-debug-macros can only fold direct
+  references). When the deprecated code has a post-removal shape, keep the
+  deprecateUntil call inside the guarded branch (it is stripped with the code)
+  and put the post-removal behavior in the other branch. When the deprecated
+  thing is itself an entrypoint (like the deprecated `inject` function), put
+  the deprecateUntil call before the guard instead — it survives shaking as
+  the throwing stub while the guarded implementation is eliminated. In a build
+  where the flag is false, the registry entry reports `isRemoved`, so any
+  reach of the API throws the removal error.
  */
 export const DEPRECATIONS = {
   DEPRECATE_IMPORT_EMBER(importName: string) {
@@ -102,23 +164,29 @@ export const DEPRECATIONS = {
       ).toLowerCase()}-from-ember`,
     });
   },
-  DEPRECATE_IMPORT_INJECT: deprecation({
-    for: 'ember-source',
-    id: 'importing-inject-from-ember-service',
-    since: {
-      available: '6.2.0',
-      enabled: '6.3.0',
+  DEPRECATE_IMPORT_INJECT: deprecation(
+    {
+      for: 'ember-source',
+      id: 'importing-inject-from-ember-service',
+      since: {
+        available: '6.2.0',
+        enabled: '6.3.0',
+      },
+      until: '7.0.0',
+      url: 'https://deprecations.emberjs.com/id/importing-inject-from-ember-service',
     },
-    until: '7.0.0',
-    url: 'https://deprecations.emberjs.com/id/importing-inject-from-ember-service',
-  }),
-  DEPRECATE_COMPARABLE_MIXIN: deprecation({
-    for: 'ember-source',
-    id: 'deprecate-comparable-mixin',
-    since: { available: '7.2.0', enabled: '7.2.0' },
-    until: '7.5.0',
-    url: 'https://deprecations.emberjs.com/id/deprecate-comparable-mixin',
-  }),
+    DEPRECATE_IMPORT_INJECT
+  ),
+  DEPRECATE_COMPARABLE_MIXIN: deprecation(
+    {
+      for: 'ember-source',
+      id: 'deprecate-comparable-mixin',
+      since: { available: '7.2.0', enabled: '7.2.0' },
+      until: '7.5.0',
+      url: 'https://deprecations.emberjs.com/id/deprecate-comparable-mixin',
+    },
+    DEPRECATE_COMPARABLE_MIXIN
+  ),
   DEPRECATE_TARGET_ACTION_SUPPORT: deprecation({
     for: 'ember-source',
     id: 'deprecate-target-action-support',
@@ -147,20 +215,26 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-array-proxy',
   }),
-  DEPRECATE_OBJECT_PROXY: deprecation({
-    id: 'deprecate-object-proxy',
-    for: 'ember-source',
-    since: { available: '7.4.0' },
-    until: '8.0.0',
-    url: 'https://deprecations.emberjs.com/id/deprecate-object-proxy',
-  }),
-  DEPRECATE_PROMISE_PROXY_MIXIN: deprecation({
-    id: 'deprecate-promise-proxy-mixin',
-    for: 'ember-source',
-    since: { available: '7.4.0' },
-    until: '8.0.0',
-    url: 'https://deprecations.emberjs.com/id/deprecate-promise-proxy-mixin',
-  }),
+  DEPRECATE_OBJECT_PROXY: deprecation(
+    {
+      id: 'deprecate-object-proxy',
+      for: 'ember-source',
+      since: { available: '7.4.0' },
+      until: '8.0.0',
+      url: 'https://deprecations.emberjs.com/id/deprecate-object-proxy',
+    },
+    DEPRECATE_OBJECT_PROXY
+  ),
+  DEPRECATE_PROMISE_PROXY_MIXIN: deprecation(
+    {
+      id: 'deprecate-promise-proxy-mixin',
+      for: 'ember-source',
+      since: { available: '7.4.0' },
+      until: '8.0.0',
+      url: 'https://deprecations.emberjs.com/id/deprecate-promise-proxy-mixin',
+    },
+    DEPRECATE_PROMISE_PROXY_MIXIN
+  ),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

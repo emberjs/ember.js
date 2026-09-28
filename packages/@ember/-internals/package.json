@@ -31,6 +31,7 @@
     "@ember/component": "workspace:^",
     "@ember/controller": "workspace:*",
     "@ember/debug": "workspace:*",
+    "@ember/deprecated-features": "workspace:*",
     "@ember/destroyable": "workspace:*",
     "@ember/engine": "workspace:*",
     "@ember/enumerable": "workspace:*",
