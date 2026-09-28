@@ -3,6 +3,7 @@ import {
   ModuleBasedTestResolver,
   ApplicationTestCase,
   runTask,
+  defineSimpleModifier,
 } from 'internal-test-helpers';
 import { service } from '@ember/service';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -14,11 +15,7 @@ import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import Route from '@ember/routing/route';
-import {
-  Component as EmberComponent,
-  helper,
-  isSerializationFirstNode,
-} from '@ember/-internals/glimmer';
+import { helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
 import Component from '@glimmer/component';
 import { precompileTemplate } from '@ember/template-compilation';
 
@@ -631,11 +628,11 @@ moduleFor(
     }
 
     [`@test Ember Islands-style setup`](assert) {
-      let xFooInitCalled = false;
-      let xFooDidInsertElementCalled = false;
+      let xFooCreated = false;
+      let xFooInserted = false;
 
-      let xBarInitCalled = false;
-      let xBarDidInsertElementCalled = false;
+      let xBarCreated = false;
+      let xBarInserted = false;
 
       this.router.map(function () {
         this.route('show', { path: '/:component_name' });
@@ -680,29 +677,30 @@ moduleFor(
         'component:x-foo',
         setComponentTemplate(
           precompileTemplate(
-            `<h1>X-Foo</h1>
-           <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>`
+            `<x-foo {{this.inserted}} {{on "click" this.click}}>
+            <h1>X-Foo</h1>
+            <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>
+          </x-foo>`
           ),
-          class extends EmberComponent {
-            tagName = 'x-foo';
-
+          class extends Component {
             @service
             isolatedCounter;
             @service
             sharedCounter;
 
-            init() {
-              super.init();
-              xFooInitCalled = true;
+            inserted = defineSimpleModifier(() => {
+              xFooInserted = true;
+            });
+
+            constructor(owner, args) {
+              super(owner, args);
+              xFooCreated = true;
             }
 
-            didInsertElement() {
-              xFooDidInsertElementCalled = true;
-            }
-
+            @action
             click() {
-              this.get('isolatedCounter').increment();
-              this.get('sharedCounter').increment();
+              this.isolatedCounter.increment();
+              this.sharedCounter.increment();
             }
           }
         )
@@ -712,25 +710,25 @@ moduleFor(
         'component:x-bar',
         setComponentTemplate(
           precompileTemplate(
-            `<h1>X-Bar</h1>
+            `<h1 {{this.inserted}}>X-Bar</h1>
           <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>`
           ),
-          class extends EmberComponent {
+          class extends Component {
             @service('sharedCounter')
             counter;
 
+            inserted = defineSimpleModifier(() => {
+              xBarInserted = true;
+            });
+
+            constructor(owner, args) {
+              super(owner, args);
+              xBarCreated = true;
+            }
+
             @action
             incrementCounter() {
-              this.get('counter').increment();
-            }
-
-            init() {
-              super.init();
-              xBarInitCalled = true;
-            }
-
-            didInsertElement() {
-              xBarDidInsertElementCalled = true;
+              this.counter.increment();
             }
           }
         )
@@ -758,11 +756,11 @@ moduleFor(
         .then((_instances) => {
           instances = _instances;
 
-          assert.ok(xFooInitCalled);
-          assert.ok(xFooDidInsertElementCalled);
+          assert.ok(xFooCreated);
+          assert.ok(xFooInserted);
 
-          assert.ok(xBarInitCalled);
-          assert.ok(xBarDidInsertElementCalled);
+          assert.ok(xBarCreated);
+          assert.ok(xBarInserted);
 
           assert.equal(foo.querySelector('h1').textContent, 'X-Foo');
           assert.equal(
