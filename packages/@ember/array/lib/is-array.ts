@@ -1,6 +1,5 @@
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal/lib/property_get';
-import typeOf from '@ember/utils/lib/type-of';
 import { isEmberArray } from '@ember/array/-internals';
 import type EmberArray from '@ember/array';
 
@@ -58,16 +57,15 @@ export default function isArray(obj: unknown): obj is ArrayLike<unknown> | Ember
     return true;
   }
 
-  let type = typeOf(obj);
-  if ('array' === type) {
-    return true;
+  if (typeof obj !== 'object' || obj instanceof String) {
+    return false;
   }
 
   // SAFETY: Property read checks are safe if it's an object
   let length = (obj as any).length;
-  if (typeof length === 'number' && length === length && 'object' === type) {
-    return true;
+  if (typeof length !== 'number' || length !== length) {
+    return false;
   }
 
-  return false;
+  return Object.prototype.toString.call(obj) !== '[object FileList]';
 }

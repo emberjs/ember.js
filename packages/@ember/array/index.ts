@@ -15,7 +15,7 @@ import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixi
 import { assert } from '@ember/debug';
 import Enumerable from '@ember/enumerable';
 import MutableEnumerable from '@ember/enumerable/mutable';
-import compare from '@ember/utils/lib/compare';
+import sortCompare from './lib/sort-compare';
 import Observable from '@ember/object/observable';
 import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
 import type { ComputedPropertyCallback } from '@ember/-internals/metal/lib/computed';
@@ -1383,7 +1383,7 @@ const EmberArray = Mixin[INTERNAL_MIXIN_CREATE](Enumerable, {
         let propA = get(a, key);
         let propB = get(b, key);
         // return 1 or -1 else continue to the next sortKey
-        let compareValue = compare(propA, propB);
+        let compareValue = sortCompare(propA, propB);
 
         if (compareValue) {
           return compareValue;

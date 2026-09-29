@@ -29,6 +29,7 @@ moduleFor(
   class extends AbstractTestCase {
     [`${testUnless(isRemoved)} @test empty part 1/2`](assert) {
       expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 
       let obj = class extends EmberObject {
         bestLannister = null;
@@ -52,6 +53,7 @@ moduleFor(
 
     [`${testUnless(isRemoved)} @test notEmpty part 1/2`](assert) {
       expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 
       let obj = class extends EmberObject {
         bestLannister = null;
@@ -85,6 +87,7 @@ moduleFor(
 
     [`${testUnless(isRemoved)} @test empty part 2/2`](assert) {
       expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 
       let obj = { foo: [], bar: undefined, baz: null, quz: '' };
       defineProperty(obj, 'fooEmpty', empty('foo'));
@@ -187,6 +190,7 @@ moduleFor(
 
     [`${testUnless(isRemoved)} @test notEmpty part 2/2`](assert) {
       expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
 
       let obj = { items: [1] };
       defineProperty(obj, 'hasItems', notEmpty('items'));
@@ -200,6 +204,7 @@ moduleFor(
 
     [`${testUnless(isRemoved)} @test none`](assert) {
       expectDeprecation(/`none` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isNone` from `@ember\/utils` is deprecated/, isEnabled);
 
       let obj = { food: null };
       defineProperty(obj, 'isHungry', none('food'));

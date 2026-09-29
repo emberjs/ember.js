@@ -7,7 +7,7 @@ import { autoComputed } from '@ember/-internals/metal/lib/computed';
 import { isElementDescriptor } from '@ember/-internals/metal/lib/decorator';
 import computed from '@ember/-internals/metal/lib/computed';
 import { get } from '@ember/-internals/metal/lib/property_get';
-import compare from '@ember/utils/lib/compare';
+import sortCompare from '@ember/array/lib/sort-compare';
 import EmberArray, { A as emberA, uniqBy as uniqByArray } from '@ember/array';
 import type { NativeArray } from '@ember/array';
 
@@ -1296,7 +1296,7 @@ function sortByNormalizedSortProperties(
   return emberA(
     items.slice().sort((itemA: unknown, itemB: unknown) => {
       for (let [prop, direction] of normalizedSortProperties) {
-        let result = compare(get(itemA, prop), get(itemB, prop));
+        let result = sortCompare(get(itemA, prop), get(itemB, prop));
         if (result !== 0) {
           return direction === 'desc' ? -1 * result : result;
         }
