@@ -1,4 +1,5 @@
-import { compare, typeOf } from '@ember/utils';
+import compare from '../lib/compare';
+import typeOf from '../lib/type-of';
 import EmberObject from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

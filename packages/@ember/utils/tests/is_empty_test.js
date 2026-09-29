@@ -1,4 +1,4 @@
-import { isEmpty } from '..';
+import isEmpty from '../lib/is_empty';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import ObjectProxy from '@ember/object/proxy';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';

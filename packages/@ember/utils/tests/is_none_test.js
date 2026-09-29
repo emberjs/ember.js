@@ -1,4 +1,4 @@
-import { isNone } from '..';
+import isNone from '../lib/is_none';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

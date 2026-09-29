@@ -1,4 +1,4 @@
-import { isBlank } from '..';
+import isBlank from '../lib/is_blank';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

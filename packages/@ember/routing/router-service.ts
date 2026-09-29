@@ -842,13 +842,14 @@ class RouterService extends Service {
     ```gjs {data-filename="app/components/header.gjs"}
       import Component from '@glimmer/component';
       import { service } from '@ember/service';
-      import { notEmpty } from '@ember/object/computed';
 
       export default class extends Component {
         @service router;
 
-        @notEmpty('router.currentRoute.child') isChildRoute;
-      });
+        get isChildRoute() {
+          return Boolean(this.router.currentRoute?.child);
+        }
+      }
     ```
 
     @property currentRoute

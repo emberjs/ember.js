@@ -1,4 +1,4 @@
-import { isPresent } from '..';
+import isPresent from '../lib/is_present';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

@@ -1,4 +1,4 @@
-import { isEqual } from '@ember/utils';
+import isEqual from '@ember/utils/lib/is-equal';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

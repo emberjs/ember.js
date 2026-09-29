@@ -1,5 +1,5 @@
 import EmberObject, { get } from '@ember/object';
-import { compare } from '@ember/utils';
+import compare from '@ember/utils/lib/compare';
 import Comparable from '../../lib/mixins/comparable';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
