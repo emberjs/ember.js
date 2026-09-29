@@ -3,5 +3,7 @@
   "compilerOptions": {
     // downgrade from @tsconfig/ember@>=3.0.9 (which sets es2023)
     "target": "es2022",
-  }
+  },
+  // These are checked with standard decorators by their own tsconfig.
+  "exclude": ["stable-decorators"]
 }

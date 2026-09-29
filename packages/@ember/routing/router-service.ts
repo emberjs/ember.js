@@ -727,7 +727,7 @@ class RouterService extends Service {
     @public
   */
   @readOnly('_router.currentRouteName')
-  declare readonly currentRouteName: this['_router']['currentRouteName'];
+  readonly currentRouteName!: this['_router']['currentRouteName'];
 
   /**
    Current URL for the application.
@@ -756,7 +756,7 @@ class RouterService extends Service {
     @public
   */
   @readOnly('_router.currentURL')
-  declare readonly currentURL: this['_router']['currentURL'];
+  readonly currentURL!: this['_router']['currentURL'];
 
   /**
     The `location` property returns what implementation of the `location` API
@@ -795,7 +795,7 @@ class RouterService extends Service {
     @public
   */
   @readOnly('_router.location')
-  declare readonly location: this['_router']['location'];
+  readonly location!: this['_router']['location'];
 
   /**
     The `rootURL` property represents the URL of the root of
@@ -825,7 +825,7 @@ class RouterService extends Service {
     @public
   */
   @readOnly('_router.rootURL')
-  declare readonly rootURL: this['_router']['rootURL'];
+  readonly rootURL!: this['_router']['rootURL'];
 
   /**
     The `currentRoute` property contains metadata about the current leaf route.
@@ -856,7 +856,7 @@ class RouterService extends Service {
     @public
   */
   @readOnly('_router.currentRoute')
-  declare readonly currentRoute: this['_router']['currentRoute'];
+  readonly currentRoute!: this['_router']['currentRoute'];
 }
 
 export { RouterService as default, type RouteInfo, type RouteInfoWithAttributes };

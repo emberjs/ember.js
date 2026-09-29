@@ -7,29 +7,48 @@ export interface ComponentTestMeta {
   skip?: boolean | DeclaredComponentKind;
 }
 
-export function test(meta: ComponentTestMeta): MethodDecorator;
+type LegacyMethodDecorator = <T>(
+  target: object,
+  name: string | symbol,
+  descriptor: TypedPropertyDescriptor<T>
+) => TypedPropertyDescriptor<T> | void;
+
+type StableMethodDecorator = (value: Function, context: ClassMethodDecoratorContext) => void;
+
+export function test(meta: ComponentTestMeta): LegacyMethodDecorator & StableMethodDecorator;
 export function test<T>(
-  _target: object | ComponentTestMeta,
-  _name?: string,
-  descriptor?: TypedPropertyDescriptor<T>
+  target: object,
+  name: string | symbol,
+  descriptor: TypedPropertyDescriptor<T>
 ): TypedPropertyDescriptor<T> | void;
-export function test(...args: any[]) {
+export function test(value: Function, context: ClassMethodDecoratorContext): void;
+export function test(...args: any[]): any {
   if (args.length === 1) {
     let meta: ComponentTestMeta = args[0];
-    return (_target: object, _name: string, descriptor: PropertyDescriptor) => {
-      let testFunction = descriptor.value;
+    return (...decoratorArgs: any[]) => {
+      let testFunction = testFunctionFor(decoratorArgs);
       keys(meta).forEach((key) => (testFunction[key] = meta[key]));
-      setTestingDescriptor(descriptor);
+      markTest(decoratorArgs);
     };
   }
 
-  let descriptor = args[2];
-  setTestingDescriptor(descriptor);
-  return descriptor;
+  markTest(args);
+  return isStableDecoratorArgs(args) ? undefined : args[2];
 }
 
-function setTestingDescriptor(descriptor: PropertyDescriptor): void {
-  let testFunction = descriptor.value;
-  descriptor.enumerable = true;
-  testFunction['isTest'] = true;
+// Stable (2023-11) decorators are called as `(value, context)`, legacy ones as
+// `(target, key, descriptor)`.
+function isStableDecoratorArgs(args: any[]): args is [Function, ClassMethodDecoratorContext] {
+  return args.length === 2 && typeof args[1] === 'object' && args[1] !== null && 'kind' in args[1];
+}
+
+function testFunctionFor(args: any[]): any {
+  return isStableDecoratorArgs(args) ? args[0] : (args[2] as PropertyDescriptor).value;
+}
+
+function markTest(args: any[]): void {
+  if (!isStableDecoratorArgs(args)) {
+    (args[2] as PropertyDescriptor).enumerable = true;
+  }
+  testFunctionFor(args)['isTest'] = true;
 }

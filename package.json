@@ -74,7 +74,9 @@
     "type-check": "npm-run-all type-check:*",
     "type-check:handlebars": "tsc --noEmit --project packages/@handlebars/parser/tsconfig.json",
     "type-check:internals": "tsc --noEmit",
-    "type-check:types": "tsc --noEmit --project type-tests"
+    "type-check:internals-stable-decorators": "tsc --noEmit --project tsconfig.stable-decorators.json",
+    "type-check:types": "tsc --noEmit --project type-tests",
+    "type-check:types-stable-decorators": "tsc --noEmit --project type-tests/stable-decorators"
   },
   "resolutions": {
     "socket.io": "^4.7.0"
@@ -100,7 +102,8 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.731.0",
-    "@babel/plugin-transform-typescript": "^7.22.9",
+    "@babel/plugin-proposal-decorators": "^7.25.9",
+    "@babel/plugin-transform-typescript": "^7.26.8",
     "@babel/preset-env": "^7.16.11",
     "@babel/types": "^7.22.5",
     "@embroider/macros": "^1.20.2",

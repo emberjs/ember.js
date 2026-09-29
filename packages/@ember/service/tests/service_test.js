@@ -50,7 +50,6 @@ moduleFor(
       let owner = buildOwner();
 
       class MainService extends Service {}
-
       class Foo extends EmberObject {
         @inject main;
       }
@@ -106,6 +105,47 @@ moduleFor(
       assert.ok(foo.main instanceof Service, 'service injected correctly');
 
       runDestroy(owner);
+    }
+
+    ['@test can be replaced by assignment'](assert) {
+      let owner = buildOwner();
+
+      class MainService extends Service {}
+
+      class Foo extends EmberObject {
+        @service main;
+      }
+
+      owner.register('service:main', MainService);
+      owner.register('foo:main', Foo);
+
+      let foo = owner.lookup('foo:main');
+      let replacement = {};
+      foo.main = replacement;
+      assert.strictEqual(foo.main, replacement, 'replaced');
+
+      runDestroy(owner);
+    }
+
+    ['@test throws when used in wrong syntactic position'](assert) {
+      // I'm allowing the assertions to be different under the new decorator
+      // standard because the assertions on the old one were pretty bad.
+      if (import.meta.env.VITE_STABLE_DECORATORS) {
+        assert.throws(() => {
+          // eslint-disable-next-line no-unused-vars
+          class Foo extends EmberObject {
+            @service main() {}
+          }
+        }, /The @service decorator does not support method main/);
+
+        assert.throws(() => {
+          @service
+          // eslint-disable-next-line no-unused-vars
+          class Foo extends EmberObject {}
+        }, /The @service decorator does not support class Foo/);
+      } else {
+        assert.expect(0);
+      }
     }
   }
 );

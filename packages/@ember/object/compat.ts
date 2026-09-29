@@ -9,6 +9,10 @@ import {
   setClassicDecorator,
 } from '@ember/-internals/metal/lib/decorator';
 import type { ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
+import {
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from '@ember/-internals/metal/lib/decorator-util';
 import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/interfaces';
 import { consumeTag, track } from '@glimmer/validator/lib/tracking';
@@ -95,14 +99,18 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
   @return {PropertyDecorator} property decorator instance
  */
 export function dependentKeyCompat(
+  value: (this: any) => any,
+  context: ClassGetterDecoratorContext
+): void;
+export function dependentKeyCompat(
   target: ElementDescriptor[0],
   key: ElementDescriptor[1],
   desc: ElementDescriptor[2]
 ): PropertyDescriptor;
 export function dependentKeyCompat(desc: PropertyDescriptor): ExtendedMethodDecorator;
 export function dependentKeyCompat(
-  ...args: ElementDescriptor | [PropertyDescriptor]
-): PropertyDescriptor | ExtendedMethodDecorator {
+  ...args: ElementDescriptor | [PropertyDescriptor] | [value: unknown, context: DecoratorContext]
+): PropertyDescriptor | ExtendedMethodDecorator | void {
   if (isElementDescriptor(args)) {
     let [target, key, desc] = args;
 
@@ -112,6 +120,25 @@ export function dependentKeyCompat(
     );
 
     return wrapGetterSetter(target, key, desc);
+  } else if (isModernDecoratorArgs(args)) {
+    const dec = identifyModernDecoratorArgs(args);
+    assert(
+      'The @dependentKeyCompat decorator must be applied to getters/setters when used in native classes',
+      dec.kind === 'getter'
+    );
+    return function (this: any) {
+      let propertyTag = tagFor(this, dec.context.name as string) as UpdatableTag;
+      let ret;
+
+      let tag = track(() => {
+        ret = dec.value.call(this);
+      });
+
+      updateTag(propertyTag, tag);
+      consumeTag(tag);
+
+      return ret;
+    };
   } else {
     const desc = args[0];
 

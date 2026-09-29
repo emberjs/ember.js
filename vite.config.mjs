@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => {
       output: {
         preserveModules: true,
       },
+      treeshake: false,
     },
     minify: mode === 'production',
   };
@@ -34,6 +35,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       templateTag(),
+      ...(process.env.VITE_STABLE_DECORATORS === 'typescript' ? [typescriptEmit()] : []),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts', '.gjs', '.gts'],
@@ -68,10 +70,59 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
     publicDir: 'tests/public',
     build,
+
+    // the stock esbuild support for typescript is horribly broken. For example,
+    // it will simply remove your decorators.
     esbuild: false,
-    envPrefix: 'VM_',
+    envPrefix: ['VM_', 'VITE_'],
   };
 });
+
+// Compiles our sources with TypeScript's own emit (with standard decorators)
+// before babel sees them, so we can test Ember against TypeScript's decorator
+// implementation rather than babel's.
+function typescriptEmit() {
+  const ts = require('typescript');
+  return {
+    name: 'typescript-emit',
+    // TypeScript's emit only provides decorator metadata if `Symbol.metadata`
+    // exists, which it doesn't in browsers yet. Ember relies on that metadata,
+    // so apps using TypeScript's emit must polyfill it, as we do here.
+    transformIndexHtml() {
+      return [
+        {
+          tag: 'script',
+          children: `Symbol.metadata ??= Symbol('Symbol.metadata');`,
+          injectTo: 'head-prepend',
+        },
+      ];
+    },
+    transform(code, id) {
+      let [file] = id.split('?');
+      if (file.includes('/node_modules/') || !/\.(js|ts|gjs|gts)$/.test(file)) {
+        return;
+      }
+      let { outputText, sourceMapText } = ts.transpileModule(code, {
+        // TypeScript doesn't know about .gjs/.gts, which templateTag() has
+        // already turned into plain JS/TS by now.
+        fileName: file.replace(/\.gjs$/, '.js').replace(/\.gts$/, '.ts'),
+        compilerOptions: {
+          // ES2022 rather than ESNext, since for ESNext TypeScript leaves
+          // decorators as-is instead of compiling them.
+          target: ts.ScriptTarget.ES2022,
+          module: ts.ModuleKind.ESNext,
+          experimentalDecorators: false,
+          allowJs: true,
+          sourceMap: true,
+        },
+      });
+      return {
+        code: outputText.replace(/^\/\/# sourceMappingURL=.*$/m, ''),
+        map: sourceMapText,
+      };
+    },
+  };
+}
 
 function viteResolverBug() {
   const packageCache = new PackageCache(projectRoot);

@@ -1,7 +1,8 @@
 import { match } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(match('foo', /^foo$/)).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(match('foo', /^foo$/)).toMatchTypeOf<FieldDecorator>();
 
 class Foo {
   @match('foo', /^foo$/) declare match: boolean;

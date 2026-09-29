@@ -11,6 +11,12 @@ import { setObservers } from '@ember/-internals/utils/lib/super';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
 import Observable from '@ember/object/observable';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+  onClassFinalized,
+} from '@ember/-internals/metal/lib/decorator-util';
 
 export { notifyPropertyChange } from '@ember/-internals/metal/lib/property_events';
 export { defineProperty } from '@ember/-internals/metal/lib/properties';
@@ -174,18 +180,26 @@ function setupAction(
 }
 
 export function action(
+  value: (this: any, ...args: any[]) => any,
+  context: ClassMethodDecoratorContext
+): void;
+export function action(
   target: ElementDescriptor[0],
   key: ElementDescriptor[1],
   desc: ElementDescriptor[2]
 ): PropertyDescriptor;
 export function action(desc: PropertyDescriptor): ExtendedMethodDecorator;
 export function action(
-  ...args: ElementDescriptor | [PropertyDescriptor]
-): PropertyDescriptor | ExtendedMethodDecorator {
+  ...args: ElementDescriptor | [PropertyDescriptor] | [value: unknown, context: DecoratorContext]
+): PropertyDescriptor | ExtendedMethodDecorator | void {
+  if (isModernDecoratorArgs(args)) {
+    return action2023(args);
+  }
+
   let actionFn: object | Function;
 
   if (!isElementDescriptor(args)) {
-    actionFn = args[0];
+    actionFn = (args as [PropertyDescriptor])[0];
 
     let decorator: ExtendedMethodDecorator = function (
       target,
@@ -310,4 +324,15 @@ export function observer<T extends AnyFn>(
     sync,
   });
   return func;
+}
+
+function action2023(args: Parameters<Decorator>) {
+  const dec = identifyModernDecoratorArgs(args);
+  assert(
+    'The @action decorator must be applied to methods when used in native classes',
+    dec.kind === 'method'
+  );
+  onClassFinalized(dec.context, (proto) => {
+    Object.defineProperty(proto, dec.context.name, setupAction(proto, dec.context.name, dec.value));
+  });
 }

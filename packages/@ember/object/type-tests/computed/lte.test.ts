@@ -1,7 +1,8 @@
 import { lte } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(lte('foo', 10)).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(lte('foo', 10)).toMatchTypeOf<FieldDecorator>();
 
 class Foo {
   @lte('foo', 10) declare lte: boolean;

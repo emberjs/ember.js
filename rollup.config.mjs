@@ -305,10 +305,14 @@ export function hiddenDependencies() {
     ).path,
     '@handlebars/parser': resolve(packageCache.appRoot, 'packages/@handlebars/parser/lib/index.js'),
     ...walkGlimmerDeps(['@glimmer/compiler']),
-    'decorator-transforms/runtime': resolve(
-      findFromProject('decorator-transforms').root,
-      'dist/runtime.js'
-    ),
+    ...(process.env.VITE_STABLE_DECORATORS
+      ? {}
+      : {
+          'decorator-transforms/runtime': resolve(
+            findFromProject('decorator-transforms').root,
+            'dist/runtime.js'
+          ),
+        }),
   };
 }
 

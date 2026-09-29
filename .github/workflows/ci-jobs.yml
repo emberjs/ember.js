@@ -37,10 +37,14 @@ jobs:
         run: pnpm build:types
       - name: Check internal types
         run: pnpm type-check:internals
+      - name: Check internal types with stable decorators
+        run: pnpm type-check:internals-stable-decorators
       - name: Check @handlebars/parser types
         run: pnpm type-check:handlebars
       - name: Check published types
         run: pnpm type-check:types
+      - name: Check published types with stable decorators
+        run: pnpm type-check:types-stable-decorators
 
   types-range:
     name: Type Checking (other supported versions)
@@ -61,6 +65,8 @@ jobs:
         run: pnpm add --save-dev --workspace-root typescript@${{ matrix.ts-version }}
       - name: Check published types
         run: pnpm type-check:types
+      - name: Check published types with stable decorators
+        run: pnpm type-check:types-stable-decorators
 
   build-test:
     name: package preparation test
@@ -114,6 +120,10 @@ jobs:
           - name: "Production build, with optional features"
             BUILD: "production"
             ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Stable decorators"
+            VITE_STABLE_DECORATORS: "true"
+          - name: "Stable decorators (TypeScript emit)"
+            VITE_STABLE_DECORATORS: "typescript"
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -124,13 +134,18 @@ jobs:
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
         env:
           NODE_ENV: ${{ matrix.BUILD || 'development' }}
+          ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
+          OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
+          ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
+          RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
+          VITE_STABLE_DECORATORS: ${{ matrix.VITE_STABLE_DECORATORS }}
       - name: test
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
           RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
-
+          VITE_STABLE_DECORATORS: ${{ matrix.VITE_STABLE_DECORATORS }}
         run: pnpm test
 
   browserstack-test:

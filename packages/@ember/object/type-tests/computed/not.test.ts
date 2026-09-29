@@ -1,7 +1,8 @@
 import { not } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(not('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(not('foo')).toMatchTypeOf<FieldDecorator>();
 
 class Foo {
   @not('foo') not: unknown;

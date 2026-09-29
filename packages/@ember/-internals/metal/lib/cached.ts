@@ -3,6 +3,12 @@
 // of @cached, so any changes made to one should also be made to the other
 import { DEBUG } from '@glimmer/env';
 import { createCache, getValue } from '@glimmer/validator/lib/tracking';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+  type StandardGetterDecorator,
+} from './decorator-util';
 
 /**
  * @decorator
@@ -84,7 +90,7 @@ import { createCache, getValue } from '@glimmer/validator/lib/tracking';
   the subsequent cache invalidations of the `@cached` properties who were
   using this `trackedProp`.
 
-  Remember that setting tracked data should only be done during initialization, 
+  Remember that setting tracked data should only be done during initialization,
   or as the result of a user action. Setting tracked data during render
   (such as in a getter), is not supported.
 
@@ -93,7 +99,11 @@ import { createCache, getValue } from '@glimmer/validator/lib/tracking';
   @for @glimmer/tracking
   @public
  */
-export const cached: MethodDecorator = (...args: any[]) => {
+export const cached: MethodDecorator & StandardGetterDecorator = (...args: any[]) => {
+  if (isModernDecoratorArgs(args)) {
+    return cached2023(args) as any;
+  }
+
   const [target, key, descriptor] = args;
 
   // Error on `@cached()`, `@cached(...args)`, and `@cached propName = value;`
@@ -122,6 +132,23 @@ export const cached: MethodDecorator = (...args: any[]) => {
     return getValue(caches.get(this));
   };
 };
+
+function cached2023(args: Parameters<Decorator>) {
+  const dec = identifyModernDecoratorArgs(args);
+  switch (dec.kind) {
+    case 'getter': {
+      const caches = new WeakMap();
+      return function (this: any) {
+        if (!caches.has(this)) {
+          caches.set(this, createCache(dec.value.bind(this)));
+        }
+        return getValue(caches.get(this));
+      };
+    }
+    default:
+      throw new Error(`unsupported use of @cached on ${dec.kind} ${dec.context.name?.toString()}`);
+  }
+}
 
 function throwCachedExtraneousParens(): never {
   throw new Error(

@@ -1,7 +1,8 @@
 import { oneWay } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(oneWay('foo')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(oneWay('foo')).toEqualTypeOf<FieldDecorator>();
 
 class Foo {
   @oneWay('foo') oneWay: unknown;

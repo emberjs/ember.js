@@ -1314,7 +1314,6 @@ class Component<S = unknown>
     @default []
     @private
   */
-  // @ts-expect-error TODO: Fix these types
   @nativeDescDecorator({
     configurable: false,
     enumerable: false,
@@ -1424,7 +1423,6 @@ class Component<S = unknown>
     @type DOMElement
     @public
   */
-  // @ts-expect-error The types are not correct here
   @nativeDescDecorator({ configurable: false, enumerable: false })
   get element() {
     return this.renderer.getElement(this);

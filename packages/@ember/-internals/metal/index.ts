@@ -47,6 +47,7 @@ export {
   ComputedDescriptor,
   type ElementDescriptor,
   isElementDescriptor,
+  isDecoratorCall,
   nativeDescDecorator,
   descriptorForDecorator,
   descriptorForProperty,

@@ -1,7 +1,8 @@
 import { equal } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(equal('foo', 'bar')).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(equal('foo', 'bar')).toMatchTypeOf<FieldDecorator>();
 
 class Foo {
   @equal('foo', 'bar') declare equal: boolean;

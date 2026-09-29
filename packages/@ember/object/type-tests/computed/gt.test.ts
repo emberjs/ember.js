@@ -1,7 +1,8 @@
 import { gt } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
+import type { FieldDecorator } from '@ember/-internals/metal/lib/decorator-util';
 
-expectTypeOf(gt('foo', 10)).toEqualTypeOf<PropertyDecorator>();
+expectTypeOf(gt('foo', 10)).toMatchTypeOf<FieldDecorator>();
 
 class Foo {
   @gt('foo', 10) declare gt: boolean;
