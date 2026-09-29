@@ -17,7 +17,7 @@ import _compare, { type Compare } from './lib/compare';
 */
 function deprecateUtil(name: string) {
   deprecateUntil(
-    `\`${name}\` from \`@ember/utils\` is deprecated. Use native JavaScript or \`${name}\` from \`@ember/legacy-utils\` instead.`,
+    `\`${name}\` from \`@ember/utils\` is deprecated. Use native JavaScript instead.`,
     DEPRECATIONS.DEPRECATE_EMBER_UTILS
   );
 }
@@ -41,7 +41,7 @@ function deprecateUtil(name: string) {
   @param {Object} obj Value to test
   @return {Boolean}
   @public
-  @deprecated Use native JavaScript or `isNone` from `@ember/legacy-utils` instead.
+  @deprecated Use native JavaScript instead.
 */
 export function isNone(obj: any): obj is null | undefined {
   deprecateUtil('isNone');
@@ -73,7 +73,7 @@ export function isNone(obj: any): obj is null | undefined {
   @return {Boolean}
   @since 1.5.0
   @public
-  @deprecated Use native JavaScript or `isBlank` from `@ember/legacy-utils` instead.
+  @deprecated Use native JavaScript instead.
 */
 export function isBlank(obj: unknown): boolean {
   deprecateUtil('isBlank');
@@ -111,7 +111,7 @@ export function isBlank(obj: unknown): boolean {
   @param {Object} obj Value to test
   @return {Boolean}
   @public
-  @deprecated Use native JavaScript or `isEmpty` from `@ember/legacy-utils` instead.
+  @deprecated Use native JavaScript instead.
 */
 export function isEmpty(obj: unknown): boolean {
   deprecateUtil('isEmpty');
@@ -146,7 +146,7 @@ export function isEmpty(obj: unknown): boolean {
   @return {Boolean}
   @since 1.8.0
   @public
-  @deprecated Use native JavaScript or `isPresent` from `@ember/legacy-utils` instead.
+  @deprecated Use native JavaScript instead.
 */
 export function isPresent<T>(obj: T | null | undefined): obj is T {
   deprecateUtil('isPresent');
@@ -198,7 +198,7 @@ export function isPresent<T>(obj: T | null | undefined): obj is T {
   @param {Object} b second object to compare
   @return {Boolean}
   @public
-  @deprecated Use native JavaScript or `isEqual` from `@ember/legacy-utils` instead.
+  @deprecated Use native JavaScript instead.
 */
 export function isEqual(a: unknown, b: unknown): boolean {
   deprecateUtil('isEqual');
@@ -264,7 +264,7 @@ export function isEqual(a: unknown, b: unknown): boolean {
   @param item the item to check
   @return {String} the type
   @public
-  @deprecated Use native JavaScript or `typeOf` from `@ember/legacy-utils` instead.
+  @deprecated Use native JavaScript instead.
   @static
 */
 export function typeOf(item: unknown): TypeName {
@@ -317,7 +317,7 @@ export function typeOf(item: unknown): TypeName {
  @param {Object} w Second value to compare
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
  @public
- @deprecated Use native JavaScript or `compare` from `@ember/legacy-utils` instead.
+ @deprecated Use native JavaScript instead.
 */
 export function compare<T>(v: T, w: T): Compare {
   deprecateUtil('compare');
