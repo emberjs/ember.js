@@ -239,6 +239,9 @@ function packages() {
 
       // @handlebars/parser is a hidden dependency, not an explicit entrypoint
       '@handlebars/**',
+
+      // private helpers that must not become importable module paths
+      '@ember/array/lib/sort-compare.ts',
     ],
     cwd: 'packages',
   });
