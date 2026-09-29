@@ -67,6 +67,7 @@ import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared'
 import {
   Call,
   CallDynamic,
+  DynamicAttrValue,
   DynamicScope,
   PushPrimitiveReference,
 } from '../opcode-builder/helpers/vm';
@@ -123,22 +124,22 @@ STATEMENTS.add(SexpOpcodes.StaticComponentAttr, (op, [, name, value, namespace])
 });
 
 STATEMENTS.add(SexpOpcodes.DynamicAttr, (op, [, name, value, namespace]) => {
-  expr(op, value);
+  DynamicAttrValue(op, value);
   op(VM_DYNAMIC_ATTR_OP, inflateAttrName(name), false, namespace ?? null);
 });
 
 STATEMENTS.add(SexpOpcodes.TrustingDynamicAttr, (op, [, name, value, namespace]) => {
-  expr(op, value);
+  DynamicAttrValue(op, value);
   op(VM_DYNAMIC_ATTR_OP, inflateAttrName(name), true, namespace ?? null);
 });
 
 STATEMENTS.add(SexpOpcodes.ComponentAttr, (op, [, name, value, namespace]) => {
-  expr(op, value);
+  DynamicAttrValue(op, value);
   op(VM_COMPONENT_ATTR_OP, inflateAttrName(name), false, namespace ?? null);
 });
 
 STATEMENTS.add(SexpOpcodes.TrustingComponentAttr, (op, [, name, value, namespace]) => {
-  expr(op, value);
+  DynamicAttrValue(op, value);
   op(VM_COMPONENT_ATTR_OP, inflateAttrName(name), true, namespace ?? null);
 });
 
