@@ -187,6 +187,50 @@ export class ServerSideSuite extends AbstractNodeTest {
 
     this.assertHTML(template);
   }
+
+  @test
+  'DocumentFragment renders between region markers'() {
+    let fragment = this.delegate.createDocumentFragment();
+    fragment.appendChild(this.delegate.createTextNode('hello'));
+
+    this.render('<div>{{this.fragment}}</div>', { fragment });
+
+    this.assertHTML('<div><!---->hello<!----></div>');
+  }
+
+  @test
+  'an empty DocumentFragment renders as a pair of region markers'() {
+    this.render('<div>{{this.fragment}}</div>', {
+      fragment: this.delegate.createDocumentFragment(),
+    });
+
+    this.assertHTML('<div><!----><!----></div>');
+  }
+
+  @test
+  '{{#in-element}} into a rendered fragment renders inside the region'() {
+    let fragment = this.delegate.createDocumentFragment();
+
+    this.render(
+      '<div>{{this.fragment}}{{#in-element this.fragment}}[content]{{/in-element}}</div>',
+      { fragment }
+    );
+
+    this.assertHTML('<div><!---->[content]<!----><!----></div>');
+  }
+
+  @test
+  'sibling fragments render as separate regions'() {
+    let first = this.delegate.createDocumentFragment();
+    let second = this.delegate.createDocumentFragment();
+
+    first.appendChild(this.delegate.createTextNode('one'));
+    second.appendChild(this.delegate.createTextNode('two'));
+
+    this.render('<div>{{this.first}}{{this.second}}</div>', { first, second });
+
+    this.assertHTML('<div><!---->one<!----><!---->two<!----></div>');
+  }
 }
 
 export class ServerSideComponentSuite extends AbstractNodeTest {

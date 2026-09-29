@@ -80,7 +80,12 @@ export class RehydrationDelegate implements RenderDelegate {
     this.serverDoc = createHTMLDocument();
     this.serverRegistry = new TestJitRegistry();
     this.serverResolver = new TestJitRuntimeResolver(this.serverRegistry);
-    this.serverContext = JitDelegateContext(this.serverDoc, this.serverResolver, delegate);
+    // A server has no events, so modifiers do not run there.
+    this.serverContext = JitDelegateContext(
+      this.serverDoc,
+      this.serverResolver,
+      assign({}, delegate, { isInteractive: false })
+    );
   }
 
   getInitialElement(): SimpleElement {

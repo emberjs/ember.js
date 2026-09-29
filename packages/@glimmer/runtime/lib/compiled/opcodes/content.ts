@@ -124,7 +124,9 @@ APPEND_OPCODES.add(VM_APPEND_DOCUMENT_FRAGMENT_OP, (vm) => {
 
   let value = check(valueForRef(reference), CheckDocumentFragment);
 
-  vm.tree().appendDynamicFragment(value);
+  // The region owns DOM that outlives this append: when it is torn down it
+  // hands the content back to the fragment.
+  vm.associateDestroyable(vm.tree().appendDynamicFragment(value));
 });
 
 APPEND_OPCODES.add(VM_APPEND_NODE_OP, (vm) => {

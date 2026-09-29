@@ -1,12 +1,15 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
 import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
+import { on, renderComponent, renderSync } from '@glimmer/runtime';
 import { isIndexable, LOCAL_LOGGER } from '@glimmer/util';
 import {
   blockStack,
   CLOSE,
   content,
+  defineComponent,
   equalTokens,
+  GlimmerishComponent,
   OPEN,
   PartialRehydrationDelegate,
   qunitFixture,
@@ -15,10 +18,11 @@ import {
   replaceHTML,
   suite,
   test,
+  tracked,
 } from '@glimmer-workspace/integration-tests';
 
 abstract class AbstractChaosMonkeyTest extends RenderTest {
-  abstract renderClientSide(template: string | ComponentBlueprint, context: Dict): void;
+  abstract renderClientSide(template: string | object, context: Dict): void;
 
   getRandomForIteration(iteration: number) {
     const { seed } = QUnit.config;
@@ -111,7 +115,13 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
     );
   }
 
-  runIterations(template: string, context: Dict, expectedHTML: string, count: number) {
+  runIterations(
+    template: string | object,
+    context: Dict,
+    expectedHTML: string,
+    count: number,
+    afterRehydration: () => void = () => {}
+  ) {
     const element = castToBrowser(this.element, 'HTML');
     const elementResetValue = element.innerHTML;
 
@@ -125,6 +135,8 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
       const element = castToBrowser(this.element, 'HTML');
       this.assert.strictEqual(element.innerHTML, expectedHTML);
+
+      afterRehydration();
     } else {
       for (let i = 0; i < count; i++) {
         const seed = QUnit.config.seed ? `&seed=${QUnit.config.seed}` : '';
@@ -141,6 +153,8 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
             expectedHTML,
             `should match after iteration ${i}; rerun with these query params: '${rerunUrl}'`
           );
+
+          afterRehydration();
         } catch (error) {
           this.assert.pushResult({
             result: false,
@@ -173,11 +187,25 @@ function getErrorMessage(assert: Assert, error: unknown): string {
   }
 }
 
-class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
-  static suiteName = 'chaos-rehydration';
-
+abstract class AbstractChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
   declare protected delegate: RehydrationDelegate;
   declare protected serverOutput: Nullable<string>;
+
+  assertExactServerOutput(_expected: string) {
+    const output = expect(
+      this.serverOutput,
+      'must renderServerSide before calling assertServerOutput'
+    );
+    equalTokens(output, _expected);
+  }
+
+  assertServerOutput(..._expected: Content[]) {
+    this.assertExactServerOutput(content([OPEN, ..._expected, CLOSE]));
+  }
+}
+
+class ChaosMonkeyRehydration extends AbstractChaosMonkeyRehydration {
+  static suiteName = 'chaos-rehydration';
 
   renderServerSide(
     template: string | ComponentBlueprint,
@@ -196,18 +224,6 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
   renderClientSide(template: string | ComponentBlueprint, context: Dict): void {
     this.context = context;
     this.renderResult = this.delegate.renderClientSide(template as string, context, this.element);
-  }
-
-  assertExactServerOutput(_expected: string) {
-    const output = expect(
-      this.serverOutput,
-      'must renderServerSide before calling assertServerOutput'
-    );
-    equalTokens(output, _expected);
-  }
-
-  assertServerOutput(..._expected: Content[]) {
-    this.assertExactServerOutput(content([OPEN, ..._expected, CLOSE]));
   }
 
   @test
@@ -326,5 +342,103 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
   }
 }
 
+class ChaosMonkeyDocumentFragmentRehydration extends AbstractChaosMonkeyRehydration {
+  static suiteName = 'chaos-rehydration (DocumentFragment)';
+
+  /**
+   * Rendering a fragment moves its children into the DOM and leaves it empty,
+   * so every render (server or client) gets a fresh fragment from its own
+   * document as `@fragment`. The content comes from `{{#in-element}}`.
+   */
+  renderServerSide(component: object, args: Dict): void {
+    const { serverContext: context, serverDoc: doc } = this.delegate;
+    const element = doc.createElement('div');
+    const builder = this.delegate.getElementBuilder(context.env, { element, nextSibling: null });
+    const iterator = renderComponent(context, builder, {}, component, {
+      ...args,
+      fragment: doc.createDocumentFragment(),
+    });
+
+    renderSync(context.env, iterator);
+
+    this.serverOutput = this.delegate.serialize(element);
+    replaceHTML(this.element, this.serverOutput);
+  }
+
+  renderClientSide(component: object, args: Dict): void {
+    const { clientContext: context, clientDoc: doc } = this.delegate;
+    const builder = this.delegate.getElementBuilder(context.env, {
+      element: this.element,
+      nextSibling: null,
+    });
+    const iterator = renderComponent(context, builder, {}, component, {
+      ...args,
+      fragment: doc.createDocumentFragment(),
+    });
+
+    this.renderResult = renderSync(context.env, iterator);
+  }
+
+  @test
+  'static content'() {
+    const Static = defineComponent(
+      {},
+      '<div>{{@fragment}}</div>{{#in-element @fragment}}<p>one</p><p>two</p>{{/in-element}}'
+    );
+
+    this.renderServerSide(Static, {});
+
+    const b = blockStack();
+    this.assertServerOutput(
+      `${b(1)}<div>${b(2)}<!--%+f%--><script glmr="%cursor:0%"></script>${b(3)}<p>one</p><p>two</p>${b(3)}<!--%-f%-->${b(2)}</div>${b(2)}<!---->${b(2)}${b(1)}`
+    );
+
+    this.runIterations(Static, {}, '<div><!----><p>one</p><p>two</p><!----></div><!---->', 100);
+  }
+
+  @test
+  'updating content by clicking'() {
+    class Clicker extends GlimmerishComponent {
+      @tracked count = 0;
+
+      increment = () => this.count++;
+    }
+
+    const Component = defineComponent(
+      { on },
+      '<div>{{@fragment}}</div>' +
+        '{{#in-element @fragment}}<button {{on "click" this.increment}}>{{this.count}}</button>{{/in-element}}',
+      { definition: Clicker }
+    );
+
+    this.renderServerSide(Component, {});
+
+    const b = blockStack();
+    this.assertServerOutput(
+      `${b(1)}<div>${b(2)}<!--%+f%--><script glmr="%cursor:0%"></script>${b(3)}<button>${b(4)}0${b(4)}</button>${b(3)}<!--%-f%-->${b(2)}</div>${b(2)}<!---->${b(2)}${b(1)}`
+    );
+
+    this.runIterations(
+      Component,
+      {},
+      '<div><!----><button>0</button><!----></div><!---->',
+      100,
+      () => {
+        const element = castToBrowser(this.element, 'HTML');
+
+        this.guardPresent({ button: element.querySelector('button') }).click();
+        this.rerender();
+
+        this.assert.strictEqual(
+          element.innerHTML,
+          '<div><!----><button>1</button><!----></div><!---->',
+          'the click updated the content in the fragment'
+        );
+      }
+    );
+  }
+}
+
 suite(ChaosMonkeyRehydration, RehydrationDelegate);
+suite(ChaosMonkeyDocumentFragmentRehydration, RehydrationDelegate);
 suite(ChaosMonkeyPartialRehydration, PartialRehydrationDelegate);

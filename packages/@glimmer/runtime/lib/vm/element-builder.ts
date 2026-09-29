@@ -28,7 +28,8 @@ import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 
 import type { DynamicAttribute } from './attributes/dynamic';
 
-import { clear, ConcreteBounds, CursorImpl } from '../bounds';
+import { clear, ConcreteBounds, CursorImpl, liveParent } from '../bounds';
+import { fragmentRegionFor, makeFragmentRegion } from '../dom/fragment-region';
 import { dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
@@ -64,8 +65,8 @@ export class Fragment implements Bounds {
     this.bounds = bounds;
   }
 
-  parentElement(): SimpleElement {
-    return this.bounds.parentElement();
+  parentNode(): SimpleElement | SimpleDocumentFragment {
+    return this.bounds.parentNode();
   }
 
   firstNode(): SimpleNode {
@@ -99,7 +100,11 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   static resume(env: Environment, block: ResettableBlock): NewTreeBuilder {
-    let parentNode = block.parentElement();
+    // Capture the live parent before resetting, because the bounds may have been
+    // rendered into a DocumentFragment that was subsequently appended to a real
+    // DOM container. In that case firstNode().parentNode is the container while
+    // parentNode() still returns the original (now-empty) fragment.
+    let parentNode = liveParent(block);
     let nextSibling = block.reset(env);
 
     let stack = new this(env, parentNode, nextSibling).initialize();
@@ -108,7 +113,11 @@ export class NewTreeBuilder implements TreeBuilder {
     return stack;
   }
 
-  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
+  constructor(
+    env: Environment,
+    parentNode: SimpleElement | SimpleDocumentFragment,
+    nextSibling: Nullable<SimpleNode>
+  ) {
     this.pushElement(parentNode, nextSibling);
     this.env = env;
     this.dom = env.getAppendOperations();
@@ -132,7 +141,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return this.blockStack.toArray();
   }
 
-  get element(): SimpleElement {
+  get element(): SimpleElement | SimpleDocumentFragment {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     return this.cursors.current!.element;
   }
@@ -219,7 +228,7 @@ export class NewTreeBuilder implements TreeBuilder {
     this.didOpenElement(element);
   }
 
-  __flushElement(parent: SimpleElement, constructing: SimpleElement) {
+  __flushElement(parent: SimpleElement | SimpleDocumentFragment, constructing: SimpleElement) {
     this.dom.insertBefore(parent, constructing, this.nextSibling);
   }
 
@@ -230,7 +239,7 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
@@ -238,10 +247,27 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleElement | SimpleDocumentFragment,
     _guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteBlock {
+    let region = fragmentRegionFor(element);
+
+    // A fragment that was already rendered through `{{fragment}}` is empty,
+    // because its children moved into the region. Render into the region,
+    // because content put into the fragment itself stays detached from the DOM.
+    if (region) {
+      let parent = region.parentNode();
+
+      this.pushElement(parent, insertBefore ?? region.insertionPoint());
+
+      if (insertBefore === undefined) {
+        region.clearContent();
+      }
+
+      return this.pushBlock(new RemoteBlock(parent), true);
+    }
+
     this.pushElement(element, insertBefore);
 
     if (insertBefore === undefined) {
@@ -262,7 +288,10 @@ export class NewTreeBuilder implements TreeBuilder {
     return block;
   }
 
-  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
+  protected pushElement(
+    element: SimpleElement | SimpleDocumentFragment,
+    nextSibling: Maybe<SimpleNode> = null
+  ): void {
     this.cursors.push(new CursorImpl(element, nextSibling));
   }
 
@@ -309,18 +338,31 @@ export class NewTreeBuilder implements TreeBuilder {
     return node;
   }
 
+  /**
+   * Appends the fragment's children between a pair of comment markers, and
+   * records the markers as the fragment's region. The markers are always
+   * present, so the region is a stable address even when the fragment is empty
+   * and even after its content changes.
+   */
   __appendFragment(fragment: SimpleDocumentFragment): Bounds {
-    let first = fragment.firstChild;
+    let parent = this.element;
+    let open = this.__appendComment(this.fragmentMarker('open'));
 
-    if (first) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      let ret = new ConcreteBounds(this.element, first, fragment.lastChild!);
-      this.dom.insertBefore(this.element, fragment, this.nextSibling);
-      return ret;
-    } else {
-      const comment = this.__appendComment('');
-      return new ConcreteBounds(this.element, comment, comment);
+    if (fragment.firstChild) {
+      this.dom.insertBefore(parent, fragment, this.nextSibling);
     }
+
+    let close = this.__appendComment(this.fragmentMarker('close'));
+
+    return makeFragmentRegion(fragment, parent, open, close);
+  }
+
+  /**
+   * The value of a region marker. It is empty on the client, and serialization
+   * gives it a name so that rehydration can find the region.
+   */
+  protected fragmentMarker(_position: 'open' | 'close'): string {
+    return '';
   }
 
   __appendHTML(html: string): Bounds {
@@ -338,9 +380,8 @@ export class NewTreeBuilder implements TreeBuilder {
     return node;
   }
 
-  appendDynamicFragment(value: SimpleDocumentFragment): void {
-    let bounds = this.__appendFragment(value);
-    this.didAppendBounds(bounds);
+  appendDynamicFragment(value: SimpleDocumentFragment): Bounds {
+    return this.didAppendBounds(this.__appendFragment(value));
   }
 
   appendDynamicNode(value: SimpleNode): void {
@@ -405,7 +446,7 @@ export class AppendingBlockImpl implements AppendingBlock {
   protected last: Nullable<LastNode> = null;
   protected nesting = 0;
 
-  constructor(private parent: SimpleElement) {
+  constructor(private parent: SimpleElement | SimpleDocumentFragment) {
     setLocalDebugType('block:simple', this);
 
     if (LOCAL_DEBUG) {
@@ -416,7 +457,7 @@ export class AppendingBlockImpl implements AppendingBlock {
     }
   }
 
-  parentElement() {
+  parentNode() {
     return this.parent;
   }
 
@@ -475,7 +516,7 @@ export class AppendingBlockImpl implements AppendingBlock {
 }
 
 export class RemoteBlock extends AppendingBlockImpl {
-  constructor(parent: SimpleElement) {
+  constructor(parent: SimpleElement | SimpleDocumentFragment) {
     super(parent);
 
     setLocalDebugType('block:remote', this);
@@ -505,7 +546,12 @@ export class RemoteBlock extends AppendingBlockImpl {
       // and avoid clearing the node if it was. In most cases this shouldn't happen,
       // so this might hide bugs where the code clears nested nodes unnecessarily,
       // so we should eventually try to do the correct fix.
-      if (this.parentElement() === this.firstNode().parentNode) {
+      //
+      // Note: we check firstNode().parentNode !== null (node still has a parent)
+      // rather than === parentNode() (node is in the original parent), so that
+      // {{#in-element}} into a DocumentFragment still clears correctly after the
+      // fragment's children are moved to a real DOM container via appendChild().
+      if (this.firstNode().parentNode !== null) {
         clear(this);
       }
     });
@@ -513,7 +559,7 @@ export class RemoteBlock extends AppendingBlockImpl {
 }
 
 export class ResettableBlockImpl extends AppendingBlockImpl implements ResettableBlock {
-  constructor(parent: SimpleElement) {
+  constructor(parent: SimpleElement | SimpleDocumentFragment) {
     super(parent);
     setLocalDebugType('block:resettable', this);
   }
@@ -533,14 +579,14 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
 // FIXME: All the noops in here indicate a modelling problem
 export class AppendingBlockList implements AppendingBlock {
   constructor(
-    private readonly parent: SimpleElement,
+    private readonly parent: SimpleElement | SimpleDocumentFragment,
     public boundList: AppendingBlock[]
   ) {
     this.parent = parent;
     this.boundList = boundList;
   }
 
-  parentElement() {
+  parentNode() {
     return this.parent;
   }
 

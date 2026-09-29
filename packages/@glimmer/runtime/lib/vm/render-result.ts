@@ -2,6 +2,7 @@ import type {
   AppendingBlock,
   Environment,
   RenderResult,
+  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   UpdatingOpcode,
@@ -32,8 +33,8 @@ export default class RenderResultImpl implements RenderResult {
     vm.execute(updating, this);
   }
 
-  parentElement(): SimpleElement {
-    return this.bounds.parentElement();
+  parentNode(): SimpleElement | SimpleDocumentFragment {
+    return this.bounds.parentNode();
   }
 
   firstNode(): SimpleNode {

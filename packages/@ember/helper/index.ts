@@ -303,7 +303,7 @@ export const setHelperManager = glimmerSetHelperManager;
       return getValue(this.plusOne);
     }
   }
-  
+
   <template>
     {{this.value}}
   </template>
@@ -852,7 +852,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs {data-filename="app/templates/application.gjs"}
   import LabeledTextField from '../components/labeled-textfield';
-    
+
   <template>
     <LabeledTextField @value={{@model.name}}>
       First name:
@@ -862,7 +862,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs {data-filename="app/components/labeled-textfield.gjs"}
   import { Input } from '@ember/component';
-    
+
   <template>
     <label>
       {{yield}} <Input @value={{@value}} />
@@ -883,12 +883,12 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   ```gjs {data-filename="app/templates/application.gjs"}
   import Component from '@glimmer/component';
   import LabeledTextField from '../components/labeled-textfield';
-    
+
   export default class Application extends Component {
     firstNameValidator = (value) => {
       // validates
     }
-    
+
     <template>
       <LabeledTextField @value={{@model.validation}} @validator={{this.firstNameValidator}} as |validationError|>
         {{#if validationError}}
@@ -902,7 +902,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs {data-filename="app/components/labeled-textfield.gjs"}
   import { Input } from '@ember/component';
-    
+
   <template>
     <label>
       {{yield this.validationError}} <Input @value={{@value}} />
@@ -923,7 +923,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs {data-filename="app/templates/application.gjs"}
   import DateRanges from '../components/date-ranges';
-    
+
   <template>
     <DateRanges @value={{@model.date}} as |range|>
       Start date: {{range.start}}
@@ -950,10 +950,10 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   ```
 
   Multiple values can be yielded as block params:
-    
+
   ```gjs {data-filename="app/templates/application.gjs"}
   import Banner from '../components/banner';
-    
+
   <template>
     <Banner @value={{@model}} as |title subtitle body|>
       <h1>{{title}}</h1>
@@ -1006,7 +1006,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
     Title = Title;
     Subtitle = Subtitle;
     Body = Body;
-    
+
     <template>
       <div>
         {{yield (hash
@@ -1151,7 +1151,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   `{{(has-block-params)}}` indicates if the component was invoked with block params.
 
   This component is invoked with block params:
-    
+
   ```handlebars
   <MyComponent as |favoriteFlavor|>
     Hi Jen!
@@ -1243,33 +1243,33 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   additional information on how a `Component` functions.
 
   This is similar to the concept of Partial Application.
-    
+
   For example, given a `FullName` component:
-  
+
   ```gjs {data-filename="app/components/full-name.gjs"}
   import MyInputComponent from './my-input-component';
-  
+
   <template>
     {{yield (component MyInputComponent value=@model.name placeholder="Username")}}
   </template>
   ```
-  
+
   The yielded component can be invoked by the calling component.
   See the following snippet:
-  
+
   ```gjs {data-filename="app/components/person-form.gjs"}
   import FullName from './full-name';
-    
+
   <template>
     <FullName @model={{@model}} as |Field|>
       <Field />
     </FullName>
   </template>
   ```
-  
+
   Which will output an input whose value is already bound to `@model.name` and `placeholder`
   is "Username".
-    
+
   Any arguments passed at the invocation site of the component will override those applied via
   the `component` helper. For example, if the invocation site of the component is:
 
@@ -1285,9 +1285,9 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   The output will be an input whose value is bound to `@model.name` and `placeholder`
   is "Your name".
-    
-  The `component` helper is built-in and does not need to be imported. 
-    
+
+  The `component` helper is built-in and does not need to be imported.
+
   Prior to Strict Mode aka "Template Tag" or gjs, the component helper was also used to invoke
   components dynamically. This is no longer necessary, and they can be directly invoked, as above.
 
@@ -1310,7 +1310,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
     <template>
       {{!-- The component can be invoked directly --}}
       <this.infographicComponent />
-    
+
       {{!-- The component helper here is no longer necessary --}}
       {{component this.infographicComponentName}}
     </template>
@@ -1382,7 +1382,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs {data-filename="app/templates/application.gjs"}
   import Weather from '../components/weather';
-    
+
   <template>
     <Weather />
   </template>
@@ -1424,14 +1424,14 @@ export interface NotHelper extends Opaque<'helper:not'> {}
     {{else}}
       No, it's lovely outside!
     {{/if}}
-  </template>  
+  </template>
   ```
 
   If you call it by saying `isCold` is true:
 
   ```gjs {data-filename="app/templates/application.gjs"}
   import Weather from '../components/weather';
-    
+
   <template>
     <Weather @isCold={{true}} />
   </template>
@@ -1450,7 +1450,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs {data-filename="app/templates/application.gjs"}
   import Greeting from '../components/greeting';
-  
+
   <template>
     <Greeting @useLongGreeting={{true}} />
   <template>
@@ -1471,9 +1471,9 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   One detail to keep in mind is that both branches of the `if` helper will be evaluated,
   so if you have `{{if condition "foo" (expensive-operation "bar")`,
   `expensive-operation` will always calculate.
- 
+
   `if` is built-in and does not need to be imported.
- 
+
   @method if
   @static
   @for Keywords
@@ -1497,7 +1497,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs {data-filename="app/templates/application.gjs"}
   import Greeting from '../components/greeting';
-    
+
   <template>
     <Greeting @useLongGreeting={{false}} />
   </template>
@@ -1523,7 +1523,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs {data-filename="app/templates/application.gjs"}
   import Greeting from '../components/greeting';
-    
+
   <template>
     <Greeting />
   </template>
@@ -1556,7 +1556,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs {data-filename="app/templates/application.gjs"}
   import LoggedIn from '../components/logged-in';
-    
+
   <template>
     <LoggedIn @userData={{hash username="Zoey"}} />
   </template>
@@ -1583,9 +1583,9 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   ```html
   Please login.
   ```
- 
+
   `unless` is built-in and does not need to be imported.
- 
+
   @method unless
   @for Keywords
   @noimport
@@ -1600,7 +1600,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   ```handlebars
   {{log "myVariable:" myVariable }}
   ```
- 
+
   `log` is built-in as a template keyword and does not need to be imported.
 
   @method log
@@ -1643,7 +1643,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
    these arguments will be passed along to the referenced modifier.
 
  `modifier` is built-in as a template keyword and does not need to be imported.
- 
+
  @method modifier
  @for Keywords
  @static
@@ -1658,7 +1658,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
   ```gjs
   import { pageTitle } from 'ember-page-title';
-    
+
   <template>
     {{pageTitle "My Page Title" }}
   </template>
@@ -1703,7 +1703,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   ```
 
  `let` is built-in and does not need to be imported.
- 
+
   @method let
   @static
   @noimport
@@ -1730,8 +1730,8 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
  `{{in-element}}` requires a single positional argument:
 
- - `destinationElement` -- the DOM element to render into. It must exist at the time
- of rendering.
+ - `destinationElement` -- the DOM element, `DocumentFragment`, or `ShadowRoot` to
+ render into. It must exist at the time of rendering.
 
  It also supports an optional named argument:
 
@@ -1749,7 +1749,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
      ```
 
  `in-element` is built-in and does not need to be imported.
- 
+
  @method in-element
  @for Keywords
  @param {Element} destinationElement the DOM element to render into. It must exist at the time
