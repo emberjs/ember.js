@@ -66,7 +66,7 @@ moduleFor(
       );
       this.add(
         'component:my-component',
-        class extends EmberComponent {
+        class extends Component {
           text = 'inner';
         }
       );

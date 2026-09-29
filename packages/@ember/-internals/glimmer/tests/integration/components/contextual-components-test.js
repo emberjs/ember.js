@@ -8,6 +8,7 @@ import { A as emberA } from '@ember/array';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { Component as EmberComponent } from '../../utils/helpers';
+import PositionalComponent from '../../utils/positional-component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -35,8 +36,8 @@ moduleFor(
       this.owner.register(
         'component:-looked-up',
         setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends EmberComponent {
+          precompileTemplate('{{@greeting}} {{this.name}}'),
+          class extends PositionalComponent {
             static positionalParams = ['name'];
           }
         )
@@ -57,7 +58,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -95,7 +96,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -135,7 +136,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -175,7 +176,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -214,8 +215,8 @@ moduleFor(
       this.owner.register(
         'component:-looked-up',
         setComponentTemplate(
-          precompileTemplate('{{this.greeting}} {{this.name}}'),
-          class extends EmberComponent {
+          precompileTemplate('{{@greeting}} {{this.name}}'),
+          class extends PositionalComponent {
             static positionalParams = ['name'];
           }
         )
@@ -329,7 +330,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -351,7 +352,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.greeting}} {{this.name}} {{this.age}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['greeting', 'name', 'age'];
           }
         )
@@ -409,7 +410,7 @@ moduleFor(
         'component:-inner-component',
         setComponentTemplate(
           precompileTemplate('{{component this.comp "Inner"}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['comp'];
           }
         )
@@ -419,7 +420,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -463,10 +464,8 @@ moduleFor(
       this.owner.register(
         'component:-inner-component',
         setComponentTemplate(
-          precompileTemplate('{{component this.comp name="Inner"}}'),
-          class extends EmberComponent {
-            static positionalParams = ['comp'];
-          }
+          precompileTemplate('{{component @comp name="Inner"}}'),
+          class extends Component {}
         )
       );
 
@@ -476,7 +475,7 @@ moduleFor(
       );
 
       this.render(
-        '{{component "-inner-component" (component "-looked-up" name=this.model.outerName age=this.model.outerAge)}}',
+        '{{component "-inner-component" comp=(component "-looked-up" name=this.model.outerName age=this.model.outerAge)}}',
         {
           model: {
             outerName: 'Outer',
@@ -763,7 +762,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.params}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -1414,7 +1413,7 @@ moduleFor(
           precompileTemplate(
             'foo-bar component:{{#each this.params as |param|}} {{param}}{{/each}}'
           ),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -1458,7 +1457,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('inner:{{#each this.params as |param|}} {{param}}{{/each}}'),
-          class extends EmberComponent {
+          class extends PositionalComponent {
             static positionalParams = 'params';
           }
         )
@@ -1603,20 +1602,32 @@ class MutableParamTestGenerator {
     this.cases = cases;
   }
 
-  generate({ title, setup }) {
+  generate({ title, positional, setup }) {
     return {
       [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
-        this.owner.register(
-          'component:change-button',
-          setComponentTemplate(
-            precompileTemplate(
-              '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
-            ),
-            class extends EmberComponent {
-              static positionalParams = ['val'];
-            }
-          )
-        );
+        if (positional) {
+          this.owner.register(
+            'component:change-button',
+            setComponentTemplate(
+              precompileTemplate(
+                '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
+              ),
+              class extends EmberComponent {
+                static positionalParams = ['val'];
+              }
+            )
+          );
+        } else {
+          this.owner.register(
+            'component:change-button',
+            setComponentTemplate(
+              precompileTemplate(
+                '<button {{on "click" (fn (mut @val) 10)}} class="my-button">Change to 10</button>'
+              ),
+              class extends Component {}
+            )
+          );
+        }
 
         setup.call(this, assert);
 
@@ -1643,6 +1654,7 @@ applyMixins(
   new MutableParamTestGenerator([
     {
       title: 'param',
+      positional: true,
       setup() {
         this.render('{{component (component "change-button" this.model.val2)}}');
       },
@@ -1650,6 +1662,7 @@ applyMixins(
 
     {
       title: 'nested param',
+      positional: true,
       setup() {
         this.owner.register(
           'component:my-comp',
