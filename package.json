@@ -328,7 +328,6 @@
       "@ember/template-compiler/lib/plugins/assert-reserved-named-arguments.js": "ember-source/@ember/template-compiler/lib/plugins/assert-reserved-named-arguments.js",
       "@ember/template-compiler/lib/plugins/auto-import-builtins.js": "ember-source/@ember/template-compiler/lib/plugins/auto-import-builtins.js",
       "@ember/template-compiler/lib/plugins/index.js": "ember-source/@ember/template-compiler/lib/plugins/index.js",
-      "@ember/template-compiler/lib/plugins/transform-action-syntax.js": "ember-source/@ember/template-compiler/lib/plugins/transform-action-syntax.js",
       "@ember/template-compiler/lib/plugins/transform-each-in-into-each.js": "ember-source/@ember/template-compiler/lib/plugins/transform-each-in-into-each.js",
       "@ember/template-compiler/lib/plugins/transform-each-track-array.js": "ember-source/@ember/template-compiler/lib/plugins/transform-each-track-array.js",
       "@ember/template-compiler/lib/plugins/transform-in-element.js": "ember-source/@ember/template-compiler/lib/plugins/transform-in-element.js",

@@ -437,6 +437,7 @@ function tracked2023(
             return;
           }
           dirtyTagFor(this, dec.context.name);
+          dirtyTagFor(this, SELF_TAG);
           return dec.value.set.call(this, value);
         },
       };

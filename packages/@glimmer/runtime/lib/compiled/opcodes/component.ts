@@ -577,8 +577,9 @@ export class ComponentElementOperations implements ElementOperations {
 
       vm.env.debugRenderTree.didRender(state, bounds);
 
-      // For tearing down the debugRenderTree
-      vm.associateDestroyable(state);
+      // The state is associated with its parent destroyable when the element closes (see
+      // VM_CLOSE_ELEMENT_OP), not here, so that the debug render tree does not change the
+      // order in which modifiers are destroyed.
 
       vm.updateWith(new DebugRenderTreeUpdateOpcode(state));
       vm.updateWith(new DebugRenderTreeDidRenderOpcode(state, bounds));

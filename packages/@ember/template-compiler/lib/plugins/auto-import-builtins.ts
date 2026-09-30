@@ -32,7 +32,7 @@ const importSource: Record<string, string> = {
   A Glimmer2 AST transformation that makes importable keywords work
 
   @private
-  @class TransformActionSyntax
+  @class AutoImportBuiltins
 */
 
 export default function autoImportBuiltins(env: EmberASTPluginEnvironment): ASTPlugin {

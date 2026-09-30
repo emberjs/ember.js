@@ -141,10 +141,23 @@ APPEND_OPCODES.add(VM_CLOSE_ELEMENT_OP, (vm) => {
   if (modifiers !== null) {
     modifiers.forEach((modifier) => {
       vm.env.scheduleInstallModifier(modifier);
-      const d = modifier.manager.getDestroyable(modifier.state);
+      const { state } = modifier;
+      const d = modifier.manager.getDestroyable(state);
 
       if (d !== null) {
         vm.associateDestroyable(d);
+      }
+
+      // For tearing down the debugRenderTree entry that addModifier created. This happens here,
+      // with the modifier's own destroyable, so that modifiers are destroyed in the same order
+      // with or without the debug render tree.
+      if (
+        vm.env.debugRenderTree !== undefined &&
+        d !== state &&
+        state !== null &&
+        (typeof state === 'object' || typeof state === 'function')
+      ) {
+        vm.associateDestroyable(state);
       }
     });
   }
