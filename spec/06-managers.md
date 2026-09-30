@@ -283,7 +283,12 @@ consequences:
    definition. Changing capabilities later has no effect.
 2. A component's template factory is resolved once per definition, via
    `getComponentTemplate` and then `templateFactory(owner)`. It is called with the owner
-   in effect at the definition's *first* use (`constants.ts:197-208`).
+   in effect at the definition's *first* use (`constants.ts:197-208`). The cache is keyed
+   by the definition only, not by owner (`constants.ts:183`), and there is one cache per
+   renderer (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:627`). So within one
+   renderer (an application and all its engines share one), a definition's template stays
+   bound to the first owner that rendered it. For a loose-mode template this decides which
+   owner resolves its free names. See Q15.
 3. For helpers, `CustomHelperManager.getHelper(definition)` runs once per definition
    (`constants.ts:114-135`). This is invisible to user code, because the delegate factory
    is still per-owner.
@@ -1352,10 +1357,9 @@ as a child of the **innermost enclosing block**, at the time it is created:
 
 A component's own content (its layout's blocks, modifiers, nested components) is associated
 with the same enclosing block as the component's destroyable, as **later siblings**. It is
-not associated as children of the component's destroyable. So when the enclosing block is
-destroyed, the component's destructors are scheduled **before** those of components nested
-in its layout. The component's own eager destructors also run before nested components'
-eager destructors. See Q10.
+not associated as children of the component's destroyable. The resulting destruction order
+(components parent-first, modifiers child-first) is specified in §05-11.1 and §05-11.3. See
+Q10.
 
 When a block is torn down:
 
@@ -1377,12 +1381,19 @@ Each render or re-render runs inside a transaction
 walk the runtime records:
 
 - **created components**: `createInstance` managers, recorded when their layout *finishes*
-  rendering (post-order);
+  rendering: post-order, so children before parents and siblings in document order
+  (`component.ts:902-934`);
 - **updated components**: `createInstance` managers whose region was re-validated, recorded
-  when their update finishes (post-order);
-- **scheduled installs**: modifiers, recorded at element close;
-- **scheduled updates**: modifiers whose dependencies were invalidated, recorded when
-  encountered in the update walk.
+  when their update finishes: post-order (`component.ts:940-968`);
+- **scheduled installs**: modifiers, recorded when their element is *closed*, that is after
+  the element's children have rendered. The order is post-order by element: an element's
+  modifiers come after those of all its descendants, and several modifiers on one element
+  keep their creation order (`dom.ts:137-150`; test `modifiers-test.ts:304-424`);
+- **scheduled updates**: modifiers whose dependencies were invalidated, recorded when the
+  update walk reaches the modifier's position. That position is at the element's *opening*,
+  before its children (the update check is registered when the modifier is created,
+  `dom.ts:186-191`), so the order is document **pre-order**: a parent element's modifiers
+  before its descendants'.
 
 At commit, the runtime runs these in order:
 
@@ -1395,6 +1406,8 @@ At commit, the runtime runs these in order:
 
 So a component's `didCreateComponent` / `didInsertElement` run **before** any modifier on
 its own elements is installed. Children's creation hooks run before their parents'.
+Installs run child-first and updates run parent-first. This section is the owner of the
+commit-phase order. §05-1.4 and §07-1.10 refer to it.
 
 *Note:* a transaction cannot be nested. Beginning one while another is open is a dev
 assertion: `A glimmer transaction was begun, but one already exists...`
@@ -1419,7 +1432,12 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   receives the *invoking* scope's owner, while the layout renders with the *curried* owner.
   For a component curried inside an engine and invoked in the host, the manager delegate and
   `@glimmer/component`'s `owner` constructor argument would be the host owner. Helpers and
-  modifiers use the curried owner. This looks inconsistent and is untested.
+  modifiers use the curried owner. A third owner is involved too: the definition record for
+  the curried inner definition is created with the curried owner
+  (`constants.component(definition, owner)`, `component.ts:337`), so its template factory is
+  bound to the curried owner if that is the definition's first use, and to whichever owner
+  used it first otherwise (§1.7, Q15). This looks inconsistent and is untested. §05-7.8 and
+  §08-8.6 describe the same behavior.
 - **Q4: `undefined` owner.** Public component and modifier managers cache delegates in a
   `WeakMap` keyed by owner, so an `undefined` owner throws a raw `TypeError`. Helper managers
   special-case `undefined`. Should component and modifier managers do the same?
@@ -1449,11 +1467,8 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   so changing an extraneous named argument (which is itself a dev error) or any named
   argument triggers an update. In prod, only `once`, `passive`, and `capture` are read. In
   dev the callback is rebound to a sentinel `this`; in prod `this` is the element.
-- **Q10: Destruction order of a component vs. its layout contents.** A component's
-  destroyable and its layout's contents are siblings under the enclosing block (§10.3), not
-  parent and child. So parent components are torn down before their children. Modifier
-  destruction is child-first, because modifiers are associated at element close. There is
-  no direct test pinning the component-vs-nested-component order for public managers.
+- **Q10: Destruction order of a component vs. its layout contents.** Recorded as §05-14
+  item 11, which owns destruction ordering.
 - **Q11: Curried dynamic helper argument accumulation.** When a dynamic helper's definition
   is a curried helper and the selecting computation re-runs, the code prepends the curried
   positional arguments to `args.positional`, which already contains them from the previous
@@ -1476,3 +1491,11 @@ assertion: `A glimmer transaction was begun, but one already exists...`
 - **Q14: Content-position precedence.** A value with both a component and a helper manager
   renders as a component. A plain function in `{{this.fn}}` is *called*. Only the latter
   is directly tested, and only through helper-position tests. Content position needs a test.
+- **Q15: The component-definition cache ignores the owner.** Because definition records are
+  cached per definition object, not per (definition, owner) (§1.7 item 2), a component's
+  template factory effectively runs only with the first owner that renders it in a given
+  renderer. A loose-mode component template that is associated through
+  `setComponentTemplate` and rendered both in the host and in an engine resolves its free
+  names against whichever owner rendered it first. The factory's own per-owner cache
+  (§01-1.8.1) is therefore only partly effective. Untested. Is this intended? §01-1.11
+  item 11 and §04-4.14 item 4 describe the same behavior.

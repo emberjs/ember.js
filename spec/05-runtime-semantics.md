@@ -161,7 +161,7 @@ A **render** of a template or component into a cursor produces a **render result
 
 - bounds (first node, last node, parent element);
 - `rerender()` — perform an update pass;
-- destruction — destroying the render result destroys everything it created (§05-12) and
+- destruction — destroying the render result destroys everything it created (§05-11) and
   removes its DOM (`render-result.ts:26`).
 
 Two kinds of pass exist:
@@ -174,21 +174,10 @@ Two kinds of pass exist:
 
 Each initial render and each update pass (and each root destruction initiated by the embedder)
 runs inside a **render transaction** (`packages/@glimmer/runtime/lib/environment.ts:141-185`,
-`218-229`). Certain effects are deferred to the **commit** of the transaction, in this order
-(`environment.ts:50-96`):
-
-1. `didCreate` for every component instance created in this transaction whose manager has the
-   `createInstance` capability, in the order their layouts *finished* rendering (children
-   before parents; siblings in document order);
-2. `didUpdate` for every such component whose layout was revalidated in this pass, in the
-   order their update region finished (children before parents);
-3. modifier `install` for every modifier created in this transaction, in the order their
-   elements were *closed* (post-order: an element's modifiers are installed after the
-   modifiers of all its descendants; modifiers on one element in their creation order —
-   `packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:305-422`);
-4. modifier `update` for every modifier whose inputs were invalidated in this pass, in
-   **document pre-order** (a parent element's modifiers before those of its descendants —
-   because the update check is positioned at the element's opening, see §05-10.3).
+`218-229`). Certain effects are deferred to the transaction's **commit phase** (§07-0). §06-11
+specifies its order: component `didCreate` hooks (children before parents), then component
+`didUpdate` hooks (children before parents), then modifier installs (child elements before
+parents), then modifier updates (document pre-order, parents before children; see §05-10.3).
 
 Transactions do not nest: starting a render while a transaction is open joins the open
 transaction (`environment.ts:218-229`). [Dev] beginning a second transaction when one exists
@@ -211,7 +200,7 @@ Every template construct falls into one of these categories:
 | Category | Constructs | On change |
 |---|---|---|
 | **In-place** | text content of `{{x}}` whose value stays "string-like"; dynamic attribute and property values; modifier updates; component argument changes | The existing node/element is kept; its `nodeValue`, attribute or property is updated. |
-| **Replaceable region** | `{{#if}}`/`{{#unless}}` bodies (on truthiness flip), dynamic content whose *kind* changes (§05-3.4) or whose trusted/node/component value changes identity, `{{{x}}}` on any value change, dynamic component invocation on definition change, `{{#in-element}}` on destination or `insertBefore` change, `{{#each}}` on empty↔non-empty transition | The region's contents are **destroyed** (§05-12), its DOM removed, and the construct is re-evaluated from scratch *at the same position*. |
+| **Replaceable region** | `{{#if}}`/`{{#unless}}` bodies (on truthiness flip), dynamic content whose *kind* changes (§05-3.4) or whose trusted/node/component value changes identity, `{{{x}}}` on any value change, dynamic component invocation on definition change, `{{#in-element}}` on destination or `insertBefore` change, `{{#each}}` on empty↔non-empty transition | The region's contents are **destroyed** (§05-11), its DOM removed, and the construct is re-evaluated from scratch *at the same position*. |
 | **Keyed list** | `{{#each}}` / `{{#each-in}}` items | Items are matched by key; retained items keep their DOM and are updated in place; new items are rendered; removed items are destroyed; moved items' DOM is moved (§05-5.4). |
 | **Static** | literal text, static attributes, element structure, `{{#let}}` | Never changes. |
 
@@ -1012,7 +1001,7 @@ Observable consequences:
 - Inserted items are rendered *during* synchronization, before retained items that follow them
   are revalidated; so a component in a new item is created (and its hooks run) before later
   items' updates run.
-- Deleted items are destroyed (destructors scheduled, §05-12) and their DOM removed during
+- Deleted items are destroyed (destructors scheduled, §05-11) and their DOM removed during
   synchronization, in the order of the old list.
 - Moving uses `insertBefore` of each top-level node of the item region; element identity is
   preserved (focus is not preserved by the DOM for moved elements, which is a platform
@@ -1320,7 +1309,7 @@ invoke(definition, args):
          layout = manager.getDynamicLayout(state, resolver)
          (null ⇒ an empty default layout, or the "wrapped" empty layout if capability wrapped)
   7. d = manager.getDestroyable(state); if d: register d as a destroyable child of the
-         enclosing region (§05-12)
+         enclosing region (§05-11)
   8. self = manager.getSelf(state)
   9. new root scope: owner (§7.8), this = self, each `@name` = args.named[name],
          each `&block` = the passed block
@@ -1563,7 +1552,7 @@ keyword helper):
 ```
 when evaluation reaches the expression (initial render of the enclosing region):
   inst = manager-specific helper function(args, owner, dynamicScope)   -- creates the instance
-  if inst has destroyable children: associate inst with the enclosing region (§05-12)
+  if inst has destroyable children: associate inst with the enclosing region (§05-11)
   the expression's value = inst's reactive value
 ```
 
@@ -1671,7 +1660,7 @@ For `<div {{this.m args}}>` / `{{@m}}` / curried modifiers (`dom.ts:194-306`, `3
         object or function that did not have a modifier manager associated with it. …"
   create as in §10.1; install at commit
 on update: if d's identity changed:
-     destroy the old instance (its destructor is scheduled, §05-12)
+     destroy the old instance (its destructor is scheduled, §05-11)
      create the new one immediately (element is in the document), schedule its install at commit
   else if the instance's tracked inputs are invalid: schedule update at commit
 ```
@@ -1720,22 +1709,13 @@ Registration order within a region is creation order, which is:
 
 ### 11.2 Destroying
 
-Destroying a destroyable `x` (`packages/@glimmer/destroyable/index.ts:210-227`):
-
-```
-destroy(x):
-  if x is already destroying/destroyed: return
-  mark x "destroying"
-  for each child c of x in registration order: destroy(c)
-  run x's eager destructors now, in registration order
-  schedule x's destructors via the embedder hook scheduleDestroy, in registration order
-  schedule (via scheduleDestroyed) marking x "destroyed" and detaching it from its parents
-```
-
-Ember schedules destructors into the run loop's `actions` queue and the "destroyed" finalizers
-into the `destroy` queue (`packages/@ember/-internals/glimmer/lib/environment.ts:35-41`), so
-destructors run after the current render queue flush, and all objects become `isDestroyed`
-at the end of the run loop.
+Destroying a destroyable follows the `destroy(obj)` algorithm of §06-10.2: the whole subtree
+is marked destroying, children are destroyed before their parent, eager destructors run
+synchronously, and ordinary (deferred) destructors are scheduled through the embedder hook
+`scheduleDestroy`. Ember schedules deferred destructors into the run loop's `actions` queue
+and the "destroyed" finalizers into the `destroy` queue (§06-10.2), so destructors run after
+the current render queue flush, and all objects become `isDestroyed` at the end of the run
+loop.
 
 When a region is replaced or removed (§05-1.5, §05-5.4):
 
@@ -1961,8 +1941,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    All-static merges are joined without filtering empty strings.
 3. **Owner asymmetry for curried components.** `manager.create` receives the *invoking*
    scope's owner, while the component's layout scope uses the *curried* owner
-   (`component.ts:429-437` vs `825-853`). Custom component managers choose their delegate by
-   the `create` owner.
+   (`component.ts:429-437` vs `825-853`). Recorded as §06-12 Q3, which owns it.
 4. **`updateComponent` / `didUpdate` frequency.** Because the component update region includes
    the whole subtree (§05-1.6), managers with `updateHook` get `update` called whenever anything
    consumed in the subtree changed, not only arguments. Recorded as §06-12 Q12.
@@ -1980,9 +1959,12 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
 10. **Serialize builder `in-element`** defaults `insertBefore` to `null`, so SSR never clears
     the destination, unlike the client and rehydration builders
     (`serialize-builder.ts:132-142`).
-11. **Opposite destruction orders.** Components are destroyed parent-first (pinned for classic
-    components), modifiers child-first (pinned). For components with public managers
-    (`destroyComponent`) the parent-first order follows from the source but is untested.
+11. **Opposite destruction orders.** A component's destroyable and its layout's contents are
+    siblings under the enclosing region (§05-11.1, §06-10.3), not parent and child, so
+    components are destroyed parent-first (pinned for classic components), while modifiers,
+    associated at element close, are destroyed child-first (pinned). For components with
+    public managers (`destroyComponent`) the parent-first order follows from the source but
+    is untested (task T4).
 12. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls
     `setAttribute` whenever the computation is invalid, even if the string is unchanged; only
     property mode compares with the last value.

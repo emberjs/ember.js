@@ -967,8 +967,9 @@ it was being resolved from`, `…/resolution.ts:68-70`). Strict-mode templates d
 owner for name resolution. Owner flow into component *instances* is §06.
 
 *Note:* the component-definition cache in `constants.component` is keyed by the definition
-object only (`packages/@glimmer/program/lib/constants.ts:181`), so within one runtime the
-template of a given definition is bound to the owner of its first use.
+object only (`packages/@glimmer/program/lib/constants.ts:181`), so within one renderer the
+template of a given definition is bound to the owner of its first use (§06-1.7; open
+question §06-12 Q15).
 
 ### 1.8.3 `setComponentTemplate` / `getComponentTemplate`
 
@@ -1169,11 +1170,7 @@ paired with their component through the resolver, not through `setComponentTempl
     key as well as the value for `{ Foo: bar }`. Harmless because values are consumed
     positionally (§1.5.5) and keys are debug-only, but the debug names may be wrong. The
     babel tests normalize this away (`__tests__/all.test.ts` `canonicalizeWireScope`).
-11. **Definition cache ignores owner.** `constants.component` caches by definition only
-    (`packages/@glimmer/program/lib/constants.ts:181`), so a definition rendered under two
-    owners in one runtime binds its template to the first owner. Matters only for loose-mode
-    templates associated via `setComponentTemplate` rendered in multiple owners (e.g.
-    engines). Untested.
+11. **Definition cache ignores owner.** Recorded as §06-12 Q15, which owns it.
 12. **`@ember/template-compiler` (non-runtime) at run time.** RFC 0931 says calling it without
     the compiler should throw; the implementation always ships a working compiler behind both
     entry points. Whether apps can rely on this is unspecified.

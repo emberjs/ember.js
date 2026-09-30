@@ -1508,10 +1508,8 @@ the chapter. It is not a checklist that any implementation must satisfy.
    behavior is recorded here rather than changed (a **[Dev]** error would be one option).
 4. **Owner used for component templates.** Component definitions are cached per
    definition object in the program constants, so a component's `templateFactory(owner)`
-   is invoked with the first owner that rendered it; subsequent owners (e.g. engines)
-   reuse that template (`packages/@glimmer/program/lib/constants.ts:176-235`). The
-   per-owner cache in the factory is therefore only partially effective. Whether this is
-   intended is unclear.
+   is invoked with the first owner that rendered it (`packages/@glimmer/program/lib/constants.ts:176-235`).
+   This is host behavior, not wire format. It is recorded as §06-12 Q15.
 5. **`scope()` call count.** `WrappedBuilder` calls `meta(layout)` (and thus `scope()`)
    in its constructor and again in `compile()`
    (`packages/@glimmer/opcode-compiler/lib/wrapped-component.ts:49`, `55`), and

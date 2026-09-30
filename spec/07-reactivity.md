@@ -366,7 +366,8 @@ DOM updates, `renderSettled()`, and the run loop.
    2. Records "last validated" as *now*, at the end of the render body and **before** the commit
       phase (`base-renderer.ts:353`).
    3. Runs the **commit phase** (component `didCreate` then `didUpdate` hooks, then modifier
-      `install`s, then modifier `update`s, in scheduling order; `environment.ts:50-100`).
+      `install`s, then modifier `update`s, in scheduling order; `environment.ts:50-100`). The
+      scheduling order is specified in §06-11.
    Because "last validated" is recorded before the commit phase, any cell invalidated by commit
    phase code (or later in `afterRender`) leaves the renderer invalid. That is handled by
    item 6.
@@ -1406,9 +1407,9 @@ yielder (§07-4.2 "Sharing"; tests
 1. Positions are revalidated in tree order (§05). A computation read by several positions
    (sharing, §07-4.2) is evaluated at the first position that reads it while it is invalid.
 2. All DOM updates of a transaction happen before any commit-phase hook of that transaction.
-3. Commit-phase order is: component `didCreate` (in creation order), component `didUpdate` (in
-   order), modifier `install` (in order), modifier `update` (in order)
-   (`environment.ts:50-100`).
+3. Commit-phase order is: component `didCreate`, component `didUpdate`, modifier `install`,
+   modifier `update`, each in scheduling order (`environment.ts:50-100`). §06-11 specifies
+   the scheduling order.
 
 ---
 

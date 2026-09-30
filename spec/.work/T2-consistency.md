@@ -17,14 +17,17 @@ so check the current text before editing.
   — no chapter claimed otherwise; §05-3.2, §05-10.2 and §08-5.4 now cite §06-1.5.
 - [x] 3 updateComponent/didUpdate fire on region changes
   — §05-1.6 owns the rule, §06-4.4 cites it; §08-6.7 said "only when args changed or rerender()" (wrong, fixed from curly.ts:442-472); open question merged into §06-12 Q12 (07-5 item 6 and 05 Q4 now point there; 07's "only test changes an argument" was wrong).
-- [ ] 4 commit-phase and destruction ordering
-- [ ] 5 curried-component owner
+- [x] 4 commit-phase and destruction ordering
+  — source (environment.ts:50-96, dom.ts:137-191) confirms installs post-order, updates pre-order; §06-11 now owns the order (05-1.4, 07-1.10, 07-4.10 point to it); §05-11.2 now cites §06-10.2's algorithm; §06-10.3 cites §05-11 for order; 06 Q10 merged into 05 Q11. Fixed §08-6.7: classic willDestroy runs in the `actions` queue (scheduled by component.destroy()), not `destroy`. Also fixed six §05-12 refs that meant §05-11 (Destruction).
+- [x] 5 curried-component owner
+  — 05/06 already agreed with component.ts:304-360,420-440,815-853; 05 Q3 now points to §06-12 Q3 (which adds the definition-record owner); §08-8.6 gained an engine paragraph.
 - [ ] 6 outlet is `<@outlet/>`, lexical
 - [ ] 7 action keyword vs removed runtime
 - [ ] 8 loose-mode free names (argument position; silent `{{foo}}`)
 - [ ] 9 auto-imported strict built-ins list identical everywhere
 - [ ] 10 lexical scope timing
-- [ ] 11 component-definition cache ignores owner
+- [x] 11 component-definition cache ignores owner
+  — new §06-12 Q15 owns it (cache is per renderer, base-renderer.ts:627); §06-1.7, §01-1.8.2 note, 01 Q11 and 04 Q4 point there.
 - [ ] 12 trackLocals bug described once
 - [ ] 13 `{{this.fn}}` plain function → helper
 - [ ] 14 eager helper creation vs lazy values

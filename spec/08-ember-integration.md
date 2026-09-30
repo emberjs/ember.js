@@ -1131,11 +1131,17 @@ synchronously, top-down (parent before children), during teardown:
     element ↔ view association cleared; view unregistered from the view registry
 scheduled (runloop 'actions' queue), top-down:
     component.destroy(): state → destroying; (I) didDestroyElement   (no element)
+    (component.destroy() calls destroy(component), which schedules willDestroy as a
+    deferred destructor, again in the 'actions' queue, so it runs after every
+    didDestroyElement of this batch)
+then, in the same 'actions' flush, top-down:
+    willDestroy, then other deferred destructors registered on the component
 later (runloop 'destroy' queue):
-    willDestroy, then destroyables' destructors
+    the component is marked destroyed
 ```
 
-Test: `life-cycle-test.js:502-534` — the full order for three nested components is
+(`packages/@ember/object/core.ts:300-301`, `packages/@ember/-internals/glimmer/lib/component.ts:1596-1600`;
+§06-10.2 gives the queue mapping.) Test: `life-cycle-test.js:502-534` — the full order for three nested components is
 `top.willDestroyElement, top.willClearRender, middle.willDestroyElement, middle.willClearRender,
 bottom.willDestroyElement, bottom.willClearRender, top.didDestroyElement, middle.didDestroyElement,
 bottom.didDestroyElement, top.willDestroy, middle.willDestroy, bottom.willDestroy`.
@@ -1500,6 +1506,13 @@ Rendering a mount definition (`component-managers/mount.ts:54-167`):
 Components, helpers and modifiers inside an engine's templates resolve against the engine
 instance (§5.2). LinkTo inside a routable engine namespaces route names with the mount point
 (§7.4).
+
+A value curried inside an engine, such as `(component X)` passed out to the host, captures
+the engine instance as its owner (§05-8.2). When the host invokes it, the component's layout,
+and helpers and modifiers created in it, use the engine owner, but the component manager's
+`create` (and so a public manager's factory and `@glimmer/component`'s `owner`) receives
+the host's owner (§05-7.8; open question §06-12 Q3). Curried helpers and modifiers use the
+engine owner throughout.
 
 ---
 
