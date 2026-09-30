@@ -1,7 +1,12 @@
 # 04 — The Wire Format
 
-This chapter specifies the *wire format*: the serialized, precompiled form of a template
-that the build step (the template compiler) emits and the runtime consumes. It defines
+**This chapter is informative.** It documents the *current* wire format: the serialized,
+precompiled form of a template that the build step (the template compiler) emits and the
+runtime consumes. Wire format is not a compatibility requirement (§00-0.2): Ember makes no
+guarantee that it is stable across versions, and addons ship template source, not wire
+format. Nothing in this chapter is a conformance requirement on an implementation; where it
+says "the consumer does X" it describes what the current runtime does. It documents
+
 
 - the outer serialized template object and the JavaScript expression it is shipped in
   (§4.2);
@@ -12,9 +17,9 @@ that the build step (the template compiler) emits and the runtime consumes. It d
   (§4.5);
 - every expression opcode (§4.6) and every statement opcode (§4.8), with numeric value,
   tuple layout, meaning of each field, source construct that produces it, and the
-  semantics a consumer must implement;
+  semantics the current consumer implements;
 - how names in a *callee's* symbol table bind the caller's arguments and blocks (§4.9);
-- the version history and exactly which historical shapes are in scope (§4.11);
+- the version history of wire-visible changes (§4.11);
 - worked examples with exact compiler output (§4.12).
 
 Detailed runtime behavior (what "append a value", "invoke a component", "iterate" etc.
@@ -23,19 +28,19 @@ level needed to map it onto those semantics, and cites §05 for the rest. Resolu
 free names against the owner is described in `08-ember-integration.md`; how names are
 classified at compile time is `03-static-semantics.md`.
 
-Throughout, "consumer" means the runtime (or a new implementation's loader/compiler) that
-accepts wire-format input; "producer" means the template compiler that emits it.
+Throughout, "consumer" means the runtime that accepts wire-format input; "producer" means
+the template compiler that emits it.
 
 *Note:* In the current implementation the consumer is `@glimmer/opcode-compiler`, which
 lazily translates each wire-format block into VM bytecode the first time it is needed
 (`packages/@glimmer/opcode-compiler/lib/compilable-template.ts:68-111`). A new
-implementation is expected to instead translate each block into a JavaScript function.
-Nothing in this chapter requires bytecode; where the current consumer's bytecode strategy
-leaks into observable behavior it is called out explicitly.
+implementation need not consume this format at all (it could, for example, compile
+template source directly to JavaScript functions). Where the current consumer's bytecode
+strategy leaks into observable behavior it is called out explicitly.
 
 ---
 
-## 4.1 Status, scope and conformance
+## 4.1 Status and scope
 
 ### 4.1.1 What the wire format is for
 
@@ -61,8 +66,10 @@ The maintainers treat the format as *version-locked*: "The wire format is versio
 (templates must be compiled by the matching compiler), so removing never-emitted opcodes
 is safe" (commit `b6e26a9e69`, "Remove dead opcodes").
 
-### 4.1.3 Compatibility surface in scope for this specification
+### 4.1.3 Status: informative, not a compatibility surface
 
+Wire format is not a compatibility requirement (§00-0.2; STATUS decision). Nothing in this
+chapter obliges an implementation to accept any wire-format input, current or historical.
 In practice, wire-format templates reach a running application in three ways:
 
 1. Compiled by the application's own build, with the `ember-template-compiler` that ships
@@ -72,20 +79,15 @@ In practice, wire-format templates reach a running application in three ways:
 2. Compiled at runtime by `@ember/template-compiler`'s `template()` (same version by
    construction).
 3. Genuinely pre-built wire output published inside an npm package and executed by a
-   *different* `ember-source` version. The runtime does not support this reliably today
-   (§4.11 lists shapes that break), but it happens.
+   *different* `ember-source` version. The current runtime does not support this
+   reliably (§4.11 lists shapes that break).
 
-A conforming implementation:
-
-- **MUST** accept every shape the *current* producer (Ember 7.5 / this repository) can
-  emit, as specified in §4.2–§4.10.
-- **MUST** accept the *legacy scope-array* form of `scope` (§4.3.3, **[Legacy]**), which
-  the current runtime accepts and older producers (Ember ≤ 6.11) emitted.
-- **SHOULD** accept the additional historical shapes listed in §4.11.3 as **[Legacy]**
-  (these are cheap to accept and remove a sharp edge for case 3 above). A consumer that
-  does not accept them MUST fail with a clear error rather than mis-render.
-- **MAY** reject opcodes that the current producer can no longer emit and the current
-  consumer can no longer execute (§4.11.4). The current runtime does not support them.
+Because addons ship template source, what *is* part of the compatibility surface is the
+source-level path, including the babel plugin's `hbs` re-printing (§02-10). Descriptions
+below of shapes that the current producer emits (§4.2-§4.10), of the legacy scope-array
+form (§4.3.3, **[Legacy]**), and of historical shapes (§4.11) are documentation of current
+and past behavior only. The current runtime accepts the scope-array form, and does not
+support the opcodes of §4.11.4.
 
 *Note:* The alternative "compact string encoding" described in
 `packages/@glimmer/compiler/lib/wire-encoding.md` is an unimplemented proposal. No
@@ -98,9 +100,9 @@ booleans, `null` and plain objects (the last only in `Debugger`, §4.8.18). The 
 shipped *as a JSON string* (§4.2) and parsed with `JSON.parse`
 (`packages/@glimmer/opcode-compiler/lib/template.ts:64-66`). Consequently JavaScript
 `undefined` never survives inside a block: a producer-side `undefined` in array position
-becomes `null`, and trailing optional elements are omitted instead. Consumers MUST treat
-a *missing* trailing element and (where noted) `null` identically, and MUST NOT depend on
-distinguishing `undefined` from absence inside a block.
+becomes `null`, and trailing optional elements are omitted instead. The current
+consumer treats a *missing* trailing element and (where noted) `null` identically, and
+does not distinguish `undefined` from absence inside a block.
 
 ---
 
@@ -151,9 +153,9 @@ Example (loose mode, no lexical names):
 
 ### 4.2.2 Field semantics for consumers
 
-| Field | Required | Consumer behavior |
+| Field | Required | Current consumer behavior |
 |---|---|---|
-| `block` | yes | MUST be a string; parsed lazily (on the first factory call) and the parse result shared by all templates produced by that factory (`template.ts:58-66`). Passing an already-parsed array is not supported by the current runtime (`JSON.parse` of a non-string coerces it to a string and throws). |
+| `block` | yes | Is a string; parsed lazily (on the first factory call) and the parse result shared by all templates produced by that factory (`template.ts:58-66`). Passing an already-parsed array is not supported by the current runtime (`JSON.parse` of a non-string coerces it to a string and throws). |
 | `id` | no | If falsy, the factory synthesizes `"client-" + n` from a module-global counter (`template.ts:53`). Exposed as `factory.__id` and `template.id` (`template.ts:99`, `117-119`). Not otherwise used. |
 | `moduleName` | yes | Exposed as `factory.__meta = { moduleName }` and `template.moduleName`/`template.referrer.moduleName` (`template.ts:100`, `113-128`); used in error messages and debug tooling. |
 | `scope` | no | See §4.3.3. `undefined`, `null` and absent are equivalent. |
@@ -161,7 +163,7 @@ Example (loose mode, no lexical names):
 
 `factory.__id`, `factory.__meta`, `template.id` and `template.referrer` are documented in
 source as intimate APIs kept "for backwards compatibility, some addons use these"
-(`template.ts:25-37`). A conforming implementation SHOULD expose them. **[Legacy]**
+(`template.ts:25-37`). The current factory exposes them. **[Legacy]**
 
 ### 4.2.3 The shipped module form
 
@@ -182,10 +184,10 @@ property *keys* of the scope object are template names while the *values* are th
 JavaScript bindings.
 
 `@ember/template-factory` re-exports the Glimmer template factory unchanged as
-`createTemplateFactory` (`packages/@ember/template-factory/index.ts:1`). This module
-specifier and export name are part of the compatibility surface: compiled code in the
-wild imports them. A conforming implementation MUST provide
-`createTemplateFactory` from `@ember/template-factory` with the contract of §4.3.
+`createTemplateFactory` (`packages/@ember/template-factory/index.ts:1`). Compiled
+code in the wild imports this module specifier and export name; since wire format is not
+a compatibility requirement (§4.1.3), this is a description of the current shipped form,
+not a requirement.
 
 ---
 
@@ -195,7 +197,7 @@ wild imports them. A conforming implementation MUST provide
 
 `createTemplateFactory` takes a `SerializedTemplateWithLazyBlock` and returns a function
 `factory(owner?)` (`packages/@glimmer/opcode-compiler/lib/template.ts:44-103`). Creating
-the factory MUST NOT parse the block, call `scope`, or touch the owner; all of that is
+the factory does not parse the block, call `scope`, or touch the owner; all of that is
 deferred.
 
 *Rationale:* modules evaluate `createTemplateFactory(...)` at import time, and the
@@ -207,7 +209,7 @@ still in their temporal dead zone at that point.
 - Calling `factory()` with `owner === undefined` returns a single *ownerless* template,
   created on first call and cached for the lifetime of the factory (`template.ts:68-84`).
 - Calling `factory(owner)` returns a template cached per owner in a `WeakMap` keyed by
-  the owner object (`template.ts:86-96`). Repeated calls with the same owner MUST return
+  the owner object (`template.ts:86-96`). Repeated calls with the same owner return
   the identical template object.
 - Every template produced by one factory shares the same parsed block (`template.ts:58`,
   `64-66`).
@@ -256,26 +258,26 @@ A `GetLexicalSymbol` index `n` (§4.6.4) denotes `lexicalValues[n]`. **Only the 
 values is semantically significant**; names are used only in error messages and debug
 tooling (e.g. `lexical?.at(n)` as a debug name, `resolution.ts:119`, `215`).
 
-Requirements:
+Current behavior:
 
-- The consumer MUST call `scope` lazily (not before the template is first needed for
-  rendering) and MUST NOT call it more than once per template object for the purpose of
+- The consumer calls `scope` lazily (not before the template is first needed for
+  rendering) and, on the ordinary path, calls it once per template object for the purpose of
   capturing lexical values. The captured values are then *constants*: later reassignment
   of the underlying JavaScript binding is not observed.
   *Note:* the wrapped-layout path of the current implementation calls `meta()` (and so
   `scope()`) in both its constructor and `compile()` (`packages/@glimmer/opcode-compiler/lib/wrapped-component.ts:49`, `55`); see Open question 5.
-- **[Legacy]** A `scope` that returns an **array** `[v0, v1, …]` MUST be accepted, with
+- **[Legacy]** A `scope` that returns an **array** `[v0, v1, …]` is accepted, with
   `lexicalValues` = the array elements in order. Producers before commit `9498833de2`
   (Ember ≤ 6.11) emitted `()=>[a,b]` (`git show 9498833de2 -- packages/@glimmer/compiler/lib/compiler.ts`).
   The current runtime accepts it by accident: `Object.values([a,b])` is `[a,b]` and
   `Object.keys` yields `"0","1"`.
 - The producer emits object keys that are JavaScript identifiers (or `"this"`). Integer-like
-  keys would be reordered by `Object.values`; producers MUST NOT emit them, and
-  consumers MAY assume they do not occur.
+  keys would be reordered by `Object.values`; the producer never emits them, and
+  the consumer assumes they do not occur.
 
 **[Legacy]** Before commit `3cd64941e8` (Ember < 7.1), a fourth element `lexicalSymbols`
-(an array of names) could appear in the block (§4.4.1). It was only a debug aid; consumers
-MUST ignore any elements of the template block beyond the third.
+(an array of names) could appear in the block (§4.4.1). It was only a debug aid; the current
+consumer ignores any elements of the template block beyond the third.
 
 ---
 
@@ -324,11 +326,11 @@ Two different block parameters with the same source name in different blocks rec
 
 **Semantics.** Symbol names matter in two ways:
 
-1. Within the template, only slot numbers matter; the consumer MAY ignore names.
+1. Within the template, only slot numbers matter; the current consumer ignores names.
 2. When this template is the **layout of a component**, the caller binds named arguments
    and blocks into the callee's slots **by name**, by searching the callee's `symbols` for
-   `"@argName"` and `"&blockName"` (§4.9). Therefore the consumer MUST preserve the names
-   of `@…` and `&…` symbols of every layout.
+   `"@argName"` and `"&blockName"` (§4.9). The current consumer therefore relies on the
+   names of `@…` and `&…` symbols of every layout being preserved.
 
 The number of slots of a layout is `symbols.length + 1`
 (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/shared.ts:122`,
@@ -342,13 +344,13 @@ exact string, in order of first allocation (`symbol-table.ts:124-143`). Opcodes
 `GetStrictKeyword` (31) and `GetFreeAs*` (35, 37, 38, 39) carry an index into this table
 (§4.6.3, §4.6.5).
 
-Notes a consumer must be aware of:
+Notes on the current encoding:
 
 - **Angle-bracket component names are already normalized.** When a free name is used as
   an angle-bracket component tag in loose mode, the producer applies the host's
   `customizeComponentName` *before* storing it (`symbol-table.ts:125-132`). Ember's
   customization dasherizes and maps `::` to `/` (`<XFoo />` → `"x-foo"`,
-  `<Foo::BarBaz />` → `"foo/bar-baz"`; §4.12.4). The consumer MUST use the stored string
+  `<Foo::BarBaz />` → `"foo/bar-baz"`; §4.12.4). The consumer uses the stored string
   as-is.
 - **Deduplication is by string only, across roles.** `<div {{foo}}></div><Foo />` stores a
   single `"foo"` used both as a modifier head and as a component head (§4.12.4). The
@@ -357,7 +359,7 @@ Notes a consumer must be aware of:
   consumed (`"if"`, `"each"`, `"yield"`, `"let"`, `"debugger"`, `"component"`, …) and, in
   loose mode, the tag name of every plain HTML element (`"div"`, `"h1"`, `"input"`)
   (`packages/@glimmer/syntax/lib/v2/normalize.ts:847`). No opcode references these
-  entries. Consumers MUST tolerate unreferenced entries and MUST NOT resolve them.
+  entries. The consumer tolerates unreferenced entries and does not resolve them.
   See Open question 1.
 
 ### 4.4.4 Inline blocks
@@ -416,7 +418,7 @@ type Params = [Expression, ...Expression[]] | null;
 ```
 
 A non-empty array of expressions, or `null` when there are none. The producer never emits
-`[]` (`expressions.ts:122-124`, `toPresentArray`). Consumers MUST treat `[]` like `null`.
+`[]` (`expressions.ts:122-124`, `toPresentArray`). The consumer treats `[]` like `null`.
 
 ### 4.5.3 Named parameters (`Hash`)
 
@@ -460,7 +462,7 @@ get per segment).
 
 The current producer never attaches a path to `GetStrictKeyword` (it asserts,
 `expressions.ts:102`) or to the `GetFreeAs*` opcodes (loose mode rejects `{{foo.bar}}` with
-free `foo` at compile time). See §4.6.5 for how a consumer must treat such tuples if they
+free `foo` at compile time). See §4.6.5 for how the current consumer treats such tuples if they
 appear.
 
 ### 4.5.6 Well-known tag and attribute names
@@ -480,8 +482,8 @@ producer `packages/@glimmer/compiler/lib/utils.ts:41-84`, consumer
 | 5 | — | `style` |
 | 6 | — | `href` |
 
-A consumer MUST inflate an integer to its name before any other processing, and MUST
-treat the string and integer spellings identically (the producer always deflates, but a
+The current consumer inflates an integer to its name before any other processing, and
+treats the string and integer spellings identically (the producer always deflates, but a
 string `"div"` is equally valid).
 
 ### 4.5.7 Attribute namespaces
@@ -496,7 +498,7 @@ only for this fixed set of attribute names (`packages/@glimmer/compiler/lib/util
 | `xmlns`, `xmlns:xlink` | `http://www.w3.org/2000/xmlns/` |
 
 The attribute *name* keeps its prefix (`"xlink:href"`). When a namespace is present the
-attribute MUST be set with namespace-aware DOM APIs (§05-4.4).
+attribute is set with namespace-aware DOM APIs (§05-4.4).
 
 ### 4.5.8 Element parameters
 
@@ -571,7 +573,7 @@ Semantics of each kind of slot:
   declares it (§4.4.4).
 - `&name` slot: a *block value* (an opaque handle to a caller-supplied block, or
   "no block"). Block slots are only read via `HasBlock`, `HasBlockParams`, `Yield` and
-  `AttrSplat`; a consumer MAY reject a `GetSymbol` of a block slot in any other position.
+  `AttrSplat`; the producer emits no `GetSymbol` of a block slot in any other position.
 
 ### 4.6.3 `GetStrictKeyword` (31)
 
@@ -640,7 +642,7 @@ consulted (`resolution.ts:100-113` in `@glimmer/syntax`; loose-resolution contex
 
 These are produced only in loose mode and only for a simple identifier with no path.
 
-A consumer MUST implement them as follows (consumer `packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts`,
+The current consumer implements them as follows (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts`,
 `packages/@glimmer/opcode-compiler/lib/syntax/expressions.ts:75-81`):
 
 - 37 as a **value** (e.g. `class={{foo}}`) means "resolve `foo` as a helper and invoke it
@@ -648,14 +650,14 @@ A consumer MUST implement them as follows (consumer `packages/@glimmer/opcode-co
   found: ``Attempted to resolve `${name}`, which was expected to be a helper, but nothing was found.``
   (`resolution.ts:175-188`).
 - 35, 38 and 39 have **no value semantics**; the current consumer has no expression
-  handler for them and fails if one appears outside its head position. A consumer MUST
-  reject them outside the positions listed in the table of §4.6.
+  handler for them and fails if one appears outside its head position, so they are effectively
+  rejected outside the positions listed in the table of §4.6.
 - In head positions, see §4.7.
 
 Free-variable resolution happens once, when the block is first compiled for a given
 template object (i.e. per owner), not on every render: the resolved definition is a
-constant (`packages/@glimmer/opcode-compiler/lib/opcode-builder/encoder.ts:88-97`). A
-conforming implementation MUST NOT re-resolve on re-render.
+constant (`packages/@glimmer/opcode-compiler/lib/opcode-builder/encoder.ts:88-97`). The
+current consumer does not re-resolve on re-render.
 
 ### 4.6.6 `Call` (28)
 
@@ -816,7 +818,7 @@ resolveStatic(position, [op, n]):
   (`resolution.ts:333-335`; `packages/@glimmer-workspace/integration-tests/test/updating-test.ts:881`)
 
 In production builds these checks are compiled out and a missing definition leads to an
-undefined failure; a conforming implementation MAY throw in production too.
+undefined failure; the current runtime does not throw a descriptive error in production.
 
 A non-resolvable head is evaluated as an ordinary expression and its value is used as a
 **dynamic** definition, re-examined whenever it changes (§05-7.2).
@@ -868,8 +870,7 @@ or an inline block.
 static text (`hi` → `[1,"hi"]`) (`packages/@glimmer/compiler/lib/passes/2-encoding/content.ts:121-123`).
 
 Consumer behavior (`packages/@glimmer/opcode-compiler/lib/syntax/statements.ts:174-249`)
-has four cases, which a conforming implementation MUST reproduce because they differ
-observably:
+has four cases, which differ observably (they are the runtime semantics of §05-3):
 
 1. **Literal** (`value` not an array): append a text node containing `String(value)`, or
    `""` for `null`/`undefined` (`statements.ts:176-177`). This is static content (§05-3.1).
@@ -922,8 +923,8 @@ changes, are §05-3.2–3.5.
 
 - Literal: append as text exactly like `Append` (the consumer does *not* parse a literal
   as HTML: `{{{"<b>x</b>"}}}` compiles to `[2,"<b>x</b>"]` and renders the *text*
-  `<b>x</b>`) (`statements.ts:251-253`). A conforming implementation MUST reproduce this;
-  see Open question 6.
+  `<b>x</b>`) (`statements.ts:251-253`). This is observable
+  behavior of the current implementation; see Open question 6.
 - Otherwise: evaluate and "append dynamically, trusting": like cautious append, but a
   string value is inserted as raw HTML (`statements.ts:254-259`, `stdlib.ts:42-47`). A
   `Call` value is *not* special-cased: `{{{foo 1}}}` evaluates the `Call` expression
@@ -956,7 +957,7 @@ A plain HTML/SVG element is encoded as a flat sequence
   `dynamicFeatures`). Semantically it opens the element in a mode where attributes are
   merged with those supplied via `...attributes` according to the component-attribute
   rules (§4.8.7); the consumer emits `PutComponentOperations` first
-  (`statements.ts:149-152`). A consumer MUST implement 11 exactly as 10 plus
+  (`statements.ts:149-152`). The consumer implements 11 exactly as 10 plus
   "attributes on this element go through the component-attribute merge (§05-7.5)".
 - Between the open and `FlushElement`, only element parameters appear. `FlushElement`
   ends the attribute list: at that point the element's attributes are committed and the
@@ -966,7 +967,7 @@ A plain HTML/SVG element is encoded as a flat sequence
   the tag and its parent exactly as in §05-4.2; the wire format carries no namespace for
   elements.
 
-The consumer MUST treat unbalanced sequences as malformed input.
+The producer never emits unbalanced sequences, and the current consumer does not check for them.
 
 ### 4.8.5 `StaticAttr` (14) and `StaticComponentAttr` (24)
 
@@ -1047,7 +1048,7 @@ Semantics (consumer `statements.ts:154-164`,
 
 - If `tag` is a resolvable component head, resolve it statically and invoke the resulting
   definition.
-- Otherwise evaluate `tag` dynamically. Its value MUST be a component definition (an
+- Otherwise evaluate `tag` dynamically. Its value must be a component definition (an
   object/function with a component manager) or a curried component; `null`/`undefined`
   renders nothing; a string is **[Dev]** error ("Expected a component definition, but
   received …") — angle-bracket syntax never resolves strings
@@ -1154,7 +1155,7 @@ Semantics: **[Dev]**-oriented. Invoke the host's debugger callback with
 that slot, and anything else as a property path on self
 (`packages/@glimmer/runtime/lib/compiled/opcodes/debugger.ts:46-83`). The default callback
 logs a hint and executes a JavaScript `debugger` statement. Only `locals` is consulted by
-the current runtime. Producing no DOM, a consumer MAY treat `Debugger` as a no-op in
+the current runtime. Producing no DOM, `Debugger` could be treated as a no-op in
 production. See Open question 8.
 
 ### 4.8.19 `InElement` (40)
@@ -1280,25 +1281,26 @@ tag lookups via `git tag --contains <commit>`.)
   resolution; and `Debugger` `[26, number[]]` would be mis-read.
 - Opcodes 34, 36, 43, 99, 33, 19: **no** — no handler exists.
 
-### 4.11.3 Legacy shapes a conforming implementation SHOULD accept
+### 4.11.3 Historical shapes that could be recognized
 
-**[Legacy]** These are detectable without ambiguity and SHOULD be accepted:
+*Note:* Wire format is not a compatibility requirement (§4.1.3), so this section is a
+note, not a recommendation. **[Legacy]** These historical shapes are detectable without
+ambiguity, should a tool ever want to read old wire output:
 
-1. `scope` returning an array (MUST, §4.3.3).
+1. `scope` returning an array (accepted by the current runtime, §4.3.3).
 2. Template blocks of length ≥ 4 whose third element (index 2) is a **boolean**:
-   interpret as `[statements, symbols, hasEval, upvars]` and ignore `hasEval`
+   would be read as `[statements, symbols, hasEval, upvars]`, ignoring `hasEval`
    (Ember 3.25–6.3). A block of length 4 whose index 2 is an array is the 6.4–7.0 shape
-   `[statements, symbols, upvars, lexicalSymbols]`; ignore index 3.
-3. `Debugger` of the form `[26, number[]]` (any second element that is an array): treat
-   as a debugger statement with no symbol information.
+   `[statements, symbols, upvars, lexicalSymbols]`, where index 3 is ignorable.
+3. `Debugger` of the form `[26, number[]]` (any second element that is an array) would be a
+   debugger statement with no symbol information.
 4. `31` tuples carrying a path (`[31, n, path]`, possible before `025e7429bc` in 0.92):
-   evaluate as the keyword value, then follow the path.
+   would be the keyword value followed by the path.
 
-### 4.11.4 Legacy shapes that MAY be rejected
+### 4.11.4 Legacy shapes the current runtime does not support
 
 The following require semantics that no longer exist (implicit `this` fallback, partials,
-`{{#with}}`) and cannot be executed faithfully by the current runtime either. A conforming
-implementation MAY reject them with a clear error naming the opcode:
+`{{#with}}`) and cannot be executed by the current runtime (no handler exists):
 
 | Op | Name | Former meaning |
 |---|---|---|
@@ -1310,7 +1312,7 @@ implementation MAY reject them with a clear error naming the opcode:
 | 99 | GetFreeAsDeprecatedHelperHeadOrThisFallback | `@arg={{x}}`: helper (deprecated) else `this.x` |
 | 5, 7, 20, 21 | StrictModifier, StrictBlock, DynamicArg, StaticArg | declared but never emitted by any producer since 0.74 |
 
-*Note:* if an implementation chooses to support 34/36/99, the historical semantics were:
+*Note:* the historical semantics of 34/36/99 were:
 resolve as the stated kinds; if not found, evaluate `this.<name>` (with the path, if any).
 This is not part of the current language.
 
@@ -1464,21 +1466,24 @@ template (§4.3.2).
 
 ---
 
-## 4.13 Consumer checklist (non-normative summary)
+## 4.13 Reading aid: how the current consumer processes a template
 
-1. Accept `{id, block: string, moduleName, scope?, isStrictMode}`; do nothing at factory
-   creation time; parse `block` on first `factory()` call.
-2. Cache templates per owner (WeakMap) and one ownerless template.
-3. On first use of a template, call `scope()` once; take `Object.values` (array form OK).
-4. Normalize the block to `[statements, symbols, upvars]` (legacy: drop a boolean at
-   index 2; ignore index ≥ 3).
-5. Allocate `symbols.length + 1` slots; slot 0 = self.
-6. Compile statements per §4.8; expressions per §4.6; heads per §4.7, resolving
+This is a non-normative summary of what the current consumer does, as an aid to reading
+the chapter. It is not a checklist that any implementation must satisfy.
+
+1. It takes `{id, block: string, moduleName, scope?, isStrictMode}`; does nothing at factory
+   creation time; and parses `block` on first `factory()` call.
+2. It caches templates per owner (WeakMap) and one ownerless template.
+3. On first use of a template, it calls `scope()` and takes `Object.values` (the array form works too).
+4. It reads the block as `[statements, symbols, upvars]` (index ≥ 3 is ignored; the legacy
+   boolean at index 2 is not handled, §4.11.2).
+5. It allocates `symbols.length + 1` slots; slot 0 = self.
+6. It compiles statements per §4.8, expressions per §4.6 and heads per §4.7, resolving
    resolvable heads once per template object.
-7. Preserve `@…`/`&…` names of layouts for invocation binding (§4.9).
-8. Inflate well-known tag/attribute integers; honor attribute namespaces.
-9. Distinguish absent vs. present `insertBefore` on `InElement`.
-10. Reject unknown opcodes with a clear error.
+7. It relies on the `@…`/`&…` names of layouts for invocation binding (§4.9).
+8. It inflates well-known tag/attribute integers and honors attribute namespaces.
+9. It distinguishes absent from present `insertBefore` on `InElement`.
+10. It fails, without a clear error, on unknown opcodes (§4.1.2).
 
 ---
 
@@ -1499,9 +1504,8 @@ template (§4.3.2).
    silently.** `resolveOptionalComponentOrHelper` has no error branch for the loose case
    (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts:403-422`),
    whereas `{{foo 1}}` errors. Historically the missing case fell back to `this.foo`;
-   after the fallback's removal it became a silent no-op. Likely a bug; a new
-   implementation may want to match it for compatibility but should consider a
-   **[Dev]** error.
+   after the fallback's removal it became a silent no-op. Likely a bug; the
+   behavior is recorded here rather than changed (a **[Dev]** error would be one option).
 4. **Owner used for component templates.** Component definitions are cached per
    definition object in the program constants, so a component's `templateFactory(owner)`
    is invoked with the first owner that rendered it; subsequent owners (e.g. engines)
@@ -1544,12 +1548,13 @@ template (§4.3.2).
 12. **Paths on contextual free opcodes.** The interface types still allow
     `[35|37|38|39, n, path]` (`api.d.ts:111-127`) but the producer never emits them. If
     one appears, the current consumer treats it as non-resolvable and, for 37, *ignores
-    the path* (`expressions.ts:75-81`). Consumers should reject such tuples.
+    the path* (`expressions.ts:75-81`). The current consumer does not reject such tuples.
 13. **Version-lock vs. published wire output.** The maintainers consider the format
     version-locked, yet `createTemplateFactory` output in published packages is still
     loaded by newer runtimes without any version marker; the 5.9–6.3 → 6.4 block-shape
     change silently breaks such packages. Adding a version field (or a shape check) would
-    make failures diagnosable. §4.11.3 recommends accepting the old shape.
+    make failures diagnosable. Since wire format is not a compatibility requirement
+    (§4.1.3), this is recorded as a note only.
 14. **`Append` of a string head in a dynamic `Call`.** `{{@foo 1}}` where `@foo` is a
     string classifies as "string" content type, but the switch only has component and
     helper clauses; the fall-through lands in the helper clause and fails inside dynamic

@@ -22,8 +22,9 @@ it *is* behavior and must be specified.
 ## Abstraction rules
 
 - Do not describe the Glimmer VM's opcodes, stack, heap, or register machine as normative.
-  Where they matter (e.g. the wire format that precompiled templates ship in), describe the data
-  format, and the semantics of each construct, not the VM that interprets it.
+  Where they matter for observable behavior, describe that behavior, not the VM that
+  produces it. Chapter 04 documents the current wire format as *informative* only: wire
+  format is not a compatibility requirement, and no chapter may require accepting it.
 - Do not make references (`Reference`), tags (`Tag`), revisions, or validators part of the
   normative model. Reactivity is specified in terms of the abstract model in
   `07-reactivity.md` (tracked storage, reactive computations, validity, and invalidation).
@@ -60,7 +61,7 @@ it *is* behavior and must be specified.
 | `01-authoring-formats.md` | Template tag (.gjs/.gts), content-tag, babel plugin, `template()` / `precompileTemplate` APIs, scope & `eval`, strict vs loose mode, colocation, `setComponentTemplate`, `templateOnly` |
 | `02-syntax.md` | Lexing & parsing: Handlebars layer, HTML tokenizer layer, AST (ASTv1), whitespace control, entities, errors |
 | `03-static-semantics.md` | Scoping, symbol resolution, keywords, reserved names, normalization (ASTv2), Ember AST transforms, compile-time errors |
-| `04-wire-format.md` | The serialized precompiled template format and the meaning of each construct |
+| `04-wire-format.md` | **Informative.** The current serialized precompiled template format and the meaning of each construct. Documents the current encoding only; wire format is not a compatibility requirement (§00-0.2) |
 | `05-runtime-semantics.md` | Evaluation: content, attributes/properties, elements, blocks, control flow keywords, component invocation, yield, curried values, destruction & ordering, rehydration/SSR |
 | `06-managers.md` | Component, helper, modifier manager APIs (public + internal capabilities), default managers, arguments, owner |
 | `07-reactivity.md` | Abstract reactivity model, `tracked`, caches, update semantics, proposed consumption primitive |
