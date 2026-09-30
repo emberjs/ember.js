@@ -42,7 +42,7 @@ continue the work. Last updated: 2026-09-29.
 | Chapter | Lines | State | Verification |
 |---|---|---|---|
 | 00 overview | ~330 | Drafted. §0.1 and §0.2 were updated for the wire-format decision. §0.6 matches this table. §0.7 (consolidated open questions, 40 items) written by T2b. | — |
-| 01 authoring formats | ~1190 | Drafted | From source. A few citations were spot-checked. |
+| 01 authoring formats | ~1220 | Drafted | From source. T3 hand-checked every flagged citation; one unsupported claim (§01-1.9) was rewritten. |
 | 02 syntax | ~1410 | Drafted | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes). |
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev` (built Sep 27). The runtime `eval` form, the babel plugin and runtime rendering were not run. |
 | 04 wire format | ~1560 | Drafted; recast as informative (T1 done). | All examples are real compiler output. |
@@ -53,6 +53,10 @@ continue the work. Last updated: 2026-09-29.
 
 All `§NN-x.y` cross-references resolve (`python3 spec/tools/xref.py`). All file:line citations
 exist and are in range (`python3 spec/tools/check-citations.py`), and T3 checked that the NEAR/MISS ones point at the construct named.
+
+All planned tasks (T1–T5) are done. Every chapter is a complete draft that has had a
+consistency pass, citation verification and a final CONVENTIONS read-through. None of it has
+been reviewed by the plan's author yet.
 
 ## Task queue
 
@@ -65,7 +69,7 @@ Run these in order, one at a time.
 | T3 | Citation verification (ranges, then whether cited lines contain the claim), 06 and 07 first | Sonnet | `.work/T3-citations.md` | done; unsupported claims are listed under "Unsupported claims" in `.work/T3-citations.md` (2 items) |
 | T4 | Find test assertions for 05's source-only areas and cite them, or record them as untested | Sonnet | `.work/T4-ch05-tests.md` | done; untested claims are §05-14 item 20 |
 | T2b | Consolidated open questions in §00-0.7 | Opus | `.work/T2b-open-questions.md` | done |
-| T5 | Final read-through: CONVENTIONS compliance, markers, `[Dev]` tags, a tidy STATUS | Opus | `.work/T5-final.md` | pending |
+| T5 | Final read-through: CONVENTIONS compliance, markers, `[Dev]` tags, a tidy STATUS | Opus | `.work/T5-final.md` | done; markers and normative-language fixes, §0.4/§0.6 wording, 41 cross-references spot-checked (1 fixed) |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -75,8 +79,8 @@ Where the code did not settle a question, it is an *Open questions* item in the 
 New cross-cutting notes from T2:
 
 1. **`xref.py` only checks that a target exists, not that it is the right one.** T2 found six
-   `§05-12` references (Errors) that meant `§05-11` (Destruction). T5 should spot-check that
-   cross-references point at the intended section, especially in 05.
+   `§05-12` references (Errors) that meant `§05-11` (Destruction). T5 spot-checked 41
+   references and fixed one (`.work/T5-final.md`). The rest have not been checked by hand.
 2. **Ownership conventions introduced by T2.** Each duplicated rule now has one owner, and the
    other chapters cite it. The main owners are: commit-phase order §06-11; destroy algorithm
    §06-10.2; destruction order §05-11; component-region skipping §05-1.6; element parameter
@@ -138,3 +142,27 @@ into §00-0.7.
   - `-track-array` is applied twice (harmless, §03-7.8).
 - **Wire format (informative).** There is no version marker, and Ember 5.9–6.3 blocks are
   misread silently. Not a requirement now; keep it as a note only.
+
+## Next steps
+
+Suggestions for the plan's author, based on what is still open:
+
+1. **Decide the ten "preserve or change" items in §00-0.7.1.** The most urgent are the `hbs`
+   round-trip losses (item 1), because addons publish that output, and the
+   `strict`/`strictMode` option split (item 2). Each decision changes normative text in the
+   owning chapter.
+2. **Review the [Proposed] consumption primitive** (§07-2.2, the review points in §00-0.7.10).
+   Only chapter 07 uses it. If it is accepted, other chapters could state update rules with it
+   directly; if it is rejected, §07-2.4 needs another way to show sufficiency.
+3. **Rule on the suspected bugs** in §00-0.7.2–0.7.8, deciding for each whether a new
+   implementation must keep it. Parser crashes (§0.7.2) and the babel-vs-runtime
+   differences (§0.7.4) are the obvious ones to fix rather than preserve.
+4. **Close the verification gaps.** Write tests for the orderings in §05-14 item 20
+   (public-manager hook order across a tree, `didCreate` against modifier installs, deferred
+   destructor timing). Run the babel plugin and the runtime `eval` form against §01 and §03,
+   which so far are checked only against source and `dist/dev`.
+5. **Turn the spec into a conformance suite.** Many rules already cite the tests that pin
+   them. Collecting those into one implementation-independent suite, keyed by section number,
+   would give a new implementation something to run against.
+6. **Keep citations current.** Line numbers are accurate for this checkout only. Re-run
+   `python3 spec/tools/check-citations.py` after rebasing, or pin the spec to a commit.

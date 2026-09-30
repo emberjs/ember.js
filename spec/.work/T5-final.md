@@ -14,5 +14,5 @@
 - [x] Spot-check about 30 `§NN-x.y` cross-references for pointing at the *intended* section. xref.py only checks that the target exists (see the T2 note in STATUS.md)
   - 30 refs sampled at random across all chapters (6 from 05, 2 from 00, 3 from each other chapter), plus the 11 cross-chapter refs to §06-10/§06-11 and a search for §05-12 refs (none remain). 41 checked, 1 fixed: §01-1.7.3 cited §1.5.6 (hbs output) for bindings added by AST transforms; now cites §1.5.7 (jsutils) and §1.5.6.
 - [x] Run xref.py and check-citations.py cleanly (xref prints nothing; every chapter total=ok)
-- [ ] STATUS.md reflects the final state
-- [ ] Commit
+- [x] STATUS.md reflects the final state (T5 done, chapter table refreshed, Next steps added)
+- [x] Commit
