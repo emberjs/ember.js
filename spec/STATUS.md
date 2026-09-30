@@ -41,7 +41,7 @@ continue the work. Last updated: 2026-09-29.
 
 | Chapter | Lines | State | Verification |
 |---|---|---|---|
-| 00 overview | ~150 | Drafted. §0.1 and §0.2 were updated for the wire-format decision. §0.7 (consolidated open questions) is not yet written. | — |
+| 00 overview | ~330 | Drafted. §0.1 and §0.2 were updated for the wire-format decision. §0.6 matches this table. §0.7 (consolidated open questions, 40 items) written by T2b. | — |
 | 01 authoring formats | ~1190 | Drafted | From source. A few citations were spot-checked. |
 | 02 syntax | ~1410 | Drafted | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes). |
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev` (built Sep 27). The runtime `eval` form, the babel plugin and runtime rendering were not run. |
@@ -64,7 +64,7 @@ Run these in order, one at a time.
 | T2 | Cross-chapter consistency pass | Opus | `.work/T2-consistency.md` | done |
 | T3 | Citation verification (ranges, then whether cited lines contain the claim), 06 and 07 first | Sonnet | `.work/T3-citations.md` | done; unsupported claims are listed under "Unsupported claims" in `.work/T3-citations.md` (2 items) |
 | T4 | Find test assertions for 05's source-only areas and cite them, or record them as untested | Sonnet | `.work/T4-ch05-tests.md` | done; untested claims are §05-14 item 20 |
-| T2b | Consolidated open questions in §00-0.7 | Opus | `.work/T2b-open-questions.md` | pending |
+| T2b | Consolidated open questions in §00-0.7 | Opus | `.work/T2b-open-questions.md` | done |
 | T5 | Final read-through: CONVENTIONS compliance, markers, `[Dev]` tags, a tidy STATUS | Opus | `.work/T5-final.md` | pending |
 
 ## Cross-chapter findings (from chapter authors' reports)
@@ -94,7 +94,7 @@ New cross-cutting notes from T2:
 
 ## Notable suspected bugs (for §0.7)
 
-These are collected from the chapters' open-questions sections. T2b writes the curated version
+These are collected from the chapters' open-questions sections. T2b wrote the curated version
 into §00-0.7.
 
 - **Parser.** Some inputs crash with a `TypeError` instead of a syntax error:
