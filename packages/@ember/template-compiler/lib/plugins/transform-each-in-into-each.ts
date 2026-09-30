@@ -1,5 +1,6 @@
 import type * as AST from '@glimmer/syntax/lib/v1/api';
 import type { ASTPlugin } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
+import { generateSyntaxError } from '@glimmer/syntax/lib/syntax-error';
 import type { EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
@@ -32,7 +33,14 @@ export default function transformEachInIntoEach(env: EmberASTPluginEnvironment):
     visitor: {
       BlockStatement(node: AST.BlockStatement): AST.Node | void {
         if (isPath(node.path) && node.path.original === 'each-in') {
-          node.params[0] = b.sexpr(b.path('-each-in'), [node.params[0]!]);
+          if (node.params[0] === undefined) {
+            throw generateSyntaxError(
+              `{{#each-in}} requires an object to be passed as its first positional parameter, did not receive any parameters`,
+              node.loc
+            );
+          }
+
+          node.params[0] = b.sexpr(b.path('-each-in'), [node.params[0]]);
 
           let blockParams = node.program.blockParams;
 
