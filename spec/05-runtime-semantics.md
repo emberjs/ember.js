@@ -2185,10 +2185,10 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    `setAttribute("xlink:href", …)` / `removeAttribute("xlink:href")` without a namespace
    (`packages/@glimmer/runtime/lib/vm/attributes/dynamic.ts:97-106`). Value changes keep the
    namespace (tested, `updating-svg-test.ts:108-134`), but `null` → value re-creates the
-   attribute in the null namespace (untested). Property-mode removal does use
-   `removeAttributeNS`. Should a new implementation fix this?
-
-   > Let's make a proposed bugfix branch for this.
+   attribute in the null namespace (confirmed by a failing test on the fix branch).
+   Property-mode removal does use `removeAttributeNS`. *Fix proposed* on branch
+   `fix/namespaced-attribute-updates`: updates of a namespaced attribute use
+   `setAttributeNS`/`removeAttributeNS`.
 
 2. **`false` in merged `class`.** A lone `class={{false}}` removes the attribute; when several
    `class` values are merged (splattributes/modifiers), `false` becomes the class `"false"`
@@ -2214,9 +2214,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    managers renders as a component. Only the function case is tested, and only through
    helper-position tests; content-position precedence needs a test.
 9. **`<svg>` inside `<foreignObject>`** is created in the HTML namespace, because the
-   integration-point test runs before the `tag == "svg"` test (`operations.ts:53-79`).
-
-   > Let's create a proposed bugfix branch for this.
+   integration-point test runs before the `tag == "svg"` test (`operations.ts:53-79`). The same
+   applies to `<math>`. *Fix proposed* on branch `fix/svg-inside-foreign-object`: an `<svg>` or
+   `<math>` tag always starts its own namespace, as in the HTML parser.
 
 10. **Serialize builder `in-element`** defaults `insertBefore` to `null`, so SSR never clears
     the destination, unlike the client and rehydration builders
@@ -2256,15 +2256,20 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     literal fast path emits a text node, unlike `{{{this.x}}}` holding the same string.
     `{{{if c x}}}`, `{{{helper h}}}`, `{{{has-block}}}` and `{{{log}}}` lose the flag during
     keyword translation (`keywords/utils/call-to-append.ts:7-26`, `keywords/append.ts:127-145`).
-    Both look like bugs. No test pins either behavior.
+    Both look like bugs. No test pins either behavior. *Fix proposed* on branch
+    `fix/triple-curly-literals-and-keywords`: string literals and append keywords honour triple
+    curlies.
 19. **Duplicate attributes and duplicate named arguments** (§05-4.9, §05-7.3). The parser
     accepts both (§02-11 item 20). For attributes, the result depends on whether the element
     has `...attributes`/modifiers (last-wins without `class` merging vs. deferred last-wins
     with `class` merging). For named arguments, a component's layout sees the first
     occurrence while its manager (e.g. a Glimmer component's `this.args`) sees the last. All
-    of this is derived from source and untested. Should duplicates be a compile-time error?
-
-    > Lets create a bugfix branch proposing that these become compile errors. The commit description should have a complete explainer of the problem. I'll open the PR for team discussion before we decide whether this will land.
+    of this was derived from source; T12 confirmed it by experiment on `main` (development build):
+    `<div title={{this.a}} title={{this.b}}>` shows `this.b` at first and `this.a` after only
+    `this.a` changes, but stays `this.b` once a modifier is added; a helper's `named.a` is the
+    last occurrence. *Proposal* on branch `proposal/duplicate-attributes-and-arguments-are-errors`
+    (its commit message is the full explainer, for team discussion): every duplicate attribute,
+    component argument or named argument is a compile-time syntax error.
 
 20. **Claims with no test (T4).** These are derived from source only. The lifecycle and
     destruction orderings that used to be listed here (public-manager tree hook order,

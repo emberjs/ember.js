@@ -11,10 +11,10 @@ not acted on until now. Resolve from the first unticked item. Stage only files I
 - [x] `#each` holes vs `#each-in` — keep (§05-14 item 17): remove item.
 
 ## B. Bugfix branches (origin/main; failing tests commit, then fix; not pushed)
-- [ ] B1 triple curlies ignored for literals and keyword appends (§05-14 item 18, §05-3.5 item 6, §0.7.1 item 5)
-- [ ] B2 namespaced attribute updates drop the namespace after removal (§05-14 item 1)
-- [ ] B3 `<svg>` inside `<foreignObject>` created in the HTML namespace (§05-14 item 9)
-- [ ] B4 duplicate attributes / named arguments become compile errors (§05-14 item 19, §0.7.1 item 4); commit message = complete explainer; author opens the PR for discussion
+- [x] B1 triple curlies ignored for literals and keyword appends (§05-14 item 18, §05-3.5 item 6, §0.7.1 item 5)
+- [x] B2 namespaced attribute updates drop the namespace after removal (§05-14 item 1)
+- [x] B3 `<svg>` inside `<foreignObject>` created in the HTML namespace (§05-14 item 9)
+- [x] B4 duplicate attributes / named arguments become compile errors (§05-14 item 19, §0.7.1 item 4); commit message = complete explainer; author opens the PR for discussion
 
 ## C. Cleanup pass
 - [ ] Remove resolved items (conclusions already in the normative text) from every open-question list: §0.7, §01-1.11, §02-11, §03-10, §04-4.14, §05-14, §06-12, §07-5, §08-14. Trim partly resolved items to their open remainder. Remove transitively resolved items ("Recorded as …, which owns it" pointers to removed items).

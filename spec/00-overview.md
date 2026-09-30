@@ -220,11 +220,9 @@ choice breaks someone.
 4. Duplicate attributes and duplicate named arguments are accepted. A component's layout
    sees the first `@a` while its manager sees the last, and `class` is merged only when the
    element has modifiers or `...attributes`. Should duplicates become a compile-time error?
-   (§05-14 item 19)
+   A proposal branch makes them errors, for team discussion. (§05-14 item 19)
 5. Triple curlies are ignored for literals and keyword appends: `{{{"<b>"}}}`,
-   `{{{if c x}}}` and `{{{helper h}}}` render text. (§05-14 item 18)
-
-  > Let's make a bugfix branch for this.
+   `{{{if c x}}}` and `{{{helper h}}}` render text. Fix proposed. (§05-14 item 18)
 
 6. *Resolved: keep.* In loose mode, `{{foo}}` renders nothing, with no error, when neither
    `component:foo` nor `helper:foo` exists. Loose mode stays as stable as possible while it is
