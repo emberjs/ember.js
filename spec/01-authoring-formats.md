@@ -935,7 +935,7 @@ classic Ember keyword set and transforms (§03, §08). Loose templates MAY still
 scope (`precompileTemplate(src, { scope })` without `strictMode`): lexical names take
 precedence over resolution (`packages/@glimmer-workspace/integration-tests/test/lexical-scope-test.ts:6-14`;
 `packages/@glimmer/syntax/lib/v2/normalize.ts:834-836`) — this is **[Loose mode]** behaviour
-used by colocated templates after AST transforms add bindings (§1.5.6).
+used by colocated templates after AST transforms add bindings (§1.5.7, converted per §1.5.6).
 
 ### 1.7.4 Run-time effects of the mode flag
 

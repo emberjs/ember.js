@@ -11,7 +11,8 @@
   - 04 has no MUST/SHOULD. Softened 02 §8.2 heading ("normative for … the wire format's debug info") and 05 intro ("represented as the constructs of the wire format"). 01 §1.10 and 08 §14 already say wire format need not be accepted.
 - [x] §00-0.4 says the [Proposed] primitive is used by "the other chapters". Only 07 and 08 use `isValid`/`onInvalidate`, so fix the wording
   - In fact only 07 uses it: 08's `isValid` (§08-9.1) is the renderer's own method. Fixed §0.4 and §0.7.10 wording and disambiguated the 08 sentence.
-- [ ] Spot-check about 30 `§NN-x.y` cross-references for pointing at the *intended* section. xref.py only checks that the target exists (see the T2 note in STATUS.md)
-- [ ] Run xref.py and check-citations.py cleanly
+- [x] Spot-check about 30 `§NN-x.y` cross-references for pointing at the *intended* section. xref.py only checks that the target exists (see the T2 note in STATUS.md)
+  - 30 refs sampled at random across all chapters (6 from 05, 2 from 00, 3 from each other chapter), plus the 11 cross-chapter refs to §06-10/§06-11 and a search for §05-12 refs (none remain). 41 checked, 1 fixed: §01-1.7.3 cited §1.5.6 (hbs output) for bindings added by AST transforms; now cites §1.5.7 (jsutils) and §1.5.6.
+- [x] Run xref.py and check-citations.py cleanly (xref prints nothing; every chapter total=ok)
 - [ ] STATUS.md reflects the final state
 - [ ] Commit
