@@ -25,8 +25,7 @@ continue the work. Last updated: 2026-09-29.
 
 ## Decisions
 
-- **Wire format is not a compatibility requirement** (plan.md, "new inputs for this
-  session"). Addons ship template source, not wire format. Chapter 04 is **informative**:
+- **Wire format is not a compatibility requirement** (the author's input of 2026-09-29). Addons ship template source, not wire format. Chapter 04 is **informative**:
   it documents the current encoding and must contain no conformance requirements. Other
   chapters must not require accepting wire format. Because addons ship source, the babel
   plugin's `hbs` re-printing (§02-10) *is* part of the compatibility surface.
@@ -34,6 +33,18 @@ continue the work. Last updated: 2026-09-29.
   `isValid(cache)`, a public `untrack(fn)`, and a host-level `onInvalidate(listener)`
   (§07-2.2). It builds on the existing `createCache`, `getValue` and `isConst`.
 - **Loose mode and classic components are in scope,** marked **[Loose mode]** or **[Legacy]**.
+- **Author rulings of 2026-09-30** (commit `a135fe1862`):
+  - `</template>` cannot appear in a content-tag body, by design: the content tag assumes no
+    interior syntax (§01-1.2.2 rule 2, §01-1.11 item 8).
+  - The legacy vs stage-3 `@tracked` timing difference is accepted and is orthogonal to the
+    renderer (§07-5 item 7).
+  - Private `@glimmer/validator` APIs: shim them if cheap; otherwise the main users must
+    migrate (§07-5 item 9).
+  - The 7.1 built-ins (`eq`, `and`, `element`, …) are strict-only on purpose; loose mode gains
+    no new features (§08-14 Q3).
+  - Upstream fixes were requested for the parser `TypeError` crashes (§0.7.2 item 11), the
+    content-tag indentation panic (§01-1.11 item 7), and `@tracked accessor` not dirtying the
+    object-level cell (§07-5 item 8). Their branches are listed under "Upstream fix branches".
 - **Suspected bugs are recorded, not "fixed" in the spec.** Each goes in its chapter's
   *Open questions* section, for the reader to decide whether to preserve it.
 

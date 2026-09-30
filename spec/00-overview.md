@@ -191,8 +191,9 @@ choice breaks someone.
    `{{{if c x}}}` and `{{{helper h}}}` render text. (§05-14 item 18)
 6. In loose mode, `{{foo}}` renders nothing, with no error, when neither `component:foo` nor
    `helper:foo` exists. (§08-14 Q1)
-7. Legacy and stage-3 `@tracked` differ observably in initialization timing and accessor
-   placement. An implementation must pick one per build mode. (§07-5 item 7)
+7. *Resolved (accepted):* legacy and stage-3 `@tracked` differ observably in initialization
+   timing and accessor placement. This is a property of the decorators, not of the renderer.
+   (§07-5 item 7)
 8. Whether argument expressions are evaluated depends on how the component is invoked. A
    static invocation of a template-only component evaluates only the arguments its layout
    reads, while a dynamic one evaluates all of them. `createHelper` runs eagerly in static
@@ -221,15 +222,16 @@ choice breaks someone.
     case-sensitive (`<BR>` needs a close tag). Tag names such as `<_foo />` (compiled as
     `foo`) and `<É />` (compiled to nothing), and segments containing `.`
     (`{{foo.[bar.baz]}}`), give surprising results. (§02-11 items 5, 10–12; §03-10 item 20)
-15. There is no way to write `</template>` inside a `<template>` body. Mixing multi-byte and
-    ASCII indentation can make content-tag panic. (§01-1.11 items 7, 8)
+15. Mixing multi-byte and ASCII indentation can make content-tag panic. (§01-1.11 item 7)
+    The lack of a way to write `</template>` inside a body is intentional (§01-1.2.2
+    rule 2, §01-1.11 item 8).
 
 ### 0.7.3 Strict vs loose divergence
 
 16. A strict `<x.y/>` with `x` unbound becomes an element named `x.y`. Loose mode reports
     an error. (§03-10 item 3)
-17. `eq`, `and`, `not`, `element` and the other 7.1 built-ins exist only in strict mode,
-    while `concat`, `get` and `unique-id` are built in only in loose mode. (§08-14 Q3)
+17. *Resolved (intentional):* `eq`, `and`, `not`, `element` and the other 7.1 built-ins
+    exist only in strict mode, because loose mode gains no new features. (§08-14 Q3)
 18. In loose mode, a free name used as an argument (`{{foo bar}}`) is looked up as a strict
     keyword, and the error message says "strict mode". Should this be a compile-time error?
     (§08-14 Q16, §03-5.3)
@@ -302,8 +304,9 @@ The main item is 0.7.1 item 1.
 36. Validity edge cases: `getValue` after a throw returns a stale value and does not
     rethrow; a write during a computation's own evaluation is invisible in production; and
     a write to a never-read cell does not schedule a run loop. (§07-5 items 1, 3, 4)
-37. Addons import private `@glimmer/validator` tag APIs directly, so a new implementation
-    needs a shim or the §07-2.2 primitives. (§07-5 item 9)
+37. Addons import private `@glimmer/validator` tag APIs directly. Policy: shim them if that
+    is cheap; otherwise require the main users, which the project can influence, to migrate
+    to the §07-2.2 primitives. (§07-5 item 9)
 
 ### 0.7.9 Ordering that is inferred or untested
 

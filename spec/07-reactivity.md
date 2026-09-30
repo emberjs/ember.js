@@ -1450,10 +1450,10 @@ yielder (§07-4.2 "Sharing"; tests
    (lazy on first read vs. eager), in whether an initializer runs when the field is written
    before it is read, and in whether the property is a prototype accessor or an own instance
    accessor (§07-3.1.2, §07-3.1.4; `validation_test.js:46-87` asserts different results for the
-   two builds). A new implementation must pick one per build mode. The spec currently allows
-   both.
-
-      > The initialization timing difference is a known accepted decision, hence the differing test assertions. This should hopefully be orthogonal from the question of how to implement an alternative rendering layer.
+   two builds). *Resolved: accepted.* The difference is a known, accepted consequence of the
+   two decorator implementations, which is why the tests assert different results. It is a
+   property of `@tracked` itself and is orthogonal to the rendering layer: a new renderer
+   keeps whichever `@tracked` implementation the build uses and need not reconcile them.
 
 8. **`@tracked accessor` does not invalidate the object-level cell.** The legacy field setter
    does (`tracked.ts:363` vs. `:439`). Code that depends on the object-level cell, such as
@@ -1466,9 +1466,9 @@ yielder (§07-4.2 "Sharing"; tests
    consumption), `tracked-built-ins`, and ember-resources import `@glimmer/validator`
    (`consumeTag`, `tagFor`, `dirtyTagFor`) directly. A new implementation will need a
    compatibility shim, or the proposed public primitives (§07-2) plus `tracked(v)`, to replace
-   those uses.
-
-    > If shimming the APIs is cheap and easy, we should do that, but it's also likely that the most significant users of these APIs are in packages we can directly influence and force to update before they could use a new renderer.
+   those uses. *Policy:* provide a shim if it is cheap and easy. It is not a hard requirement,
+   because the most significant users are packages the project can influence directly, and
+   they can be required to migrate before they run on a new renderer.
 
 10. **The `createCache` debug label is ignored.** `getValue` calls `beginTrackFrame()` without
     the label (`tracking.ts:173`). So caches never appear in the write-after-consume tracking

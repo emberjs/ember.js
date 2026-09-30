@@ -123,7 +123,8 @@ Consequences:
 - The strict-mode auto-imported built-ins `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `and`, `or`,
   `not`, `element` (§1.3(a)) are **not** in these tables; in loose mode those names resolve
   through the registry like any user helper (and are therefore unavailable unless an app
-  registers them). See Open question Q3.
+  registers them). This is intentional: they are recent additions designed for strict mode
+  only, and loose mode is maintained but gains no new features (Q3).
 
 ### 1.3 Strict-mode keywords and auto-imported built-ins
 
@@ -1867,9 +1868,10 @@ visible as an ordinary named argument (e.g. `{{#if @outlet}}`), which is new sur
 `and`, `or`, `not`, `element` are auto-imported in strict mode but absent from the loose-mode
 built-in table (`resolver.ts:88-117`), so `{{#if (eq a b)}}` fails in a loose-mode template
 unless an addon registers `helper:eq`. Conversely `concat`, `get`, `unique-id` are built-in in
-loose mode but require imports in strict mode.
-
-> This is intentional, those are recent additions that were designed to only work in strict mode. Loose mode is supported but under maintenance and not gaining new features.
+loose mode but require imports in strict mode. *Resolved: intentional.* The 7.1 built-ins
+are recent additions designed to work only in strict mode. Loose mode is supported but in
+maintenance and does not gain new features, so a new implementation must **not** add them to
+the loose-mode table.
 
 **Q4. `element` with `null`/`undefined`.** The public docs say "When `@tagName` is `null` or
 `undefined`, nothing is rendered" (`packages/@ember/helper/index.ts:674-675`), but the

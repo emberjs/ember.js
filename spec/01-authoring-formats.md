@@ -109,7 +109,11 @@ Normative rules (all from `swc/crates/swc_ecma_parser/src/lexer/mod.rs:421-466`)
    nesting, no escape mechanism, and no awareness of Handlebars/HTML structure: a
    `</template>` inside a Handlebars comment, string literal, or attribute terminates the
    tag. Consequently a nested HTML `<template>` element may be opened inside a content tag
-   but its closing tag terminates the outer content tag.
+   but its closing tag terminates the outer content tag. This is a deliberate design choice,
+   not an omission: the content tag is meant to be usable as a JS syntax extension for
+   embedding *any* language, so it assumes no interior syntax other than the literal closing
+   bytes. Authors who need the text `</template>` in a body must spell it some other way
+   (for example the entity `&lt;/template>`).
 3. Reaching end of input before `</template>` is a parse error (`SyntaxError::Eof`).
 4. Because recognition happens at the token level, `<template>` inside JS string literals,
    template literals, regular-expression literals and comments is never recognized
@@ -1188,13 +1192,10 @@ or pods lookup (§08-5). The one remaining registry lookup of a template is the 
 
    > Let's work a fix for this bug. The `content-tag` repo is checked out beside this repo. Make a new branch with a failing test and proposed fix, as separate commits so it's easy to see the test failing vs passing.
 
-8. **No way to include `</template>` in a `<template>` body.** There is no escape, and even a
-   string literal (`{{"</template>"}}`) or comment terminates the tag; authors must use
-   workarounds such as the entity `&lt;/template>`. Worth specifying explicitly as a
-   limitation (RFC 0779 §"Spec" promised a spec covering "handling closing tags within
-   comments").
-
-    > This is an intentional design choice. The theory here is that content-tag could become a syntax extension that is not specific to our templates. Arbitrary other languages can be embedded in side JS. So there's no assumed interior syntax, except the literal closing bytes.
+8. **No way to include `</template>` in a `<template>` body.** *Resolved: intentional.* The
+   content tag assumes no interior syntax, so that it can serve as a language-neutral JS
+   syntax extension; §1.2.2 rule 2 now states this as normative. (RFC 0779 §"Spec" had
+   promised a spec covering "handling closing tags within comments"; this is that answer.)
 
 9. **Multiple top-level `<template>`s / multiple class-member `<template>`s** are not
    diagnosed by `content-tag`; they fail later (duplicate `export default`, or the [Dev]
