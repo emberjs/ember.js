@@ -582,7 +582,7 @@ Conversely, if an argument changes but nothing in the region consumed it (no rea
 `args.named.x`, no `@x` in the layout), the region stays valid and `updateComponent` is not
 called.
 
-*Note:* a new implementation MUST reproduce this region-granular trigger. A narrower rule
+A new implementation MUST reproduce this region-granular trigger. A narrower rule
 such as "only when arguments changed" would change the number of `updateComponent` calls,
 and classic components' `willUpdate` / `didUpdate` / `didRender` hooks depend on it (§8.5).
 
@@ -1298,7 +1298,7 @@ destructors, and deferred destructors (`packages/@glimmer/destroyable/index.ts`)
   unregister a destructor ...`), or if `fn` was not registered (`attempted to remove a
   destructor that was not registered with the destroyable`).
 - `destroy(obj)`, `isDestroying(obj)`, `isDestroyed(obj)`.
-- `enableDestroyableTracking()` / `assertDestroyablesDestroyed()` [Dev, test support]. The
+- `enableDestroyableTracking()` / `assertDestroyablesDestroyed()` **[Dev]** (test support). The
   latter throws `Some destroyables were not destroyed during this test:\n    <list>`
   (`index.ts:282-331`).
 

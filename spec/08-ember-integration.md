@@ -258,7 +258,7 @@ Verified output (loose mode, dev build of `ember-template-compiler`):
 <Foo::Bar />                        => [[8,[39,0],null,null,null]]      upvars ["foo/bar"]
 ```
 
-*Implementation note:* a new implementation that does not reuse Ember's AST plugins MUST still
+A new implementation that does not reuse Ember's AST plugins MUST still
 produce the same observable results: `{{outlet}}` MUST read the `@outlet` argument of the
 enclosing template (lexically), `{{#each-in}}` MUST behave per §2.13, `{{#each}}` MUST consume the
 collection-contents storage per §2.14, etc.
@@ -676,7 +676,7 @@ See Q7. The `@action` *decorator* from `@ember/object` is unrelated and remains.
   changes.
 
 ---
-## 3. Classic helpers (`@ember/component/helper`)
+## 3. Classic helpers (`@ember/component/helper`) **[Legacy]**
 
 Ember provides two helper forms in addition to plain functions (default helper manager, §06).
 Both are ordinary helper-manager clients; this section specifies their observable contract.
@@ -1558,7 +1558,8 @@ DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:228-
   are removed afterwards; if none remain the renderer is deregistered. The renderer records the
   "last validated" point in the reactivity timeline.
 - A renderer is *valid* iff it is destroyed, has no roots, or no tracked storage has changed
-  since its last validated point (`isValid`, `base-renderer.ts:374-378`).
+  since its last validated point (the renderer's own `isValid` method, `base-renderer.ts:374-378`;
+  not the **[Proposed]** primitive of §07-2.2.2).
 - **[Dev]** If a render throws, that root's render function is replaced by one that only logs
   `Attempted to rerender, but the Ember application has had an unrecoverable error occur during render. You should reload the application after fixing the cause of the error.`
   (`errorLoopTransaction`, `base-renderer.ts:43-67`); the renderer is marked validated so it

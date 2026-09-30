@@ -1160,7 +1160,7 @@ HashPair { type; key: string; value: Expression; loc }
 The deprecated `PathExpression.parts` getter returns `original.split('.')` minus a leading
 `this`, and with the `@` removed from a leading `@name` (`legacy-interop.ts:63-96`; test
 `packages/@glimmer/syntax/test/legacy-interop-test.ts`). Head/`VarHead` names are not validated
-in production builds; in debug builds the builders assert that a `VarHead` name is not `this`,
+in production builds; **[Dev]** in debug builds the builders assert that a `VarHead` name is not `this`,
 does not start with `@`, and contains no `.` (`parser-builders.ts:363-399`) — a literal segment
 like `{{[foo.bar]}}` violates this (see Open questions).
 

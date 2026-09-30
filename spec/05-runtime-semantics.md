@@ -426,7 +426,7 @@ Consequences (pinned by tests):
 
 The forms below are distinguished statically (chapters 03, 04); their runtime behavior:
 
-1. **`{{name}}` where `name` resolves (loose mode) to a component** — component invocation with
+1. **[Loose mode]** **`{{name}}` where `name` resolves to a component** — component invocation with
    no args, not a replaceable region beyond the component's own layout region.
 2. **`{{name}}` where `name` resolves to a helper** — helper invocation with no args, result
    displayed per the HELPER row of §05-3.3 (non-dynamic append).
@@ -1333,8 +1333,8 @@ blocks (chapter 03). A named block that is passed but never yielded is never ren
 |---|---|---|
 | `<Foo @a={{x}} class="c" {{m}}>…</Foo>` with `Foo` resolved statically (strict lexical / loose resolution) | static | named `@a`, blocks incl. `attrs` |
 | `<this.Foo>`, `<@Foo>`, `<foo.Bar>`, `<local>` (path head) | dynamic value (§7.2) | same |
-| `{{foo a=x}}`, `{{#foo a=x}}…{{/foo}}` (resolved component, loose mode) | static | named `a` → `@a`; positional; blocks `default`/`else` |
-| `{{component def a=x}}`, `{{#component def}}…{{/component}}` | dynamic (strings allowed in loose mode) | named, positional, blocks |
+| **[Loose mode]** `{{foo a=x}}`, `{{#foo a=x}}…{{/foo}}` (resolved component) | static | named `a` → `@a`; positional; blocks `default`/`else` |
+| `{{component def a=x}}`, `{{#component def}}…{{/component}}` | dynamic (strings allowed only in **[Loose mode]**) | named, positional, blocks |
 | `{{this.Foo a=x}}`, `{{@Foo}}` (dynamic value in append position with component kind) | dynamic | named, positional; no blocks |
 | component-kind value in `{{…}}` content (§05-3) | dynamic | none |
 
@@ -1353,7 +1353,7 @@ invokeDynamic(dExpr, args, blocks, stringsAllowed):
   else:
      if d is a curried component: use it (§05-8)
      else if typeof d == "string":
-         if stringsAllowed (only `{{component …}}` in loose mode):
+         if stringsAllowed (only `{{component …}}` in loose mode) [Loose mode]:
              resolve the component named d with the current owner;
              [Dev] error if not found: `Attempted to resolve \`${d}\`, which was expected to be a component, but nothing was found.`
          else: [Dev] error (angle-bracket/path invocation):
@@ -1407,7 +1407,7 @@ sees the arguments (`component.ts:304-360`,
 If the manager has the `prepareArgs` capability, `prepareArgs(definitionState, args)` is called
 next; if it returns `{positional, named}`, those replace the arguments (blocks are kept)
 (`component.ts:362-399`). This is how classic components implement `positionalParams`
-(chapter 08).
+(chapter 08) **[Legacy]**.
 
 ### 7.4 Invocation sequence
 
@@ -1538,7 +1538,7 @@ modifier instances and invokes helpers in attribute values separately). `...attr
 template that received no `attrs` block (e.g. curly invocation, or a route template) does
 nothing.
 
-### 7.6 Wrapped components (classic)
+### 7.6 Wrapped components (classic) **[Legacy]**
 
 A manager with the `wrapped` capability (Ember classic components, chapter 08) has its layout
 rendered inside a wrapper element (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts:413-439`):
@@ -1581,7 +1581,7 @@ created inside it — is (`component.ts:825-853`):
 
 Blocks passed to the component keep the owner of the scope in which they were written.
 
-For a curried component whose inner definition is a string (loose mode), the string is resolved
+**[Loose mode]** For a curried component whose inner definition is a string, the string is resolved
 with the **curried** owner (`component.ts:329-335`). See Open questions for the asymmetry
 between the owner given to `create` and the owner of the layout.
 

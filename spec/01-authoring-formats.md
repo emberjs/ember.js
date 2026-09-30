@@ -927,7 +927,7 @@ later RFCs and the implementation's `STRICT_MODE_KEYWORDS` plus AutoImportBuilti
 *every* free name must be lexical or a keyword — there is no "emit a JS reference and hope"
 path in the current implementation.
 
-### 1.7.3 Loose mode
+### 1.7.3 Loose mode **[Loose mode]**
 
 Loose mode allows free names to be resolved at run time against the template's owner
 (components, helpers, modifiers by string name), string-based `(component "x")`, and the
@@ -1065,7 +1065,7 @@ form, where the calls are observable).
 
 ---
 
-## 1.9 Classic `.hbs` templates
+## 1.9 Classic `.hbs` templates **[Loose mode]**
 
 ### 1.9.1 Colocated component templates (RFC 0481)
 

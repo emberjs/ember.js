@@ -747,7 +747,7 @@ Step 5 **[Dev]** asserts that `options` is `undefined` or a non-null object:
 ``tracked() may only receive an options object containing 'equals' or 'description' as its second argument, received ${options}``
 (`tracked.ts:220-223`).
 
-In development builds `tracked` is itself marked as a classic decorator, so that step 2 can run
+**[Dev]** In development builds `tracked` is itself marked as a classic decorator, so that step 2 can run
 (`tracked.ts:321-325`).
 
 #### 07-3.1.2 Legacy (experimental/TypeScript) field decorator: `@tracked x = init`
@@ -1178,7 +1178,7 @@ update. That is expected behavior, not an error.
 These defer *sync observer* flushing only. Invalidation is still immediate
 (`property_events.ts:88-127`).
 
-### 07-3.7 Classic `Helper#recompute()` (`@ember/component/helper`)
+### 07-3.7 Classic `Helper#recompute()` (`@ember/component/helper`) **[Legacy]**
 
 Each classic helper instance has a private value-less cell. It is consumed after every
 `compute()` call. `recompute()` invalidates it inside `join()` (it ensures a run loop), which

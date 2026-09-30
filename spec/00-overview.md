@@ -112,9 +112,10 @@ Each chapter defines its own terms. These are the cross-cutting ones:
 | wire format, serialized template, template block, symbol table | §04 |
 
 Chapters use "**[Proposed]**" to mark new API that this spec introduces. That is chiefly the
-consumption primitive in §07-2.2 (`isValid`, a public `untrack`, `onInvalidate`), which the
-other chapters use to describe updates without referring to references or tags. Existing
-behavior never depends on a **[Proposed]** API.
+consumption primitive in §07-2.2 (`isValid`, a public `untrack`, `onInvalidate`). Chapter 07
+uses it (§07-2.4) to show that every renderer need can be expressed without references or
+tags. The other chapters describe updates with the abstract model of §07-1 and do not call the
+proposed API. Existing behavior never depends on a **[Proposed]** API.
 
 ## 0.5 Conformance markers
 
@@ -319,8 +320,9 @@ guid collisions). The wire format is informative (§0.2), so these are not requi
 
 §07-2.2 introduces a **[Proposed]** consumption primitive. It keeps the existing
 `createCache`, `getValue` and `isConst`, and adds `isValid(cache)`, a public `untrack(fn)`
-and a host-level `onInvalidate(listener)`. Chapters 07 and 08 use it to describe
-updates without references or tags. This is a design decision for the plan's author, not a
+and a host-level `onInvalidate(listener)`. §07-2.4 uses it to show that updates can be
+described without references or tags; the other chapters rely only on the abstract model
+of §07-1. This is a design decision for the plan's author, not a
 record of existing behavior. Points to review: whether `isValid` of a never-evaluated cache
 should return `false` (while `isConst` throws), whether a parameterless global
 `onInvalidate` is enough or a per-computation watcher is wanted (§07-2.5), and whether

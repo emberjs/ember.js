@@ -485,7 +485,7 @@ arguments. Unless noted, the error span is the whole node (`{{...}}` / `(...)` /
 - More than 1 positional: error `{{#each}} can only receive one positional parameter, the collection being iterated. Received <n> parameters`
   at the positional span.
 - 0 positionals: error `{{#each}} requires an iterable value to be passed as its first positional parameter, did not receive any parameters`
-  at the args span (`keywords/block.ts:216-283`). **[Dev, Ember]** In Ember this case is
+  at the args span (`keywords/block.ts:216-283`). **[Dev]** (Ember) In Ember this case is
   first caught by `TransformEachTrackArray` as `Assertion Failed: has firstParam` (§03-7.8).
 - `key` may be any expression. Statically, nothing checks that it is a string.
 - In Ember, the iterable is wrapped as `(-track-array <iterable>)` (§03-7.8).
@@ -513,7 +513,7 @@ arguments. Unless noted, the error span is the whole node (`{{...}}` / `(...)` /
   at the args span (`keywords/block.ts:15-43`).
 - Extra positionals, other named arguments, and an `{{else}}` block are **silently ignored**
   (verified: the else block is dropped). See §03-10.
-- **[Dev, Ember]** `insertBefore` MUST be the literal `null` or `undefined`; otherwise
+- **[Dev]** (Ember) `insertBefore` MUST be the literal `null` or `undefined`; otherwise
   `Assertion Failed: Can only pass null to insertBefore in in-element, received: <JSON of the ASTv1 node>`
   (§03-7.9).
 - Each `in-element` gets a unique compile-time cursor id (`%cursor:<n>%`,
@@ -1181,7 +1181,7 @@ element modifiers) whose path's `original` is exactly `helper` or `modifier`:
 - A string-literal first argument `"name"` is replaced by `(-resolve "<type>:name")`, a
   build-time-described lookup of the named helper/modifier (§08). For example
   `{{helper "foo" 1}}` → `{{helper (-resolve "helper:foo") 1}}`.
-- Otherwise, in DEBUG builds, the first argument `e` is replaced by
+- **[Dev]** Otherwise, in DEBUG builds, the first argument `e` is replaced by
   `(-disallow-dynamic-resolution e type="<type>" loc="<location display>" original="<printed e>")`,
   a runtime check that `e` is not a string (§08). In production the args are unchanged.
 - The rewritten node is marked, so it is not processed again.
