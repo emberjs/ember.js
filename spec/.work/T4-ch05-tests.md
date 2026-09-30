@@ -9,9 +9,16 @@ For each area, search the tests: `packages/@glimmer-workspace/integration-tests/
 
 Commit after each area.
 
-- [ ] `each`: keys (`@identity`, `@index`, property keys), duplicate keys, move/insert/remove, `{{else}}`, iterables
+- [x] `each`: keys (`@identity`, `@index`, property keys), duplicate keys, move/insert/remove, `{{else}}`, iterables
 - [ ] `in-element`: `insertBefore`, null/undefined destination, destination change, clearing
 - [ ] `yield` / named blocks / `has-block` / `has-block-params`
 - [ ] Modifier install/update/destroy ordering (child vs parent)
 - [ ] Component lifecycle hook ordering (didCreate/didUpdate vs modifier install; classic hooks)
 - [ ] Destruction order (parent vs child destructors; eager vs deferred; which queue)
+
+## Notes
+
+### each
+- Confirmed: retain/move sequences (`each.ts` swap #1, #2, #8, #9; LOCAL_DEBUG only), duplicates render, `@index`/`@identity`/path keys, `else`, holes, Set/forEach/Symbol.iterator, destroy on remove/empty, each-in key tests (already cited).
+- No contradictions found.
+- Untested (added to §05-14 item 20): `@key` on plain each, invalid-keypath assertion, key read once, occurrence numbering of duplicate keys, NaN keys, Map entries in plain each, non-iterable objects, lazy native iterator consumption, extra block params, node non-reuse across empty transition, insert-before-revalidate and delete ordering. Sync step tests are LOCAL_DEBUG-only.
