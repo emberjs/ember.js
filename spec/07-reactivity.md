@@ -851,8 +851,8 @@ Any other decorator kind (method, getter, setter, class) throws
   templates, Ember `get`, getters, methods, and so on. Test:
   `packages/@ember/-internals/glimmer/tests/integration/helpers/tracked-test.js:15-142`.
 - Ordinary getters that read tracked properties are reactive without any annotation (they are
-  plain code inside the reader's computation). Tests: `tracked-test.js` (components) `:426`,
-  `:495`.
+  plain code inside the reader's computation). Tests: `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:426`,
+  `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:495`.
 
 ### 07-3.2 Standalone `tracked(value, options?)` → `TrackedValue`
 

@@ -12,7 +12,10 @@ Usage: semantic.py chapter.md [--only NEAR,MISS]
 """
 import sys, re, os, json
 sys.path.insert(0, os.path.dirname(__file__))
-import check
+import importlib.util
+_spec = importlib.util.spec_from_file_location('check', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'check-citations.py'))
+check = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(check)
 
 SLACK = 2
 STOP = set('''true false null undefined this args if else each let with yield in of as new
