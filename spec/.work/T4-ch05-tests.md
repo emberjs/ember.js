@@ -11,7 +11,7 @@ Commit after each area.
 
 - [x] `each`: keys (`@identity`, `@index`, property keys), duplicate keys, move/insert/remove, `{{else}}`, iterables
 - [x] `in-element`: `insertBefore`, null/undefined destination, destination change, clearing
-- [ ] `yield` / named blocks / `has-block` / `has-block-params`
+- [x] `yield` / named blocks / `has-block` / `has-block-params`
 - [ ] Modifier install/update/destroy ordering (child vs parent)
 - [ ] Component lifecycle hook ordering (didCreate/didUpdate vs modifier install; classic hooks)
 - [ ] Destruction order (parent vs child destructors; eager vs deferred; which queue)
@@ -26,3 +26,8 @@ Commit after each area.
 ### in-element
 - Confirmed by `lib/suites/in-element.ts` and `public-in-element-test.js`: clearing, insertBefore null/node, node-to-null move, falsy destination, destination change, nesting, destroy. No contradictions.
 - Untested (in §05-5.7 test list): explicit `insertBefore=undefined`, node-to-node insertBefore change, remote-not-in-bounds rule, `guid` error, isProduction omission of `-in-el-null`. Added to §05-14 item 20.
+
+### yield / blocks
+- Confirmed: named blocks, `<:else>`/`<:inverse>` aliasing, has-block/has-block-params matrix, absent-block yield, lexical context, block-param shadowing.
+- Corrected/clarified: §05-6.3 said "else blocks cannot declare params"; only `{{else}}` cannot, `<:else as |x|>` can (emberish-components.ts:263-295). §14 item 16 said Glimmer "skips" the inverse/else yield tests; `skip:'glimmer'` skips only the angle-bracket kind, curly and dynamic still run them (lib/test-helpers/module.ts:143-160). Reworded item 16.
+- Untested (added to §14 item 20): owner inside yielded block, yielding one block several times, has-block constancy, non-literal has-block error, has-block-params for `<:else as |x|>`.

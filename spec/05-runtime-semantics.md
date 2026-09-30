@@ -1244,7 +1244,15 @@ An invocation passes zero or more blocks to a component:
 
 Inside the component, the block named `n` is in slot `&n`; `inverse` is always an alias of
 `else` (`packages/@glimmer/syntax/lib/symbol-table.ts:155-166`,
-`packages/@glimmer/compiler/lib/passes/2-encoding/content.ts:186-192`). A block is a closure
+`packages/@glimmer/compiler/lib/passes/2-encoding/content.ts:186-192`). Tests: `<:else>` and
+`<:inverse>` each satisfy both `has-block "else"`/`"inverse"` and both `yield to=` spellings
+(`packages/@ember/-internals/glimmer/tests/integration/helpers/yield-test.js:61-85`); both may
+declare block params and receive yielded values
+(`lib/suites/emberish-components.ts:263-295`, `kind: 'curly'`); a `<:default>` block and an
+arbitrary `<:baz>` block (`emberish-components.ts:207-260`); an implicit default
+(`emberish-components.ts:225-243`). Passing both `<:else>` and `<:inverse>` is a compile-time
+error (`packages/@glimmer-workspace/integration-tests/test/syntax/named-blocks-test.ts:73-105`).
+A block is a closure
 (§05-1.1) that also records its declared block-parameter count.
 
 ### 6.2 `{{yield}}`
@@ -1266,15 +1274,24 @@ yield(slot, args):
 
 - Yielded primitives render per §05-3 (`true`, `false`, `123.45`, empty for `null`/`undefined`);
   yielding to an absent block renders nothing at all (`Before--After`)
-  (`packages/@glimmer-workspace/integration-tests/lib/suites/yield.ts:21-211`).
+  (`packages/@glimmer-workspace/integration-tests/lib/suites/yield.ts:64-72`, `112-194`;
+  Ember: `yield-test.js:216-240`).
+- A yield inside `{{#if}}`/`{{#each}}` in the layout renders inline into that region and is
+  removed with it (`yield.ts:196-215`; `yield-test.js:117-163`).
+- A parameter with no corresponding yielded value is `undefined` (`42 - `), tested for curly
+  and dynamic invocation only (`yield.ts:86-99`, `skip: 'glimmer'`; §14 item 16).
 - `yield` is not itself a replaceable region: the yielded content is rendered inline into the
   current region. Yielding the same block several times renders it several times, each with its
   own instances.
 - Yielded values are reactive: if the component yields `this.count`, the block's reads of the
-  param update in place.
+  param update in place (block content updates, `yield-test.js:36-59`; yielded param updating
+  is covered by `yield-test.js:323-346` but no test isolates it).
 - The yielded block's `this` is the caller's `this` (lexical), and `@args` inside it are the
-  caller's arguments. Block params shadow outer names (chapter 03).
-- The owner in effect inside the yielded block is the owner of the block's defining scope.
+  caller's arguments (`yield-test.js:242-267`). Block params shadow outer names (chapter 03;
+  `yield-test.js:269-321`).
+- The owner in effect inside the yielded block is the owner of the block's defining scope
+  (untested).
+- Yielding the same block more than once, each time with its own instances, is untested.
 
 ### 6.3 `has-block` and `has-block-params`
 
@@ -1284,11 +1301,18 @@ argument must be a string literal (compile-time error otherwise:
 `(has-block) can only receive a string literal as its first argument`). `"inverse"` means
 `else`. `(has-block-params "name")`: `true` iff that block was passed *and* declares at least
 one block parameter (`expressions.ts:260-271`); so `(has-block-params "inverse")` is false even
-when an `{{else}}` block is passed, because `else` blocks cannot declare params
-(`lib/suites/has-block-params.ts:9-16`, `79-109`). A curried component yielded and invoked as
+when an `{{else}}` block is passed, because an `{{else}}` block cannot declare params
+(`lib/suites/has-block-params.ts:9-19`, `79-100`; all of these are `kind: 'curly'`, which runs
+for curly and dynamic invocation). A `<:else as |x|>` named block *can* declare params and is
+yielded to with them (§05-6.1); what `has-block-params` reports for it is untested. The
+`has-block` and `has-block-params` results for `default`, `else`, present and absent blocks
+are covered in `lib/suites/has-block.ts:7-140` and `has-block-params.ts:34-134` (subexpression,
+content, property, attribute and concatenated-attribute positions). A curried component yielded and invoked as
 `<c/>` or `{{c}}` reports `has-block` false; `<c></c>` reports true
-(`lib/suites/has-block.ts:279-342`). Both values are constant for the lifetime of the
-component instance. In content position they render as the text `true` / `false`.
+(`lib/suites/has-block.ts:279-342`, `has-block-params.ts:20-33`). Both values are constant
+for the lifetime of the component instance (untested). In content position they render as
+the text `true` / `false` (`has-block.ts:51-94`). The compile-time error for a non-literal
+argument is untested.
 
 For invocations that pass no `attrs` (e.g. curly invocations), `(has-block "attrs")` is not
 expressible (the name `attrs` cannot be written by users).
@@ -2079,9 +2103,12 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
 15. **Modifier element state at `create`.** For elements with modifiers, attributes are deferred,
     so `createModifier` sees an element with *no* attributes and not yet in the document; any
     code relying on attributes must wait for `install`.
-16. **Glimmer skips `yield to="inverse"`/`to="else"` tests** (`lib/suites/yield.ts:25-99`,
-    `skip: 'glimmer'`) although the implementation maps `inverse` to `else`; their status is
-    unclear.
+16. **`yield to="inverse"`/`to="else"` and extra block params are not tested under angle-bracket
+    invocation.** `skip: 'glimmer'` (`lib/suites/yield.ts:25-62`, `86-99`) skips the test only
+    for the Glimmer (angle-bracket) invocation kind; the module builder still runs it for curly
+    and dynamic invocation (`lib/test-helpers/module.ts:143-160`). The implementation maps
+    `inverse` to `else` regardless of invocation kind, and `yield-test.js:61-85` covers the
+    Ember angle-bracket case, so the gap is small, but the reason for the skip is unrecorded.
 17. **`#each` visits sparse-array holes, `#each-in` skips them** — an inconsistency pinned by
     Ember tests (`each-test.js:1187-1212`, `each-in-test.js:459-475`).
 18. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
@@ -2106,3 +2133,6 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     - `in-element`: explicit `insertBefore=undefined`; a node-to-node `insertBefore` change;
       the remote region not counting toward enclosing bounds; the `guid` compile error; the
       `isProduction` omission of `-in-el-null` (see the test list in §05-5.7).
+    - `yield`/blocks: the owner inside a yielded block; yielding one block several times;
+      `has-block`/`has-block-params` constancy and the non-literal-argument compile error;
+      `has-block-params` for a `<:else as |x|>` block.
