@@ -26,7 +26,7 @@ construct is rewritten before it is classified.
    plugin list depends on the mode (§03-7). User plugins registered with the Ember compiler run
    *before* the built-in ones (`packages/@ember/template-compiler/lib/compile-options.ts:161-171`).
    Babel's `scope-locals-crawl` plugin runs *after* all of these
-   (`babel-plugin-ember-template-compilation/src/plugin.ts:408-412`).
+   (`babel-plugin-ember-template-compilation/src/plugin.ts:411-415`).
 3. **Normalization** to ASTv2 (`packages/@glimmer/syntax/lib/v2/normalize.ts:37-66`). This
    phase builds the scope chain, turns every variable head into a typed reference
    (`This`, `Arg`, `Local`, `Free`, or strict-mode `Keyword`), gives each free variable
@@ -864,7 +864,7 @@ named blocks (`<:name>` children) and other content (`normalize.ts:867-1056`):
   - Both `<:else>` and `<:inverse>` (in either order):
     `Component has both <:else> and <:inverse> block. <:inverse> is an alias for <:else>`.
 - A self-closing component has **no** blocks, not even an empty `default`
-  (`builders.ts:388-403`). An empty non-self-closing component has an empty `default` block.
+  (`builders.ts:370-385,388-403`). An empty non-self-closing component has an empty `default` block.
 
 A named block element itself:
 
@@ -961,7 +961,7 @@ grammar: `packages/@glimmer/syntax/lib/v2/objects/ebnf/ASTv2.ebnf`.
 | `HtmlComment` | `text` | an HTML `<!-- -->` comment (rendered) |
 | `GlimmerComment` | `text` | a `{{! }}` comment (not rendered; dropped by the compiler, `visitors/statements.ts:27-28`) |
 | `AppendContent` | `value: Expr`, `trusting: bool`, `table` | `{{value}}` / `{{{value}}}`. The `callee` / `args` views unwrap a `Call` value. |
-| `InvokeBlock` | `callee`, `args`, `blocks` (`default` and optional `else`) | `{{#callee args}}...{{else}}...{{/callee}}` (`builders.ts:337-363`) |
+| `InvokeBlock` | `callee`, `args`, `blocks` (`default` and optional `else`) | `{{#callee args}}...{{else}}...{{/callee}}` (`builders.ts:294-321`) |
 | `InvokeComponent` | `callee: Expr`, `attrs: (HtmlAttr|SplatAttr)[]`, `componentArgs: ComponentArg[]`, `modifiers`, `blocks` | an angle-bracket component invocation |
 | `SimpleElement` | `tag`, `attrs`, `componentArgs` (always empty after validation), `modifiers`, `body` | an HTML element |
 
