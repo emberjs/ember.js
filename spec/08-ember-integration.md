@@ -224,7 +224,7 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
    (`assert-against-attrs.ts:25-85`, test `curly-components-test.js:1315-1358,1554-1596`).
 5. `transform-each-in-into-each` — `{{#each-in X as |k v|}}` → `{{#each (-each-in X) as |v k|}}`;
    with a single block param `|k|` the params become `['( unused value )', k]`
-   (`transform-each-in-into-each.ts:26-65`). The `key=` hash pair is preserved.
+   (`transform-each-in-into-each.ts:27-73`). The `key=` hash pair is preserved.
 6. `assert-input-helper-without-block` (loose only) — **[Dev]** `{{#input}}` is a compile error
    `The {{input}} helper cannot be used in block form. <loc>`.
 7. `transform-in-element` — in non-production builds, wraps the first param of
