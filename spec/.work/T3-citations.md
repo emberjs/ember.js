@@ -10,8 +10,8 @@ below, with the chapter, the spec line and the reason.
 - [x] Range errors: fix the 2 in 07 (tracked-test.js continuation ranges)
 - [x] Semantic pass 06-managers.md (NEAR/MISS triaged and fixed)
 - [x] Semantic pass 07-reactivity.md
-- [ ] Semantic pass 05-runtime-semantics.md
-- [ ] Semantic pass 01-authoring-formats.md
+- [x] Semantic pass 05-runtime-semantics.md (all 36 NEAR/MISS opened; none needed changes)
+- [x] Semantic pass 01-authoring-formats.md (all 28 NEAR/MISS opened; none needed changes)
 - [ ] Semantic pass 08-ember-integration.md
 - [ ] Semantic pass 03, 02 (lower priority; those were checked more closely when written)
 - [ ] Commit after each chapter
@@ -28,3 +28,10 @@ patched to load it by path. Its NEAR/MISS output has many false positives: test-
 live in a different file than the resolved one, and labels resolved to the wrong file (for
 example bare `:560-601` after an `rfcs/...` mention in 07-3.x, which is really `computed.ts`).
 Chapters 06 and 07: every NEAR/MISS was opened and confirmed correct except as listed above.
+- 01-authoring-formats.md:1119-1122 (§01-1.9): "Non-colocated component templates and pods layouts ...
+  are paired with their component through the resolver". The cited `resolver.ts:69-85`
+  (`lookupComponentPair`) pairs only through `getComponentTemplate(component.class)`, that is
+  through `setComponentTemplate`, and returns `layout: null` otherwise. The only `template:`
+  lookup in the runtime is the classic `layoutName` path
+  (`packages/@ember/-internals/glimmer/lib/component-managers/curly.ts:155`). No `template:components/x`
+  or pods lookup exists in this checkout.
