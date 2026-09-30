@@ -320,9 +320,9 @@ to addon tooling.
 ### 0.7.8 Reactivity
 
 35. Invalidation is coarser than it looks. `trackedArray`'s per-index cells never narrow
-    invalidation, because every access also uses the collection cell. `@tracked accessor`
-    does not invalidate the object-level cell, so `{{#each-in}}` over such an object may
-    not update. `trackedObject` breaks `instanceof`. (§07-5 items 8, 11, 12)
+    invalidation, because every access also uses the collection cell. `trackedObject` breaks
+    `instanceof`. (`@tracked accessor` not invalidating the object-level cell is fixed, #21636.)
+    (§07-5 items 8, 11, 12)
 36. Validity edge cases: `getValue` after a throw returns a stale value and does not
     rethrow; a write during a computation's own evaluation is invisible in production; and
     a write to a never-read cell does not schedule a run loop. (§07-5 items 1, 3, 4)
@@ -337,9 +337,9 @@ to addon tooling.
     derived from source and then confirmed by experiment (T9b; no upstream tests). `each` sync
     step sequences are still asserted only in `LOCAL_DEBUG` builds. (§05-14 item 20)
 39. Components are destroyed parent-first, including with public managers (verified by
-    experiment, T9b). Modifiers are destroyed child-first only when the debug render tree is off
-    (production and the Glimmer harness). When it is on, the default in Ember DEBUG builds, they
-    are destroyed in creation order, interleaved with components (corrected by experiment, T9b).
+    experiment, T9b). Modifiers must be destroyed child-first in every build (author ruling);
+    current development builds, where the debug render tree is on, destroy them in creation order
+    instead, a bug with a fix proposed on branch `fix/modifier-destruction-order` (T9b).
     `createModifier` sees an element that has no attributes yet and is
     not in the document. (§05-14 items 11, 15)
 40. Ember render timing: `renderComponent` called during a render defers the new root, so

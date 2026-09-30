@@ -50,6 +50,8 @@ continue the work. Last updated: 2026-09-30.
     migrate (§07-5 item 9).
   - The 7.1 built-ins (`eq`, `and`, `element`, …) are strict-only on purpose; loose mode gains
     no new features (§08-14 Q3).
+  - Modifier destruction order must not differ between development and production; the
+    production (child-first) order is correct for both (2026-09-30, after T9b).
   - Upstream fixes were requested for the parser `TypeError` crashes (§0.7.2 item 11), the
     content-tag indentation panic (§01-1.11 item 7), and `@tracked accessor` not dirtying the
     object-level cell (§07-5 item 8). Their branches are listed under "Upstream fix branches".
@@ -66,7 +68,8 @@ none of those commits touch the files involved.
 |---|---|---|---|---|
 | §0.7.2 item 11 | ember.js | `fix/parser-typeerror-crashes` | **Landed on main** (emberjs/ember.js#21635, merge `e1d334284e`) | Syntax errors for inverse sections without `{{else}}`, hash literals, sub-expression-rooted paths, mustaches or comments in end tags, and mustaches in markup declarations. Handlebars syntax in any HTML-comment state becomes comment text. `<div /{{x}}>` treats the stray `/` as HTML does (ignored). `{{#each-in}}` with no params is a syntax error. |
 | §01-1.11 item 7 | content-tag | `fix-multibyte-indentation-panic` | **Shipped in content-tag 4.2.1** (embroider-build/content-tag#134) | `strip_indent` counts only ASCII spaces and tabs as indentation. |
-| §07-5 item 8 | ember.js | `fix/tracked-accessor-object-tag` | Open for review. The accessor test now lives in the stable-decorator smoke tests (`smoke-tests/scenarios/stable-decorator-files.ts`). | The `@tracked accessor` setter also dirties the object-level cell. |
+| §07-5 item 8 | ember.js | `fix/tracked-accessor-object-tag` | **Landed on main** (emberjs/ember.js#21636) | The `@tracked accessor` setter also dirties the object-level cell. Test in the stable-decorator smoke tests. |
+| §05-11.3, §05-14 item 11 | ember.js | `fix/modifier-destruction-order` | Open for review | With the debug render tree on, modifiers are now destroyed child-first, as in production (author ruling, 2026-09-30). |
 
 When a branch is merged, update the owning item to describe the new behavior. Done for the two
 that have landed (T7, `.work/T6-feedback-8b34378.md`): §02-3.3, §02-3.8, §02-6.7, §02-6.9–6.11,
@@ -195,24 +198,21 @@ Suggestions for the plan's author, based on what is still open:
 1. **Decide the remaining "preserve or change" items in §00-0.7.1** (item 1 is resolved).
    The most urgent is the `strict`/`strictMode` option split (item 2; T9a confirmed all three
    behaviors). Each decision changes normative text in the owning chapter.
-2. **Decide the modifier destruction order.** Development builds (debug render tree on)
-   destroy modifiers in creation order interleaved with components; production builds destroy
-   them child-first (§05-11.3, §05-14 item 11; found by T9b). A new implementation has to pick.
-3. **Review the [Proposed] consumption primitive** (§07-2.2, the review points in §00-0.7.10).
+2. **Review the [Proposed] consumption primitive** (§07-2.2, the review points in §00-0.7.10).
    Only chapter 07 uses it. If it is accepted, other chapters could state update rules with it
    directly; if it is rejected, §07-2.4 needs another way to show sufficiency.
-4. **Rule on the suspected bugs** in §00-0.7.2–0.7.8, deciding for each whether a new
+3. **Rule on the suspected bugs** in §00-0.7.2–0.7.8, deciding for each whether a new
    implementation must keep it. The babel-vs-runtime differences (§0.7.4) are confirmed by
    running both paths (T9a).
-5. **Upstream the ordering experiments?** T9b's throwaway tests pinned orderings that Ember's
+4. **Upstream the ordering experiments?** T9b's throwaway tests pinned orderings that Ember's
    suite does not test; `.work/T9b-orderings.md` "Upstream candidates" lists the ones worth
    turning into real tests.
-6. **Remaining verification gaps.** §05-14 item 20 still lists the `each`, `in-element` and
+5. **Remaining verification gaps.** §05-14 item 20 still lists the `each`, `in-element` and
    `yield`/block claims with no test. Most of §01 and §03 beyond the T9a items is checked only
    against source and `dist/dev`.
-7. **Turn the spec into a conformance suite.** Many rules already cite the tests that pin
+6. **Turn the spec into a conformance suite.** Many rules already cite the tests that pin
    them. Collecting those into one implementation-independent suite, keyed by section number,
    would give a new implementation something to run against.
-8. **Keep citations current.** Line numbers are accurate for this checkout (`main` merged at
+7. **Keep citations current.** Line numbers are accurate for this checkout (`main` merged at
    `7364f4b36d`). After the next merge, re-run `python3 spec/tools/check-citations.py` and
    repeat T8 for the files the merge changed (`git diff --name-only <old> HEAD`).

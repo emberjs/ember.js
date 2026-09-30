@@ -834,9 +834,10 @@ Returns `{ get, set }` wrapping the native accessor storage (`tracked.ts:418-443
 - **get:** consume the (instance, key) cell, read the native private storage, and, for arrays,
   also consume the array's `[]` cell.
 - **set:** if `equals` is present and `equals(untrack(read), v)` is true, return. Otherwise
-  invalidate the (instance, key) cell and write the native storage. Note that, unlike
-  §07-3.1.2, this form does **not** invalidate the instance's object-level cell (see §07-5,
-  item 8).
+  invalidate the (instance, key) cell **and** the instance's object-level cell, as §07-3.1.2
+  does, and write the native storage. (Until emberjs/ember.js#21636, which landed after this
+  checkout's base, the object-level cell was not invalidated and the cited line lacks it; see
+  §07-5 item 8.)
 - Initialization follows native accessor semantics (eager).
 
 Any other decorator kind (method, getter, setter, class) throws
@@ -1455,11 +1456,9 @@ yielder (§07-4.2 "Sharing"; tests
    property of `@tracked` itself and is orthogonal to the rendering layer: a new renderer
    keeps whichever `@tracked` implementation the build uses and need not reconcile them.
 
-8. **`@tracked accessor` does not invalidate the object-level cell.** The legacy field setter
-   does (`tracked.ts:363` vs. `:439`). Code that depends on the object-level cell, such as
-   `{{#each-in}}` over an object with tracked accessors, or proxies, may not update for accessor
-   fields. *Fix proposed* on branch `fix/tracked-accessor-object-tag` (STATUS.md, "Upstream
-   fix branches"). The only in-tree consumers of the object-level cell are `{{#each-in}}` and
+8. **`@tracked accessor` did not invalidate the object-level cell.** *Resolved* by
+   emberjs/ember.js#21636 (after this checkout's base): the accessor setter now invalidates it,
+   like the field setters (`tracked.ts:363` vs. `:439` in this checkout). The only in-tree consumers of the object-level cell are `{{#each-in}}` and
    `ObjectProxy`, and `{{#each-in}}` iterates own keys, which an accessor is not, so the
    difference is mostly visible to code that reads `tagForObject` directly.
 
