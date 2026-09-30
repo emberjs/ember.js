@@ -177,6 +177,9 @@ choice breaks someone.
    `{{foo.[bar baz]}}` with a different meaning, and addons publish that output. Should a new
    `hbs` target preserve meaning or reproduce the output byte for byte? (§01-1.11 item 15,
    §02-10)
+
+    > Addon's pre-publication tooling is important but can be managed independently of changes to Ember's core rendering. Our priority is to ensure that our spec faithfully executes the handlebars code that people have already published in the same way. Newer versions of addon author tooling that change the mapping from their authored source to their published source are fine, and can be incrementally adopted, but remain outside the primary scope of this spec.
+
 2. `template(src, { strict: false })` is loose through babel `hbs`, strict through babel
    `wire`, and strict at run time, because the runtime reads only `strictMode`. Which option
    name wins, and what does it mean? (§01-1.11 item 1)

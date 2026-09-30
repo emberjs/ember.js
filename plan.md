@@ -41,3 +41,11 @@ The user-defined things that can be invoked in a template are Components, Helper
 Internally, reactivity is modeled through a reference and tagging system. Users can use the `tracked` function as a field decorator, auto-accessor decorator, or plain function to establish buckets of tracked state.
 
 There is, presently, no single clear well-established low-level public API for _consuming_ changes to tracked state. I believe that's an important missing primitive. If introducing such a primitive can make the spec cleaner, let's attempt that. For example: ideally the details of tags and refs are not visible the spec we're writing, they remain implementation details of the current implementation only.
+
+## Non-goals
+
+- Wire format compatibility is not important (every Ember version is allowed to change wire format, addons must publish hbs strings, not wire format, for this reason).
+
+- AST transform compatibility is not a priority.
+  - Ember happens to use AST transforms internally to implement some features, and that _behavior_ is important, but the implementation detail of the internal AST transforms is not.
+  - Custom user-authored AST transforms exist, but they are too implementation-defined for me to want to make them part of our language spec. In the future we could decide to carefully design a stable AST spec, but the current API is not one I want to be committed to.
