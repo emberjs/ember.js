@@ -1458,9 +1458,10 @@ yielder (§07-4.2 "Sharing"; tests
 8. **`@tracked accessor` does not invalidate the object-level cell.** The legacy field setter
    does (`tracked.ts:363` vs. `:439`). Code that depends on the object-level cell, such as
    `{{#each-in}}` over an object with tracked accessors, or proxies, may not update for accessor
-   fields.
-
-      > Write a test to demonstrate this bug. Commit it on a new branch (based off main). Then add a second commit to that branch with a proposed fix. I will review and then decide about opening a PR.
+   fields. *Fix proposed* on branch `fix/tracked-accessor-object-tag` (STATUS.md, "Upstream
+   fix branches"). The only in-tree consumers of the object-level cell are `{{#each-in}}` and
+   `ObjectProxy`, and `{{#each-in}}` iterates own keys, which an accessor is not, so the
+   difference is mostly visible to code that reads `tagForObject` directly.
 
 9. **Ecosystem use of private tags.** Addons such as ember-modifier (classic modifier arg
    consumption), `tracked-built-ins`, and ember-resources import `@glimmer/validator`

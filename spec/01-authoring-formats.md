@@ -1188,9 +1188,9 @@ or pods lookup (§08-5). The one remaining registry lookup of a template is the 
    sequence (a Rust panic → likely a wasm trap) (`content-tag/src/transform.rs:109-143`).
    The tab/space mixing check is cumulative and order-dependent. CRLF normalization happens
    only for multi-line bodies. RFC #1121 is not in the local RFC repo, so the intended
-   specification cannot be checked against the implementation.
-
-   > Let's work a fix for this bug. The `content-tag` repo is checked out beside this repo. Make a new branch with a failing test and proposed fix, as separate commits so it's easy to see the test failing vs passing.
+   specification cannot be checked against the implementation. *Fix proposed* for the panic
+   on content-tag branch `fix-multibyte-indentation-panic`: only ASCII spaces and tabs count
+   as indentation (STATUS.md, "Upstream fix branches").
 
 8. **No way to include `</template>` in a `<template>` body.** *Resolved: intentional.* The
    content tag assumes no interior syntax, so that it can serve as a language-neutral JS

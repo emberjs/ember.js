@@ -48,6 +48,21 @@ continue the work. Last updated: 2026-09-29.
 - **Suspected bugs are recorded, not "fixed" in the spec.** Each goes in its chapter's
   *Open questions* section, for the reader to decide whether to preserve it.
 
+## Upstream fix branches
+
+Proposed fixes requested in `a135fe1862`. Each branch has two commits: failing tests, then
+the fix. None is merged or opened as a PR; the author reviews them first. The ember.js
+branches are based on `origin/main` (`1ce8f4b270`), which is 7 commits ahead of the local
+`main` this spec was written against; none of those commits touch the files involved.
+
+| Spec item | Repo | Branch | Summary |
+|---|---|---|---|
+| §0.7.2 item 11 | ember.js | `fix/parser-typeerror-crashes` | Syntax errors for inverse sections without `{{else}}`, hash literals, sub-expression-rooted paths, mustaches or comments in end tags, and mustaches in markup declarations. Handlebars syntax in any HTML-comment state becomes comment text. `<div /{{x}}>` treats the stray `/` as HTML does (ignored). `{{#each-in}}` with no params is a syntax error. |
+| §01-1.11 item 7 | content-tag | `fix-multibyte-indentation-panic` | `strip_indent` counts only ASCII spaces and tabs as indentation. |
+| §07-5 item 8 | ember.js | `fix/tracked-accessor-object-tag` | The `@tracked accessor` setter also dirties the object-level cell. |
+
+When a branch is merged, update the owning item to describe the new behavior.
+
 ## Chapters
 
 | Chapter | Lines | State | Verification |

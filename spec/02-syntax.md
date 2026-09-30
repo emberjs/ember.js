@@ -1343,11 +1343,15 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
 1. **Inverse sections crash.** `{{^foo}}…{{/foo}}` parses at layer 1 but throws a `TypeError`
    in Glimmer (`handlebars-node-visitors.ts:139`). Upstream supports it; Glimmer has no test.
    Recommend a proper syntax error ("inverse sections are not supported") or support as
-   `{{#unless}}`-like sugar — either is a behavior change from "TypeError".
+   `{{#unless}}`-like sugar — either is a behavior change from "TypeError". Note that
+   `{{^foo}}a{{else}}b{{/foo}}` already parses, as `{{#foo}}b{{else}}a{{/foo}}`; only the form
+   without `{{else}}` crashes. *Fix proposed* (a syntax error for the crashing form only):
+   branch `fix/parser-typeerror-crashes`.
 2. **Hash-literal and sub-expression-rooted paths crash.** `{{foo=bar}}`, `{{(foo=bar)}}`,
    `{{foo =bar}}`, `{{(foo).bar}}` throw `TypeError`s because the upstream parser (v2.2.2)
    emits `HashLiteral` nodes and sexpr-headed paths that Glimmer's visitor does not handle.
-   Should be syntax errors (or new features, per any future RFC).
+   Should be syntax errors (or new features, per any future RFC). *Fix proposed* (syntax
+   errors): branch `fix/parser-typeerror-crashes`.
 3. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
    (`handlebars-node-visitors.ts:238-246`), while `{{#"foo"}}` and `("foo")` error. Probably
    should be an error.
@@ -1362,7 +1366,11 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
    `handlebars-node-visitors.ts:53-55` acknowledges this. Recommend errors.
 7. **Mustaches in unusual tokenizer states** (§02-6.9 last paragraph): `<div /{{x}}>`,
    `</div{{x}}>`, `</div {{x}}>`, `<!--{{x}}-->`, `<!-{{x}}-->` produce misplaced nodes or a
-   `TypeError`. Only the `data`/attribute/`comment` states are intentionally handled.
+   `TypeError`. Only the `data`/attribute/`comment` states are intentionally handled. Also
+   `<!-- a -{{x}}-->` loses the entire comment, and `</div {{! x}}>` throws a `TypeError`.
+   *Fix proposed* on branch `fix/parser-typeerror-crashes`: every other comment state appends
+   to the comment, a stray `/` in a start tag is ignored as in HTML, and end tags and markup
+   declarations reject mustaches with a syntax error.
 8. **`pendingError` is only consulted by mustaches and EOF**; a Handlebars comment inside an
    element's block-params list (`<Foo as |a {{! c}}|>`) is accepted onto `comments` and the
    remaining `|` then produces the misleading "must be preceded by the `as` keyword" error; a
