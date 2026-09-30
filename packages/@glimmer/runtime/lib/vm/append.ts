@@ -739,32 +739,40 @@ export class VM {
   /// EXECUTION
 
   execute(initialize?: (vm: this) => void): RenderResult {
-    if (DEBUG) {
-      let hasErrored = true;
-      try {
-        let value = this._execute(initialize);
+    let hasErrored = true;
+    try {
+      let value = this._execute(initialize);
 
-        // using a boolean here to avoid breaking ergonomics of "pause on uncaught exceptions"
-        // which would happen with a `catch` + `throw`
-        hasErrored = false;
+      // using a boolean here to avoid breaking ergonomics of "pause on uncaught exceptions"
+      // which would happen with a `catch` + `throw`
+      hasErrored = false;
 
-        return value;
-      } finally {
-        if (hasErrored) {
-          // If any existing blocks are open, due to an error or something like
-          // that, we need to close them all and clean things up properly.
-          let elements = this.tree();
+      return value;
+    } finally {
+      if (hasErrored) {
+        // If any existing blocks are open, due to an error or something like
+        // that, we need to close them all and clean things up properly.
+        let elements = this.tree();
 
-          while (elements.hasBlocks) {
-            elements.popBlock();
-          }
+        while (elements.hasBlocks) {
+          elements.popBlock();
+        }
 
+        // Tracking state is module-level in @glimmer/validator. An opcode that
+        // opened a tracking frame and then threw never reaches the matching
+        // close, so without this reset the frame stays open for the life of
+        // the process and every later render adds its tags to it. In a
+        // browser the page is already broken, but a long-lived server render
+        // (FastBoot) keeps going and leaks until it runs out of heap
+        // (emberjs/ember.js#20130). The reset therefore runs in every build;
+        // only the diagnostic report is DEBUG-only.
+        let message = resetTracking();
+
+        if (DEBUG) {
           // eslint-disable-next-line no-console
-          console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
+          console.error(`\n\nError occurred:\n\n${message}\n\n`);
         }
       }
-    } else {
-      return this._execute(initialize);
     }
   }
 

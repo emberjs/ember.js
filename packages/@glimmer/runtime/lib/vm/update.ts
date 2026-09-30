@@ -46,26 +46,33 @@ export class UpdatingVM implements IUpdatingVM {
   }
 
   execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
-    if (DEBUG) {
-      let hasErrored = true;
-      try {
+    let hasErrored = true;
+    try {
+      if (DEBUG) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         debug.runInTrackingTransaction!(
           () => this._execute(opcodes, handler),
           '- While rendering:'
         );
+      } else {
+        this._execute(opcodes, handler);
+      }
 
-        // using a boolean here to avoid breaking ergonomics of "pause on uncaught exceptions"
-        // which would happen with a `catch` + `throw`
-        hasErrored = false;
-      } finally {
-        if (hasErrored) {
+      // using a boolean here to avoid breaking ergonomics of "pause on uncaught exceptions"
+      // which would happen with a `catch` + `throw`
+      hasErrored = false;
+    } finally {
+      if (hasErrored) {
+        // Same reasoning as VM#execute in append.ts: the tracking reset must
+        // run in every build, not just DEBUG, or a throwing rerender leaves
+        // the frame open for the life of the process.
+        let message = resetTracking();
+
+        if (DEBUG) {
           // eslint-disable-next-line no-console
-          console.error(`\n\nError occurred:\n\n${resetTracking()}\n\n`);
+          console.error(`\n\nError occurred:\n\n${message}\n\n`);
         }
       }
-    } else {
-      this._execute(opcodes, handler);
     }
   }
 
