@@ -80,9 +80,9 @@ repo).
 | Chapter | Lines | State | Verification |
 |---|---|---|---|
 | 00 overview | ~330 | Drafted. §0.1 and §0.2 were updated for the wire-format decision. §0.6 matches this table. §0.7 (consolidated open questions, 40 items) written by T2b. | — |
-| 01 authoring formats | ~1220 | Drafted | From source. T3 hand-checked every flagged citation; one unsupported claim (§01-1.9) was rewritten. |
+| 01 authoring formats | ~1220 | Drafted | From source. T3 hand-checked every flagged citation; one unsupported claim (§01-1.9) was rewritten. T9a ran the babel plugin (`wire`, `hbs`) and the runtime `template()` against §01-1.11 items 1–3, §01-1.4 and §01-1.5.6 (all confirmed; `.work/T9a-compile-paths.md`). |
 | 02 syntax | ~1410 | Drafted | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes). |
-| 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev` (built Sep 27). The runtime `eval` form, the babel plugin and runtime rendering were not run. |
+| 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev`. T9a ran §03-10 items 1 and 12–14 through the babel plugin and the runtime `template()` path (all confirmed). Other §03 claims still have only compiler-level checks. |
 | 04 wire format | ~1560 | Drafted; recast as informative (T1 done). | All examples are real compiler output. |
 | 05 runtime semantics | ~2210 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. T4 added test citations for `each`, `in-element`, `yield`/blocks, modifier ordering, classic lifecycle hooks and destruction order. Claims with no test are marked "(untested)" and gathered in §05-14 item 20. `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. Public-manager component ordering across a tree, and component-hook vs modifier-install order, are untested. |
 | 06 managers | ~1470 | Drafted | From source. Citations verified by T3. |
@@ -197,8 +197,9 @@ Suggestions for the plan's author, based on what is still open:
    differences (§0.7.4) are the obvious ones to fix rather than preserve.
 4. **Close the verification gaps.** Write tests for the orderings in §05-14 item 20
    (public-manager hook order across a tree, `didCreate` against modifier installs, deferred
-   destructor timing). Run the babel plugin and the runtime `eval` form against §01 and §03,
-   which so far are checked only against source and `dist/dev`.
+   destructor timing). The babel plugin and runtime `template()` checks for §01 and §03
+   are done for the items in `.work/T9a-compile-paths.md`; the rest of §01 and §03 is still checked
+   only against source and `dist/dev`.
 5. **Turn the spec into a conformance suite.** Many rules already cite the tests that pin
    them. Collecting those into one implementation-independent suite, keyed by section number,
    would give a new implementation something to run against.

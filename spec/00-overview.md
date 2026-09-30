@@ -149,8 +149,9 @@ throughout. How much each chapter was verified by running code varies:
 - **§02** edge cases were checked by running the built `@glimmer/syntax` against more than
   200 probe inputs.
 - **§03** claims marked as verified came from compiling against this repository's built
-  template compiler (`dist/dev`). The runtime `eval` form, the babel plugin and runtime
-  rendering were not run.
+  template compiler (`dist/dev`). T9a additionally ran the babel plugin (`wire` and `hbs`) and the
+  runtime `template()` path in a browser for the items listed in `.work/T9a-compile-paths.md`
+  (§03-10 items 1 and 12–14).
 - **§04** worked examples are all real compiler output.
 - **§08** compile-output claims were checked against `dist/dev` in the same way.
 - **§05** is written from source. Its attribute and SSR/rehydration behavior, `each`,
@@ -159,7 +160,9 @@ throughout. How much each chapter was verified by running code varies:
   "(untested)" and gathered in §05-14 item 20.
 - **§06** and **§07** are written from source, and their citations were checked to point at
   the construct named.
-- **§01** is written from source.
+- **§01** is written from source. T9a ran the babel plugin and the runtime `template()` path
+  against §01-1.11 items 1–3, the `hbs` conversions of §01-1.5.6 and the scope-capture rules of §01-1.4;
+  each confirmed claim is marked "(verified: …)".
 
 Every file:line citation in every chapter was checked to exist and to be in range. In every
 chapter, each citation whose cited lines did not obviously contain the identifiers named in

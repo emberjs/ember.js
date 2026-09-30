@@ -31,9 +31,9 @@ Resume from the first unticked item. Commit spec/ changes after each item: `spec
 - [x] §01-1.11 item 3 (verified, runtime): runtime explicit `scope` uses `in` (inherited names like `toString` accepted) and calls `scope()` twice.
 - [x] §03-10 item 1 (verified, babel wire + runtime): `action`, `mut`, `readonly`, `unbound` can be shadowed via runtime `lexicalScope` but not via babel `locals`.
 - [x] §03-10 items 12–14 (verified, babel wire + runtime) (trackLocals counter bug, element block params, `helper`/`modifier`/`each-in`/`in-element` block params still rewritten): confirm with the babel wire path and at run time.
-- [ ] §01-1.5.6: the `hbs` target conversions (`template()` → `setComponentTemplate(precompileTemplate(...))`, `strict` → `strictMode`). Spot-check 3 examples.
-- [ ] §01-1.4 implicit vs explicit scope capture at build time: spot-check 3 claims against babel output.
-- [ ] Update STATUS chapter table "Verification" for 01 and 03; update §00-0.6.
+- [x] §01-1.5.6 (verified, babel hbs): the `hbs` target conversions (`template()` → `setComponentTemplate(precompileTemplate(...))`, `strict` → `strictMode`). Spot-check 3 examples.
+- [x] §01-1.4 (verified, babel wire + hbs) implicit vs explicit scope capture at build time: spot-check 3 claims against babel output.
+- [x] Update STATUS chapter table "Verification" for 01 and 03; update §00-0.6.
 
 ## Results
 
@@ -101,3 +101,24 @@ component can only be registered once per test.
   invocation `[6,[30,1],[[28,[31,1],…` with `-in-el-null`. Runtime: each-in case renders `<!---->`
   like control; in-element case throws "Got 1, expected:".
 - Result: chapter right on all three; notes added.
+
+### Item 6: §01-1.5.6 `hbs` conversions (babel hbs)
+1. `template("<Foo/>{{bar}}", { strict: true, scope: () => ({ Foo, bar }) })` becomes
+   `setComponentTemplate(precompileTemplate("<Foo />{{bar}}", { strictMode: true, scope: () => ({ Foo, bar }) }), templateOnly())`.
+2. `class A { static { template("<Foo/>{{this.x}}", { component: this, eval() {...} }) } }` becomes
+   `setComponentTemplate(precompileTemplate("<Foo />{{this.x}}", { strictMode: true, scope: () => ({ Foo }) }), this)`;
+   `eval`/`component` keys removed, no `templateOnly` import.
+3. `template("{{foo}}", { strictMode: false, scope: () => ({}) })` becomes `{ strictMode: false, strictMode: true }`
+   (empty scope dropped). Also: `{{on}}`/`{{#each-in}}` not rewritten in `hbs`, rewritten in `wire`.
+- Result: chapter right; note added to §01-1.5.6.
+
+### Item 7: §01-1.4 build-time scope capture (babel wire/hbs)
+- `let div = 1` inside a function with `<div></div>` implicit: `scope: () => ({ div })`.
+- Block param `|A|` over imported `A`: no `scope`. `let hasBlock = 1`: captured. `JSON`: captured.
+- `this`: `scope: () => ({ this: this })` in a function; absent with `component: this`.
+- Explicit `scope: () => ({ A, B })` with `<A/>`: output keeps only `A` (hbs and wire);
+  `{{nope}}` explicit: "not in scope" error. `{ Foo: bar }` is kept as `Foo: bar`.
+- Result: chapter right; a summary note was added after the "Normative consequences" list.
+
+### Item 8
+- STATUS chapter table, STATUS "Next steps" item 4 and §00-0.6 updated.

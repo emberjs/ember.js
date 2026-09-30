@@ -504,6 +504,13 @@ Normative consequences (all pinned by tests in `babel-plugin-ember-template-comp
 - Allowed globals are captured even though they are not declared (tests
   "implements RFC#1070: default globals", `:1972-2004`).
 
+(verified: babel hbs/wire; T9a. Build-time claims checked against plugin output: `let div = 1` in a
+function puts `div` in `scope` for `<div></div>`; a block param `|A|` over an imported `A` leaves `scope`
+out; `let hasBlock = 1` is captured for `{{hasBlock "thing"}}`; `JSON` is captured without a declaration;
+`this` is captured as `scope: () => ({ this: this })` in a function but not when `component: this` is
+given; unused explicit entries are pruned, `scope: () => ({ A, B })` with `<A/>` keeping only `A`; and
+in the explicit form `{{nope}}` fails with "not in scope".)
+
 **Runtime scope discovery** (`packages/@ember/template-compiler/lib/compile-options.ts:88-111`,
 `:176-201`). The runtime compiler cannot inspect bindings, so it probes:
 
@@ -723,7 +730,12 @@ text replaces the first argument. Printing may normalize whitespace inside musta
   `setComponentTemplate(precompileTemplate(src, { strictMode, scope? , …}), component ?? templateOnly())`:
   `strict` is renamed to `strictMode` or `strictMode: true` appended; `eval` and `component`
   are removed; the computed scope is written as `scope: () => ({ … })`
-  (`src/plugin.ts:612-705`, `:707-753`).
+  (`src/plugin.ts:612-705`, `:707-753`). (verified: babel hbs; T9a. `template("<Foo/>{{bar}}", { strict: true, scope })`
+  gives `setComponentTemplate(precompileTemplate("<Foo />{{bar}}", { strictMode: true, scope: () => ({ Foo, bar }) }), templateOnly())`;
+  an `eval` form with `component: this` in a static block gives `…, this)` with the computed `scope`
+  and no `eval`/`component` keys; `{ strictMode: false }` gives `{ strictMode: false, strictMode: true }`.
+  The source is re-printed, so `<Foo/>` becomes `<Foo />`. Built-ins are not rewritten: `{{on …}}` and
+  `{{#each-in}}` stay as written, while `wire` adds `import { on as __keyword__on }`.)
 
 Ember's own built-in AST transforms (§1.6.3) do *not* run in `hbs` mode; they run when the
 emitted `precompileTemplate` is later compiled to wire.
