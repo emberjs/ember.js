@@ -20,7 +20,7 @@ Resume from the first unticked item. Commit after each item: `spec(T8): <file>`.
 - [x] parser-error-test.ts (4 checked, 0 renumbered; all cite the new tests correctly)
 - [x] integration-tests/lib/render-test.ts (0 citations found in spec/*.md; `initial-render-test.ts` is a different file; nothing to do)
 - [x] template-compiler/lib/plugins/transform-each-in-into-each.ts (2 checked: 03:1136 `36-41` already right; 08:227 `26-65` renumbered to `27-73`)
-- [ ] run `python3 spec/tools/check-citations.py` — all ok; `python3 spec/tools/xref.py` — silent
+- [x] (check-citations all ok; xref silent) run `python3 spec/tools/check-citations.py` — all ok; `python3 spec/tools/xref.py` — silent
 
 ## Behavior changes found
 - 05-runtime-semantics §05-5.4.1 (`iterable.ts:141-160`, pseudocode "items are L[0..n-1]" and "for sources converted eagerly (arrays, `forEach`) the count is known"): `ArrayIterator` (iterable.ts:201-225) now reads only `length` at construction (for `isEmpty`) and reads `iterator.length` live on every `next()`, so a plain array that shrinks or grows during iteration stops early or renders the new items (new tests suites/each.ts:49-87). Items are no longer read eagerly; the first item is read in `next()`, not the constructor.
