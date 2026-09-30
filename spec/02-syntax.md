@@ -465,11 +465,11 @@ See §02-4.
 
 ### 3.7 Literal callees
 
-`acceptCallNodes` (`handlebars-node-visitors.ts:588-658`) is used for blocks, sub-expressions,
+`acceptCallNodes` (`handlebars-node-visitors.ts:659-733`) is used for blocks, sub-expressions,
 modifiers and non-literal mustaches:
 
 - A **mustache whose path is a literal** (`{{"foo"}}`, `{{1 a=b}}`) is special-cased
-  (`handlebars-node-visitors.ts:238-246`): the literal becomes the mustache `path`, and any
+  (`handlebars-node-visitors.ts:247-255`): the literal becomes the mustache `path`, and any
   params and hash in the source are **silently discarded** (`{{"foo" bar}}` ≡ `{{"foo"}}`).
   See Open questions.
 - A **block or sub-expression whose callee is a literal** is a syntax error:
@@ -477,7 +477,7 @@ modifiers and non-literal mustaches:
   where `Type` is the literal node type, `text` is the string value for strings and the printed
   value otherwise, and `value` is `"…"`-quoted for strings, `true`/`false`, `null`, `undefined`,
   or `Number.prototype.toString()` of the number. The error span is the literal
-  (`handlebars-node-visitors.ts:618-641`; tests `parser-node-test.ts:1011-1084`). E.g.
+  (`handlebars-node-visitors.ts:693-716`; tests `parser-node-test.ts:1011-1084`). E.g.
   `{{("foo-baz")}}` →
   `StringLiteral "foo-baz" cannot be called as a sub-expression, replace ("foo-baz") with "foo-baz"`;
   `{{#"foo"}}{{/foo}}` produces the same message form.
@@ -526,7 +526,7 @@ original `this/foo`; `../foo` has parts `[foo]` and original `../foo`; `[this]` 
 
 ### 4.2 Conversion to ASTv1 (`PathExpression` visitor)
 
-`handlebars-node-visitors.ts:393-491`. Given the layer-1 `original` and `parts`:
+`handlebars-node-visitors.ts:457-562`. Given the layer-1 `original` and `parts`:
 
 1. If `original` contains `/`:
    1. if it starts with `./` → error `Using "./" is not supported in Glimmer and unnecessary`;
@@ -707,7 +707,7 @@ Worked examples (precompile mode; tests `parser-whitespace-test.ts`, `parser-nod
 When a content statement has been *right*-stripped (leading text removed), the HTML tokenizer's
 line/column is advanced past the removed prefix before tokenizing, so resulting `TextNode`
 locations point at the retained text (`updateTokenizerLocation` /
-`calculateRightStrippedOffsets`, `handlebars-node-visitors.ts:546-586`). Left-stripping simply
+`calculateRightStrippedOffsets`, `handlebars-node-visitors.ts:617-657`). Left-stripping simply
 ends the text earlier. *Note:* the offset computation uses `original.split(value)[0]`, i.e. the
 first occurrence of the retained text in the original; see Open questions.
 
@@ -727,7 +727,7 @@ parse(program):
 ```
 
 - `ContentStatement`: set tokenizer line/column to the start of the (stripped) content
-  (§02-5.4), call `tokenizePart(value)`, then `flushData()` (`handlebars-node-visitors.ts:321-326`).
+  (§02-5.4), call `tokenizePart(value)`, then `flushData()` (`handlebars-node-visitors.ts:378-383`).
   `flushData` finishes the current text node *only if the tokenizer is in `data` state*
   (`simple-html-tokenizer/dist/es6/index.js:665-670`). Therefore:
   - text in element/template content is split into a separate `TextNode` at every layer-1
@@ -739,7 +739,7 @@ parse(program):
 - A block's programs are visited recursively with a new `Block` node pushed on `elementStack`;
   after the program, the popped node must be that `Block`, otherwise an element opened inside
   the block was not closed there: `Unclosed element \`tag\`` (span: the element's open tag)
-  (`handlebars-node-visitors.ts:86-116`). Elements therefore MUST be properly nested with
+  (`handlebars-node-visitors.ts:87-117`). Elements therefore MUST be properly nested with
   respect to blocks: `{{#if}}<div>{{/if}}</div>` → `Unclosed element \`div\``;
   `<div>{{#if}}</div>{{/if}}` → `Closing tag </div> without an open tag`.
 - The HTML tokenizer is **never** given an end-of-input signal. Any partially-tokenized
@@ -965,7 +965,7 @@ Handlebars comments encountered anywhere inside an HTML comment are *not* interp
 value. This applies in every comment tokenizer state (`commentStart`, `commentStartDash`,
 `comment`, `commentEndDash`, `commentEnd`). A `-` or `--` that the tokenizer is still holding,
 because it might begin `-->`, is appended first, as the tokenizer itself would do when the next
-character is not `>` (`handlebars-node-visitors.ts:322-350`;
+character is not `>` (`handlebars-node-visitors.ts:323-350`;
 `packages/@glimmer/syntax/lib/parser.ts:174-210`). E.g. `<!-- {{#if x}}y{{/if}} -->` has value
 ` {{#if x}}y{{/if}} `, `<!--{{x}}-->` has value `{{x}}`, and `<!-- a -{{x}}-->` has value
 ` a -{{x}}` (tests `parser-node-test.ts:789-799`). However, because layer 1 has already run, whitespace control *has* been
@@ -1000,7 +1000,7 @@ which means it effectively swallows input until `--` or a `DOCTYPE` match — se
 
 ### 6.9 Mustache placement
 
-For each layer-1 `MustacheStatement` (`handlebars-node-visitors.ts:228-320`):
+For each layer-1 `MustacheStatement` (`handlebars-node-visitors.ts:228-321`):
 
 1. Throw a pending block-params error if any (§02-6.6).
 2. If the tokenizer is inside an HTML comment (any comment state): append its source to the
@@ -1031,7 +1031,7 @@ In the tag states above (`beforeAttributeName`, `selfClosingStartTag`, `attribut
 
 An element modifier whose path is a literal → error
 `` In <TAG ... {{LIT}} ..., {{LIT}} is not a valid modifier `` where `LIT` is
-`JSON.stringify(value)` (or `undefined`) (`handlebars-node-visitors.ts:660-675`), e.g.
+`JSON.stringify(value)` (or `undefined`) (`handlebars-node-visitors.ts:735-750`), e.g.
 `<div {{'str'}}>` → `In <div ... {{"str"}} ..., {{"str"}} is not a valid modifier`. Modifiers keep
 source order in `ElementNode.modifiers`, independent of attribute order. A trusting mustache
 `{{{x}}}` in modifier position is accepted and treated as a modifier (the `trusting` flag is
@@ -1070,7 +1070,7 @@ A layer-1 `BlockStatement` (`handlebars-node-visitors.ts:119-226`):
 
 Block params on blocks are converted to `VarHead`s with locations found by searching the source
 between the end of the hash and the start of the program for the `|…|` list
-(`handlebars-node-visitors.ts:139-196`). If a name cannot be located in the searched span, its
+(`handlebars-node-visitors.ts:149-203`). If a name cannot be located in the searched span, its
 loc is the non-existent location. The default block is visited with these params; the inverse
 with none.
 
@@ -1156,7 +1156,7 @@ StripFlags        { open: boolean; close: boolean }
 - `ElementNode.closeTag` is `null` for void and self-closing elements. Setting `selfClosing`
   via the accessor sets `closeTag` to null or a synthetic `</tag>` span.
 - Missing `hash` is always materialized as an empty `Hash` whose loc is collapsed at the end of
-  the last param (or of the path) (`handlebars-node-visitors.ts:644-657`).
+  the last param (or of the path) (`handlebars-node-visitors.ts:719-732`).
 
 ### 7.3 Expressions
 
@@ -1239,7 +1239,7 @@ Special spans exist for nodes without real source: `synthetic`, `broken`, `nonex
 |---|---|
 | `Template` | the entire source (offset 0 to length), regardless of leading/trailing whitespace |
 | `MustacheStatement`, `BlockStatement`, comments | from the first `{` to the last `}` inclusive, including `~` |
-| `Block` (default program) | from the end of the opener to the start of `{{else}}`/closer (layer-1 program loc). If layer 1 gives no loc (empty program), a fallback derived from the block params span or the block end is used (`repairBlock`, `handlebars-node-visitors.ts:677-705`) — these fallback spans are irregular (see Open questions) |
+| `Block` (default program) | from the end of the opener to the start of `{{else}}`/closer (layer-1 program loc). If layer 1 gives no loc (empty program), a fallback derived from the block params span or the block end is used (`repairBlock`, `handlebars-node-visitors.ts:752-780`) — these fallback spans are irregular (see Open questions) |
 | chained inverse `Block` | currently the span of the *chained block's default program*, not of the whole chain |
 | `ElementNode` | from `<` of the start tag to `>` of the end tag (or of the start tag if void/self-closing) |
 | `ElementNode.openTag` / `closeTag` | the start tag / end tag text |
@@ -1302,23 +1302,23 @@ and SHOULD produce identical messages (tests assert full messages for Glimmer sy
 | E3 | `X doesn't match Y - L:C` | 2 | block / raw-block open and close names differ | `lib/helpers.js:3-11` |
 | E4 | `Invalid path: P - L:C` | 2 | `this`, `.`, `..` after a real segment | `lib/helpers.js:71-74` |
 | E5 | `Unexpected inverse block on decorator` | 2 | `{{#*x}}{{else}}` | `lib/helpers.js:150-152` |
-| E6 | `Handlebars partials are not supported` | 1 | `{{> …}}` | `handlebars-node-visitors.ts:360-365` |
-| E7 | `Handlebars partial blocks are not supported` | 1 | `{{#> …}}` | `:367-372` |
-| E8 | `Handlebars decorators are not supported` | 1 | `{{* …}}` | `:374-379` |
-| E9 | `Handlebars decorator blocks are not supported` | 1 | `{{#* …}}` | `:381-386` |
-| E10 | `Using "./" is not supported in Glimmer and unnecessary` | 1 | path starts `./` | `:398-403` |
-| E11 | `Changing context using "../" is not supported in Glimmer` | 1 | path starts `../` | `:404-409` |
-| E12 | `Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths` | 1 | `/` and `.` in one path | `:410-415` |
-| E13 | `'.' is not a supported path in Glimmer; check for a path with a trailing '.'` | 1 | path `.` | `:417-421` |
-| E14 | `Attempted to parse a path expression, but it was not valid. Paths beginning with @ must start with a-z.` | 1 | data path with no segment | `:453-458` |
-| E15 | `Attempted to parse a path expression, but it was not valid. Paths must start with a-z or A-Z.` | 1 | non-data path with no segment left (`{{[]}}`, the `..` in `foo..bar`) | `:470-475` |
-| E16 | `` ${Type} "${v}" cannot be called as a sub-expression, replace (${v}) with ${v} `` | 1 | literal callee of block/sexpr | `:618-641` |
-| E17 | `Illegal use of ...attributes` | 1 | `{{...attributes}}` anywhere | `:231-236` |
-| E18 | `Cannot use mustaches in an elements tagname` | 1 | mustache in `tagOpen`/`tagName`/`endTagOpen`/`endTagName` | `:261-263` |
-| E19 | `` In <T ... {{L}} ..., {{L}} is not a valid modifier `` | 1 | literal in modifier position | `:660-671` |
-| E20 | ``Using a Handlebars comment when in the `S` state is not supported`` | 1 | §02-6.10 | `:350-354` |
-| E21 | `A block may only be used inside an HTML element or another block.` | 1 | block outside content | `:125-130` |
-| E22 | ``Unclosed element `T` `` | 1 | element not closed by end of its template/block (span: the element's start tag) | `:104-107` |
+| E6 | `Handlebars partials are not supported` | 1 | `{{> …}}` | `handlebars-node-visitors.ts:417-422` |
+| E7 | `Handlebars partial blocks are not supported` | 1 | `{{#> …}}` | `:424-429` |
+| E8 | `Handlebars decorators are not supported` | 1 | `{{* …}}` | `:431-436` |
+| E9 | `Handlebars decorator blocks are not supported` | 1 | `{{#* …}}` | `:438-443` |
+| E10 | `Using "./" is not supported in Glimmer and unnecessary` | 1 | path starts `./` | `:469-474` |
+| E11 | `Changing context using "../" is not supported in Glimmer` | 1 | path starts `../` | `:475-480` |
+| E12 | `Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths` | 1 | `/` and `.` in one path | `:481-486` |
+| E13 | `'.' is not a supported path in Glimmer; check for a path with a trailing '.'` | 1 | path `.` | `:488-492` |
+| E14 | `Attempted to parse a path expression, but it was not valid. Paths beginning with @ must start with a-z.` | 1 | data path with no segment | `:524-529` |
+| E15 | `Attempted to parse a path expression, but it was not valid. Paths must start with a-z or A-Z.` | 1 | non-data path with no segment left (`{{[]}}`, the `..` in `foo..bar`) | `:541-546` |
+| E16 | `` ${Type} "${v}" cannot be called as a sub-expression, replace (${v}) with ${v} `` | 1 | literal callee of block/sexpr | `:693-716` |
+| E17 | `Illegal use of ...attributes` | 1 | `{{...attributes}}` anywhere | `:240-245` |
+| E18 | `Cannot use mustaches in an elements tagname` | 1 | mustache in `tagOpen`/`tagName`/`endTagOpen`/`endTagName` | `:270-274` |
+| E19 | `` In <T ... {{L}} ..., {{L}} is not a valid modifier `` | 1 | literal in modifier position | `:735-746` |
+| E20 | ``Using a Handlebars comment when in the `S` state is not supported`` | 1 | §02-6.10 | `:407-411` |
+| E21 | `A block may only be used inside an HTML element or another block.` | 1 | block outside content | `:126-131` |
+| E22 | ``Unclosed element `T` `` | 1 | element not closed by end of its template/block (span: the element's start tag) | `:105-108` |
 | E23 | `Closing tag </T> without an open tag` | 1 | end tag with no element open in this block | `tokenizer-event-handlers.ts:591-592` |
 | E24 | `Closing tag </T> did not match last open tag <U> (on line N)` | 1 | tag mismatch | `:593-597` |
 | E25 | `<T> elements do not need end tags. You should remove it` | 1 | end tag for void name | `:583-590` |
@@ -1381,7 +1381,7 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
    `TypeError`s because the upstream parser emits `HashLiteral` nodes and sexpr-headed paths
    that Glimmer's visitor did not handle.
 3. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
-   (`handlebars-node-visitors.ts:238-246`), while `{{#"foo"}}` and `("foo")` error. Probably
+   (`handlebars-node-visitors.ts:247-255`), while `{{#"foo"}}` and `("foo")` error. Probably
    should be an error.
 4. **`this/foo` loses `this`.** It becomes the free variable `foo` (not `this.foo`), because the
    `this` regex is `^this(\..+)?$` while layer 1 has already dropped the `this` segment. Loose
@@ -1391,7 +1391,7 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
    `{{foo.[]}}` produces an empty-string tail segment. Semantics for chapter 03 are unclear.
 6. **Silent input loss.** Unterminated tags/comments at EOF, `<>`, `a < b`, and non-letter
    characters after `<` / `</` / `<!` are silently discarded (§02-6.12). The code comment at
-   `handlebars-node-visitors.ts:53-55` acknowledges this. Recommend errors.
+   `handlebars-node-visitors.ts:54-56` acknowledges this. Recommend errors.
 7. **Mustaches in unusual tokenizer states.** *Resolved* by #21635 (§02-6.9, §02-6.10):
    mustaches, blocks and Handlebars comments in any HTML-comment state become comment text;
    a stray `/` in a start tag is ignored, as in HTML; and mustaches or comments in end tags,

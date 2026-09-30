@@ -912,7 +912,7 @@ this applies, because a free uppercase tag is an error.
 
 - **Literals in callee position.** In the parser, a mustache whose path is a literal
   **drops** its params and hash: `{{"foo" 1}}` is `{{"foo"}}` and `{{true 1}}` is `{{true}}`
-  (`packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts:238-246`; verified). See
+  (`packages/@glimmer/syntax/lib/parser/handlebars-node-visitors.ts:247-255`; verified). See
   §03-10. Normalization has an `Unexpected literal \`<v>\`` check for this case
   (`normalize.ts:451-456, 1071-1074`), but that check is unreachable for mustaches coming from
   the parser. It is reachable for block statements, sub-expressions, and modifiers built by
@@ -929,7 +929,7 @@ this applies, because a free uppercase tag is an error.
   Whether the value is then invoked is a runtime decision (§05).
 - **`...attributes`** is only valid as an attribute. On any element or component it allocates
   the `attrs` block symbol (`normalize.ts:712-714`). `{{...attributes}}` anywhere else is the
-  parse error `Illegal use of ...attributes` (`handlebars-node-visitors.ts:231-235`).
+  parse error `Illegal use of ...attributes` (`handlebars-node-visitors.ts:240-244`).
 - **`type` attribute ordering.** On an element with no `...attributes`, a `type` attribute is
   moved after all other attributes, and modifiers come after all attributes
   (`visitors/element/classified.ts:102-156`). This is a static reordering. §05-4.1 owns the
