@@ -272,8 +272,12 @@ For every helper below the notation is:
 - **Access**: how a template reaches it (strict: keyword / auto-import / import; loose: name).
 - **Semantics**: what value the helper expression produces, as a reactive computation.
 
-"Positional/named argument" means an argument *reference* in the sense of chapter 05/06:
-evaluating it is a reactive computation that consumes whatever its expression consumes.
+"Positional/named argument" means an argument computation in the sense of §07-2.4.4 and §06-3:
+evaluating it is a reactive computation that consumes whatever its expression consumes. Some
+arguments are **updatable**: a path argument (`this.x`, `@x`, `local.x`), and the results of
+`get`, `mut`, and `hash` child paths, can also be *written*, which sets the underlying
+property with Ember `set` semantics (§10.3, §07-4.2 "update targets"). Literals and helper
+results are not updatable. A **constant** value is a computation that never changes (§07-0).
 Unless stated otherwise, a helper result is a reactive computation that is re-evaluated when
 any tracked storage consumed during its previous evaluation has changed, and whose last value
 is reused otherwise (chapter 07 caching semantics).
@@ -302,7 +306,7 @@ is reused otherwise (chapter 07 caching semantics).
   or `@h.a` / `h.a` where `@h` / `h` is bound directly to a `hash` result — MUST evaluate only
   the corresponding named argument (`x`) and MUST NOT evaluate the others (`y`). The current
   implementation achieves this by pre-populating the result's child-path table with the named
-  argument references (`hash.ts:17-25`), so property access on the hash result in a template
+  argument computations (`hash.ts:17-25`), so property access on the hash result in a template
   resolves to the argument itself. Consequently:
   - the child path is reactive to `x` only;
   - the child path is *updatable* iff the argument is (e.g. `@h.a` where `a=this.foo` can be
@@ -337,15 +341,15 @@ is reused otherwise (chapter 07 caching semantics).
 - **Source**: `packages/@glimmer/runtime/lib/helpers/fn.ts:18-55`.
 - **Semantics**: `(fn f a1 … an)` evaluates to a JS function `g`. The helper's reactive value is
   created once and returns the *same* `g` until re-evaluated; `g` itself captures the argument
-  references, not their values. The helper value does not consume its arguments while
+  computations, not their values. The helper value does not consume its arguments while
   producing `g` (the returned closure reads them lazily), so `g`'s identity is stable across
   argument changes. When `g(...rest)` is called:
 
   ```text
   [fnValue, ...args] = current values of all positional arguments  (read at call time)
-  [Dev] if the first argument is not an invokable (mut) reference and fnValue is not a function:
+  [Dev] if the first argument is not an invokable (`mut`) value and fnValue is not a function:
         throw Error("You must pass a function as the `fn` helper's first argument, you passed <v>. While rendering:\n\n<debug label>")
-  if first argument is an invokable reference (result of `mut`, §2.11):
+  if first argument is an invokable value (result of `mut`, §2.11):
         value = args.length > 0 ? args[0] : rest[0]
         update the referenced path to value;  return undefined
   else:
@@ -387,7 +391,7 @@ is reused otherwise (chapter 07 caching semantics).
   - **[Dev]** `EmberGet` asserts `'this' in paths is not supported` if the key starts with
     `this.` and asserts the key type (string or non-NaN number) — only reachable for keys that
     remain non-strings, which cannot happen after `String()`.
-- **Updatable**: the result reference is updatable. Updating it (via two-way binding, `mut`, or
+- **Updatable**: the result is updatable. Updating it (via two-way binding, `mut`, or
   `<Input @value=(get …)>`) calls Ember's `set(source, String(key), value)` when `source` is not
   null/undefined, else does nothing. Tests: `get-test.js:488-625`.
 - Re-evaluates when the source, the key, or any consumed property storage changes (dynamic
@@ -465,7 +469,7 @@ is reused otherwise (chapter 07 caching semantics).
   default helper manager. Since it takes no arguments, its value is computed once per
   invocation site instance and is stable thereafter (no tracked storage consumed).
 - **Loose**: the name `unique-id` resolves to an internal helper that returns a constant
-  (non-reactive) reference to a fresh id each time the helper is instantiated
+  (constant) value, a fresh id each time the helper is instantiated
   (`unique-id.ts:5-12`).
 - **Value format**: a UUID-shaped string of the form `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`
   whose first character is always a letter `a`–`f`, so that it is a valid CSS identifier /
@@ -481,8 +485,8 @@ is reused otherwise (chapter 07 caching semantics).
 
 - **Access**: strict keyword (`STRICT_MODE_KEYWORDS`); loose name `mut`.
 - **Source**: `packages/@ember/-internals/glimmer/lib/helpers/mut.ts:53-72`.
-- **Semantics**: `(mut path)` requires its single positional argument to be an *updatable*
-  reference — a path (`this.x`, `@x`, block param `.x`, `(get …)`, a `hash` child path, or
+- **Semantics**: `(mut path)` requires its single positional argument to be *updatable*
+  (§2) — a path (`this.x`, `@x`, block param `.x`, `(get …)`, a `hash` child path, or
   another `mut`). **[Dev]** otherwise `You can only pass a path to mut`
   (tests `mut-test.js:121-142`: literals and helper results assert).
 - The result's *value* is the current value of the path (reading it is reactive to the path).
@@ -501,10 +505,10 @@ is reused otherwise (chapter 07 caching semantics).
 - **Access**: strict keyword; loose name `readonly`.
 - **Source**: `packages/@ember/-internals/glimmer/lib/helpers/readonly.ts:122-126`,
   `packages/@glimmer/reference/lib/reference.ts:120-124`.
-- **Semantics**: returns the first positional argument's value through a reference that is
-  *not updatable*. If the argument is already non-updatable it is returned as-is. The result
-  follows upstream changes but writes downstream (e.g. a classic child `set`ting the property)
-  do not propagate upstream. Only the reference is protected — mutating properties of an
+- **Semantics**: returns the first positional argument's value as a reactive value that is
+  *not updatable* (§2). If the argument is already non-updatable it is returned as-is. The
+  result follows upstream changes but writes downstream (e.g. a classic child `set`ting the
+  property) do not propagate upstream. Only the binding is protected — mutating properties of an
   object value is still visible to all (tests `readonly-test.js:12-270`;
   `mut-test.js:177-232` "{{readonly}} of a {{mut}} is converted into an immutable binding").
 
@@ -568,7 +572,7 @@ The runtime `toIterator` for plain `{{#each}}` (§10.2) is also Ember's.
 - **Access**: strict keyword; loose name `unbound`.
 - **Source**: `packages/@ember/-internals/glimmer/lib/helpers/unbound.ts:42-49`.
 - **Semantics**: evaluates its single positional argument once, when the helper is
-  instantiated, and produces a *constant* reference to that value. Property paths off the
+  instantiated, and produces a *constant* value (§07-0). Property paths off the
   result (`(unbound this.obj).x`) are also constant, read once
   (`packages/@glimmer/reference/lib/reference.ts:207-217`). Nothing inside an `unbound`
   invocation site updates afterwards, including across parent re-renders, `{{#each}}` item
@@ -592,12 +596,12 @@ The runtime `toIterator` for plain `{{#each}}` (§10.2) is also Ember's.
 - **[Dev]** Evaluates to its argument; asserts
   `You cannot pass a null or undefined destination element to in-element` when the value is
   `null`/`undefined` (`lib/helpers/-in-element-null-check.ts:9-24`). In production it returns
-  the argument reference unchanged.
+  the argument unchanged.
 
 ### 2.18 `-resolve` **[Loose mode]**
 
 - Inserted by `transform-resolutions` for `(helper "name")` / `(modifier "name")`.
-- `(-resolve "type:name")`: returns a *constant* reference to `owner.factoryFor("type:name")?.class`
+- `(-resolve "type:name")`: returns the *constant* value `owner.factoryFor("type:name")?.class`
   (`lib/helpers/-resolve.ts:11-44`). **[Dev]** asserts the owner exists, exactly one
   positional, a constant string literal of the form `a:b`, and
   `` Attempted to invoke `(-resolve "type:name")`, but name was not a valid type name. `` when
@@ -917,7 +921,7 @@ args:
   reactive array of all positional values (re-created when any changes). **[Dev]** if `P` is
   also passed as a named arg: `You cannot specify positional parameters and the hash argument \`${P}\`.`
 - an **array** `[n0, n1, …]`: for `i < min(len, positional.length)`, named arg `n_i` is the
-  i-th positional argument (the same reference, so updatable). **[Dev]** conflict with a named
+  i-th positional argument (the same argument computation, so updatable). **[Dev]** conflict with a named
   arg: `You cannot specify both a positional param (at position ${i}) and the hash argument \`${n_i}\`.`
 - extra positional args beyond the array length are dropped; after mapping, the component
   receives no positional args.
@@ -927,7 +931,7 @@ args:
 creation:
 
 ```text
-captured = the named argument references (stable for the component's lifetime)
+captured = the named argument computations (stable for the component's lifetime)
 props = {}; attrs = {}
 for each name k in captured:            // this whole loop is a tracked computation → argsValidity
     v = value(captured[k])
@@ -1063,13 +1067,13 @@ truthiness, not Ember `toBool`. **[Dev]** entries must be non-empty strings with
 
 ### 6.5 Two-way binding
 
-Classic components implement two-way binding for *every* named argument whose reference is
-updatable (paths, `mut`, `get`, `hash` children …), not only `mut`:
+Classic components implement two-way binding for *every* named argument that is
+updatable (§2) (paths, `mut`, `get`, `hash` children …), not only `mut`:
 
 - When a property `k` of the component is changed through Ember's property-change machinery
   (`set`, `this.set`, tracked/`notifyPropertyChange`), and the component is not currently
-  receiving attrs (§6.1 update), and `k` is a named argument whose reference is updatable,
-  the new value is written to that reference (`component.ts:1039-1050`). This propagates
+  receiving attrs (§6.1 update), and `k` is an updatable named argument,
+  the new value is written to that argument (`component.ts:1039-1050`). This propagates
   through intermediate classic components (`mut-test.js:13-120, 144-175`,
   `curly-components-test.js:2900-3113`).
 - `this.attrs.k.update(v)` (mutable cell) writes `v` upstream (`mut-test.js:385-513`).
@@ -1232,7 +1236,7 @@ Source: `packages/@ember/-internals/glimmer/lib/components/internal.ts`.
   (`lib/templates/*.ts`). Its `create()` throws (**[Dev]** `Use constructor instead of create`);
   it cannot be subclassed or instantiated by users. `toString()` is `Input` / `Textarea` / `LinkTo`.
 - One instance per invocation; `this` in the template is the instance; arguments are read
-  lazily and reactively (`this.named(name)` evaluates the argument reference).
+  lazily and reactively (`this.named(name)` evaluates the argument computation).
 - **Unsupported named arguments are silently ignored** except where noted
   (`internal.ts:62-99`); `validateArguments` runs untracked at creation.
 - **Default attributes**: the template sets `id={{this.id}}` and `class={{this.class}}`
@@ -1274,13 +1278,13 @@ never valid) → `"text"`. Without a DOM, any non-empty string is accepted
 `"ember-text-field ember-view"` (`input.ts:154-163`).
 
 **Value binding** (`abstract-input.ts:35-106`). The component keeps a *value cell* chosen once
-from the kind of `@value` reference:
+from the kind of `@value` argument:
 
 | `@value` | cell |
 |---|---|
 | absent | local tracked value, initially `undefined` |
 | constant (literal) | local tracked value initialised to the literal |
-| updatable (path, `mut`, `get`, …) | reads/writes go directly to the upstream reference (two-way) |
+| updatable (path, `mut`, `get`, …) | reads/writes go directly to the upstream argument (two-way) |
 | non-updatable, non-constant (e.g. helper result) | *forked*: local copy that is reset to the upstream value whenever the upstream value changes |
 
 On `input`, `change` (non-checkbox), `paste`, `cut` events the cell is set to

@@ -46,7 +46,7 @@ is evaluated in an **evaluation context** consisting of:
 |---|---|
 | **self** | The value of `this`. A reactive value (see below). For a component layout it is the result of the component manager's `getSelf` (chapter 06). For template-only components it is the constant `null`, so `{{this.x}}` evaluates to `undefined` (`packages/@glimmer/runtime/lib/component/template-only.ts:31-33`). For a root template rendered with `renderMain` it is the `self` passed by the embedder. |
 | **scope slots** | Named argument slots (`@foo`), local variables (block params), and block slots (`&default`, `&else`, `&attrs`, `&<name>`). Unbound slots read as `undefined` (`packages/@glimmer/runtime/lib/scope.ts:52-62`). |
-| **lexical scope values** | In strict mode, the values captured from the JavaScript scope of the template. When they are captured is specified in §01-1.8.5. They are **constant**: a lexical variable's value is captured once per template instance and its identity never changes during the life of that instance (`packages/@glimmer/opcode-compiler/lib/syntax/expressions.ts:60-65` — lexical symbols compile to constant references). Properties *of* a lexical value are ordinary reactive property reads. |
+| **lexical scope values** | In strict mode, the values captured from the JavaScript scope of the template. When they are captured is specified in §01-1.8.5. They are **constant**: a lexical variable's value is captured once per template instance and its identity never changes during the life of that instance (`packages/@glimmer/opcode-compiler/lib/syntax/expressions.ts:60-65` — lexical symbols compile to constant values). Properties *of* a lexical value are ordinary reactive property reads. |
 | **owner** | The owner (DI container) used for resolution and passed to manager hooks. Inherited from the invoking context, except where a curried value or a manager with the `hasSubOwner` capability supplies a different one (§05-7.8). |
 | **dynamic scope** | A string-keyed map of reactive values that is inherited *dynamically* (by render-tree nesting, not lexically). Used by `-with-dynamic-vars` / `-get-dynamic-var` (§05-5.8) and by component managers with the `dynamicScope` capability. Each component invocation and each `-with-dynamic-vars` block gets a child copy (`packages/@glimmer/runtime/lib/scope.ts:15-37`). |
 
@@ -68,7 +68,7 @@ when a consumer needs it:
 - a component argument is passed *as a reactive value* (not as a snapshot); it is computed only
   when the component (its manager, its JavaScript class, or its template) reads it
   (`packages/@glimmer/runtime/lib/vm/arguments.ts:137-142`, `310-345` — captured arguments are
-  lists/maps of references, never values);
+  lists/maps of reactive values, never snapshots);
 - a helper receives its arguments as reactive values and decides when to read them.
 
 Consequently, a getter in a component argument that is never read is never run, and a getter
@@ -1738,8 +1738,8 @@ on update: if d's identity changed:
 
 On an update pass, when the traversal reaches an element's modifier position (which is at the
 element's *opening*, before the element's children), each modifier whose tracked inputs
-(everything consumed by its last `install`/`update`, and anything the manager reports via its
-tag — chapter 06) have changed is **scheduled** for `update`; all scheduled updates run at
+(everything consumed by its last `install`/`update` — §06-7.3, §07-2.4.6) have changed is
+**scheduled** for `update`; all scheduled updates run at
 commit in scheduling order (document pre-order) (`dom.ts:308-328`,
 `environment.ts:80-95`). A modifier's `update` never runs in the same transaction as its
 `install`.

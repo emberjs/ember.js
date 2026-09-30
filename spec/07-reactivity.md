@@ -777,8 +777,7 @@ one.
       stored-or-initialized value), v)`. If it returns true, return without storing or
       invalidating. The comparison runs the lazy initializer if needed (test `options_test.js:44`).
    2. Otherwise invalidate the cell, then store `v`, then invalidate the instance's
-      **object-level cell** (the "any tracked property changed" cell used by Ember's object
-      tag, §07-3.6.1) (`tracked.ts:351-364`; `tracked-data.ts:31-34`).
+      **object-level cell** (the "any tracked property changed" cell, §07-3.6.1) (`tracked.ts:351-364`; `tracked-data.ts:31-34`).
    A set with no `equals` option **always** invalidates. Test: `options_test.js:29`.
    **Initializer skipped:** if the property is set before it is ever read, the initializer is
    never called (`tracked-data.ts:20` checks `values.has(self)`).

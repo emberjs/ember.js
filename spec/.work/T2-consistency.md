@@ -53,6 +53,7 @@ so check the current text before editing.
   — base-renderer.ts:282-360: a root added mid-render is rendered in a later loop iteration = new runtime transaction with its own commit; §05-1.4 now states Ember's deferral, §07-1.10 item 5.1 corrected ("same transaction" was wrong; old roots are revalidated again), §08-9.1 aligned; Q9 stays open in 08.
 - [x] 21 terms 07 and 06 must define
   — constant (§07-0/§07-1.5), component region (added in item 1), `[]` cell (§07-3.6.6) and the default helper manager's trailing named-args proxy (§06-6.3/§06-3.2) were already defined; 05-1.6/05-1.7/08 intro/08-2.6 now cite them. Fixed 08 intro claim that tracked arrays dirty `[]` (they use their own collection cell; -track-array.ts:17-30).
-- [ ] Also: grep all chapters for references/tags/revisions/opcodes in normative prose (not citations, paths, or marked implementation notes; opcodes are fine in 04), and rephrase using §07 terms
+- [x] Also: grep all chapters for references/tags/revisions/opcodes in normative prose (not citations, paths, or marked implementation notes; opcodes are fine in 04), and rephrase using §07 terms
+  — 08 used "reference" throughout (updatable/constant/argument reference): §08-2 intro now defines *updatable* and *constant* via §07, and ~20 spots were rephrased; 05-1.1 citation glosses, §05-10.3 "via its tag", and one 07 "object tag" rephrased. Remaining hits are HTML tags, citations, 07-2.6's list of internals, or marked implementation notes.
 - [ ] Update STATUS.md: remove reconciled findings and mark T2 done
 - [ ] Final `python3 spec/tools/xref.py` and commit
