@@ -45,7 +45,7 @@ continue the work. Last updated: 2026-09-29.
 | 01 authoring formats | ~1190 | Drafted | From source. A few citations were spot-checked. |
 | 02 syntax | ~1410 | Drafted | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes). |
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev` (built Sep 27). The runtime `eval` form, the babel plugin and runtime rendering were not run. |
-| 04 wire format | ~1560 | Drafted, but still **normative in tone**. It must be recast as informative (task T1). | All examples are real compiler output. |
+| 04 wire format | ~1560 | Drafted; recast as informative (T1 done). | All examples are real compiler output. |
 | 05 runtime semantics | ~1990 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. **`each`/`in-element`/`yield` behavior and lifecycle/destruction ordering are source-only** (task T4). |
 | 06 managers | ~1470 | Drafted | From source. Citations were not all re-verified (task T3). |
 | 07 reactivity | ~1490 | Drafted | From source. Citations were not all re-verified (task T3). |
@@ -60,7 +60,7 @@ Run these in order, one at a time.
 
 | ID | Task | Model | Checklist | State |
 |---|---|---|---|---|
-| T1 | Recast 04 as informative and remove wire-compat requirements from other chapters | Sonnet | `.work/T1-wire-informative.md` | pending |
+| T1 | Recast 04 as informative and remove wire-compat requirements from other chapters | Sonnet | `.work/T1-wire-informative.md` | done |
 | T2 | Cross-chapter consistency pass (items below) | Opus | `.work/T2-consistency.md` | pending; a first attempt was interrupted and may have made a few edits |
 | T3 | Citation verification (ranges, then whether cited lines contain the claim), 06 and 07 first | Sonnet | `.work/T3-citations.md` | pending; a first attempt fixed 10 citations (`tools/fixes.log`) |
 | T4 | Find test assertions for 05's source-only areas and cite them, or record them as untested | Sonnet | `.work/T4-ch05-tests.md` | pending |

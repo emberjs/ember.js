@@ -1828,8 +1828,8 @@ implementation asserts in DEBUG (tests `element-test.js:27-56` expect a throw). 
 wrapper (same as `""`), not nothing. The three behaviours disagree.
 
 **Q5. `-normalize-class` is unreachable** from current compilers but kept for old
-precompiled templates; whether a new implementation must support precompiled wire format that
-references it depends on the backward-compatibility window for precompiled addons (§04).
+precompiled templates. Since wire format is not a compatibility requirement (§00-0.2), a new
+implementation need not support precompiled wire format that references it.
 
 **Q6. `(helper "name")` in loose mode bypasses classic-helper factory handling.**
 `-resolve` returns `factoryFor(...).class` (`-resolve.ts:42`), whereas `lookupHelper`

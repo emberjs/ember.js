@@ -50,9 +50,8 @@ A conforming new implementation that compiles templates to JS functions replaces
 "wire" step. It MUST preserve every observable property listed in this chapter of the
 *inputs* (source forms, options, scoping, mode selection, association with component
 objects, owner binding, timing of scope evaluation). It MAY change the shape of the
-compiled payload (see §04), but only if every consumer that can observe it (e.g.
-`createTemplateFactory` callers, published addons shipping precompiled wire format) is
-also handled — see §1.10.
+compiled payload freely: wire format is not a compatibility requirement (§00-0.2, §04 is
+informative), and addons ship template source. See §1.10.
 
 ---
 
@@ -1104,10 +1103,11 @@ paired with their component through the resolver, not through `setComponentTempl
   returning a JS expression string that, when placed in the caller's lexical scope and passed
   to `createTemplateFactory`, yields a factory with the semantics of §1.8.1, reading lexical
   values no earlier than first use (§1.8.5).
-- Precompiled wire payloads are shipped inside published v2 addons. A backward-compatible
-  implementation's `createTemplateFactory` MUST continue to accept the wire envelope of §1.6.4
-  (and older array-form `scope`) for templates it did not compile itself, unless the
-  compatibility target excludes such packages.
+- Wire payloads are not a compatibility surface (§00-0.2): addons ship template source, not
+  precompiled templates. An implementation is not required to accept the wire envelope of
+  §1.6.4 (or the older array-form `scope`) for templates it did not compile itself. The
+  babel plugin's `hbs` target (§1.5), by contrast, is compatibility-relevant because it
+  is how addons ship source.
 - The owner-keyed caching and ownerless template of §1.8.1 are observable only through
   identity and resolution; a new implementation may restructure them provided loose-mode
   resolution uses the correct owner.

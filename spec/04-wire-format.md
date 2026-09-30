@@ -84,7 +84,7 @@ In practice, wire-format templates reach a running application in three ways:
 
 Because addons ship template source, what *is* part of the compatibility surface is the
 source-level path, including the babel plugin's `hbs` re-printing (§02-10). Descriptions
-below of shapes that the current producer emits (§4.2-§4.10), of the legacy scope-array
+below of shapes that the current producer emits (§4.2 to §4.10), of the legacy scope-array
 form (§4.3.3, **[Legacy]**), and of historical shapes (§4.11) are documentation of current
 and past behavior only. The current runtime accepts the scope-array form, and does not
 support the opcodes of §4.11.4.
