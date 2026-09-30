@@ -928,8 +928,9 @@ this applies, because a free uppercase tag is an error.
   the `attrs` block symbol (`normalize.ts:712-714`). `{{...attributes}}` anywhere else is the
   parse error `Illegal use of ...attributes` (`handlebars-node-visitors.ts:231-235`).
 - **`type` attribute ordering.** On an element with no `...attributes`, a `type` attribute is
-  moved after all other attributes (`visitors/element/classified.ts:102-129`). This is a
-  static reordering, and its DOM effect is specified in §05.
+  moved after all other attributes, and modifiers come after all attributes
+  (`visitors/element/classified.ts:102-156`). This is a static reordering. §05-4.1 owns the
+  full parameter-order rule and its DOM effect.
 - **`@arg` values.** A valueless `@a` means the empty string `""` (verified: `<Foo @a />`).
 
 ---

@@ -508,7 +508,10 @@ type ElementParameter = Attribute /* 14,15,16,22,23,24 */ | Modifier /* 4 */ | A
 ```
 
 (`api.d.ts:83`, `324-334`) — the attributes, modifiers and `...attributes` of an
-angle-bracket *component* invocation, in source order, carried inside `Component` (§4.8.10).
+angle-bracket *component* invocation, carried inside `Component` (§4.8.10). The order is
+that of §05-4.1: attributes (with `AttrSplat` at its source position) in source order, then
+modifiers in source order, with `type` moved after the other attributes when there is no
+`AttrSplat`.
 For plain elements the same tuples appear inline as statements between `OpenElement`
 and `FlushElement` (§4.8.4).
 
@@ -1039,7 +1042,7 @@ Hash keys have no `@`.
   `[39,n]` (with the customized name in `upvars`); `<@comp>` → `[30,slot]`;
   `<this.comp>` → `[30,0,["comp"]]`; `<x.y>` with block param `x` → `[30,slot,["y"]]`.
 - `ElementParameters` (§4.5.8): attributes (only 24, 16, 23 — never 14/15/22), modifiers,
-  and `AttrSplat`, in source order; `null` if none.
+  and `AttrSplat`, in the order of §4.5.8; `null` if none.
 - `Hash`: the named arguments; **keys include the `@`** (`[["@a","@b"],["s",1]]`).
 - `Blocks`: `default` for the body (`<Foo as |x|>{{x}}</Foo>`), or the named blocks
   `<:name>` (§4.5.4). `null` if self-closing or empty.

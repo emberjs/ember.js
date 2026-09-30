@@ -490,12 +490,17 @@ renderElement(tag, params, children):
 `packages/@glimmer/compiler/lib/passes/1-normalization/visitors/element/classified.ts:98-175`,
 `packages/@glimmer/compiler/lib/passes/2-encoding/content.ts:129-137`.)
 
-Order of params: the compiler orders an element's params as *all attributes in source order*
+Order of params (this paragraph is the owner of the rule; §03-5.7, §04-4.5.8 and §05-7.5
+refer to it): the compiler orders an element's params as *all attributes in source order*
 (including `...attributes` at its source position), followed by *all modifiers in source
-order* (`classified.ts:140-156`). For a simple element (no splattributes), an attribute named
-exactly `type` is moved after all other attributes (`classified.ts:102-129`), because `type`
-can change how the browser interprets other attributes (e.g. `value` on `<input>`). For
-elements with dynamic features the same reordering happens at flush time (§4.8).
+order* (`classified.ts:140-156`). When the element has no `...attributes` (it may still have
+modifiers), an attribute named exactly `type` (case-sensitive) is moved after all other
+attributes at compile time (`classified.ts:102-129`), because `type` can change how the
+browser interprets other attributes (e.g. `value` on `<input>`). When the element has
+`...attributes`, the compiler keeps source order and the same reordering happens at flush
+time (§4.8). The same rules apply to the attributes of an angle-bracket component invocation,
+which form its `attrs` block (§05-7.5). Verified: `<div {{m}} type="x" title="a">` compiles
+with params in the order `title`, `type`, `m`.
 
 Therefore, at the time the element is inserted into the document, all its attributes and
 properties have been set, and its modifiers have been *created* but not *installed*. Modifier
@@ -659,9 +664,11 @@ update(v):   s = normalize(v); if el.value !== s: el.value = s
 The update compares with the element's *current* `value`: if the user typed `bar` and the
 bound value is (re)set to `foo`, the re-render writes `foo` back
 (`attributes-test.ts:251-282`). `null`/`undefined` display as `""`
-(`attributes-test.ts:207-232`). Because `type`, `min`, `max` are applied before `value` in
-every ordering (the `type` rule of §4.1/§4.8 and source order), range inputs clamp correctly
-(`packages/@glimmer-workspace/integration-tests/test/input-range-test.ts:14-150`).
+(`attributes-test.ts:207-232`). Because `type` is applied after every other attribute (the
+`type` rule of §4.1/§4.8), `value`, `min` and `max` are already set when the input becomes
+`type="range"`, and the browser then clamps the value against the author's `min`/`max`, not
+the defaults (`packages/@glimmer-workspace/integration-tests/test/input-range-test.ts:14-150`:
+`-2` with `min=-5` is kept, `55` with `max=50` becomes `50`).
 
 **OPTION_SELECTED** (`selected` on `<option>`; `dynamic.ts:202-218`):
 
@@ -806,6 +813,21 @@ with the contents of `...attributes` recorded at the position of `...attributes`
 - A `<tr>` written directly inside `<table>` is created directly as a child of the `<table>`
   on the client (no implicit `<tbody>` is inserted by the DOM builder); the SSR serializer
   inserts one (§05-13.1).
+- **Duplicate attribute names** are kept by the parser (§02-11 item 20) and compiled as
+  separate attributes (verified: `<div title="a" title="b">` compiles to two static
+  attributes). At runtime (from source, untested):
+  - On a *simple* element (§4.1), each occurrence is applied in order, so the last one wins
+    at first render. Each dynamic occurrence keeps its own update, so after an update the DOM
+    shows whichever occurrence was re-evaluated most recently. Two `class` occurrences are
+    *not* merged: the last one wins.
+  - On an element with `...attributes` or modifiers, §4.8 applies: the last recorded value for
+    a name wins, it is applied once, and `class` values are merged.
+
+  So `<div class="a" class="b">` renders `class="b"`, but adding a modifier makes it
+  `class="a b"`. Duplicate `type` attributes on an element without `...attributes` are a
+  special case: the compile-time `type` reordering (§4.1) keeps only the *last* `type`
+  occurrence and drops the others (`classified.ts:108-121`; verified: `<input type="a" type="b">`
+  compiles to a single `type="b"`). See §05-14 item 19.
 
 ---
 
@@ -846,7 +868,9 @@ An implementation that is not embedded in Ember MUST let the embedder supply `to
 ```
 
 `unless c` is exactly `if (not c)` with the same blocks
-(`packages/@glimmer/compiler/lib/passes/1-normalization/keywords/block.ts:154-214`).
+(`packages/@glimmer/compiler/lib/passes/1-normalization/keywords/block.ts:154-214`; §03-4.4;
+verified: `{{#unless this.c}}` compiles to `[41,[51,…],…]` and inline `{{unless c 1 2}}` to
+`[52,[51,…],1,2]`).
 `{{else if …}}` chains are nested `if`s in the `else` block (chapter 02).
 
 Semantics:
@@ -1297,6 +1321,15 @@ component's layout as `@name`, reading the caller's reactive value directly: a c
 caller's value updates exactly the positions in the layout (and anything else) that read it, and
 does not by itself replace any region. Positional arguments are not accessible from the layout
 by syntax; they are available to the manager (chapter 06).
+
+**Duplicate named arguments** (`{{h a=1 a=2}}`, `<Foo @a={{1}} @a={{2}} />`) are kept by the
+parser and the compiler (verified: the hash is `[["a","a"],[1,2]]`). From source (untested),
+the two readers disagree. A component layout's `@a` is bound to the **first** occurrence
+(`packages/@glimmer/runtime/lib/vm/arguments.ts:310-329` uses `indexOf`; the static path in
+`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts:337-350` binds in
+reverse so the first wins). The captured arguments that managers, helpers, and modifiers see
+(`args.named.a`, §06-3) hold the **last** occurrence (`arguments.ts:331-344` overwrites the
+map), and list the name once. See §05-14 item 19.
 
 If the definition is curried (§05-8), its curried arguments are merged **before** the manager
 sees the arguments (`component.ts:304-360`,
@@ -2016,3 +2049,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     `{{{if c x}}}`, `{{{helper h}}}`, `{{{has-block}}}` and `{{{log}}}` lose the flag during
     keyword translation (`keywords/utils/call-to-append.ts:7-26`, `keywords/append.ts:127-145`).
     Both look like bugs. No test pins either behavior.
+19. **Duplicate attributes and duplicate named arguments** (§05-4.9, §05-7.3). The parser
+    accepts both (§02-11 item 20). For attributes, the result depends on whether the element
+    has `...attributes`/modifiers (last-wins without `class` merging vs. deferred last-wins
+    with `class` merging). For named arguments, a component's layout sees the first
+    occurrence while its manager (e.g. a Glimmer component's `this.args`) sees the last. All
+    of this is derived from source and untested. Should duplicates be a compile-time error?

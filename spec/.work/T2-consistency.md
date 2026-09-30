@@ -45,8 +45,10 @@ so check the current text before editing.
   — re-verified the three lossy cases with built @glimmer/syntax; §01-1.5.6 now states the emitted source normatively (plugin uses its own @glimmer/syntax) and new §01-1.11 item 15 owns the decision; 02 Q15 points there.
 - [x] 17 Ember transforms summary in 05 vs §03-7 / §08-1.4
   — probed each/each-in/style/in-element in both modes. Double `-track-array` confirmed in both modes; now §03-7.8 + new 03-10 item 22 (04 Q9, 08-1.4(8), 05-5.4.1 cite it). Fixed §08-1.4(1)/§08-10.6: `style="a {{x}}"` does warn (dynamic.ts:31-33). 05-5.7 now says `-in-el-null` depends on `isProduction`.
-- [ ] 18 duplicate attributes / hash keys runtime meaning
-- [ ] 19 element parameter order; unless → if(not)
+- [x] 18 duplicate attributes / hash keys runtime meaning
+  — from source + compile probes: §05-4.9 (simple element last-wins, no class merge; deferred last-wins with merge; duplicate `type` keeps only the last, verified) and §05-7.3 (layout `@a` = first occurrence, manager args = last); new 05 open question 19 (untested); 02 Q20 points there.
+- [x] 19 element parameter order; unless → if(not)
+  — probed; §05-4.1 owns the order (type moved at compile time whenever there is no `...attributes`, even with modifiers; case-sensitive); fixed §04-4.5.8/§04-4.8.10 ("in source order") and the wrong range-input explanation in §05-4.5.2; unless→if(not) verified, §05-5.2 cites §03-4.4.
 - [ ] 20 renderComponent inside a transaction
 - [ ] 21 terms 07 and 06 must define
 - [ ] Also: grep all chapters for references/tags/revisions/opcodes in normative prose (not citations, paths, or marked implementation notes; opcodes are fine in 04), and rephrase using §07 terms
