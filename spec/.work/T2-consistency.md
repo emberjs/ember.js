@@ -21,9 +21,12 @@ so check the current text before editing.
   — source (environment.ts:50-96, dom.ts:137-191) confirms installs post-order, updates pre-order; §06-11 now owns the order (05-1.4, 07-1.10, 07-4.10 point to it); §05-11.2 now cites §06-10.2's algorithm; §06-10.3 cites §05-11 for order; 06 Q10 merged into 05 Q11. Fixed §08-6.7: classic willDestroy runs in the `actions` queue (scheduled by component.destroy()), not `destroy`. Also fixed six §05-12 refs that meant §05-11 (Destruction).
 - [x] 5 curried-component owner
   — 05/06 already agreed with component.ts:304-360,420-440,815-853; 05 Q3 now points to §06-12 Q3 (which adds the definition-record owner); §08-8.6 gained an engine paragraph.
-- [ ] 6 outlet is `<@outlet/>`, lexical
-- [ ] 7 action keyword vs removed runtime
-- [ ] 8 loose-mode free names (argument position; silent `{{foo}}`)
+- [x] 6 outlet is `<@outlet/>`, lexical
+  — 03/04/05 did not call it dynamic, but §05-5.8 and §04-4.6.12/4.8.17 said Ember outlets use the dynamic-var keywords; no current Ember code emits them (grep), fixed. §03-7.10 now states lexical scoping and cites §08-8.3.
+- [x] 7 action keyword vs removed runtime
+  — probed: loose `{{action …}}` append is a keyword-misuse compile error, strict compiles all forms; §03-7.3 fixed, §08-2.20 now gives per-position runtime errors (modifier message says "it was not in scope"); 03-10 #15 points to §08-14 Q7.
+- [x] 8 loose-mode free names (argument position; silent `{{foo}}`)
+  — chapters agreed (probed `{{foo bar}}` → `[31,1]`); §03-5.3 owns static side and cites §08-14 Q1/Q16; 04 Q2/Q3 now point to 08.
 - [ ] 9 auto-imported strict built-ins list identical everywhere
 - [ ] 10 lexical scope timing
 - [x] 11 component-definition cache ignores owner

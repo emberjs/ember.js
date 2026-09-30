@@ -751,6 +751,12 @@ About the last row: for `{{foo bar.baz}}`, the argument `bar.baz` is normalized 
 `STRICT_RESOLUTION` and does not go through `resolutionFor`, so there is no compile-time
 error. The head `bar` becomes a `Strict` free variable (`normalize.ts:266, 339`).
 
+This section owns the static side of loose-mode free names. §08-5 owns the runtime side. Two
+runtime consequences are open questions there: a `Strict` value that is not a built-in keyword
+helper fails with a **[Dev]** error whose text says "strict mode template" although the
+template is loose (§08-14 Q16), and an argument-less `{{x}}` whose `ComponentOrHelper`
+lookup finds nothing renders nothing, silently (§08-14 Q1).
+
 **Arguments to components in loose mode.** An `@arg` whose value is `{{x}}`, where `x` is a
 bare free `VarHead` with no tail, no params, and no hash, is an error unless `x` is
 `has-block` (`normalize.ts:728-765`):
@@ -1067,9 +1073,13 @@ no longer stringified by concatenation (see §05 for the effect on `SafeString` 
 `MustacheStatement`, or `SubExpression` whose path's `original` is exactly `action` and
 `!hasLocal('action')`, insert the path `this` as the **first** positional parameter.
 `{{action "foo"}}` → `{{action this "foo"}}`. No errors. *Note:* the runtime `action`
-helper/modifier was removed (RFC 1006; `packages/@ember/-internals/glimmer/lib/resolver.ts:119-121`),
-so at runtime this now resolves as a user-registered helper/modifier named `action` in loose
-mode, and fails in strict mode (§03-10).
+helper/modifier was removed (RFC 1006; `packages/@ember/-internals/glimmer/lib/resolver.ts:119-121`).
+The static consequences are: in loose mode `action` is an ordinary free name, so `(action …)`
+and `<div {{action …}}>` resolve a user-registered helper or modifier named `action`, while
+`{{action …}}` in append position is the keyword-misuse error of §03-4.3 (`action` is valid
+only in Call and Modifier position; verified). In strict mode `action` is a host keyword
+(§03-4.6), so all three forms compile, including the append form (verified). What happens
+at runtime is §08-2.20.
 
 #### 03-7.4 `AssertReservedNamedArguments` (both) [Dev]
 
@@ -1148,7 +1158,9 @@ properties of undefined (reading 'type')`; verified). See §03-10.
     `Helper` free variable in loose mode, and a `Keyword` in strict mode.
   - `{{outlet}}` → `<@outlet />`, a self-closing component invocation of the named argument
     `@outlet`. This allocates the arg slot `@outlet` (verified). Any hash is dropped. Positional
-    args were already rejected in dev.
+    args were already rejected in dev. So `{{outlet}}` is **lexically** scoped: it reads the
+    `@outlet` argument of the template it is written in, and is not dynamically scoped
+    (runtime meaning: §08-8.3).
 
   Only mustaches are handled. `(outlet)` and `(mount)` produce the keyword misuse error.
 
@@ -1281,7 +1293,8 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
     rewritten.
 15. **`action`** is still a keyword (`KEYWORDS_TYPES`, `STRICT_MODE_KEYWORDS`) and is still
     rewritten, but its runtime implementation has been removed (RFC 1006). In strict mode
-    `{{action}}` compiles and then fails at runtime resolution.
+    every `action` form compiles and then fails at runtime resolution (§03-7.3, §08-2.20).
+    Recorded as §08-14 Q7, which owns it.
 16. **`modifier` in modifier position** is listed as valid in `KEYWORDS_TYPES`, but is never
     translated, so it is treated as a free modifier named `modifier`.
 17. **`this.attrs` deprecation** is past its `until: '6.0.0'` but still only logs, and the

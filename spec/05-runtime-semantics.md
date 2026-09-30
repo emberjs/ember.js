@@ -1105,7 +1105,8 @@ region. `(-get-dynamic-var nameExpr)` evaluates to the current value of the dyna
 named `String(nameExpr)` in the dynamic scope in effect where the expression appears
 (`packages/@glimmer/runtime/lib/compiled/opcodes/expressions.ts:310-321`); reading an unbound
 name is an error in the current implementation (`scope.ts:26-28` unwraps `undefined`). These
-are private keywords used by Ember (outlets, chapter 08). The name expression is itself
+are private keywords. Ember's outlets once used them, but `{{outlet}}` is now the lexical
+`<@outlet />` (§08-8.3) and no current Ember template emits them. The name expression is itself
 reactive: `{{-get-dynamic-var this.keyword}}` switches variables when `keyword` changes, and
 inner `-with-dynamic-vars` shadow outer bindings only within their block
 (`packages/@glimmer-workspace/integration-tests/lib/suites/with-dynamic-vars.ts:4-84`).

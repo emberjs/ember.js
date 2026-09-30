@@ -617,10 +617,23 @@ The `{{action}}` helper and modifier were removed (RFC
 `rfcs/text/1006-deprecate-action-template-helper.md`; commit `c1c8b00f70` "Remove
 DEPRECATE_TEMPLATE_ACTION"). `action` remains a syntax keyword
 (`packages/@glimmer/syntax/lib/keywords.ts`), a strict keyword (§1.3(b)) and the target of
-`transform-action-syntax`, but no implementation exists in any resolver table. Using it
-therefore fails at runtime with the generic resolution errors of §5 (loose) or
-`Attempted to resolve a helper in a strict mode template, but that value was not in scope: action`
-(strict). See Q7. The `@action` *decorator* from `@ember/object` is unrelated and remains.
+`transform-action-syntax`, but no implementation exists in any resolver table. Which forms
+compile is specified in §03-7.3. At runtime:
+
+- **[Loose mode]** `(action …)` and `<div {{action …}}>` resolve `helper:action` /
+  `modifier:action` through the registry (§5.3, §5.4). Unless an app registers one, the
+  **[Dev]** error is the generic ``Attempted to resolve `action`, which was expected to be a
+  helper, but nothing was found.`` (or `…a modifier…`). `{{action …}}` in append position does
+  not compile in loose mode.
+- Strict mode: `action` is a strict keyword, looked up with `lookupBuiltInHelper` /
+  `lookupBuiltInModifier`, which return `null`. The **[Dev]** error is
+  `Attempted to resolve a helper in a strict mode template, but that value was not in scope: action`
+  for `{{action …}}` and `(action …)`, and
+  `Attempted to resolve a modifier in a strict mode template, but it was not in scope: action`
+  (note "it was") for `<div {{action …}}>`
+  (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts:165-168,217-229,425-454`).
+
+See Q7. The `@action` *decorator* from `@ember/object` is unrelated and remains.
 
 ### 2.21 `on` modifier
 
@@ -1824,7 +1837,8 @@ compiler emits an "optional component or helper" resolution; when neither
 `component:foo` nor `helper:foo` exists the resolution emits *nothing* — no error, no output
 (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts:403-422`, contrast
 the erroring `{{foo bar}}` path at `:316-341`). With implicit-`this` fallback removed this makes
-typos render empty silently. No test pins either outcome for the no-argument case.
+typos render empty silently. No test pins either outcome for the no-argument case. A
+**[Dev]** error would be one option. (Static side: §03-5.3.)
 
 **Q2. `{{outlet}}` outside route templates.** `{{outlet}}` is now `<@outlet />`, i.e.
 lexically scoped to the enclosing template's `@outlet` argument. Historically `{{outlet}}` was
@@ -1908,4 +1922,5 @@ at that level is required.
 *strict keyword* lookup even in loose mode (verified: `[28,[35,0],[[31,1]],null]`), so a
 non-keyword `bar` fails at runtime in DEBUG with a message that mentions "strict mode
 template" even though the template is loose (`resolution.ts:425-454`). In production the
-failure mode is unspecified.
+failure mode is unspecified. §03-5.3 explains why arguments get `Strict` resolution; whether
+this should instead be a compile-time error is open.

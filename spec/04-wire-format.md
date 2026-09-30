@@ -759,7 +759,8 @@ observed.
 
 `[53, name]` — `(-get-dynamic-var name)`; reads the named entry of the *dynamic scope*
 (§05-5.8). `name` is any expression (in practice a string literal).
-Internal to Ember (outlets). Consumer `expressions.ts:117-120`.
+A private keyword. Ember's outlets once used it, but `{{outlet}}` now compiles to
+`<@outlet />` (§08-8.3) and no current Ember template emits it. Consumer `expressions.ts:117-120`.
 
 ### 4.6.13 `Log` (54)
 
@@ -1132,7 +1133,8 @@ reactive (consumer `statements.ts:361-364`). No teardown on change.
 `[45, Hash, block]` — `{{#-with-dynamic-vars name=value}}…{{/-with-dynamic-vars}}`
 (`content.ts:218-220`). Semantics: render `block` in a child dynamic scope in which each
 hash entry is bound (§05-5.8). A `null` hash renders the block unchanged
-(consumer `statements.ts:366-377`). Internal to Ember.
+(consumer `statements.ts:366-377`). A private keyword; no current Ember template emits it
+(§4.6.12).
 
 ### 4.8.18 `Debugger` (26)
 
@@ -1495,17 +1497,11 @@ the chapter. It is not a checklist that any implementation must satisfy.
    opcode references them. This bloats output and could mislead tools that treat `upvars`
    as "names to resolve". Unclear whether any external tool depends on it.
 2. **Free argument names in loose mode become `GetStrictKeyword`.** `{{foo bar}}` with free
-   `bar` compiles (Ember's loose-mode plugins do not reject it) to `[31,1]`, which at runtime
-   resolves `bar` via `lookupBuiltInHelper` and, if not a built-in, throws a **[Dev]** error
-   whose text mentions "strict mode template" even though the template is loose. In
-   production the behavior is undefined. §03 should decide whether this is a compile-time
-   error; the wire format has no dedicated opcode for it.
+   `bar` compiles to `[31,1]`. The static rule is §03-5.3, and the runtime failure is
+   recorded as §08-14 Q16. The wire format has no dedicated opcode for it.
 3. **`{{foo}}` in loose mode that is neither component nor helper renders nothing
-   silently.** `resolveOptionalComponentOrHelper` has no error branch for the loose case
-   (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts:403-422`),
-   whereas `{{foo 1}}` errors. Historically the missing case fell back to `this.foo`;
-   after the fallback's removal it became a silent no-op. Likely a bug; the
-   behavior is recorded here rather than changed (a **[Dev]** error would be one option).
+   silently.** Recorded as §08-14 Q1, which owns it. Historically the missing case fell
+   back to `this.foo`; after the fallback's removal it became a silent no-op.
 4. **Owner used for component templates.** Component definitions are cached per
    definition object in the program constants, so a component's `templateFactory(owner)`
    is invoked with the first owner that rendered it (`packages/@glimmer/program/lib/constants.ts:176-235`).
