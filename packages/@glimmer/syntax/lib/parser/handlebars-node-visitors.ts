@@ -18,6 +18,7 @@ import { appendChild, isHBSLiteral, printLiteral } from '../utils';
 import b from '../v1/parser-builders';
 
 const BEFORE_ATTRIBUTE_NAME = 'beforeAttributeName' as TokenizerState.beforeAttributeName;
+const COMMENT = 'comment' as TokenizerState.comment;
 const ATTRIBUTE_VALUE_UNQUOTED = 'attributeValueUnquoted' as TokenizerState.attributeValueUnquoted;
 
 export interface PendingError {
@@ -116,15 +117,24 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   }
 
   BlockStatement(block: HBS.UpstreamBlockStatement): ASTv1.BlockStatement | void {
-    if (this.tokenizer.state === 'comment') {
-      assert(block.loc, '[BUG] BlockStatement in parser unexpectedly did not have loc');
-      this.appendToCommentData(this.sourceForNode(block as HBS.Node));
+    assert(block.loc, '[BUG] BlockStatement in parser unexpectedly did not have loc');
+
+    if (this.appendToHtmlComment(block as HBS.Node)) {
       return;
     }
 
     if (this.tokenizer.state !== 'data' && this.tokenizer.state !== 'beforeData') {
       throw generateSyntaxError(
         'A block may only be used inside an HTML element or another block.',
+        this.source.spanFor(block.loc)
+      );
+    }
+
+    // For an inverse section (`{{^foo}}...{{/foo}}`), the upstream parser swaps the program and
+    // the inverse, so there is no program unless the section has an `{{else}}`.
+    if ((block.program as HBS.UpstreamProgram | undefined) === undefined) {
+      throw generateSyntaxError(
+        'Inverse sections (`{{^foo}}...{{/foo}}`) are not supported. Use `{{#unless foo}}...{{/unless}}` instead',
         this.source.spanFor(block.loc)
       );
     }
@@ -220,8 +230,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     const { tokenizer } = this;
 
-    if (tokenizer.state === 'comment') {
-      this.appendToCommentData(this.sourceForNode(rawMustache));
+    if (this.appendToHtmlComment(rawMustache)) {
       return;
     }
 
@@ -260,13 +269,20 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       // Tag helpers
       case 'tagOpen':
       case 'tagName':
+      case 'endTagOpen':
+      case 'endTagName':
         throw generateSyntaxError(`Cannot use mustaches in an elements tagname`, mustache.loc);
 
       case 'beforeAttributeName':
+      case 'selfClosingStartTag':
+        this.assertNotInEndTag('mustaches', mustache.loc);
+        // A `/` that is not followed by `>` is ignored, as in HTML (`<div / {{x}}>`)
         addElementModifier(this.currentStartTag, mustache);
+        tokenizer.transitionTo(BEFORE_ATTRIBUTE_NAME);
         break;
       case 'attributeName':
       case 'afterAttributeName':
+        this.assertNotInEndTag('mustaches', mustache.loc);
         this.beginAttributeValue(false);
         this.finishAttributeValue();
         addElementModifier(this.currentStartTag, mustache);
@@ -289,13 +305,54 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         this.appendDynamicAttributeValuePart(mustache);
         break;
 
-      // TODO: Only append child when the tokenizer state makes
-      // sense to do so, otherwise throw an error.
-      default:
+      case 'beforeData':
+      case 'data':
         appendChild(this.currentElement(), mustache);
+        break;
+
+      default:
+        throw generateSyntaxError(
+          `Using a Handlebars mustache when in the \`${tokenizer.state}\` state is not supported`,
+          mustache.loc
+        );
     }
 
     return mustache;
+  }
+
+  /**
+   * If the HTML tokenizer is inside an HTML comment, append the source of `node` to the comment
+   * and return true. The tokenizer may be part-way through a `-` or `--` sequence that is not
+   * followed by `>`, so those characters are flushed first, as the tokenizer itself would do.
+   */
+  private appendToHtmlComment(node: HBS.Node): boolean {
+    let pending: string;
+
+    switch (this.tokenizer.state) {
+      case 'comment':
+      case 'commentStart':
+        pending = '';
+        break;
+      case 'commentStartDash':
+      case 'commentEndDash':
+        pending = '-';
+        break;
+      case 'commentEnd':
+        pending = '--';
+        break;
+      default:
+        return false;
+    }
+
+    this.appendToCommentData(pending + this.sourceForNode(node));
+    this.tokenizer.transitionTo(COMMENT);
+    return true;
+  }
+
+  private assertNotInEndTag(what: string, loc: SourceSpan): void {
+    if (this.currentTag.type === 'EndTag') {
+      throw generateSyntaxError(`Invalid end tag: closing tag must not contain ${what}`, loc);
+    }
   }
 
   appendDynamicAttributeValuePart(part: ASTv1.MustacheStatement): void {
@@ -328,8 +385,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   CommentStatement(rawComment: HBS.CommentStatement): Nullable<ASTv1.MustacheCommentStatement> {
     const { tokenizer } = this;
 
-    if (tokenizer.state === 'comment') {
-      this.appendToCommentData(this.sourceForNode(rawComment));
+    if (this.appendToHtmlComment(rawComment)) {
       return null;
     }
 
@@ -339,6 +395,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     switch (tokenizer.state) {
       case 'beforeAttributeName':
       case 'afterAttributeName':
+        this.assertNotInEndTag('Handlebars comments', comment.loc);
         this.currentStartTag.comments.push(comment);
         break;
 
@@ -390,9 +447,23 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return b.sexpr({ path, params, hash, loc: this.source.spanFor(sexpr.loc) });
   }
 
+  HashLiteral(hash: HBS.HashLiteral): never {
+    throw generateSyntaxError(
+      `Hash literals are not supported. Use named arguments (\`{{helper foo=bar}}\`) or the \`hash\` helper (\`(hash foo=bar)\`) instead`,
+      this.source.spanFor(hash.loc)
+    );
+  }
+
   PathExpression(path: HBS.PathExpression): ASTv1.PathExpression {
     const { original } = path;
     let parts: string[];
+
+    if (typeof path.head === 'object') {
+      throw generateSyntaxError(
+        `A path cannot start with a sub-expression. Use the \`get\` helper (\`(get (foo) "bar")\`) instead`,
+        this.source.spanFor(path.loc)
+      );
+    }
 
     if (original.indexOf('/') !== -1) {
       if (original.slice(0, 2) === './') {
@@ -595,7 +666,8 @@ function acceptCallNodes(
       | HBS.UndefinedLiteral
       | HBS.NullLiteral
       | HBS.NumberLiteral
-      | HBS.BooleanLiteral;
+      | HBS.BooleanLiteral
+      | HBS.HashLiteral;
     params: HBS.Expression[];
     hash?: HBS.Hash;
   }
@@ -614,6 +686,9 @@ function acceptCallNodes(
     case 'SubExpression':
       path = compiler.SubExpression(node.path);
       break;
+
+    case 'HashLiteral':
+      return compiler.HashLiteral(node.path);
 
     case 'StringLiteral':
     case 'UndefinedLiteral':
