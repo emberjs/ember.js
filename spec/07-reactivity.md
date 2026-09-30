@@ -569,10 +569,11 @@ Replaces `VM_TO_BOOLEAN_OP` + `Assert` (`vm.ts:209-264`).
 Each argument expression at an invocation site becomes `cᵢ := C(argExprᵢ)`, created when the
 invocation is first rendered and **not** evaluated at that time. Every consumer of the argument
 calls `getValue(cᵢ)`: `@name` in the callee's template, `this.args.name` through the args proxy,
-a helper reading `named.name`, and so on. Consequences, all normative:
+a helper reading `named.name`, and so on. Consequences:
 
-- An argument that is never read is never evaluated.
-- An argument read many times while valid is evaluated once.
+- An argument that is never read is never evaluated, and one read many times while valid is
+  evaluated once. This describes the current implementation; evaluation counts are not part
+  of the contract (§00-0.1 "Evaluation is not part of the contract").
 - A consumer that reads an argument depends on the argument expression's cells. This is why
   inner state changes do not re-run outer getters: test "downstream property changes do not
   invalidate upstream component getters/arguments",
@@ -1227,9 +1228,11 @@ computations (`packages/@glimmer/manager/lib/util/args-proxy.ts:139-188`):
 3. **Literals are constants.** String, number, boolean, `null`, and `undefined` literals, and
    positions built only from them, are constant (§07-1.5, item 3). No update machinery is
    required for them.
-4. Re-evaluation during revalidation affects only positions whose computation is invalid. A
-   position whose computation is valid MUST NOT re-run any user code. (Tests: evaluation counts
-   in `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:281-311,745-816`.)
+4. Re-evaluation during revalidation affects only positions whose computation is invalid; a
+   position whose computation is valid does not re-run user code. (Tests: evaluation counts in
+   `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:281-311,745-816`.)
+   An implementation SHOULD avoid needless re-evaluation, but the counts are not part of the
+   contract (§00-0.1).
 
 ### 07-4.2 Path evaluation
 
@@ -1267,10 +1270,10 @@ the position's value = getValue(Sₙ)
   the same parent. So `{{this.foo}} {{this.foo}}`, or `{{this.foo}}` next to `{{#if this.foo}}`,
   evaluate the `foo` getter **once** per validity period (`reference.ts:198-207`, children map).
   Sharing extends across component boundaries when the parent computation is shared, e.g. the
-  caller's `this.user` passed as `@user`, with the callee reading `@user.name`. This is observable
-  through getter side effects and evaluation counts. A conforming implementation MUST NOT evaluate
-  a shared path segment more often than the current implementation does. It MAY evaluate it less
-  often only where that is unobservable (see §07-5, item 5).
+  caller's `this.user` passed as `@user`, with the callee reading `@user.name`. This sharing is
+  an optimization of the current implementation, not a requirement: evaluation counts and getter
+  side effects are not part of the contract (§00-0.1), so an implementation MAY share more, less,
+  or not at all.
 - Paths used as **update targets** (two-way bindings such as `mut`, `<Input @value=…>`) set
   through `setProp` (Ember `_setProp`, §07-3.6.3) on the parent value. That is outside this
   chapter.
@@ -1441,11 +1444,11 @@ yielder (§07-4.2 "Sharing"; tests
    the snapshot is taken after the frame ends (§07-1.5, item 2). The computation can then stay
    valid while holding a stale value. The dev-mode assertion prevents this, but the production
    behavior is unspecified.
-5. **Path computation sharing is an implementation artifact.** It comes from `childRefFor`'s
+<!-- REMOVE -->5. **Path computation sharing is an implementation artifact.** It comes from `childRefFor`'s
    per-parent `children` map (§07-4.2), yet it determines evaluation counts. It is unclear which
    tests depend on it. A JS-function implementation needs to decide whether to reproduce it
    exactly (a memo keyed by parent computation and segment).
-6. **`updateComponent` fires for descendant changes.** Recorded as §06-12 Q12, which owns
+<!-- REMOVE -->6. **`updateComponent` fires for descendant changes.** Recorded as §06-12 Q12, which owns
    it.
 7. **Legacy vs. stage-3 `@tracked` differ observably.** They differ in initialization timing
    (lazy on first read vs. eager), in whether an initializer runs when the field is written

@@ -71,10 +71,11 @@ when a consumer needs it:
   lists/maps of reactive values, never snapshots);
 - a helper receives its arguments as reactive values and decides when to read them.
 
-Consequently, a getter in a component argument that is never read is never run, and a getter
-read in two places is run at most once per render pass for each place (and possibly shared —
-the current implementation caches the result of each reactive value until something it
-consumed changes: `packages/@glimmer/reference/lib/reference.ts:153-183`).
+Consequently, in the current implementation a getter in a component argument that is never read
+is never run, and a getter read in two places is run at most once per render pass for each place
+(and possibly shared — the current implementation caches the result of each reactive value until
+something it consumed changes: `packages/@glimmer/reference/lib/reference.ts:153-183`). These
+counts are not part of the contract (§00-0.1).
 
 *Laziness applies to values, not to helper instances.* Computing a value is lazy, but
 creating a **static helper instance** (the manager's `createHelper`) is eager. It happens when
@@ -85,7 +86,8 @@ its truthy branch, then its condition. So `{{if c (a) (b)}}` creates both `(b)` 
 but computes only the selected one (§06-6.2 step 1). Dynamic helpers (`(this.h)`) are created
 lazily, on first read (§05-9.2). One more case is observable: when a template-only component
 is invoked statically, named arguments that its layout never references are not evaluated at
-all, so helpers in them are never created (§06-5; open question §06-12 Q6).
+all, so helpers in them are never created (§06-5). All of this timing describes the current
+implementation and is not part of the contract (§00-0.1).
 
 A path expression `a.b.c` is a chain of reactive property reads. Reading `b` of a value `v`
 yields `undefined` if `v` is `null` or `undefined`, and otherwise `getProp(v, "b")`
@@ -970,8 +972,8 @@ also notes that the wrapper is currently applied twice, harmlessly;
 `key` is read **once**, when the `each` region is first rendered, and converted with
 `String(k)` unless `null` (absent `key` means `@identity`)
 (`packages/@glimmer/runtime/lib/compiled/opcodes/lists.ts:14-35`). A later change of the key
-expression's value has no effect until the whole `each` is re-rendered for some other reason
-(untested; §14 item 5).
+expression's value has no effect until the whole `each` is re-rendered for some other reason.
+This is required behavior (author ruling, 2026-09-30), although no test pins it.
 
 | `key` | key of item `(value, memo)` |
 |---|---|
@@ -2195,13 +2197,11 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
 3. **Owner asymmetry for curried components.** `manager.create` receives the *invoking*
    scope's owner, while the component's layout scope uses the *curried* owner
    (`component.ts:429-437` vs `825-853`). Recorded as §06-12 Q3, which owns it.
-4. **`updateComponent` / `didUpdate` frequency.** Because the component update region includes
+<!-- REMOVE -->4. **`updateComponent` / `didUpdate` frequency.** Because the component update region includes
    the whole subtree (§05-1.6), managers with `updateHook` get `update` called whenever anything
    consumed in the subtree changed, not only arguments. Recorded as §06-12 Q12.
-5. **`each` key read once.** The `key=` value is read only when the `each` region is (re)created;
+<!-- REMOVE -->5. **`each` key read once.** The `key=` value is read only when the `each` region is (re)created;
    changing it later has no effect (`lists.ts:19-21`).
-
-   > This is OK, keep this behavior. 
 
 6. **`NaN` keys** never match (`===`), so an item keyed by `NaN` is re-created every sync.
 7. **Dynamic head with a primitive value and arguments** (`{{this.str 1}}`) silently renders
@@ -2248,10 +2248,8 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     and dynamic invocation (`lib/test-helpers/module.ts:143-160`). The implementation maps
     `inverse` to `else` regardless of invocation kind, and `yield-test.js:61-85` covers the
     Ember angle-bracket case, so the gap is small, but the reason for the skip is unrecorded.
-17. **`#each` visits sparse-array holes, `#each-in` skips them** — an inconsistency pinned by
+<!-- REMOVE -->17. **`#each` visits sparse-array holes, `#each-in` skips them** — an inconsistency pinned by
     Ember tests (`each-test.js:1187-1212`, `each-in-test.js:459-475`).
-
-    > It's weird but that's the behavior and it doesn't need to change.
 
 18. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
     `{{{"<b>x</b>"}}}` compiles to a trusting append of a literal (`[2,"<b>x</b>"]`), but the

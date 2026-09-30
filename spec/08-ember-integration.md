@@ -1142,7 +1142,10 @@ private "dirty" storage (invalidated by `rerender()`):
   descendants, calling `rerender()` on a component also runs
   `willUpdate/willRender/didUpdate/didRender` on **every ancestor classic component** (not
   descendants): `life-cycle-test.js:380-470`. Changing an argument used only by the top
-  component runs hooks only on that component (`:470-501`). See §06-12 Q12.
+  component runs hooks only on that component (`:470-501`). This ancestor behavior is
+  required, for the same reason as `updateComponent`'s coarse granularity (§06-4.4): these
+  hooks exist for older component patterns that depend on it. An implementation with
+  finer-grained invalidation MUST still run them on every ancestor classic component.
 - `rerender()` in states `preRender` does nothing, in `hasElement`/`inDOM` schedules a
   revalidation of the renderer, in `destroying` throws
   `You can't call rerender on a view being destroyed` (`views/lib/views/states.ts:18-107`).
@@ -1934,7 +1937,7 @@ source comment claims "Replace all contents". The intended semantics are unclear
 **Q10. `this.attrs` deprecation past its `until`.** `attrs-arg-access` has `until: '6.0.0'`
 but is still emitted (and rewritten) in 7.x (`assert-against-attrs.ts:52-72`).
 
-**Q11. Hook ordering of ancestors on `rerender()`.** That `rerender()` on a child runs update
+<!-- REMOVE -->**Q11. Hook ordering of ancestors on `rerender()`.** That `rerender()` on a child runs update
 hooks on all ancestor classic components (`life-cycle-test.js:380-470`) is a consequence of
 region-granular update hooks (§05-1.6; the open question is §06-12 Q12). A JS-function
 implementation with finer-grained invalidation would naturally *not* do this; the tests

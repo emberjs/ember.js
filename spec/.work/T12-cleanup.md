@@ -4,11 +4,11 @@ The ten notes were uncommitted edits swept into 8e838d47cd by a `git commit -a`;
 not acted on until now. Resolve from the first unticked item. Stage only files I edited.
 
 ## A. Rulings to incorporate (then delete the note)
-- [ ] §0.7.1 item 2 / §01-1.11 item 1: `template()` uses `strict` (RFC 0931, default true); no naming question. Recast: remaining issue is that `strict: false` is honored only by babel hbs (T9a). Ask author.
-- [ ] Coarse update granularity kept (§06-12 Q12 note): resolve §06-12 Q12, §08-14 Q11, §05-14 item 4, §0.7.1 item 3; state as normative in §06-4.4 / §05-1.6 / §08-6.7 if not already.
-- [ ] Evaluation timing/count is not part of the contract (§0.7.1 items 8, 9 notes): resolve §06-12 Q5, Q6, §07-5 item 5; add normative statement (§07-4.2 currently requires "no more evaluations than today" — change); check §05/§06 text that pins evaluation counts.
-- [ ] `each` key read once — keep (§05-14 item 5): make §05-5.4.2 normative, remove item.
-- [ ] `#each` holes vs `#each-in` — keep (§05-14 item 17): remove item.
+- [x] §0.7.1 item 2 / §01-1.11 item 1: `template()` uses `strict` (RFC 0931, default true); no naming question. Recast: remaining issue is that `strict: false` is honored only by babel hbs (T9a). Ask author.
+- [x] Coarse update granularity kept (§06-12 Q12 note): resolve §06-12 Q12, §08-14 Q11, §05-14 item 4, §0.7.1 item 3; state as normative in §06-4.4 / §05-1.6 / §08-6.7 if not already.
+- [x] Evaluation timing/count is not part of the contract (§0.7.1 items 8, 9 notes): resolve §06-12 Q5, Q6, §07-5 item 5; add normative statement (§07-4.2 currently requires "no more evaluations than today" — change); check §05/§06 text that pins evaluation counts.
+- [x] `each` key read once — keep (§05-14 item 5): make §05-5.4.2 normative, remove item.
+- [x] `#each` holes vs `#each-in` — keep (§05-14 item 17): remove item.
 
 ## B. Bugfix branches (origin/main; failing tests commit, then fix; not pushed)
 - [ ] B1 triple curlies ignored for literals and keyword appends (§05-14 item 18, §05-3.5 item 6, §0.7.1 item 5)

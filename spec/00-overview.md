@@ -31,6 +31,18 @@ A conforming implementation MUST, for every input that the current implementatio
 Implementation internals are not part of the contract. That includes the VM, its opcodes,
 references, tags, revisions, the program heap, and the **wire format** (§04).
 
+**Evaluation is not part of the contract.** When, and how often, an implementation evaluates
+template expressions is not behavior that user code may depend on. That covers getters reached
+through paths, argument expressions, helper values, the tracked state they consume, and when
+a helper manager's `createHelper` runs. An implementation MAY defer, cache, share or repeat
+these evaluations, so evaluation counts and getter side effects are unspecified. Two
+requirements remain: every rendered value MUST be up to date with the tracked state it reads
+(§07), and code that the template does not reach (for example the branch of an `{{#if}}` that
+is not taken) MUST NOT be evaluated. The "observable calls into user code" of item 3 are the
+manager and lifecycle hooks, modifier hooks, destructors and event handlers, not these
+evaluations. Where a chapter describes today's evaluation counts or timing, it does so as
+information.
+
 **Non-goals.** These are outside the contract as well (`plan.md`, "Non-goals"):
 
 - **AST transforms and the AST shape.** The spec uses the parse tree (ASTv1, §02) and
@@ -197,13 +209,12 @@ choice breaks someone.
    spec's job is to execute already-published source the same way (§0.1 "Non-goals";
    §01-1.11 item 15, §02-10).
 
-2. `template(src, { strict: false })` is loose through babel `hbs`, strict through babel
-   `wire`, and strict at run time, because the runtime reads only `strictMode`. Which option
-   name wins, and what does it mean? (§01-1.11 item 1; verified: babel hbs, babel wire, runtime)
+2. `template()`'s option is `strict` (RFC 0931, default `true`); `strictMode` belongs to the
+   older APIs. But `template(src, { strict: false })` is loose only through babel `hbs`; the
+   babel `wire` path and the runtime ignore it and compile strict. Should they honour
+   `strict: false`, or is `template()` strict-only? (§01-1.11 item 1; verified by T9a)
 
-    > Is there actually an open question remaining here? The newest layer of public api is `template()` and that was written to use `strict` as the option. I think that works consistently. There are older low-level functions that use strictMode instead, but I don't think there's an ambiguity.
-
-3. `updateComponent` and the classic `willUpdate`/`didUpdate`/`didRender` hooks run on any
+<!-- REMOVE -->3. `updateComponent` and the classic `willUpdate`/`didUpdate`/`didRender` hooks run on any
    invalidation inside the component's region, not only on argument changes. Tests pin this,
    so finer-grained regions would be incompatible. (§06-12 Q12, §08-14 Q11)
 4. Duplicate attributes and duplicate named arguments are accepted. A component's layout
@@ -221,18 +232,9 @@ choice breaks someone.
 7. *Resolved (accepted):* legacy and stage-3 `@tracked` differ observably in initialization
    timing and accessor placement. This is a property of the decorators, not of the renderer.
    (§07-5 item 7)
-8. Whether argument expressions are evaluated depends on how the component is invoked. A
-   static invocation of a template-only component evaluates only the arguments its layout
-   reads, while a dynamic one evaluates all of them. `createHelper` runs eagerly in static
-   position but re-runs on tracked reads in dynamic position. (§06-12 Q5, Q6)
+<!-- REMOVE -->8. Whether argument expressions are evaluated depends on how the component is invoked. (§06-12 Q5, Q6)
 
-    > User code is not supposed to make any assumptions about when or how often its tracked state gets consumed by the rendering engine. The rendering engine reserves the right to optimize that when possible.
-
-9. Path computations are shared per (parent, segment), so `{{this.foo}} {{this.foo}}` runs
-   the `foo` getter once, and the sharing crosses component boundaries. §07-4.2 requires no
-   more evaluations than today. Is that sharing a contract or an artifact? (§07-5 item 5)
-
-   > This is a consequence of the same point as above. The engine is allowed to optimize evaluation and user code isn't supposed to care. So no, we do not want to make evaluation counts or getter side-effects part of the contract with user code, and the spec can be clear about that.
+<!-- REMOVE -->9. Path computations are shared per (parent, segment). (§07-5 item 5)
 
 10. `&#128512;` decodes through `String.fromCharCode` to U+F600. Templates may depend on
     this. (§02-11 item 9)

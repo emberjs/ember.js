@@ -1198,7 +1198,12 @@ or pods lookup (§08-5). The one remaining registry lookup of a template is the 
    (`babel-plugin-ember-template-compilation/src/plugin.ts:418-430`, `:731-753`;
    `packages/@ember/template-compiler/lib/template.ts:240`). So `template(src, {strict:false})`
    is loose via babel-hbs, strict via babel-wire, strict at run time (verified: babel hbs, babel wire, runtime;
-   T9a). Needs a decision.
+   T9a). *Naming settled:* `template()`'s option is `strict` (RFC 0931, default `true`);
+   `strictMode` belongs to the older lower-level APIs (`precompileTemplate`, `precompile`,
+   `compile`), so the spec treats `strictMode` passed to `template()` as unsupported.
+   *Still open:* RFC 0931 says `strict: false` selects loose mode, and only the babel `hbs`
+   path honours it. Either the babel `wire` path and the runtime should honour it, or
+   `template()` should be declared strict-only (loose mode is being phased out).
 2. **Runtime implicit form misses some bindings.** `inScope` uses `typeof x !== "undefined"`
    and excludes names that are also globals (`packages/@ember/template-compiler/lib/compile-options.ts:99-104`, `:181-200`).
    Hence at run time a local whose value is `undefined`, or a local that shadows a global

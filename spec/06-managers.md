@@ -382,8 +382,9 @@ behavior:
 | `Object.isExtensible(named)` | The trap returns `false` (`args-proxy.ts:83-85`). See Q7. |
 | `named.k = v` (any `k`) | [Dev] throws: `You attempted to set <k> on the arguments of a component, helper, or modifier. Arguments are immutable and cannot be updated directly; they always represent the values that are passed down. If you want to set default values, you should use a getter and local tracked state instead.` (`args-proxy.ts:156-162`). Tests: `packages/@ember/-internals/glimmer/tests/integration/helpers/custom-helper-test.js:806-895`. In production the write is not intercepted (Q7). |
 
-Laziness: an argument is not evaluated until something reads it. A manager or instance that
-never reads an argument never evaluates its expression. Test: "does not eagerly access
+Laziness: in the current implementation an argument is not evaluated until something reads it,
+so a manager or instance that never reads an argument never evaluates its expression. When
+arguments are evaluated is not part of the contract (§00-0.1). Test: "does not eagerly access
 arguments during destruction",
 `packages/@glimmer-workspace/integration-tests/test/managers/modifier-manager-test.ts:251-295`.
 
@@ -569,7 +570,12 @@ the component's region changed. Examples:
 - a change in a descendant component.
 
 A change deep in a descendant re-validates every ancestor region, so every ancestor with
-`updateHook` gets `updateComponent`. Tests:
+`updateHook` gets `updateComponent`. This coarse granularity is **required**, even though
+RFC 0213 describes the hook as running when arguments change: `updateHook`, like the classic
+update hooks (§08-6.7), exists for compatibility with older component patterns, which
+depend on it. Typical modern components do not use these hooks, so they do not pay for the
+coarse granularity. A conforming implementation MUST NOT narrow when `updateComponent`
+runs, even if its own invalidation is finer-grained. Tests:
 
 - "updateComponent fires consistently with or without args": three invocations with no
   args, a static `@id`, and a dynamic `@id`. Changing only `{{this.value}}` inside their
@@ -635,7 +641,8 @@ semantics:
   arguments that the layout references are evaluated. Unreferenced argument expressions
   are never evaluated, so helpers in them are never created
   (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts`,
-  `InvokeStaticComponent`, the `else if (named !== null)` branch). See Q6.
+  `InvokeStaticComponent`, the `else if (named !== null)` branch). This is an optimization
+  that implementations MAY make or not; evaluation is not part of the contract (§00-0.1).
 - Loose-mode resolution: a template registered with no component class resolves to a fresh
   template-only definition (§8.6).
 
@@ -695,7 +702,8 @@ attribute, or argument position, or `(h ...)` as a sub-expression:
      `createHelper` runs within the enclosing region. Its consumption is attributed to that
      region, and the helper is never recreated because of it. In effect `createHelper` "is
      not autotracked" (`rfcs/text/0625-helper-managers.md`), and a new implementation MAY
-     run it untracked. See Q5.
+     run it untracked. The timing of `createHelper`, eager here and lazy in dynamic position,
+     describes the current implementation; it is not part of the contract (§00-0.1).
    - *Timing, dynamic invocation* (`(this.h)`, `{{(@h)}}`, `(helper …)`-curried values):
      creation is **lazy**. It happens the first time the helper's value is read, inside a
      reactive computation that also reads the definition value. If the definition value
@@ -1105,7 +1113,7 @@ On update, when the region is re-validated, for `[createInstance]` managers:
 | Capability | Observable behavior when `true` | When `false` |
 |---|---|---|
 | `createInstance` | The manager's `create` hook runs and produces instance state. `didRenderLayout` / `didUpdateLayout` run after the layout renders / updates, and `didCreate` / `didUpdate` run in the commit phase (§11). | No instance. No lifecycle hooks at all. This is the template-only case (§5). |
-| `createArgs` | `create` receives the invocation's arguments object (internal form). **Every** argument passed at the invocation site is captured, even ones the layout doesn't reference. | `create` receives `null`. With static invocation, only arguments the layout references are evaluated (§5, Q6). |
+| `createArgs` | `create` receives the invocation's arguments object (internal form). **Every** argument passed at the invocation site is captured, even ones the layout doesn't reference. | `create` receives `null`. With static invocation, only arguments the layout references are evaluated (§5; current behavior, not part of the contract, §00-0.1). |
 | `prepareArgs` | Before the instance is created, `prepareArgs(definitionState, args)` may return `{ positional, named }` to **replace** the arguments. Blocks are preserved. It also forces the invocation to be compiled the dynamic way. Classic components use this for `positionalParams` (§8.5). | Arguments are used as passed. |
 | `createCaller` | `create` receives the *caller's* `this` as a reactive value. Classic components store it as `_target` for action bubbling. | `null`. |
 | `dynamicScope` | A child frame of the *dynamic scope* is pushed for the component's duration. The frame is passed to `create` and `update`. Writes to it (for example Ember's `view` / `outletState` entries) are visible to descendants only. | No frame is pushed. The component and its descendants share the caller's dynamic scope. |
@@ -1470,13 +1478,13 @@ assertion: `A glimmer transaction was begun, but one already exists...`
 - **Q4: `undefined` owner.** Public component and modifier managers cache delegates in a
   `WeakMap` keyed by owner, so an `undefined` owner throws a raw `TypeError`. Helper managers
   special-case `undefined`. Should component and modifier managers do the same?
-- **Q5: Eager `createHelper` / `createModifier` inside the enclosing region.** In static
+<!-- REMOVE -->- **Q5: Eager `createHelper` / `createModifier` inside the enclosing region.** In static
   position, `createHelper` runs eagerly, even for values that are never read (`{{if c (a)
   (b)}}` creates both). Its tracked reads are attributed to the enclosing region. In
   dynamic position, `createHelper` / `createModifier` run inside the reactive computation
   that selects the definition, so a tracked read there causes **re-creation**. The RFC says
   `createHelper` "is not autotracked". Only the static behavior matches that statement.
-- **Q6: Argument evaluation depends on compilation strategy.**
+<!-- REMOVE -->- **Q6: Argument evaluation depends on compilation strategy.**
   - For managers without `createArgs` (template-only), a statically compiled invocation
     evaluates only the named arguments referenced by the layout.
   - A dynamic invocation (`<this.C>`, curried) captures all of them.
@@ -1504,7 +1512,7 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   run (`expressions.ts:115-122`). This looks like it duplicates curried positional
   arguments on each re-creation. The dynamic *modifier* code avoids this by keeping the
   original outer arguments.
-- **Q12: `updateComponent` granularity.** `updateComponent` runs on any invalidation within
+<!-- REMOVE -->- **Q12: `updateComponent` granularity.** `updateComponent` runs on any invalidation within
   the component's region (§4.4, §05-1.6), not only on argument changes, including when only
   a descendant's own tracked state changed. RFC 0213 describes the hook as running when
   arguments change. The public-manager tests do change something inside the region without
@@ -1513,8 +1521,6 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   incompatible. It is specified as normative. The same rule makes classic
   `willUpdate`/`willRender`/`didUpdate`/`didRender` fire on ancestors (§08-6.7, §08-14 Q11),
   which is long-standing documented classic behavior.
-
-  > We can keep the coarse granularity. All of these are compatibility for older component patterns and we want to maintain the old granularity for them. Typical modern components don't use any of these hooks and don't pay a cost for the coarse granularity.
 
 - **Q13: `hasScheduledEffect` / `runEffect`.** These are documented in `@ember/helper`, but
   they throw in dev and produce `undefined` in prod. `invokeHelper` throws for them in every
