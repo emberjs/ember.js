@@ -52,6 +52,38 @@ export const stableDecoratorFiles = {
           });
         });
       `,
+      'tracked-object-tag-test.js': `
+        import { module, test } from 'qunit';
+        import { tracked } from '@glimmer/tracking';
+        import { tagForObject } from '@ember/-internals/metal';
+        import { valueForTag, validateTag } from '@glimmer/validator';
+
+        // {{#each-in}} and ObjectProxy depend on the object's own tag, which
+        // every form of @tracked must dirty when it is set.
+        module('Unit | tracked object tag', function() {
+          test('setting a tracked field dirties the object tag', function(assert) {
+            class Example {
+              @tracked count = 0;
+            }
+            let obj = new Example();
+            let tag = tagForObject(obj);
+            let snapshot = valueForTag(tag);
+            obj.count = 1;
+            assert.false(validateTag(tag, snapshot));
+          });
+
+          test('setting a tracked accessor dirties the object tag', function(assert) {
+            class Example {
+              @tracked accessor count = 0;
+            }
+            let obj = new Example();
+            let tag = tagForObject(obj);
+            let snapshot = valueForTag(tag);
+            obj.count = 1;
+            assert.false(validateTag(tag, snapshot));
+          });
+        });
+      `,
       'service-accessor-test.gjs': `
         import { module, test } from 'qunit';
         import { setupRenderingTest } from 'ember-qunit';

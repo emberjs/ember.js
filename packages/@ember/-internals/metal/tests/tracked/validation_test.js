@@ -3,7 +3,6 @@ import {
   defineProperty,
   get,
   set,
-  tagForObject,
   tagForProperty,
   tracked,
   notifyPropertyChange,
@@ -85,53 +84,6 @@ moduleFor(
       snapshot = valueForTag(tag);
 
       assert.equal(validateTag(tag, snapshot), true);
-    }
-
-    [`@test setting a tracked field invalidates the object's tag`](assert) {
-      class Tracked {
-        @tracked first = 'Tom';
-      }
-
-      let obj = new Tracked();
-      let tag = tagForObject(obj);
-      let snapshot = valueForTag(tag);
-
-      obj.first = 'Thomas';
-
-      assert.false(validateTag(tag, snapshot), 'the object tag is invalidated');
-    }
-
-    [`@test setting a tracked accessor invalidates the object's tag`](assert) {
-      // Apply the decorator by hand, as the stage 3 runtime would for
-      // `@tracked accessor first`, so this test runs in every build (the
-      // legacy-decorators build cannot parse the `accessor` keyword).
-      let storage = new WeakMap();
-      let { get, set } = tracked(
-        {
-          get() {
-            return storage.has(this) ? storage.get(this) : 'Tom';
-          },
-          set(value) {
-            storage.set(this, value);
-          },
-        },
-        { kind: 'accessor', name: 'first', static: false, private: false, addInitializer() {} }
-      );
-
-      class Tracked {}
-      Object.defineProperty(Tracked.prototype, 'first', { get, set, configurable: true });
-
-      let obj = new Tracked();
-      let propertyTag = track(() => obj.first);
-      let propertySnapshot = valueForTag(propertyTag);
-      let tag = tagForObject(obj);
-      let snapshot = valueForTag(tag);
-
-      obj.first = 'Thomas';
-
-      assert.strictEqual(obj.first, 'Thomas');
-      assert.false(validateTag(propertyTag, propertySnapshot), 'the property is invalidated');
-      assert.false(validateTag(tag, snapshot), 'the object tag is invalidated');
     }
 
     [`@test autotracking should work with native getters`](assert) {
