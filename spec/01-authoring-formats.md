@@ -207,7 +207,7 @@ Consequences pinned by tests:
 - Whitespace-only interior lines longer than `min_indent` keep their excess whitespace.
 - A line that starts with non-ASCII whitespace is content with no indentation, so it
   disables de-indenting for the whole body: `<template>\n\u3000<a></a>\n  <b></b>\n</template>`
-  → `\u3000<a></a>\n  <b></b>` (`content-tag/src/transform.rs:468-481`).
+  → `\u3000<a></a>\n  <b></b>` (`content-tag/src/transform.rs:468-480`).
 - Before content-tag 4.2.1, indentation was measured with Unicode `trim_start` but removed by
   byte count, so mixing multi-byte and ASCII whitespace could panic the preprocessor
   (§1.11 item 7).
