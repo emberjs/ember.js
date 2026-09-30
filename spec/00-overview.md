@@ -157,7 +157,8 @@ throughout. How much each chapter was verified by running code varies:
 - **§05** is written from source. Its attribute and SSR/rehydration behavior, `each`,
   `in-element`, `yield` and blocks, modifier ordering, classic lifecycle hooks and
   destruction order cite the tests that pin them. Claims with no test are marked
-  "(untested)" and gathered in §05-14 item 20.
+  "(untested)" and gathered in §05-14 item 20. The lifecycle and destruction orderings that
+  no test pins were checked by experiment in T9b and are marked "(verified by experiment, T9b)".
 - **§06** and **§07** are written from source, and their citations were checked to point at
   the construct named.
 - **§01** is written from source. T9a ran the babel plugin and the runtime `template()` path

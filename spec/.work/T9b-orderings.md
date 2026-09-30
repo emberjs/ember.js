@@ -35,7 +35,7 @@ Resume from the first unticked item. Commit spec/ changes after each item: `spec
 - [x] Deferred destructors (`registerDestructor`) run after DOM removal, in the `actions` queue; `isDestroyed` becomes true in the `destroy` queue (§05-11, §06-10.2). Done: verified, no correction.
 - [x] `destroyComponent` order for public managers across a tree (§05-14 item 11). Done: verified, no correction.
 - [x] Modifiers: `updateModifier` never in the same transaction as `installModifier`; element already detached when `destroyModifier` runs (§05-14 item 20 "Modifiers"). Done: verified; found and corrected a dev/prod difference in modifier destruction order (see Results 6).
-- [ ] Update §05-14 item 20, STATUS chapter table (05 row), §00-0.6, §0.7.9.
+- [x] Update §05-14 item 20, STATUS chapter table (05 row), §00-0.6, §0.7.9.
 
 
 ## Results
@@ -113,3 +113,13 @@ Observed:
   (`base-env.ts:23`). Recorded in §05-11.1, §05-11.3, §05-14 item 11, §06-10.3, §00-0.7.9 item 39.
 
 ## Upstream candidates
+- Public-manager tree hook order (create/didCreate/update/didUpdate/destroy) plus modifier
+  installs/updates: a single test with `p{c1,c2}` and modifiers, asserting the full commit order.
+  Cheap and pins §06-11 steps 1-4 (items 1-3, 5).
+- Modifier destruction order under `_DEBUG_RENDER_TREE` true vs false (item 6). Worth upstreaming
+  together with a decision on which order is intended, since the two configurations differ today.
+- Deferred destructor timing in Ember: queue `actions`, DOM already removed, `isDestroyed` only after
+  the `destroy` queue (item 4). Needs the backburner internals probe; a simpler form is to assert
+  `isDestroyed` false in a destructor and true after `run` returns.
+- `didCreateComponent` changing a value a modifier consumed: install sees it, no `updateModifier`
+  (item 6). Mostly documents current behavior; the author may prefer not to pin it.

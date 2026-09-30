@@ -1437,8 +1437,7 @@ parent-first order of modifier updates were also observed (verified by experimen
 an argument change reaching the same tree, the commit was `c1.didUpdateComponent,
 c2.didUpdateComponent, p.didUpdateComponent, m(p).update, m(c1).update, m(c2).update`, and for
 `<div {{m a}}><div {{m b}}></div><div {{m c}}></div></div>` followed by a sibling `<p {{m d}}>`
-the updates ran `a, b, c, d` (document pre-order). Nothing in this section remains untested
-except that no upstream test pins these orders (§05-14 item 20 no longer lists them).
+the updates ran `a, b, c, d` (document pre-order). No upstream test pins these orders.
 
 *Note:* a transaction cannot be nested. Beginning one while another is open is a dev
 assertion: `A glimmer transaction was begun, but one already exists...`

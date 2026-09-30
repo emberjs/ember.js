@@ -2216,9 +2216,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     (pinned, `modifiers-test.ts:326-458`, in the Glimmer harness, where the debug render tree is
     off). **In Ember DEBUG builds the debug render tree is on and modifiers are destroyed in
     creation (document pre-order) position instead** (§11.3, corrected by experiment, T9b). Should a
-    new implementation reproduce this debug-only difference, or always use the child-first order? For components with public managers
-    (`destroyComponent`) the parent-first order was observed by experiment (verified by
-    experiment, T9b; see §05-11.3), although no upstream test covers it.
+    new implementation reproduce this debug-only difference, or always use the child-first order?
+    For components with public managers (`destroyComponent`) the parent-first order was observed
+    by experiment (verified by experiment, T9b; see §05-11.3), although no upstream test covers it.
 12. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls
     `setAttribute` whenever the computation is invalid, even if the string is unchanged; only
     property mode compares with the last value.
@@ -2249,7 +2249,13 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     with `class` merging). For named arguments, a component's layout sees the first
     occurrence while its manager (e.g. a Glimmer component's `this.args`) sees the last. All
     of this is derived from source and untested. Should duplicates be a compile-time error?
-20. **Claims with no test (T4).** These are derived from source only:
+20. **Claims with no test (T4).** These are derived from source only. The lifecycle and
+    destruction orderings that used to be listed here (public-manager tree hook order,
+    component hooks before modifier installs, `updateModifier` after `didUpdate`, modifier update
+    pre-order, deferred destructors in `actions` after DOM removal, `destroyComponent` order,
+    `updateModifier` vs `installModifier`, detached element at `destroyModifier`) were observed
+    by experiment in T9b and are marked "(verified by experiment, T9b)" where they occur; one
+    was corrected (item 11). No upstream tests pin them.
     - `each`: `key="@key"` on plain `each`; the dev `invalid keypath` assertion; `key` read
       once (item 5); occurrence numbering of duplicate keys; `NaN` keys (item 6); `Map` entries
       and other non-array objects in plain `each`; lazy consumption of native iterators;
@@ -2262,5 +2268,5 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     - `yield`/blocks: the owner inside a yielded block; yielding one block several times;
       `has-block`/`has-block-params` constancy and the non-literal-argument compile error;
       `has-block-params` for a `<:else as |x|>` block.
-    - Modifiers: timing of replacing a dynamic modifier definition; the attribute-less, undocumented element at
-      `create` (item 15).
+    - Modifiers: timing of replacing a dynamic modifier definition; the attribute-less,
+      undocumented element at `create` (item 15).
