@@ -1513,10 +1513,9 @@ the chapter. It is not a checklist that any implementation must satisfy.
    per template object. With side-effect-free thunks this is unobservable, but the values
    could differ if the underlying bindings were reassigned in between.
 6. **Literal `TrustingAppend` renders as text.** `{{{"<b>x</b>"}}}` compiles to
-   `[2,"<b>x</b>"]` (verified with the current compiler), and the consumer's literal
-   fast path appends it as a *text* node (`statements.ts:251-253`), so triple-curlies around
-   a string literal do not produce HTML, unlike `{{{this.x}}}` with the same string. This
-   looks like a bug in the fast path; no test pinning either behavior was found.
+   `[2,"<b>x</b>"]`, and the consumer's literal fast path appends it as a *text* node
+   (`statements.ts:251-253`). The behavior is specified in §05-3.5 item 6 and recorded as
+   §05-14 item 18.
 7. **Block parameter under-supply.** When a block declares more parameters than values
    are yielded, the extra slots are not written (`blocks.ts:92-109`) and retain whatever
    the child scope inherited; since slots are unique per template this is normally

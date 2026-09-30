@@ -457,7 +457,8 @@ arguments. Unless noted, the error span is the whole node (`{{...}}` / `(...)` /
   argument means `undefined` (§05).
 - In Append position the result is appended as **text even inside `{{{ }}}`**: the trusting
   flag is dropped (`keywords/utils/call-to-append.ts:7-26`; verified
-  `{{{if true "<b>"}}}` → a non-trusted append). See §03-10.
+  `{{{if true "<b>"}}}` → a non-trusted append). The runtime rule is §05-3.5 item 6. See
+  §03-10.
 - Tests: `packages/@glimmer-workspace/integration-tests/test/syntax/if-unless-test.ts`.
 
 #### `if`, `unless` — block form (Block)
@@ -1267,6 +1268,7 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
    params forbid it.
 5. **Keyword appends drop `{{{ }}}` trusting**: `{{{if c x}}}`, `{{{helper h}}}`,
    `{{{has-block}}}`, `{{{log}}}` append as text (`call-to-append.ts`, `append.ts:127-145`).
+   Recorded as §05-14 item 18, which owns it together with the literal case.
 6. **Bare-path keyword promotion** happens in attribute, `@arg`, hash, and interpolation
    positions, but not in positional-argument positions. So `(x has-block)` and `(x (has-block))`
    differ.

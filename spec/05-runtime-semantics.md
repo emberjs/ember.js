@@ -76,6 +76,17 @@ read in two places is run at most once per render pass for each place (and possi
 the current implementation caches the result of each reactive value until something it
 consumed changes: `packages/@glimmer/reference/lib/reference.ts:153-183`).
 
+*Laziness applies to values, not to helper instances.* Computing a value is lazy, but
+creating a **static helper instance** (the manager's `createHelper`) is eager. It happens when
+evaluation first reaches the helper expression, whether or not its value is ever read
+(§05-9.1). Sub-expressions are reached positional arguments first, then named arguments, each
+in source order. The inline `if`/`unless` is the exception: it reaches its falsy branch, then
+its truthy branch, then its condition. So `{{if c (a) (b)}}` creates both `(b)` and `(a)`,
+but computes only the selected one (§06-6.2 step 1). Dynamic helpers (`(this.h)`) are created
+lazily, on first read (§05-9.2). One more case is observable: when a template-only component
+is invoked statically, named arguments that its layout never references are not evaluated at
+all, so helpers in them are never created (§06-5; open question §06-12 Q6).
+
 A path expression `a.b.c` is a chain of reactive property reads. Reading `b` of a value `v`
 yields `undefined` if `v` is `null` or `undefined`, and otherwise `getProp(v, "b")`
 (`packages/@glimmer/reference/lib/reference.ts:193-246`; `isDict` is `v != null`,
@@ -434,7 +445,18 @@ The forms below are distinguished statically (chapters 03, 04); their runtime be
    component and appended as `{{this.fn}}` is called with no arguments and its return value
    rendered.
 6. **`{{{…}}}`** with any of the above: the same, except strings and helper results are
-   inserted as trusted HTML.
+   inserted as trusted HTML. There are two exceptions, and in both the triple curlies have
+   no effect, so the value is rendered as **text** like `{{…}}` (verified with the current
+   compiler; this item is the owner of the rule):
+   - a string (or other) **literal**: `{{{"<b>x</b>"}}}` renders the text `<b>x</b>`, because
+     a literal append always becomes a static text node (§05-3.1;
+     `packages/@glimmer/opcode-compiler/lib/syntax/statements.ts:251-253`);
+   - an append whose value is a **keyword** construct: `{{{if c x}}}`, `{{{(if c x)}}}`,
+     `{{{unless …}}}`, `{{{helper h}}}`, `{{{has-block}}}`, `{{{has-block-params}}}`,
+     `{{{log …}}}`, `{{{-get-dynamic-var …}}}`. Keyword translation drops the trusting flag
+     (§03-4.4). `{{{h}}}` and `{{{this.h}}}` with a helper value do insert HTML.
+
+   See §05-14 item 18.
 
 ---
 
@@ -1572,7 +1594,9 @@ component argument lives as long as the enclosing region
 
 The *value* of a helper is read only by consumers: a helper whose value is never read (e.g. an
 argument the component never reads) still has its instance created (and `createHelper` called),
-but `getValue` is never called.
+but `getValue` is never called. The exception is a named argument of a statically invoked
+template-only component that its layout never references: it is not evaluated at all, so no
+instance is created (§05-1.1, §06-5).
 
 ### 9.2 Dynamic helper invocation
 
@@ -1984,3 +2008,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     unclear.
 17. **`#each` visits sparse-array holes, `#each-in` skips them** — an inconsistency pinned by
     Ember tests (`each-test.js:1187-1212`, `each-in-test.js:459-475`).
+18. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
+    `{{{"<b>x</b>"}}}` compiles to a trusting append of a literal (`[2,"<b>x</b>"]`), but the
+    literal fast path emits a text node, unlike `{{{this.x}}}` holding the same string.
+    `{{{if c x}}}`, `{{{helper h}}}`, `{{{has-block}}}` and `{{{log}}}` lose the flag during
+    keyword translation (`keywords/utils/call-to-append.ts:7-26`, `keywords/append.ts:127-145`).
+    Both look like bugs. No test pins either behavior.

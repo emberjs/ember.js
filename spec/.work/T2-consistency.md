@@ -37,8 +37,10 @@ so check the current text before editing.
   — confirmed in utils.ts:28-65; §03-10 item 12 now holds both parts (count bug with 01's example, element-param visibility); 01 Q5 points there.
 - [x] 13 `{{this.fn}}` plain function → helper
   — 05 and 06 agreed with content.ts:34-69; 06-1.6 cites §05-3.2/§05-3.5; 06 Q14 merged into 05 Q8.
-- [ ] 14 eager helper creation vs lazy values
-- [ ] 15 triple-curly keyword/string literal renders as text
+- [x] 14 eager helper creation vs lazy values
+  — §05-1.1 now separates eager static-helper instance creation (creation order from opcode-compiler syntax/expressions.ts:104-110) from lazy value computation, incl. the template-only unreferenced-arg case; §05-9.1 and §07-4.5 cite it.
+- [x] 15 triple-curly keyword/string literal renders as text
+  — probed (`{{{"<b>"}}}`→[2,…] text; `{{{if}}}`, `{{{(if)}}}`, `{{{helper h}}}`, `{{{has-block}}}`, `{{{log}}}`→non-trusting append); owner §05-3.5 item 6 + new 05 open question 18; 03-10 #5 and 04 Q6 point there.
 - [ ] 16 babel hbs round-trip (now compat-relevant; ensure §01-1.5 states it normatively or as an open question)
 - [ ] 17 Ember transforms summary in 05 vs §03-7 / §08-1.4
 - [ ] 18 duplicate attributes / hash keys runtime meaning

@@ -1311,7 +1311,9 @@ reactively equivalent (test
    is resolved once. A dynamic helper, `{{(this.h) …}}` or `(helper …)`, keeps the definition
    as a computation (§07-2.4.9).
 2. `createHelper` runs once per invocation instance, eagerly at first render, in the enclosing
-   frame. Its tracked reads are consumed by the enclosing region.
+   frame. Its tracked reads are consumed by the enclosing region. This holds for static
+   helpers. Dynamic helpers are created lazily inside the definition's computation, and the
+   creation order is specified in §05-1.1 and §06-6.2.
 3. For `hasValue` managers, the helper value is a computation over `getValue(bucket)`
    (§07-2.4.5). It re-runs iff something it consumed changed, including argument computations it
    read.
