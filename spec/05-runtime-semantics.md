@@ -925,7 +925,10 @@ The list value `L` is converted to an **iterator** each time the list computatio
 ```
 iterate(L, keyPath):
   keyFor = makeKeyFor(keyPath ?? "@identity")
-  if Array.isArray(L): items are L[0..n-1], memo (index) = position
+  if Array.isArray(L):
+       empty := (L.length == 0)          -- the only read inside the list computation
+       items are read lazily: step i yields (L[i], memo i) while i < L.length,
+       with L.length re-read at every step
   else d = toIterator(L)      -- embedder hook
        if d is null: the list is empty
        else items/memos come from d
@@ -944,11 +947,17 @@ Ember's `toIterator` (`packages/@ember/-internals/glimmer/lib/utils/iterator.ts:
 | any other object | none (empty) (untested) |
 | wrapper produced by `-each-in` (§5.5) | see §5.5 |
 
-Emptiness is known *before* rendering: for sources that are converted eagerly (arrays,
-`forEach`) the count is known; for native iterators the first `next()` is called to test
-emptiness (`iterator.ts:195-237`). Native iterators are consumed lazily during rendering,
-interleaved with rendering each item's block (both untested; tests only use array-backed
-iterators).
+Emptiness is known *before* rendering. For a plain array only `length` is read up front,
+inside the list computation, so only that read is tracked there
+(`packages/@glimmer/reference/lib/iterable.ts:201-226`). Its items are read one at a time
+during rendering, interleaved with rendering each item's block, and `length` is re-read before
+each item. So a plain array that shrinks while its items render stops early, and one that grows
+renders the new items (tests `packages/@glimmer-workspace/integration-tests/lib/suites/each.ts:49-87`).
+This changed in emberjs/ember.js#21598; before it, arrays were read in full up front. For
+`forEach` sources the items are collected eagerly, so the count is known. For native
+iterators the first `next()` is called to test emptiness (`iterator.ts:195-237`), and the
+rest are consumed lazily during rendering, interleaved with rendering each item's block
+(untested).
 
 In Ember templates, `{{#each x}}` is compiled as `{{#each (-track-array x)}}` (§03-7.8, which
 also notes that the wrapper is currently applied twice, harmlessly;

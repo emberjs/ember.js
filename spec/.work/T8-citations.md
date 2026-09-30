@@ -24,3 +24,5 @@ Resume from the first unticked item. Commit after each item: `spec(T8): <file>`.
 
 ## Behavior changes found
 - 05-runtime-semantics §05-5.4.1 (`iterable.ts:141-160`, pseudocode "items are L[0..n-1]" and "for sources converted eagerly (arrays, `forEach`) the count is known"): `ArrayIterator` (iterable.ts:201-225) now reads only `length` at construction (for `isEmpty`) and reads `iterator.length` live on every `next()`, so a plain array that shrinks or grows during iteration stops early or renders the new items (new tests suites/each.ts:49-87). Items are no longer read eagerly; the first item is read in `next()`, not the constructor.
+
+- Resolved by the orchestrator: §05-5.4.1 rewritten for lazy plain-array iteration (#21598).
