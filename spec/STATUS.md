@@ -47,12 +47,12 @@ continue the work. Last updated: 2026-09-29.
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev` (built Sep 27). The runtime `eval` form, the babel plugin and runtime rendering were not run. |
 | 04 wire format | ~1560 | Drafted; recast as informative (T1 done). | All examples are real compiler output. |
 | 05 runtime semantics | ~1990 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. **`each`/`in-element`/`yield` behavior and lifecycle/destruction ordering are source-only** (task T4). |
-| 06 managers | ~1470 | Drafted | From source. Citations were not all re-verified (task T3). |
-| 07 reactivity | ~1490 | Drafted | From source. Citations were not all re-verified (task T3). |
+| 06 managers | ~1470 | Drafted | From source. Citations verified by T3. |
+| 07 reactivity | ~1490 | Drafted | From source. Citations verified by T3. |
 | 08 Ember integration | ~1890 | Drafted | Compile-output claims were checked against `dist/dev`. |
 
 All `§NN-x.y` cross-references resolve (`python3 spec/tools/xref.py`). All file:line citations
-exist and are in range, except two in 07 (`python3 spec/tools/check-citations.py`).
+exist and are in range (`python3 spec/tools/check-citations.py`), and T3 checked that the NEAR/MISS ones point at the construct named.
 
 ## Task queue
 
@@ -62,7 +62,7 @@ Run these in order, one at a time.
 |---|---|---|---|---|
 | T1 | Recast 04 as informative and remove wire-compat requirements from other chapters | Sonnet | `.work/T1-wire-informative.md` | done |
 | T2 | Cross-chapter consistency pass | Opus | `.work/T2-consistency.md` | done |
-| T3 | Citation verification (ranges, then whether cited lines contain the claim), 06 and 07 first | Sonnet | `.work/T3-citations.md` | pending; a first attempt fixed 10 citations (`tools/fixes.log`) |
+| T3 | Citation verification (ranges, then whether cited lines contain the claim), 06 and 07 first | Sonnet | `.work/T3-citations.md` | done; unsupported claims are listed under "Unsupported claims" in `.work/T3-citations.md` (2 items) |
 | T4 | Find test assertions for 05's source-only areas and cite them, or record them as untested | Sonnet | `.work/T4-ch05-tests.md` | pending |
 | T2b | Consolidated open questions in §00-0.7 | Opus | `.work/T2b-open-questions.md` | pending |
 | T5 | Final read-through: CONVENTIONS compliance, markers, `[Dev]` tags, a tidy STATUS | Opus | `.work/T5-final.md` | pending |

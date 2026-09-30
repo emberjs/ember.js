@@ -12,9 +12,9 @@ below, with the chapter, the spec line and the reason.
 - [x] Semantic pass 07-reactivity.md
 - [x] Semantic pass 05-runtime-semantics.md (all 36 NEAR/MISS opened; none needed changes)
 - [x] Semantic pass 01-authoring-formats.md (all 28 NEAR/MISS opened; none needed changes)
-- [ ] Semantic pass 08-ember-integration.md
-- [ ] Semantic pass 03, 02 (lower priority; those were checked more closely when written)
-- [ ] Commit after each chapter
+- [x] Semantic pass 08-ember-integration.md (all 24 NEAR/MISS opened; none needed changes)
+- [x] Semantic pass 03, 02 (03: 3 range fixes, see fixes.log; 02: none)
+- [x] Commit after each chapter
 
 ## Unsupported claims
 
