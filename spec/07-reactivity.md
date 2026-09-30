@@ -360,9 +360,12 @@ DOM updates, `renderSettled()`, and the run loop.
    `renderSettled()`/loop-end behavior (items 6–7) MUST still hold with respect to cells the
    renderer actually depends on. See §07-5, item 4.
 5. **Render transaction.** A render transaction:
-   1. Renders each non-destroyed root in insertion order. Roots added *during* the transaction
-      are rendered by the same transaction: the loop repeats while the root count grew
-      (`base-renderer.ts:320-355`).
+   1. Renders each non-destroyed root in insertion order. Roots added *during* the pass are
+      rendered before the pass ends: the loop repeats while the root count grew. Each
+      iteration is its own runtime transaction with its own commit phase, and a repeated
+      iteration renders the new roots and revalidates the earlier ones again
+      (`base-renderer.ts:320-355`). So the adding call (e.g. `renderComponent`) returns
+      before its root has rendered (§08-14 Q9).
    2. Records "last validated" as *now*, at the end of the render body and **before** the commit
       phase (`base-renderer.ts:353`).
    3. Runs the **commit phase** (component `didCreate` then `didUpdate` hooks, then modifier

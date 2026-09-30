@@ -49,8 +49,10 @@ so check the current text before editing.
   — from source + compile probes: §05-4.9 (simple element last-wins, no class merge; deferred last-wins with merge; duplicate `type` keeps only the last, verified) and §05-7.3 (layout `@a` = first occurrence, manager args = last); new 05 open question 19 (untested); 02 Q20 points there.
 - [x] 19 element parameter order; unless → if(not)
   — probed; §05-4.1 owns the order (type moved at compile time whenever there is no `...attributes`, even with modifiers; case-sensitive); fixed §04-4.5.8/§04-4.8.10 ("in source order") and the wrong range-input explanation in §05-4.5.2; unless→if(not) verified, §05-5.2 cites §03-4.4.
-- [ ] 20 renderComponent inside a transaction
-- [ ] 21 terms 07 and 06 must define
+- [x] 20 renderComponent inside a transaction
+  — base-renderer.ts:282-360: a root added mid-render is rendered in a later loop iteration = new runtime transaction with its own commit; §05-1.4 now states Ember's deferral, §07-1.10 item 5.1 corrected ("same transaction" was wrong; old roots are revalidated again), §08-9.1 aligned; Q9 stays open in 08.
+- [x] 21 terms 07 and 06 must define
+  — constant (§07-0/§07-1.5), component region (added in item 1), `[]` cell (§07-3.6.6) and the default helper manager's trailing named-args proxy (§06-6.3/§06-3.2) were already defined; 05-1.6/05-1.7/08 intro/08-2.6 now cite them. Fixed 08 intro claim that tracked arrays dirty `[]` (they use their own collection cell; -track-array.ts:17-30).
 - [ ] Also: grep all chapters for references/tags/revisions/opcodes in normative prose (not citations, paths, or marked implementation notes; opcodes are fine in 04), and rephrase using §07 terms
 - [ ] Update STATUS.md: remove reconciled findings and mark T2 done
 - [ ] Final `python3 spec/tools/xref.py` and commit

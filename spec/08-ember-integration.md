@@ -26,8 +26,10 @@ is a subclass of a particular base class. Reactivity is phrased in terms of the 
 chapter 07: *tracked storage*, *reactive computations*, *consumption*, and *invalidation*.
 Where Ember consumes "the storage for property `k` of object `o`" this means the tracked storage
 cell that Ember's `set`/`notifyPropertyChange` (and `@tracked`) dirty for that `(o, k)` pair
-(§07); the special key `[]` denotes the "collection contents" cell that Ember array mutation
-methods (`pushObject`, `A()` KVO, `notifyPropertyChange(arr, '[]')`, tracked arrays) dirty.
+(§07-3.6.2); the special key `[]` denotes an array's "collection contents" cell (§07-3.6.6),
+which Ember array mutation methods (`pushObject`, `A()` KVO) and
+`notifyPropertyChange(arr, '[]')` dirty. Tracked arrays (`trackedArray`, §07-3.5.1) do not use
+the `[]` cell; they invalidate their own collection cell, which iteration consumes.
 
 Conventions follow `CONVENTIONS.md`: **[Legacy]**, **[Loose mode]**, **[Dev]** markers are used;
 source citations are repo-relative.
@@ -400,8 +402,8 @@ is reused otherwise (chapter 07 caching semantics).
   `a === b`; `neq(a, b)` is `a !== b`.
 - **[Dev]** If the call receives an argument count other than 2, throws
   `` `eq` expects exactly two arguments, but received N. `` (resp. `neq`). Under the default
-  helper manager, passing any named argument appends a named-args object as an extra
-  argument (§06), so `(eq a b c=1)` also throws (3 arguments).
+  helper manager, passing any named argument appends the named-arguments proxy as an extra
+  argument (§06-6.3, §06-3.2), so `(eq a b c=1)` also throws (3 arguments).
 
 ### 2.7 `gt`, `gte`, `lt`, `lte`
 
@@ -1545,10 +1547,11 @@ DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:228-
   renderer is already inside one, in which case the new root is rendered by the ongoing
   transaction's loop and **the call returns before the root has rendered** (see Q9).
 - A render transaction (`renderRoots`, `base-renderer.ts:320-368`) repeats: inside one runtime
-  transaction (§05: modifiers installed / `didInsertElement`-class hooks run at commit), render
-  (first time) or revalidate every non-destroyed root that existed at the start of the pass;
-  if roots were added during the pass, loop again for the new ones. Destroyed roots are
-  removed afterwards; if none remain the renderer is deregistered. The renderer records the
+  transaction (§05: modifiers installed / `didInsertElement`-class hooks run at its commit
+  phase, §06-11), render (first time) or revalidate every non-destroyed root that existed at
+  the start of the iteration; if roots were added during the iteration, loop again, in a new
+  runtime transaction, which renders the new roots and revalidates the others. Destroyed roots
+  are removed afterwards; if none remain the renderer is deregistered. The renderer records the
   "last validated" point in the reactivity timeline.
 - A renderer is *valid* iff it is destroyed, has no roots, or no tracked storage has changed
   since its last validated point (`isValid`, `base-renderer.ts:374-378`).

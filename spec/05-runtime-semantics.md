@@ -191,7 +191,12 @@ specifies its order: component `didCreate` hooks (children before parents), then
 parents), then modifier updates (document pre-order, parents before children; see §05-10.3).
 
 Transactions do not nest: starting a render while a transaction is open joins the open
-transaction (`environment.ts:218-229`). [Dev] beginning a second transaction when one exists
+transaction (`environment.ts:218-229`). That is the runtime's rule. Ember's renderer adds
+one of its own: a root added while the renderer is rendering (for example `renderComponent`
+called from a getter, a helper, or a modifier hook) is not rendered by that call. It is
+rendered after the current transaction commits, in a further iteration of the renderer's
+loop, which is a new transaction with its own commit phase. The call returns before the
+root has rendered (§07-1.10 item 5, §08-9.1, open question §08-14 Q9). [Dev] beginning a second transaction when one exists
 is an assertion failure with the message "A glimmer transaction was begun, but one already
 exists. …" (`environment.ts:141-145`).
 
@@ -244,6 +249,9 @@ component's `update` hook (if its manager has the `updateHook` capability) and i
 what "didUpdate" means for managers with the `createInstance` capability: "something in my
 rendered subtree was revalidated".)
 
+§07-2.4.7 gives the reactive skeleton of this rule, and §06-4.4 and §06-8.5 give its
+consequences for public and classic component managers.
+
 The embedder may request an update pass with `alwaysRevalidate: true`, which disables this
 skipping (`vm.ts:299`). Ember does not use it (`base-renderer.ts:110`).
 
@@ -252,8 +260,9 @@ through manager hooks and MUST be preserved.
 
 ### 1.7 Constant computations
 
-If a reactive value's computation consumed no tracked storage the first time it was run, it is
-**constant**: it is never re-run, and positions that display it are never updated and set up
+If a reactive value's computation consumed no tracked storage when it was run (the first time,
+or any later re-evaluation), it is **constant** from then on (§07-0, §07-1.5 items 3–4, which
+own the definition): it is never re-run, and positions that display it are never updated and set up
 no update work (`packages/@glimmer/reference/lib/reference.ts:141-160`,
 `packages/@glimmer/validator/lib/tracking.ts:29-37`). For example, with
 `self = { name: "a" }` where `name` is an ordinary (untracked) property, `{{this.name}}`
