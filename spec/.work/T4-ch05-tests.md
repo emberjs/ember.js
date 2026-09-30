@@ -13,8 +13,8 @@ Commit after each area.
 - [x] `in-element`: `insertBefore`, null/undefined destination, destination change, clearing
 - [x] `yield` / named blocks / `has-block` / `has-block-params`
 - [x] Modifier install/update/destroy ordering (child vs parent)
-- [ ] Component lifecycle hook ordering (didCreate/didUpdate vs modifier install; classic hooks)
-- [ ] Destruction order (parent vs child destructors; eager vs deferred; which queue)
+- [x] Component lifecycle hook ordering (didCreate/didUpdate vs modifier install; classic hooks)
+- [x] Destruction order (parent vs child destructors; eager vs deferred; which queue)
 
 ## Notes
 
@@ -35,3 +35,8 @@ Commit after each area.
 ### Modifier ordering
 - Confirmed: install order (same element source order; children before parents; siblings doc order), destroy order (identical), update on changed arg only, non-interactive skip, dynamic modifier install/destroy. No contradictions.
 - Untested: update pre-order across elements, update never in same transaction as install, dynamic modifier definition replacement timing, element detached at destroy time, element attribute-less/undocumented at create.
+
+### Lifecycle and destruction
+- Confirmed: classic hook order create/update (child-first post hooks, parent-first pre hooks), destroy phases and order (life-cycle-test.js:305-537, 1161-1222), eager hooks run with DOM attached (1429-1587), eager hooks before replacement content, deferred after; @glimmer/destroyable unit tests for the algorithm (bonus, outside the two named dirs).
+- Clarified: 05-11.3 replacement bullet now says eager hooks of removed items run before the else content's init. 06-10.2/10.3/11 now carry test status and agree with 05-11 and 05-14 item 11. 06-11 test range widened to 304-458.
+- Untested (05-14 item 20): component hooks vs modifier installs across the commit phase; parent-first modifier update order; public-manager tree ordering and destroyComponent order; deferred destructors after DOM removal / actions queue.

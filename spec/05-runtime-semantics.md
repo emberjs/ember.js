@@ -1464,6 +1464,18 @@ On an **update pass**, if the component update region is invalid (§05-1.6):
 - `update`: parents before children (pre-order), only for components whose region is invalid.
 - `didUpdateLayout`: post-order; `didUpdate` at commit in that order.
 
+Tests (classic components, whose hooks map onto these, §08-6.7): `init`, `didReceiveAttrs`,
+`willRender` and `willInsertElement` run top → middle → bottom; `didInsertElement` and
+`didRender` run bottom → middle → top; on update `willUpdate`/`willRender` run top → bottom and
+`didUpdate`/`didRender` bottom → top, and re-rendering a middle component involves only it and its
+ancestors' hooks as shown (`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:305-537`); the
+sibling case is in `packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:538-858`; changed attributes trigger `didUpdateAttrs`/
+`didReceiveAttrs` before `willUpdate` (`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:859-1043`). For public managers only the
+per-instance sequences `createComponent, getContext, didCreateComponent` and
+`updateComponent, didUpdateComponent` are tested
+(`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:476-535`,
+`694-757`); the ordering across a tree of public-manager components, and against modifier
+installs (§06-11), is untested.
 The public custom component manager (chapter 06) maps: `createComponent` ← `create`,
 `getContext` ← `getSelf` (called once per instance), `updateComponent` ← `update` (only with the
 `updateHook` capability), `didCreateComponent` / `didUpdateComponent` ← `didCreate` /
@@ -1778,7 +1790,7 @@ Tests: several modifiers on one element install in source order, `<div {{foo}} {
 `foo, bar` (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-324`); a nested
 element's modifiers install before its parent's (`350-370`), and siblings install in document
 order before the parent (`396-423`). When the environment is not interactive no modifier hook
-runs (`custom-modifier-manager-test.js:587-655`). That `create` sees an element with no
+runs (`custom-modifier-manager-test.js:587-641`). That `create` sees an element with no
 attributes and outside the document is untested (§14 item 15).
 
 ### 10.2 Dynamic modifiers
@@ -1803,7 +1815,7 @@ on update: if d's identity changed:
 Tests: a modifier that is `undefined` at first and set later is installed on that update, and is
 destroyed when its enclosing block is removed or the render result is destroyed
 (`custom-modifier-manager-test.js:108-135`;
-`packages/@glimmer-workspace/integration-tests/test/modifiers/dynamic-modifiers-test.ts:204-258`);
+`packages/@glimmer-workspace/integration-tests/test/modifiers/dynamic-modifiers-test.ts:204-254`);
 curried modifiers with positional and named arguments (`dynamic-modifiers-test.ts:44-138`).
 Replacing one modifier definition by another on an element that stays, and the timing of the
 new instance's `create`, are untested.
@@ -1880,6 +1892,17 @@ and after the new content has been rendered. Eager destructors (used by managers
 `willDestroy` capability — classic components' `willDestroyElement`/`willClearRender`, chapter
 08) run synchronously, *before* the DOM is removed.
 
+Test status: the eager half is pinned. A classic component's `willDestroyElement` sees its
+element still attached with its siblings intact, for items removed from an `each` and from
+`if` blocks (`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:1429-1587`), and it runs
+before the replacement content is created (`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:1161-1184`). The deferred half is pinned only as
+"after the replacement content's hooks" (`didDestroyElement` and `willDestroy`,
+`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:1202-1221`); that deferred destructors run
+after the old DOM has been removed, and in the run loop's `actions` queue, is untested. A
+component's `willDestroy` has run by the time a Glimmer-harness `rerender` returns
+(`packages/@glimmer-workspace/integration-tests/test/updating-test.ts:1985-2058`), which does not
+distinguish queues.
+
 ### 11.3 Order
 
 Because children are destroyed before their parent's own destructors are scheduled, and
@@ -1893,20 +1916,33 @@ scheduled is a walk of the *region* tree in creation order:
   `willDestroyElement`/`willClearRender` (eager), then `didDestroyElement`, then `willDestroy`,
   each phase running top → middle → bottom
   (`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:305-537`,
-  `538-858`).
+  `538-858`). The eager phase interleaves the two hooks per component, `top.willDestroyElement,
+  top.willClearRender, middle.willDestroyElement, …`, then all `didDestroyElement`, then all
+  `willDestroy` (`life-cycle-test.js:510-531`). In non-interactive mode only `willDestroy` runs,
+  in the same order. The same parent-first order holds for a component and the component inside
+  its layout in each removed `each` item, item by item in list order (`life-cycle-test.js:1161-1222`).
 - **Modifiers: child before parent.** A modifier is registered when its element closes, so a
   nested element's modifier precedes its ancestor's; siblings in document order; several
   modifiers on one element in source order. `<div {{foo}}><div {{bar}}></div><div {{baz}}></div></div>`
   installs **and** destroys in the order `bar, baz, foo`
-  (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:305-458`).
+  (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:305-458`; the tests
+  remove the enclosing block and observe `willDestroyElement` after `rerender`, so they pin the
+  order but not the queue or the timing relative to DOM removal).
 - Replacement content is rendered (and its synchronous hooks run) before the old content's
   deferred destructors run (`life-cycle-test.js:1044-1250`: after resetting an `each` to empty,
   the `else` content's components run `init … didInsertElement` before the removed items'
-  `didDestroyElement`/`willDestroy`).
+  `didDestroyElement`/`willDestroy`, whereas the removed items' eager `willDestroyElement` /
+  `willClearRender` run *before* the `else` content's `init`).
 
 Destroying the render result (e.g. Ember tearing down an application or a `renderComponent`
 root) destroys everything and removes the root's DOM
-(`packages/@glimmer/runtime/lib/vm/render-result.ts:19-27`).
+(`packages/@glimmer/runtime/lib/vm/render-result.ts:19-27`; a dynamic modifier is destroyed with
+it, `packages/@glimmer-workspace/integration-tests/test/modifiers/dynamic-modifiers-test.ts:229-254`;
+components inside `in-element`, `packages/@glimmer-workspace/integration-tests/lib/suites/in-element.ts:517-560`).
+The destroy semantics themselves (children first, eager synchronous, deferred scheduled,
+`isDestroying` before `isDestroyed`) are pinned by
+`packages/@glimmer/destroyable/test/destroyables-test.ts:126-143`, `158-192`, `336-366`.
+A helper-created destroyable is destroyed with its region (`updating-test.ts:444-480`).
 
 [Dev] Associating a child with, or registering a destructor on, an object that is already
 destroying throws (`destroyable/index.ts:138-174`).
@@ -2115,10 +2151,11 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     (`serialize-builder.ts:132-142`).
 11. **Opposite destruction orders.** A component's destroyable and its layout's contents are
     siblings under the enclosing region (§05-11.1, §06-10.3), not parent and child, so
-    components are destroyed parent-first (pinned for classic components), while modifiers,
-    associated at element close, are destroyed child-first (pinned). For components with
-    public managers (`destroyComponent`) the parent-first order follows from the source but
-    is untested (task T4).
+    components are destroyed parent-first (pinned for classic components, `life-cycle-test.js:305-537`,
+    `1161-1222`), while modifiers, associated at element close, are destroyed child-first
+    (pinned, `modifiers-test.ts:326-458`). For components with public managers
+    (`destroyComponent`) the parent-first order follows from the source, but no test covers
+    it (T4).
 12. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls
     `setAttribute` whenever the computation is invalid, even if the string is unchanged; only
     property mode compares with the last value.
@@ -2166,3 +2203,8 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       `install`; timing of replacing a dynamic modifier definition; the element being already
       detached when `destroyModifier` runs; the attribute-less, undocumented element at
       `create` (item 15).
+    - Lifecycle and destruction: hook order across a tree of public-manager components;
+      `didCreate` of a component before installs of modifiers on its elements (§06-11);
+      the order of `updateModifier` against `didUpdate`; deferred destructors running after
+      DOM removal and in the `actions` queue (and `isDestroyed` in the `destroy` queue);
+      `destroyComponent` order for public managers (item 11).

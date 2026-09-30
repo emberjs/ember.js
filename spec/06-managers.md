@@ -1339,6 +1339,14 @@ A new implementation MUST preserve all three orderings:
 - deferred destructors after the render's DOM changes;
 - `isDestroyed` after all deferred destructors of that batch.
 
+Tests: `packages/@glimmer/destroyable/test/destroyables-test.ts:126-143` (eager destructors run
+inside `destroy()`, the others only when flushed), `158-192` (whole subtree is `destroying`
+immediately, nothing `destroyed` and no deferred destructor has run; children first),
+`336-366` (inside a destructor everything is `destroying` and nothing is `destroyed`). The
+Ember queue mapping (`actions`/`destroy`) and the "after the render's DOM changes" guarantee are
+untested; the tests use their own two-queue flush. Eager-before-DOM-removal is pinned for classic
+components (`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:1429-1587`).
+
 ### 10.3 How template-created objects join the tree
 
 The rendering process keeps a stack of *destroyable owners*: the render result at the root,
@@ -1370,7 +1378,8 @@ When a block is torn down:
 
 `destroy(block)` is called and the block's DOM is cleared **after** `destroy()` returns. So
 eager destructors, such as classic `willDestroyElement`, run while the DOM is still
-attached, and deferred ones run after it is detached.
+attached (tested, `life-cycle-test.js:1429-1587`), and deferred ones run after it is detached
+(untested; §05-11.2).
 
 ---
 
@@ -1388,7 +1397,7 @@ walk the runtime records:
 - **scheduled installs**: modifiers, recorded when their element is *closed*, that is after
   the element's children have rendered. The order is post-order by element: an element's
   modifiers come after those of all its descendants, and several modifiers on one element
-  keep their creation order (`dom.ts:137-150`; test `modifiers-test.ts:304-424`);
+  keep their creation order (`dom.ts:137-150`; test `modifiers-test.ts:304-458`);
 - **scheduled updates**: modifiers whose dependencies were invalidated, recorded when the
   update walk reaches the modifier's position. That position is at the element's *opening*,
   before its children (the update check is registered when the modifier is created,
@@ -1408,6 +1417,14 @@ So a component's `didCreateComponent` / `didInsertElement` run **before** any mo
 its own elements is installed. Children's creation hooks run before their parents'.
 Installs run child-first and updates run parent-first. This section is the owner of the
 commit-phase order. §05-1.4 and §07-1.10 refer to it.
+
+Test status: the child-first order of creation and update hooks is pinned for classic
+components (`life-cycle-test.js:305-537`: `didInsertElement`/`didRender` bottom → top, `didUpdate`
+bottom → top), and the child-first order of modifier installs by
+`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-458`. Steps 1 and 3
+relative to each other (component hooks before modifier installs), the parent-first order of
+modifier updates, and the relative order of steps 2 and 4 have **no test**; nor does any
+test nest public-manager components. Recorded in §05-14 item 20.
 
 *Note:* a transaction cannot be nested. Beginning one while another is open is a dev
 assertion: `A glimmer transaction was begun, but one already exists...`
