@@ -1,0 +1,27 @@
+# T10 — hand-check §-cross-references
+
+`xref.py` only checks that a target exists. T2 found six refs pointing at the wrong section
+and T5 spot-checked 41 (1 wrong). This task checks the rest.
+
+Run `python3 spec/tools/xref-context.py <chapter.md>`. Each entry shows the reference, the
+heading it resolves to, and the line it appears on. For each, judge whether the target
+section is about what the sentence means. Only flag real mismatches (e.g. "destruction order
+(§05-12)" when §05-12 is "Errors"); a reference to a parent section instead of the exact
+subsection is fine. For each mismatch, find the right section and fix the reference. If you
+cannot tell, list it under "Unsure" below instead of changing it.
+
+Resume from the first unticked item. Commit after each chapter: `spec(T10): <chapter>`.
+
+- [ ] 00-overview.md
+- [ ] 01-authoring-formats.md
+- [ ] 02-syntax.md
+- [ ] 03-static-semantics.md
+- [ ] 04-wire-format.md
+- [ ] 05-runtime-semantics.md
+- [ ] 06-managers.md
+- [ ] 07-reactivity.md
+- [ ] 08-ember-integration.md
+- [ ] `python3 spec/tools/xref.py` prints nothing
+
+## Fixed
+## Unsure

@@ -6,6 +6,7 @@ standard library, and Node probes need the repo built (`pnpm build`).
 | Script | Purpose |
 |---|---|
 | `xref.py` | Checks that every `§NN-x.y` cross-reference points at an existing section heading. Prints nothing when all resolve. |
+| `xref-context.py [chapter.md ...]` | Prints every §-reference with the heading it resolves to and the line it appears on, for checking by eye that each points at the intended section. |
 | `check-citations.py [chapter.md ...]` | Extracts every `path:line` citation. Checks that the file exists (in this repo or a sibling repo under `~/hacking`) and that the lines are in range. `--json out.json` dumps all citations. |
 | `check-citation-semantics.py chapter.md [--only NEAR,MISS]` | Heuristic check that the cited lines contain the identifiers or message text named in the surrounding prose. |
 | `fix-citations.py chapter.md 'old-span' 'new-span' ...` | Replaces backticked citation spans and appends each change to `fixes.log`. |
