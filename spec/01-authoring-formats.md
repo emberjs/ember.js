@@ -1117,9 +1117,13 @@ export a *component* instead, invoked with `@model` and `@controller` — is §0
 `packages/@ember/-internals/glimmer/lib/component-managers/route-template.ts`).
 
 Non-colocated component templates and pods layouts are deprecated by RFC 0995
-(`rfcs/text/0995-deprecate-non-colocated-components.md`); they are **[Legacy]** and are
-paired with their component through the resolver, not through `setComponentTemplate`
-(`packages/@ember/-internals/glimmer/lib/resolver.ts:69-85`, §08).
+(`rfcs/text/0995-deprecate-non-colocated-components.md`). This checkout no longer supports
+them. The resolver pairs a component with its template only through `getComponentTemplate`,
+which reads what `setComponentTemplate` recorded, and otherwise returns `layout: null`
+(`packages/@ember/-internals/glimmer/lib/resolver.ts:69-85`). There is no `template:components/*`
+or pods lookup (§08-5). The one remaining registry lookup of a template is the classic
+`layoutName` path (`packages/@ember/-internals/glimmer/lib/component-managers/curly.ts:155`,
+§08-6) **[Legacy]**.
 
 ---
 

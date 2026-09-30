@@ -1280,8 +1280,9 @@ Both evaluate the same argument computation. `@x` reads it directly. `this.args.
 `this` → `args` → `x`: it consumes the (component, 'args') property cell (never invalidated),
 then the args proxy returns `getValue(argComputation)`, which consumes its dependencies, plus
 the (argsProxy, 'x') property cell (also never invalidated). The two forms are therefore
-reactively equivalent (test
-`packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:529-580`).
+reactively equivalent (`packages/@glimmer/manager/lib/util/args-proxy.ts:32-56`). No test
+compares the two forms directly. `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:529-580`
+exercises `this.args` reactivity only.
 
 ### 07-4.4 Arguments
 

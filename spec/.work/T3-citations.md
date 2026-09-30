@@ -35,3 +35,5 @@ Chapters 06 and 07: every NEAR/MISS was opened and confirmed correct except as l
   lookup in the runtime is the classic `layoutName` path
   (`packages/@ember/-internals/glimmer/lib/component-managers/curly.ts:155`). No `template:components/x`
   or pods lookup exists in this checkout.
+
+Resolved by main session: claim 1 rewritten in §01-1.9 to match resolver.ts (no pods/template:components lookup; layoutName is the only registry lookup). Claim 2: §07-4.3 now cites args-proxy.ts and says no test compares the forms.
