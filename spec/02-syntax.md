@@ -1345,13 +1345,13 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
    Recommend a proper syntax error ("inverse sections are not supported") or support as
    `{{#unless}}`-like sugar — either is a behavior change from "TypeError". Note that
    `{{^foo}}a{{else}}b{{/foo}}` already parses, as `{{#foo}}b{{else}}a{{/foo}}`; only the form
-   without `{{else}}` crashes. *Fix proposed* (a syntax error for the crashing form only):
-   branch `fix/parser-typeerror-crashes`.
+   without `{{else}}` crashes. *Fixed* on main (#21635): the crashing form is now a
+   syntax error.
 2. **Hash-literal and sub-expression-rooted paths crash.** `{{foo=bar}}`, `{{(foo=bar)}}`,
    `{{foo =bar}}`, `{{(foo).bar}}` throw `TypeError`s because the upstream parser (v2.2.2)
    emits `HashLiteral` nodes and sexpr-headed paths that Glimmer's visitor does not handle.
-   Should be syntax errors (or new features, per any future RFC). *Fix proposed* (syntax
-   errors): branch `fix/parser-typeerror-crashes`.
+   Should be syntax errors (or new features, per any future RFC). *Fixed* on main (#21635):
+   these are now syntax errors.
 3. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
    (`handlebars-node-visitors.ts:238-246`), while `{{#"foo"}}` and `("foo")` error. Probably
    should be an error.
@@ -1368,7 +1368,7 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
    `</div{{x}}>`, `</div {{x}}>`, `<!--{{x}}-->`, `<!-{{x}}-->` produce misplaced nodes or a
    `TypeError`. Only the `data`/attribute/`comment` states are intentionally handled. Also
    `<!-- a -{{x}}-->` loses the entire comment, and `</div {{! x}}>` throws a `TypeError`.
-   *Fix proposed* on branch `fix/parser-typeerror-crashes`: every other comment state appends
+   *Fixed* on main (#21635): every other comment state appends
    to the comment, a stray `/` in a start tag is ignored as in HTML, and end tags and markup
    declarations reject mustaches with a syntax error.
 8. **`pendingError` is only consulted by mustaches and EOF**; a Handlebars comment inside an

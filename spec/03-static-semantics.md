@@ -1287,7 +1287,7 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
    (`normalize.ts:984-986`).
 10. **`-get-dynamic-var` errors say `(-get-dynamic-vars)`** (with an `s`).
 11. **`{{#each-in}}` with no params crashes** with a `TypeError` in `TransformEachInIntoEach`
-    (*fix proposed* on branch `fix/parser-typeerror-crashes`: a syntax error).
+    (*fixed* on main in #21635: now a syntax error).
     `{{#each}}` with no params gives the Ember assertion `has firstParam` instead of the Glimmer
     error, and in production continues with an `undefined` param.
 12. **`trackLocals` counter bug** (`plugins/utils.ts:36` reads the count with the `VarHead`
