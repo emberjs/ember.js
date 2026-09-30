@@ -1,4 +1,5 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { setTesting } from '@ember/debug';
 import { getInternalModifierManager, setComponentTemplate } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -295,6 +296,53 @@ moduleFor(
 
       this.assertStableRerender();
       this.assertCounts({ adds: 2, removes: 0 });
+    }
+
+    async '@todo all listeners for an event run even when an earlier one removes the element (GH#19344)'(
+      assert
+    ) {
+      let sequence = [];
+
+      this.render(
+        '{{#if this.showBox}}<div id="scrollbox" style="overflow: scroll; height: 50px; width: 50px;" {{on "scroll" this.first}} {{on "scroll" this.second}}><div style="height: 500px;"></div></div>{{/if}}',
+        {
+          showBox: true,
+          first: () => {
+            sequence.push('first');
+            this.context.set('showBox', false);
+          },
+          second: () => sequence.push('second'),
+        }
+      );
+
+      let box = this.element.querySelector('#scrollbox');
+
+      // Testing mode disables the autorun that makes this reproducible in
+      // apps: with autorun enabled, the flush is scheduled as a microtask,
+      // and browser-dispatched events (unlike synthetic el.click()) run a
+      // microtask checkpoint between listener callbacks. The flush tears
+      // down the element's modifiers mid-dispatch, and the removed second
+      // listener is never invoked.
+      setTesting(false);
+      try {
+        box.scrollTop = 30;
+
+        await new Promise((resolve) => {
+          let attempts = 0;
+          (function check() {
+            if (sequence.length >= 2 || ++attempts > 50) {
+              resolve();
+            } else {
+              setTimeout(check, 10);
+            }
+          })();
+        });
+      } finally {
+        setTesting(true);
+      }
+
+      assert.strictEqual(this.element.querySelector('#scrollbox'), null, 'the element was removed');
+      assert.deepEqual(sequence, ['first', 'second'], 'both listeners ran, in order');
     }
   }
 );
