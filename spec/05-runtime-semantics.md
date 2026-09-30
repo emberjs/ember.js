@@ -6,10 +6,10 @@ torn down and rebuilt, when manager hooks run relative to DOM construction, how 
 ordered, and how server-side rendering (SSR) serializes output and how the client rehydrates it.
 
 The input to this chapter is a template whose static semantics have already been resolved
-(chapter 03) and which is represented as the constructs of the wire format (chapter 04). This
-chapter names constructs by their wire-format / ASTv2 meaning ("an `Append` of a path
-expression", "a `Block` invocation", "an element with splattributes") rather than by any VM
-opcode. Where the current implementation's opcodes are cited, it is only as evidence of
+(chapter 03), whether it is held as ASTv2 or in any other form. (Chapter 04 shows the
+current encoding, which is informative only.) This chapter names constructs by their ASTv2 /
+wire-format meaning ("an `Append` of a path expression", "a `Block` invocation", "an element
+with splattributes") rather than by any VM opcode. Where the current implementation's opcodes are cited, it is only as evidence of
 behavior.
 
 Reactivity is described with the abstract model of chapter 07:

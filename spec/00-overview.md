@@ -145,9 +145,12 @@ throughout. How much each chapter was verified by running code varies:
   "(untested)" and gathered in §05-14 item 20.
 - **§06** and **§07** are written from source, and their citations were checked to point at
   the construct named.
-- **§01** is written from source, with a few citations spot-checked.
+- **§01** is written from source.
 
-Every file:line citation in every chapter was checked to exist and to be in range.
+Every file:line citation in every chapter was checked to exist and to be in range. In every
+chapter, each citation whose cited lines did not obviously contain the identifiers named in
+the prose was opened by hand and confirmed or corrected. Two claims that the cited code did
+not support were rewritten (§01-1.9, §07-4.3).
 Line-number citations were accurate when each chapter was written. Treat a citation that no
 longer matches as a pointer to the nearby code.
 

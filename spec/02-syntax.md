@@ -1210,7 +1210,7 @@ a column past the end of a line to the line end.
 Special spans exist for nodes without real source: `synthetic`, `broken`, `nonexistent`
 (`location.ts:18-48`).
 
-### 8.2 Node spans (normative for tooling, error messages and the wire format's debug info)
+### 8.2 Node spans (normative for tooling and error messages; the current wire format's debug info also uses them)
 
 | Node | Span |
 |---|---|
