@@ -16,7 +16,7 @@ Resume from the first unticked item. Commit after each item: `spec(T8): <file>`.
 - [x] parser-node-test.ts (15 checked, 5 renumbered; 02:971 already pointed at the new tests)
 - [x] integration-tests/lib/suites/each.ts (10 checked, 10 renumbered +40 after two inserted tests)
 - [x] reference/lib/iterable.ts (8 checked, 0 renumbered; diff only touches ArrayIterator at line 199+, no citation reaches it; behavior change noted below)
-- [ ] syntax/lib/parser.ts (≈5; distinguish from @handlebars `lib/parser.js`)
+- [x] (1 citation found, at 02:969 `sourceForNode`, renumbered 175-211; the `HashLiteral` abstract line added at :111 is not cited) syntax/lib/parser.ts (≈5; distinguish from @handlebars `lib/parser.js`)
 - [ ] parser-error-test.ts (≈4)
 - [ ] integration-tests/lib/render-test.ts (≈3)
 - [ ] template-compiler/lib/plugins/transform-each-in-into-each.ts (≈2, plus the §08-1.4 item 5 `:26-65` range)

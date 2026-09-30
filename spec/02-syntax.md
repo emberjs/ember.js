@@ -966,7 +966,7 @@ value. This applies in every comment tokenizer state (`commentStart`, `commentSt
 `comment`, `commentEndDash`, `commentEnd`). A `-` or `--` that the tokenizer is still holding,
 because it might begin `-->`, is appended first, as the tokenizer itself would do when the next
 character is not `>` (`handlebars-node-visitors.ts:323-350`;
-`packages/@glimmer/syntax/lib/parser.ts:174-210`). E.g. `<!-- {{#if x}}y{{/if}} -->` has value
+`packages/@glimmer/syntax/lib/parser.ts:175-211`). E.g. `<!-- {{#if x}}y{{/if}} -->` has value
 ` {{#if x}}y{{/if}} `, `<!--{{x}}-->` has value `{{x}}`, and `<!-- a -{{x}}-->` has value
 ` a -{{x}}` (tests `parser-node-test.ts:789-799`). However, because layer 1 has already run, whitespace control *has* been
 applied to the content surrounding them (`<!-- a {{~x~}} b -->` → value ` a{{~x~}}b `), and a
