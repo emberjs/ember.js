@@ -3,10 +3,10 @@
 Resume from the first unticked item. Commit after each item: `spec(T6): ...` etc.
 
 ## T6 — author feedback (Opus)
-- [ ] T6a hbs round-trip ruling: published hbs must execute faithfully; addon pre-publication
+- [x] T6a hbs round-trip ruling: published hbs must execute faithfully; addon pre-publication
       tooling (babel `hbs` re-printing) is outside the primary scope. Update STATUS decision,
       §0.2 (if it mentions it), §0.7.1 item 1 (remove blockquote), §0.7.5, §01-1.11 item 15, §02-10.
-- [ ] T6b AST-transform non-goal (plan.md "Non-goals"): the behavior of Ember's internal
+- [x] T6b AST-transform non-goal (plan.md "Non-goals"): the behavior of Ember's internal
       transforms is normative, the transforms themselves are not; custom user AST plugins and
       the ASTv1 shape are not part of the spec. Survey every chapter, recast, add to §0.2 and
       STATUS decisions.

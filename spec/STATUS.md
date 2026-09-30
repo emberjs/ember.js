@@ -27,8 +27,16 @@ continue the work. Last updated: 2026-09-30.
 
 - **Wire format is not a compatibility requirement** (the author's input of 2026-09-29). Addons ship template source, not wire format. Chapter 04 is **informative**:
   it documents the current encoding and must contain no conformance requirements. Other
-  chapters must not require accepting wire format. Because addons ship source, the babel
-  plugin's `hbs` re-printing (§02-10) *is* part of the compatibility surface.
+  chapters must not require accepting wire format.
+- **Non-goals** (`plan.md`, author's input of 2026-09-30, commit `8b343781b3`; §00-0.1):
+  - *AST transforms.* The behavior of Ember's internal transforms is normative; the ASTv1
+    shape, the transforms' existence and order, and user AST plugins (`plugins.ast`, babel
+    `transforms`/`jsutils`) are not. §02 uses ASTv1 as notation, §02-7 is informative as a
+    data structure, and §03-7 states meaning through rewrites.
+  - *Addon pre-publication tooling.* The babel `hbs` re-printing (§01-1.5.6, §02-10) is
+    outside the primary scope; already-published source must run faithfully (§0.7.1 item 1,
+    §01-1.11 item 15 resolved). This reverses the earlier note that the re-printing was part
+    of the compatibility surface.
 - **Reactivity is spec'd abstractly** (§07-0). The **[Proposed]** consumption primitive is
   `isValid(cache)`, a public `untrack(fn)`, and a host-level `onInvalidate(listener)`
   (§07-2.2). It builds on the existing `createCache`, `getValue` and `isConst`.
