@@ -457,7 +457,7 @@ depth and may span lines. `()` is a parse error.
 
 Literals may appear as params, hash values, and as the entire content of a mustache
 (`{{"foo"}}`, `{{1}}`, `{{null}}`, `{{undefined}}` — tests
-`packages/@glimmer/syntax/test/parser-node-test.ts:875-897`).
+`packages/@glimmer/syntax/test/parser-node-test.ts:891-913`).
 
 ### 3.6 Paths
 
@@ -477,7 +477,7 @@ modifiers and non-literal mustaches:
   where `Type` is the literal node type, `text` is the string value for strings and the printed
   value otherwise, and `value` is `"…"`-quoted for strings, `true`/`false`, `null`, `undefined`,
   or `Number.prototype.toString()` of the number. The error span is the literal
-  (`handlebars-node-visitors.ts:693-716`; tests `parser-node-test.ts:1011-1084`). E.g.
+  (`handlebars-node-visitors.ts:693-716`; tests `parser-node-test.ts:1027-1100`). E.g.
   `{{("foo-baz")}}` →
   `StringLiteral "foo-baz" cannot be called as a sub-expression, replace ("foo-baz") with "foo-baz"`;
   `{{#"foo"}}{{/foo}}` produces the same message form.
@@ -498,7 +498,7 @@ modifiers and non-literal mustaches:
 
 (`handlebars-node-visitors.ts:417-443` for the first four rows, `:133-140` for inverse
 sections, `:450-455` and `:690-691` for hash literals, `:461-466` for sub-expression-rooted
-paths; tests `parser-node-test.ts:899-945`, `parser-error-test.ts:110-134`.) A conforming
+paths; tests `parser-node-test.ts:915-961`, `parser-error-test.ts:110-134`.) A conforming
 implementation MUST reject all of these with a syntax error.
 
 ---
@@ -549,7 +549,7 @@ original `this/foo`; `../foo` has parts `[foo]` and original `../foo`; `[this]` 
 
 All errors in this section have the path's span as location (tests
 `packages/@glimmer-workspace/integration-tests/test/syntax/general-errors-test.ts:12-58`,
-`parser-node-test.ts:996-1009`).
+`parser-node-test.ts:1012-1025`).
 
 Resulting behavior table (normative):
 
@@ -1054,7 +1054,7 @@ the parent. Templates that relied on those behaviors now either error or parse a
 | `beforeAttributeName`, `afterAttributeName` | pushed on the start tag's `comments` list (`<div {{! c }} class="x">`, `<input foo {{! c }}>`); the pending attribute in `afterAttributeName` is *not* finished by the comment, it is finished by whatever follows. In an **end** tag it is an error `Invalid end tag: closing tag must not contain Handlebars comments` (`</div {{! c}}>`) |
 | anything else | error ``Using a Handlebars comment when in the `STATE` state is not supported`` (span: the comment), e.g. states `attributeName`, `beforeAttributeValue`, `attributeValueDoubleQuoted`, `attributeValueUnquoted`, `tagName` |
 
-(Tests `parser-node-test.ts:789-873`.) Note `<div a="x"{{! c}}>` (state
+(Tests `parser-node-test.ts:805-889`.) Note `<div a="x"{{! c}}>` (state
 `afterAttributeValueQuoted`) is an error, while `<div a="x" {{! c}}>` is allowed.
 
 ### 6.11 Block placement
