@@ -61,11 +61,11 @@ none of those commits touch the files involved.
 | §07-5 item 8 | ember.js | `fix/tracked-accessor-object-tag` | Open for review. The accessor test now lives in the stable-decorator smoke tests (`smoke-tests/scenarios/stable-decorator-files.ts`). | The `@tracked accessor` setter also dirties the object-level cell. |
 
 When a branch is merged, update the owning item to describe the new behavior. **Still to do**
-for the two that have landed: the chapters' normative text (§02-6.9, §02-9, §03-10 item 11,
-§01-1.3) still describes the pre-fix behavior, and citations into the changed files
+for the two that have landed: the chapters' normative text (§02-6.9, §02-9, §01-1.2.4) still
+describes the pre-fix behavior, and citations into the changed files
 (`handlebars-node-visitors.ts`, `transform-each-in-into-each.ts`, content-tag
-`src/transform.rs`) predate the fixes. The open-question items below now say "Fixed" but have
-not been rewritten.
+`src/transform.rs`) predate the fixes. The chapters' open-question items (§02-11 items 1, 2,
+7; §03-10 item 11; §01-1.11 item 7) now say "Fixed" but have not been rewritten.
 
 ## Chapters
 
