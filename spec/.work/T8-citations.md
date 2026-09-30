@@ -15,7 +15,7 @@ Resume from the first unticked item. Commit after each item: `spec(T8): <file>`.
 - [x] (30 checked: 02/03 cites all verified; 28 renumbered, 2 already right + E42-E47/02-6.x already correct, catalogue E6-E22 renumbered; note: 02-6.7 `323-350`, E18 `270-274`, 02-6.9 `228-321` tightened) handlebars-node-visitors.ts (≈29 citations; §02 mostly, some §03). Note: §02-3.3, §02-3.8, §02-6.7, §02-6.9–6.11 and catalogue rows E18, E42–E47 were just rewritten against the new code — verify them too, but they should already be right. Catalogue rows E6–E21 still use pre-merge numbers.
 - [x] parser-node-test.ts (15 checked, 5 renumbered; 02:971 already pointed at the new tests)
 - [x] integration-tests/lib/suites/each.ts (10 checked, 10 renumbered +40 after two inserted tests)
-- [ ] reference/lib/iterable.ts (≈8)
+- [x] reference/lib/iterable.ts (8 checked, 0 renumbered; diff only touches ArrayIterator at line 199+, no citation reaches it; behavior change noted below)
 - [ ] syntax/lib/parser.ts (≈5; distinguish from @handlebars `lib/parser.js`)
 - [ ] parser-error-test.ts (≈4)
 - [ ] integration-tests/lib/render-test.ts (≈3)
@@ -23,3 +23,4 @@ Resume from the first unticked item. Commit after each item: `spec(T8): <file>`.
 - [ ] run `python3 spec/tools/check-citations.py` — all ok; `python3 spec/tools/xref.py` — silent
 
 ## Behavior changes found
+- 05-runtime-semantics §05-5.4.1 (`iterable.ts:141-160`, pseudocode "items are L[0..n-1]" and "for sources converted eagerly (arrays, `forEach`) the count is known"): `ArrayIterator` (iterable.ts:201-225) now reads only `length` at construction (for `isEmpty`) and reads `iterator.length` live on every `next()`, so a plain array that shrinks or grows during iteration stops early or renders the new items (new tests suites/each.ts:49-87). Items are no longer read eagerly; the first item is read in `next()`, not the constructor.
