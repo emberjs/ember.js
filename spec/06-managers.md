@@ -1363,14 +1363,14 @@ as a child of the **innermost enclosing block**, at the time it is created:
 | Component destroyable (`manager.getDestroyable(state)`, if non-null) | After `create`, before `getSelf` | `component.ts:448-468` |
 | Helper instance (static), if it has destroyable children, which is always the case with `hasDestroyable` | Helper evaluation | `expressions.ts:181-183` |
 | Dynamic-helper slot, and through it the current helper instance | Helper evaluation / re-creation | `expressions.ts:126-133,145` |
-| Modifier state (`getDestroyable`) | Element close. (Current bug, fix proposed: with the debug render tree enabled, the Ember DEBUG default, it is also associated at modifier creation, and that position wins; §05-11.1) | `dom.ts:138-150`; `component.ts:581` |
+| Modifier state (`getDestroyable`) | Element close. (Before emberjs/ember.js#21639, with the debug render tree enabled, the Ember DEBUG default, it was also associated at modifier creation, and that position won; §05-11.1) | `dom.ts:138-150`; `component.ts:581` |
 | Dynamic-modifier slot, and through it each installed instance | Modifier evaluation / replacement | `dom.ts:296-305,356-361` |
 
 A component's own content (its layout's blocks, modifiers, nested components) is associated
 with the same enclosing block as the component's destroyable, as **later siblings**. It is
 not associated as children of the component's destroyable. The resulting destruction order
-(components parent-first, modifiers child-first in every build; current development builds
-differ, which is a bug, §05-11.3) is specified in §05-11.1 and §05-11.3. See Q10.
+(components parent-first, modifiers child-first in every build; development builds differed
+until #21639, §05-11.3) is specified in §05-11.1 and §05-11.3. See Q10.
 
 When a block is torn down:
 

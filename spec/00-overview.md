@@ -351,8 +351,8 @@ to addon tooling.
     step sequences are still asserted only in `LOCAL_DEBUG` builds. (§05-14 item 20)
 39. Components are destroyed parent-first, including with public managers (verified by
     experiment, T9b). Modifiers must be destroyed child-first in every build (author ruling);
-    current development builds, where the debug render tree is on, destroy them in creation order
-    instead, a bug with a fix proposed on branch `fix/modifier-destruction-order` (T9b).
+    development builds, where the debug render tree is on, used to destroy them in creation
+    order instead; fixed on main (emberjs/ember.js#21639, found by T9b).
     `createModifier` sees an element that has no attributes yet and is
     not in the document. (§05-14 items 11, 15)
 40. Ember render timing: `renderComponent` called during a render defers the new root, so

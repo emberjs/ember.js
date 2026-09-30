@@ -1898,14 +1898,14 @@ Registration order within a region is creation order, which is:
 - helper instances: when the helper expression is reached;
 - modifier destroyables: when their element is **closed** (after the element's content). This
   is the required order in every build.
-  *Current bug (fix proposed):* when the debug render tree is enabled (Ember's
+  *Fixed on main (emberjs/ember.js#21639), after this checkout's base:* when the debug render tree is enabled (Ember's
   `ENV._DEBUG_RENDER_TREE`, default `true` in DEBUG builds and `false` in production; always off
   in the Glimmer test harness), a modifier is associated a second time, earlier, at the moment it
   is *created* (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:581`, called from
   `dom.ts:184`, `289`). The first association fixes its position, so development builds register
   modifiers when their element is **opened**. The author ruled that the production order is
-  correct for both; branch `fix/modifier-destruction-order` makes development match (§11.3, §14
-  item 11).
+  correct for both, and #21639 makes development match (§11.3, §14 item 11). The citation above
+  is to this checkout, which predates the fix.
 
 ### 11.2 Destroying
 
@@ -1979,9 +1979,8 @@ scheduled is a walk of the *region* tree in creation order:
   order but not the queue or the timing relative to DOM removal). These tests run in the Glimmer
   harness, where the debug render tree is disabled. This order is **required in every build**,
   including development builds with the debug render tree on (author ruling, 2026-09-30).
-  *Current bug (fix proposed, branch `fix/modifier-destruction-order`):* found by experiment (T9b),
-  with the debug render tree enabled, which is the default in Ember DEBUG builds, current Ember
-  destroys modifiers in the order they were *created* (element-open, document pre-order), so
+  *Fixed on main (emberjs/ember.js#21639):* found by experiment (T9b), with the debug render
+  tree enabled, which is the default in Ember DEBUG builds, Ember used to destroy modifiers in the order they were *created* (element-open, document pre-order), so
   a parent element's modifier is destroyed before its descendants' and interleaved with components.
   Observed in Ember (dev) for a tree `{{#if}}<div {{m top}}>{{d0}}<b {{m b1}}></b>{{e0}}{{d2}}<b {{m b2}}></b></div>{{/if}}`
   where `e0` renders `<div {{m e}}><b {{m eb}}></b>{{d1}}</div>`: destruction order
@@ -2230,7 +2229,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     off). In Ember DEBUG builds the debug render tree is on and current Ember destroys modifiers in
     creation (document pre-order) position instead (§11.3, found by experiment, T9b). *Resolved:*
     this is a bug; the child-first order is required in every build (author ruling, 2026-09-30),
-    and branch `fix/modifier-destruction-order` fixes development builds.
+    and emberjs/ember.js#21639 fixed development builds.
     For components with public managers (`destroyComponent`) the parent-first order was observed
     by experiment (verified by experiment, T9b; see §05-11.3), although no upstream test covers it.
 12. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls

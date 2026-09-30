@@ -1870,10 +1870,15 @@ of why it is no longer recommended. In practice the ember-template-lint rules
 lexically scoped to the enclosing template's `@outlet` argument. Historically `{{outlet}}` was
 dynamically scoped (it worked inside any component rendered by a route template). A component
 template containing `{{outlet}}` now silently renders nothing; and a component passed `@outlet`
-explicitly could render the outlet anywhere. Neither behaviour is tested. Also, `@outlet` is
-visible as an ordinary named argument (e.g. `{{#if @outlet}}`), which is new surface.
-
-> If I understand this correctly, we recently introduced a breaking change here (when we landed the new route manager support). Can we produce a branch (against main) with a test that passed before 4b5d79a6d7d1b and fails after it?
+explicitly could render the outlet anywhere. Also, `@outlet` is visible as an ordinary named
+argument (e.g. `{{#if @outlet}}`), which is new surface.
+*Confirmed regression.* The change came with the route manager merge (`4b5d79a6d7d1b`,
+emberjs/ember.js#21460), which changed `transform-wrap-mount-and-outlet` from
+`{{component (-outlet)}}` (which read the outlet state from the dynamic scope) to `<@outlet />`.
+Branch `test/outlet-inside-component` adds tests for `{{outlet}}` inside a template-only and a
+classic component rendered by the application template: both pass at `4b5d79a6d7d1b^1` and fail
+at `4b5d79a6d7d1b` and on current `main`, where the outlet renders as an empty comment. Whether
+to restore the dynamically scoped behavior is open.
 
 **Q3. Loose vs strict availability of the 7.1 built-ins.** `eq`, `neq`, `gt`, `gte`, `lt`, `lte`,
 `and`, `or`, `not`, `element` are auto-imported in strict mode but absent from the loose-mode
@@ -1902,10 +1907,13 @@ returns the *factory* for classic `Helper` subclasses so injections apply
 
 **Q7. `action` leftovers.** `action` is still a syntax keyword, a strict-mode keyword, and
 the target of `transform-action-syntax`, but has no runtime implementation. Error messages
-users get are generic resolution failures. A new implementation should decide whether to keep
-reserving the name.
-
-> Let's make a branch with a cleanup for this. 
+users get are generic resolution failures. In strict mode every use, even a lexically bound
+`action`, fails with the internal error "Strict mode errors should already be handled at compile
+time"; in loose mode `{{action …}}` is a keyword-misuse error, and a registered `helper:action`
+receives an extra `this` argument. *Cleanup proposed* on branch
+`cleanup/remove-action-keyword`: `action` is removed from the syntax keywords and
+`STRICT_MODE_KEYWORDS`, and `transform-action-syntax` is deleted, so `action` becomes an
+ordinary name with the standard "not in scope" / "nothing was found" errors.
 
 **Q8. Curly `{{input}}`/`{{textarea}}`/`{{link-to}}` and HTML attributes.** Internal
 components ignore unsupported named arguments, so `{{input placeholder="x" disabled=true}}`
