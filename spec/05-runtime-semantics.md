@@ -1769,7 +1769,17 @@ when the element is closed (after its children have rendered):
 ```
 
 At commit, `install` runs with auto-tracking: storage consumed during `install` (including
-argument reads) determines when `update` is needed (`packages/@glimmer/runtime/lib/environment.ts:63-78`).
+argument reads) determines when `update` is needed (`packages/@glimmer/runtime/lib/environment.ts:63-78`;
+`packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:216-273`,
+`packages/@glimmer-workspace/integration-tests/test/managers/modifier-manager-test.ts:165-217`,
+`329-430`: only arguments consumed by a hook cause `update`).
+
+Tests: several modifiers on one element install in source order, `<div {{foo}} {{bar}}>` gives
+`foo, bar` (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-324`); a nested
+element's modifiers install before its parent's (`350-370`), and siblings install in document
+order before the parent (`396-423`). When the environment is not interactive no modifier hook
+runs (`custom-modifier-manager-test.js:587-655`). That `create` sees an element with no
+attributes and outside the document is untested (§14 item 15).
 
 ### 10.2 Dynamic modifiers
 
@@ -1790,6 +1800,13 @@ on update: if d's identity changed:
   else if the instance's tracked inputs are invalid: schedule update at commit
 ```
 
+Tests: a modifier that is `undefined` at first and set later is installed on that update, and is
+destroyed when its enclosing block is removed or the render result is destroyed
+(`custom-modifier-manager-test.js:108-135`;
+`packages/@glimmer-workspace/integration-tests/test/modifiers/dynamic-modifiers-test.ts:204-258`);
+curried modifiers with positional and named arguments (`dynamic-modifiers-test.ts:44-138`).
+Replacing one modifier definition by another on an element that stays, and the timing of the
+new instance's `create`, are untested.
 ### 10.3 Updates
 
 On an update pass, when the traversal reaches an element's modifier position (which is at the
@@ -1798,14 +1815,23 @@ element's *opening*, before the element's children), each modifier whose tracked
 **scheduled** for `update`; all scheduled updates run at
 commit in scheduling order (document pre-order) (`dom.ts:308-328`,
 `environment.ts:80-95`). A modifier's `update` never runs in the same transaction as its
-`install`.
+`install`. Tests confirm that `update` runs when a consumed argument changes, not on a no-op
+re-render, and never for constant arguments
+(`packages/@glimmer-workspace/integration-tests/test/updating-modifiers-test.ts:28-71`;
+`modifiers-test.ts:56-82`). The pre-order of scheduled updates across elements and the
+same-transaction rule are untested.
 
 ### 10.4 Destruction
 
 A modifier is destroyed when its element's enclosing region is destroyed; for managers created
 through the public modifier manager API, `destroyModifier` runs as a (deferred) destructor
 (`packages/@glimmer/manager/lib/public/modifier.ts:107-127`). At that time the element has
-already been removed from the document.
+already been removed from the document (untested).
+
+Tests: the destructor runs when the element's block is removed and again for a re-created
+element (`updating-modifiers-test.ts:73-105`). Several modifiers on one element are destroyed in
+source order (`modifiers-test.ts:326-348`); nested elements' modifiers are destroyed child-first
+(`372-394`) and siblings in document order before their parent (`425-458`).
 
 ---
 
@@ -2136,3 +2162,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     - `yield`/blocks: the owner inside a yielded block; yielding one block several times;
       `has-block`/`has-block-params` constancy and the non-literal-argument compile error;
       `has-block-params` for a `<:else as |x|>` block.
+    - Modifiers: pre-order of scheduled updates; `update` never in the same transaction as
+      `install`; timing of replacing a dynamic modifier definition; the element being already
+      detached when `destroyModifier` runs; the attribute-less, undocumented element at
+      `create` (item 15).

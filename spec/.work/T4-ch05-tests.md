@@ -12,7 +12,7 @@ Commit after each area.
 - [x] `each`: keys (`@identity`, `@index`, property keys), duplicate keys, move/insert/remove, `{{else}}`, iterables
 - [x] `in-element`: `insertBefore`, null/undefined destination, destination change, clearing
 - [x] `yield` / named blocks / `has-block` / `has-block-params`
-- [ ] Modifier install/update/destroy ordering (child vs parent)
+- [x] Modifier install/update/destroy ordering (child vs parent)
 - [ ] Component lifecycle hook ordering (didCreate/didUpdate vs modifier install; classic hooks)
 - [ ] Destruction order (parent vs child destructors; eager vs deferred; which queue)
 
@@ -31,3 +31,7 @@ Commit after each area.
 - Confirmed: named blocks, `<:else>`/`<:inverse>` aliasing, has-block/has-block-params matrix, absent-block yield, lexical context, block-param shadowing.
 - Corrected/clarified: §05-6.3 said "else blocks cannot declare params"; only `{{else}}` cannot, `<:else as |x|>` can (emberish-components.ts:263-295). §14 item 16 said Glimmer "skips" the inverse/else yield tests; `skip:'glimmer'` skips only the angle-bracket kind, curly and dynamic still run them (lib/test-helpers/module.ts:143-160). Reworded item 16.
 - Untested (added to §14 item 20): owner inside yielded block, yielding one block several times, has-block constancy, non-literal has-block error, has-block-params for `<:else as |x|>`.
+
+### Modifier ordering
+- Confirmed: install order (same element source order; children before parents; siblings doc order), destroy order (identical), update on changed arg only, non-interactive skip, dynamic modifier install/destroy. No contradictions.
+- Untested: update pre-order across elements, update never in same transaction as install, dynamic modifier definition replacement timing, element detached at destroy time, element attribute-less/undocumented at create.
