@@ -124,7 +124,8 @@ Consequences:
   `not`, `element` (§1.3(a)) are **not** in these tables; in loose mode those names resolve
   through the registry like any user helper (and are therefore unavailable unless an app
   registers them). This is intentional: they are recent additions designed for strict mode
-  only, and loose mode is maintained but gains no new features (Q3).
+  only, and loose mode is maintained but gains no new features. A new implementation MUST NOT
+  add them to the loose-mode table.
 
 ### 1.3 Strict-mode keywords and auto-imported built-ins
 
@@ -589,7 +590,8 @@ The runtime `toIterator` for plain `{{#each}}` (§10.2) is also Ember's.
   argument. Result: `dasherize(name)` if `value === true`; `''` if `value` is falsy and not `0`;
   else `String(value)`.
   *Note:* No current Ember AST plugin emits this helper; it remains in the table for
-  precompiled templates from older compilers. See Q5.
+  precompiled templates from older compilers. Because the wire format is not a compatibility
+  requirement (§00-0.2), a new implementation need not support it.
 
 ### 2.17 `-in-el-null`
 
@@ -748,7 +750,7 @@ A *simple* callee is a path with a variable head and no tail that is not a local
 | Position | Example | Namespaces tried, in order |
 |---|---|---|
 | append with args | `{{foo a}}`, `{{foo a=b}}` | component, then helper; error if neither |
-| append without args | `{{foo}}` | component, then helper; **nothing rendered** if neither (see Q1) |
+| append without args | `{{foo}}` | component, then helper; **nothing rendered, and no error,** if neither. This is required: loose mode stays as stable as possible while it is phased out, and the ember-template-lint rules `no-curly-component-invocation` and `no-implicit-this` flag the case (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts:403-422`). Under the removed implicit-`this` fallback a typo also rendered empty, but raised the **[Dev]** `this-property-fallback` deprecation from 3.26 until 4.0. |
 | trusting append | `{{{foo}}}` | helper only |
 | block | `{{#foo}}…{{/foo}}` | component only |
 | sub-expression | `(foo …)` | helper only |
@@ -1848,22 +1850,6 @@ For debug labels in the backtracking message (§10.4) the outlet providers are n
 ---
 ## 14. Open questions / inconsistencies
 
-**Q1. Silent `{{foo}}` in loose mode.** For an argument-less append of a free name, the
-compiler emits an "optional component or helper" resolution; when neither
-`component:foo` nor `helper:foo` exists the resolution emits *nothing* — no error, no output
-(`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts:403-422`, contrast
-the erroring `{{foo bar}}` path at `:316-341`). A typo rendering empty is not new: under the
-implicit-`this` fallback, `{{fooo}}` read `this.fooo`, which is `undefined`. What changed is
-the diagnostic. From Ember 3.26 until the fallback was removed in 4.0, that lookup raised the
-**[Dev]** `this-property-fallback` deprecation (commit `7b628fc857`, `since: { enabled: '3.26.0' }`,
-`until: '4.0.0'`), so a typo was reported; apps that treated deprecations as errors got an
-exception. Nothing replaced it when the fallback was removed, so today the typo is silent.
-No test pins either outcome for the no-argument case. (Static side: §03-5.3.)
-*Resolved: keep.* A conforming implementation MUST render nothing, without an error, in this
-case. Loose mode is kept as stable as possible while it is phased out, and this is an example
-of why it is no longer recommended. In practice the ember-template-lint rules
-`no-curly-component-invocation` and `no-implicit-this` both flag the problematic template.
-
 **Q2. `{{outlet}}` outside route templates.** `{{outlet}}` is now `<@outlet />`, i.e.
 lexically scoped to the enclosing template's `@outlet` argument. Historically `{{outlet}}` was
 dynamically scoped (it worked inside any component rendered by a route template). A component
@@ -1873,19 +1859,11 @@ argument (e.g. `{{#if @outlet}}`), which is new surface.
 *Confirmed regression.* The change came with the route manager merge (`4b5d79a6d7d1b`,
 emberjs/ember.js#21460), which changed `transform-wrap-mount-and-outlet` from
 `{{component (-outlet)}}` (which read the outlet state from the dynamic scope) to `<@outlet />`.
-Branch `test/outlet-inside-component` (tracked in emberjs/ember.js#21640) adds tests for `{{outlet}}` inside a template-only and a
-classic component rendered by the application template: both pass at `4b5d79a6d7d1b^1` and fail
-at `4b5d79a6d7d1b` and on current `main`, where the outlet renders as an empty comment. Whether
-to restore the dynamically scoped behavior is open.
-
-**Q3. Loose vs strict availability of the 7.1 built-ins.** `eq`, `neq`, `gt`, `gte`, `lt`, `lte`,
-`and`, `or`, `not`, `element` are auto-imported in strict mode but absent from the loose-mode
-built-in table (`resolver.ts:88-117`), so `{{#if (eq a b)}}` fails in a loose-mode template
-unless an addon registers `helper:eq`. Conversely `concat`, `get`, `unique-id` are built-in in
-loose mode but require imports in strict mode. *Resolved: intentional.* The 7.1 built-ins
-are recent additions designed to work only in strict mode. Loose mode is supported but in
-maintenance and does not gain new features, so a new implementation must **not** add them to
-the loose-mode table.
+Branch `test/outlet-inside-component` (tracked in emberjs/ember.js#21640) adds tests for
+`{{outlet}}` inside a template-only and a classic component rendered by the application
+template: both pass at `4b5d79a6d7d1b^1` and fail at `4b5d79a6d7d1b` and on current `main`,
+where the outlet renders as an empty comment. Whether to restore the dynamically scoped
+behavior is open.
 
 **Q4. `element` with `null`/`undefined`.** The public docs say "When `@tagName` is `null` or
 `undefined`, nothing is rendered" (`packages/@ember/helper/index.ts:674-675`), but the
@@ -1893,25 +1871,11 @@ implementation asserts in DEBUG (tests `element-test.js:27-56` expect a throw). 
 `null` produces a definition whose tag is `null`, which renders the block *without* a
 wrapper (same as `""`), not nothing. The three behaviours disagree.
 
-**Q5. `-normalize-class` is unreachable** from current compilers but kept for old
-precompiled templates. Since wire format is not a compatibility requirement (§00-0.2), a new
-implementation need not support precompiled wire format that references it.
-
 **Q6. `(helper "name")` in loose mode bypasses classic-helper factory handling.**
 `-resolve` returns `factoryFor(...).class` (`-resolve.ts:42`), whereas `lookupHelper`
 returns the *factory* for classic `Helper` subclasses so injections apply
 (`resolver.ts:160-183`). A classic helper obtained via `(helper "x")` is therefore created with
 `Class.create(ownerInjection)` rather than through the container. Untested.
-
-<!-- REMOVE -->**Q7. `action` leftovers.** `action` is still a syntax keyword, a strict-mode keyword, and
-the target of `transform-action-syntax`, but has no runtime implementation. Error messages
-users get are generic resolution failures. In strict mode every use, even a lexically bound
-`action`, fails with the internal error "Strict mode errors should already be handled at compile
-time"; in loose mode `{{action …}}` is a keyword-misuse error, and a registered `helper:action`
-receives an extra `this` argument. *Cleanup proposed* on branch
-`cleanup/remove-action-keyword`: `action` is removed from the syntax keywords and
-`STRICT_MODE_KEYWORDS`, and `transform-action-syntax` is deleted, so `action` becomes an
-ordinary name with the standard "not in scope" / "nothing was found" errors.
 
 **Q8. Curly `{{input}}`/`{{textarea}}`/`{{link-to}}` and HTML attributes.** Internal
 components ignore unsupported named arguments, so `{{input placeholder="x" disabled=true}}`
@@ -1931,12 +1895,6 @@ source comment claims "Replace all contents". The intended semantics are unclear
 
 **Q10. `this.attrs` deprecation past its `until`.** `attrs-arg-access` has `until: '6.0.0'`
 but is still emitted (and rewritten) in 7.x (`assert-against-attrs.ts:52-72`).
-
-<!-- REMOVE -->**Q11. Hook ordering of ancestors on `rerender()`.** That `rerender()` on a child runs update
-hooks on all ancestor classic components (`life-cycle-test.js:380-470`) is a consequence of
-region-granular update hooks (§05-1.6; the open question is §06-12 Q12). A JS-function
-implementation with finer-grained invalidation would naturally *not* do this; the tests
-nevertheless pin it.
 
 **Q12. Class attribute ordering on classic wrappers.** The order in which `class`
 contributions are set (§6.3) is deterministic in the implementation but tests compare class

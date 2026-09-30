@@ -6,6 +6,7 @@ standard library, and Node probes need the repo built (`pnpm build`).
 | Script | Purpose |
 |---|---|
 | `xref.py` | Checks that every `§NN-x.y` cross-reference points at an existing section heading. Prints nothing when all resolve. |
+| `prune-open-questions.py [--apply]` | Deletes open-question items marked `<!-- REMOVE -->`, renumbers the numbered lists (Q-lists keep their labels) and rewrites `§NN-x item N` references. Without `--apply` it reports the new numbering and every reference to a removed item, which must be fixed by hand first. Bare in-list references such as "(item 5)" and §04's "Open question N" are not rewritten. |
 | `xref-context.py [chapter.md ...]` | Prints every §-reference with the heading it resolves to and the line it appears on, for checking by eye that each points at the intended section. |
 | `check-citations.py [chapter.md ...]` | Extracts every `path:line` citation. Checks that the file exists (in this repo or a sibling repo under `~/hacking`) and that the lines are in range. `--json out.json` dumps all citations. |
 | `check-citation-semantics.py chapter.md [--only NEAR,MISS]` | Heuristic check that the cited lines contain the identifiers or message text named in the surrounding prose. |

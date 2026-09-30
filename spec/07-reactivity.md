@@ -630,7 +630,8 @@ any cell consumed anywhere in the region changed, *including in descendants*. It
 depend only on the component's own arguments (`component.ts:440-445,940-966`). The classic
 (curly) manager filters `didUpdateAttrs`/`didReceiveAttrs` by its own argument validity
 (`packages/@ember/-internals/glimmer/lib/component-managers/curly.ts:443-471`). It still fires
-`didUpdate`/`didRender` for every invalid region (`curly.ts:479-483`). See §07-5, item 6.
+`didUpdate`/`didRender` for every invalid region (`curly.ts:479-483`); this coarse granularity is
+required (§06-4.4, §08-6.7).
 
 Skipping a valid region is **required only for its observable effects** (the hooks above). An
 implementation MAY skip or MAY descend. Descending is harmless because every inner position is
@@ -700,7 +701,14 @@ Tags, tag combinators, updatable tags, "volatile" and "current" tags, revisions,
 `valueForRef`, `childRefFor`, `ALLOW_CYCLES`, and the cycle assertion
 `'Cycles in tags are not allowed'` (`validators.ts:126-131`) are all implementation details.
 `@glimmer/validator` exports these (`packages/@glimmer/validator/index.ts:11-69`), but that
-package is not public Ember API. See §07-5, item 9 regarding ecosystem reliance.
+package is not public Ember API.
+
+Some addons nevertheless import it directly: ember-modifier (classic modifier argument
+consumption), `tracked-built-ins` and ember-resources use `consumeTag`, `tagFor` and
+`dirtyTagFor`. A new implementation SHOULD provide a compatibility shim for these where that
+is cheap. It is not required: the main users are packages the project can influence, and they
+can be required to migrate to the public primitives (§07-2.2) plus `tracked(v)` before they run
+on a new renderer (author ruling, 2026-09-30).
 
 ---
 
@@ -820,7 +828,10 @@ Uses:
    already evaluated eagerly), then **redefines the property on the instance** as an own
    accessor with the same get/set semantics as §07-3.1.2. Its initializer returns the captured
    initial value (`tracked.ts:405-417`).
-2. Observable differences from the legacy form (see §07-5, item 7):
+2. Observable differences from the legacy form. Both behaviors are required, each for its own
+   decorator implementation; the difference is accepted (author ruling, 2026-09-30) and is a
+   property of `@tracked`, independent of the renderer (`validation_test.js:46-87` asserts
+   different results for the two builds):
    - Initialization is **eager** (normal class-field order). In the `validation_test.js:46` case
      the result is `'first: undefined'`.
    - The accessor is an **own, enumerable, configurable property of the instance**, not a
@@ -837,8 +848,7 @@ Returns `{ get, set }` wrapping the native accessor storage (`tracked.ts:418-443
 - **set:** if `equals` is present and `equals(untrack(read), v)` is true, return. Otherwise
   invalidate the (instance, key) cell **and** the instance's object-level cell, as §07-3.1.2
   does, and write the native storage. (Until emberjs/ember.js#21636, which landed after this
-  checkout's base, the object-level cell was not invalidated and the cited line lacks it; see
-  §07-5 item 8.)
+  checkout's base, the object-level cell was not invalidated and the cited line lacks it.)
 - Initialization follows native accessor semantics (eager).
 
 Any other decorator kind (method, getter, setter, class) throws
@@ -916,7 +926,7 @@ tracked<V>(initial: V, options?: { equals?: (a: V, b: V) => boolean; description
   ``createCache() must be passed a function as its first parameter. Called with: ${String(fn)}``.
 - Does not call `fn`.
 - `debuggingLabel` is used only in development, and it is currently unused by `getValue` (see
-  §07-5, item 10).
+  §07-5, item 5).
 
 **`getValue(cache)`**
 
@@ -978,14 +988,14 @@ Returns a `Proxy` over a copy (`data.slice()`), with `getPrototypeOf` reporting
 
 Because every index read also consumes the collection cell, **any** index or length write
 invalidates **every** reader of the array. The per-index cells do not currently narrow
-invalidation (see §07-5, item 11). Methods not in the list above that read indices (`at`, for
+invalidation (see §07-5, item 6). Methods not in the list above that read indices (`at`, for
 example) read through the index trap and so still consume.
 
 #### 07-3.5.2 `trackedObject(data = {}, options)`
 
 Proxy over a clone. The clone has the same prototype as `data` and copies all own property
 descriptors. `getPrototypeOf` reports an internal `TrackedObject.prototype`, **not** the
-original prototype (`object.ts:37-105`; see §07-5, item 12).
+original prototype (`object.ts:37-105`; see §07-5, item 7).
 
 | Operation | Consumes | Invalidates |
 |---|---|---|
@@ -1262,7 +1272,7 @@ the position's value = getValue(Sₙ)
   (`packages/@glimmer/reference/lib/reference.ts:193-246`).
 - Unlike `get('a.b')`, template paths do **not** stop at `isDestroyed` objects. The
   `isDestroyed` short-circuit exists only in `_getPath` (§07-3.6.2, item 1), which template paths
-  do not use (see §07-5, item 13).
+  do not use (see §07-5, item 8).
 - So `{{this.a.b}}` depends on the (this, 'a') cell, the (this.a, 'b') cell, anything read by
   getters for `a` and `b`, and, if a value is an array, its `[]` cell.
 - **Sharing.** Within one evaluation scope, the computation for `X.s` is created once per (parent
@@ -1444,60 +1454,31 @@ yielder (§07-4.2 "Sharing"; tests
    the snapshot is taken after the frame ends (§07-1.5, item 2). The computation can then stay
    valid while holding a stale value. The dev-mode assertion prevents this, but the production
    behavior is unspecified.
-<!-- REMOVE -->5. **Path computation sharing is an implementation artifact.** It comes from `childRefFor`'s
-   per-parent `children` map (§07-4.2), yet it determines evaluation counts. It is unclear which
-   tests depend on it. A JS-function implementation needs to decide whether to reproduce it
-   exactly (a memo keyed by parent computation and segment).
-<!-- REMOVE -->6. **`updateComponent` fires for descendant changes.** Recorded as §06-12 Q12, which owns
-   it.
-7. **Legacy vs. stage-3 `@tracked` differ observably.** They differ in initialization timing
-   (lazy on first read vs. eager), in whether an initializer runs when the field is written
-   before it is read, and in whether the property is a prototype accessor or an own instance
-   accessor (§07-3.1.2, §07-3.1.4; `validation_test.js:46-87` asserts different results for the
-   two builds). *Resolved: accepted.* The difference is a known, accepted consequence of the
-   two decorator implementations, which is why the tests assert different results. It is a
-   property of `@tracked` itself and is orthogonal to the rendering layer: a new renderer
-   keeps whichever `@tracked` implementation the build uses and need not reconcile them.
-
-8. **`@tracked accessor` did not invalidate the object-level cell.** *Resolved* by
-   emberjs/ember.js#21636 (after this checkout's base): the accessor setter now invalidates it,
-   like the field setters (`tracked.ts:363` vs. `:439` in this checkout). The only in-tree consumers of the object-level cell are `{{#each-in}}` and
-   `ObjectProxy`, and `{{#each-in}}` iterates own keys, which an accessor is not, so the
-   difference is mostly visible to code that reads `tagForObject` directly.
-
-9. **Ecosystem use of private tags.** Addons such as ember-modifier (classic modifier arg
-   consumption), `tracked-built-ins`, and ember-resources import `@glimmer/validator`
-   (`consumeTag`, `tagFor`, `dirtyTagFor`) directly. A new implementation will need a
-   compatibility shim, or the proposed public primitives (§07-2) plus `tracked(v)`, to replace
-   those uses. *Policy:* provide a shim if it is cheap and easy. It is not a hard requirement,
-   because the most significant users are packages the project can influence directly, and
-   they can be required to migrate before they run on a new renderer.
-
-10. **The `createCache` debug label is ignored.** `getValue` calls `beginTrackFrame()` without
-    the label (`tracking.ts:173`). So caches never appear in the write-after-consume tracking
-    stack, even though `createCache` accepts and stores a `debuggingLabel`.
-11. **Per-index cells in `trackedArray` are ineffective.** Every index read also consumes the
-    collection cell, and every index write invalidates the collection cell, so invalidation is
-    effectively array-wide (`array.ts:77-80,139-144`). Is this intended (RFC 1068 promises that
-    "changes to the collection only render what changed")?
-12. **`trackedObject`'s `getPrototypeOf` hides the original prototype.** It reports an internal
-    `TrackedObject.prototype` even though the clone keeps the original prototype, so
-    `trackedObject(new Foo()) instanceof Foo` is `false` (`object.ts:101-103`). This contradicts
-    the source comment "mimic the same behavior as a plain object".
-13. **Template paths do not stop at `isDestroyed` objects**, but `get('a.b')` does
-    (`property_get.ts:143-146` vs. `reference.ts:221-228`). Is this divergence intentional?
-14. **`trackedSet.add` with a custom `equals` and an existing value** invalidates the value's
-    cell but not the collection cell, whereas adding a new value invalidates both
-    (`set.ts:41-54`). `equals(value, value)` with the same argument twice is an odd contract.
-15. **`description` options are mostly unused.** They are accepted by all collections and by
+5. **The `createCache` debug label is ignored.** `getValue` calls `beginTrackFrame()` without
+   the label (`tracking.ts:173`). So caches never appear in the write-after-consume tracking
+   stack, even though `createCache` accepts and stores a `debuggingLabel`.
+6. **Per-index cells in `trackedArray` are ineffective.** Every index read also consumes the
+   collection cell, and every index write invalidates the collection cell, so invalidation is
+   effectively array-wide (`array.ts:77-80,139-144`). Is this intended (RFC 1068 promises that
+   "changes to the collection only render what changed")?
+7. **`trackedObject`'s `getPrototypeOf` hides the original prototype.** It reports an internal
+   `TrackedObject.prototype` even though the clone keeps the original prototype, so
+   `trackedObject(new Foo()) instanceof Foo` is `false` (`object.ts:101-103`). This contradicts
+   the source comment "mimic the same behavior as a plain object".
+8. **Template paths do not stop at `isDestroyed` objects**, but `get('a.b')` does
+   (`property_get.ts:143-146` vs. `reference.ts:221-228`). Is this divergence intentional?
+9. **`trackedSet.add` with a custom `equals` and an existing value** invalidates the value's
+   cell but not the collection cell, whereas adding a new value invalidates both
+   (`set.ts:41-54`). `equals(value, value)` with the same argument twice is an odd contract.
+10. **`description` options are mostly unused.** They are accepted by all collections and by
     `@tracked({description})`, but only `TrackedValue` uses `description`, in its frozen error.
-16. **Frozen `TrackedValue` throws even for equal writes** (§07-3.2). This is plausible, but it
+11. **Frozen `TrackedValue` throws even for equal writes** (§07-3.2). This is plausible, but it
     is untested.
-17. **Commit-phase writes can loop without an assertion.** A modifier that writes state its own
+12. **Commit-phase writes can loop without an assertion.** A modifier that writes state its own
     element's template reads causes one extra run loop per render. With a cycle it only hits the
     1000-loop limit, and there is no development-mode assertion pointing at the modifier
     (§07-1.11).
-18. **`Tag` cycle assertion.** `'Cycles in tags are not allowed'` (`validators.ts:126-131`) can
+13. **`Tag` cycle assertion.** `'Cycles in tags are not allowed'` (`validators.ts:126-131`) can
     only arise through internal tag updating (classic computed chains, which are exempted with
     `ALLOW_CYCLES`). The abstract model has no counterpart. A computation that reads itself
     recurses instead (§07-3.4).

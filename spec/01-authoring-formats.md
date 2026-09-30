@@ -751,7 +751,7 @@ blocks, and bracketed path segments lose their brackets (`{{foo.[bar baz]}}` →
 `{{foo.bar baz}}`, which is a different invocation). Output already published this way is
 ordinary template source, and a conforming implementation MUST run it as §02–§08 describe;
 it need not reproduce the re-printing itself. A newer `hbs` target that preserves meaning is
-a tooling change that addons can adopt independently (§1.11 item 15).
+a tooling change that addons can adopt independently (§00-0.1 "Non-goals").
 
 ### 1.5.7 AST transform hook and `jsutils`
 
@@ -1086,7 +1086,7 @@ first compiled, even if the invocation itself is not rendered then.
 
 The closure may be *called* more than once per template object. A wrapped layout (classic
 components with a tag) calls it in its constructor and again when it compiles, so a thunk can
-run up to three times (§04-4.14 item 5). The values that the compiled code uses are those of
+run up to three times (§04-4.14 item 4). The values that the compiled code uses are those of
 a single call, made no earlier than the first build of the layout, and they never change
 afterwards: lexical values are constants for the life of the template object (§05-1.1).
 
@@ -1233,48 +1233,28 @@ or pods lookup (§08-5). The one remaining registry lookup of a template is the 
 6. **`content-tag` claims `<template>` in any `<`-token position**, including TypeScript
    type arguments and relational expressions (`swc/crates/swc_ecma_parser/src/lexer/mod.rs:454-466`).
    Probably acceptable but unspecified.
-7. **Indentation stripping edge cases.** *Resolved* in content-tag 4.2.1
-   (embroider-build/content-tag#134): only ASCII spaces and tabs count as indentation or as
-   blank-line whitespace (§1.2.4). Before that, `min_indent` was computed in bytes over
-   Unicode whitespace, so mixing a multi-byte whitespace character (e.g. U+3000) with ASCII
-   spaces could slice inside a UTF-8 sequence and panic. Still unspecified elsewhere:
-   CRLF normalization happens only for multi-line bodies, and RFC #1121 is not in the local
-   RFC repo, so the intended specification cannot be checked against the implementation.
-   (The tab/space check stops at the first line that completes the mix, but the result, no
-   de-indent, does not depend on line order.)
-
-8. **No way to include `</template>` in a `<template>` body.** *Resolved: intentional.* The
-   content tag assumes no interior syntax, so that it can serve as a language-neutral JS
-   syntax extension; §1.2.2 rule 2 now states this as normative. (RFC 0779 §"Spec" had
-   promised a spec covering "handling closing tags within comments"; this is that answer.)
-
-9. **Multiple top-level `<template>`s / multiple class-member `<template>`s** are not
+7. **Indentation edge cases left unspecified.** CRLF normalization happens only for
+   multi-line bodies, and RFC #1121 is not in the local RFC repo, so the intended specification
+   of §1.2.4 cannot be checked against the implementation.
+8. **Multiple top-level `<template>`s / multiple class-member `<template>`s** are not
    diagnosed by `content-tag`; they fail later (duplicate `export default`, or the [Dev]
    `setComponentTemplate` double-set error; silently last-wins in production).
-10. **Rename of shorthand scope entries.** The compiled scope object uses shorthand keys
-    (`()=>({Foo})`) and the babel plugin renames *all* matching identifiers
-    (`babel-plugin-ember-template-compilation/src/plugin.ts:435-450`), which may rewrite the
-    key as well as the value for `{ Foo: bar }`. Harmless because values are consumed
-    positionally (§1.5.5) and keys are debug-only, but the debug names may be wrong. The
-    babel tests normalize this away (`__tests__/all.test.ts` `canonicalizeWireScope`).
-11. **Definition cache ignores owner.** Recorded as §06-12 Q15, which owns it.
-12. **`@ember/template-compiler` (non-runtime) at run time.** RFC 0931 says calling it without
+9. **Rename of shorthand scope entries.** The compiled scope object uses shorthand keys
+   (`()=>({Foo})`) and the babel plugin renames *all* matching identifiers
+   (`babel-plugin-ember-template-compilation/src/plugin.ts:435-450`), which may rewrite the
+   key as well as the value for `{ Foo: bar }`. Harmless because values are consumed
+   positionally (§1.5.5) and keys are debug-only, but the debug names may be wrong. The
+   babel tests normalize this away (`__tests__/all.test.ts` `canonicalizeWireScope`).
+10. **Definition cache ignores owner.** Recorded as §06-12 Q15, which owns it.
+11. **`@ember/template-compiler` (non-runtime) at run time.** RFC 0931 says calling it without
     the compiler should throw; the implementation always ships a working compiler behind both
     entry points. Whether apps can rely on this is unspecified.
-13. **`ember-template-compiler/lib/plugins/index.ts`** duplicates the plugin lists of
+12. **`ember-template-compiler/lib/plugins/index.ts`** duplicates the plugin lists of
     `@ember/template-compiler/lib/plugins/index.ts` but appears unused by
     `ember-template-compiler/lib/system/compile-options.ts` (which imports from
     `@ember/template-compiler/-internal-primitives`); the two copies differ in whether
     `AutoImportBuiltins` is in `INTERNAL_PLUGINS`. Possible drift hazard.
-14. **`compile()` cannot handle lexical scope.** It evaluates the payload in global scope
+13. **`compile()` cannot handle lexical scope.** It evaluates the payload in global scope
     (`packages/ember-template-compiler/lib/system/compile.ts:30-32`), so
     `compile(src, { strictMode: true, locals: [...] })` produces a scope closure referring to
     globals. Probably intended; unspecified.
-15. **The `hbs` target changes the meaning of some templates.** The round trips listed in
-    §02-10 (escaped mustaches, raw blocks, bracketed path segments) produce different
-    template source, and addons publish that source (§1.5.6). Verified with the built
-    `@glimmer/syntax`: `a \{{foo}} b` → `a {{foo}} b`, `{{{{raw}}}} {{x}} {{{{/raw}}}}` →
-    `{{#raw}} {{x}} {{/raw}}`, `{{foo.[bar baz]}}` → `{{foo.bar baz}}`. No babel-plugin test
-    covers these inputs. *Resolved: outside the primary scope.* This is addon pre-publication
-    tooling, and fixing it is a tooling change that addons can adopt independently. The spec
-    only requires that already-published output runs as written (§00-0.1 "Non-goals").

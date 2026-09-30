@@ -163,13 +163,13 @@ throughout. How much each chapter was verified by running code varies:
 - **§03** claims marked as verified came from compiling against this repository's built
   template compiler (`dist/dev`). T9a additionally ran the babel plugin (`wire` and `hbs`) and the
   runtime `template()` path in a browser for the items listed in `.work/T9a-compile-paths.md`
-  (§03-10 items 1 and 12–14).
+  (§03-10 items 1, 12–14).
 - **§04** worked examples are all real compiler output.
 - **§08** compile-output claims were checked against `dist/dev` in the same way.
 - **§05** is written from source. Its attribute and SSR/rehydration behavior, `each`,
   `in-element`, `yield` and blocks, modifier ordering, classic lifecycle hooks and
   destruction order cite the tests that pin them. Claims with no test are marked
-  "(untested)" and gathered in §05-14 item 20. The lifecycle and destruction orderings that
+  "(untested)" and gathered in §05-14 item 16. The lifecycle and destruction orderings that
   no test pins were checked by experiment in T9b and are marked "(verified by experiment, T9b)".
 - **§06** and **§07** are written from source, and their citations were checked to point at
   the construct named.
@@ -203,83 +203,52 @@ looks like a bug, the spec still describes the current behavior (§0.1).
 A new implementation cannot stay neutral on these. Each one is observable, and either
 choice breaks someone.
 
-1. *Resolved: outside the primary scope.* The babel `hbs` target re-prints
-   `a \{{foo}}`, `{{{{raw}}}}…{{{{/raw}}}}` and `{{foo.[bar baz]}}` with a different meaning.
-   That is addon pre-publication tooling, which can change and be adopted independently. The
-   spec's job is to execute already-published source the same way (§0.1 "Non-goals";
-   §01-1.11 item 15, §02-10).
-
-2. `template()`'s option is `strict` (RFC 0931, default `true`); `strictMode` belongs to the
+1. `template()`'s option is `strict` (RFC 0931, default `true`); `strictMode` belongs to the
    older APIs. But `template(src, { strict: false })` is loose only through babel `hbs`; the
    babel `wire` path and the runtime ignore it and compile strict. Should they honour
    `strict: false`, or is `template()` strict-only? (§01-1.11 item 1; verified by T9a)
-
-<!-- REMOVE -->3. `updateComponent` and the classic `willUpdate`/`didUpdate`/`didRender` hooks run on any
-   invalidation inside the component's region, not only on argument changes. Tests pin this,
-   so finer-grained regions would be incompatible. (§06-12 Q12, §08-14 Q11)
-4. Duplicate attributes and duplicate named arguments are accepted. A component's layout
+2. Duplicate attributes and duplicate named arguments are accepted. A component's layout
    sees the first `@a` while its manager sees the last, and `class` is merged only when the
    element has modifiers or `...attributes`. Should duplicates become a compile-time error?
-   A proposal branch makes them errors, for team discussion. (§05-14 item 19)
-5. Triple curlies are ignored for literals and keyword appends: `{{{"<b>"}}}`,
-   `{{{if c x}}}` and `{{{helper h}}}` render text. Fix proposed. (§05-14 item 18)
-
-6. *Resolved: keep.* In loose mode, `{{foo}}` renders nothing, with no error, when neither
-   `component:foo` nor `helper:foo` exists. Loose mode stays as stable as possible while it is
-   phased out, and linting flags the case. (§08-14 Q1)
-7. *Resolved (accepted):* legacy and stage-3 `@tracked` differ observably in initialization
-   timing and accessor placement. This is a property of the decorators, not of the renderer.
-   (§07-5 item 7)
-<!-- REMOVE -->8. Whether argument expressions are evaluated depends on how the component is invoked. (§06-12 Q5, Q6)
-
-<!-- REMOVE -->9. Path computations are shared per (parent, segment). (§07-5 item 5)
-
-10. `&#128512;` decodes through `String.fromCharCode` to U+F600. Templates may depend on
-    this. (§02-11 item 9)
+   A proposal branch makes them errors, for team discussion. (§05-14 item 15)
+3. Triple curlies are ignored for literals and keyword appends: `{{{"<b>"}}}`,
+   `{{{if c x}}}` and `{{{helper h}}}` render text. Fix proposed. (§05-14 item 14)
+4. `&#128512;` decodes through `String.fromCharCode` to U+F600. Templates may depend on
+   this. (§02-11 item 7)
 
 ### 0.7.2 Parser robustness
 
-11. *Resolved* by emberjs/ember.js#21635. Inputs that used to throw a `TypeError`
-    (`{{^foo}}…{{/foo}}`, `{{foo=bar}}`, `{{(foo).bar}}`, `</div {{x}}>`, `</div {{! x}}>`,
-    `{{#each-in}}` with no params) are now syntax errors. Inputs that used to be misparsed
-    (`<!--{{x}}-->`, `<!-- a -{{x}}-->`, `<div /{{x}}>`, `</div{{x}}>`, `<!-{{x}}-->`) now
-    parse as HTML would or are errors. Remaining: `{{^foo}}a{{else}}b{{/foo}}` is still
-    accepted, untested. (§02-11 items 1, 2, 7; §03-10 item 11)
-
-12. Some input is dropped silently: `a < b` becomes `"a "`, `<>` disappears, and so does an
-    unterminated tag or comment at EOF. (§02-11 item 6)
-13. `{{"foo" bar baz=1}}` silently drops its arguments, while `{{#"foo"}}` and `("foo")` are
-    errors. `this/foo` becomes the free variable `foo`, not `this.foo`. (§02-11 items 3, 4;
-    §03-10 item 8)
-14. `<pre>` and `<textarea>` newline stripping is re-applied after each mustache. `<title>`,
-    `<script>` and `<style>` handling is keyed off the last tag name, and void elements are
-    case-sensitive (`<BR>` needs a close tag). Tag names such as `<_foo />` (compiled as
-    `foo`) and `<É />` (compiled to nothing), and segments containing `.`
-    (`{{foo.[bar.baz]}}`), give surprising results. (§02-11 items 5, 10–12; §03-10 item 20)
-15. *Resolved.* Mixing multi-byte and ASCII indentation no longer panics content-tag (fixed in
-    content-tag 4.2.1; §01-1.11 item 7). The lack of a way to write `</template>` inside a
-    body is intentional (§01-1.2.2 rule 2, §01-1.11 item 8).
+5. `{{^foo}}a{{else}}b{{/foo}}` is accepted and means `{{#foo}}b{{else}}a{{/foo}}`; no test
+   covers it, and the form without `{{else}}` is now an error. (§02-11 item 1)
+6. Some input is dropped silently: `a < b` becomes `"a "`, `<>` disappears, and so does an
+   unterminated tag or comment at EOF. (§02-11 item 5)
+7. `{{"foo" bar baz=1}}` silently drops its arguments, while `{{#"foo"}}` and `("foo")` are
+   errors. `this/foo` becomes the free variable `foo`, not `this.foo`. (§02-11 items 2, 3;
+   §03-10 item 8)
+8. `<pre>` and `<textarea>` newline stripping is re-applied after each mustache. `<title>`,
+   `<script>` and `<style>` handling is keyed off the last tag name, and void elements are
+   case-sensitive (`<BR>` needs a close tag). Tag names such as `<_foo />` (compiled as
+   `foo`) and `<É />` (compiled to nothing), and segments containing `.`
+   (`{{foo.[bar.baz]}}`), give surprising results. (§02-11 items 4, 8–10; §03-10 item 19)
 
 ### 0.7.3 Strict vs loose divergence
 
-16. A strict `<x.y/>` with `x` unbound becomes an element named `x.y`. Loose mode reports
-    an error. (§03-10 item 3)
-17. *Resolved (intentional):* `eq`, `and`, `not`, `element` and the other 7.1 built-ins
-    exist only in strict mode, because loose mode gains no new features. (§08-14 Q3)
-18. In loose mode, a free name used as an argument (`{{foo bar}}`) is looked up as a strict
+9. A strict `<x.y/>` with `x` unbound becomes an element named `x.y`. Loose mode reports
+   an error. (§03-10 item 3)
+10. In loose mode, a free name used as an argument (`{{foo bar}}`) is looked up as a strict
     keyword, and the error message says "strict mode". Should this be a compile-time error?
     (§08-14 Q16, §03-5.3)
-19. `{{#let v as |this|}}` rebinds `this`, although element block params forbid it.
+11. `{{#let v as |this|}}` rebinds `this`, although element block params forbid it.
     (§03-10 item 4)
 
 ### 0.7.4 Babel vs runtime compile paths
 
-20. `mut`, `readonly` and `unbound` can be shadowed by the runtime path's
+12. `mut`, `readonly` and `unbound` can be shadowed by the runtime path's
     `lexicalScope` but not by babel's `locals`. (§03-10 item 1)
-21. The runtime implicit form misses locals that are `undefined`, that shadow a global
+13. The runtime implicit form misses locals that are `undefined`, that shadow a global
     (`name`, `status`, …), or that are `this`. The explicit form uses `in`, so it accepts
     inherited names such as `toString`, and it calls `scope()` twice. (§01-1.11 items 2, 3)
-22. The Ember AST transforms mishandle shadowing. The `trackLocals` counter bug lets an
+14. The Ember AST transforms mishandle shadowing. The `trackLocals` counter bug lets an
     inner block param delete an outer one, so the outer `{{on}}` becomes the built-in.
     Element block params are visible to the Ember plugins but not to normalization. A block
     param named `helper`, `modifier`, `each-in` or `in-element` is still rewritten.
@@ -287,74 +256,64 @@ choice breaks someone.
 
 ### 0.7.5 `hbs` round-trip fidelity (informative)
 
-0.7.1 item 1 puts the `hbs` re-printing outside the primary scope, so these items matter only
+§0.1 "Non-goals" puts the `hbs` re-printing outside the primary scope, so these items matter only
 to addon tooling.
 
-23. The printer lower-cases void-tag checks while the parser does not. Raw blocks have no
+15. The printer lower-cases void-tag checks while the parser does not. Raw blocks have no
     ASTv1 marker. The upstream-Handlebars leftovers (`{{&x}}`, `{{^}}`, `foo/bar`,
     standalone-line stripping) are only partly tested, so their re-printed form is also
-    unpinned. (§02-11 items 12, 16, 19)
+    unpinned. (§02-11 items 10, 13, 16)
 
 ### 0.7.6 Runtime DOM behavior
 
-24. Namespaces: a namespaced attribute that is removed and then set again loses its
-    namespace (untested), and an `<svg>` inside `<foreignObject>` is created in the HTML
-    namespace. (§05-14 items 1, 9)
-25. `false` in a merged `class` becomes the class `"false"`. (§05-14 item 2)
-26. SSR `in-element` never clears its destination, unlike client rendering and rehydration.
-    (§05-14 item 10)
-27. The `each` `key=` value is read only once, `NaN` keys never match, and `#each` visits
-    sparse-array holes while `#each-in` skips them. (§05-14 items 5, 6, 17)
-28. `{{this.str 1}}` on a primitive silently renders nothing. Any function in content
+16. Namespaces: a namespaced attribute that is removed and then set again loses its
+    namespace, and an `<svg>` or `<math>` inside `<foreignObject>` is created in the HTML
+    namespace. Fixes proposed for both. (§05-14 items 1, 7)
+17. `false` in a merged `class` becomes the class `"false"`. (§05-14 item 2)
+18. SSR `in-element` never clears its destination, unlike client rendering and rehydration.
+    (§05-14 item 8)
+19. `NaN` keys never match (`===`), so an item keyed by `NaN` is re-created on every sync.
+    (§05-14 item 4)
+20. `{{this.str 1}}` on a primitive silently renders nothing. Any function in content
     position is called as a helper, and a value with both managers renders as a component.
-    (§05-14 items 7, 8)
-29. `element` with `null` or `undefined`: the docs, the dev build and the production build
+    (§05-14 items 5, 6)
+21. `element` with `null` or `undefined`: the docs, the dev build and the production build
     all disagree. (§08-14 Q4)
 
 ### 0.7.7 Managers and owners
 
-30. Owners are inconsistent. The component-definition cache ignores the owner, so a template
+22. Owners are inconsistent. The component-definition cache ignores the owner, so a template
     factory runs with whichever owner renders it first. For a curried component, `create`
     gets the invoking owner while the layout gets the curried one. An `undefined` owner
     throws a raw `TypeError` in component and modifier managers. (§06-12 Q15, Q3, Q4)
-31. Capability handling: the dev-only `willDestroy` check never fires (`'string' in d`), and
+23. Capability handling: the dev-only `willDestroy` check never fires (`'string' in d`), and
     with `disableAutoTracking: true` `updateModifier` never runs, even when arguments
     change. (§06-12 Q8, Q2)
-32. A curried dynamic helper re-prepends its curried positional arguments each time it is
+24. A curried dynamic helper re-prepends its curried positional arguments each time it is
     re-created. (§06-12 Q11)
-33. Production differs from development in ways code can observe.
+25. Production differs from development in ways code can observe.
     `Object.isExtensible(args.named)` throws, writes to the args proxy are silently lost,
     capability versions are not checked, and `on` reads different arguments.
     (§06-12 Q7, Q1, Q9)
-34. `(helper "name")` in loose mode bypasses classic-helper factory injection.
+26. `(helper "name")` in loose mode bypasses classic-helper factory injection.
     (§08-14 Q6)
 
 ### 0.7.8 Reactivity
 
-35. Invalidation is coarser than it looks. `trackedArray`'s per-index cells never narrow
+27. Invalidation is coarser than it looks. `trackedArray`'s per-index cells never narrow
     invalidation, because every access also uses the collection cell. `trackedObject` breaks
-    `instanceof`. (`@tracked accessor` not invalidating the object-level cell is fixed, #21636.)
-    (§07-5 items 8, 11, 12)
-36. Validity edge cases: `getValue` after a throw returns a stale value and does not
+    `instanceof`. (§07-5 items 6, 7)
+28. Validity edge cases: `getValue` after a throw returns a stale value and does not
     rethrow; a write during a computation's own evaluation is invisible in production; and
     a write to a never-read cell does not schedule a run loop. (§07-5 items 1, 3, 4)
-37. Addons import private `@glimmer/validator` tag APIs directly. Policy: shim them if that
-    is cheap; otherwise require the main users, which the project can influence, to migrate
-    to the §07-2.2 primitives. (§07-5 item 9)
 
 ### 0.7.9 Ordering that is inferred or untested
 
-38. Hook order across a tree of public-manager components, `didCreate` against modifier
-    installs, `updateModifier` against `didUpdate`, and the timing of deferred destructors were
-    derived from source and then confirmed by experiment (T9b; no upstream tests). `each` sync
-    step sequences are still asserted only in `LOCAL_DEBUG` builds. (§05-14 item 20)
-39. Components are destroyed parent-first, including with public managers (verified by
-    experiment, T9b). Modifiers must be destroyed child-first in every build (author ruling);
-    development builds, where the debug render tree is on, used to destroy them in creation
-    order instead; fixed on main (emberjs/ember.js#21639, found by T9b).
-    `createModifier` sees an element that has no attributes yet and is
-    not in the document. (§05-14 items 11, 15)
-40. Ember render timing: `renderComponent` called during a render defers the new root, so
+29. Several orderings are confirmed only by T9b's throwaway experiments, with no upstream tests,
+    and `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. (§05-14 item 16)
+30. `createModifier` sees an element that has no attributes yet and is not in the document.
+    (§05-14 item 12)
+31. Ember render timing: `renderComponent` called during a render defers the new root, so
     its `destroy()` does nothing and both renders stay live. Each outlet level renders one
     microtask late, and nothing tests whether the empty intermediate state can be observed.
     `{{outlet}}` inside a component stopped rendering with the route manager merge
@@ -374,4 +333,4 @@ of §07-1. This is a design decision for the plan's author, not a
 record of existing behavior. Points to review: whether `isValid` of a never-evaluated cache
 should return `false` (while `isConst` throws), whether a parameterless global
 `onInvalidate` is enough or a per-computation watcher is wanted (§07-2.5), and whether
-these should replace the private tag APIs that addons use today (item 37).
+these should replace the private tag APIs that addons use today (§07-2.6).

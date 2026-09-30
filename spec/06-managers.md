@@ -1378,7 +1378,7 @@ A component's own content (its layout's blocks, modifiers, nested components) is
 with the same enclosing block as the component's destroyable, as **later siblings**. It is
 not associated as children of the component's destroyable. The resulting destruction order
 (components parent-first, modifiers child-first in every build; development builds differed
-until #21639, §05-11.3) is specified in §05-11.1 and §05-11.3. See Q10.
+until #21639, §05-11.3) is specified in §05-11.1 and §05-11.3.
 
 When a block is torn down:
 
@@ -1478,18 +1478,6 @@ assertion: `A glimmer transaction was begun, but one already exists...`
 - **Q4: `undefined` owner.** Public component and modifier managers cache delegates in a
   `WeakMap` keyed by owner, so an `undefined` owner throws a raw `TypeError`. Helper managers
   special-case `undefined`. Should component and modifier managers do the same?
-<!-- REMOVE -->- **Q5: Eager `createHelper` / `createModifier` inside the enclosing region.** In static
-  position, `createHelper` runs eagerly, even for values that are never read (`{{if c (a)
-  (b)}}` creates both). Its tracked reads are attributed to the enclosing region. In
-  dynamic position, `createHelper` / `createModifier` run inside the reactive computation
-  that selects the definition, so a tracked read there causes **re-creation**. The RFC says
-  `createHelper` "is not autotracked". Only the static behavior matches that statement.
-<!-- REMOVE -->- **Q6: Argument evaluation depends on compilation strategy.**
-  - For managers without `createArgs` (template-only), a statically compiled invocation
-    evaluates only the named arguments referenced by the layout.
-  - A dynamic invocation (`<this.C>`, curried) captures all of them.
-
-  This is visible through eager helper creation (Q5). Should the spec require one behavior?
 - **Q7: Args proxy mutation in production.** Only dev builds install the `set` trap and the
   positional `ownKeys` trap. In production, `args.named.x = 1` writes to the hidden target,
   and the write is invisible to later reads. `Object.keys(args.positional)` returns `[]`.
@@ -1504,29 +1492,17 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   so changing an extraneous named argument (which is itself a dev error) or any named
   argument triggers an update. In prod, only `once`, `passive`, and `capture` are read. In
   dev the callback is rebound to a sentinel `this`; in prod `this` is the element.
-- **Q10: Destruction order of a component vs. its layout contents.** Recorded as §05-14
-  item 11, which owns destruction ordering.
 - **Q11: Curried dynamic helper argument accumulation.** When a dynamic helper's definition
   is a curried helper and the selecting computation re-runs, the code prepends the curried
   positional arguments to `args.positional`, which already contains them from the previous
   run (`expressions.ts:115-122`). This looks like it duplicates curried positional
   arguments on each re-creation. The dynamic *modifier* code avoids this by keeping the
   original outer arguments.
-<!-- REMOVE -->- **Q12: `updateComponent` granularity.** `updateComponent` runs on any invalidation within
-  the component's region (§4.4, §05-1.6), not only on argument changes, including when only
-  a descendant's own tracked state changed. RFC 0213 describes the hook as running when
-  arguments change. The public-manager tests do change something inside the region without
-  changing an argument (`custom-component-manager-test.js:750-808`), so the behavior is
-  pinned, but it is surprising, and an implementation with finer-grained regions would be
-  incompatible. It is specified as normative. The same rule makes classic
-  `willUpdate`/`willRender`/`didUpdate`/`didRender` fire on ancestors (§08-6.7, §08-14 Q11),
-  which is long-standing documented classic behavior.
-
 - **Q13: `hasScheduledEffect` / `runEffect`.** These are documented in `@ember/helper`, but
   they throw in dev and produce `undefined` in prod. `invokeHelper` throws for them in every
   build. The `@ember/helper` docs also mention a nonexistent `hasDestructor` option and a
   `'3.21.0'` version string (`packages/@ember/helper/index.ts:44-47,140`).
-- **Q14: Content-position precedence.** Recorded as §05-14 item 8, which owns it.
+- **Q14: Content-position precedence.** Recorded as §05-14 item 6, which owns it.
 - **Q15: The component-definition cache ignores the owner.** Because definition records are
   cached per definition object, not per (definition, owner) (§1.7 item 2), a component's
   template factory effectively runs only with the first owner that renders it in a given
@@ -1534,4 +1510,4 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   `setComponentTemplate` and rendered both in the host and in an engine resolves its free
   names against whichever owner rendered it first. The factory's own per-owner cache
   (§01-1.8.1) is therefore only partly effective. Untested. Is this intended? §01-1.11
-  item 11 and §04-4.14 item 4 describe the same behavior.
+  item 10 and §04-4.14 item 3 describe the same behavior.

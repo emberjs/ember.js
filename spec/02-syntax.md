@@ -1007,7 +1007,7 @@ For each layer-1 `MustacheStatement` (`handlebars-node-visitors.ts:228-321`):
    comment (§02-6.7); done.
 3. If the layer-1 path `original` is `...attributes` (i.e. `{{...attributes}}`) → syntax error
    `Illegal use of ...attributes` (span: the mustache) in any position — content, attribute
-   value, or modifier (tests `parser-node-test.ts:124-152`; see Open question 18 for how this
+   value, or modifier (tests `parser-node-test.ts:124-152`; see Open question 15 for how this
    path lexes).
 4. Build an ASTv1 `MustacheStatement` (§02-3.2, §02-3.7).
 5. Dispatch on tokenizer state:
@@ -1372,74 +1372,60 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
 
 ## 11. Open questions / inconsistencies
 
-1. **Inverse sections.** *Resolved* by emberjs/ember.js#21635: `{{^foo}}…{{/foo}}` without
-   `{{else}}` is now a syntax error (§02-3.3; it used to throw a `TypeError`). Still open: the
-   form *with* `{{else}}` (`{{^foo}}a{{else}}b{{/foo}}`) is accepted as
-   `{{#foo}}b{{else}}a{{/foo}}`, has no test, and could reasonably be an error too.
-2. **Hash-literal and sub-expression-rooted paths.** *Resolved* by #21635: `{{foo=bar}}`,
-   `(a=b)` and `{{(foo).bar}}` are syntax errors (§02-3.8; E43, E44). They used to throw
-   `TypeError`s because the upstream parser emits `HashLiteral` nodes and sexpr-headed paths
-   that Glimmer's visitor did not handle.
-3. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
+1. **Inverse sections with `{{else}}`.** `{{^foo}}a{{else}}b{{/foo}}` is accepted as
+   `{{#foo}}b{{else}}a{{/foo}}` (§02-3.3), has no test, and could reasonably be an error like the
+   form without `{{else}}`.
+2. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
    (`handlebars-node-visitors.ts:247-255`), while `{{#"foo"}}` and `("foo")` error. Probably
    should be an error.
-4. **`this/foo` loses `this`.** It becomes the free variable `foo` (not `this.foo`), because the
+3. **`this/foo` loses `this`.** It becomes the free variable `foo` (not `this.foo`), because the
    `this` regex is `^this(\..+)?$` while layer 1 has already dropped the `this` segment. Loose
    mode would then resolve `foo` differently from `this.foo`. Untested.
-5. **Literal segments containing `.`** (`{{[foo.bar]}}`, `{{foo.[bar.baz]}}`) produce heads/tails
+4. **Literal segments containing `.`** (`{{[foo.bar]}}`, `{{foo.[bar.baz]}}`) produce heads/tails
    containing `.`, violating debug-build builder assertions and making `original` ambiguous.
    `{{foo.[]}}` produces an empty-string tail segment. Semantics for chapter 03 are unclear.
-6. **Silent input loss.** Unterminated tags/comments at EOF, `<>`, `a < b`, and non-letter
+5. **Silent input loss.** Unterminated tags/comments at EOF, `<>`, `a < b`, and non-letter
    characters after `<` / `</` / `<!` are silently discarded (§02-6.12). The code comment at
    `handlebars-node-visitors.ts:54-56` acknowledges this. Recommend errors.
-7. **Mustaches in unusual tokenizer states.** *Resolved* by #21635 (§02-6.9, §02-6.10):
-   mustaches, blocks and Handlebars comments in any HTML-comment state become comment text;
-   a stray `/` in a start tag is ignored, as in HTML; and mustaches or comments in end tags,
-   markup declarations and doctypes are syntax errors (E45–E47). Previously these produced
-   misplaced nodes, lost the comment, or threw a `TypeError`.
-8. **`pendingError` is only consulted by mustaches and EOF**; a Handlebars comment inside an
+6. **`pendingError` is only consulted by mustaches and EOF**; a Handlebars comment inside an
    element's block-params list (`<Foo as |a {{! c}}|>`) is accepted onto `comments` and the
    remaining `|` then produces the misleading "must be preceded by the `as` keyword" error; a
    block there errors with E21.
-9. **Numeric character references** use `String.fromCharCode` (no astral support, no WHATWG
+7. **Numeric character references** use `String.fromCharCode` (no astral support, no WHATWG
    replacement of 0, surrogates, or C1 controls). `&#128512;` yields U+F600. Likely a bug that
    templates might nonetheless depend on.
-10. **`<pre>`/`<textarea>` newline** is keyed off the most recent start-tag name (compared
-    case-insensitively, cleared by any end tag) and is re-applied at every content chunk starting in `beforeData`
-    (e.g. after a mustache inside `<pre>`), which does not match HTML parsing (only the newline
-    immediately after the start tag). Meanwhile the runtime DOM parser is never involved, so this
-    determines the rendered text.
-11. **`<title>`/`<script>`/`<style>` handling** is keyed off the last tag name, case-sensitive,
-    and applies inside SVG `<title>` too. Entity decoding is suppressed in `script`/`style` but
-    not `title`.
-12. **Void elements are case-sensitive in the parser** (`voidMap.has(name)`) but the printer's
+8. **`<pre>`/`<textarea>` newline** is keyed off the most recent start-tag name (compared
+   case-insensitively, cleared by any end tag) and is re-applied at every content chunk starting in `beforeData`
+   (e.g. after a mustache inside `<pre>`), which does not match HTML parsing (only the newline
+   immediately after the start tag). Meanwhile the runtime DOM parser is never involved, so this
+   determines the rendered text.
+9. **`<title>`/`<script>`/`<style>` handling** is keyed off the last tag name, case-sensitive,
+   and applies inside SVG `<title>` too. Entity decoding is suppressed in `script`/`style` but
+   not `title`.
+10. **Void elements are case-sensitive in the parser** (`voidMap.has(name)`) but the printer's
     `isVoidTag` lower-cases (`printer.ts:57-59`). `<BR>` needs a close tag in the parser.
-13. **Location oddities:** chained inverse `Block.loc` covers only the chained block's default
+11. **Location oddities:** chained inverse `Block.loc` covers only the chained block's default
     program; empty-program fallback spans can cover the block params and closer; valueless
     attribute spans include trailing whitespace; `calculateRightStrippedOffsets` uses the first
     occurrence of the retained text, which is wrong when the stripped prefix contains the same
     text (unlikely since the prefix is whitespace, but `value === ''` handling counts `\n` in
     the whole original).
-14. **CR handling:** layer 2 normalizes lone `\r` to `\n`, but `Source` line tables only split on
+12. **CR handling:** layer 2 normalizes lone `\r` to `\n`, but `Source` line tables only split on
     `\n` (while `Parser.lines` splits on `\r\n?|\n`). Templates with lone CR line endings get
     inconsistent line numbers between layer-1 locs, tokenizer positions and `Source`.
-15. **Codemod round-trip is lossy** (§02-10) for escaped mustaches, raw blocks and literal
-    segments; with `targetFormat: 'hbs'` this changes template meaning. Because addons ship
-    that output, this is a compatibility question; it is recorded as §01-1.11 item 15, which
-    owns it.
-16. **Raw blocks** are parsed as normal blocks with HTML-tokenized content; there is no ASTv1
+13. **Raw blocks** are parsed as normal blocks with HTML-tokenized content; there is no ASTv1
     marker and no test in `@glimmer/syntax`. Their runtime meaning is whatever the block helper
     does (chapter 03/05).
-17. **Private-field-looking segments** `foo.#bar` / `this.#foo` parse (tail `"#bar"`); no
+14. **Private-field-looking segments** `foo.#bar` / `this.#foo` parse (tail `"#bar"`); no
     Glimmer test pins down their meaning.
-18. **The `...attributes` check** (E17) compares the layer-1 `original` to `...attributes`.
+15. **The `...attributes` check** (E17) compares the layer-1 `original` to `...attributes`.
     Layer 1 lexes `...attributes` as `..` (ID) `.` (SEP) `attributes`; `preparePath` drops `..`
     (depth 1) giving `original = "...attributes"` — the check works only by this coincidence.
     `{{../attributes}}` is a different error. `<div ...attributes={{x}}>` is accepted by the
     parser (validated, if at all, in chapter 03).
-19. **Upstream-Handlebars leftovers**: `{{&foo}}` (trusting), `{{^}}` as `{{else}}`, `foo/bar`
+16. **Upstream-Handlebars leftovers**: `{{&foo}}` (trusting), `{{^}}` as `{{else}}`, `foo/bar`
     paths, `{{{{raw}}}}` blocks, `\{{` escapes and standalone-line stripping are all inherited
     from Handlebars and only partially tested in Glimmer. They are specified here as current
     behavior and should be marked **[Legacy]**.
-20. **Duplicate attribute names and duplicate hash keys** are accepted at parse time. Their
-    runtime meaning is specified in §05-4.9 and §05-7.3 and recorded as §05-14 item 19.
+17. **Duplicate attribute names and duplicate hash keys** are accepted at parse time. Their
+    runtime meaning is specified in §05-4.9 and §05-7.3 and recorded as §05-14 item 15.

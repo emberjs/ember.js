@@ -265,7 +265,7 @@ Current behavior (the timing is specified normatively in §01-1.8.5):
   capturing lexical values. The captured values are then *constants*: later reassignment
   of the underlying JavaScript binding is not observed.
   *Note:* the wrapped-layout path of the current implementation calls `meta()` (and so
-  `scope()`) in both its constructor and `compile()` (`packages/@glimmer/opcode-compiler/lib/wrapped-component.ts:49`, `55`); see Open question 5.
+  `scope()`) in both its constructor and `compile()` (`packages/@glimmer/opcode-compiler/lib/wrapped-component.ts:49`, `55`); see Open question 4.
 - **[Legacy]** A `scope` that returns an **array** `[v0, v1, …]` is accepted, with
   `lexicalValues` = the array elements in order. Producers before commit `9498833de2`
   (Ember ≤ 6.11) emitted `()=>[a,b]` (`git show 9498833de2 -- packages/@glimmer/compiler/lib/compiler.ts`).
@@ -383,7 +383,7 @@ Semantics of invoking an inline block with values `v0…vn-1` (the "yield" opera
 §05-6.2): a new child scope of the frame the block was *defined* in is created; for
 `i < min(n, parameters.length)`, slot `parameters[i]` is set to `vi`; the statements are
 evaluated in that scope (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/blocks.ts:86-120`).
-Extra values are ignored; extra parameters are left unassigned (see Open question 7).
+Extra values are ignored; extra parameters are left unassigned (see Open question 6).
 
 *Note:* Because a block is defined in its enclosing template's frame, a block passed to a
 component and yielded to from inside that component still evaluates `this`, `@args` and
@@ -887,7 +887,7 @@ has four cases, which differ observably (they are the runtime semantics of §05-
    - `[35,n]` (loose): if `lookupComponent(name, owner)` finds a component, invoke it;
      else if `lookupHelper(name, owner)` finds a helper, invoke it with no arguments and
      append the result non-dynamically; **else render nothing** (no DEV error)
-     (`resolution.ts:403-422`). See Open question 3.
+     (`resolution.ts:403-422`); this is required behavior (§08-5.1).
    - `[31,n]`: `lookupBuiltInHelper(name)`, invoke with no arguments, append non-dynamically
      (`resolution.ts:399-402`).
 3. **Call** (`[28, head, Params, Hash]`):
@@ -928,7 +928,7 @@ changes, are §05-3.2–3.5.
 - Literal: append as text exactly like `Append` (the consumer does *not* parse a literal
   as HTML: `{{{"<b>x</b>"}}}` compiles to `[2,"<b>x</b>"]` and renders the *text*
   `<b>x</b>`) (`statements.ts:251-253`). This is observable
-  behavior of the current implementation; see Open question 6.
+  behavior of the current implementation; see Open question 5.
 - Otherwise: evaluate and "append dynamically, trusting": like cautious append, but a
   string value is inserted as raw HTML (`statements.ts:254-259`, `stdlib.ts:42-47`). A
   `Call` value is *not* special-cased: `{{{foo 1}}}` evaluates the `Call` expression
@@ -1161,7 +1161,7 @@ that slot, and anything else as a property path on self
 (`packages/@glimmer/runtime/lib/compiled/opcodes/debugger.ts:46-83`). The default callback
 logs a hint and executes a JavaScript `debugger` statement. Only `locals` is consulted by
 the current runtime. Producing no DOM, `Debugger` could be treated as a no-op in
-production. See Open question 8.
+production. See Open question 7.
 
 ### 4.8.19 `InElement` (40)
 
@@ -1397,7 +1397,7 @@ Notes:
 - `on` is lexical index 0 (`[32,0]`), `Card` index 1 (`[32,1]`), matching the order of
   `()=>({on,Card})`.
 - The `<:header>` block binds `h` to slot 3; `<:default>` has no params.
-- Ember wrapped `@items` in `-track-array` (twice; see Open question 9), a strict keyword
+- Ember wrapped `@items` in `-track-array` (twice; see Open question 8), a strict keyword
   (`[31,2]`).
 
 ### 4.12.3 Control flow and curried values (strict)
@@ -1502,56 +1502,53 @@ the chapter. It is not a checklist that any implementation must satisfy.
 2. **Free argument names in loose mode become `GetStrictKeyword`.** `{{foo bar}}` with free
    `bar` compiles to `[31,1]`. The static rule is §03-5.3, and the runtime failure is
    recorded as §08-14 Q16. The wire format has no dedicated opcode for it.
-3. **`{{foo}}` in loose mode that is neither component nor helper renders nothing
-   silently.** Recorded as §08-14 Q1, which owns it. Historically the missing case fell
-   back to `this.foo`; after the fallback's removal it became a silent no-op.
-4. **Owner used for component templates.** Component definitions are cached per
+3. **Owner used for component templates.** Component definitions are cached per
    definition object in the program constants, so a component's `templateFactory(owner)`
    is invoked with the first owner that rendered it (`packages/@glimmer/program/lib/constants.ts:176-235`).
    This is host behavior, not wire format. It is recorded as §06-12 Q15.
-5. **`scope()` call count.** `WrappedBuilder` calls `meta(layout)` (and thus `scope()`)
+4. **`scope()` call count.** `WrappedBuilder` calls `meta(layout)` (and thus `scope()`)
    in its constructor and again in `compile()`
    (`packages/@glimmer/opcode-compiler/lib/wrapped-component.ts:49`, `55`), and
    `asLayout`/`asWrappedLayout` each call it — so a scope thunk can run up to three times
    per template object. With side-effect-free thunks this is unobservable, but the values
    could differ if the underlying bindings were reassigned in between.
-6. **Literal `TrustingAppend` renders as text.** `{{{"<b>x</b>"}}}` compiles to
+5. **Literal `TrustingAppend` renders as text.** `{{{"<b>x</b>"}}}` compiles to
    `[2,"<b>x</b>"]`, and the consumer's literal fast path appends it as a *text* node
    (`statements.ts:251-253`). The behavior is specified in §05-3.5 item 6 and recorded as
-   §05-14 item 18.
-7. **Block parameter under-supply.** When a block declares more parameters than values
+   §05-14 item 14.
+6. **Block parameter under-supply.** When a block declares more parameters than values
    are yielded, the extra slots are not written (`blocks.ts:92-109`) and retain whatever
    the child scope inherited; since slots are unique per template this is normally
    "unset", but the exact value (`undefined` reference vs. stale value in re-invocations)
    is untested.
-8. **`Debugger` symbol maps are inconsistent.** At top level the second element holds the
+7. **`Debugger` symbol maps are inconsistent.** At top level the second element holds the
    `@args` map and the first is empty, so `get('@a')` in the debugger callback falls back
    to `this['@a']` (`packages/@glimmer/runtime/lib/compiled/opcodes/debugger.ts:56-76`);
    inside a block `@args` are in the first map and the second holds upvars. The third
    (`lexical`) map is always `{}` although its name suggests lexical names. The upvars map
    is computed after the entire template is normalized, so it includes names first used
    after the `{{debugger}}`.
-9. **Double `-track-array`.** Ember's output wraps `{{#each}}` iterables in `-track-array`
+8. **Double `-track-array`.** Ember's output wraps `{{#each}}` iterables in `-track-array`
    twice (`[28,[31,2],[[28,[31,2],[[30,4]],null]],null]`, §4.12.2), because the transform
-   re-visits its own output. Recorded as §03-10 item 22.
-10. **`InElement` guid collisions.** `"%cursor:N%"` restarts at 0 for every compiled
-    template, so two templates each containing `{{#in-element}}` produce the same guid;
-    rehydration's `querySelector('script[glmr="%cursor:0%"]')` scoped to the destination
-    element can then pick the wrong marker when two remote blocks target the same element.
-11. **`wire-format-debug.ts` mis-decodes `InElement`.** It prints `opcode[1]` (the block)
+   re-visits its own output. Recorded as §03-10 item 21.
+9. **`InElement` guid collisions.** `"%cursor:N%"` restarts at 0 for every compiled
+   template, so two templates each containing `{{#in-element}}` produce the same guid;
+   rehydration's `querySelector('script[glmr="%cursor:0%"]')` scoped to the destination
+   element can then pick the wrong marker when two remote blocks target the same element.
+10. **`wire-format-debug.ts` mis-decodes `InElement`.** It prints `opcode[1]` (the block)
     as the guid position (`packages/@glimmer/compiler/lib/wire-format-debug.ts`); debug
     output only.
-12. **Paths on contextual free opcodes.** The interface types still allow
+11. **Paths on contextual free opcodes.** The interface types still allow
     `[35|37|38|39, n, path]` (`api.d.ts:111-127`) but the producer never emits them. If
     one appears, the current consumer treats it as non-resolvable and, for 37, *ignores
     the path* (`expressions.ts:75-81`). The current consumer does not reject such tuples.
-13. **Version-lock vs. published wire output.** The maintainers consider the format
+12. **Version-lock vs. published wire output.** The maintainers consider the format
     version-locked, yet `createTemplateFactory` output in published packages is still
     loaded by newer runtimes without any version marker; the 5.9–6.3 → 6.4 block-shape
     change silently breaks such packages. Adding a version field (or a shape check) would
     make failures diagnosable. Since wire format is not a compatibility requirement
     (§4.1.3), this is recorded as a note only.
-14. **`Append` of a string head in a dynamic `Call`.** `{{@foo 1}}` where `@foo` is a
+13. **`Append` of a string head in a dynamic `Call`.** `{{@foo 1}}` where `@foo` is a
     string classifies as "string" content type, but the switch only has component and
     helper clauses; the fall-through lands in the helper clause and fails inside dynamic
     helper invocation with a less helpful error (`statements.ts:213-241`,

@@ -467,7 +467,7 @@ The forms below are distinguished statically (chapters 03, 04); their runtime be
      `{{{log …}}}`, `{{{-get-dynamic-var …}}}`. Keyword translation drops the trusting flag
      (§03-4.4). `{{{h}}}` and `{{{this.h}}}` with a helper value do insert HTML.
 
-   See §05-14 item 18.
+   See §05-14 item 14.
 
 ---
 
@@ -824,7 +824,7 @@ with the contents of `...attributes` recorded at the position of `...attributes`
 - A `<tr>` written directly inside `<table>` is created directly as a child of the `<table>`
   on the client (no implicit `<tbody>` is inserted by the DOM builder); the SSR serializer
   inserts one (§05-13.1).
-- **Duplicate attribute names** are kept by the parser (§02-11 item 20) and compiled as
+- **Duplicate attribute names** are kept by the parser (§02-11 item 17) and compiled as
   separate attributes (verified: `<div title="a" title="b">` compiles to two static
   attributes). At runtime (from source, untested):
   - On a *simple* element (§4.1), each occurrence is applied in order, so the last one wins
@@ -838,7 +838,7 @@ with the contents of `...attributes` recorded at the position of `...attributes`
   `class="a b"`. Duplicate `type` attributes on an element without `...attributes` are a
   special case: the compile-time `type` reordering (§4.1) keeps only the *last* `type`
   occurrence and drops the others (`classified.ts:108-121`; verified: `<input type="a" type="b">`
-  compiles to a single `type="b"`). See §05-14 item 19.
+  compiles to a single `type="b"`). See §05-14 item 15.
 
 ---
 
@@ -1290,7 +1290,7 @@ yield(slot, args):
 - A yield inside `{{#if}}`/`{{#each}}` in the layout renders inline into that region and is
   removed with it (`yield.ts:196-215`; `yield-test.js:117-163`).
 - A parameter with no corresponding yielded value is `undefined` (`42 - `), tested for curly
-  and dynamic invocation only (`yield.ts:86-99`, `skip: 'glimmer'`; §14 item 16).
+  and dynamic invocation only (`yield.ts:86-99`, `skip: 'glimmer'`; §14 item 13).
 - `yield` is not itself a replaceable region: the yielded content is rendered inline into the
   current region. Yielding the same block several times renders it several times, each with its
   own instances.
@@ -1405,7 +1405,7 @@ the two readers disagree. A component layout's `@a` is bound to the **first** oc
 `packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts:337-350` binds in
 reverse so the first wins). The captured arguments that managers, helpers, and modifiers see
 (`args.named.a`, §06-3) hold the **last** occurrence (`arguments.ts:331-344` overwrites the
-map), and list the name once. See §05-14 item 19.
+map), and list the name once. See §05-14 item 15.
 
 If the definition is curried (§05-8), its curried arguments are merged **before** the manager
 sees the arguments (`component.ts:304-360`,
@@ -1808,7 +1808,7 @@ Tests: several modifiers on one element install in source order, `<div {{foo}} {
 element's modifiers install before its parent's (`350-370`), and siblings install in document
 order before the parent (`396-423`). When the environment is not interactive no modifier hook
 runs (`custom-modifier-manager-test.js:587-641`). That `create` sees an element with no
-attributes and outside the document is untested (§14 item 15).
+attributes and outside the document is untested (§14 item 12).
 
 ### 10.2 Dynamic modifiers
 
@@ -1906,7 +1906,7 @@ Registration order within a region is creation order, which is:
   is *created* (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:581`, called from
   `dom.ts:184`, `289`). The first association fixes its position, so development builds register
   modifiers when their element is **opened**. The author ruled that the production order is
-  correct for both, and #21639 makes development match (§11.3, §14 item 11). The citation above
+  correct for both, and #21639 makes development match (§11.3). The citation above
   is to this checkout, which predates the fix.
 
 ### 11.2 Destroying
@@ -2189,7 +2189,6 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    Property-mode removal does use `removeAttributeNS`. *Fix proposed* on branch
    `fix/namespaced-attribute-updates`: updates of a namespaced attribute use
    `setAttributeNS`/`removeAttributeNS`.
-
 2. **`false` in merged `class`.** A lone `class={{false}}` removes the attribute; when several
    `class` values are merged (splattributes/modifiers), `false` becomes the class `"false"`
    (`packages/@glimmer/runtime/lib/references/class-list.ts:9-12` uses `normalizeStringValue`).
@@ -2197,61 +2196,40 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
 3. **Owner asymmetry for curried components.** `manager.create` receives the *invoking*
    scope's owner, while the component's layout scope uses the *curried* owner
    (`component.ts:429-437` vs `825-853`). Recorded as §06-12 Q3, which owns it.
-<!-- REMOVE -->4. **`updateComponent` / `didUpdate` frequency.** Because the component update region includes
-   the whole subtree (§05-1.6), managers with `updateHook` get `update` called whenever anything
-   consumed in the subtree changed, not only arguments. Recorded as §06-12 Q12.
-<!-- REMOVE -->5. **`each` key read once.** The `key=` value is read only when the `each` region is (re)created;
-   changing it later has no effect (`lists.ts:19-21`).
-
-6. **`NaN` keys** never match (`===`), so an item keyed by `NaN` is re-created every sync.
-7. **Dynamic head with a primitive value and arguments** (`{{this.str 1}}`) silently renders
+4. **`NaN` keys** never match (`===`), so an item keyed by `NaN` is re-created every sync.
+5. **Dynamic head with a primitive value and arguments** (`{{this.str 1}}`) silently renders
    nothing even in development, while an object without managers throws
    (`content.ts:52-69`). No test covers the error message.
-8. **`{{this.fn}}` calls plain functions.** Any function in content position is treated as a
+6. **`{{this.fn}}` calls plain functions.** Any function in content position is treated as a
    helper (default helper manager, §06-1.6) and invoked with no arguments; a class without a
    component manager will throw a "Class constructor … cannot be invoked without 'new'"
    TypeError. The component check runs before the helper check, so a value with both
    managers renders as a component. Only the function case is tested, and only through
    helper-position tests; content-position precedence needs a test.
-9. **`<svg>` inside `<foreignObject>`** is created in the HTML namespace, because the
+7. **`<svg>` inside `<foreignObject>`** is created in the HTML namespace, because the
    integration-point test runs before the `tag == "svg"` test (`operations.ts:53-79`). The same
    applies to `<math>`. *Fix proposed* on branch `fix/svg-inside-foreign-object`: an `<svg>` or
    `<math>` tag always starts its own namespace, as in the HTML parser.
-
-10. **Serialize builder `in-element`** defaults `insertBefore` to `null`, so SSR never clears
-    the destination, unlike the client and rehydration builders
-    (`serialize-builder.ts:132-142`).
-11. **Opposite destruction orders.** A component's destroyable and its layout's contents are
-    siblings under the enclosing region (§05-11.1, §06-10.3), not parent and child, so
-    components are destroyed parent-first (pinned for classic components, `life-cycle-test.js:305-537`,
-    `1161-1222`), while modifiers, associated at element close, are destroyed child-first
-    (pinned, `modifiers-test.ts:326-458`, in the Glimmer harness, where the debug render tree is
-    off). In Ember DEBUG builds the debug render tree is on and current Ember destroys modifiers in
-    creation (document pre-order) position instead (§11.3, found by experiment, T9b). *Resolved:*
-    this is a bug; the child-first order is required in every build (author ruling, 2026-09-30),
-    and emberjs/ember.js#21639 fixed development builds.
-    For components with public managers (`destroyComponent`) the parent-first order was observed
-    by experiment (verified by experiment, T9b; see §05-11.3), although no upstream test covers it.
-12. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls
-    `setAttribute` whenever the computation is invalid, even if the string is unchanged; only
-    property mode compares with the last value.
-13. **`{{debugger}}` / `{{log}}`** timing differs: `debugger` runs only during (re-)rendering of
+8. **Serialize builder `in-element`** defaults `insertBefore` to `null`, so SSR never clears
+   the destination, unlike the client and rehydration builders
+   (`serialize-builder.ts:132-142`).
+9. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls
+   `setAttribute` whenever the computation is invalid, even if the string is unchanged; only
+   property mode compares with the last value.
+10. **`{{debugger}}` / `{{log}}`** timing differs: `debugger` runs only during (re-)rendering of
     its region; `log` runs whenever its reactive value is recomputed.
-14. **Unbound `-get-dynamic-var`** reads throw an internal error rather than returning
+11. **Unbound `-get-dynamic-var`** reads throw an internal error rather than returning
     `undefined`.
-15. **Modifier element state at `create`.** For elements with modifiers, attributes are deferred,
+12. **Modifier element state at `create`.** For elements with modifiers, attributes are deferred,
     so `createModifier` sees an element with *no* attributes and not yet in the document; any
     code relying on attributes must wait for `install`.
-16. **`yield to="inverse"`/`to="else"` and extra block params are not tested under angle-bracket
+13. **`yield to="inverse"`/`to="else"` and extra block params are not tested under angle-bracket
     invocation.** `skip: 'glimmer'` (`lib/suites/yield.ts:25-62`, `86-99`) skips the test only
     for the Glimmer (angle-bracket) invocation kind; the module builder still runs it for curly
     and dynamic invocation (`lib/test-helpers/module.ts:143-160`). The implementation maps
     `inverse` to `else` regardless of invocation kind, and `yield-test.js:61-85` covers the
     Ember angle-bracket case, so the gap is small, but the reason for the skip is unrecorded.
-<!-- REMOVE -->17. **`#each` visits sparse-array holes, `#each-in` skips them** — an inconsistency pinned by
-    Ember tests (`each-test.js:1187-1212`, `each-in-test.js:459-475`).
-
-18. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
+14. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
     `{{{"<b>x</b>"}}}` compiles to a trusting append of a literal (`[2,"<b>x</b>"]`), but the
     literal fast path emits a text node, unlike `{{{this.x}}}` holding the same string.
     `{{{if c x}}}`, `{{{helper h}}}`, `{{{has-block}}}` and `{{{log}}}` lose the flag during
@@ -2259,8 +2237,8 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     Both look like bugs. No test pins either behavior. *Fix proposed* on branch
     `fix/triple-curly-literals-and-keywords`: string literals and append keywords honour triple
     curlies.
-19. **Duplicate attributes and duplicate named arguments** (§05-4.9, §05-7.3). The parser
-    accepts both (§02-11 item 20). For attributes, the result depends on whether the element
+15. **Duplicate attributes and duplicate named arguments** (§05-4.9, §05-7.3). The parser
+    accepts both (§02-11 item 17). For attributes, the result depends on whether the element
     has `...attributes`/modifiers (last-wins without `class` merging vs. deferred last-wins
     with `class` merging). For named arguments, a component's layout sees the first
     occurrence while its manager (e.g. a Glimmer component's `this.args`) sees the last. All
@@ -2270,16 +2248,15 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     last occurrence. *Proposal* on branch `proposal/duplicate-attributes-and-arguments-are-errors`
     (its commit message is the full explainer, for team discussion): every duplicate attribute,
     component argument or named argument is a compile-time syntax error.
-
-20. **Claims with no test (T4).** These are derived from source only. The lifecycle and
+16. **Claims with no test (T4).** These are derived from source only. The lifecycle and
     destruction orderings that used to be listed here (public-manager tree hook order,
     component hooks before modifier installs, `updateModifier` after `didUpdate`, modifier update
     pre-order, deferred destructors in `actions` after DOM removal, `destroyComponent` order,
     `updateModifier` vs `installModifier`, detached element at `destroyModifier`) were observed
     by experiment in T9b and are marked "(verified by experiment, T9b)" where they occur; one
-    was corrected (item 11). No upstream tests pin them.
+    was corrected (modifier destruction order, §11.3). No upstream tests pin them.
     - `each`: `key="@key"` on plain `each`; the dev `invalid keypath` assertion; `key` read
-      once (item 5); occurrence numbering of duplicate keys; `NaN` keys (item 6); `Map` entries
+      once (§5.4.2); occurrence numbering of duplicate keys; `NaN` keys (item 4); `Map` entries
       and other non-array objects in plain `each`; lazy consumption of native iterators;
       extra block params; DOM non-reuse across the empty/non-empty transition; insert-before-
       revalidate and delete ordering during sync. The retain/move step sequences are
@@ -2291,4 +2268,4 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       `has-block`/`has-block-params` constancy and the non-literal-argument compile error;
       `has-block-params` for a `<:else as |x|>` block.
     - Modifiers: timing of replacing a dynamic modifier definition; the attribute-less,
-      undocumented element at `create` (item 15).
+      undocumented element at `create` (item 12).

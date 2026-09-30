@@ -17,6 +17,6 @@ not acted on until now. Resolve from the first unticked item. Stage only files I
 - [x] B4 duplicate attributes / named arguments become compile errors (§05-14 item 19, §0.7.1 item 4); commit message = complete explainer; author opens the PR for discussion
 
 ## C. Cleanup pass
-- [ ] Remove resolved items (conclusions already in the normative text) from every open-question list: §0.7, §01-1.11, §02-11, §03-10, §04-4.14, §05-14, §06-12, §07-5, §08-14. Trim partly resolved items to their open remainder. Remove transitively resolved items ("Recorded as …, which owns it" pointers to removed items).
-- [ ] Renumber numbered lists and rewrite every "§NN-x item N" / "0.7.x item N" reference (Q-labels in §06-12 / §08-14 stay as stable IDs; gaps are fine). Update STATUS references.
-- [ ] xref.py, check-citations.py, items check
+- [x] Remove resolved items (conclusions already in the normative text) from every open-question list: §0.7, §01-1.11, §02-11, §03-10, §04-4.14, §05-14, §06-12, §07-5, §08-14. Trim partly resolved items to their open remainder. Remove transitively resolved items ("Recorded as …, which owns it" pointers to removed items).
+- [x] Renumber numbered lists and rewrite every "§NN-x item N" / "0.7.x item N" reference (Q-labels in §06-12 / §08-14 stay as stable IDs; gaps are fine). Update STATUS references.
+- [x] xref.py, check-citations.py, items check

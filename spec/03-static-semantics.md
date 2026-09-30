@@ -759,7 +759,7 @@ This section owns the static side of loose-mode free names. §08-5 owns the runt
 runtime consequences are open questions there: a `Strict` value that is not a built-in keyword
 helper fails with a **[Dev]** error whose text says "strict mode template" although the
 template is loose (§08-14 Q16), and an argument-less `{{x}}` whose `ComponentOrHelper`
-lookup finds nothing renders nothing, silently (§08-14 Q1).
+lookup finds nothing renders nothing, silently; this is required (§08-5.1).
 
 **Arguments to components in loose mode.** An `@arg` whose value is `{{x}}`, where `x` is a
 bare free `VarHead` with no tail, no params, and no hash, is an error unless `x` is
@@ -1152,7 +1152,7 @@ emberjs/ember.js#21635 this threw a `TypeError`.
   the traversal visits again, so the current output wraps the iterable **twice**:
   `{{#each this.x}}` compiles to `(-track-array (-track-array this.x))` in both modes
   (verified). Because `-track-array` returns its argument unchanged, the second wrapper has no
-  observable effect (§08-2.14). See §03-10 item 22.
+  observable effect (§08-2.14). See §03-10 item 21.
 
 #### 03-7.9 `TransformInElement` (both)
 
@@ -1288,7 +1288,7 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
    params forbid it.
 5. **Keyword appends drop `{{{ }}}` trusting**: `{{{if c x}}}`, `{{{helper h}}}`,
    `{{{has-block}}}`, `{{{log}}}` append as text (`call-to-append.ts`, `append.ts:127-145`).
-   Recorded as §05-14 item 18, which owns it together with the literal case.
+   Recorded as §05-14 item 14, which owns it together with the literal case (fix proposed).
 6. **Bare-path keyword promotion** happens in attribute, `@arg`, hash, and interpolation
    positions, but not in positional-argument positions. So `(x has-block)` and `(x (has-block))`
    differ.
@@ -1300,9 +1300,9 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
 9. **Error text bug**: a single named block inside an HTML element always reports `<:foo>`
    (`normalize.ts:984-986`).
 10. **`-get-dynamic-var` errors say `(-get-dynamic-vars)`** (with an `s`).
-11. **`{{#each-in}}` with no params.** *Resolved* by emberjs/ember.js#21635: it is a syntax
-    error (§03-7.6) instead of a `TypeError`. Still open: `{{#each}}` with no params gives the Ember assertion `has firstParam` instead of the Glimmer
-    error, and in production continues with an `undefined` param.
+11. **`{{#each}}` with no params** gives the Ember assertion `has firstParam` instead of the
+    Glimmer error, and in production continues with an `undefined` param. (`{{#each-in}}` with no
+    params is a syntax error, §03-7.6.)
 12. **`trackLocals` counter bug** (`plugins/utils.ts:36` reads the count with the `VarHead`
     object as the map key but writes it under the name, so the count never exceeds 1).
     Exiting an inner block that re-binds a name deletes the outer binding too. For example,
@@ -1312,40 +1312,36 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
     the Ember plugins, but not in normalization. For example `<Foo {{on ...}} as |on|>` in
     strict mode: `AutoImportBuiltins` sees `on` as local and does not rewrite it, then
     normalization finds `on` free and reports "not in scope". (§01-1.11 item 5 refers here.)
-   (verified: babel wire, runtime; T9a. The nested-`let` example compiles to a lexical reference to the
-   built-in `on` (`[32,0]`), and at run time `[{{on}}]` renders `[[object Object]]` instead of
-   `[b]`/`[a]`; the element example fails with "Attempted to resolve a modifier in a strict mode
-   template, but that value was not in scope: on" on both paths, while `as |x|` compiles.)
+    (verified: babel wire, runtime; T9a. The nested-`let` example compiles to a lexical reference to the
+    built-in `on` (`[32,0]`), and at run time `[{{on}}]` renders `[[object Object]]` instead of
+    `[b]`/`[a]`; the element example fails with "Attempted to resolve a modifier in a strict mode
+    template, but that value was not in scope: on" on both paths, while `as |x|` compiles.)
 13. **`TransformResolutions` local check is dead** (`tail.length === 1`), so shadowing
     `helper`/`modifier` with a block param does not stop the `-resolve` rewrite in loose mode.
-   (verified: babel wire via `precompileTemplate`, and runtime loose `template()`; T9a.
-   `{{#let 1 as |helper|}}{{helper "foo"}}{{/let}}` compiles to a call of the block param with
-   `(-resolve "helper:foo")` as its first argument, and likewise for `(modifier "foo")`. Babel
-   `template()` cannot show this, because it forces strict mode.)
+    (verified: babel wire via `precompileTemplate`, and runtime loose `template()`; T9a.
+    `{{#let 1 as |helper|}}{{helper "foo"}}{{/let}}` compiles to a call of the block param with
+    `(-resolve "helper:foo")` as its first argument, and likewise for `(modifier "foo")`. Babel
+    `template()` cannot show this, because it forces strict mode.)
 14. **`TransformEachInIntoEach` and `TransformInElement` do no local check**, so a block param
     named `each-in` or `in-element` (legal identifiers in Handlebars block params) is still
     rewritten. (verified: babel wire, runtime; T9a. With `|each-in|`, `{{#each-in this.x}}` still
     compiles to `each` over `(-each-in …)` and the block param is unused; at run time it renders like
     the control. With `|in-element|`, `{{#in-element this.x}}` gets the `-in-el-null` argument and
     invokes the block param as a component, which fails at run time with "Got 1, expected:".)
-<!-- REMOVE -->15. **`action`** is still a keyword (`KEYWORDS_TYPES`, `STRICT_MODE_KEYWORDS`) and is still
-    rewritten, but its runtime implementation has been removed (RFC 1006). In strict mode
-    every `action` form compiles and then fails at runtime resolution (§03-7.3, §08-2.20).
-    Recorded as §08-14 Q7, which owns it.
-16. **`modifier` in modifier position** is listed as valid in `KEYWORDS_TYPES`, but is never
+15. **`modifier` in modifier position** is listed as valid in `KEYWORDS_TYPES`, but is never
     translated, so it is treated as a free modifier named `modifier`.
-17. **`this.attrs` deprecation** is past its `until: '6.0.0'` but still only logs, and the
+16. **`this.attrs` deprecation** is past its `until: '6.0.0'` but still only logs, and the
     rewrite of a bare `{{this.attrs}}` produces the invalid path `@`.
-18. **Duplicate block-param names** (`as |a a|`) are accepted. Lookup picks the first index.
-19. **Upvar noise**: in loose mode, simple element tag names and `:named-block` tags are
+17. **Duplicate block-param names** (`as |a a|`) are accepted. Lookup picks the first index.
+18. **Upvar noise**: in loose mode, simple element tag names and `:named-block` tags are
     recorded as upvars. This is harmless but observable in the wire format (§04).
-20. **Tag-name tokenization oddities**: the parser/tokenizer produced surprising results for tags such
+19. **Tag-name tokenization oddities**: the parser/tokenizer produced surprising results for tags such
     as `<_foo />` (compiled as element `foo`) and `<É />` (compiled to nothing). These belong
     in §02, but they affect the element classification here.
-21. **RFC 0496 keyword list vs implementation**: `hasBlock`, `with`, `link-to`, `loc`, and
-    `query-params` are no longer keywords, and `component`/`helper`/`modifier`/`debugger` are.
+20. **RFC 0496 keyword list vs implementation**: `action`, `hasBlock`, `with`, `link-to`, `loc`,
+    and `query-params` are no longer keywords, and `component`/`helper`/`modifier`/`debugger` are.
     The RFC's import list (`concat`, `get`) is not auto-imported, although the other RFC
     built-ins are.
-22. **`-track-array` is applied twice** (§03-7.8). This is harmless, because the helper is
+21. **`-track-array` is applied twice** (§03-7.8). This is harmless, because the helper is
     idempotent, but it is evidence that the transform re-visits its own output. An
     implementation need not reproduce it.
