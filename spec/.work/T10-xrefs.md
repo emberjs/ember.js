@@ -12,7 +12,7 @@ cannot tell, list it under "Unsure" below instead of changing it.
 
 Resume from the first unticked item. Commit after each chapter: `spec(T10): <chapter>`.
 
-- [ ] 00-overview.md
+- [x] 00-overview.md (84 refs, 0 fixed)
 - [ ] 01-authoring-formats.md
 - [ ] 02-syntax.md
 - [ ] 03-static-semantics.md
