@@ -208,6 +208,9 @@ choice breaks someone.
 11. Some inputs crash with a `TypeError` instead of a syntax error: `{{^foo}}…{{/foo}}`,
     `{{foo=bar}}`, `{{(foo).bar}}`, `</div {{x}}>`, `<div /{{x}}>`, `<!--{{x}}-->`, and
     `{{#each-in}}` with no params. (§02-11 items 1, 2, 7; §03-10 item 11)
+
+    > Produce a branch (based off main) that fixes these bugs. It can be all together in one branch. Structure it as two commits, the first one is the (failing) tests, the second is the fix that makes the tests pass.
+
 12. Some input is dropped silently: `a < b` becomes `"a "`, `<>` disappears, and so does an
     unterminated tag or comment at EOF. (§02-11 item 6)
 13. `{{"foo" bar baz=1}}` silently drops its arguments, while `{{#"foo"}}` and `("foo")` are

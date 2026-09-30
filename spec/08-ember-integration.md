@@ -1869,6 +1869,8 @@ built-in table (`resolver.ts:88-117`), so `{{#if (eq a b)}}` fails in a loose-mo
 unless an addon registers `helper:eq`. Conversely `concat`, `get`, `unique-id` are built-in in
 loose mode but require imports in strict mode.
 
+> This is intentional, those are recent additions that were designed to only work in strict mode. Loose mode is supported but under maintenance and not gaining new features.
+
 **Q4. `element` with `null`/`undefined`.** The public docs say "When `@tagName` is `null` or
 `undefined`, nothing is rendered" (`packages/@ember/helper/index.ts:674-675`), but the
 implementation asserts in DEBUG (tests `element-test.js:27-56` expect a throw). In production,

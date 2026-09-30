@@ -1452,15 +1452,24 @@ yielder (§07-4.2 "Sharing"; tests
    accessor (§07-3.1.2, §07-3.1.4; `validation_test.js:46-87` asserts different results for the
    two builds). A new implementation must pick one per build mode. The spec currently allows
    both.
+
+      > The initialization timing difference is a known accepted decision, hence the differing test assertions. This should hopefully be orthogonal from the question of how to implement an alternative rendering layer.
+
 8. **`@tracked accessor` does not invalidate the object-level cell.** The legacy field setter
    does (`tracked.ts:363` vs. `:439`). Code that depends on the object-level cell, such as
    `{{#each-in}}` over an object with tracked accessors, or proxies, may not update for accessor
    fields.
+
+      > Write a test to demonstrate this bug. Commit it on a new branch (based off main). Then add a second commit to that branch with a proposed fix. I will review and then decide about opening a PR.
+
 9. **Ecosystem use of private tags.** Addons such as ember-modifier (classic modifier arg
    consumption), `tracked-built-ins`, and ember-resources import `@glimmer/validator`
    (`consumeTag`, `tagFor`, `dirtyTagFor`) directly. A new implementation will need a
    compatibility shim, or the proposed public primitives (§07-2) plus `tracked(v)`, to replace
    those uses.
+
+    > If shimming the APIs is cheap and easy, we should do that, but it's also likely that the most significant users of these APIs are in packages we can directly influence and force to update before they could use a new renderer.
+
 10. **The `createCache` debug label is ignored.** `getValue` calls `beginTrackFrame()` without
     the label (`tracking.ts:173`). So caches never appear in the write-after-consume tracking
     stack, even though `createCache` accepts and stores a `debuggingLabel`.

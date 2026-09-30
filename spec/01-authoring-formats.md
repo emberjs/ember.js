@@ -1185,11 +1185,17 @@ or pods lookup (§08-5). The one remaining registry lookup of a template is the 
    The tab/space mixing check is cumulative and order-dependent. CRLF normalization happens
    only for multi-line bodies. RFC #1121 is not in the local RFC repo, so the intended
    specification cannot be checked against the implementation.
+
+   > Let's work a fix for this bug. The `content-tag` repo is checked out beside this repo. Make a new branch with a failing test and proposed fix, as separate commits so it's easy to see the test failing vs passing.
+
 8. **No way to include `</template>` in a `<template>` body.** There is no escape, and even a
    string literal (`{{"</template>"}}`) or comment terminates the tag; authors must use
    workarounds such as the entity `&lt;/template>`. Worth specifying explicitly as a
    limitation (RFC 0779 §"Spec" promised a spec covering "handling closing tags within
    comments").
+
+    > This is an intentional design choice. The theory here is that content-tag could become a syntax extension that is not specific to our templates. Arbitrary other languages can be embedded in side JS. So there's no assumed interior syntax, except the literal closing bytes.
+
 9. **Multiple top-level `<template>`s / multiple class-member `<template>`s** are not
    diagnosed by `content-tag`; they fail later (duplicate `export default`, or the [Dev]
    `setComponentTemplate` double-set error; silently last-wins in production).
