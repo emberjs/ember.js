@@ -426,14 +426,18 @@ fails with `if doesn't match unless`. Any helper name may follow `else` (`{{else
 The closing strip flags of the outer block are copied onto the innermost chained block's
 `closeStrip` (`lib/helpers.js:154-156`).
 
-**Inverse sections** `{{^name}}…{{/name}}` parse at layer 1 (as a block whose `program` is
-missing and whose `inverse` is the body), but are **not supported** by Glimmer: the layer-2
-visitor dereferences the missing program and throws a `TypeError`
-(`Cannot read properties of undefined (reading 'blockParams')`,
-`handlebars-node-visitors.ts:139`). A conforming implementation MUST reject
-`{{^name …}}…{{/name}}` at parse time; it SHOULD do so with a syntax error rather than a
-`TypeError` (see Open questions). `{{^}}` *inside* a block is fully supported as a synonym for
-`{{else}}`.
+**Inverse sections** `{{^name}}…{{/name}}` parse at layer 1 as a block whose program and
+inverse are swapped: the body becomes the `inverse`, and the `{{else}}` part, if any, becomes
+the `program`. Glimmer handles the two forms differently:
+
+- **Without `{{else}}`** there is no program, and the construct is a syntax error:
+  ``Inverse sections (`{{^foo}}...{{/foo}}`) are not supported. Use `{{#unless foo}}...{{/unless}}` instead``
+  (span: the whole block; `handlebars-node-visitors.ts:133-140`; test
+  `parser-error-test.ts:110-119`).
+- **With `{{else}}`**, `{{^foo}}a{{else}}b{{/foo}}` is accepted and means
+  `{{#foo}}b{{else}}a{{/foo}}` (untested).
+
+`{{^}}` *inside* a block is fully supported as a synonym for `{{else}}`.
 
 ### 3.4 Sub-expressions
 
@@ -488,13 +492,14 @@ modifiers and non-literal mustaches:
 | Decorator | `{{* foo}}`, `{{*foo}}` | `Handlebars decorators are not supported` |
 | Decorator block | `{{#* foo}}{{/foo}}` | `Handlebars decorator blocks are not supported` |
 | Decorator block with inverse | `{{#* foo}}{{^}}{{/foo}}` | layer-1 `Unexpected inverse block on decorator` |
-| Inverse section | `{{^foo}}x{{/foo}}` | `TypeError` today (§02-3.3) |
-| Hash-literal mustache / sub-expression | `{{foo=bar}}`, `{{(foo=bar)}}`, `{{foo =bar}}` | `TypeError` today (`HashLiteral` has no layer-2 visitor; `acceptCallNodes` reads `.loc` of an undefined path) |
-| Sub-expression-rooted path | `{{(foo).bar}}` | `TypeError` today (`value.indexOf is not a function`) |
+| Inverse section without `{{else}}` | `{{^foo}}x{{/foo}}` | ``Inverse sections (`{{^foo}}...{{/foo}}`) are not supported. Use `{{#unless foo}}...{{/unless}}` instead`` (§02-3.3) |
+| Hash literal, anywhere an expression can appear | `{{foo=bar}}`, `{{(foo=bar)}}`, `{{foo =bar}}`, `{{foo (a=b)}}`, `{{foo x=(a=b)}}` | ``Hash literals are not supported. Use named arguments (`{{helper foo=bar}}`) or the `hash` helper (`(hash foo=bar)`) instead`` (span: the hash literal, e.g. `(a=b)`) |
+| Sub-expression-rooted path | `{{(foo).bar}}`, `{{foo (bar).baz}}` | ``A path cannot start with a sub-expression. Use the `get` helper (`(get (foo) "bar")`) instead`` (span: the path) |
 
-(`handlebars-node-visitors.ts:360-386`; tests `parser-node-test.ts:899-945`.) A conforming
-implementation MUST reject all of these; for the last three rows it SHOULD raise a syntax error
-(see Open questions).
+(`handlebars-node-visitors.ts:417-443` for the first four rows, `:133-140` for inverse
+sections, `:450-455` and `:690-691` for hash literals, `:461-466` for sub-expression-rooted
+paths; tests `parser-node-test.ts:899-945`, `parser-error-test.ts:110-134`.) A conforming
+implementation MUST reject all of these with a syntax error.
 
 ---
 
@@ -955,11 +960,15 @@ Error spans for the other cases begin at the `a` of `as` (tests
 
 `<!-- … -->` produces a `CommentStatement` whose `value` is the text between the delimiters
 (tokenized per §02-6.2; entities are *not* decoded in comments). Mustaches, blocks and
-Handlebars comments encountered while the tokenizer is in the `comment` state are *not*
-interpreted: their **original source text** (from the source lines, joined with `\n`) is
-appended to the comment value (`handlebars-node-visitors.ts:118-123, 223-226, 331-334`;
+Handlebars comments encountered anywhere inside an HTML comment are *not* interpreted: their
+**original source text** (from the source lines, joined with `\n`) is appended to the comment
+value. This applies in every comment tokenizer state (`commentStart`, `commentStartDash`,
+`comment`, `commentEndDash`, `commentEnd`). A `-` or `--` that the tokenizer is still holding,
+because it might begin `-->`, is appended first, as the tokenizer itself would do when the next
+character is not `>` (`handlebars-node-visitors.ts:322-350`;
 `packages/@glimmer/syntax/lib/parser.ts:174-210`). E.g. `<!-- {{#if x}}y{{/if}} -->` has value
-` {{#if x}}y{{/if}} `. However, because layer 1 has already run, whitespace control *has* been
+` {{#if x}}y{{/if}} `, `<!--{{x}}-->` has value `{{x}}`, and `<!-- a -{{x}}-->` has value
+` a -{{x}}` (tests `parser-node-test.ts:789-799`). However, because layer 1 has already run, whitespace control *has* been
 applied to the content surrounding them (`<!-- a {{~x~}} b -->` → value ` a{{~x~}}b `), and a
 `--}}`-terminated long comment or a `{{!` short comment still ends at its own delimiter.
 
@@ -991,10 +1000,11 @@ which means it effectively swallows input until `--` or a `DOCTYPE` match — se
 
 ### 6.9 Mustache placement
 
-For each layer-1 `MustacheStatement` (`handlebars-node-visitors.ts:218-299`):
+For each layer-1 `MustacheStatement` (`handlebars-node-visitors.ts:228-320`):
 
 1. Throw a pending block-params error if any (§02-6.6).
-2. If the tokenizer is in `comment` state: append its source to the comment (§02-6.7); done.
+2. If the tokenizer is inside an HTML comment (any comment state): append its source to the
+   comment (§02-6.7); done.
 3. If the layer-1 path `original` is `...attributes` (i.e. `{{...attributes}}`) → syntax error
    `Illegal use of ...attributes` (span: the mustache) in any position — content, attribute
    value, or modifier (tests `parser-node-test.ts:124-152`; see Open question 18 for how this
@@ -1004,13 +1014,20 @@ For each layer-1 `MustacheStatement` (`handlebars-node-visitors.ts:218-299`):
 
 | Tokenizer state | Source example | Meaning |
 |---|---|---|
-| `beforeData`, `data`, (and any state not listed) | `<p>{{x}}</p>` | child of the current parent node |
-| `tagOpen`, `tagName` | `<{{x}}>`, `<div{{x}}>` | error `Cannot use mustaches in an elements tagname` |
-| `beforeAttributeName` | `<div {{x}}>` | element modifier |
+| `beforeData`, `data` | `<p>{{x}}</p>` | child of the current parent node |
+| `tagOpen`, `tagName`, `endTagOpen`, `endTagName` | `<{{x}}>`, `<div{{x}}>`, `</{{x}}>`, `</div{{x}}>` | error `Cannot use mustaches in an elements tagname` |
+| `beforeAttributeName`, `selfClosingStartTag` | `<div {{x}}>`, `<div /{{x}}>` | element modifier; tokenizer → `beforeAttributeName`. A `/` not followed by `>` is ignored, as in HTML, so `<div /{{x}}></div>` ≡ `<div {{x}}></div>` (test `parser-node-test.ts:801-804`) |
 | `attributeName`, `afterAttributeName` | `<div a{{x}}>`, `<div a {{x}}>` | finish the pending valueless attribute (`a=""`), then element modifier; tokenizer → `beforeAttributeName` |
 | `afterAttributeValueQuoted` | `<div a="1"{{x}}>` | element modifier; → `beforeAttributeName` |
 | `beforeAttributeValue` | `<div a={{x}}>`, `<div a= {{x}}>` | begin unquoted value with this mustache part; → `attributeValueUnquoted` |
 | `attributeValueDoubleQuoted`, `attributeValueSingleQuoted`, `attributeValueUnquoted` | `<div a="x {{y}}">`, `<div a=b{{x}}>` | append as a dynamic value part (unquoted multi-part then errors per §02-6.5) |
+| any other state (`markupDeclarationOpen`, doctype states) | `<!-{{x}}-->`, `<!DOCTYPE {{x}}>` | error ``Using a Handlebars mustache when in the `STATE` state is not supported`` |
+
+In the tag states above (`beforeAttributeName`, `selfClosingStartTag`, `attributeName`,
+`afterAttributeName`), if the tag being tokenized is an **end** tag, the mustache is an error
+`Invalid end tag: closing tag must not contain mustaches` (span: the mustache;
+`handlebars-node-visitors.ts:352-356`), e.g. `</div {{x}}>`, `</div foo{{x}}>`, `</div/{{x}}>`
+(tests `parser-error-test.ts:136-153`).
 
 An element modifier whose path is a literal → error
 `` In <TAG ... {{LIT}} ..., {{LIT}} is not a valid modifier `` where `LIT` is
@@ -1020,23 +1037,21 @@ source order in `ElementNode.modifiers`, independent of attribute order. A trust
 `{{{x}}}` in modifier position is accepted and treated as a modifier (the `trusting` flag is
 dropped).
 
-Unlisted states, whose current behavior is buggy and which a conforming implementation SHOULD
-reject with a syntax error (see Open questions): `selfClosingStartTag` (`<div /{{x}}>` — today
-the mustache is appended to the *parent* before the element), `endTagOpen`/`endTagName`
-(`</div{{x}}>` — today appended as a child of the element being closed), `beforeAttributeName`
-of an *end* tag (`</div {{x}}>` — today a `TypeError`), `commentStart`/`commentStartDash`/
-`commentEndDash`/`commentEnd` (`<!--{{x}}-->` — today appended *before* the comment and the
-comment loses it), `markupDeclarationOpen`, and doctype states.
+Until emberjs/ember.js#21635 (merged for 7.5.0-alpha) several of these states were mishandled: an end tag
+with a mustache or comment threw a `TypeError`, the comment states other than `comment` moved
+the mustache out of the comment (and `<!-- a -{{x}}-->` lost the comment), and the
+`selfClosingStartTag`, end-tag-name, markup-declaration and doctype states put the mustache in
+the parent. Templates that relied on those behaviors now either error or parse as above.
 
 ### 6.10 Handlebars comment placement
 
-`{{! … }}` / `{{!-- … --}}` (`handlebars-node-visitors.ts:328-358`):
+`{{! … }}` / `{{!-- … --}}` (`handlebars-node-visitors.ts:385-415`):
 
 | Tokenizer state | Meaning |
 |---|---|
-| `comment` | source appended to the HTML comment |
+| any comment state | source appended to the HTML comment (§02-6.7) |
 | `beforeData`, `data` | `MustacheCommentStatement` child |
-| `beforeAttributeName`, `afterAttributeName` | pushed on the start tag's `comments` list (`<div {{! c }} class="x">`, `<input foo {{! c }}>`); the pending attribute in `afterAttributeName` is *not* finished by the comment, it is finished by whatever follows |
+| `beforeAttributeName`, `afterAttributeName` | pushed on the start tag's `comments` list (`<div {{! c }} class="x">`, `<input foo {{! c }}>`); the pending attribute in `afterAttributeName` is *not* finished by the comment, it is finished by whatever follows. In an **end** tag it is an error `Invalid end tag: closing tag must not contain Handlebars comments` (`</div {{! c}}>`) |
 | anything else | error ``Using a Handlebars comment when in the `STATE` state is not supported`` (span: the comment), e.g. states `attributeName`, `beforeAttributeValue`, `attributeValueDoubleQuoted`, `attributeValueUnquoted`, `tagName` |
 
 (Tests `parser-node-test.ts:789-873`.) Note `<div a="x"{{! c}}>` (state
@@ -1044,9 +1059,9 @@ comment loses it), `markupDeclarationOpen`, and doctype states.
 
 ### 6.11 Block placement
 
-A layer-1 `BlockStatement` (`handlebars-node-visitors.ts:118-216`):
+A layer-1 `BlockStatement` (`handlebars-node-visitors.ts:119-226`):
 
-- in `comment` state: source appended to the HTML comment;
+- in any comment state: source appended to the HTML comment (§02-6.7);
 - in `beforeData` or `data`: a `BlockStatement` child of the current parent;
 - anywhere else (tag, attribute name/value, etc.): error
   `A block may only be used inside an HTML element or another block.` (span: the whole block).
@@ -1299,7 +1314,7 @@ and SHOULD produce identical messages (tests assert full messages for Glimmer sy
 | E15 | `Attempted to parse a path expression, but it was not valid. Paths must start with a-z or A-Z.` | 1 | non-data path with no segment left (`{{[]}}`, the `..` in `foo..bar`) | `:470-475` |
 | E16 | `` ${Type} "${v}" cannot be called as a sub-expression, replace (${v}) with ${v} `` | 1 | literal callee of block/sexpr | `:618-641` |
 | E17 | `Illegal use of ...attributes` | 1 | `{{...attributes}}` anywhere | `:231-236` |
-| E18 | `Cannot use mustaches in an elements tagname` | 1 | mustache in `tagOpen`/`tagName` | `:261-263` |
+| E18 | `Cannot use mustaches in an elements tagname` | 1 | mustache in `tagOpen`/`tagName`/`endTagOpen`/`endTagName` | `:261-263` |
 | E19 | `` In <T ... {{L}} ..., {{L}} is not a valid modifier `` | 1 | literal in modifier position | `:660-671` |
 | E20 | ``Using a Handlebars comment when in the `S` state is not supported`` | 1 | §02-6.10 | `:350-354` |
 | E21 | `A block may only be used inside an HTML element or another block.` | 1 | block outside content | `:125-130` |
@@ -1314,6 +1329,12 @@ and SHOULD produce identical messages (tests assert full messages for Glimmer sy
 | E30 | `" is not a valid character within attribute names` (also `'`, `<`) | 1 (collapsed span) | | s-h-t `:466-470` |
 | E31 | `An unquoted attribute value must be a string or a mustache, preceded by whitespace or a '=' character, and followed by whitespace, a '>' character, or '/>'` | 1 | §02-6.5 | `tokenizer-event-handlers.ts:617-622` |
 | E32–E41 | `Invalid block parameters syntax: …` (10 variants in §02-6.6, plus "block parameters must be preceded by the `as` keyword") | 1 | §02-6.6 | `:300-306, 316-558` |
+| E42 | ``Inverse sections (`{{^foo}}...{{/foo}}`) are not supported. Use `{{#unless foo}}...{{/unless}}` instead`` | 1 | `{{^x}}…{{/x}}` without `{{else}}` (§02-3.3) | `handlebars-node-visitors.ts:133-140` |
+| E43 | ``Hash literals are not supported. Use named arguments (`{{helper foo=bar}}`) or the `hash` helper (`(hash foo=bar)`) instead`` | 1 | hash literal as a callee, param or hash value (§02-3.8) | `handlebars-node-visitors.ts:450-455` |
+| E44 | ``A path cannot start with a sub-expression. Use the `get` helper (`(get (foo) "bar")`) instead`` | 1 | `(foo).bar` (§02-3.8) | `handlebars-node-visitors.ts:461-466` |
+| E45 | `Invalid end tag: closing tag must not contain mustaches` | 1 | mustache in an end tag's attribute area (§02-6.9) | `handlebars-node-visitors.ts:352-356` |
+| E46 | `Invalid end tag: closing tag must not contain Handlebars comments` | 1 | `{{! …}}` in an end tag (§02-6.10) | `handlebars-node-visitors.ts:352-356` |
+| E47 | ``Using a Handlebars mustache when in the `S` state is not supported`` | 1 | mustache in a markup declaration or doctype (§02-6.9) | `handlebars-node-visitors.ts:313-317` |
 
 *Note on E15:* for `{{[]}}` layer 1 produces an empty head string, which its `parts` construction
 treats as absent (`lib/helpers.js:82-91`), so Glimmer sees no segments. For `foo..bar` the lexer
@@ -1351,18 +1372,14 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
 
 ## 11. Open questions / inconsistencies
 
-1. **Inverse sections crash.** `{{^foo}}…{{/foo}}` parses at layer 1 but throws a `TypeError`
-   in Glimmer (`handlebars-node-visitors.ts:139`). Upstream supports it; Glimmer has no test.
-   Recommend a proper syntax error ("inverse sections are not supported") or support as
-   `{{#unless}}`-like sugar — either is a behavior change from "TypeError". Note that
-   `{{^foo}}a{{else}}b{{/foo}}` already parses, as `{{#foo}}b{{else}}a{{/foo}}`; only the form
-   without `{{else}}` crashes. *Fixed* on main (#21635): the crashing form is now a
-   syntax error.
-2. **Hash-literal and sub-expression-rooted paths crash.** `{{foo=bar}}`, `{{(foo=bar)}}`,
-   `{{foo =bar}}`, `{{(foo).bar}}` throw `TypeError`s because the upstream parser (v2.2.2)
-   emits `HashLiteral` nodes and sexpr-headed paths that Glimmer's visitor does not handle.
-   Should be syntax errors (or new features, per any future RFC). *Fixed* on main (#21635):
-   these are now syntax errors.
+1. **Inverse sections.** *Resolved* by emberjs/ember.js#21635: `{{^foo}}…{{/foo}}` without
+   `{{else}}` is now a syntax error (§02-3.3; it used to throw a `TypeError`). Still open: the
+   form *with* `{{else}}` (`{{^foo}}a{{else}}b{{/foo}}`) is accepted as
+   `{{#foo}}b{{else}}a{{/foo}}`, has no test, and could reasonably be an error too.
+2. **Hash-literal and sub-expression-rooted paths.** *Resolved* by #21635: `{{foo=bar}}`,
+   `(a=b)` and `{{(foo).bar}}` are syntax errors (§02-3.8; E43, E44). They used to throw
+   `TypeError`s because the upstream parser emits `HashLiteral` nodes and sexpr-headed paths
+   that Glimmer's visitor did not handle.
 3. **Literal mustaches discard params.** `{{"foo" bar baz=1}}` silently becomes `{{"foo"}}`
    (`handlebars-node-visitors.ts:238-246`), while `{{#"foo"}}` and `("foo")` error. Probably
    should be an error.
@@ -1375,13 +1392,11 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
 6. **Silent input loss.** Unterminated tags/comments at EOF, `<>`, `a < b`, and non-letter
    characters after `<` / `</` / `<!` are silently discarded (§02-6.12). The code comment at
    `handlebars-node-visitors.ts:53-55` acknowledges this. Recommend errors.
-7. **Mustaches in unusual tokenizer states** (§02-6.9 last paragraph): `<div /{{x}}>`,
-   `</div{{x}}>`, `</div {{x}}>`, `<!--{{x}}-->`, `<!-{{x}}-->` produce misplaced nodes or a
-   `TypeError`. Only the `data`/attribute/`comment` states are intentionally handled. Also
-   `<!-- a -{{x}}-->` loses the entire comment, and `</div {{! x}}>` throws a `TypeError`.
-   *Fixed* on main (#21635): every other comment state appends
-   to the comment, a stray `/` in a start tag is ignored as in HTML, and end tags and markup
-   declarations reject mustaches with a syntax error.
+7. **Mustaches in unusual tokenizer states.** *Resolved* by #21635 (§02-6.9, §02-6.10):
+   mustaches, blocks and Handlebars comments in any HTML-comment state become comment text;
+   a stray `/` in a start tag is ignored, as in HTML; and mustaches or comments in end tags,
+   markup declarations and doctypes are syntax errors (E45–E47). Previously these produced
+   misplaced nodes, lost the comment, or threw a `TypeError`.
 8. **`pendingError` is only consulted by mustaches and EOF**; a Handlebars comment inside an
    element's block-params list (`<Foo as |a {{! c}}|>`) is accepted onto `comments` and the
    remaining `|` then produces the misleading "must be preceded by the `as` keyword" error; a
