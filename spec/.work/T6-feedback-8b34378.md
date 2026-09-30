@@ -17,11 +17,11 @@ Resume from the first unticked item. Commit after each item: `spec(T6): ...` etc
 - [x] §01-1.2.4 and §01-1.11 item 7 for content-tag 4.2.1
 - [x] §0.7 entries, STATUS "Still to do" cleared
 
-## T8 — citation refresh after merging main (Sonnet agent) — checklist .work/T8-citations.md
+## T8 — citation refresh after merging main — done (.work/T8-citations.md)
 ## T9 — verification gaps (Sonnet agents, one at a time)
-- [ ] T9a run babel plugin + runtime `template()` eval against §01/§03 claims — .work/T9a-compile-paths.md
-- [ ] T9b orderings in §05-14 item 20 via throwaway tests — .work/T9b-orderings.md
-## T10 — hand-check remaining §-cross-references (Sonnet agent) — .work/T10-xrefs.md
+- [x] T9a run babel plugin + runtime `template()` eval against §01/§03 claims — .work/T9a-compile-paths.md
+- [x] T9b orderings in §05-14 item 20 via throwaway tests — .work/T9b-orderings.md
+## T10 — hand-check remaining §-cross-references — done (.work/T10-xrefs.md)
 
 ## Not attempted (need author decisions or are separate projects)
 - §0.7.1 items 2–10 decisions, [Proposed] primitive review, suspected-bug rulings

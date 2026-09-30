@@ -79,7 +79,7 @@ repo).
 
 | Chapter | Lines | State | Verification |
 |---|---|---|---|
-| 00 overview | ~330 | Drafted. §0.1 and §0.2 were updated for the wire-format decision. §0.6 matches this table. §0.7 (consolidated open questions, 40 items) written by T2b. | — |
+| 00 overview | ~350 | Drafted. §0.1 and §0.2 were updated for the wire-format decision and the non-goals (T6). §0.6 matches this table. §0.7 (consolidated open questions, 40 items) written by T2b. | — |
 | 01 authoring formats | ~1220 | Drafted | From source. T3 hand-checked every flagged citation; one unsupported claim (§01-1.9) was rewritten. T9a ran the babel plugin (`wire`, `hbs`) and the runtime `template()` against §01-1.11 items 1–3, §01-1.4 and §01-1.5.6 (all confirmed; `.work/T9a-compile-paths.md`). |
 | 02 syntax | ~1410 | Drafted | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes). |
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev`. T9a ran §03-10 items 1 and 12–14 through the babel plugin and the runtime `template()` path (all confirmed). Other §03 claims still have only compiler-level checks. |
@@ -108,6 +108,12 @@ Run these in order, one at a time.
 | T4 | Find test assertions for 05's source-only areas and cite them, or record them as untested | Sonnet | `.work/T4-ch05-tests.md` | done; untested claims are §05-14 item 20 |
 | T2b | Consolidated open questions in §00-0.7 | Opus | `.work/T2b-open-questions.md` | done |
 | T5 | Final read-through: CONVENTIONS compliance, markers, `[Dev]` tags, a tidy STATUS | Opus | `.work/T5-final.md` | done; markers and normative-language fixes, §0.4/§0.6 wording, 41 cross-references spot-checked (1 fixed) |
+| T6 | Author feedback `8b343781b3`: `hbs` re-printing and AST transforms are non-goals | Opus | `.work/T6-feedback-8b34378.md` | done; §00-0.1 "Non-goals", §02 uses ASTv1 as notation, §02-7/§02-10/§01-1.5.6/§01-1.5.7 informative, §03-7 states meaning through rewrites |
+| T7 | Rewrite the owning items for the landed parser and content-tag fixes | Opus | `.work/T6-feedback-8b34378.md` | done |
+| T8 | Citation refresh after merging `main` (`7364f4b36d`) | Sonnet | `.work/T8-citations.md` | done; ≈70 citations renumbered; one behavior change (lazy plain-array iteration, #21598) written into §05-5.4.1 |
+| T9a | Run the babel plugin and runtime `template()` against §01/§03 claims | Sonnet | `.work/T9a-compile-paths.md` | done; 8 items, all confirmed |
+| T9b | Throwaway browser tests for the orderings in §05-14 item 20 | Sonnet | `.work/T9b-orderings.md` | done; 5 confirmed, 1 corrected (modifier destruction order depends on the debug render tree) |
+| T10 | Hand-check every §-cross-reference | Sonnet | `.work/T10-xrefs.md` | done; 1,054 checked, 0 wrong; every "item N"/"QN" reference resolves to an existing item |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -117,8 +123,9 @@ Where the code did not settle a question, it is an *Open questions* item in the 
 New cross-cutting notes from T2:
 
 1. **`xref.py` only checks that a target exists, not that it is the right one.** T2 found six
-   `§05-12` references (Errors) that meant `§05-11` (Destruction). T5 spot-checked 41
-   references and fixed one (`.work/T5-final.md`). The rest have not been checked by hand.
+   `§05-12` references (Errors) that meant `§05-11` (Destruction). T5 spot-checked 41 and
+   fixed one; T10 then checked all 1,054 by eye with `tools/xref-context.py` and found none
+   wrong. Re-run that check after large edits.
 2. **Ownership conventions introduced by T2.** Each duplicated rule now has one owner, and the
    other chapters cite it. The main owners are: commit-phase order §06-11; destroy algorithm
    §06-10.2; destruction order §05-11; component-region skipping §05-1.6; element parameter
@@ -185,23 +192,27 @@ into §00-0.7.
 
 Suggestions for the plan's author, based on what is still open:
 
-1. **Decide the ten "preserve or change" items in §00-0.7.1.** The most urgent are the `hbs`
-   round-trip losses (item 1), because addons publish that output, and the
-   `strict`/`strictMode` option split (item 2). Each decision changes normative text in the
-   owning chapter.
-2. **Review the [Proposed] consumption primitive** (§07-2.2, the review points in §00-0.7.10).
+1. **Decide the remaining "preserve or change" items in §00-0.7.1** (item 1 is resolved).
+   The most urgent is the `strict`/`strictMode` option split (item 2; T9a confirmed all three
+   behaviors). Each decision changes normative text in the owning chapter.
+2. **Decide the modifier destruction order.** Development builds (debug render tree on)
+   destroy modifiers in creation order interleaved with components; production builds destroy
+   them child-first (§05-11.3, §05-14 item 11; found by T9b). A new implementation has to pick.
+3. **Review the [Proposed] consumption primitive** (§07-2.2, the review points in §00-0.7.10).
    Only chapter 07 uses it. If it is accepted, other chapters could state update rules with it
    directly; if it is rejected, §07-2.4 needs another way to show sufficiency.
-3. **Rule on the suspected bugs** in §00-0.7.2–0.7.8, deciding for each whether a new
-   implementation must keep it. Parser crashes (§0.7.2) and the babel-vs-runtime
-   differences (§0.7.4) are the obvious ones to fix rather than preserve.
-4. **Close the verification gaps.** Write tests for the orderings in §05-14 item 20
-   (public-manager hook order across a tree, `didCreate` against modifier installs, deferred
-   destructor timing). The babel plugin and runtime `template()` checks for §01 and §03
-   are done for the items in `.work/T9a-compile-paths.md`; the rest of §01 and §03 is still checked
-   only against source and `dist/dev`.
-5. **Turn the spec into a conformance suite.** Many rules already cite the tests that pin
+4. **Rule on the suspected bugs** in §00-0.7.2–0.7.8, deciding for each whether a new
+   implementation must keep it. The babel-vs-runtime differences (§0.7.4) are confirmed by
+   running both paths (T9a).
+5. **Upstream the ordering experiments?** T9b's throwaway tests pinned orderings that Ember's
+   suite does not test; `.work/T9b-orderings.md` "Upstream candidates" lists the ones worth
+   turning into real tests.
+6. **Remaining verification gaps.** §05-14 item 20 still lists the `each`, `in-element` and
+   `yield`/block claims with no test. Most of §01 and §03 beyond the T9a items is checked only
+   against source and `dist/dev`.
+7. **Turn the spec into a conformance suite.** Many rules already cite the tests that pin
    them. Collecting those into one implementation-independent suite, keyed by section number,
    would give a new implementation something to run against.
-6. **Keep citations current.** Line numbers are accurate for this checkout only. Re-run
-   `python3 spec/tools/check-citations.py` after rebasing, or pin the spec to a commit.
+8. **Keep citations current.** Line numbers are accurate for this checkout (`main` merged at
+   `7364f4b36d`). After the next merge, re-run `python3 spec/tools/check-citations.py` and
+   repeat T8 for the files the merge changed (`git diff --name-only <old> HEAD`).
