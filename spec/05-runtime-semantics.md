@@ -1945,7 +1945,10 @@ scheduled is a walk of the *region* tree in creation order:
   `538-858`). The eager phase interleaves the two hooks per component, `top.willDestroyElement,
   top.willClearRender, middle.willDestroyElement, …`, then all `didDestroyElement`, then all
   `willDestroy` (`life-cycle-test.js:510-531`). In non-interactive mode only `willDestroy` runs,
-  in the same order. The same parent-first order holds for a component and the component inside
+  in the same order. Public-manager components show the same parent-first order (verified by
+  experiment, T9b): removing `p` (layout: `c1`, `c2`) gave `p.destroyComponent, c1.destroyComponent,
+  c2.destroyComponent`, and a tree `top{d0, e0{d1}, d2}` gave `d0, e0, d1, d2` (each component before
+  the components of its own layout, document order otherwise), all in the `actions` queue. The same parent-first order holds for a component and the component inside
   its layout in each removed `each` item, item by item in list order (`life-cycle-test.js:1161-1222`).
 - **Modifiers: child before parent.** A modifier is registered when its element closes, so a
   nested element's modifier precedes its ancestor's; siblings in document order; several
@@ -2180,8 +2183,8 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     components are destroyed parent-first (pinned for classic components, `life-cycle-test.js:305-537`,
     `1161-1222`), while modifiers, associated at element close, are destroyed child-first
     (pinned, `modifiers-test.ts:326-458`). For components with public managers
-    (`destroyComponent`) the parent-first order follows from the source, but no test covers
-    it (T4).
+    (`destroyComponent`) the parent-first order was observed by experiment (verified by
+    experiment, T9b; see §05-11.3), although no upstream test covers it.
 12. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls
     `setAttribute` whenever the computation is invalid, even if the string is unchanged; only
     property mode compares with the last value.
@@ -2229,4 +2232,3 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       `install`; timing of replacing a dynamic modifier definition; the element being already
       detached when `destroyModifier` runs; the attribute-less, undocumented element at
       `create` (item 15).
-    - Lifecycle and destruction: `destroyComponent` order for public managers (item 11).

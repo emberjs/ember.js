@@ -33,7 +33,7 @@ Resume from the first unticked item. Commit spec/ changes after each item: `spec
 - [x] `didCreate` of a component vs `installModifier` of modifiers on its elements (§06-11). Done: verified, no correction.
 - [x] `updateModifier` vs `didUpdate` order in the same render (§06-11). Done: verified, no correction.
 - [x] Deferred destructors (`registerDestructor`) run after DOM removal, in the `actions` queue; `isDestroyed` becomes true in the `destroy` queue (§05-11, §06-10.2). Done: verified, no correction.
-- [ ] `destroyComponent` order for public managers across a tree (§05-14 item 11).
+- [x] `destroyComponent` order for public managers across a tree (§05-14 item 11). Done: verified, no correction.
 - [ ] Modifiers: `updateModifier` never in the same transaction as `installModifier`; element already detached when `destroyModifier` runs (§05-14 item 20 "Modifiers").
 - [ ] Update §05-14 item 20, STATUS chapter table (05 row), §00-0.6, §0.7.9.
 
@@ -85,5 +85,11 @@ false`, `probe(destroy, scheduled from afterRender): true`, then true after `run
 (Current queue was detected through `_backburner.currentInstance.queues[name]._queueBeingFlushed`.)
 Verified; no correction. The word "after the new content rendered" (§05-11.2) was not separately
 tested here.
+
+### 5. `destroyComponent` order across a public-manager tree
+Spec claimed (§05-11.3, §05-14 item 11): parent before child, siblings in document order.
+Observed: `p, c1, c2` for `p{c1, c2}`; for `top{d0, e0{d1}, d2}` (with modifiers present or not):
+`d0, e0, d1, d2`. All in the `actions` queue. Verified; no correction for components. (The
+modifier half of item 11 is corrected under item 6.)
 
 ## Upstream candidates
