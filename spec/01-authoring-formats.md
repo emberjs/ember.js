@@ -1185,21 +1185,28 @@ or pods lookup (§08-5). The one remaining registry lookup of a template is the 
    in `wire` target it forces `strictMode: true` regardless of either key
    (`babel-plugin-ember-template-compilation/src/plugin.ts:418-430`, `:731-753`;
    `packages/@ember/template-compiler/lib/template.ts:240`). So `template(src, {strict:false})`
-   is loose via babel-hbs, strict via babel-wire, strict at run time. Needs a decision.
+   is loose via babel-hbs, strict via babel-wire, strict at run time (verified: babel hbs, babel wire, runtime;
+   T9a). Needs a decision.
 2. **Runtime implicit form misses some bindings.** `inScope` uses `typeof x !== "undefined"`
    and excludes names that are also globals (`packages/@ember/template-compiler/lib/compile-options.ts:99-104`, `:181-200`).
    Hence at run time a local whose value is `undefined`, or a local that shadows a global
    (browser `name`, `status`, `open`, `event`, …), is not lexical — a strict-mode compile
    error or (for keywords) keyword behaviour — whereas the babel plugin binds them. `this`
    is never found at run time (the global evaluator is a sloppy `new Function`, where `this`
-   is defined), whereas babel captures lexical `this` in expression position. Untested.
+   is defined), whereas babel captures lexical `this` in expression position.
+   (verified: babel wire, runtime; T9a. At run time `{{u}}`, `{{name}}` and `{{status}}` fail
+   with "not in scope" while `{{ok}}` renders, and `{{this.message}}` reads the component's
+   `this`, not the caller's. Babel wire binds all of them.)
 3. **Runtime explicit scope uses `in`.** `lexicalScope = name in scope`
    (`…/compile-options.ts:116-117`) includes inherited properties (`toString`,
    `constructor`, `hasOwnProperty`, …), but the evaluator binds only own enumerable entries
    (`…/template.ts:295-306`), so `{{toString}}` compiles and then reads whatever
    `toString` means inside `new Function` (the global). Also `scope()` is called twice
    eagerly (`…/template.ts:278`, `…/compile-options.ts:114`), observable with side effects,
-   and at a different time than build-time compilation (§1.8.5).
+   and at a different time than build-time compilation (§1.8.5). (verified: runtime, T9a: with
+   `scope: () => ({})`, `{{toString}}` compiles and renders `[object Undefined]`, `{{constructor}}`
+   throws `Illegal constructor`, `{{hasOwnProperty}}` throws a `TypeError`, `{{nope}}` is "not in scope";
+   a `scope()` with a counter ran twice, first from `buildEvaluator`, then from `buildCompileOptions`.)
 4. **Private fields in scope** (`scope: (instance) => ({ "#x": instance.#x })`) are specified by
    RFC 0931 but unimplemented in the babel parser, the runtime, and the template grammar.
 5. **`hasLocal` counting bug in `trackLocals`.** Recorded as §03-10 item 12, which owns it.

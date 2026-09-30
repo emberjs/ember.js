@@ -195,7 +195,7 @@ choice breaks someone.
 
 2. `template(src, { strict: false })` is loose through babel `hbs`, strict through babel
    `wire`, and strict at run time, because the runtime reads only `strictMode`. Which option
-   name wins, and what does it mean? (§01-1.11 item 1)
+   name wins, and what does it mean? (§01-1.11 item 1; verified: babel hbs, babel wire, runtime)
 3. `updateComponent` and the classic `willUpdate`/`didUpdate`/`didRender` hooks run on any
    invalidation inside the component's region, not only on argument changes. Tests pin this,
    so finer-grained regions would be incompatible. (§06-12 Q12, §08-14 Q11)
