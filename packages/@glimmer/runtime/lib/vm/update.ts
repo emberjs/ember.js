@@ -63,9 +63,9 @@ export class UpdatingVM implements IUpdatingVM {
       hasErrored = false;
     } finally {
       if (hasErrored) {
-        // Same reasoning as VM#execute in append.ts: the tracking reset must
-        // run in every build, not just DEBUG, or a throwing rerender leaves
-        // the frame open for the life of the process.
+        // Same reason as VM#execute in append.ts.
+        // A rerender that throws would otherwise leave the frame open for good,
+        // so the reset runs in every build.
         let message = resetTracking();
 
         if (DEBUG) {

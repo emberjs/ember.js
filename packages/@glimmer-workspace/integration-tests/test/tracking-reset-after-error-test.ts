@@ -10,14 +10,15 @@ import { isTracking, resetTracking } from '@glimmer/validator';
 
 import { assert } from './support';
 
-// A render that throws part-way through leaves a tracking frame open: the
-// opcode that opened it never reaches the one that would close it. The VM
-// resets the tracking state when that happens, and that reset has to run in
-// every build. When it only ran in DEBUG builds, a production build kept the
-// frame open for the life of the process and every later render added its
-// tags to it. In a browser the page was already broken; in a long-lived
-// server-side renderer (FastBoot) it was a memory leak that grew until the
-// process ran out of heap (emberjs/ember.js#20130).
+// A render that throws part-way leaves a tracking frame open.
+// The opcode that opened it never reaches the one that would close it.
+// The VM resets the tracking state when that happens.
+// That reset has to run in every build.
+// When it ran only in DEBUG builds, a production build kept the frame open
+// for as long as the process lived, and every later render added its tags.
+// In a browser the page was already broken.
+// A long-lived server-side renderer such as FastBoot kept rendering,
+// so it leaked until it ran out of heap (emberjs/ember.js#20130).
 class TrackingResetAfterErrorTest extends RenderTest {
   static suiteName = 'tracking state after a render error';
 

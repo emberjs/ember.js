@@ -758,14 +758,14 @@ export class VM {
           elements.popBlock();
         }
 
-        // Tracking state is module-level in @glimmer/validator. An opcode that
-        // opened a tracking frame and then threw never reaches the matching
-        // close, so without this reset the frame stays open for the life of
-        // the process and every later render adds its tags to it. In a
-        // browser the page is already broken, but a long-lived server render
-        // (FastBoot) keeps going and leaks until it runs out of heap
-        // (emberjs/ember.js#20130). The reset therefore runs in every build;
-        // only the diagnostic report is DEBUG-only.
+        // Tracking state is module-level in @glimmer/validator.
+        // An opcode that opens a frame and then throws never closes it.
+        // Without this reset the frame stays open for the life of the process,
+        // and every render after that adds its tags to it.
+        // In a browser that page is already broken.
+        // A server-side renderer such as FastBoot keeps going, so it leaks
+        // until it runs out of heap (emberjs/ember.js#20130).
+        // The reset runs in every build. Only the report is DEBUG-only.
         let message = resetTracking();
 
         if (DEBUG) {
