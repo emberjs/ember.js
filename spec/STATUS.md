@@ -46,7 +46,7 @@ continue the work. Last updated: 2026-09-29.
 | 02 syntax | ~1410 | Drafted | Edge cases were run through the built `@glimmer/syntax` (more than 200 probes). |
 | 03 static semantics | ~1300 | Drafted | Many claims were compiled against `dist/dev` (built Sep 27). The runtime `eval` form, the babel plugin and runtime rendering were not run. |
 | 04 wire format | ~1560 | Drafted; recast as informative (T1 done). | All examples are real compiler output. |
-| 05 runtime semantics | ~2170 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. T4 added test citations for `each`, `in-element`, `yield`/blocks, modifier ordering, classic lifecycle hooks and destruction order. Claims with no test are marked "(untested)" and gathered in §05-14 item 20. `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. Public-manager component ordering across a tree, and component-hook vs modifier-install order, are untested. |
+| 05 runtime semantics | ~2210 | Drafted | From source. Attribute and SSR/rehydration behavior is test-cited. T4 added test citations for `each`, `in-element`, `yield`/blocks, modifier ordering, classic lifecycle hooks and destruction order. Claims with no test are marked "(untested)" and gathered in §05-14 item 20. `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. Public-manager component ordering across a tree, and component-hook vs modifier-install order, are untested. |
 | 06 managers | ~1470 | Drafted | From source. Citations verified by T3. |
 | 07 reactivity | ~1490 | Drafted | From source. Citations verified by T3. |
 | 08 Ember integration | ~1890 | Drafted | Compile-output claims were checked against `dist/dev`. |
