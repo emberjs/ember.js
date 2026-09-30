@@ -1845,8 +1845,10 @@ commit in scheduling order (document pre-order) (`dom.ts:308-328`,
 `install`. Tests confirm that `update` runs when a consumed argument changes, not on a no-op
 re-render, and never for constant arguments
 (`packages/@glimmer-workspace/integration-tests/test/updating-modifiers-test.ts:28-71`;
-`modifiers-test.ts:56-82`). The pre-order of scheduled updates across elements and the
-same-transaction rule are untested.
+`modifiers-test.ts:56-82`). The pre-order of scheduled updates across elements was
+observed by experiment (T9b): modifiers `a` on an outer element, `b` and `c` on its two
+children, `d` on a later sibling, all consuming one argument, updated in the order
+`a, b, c, d` (verified by experiment, T9b). The same-transaction rule is untested.
 
 ### 10.4 Destruction
 
@@ -2214,10 +2216,10 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     - `yield`/blocks: the owner inside a yielded block; yielding one block several times;
       `has-block`/`has-block-params` constancy and the non-literal-argument compile error;
       `has-block-params` for a `<:else as |x|>` block.
-    - Modifiers: pre-order of scheduled updates; `update` never in the same transaction as
+    - Modifiers: `update` never in the same transaction as
       `install`; timing of replacing a dynamic modifier definition; the element being already
       detached when `destroyModifier` runs; the attribute-less, undocumented element at
       `create` (item 15).
-    - Lifecycle and destruction: the order of `updateModifier` against `didUpdate`; deferred destructors running after
+    - Lifecycle and destruction: deferred destructors running after
       DOM removal and in the `actions` queue (and `isDestroyed` in the `destroy` queue);
       `destroyComponent` order for public managers (item 11).

@@ -1428,8 +1428,13 @@ verified by experiment, T9b). Steps 1 and 3 relative to each other were observed
 each with `<i {{m}}>`, the commit was `c1.didCreateComponent, c2.didCreateComponent,
 p.didCreateComponent, m(c1).install, m(c2).install, m(p).install`; a second tree with
 modifiers on nested plain elements between and inside the components gave all
-`didCreateComponent` calls before any `installModifier`. The parent-first order of modifier
-updates and the relative order of steps 2 and 4 have **no test**. Recorded in §05-14 item 20.
+`didCreateComponent` calls before any `installModifier`. Steps 2 and 4 and the
+parent-first order of modifier updates were also observed (verified by experiment, T9b): after
+an argument change reaching the same tree, the commit was `c1.didUpdateComponent,
+c2.didUpdateComponent, p.didUpdateComponent, m(p).update, m(c1).update, m(c2).update`, and for
+`<div {{m a}}><div {{m b}}></div><div {{m c}}></div></div>` followed by a sibling `<p {{m d}}>`
+the updates ran `a, b, c, d` (document pre-order). Nothing in this section remains untested
+except that no upstream test pins these orders (§05-14 item 20 no longer lists them).
 
 *Note:* a transaction cannot be nested. Beginning one while another is open is a dev
 assertion: `A glimmer transaction was begun, but one already exists...`

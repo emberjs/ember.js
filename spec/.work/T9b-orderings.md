@@ -31,7 +31,7 @@ Resume from the first unticked item. Commit spec/ changes after each item: `spec
 
 - [x] Hook order across a tree of public-manager (custom component manager) components: create/didCreate/update/didUpdate/destroy for parent + two children (§06-11, §05-11). Done: verified, no spec correction.
 - [x] `didCreate` of a component vs `installModifier` of modifiers on its elements (§06-11). Done: verified, no correction.
-- [ ] `updateModifier` vs `didUpdate` order in the same render (§06-11).
+- [x] `updateModifier` vs `didUpdate` order in the same render (§06-11). Done: verified, no correction.
 - [ ] Deferred destructors (`registerDestructor`) run after DOM removal, in the `actions` queue; `isDestroyed` becomes true in the `destroy` queue (§05-11, §06-10.2).
 - [ ] `destroyComponent` order for public managers across a tree (§05-14 item 11).
 - [ ] Modifiers: `updateModifier` never in the same transaction as `installModifier`; element already detached when `destroyModifier` runs (§05-14 item 20 "Modifiers").
@@ -64,5 +64,14 @@ Second tree with modifiers on plain elements between/inside components: all four
 (`d0, d1, e0, d2`) precede all five installs (`b1, eb, e, b2, top`). Also seen: the modifier
 `createModifier` hooks run interleaved with component `createComponent` hooks in document
 pre-order (`p, mod p, c1, mod c1, ...`). Verified; no correction.
+
+### 3. `updateModifier` vs `didUpdate`
+Spec claimed (§06-11 steps 2, 4): all `didUpdate` (children first), then all `updateModifier`
+(document pre-order, parents first).
+Observed after an argument change: `p.update, c1.update, c2.update` (component updates pre-order),
+then at commit `c1.didUpdate, c2.didUpdate, p.didUpdate, m(p).update, m(c1).update, m(c2).update`.
+Plain elements `<div {{m a}}><div {{m b}}></div><div {{m c}}></div></div>{{#if}}<p {{m d}}>{{/if}}`:
+updates `a, b, c, d`. Verified; no correction (this also settles "pre-order of scheduled updates"
+in §05-14 item 20 and §05-10.3).
 
 ## Upstream candidates
