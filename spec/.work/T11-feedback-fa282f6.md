@@ -2,7 +2,7 @@
 
 Resume from the first unticked item.
 
-- [ ] Q1 (§08-14): ruling, keep the silent `{{foo}}` in loose mode (loose mode stays stable while
+- [x] Q1 (§08-14): ruling, keep the silent `{{foo}}` in loose mode (loose mode stays stable while
       it is phased out; ember-template-lint `no-curly-component-invocation` and `no-implicit-this`
       flag it). Update §08-14 Q1, §0.7.1 item 6, §03-5.3 if it discusses it, STATUS decisions.
 - [ ] Q2 (§08-14): branch against origin/main with a test that passes before 4b5d79a6d7d1b

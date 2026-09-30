@@ -52,6 +52,8 @@ continue the work. Last updated: 2026-09-30.
     no new features (§08-14 Q3).
   - Modifier destruction order must not differ between development and production; the
     production (child-first) order is correct for both (2026-09-30, after T9b).
+  - Loose mode stays as stable as possible while it is phased out: the silent `{{foo}}` is
+    kept (2026-09-30, commit `fa282f6d78`; §08-14 Q1).
   - Upstream fixes were requested for the parser `TypeError` crashes (§0.7.2 item 11), the
     content-tag indentation panic (§01-1.11 item 7), and `@tracked accessor` not dirtying the
     object-level cell (§07-5 item 8). Their branches are listed under "Upstream fix branches".

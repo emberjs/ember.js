@@ -215,8 +215,9 @@ choice breaks someone.
 
   > Let's make a bugfix branch for this.
 
-6. In loose mode, `{{foo}}` renders nothing, with no error, when neither `component:foo` nor
-   `helper:foo` exists. (§08-14 Q1)
+6. *Resolved: keep.* In loose mode, `{{foo}}` renders nothing, with no error, when neither
+   `component:foo` nor `helper:foo` exists. Loose mode stays as stable as possible while it is
+   phased out, and linting flags the case. (§08-14 Q1)
 7. *Resolved (accepted):* legacy and stage-3 `@tracked` differ observably in initialization
    timing and accessor placement. This is a property of the decorators, not of the renderer.
    (§07-5 item 7)

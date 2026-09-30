@@ -1860,10 +1860,11 @@ the diagnostic. From Ember 3.26 until the fallback was removed in 4.0, that look
 **[Dev]** `this-property-fallback` deprecation (commit `7b628fc857`, `since: { enabled: '3.26.0' }`,
 `until: '4.0.0'`), so a typo was reported; apps that treated deprecations as errors got an
 exception. Nothing replaced it when the fallback was removed, so today the typo is silent.
-No test pins either outcome for the no-argument case. A
-**[Dev]** error would be one option. (Static side: §03-5.3.)
-
-> This is yucky but loose mode should be kept as stable as possible while it's being phased out. This is a perfect example of why loose mode is "loose" and no longer recommended. So we should maintain this behavior. In practice, the no-curly-component-invocation and no-implicit-this rules in ember-template-lint both flag the problematic case.
+No test pins either outcome for the no-argument case. (Static side: §03-5.3.)
+*Resolved: keep.* A conforming implementation MUST render nothing, without an error, in this
+case. Loose mode is kept as stable as possible while it is phased out, and this is an example
+of why it is no longer recommended. In practice the ember-template-lint rules
+`no-curly-component-invocation` and `no-implicit-this` both flag the problematic template.
 
 **Q2. `{{outlet}}` outside route templates.** `{{outlet}}` is now `<@outlet />`, i.e.
 lexically scoped to the enclosing template's `@outlet` argument. Historically `{{outlet}}` was
