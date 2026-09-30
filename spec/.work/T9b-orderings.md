@@ -19,6 +19,11 @@ Put a throwaway test module in `packages/@ember/-internals/glimmer/tests/integra
 const base = require('./testem.cjs');
 module.exports = { ...base, test_page: `index.html?hidepassed&filter=${encodeURIComponent(process.env.FILTER)}`, reporter: 'tap', port: 13142 };
 ```
+Notes from T9a: `npx vite build` empties `dist/` (fine for these tests). The tap reporter
+hides passing assertions, so also `console.log(JSON.stringify(log))` and read the testem
+"browser log"; a failing assertion prints actual vs expected. Use one `moduleFor` per case if
+components need registering under the same name.
+
 Log calls into an array and `assert.deepEqual` against the order the spec claims; a failing
 assertion prints the actual order.
 
