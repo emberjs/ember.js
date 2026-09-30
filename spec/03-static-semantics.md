@@ -1281,11 +1281,15 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
 11. **`{{#each-in}}` with no params crashes** with a `TypeError` in `TransformEachInIntoEach`.
     `{{#each}}` with no params gives the Ember assertion `has firstParam` instead of the Glimmer
     error, and in production continues with an `undefined` param.
-12. **`trackLocals` counter bug** (`plugins/utils.ts:36` uses the `VarHead` object as the map
-    key), and element block params count as visible for the element's own attributes and
-    modifiers in the Ember plugins, but not in normalization. For example `<Foo {{on ...}} as |on|>`
-    in strict mode: `AutoImportBuiltins` sees `on` as local and does not rewrite it, then
-    normalization finds `on` free and reports "not in scope".
+12. **`trackLocals` counter bug** (`plugins/utils.ts:36` reads the count with the `VarHead`
+    object as the map key but writes it under the name, so the count never exceeds 1).
+    Exiting an inner block that re-binds a name deletes the outer binding too. For example,
+    in strict mode `{{#let a as |on|}}{{#let b as |on|}}{{/let}}{{on}}{{/let}}` rewrites the
+    outer `{{on}}` to the built-in `on` instead of the block param. Untested. Separately,
+    element block params count as visible for the element's own attributes and modifiers in
+    the Ember plugins, but not in normalization. For example `<Foo {{on ...}} as |on|>` in
+    strict mode: `AutoImportBuiltins` sees `on` as local and does not rewrite it, then
+    normalization finds `on` free and reports "not in scope". (§01-1.11 item 5 refers here.)
 13. **`TransformResolutions` local check is dead** (`tail.length === 1`), so shadowing
     `helper`/`modifier` with a block param does not stop the `-resolve` rewrite in loose mode.
 14. **`TransformEachInIntoEach` and `TransformInElement` do no local check**, so a block param

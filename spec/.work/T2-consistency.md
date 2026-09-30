@@ -33,8 +33,10 @@ so check the current text before editing.
   — §01-1.8.5 owns it; corrected "at most once" (thunk can run up to 3 times; values captured once) and added that a component's layout (and scope) is built at definition creation, possibly before it renders (constants.ts:197-219); 04-4.3.3 and 05-1.1 point there.
 - [x] 11 component-definition cache ignores owner
   — new §06-12 Q15 owns it (cache is per renderer, base-renderer.ts:627); §06-1.7, §01-1.8.2 note, 01 Q11 and 04 Q4 point there.
-- [ ] 12 trackLocals bug described once
-- [ ] 13 `{{this.fn}}` plain function → helper
+- [x] 12 trackLocals bug described once
+  — confirmed in utils.ts:28-65; §03-10 item 12 now holds both parts (count bug with 01's example, element-param visibility); 01 Q5 points there.
+- [x] 13 `{{this.fn}}` plain function → helper
+  — 05 and 06 agreed with content.ts:34-69; 06-1.6 cites §05-3.2/§05-3.5; 06 Q14 merged into 05 Q8.
 - [ ] 14 eager helper creation vs lazy values
 - [ ] 15 triple-curly keyword/string literal renders as text
 - [ ] 16 babel hbs round-trip (now compat-relevant; ensure §01-1.5 states it normatively or as an open question)

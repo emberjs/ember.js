@@ -271,7 +271,7 @@ In content position the component check comes before the helper check
 (`packages/@glimmer/runtime/lib/compiled/opcodes/content.ts:34-50`). A value with both
 managers is therefore rendered as a component. A *plain function* in content position,
 such as `{{this.fn}}`, is invoked as a helper with no arguments and its return value is
-rendered (the default helper manager).
+rendered (the default helper manager). §05-3.2 and §05-3.5 own the content-position rules.
 
 ### 1.7 Definition-level caching
 
@@ -1488,9 +1488,7 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   they throw in dev and produce `undefined` in prod. `invokeHelper` throws for them in every
   build. The `@ember/helper` docs also mention a nonexistent `hasDestructor` option and a
   `'3.21.0'` version string (`packages/@ember/helper/index.ts:44-47,140`).
-- **Q14: Content-position precedence.** A value with both a component and a helper manager
-  renders as a component. A plain function in `{{this.fn}}` is *called*. Only the latter
-  is directly tested, and only through helper-position tests. Content position needs a test.
+- **Q14: Content-position precedence.** Recorded as §05-14 item 8, which owns it.
 - **Q15: The component-definition cache ignores the owner.** Because definition records are
   cached per definition object, not per (definition, owner) (§1.7 item 2), a component's
   template factory effectively runs only with the first owner that renders it in a given

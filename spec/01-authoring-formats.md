@@ -1156,11 +1156,8 @@ paired with their component through the resolver, not through `setComponentTempl
    and at a different time than build-time compilation (§1.8.5).
 4. **Private fields in scope** (`scope: (instance) => ({ "#x": instance.#x })`) are specified by
    RFC 0931 but unimplemented in the babel parser, the runtime, and the template grammar.
-5. **`hasLocal` counting bug in `trackLocals`.** `enter` reads `locals.get(param)` (the AST
-   node) instead of `locals.get(name)` (`packages/@ember/template-compiler/lib/plugins/utils.ts:33-37`),
-   so the nesting count never exceeds 1; exiting an inner block that re-binds a name deletes
-   the outer binding. E.g. `{{#let a as |on|}}{{#let b as |on|}}{{/let}}{{on}}{{/let}}` in
-   strict mode would rewrite the outer `{{on}}` to the built-in `on`. Untested.
+5. **`hasLocal` counting bug in `trackLocals`.** Recorded as §03-10 item 12, which owns it.
+   It affects which names AutoImportBuiltins (§1.6.3) treats as shadowed.
 6. **`content-tag` claims `<template>` in any `<`-token position**, including TypeScript
    type arguments and relational expressions (`swc/crates/swc_ecma_parser/src/lexer/mod.rs:454-466`).
    Probably acceptable but unspecified.

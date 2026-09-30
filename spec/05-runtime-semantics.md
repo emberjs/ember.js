@@ -1953,8 +1953,11 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    nothing even in development, while an object without managers throws
    (`content.ts:52-69`). No test covers the error message.
 8. **`{{this.fn}}` calls plain functions.** Any function in content position is treated as a
-   helper (default helper manager) and invoked with no arguments; a class without a component
-   manager will throw a "Class constructor … cannot be invoked without 'new'" TypeError.
+   helper (default helper manager, §06-1.6) and invoked with no arguments; a class without a
+   component manager will throw a "Class constructor … cannot be invoked without 'new'"
+   TypeError. The component check runs before the helper check, so a value with both
+   managers renders as a component. Only the function case is tested, and only through
+   helper-position tests; content-position precedence needs a test.
 9. **`<svg>` inside `<foreignObject>`** is created in the HTML namespace, because the
    integration-point test runs before the `tag == "svg"` test (`operations.ts:53-79`).
 10. **Serialize builder `in-element`** defaults `insertBefore` to `null`, so SSR never clears
