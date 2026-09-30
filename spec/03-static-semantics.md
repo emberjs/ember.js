@@ -1277,7 +1277,11 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
    shadowed by a block param, or by a JS binding passed through `locals` (the babel path).
    A lexical binding passed through `lexicalScope` (the runtime `template()`) does shadow.
    The two authoring paths therefore disagree (verified with `locals: ['mut']` against
-   `scope: () => ({ mut })`).
+   `scope: () => ({ mut })`). (verified: babel wire, runtime; T9a. Babel wire emits the keyword
+   opcode (31) for `{{mut 1}}`, `{{action 1}}`, `{{readonly 1}}` and `{{unbound 1}}` whether the name is in
+   `scope`, bound by `eval` capture, or a block param. At run time a `scope` or `eval` binding of
+   each of the four makes `{{k "x"}}` call the local and render its result, while a block param
+   `|mut|` still gets the keyword, which asserts "You can only pass a path to mut".)
 2. **Loose mode + `lexicalScope`**: `{{foo.bar}}` with a lexical `foo` is a "not in scope"
    error, because `isFreeVar` consults only `locals` (`normalize.ts:131-143`). Angle brackets
    special-case this, but curlies do not.
@@ -1311,11 +1315,22 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
     the Ember plugins, but not in normalization. For example `<Foo {{on ...}} as |on|>` in
     strict mode: `AutoImportBuiltins` sees `on` as local and does not rewrite it, then
     normalization finds `on` free and reports "not in scope". (§01-1.11 item 5 refers here.)
+   (verified: babel wire, runtime; T9a. The nested-`let` example compiles to a lexical reference to the
+   built-in `on` (`[32,0]`), and at run time `[{{on}}]` renders `[[object Object]]` instead of
+   `[b]`/`[a]`; the element example fails with "Attempted to resolve a modifier in a strict mode
+   template, but that value was not in scope: on" on both paths, while `as |x|` compiles.)
 13. **`TransformResolutions` local check is dead** (`tail.length === 1`), so shadowing
     `helper`/`modifier` with a block param does not stop the `-resolve` rewrite in loose mode.
+   (verified: babel wire via `precompileTemplate`, and runtime loose `template()`; T9a.
+   `{{#let 1 as |helper|}}{{helper "foo"}}{{/let}}` compiles to a call of the block param with
+   `(-resolve "helper:foo")` as its first argument, and likewise for `(modifier "foo")`. Babel
+   `template()` cannot show this, because it forces strict mode.)
 14. **`TransformEachInIntoEach` and `TransformInElement` do no local check**, so a block param
     named `each-in` or `in-element` (legal identifiers in Handlebars block params) is still
-    rewritten.
+    rewritten. (verified: babel wire, runtime; T9a. With `|each-in|`, `{{#each-in this.x}}` still
+    compiles to `each` over `(-each-in …)` and the block param is unused; at run time it renders like
+    the control. With `|in-element|`, `{{#in-element this.x}}` gets the `-in-el-null` argument and
+    invokes the block param as a component, which fails at run time with "Got 1, expected:".)
 15. **`action`** is still a keyword (`KEYWORDS_TYPES`, `STRICT_MODE_KEYWORDS`) and is still
     rewritten, but its runtime implementation has been removed (RFC 1006). In strict mode
     every `action` form compiles and then fails at runtime resolution (§03-7.3, §08-2.20).

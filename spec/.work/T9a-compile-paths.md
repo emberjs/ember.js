@@ -29,8 +29,8 @@ Resume from the first unticked item. Commit spec/ changes after each item: `spec
 - [x] §01-1.11 item 1 / §0.7.1 item 2 (verified all three; see Results): `template(src, { strict: false })` is loose through babel `hbs`, strict through babel `wire`, strict at run time. Check all three.
 - [x] §01-1.11 item 2 (verified, babel wire + runtime): runtime implicit (`eval`) form misses locals that are `undefined`, that shadow a global (`name`, `status`), or `this`. Compare with babel.
 - [x] §01-1.11 item 3 (verified, runtime): runtime explicit `scope` uses `in` (inherited names like `toString` accepted) and calls `scope()` twice.
-- [ ] §03-10 item 1: `action`, `mut`, `readonly`, `unbound` can be shadowed via runtime `lexicalScope` but not via babel `locals`.
-- [ ] §03-10 items 12–14 (trackLocals counter bug, element block params, `helper`/`modifier`/`each-in`/`in-element` block params still rewritten): confirm with the babel wire path and at run time.
+- [x] §03-10 item 1 (verified, babel wire + runtime): `action`, `mut`, `readonly`, `unbound` can be shadowed via runtime `lexicalScope` but not via babel `locals`.
+- [x] §03-10 items 12–14 (verified, babel wire + runtime) (trackLocals counter bug, element block params, `helper`/`modifier`/`each-in`/`in-element` block params still rewritten): confirm with the babel wire path and at run time.
 - [ ] §01-1.5.6: the `hbs` target conversions (`template()` → `setComponentTemplate(precompileTemplate(...))`, `strict` → `strictMode`). Spot-check 3 examples.
 - [ ] §01-1.4 implicit vs explicit scope capture at build time: spot-check 3 claims against babel output.
 - [ ] Update STATUS chapter table "Verification" for 01 and 03; update §00-0.6.
@@ -71,3 +71,33 @@ component can only be registered once per test.
 - A counting `scope()` was called 2 times; the stack shows `buildEvaluator` (template.ts:278) then
   `buildCompileOptions` (compile-options.ts:114).
 - Result: chapter right; verification note added to §01-1.11 item 3.
+
+### Item 4: shadowing `action`/`mut`/`readonly`/`unbound`
+- babel wire: for each of the four, with the name in `scope` (via `template()` and
+  `precompileTemplate`), or captured by `eval`, `{{k 1}}` compiles to `[28,[31,0],[1],null]`
+  (31 = GetStrictKeyword), identical to the control with no binding. `{{#let 1 as |mut|}}{{mut 1}}`
+  is also `[31,1]`.
+- runtime: `scope: () => ({ k: () => "SHADOW" })` renders `SHADOW` for all four; `eval` with a local
+  `mut` renders `SHADOW`. Without a binding: `mut` asserts "You can only pass a path to mut",
+  `readonly` and `unbound` render `x`, `action` throws "Strict mode errors should already be handled
+  at compile time". A block param `|mut|` still gets the keyword (same assertion).
+- Result: chapter right; note added to §03-10 item 1.
+
+### Item 5: §03-10 items 12-14
+- 12 (babel wire): `{{#let "a" as |on|}}{{#let "b" as |on|}}{{/let}}{{on}}{{/let}}` compiles to
+  `[[[44,["a"],[[[44,["b"],[[],[2]]],[1,[32,0]]],[1]]]],["on","on"],["let"]]`, so the outer `{{on}}`
+  is a lexical reference (the auto-imported built-in), where the control without the inner let gives
+  `[30,1]` (block param). runtime: renders `[[object Object]]` vs `[a]` for the control.
+  `<Foo {{on "click" this.x}} as |on|></Foo>` fails with "...modifier in a strict mode template...
+  not in scope: on" on both paths; `as |x|` compiles.
+- 13: babel `template()` forces strict, so used `precompileTemplate` (loose):
+  `{{#let 1 as |helper|}}{{helper "foo"}}{{/let}}` gives `[28,[30,1],[[28,[37,1],["helper:foo"],null]],null]`,
+  so `-resolve` is still inserted (free list `["let","-resolve"]`); same for `(modifier "foo")` via
+  `@ember/template-compiler` `precompile`. runtime loose `template()`: the local helper receives the
+  `-resolve` result (errors "Attempted to invoke `(-resolve \"helper:foo\")`, but foo was not a valid
+  helper name" for the subexpression form). `<div {{modifier "foo"}}>` is not a rewrite target.
+- 14 (babel wire): `|each-in|` + `{{#each-in this.x as |k v|}}` gives `[42,[28,[31,2],…]]` with free
+  list `["let","each","-each-in"]`; `|in-element|` + `{{#in-element this.x}}` gives a component
+  invocation `[6,[30,1],[[28,[31,1],…` with `-in-el-null`. Runtime: each-in case renders `<!---->`
+  like control; in-element case throws "Got 1, expected:".
+- Result: chapter right on all three; notes added.
