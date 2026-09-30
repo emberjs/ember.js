@@ -3,7 +3,6 @@ import AssertAgainstAttrs from './assert-against-attrs';
 import AssertAgainstNamedOutlets from './assert-against-named-outlets';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
-import TransformActionSyntax from './transform-action-syntax';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformEachTrackArray from './transform-each-track-array';
 import TransformInElement from './transform-in-element';
@@ -17,7 +16,6 @@ export const INTERNAL_PLUGINS: Record<string, ASTPluginBuilder> = {
   AssertAgainstNamedOutlets,
   AssertInputHelperWithoutBlock,
   AssertReservedNamedArguments,
-  TransformActionSyntax,
   TransformEachInIntoEach,
   TransformEachTrackArray,
   TransformInElement,
@@ -30,7 +28,6 @@ export const INTERNAL_PLUGINS: Record<string, ASTPluginBuilder> = {
 export const RESOLUTION_MODE_TRANSFORMS: readonly ASTPluginBuilder[] = Object.freeze([
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
-  TransformActionSyntax,
   AssertAgainstAttrs,
   TransformEachInIntoEach,
   AssertInputHelperWithoutBlock,
@@ -45,7 +42,6 @@ export const STRICT_MODE_TRANSFORMS: readonly ASTPluginBuilder[] = Object.freeze
   AutoImportBuiltins,
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
-  TransformActionSyntax,
   TransformEachInIntoEach,
   TransformInElement,
   TransformEachTrackArray,
@@ -54,7 +50,6 @@ export const STRICT_MODE_TRANSFORMS: readonly ASTPluginBuilder[] = Object.freeze
 ]);
 
 export const STRICT_MODE_KEYWORDS = Object.freeze([
-  'action',
   'mut',
   'readonly',
   'unbound',

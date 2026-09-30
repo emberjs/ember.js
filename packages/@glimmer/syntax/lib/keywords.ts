@@ -22,7 +22,6 @@ export function isKeyword(word: string, type?: KeywordType): boolean {
  * language, and where their valid usages are.
  */
 export const KEYWORDS_TYPES = {
-  action: ['Call', 'Modifier'],
   component: ['Call', 'Append', 'Block'],
   debugger: ['Append'],
   'each-in': ['Block'],
