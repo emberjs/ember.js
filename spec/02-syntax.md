@@ -1,7 +1,9 @@
 # 02 — Lexical Syntax and Parsing
 
-This chapter specifies how template source text is turned into the canonical parse tree
-(**ASTv1**). It covers the Handlebars mustache layer, the HTML tokenizer layer, how the two
+This chapter specifies how template source text is parsed: which text is accepted, which is
+rejected and with what error, and what structure each accepted template has. It states that
+structure as the current parse tree (**ASTv1**), which serves as the spec's notation; the
+tree itself is not part of the contract (§00-0.1 "Non-goals"). It covers the Handlebars mustache layer, the HTML tokenizer layer, how the two
 are interleaved, whitespace control, character references, source locations, and every
 parse-time error.
 
@@ -41,11 +43,12 @@ A template is parsed by two cooperating tokenizers:
    construct means (child content, attribute value, attribute-value part, element modifier,
    element comment, or error).
 
-A conforming implementation MUST produce the same ASTv1 (modulo the non-enumerable and
-deprecated accessor properties described in §02-7) and the same errors as this two-layer
-process for every input, including the quirks recorded in this chapter. Implementations
-MAY use a different internal architecture (e.g. a single hand-written scanner), but must then
-reproduce the interleaving semantics precisely — in particular, that Handlebars tokenization
+A conforming implementation MUST accept and reject the same inputs as this two-layer
+process, report the same errors, and give every accepted input the structure that the ASTv1
+described here records, including the quirks recorded in this chapter. It need not build
+ASTv1 or expose any parse tree (§00-0.1 "Non-goals"). Implementations MAY use a different
+internal architecture (e.g. a single hand-written scanner), but must then reproduce the
+interleaving semantics precisely — in particular, that Handlebars tokenization
 happens *first and independently of HTML context* (so `{{` inside an HTML attribute value or
 an HTML comment is still a mustache at layer 1), and that whitespace control operates on
 layer-1 content *before* HTML tokenization.
@@ -63,7 +66,7 @@ Handlebars Program  ──►  WhitespaceControl (precompile mode only)
    │  ContentStatement text → HTML tokenizer.tokenizePart(); flushData()
    │  Mustache/Block/Comment → dispatch on tokenizer.state
    ▼
-ASTv1 Template  ──►  AST plugins (options.plugins.ast), see chapter 03
+ASTv1 Template  ──►  AST plugins (options.plugins.ast; implementation-defined), see chapter 03
 ```
 
 ### 1.2 Parse options that affect the result
@@ -1078,14 +1081,19 @@ A literal `<` in content MUST be written as `&lt;` (or inside a string literal /
 
 ---
 
-## 7. ASTv1 — the canonical parse tree
+## 7. ASTv1 — the parse tree used as notation
+
+*Informative as a data structure.* The node shapes below are how this chapter and chapter 03
+state the structure of a parsed template. What they record (for example which part of an
+element is an attribute, a modifier or a comment) is normative through §02-1.1; the field
+names, accessors and deprecated properties are not (§00-0.1 "Non-goals").
 
 Defined in `packages/@glimmer/syntax/lib/v1/nodes-v1.ts`, built by
 `packages/@glimmer/syntax/lib/v1/parser-builders.ts` and `legacy-interop.ts`. Every node has
 `type` and `loc` (a `SourceSpan`, §02-8). Fields marked *(accessor)* are getters/setters, not
 own data; fields marked *(non-enumerable, deprecated)* are defined with `enumerable: false` and
-emit a deprecation when accessed. AST plugins (chapter 03) observe these shapes, so the field
-set is normative for plugin compatibility.
+emit a deprecation when accessed. Today's AST plugins observe these shapes, but plugin
+compatibility is not a goal of this spec.
 
 ### 7.1 Programs
 
@@ -1210,7 +1218,7 @@ a column past the end of a line to the line end.
 Special spans exist for nodes without real source: `synthetic`, `broken`, `nonexistent`
 (`location.ts:18-48`).
 
-### 8.2 Node spans (normative for tooling and error messages; the current wire format's debug info also uses them)
+### 8.2 Node spans (normative where they appear in error messages; the current wire format's debug info also uses them)
 
 | Node | Span |
 |---|---|
@@ -1316,13 +1324,16 @@ In contrast `{{foo.[]}}` yields tail `[""]` without error.
 
 ## 10. Codemod mode and printing
 
+*Informative.* Printing is used only by addon pre-publication tooling, which is outside the
+primary scope (§00-0.1 "Non-goals").
+
 The printer (`packages/@glimmer/syntax/lib/generation/printer.ts`) is not part of compilation
 proper, but it is used on the compile path by `babel-plugin-ember-template-compilation` when
 `targetFormat: 'hbs'`: the template is parsed with `mode: 'codemod'`, AST plugins run, and the
 result is printed with `entityEncoding: 'raw'` (`babel-plugin-ember-template-compilation/src/plugin.ts:544-545`).
 The printed text is later compiled normally. Therefore the observable semantics of such a
 template are those of *print(parse_codemod(src))* re-parsed in precompile mode. Addons publish
-this printed text, so it is part of the compatibility surface (§00-0.2, §01-1.5.6). Relevant facts:
+this printed text; once published it is ordinary template source (§01-1.5.6). Relevant facts:
 
 - In codemod mode, no whitespace is stripped and entities are left encoded, so a `raw` print
   reproduces text and attribute values verbatim (quotes chosen to avoid escaping where possible).

@@ -583,7 +583,7 @@ compiler (§1.4.2, §1.4.3); the default is "nothing is lexical"
 |---|---|
 | `targetFormat: 'wire'` (default) \| `'hbs'` | `'wire'`: replace calls with compiled payloads. `'hbs'`: keep template source, only run user AST transforms and normalize the call form (for codemods and library pre-publication). |
 | `compiler` / `compilerPath` | The Ember template compiler module (required for `'wire'`). If neither is given, resolved from cwd as `ember-source/ember-template-compiler/index.js`, falling back to `ember-source/dist/ember-template-compiler.js`. Must expose `_preprocess` (`src/ember-template-compiler.ts:13-19`). |
-| `transforms` | Extra Glimmer AST plugins (functions, module names, or `[moduleName, options]`). §1.5.7. |
+| `transforms` | Extra Glimmer AST plugins (functions, module names, or `[moduleName, options]`). Implementation-defined; not part of the spec (§1.5.7). |
 | `enableLegacyModules` | Subset of `'ember-cli-htmlbars'`, `'ember-cli-htmlbars-inline-precompile'`, `'htmlbars-inline-precompile'` whose exports are also recognized (§1.5.2). |
 | `outputModuleOverrides` | Remaps emitted imports, e.g. `createTemplateFactory` from another module (`src/plugin.ts:641-648`). |
 
@@ -691,6 +691,10 @@ so key names are debug-only. Details: §04.
 
 ### 1.5.6 Output, `targetFormat: 'hbs'`
 
+*Informative.* The `hbs` target is addon pre-publication tooling: it produces the source an
+addon publishes. It is outside the primary scope (§00-0.1 "Non-goals"). What the spec requires
+is that the published source, once compiled by the app, behaves as §02–§08 describe.
+
 (`src/plugin.ts:522-639`.) The template is parsed with `@glimmer/syntax` `preprocess` in
 `codemod` mode (no whitespace control processing, no entity decoding), user transforms and
 the scope crawl run, and the AST is printed back with `entityEncoding: 'raw'`; the printed
@@ -715,15 +719,21 @@ emitted `precompileTemplate` is later compiled to wire.
 `package.json` `"@glimmer/syntax": ">= 0.94.9"`), not the app's Ember compiler. The
 emitted source is `print(preprocess(src, { mode: 'codemod' }), { entityEncoding: 'raw' })`
 (`src/plugin.ts:544-545`), and it is that text, not the author's original, that the consuming
-app later compiles. Addons publish this output, so this re-printing is part of the
-compatibility surface (§00-0.2). A conforming `hbs` target MUST emit source that means the
-same as the author's template. The current printer does not always do so. §02-10 lists the
-round trips that change meaning: `\{{` escapes become live mustaches, raw blocks become
-ordinary blocks, and bracketed path segments lose their brackets (`{{foo.[bar baz]}}` →
-`{{foo.bar baz}}`, which is a different invocation). Whether a new implementation should
-reproduce these losses is open (§1.11 item 15).
+app later compiles. The current printer does not always preserve meaning. §02-10 lists the
+round trips that change it: `\{{` escapes become live mustaches, raw blocks become ordinary
+blocks, and bracketed path segments lose their brackets (`{{foo.[bar baz]}}` →
+`{{foo.bar baz}}`, which is a different invocation). Output already published this way is
+ordinary template source, and a conforming implementation MUST run it as §02–§08 describe;
+it need not reproduce the re-printing itself. A newer `hbs` target that preserves meaning is
+a tooling change that addons can adopt independently (§1.11 item 15).
 
 ### 1.5.7 AST transform hook and `jsutils`
+
+*Informative.* User-authored AST transforms are not part of the spec (§00-0.1 "Non-goals"):
+the plugin interface and the tree it exposes are implementation-defined, and a conforming
+implementation need not support them. This section documents the current hook because
+Ember's own `AutoImportBuiltins` uses `jsutils`, and because it explains where lexical
+bindings added at build time come from.
 
 User transforms are Glimmer AST plugins (§02/§03 describe the plugin interface: a function
 `env => { name, visitor }`). They run in order, before the scope crawl and before Ember's
@@ -797,14 +807,15 @@ Observable options:
 | `isProduction` | When true, `{{#in-element}}` does not wrap its destination in the [Dev] null check (`packages/@ember/template-compiler/lib/plugins/transform-in-element.ts:35-43`). No other built-in effect. |
 | `locals`, `lexicalScope` | §1.4.6. |
 | `keywords` | Additional names treated as keywords in strict mode (resolved by the runtime environment rather than erroring; `packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:663-676`; test "Non-native keyword", `packages/@glimmer-workspace/integration-tests/test/strict-mode-test.ts:98-118`). Normally set only by step 5. |
-| `plugins.ast` | Extra AST transforms. |
+| `plugins.ast` | Extra AST transforms. Implementation-defined; not part of the spec (§00-0.1 "Non-goals"). |
 | `parseOptions` | Passed to the Handlebars parser (`srcName` etc., §02). |
 | `mode: 'codemod'` | Parse-only mode used by tooling (§02). |
 | `id` | Template id function; default is the first 8 base64 chars of SHA-1 over `JSON.stringify(meta) + blockJSON` when Node's `crypto` is available, else `null` (`packages/@glimmer/compiler/lib/compiler.ts:30-66`, `:131`). Not semantically observable. |
 
 ### 1.6.3 Built-in AST transforms and strict-mode keywords
 
-The built-in transforms are selected by mode (`packages/@ember/template-compiler/lib/plugins/index.ts:29-54`), in this order:
+The behavior these transforms produce is normative (it is specified in §03-7 and §08-1.4);
+their existence and order as AST transforms is not (§00-0.1 "Non-goals"). The built-in transforms are selected by mode (`packages/@ember/template-compiler/lib/plugins/index.ts:29-54`), in this order:
 
 - **Loose** (`RESOLUTION_MODE_TRANSFORMS`): TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments, TransformActionSyntax, AssertAgainstAttrs,
@@ -1223,6 +1234,7 @@ or pods lookup (§08-5). The one remaining registry lookup of a template is the 
     §02-10 (escaped mustaches, raw blocks, bracketed path segments) produce different
     template source, and addons publish that source (§1.5.6). Verified with the built
     `@glimmer/syntax`: `a \{{foo}} b` → `a {{foo}} b`, `{{{{raw}}}} {{x}} {{{{/raw}}}}` →
-    `{{#raw}} {{x}} {{/raw}}`, `{{foo.[bar baz]}}` → `{{foo.bar baz}}`. A new `hbs` target
-    could preserve meaning (a fix) or reproduce the current output byte for byte (bug
-    compatibility). No babel-plugin test covers these inputs. Needs a decision.
+    `{{#raw}} {{x}} {{/raw}}`, `{{foo.[bar baz]}}` → `{{foo.bar baz}}`. No babel-plugin test
+    covers these inputs. *Resolved: outside the primary scope.* This is addon pre-publication
+    tooling, and fixing it is a tooling change that addons can adopt independently. The spec
+    only requires that already-published output runs as written (§00-0.1 "Non-goals").

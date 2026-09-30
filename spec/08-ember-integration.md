@@ -259,8 +259,9 @@ Verified output (loose mode, dev build of `ember-template-compiler`):
 <Foo::Bar />                        => [[8,[39,0],null,null,null]]      upvars ["foo/bar"]
 ```
 
-A new implementation that does not reuse Ember's AST plugins MUST still
-produce the same observable results: `{{outlet}}` MUST read the `@outlet` argument of the
+AST transforms themselves are not part of the contract (§00-0.1 "Non-goals"). A new
+implementation that does not reuse Ember's AST plugins MUST still produce the same
+observable results: `{{outlet}}` MUST read the `@outlet` argument of the
 enclosing template (lexically), `{{#each-in}}` MUST behave per §2.13, `{{#each}}` MUST consume the
 collection-contents storage per §2.14, etc.
 

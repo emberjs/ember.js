@@ -21,12 +21,15 @@ construct is rewritten before it is classified.
 
 1. **Parse** to ASTv1 (§02). Parse-level errors (for example `Illegal use of ...attributes`,
    bad block-param syntax, literal callees in sub-expressions) happen here.
-2. **AST plugins**, run in array order over the ASTv1 tree. Each plugin is a full traversal
+2. **Ember's source rewrites** (§03-7), implemented today as AST plugins run in array order
+   over the ASTv1 tree. Each plugin is a full traversal
    (`packages/@glimmer/syntax/lib/parser/tokenizer-event-handlers.ts:794-802`). The Ember
    plugin list depends on the mode (§03-7). User plugins registered with the Ember compiler run
    *before* the built-in ones (`packages/@ember/template-compiler/lib/compile-options.ts:161-171`).
    Babel's `scope-locals-crawl` plugin runs *after* all of these
-   (`babel-plugin-ember-template-compilation/src/plugin.ts:411-415`).
+   (`babel-plugin-ember-template-compilation/src/plugin.ts:411-415`). User plugins are not part
+   of the spec (§00-0.1 "Non-goals"); the order is stated here because it decides which error
+   a template with several problems reports.
 3. **Normalization** to ASTv2 (`packages/@glimmer/syntax/lib/v2/normalize.ts:37-66`). This
    phase builds the scope chain, turns every variable head into a typed reference
    (`This`, `Arg`, `Local`, `Free`, or strict-mode `Keyword`), gives each free variable
@@ -1006,6 +1009,13 @@ runtime semantics are in §05.
 ---
 
 ## 03-7 Ember AST transforms
+
+The rewrites in this section are how the spec states the meaning of the constructs they
+touch: a template means what its rewritten form means. That meaning, and the errors the
+rewrites report, are normative. Implementing them as AST transforms, in this order and with
+these names, is not (§00-0.1 "Non-goals"; §08-1.4 states the same for the runtime-relevant
+rewrites). Where a rewrite's order is observable (for example, which error wins), the
+section says so.
 
 ### 03-7.0 Order and applicability
 

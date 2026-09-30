@@ -29,7 +29,20 @@ A conforming implementation MUST, for every input that the current implementatio
    rendering entry points (§08).
 
 Implementation internals are not part of the contract. That includes the VM, its opcodes,
-references, tags, revisions, the program heap, and the **wire format** (§04). They are named only in citations and
+references, tags, revisions, the program heap, and the **wire format** (§04).
+
+**Non-goals.** These are outside the contract as well (`plan.md`, "Non-goals"):
+
+- **AST transforms and the AST shape.** The spec uses the parse tree (ASTv1, §02) and
+  Ember's source-to-source rewrites (§03-7) as a notation for stating what a template means.
+  The *behavior* they produce is normative. The trees themselves, the order and existence of
+  individual transforms, and the plugin interface through which user-authored AST transforms
+  run (`plugins.ast`, the babel plugin's `transforms` and `jsutils`, §01-1.5.7) are not. A
+  conforming implementation need not build these trees or accept AST plugins.
+- **Addon pre-publication tooling.** What the spec must reproduce is the meaning of template
+  source that has already been published. How authoring tools map an author's source to the
+  published source, including the babel plugin's `hbs` re-printing (§01-1.5.6, §02-10), can
+  change and be adopted independently, and is outside the primary scope. They are named only in citations and
 "implementation note" asides. Where the current implementation has an observable quirk, the
 spec states it. When the quirk looks like a bug, the chapter's *Open questions* section
 records it and leaves it to the reader to decide whether to preserve it.
@@ -48,7 +61,7 @@ records it and leaves it to the reader to decide whether to preserve it.
                        ▼
    ┌─────────────── compile time ────────────────────────────────────────┐
    │ Lexing & parsing: Handlebars layer + HTML tokenizer → ASTv1  (§02)  │
-   │ Ember AST transforms (§03-7)                                        │
+   │ Ember source rewrites (§03-7; AST transforms today)                 │
    │ Scope, keyword and resolution analysis → ASTv2              (§03)   │
    │ Encoding → wire format                                      (§04)   │
    └─────────────────────────────────────────────────────────────────────┘
@@ -72,8 +85,9 @@ precompiled templates. The source reaches the app's build either as `precompileT
 implementation therefore MAY replace everything from ASTv2 (§03-6) down, for example by
 compiling straight to JavaScript. Chapter 04 is **informative only**: it records how the
 current implementation encodes each construct, as a guide to the existing compiler and
-runtime. Because addons ship source, the way the babel plugin re-prints templates in `hbs`
-mode is part of the compatibility surface (§02-10, §01-1.5).
+runtime. The source that matters is the source addons *publish*. How the babel plugin
+re-prints templates in `hbs` mode on the way to publication is addon tooling, outside the
+primary scope (§0.1 "Non-goals").
 
 ## 0.3 Chapters
 
@@ -173,12 +187,11 @@ looks like a bug, the spec still describes the current behavior (§0.1).
 A new implementation cannot stay neutral on these. Each one is observable, and either
 choice breaks someone.
 
-1. The babel `hbs` target re-prints `a \{{foo}}`, `{{{{raw}}}}…{{{{/raw}}}}` and
-   `{{foo.[bar baz]}}` with a different meaning, and addons publish that output. Should a new
-   `hbs` target preserve meaning or reproduce the output byte for byte? (§01-1.11 item 15,
-   §02-10)
-
-    > Addon's pre-publication tooling is important but can be managed independently of changes to Ember's core rendering. Our priority is to ensure that our spec faithfully executes the handlebars code that people have already published in the same way. Newer versions of addon author tooling that change the mapping from their authored source to their published source are fine, and can be incrementally adopted, but remain outside the primary scope of this spec.
+1. *Resolved: outside the primary scope.* The babel `hbs` target re-prints
+   `a \{{foo}}`, `{{{{raw}}}}…{{{{/raw}}}}` and `{{foo.[bar baz]}}` with a different meaning.
+   That is addon pre-publication tooling, which can change and be adopted independently. The
+   spec's job is to execute already-published source the same way (§0.1 "Non-goals";
+   §01-1.11 item 15, §02-10).
 
 2. `template(src, { strict: false })` is loose through babel `hbs`, strict through babel
    `wire`, and strict at run time, because the runtime reads only `strictMode`. Which option
@@ -258,9 +271,10 @@ choice breaks someone.
     param named `helper`, `modifier`, `each-in` or `in-element` is still rewritten.
     (§03-10 items 12–14)
 
-### 0.7.5 `hbs` round-trip fidelity
+### 0.7.5 `hbs` round-trip fidelity (informative)
 
-The main item is 0.7.1 item 1.
+0.7.1 item 1 puts the `hbs` re-printing outside the primary scope, so these items matter only
+to addon tooling.
 
 23. The printer lower-cases void-tag checks while the parser does not. Raw blocks have no
     ASTv1 marker. The upstream-Handlebars leftovers (`{{&x}}`, `{{^}}`, `foo/bar`,
