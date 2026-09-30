@@ -1875,7 +1875,7 @@ argument (e.g. `{{#if @outlet}}`), which is new surface.
 *Confirmed regression.* The change came with the route manager merge (`4b5d79a6d7d1b`,
 emberjs/ember.js#21460), which changed `transform-wrap-mount-and-outlet` from
 `{{component (-outlet)}}` (which read the outlet state from the dynamic scope) to `<@outlet />`.
-Branch `test/outlet-inside-component` adds tests for `{{outlet}}` inside a template-only and a
+Branch `test/outlet-inside-component` (tracked in emberjs/ember.js#21640) adds tests for `{{outlet}}` inside a template-only and a
 classic component rendered by the application template: both pass at `4b5d79a6d7d1b^1` and fail
 at `4b5d79a6d7d1b` and on current `main`, where the outlet renders as an empty comment. Whether
 to restore the dynamically scoped behavior is open.
