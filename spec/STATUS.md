@@ -61,7 +61,7 @@ Run these in order, one at a time.
 | ID | Task | Model | Checklist | State |
 |---|---|---|---|---|
 | T1 | Recast 04 as informative and remove wire-compat requirements from other chapters | Sonnet | `.work/T1-wire-informative.md` | done |
-| T2 | Cross-chapter consistency pass (items below) | Opus | `.work/T2-consistency.md` | pending; a first attempt was interrupted and may have made a few edits |
+| T2 | Cross-chapter consistency pass | Opus | `.work/T2-consistency.md` | done |
 | T3 | Citation verification (ranges, then whether cited lines contain the claim), 06 and 07 first | Sonnet | `.work/T3-citations.md` | pending; a first attempt fixed 10 citations (`tools/fixes.log`) |
 | T4 | Find test assertions for 05's source-only areas and cite them, or record them as untested | Sonnet | `.work/T4-ch05-tests.md` | pending |
 | T2b | Consolidated open questions in §00-0.7 | Opus | `.work/T2b-open-questions.md` | pending |
@@ -69,86 +69,32 @@ Run these in order, one at a time.
 
 ## Cross-chapter findings (from chapter authors' reports)
 
-These are the inputs to T2. Each should end up either reconciled in the chapters or listed in
-an *Open questions* section. After that, it can be deleted from this list.
+The 21 findings from the chapter authors were all reconciled by T2 and removed from this list.
+`.work/T2-consistency.md` records, for each one, which chapter now owns it and what changed.
+Where the code did not settle a question, it is an *Open questions* item in the owning chapter.
+New cross-cutting notes from T2:
 
-1. **Terminology.** Every chapter uses §07-0's vocabulary. §06 also uses the terms "region" and
-   "re-validated", and §05 uses "render transaction" and "commit phase". Define each once and
-   use it consistently.
-2. **No default modifier or component manager exists.** Plain functions get only the default
-   helper manager (§06). Neither 01, 05 nor 08 may claim otherwise.
-3. **`updateComponent` and `didUpdate`/`didRender` fire on any change within the component's
-   region,** not only when its arguments change. §05-1.6, §06 and §07 must agree.
-4. **Commit-phase ordering.** §06-11 gives component `didCreate`, then `didUpdate`, then
-   modifier installs, then modifier updates. §05 says installs run children-first and
-   updates parent-first. Destruction:
-   - a parent component's destructor is scheduled before its children's;
-   - eager destructors run synchronously, deferred ones in the `actions` queue, and
-     "destroyed" is marked in the `destroy` queue.
-
-   §05-11 and §06-10/§06-11 must agree. Parts of this are inferred from source, not tested (T4).
-5. **Owner for curried components.** The manager's `create` gets the invoking scope's owner,
-   but the layout renders with the curried owner. Helpers and modifiers use the curried owner.
-   §05, §06 and §08 (engines) must agree.
-6. **`{{outlet}}` compiles to `<@outlet />`** and is lexical within route templates (§08-8.3).
-   03, 04 and 05 must not describe it as dynamically scoped.
-7. **`action` remains a syntax keyword and a strict-mode keyword,** and is still rewritten at
-   compile time, but its runtime implementation was removed (§03, §08-2.20).
-8. **Free names in loose mode.** A free identifier in argument position (`{{foo bar}}`)
-   compiles to a strict-keyword lookup, and the dev error then says "strict mode template".
-   A loose `{{foo}}` that resolves to nothing renders nothing silently. §03 owns the static
-   side and §08 the runtime side.
-9. **Auto-imported strict-mode built-ins** must be listed identically in §01 (14 names),
-   §03 and §08-1.3. `eq`/`neq`/`gt`/`gte`/`lt`/`lte`/`and`/`or`/`not`/`element` exist only in
-   strict mode.
-10. **Lexical scope timing.**
-    - §01: lexical values are read at first compile per (template, owner); the runtime
-      explicit form calls `scope()` eagerly, and twice.
-    - §04: the factory calls `scope()` lazily.
-    - §05-1.1: lexical values are constant.
-
-    Reconcile these.
-11. **The component-definition cache ignores the owner** (`@glimmer/program/lib/constants.ts`),
-    so the component's template factory effectively runs only with the first owner (§01, §04,
-    §06-1.7).
-12. **`trackLocals` bug** in `@ember/template-compiler/lib/plugins/utils.ts`. The block-param
-    count is keyed wrongly, so closing an inner block un-shadows the outer binding. §01 and §03
-    both report it; describe it once.
-13. **`{{this.fn}}` with a plain function is invoked as a helper.** The component manager is
-    checked before the helper manager. §05-3 and §06 must agree.
-14. **Eager helper creation.** `{{if c (a) (b)}}` creates both helpers, in the order falsy,
-    truthy, condition (§06). §05-1.1 says "values are lazy". Distinguish instance creation
-    from value computation. Also, a statically compiled template-only invocation never
-    evaluates named arguments that its template doesn't use.
-15. **A triple-curly keyword or string literal renders as text** (`{{{if …}}}`,
-    `{{{"<b>"}}}`) (§03, §04). Pick one owner chapter and reference it from the others.
-16. **The babel `hbs` target round-trip loses meaning** (§02-10, §01-1.5):
-    - `\{{` becomes a live mustache;
-    - raw blocks become ordinary blocks;
-    - `foo.[bar baz]` changes meaning.
-
-    Given the wire-format decision, this is a compatibility-relevant issue.
-17. **Ember transforms summarized in §05** (`-track-array`, which §04 says is applied twice;
-    `-each-in` with swapped block params; `-in-el-null`; quoted `style` becoming unquoted) must
-    match §03-7 and §08-1.4.
-18. **The parser keeps duplicate attributes and duplicate hash keys** (§02). §05 must specify
-    their runtime meaning or list it as an open question.
-19. **Element parameter order.** Attributes come in source order, then modifiers, and `type`
-    moves last when there is no `...attributes`. `unless` compiles to `if (not …)`. §05, §03
-    and §04 must agree.
-20. **`renderComponent` inside a render transaction** returns `undefined`, so its destroy and
-    replace logic do nothing (§08 Q9). §05's transaction model must be consistent with this.
-21. **Chapter 07 must define the terms other chapters depend on:**
-    - "a computation that read no tracked storage never re-runs";
-    - per-component skipping;
-    - the `[]` collection-contents cell.
-
-    §06 must define the named-arguments object that the default helper manager appends
-    (§08-2.6 depends on it).
+1. **`xref.py` only checks that a target exists, not that it is the right one.** T2 found six
+   `§05-12` references (Errors) that meant `§05-11` (Destruction). T5 should spot-check that
+   cross-references point at the intended section, especially in 05.
+2. **Ownership conventions introduced by T2.** Each duplicated rule now has one owner, and the
+   other chapters cite it. The main owners are: commit-phase order §06-11; destroy algorithm
+   §06-10.2; destruction order §05-11; component-region skipping §05-1.6; element parameter
+   order §05-4.1; triple-curly text rule §05-3.5 item 6; lexical-scope timing §01-1.8.5;
+   auto-import rewrite §03-7.1; loose free names §03-5.3 (static) and §08-5 (runtime);
+   `trackLocals` bug §03-10 item 12; `hbs` round trip §01-1.11 item 15. Duplicate open
+   questions were merged into one item, and the others now say "Recorded as …". T2b should
+   collect from the owners.
+3. **Several fixes came from the source, not from the chapters.** These were: classic
+   `willDestroy` runs in the `actions` queue (§08-6.7); `style="a {{x}}"` does trigger the
+   style warning (§08-10.6); `type` is applied *last*, which is why range inputs clamp
+   (§05-4.5.2); roots added during a render are rendered in a later runtime transaction
+   (§07-1.10 item 5); and `-get-dynamic-var`/`-with-dynamic-vars` are no longer emitted by
+   Ember (§05-5.8). T3 and T4 should not "restore" the older wording.
 
 ## Notable suspected bugs (for §0.7)
 
-These are collected from the chapters' open-questions sections. T2 writes the curated version
+These are collected from the chapters' open-questions sections. T2b writes the curated version
 into §00-0.7.
 
 - **Parser.** Some inputs crash with a `TypeError` instead of a syntax error:
@@ -181,5 +127,14 @@ into §00-0.7.
   - `trackedArray`'s per-index cells never narrow invalidation.
   - `trackedObject` breaks `instanceof`.
   - `getValue` after a throw returns a stale value.
+- **Found during T2.**
+  - Duplicate named arguments: a component's layout `@a` sees the first occurrence, while its
+    manager's `args` sees the last (§05-7.3, from source).
+  - Duplicate attributes: `class` is merged only when the element has modifiers or
+    `...attributes`, and a duplicate `type` keeps only the last occurrence (§05-4.9).
+  - `{{{"<b>"}}}` and `{{{if c x}}}`/`{{{helper h}}}` render text (§05-3.5 item 6).
+  - The babel `hbs` target loses `\{{` escapes, raw blocks and bracketed segments (§01-1.11
+    item 15).
+  - `-track-array` is applied twice (harmless, §03-7.8).
 - **Wire format (informative).** There is no version marker, and Ember 5.9–6.3 blocks are
   misread silently. Not a requirement now; keep it as a note only.
