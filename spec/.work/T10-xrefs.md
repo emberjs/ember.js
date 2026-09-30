@@ -20,8 +20,8 @@ Resume from the first unticked item. Commit after each chapter: `spec(T10): <cha
 - [x] 05-runtime-semantics.md (172 refs, 0 fixed)
 - [x] 06-managers.md (105 refs, 0 fixed)
 - [x] 07-reactivity.md (123 refs, 0 fixed)
-- [ ] 08-ember-integration.md
-- [ ] `python3 spec/tools/xref.py` prints nothing
+- [x] 08-ember-integration.md (125 refs, 0 fixed)
+- [x] `python3 spec/tools/xref.py` prints nothing
 
 ## Fixed
 ## Unsure
