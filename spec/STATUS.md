@@ -62,9 +62,9 @@ continue the work. Last updated: 2026-09-30.
 
 ## Upstream fix branches
 
-Fixes requested in `a135fe1862`. The ember.js branches are based on `origin/main`
-(`1ce8f4b270`), which is 7 commits ahead of the local `main` this spec was written against;
-none of those commits touch the files involved.
+Fixes requested by the author during review. The spec branch has `origin/main` merged in at
+`98fa794473` (base `675744ab35`), so the landed fixes below are in this checkout and the spec
+cites their code directly. Branches still open for review are based on that `origin/main`.
 
 | Spec item | Repo | Branch | State | Summary |
 |---|---|---|---|---|
@@ -127,6 +127,7 @@ Run these in order, one at a time.
 | T10 | Hand-check every §-cross-reference | Sonnet | `.work/T10-xrefs.md` | done; 1,054 checked, 0 wrong; every "item N"/"QN" reference resolves to an existing item |
 | T11 | Author feedback `fa282f6d78` (Q1 ruling, outlet regression test, `action` cleanup) | Opus | `.work/T11-feedback-fa282f6.md` | done |
 | T12 | The ten notes swept into `8e838d47cd`; four bugfix/proposal branches; open-question cleanup | Opus | `.work/T12-cleanup.md` | done; resolved items removed from every list, lists renumbered and references rewritten (`tools/prune-open-questions.py`) |
+| T13 | Merge `origin/main` (`98fa794473`: #21636, #21639, #21641) and follow up | Opus | — | done; 68 citations shifted with `tools/remap-citations.py`, the "after this checkout's base" notes rewritten against the new code |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -223,6 +224,8 @@ Suggestions for the plan's author, based on what is still open:
 6. **Turn the spec into a conformance suite.** Many rules already cite the tests that pin
    them. Collecting those into one implementation-independent suite, keyed by section number,
    would give a new implementation something to run against.
-7. **Keep citations current.** Line numbers are accurate for this checkout (`main` merged at
-   `7364f4b36d`). After the next merge, re-run `python3 spec/tools/check-citations.py` and
-   repeat T8 for the files the merge changed (`git diff --name-only <old> HEAD`).
+7. **Keep citations current.** Line numbers are accurate for this checkout (`origin/main`
+   merged at `98fa794473`, upstream base `675744ab35`). After the next merge, run
+   `python3 spec/tools/remap-citations.py 675744ab35 --apply` once, fix its FLAG lines by hand,
+   then run `check-citations.py` and check the prose against what the merge changed
+   (`git diff 675744ab35 <new base> -- packages`), as T8 and T13 did.

@@ -496,7 +496,7 @@ renderElement(tag, params, children):
   close el: schedule `install` for el's modifiers (in creation order) at commit
 ```
 
-(`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:66-151`,
+(`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:66-164`,
 `packages/@glimmer/runtime/lib/vm/element-builder.ts:194-230`,
 `packages/@glimmer/compiler/lib/passes/1-normalization/visitors/element/classified.ts:98-175`,
 `packages/@glimmer/compiler/lib/passes/2-encoding/content.ts:129-137`.)
@@ -518,7 +518,7 @@ properties have been set, and its modifiers have been *created* but not *install
 `install` runs at transaction commit (§05-1.4), after the whole render pass has inserted all DOM.
 
 Modifiers are not created at all, and no modifier hooks run, when the environment
-is not interactive (SSR) (`dom.ts:153-157`, `194-201`; `packages/@glimmer/runtime/lib/environment.ts:164-174`).
+is not interactive (SSR) (`dom.ts:166-170`, `194-201`; `packages/@glimmer/runtime/lib/environment.ts:164-174`).
 
 ### 4.2 Element namespace
 
@@ -769,7 +769,7 @@ of only null/undefined parts yields `null`, removing the attribute.
 
 Each dynamic attribute is a reactive computation; on an update pass, if invalid, it is
 re-evaluated and `update` of its operation is invoked with the new value
-(`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:394-430`). A dynamic attribute
+(`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:407-443`). A dynamic attribute
 whose value is constant (§05-1.7) is applied once and never updated. Attribute updates happen
 during the traversal (§05-1.5), before any modifier `update` hooks of the same pass (which run
 at commit).
@@ -778,7 +778,7 @@ at commit).
 
 For an element that has `...attributes` or any modifier, attributes are first collected into a
 **deferred-attribute list** and applied at once just before the element is inserted
-(`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:519-651`):
+(`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:519-652`):
 
 ```
 record(name, value, namespace, trusting):         -- value: static string or reactive value
@@ -1425,7 +1425,7 @@ next; if it returns `{positional, named}`, those replace the arguments (blocks a
 The observable sequence for one invocation (initial render), where "manager" is the internal
 component manager and capabilities are as defined in chapter 06
 (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts:194-479`,
-`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:401-934`):
+`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:401-935`):
 
 ```
 invoke(definition, args):
@@ -1466,7 +1466,7 @@ On an **update pass**, if the component update region is invalid (§05-1.6):
         manager.didUpdateLayout(state, bounds); queue didUpdate(state) for commit
 ```
 
-(`component.ts:940-968`.) Hook ordering across a tree therefore is:
+(`component.ts:941-969`.) Hook ordering across a tree therefore is:
 
 - `create`: parents before children (pre-order), since a child is created while its parent's
   layout renders.
@@ -1589,7 +1589,7 @@ classic components) do so in their `update` hook (chapter 08).
 `manager.create` always receives the owner of the **invoking** scope
 (`component.ts:429-437`). The owner of the component's *layout scope* — used for resolution
 inside the layout, for nested invocations' `create`, and returned by helpers/modifiers
-created inside it — is (`component.ts:825-853`):
+created inside it — is (`component.ts:826-854`):
 
 1. `manager.getOwner(state)` if the manager has the `hasSubOwner` capability (used by engines,
    chapter 08);
@@ -1674,10 +1674,10 @@ Merge rules per kind:
 |---|---|---|
 | component | curried prepended to invocation positional (`component.ts:345-348`) | invocation names win; curried names added only if absent (`arguments.ts:347-368`); among curries, later (outer) layers override earlier (`Object.assign({}, ...layers)`, `component.ts:340-343`) |
 | helper | `curried.concat(invocation)` (`expressions.ts:115-122`) | `Object.assign({}, ...layers, invocationNamed)` — invocation wins |
-| modifier | `curried.concat(invocation)` (`dom.ts:231-238`) | `Object.assign({}, ...layers, invocationNamed)` — invocation wins |
+| modifier | `curried.concat(invocation)` (`dom.ts:244-251`) | `Object.assign({}, ...layers, invocationNamed)` — invocation wins |
 
 The owner used is the innermost curry's owner (for components, see §05-7.8; for helpers and
-modifiers it is passed to the manager as the owner — `expressions.ts:111-124`, `dom.ts:220-229`).
+modifiers it is passed to the manager as the owner — `expressions.ts:111-124`, `dom.ts:233-242`).
 
 A curried value may be invoked in any position appropriate to its kind:
 
@@ -1783,7 +1783,7 @@ runtime semantics (`packages/@glimmer/runtime/lib/helpers/*.ts`):
 ### 10.1 Static modifiers
 
 For `<div {{m args}}>` with a statically known modifier definition
-(`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:153-192`, `138-151`):
+(`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:166-205`, `138-151`):
 
 ```
 at the modifier's position in the element's params (after all attributes are *recorded*,
@@ -1799,7 +1799,7 @@ when the element is closed (after its children have rendered):
 
 At commit, `install` runs with auto-tracking: storage consumed during `install` (including
 argument reads) determines when `update` is needed (`packages/@glimmer/runtime/lib/environment.ts:63-78`;
-`packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:216-273`,
+`packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:218-275`,
 `packages/@glimmer-workspace/integration-tests/test/managers/modifier-manager-test.ts:165-217`,
 `329-430`: only arguments consumed by a hook cause `update`).
 
@@ -1807,12 +1807,12 @@ Tests: several modifiers on one element install in source order, `<div {{foo}} {
 `foo, bar` (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-324`); a nested
 element's modifiers install before its parent's (`350-370`), and siblings install in document
 order before the parent (`396-423`). When the environment is not interactive no modifier hook
-runs (`custom-modifier-manager-test.js:587-641`). That `create` sees an element with no
+runs (`custom-modifier-manager-test.js:589-643`). That `create` sees an element with no
 attributes and outside the document is untested (§14 item 12).
 
 ### 10.2 Dynamic modifiers
 
-For `<div {{this.m args}}>` / `{{@m}}` / curried modifiers (`dom.ts:194-306`, `330-384`):
+For `<div {{this.m args}}>` / `{{@m}}` / curried modifiers (`dom.ts:207-319`, `330-384`):
 
 ```
   d = value(head)
@@ -1831,7 +1831,7 @@ on update: if d's identity changed:
 
 Tests: a modifier that is `undefined` at first and set later is installed on that update, and is
 destroyed when its enclosing block is removed or the render result is destroyed
-(`custom-modifier-manager-test.js:108-135`;
+(`custom-modifier-manager-test.js:110-137`;
 `packages/@glimmer-workspace/integration-tests/test/modifiers/dynamic-modifiers-test.ts:204-254`);
 curried modifiers with positional and named arguments (`dynamic-modifiers-test.ts:44-138`).
 Replacing one modifier definition by another on an element that stays, and the timing of the
@@ -1842,7 +1842,7 @@ On an update pass, when the traversal reaches an element's modifier position (wh
 element's *opening*, before the element's children), each modifier whose tracked inputs
 (everything consumed by its last `install`/`update` — §06-7.3, §07-2.4.6) have changed is
 **scheduled** for `update`; all scheduled updates run at
-commit in scheduling order (document pre-order) (`dom.ts:308-328`,
+commit in scheduling order (document pre-order) (`dom.ts:321-341`,
 `environment.ts:80-95`). A modifier's `update` never runs in the same transaction as its
 `install` (verified by experiment, T9b; see below). Tests confirm that `update` runs when a consumed argument changes, not on a no-op
 re-render, and never for constant arguments
@@ -1899,15 +1899,15 @@ Registration order within a region is creation order, which is:
   when entered;
 - helper instances: when the helper expression is reached;
 - modifier destroyables: when their element is **closed** (after the element's content). This
-  is the required order in every build.
-  *Fixed on main (emberjs/ember.js#21639), after this checkout's base:* when the debug render tree is enabled (Ember's
-  `ENV._DEBUG_RENDER_TREE`, default `true` in DEBUG builds and `false` in production; always off
-  in the Glimmer test harness), a modifier is associated a second time, earlier, at the moment it
-  is *created* (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:581`, called from
-  `dom.ts:184`, `289`). The first association fixes its position, so development builds register
-  modifiers when their element is **opened**. The author ruled that the production order is
-  correct for both, and #21639 makes development match (§11.3). The citation above
-  is to this checkout, which predates the fix.
+  is the required order in every build, with or without the debug render tree
+  (`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:138-163`: when the debug render tree is
+  on, the modifier's state is associated there too, next to the manager's destroyable).
+  Before emberjs/ember.js#21639, a development build (where Ember's `ENV._DEBUG_RENDER_TREE`
+  defaults to `true`) also associated the state when the modifier was *created*, and that earlier
+  position won, so modifiers were registered when their element was **opened**. The author ruled
+  that the production order is correct for both (§11.3; tests
+  `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js`,
+  "Custom modifier manager: destruction order").
 
 ### 11.2 Destroying
 
@@ -1980,19 +1980,13 @@ scheduled is a walk of the *region* tree in creation order:
   remove the enclosing block and observe `willDestroyElement` after `rerender`, so they pin the
   order but not the queue or the timing relative to DOM removal). These tests run in the Glimmer
   harness, where the debug render tree is disabled. This order is **required in every build**,
-  including development builds with the debug render tree on (author ruling, 2026-09-30).
-  *Fixed on main (emberjs/ember.js#21639):* found by experiment (T9b), with the debug render
-  tree enabled, which is the default in Ember DEBUG builds, Ember used to destroy modifiers in the order they were *created* (element-open, document pre-order), so
-  a parent element's modifier is destroyed before its descendants' and interleaved with components.
-  Observed in Ember (dev) for a tree `{{#if}}<div {{m top}}>{{d0}}<b {{m b1}}></b>{{e0}}{{d2}}<b {{m b2}}></b></div>{{/if}}`
-  where `e0` renders `<div {{m e}}><b {{m eb}}></b>{{d1}}</div>`: destruction order
-  `top, d0, b1, e0, e, eb, d1, d2, b2` (`m x` = the modifier named x, other names the component's
-  `destroyComponent`). With `ENV._DEBUG_RENDER_TREE = false` set before the test's application was created,
-  the same tree gave `d0, b1, e0, eb, d1, e, d2, b2, top`, i.e. child-first as described above. For a
-  component `p` whose layout is `<div {{m p}}>{{c1}}{{c2}}</div>` with modifiers on `c1` and `c2`'s elements:
-  debug tree on `p, m(p), c1, m(c1), c2, m(c2)`; off `p, c1, m(c1), c2, m(c2), m(p)`. The mechanism
-  is `addModifier`'s extra association when the debug render tree exists (§11.1). A conforming
-  implementation MUST use the child-first order whether or not debug tooling is enabled.
+  including development builds with the debug render tree on (author ruling, 2026-09-30), and
+  Ember's own tests now pin it both ways (`packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js`,
+  "Custom modifier manager: destruction order" and "… without the debug render tree": for
+  `<div {{m "outer"}}><span {{m "inner"}}></span><Child /></div>`, where `Child` has its own
+  modifier, the order is `inner, child, outer`). Before emberjs/ember.js#21639 a development build
+  destroyed modifiers in the order they were *created*, interleaved with components, because of
+  an extra association in `addModifier` (found by experiment, T9b).
 - Replacement content is rendered (and its synchronous hooks run) before the old content's
   deferred destructors run (`life-cycle-test.js:1044-1250`: after resetting an `each` to empty,
   the `else` content's components run `init … didInsertElement` before the removed items'

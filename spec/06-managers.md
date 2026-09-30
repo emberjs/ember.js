@@ -153,7 +153,7 @@ fails, the runtime throws one of these, where the prefix is asserted by tests:
 Sources: `packages/@glimmer/manager/lib/public/component.ts:127-135`,
 `helper.ts:89-97`, `modifier.ts:91-99`. Tests:
 `packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:535-583`,
-`custom-modifier-manager-test.js:18-39,315-353`,
+`custom-modifier-manager-test.js:20-41,317-355`,
 `packages/@glimmer-workspace/integration-tests/test/managers/helper-manager-test.ts:427-451`.
 
 In production builds this check is skipped, and any object with the right boolean fields
@@ -216,7 +216,7 @@ The error messages (all [Dev]; production behavior is unspecified and typically 
   function that did not have a modifier manager associated with it. The dynamic
   invocation was `{{<label>}}`, and the incorrect definition is the value at the path
   `<label>`, which was: <v>``
-  (`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:244-257`).
+  (`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:257-270`).
 - Static component: `Attempted to load a component, but there wasn't a component manager
   associated with the definition. The definition was: <v>` (`api.ts:199-212`).
 - Dynamic / curried component: ``Expected a dynamic component definition, but received an
@@ -234,9 +234,9 @@ The error messages (all [Dev]; production behavior is unspecified and typically 
 - Dynamic helper: if the value is not a non-null object or function, the helper produces
   `undefined` and no error is raised (`expressions.ts:134-136`).
 - Dynamic modifier: if the value is not a non-null object or function, no modifier is
-  installed (`dom.ts:205-208`). A modifier installed later, when the value becomes a
+  installed (`dom.ts:218-221`). A modifier installed later, when the value becomes a
   definition, is installed at that time. Test:
-  `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:108-135`.
+  `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:110-137`.
 - Dynamic component: a falsy definition renders nothing
   (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts`,
   `InvokeDynamicComponent`, `JumpUnless 'ELSE'`).
@@ -314,10 +314,10 @@ with the owner of the scope that invoked it, with these exceptions:
 
 - A curried component (`(component X)`, see `05-runtime-semantics.md`) captures the owner
   that was current when the currying happened. Its layout runs with **that** captured
-  owner (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:356-359,825-853`).
+  owner (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:356-359,826-854`).
 - A component whose internal manager has the `hasSubOwner` capability (§8) supplies a new
   owner for its layout through `manager.getOwner(instanceState)`. `{{mount}}` uses this to
-  give an engine's templates the engine instance as owner (`component.ts:833-835`,
+  give an engine's templates the engine instance as owner (`component.ts:834-836`,
   `packages/@ember/-internals/glimmer/lib/component-managers/mount.ts:70-72`).
 
 Owners reach managers as follows:
@@ -328,8 +328,8 @@ Owners reach managers as follows:
 | Helper (static) | The owner of the invoking scope (`expressions.ts:179`). |
 | Helper (dynamic, curried) | The owner captured when the helper was curried (`expressions.ts:111,124`). |
 | Helper (dynamic, not curried) | The invoking scope's owner (`expressions.ts:101,129`). |
-| Modifier (static) | The invoking scope's owner (`dom.ts:158`). |
-| Modifier (dynamic, curried) | The captured owner (`dom.ts:220-233`). |
+| Modifier (static) | The invoking scope's owner (`dom.ts:171`). |
+| Modifier (dynamic, curried) | The captured owner (`dom.ts:233-246`). |
 | `invokeHelper(context, …)` | `getOwner(context)`, which MAY be `undefined` (`invoke.ts:59`). |
 
 A public manager factory receives this owner as its only argument. A manager commonly gives
@@ -555,7 +555,7 @@ When the region is re-validated:
 1. If `updateHook` is true, **`updateComponent(instance, args)`** is called *before*
    anything inside the component's layout is updated. `args` is the same arguments object
    as at creation (`component.ts:161-168`,
-   `packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:940-952`).
+   `packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:941-953`).
 2. The layout's contents are updated (`05-runtime-semantics.md`).
 3. The component is recorded as "updated". In the commit phase, if
    `asyncLifecycleCallbacks && updateHook`, **`didUpdateComponent(instance)`** is called
@@ -897,8 +897,8 @@ element through `...attributes` (`05-runtime-semantics.md`).
 
 **Non-interactive environments.** If the environment is non-interactive (SSR, or
 `isInteractive: false`), the modifier is **not created at all**. No hook is called and no
-argument is evaluated (`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:153-157,201-203`).
-Tests: `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:584-641`,
+argument is evaluated (`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:166-170,214-216`).
+Tests: `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:586-643`,
 and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:333`.
 
 **Interactive environments:**
@@ -915,7 +915,7 @@ and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration
    - Several modifiers on the same element are created in source order.
 2. **Schedule install.** When the element is *closed* (its children have been rendered),
    each of its modifiers is scheduled for installation, in source order. Its state object
-   becomes a destroyable child of the enclosing block (`dom.ts:138-150`). An inner element
+   becomes a destroyable child of the enclosing block (`dom.ts:138-163`). An inner element
    closes before its parent, so an inner element's modifiers are scheduled before the
    outer element's.
 3. **Install (commit phase).** For each scheduled modifier in schedule order,
@@ -929,7 +929,7 @@ and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration
    (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-424`).
 4. **Update.** During an update pass, when the region containing the modifier is
    re-validated and the modifier's dependency set has been invalidated, the modifier is
-   scheduled for update (`dom.ts:308-328`). In the commit phase, after all installs,
+   scheduled for update (`dom.ts:321-341`). In the commit phase, after all installs,
    `updateModifier(instance, args)` runs as a reactive computation. Its consumption
    **replaces** the dependency set.
 
@@ -975,13 +975,13 @@ covers this (Q2).
 - If the value starts as a non-object and later becomes a modifier, the new modifier is
   installed in the commit phase of that update.
 
-Sources: `dom.ts:194-306,330-384`. Tests:
+Sources: `dom.ts:207-319,343-397`. Tests:
 `packages/@glimmer-workspace/integration-tests/test/modifiers/dynamic-modifiers-test.ts:204-251`,
-`custom-modifier-manager-test.js:108-135`.
+`custom-modifier-manager-test.js:110-137`.
 
 For a curried modifier, the curried positional arguments come first, followed by the
 invocation's positional arguments. Curried named arguments are overridden by
-invocation-site named arguments of the same name (`dom.ts:225-232`).
+invocation-site named arguments of the same name (`dom.ts:238-245`).
 
 ### 7.4 The `on` modifier
 
@@ -1070,7 +1070,7 @@ are enabled by capabilities: `prepareArgs`, `update`, `getDynamicLayout`, `getTa
 `didCreateElement`, `getOwner`. Debug tooling may also use `getDebugCustomRenderTree`.
 
 Invocation sequence for an internal manager, with capability gates in brackets
-(`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:304-938`,
+(`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:304-939`,
 `packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts`):
 
 ```
@@ -1106,7 +1106,7 @@ On update, when the region is re-validated, for `[createInstance]` managers:
 - `[updateHook] update(state, dynamicScope)` runs first;
 - then the contents update;
 - then `didUpdateLayout(state, bounds)` runs and the component is recorded for `didUpdate`
-  in the commit phase (`component.ts:940-968`).
+  in the commit phase (`component.ts:941-969`).
 
 ### 8.2 Capability reference
 
@@ -1118,7 +1118,7 @@ On update, when the region is re-validated, for `[createInstance]` managers:
 | `createCaller` | `create` receives the *caller's* `this` as a reactive value. Classic components store it as `_target` for action bubbling. | `null`. |
 | `dynamicScope` | A child frame of the *dynamic scope* is pushed for the component's duration. The frame is passed to `create` and `update`. Writes to it (for example Ember's `view` / `outletState` entries) are visible to descendants only. | No frame is pushed. The component and its descendants share the caller's dynamic scope. |
 | `updateHook` | `update(state, dynamicScope)` runs at the start of each re-validation of the component's region (§4.4). | No update hook. |
-| `dynamicLayout` | If the definition has no statically associated template, `getDynamicLayout(state, resolver)` is called **after `create`** and chooses the layout per instance. A `null` result falls back to the default template. There is no fallback template at definition time (`constants.ts:202-208`, `component.ts:759-791`). | The template associated with the definition, or the default `{{yield}}` template. |
+| `dynamicLayout` | If the definition has no statically associated template, `getDynamicLayout(state, resolver)` is called **after `create`** and chooses the layout per instance. A `null` result falls back to the default template. There is no fallback template at definition time (`constants.ts:202-208`, `component.ts:760-792`). | The template associated with the definition, or the default `{{yield}}` template. |
 | `wrapped` | The layout is compiled in "wrapped" form. At render, `getTagName(state)` is called **once**. A non-null result makes the runtime create that element *around* the layout. `didCreateElement(state, element, operations)` is called after the element is opened and before invocation-site attributes are applied and the element is flushed. The manager may add attributes and classes through `operations` (§8.3). A `null` tag name renders the layout with no wrapper ("tagless"). The layout's own `...attributes` targets still receive invocation attributes (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts`, `WrappedComponent`; `packages/@glimmer/opcode-compiler/lib/wrapped-component.ts`). | The layout renders as-is ("outer HTML" semantics). |
 | `dynamicTag` | Declares that `getTagName` may be used. **Not consulted** by the runtime; `wrapped` alone governs the behavior. The tag name is read once and is not reactive. | — |
 | `elementHook` | Declares `didCreateElement`. **Not consulted**; the hook is called whenever `wrapped` is on and a tag is rendered. | — |
@@ -1129,7 +1129,7 @@ On update, when the region is re-validated, for `[createInstance]` managers:
 ### 8.3 Element operations (`wrapped` components)
 
 The `operations` object passed to `didCreateElement` records attributes for the wrapper
-element (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:525-651`):
+element (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:525-652`):
 
 - `setAttribute(name, reactiveValue, trusting, namespace)` and
   `setStaticAttribute(name, string, namespace)`. For a given name, a **later** set replaces
@@ -1139,7 +1139,7 @@ element (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:525-651`):
   attributes override manager-set attributes of the same name (for example `id`), and
   caller classes are appended after the manager's classes.
 - When the element is flushed, the attributes are written in insertion order, with `type`
-  written **last** (`component.ts:592-616`). Dynamic values update reactively.
+  written **last** (`component.ts:593-617`). Dynamic values update reactively.
 - Element modifiers from the invocation site attach to this element.
 
 ### 8.4 Built-in internal managers (summary)
@@ -1371,8 +1371,8 @@ as a child of the **innermost enclosing block**, at the time it is created:
 | Component destroyable (`manager.getDestroyable(state)`, if non-null) | After `create`, before `getSelf` | `component.ts:448-468` |
 | Helper instance (static), if it has destroyable children, which is always the case with `hasDestroyable` | Helper evaluation | `expressions.ts:181-183` |
 | Dynamic-helper slot, and through it the current helper instance | Helper evaluation / re-creation | `expressions.ts:126-133,145` |
-| Modifier state (`getDestroyable`) | Element close. (Before emberjs/ember.js#21639, with the debug render tree enabled, the Ember DEBUG default, it was also associated at modifier creation, and that position won; §05-11.1) | `dom.ts:138-150`; `component.ts:581` |
-| Dynamic-modifier slot, and through it each installed instance | Modifier evaluation / replacement | `dom.ts:296-305,356-361` |
+| Modifier state (`getDestroyable`) | Element close, with or without the debug render tree. (Before emberjs/ember.js#21639, with the debug render tree enabled, the Ember DEBUG default, it was also associated at modifier creation, and that position won; §05-11.1) | `dom.ts:138-163` |
+| Dynamic-modifier slot, and through it each installed instance | Modifier evaluation / replacement | `dom.ts:309-318,369-374` |
 
 A component's own content (its layout's blocks, modifiers, nested components) is associated
 with the same enclosing block as the component's destroyable, as **later siblings**. It is
@@ -1402,17 +1402,17 @@ walk the runtime records:
 
 - **created components**: `createInstance` managers, recorded when their layout *finishes*
   rendering: post-order, so children before parents and siblings in document order
-  (`component.ts:902-934`);
+  (`component.ts:903-935`);
 - **updated components**: `createInstance` managers whose region was re-validated, recorded
-  when their update finishes: post-order (`component.ts:940-968`);
+  when their update finishes: post-order (`component.ts:941-969`);
 - **scheduled installs**: modifiers, recorded when their element is *closed*, that is after
   the element's children have rendered. The order is post-order by element: an element's
   modifiers come after those of all its descendants, and several modifiers on one element
-  keep their creation order (`dom.ts:137-150`; test `modifiers-test.ts:304-458`);
+  keep their creation order (`dom.ts:137-163`; test `modifiers-test.ts:304-458`);
 - **scheduled updates**: modifiers whose dependencies were invalidated, recorded when the
   update walk reaches the modifier's position. That position is at the element's *opening*,
   before its children (the update check is registered when the modifier is created,
-  `dom.ts:186-191`), so the order is document **pre-order**: a parent element's modifiers
+  `dom.ts:199-204`), so the order is document **pre-order**: a parent element's modifiers
   before its descendants'.
 
 At commit, the runtime runs these in order:

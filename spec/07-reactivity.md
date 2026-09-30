@@ -191,7 +191,7 @@ normative.
 
 | Cell kind | Default policy | Configurable? | Source / test |
 |---|---|---|---|
-| `@tracked` property (any decorator form) and classic `tracked()` | **Always invalidate**, even when the new value is identical (`===`) to the old | Yes: `@tracked({ equals })`. When `equals(old, new)` returns true, the write is skipped entirely (the value is *not* stored and nothing is invalidated) | `packages/@ember/-internals/metal/lib/tracked.ts:351-364`, `:429-441`; tests `packages/@ember/-internals/metal/tests/tracked/options_test.js:9,29,44` |
+| `@tracked` property (any decorator form) and classic `tracked()` | **Always invalidate**, even when the new value is identical (`===`) to the old | Yes: `@tracked({ equals })`. When `equals(old, new)` returns true, the write is skipped entirely (the value is *not* stored and nothing is invalidated) | `packages/@ember/-internals/metal/lib/tracked.ts:351-364`, `:429-442`; tests `packages/@ember/-internals/metal/tests/tracked/options_test.js:9,29,44` |
 | Standalone `tracked(value, options)` (`TrackedValue`) | `Object.is`: equal writes do not invalidate and do not store | Yes: `options.equals` | `packages/@glimmer/validator/lib/tracked-value.ts:67-85,103-111`; tests `packages/@ember/-internals/metal/tests/tracked/standalone_test.js:37,50,63`, `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:281` |
 | `trackedArray` element / `length`, `trackedObject` property, `trackedMap`/`trackedWeakMap` value, `trackedSet`/`trackedWeakSet` membership | `Object.is` against the current value | Yes: `options.equals` (per collection) | §07-3.5 |
 | Plain (untracked) property written with Ember `set()` | Invalidate iff `currentValue !== newValue` (strict inequality, so `NaN → NaN` invalidates and `+0 → -0` does not) | No | `packages/@ember/-internals/metal/lib/property_set.ts:85-103` |
@@ -286,7 +286,7 @@ Consequences, all normative for development builds:
    *Source:* `renderSync`/`renderRoots` call `inTransaction`, which runs `env.commit()` after the
    render body returns (`packages/@glimmer/runtime/lib/environment.ts:218-229`,
    `packages/@glimmer/runtime/lib/render.ts:41-48`). The modifier hooks are wrapped in `track`
-   (`environment.ts:61-100`). Test: `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:305`.
+   (`environment.ts:61-100`). Test: `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:307`.
 6. Writing a cell that was **not** consumed earlier in the transaction is allowed during render.
    For example, a component constructor may initialize its own tracked fields.
 
@@ -556,7 +556,7 @@ The same pattern: `c := C(valueExpr)`. On update, if `!isValid(c)`, recompute an
 value to the attribute's update policy. (The current policy writes `setAttribute` on every
 recomputation for plain attributes, and writes properties only when `!==` the last written
 value. See §05 and `packages/@glimmer/runtime/lib/vm/attributes/dynamic.ts:97-136`.) Replaces
-`UpdateDynamicAttributeOpcode` (`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:408-430`).
+`UpdateDynamicAttributeOpcode` (`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:421-443`).
 
 #### 07-2.4.3 Conditionals
 
@@ -606,7 +606,7 @@ commit (update):    m.cache := createCache(() => manager.update(state)); getValu
 
 Replaces the modifier `UpdatableTag` + `updateTag(modifierTag, track(install))`
 (`packages/@glimmer/runtime/lib/environment.ts:61-100`) and `UpdateModifierOpcode`
-(`dom.ts:308-328`). A manager with `disableAutoTracking` runs its hook inside `untrack`. The
+(`dom.ts:321-341`). A manager with `disableAutoTracking` runs its hook inside `untrack`. The
 cache is then constant, and `update` never runs because of tracked state. See §07-4.9.
 
 #### 07-2.4.7 Component regions, `updateComponent`, and `didUpdate`
@@ -662,7 +662,7 @@ outside the list computation. Replaces `createIteratorRef`, `createIteratorItemR
 The *definition* expression is its own computation. When it is invalid and yields a different
 definition, the old instance is destroyed and a new one is created. When it yields the same
 definition, the instance is kept. (`packages/@glimmer/runtime/lib/compiled/opcodes/expressions.ts:95-170`;
-`dom.ts:193-306,330-392`.)
+`dom.ts:206-319,343-405`.)
 
 #### 07-2.4.10 The renderer loop
 
@@ -841,14 +841,15 @@ Uses:
 
 #### 07-3.1.5 Standard auto-accessor: `@tracked accessor x = init`
 
-Returns `{ get, set }` wrapping the native accessor storage (`tracked.ts:418-443`):
+Returns `{ get, set }` wrapping the native accessor storage (`tracked.ts:418-444`):
 
 - **get:** consume the (instance, key) cell, read the native private storage, and, for arrays,
   also consume the array's `[]` cell.
 - **set:** if `equals` is present and `equals(untrack(read), v)` is true, return. Otherwise
   invalidate the (instance, key) cell **and** the instance's object-level cell, as §07-3.1.2
-  does, and write the native storage. (Until emberjs/ember.js#21636, which landed after this
-  checkout's base, the object-level cell was not invalidated and the cited line lacks it.)
+  does, and write the native storage (`tracked.ts:439-441`). (Before emberjs/ember.js#21636 the
+  object-level cell was not invalidated; test `smoke-tests/scenarios/stable-decorator-files.ts`,
+  "Unit | tracked object tag".)
 - Initialization follows native accessor semantics (eager).
 
 Any other decorator kind (method, getter, setter, class) throws
@@ -1316,7 +1317,7 @@ exercises `this.args` reactivity only.
 4. **Curried arguments** (`(component …)`, `(helper …)`, `(modifier …)`) keep their argument
    computations. Curried named arguments are merged *under* the invocation's own named arguments
    (the invocation's arguments win), and curried positional arguments come first
-   (`expressions.ts:115-122`, `dom.ts:224-236`).
+   (`expressions.ts:115-122`, `dom.ts:237-249`).
 5. `(hash)` produces an object whose *properties* are the named-argument computations. Reading
    `h.k` through a path evaluates only argument `k`, but reading the `hash` value itself reifies
    every named argument (`packages/@glimmer/runtime/lib/helpers/hash.ts`). `(array)` reifies all
@@ -1415,11 +1416,11 @@ yielder (§07-4.2 "Sharing"; tests
    dependencies.
 3. On revalidation, if the last hook call's computation is invalid, `updateModifier` is
    scheduled and runs in that transaction's commit phase, after all `install`s
-   (`dom.ts:308-328`, `environment.ts:61-100`).
+   (`dom.ts:321-341`, `environment.ts:61-100`).
 4. For a *dynamic* modifier, a changed definition destroys the old instance and installs a new
-   one. An unchanged definition goes through the ordinary update path (`dom.ts:330-392`).
+   one. An unchanged definition goes through the ordinary update path (`dom.ts:343-405`).
 5. Modifiers do not run in non-interactive environments (SSR), so nothing is tracked for them
-   there (`dom.ts:196-202`; `environment.ts:164-174`).
+   there (`dom.ts:209-215`; `environment.ts:164-174`).
 
 ### 07-4.10 Ordering within a revalidation
 

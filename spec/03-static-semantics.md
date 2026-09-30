@@ -320,7 +320,7 @@ so on are rejected earlier by normalization with "You attempted to render/invoke
 
 ### 03-4.2 The keyword registry
 
-`KEYWORDS_TYPES` (`packages/@glimmer/syntax/lib/keywords.ts:24-45`) is the authoritative list
+`KEYWORDS_TYPES` (`packages/@glimmer/syntax/lib/keywords.ts:24-44`) is the authoritative list
 of Glimmer-native keyword names, with the positions in which each is *valid*:
 
 | Keyword | Append | Block | Call | Modifier | Implemented by Glimmer compiler? |
@@ -616,9 +616,9 @@ expression instead of a variable reference (`normalize.ts:226-236`). Such an exp
 - is **not** shadowed by block params or `locals` (§03-3.4, §03-10).
 
 Ember's list is `STRICT_MODE_KEYWORDS = ['mut', 'readonly', 'unbound', '-each-in',
-'-in-el-null', '-track-array', '-mount']` (`packages/@ember/template-compiler/lib/plugins/index.ts:56-70`).
-(`action` was removed from this list and from `KEYWORDS_TYPES` by emberjs/ember.js#21641, after
-this checkout's base; the cited lines still include it. See §03-7.3.) The `-` names can only arise from the Ember rewrites (§03-7), because they are not valid
+'-in-el-null', '-track-array', '-mount']` (`packages/@ember/template-compiler/lib/plugins/index.ts:52-65`).
+(`action` was removed from this list and from `KEYWORDS_TYPES` by emberjs/ember.js#21641; see
+§03-7.3.) The `-` names can only arise from the Ember rewrites (§03-7), because they are not valid
 JS identifiers. The Glimmer test `'Non-native keyword'` shows the generic mechanism
 (`strict-mode-test.ts:98-118`).
 
@@ -1019,13 +1019,13 @@ section says so.
 
 ### 03-7.0 Order and applicability
 
-**[Loose mode]** (`RESOLUTION_MODE_TRANSFORMS`, `plugins/index.ts:30-42`), in order:
+**[Loose mode]** (`RESOLUTION_MODE_TRANSFORMS`, `plugins/index.ts:28-39`), in order:
 1 `TransformQuotedBindingsIntoJustBindings`, 2 `AssertReservedNamedArguments`,
 3 `TransformActionSyntax`, 4 `AssertAgainstAttrs`, 5 `TransformEachInIntoEach`,
 6 `AssertInputHelperWithoutBlock`, 7 `TransformInElement`, 8 `TransformEachTrackArray`,
 9 `AssertAgainstNamedOutlets`, 10 `TransformWrapMountAndOutlet`, 11 `TransformResolutions`.
 
-Strict mode (`STRICT_MODE_TRANSFORMS`, `plugins/index.ts:44-54`), in order:
+Strict mode (`STRICT_MODE_TRANSFORMS`, `plugins/index.ts:41-50`), in order:
 1 `AutoImportBuiltins`, 2 `TransformQuotedBindingsIntoJustBindings`,
 3 `AssertReservedNamedArguments`, 4 `TransformActionSyntax`, 5 `TransformEachInIntoEach`,
 6 `TransformInElement`, 7 `TransformEachTrackArray`, 8 `AssertAgainstNamedOutlets`,
@@ -1083,8 +1083,8 @@ no longer stringified by concatenation (see §05 for the effect on `SafeString` 
 
 This rewrite, which inserted `this` as the first argument of `{{action …}}`, `(action …)` and
 `<div {{action …}}>`, was removed together with `action`'s keyword status by
-emberjs/ember.js#21641 (after this checkout's base, which still has
-`plugins/transform-action-syntax.ts`). The runtime `action` helper and modifier had already been
+emberjs/ember.js#21641 (which deleted `plugins/transform-action-syntax.ts`; test
+`packages/@ember/-internals/glimmer/tests/integration/action-is-not-a-keyword-test.js`). The runtime `action` helper and modifier had already been
 removed (RFC 1006). `action` is now an ordinary name: in strict mode it must be in scope, and a
 lexical `action` binding is used like any other; in loose mode `action` resolves through the
 registry like any other helper or modifier, and a registered `helper:action` receives exactly

@@ -334,7 +334,7 @@ Two different block parameters with the same source name in different blocks rec
 
 The number of slots of a layout is `symbols.length + 1`
 (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/shared.ts:122`,
-`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:852`).
+`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:853`).
 
 ### 4.4.3 Upvars (the free-name table)
 
@@ -588,7 +588,7 @@ is the name. Emitted for **every** free variable in "strict resolution", which c
 1. In strict mode, a host-provided *keyword* name (the `keywords` compile option; Ember
    passes `STRICT_MODE_KEYWORDS`: `mut`, `readonly`, `unbound`, `-each-in`,
    `-in-el-null`, `-track-array`, `-mount`,
-   `packages/@ember/template-compiler/lib/plugins/index.ts:56-70`).
+   `packages/@ember/template-compiler/lib/plugins/index.ts:52-65`).
 2. In loose mode, a free name in an *argument* position of a call, e.g. `bar` in
    `{{foo bar}}` → `[1,[28,[35,0],[[31,1]],null]]` (§4.12.4). See Open question 2.
 
@@ -1205,7 +1205,7 @@ The caller supplies named arguments as a Hash (keys with `@` for `Component`; th
 adds `@` for `Block`/`InvokeComponent`, `statements.ts:389-393`). In the callee's layout,
 the argument `@name` is visible in slot `symbols.indexOf("@name") + 1`, if present
 (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts:277`, `301`;
-runtime `packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:855-870`). Arguments the
+runtime `packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:856-871`). Arguments the
 callee's layout never references are still passed to the component manager (§06) but
 bound to no slot.
 
@@ -1213,7 +1213,7 @@ bound to no slot.
 
 For each named block `n` supplied by the caller, the callee slot
 `symbols.indexOf("&" + n) + 1`, if present, holds that block
-(`components.ts:246`, `component.ts:872-893`). The caller's `default`/`else` blocks bind
+(`components.ts:246`, `component.ts:873-894`). The caller's `default`/`else` blocks bind
 to `&default`/`&else`. The "has default block" flag passed to the manager's `create`
 (§06) is whether a `default` block was supplied (`components.ts:319-320`).
 

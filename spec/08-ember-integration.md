@@ -134,7 +134,7 @@ available without an explicit import:
 
 **(a) Auto-imported built-ins.** The AST plugin `auto-import-builtins`
 (`packages/@ember/template-compiler/lib/plugins/auto-import-builtins.ts:10-69`) runs first in
-strict mode (`plugins/index.ts:44-54`). §03-7.1 specifies the rewrite normatively; this
+strict mode (`plugins/index.ts:41-50`). §03-7.1 specifies the rewrite normatively; this
 section records its runtime meaning. They are not keywords (§03-4.7). For every
 `PathExpression` whose `original` is one of
 
@@ -175,7 +175,7 @@ auto-imported; they must be imported (`import { concat, get, uniqueId } from '@e
 mut, readonly, unbound, -each-in, -in-el-null, -track-array, -mount
 ```
 
-(`plugins/index.ts:56-70`). These free names compile to strict-keyword references
+(`plugins/index.ts:52-65`). These free names compile to strict-keyword references
 (`GetStrictKeyword`, §04) and are resolved at runtime by `lookupBuiltInHelper`
 (§1.1). `action` was removed from this list by emberjs/ember.js#21641 (§2.20).
 
@@ -207,7 +207,7 @@ JS globals, *not* like `(array)`/`(hash)`.
 
 Chapter 03 specifies the Ember AST plugins precisely. This section records the rewrites whose
 *runtime* consequences this chapter depends on. Loose-mode order is
-(`plugins/index.ts:30-42`):
+(`plugins/index.ts:28-39`):
 
 1. `transform-quoted-bindings-into-just-bindings` — `style="{{x}}"` (a single mustache in quotes)
    becomes `style={{x}}` (`transform-quoted-bindings-into-just-bindings.ts:4-47`). This matters
@@ -247,7 +247,7 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
     `The ${type} keyword requires at least one positional arguments <loc>`.
 
 Strict mode runs `auto-import-builtins` first, then steps 1, 2, 5, 7, 8, 9, 10
-(`plugins/index.ts:44-54`) — i.e. no `attrs` assertion, no `input` assertion, no
+(`plugins/index.ts:41-50`) — i.e. no `attrs` assertion, no `input` assertion, no
 `transform-resolutions`.
 
 Verified output (loose mode, dev build of `ember-template-compiler`):
@@ -641,8 +641,8 @@ longer a syntax keyword, a strict keyword (§1.3(b)), or rewritten by `transform
   (`Attempted to resolve a helper in a strict mode template, but that value was not in scope: action`,
   and the component-or-helper and modifier variants), and a lexical `action` binding works.
 
-(This checkout predates #21641, so its code still has the keyword and rewrite.) The `@action`
-*decorator* from `@ember/object` is unrelated and remains.
+(Tests: `packages/@ember/-internals/glimmer/tests/integration/action-is-not-a-keyword-test.js`.)
+The `@action` *decorator* from `@ember/object` is unrelated and remains.
 
 ### 2.21 `on` modifier
 
@@ -963,7 +963,7 @@ Note that re-processing assigns *all* argument properties, not just changed ones
 ### 6.2 Template selection (layout)
 
 In priority order (`curly.ts:146-173`; `packages/@glimmer/program/lib/constants.ts:190-270`;
-`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:768-790`):
+`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:769-791`):
 
 1. A template associated with the class via `setComponentTemplate` (colocated `.hbs`, template
    tag, or explicit) — inherited through the class hierarchy
@@ -994,7 +994,7 @@ form) and element modifiers are applied to that element (the "attribute hook", �
   (`You cannot use \`classNameBindings\` on a tag-less component: ${component}`), no
   `attributeBindings`, no `elementId` unless it equals the passed `id`
   (`You cannot use \`elementId\` on a tag-less component: ${component}`); no DOM event handler
-  methods (`component.ts:940-961`,
+  methods (`component.ts:941-962`,
   ``You can not define `${names}` function(s) to handle DOM event in the `${this}` tagless component since it doesn't have any DOM element.``).
   `this.element` is `null`.
 - **Element attributes**, applied when the element is created (`curly.ts:381-427`), *in this
@@ -1018,7 +1018,7 @@ form) and element modifiers are applied to that element (the "attribute hook", �
   (`packages/@ember/-internals/views/lib/views/states.ts:66-94`). **[Dev]** `elementId` may
   not be a computed property.
 - `classNames` and `classNameBindings` are *concatenated properties* (subclasses append to
-  superclass values) and `attributeBindings` too (`component.ts:805-821`). **[Dev]** must be
+  superclass values) and `attributeBindings` too (`component.ts:806-822`). **[Dev]** must be
   arrays, not computed properties; `classNames` entries must be static strings
   (`component.ts:963-989`).
 
