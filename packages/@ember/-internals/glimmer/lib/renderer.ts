@@ -57,6 +57,7 @@ import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
+import { renderers } from './renderers';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
 import { makeRouteTemplate } from './component-managers/route-template';
@@ -273,8 +274,6 @@ class ClassicRootState {
     }
   }
 }
-
-const renderers: BaseRenderer[] = [];
 
 export function _resetRenderers() {
   renderers.length = 0;

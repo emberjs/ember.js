@@ -1,12 +1,13 @@
 import {
   ApplicationTestCase,
+  defComponent,
   ModuleBasedTestResolver,
   moduleFor,
   strip,
 } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
-import { Component, setComponentManager } from '@ember/-internals/glimmer';
+import { Component, renderComponent, setComponentManager } from '@ember/-internals/glimmer';
 import type { InternalOwner } from '@ember/-internals/owner';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
@@ -1215,6 +1216,91 @@ if (ENV._DEBUG_RENDER_TREE) {
             children: [],
           },
         ]);
+      }
+
+      async '@test components rendered with renderComponent'() {
+        await this.visit('/');
+
+        let HelloWorld = defComponent('Hello {{@name}}', {
+          component: templateOnlyComponent('my-app/components/hello-world', 'HelloWorld'),
+        });
+        let Root = defComponent('<HelloWorld @name="world" />', { scope: { HelloWorld } });
+        let into = document.createElement('div');
+
+        let result = runTask(() => renderComponent(Root, { owner: this.owner, into }));
+
+        let roots = captureRenderTree(this.owner).filter((node) => node.type === 'component');
+
+        this.assertRenderNodes(
+          roots,
+          [
+            {
+              type: 'component',
+              name: '{ROOT}',
+              args: { positional: [], named: {} },
+              instance: null,
+              template: '(unknown template module)',
+              bounds: this.elementBounds(into),
+              children: [
+                {
+                  type: 'component',
+                  name: 'HelloWorld',
+                  args: { positional: [], named: { name: 'world' } },
+                  instance: null,
+                  template: '(unknown template module)',
+                  bounds: this.elementBounds(into),
+                  children: [],
+                },
+              ],
+            },
+          ],
+          'root'
+        );
+
+        runTask(() => result.destroy());
+      }
+
+      async '@test components rendered with renderComponent and a different owner'() {
+        await this.visit('/');
+
+        let HelloWorld = defComponent('Hello {{@name}}', {
+          component: templateOnlyComponent('my-app/components/hello-world', 'HelloWorld'),
+        });
+        let Root = defComponent('<HelloWorld @name="world" />', { scope: { HelloWorld } });
+        let owner = {};
+        let into = document.createElement('div');
+
+        let result = runTask(() => renderComponent(Root, { owner, into }));
+
+        let roots = captureRenderTree(this.owner).filter((node) => node.type === 'component');
+
+        this.assertRenderNodes(
+          roots,
+          [
+            {
+              type: 'component',
+              name: '{ROOT}',
+              args: { positional: [], named: {} },
+              instance: null,
+              template: '(unknown template module)',
+              bounds: this.elementBounds(into),
+              children: [
+                {
+                  type: 'component',
+                  name: 'HelloWorld',
+                  args: { positional: [], named: { name: 'world' } },
+                  instance: null,
+                  template: '(unknown template module)',
+                  bounds: this.elementBounds(into),
+                  children: [],
+                },
+              ],
+            },
+          ],
+          'root'
+        );
+
+        runTask(() => result.destroy());
       }
 
       async '@test <Input> components'() {
