@@ -1483,8 +1483,14 @@ sibling case is in `packages/@ember/-internals/glimmer/tests/integration/compone
 per-instance sequences `createComponent, getContext, didCreateComponent` and
 `updateComponent, didUpdateComponent` are tested
 (`packages/@ember/-internals/glimmer/tests/integration/custom-component-manager-test.js:476-535`,
-`694-757`); the ordering across a tree of public-manager components, and against modifier
-installs (§06-11), is untested.
+`694-757`). The ordering across a tree of public-manager components was observed by experiment
+(T9b; a parent `p` with children `c1`, `c2`, all with `updateHook`, `destructor` and
+`asyncLifecycleCallbacks`): initial render `p.createComponent, c1.createComponent,
+c2.createComponent, c1.didCreateComponent, c2.didCreateComponent, p.didCreateComponent`; an
+argument change reaching all three `p.updateComponent, c1.updateComponent, c2.updateComponent,
+c1.didUpdateComponent, c2.didUpdateComponent, p.didUpdateComponent`; removal of the enclosing
+`if` `p.destroyComponent, c1.destroyComponent, c2.destroyComponent`. This matches the bullets
+above (verified by experiment, T9b). Its order against modifier installs is in §06-11.
 The public custom component manager (chapter 06) maps: `createComponent` ← `create`,
 `getContext` ← `getSelf` (called once per instance), `updateComponent` ← `update` (only with the
 `updateHook` capability), `didCreateComponent` / `didUpdateComponent` ← `didCreate` /
@@ -2212,8 +2218,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       `install`; timing of replacing a dynamic modifier definition; the element being already
       detached when `destroyModifier` runs; the attribute-less, undocumented element at
       `create` (item 15).
-    - Lifecycle and destruction: hook order across a tree of public-manager components;
-      `didCreate` of a component before installs of modifiers on its elements (§06-11);
+    - Lifecycle and destruction: `didCreate` of a component before installs of modifiers on its elements (§06-11);
       the order of `updateModifier` against `didUpdate`; deferred destructors running after
       DOM removal and in the `actions` queue (and `isDestroyed` in the `destroy` queue);
       `destroyComponent` order for public managers (item 11).

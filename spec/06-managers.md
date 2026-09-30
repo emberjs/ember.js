@@ -1421,10 +1421,11 @@ commit-phase order. §05-1.4 and §07-1.10 refer to it.
 Test status: the child-first order of creation and update hooks is pinned for classic
 components (`life-cycle-test.js:305-537`: `didInsertElement`/`didRender` bottom → top, `didUpdate`
 bottom → top), and the child-first order of modifier installs by
-`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-458`. Steps 1 and 3
-relative to each other (component hooks before modifier installs), the parent-first order of
-modifier updates, and the relative order of steps 2 and 4 have **no test**; nor does any
-test nest public-manager components. Recorded in §05-14 item 20.
+`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-458`. The hook
+order across a tree of public-manager components was observed by experiment (T9b; the hook list in §05-7.4 is
+verified by experiment, T9b). Steps 1 and 3 relative to each other (component hooks
+before modifier installs), the parent-first order of modifier updates, and the relative order
+of steps 2 and 4 have **no test**. Recorded in §05-14 item 20.
 
 *Note:* a transaction cannot be nested. Beginning one while another is open is a dev
 assertion: `A glimmer transaction was begun, but one already exists...`

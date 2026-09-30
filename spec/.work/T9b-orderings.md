@@ -29,7 +29,7 @@ assertion prints the actual order.
 
 Resume from the first unticked item. Commit spec/ changes after each item: `spec(T9b): ...`.
 
-- [ ] Hook order across a tree of public-manager (custom component manager) components: create/didCreate/update/didUpdate/destroy for parent + two children (§06-11, §05-11).
+- [x] Hook order across a tree of public-manager (custom component manager) components: create/didCreate/update/didUpdate/destroy for parent + two children (§06-11, §05-11). Done: verified, no spec correction.
 - [ ] `didCreate` of a component vs `installModifier` of modifiers on its elements (§06-11).
 - [ ] `updateModifier` vs `didUpdate` order in the same render (§06-11).
 - [ ] Deferred destructors (`registerDestructor`) run after DOM removal, in the `actions` queue; `isDestroyed` becomes true in the `destroy` queue (§05-11, §06-10.2).
@@ -37,5 +37,22 @@ Resume from the first unticked item. Commit spec/ changes after each item: `spec
 - [ ] Modifiers: `updateModifier` never in the same transaction as `installModifier`; element already detached when `destroyModifier` runs (§05-14 item 20 "Modifiers").
 - [ ] Update §05-14 item 20, STATUS chapter table (05 row), §00-0.6, §0.7.9.
 
+
 ## Results
+
+Harness: throwaway `packages/@ember/-internals/glimmer/tests/integration/t9b-orderings-test.js`
+(copy in the scratchpad `t9b/`), Ember dev build, Chrome via testem. Public component manager with
+`componentCapabilities('3.13', {asyncLifecycleCallbacks, destructor, updateHook})`; tree
+`{{#if show}}{{x-parent}}{{/if}}` where `x-parent` renders `x-child` twice.
+
+### 1. Hook order across a public-manager tree
+Spec claimed: create pre-order; `didCreate` post-order (children first); `updateComponent`
+pre-order; `didUpdate` post-order; destroy parent-first (§05-7.4, §06-11, §05-11.3).
+Observed:
+- initial: `p.create, c1.create, c2.create, c1.didCreate, c2.didCreate, p.didCreate`
+- update (arg reaches all): `p.update, c1.update, c2.update, c1.didUpdate, c2.didUpdate, p.didUpdate`
+- destroy (`if` turned off): `p.destroyComponent, c1.destroyComponent, c2.destroyComponent`, each in the
+  `actions` queue.
+Verified; no correction.
+
 ## Upstream candidates
