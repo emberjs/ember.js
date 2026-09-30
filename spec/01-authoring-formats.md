@@ -706,6 +706,19 @@ text replaces the first argument. Printing may normalize whitespace inside musta
 Ember's own built-in AST transforms (§1.6.3) do *not* run in `hbs` mode; they run when the
 emitted `precompileTemplate` is later compiled to wire.
 
+**Meaning of the emitted source.** The parse and print use the babel plugin's own
+`@glimmer/syntax` dependency (`babel-plugin-ember-template-compilation/src/plugin.ts:10`,
+`package.json` `"@glimmer/syntax": ">= 0.94.9"`), not the app's Ember compiler. The
+emitted source is `print(preprocess(src, { mode: 'codemod' }), { entityEncoding: 'raw' })`
+(`src/plugin.ts:544-545`), and it is that text, not the author's original, that the consuming
+app later compiles. Addons publish this output, so this re-printing is part of the
+compatibility surface (§00-0.2). A conforming `hbs` target MUST emit source that means the
+same as the author's template. The current printer does not always do so. §02-10 lists the
+round trips that change meaning: `\{{` escapes become live mustaches, raw blocks become
+ordinary blocks, and bracketed path segments lose their brackets (`{{foo.[bar baz]}}` →
+`{{foo.bar baz}}`, which is a different invocation). Whether a new implementation should
+reproduce these losses is open (§1.11 item 15).
+
 ### 1.5.7 AST transform hook and `jsutils`
 
 User transforms are Glimmer AST plugins (§02/§03 describe the plugin interface: a function
@@ -1195,3 +1208,10 @@ paired with their component through the resolver, not through `setComponentTempl
     (`packages/ember-template-compiler/lib/system/compile.ts:30-32`), so
     `compile(src, { strictMode: true, locals: [...] })` produces a scope closure referring to
     globals. Probably intended; unspecified.
+15. **The `hbs` target changes the meaning of some templates.** The round trips listed in
+    §02-10 (escaped mustaches, raw blocks, bracketed path segments) produce different
+    template source, and addons publish that source (§1.5.6). Verified with the built
+    `@glimmer/syntax`: `a \{{foo}} b` → `a {{foo}} b`, `{{{{raw}}}} {{x}} {{{{/raw}}}}` →
+    `{{#raw}} {{x}} {{/raw}}`, `{{foo.[bar baz]}}` → `{{foo.bar baz}}`. A new `hbs` target
+    could preserve meaning (a fix) or reproduce the current output byte for byte (bug
+    compatibility). No babel-plugin test covers these inputs. Needs a decision.

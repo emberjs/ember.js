@@ -1137,6 +1137,11 @@ properties of undefined (reading 'type')`; verified). See §03-10.
   goes on with `undefined`. See §03-10.
 - If `params[0]` is already `(-each-in ...)`, leave it alone.
 - Otherwise replace `params[0]` with `(-track-array params[0])`.
+- The visitor returns a *new* `BlockStatement` (`transform-each-track-array.ts:49-57`), which
+  the traversal visits again, so the current output wraps the iterable **twice**:
+  `{{#each this.x}}` compiles to `(-track-array (-track-array this.x))` in both modes
+  (verified). Because `-track-array` returns its argument unchanged, the second wrapper has no
+  observable effect (§08-2.14). See §03-10 item 22.
 
 #### 03-7.9 `TransformInElement` (both)
 
@@ -1315,3 +1320,6 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
     `query-params` are no longer keywords, and `component`/`helper`/`modifier`/`debugger` are.
     The RFC's import list (`concat`, `get`) is not auto-imported, although the other RFC
     built-ins are.
+22. **`-track-array` is applied twice** (§03-7.8). This is harmless, because the helper is
+    idempotent, but it is evidence that the transform re-visits its own output. An
+    implementation need not reproduce it.

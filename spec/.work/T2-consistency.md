@@ -41,8 +41,10 @@ so check the current text before editing.
   — §05-1.1 now separates eager static-helper instance creation (creation order from opcode-compiler syntax/expressions.ts:104-110) from lazy value computation, incl. the template-only unreferenced-arg case; §05-9.1 and §07-4.5 cite it.
 - [x] 15 triple-curly keyword/string literal renders as text
   — probed (`{{{"<b>"}}}`→[2,…] text; `{{{if}}}`, `{{{(if)}}}`, `{{{helper h}}}`, `{{{has-block}}}`, `{{{log}}}`→non-trusting append); owner §05-3.5 item 6 + new 05 open question 18; 03-10 #5 and 04 Q6 point there.
-- [ ] 16 babel hbs round-trip (now compat-relevant; ensure §01-1.5 states it normatively or as an open question)
-- [ ] 17 Ember transforms summary in 05 vs §03-7 / §08-1.4
+- [x] 16 babel hbs round-trip (now compat-relevant; ensure §01-1.5 states it normatively or as an open question)
+  — re-verified the three lossy cases with built @glimmer/syntax; §01-1.5.6 now states the emitted source normatively (plugin uses its own @glimmer/syntax) and new §01-1.11 item 15 owns the decision; 02 Q15 points there.
+- [x] 17 Ember transforms summary in 05 vs §03-7 / §08-1.4
+  — probed each/each-in/style/in-element in both modes. Double `-track-array` confirmed in both modes; now §03-7.8 + new 03-10 item 22 (04 Q9, 08-1.4(8), 05-5.4.1 cite it). Fixed §08-1.4(1)/§08-10.6: `style="a {{x}}"` does warn (dynamic.ts:31-33). 05-5.7 now says `-in-el-null` depends on `isProduction`.
 - [ ] 18 duplicate attributes / hash keys runtime meaning
 - [ ] 19 element parameter order; unless → if(not)
 - [ ] 20 renderComponent inside a transaction

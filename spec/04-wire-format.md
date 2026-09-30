@@ -1529,8 +1529,8 @@ the chapter. It is not a checklist that any implementation must satisfy.
    is computed after the entire template is normalized, so it includes names first used
    after the `{{debugger}}`.
 9. **Double `-track-array`.** Ember's output wraps `{{#each}}` iterables in `-track-array`
-   twice (`[28,[31,2],[[28,[31,2],[[30,4]],null]],null]`, §4.12.2), apparently because the
-   transform re-visits its own output. Harmless but wasteful; belongs to §08.
+   twice (`[28,[31,2],[[28,[31,2],[[30,4]],null]],null]`, §4.12.2), because the transform
+   re-visits its own output. Recorded as §03-10 item 22.
 10. **`InElement` guid collisions.** `"%cursor:N%"` restarts at 0 for every compiled
     template, so two templates each containing `{{#in-element}}` produce the same guid;
     rehydration's `querySelector('script[glmr="%cursor:0%"]')` scoped to the destination

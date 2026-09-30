@@ -916,8 +916,9 @@ Emptiness is known *before* rendering: for sources that are converted eagerly (a
 emptiness (`iterator.ts:195-237`). Native iterators are consumed lazily during rendering,
 interleaved with rendering each item's block.
 
-In Ember templates, `{{#each x}}` is compiled as `{{#each (-track-array x)}}`
-(`packages/@ember/template-compiler/lib/plugins/transform-each-track-array.ts`), which consumes
+In Ember templates, `{{#each x}}` is compiled as `{{#each (-track-array x)}}` (§03-7.8, which
+also notes that the wrapper is currently applied twice, harmlessly;
+`packages/@ember/template-compiler/lib/plugins/transform-each-track-array.ts`), which consumes
 `x`'s `[]` storage so that in-place mutations of Ember/tracked arrays re-evaluate the list
 (`packages/@ember/-internals/glimmer/lib/helpers/-track-array.ts:17-30`).
 
@@ -1108,7 +1109,8 @@ on destroy: RR's DOM is removed, unless RR's first node is no longer a child of 
   `packages/@ember/-internals/glimmer/tests/integration/syntax/public-in-element-test.js:9-190`).
 - The block is evaluated in the enclosing context (same `self`, scope, owner).
 - The remote region does not count toward the enclosing region's bounds.
-- [Dev] In Ember, `dest` is wrapped with `-in-el-null`, which asserts `You cannot pass a null
+- [Dev] In Ember, unless the template is compiled with `isProduction: true` (§03-7.9), `dest`
+  is wrapped with `-in-el-null`, which asserts `You cannot pass a null
   or undefined destination element to in-element` (`packages/@ember/-internals/glimmer/lib/helpers/-in-element-null-check.ts:9-24`,
   `packages/@ember/template-compiler/lib/plugins/transform-in-element.ts`). Ember also asserts
   at build time that `insertBefore` is a literal `null` or `undefined`:

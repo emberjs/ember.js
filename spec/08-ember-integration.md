@@ -207,7 +207,8 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
 
 1. `transform-quoted-bindings-into-just-bindings` — `style="{{x}}"` (a single mustache in quotes)
    becomes `style={{x}}` (`transform-quoted-bindings-into-just-bindings.ts:4-47`). This matters
-   because the style-XSS warning (§10.6) is only emitted for unquoted dynamic `style`.
+   because the style-XSS warning (§10.6) is skipped for a `TrustedHTML` value, and a quoted
+   concatenation would have turned that value into a plain string first (§05-4.5.3).
 2. `assert-reserved-named-arguments` — **[Dev]** `@arguments`, `@args`, `@block`, `@else`, any
    `@` followed by a non-lowercase character, and `@__ARGS__` / `__ARGS__=` are compile errors
    `'${name}' is reserved.` (`assert-reserved-named-arguments.ts:19-48`).
@@ -228,7 +229,8 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
    `null`/`undefined` literal is a compile error
    `Can only pass null to insertBefore in in-element, received: <json>` (`transform-in-element.ts:25-59`).
 8. `transform-each-track-array` — `{{#each X}}` → `{{#each (-track-array X)}}` unless `X` is
-   already `(-each-in …)` or `each` is a local (`transform-each-track-array.ts:27-63`).
+   already `(-each-in …)` or `each` is a local (`transform-each-track-array.ts:27-63`). The
+   current output applies the wrapper twice, with no observable effect (§03-7.8).
 9. `assert-against-named-outlets` — **[Dev]** `{{outlet "name"}}` is a compile error
    `Named outlets were removed in Ember 4.0. See https://deprecations.emberjs.com/v3.x#toc_route-render-template for guidance on alternative APIs for named outlet use cases. <loc>`.
 10. `transform-wrap-mount-and-outlet` — `{{mount …}}` → `{{component (-mount …)}}`;
@@ -1726,8 +1728,12 @@ See §9.2.
 For a dynamic `style` attribute value that is not `null`/`undefined`/TrustedHTML, Ember warns
 (id `ember-htmlbars.style-xss-warning`):
 `Binding style attributes may introduce cross-site scripting vulnerabilities; please ensure that values being bound are properly escaped. For more information, including how to disable this warning, see https://deprecations.emberjs.com/v1.x/#toc_binding-style-attributes. Style affected: "<value>"`
-(`environment.ts:43-54`, `views/lib/system/utils.ts:24-35`). Quoted `style="{{x}}"` is first
-converted to unquoted (§1.4(1)); `style="a {{x}}"` (a real concatenation) is not checked (see §05).
+(`environment.ts:43-54`, `views/lib/system/utils.ts:24-35`). The check runs on every initial
+application and update of a dynamic, non-triple-curly `style` (§05-4.5.3). Quoted
+`style="{{x}}"` is first converted to unquoted (§1.4(1)), so a `TrustedHTML` `x` does not warn.
+`style="a {{x}}"` is a real concatenation. Its value is a plain string, so it warns unless every
+part is `null`/`undefined` (`packages/@glimmer/runtime/lib/vm/attributes/dynamic.ts:31-33,254-266`;
+verified that it compiles to an ordinary dynamic attribute).
 
 ### 10.7 Debug tooling flag
 

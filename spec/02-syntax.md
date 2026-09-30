@@ -1321,7 +1321,8 @@ proper, but it is used on the compile path by `babel-plugin-ember-template-compi
 `targetFormat: 'hbs'`: the template is parsed with `mode: 'codemod'`, AST plugins run, and the
 result is printed with `entityEncoding: 'raw'` (`babel-plugin-ember-template-compilation/src/plugin.ts:544-545`).
 The printed text is later compiled normally. Therefore the observable semantics of such a
-template are those of *print(parse_codemod(src))* re-parsed in precompile mode. Relevant facts:
+template are those of *print(parse_codemod(src))* re-parsed in precompile mode. Addons publish
+this printed text, so it is part of the compatibility surface (§00-0.2, §01-1.5.6). Relevant facts:
 
 - In codemod mode, no whitespace is stripped and entities are left encoded, so a `raw` print
   reproduces text and attribute values verbatim (quotes chosen to avoid escaping where possible).
@@ -1389,8 +1390,9 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     `\n` (while `Parser.lines` splits on `\r\n?|\n`). Templates with lone CR line endings get
     inconsistent line numbers between layer-1 locs, tokenizer positions and `Source`.
 15. **Codemod round-trip is lossy** (§02-10) for escaped mustaches, raw blocks and literal
-    segments; with `targetFormat: 'hbs'` this changes template meaning. Needs confirmation of
-    whether `babel-plugin-ember-template-compilation` users hit this.
+    segments; with `targetFormat: 'hbs'` this changes template meaning. Because addons ship
+    that output, this is a compatibility question; it is recorded as §01-1.11 item 15, which
+    owns it.
 16. **Raw blocks** are parsed as normal blocks with HTML-tokenized content; there is no ASTv1
     marker and no test in `@glimmer/syntax`. Their runtime meaning is whatever the block helper
     does (chapter 03/05).
