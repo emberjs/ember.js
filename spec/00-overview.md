@@ -331,12 +331,15 @@ to addon tooling.
 
 ### 0.7.9 Ordering that is inferred or untested
 
-38. The following orders are derived from source only: hook order across a tree of
-    public-manager components, `didCreate` against modifier installs, `updateModifier`
-    against `didUpdate`, and the timing of deferred destructors. `each` sync step sequences
-    are asserted only in `LOCAL_DEBUG` builds. (§05-14 item 20)
-39. Components are destroyed parent-first but modifiers child-first, and the public-manager
-    case is untested. `createModifier` sees an element that has no attributes yet and is
+38. Hook order across a tree of public-manager components, `didCreate` against modifier
+    installs, `updateModifier` against `didUpdate`, and the timing of deferred destructors were
+    derived from source and then confirmed by experiment (T9b; no upstream tests). `each` sync
+    step sequences are still asserted only in `LOCAL_DEBUG` builds. (§05-14 item 20)
+39. Components are destroyed parent-first, including with public managers (verified by
+    experiment, T9b). Modifiers are destroyed child-first only when the debug render tree is off
+    (production and the Glimmer harness). When it is on, the default in Ember DEBUG builds, they
+    are destroyed in creation order, interleaved with components (corrected by experiment, T9b).
+    `createModifier` sees an element that has no attributes yet and is
     not in the document. (§05-14 items 11, 15)
 40. Ember render timing: `renderComponent` called during a render defers the new root, so
     its `destroy()` does nothing and both renders stay live. Each outlet level renders one

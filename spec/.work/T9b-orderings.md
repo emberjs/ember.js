@@ -34,7 +34,7 @@ Resume from the first unticked item. Commit spec/ changes after each item: `spec
 - [x] `updateModifier` vs `didUpdate` order in the same render (§06-11). Done: verified, no correction.
 - [x] Deferred destructors (`registerDestructor`) run after DOM removal, in the `actions` queue; `isDestroyed` becomes true in the `destroy` queue (§05-11, §06-10.2). Done: verified, no correction.
 - [x] `destroyComponent` order for public managers across a tree (§05-14 item 11). Done: verified, no correction.
-- [ ] Modifiers: `updateModifier` never in the same transaction as `installModifier`; element already detached when `destroyModifier` runs (§05-14 item 20 "Modifiers").
+- [x] Modifiers: `updateModifier` never in the same transaction as `installModifier`; element already detached when `destroyModifier` runs (§05-14 item 20 "Modifiers"). Done: verified; found and corrected a dev/prod difference in modifier destruction order (see Results 6).
 - [ ] Update §05-14 item 20, STATUS chapter table (05 row), §00-0.6, §0.7.9.
 
 
@@ -91,5 +91,25 @@ Spec claimed (§05-11.3, §05-14 item 11): parent before child, siblings in docu
 Observed: `p, c1, c2` for `p{c1, c2}`; for `top{d0, e0{d1}, d2}` (with modifiers present or not):
 `d0, e0, d1, d2`. All in the `actions` queue. Verified; no correction for components. (The
 modifier half of item 11 is corrected under item 6.)
+
+### 6. Modifiers: update vs install; element detached at destroy (and a correction)
+Spec claimed: `updateModifier` never in the same transaction as `installModifier`; element already
+detached when `destroyModifier` runs (deferred); modifiers destroyed child-first (registered at
+element close).
+Observed:
+- Changing a consumed value in `didCreateComponent` (before installs): install saw the new value,
+  `updateModifier` was never called (the component itself updated in a follow-up transaction). A change
+  from inside `installModifier` after reading is rejected by the dev backtracking assertion. So updates
+  only occur in a later transaction. Verified.
+- `destroyModifier`: `queue=actions`, `element.isConnected === false` always; the top-level removed
+  element had `parentNode === null`, nested elements still had their (detached) parent. Verified.
+- **Correction.** In Ember DEBUG builds (`ENV._DEBUG_RENDER_TREE` true) modifiers are destroyed in
+  creation order, not child-first: `p, m(p), c1, m(c1), c2, m(c2)` for `p{<div {{m p}}>c1 c2</div>}`
+  with modifiers in the children; with `_DEBUG_RENDER_TREE=false` (set before the test owner is created)
+  `p, c1, m(c1), c2, m(c2), m(p)`, as the spec said. Cause: `addModifier` in
+  `component.ts:550-590` calls `vm.associateDestroyable(state)` when `env.debugRenderTree` is defined,
+  at modifier creation (element open), before the element-close association. The existing tests
+  (`modifiers-test.ts:326-458`) run in the Glimmer harness with `enableDebugTooling: false`
+  (`base-env.ts:23`). Recorded in §05-11.1, §05-11.3, §05-14 item 11, §06-10.3, §00-0.7.9 item 39.
 
 ## Upstream candidates

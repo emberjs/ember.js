@@ -1842,20 +1842,31 @@ element's *opening*, before the element's children), each modifier whose tracked
 **scheduled** for `update`; all scheduled updates run at
 commit in scheduling order (document pre-order) (`dom.ts:308-328`,
 `environment.ts:80-95`). A modifier's `update` never runs in the same transaction as its
-`install`. Tests confirm that `update` runs when a consumed argument changes, not on a no-op
+`install` (verified by experiment, T9b; see below). Tests confirm that `update` runs when a consumed argument changes, not on a no-op
 re-render, and never for constant arguments
 (`packages/@glimmer-workspace/integration-tests/test/updating-modifiers-test.ts:28-71`;
 `modifiers-test.ts:56-82`). The pre-order of scheduled updates across elements was
 observed by experiment (T9b): modifiers `a` on an outer element, `b` and `c` on its two
 children, `d` on a later sibling, all consuming one argument, updated in the order
-`a, b, c, d` (verified by experiment, T9b). The same-transaction rule is untested.
+`a, b, c, d` (verified by experiment, T9b). The same-transaction rule was tried by
+experiment (T9b): a component's `didCreateComponent` (which runs before modifier installs) changed
+a value the modifier consumes. `installModifier` then saw the new value and **`updateModifier` was
+never called**, in that or a later transaction, although the component's own `updateComponent`/
+`didUpdateComponent` ran in a follow-up transaction, which is consistent with the snapshot of the subtag's value that
+`updateTag` takes when `install` finishes (`validators.ts:167-201`; not tested separately), so that a
+change made before `install` is absorbed. A change made by `installModifier` itself after reading the value is
+rejected in DEV by the backtracking assertion (`You attempted to update ... but it had already been
+used previously in the same computation`). Hence `updateModifier` can only run in a transaction
+after the one that installed the modifier (verified by experiment, T9b).
 
 ### 10.4 Destruction
 
 A modifier is destroyed when its element's enclosing region is destroyed; for managers created
 through the public modifier manager API, `destroyModifier` runs as a (deferred) destructor
 (`packages/@glimmer/manager/lib/public/modifier.ts:107-127`). At that time the element has
-already been removed from the document (untested).
+already been removed from the document (verified by experiment, T9b: in the `actions` queue the
+element has `isConnected === false`; a top-level removed element has no parent, and an element
+nested in a removed element is still attached to its detached parent).
 
 Tests: the destructor runs when the element's block is removed and again for a re-created
 element (`updating-modifiers-test.ts:73-105`). Several modifiers on one element are destroyed in
@@ -1886,6 +1897,13 @@ Registration order within a region is creation order, which is:
   when entered;
 - helper instances: when the helper expression is reached;
 - modifier destroyables: when their element is **closed** (after the element's content).
+  **[Dev]** Exception: when the debug render tree is enabled (Ember's `ENV._DEBUG_RENDER_TREE`,
+  default `true` in DEBUG builds and `false` in production; always off in the Glimmer test
+  harness), a modifier is associated a second time, earlier, at the moment it is *created*
+  (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:581`, called from
+  `dom.ts:184`, `289`). The first association fixes its position, so in that configuration modifiers are
+  registered when their element is **opened**, in creation order, interleaved with the components
+  and regions around them. See §11.3 (observed, T9b).
 
 ### 11.2 Destroying
 
@@ -1950,13 +1968,26 @@ scheduled is a walk of the *region* tree in creation order:
   c2.destroyComponent`, and a tree `top{d0, e0{d1}, d2}` gave `d0, e0, d1, d2` (each component before
   the components of its own layout, document order otherwise), all in the `actions` queue. The same parent-first order holds for a component and the component inside
   its layout in each removed `each` item, item by item in list order (`life-cycle-test.js:1161-1222`).
-- **Modifiers: child before parent.** A modifier is registered when its element closes, so a
+- **Modifiers: child before parent (when the debug render tree is off).** A modifier is registered when its element closes, so a
   nested element's modifier precedes its ancestor's; siblings in document order; several
   modifiers on one element in source order. `<div {{foo}}><div {{bar}}></div><div {{baz}}></div></div>`
   installs **and** destroys in the order `bar, baz, foo`
   (`packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:305-458`; the tests
   remove the enclosing block and observe `willDestroyElement` after `rerender`, so they pin the
-  order but not the queue or the timing relative to DOM removal).
+  order but not the queue or the timing relative to DOM removal). These tests run in the Glimmer
+  harness, where the debug render tree is disabled. **Corrected by experiment (T9b):** with the debug
+  render tree enabled, which is the default in Ember DEBUG builds, the order is different.
+  Modifiers are destroyed in the order they were *created* (element-open, document pre-order), so
+  a parent element's modifier is destroyed before its descendants' and interleaved with components.
+  Observed in Ember (dev) for a tree `{{#if}}<div {{m top}}>{{d0}}<b {{m b1}}></b>{{e0}}{{d2}}<b {{m b2}}></b></div>{{/if}}`
+  where `e0` renders `<div {{m e}}><b {{m eb}}></b>{{d1}}</div>`: destruction order
+  `top, d0, b1, e0, e, eb, d1, d2, b2` (`m x` = the modifier named x, other names the component's
+  `destroyComponent`). With `ENV._DEBUG_RENDER_TREE = false` set before the test's application was created,
+  the same tree gave `d0, b1, e0, eb, d1, e, d2, b2, top`, i.e. child-first as described above. For a
+  component `p` whose layout is `<div {{m p}}>{{c1}}{{c2}}</div>` with modifiers on `c1` and `c2`'s elements:
+  debug tree on `p, m(p), c1, m(c1), c2, m(c2)`; off `p, c1, m(c1), c2, m(c2), m(p)`. The mechanism
+  is `addModifier`'s extra association when the debug render tree exists (§11.1). Whether a new
+  implementation should reproduce the debug-only order is an open question (§05-14 item 11).
 - Replacement content is rendered (and its synchronous hooks run) before the old content's
   deferred destructors run (`life-cycle-test.js:1044-1250`: after resetting an `each` to empty,
   the `else` content's components run `init … didInsertElement` before the removed items'
@@ -2182,7 +2213,10 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     siblings under the enclosing region (§05-11.1, §06-10.3), not parent and child, so
     components are destroyed parent-first (pinned for classic components, `life-cycle-test.js:305-537`,
     `1161-1222`), while modifiers, associated at element close, are destroyed child-first
-    (pinned, `modifiers-test.ts:326-458`). For components with public managers
+    (pinned, `modifiers-test.ts:326-458`, in the Glimmer harness, where the debug render tree is
+    off). **In Ember DEBUG builds the debug render tree is on and modifiers are destroyed in
+    creation (document pre-order) position instead** (§11.3, corrected by experiment, T9b). Should a
+    new implementation reproduce this debug-only difference, or always use the child-first order? For components with public managers
     (`destroyComponent`) the parent-first order was observed by experiment (verified by
     experiment, T9b; see §05-11.3), although no upstream test covers it.
 12. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls
@@ -2228,7 +2262,5 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     - `yield`/blocks: the owner inside a yielded block; yielding one block several times;
       `has-block`/`has-block-params` constancy and the non-literal-argument compile error;
       `has-block-params` for a `<:else as |x|>` block.
-    - Modifiers: `update` never in the same transaction as
-      `install`; timing of replacing a dynamic modifier definition; the element being already
-      detached when `destroyModifier` runs; the attribute-less, undocumented element at
+    - Modifiers: timing of replacing a dynamic modifier definition; the attribute-less, undocumented element at
       `create` (item 15).
