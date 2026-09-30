@@ -42,7 +42,9 @@ verbatim.
 | **constant** | An evaluated computation whose dependency set is empty. It can never become invalid. |
 | **equality policy** | A per-cell rule that decides whether a write of a value "equal" to the current one invalidates. |
 | **render transaction** | One synchronous render or revalidation pass of a renderer over all its roots, including the commit phase (§07-1.10). |
-| **revalidation** | A render transaction that brings the DOM up to date after invalidations. It re-reads computations and updates the DOM positions whose computations were invalid. |
+| **revalidation** | A render transaction that brings the DOM up to date after invalidations. It re-reads computations and updates the DOM positions whose computations were invalid. §05 calls one revalidation of a render root an *update pass* (or *re-render*); the terms are synonyms. |
+| **commit phase** | The final step of a render transaction, after all DOM updates of the transaction: component `didCreate`/`didUpdate` hooks, then modifier installs, then modifier updates. The order is specified in §06-11. |
+| **component region** | Everything consumed while one component invocation was created and rendered, including its layout, blocks rendered inside it, and descendants. It is valid iff none of those cells has been invalidated. §05-1.6 defines it (as the *component update region*) and its skipping rule. §07-2.4.7 gives its reactive skeleton. A region is **revalidated** (§06 also writes "re-validated") when a revalidation finds it invalid and descends into it. |
 | **write-after-consume assertion** (the **backtracking rerender assertion**) | The development-mode error thrown when a cell that was already consumed during the current render transaction (or the current outermost tracking frame) is written (§07-1.9). |
 | **invalidation hook** | The host callback invoked on every invalidation. The renderer uses it to schedule revalidation (§07-1.10, §07-2.2.4). |
 
@@ -1436,12 +1438,8 @@ yielder (§07-4.2 "Sharing"; tests
    per-parent `children` map (§07-4.2), yet it determines evaluation counts. It is unclear which
    tests depend on it. A JS-function implementation needs to decide whether to reproduce it
    exactly (a memo keyed by parent computation and segment).
-6. **`updateComponent` fires for descendant changes.** For custom component managers with
-   `updateHook`, `updateComponent` runs whenever the component's region is invalid, including
-   when only a descendant's own tracked state changed. RFC 0213 describes it as running when
-   arguments change. The only test changes an argument
-   (`custom-component-manager-test.js:475-535`). The same applies to classic `didUpdate`/`didRender`
-   on ancestors, which is long-standing documented classic behavior.
+6. **`updateComponent` fires for descendant changes.** Recorded as §06-12 Q12, which owns
+   it.
 7. **Legacy vs. stage-3 `@tracked` differ observably.** They differ in initialization timing
    (lazy on first read vs. eager), in whether an initializer runs when the field is written
    before it is read, and in whether the property is a prototype accessor or an own instance

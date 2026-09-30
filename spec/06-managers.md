@@ -27,10 +27,11 @@ invalidated*, *untracked*) come from `07-reactivity.md`. Where this chapter says
 is whatever tracked storage it consumes. Where it says "untracked", consumption during the
 hook is not recorded by any enclosing computation.
 
-Rendering terms (*render pass*, *initial render*, *re-render / update pass*, *region*,
-*block*, *commit phase*) come from `05-runtime-semantics.md`. The term **render
-transaction** means one initial render or one re-render pass, together with its commit
-phase (§11).
+The terms *render transaction*, *revalidation* (which §05 calls an *update pass*),
+*commit phase*, and *component region* are defined in §07-0. A component's **region** in
+this chapter is its component update region (§05-1.6), and a region is **re-validated**
+when a revalidation finds it invalid and descends into it. *Initial render* and *block*
+are §05 terms (§05-1.4, §05-1.1). This chapter owns the commit-phase ordering (§11).
 
 ---
 
@@ -529,8 +530,9 @@ is "async" only relative to the render. It is **not** deferred to a later task.
 
 ### 4.4 Update semantics
 
-Each component invocation owns a **reactive region**: the tracked storage consumed while
-the invocation rendered. That covers:
+Each component invocation owns a **component region** (§07-0), which §05-1.6 defines as the
+*component update region* together with its skipping rule. It is the tracked storage
+consumed while the invocation rendered. For a public manager that covers:
 
 - its `createComponent` and `getContext` calls;
 - its layout, including every nested component, block, and modifier rendered inside it;
@@ -540,9 +542,7 @@ the invocation rendered. That covers:
 During an update pass, a component's region is **re-validated** when (a) the enclosing
 region is itself being re-validated, and (b) any tracked storage in the component's region
 has been invalidated since the region was last validated. If the region is still valid, the
-whole invocation, including its hooks and its descendants, is skipped
-(`packages/@glimmer/runtime/lib/vm/append.ts:351-384`,
-`packages/@glimmer/runtime/lib/compiled/opcodes/vm.ts:286-327`).
+whole invocation, including its hooks and its descendants, is skipped (§05-1.6).
 
 When the region is re-validated:
 
@@ -1461,9 +1461,14 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   arguments on each re-creation. The dynamic *modifier* code avoids this by keeping the
   original outer arguments.
 - **Q12: `updateComponent` granularity.** `updateComponent` runs on any invalidation within
-  the component's region (§4.4), not only on argument changes. Tests pin this behavior, but
-  it is surprising, and it means an implementation with finer-grained regions would be
-  incompatible. It is specified here as normative.
+  the component's region (§4.4, §05-1.6), not only on argument changes, including when only
+  a descendant's own tracked state changed. RFC 0213 describes the hook as running when
+  arguments change. The public-manager tests do change something inside the region without
+  changing an argument (`custom-component-manager-test.js:750-808`), so the behavior is
+  pinned, but it is surprising, and an implementation with finer-grained regions would be
+  incompatible. It is specified as normative. The same rule makes classic
+  `willUpdate`/`willRender`/`didUpdate`/`didRender` fire on ancestors (§08-6.7, §08-14 Q11),
+  which is long-standing documented classic behavior.
 - **Q13: `hasScheduledEffect` / `runEffect`.** These are documented in `@ember/helper`, but
   they throw in dev and produce `undefined` in prod. `invokeHelper` throws for them in every
   build. The `@ember/helper` docs also mention a nonexistent `hasDestructor` option and a

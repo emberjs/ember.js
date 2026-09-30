@@ -846,6 +846,8 @@ lookupModifier(name, owner):                             // resolver.ts:198-212
 ```
 
 **[Dev]** not found: `Attempted to resolve \`${name}\`, which was expected to be a modifier, but nothing was found.`
+A registered value without a modifier manager, such as a plain function, is returned as is
+and fails when invoked, because there is no default modifier manager (§06-1.5).
 
 ### 5.5 Strict-mode templates inside a loose-mode app
 
@@ -1096,8 +1098,10 @@ Test: `life-cycle-test.js:305-420, 538-640` (the exact sequence including `on(in
 Non-interactive environments get only `init`, `on(init)`, `didReceiveAttrs` (and on update
 `didUpdateAttrs`, `didReceiveAttrs`).
 
-**Update** — when the component is re-rendered because its arguments changed or
-`rerender()` was called on it or a descendant:
+**Update** — when the component's region is invalid during a revalidation (§05-1.6). The
+region covers everything consumed while the component was created and rendered: its
+argument values, its own template's reads, blocks rendered inside it, descendants, and its
+private "dirty" storage (invalidated by `rerender()`):
 
 ```text
 (pre-order, during revalidation)
@@ -1107,12 +1111,13 @@ Non-interactive environments get only `init`, `on(init)`, `didReceiveAttrs` (and
     (I) didUpdate; didRender
 ```
 
-- A component's update hook runs when its argument values changed or its own "dirty" storage
-  was invalidated by `rerender()`. Because each classic component consumes its own dirty
-  storage while creating/updating, calling `rerender()` on a component also runs
+- The `didUpdateAttrs`/`didReceiveAttrs` pair runs only when an argument value changed
+  (`curly.ts:449-462`). `willUpdate`/`willRender`/`didUpdate`/`didRender` run whenever the
+  region is invalid, even when no argument changed (§06-8.5). Because the region includes
+  descendants, calling `rerender()` on a component also runs
   `willUpdate/willRender/didUpdate/didRender` on **every ancestor classic component** (not
   descendants): `life-cycle-test.js:380-470`. Changing an argument used only by the top
-  component runs hooks only on that component (`:470-501`).
+  component runs hooks only on that component (`:470-501`). See §06-12 Q12.
 - `rerender()` in states `preRender` does nothing, in `hasElement`/`inDOM` schedules a
   revalidation of the renderer, in `destroying` throws
   `You can't call rerender on a view being destroyed` (`views/lib/views/states.ts:18-107`).
@@ -1862,10 +1867,10 @@ source comment claims "Replace all contents". The intended semantics are unclear
 but is still emitted (and rewritten) in 7.x (`assert-against-attrs.ts:52-72`).
 
 **Q11. Hook ordering of ancestors on `rerender()`.** That `rerender()` on a child runs update
-hooks on all ancestor classic components (`life-cycle-test.js:380-470`) is an artifact of
-each component consuming its descendants' dirty storage within its own update computation. A
-JS-function implementation with finer-grained invalidation would naturally *not* do this; the
-tests nevertheless pin it.
+hooks on all ancestor classic components (`life-cycle-test.js:380-470`) is a consequence of
+region-granular update hooks (§05-1.6; the open question is §06-12 Q12). A JS-function
+implementation with finer-grained invalidation would naturally *not* do this; the tests
+nevertheless pin it.
 
 **Q12. Class attribute ordering on classic wrappers.** The order in which `class`
 contributions are set (§6.3) is deterministic in the implementation but tests compare class

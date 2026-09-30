@@ -11,9 +11,12 @@ For each item in STATUS.md "Cross-chapter findings":
 A first attempt was interrupted. It may have edited some chapters without recording anything,
 so check the current text before editing.
 
-- [ ] 1 terminology (§07-0 vocabulary; "region", "re-validated", "render transaction", "commit phase")
-- [ ] 2 no default modifier/component manager
-- [ ] 3 updateComponent/didUpdate fire on region changes
+- [x] 1 terminology (§07-0 vocabulary; "region", "re-validated", "render transaction", "commit phase")
+  — §07-0 now defines commit phase and component region and maps §05's "update pass" to revalidation; 05 and 06 intros point to §07-0.
+- [x] 2 no default modifier/component manager
+  — no chapter claimed otherwise; §05-3.2, §05-10.2 and §08-5.4 now cite §06-1.5.
+- [x] 3 updateComponent/didUpdate fire on region changes
+  — §05-1.6 owns the rule, §06-4.4 cites it; §08-6.7 said "only when args changed or rerender()" (wrong, fixed from curly.ts:442-472); open question merged into §06-12 Q12 (07-5 item 6 and 05 Q4 now point there; 07's "only test changes an argument" was wrong).
 - [ ] 4 commit-phase and destruction ordering
 - [ ] 5 curried-component owner
 - [ ] 6 outlet is `<@outlet/>`, lexical

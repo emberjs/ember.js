@@ -21,6 +21,11 @@ Reactivity is described with the abstract model of chapter 07:
 - "re-evaluated when consumed storage changes" means: during the next re-render pass, if the
   computation is invalid it is run again; if it is valid, its previous result is reused.
 
+The terms *render transaction*, *commit phase*, *revalidation*, and *component region* are
+defined in §07-0. In this chapter an **update pass** (or *re-render*) is the revalidation of
+one render root (§05-1.4), and the **component update region** is §07-0's component region
+(§05-1.6).
+
 Manager APIs (component, helper, modifier managers and their capabilities) are specified in
 chapter 06; this chapter only specifies *when* each hook is called and what the runtime does
 with its result. Ember-specific keywords, built-ins (`on`, `fn`, `hash`, `array`, `concat`,
@@ -312,12 +317,16 @@ kind(v):
      or v has no callable `toString` property (e.g. Object.create(null)): → STRING
   if v is a curried component (§05-8) or has a component manager:      → COMPONENT
   if v is a curried helper or has a helper manager
-     (every JS function has the default helper manager, chapter 06):     → HELPER
+     (every JS function has the default helper manager, §06-1.5):        → HELPER
   if v is an object with a callable `toHTML` property:                   → SAFE_STRING
   if v is an object whose `nodeType` is 11:                              → FRAGMENT
   if v is an object whose `nodeType` is a number:                        → NODE
   otherwise:                                                             → STRING
 ```
+
+There is no default component manager and no default modifier manager (§06-1.5): a plain
+function is classified as HELPER, never as COMPONENT, and a plain function in modifier
+position is an error (§05-10.2).
 
 *Note:* the "no callable `toString`" test is applied first, via the "empty" check: `isEmpty(v)`
 is `v == null || typeof v.toString !== 'function'`
@@ -1657,7 +1666,8 @@ For `<div {{this.m args}}>` / `{{@m}}` / curried modifiers (`dom.ts:194-306`, `3
   if d is not an object/function: no modifier (no-op), but keep watching d
   else if d is a curried modifier: resolve (§8.3), merge args, owner = curried owner
   else owner = current owner
-  [Dev] no modifier manager ⇒ error "Expected a dynamic modifier definition, but received an
+  [Dev] no modifier manager (plain functions included: there is no default modifier
+        manager, §06-1.5) ⇒ error "Expected a dynamic modifier definition, but received an
         object or function that did not have a modifier manager associated with it. …"
   create as in §10.1; install at commit
 on update: if d's identity changed:
@@ -1955,8 +1965,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    the `create` owner.
 4. **`updateComponent` / `didUpdate` frequency.** Because the component update region includes
    the whole subtree (§05-1.6), managers with `updateHook` get `update` called whenever anything
-   consumed in the subtree changed, not only arguments. Is this intended, or an artifact of the
-   cache-group optimization?
+   consumed in the subtree changed, not only arguments. Recorded as §06-12 Q12.
 5. **`each` key read once.** The `key=` value is read only when the `each` region is (re)created;
    changing it later has no effect (`lists.ts:19-21`).
 6. **`NaN` keys** never match (`===`), so an item keyed by `NaN` is re-created every sync.
