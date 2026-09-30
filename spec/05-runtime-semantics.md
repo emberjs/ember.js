@@ -1082,7 +1082,7 @@ items 1 and 7 of `1..8` is `retain 1, move 8, retain 3..7, move 2`; rotating `[8
 render every occurrence (`each.ts:192-261`). Sync steps run only when `LOCAL_DEBUG` is set;
 in normal test runs those tests return early, so the step sequences are pinned only for
 developers who enable that flag. Insert and delete steps are asserted only as upper bounds
-(`each.ts:670-720`); that inserted items render before later retained items are revalidated,
+(`each.ts:646-720`); that inserted items render before later retained items are revalidated,
 and that deleted items are removed in old-list order, are untested.
 
 ### 5.5 `{{#each-in}}`
@@ -1147,12 +1147,31 @@ on update: if dest's identity changed, or insertBefore (when written) changed id
 on destroy: RR's DOM is removed, unless RR's first node is no longer a child of dest
 ```
 
-- Tests: default mode clears the target; `insertBefore=null` appends after existing children;
-  `insertBefore=<node>` inserts before it; changing `insertBefore` from a node to `null` moves the
-  content to the end; changing the destination moves the content; a falsy destination renders
-  nothing (Glimmer) and the host position holds `<!---->`
-  (`packages/@glimmer-workspace/integration-tests/lib/suites/in-element.ts:53-258`;
-  `packages/@ember/-internals/glimmer/tests/integration/syntax/public-in-element-test.js:9-190`).
+- Tests (all in `packages/@glimmer-workspace/integration-tests/lib/suites/in-element.ts` unless
+  noted):
+  - Default mode clears the target's existing content (`73-93`;
+    `public-in-element-test.js:43-73`).
+  - `insertBefore=null` appends after existing children, and when the destination becomes
+    falsy only the rendered content is removed, leaving the pre-existing children (`139-171`;
+    `public-in-element-test.js:75-105`).
+  - `insertBefore=<node>` inserts before it. Changing `insertBefore` from a node to `null`
+    moves the content to the end. A falsy destination removes the content, and setting the
+    destination back re-renders it at the node's original position (`173-206`).
+  - Changing the destination moves the content (`208-258`).
+  - A falsy destination renders nothing (Glimmer) and the host position holds `<!---->`
+    (`95-137`).
+  - Content inside the host position of a nested `in-element` is followed by a `<!---->`
+    of the inner one (`Nesting`, `465-515`), and several sibling `in-element`s are independent
+    (`Multiple`, `347-391`; and in a loop, `393-463`).
+  - Components in the remote region are destroyed when the enclosing region is torn down
+    (`517-560`; `public-in-element-test.js:161-225`). Appending into the element that is
+    itself being rendered into (`insertBefore=null`) does not double-clear on teardown
+    (`325-345`; `public-in-element-test.js:227-251`).
+  - The [Dev] assertions below: `public-in-element-test.js:107-159`.
+  - Untested: `insertBefore` explicitly `undefined`; changing `insertBefore` from one node to
+    another node; re-clearing pre-existing content in default mode when the destination
+    changes back; the "remote region does not count toward the enclosing bounds" rule; the
+    `guid` compile error; the `isProduction` omission of `-in-el-null`.
 - The block is evaluated in the enclosing context (same `self`, scope, owner).
 - The remote region does not count toward the enclosing region's bounds.
 - [Dev] In Ember, unless the template is compiled with `isProduction: true` (§03-7.9), `dest`
@@ -2084,3 +2103,6 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       extra block params; DOM non-reuse across the empty/non-empty transition; insert-before-
       revalidate and delete ordering during sync. The retain/move step sequences are
       asserted only in `LOCAL_DEBUG` builds.
+    - `in-element`: explicit `insertBefore=undefined`; a node-to-node `insertBefore` change;
+      the remote region not counting toward enclosing bounds; the `guid` compile error; the
+      `isProduction` omission of `-in-el-null` (see the test list in §05-5.7).
