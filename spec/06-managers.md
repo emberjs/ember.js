@@ -1423,9 +1423,13 @@ components (`life-cycle-test.js:305-537`: `didInsertElement`/`didRender` bottom 
 bottom → top), and the child-first order of modifier installs by
 `packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-458`. The hook
 order across a tree of public-manager components was observed by experiment (T9b; the hook list in §05-7.4 is
-verified by experiment, T9b). Steps 1 and 3 relative to each other (component hooks
-before modifier installs), the parent-first order of modifier updates, and the relative order
-of steps 2 and 4 have **no test**. Recorded in §05-14 item 20.
+verified by experiment, T9b). Steps 1 and 3 relative to each other were observed by experiment
+(verified by experiment, T9b): with `p` containing `<div {{m "p"}}>` and two children `c1`, `c2`
+each with `<i {{m}}>`, the commit was `c1.didCreateComponent, c2.didCreateComponent,
+p.didCreateComponent, m(c1).install, m(c2).install, m(p).install`; a second tree with
+modifiers on nested plain elements between and inside the components gave all
+`didCreateComponent` calls before any `installModifier`. The parent-first order of modifier
+updates and the relative order of steps 2 and 4 have **no test**. Recorded in §05-14 item 20.
 
 *Note:* a transaction cannot be nested. Beginning one while another is open is a dev
 assertion: `A glimmer transaction was begun, but one already exists...`

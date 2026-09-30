@@ -30,7 +30,7 @@ assertion prints the actual order.
 Resume from the first unticked item. Commit spec/ changes after each item: `spec(T9b): ...`.
 
 - [x] Hook order across a tree of public-manager (custom component manager) components: create/didCreate/update/didUpdate/destroy for parent + two children (§06-11, §05-11). Done: verified, no spec correction.
-- [ ] `didCreate` of a component vs `installModifier` of modifiers on its elements (§06-11).
+- [x] `didCreate` of a component vs `installModifier` of modifiers on its elements (§06-11). Done: verified, no correction.
 - [ ] `updateModifier` vs `didUpdate` order in the same render (§06-11).
 - [ ] Deferred destructors (`registerDestructor`) run after DOM removal, in the `actions` queue; `isDestroyed` becomes true in the `destroy` queue (§05-11, §06-10.2).
 - [ ] `destroyComponent` order for public managers across a tree (§05-14 item 11).
@@ -54,5 +54,15 @@ Observed:
 - destroy (`if` turned off): `p.destroyComponent, c1.destroyComponent, c2.destroyComponent`, each in the
   `actions` queue.
 Verified; no correction.
+
+### 2. `didCreate` vs `installModifier`
+Spec claimed (§06-11 steps 1, 3): all `didCreate` (children first) before any `installModifier`
+(elements' modifiers child-first).
+Observed, tree `p` (`<div {{m p}}>` with `c1`, `c2`, each `<i {{m}}>`):
+`c1.didCreate, c2.didCreate, p.didCreate, m(c1).install, m(c2).install, m(p).install`.
+Second tree with modifiers on plain elements between/inside components: all four `didCreate`
+(`d0, d1, e0, d2`) precede all five installs (`b1, eb, e, b2, top`). Also seen: the modifier
+`createModifier` hooks run interleaved with component `createComponent` hooks in document
+pre-order (`p, mod p, c1, mod c1, ...`). Verified; no correction.
 
 ## Upstream candidates

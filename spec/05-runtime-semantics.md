@@ -2218,7 +2218,6 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       `install`; timing of replacing a dynamic modifier definition; the element being already
       detached when `destroyModifier` runs; the attribute-less, undocumented element at
       `create` (item 15).
-    - Lifecycle and destruction: `didCreate` of a component before installs of modifiers on its elements (§06-11);
-      the order of `updateModifier` against `didUpdate`; deferred destructors running after
+    - Lifecycle and destruction: the order of `updateModifier` against `didUpdate`; deferred destructors running after
       DOM removal and in the `actions` queue (and `isDestroyed` in the `destroy` queue);
       `destroyComponent` order for public managers (item 11).
