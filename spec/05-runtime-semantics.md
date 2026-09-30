@@ -1915,7 +1915,16 @@ element still attached with its siblings intact, for items removed from an `each
 before the replacement content is created (`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:1161-1184`). The deferred half is pinned only as
 "after the replacement content's hooks" (`didDestroyElement` and `willDestroy`,
 `packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:1202-1221`); that deferred destructors run
-after the old DOM has been removed, and in the run loop's `actions` queue, is untested. A
+after the old DOM has been removed, in the run loop's `actions` queue, with `isDestroyed`
+becoming true in the `destroy` queue, was observed by experiment (T9b; verified by experiment,
+T9b): a helper with a destroyable inside `{{#if}}<p id=x>…</p>{{/if}}`, after the `if` went false,
+ran its `registerDestructor` callback with current queue `actions`, `isDestroying` true,
+`isDestroyed` false and `#x` no longer in the document; a probe scheduled in `afterRender` saw
+`isDestroyed` false, a probe scheduled in the `destroy` queue before the render saw false, one
+scheduled from `afterRender` into `destroy` saw true, and `isDestroyed` was true when the
+enclosing run loop returned. The destructor ran after the `render` queue (which removes the DOM)
+had finished and before `afterRender`, because `actions` precedes `render` in the queue order and
+is re-flushed when work is scheduled into it. A
 component's `willDestroy` has run by the time a Glimmer-harness `rerender` returns
 (`packages/@glimmer-workspace/integration-tests/test/updating-test.ts:1985-2058`), which does not
 distinguish queues.
@@ -2220,6 +2229,4 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       `install`; timing of replacing a dynamic modifier definition; the element being already
       detached when `destroyModifier` runs; the attribute-less, undocumented element at
       `create` (item 15).
-    - Lifecycle and destruction: deferred destructors running after
-      DOM removal and in the `actions` queue (and `isDestroyed` in the `destroy` queue);
-      `destroyComponent` order for public managers (item 11).
+    - Lifecycle and destruction: `destroyComponent` order for public managers (item 11).

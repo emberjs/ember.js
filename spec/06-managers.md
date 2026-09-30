@@ -1343,8 +1343,11 @@ Tests: `packages/@glimmer/destroyable/test/destroyables-test.ts:126-143` (eager 
 inside `destroy()`, the others only when flushed), `158-192` (whole subtree is `destroying`
 immediately, nothing `destroyed` and no deferred destructor has run; children first),
 `336-366` (inside a destructor everything is `destroying` and nothing is `destroyed`). The
-Ember queue mapping (`actions`/`destroy`) and the "after the render's DOM changes" guarantee are
-untested; the tests use their own two-queue flush. Eager-before-DOM-removal is pinned for classic
+Ember queue mapping (`actions`/`destroy`) and the "after the render's DOM changes" guarantee
+were observed by experiment (verified by experiment, T9b: deferred destructor in `actions`,
+after DOM removal, `isDestroyed` false there and true after the `destroy` queue); the
+`@glimmer/destroyable` tests use their own two-queue flush, and no upstream test pins the Ember
+mapping. Eager-before-DOM-removal is pinned for classic
 components (`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:1429-1587`).
 
 ### 10.3 How template-created objects join the tree
@@ -1379,7 +1382,7 @@ When a block is torn down:
 `destroy(block)` is called and the block's DOM is cleared **after** `destroy()` returns. So
 eager destructors, such as classic `willDestroyElement`, run while the DOM is still
 attached (tested, `life-cycle-test.js:1429-1587`), and deferred ones run after it is detached
-(untested; §05-11.2).
+(verified by experiment, T9b; §05-11.2).
 
 ---
 

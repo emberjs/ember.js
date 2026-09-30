@@ -32,7 +32,7 @@ Resume from the first unticked item. Commit spec/ changes after each item: `spec
 - [x] Hook order across a tree of public-manager (custom component manager) components: create/didCreate/update/didUpdate/destroy for parent + two children (§06-11, §05-11). Done: verified, no spec correction.
 - [x] `didCreate` of a component vs `installModifier` of modifiers on its elements (§06-11). Done: verified, no correction.
 - [x] `updateModifier` vs `didUpdate` order in the same render (§06-11). Done: verified, no correction.
-- [ ] Deferred destructors (`registerDestructor`) run after DOM removal, in the `actions` queue; `isDestroyed` becomes true in the `destroy` queue (§05-11, §06-10.2).
+- [x] Deferred destructors (`registerDestructor`) run after DOM removal, in the `actions` queue; `isDestroyed` becomes true in the `destroy` queue (§05-11, §06-10.2). Done: verified, no correction.
 - [ ] `destroyComponent` order for public managers across a tree (§05-14 item 11).
 - [ ] Modifiers: `updateModifier` never in the same transaction as `installModifier`; element already detached when `destroyModifier` runs (§05-14 item 20 "Modifiers").
 - [ ] Update §05-14 item 20, STATUS chapter table (05 row), §00-0.6, §0.7.9.
@@ -73,5 +73,17 @@ then at commit `c1.didUpdate, c2.didUpdate, p.didUpdate, m(p).update, m(c1).upda
 Plain elements `<div {{m a}}><div {{m b}}></div><div {{m c}}></div></div>{{#if}}<p {{m d}}>{{/if}}`:
 updates `a, b, c, d`. Verified; no correction (this also settles "pre-order of scheduled updates"
 in §05-14 item 20 and §05-10.3).
+
+### 4. Deferred destructors: queue, DOM, `isDestroyed`
+Spec claimed (§05-11.2, §06-10.2): deferred destructors are scheduled into `actions`, run after
+the DOM is removed; `isDestroyed` becomes true in the `destroy` queue.
+Observed (helper with `hasDestroyable` inside `{{#if}}<p id=gone>{{dh 1}}</p>{{/if}}`, `if` turned
+false in `run`): the `registerDestructor` callback ran with current queue `actions`,
+`isDestroying=true`, `isDestroyed=false`, `#gone` absent from the document. Order of events:
+`destructor`, `probe(afterRender): isDestroyed=false`, `probe(destroy, scheduled before render):
+false`, `probe(destroy, scheduled from afterRender): true`, then true after `run` returned.
+(Current queue was detected through `_backburner.currentInstance.queues[name]._queueBeingFlushed`.)
+Verified; no correction. The word "after the new content rendered" (§05-11.2) was not separately
+tested here.
 
 ## Upstream candidates
