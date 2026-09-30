@@ -30,7 +30,7 @@ export class Block extends node().fields<
  */
 export class NamedBlocks extends node().fields<{ blocks: readonly NamedBlock[] }>() {
   /**
-   * Get the `NamedBlock` for a given name.
+   * Returns the `NamedBlock` for a given name, or `null` if there is none.
    */
   get(name: 'default'): NamedBlock;
   get(name: string): NamedBlock | null;
@@ -50,8 +50,8 @@ export interface NamedBlockFields extends BaseNodeFields {
 }
 
 /**
- * Corresponds to a single named block. This is used for anonymous named blocks (`default` and
- * `else`).
+ * Corresponds to a single named block. This is used for anonymous named blocks (`default`
+ * and `else`).
  */
 export class NamedBlock extends node().fields<NamedBlockFields>() {
   get args(): Args {

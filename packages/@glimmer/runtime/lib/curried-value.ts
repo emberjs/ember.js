@@ -92,9 +92,9 @@ export function resolveCurriedValue(
     }
 
     if (!isCurriedValue(inner)) {
-      // Save off the owner that this helper was curried with. Later on,
-      // we'll fetch the value of this register and set it as the owner on the
-      // new root scope.
+      // Save off the owner that this helper was curried with.
+      // Later on, we'll fetch the value of this register,
+      // and set it as the owner on the new root scope.
       definition = inner;
       owner = currentWrapper[OWNER];
       resolved = currentWrapper[RESOLVED];

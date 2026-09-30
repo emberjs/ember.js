@@ -97,7 +97,7 @@ function inject(
   if (elementDescriptor) {
     return decorator(elementDescriptor[0], elementDescriptor[1], elementDescriptor[2]);
   } else if (modernArgs) {
-    // TODO: cast is a lie, keeping the public types unchanged for now
+    // TODO: cast is a lie, it keeps the public types unchanged
     return (decorator as unknown as (...args: unknown[]) => undefined)(...modernArgs);
   } else {
     return decorator;

@@ -29,10 +29,10 @@ function malformedComponentLookup(string: string) {
 }
 
 /**
- * The variable name used to inject the keywords object into the
- * template's evaluation scope. auto-import-builtins rewrites bare
- * keyword references (e.g. `on`) to property accesses on this
- * variable (e.g. `__ember_keywords__.on`).
+ * The variable name used to inject the keywords object
+ * into the template's evaluation scope. auto-import-builtins
+ * rewrites bare keyword references (e.g. `on`) to property accesses
+ * on this variable (e.g. `__ember_keywords__.on`).
  */
 export const RUNTIME_KEYWORDS_NAME = '__ember_keywords__';
 
@@ -90,8 +90,8 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
 
     options.lexicalScope = (variable: string) => {
-      // The keywords container variable is always "in scope" —
-      // we inject it via the evaluator in template.ts.
+      // The keywords container variable is always "in scope",
+      // because we inject it via the evaluator in template.ts.
       if (variable === RUNTIME_KEYWORDS_NAME) {
         return true;
       }
@@ -126,11 +126,10 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
   }
 
   if ('locals' in options && !options.locals) {
-    // Glimmer's precompile options declare `locals` like:
-    //    locals?: string[]
-    // but many in-use versions of babel-plugin-htmlbars-inline-precompile will
-    // set locals to `null`. This used to work but only because glimmer was
-    // ignoring locals for non-strict templates, and now it supports that case.
+    // Glimmer's precompile options declare `locals` like: locals?: string[]
+    //    but many in-use versions of babel-plugin-htmlbars-inline-precompile
+    //    will set locals to `null`. This used to work but only because glimmer
+    //    was ignoring locals for non-strict templates, and now it supports that case.
     delete options.locals;
   }
 
@@ -188,9 +187,9 @@ function inScope(variable: string, evaluator: Evaluator): boolean {
     return evaluator(`typeof ${variable} !== "undefined"`) === true;
   } catch (e) {
     // This occurs when attempting to evaluate a reserved word using eval (`eval('typeof let')`).
-    // If the variable is a reserved word, it's definitely not in scope, so return false. Since
-    // reserved words are somewhat contextual, we don't try to identify them purely by their
-    // name. See https://tc39.es/ecma262/#sec-keywords-and-reserved-words
+    // If the variable is a reserved word, it's definitely not in scope, so return false.
+    // Since reserved words are somewhat contextual, we don't try to identify them purely
+    // by their name. See https://tc39.es/ecma262/#sec-keywords-and-reserved-words
     if (e && e instanceof SyntaxError) {
       return false;
     }

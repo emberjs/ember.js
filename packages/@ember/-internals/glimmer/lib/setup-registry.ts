@@ -10,9 +10,9 @@ import { Renderer } from './renderer';
 import RootTemplate from './templates/root';
 
 export function setupApplicationRegistry(registry: Registry): void {
-  // because we are using injections we can't use instantiate false
-  // we need to use bind() to copy the function so factory for
-  // association won't leak
+  // because we are using injections, we can't use instantiate false.
+  // We need to use bind() to copy the function,
+  // so the factory for the association won't leak.
   registry.register('service:-dom-builder', {
     // Additionally, we *must* constrain this to require `props` on create, else
     // we *know* it cannot have an owner.

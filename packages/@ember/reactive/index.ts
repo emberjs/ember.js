@@ -6,5 +6,5 @@
  * @public
  */
 
-// empty module (for now)
+// Empty on purpose. The utilities live in submodules such as `@ember/reactive/collections`.
 export default {};

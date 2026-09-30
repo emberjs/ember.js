@@ -120,9 +120,9 @@ export default [
         },
       ],
 
-      // these default to 'warn' in @typescript-eslint/recommended. But
-      // warnings just get ignored and allowed to generate noise. We should
-      // either commit to making them errors or leave them off.
+      // these default to 'warn' in @typescript-eslint/recommended.
+      // But warnings just get ignored and allowed to generate noise.
+      // We should either commit to making them errors or leave them off.
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
 

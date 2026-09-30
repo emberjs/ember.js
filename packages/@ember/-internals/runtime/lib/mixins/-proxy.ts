@@ -23,8 +23,8 @@ import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
 export function contentFor<T>(proxy: ProxyMixin<T>): T | null {
   let content = get(proxy, 'content');
   // SAFETY: Ideally we'd assert instead of casting, but @glimmer/validator doesn't give us
-  // sufficient public types for this. Previously this code was .js and worked correctly so
-  // hopefully this is sufficiently reliable.
+  // sufficient public types for this.
+  // This code worked correctly as untyped JavaScript, so the cast should be reliable.
   updateTag(tagForObject(proxy) as UpdatableTag, tagForObject(content));
   return content;
 }

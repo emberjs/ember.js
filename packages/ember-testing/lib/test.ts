@@ -8,8 +8,8 @@ import { checkWaiters, registerWaiter, unregisterWaiter } from './test/waiters';
 
   * Choose your default test adapter (for your framework of choice).
   * Register/Unregister additional test helpers.
-  * Setup callbacks to be fired when the test helpers are injected into
-    your application.
+  * Setup callbacks to be fired when the test helpers are injected
+    into your application.
 
   @class Test
   @namespace Ember

@@ -61,9 +61,9 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   }
 
   Program(program: HBS.Program, blockParams?: ASTv1.VarHead[]): ASTv1.Block {
-    // The abstract signature doesn't have the blockParams argument, but in
-    // practice we can only come from this.BlockStatement() which adds the
-    // extra argument for us
+    // The abstract signature doesn't have the blockParams argument,
+    // but in practice we can only come from this.BlockStatement(),
+    // which adds the extra argument for us
     assert(
       Array.isArray(blockParams),
       '[BUG] Program in parser unexpectedly called without block params'
@@ -106,8 +106,8 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       if (poppedNode?.type === 'ElementNode') {
         throw generateSyntaxError(`Unclosed element \`${poppedNode.tag}\``, poppedNode.loc);
       } else {
-        // If the stack is not balanced, then it is likely our own bug, because
-        // any unclosed Handlebars blocks should already been caught by now
+        // If the stack is not balanced, then it is likely our own bug,
+        // because any unclosed Handlebars blocks should already have been caught by now
         assert(poppedNode !== undefined, '[BUG] empty parser elementStack');
         assert(false, `[BUG] mismatched parser elementStack node: ${node.type}`);
       }
@@ -130,8 +130,9 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       );
     }
 
-    // For an inverse section (`{{^foo}}...{{/foo}}`), the upstream parser swaps the program and
-    // the inverse, so there is no program unless the section has an `{{else}}`.
+    // For an inverse section (`{{^foo}}...{{/foo}}`),
+    // the upstream parser swaps the program and the inverse,
+    // so there is no program unless the section has an `{{else}}`.
     if ((block.program as HBS.UpstreamProgram | undefined) === undefined) {
       throw generateSyntaxError(
         'Inverse sections (`{{^foo}}...{{/foo}}`) are not supported. Use `{{#unless foo}}...{{/unless}}` instead',
@@ -174,8 +175,8 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       //                   ~~~~~~~~~~~~~~~~~~~~~~~
       //
       // Either way, within this span, there should be exactly two pipes
-      // fencing our block params, neatly whitespace separated and with
-      // legal identifiers only
+      // fencing our block params,
+      // neatly whitespace separated and with legal identifiers only
       const content = span.asString();
       let skipStart = content.indexOf('|') + 1;
       const limit = content.indexOf('|', skipStart);
@@ -496,16 +497,18 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     let thisHead = false;
 
-    // This is to fix a bug in the Handlebars AST where the path expressions in
-    // `{{this.foo}}` (and similarly `{{foo-bar this.foo named=this.foo}}` etc)
-    // are simply turned into `{{foo}}`. The fix is to push it back onto the
-    // parts array and let the runtime see the difference. However, we cannot
-    // simply use the string `this` as it means literally the property called
-    // "this" in the current context (it can be expressed in the syntax as
-    // `{{[this]}}`, where the square bracket are generally for this kind of
-    // escaping – such as `{{foo.["bar.baz"]}}` would mean lookup a property
-    // named literally "bar.baz" on `this.foo`). By convention, we use `null`
-    // for this purpose.
+    // This fixes a bug in the Handlebars AST,
+    // where the path expressions in `{{this.foo}}` are turned into `{{foo}}`.
+    // The same happens in `{{foo-bar this.foo named=this.foo}}` etc.
+    // The fix is to push it back onto the parts array and let the runtime see the difference.
+    //
+    // However, we cannot use the string `this`,
+    // because it means literally the property called "this" in the current context.
+    // That can be expressed in the syntax as `{{[this]}}`.
+    // The square brackets are generally for this kind of escaping.
+    // For example, `{{foo.["bar.baz"]}}` would mean lookup a property
+    // named literally "bar.baz" on `this.foo`.
+    // By convention, we use `null` for this purpose.
     if (/^this(?:\..+)?$/u.test(original)) {
       thisHead = true;
     }
@@ -624,8 +627,7 @@ function calculateRightStrippedOffsets(original: string, value: string) {
     };
   }
 
-  // otherwise, return the number of newlines prior to
-  // `value`
+  // otherwise, return the number of newlines prior to `value`
   const [difference] = original.split(value) as [string];
   const lines = difference.split(/\n/u);
   const lineCount = lines.length - 1;
@@ -718,8 +720,8 @@ function acceptCallNodes(
 
   const params = node.params.map((e) => compiler.acceptNode<HBS.Expression['type']>(e));
 
-  // if there is no hash, position it as a collapsed node immediately after the last param (or the
-  // path, if there are also no params)
+  // if there is no hash, position it as a collapsed node immediately after the last param,
+  // or after the path if there are also no params
   const end = isPresentArray(params) ? getLast(params).loc : path.loc;
 
   const hash = node.hash

@@ -11,11 +11,11 @@ import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { internalHelper } from './internal-helper';
 
 /**
-  The `{{#each}}` keyword loops over elements in a collection. It is an extension
-  of the base Handlebars `{{#each}}` helper.
+  The `{{#each}}` keyword loops over elements in a collection.
+  It is an extension of the base Handlebars `{{#each}}` helper.
 
-  The default behavior of `{{#each}}` is to yield its inner block once for every
-  item in an array passing the item as the first block parameter.
+  The default behavior of `{{#each}}` is to yield its inner block once for every item in an array,
+  passing the item as the first block parameter.
 
   ```gjs {data-filename="app/components/developer-list.gjs"}
   import Component from '@glimmer/component';
@@ -105,17 +105,17 @@ import { internalHelper } from './internal-helper';
 
   ### Specifying Keys
 
-  In order to improve rendering speed, Ember will try to reuse the DOM elements
-  where possible. Specifically, if the same item is present in the array both
-  before and after the change, its DOM output will be reused.
+  In order to improve rendering speed, Ember will try to reuse the DOM elements where possible.
+  Specifically, if the same item is present in the array both before and after the change,
+  its DOM output will be reused.
 
-  The `key` option is used to tell Ember how to determine if the items in the
-  array being iterated over with `{{#each}}` has changed between renders. By
-  default the item's object identity is used.
+  The `key` option is used to tell Ember how to determine
+  if the items in the array being iterated over with `{{#each}}` has changed between renders.
+  By default the item's object identity is used.
 
-  This is usually sufficient, so in most cases, the `key` option is simply not
-  needed. However, in some rare cases, the objects' identities may change even
-  though they represent the same underlying data.
+  This is usually sufficient, so in most cases, the `key` option is not needed.
+  However, in some rare cases, the objects' identities may change,
+  even though they represent the same underlying data.
 
   For example, mapping over `people` produces a new array of new objects on each
   render. Use `key` so Ember can match items across those renders:
@@ -187,8 +187,8 @@ import { internalHelper } from './internal-helper';
  */
 
 /**
-  The `{{#each-in}}` keyword loops over properties on an object, or entries in a
-  native JavaScript [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
+  The `{{#each-in}}` keyword loops over properties on an object,
+  or entries in a native JavaScript [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map).
 
   For example, given this component definition:
 
@@ -269,21 +269,21 @@ import { internalHelper } from './internal-helper';
 
   ### Specifying Keys
 
-  Like `{{#each}}`, `{{#each-in}}` accepts a `key` option to decide which DOM
-  elements can be reused between renders. Since `{{#each-in}}` yields two block
-  params, the special values pick which one is used:
+  Like `{{#each}}`, `{{#each-in}}` accepts a `key` option
+  to decide which DOM elements can be reused between renders.
+  Since `{{#each-in}}` yields two block params, the special values pick which one is used:
 
-    * `@identity` - The second block param: the property's value. This is the
-      default. Changing a value replaces that entry's DOM instead of updating it
-      in place.
+    * `@identity` - The second block param: the property's value.
+      This is the default.
+      Changing a value replaces that entry's DOM instead of updating it in place.
     * `@key` - The first block param: the property name, or for a `Map`, its key.
 
   Any other string is a path, looked up on the value: `key="id"` keys each entry
   by its `value.id`.
 
-  For example, `@key` keeps each entry's DOM as its score changes, so anything
-  stateful inside it — focus, a running transition, a component instance — survives
-  the update:
+  For example, `@key` keeps each entry's DOM as its score changes.
+  So anything stateful inside it survives the update,
+  such as focus, a running transition, or a component instance:
 
   ```handlebars
   {{#each-in this.scores key="@key" as |player score|}}

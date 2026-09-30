@@ -1,6 +1,6 @@
-// NOTE: A previous iteration differentiated between public and private props
-// as well as methods vs props.  We are just keeping these for testing; the
-// current impl doesn't care about the differences as much...
+// NOTE: These tests use public and private props, and methods and props, as separate cases.
+// The implementation doesn't care much about those differences.
+// The cases are kept for test coverage.
 
 import { guidFor } from '@ember/-internals/utils';
 import Mixin, { mixin } from '@ember/object/mixin';

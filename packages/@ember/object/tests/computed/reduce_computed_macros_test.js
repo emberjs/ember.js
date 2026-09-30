@@ -1408,8 +1408,8 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
   ['@test array should not be sorted if sort properties array is empty'](assert) {
     this.cleanupObject();
     // This bug only manifests when array.sort(() => 0) is not equal to array.
-    // In order for this to happen, the browser must use an unstable sort and the
-    // array must be sufficient large. On Chrome, 12 items is currently sufficient.
+    // In order for this to happen, the browser must use an unstable sort,
+    // and the array must be large enough. On Chrome, 12 items is enough.
     this.obj = this.buildObject(emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]), []);
 
     assert.deepEqual(

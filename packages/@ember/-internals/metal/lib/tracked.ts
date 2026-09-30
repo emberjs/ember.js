@@ -52,9 +52,8 @@ import {
 
   @example Dependents
 
-  In the case that you have a computed property that depends other
-  properties, you want to track both so that when one of the
-  dependents change, a rerender is scheduled.
+  If you have a computed property that depends on other properties, track both.
+  Then a rerender is scheduled when one of the dependents changes.
 
   In the following example we have two properties,
   `eatenApples`, and `remainingApples`.
@@ -84,13 +83,14 @@ import {
 /**
  * Reactivity options for the standalone `tracked(value, options)` form.
  *
- * - `equals` decides whether writing a value notifies consumers; it defaults to
- *   `Object.is`.
+ * - `equals` decides whether writing a value notifies consumers.
+ *   It defaults to `Object.is`.
  * - `description` is used in development for debugging.
  *
- * `equals` is a function-typed property (rather than method syntax) on purpose:
- * this keeps its parameters checked strictly, so passing an `equals` typed for
- * the wrong value type is a type error instead of being silently accepted.
+ * `equals` is a function-typed property, not method syntax, on purpose.
+ * This keeps its parameters checked strictly.
+ * Passing an `equals` typed for the wrong value type is then a type error,
+ * instead of being silently accepted.
  */
 interface TrackedValueOptions<Value> {
   equals?: (a: Value, b: Value) => boolean;
@@ -102,12 +102,13 @@ interface TrackedValueOptions<Value> {
  * (`EmberObject.extend({ foo: tracked({ value }) })`).
  *
  * All properties are optional because this single shape backs several usages:
- * classic-field defaults (`tracked({ value })` / `tracked({ initializer })`) and
- * options-only native decorators (`@tracked({ equals })`). The mutually
- * exclusive combinations (e.g. both `value` and `initializer`) and the
- * classic-only restriction on `value`/`initializer` are enforced at runtime via
- * assertions rather than in the type, matching the runtime `isDecoratorOptions`
- * check that accepts any object composed of these keys.
+ * classic-field defaults (`tracked({ value })` / `tracked({ initializer })`),
+ * and options-only native decorators (`@tracked({ equals })`).
+ * Runtime assertions, not the type, enforce the mutually exclusive combinations,
+ * such as passing both `value` and `initializer`.
+ * They also enforce the classic-only restriction on `value`/`initializer`.
+ * This matches the runtime `isDecoratorOptions` check,
+ * which accepts any object composed of these keys.
  *
  * - `value` / `initializer` supply a default value and are only valid on classic
  *   classes; native classes use class field initializers instead.
@@ -117,21 +118,21 @@ interface TrackedValueOptions<Value> {
 interface TrackedDecoratorOptions {
   value?: any;
   initializer?: () => any;
-  // `equals`/`description` intentionally duplicate `TrackedValueOptions` rather
-  // than extending it: this form declares `equals` in *method* syntax so its
-  // parameters are checked loosely. That lets a typed `equals` (e.g.
-  // `(a: number, b: number) => boolean`) still select this decorator overload
-  // instead of falling through to the standalone-value overload — whereas
-  // `TrackedValueOptions.equals` is a strict function-typed property (checked
-  // against the value's type) on purpose.
+  // `equals`/`description` intentionally duplicate `TrackedValueOptions` rather than extending it.
+  // This form declares `equals` in *method* syntax, so its parameters are checked loosely.
+  // That lets a typed `equals`, such as `(a: number, b: number) => boolean`,
+  // still select this decorator overload,
+  // instead of falling through to the standalone-value overload.
+  // `TrackedValueOptions.equals` is a strict function-typed property on purpose,
+  // checked against the value's type.
   equals?(a: any, b: any): boolean;
   description?: string;
 }
 
-// `PropertyDecorator` covers the `(target, key)` call TypeScript emits for
-// native class fields with legacy decorators; `ExtendedMethodDecorator` covers
-// the classic-class call; the standard decorator types cover fields and
-// auto-accessors with standard (stage 3) decorators.
+// `PropertyDecorator` covers the `(target, key)` call that TypeScript emits
+// for native class fields with legacy decorators.
+// `ExtendedMethodDecorator` covers the classic-class call.
+// The standard decorator types cover fields and auto-accessors with standard (stage 3) decorators.
 export type TrackedDecorator = ExtendedMethodDecorator &
   PropertyDecorator &
   StandardFieldDecorator &
@@ -152,8 +153,8 @@ export function tracked(
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
 /**
- * `tracked` as a bare standard (stage 3) decorator: `@tracked foo = 1` or
- * `@tracked accessor foo = 1`.
+ * `tracked` as a bare standard (stage 3) decorator:
+ * `@tracked foo = 1` or `@tracked accessor foo = 1`.
  */
 export function tracked(value: undefined, context: ClassFieldDecoratorContext): void;
 export function tracked<This, Value>(
@@ -172,7 +173,7 @@ export function tracked(
   ...args: any[]
 ): TrackedDecorator | DecoratorPropertyDescriptor | TrackedValue<any> {
   if (isModernDecoratorArgs(args)) {
-    // TODO: cast is a lie, keeping the public types unchanged for now
+    // TODO: the cast is a lie. It avoids changing the public types.
     return tracked2023(args) as unknown as DecoratorPropertyDescriptor;
   }
 
@@ -184,8 +185,8 @@ export function tracked(
   if (isElementDescriptor(args)) {
     /*
       Native-decorator form. The runtime invokes us with `(target, key, desc)`
-      and consumes the returned `DecoratorPropertyDescriptor`. The public API is
-      the decorated field itself — reading it consumes, assigning it dirties.
+      and consumes the returned `DecoratorPropertyDescriptor`.
+      The public API is the decorated field itself: reading it consumes, assigning it dirties.
 
       ```js
       class Counter {
@@ -198,9 +199,9 @@ export function tracked(
 
   if (args.length === 0 || (args.length === 1 && isDecoratorOptions(args[0]))) {
     /*
-      Decorator-factory / classic-field form. Returns an
-      `ExtendedMethodDecorator`. The public API is the resulting property on
-      instances (get/set), with any default supplied by `value`/`initializer`.
+      Decorator-factory / classic-field form. Returns an `ExtendedMethodDecorator`.
+      The public API is the resulting property on instances (get/set),
+      with any default supplied by `value`/`initializer`.
 
       ```js
       class Counter {
@@ -299,7 +300,7 @@ function makeTrackedDecorator(propertyDesc?: TrackedDecoratorOptions): TrackedDe
         `You attempted to set a default value for ${decoratorArgs[1].name?.toString()} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
         !hasInitialValue
       );
-      // TODO: cast is a lie, keeping the public types unchanged for now
+      // TODO: the cast is a lie. It avoids changing the public types.
       return tracked2023(decoratorArgs, options) as unknown as DecoratorPropertyDescriptor;
     }
 

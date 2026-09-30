@@ -5,10 +5,9 @@ import { WellKnownAttrNames, WellKnownTagNames } from '@glimmer/wire-format/lib/
 // enumerated in
 // https://www.w3.org/TR/html/syntax.html#attributes-0
 //
-// > When a foreign element has one of the namespaced attributes given by
-// > the local name and namespace of the first and second cells of a row
-// > from the following table, it must be written using the name given by
-// > the third cell from the same row.
+// The spec gives a table of namespaced attributes.
+// A foreign element that has one of these attributes must write it
+// with the name in the third cell of the attribute's row.
 //
 // In all other cases, colons are interpreted as a regular character
 // with no special meaning:

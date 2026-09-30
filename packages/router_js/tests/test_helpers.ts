@@ -151,8 +151,8 @@ interface RouteManagerLike {
   getRouteInfoMetadata(bucket: TestRouteBucket): unknown;
 }
 
-// Stable per-route state. Per-render data (context, enterPromise) lives on
-// the routeInfo, not here.
+// Stable per-route state.
+// Per-render data, such as context and enterPromise, lives on the routeInfo, not here.
 class TestRouteBucket {
   route: ClassicRoute;
   args: { name: string };
@@ -260,12 +260,13 @@ class TestRouteManager implements RouteManagerLike {
 
   didExit(_bucket: TestRouteBucket, _args: NavigationArgs): void {}
 
-  // Classic-interop: serialize the model into the dynamic URL segments. The
-  // manager owns serialization, so this reproduces what route-info's default
-  // serialize would otherwise do once dispatch crosses the manager boundary:
-  // defer to the handler's own `serialize` when present, otherwise fall back
-  // to the single dynamic-segment default (the `_id` convention). Param-style
-  // models (string/number) are handled upstream before this is reached.
+  // Classic-interop: serialize the model into the dynamic URL segments.
+  // The manager owns serialization.
+  // So once dispatch crosses the manager boundary,
+  // this reproduces what route-info's default serialize would otherwise do.
+  // It defers to the handler's own `serialize` when present.
+  // Otherwise it falls back to the single dynamic-segment default, the `_id` convention.
+  // Param-style models (string/number) are handled upstream before this is reached.
   serializeContext(
     bucket: TestRouteBucket,
     routeInfo: any,
@@ -292,8 +293,8 @@ class TestRouteManager implements RouteManagerLike {
     return object;
   }
 
-  // Classic-interop: resolve the handler's context from URL params via its
-  // deserialize/model hook.
+  // Classic-interop: resolve the handler's context from URL params
+  // via its deserialize/model hook.
   getContext(bucket: TestRouteBucket, params: Dict<unknown>, transition: any): unknown {
     const route = bucket.route;
     if (route.deserialize) {
@@ -362,11 +363,10 @@ export class TestRouter extends Router {
     return () => {};
   }
 
-  // The manager-driven lifecycle (onTransitionSettled and friends) is
-  // inherited from the base Router. The tests want one extra behaviour: when
-  // a didEnter hook throws, roll back to the pre-transition state so the
-  // next transition sees these routes as unentered and re-fires their enter
-  // hooks.
+  // The manager-driven lifecycle, such as onTransitionSettled, is inherited from the base Router.
+  // The tests want one extra behaviour.
+  // When a didEnter hook throws, roll back to the pre-transition state.
+  // Then the next transition sees these routes as unentered, and re-fires their enter hooks.
   protected override handleDidEnterError(
     error: unknown,
     activeTransition: any,
@@ -374,8 +374,8 @@ export class TestRouter extends Router {
     preTransitionState: any
   ): never {
     this.state = preTransitionState;
-    // Copy routeInfos (don't alias) so later mutations don't corrupt the
-    // baseline used by partitionRoutes.
+    // Copy routeInfos instead of aliasing,
+    // so later mutations don't corrupt the baseline used by partitionRoutes.
     this.currentRouteInfos = preTransitionState
       ? (preTransitionState.routeInfos.slice() as any)
       : undefined;
@@ -423,8 +423,8 @@ export function trigger(
     let currentHandlerInfo = handlerInfos[i]!,
       currentHandler = routeOf(currentHandlerInfo);
 
-    // If there is no handler, it means the handler hasn't resolved yet which
-    // means that we should trigger the event later when the handler is available
+    // If there is no handler, the handler hasn't resolved yet.
+    // So we should trigger the event later, when the handler is available.
     if (!currentHandler) {
       currentHandlerInfo.managementPromise!.then(function (management: RouteManagement) {
         let resolvedHandler = routeOfManagement(management);

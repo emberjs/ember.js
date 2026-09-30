@@ -29,9 +29,8 @@ export interface StructuredProfilePayload {
 */
 
 /**
-  The purpose of the Ember Instrumentation module is
-  to provide efficient, general-purpose instrumentation
-  for Ember.
+  The purpose of the Ember Instrumentation module
+  is to provide efficient, general-purpose instrumentation for Ember.
 
   Subscribe to a listener by using `subscribe`:
 
@@ -69,10 +68,9 @@ export interface StructuredProfilePayload {
   are interested in.
 
   In the above example, the event is `render.handlebars`,
-  and the subscriber listened for all events beginning with
-  `render`. It would receive callbacks for events named
-  `render`, `render.handlebars`, `render.container`, or
-  even `render.handlebars.layout`.
+  and the subscriber listened for all events beginning with `render`.
+  It would receive callbacks for events named `render`, `render.handlebars`,
+  `render.container`, or even `render.handlebars.layout`.
 
   @class Instrumentation
   @static
@@ -198,7 +196,7 @@ function withFinalizer<Binding, Result>(
 
 function NOOP() {}
 
-// private for now
+// Private: not part of the public instrumentation API.
 export function _instrumentStart(name: string, payloadFunc: () => object): () => void;
 export function _instrumentStart<Arg>(
   name: string,

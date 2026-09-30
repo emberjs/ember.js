@@ -10,12 +10,12 @@ import { internalHelper } from './internal-helper';
   The `readonly` helper let's you specify that a binding is one-way only,
   instead of two-way.
   
-  This is a vestigial helper from the days of `@ember/component` and does not apply to
-  components extending from `@glimmer/component`.
+  This is a vestigial helper from the days of `@ember/component`.
+  It does not apply to components extending from `@glimmer/component`.
     
   When you pass a `readonly` binding from an outer context (e.g. parent component),
-  to to an inner context (e.g. child component), you are saying that changing that
-  property in the inner context does not change the value in the outer context.
+  to an inner context (e.g. child component), you are saying:
+  changing that property in the inner context does not change the value in the outer context.
 
   To specify that a binding is read-only, when invoking the child `Component`:
 

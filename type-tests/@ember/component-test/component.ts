@@ -140,9 +140,9 @@ interface MySig {
   };
 }
 
-// These type helpers are stolen (and tweaked) from Glimmer and Glint internals
-// just to demo that this actually has the expected behavior with a signature
-// and an Ember component
+// These type helpers are copied from Glimmer and Glint internals, with small tweaks.
+// They demo that this actually has the expected behavior
+// with a signature and an Ember component.
 type GetWithFallback<T, K, Fallback> = K extends keyof T ? T[K] : Fallback;
 type NamedArgsFor<T> = GetWithFallback<GetWithFallback<T, 'Args', {}>, 'Named', object>;
 

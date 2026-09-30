@@ -93,9 +93,9 @@ APPEND_OPCODES.add(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
   vm.associateDestroyable(block);
 
   if (vm.env.debugRenderTree !== undefined) {
-    // Note that there is nothing to update – when the args for an
-    // {{#in-element}} changes it gets torn down and a new one is
-    // re-created/rendered in its place (see the `Assert`s above)
+    // There is nothing to update.
+    // When the args for an {{#in-element}} change, it gets torn down,
+    // and a new one is re-created/rendered in its place. See the `Assert`s above.
     let args = createCapturedArgs(
       insertBefore === undefined ? {} : { insertBefore: insertBeforeRef },
       [elementRef]

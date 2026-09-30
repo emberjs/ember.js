@@ -42,18 +42,24 @@ function deprecation(options: DeprecationOptions) {
 
   * `id` (required): A string that uniquely identifies the deprecation. This
     should be a short, descriptive name, typically dasherized.
-  * `for` (required): The string `ember-source` -- every deprecation from this
+
+  * `for` (required): The string `ember-source`. Every deprecation from this
     package is for `ember-source`.
-  * `since` (required): An object with `available` and `enabled`. `available` is
-    the first version of Ember that the deprecation is available in. `enabled` is
-    the version of Ember that the deprecation was first enabled. This is used as
-    a feature flag deprecations. For public APIs, the `enabled` value is added
-    only once the deprecation RFC is [Ready for Release](https://github.com/emberjs/rfcs#ready-for-release).
-  * `until` (required): The version of Ember that the deprecation will be removed
-  * `url` (required): A URL to the deprecation guide for the deprecation. This
-    URL can be constructed in advance of the deprecation being added to the
-    [deprecation app](https://github.com/ember-learn/deprecation-app) by
-    following this format: `https://deprecations.emberjs.com/deprecations/{{id}}`.
+
+  * `since` (required): An object with `available` and `enabled`.
+    `available` is the first version of Ember that the deprecation is available in.
+    `enabled` is the version of Ember that first enabled the deprecation.
+    This is used as a feature flag deprecations.
+    For public APIs, add the `enabled` value only once the deprecation RFC reaches
+    [Ready for Release](https://github.com/emberjs/rfcs#ready-for-release).
+
+  * `until` (required): The version of Ember that removes the deprecation.
+
+  * `url` (required): A URL to the deprecation guide for the deprecation.
+    You can construct this URL in advance.
+    The [deprecation app](https://github.com/ember-learn/deprecation-app) does not need
+    to have the guide yet.
+    Use this format: `https://deprecations.emberjs.com/deprecations/{{id}}`.
 
   For example:
   `deprecate` should then be called using the entry from the `DEPRECATIONS` object.
@@ -85,10 +91,10 @@ function deprecation(options: DeprecationOptions) {
     [`${testUnless(DEPRECATIONS.MY_DEPRECATION.isRemoved)} specific deprecated feature tested only in this test`]
   ```
 
-  This test will be skipped when the MY_DEPRECATION is removed.
-  When adding a deprecation, we need to guard all the code that will eventually be removed, including tests.
-  For tests that are not specifically testing the deprecated feature, we need to figure out how to
-  test the behavior without encountering the deprecated feature, just as users would.
+  This test will be skipped when the MY_DEPRECATION is removed. When adding a deprecation,
+  we need to guard all the code that will eventually be removed, including tests.
+  For tests that are not specifically testing the deprecated feature, we need to figure out
+  how to test the behavior without encountering the deprecated feature, just as users would.
  */
 export const DEPRECATIONS = {
   DEPRECATE_IMPORT_EMBER(importName: string) {

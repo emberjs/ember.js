@@ -12,11 +12,11 @@ import Namespace from '@ember/application/namespace';
 
 /**
   The `ContainerDebugAdapter` helps the container and resolver interface
-  with tools that debug Ember such as the
-  [Ember Inspector](https://github.com/emberjs/ember-inspector)
+  with tools that debug Ember,
+  such as [Ember Inspector](https://github.com/emberjs/ember-inspector)
   for Chrome and Firefox.
 
-  This class can be extended by a custom resolver implementer
+  A custom resolver implementer can extend `ContainerDebugAdapter`
   to override some of the methods with library-specific code.
 
   The methods likely to be overridden are:

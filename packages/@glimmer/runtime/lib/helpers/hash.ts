@@ -14,8 +14,8 @@ export const hash = internalHelper(({ named }: CapturedArguments): Reference<Dic
     'hash'
   );
 
-  // Setup the children so that templates can bypass getting the value of
-  // the reference and treat children lazily
+  // Setup the children so that templates can bypass getting the value
+  // of the reference and treat children lazily
   let children = new Map();
 
   for (let name in named) {

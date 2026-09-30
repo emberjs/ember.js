@@ -149,8 +149,8 @@ function isPrevWhitespace(body, i, isRoot) {
     i = body.length;
   }
 
-  // Nodes that end with newlines are considered whitespace (but are special
-  // cased for strip operations)
+  // Nodes that end with newlines are considered whitespace.
+  // Strip operations special-case them.
   let prev = body[i - 1],
     sibling = body[i - 2];
   if (!prev) {

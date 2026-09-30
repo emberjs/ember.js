@@ -181,9 +181,10 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
     const normalized = normalizeStringValue(value);
     dom.__setProperty('value', normalized);
 
-    // GH#19219: Browsers don't reflect `input.value = ''` as a value attribute when
-    // type is later changed to "radio"/"checkbox". Explicitly set the attribute for <input>.
-    // Not needed for <textarea> (no value attribute).
+    // GH#19219: Browsers don't reflect `input.value = ''` as a value attribute,
+    // if the type is set to "radio" or "checkbox" after the value.
+    // Explicitly set the attribute for <input>.
+    // This is not needed for <textarea>, which has no value attribute.
     if (value === '' && this.attribute.element.tagName === 'INPUT') {
       dom.__setAttribute('value', '', null);
     }

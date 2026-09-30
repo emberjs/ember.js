@@ -44,11 +44,11 @@ interface ControllerMixin<T> extends ActionHandler {
     For example, when a template uses the `{{action}}` helper,
     it will attempt to send the action to the view's controller's `target`.
 
-    By default, the value of the target property is set to the router, and
-    is injected when a controller is instantiated. This injection is applied
-    as part of the application's initialization process. In most cases the
-    `target` property will automatically be set to the logical consumer of
-    actions for the controller.
+    By default, the value of the target property is set to the router,
+    and is injected when a controller is instantiated. This injection
+    is applied as part of the application's initialization process.
+    In most cases the `target` property will automatically be set to the logical
+    consumer of actions for the controller.
 
     @property target
     @default null
@@ -102,9 +102,9 @@ interface ControllerMixin<T> extends ActionHandler {
     aController.transitionToRoute('blogPosts.recentEntries');
     ```
 
-    Optionally supply a model for the route in question. The model
-    will be serialized into the URL using the `serialize` hook of
-    the route:
+    Optionally supply a model for the route in question.
+    The model will be serialized into the URL using the `serialize`
+    hook of the route:
 
     ```javascript
     aController.transitionToRoute('blogPost', aPost);
@@ -118,8 +118,8 @@ interface ControllerMixin<T> extends ActionHandler {
     aController.transitionToRoute('blogPost', 1);
     ```
 
-    Multiple models will be applied last to first recursively up the
-    route tree.
+    Multiple models will be applied last to first recursively up
+    the route tree.
 
     ```app/router.js
     Router.map(function() {
@@ -134,8 +134,7 @@ interface ControllerMixin<T> extends ActionHandler {
     aController.transitionToRoute('blogComment', 1, 13);
     ```
 
-    It is also possible to pass a URL (a string that starts with a
-    `/`).
+    It is also possible to pass a URL (a string that starts with a `/`).
 
     ```javascript
     aController.transitionToRoute('/');
@@ -181,9 +180,9 @@ interface ControllerMixin<T> extends ActionHandler {
     aController.replaceRoute('blogPosts.recentEntries');
     ```
 
-    Optionally supply a model for the route in question. The model
-    will be serialized into the URL using the `serialize` hook of
-    the route:
+    Optionally supply a model for the route in question.
+    The model will be serialized into the URL using the `serialize`
+    hook of the route:
 
     ```javascript
     aController.replaceRoute('blogPost', aPost);
@@ -197,8 +196,8 @@ interface ControllerMixin<T> extends ActionHandler {
     aController.replaceRoute('blogPost', 1);
     ```
 
-    Multiple models will be applied last to first recursively up the
-    route tree.
+    Multiple models will be applied last to first recursively up
+    the route tree.
 
     ```app/router.js
     Router.map(function() {
@@ -213,8 +212,7 @@ interface ControllerMixin<T> extends ActionHandler {
     aController.replaceRoute('blogComment', 1, 13);
     ```
 
-    It is also possible to pass a URL (a string that starts with a
-    `/`).
+    It is also possible to pass a URL (a string that starts with a `/`).
 
     ```javascript
     aController.replaceRoute('/');
@@ -267,17 +265,17 @@ const ControllerMixin = Mixin[INTERNAL_MIXIN_CREATE](ActionHandler, {
   queryParams: null,
 
   /**
-   This property is updated to various different callback functions depending on
-   the current "state" of the backing route. It is used by
-   `Controller.prototype._qpChanged`.
+   This property holds various different callback functions,
+   depending on the current "state" of the backing route. It is used
+   by `Controller.prototype._qpChanged`.
 
    The methods backing each state can be found in the `Route.prototype._qp` computed
-   property return value (the `.states` property). The current values are listed here for
-   the sanity of future travelers:
+   property return value (the `.states` property). The current values are listed here
+   for the sanity of future travelers:
 
    * `inactive` - This state is used when this controller instance is not part of the active
-     route hierarchy. Set in `Route.prototype._reset` (a `router.js` microlib hook) and
-     `Route.prototype.actions.finalizeQueryParamChange`.
+     route hierarchy. Set in `Route.prototype._reset` (a `router.js` microlib hook)
+     and `Route.prototype.actions.finalizeQueryParamChange`.
    * `active` - This state is used when this controller instance is part of the active
      route hierarchy. Set in `Route.prototype.actions.finalizeQueryParamChange`.
    * `allowOverrides` - This state is used in `Route.prototype.setup` (`route.js` microlib hook).
@@ -293,8 +291,8 @@ const ControllerMixin = Mixin[INTERNAL_MIXIN_CREATE](ActionHandler, {
    are changed.
 
    When invoked this method uses the currently active query param update delegate
-   (see `Controller.prototype._qpDelegate` for details) and invokes it with
-   the QP key/value being changed.
+   (see `Controller.prototype._qpDelegate` for details) and invokes it with the QP
+   key/value being changed.
 
     @method _qpChanged
     @private
@@ -347,16 +345,16 @@ class Controller<_T = unknown> extends FrameworkObject.extend(ControllerMixin) {
   });
   ```
 
-  This example will create a `posts` property on the `post` controller that
-  looks up the `posts` controller in the container, making it easy to reference
-  other controllers.
+  This example will create a `posts` property on the `post` controller that looks
+  up the `posts` controller in the container, making it easy to reference other
+  controllers.
 
   @method inject
   @static
   @for @ember/controller
   @since 1.10.0
-  @param {String} name (optional) name of the controller to inject, defaults to
-         the property's name
+  @param {String} name (optional) name of the controller to inject,
+         defaults to the property's name
   @return {ComputedDecorator} injection decorator instance
   @public
 */

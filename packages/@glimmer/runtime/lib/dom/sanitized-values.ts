@@ -20,8 +20,8 @@ function checkURI(tagName: Nullable<string>, attribute: string): boolean {
   // SVG tagNames are case-preserved, so the SVG `<a>` element comes through as
   // lowercase `a` and never matches the uppercase `badTags` entries unless we
   // normalize first. The attribute name can likewise arrive camelCased (e.g.
-  // `formAction`) when the template author writes it that way and it resolves to
-  // a DOM property, so lower-case it before matching the lowercase lists.
+  // `formAction`) when the template author writes it that way and it resolves
+  // to a DOM property, so lower-case it before matching the lowercase lists.
   return (
     (tagName === null || has(badTags, tagName.toUpperCase())) &&
     has(badAttributes, attribute.toLowerCase())
@@ -73,23 +73,23 @@ function findProtocolForURL() {
 
     typeof weirdURL.parse === 'function'
   ) {
-    // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`
-    // ultimately, this should be changed (so that we can either rely on the natural `URL` global
-    // that exists) but for now we have to detect the specific `FastBoot` case first
+    // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`.
+    // Ideally we would rely on the natural `URL` global instead.
+    // Until `fastboot` stops shadowing it, we have to detect the specific `FastBoot` case first.
     //
-    // a future version of `fastboot` will detect if this legacy URL setup is required (by
-    // inspecting Ember version) and if new enough, it will avoid shadowing the `URL` global
-    // constructor with `require('url')`.
+    // A future version of `fastboot` will inspect the Ember version to detect
+    // if this legacy URL setup is required. If Ember is new enough,
+    // it will avoid shadowing the `URL` global constructor with `require('url')`.
     let nodeURL = weirdURL as NodeUrlModule;
 
     return (url: string) => {
       let protocol = null;
 
       if (typeof url === 'string') {
-        // browsers strip ASCII tab/newline/CR from urls before navigating, so
-        // `java\nscript:` runs as `javascript:`. `url.parse` keeps them and reports
-        // a null protocol, slipping past the badProtocols check. Strip them here to
-        // match the WHATWG `URL` parser used on the non-fastboot path.
+        // browsers strip ASCII tab/newline/CR from urls before navigating,
+        // so `java\nscript:` runs as `javascript:`. `url.parse` keeps them
+        // and reports a null protocol, slipping past the badProtocols check.
+        // Strip them here to match the WHATWG `URL` parser used on the non-fastboot path.
         protocol = nodeURL.parse(url.replace(/[\t\n\r]/gu, '')).protocol;
       }
 
@@ -102,10 +102,11 @@ function findProtocolForURL() {
 
         return url.protocol;
       } catch {
-        // any non-fully qualified url string will trigger an error (because there is no
-        // baseURI that we can provide; in that case we **know** that the protocol is
-        // "safe" because it isn't specifically one of the `badProtocols` listed above
-        // (and those protocols can never be the default baseURI)
+        // Any non-fully qualified url string will trigger an error,
+        // because there is no baseURI that we can provide.
+        // In that case we **know** that the protocol is "safe".
+        // It isn't one of the `badProtocols` listed above,
+        // and those protocols can never be the default baseURI.
         return ':';
       }
     };

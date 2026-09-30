@@ -118,8 +118,8 @@ export function setupTestClass<T extends TestCase, G extends Generator>(
     // in the test suite
     //
     // returning a promise from a QUnit test always adds a 13ms
-    // delay to the test, this filtering prevents returning a
-    // promise when it is not needed
+    // delay to the test, this filtering prevents returning
+    // a promise when it is not needed
     let filteredPromises = promises.filter(Boolean);
     if (filteredPromises.length > 0) {
       return all(filteredPromises)

@@ -210,9 +210,9 @@ class OwnerTest extends RenderTest {
     this.renderComponent(Mount1);
   }
 
-  // TODO: This behavior could be confusing the users, but currently we don't know of a way
-  // to ensure we are using the component with the correct owner if it was not curried.
-  // We should continue exploring options here.
+  // TODO: This behavior could be confusing the users.
+  // We don't know of a way to ensure we are using the component with the correct owner
+  // if it was not curried. We should continue exploring options here.
   @test
   'owner is preserved in non-curried component definitions that are passed around'(assert: Assert) {
     let owner1 = { name: 'owner1' };

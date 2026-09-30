@@ -30,8 +30,8 @@
   isEqual(personA, personB); // true
   ```
 
-  Due to the expense of array comparisons, collections will never be equal to
-  each other even if each of their items are equal to each other.
+  Due to the expense of array comparisons, collections will never be equal to each other,
+  even if each of their items are equal to each other.
 
   ```javascript
   import { isEqual } from '@ember/utils';

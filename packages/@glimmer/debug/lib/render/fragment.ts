@@ -145,9 +145,9 @@ export class Fragment<T extends FragmentType = FragmentType> {
    * Apply the specified styles to the current fragment (if it's a leaf) or all
    * of its children (if it's a multi-fragment).
    *
-   * Keep in mind that merging styles might be very difficult to undo, so treat
-   * this as a low-level operation, and prefer to use higher-level concepts like
-   * `subtle` if you can instead.
+   * Keep in mind that merging styles might be very difficult to undo.
+   * Treat this as a low-level operation,
+   * and prefer to use higher-level concepts like `subtle` if you can instead.
    */
   styleAll(...allFormats: IntoFormat[]): Fragment<T> {
     if (allFormats.length === 0) return this;
@@ -168,9 +168,9 @@ export class Fragment<T extends FragmentType = FragmentType> {
   /**
    * Convert the current fragment into a string with no additional formatting.
    * The primary purpose for this method is to support converting a fragment
-   * into a string for inclusion in thrown Errors. If you're going to *log*
-   * a fragment, log it using `DebugLogger` and don't convert it to
-   * a string first.
+   * into a string for inclusion in thrown Errors.
+   * If you're going to *log* a fragment,
+   * log it using `DebugLogger` and don't convert it to a string first.
    */
   stringify(options: DisplayFragmentOptions): string {
     return this.leaves()
@@ -191,8 +191,8 @@ export class Fragment<T extends FragmentType = FragmentType> {
   /**
    * Should the current fragment be printed with the provided display options?
    *
-   * Importantly, if the current fragment contains subtle content but the `showSubtle` option is
-   * false, `#shouldShow` will return false.
+   * Importantly, if the current fragment contains subtle content,
+   * but the `showSubtle` option is false, `#shouldShow` will return false.
    *
    * @see isEmpty
    */
@@ -243,10 +243,11 @@ export class Fragment<T extends FragmentType = FragmentType> {
     // If the fragment is a value fragment and the value is a primitive, give it special
     // treatment since we can trivially serialize it.
     if (fragment.kind === 'value') {
-      // If the value is a string or number, convert it into a string, float or integer
-      // fragment and append that instead. This means that strings and numbers are
-      // represented the same way in logs whether they are explicitly created as string,
-      // float or integer fragments *or* whether they are the value of a value fragment.
+      // If the value is a string or number,
+      // convert it into a string, float or integer fragment and append that instead.
+      // Strings and numbers are then represented the same way in logs.
+      // It does not matter if they are explicitly created as string, float or integer fragments,
+      // *or* if they are the value of a value fragment.
       if (typeof fragment.value === 'string') {
         return Fragment.string(JSON.stringify(fragment.value), {
           style: STYLES.string,
@@ -276,8 +277,8 @@ export class Fragment<T extends FragmentType = FragmentType> {
         }).appendTo(buffer);
       }
 
-      // All other values (i.e. objects and functions) are represented as footnotes and
-      // are handled below.
+      // All other values, such as objects and functions,
+      // are represented as footnotes and are handled below.
     }
 
     switch (fragment.kind) {
@@ -299,8 +300,8 @@ export class Fragment<T extends FragmentType = FragmentType> {
       case 'special':
       // values are appended to the footnote line using %O
       case 'value': {
-        // If a fragment has an associated annotation, we'll use the annotation as the
-        // footnote rather than the footnote number.
+        // If a fragment has an associated annotation,
+        // we'll use the annotation as the footnote rather than the footnote number.
         const override = fragment.kind === 'value' ? fragment.display : undefined;
 
         buffer.addFootnoted(fragment.subtle ?? false, ({ n, style }, footnote) => {
@@ -373,8 +374,8 @@ function intoLeafFragment(value: IntoLeafFragment): LeafFragment {
   } else if (typeof value === 'number') {
     return new Fragment({ kind: 'integer', value });
   } else if (typeof value === 'string') {
-    // If the string contains only whitespace and punctuation, we can treat it as a
-    // punctuation fragment.
+    // If the string contains only whitespace and punctuation,
+    // we can treat it as a punctuation fragment.
     if (/^[\s\p{P}\p{Sm}]*$/u.test(value)) {
       return new Fragment({ kind: 'string', value, style: STYLES.punct });
     } else {

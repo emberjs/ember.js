@@ -16,8 +16,8 @@ const LOCAL_DEBUG_BRAND = new WeakMap<object, ClassifiedLocalDebug>();
  * An object branded with a local debug type has special local trace logging
  * behavior.
  *
- * If `LOCAL_DEBUG` is `false`, this function does nothing (and is removed
- * by the minifier in builder).
+ * If `LOCAL_DEBUG` is `false`, this function does nothing.
+ * The minifier removes it from builds.
  */
 export function setLocalDebugType<P extends LocalDebugType>(
   type: P,
@@ -39,9 +39,9 @@ export function setLocalDebugType(type: string, ...brand: [value: object, option
  * An object branded with a local debug type has special local trace logging
  * behavior.
  *
- * If `LOCAL_DEBUG` is `false`, this function always returns undefined. However,
- * this function should only be called by the trace logger, which should only
- * run in trace `LOCAL_DEBUG` + `LOCAL_TRACE_LOGGING` mode.
+ * If `LOCAL_DEBUG` is `false`, the result is always undefined.
+ * That is safe because only the trace logger should call this,
+ * and the trace logger should only run in `LOCAL_DEBUG` + `LOCAL_TRACE_LOGGING` mode.
  */
 export function getLocalDebugType(value: object): ClassifiedLocalDebug | void {
   if (LOCAL_DEBUG) {

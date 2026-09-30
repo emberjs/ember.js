@@ -4,11 +4,10 @@ import { hasUnknownProperty } from '@ember/-internals/metal/lib/property_get';
  @module @ember/utils
 */
 /**
-  Verifies that a value is `null` or `undefined`, an empty string, or an empty
-  array.
+  Verifies that a value is `null` or `undefined`, an empty string,
+  or an empty array.
 
-  Constrains the rules on `isNone` by returning true for empty strings and
-  empty arrays.
+  Constrains the rules on `isNone` by returning true for empty strings and empty arrays.
 
   If the value is an object with a `size` property of type number, it is used
   to check emptiness.

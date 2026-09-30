@@ -335,8 +335,8 @@ test('handlebars comments with whitespace removal', '<div>  {{~! some comment ~}
 //
 // Unclear if they are meant to work but the parser accepts them, and the compiler shouldn't break.
 //
-// This is really testing @glimmer/syntax's ASTv2 loc info, but that is currently only exercised by
-// the compiler and does not have its own dedicated test suite.
+// This is really testing @glimmer/syntax's ASTv2 loc info.
+// Only the compiler exercises that code, and it does not have its own dedicated test suite.
 const StrangeComments = [
   // empty comments
   '!',

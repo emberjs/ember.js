@@ -57,8 +57,8 @@ export class LooseModeResolution {
   }
 
   /**
-   * Append resolution is used when the variable should be resolved in both the `component` and
-   * `helper` namespaces.
+   * Append resolution is used when the variable should be resolved
+   * in both the `component` and `helper` namespaces.
    *
    * ```hbs
    * {{x}}
@@ -75,8 +75,8 @@ export class LooseModeResolution {
   }
 
   /**
-   * Trusting append resolution is used when the variable should be resolved only in the
-   * `helper` namespaces.
+   * Trusting append resolution is used when the variable should be resolved
+   * only in the `helper` namespaces.
    *
    * ```hbs
    * {{{x}}}

@@ -20,9 +20,9 @@ import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
 
-// `ObjectProxy` and `ArrayProxy` are deprecated, but their interaction with
-// conditionals is still worth covering until they are removed. The deprecation
-// itself is asserted by the dedicated proxy tests, so it is silenced here.
+// `ObjectProxy` and `ArrayProxy` are deprecated,
+// but their interaction with conditionals is still worth covering until they are removed.
+// The deprecation itself is asserted by the dedicated proxy tests, so it is silenced here.
 const OBJECT_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved;
 const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
 
@@ -190,8 +190,8 @@ export class StableFalsyGenerator extends FalsyGenerator {
 
 class ObjectProxyGenerator extends AbstractGenerator {
   generate(value, idx) {
-    // This is inconsistent with our usual to-bool policy, but the current proxy implementation
-    // simply uses !!content to determine truthiness
+    // This is inconsistent with our usual to-bool policy,
+    // but the proxy implementation uses !!content to determine truthiness
     if (value) {
       return {
         [`${testUnless(OBJECT_PROXY_REMOVED)} @test it should consider an object proxy with \`${JSON.stringify(

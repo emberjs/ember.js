@@ -20,12 +20,14 @@ if (DEBUG) {
     readers as well as catching bugs that accidentally violates these
     expectations.
 
-    Assertions are removed from production builds, so they can be freely added
-    for documentation and debugging purposes without worries of incuring any
-    performance penalty. However, because of that, they should not be used for
-    checks that could reasonably fail during normal usage. Furthermore, care
-    should be taken to avoid accidentally relying on side-effects produced from
-    evaluating the condition itself, since the code will not run in production.
+    Assertions are removed from production builds,
+    so they can be freely added for documentation and debugging purposes
+    without worries of incuring any performance penalty.
+    However, because of that, they should not be used
+    for checks that could reasonably fail during normal usage.
+    Furthermore, care should be taken to avoid accidentally relying
+    on side-effects produced from evaluating the condition itself,
+    since the code will not run in production.
 
     ```javascript
     import { assert } from '@ember/debug';
@@ -40,10 +42,10 @@ if (DEBUG) {
     @method assert
     @static
     @for @ember/debug
-    @param {String} description Describes the expectation. This will become the
-      text of the Error thrown if the assertion fails.
-    @param {any} condition Must be truthy for the assertion to pass. If
-      falsy, an exception will be thrown.
+    @param {String} description Describes the expectation.
+      This will become the text of the Error thrown if the assertion fails.
+    @param {any} condition Must be truthy for the assertion to pass.
+      If falsy, an exception will be thrown.
     @public
     @since 1.0.0
   */

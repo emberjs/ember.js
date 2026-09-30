@@ -14,10 +14,10 @@ import { destroy } from '@glimmer/destroyable';
 let obj;
 
 /*
-  This test file is designed to capture performance regressions related to
-  deferred computation. Things like run loops, computed properties, and bindings
-  should run the minimum amount of times to achieve best performance, so any
-  bugs that cause them to get evaluated more than necessary should be put here.
+  This test file is designed to capture performance regressions related to deferred computation.
+  Things like run loops, computed properties, and bindings should run the minimum amount of times
+  to achieve best performance.
+  Put tests for any bugs that cause them to get evaluated more than necessary here.
 */
 
 moduleFor(

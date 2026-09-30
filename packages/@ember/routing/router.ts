@@ -121,9 +121,9 @@ if (DEBUG) {
   };
 }
 
-// `QueryParam` now lives in `@ember/routing/route`. It was historically
-// exported from `@ember/routing/router`, so re-export it here to preserve that
-// published deep-import path.
+// `QueryParam` lives in `@ember/routing/route`.
+// Earlier releases exported it from `@ember/routing/router`,
+// so re-export it here to preserve that published deep-import path.
 export type { QueryParam };
 
 function K(this: Router) {
@@ -133,8 +133,8 @@ function K(this: Router) {
 const { slice } = Array.prototype;
 
 /**
-  The `EmberRouter` class manages the application state and URLs. Refer to
-  the [routing guide](https://guides.emberjs.com/release/routing/) for documentation.
+  The `EmberRouter` class manages the application state and URLs.
+  Refer to the [routing guide](https://guides.emberjs.com/release/routing/) for documentation.
 
   @class EmberRouter
   @extends EmberObject
@@ -143,14 +143,14 @@ const { slice } = Array.prototype;
 */
 class EmberRouter extends EmberObject {
   static {
-    // The deprecated Evented mixin is no longer applied, but instances still
-    // provide its methods, so `Evented.detect` must keep returning true.
+    // The deprecated Evented mixin is not applied,
+    // but instances provide its methods, so `Evented.detect` must return true.
     metaFor(this.prototype).addMixin(Evented);
   }
 
   /**
-   Represents the URL of the root of the application, often '/'. This prefix is
-    assumed on all routes defined on this router.
+   Represents the URL of the root of the application, often '/'.
+    This prefix is assumed on all routes defined on this router.
 
     @property rootURL
     @default '/'
@@ -160,15 +160,16 @@ class EmberRouter extends EmberObject {
   declare rootURL: string;
 
   /**
-   The `location` property determines the type of URL's that your
-    application will use.
+   The `location` property determines the type of URLs that your application will use.
 
-    The following location types are currently available:
+    The following location types are available:
 
-    * `history` - use the browser's history API to make the URLs look just like any standard URL
-    * `hash` - use `#` to separate the server part of the URL from the Ember part: `/blog/#/posts/new`
-    * `none` - do not store the Ember URL in the actual browser URL (mainly used for testing)
-    * `auto` - use the best option based on browser capabilities: `history` if possible, then `hash` if possible, otherwise `none`
+    * `history`: use the browser's history API to make the URLs look just like any standard URL.
+    * `hash`: use `#` to separate the server part of the URL from the Ember part:
+      `/blog/#/posts/new`.
+    * `none`: do not store the Ember URL in the actual browser URL. This is mainly used for testing.
+    * `auto`: use the best option based on browser capabilities.
+      That is `history` if possible, then `hash` if possible, otherwise `none`.
 
     This value is defaulted to `history` by the `locationType` setting of `/config/environment.js`
 
@@ -202,12 +203,13 @@ class EmberRouter extends EmberObject {
   _engineInfoByRoute = Object.create(null);
   _routerService: RouterService;
 
-  // Per-owner caches for the manager-driven route lookup path. Route
-  // management ({manager, bucket} pairs) is keyed by owner first so that
-  // engine routes (which can reuse local names) stay isolated; a cache hit
-  // skips factory resolution entirely. Manager instances are similarly keyed first
-  // by owner, then by the factory function that produced them, so that
-  // routes sharing a factory share one manager within a given owner.
+  // Per-owner caches for the manager-driven route lookup path.
+  // Route management, as {manager, bucket} pairs, is keyed by owner first,
+  // so that engine routes stay isolated, because they can reuse local names.
+  // A cache hit skips factory resolution entirely.
+  // Manager instances are similarly keyed first by owner,
+  // then by the factory function that produced them,
+  // so that routes sharing a factory share one manager within a given owner.
   #routeManagement = new WeakMap<Owner, Map<string, RouteManagement>>();
   #routeManagerInstances = new WeakMap<Owner, WeakMap<object, RouteManager>>();
 
@@ -263,26 +265,27 @@ class EmberRouter extends EmberObject {
 
   /**
     The `Router.map` function allows you to define mappings from URLs to routes
-    in your application. These mappings are defined within the
-    supplied callback function using `this.route`.
+    in your application.
+    These mappings are defined within the supplied callback function using `this.route`.
 
-    The first parameter is the name of the route which is used by default as the
-    path name as well.
+    The first parameter is the name of the route,
+    which is used by default as the path name as well.
 
     The second parameter is the optional options hash. Available options are:
 
-      * `path`: allows you to provide your own path as well as mark dynamic
-        segments.
-      * `resetNamespace`: false by default; when nesting routes, ember will
-        combine the route names to form the fully-qualified route name, which is
-        used with `{{link-to}}` or manually transitioning to routes. Setting
-        `resetNamespace: true` will cause the route not to inherit from its
-        parent route's names. This is handy for preventing extremely long route names.
+      * `path`: allows you to provide your own path as well as mark dynamic segments.
+      * `resetNamespace`: false by default.
+        When nesting routes, ember will combine the route names
+        to form the fully-qualified route name,
+        which is used with `{{link-to}}` or manually transitioning to routes.
+        Setting `resetNamespace: true` will cause the route
+        not to inherit from its parent route's names.
+        This is handy for preventing extremely long route names.
         Keep in mind that the actual URL path behavior is still retained.
 
     The third parameter is a function, which can be used to nest routes.
-    Nested routes, by default, will have the parent route tree's route name and
-    path prepended to it's own.
+    By default, nested routes will have the parent route tree's route name and path
+    prepended to their own.
 
     ```app/router.js
     Router.map(function(){
@@ -314,8 +317,8 @@ class EmberRouter extends EmberObject {
   static _routePath(routeInfos: InternalRouteInfo[]) {
     let path: string[] = [];
 
-    // We have to handle coalescing resource names that
-    // are prefixed with their parent's names, e.g.
+    // We have to handle coalescing resource names
+    // that are prefixed with their parent's names, e.g.
     // ['foo', 'foo.bar.baz'] => 'foo.bar.baz', not 'foo.foo.bar.baz'
 
     function intersectionMatches(a1: string[], a2: string[]) {
@@ -368,19 +371,19 @@ class EmberRouter extends EmberObject {
   }
 
   /**
-    Returns the `Route` instance for `name`, creating it through the route
-    manager registered against the route class on first access. Subsequent
-    calls return the same instance without re-running factory resolution.
+    Returns the `Route` instance for `name`.
+    On first access, the route manager registered against the route class creates it.
+    Subsequent calls return the same instance without re-running factory resolution.
 
-    Engine routes are resolved by their fully-qualified name via
-    `_engineInfoByRoute`.
+    Engine routes are resolved by their fully-qualified name
+    via `_engineInfoByRoute`.
 
     @private
    */
   getRoute(name: string): RouteManagement | undefined {
-    // Guard against a stringified `undefined` route name: without this, the
-    // auto-generation path below would happily register and hand back a junk
-    // `route:undefined`.
+    // Guard against a stringified `undefined` route name.
+    // Without this, the auto-generation path below would happily register
+    // and hand back a junk `route:undefined`.
     if (name === 'undefined') {
       return undefined;
     }
@@ -580,15 +583,16 @@ class EmberRouter extends EmberObject {
             manager.triggerErrorEvent(bucket, transition, error.error, error.bucket);
           }
           if (router._isErrorHandled(error.error)) {
-            // If we handled the error with a substate just roll the state back on
-            // the transition and send the "routeDidChange" event for landing on
-            // the error substate and return the error.
+            // If we handled the error with a substate,
+            // roll the state back on the transition,
+            // send the "routeDidChange" event for landing on the error substate,
+            // and return the error.
             transition.rollback();
             this.routeDidChange(transition);
             return error.error;
           } else {
-            // If it was not handled, abort the transition completely and return
-            // the error.
+            // If it was not handled,
+            // abort the transition completely and return the error.
             transition.abort();
             return error.error;
           }
@@ -607,9 +611,9 @@ class EmberRouter extends EmberObject {
         }
       }
 
-      // The manager-driven transition lifecycle (onTransitionSettled and
-      // friends) is inherited from the base router_js Router; only the
-      // Ember-specific hooks are provided here.
+      // The manager-driven transition lifecycle, such as onTransitionSettled,
+      // is inherited from the base router_js Router.
+      // Only the Ember-specific hooks are provided here.
 
       protected override isRouterDestroyed(): boolean {
         return router.isDestroying || router.isDestroyed;
@@ -627,20 +631,22 @@ class EmberRouter extends EmberObject {
           return;
         }
 
-        // Incremental (mid-transition) passes are coalesced onto the next
-        // timer tick: an instant-resolving transition never yields the event
-        // loop, so its per-route readiness folds into the settle-time render
-        // (12 passes down to 2, measured on a 9-deep transition); a genuinely
-        // pending model yields, the timer fires, and parents still render
-        // progressively above the pending child.
+        // Incremental, mid-transition passes are coalesced onto the next timer tick.
+        // An instant-resolving transition never yields the event loop,
+        // so its per-route readiness folds into the settle-time render.
+        // On a 9-deep transition, this measured 2 passes instead of 12.
+        // A pending model yields, the timer fires,
+        // and parents still render progressively above the pending child.
         //
-        // `once` would not coalesce here: each route's readiness arrives via
-        // a native promise callback, which backburner wraps in its own
-        // autorun, and `once` only dedupes within a single run loop — one
-        // pass per resolving route, the exact behavior this replaces. A
-        // timer lives outside any one run loop, so the pending-handle guard
-        // below dedupes across all of them. `later` (not setTimeout) so the
-        // pass is cancelable and visible to test waiters.
+        // `once` would not coalesce here.
+        // Each route's readiness arrives via a native promise callback,
+        // which backburner wraps in its own autorun.
+        // `once` only dedupes within a single run loop,
+        // so it would give one pass per resolving route: the exact behavior this replaces.
+        // A timer lives outside any one run loop,
+        // so the pending-handle guard below dedupes across all of them.
+        // We use `later` and not setTimeout,
+        // so that the pass is cancelable and visible to test waiters.
         if (this.#pendingOutletFlush !== null) {
           return;
         }
@@ -723,11 +729,11 @@ class EmberRouter extends EmberObject {
   }
 
   /**
-    Initializes the current router instance and sets up the change handling
-    event listeners used by the instances `location` implementation.
+    Sets up the change handling event listeners
+    that the instance's `location` implementation uses.
 
     A property named `initialURL` will be used to determine the initial URL.
-    If no value is found `/` will be used.
+    If no value is found, `/` will be used.
 
     @method startRouting
     @private
@@ -754,8 +760,8 @@ class EmberRouter extends EmberObject {
 
     let location = get(this, 'location') as EmberLocation;
 
-    // Allow the Location class to cancel the router setup while it refreshes
-    // the page
+    // Allow the Location class to cancel the router setup
+    // while it refreshes the page
     if (get(location, 'cancelRouterSetup')) {
       return false;
     }
@@ -771,19 +777,19 @@ class EmberRouter extends EmberObject {
 
   _setOutlets() {
     // This is triggered async during Route#willDestroy.
-    // If the router is also being destroyed we do not want to
-    // render another root outlet (and leak the renderer)
+    // If the router is also being destroyed, we do not want to render another root outlet,
+    // because that would leak the renderer.
     if (this.isDestroying || this.isDestroyed) {
       return;
     }
 
-    // Skip rendering when the application instance was booted with
-    // `shouldRender: false`. The full transition lifecycle still runs
-    // (resolve, controllers, models) but no DOM is created. Used by
-    // `application.visit()` in non-rendering scenarios such as fastboot
-    // prefetching or route-only unit tests. This is the single
-    // `shouldRender` gate for the render path. (`environment` is also
-    // reused by the toplevel-view creation below.)
+    // Skip rendering when the application instance was booted with `shouldRender: false`.
+    // The full transition lifecycle of resolve, controllers, and models still runs,
+    // but no DOM is created.
+    // `application.visit()` uses this in non-rendering scenarios,
+    // such as fastboot prefetching or route-only unit tests.
+    // This is the single `shouldRender` gate for the render path.
+    // The toplevel-view creation below also reuses `environment`.
     let environment = getOwner(this)?.lookup('-environment:main') as BootEnvironment | undefined;
     if (environment?.options?.shouldRender === false) {
       return;
@@ -813,10 +819,9 @@ class EmberRouter extends EmberObject {
     }
 
     // when a transitionTo happens after the validation phase
-    // during the initial transition _setOutlets is called
-    // when no routes are active. However, it will get called
-    // again with the correct values during the next turn of
-    // the runloop
+    // during the initial transition, _setOutlets is called
+    // when no routes are active. However, it will get called again
+    // with the correct values during the next turn of the runloop
     if (root === null) {
       return;
     }
@@ -841,8 +846,8 @@ class EmberRouter extends EmberObject {
   }
 
   handleURL(url: string) {
-    // Until we have an ember-idiomatic way of accessing #hashes, we need to
-    // remove it because router.js doesn't know how to handle it.
+    // Until we have an ember-idiomatic way of accessing #hashes,
+    // we need to remove it, because router.js doesn't know how to handle it.
     let _url = url.split(/#(.+)?/)[0]!;
     return this._doURLTransition('handleURL', _url);
   }
@@ -860,8 +865,8 @@ class EmberRouter extends EmberObject {
 
     @method transitionTo
     @param {String} [name] the name of the route or a URL
-    @param {...Object} models the model(s) or identifier(s) to be used while
-      transitioning to the route.
+    @param {...Object} models the model(s) or identifier(s)
+      to be used while transitioning to the route.
     @param {Object} [options] optional hash with a queryParams property
       containing a mapping of query parameters
     @return {Transition} the transition object associated with this
@@ -908,8 +913,8 @@ class EmberRouter extends EmberObject {
 
     @method replaceWith
     @param {String} [name] the name of the route or a URL
-    @param {...Object} models the model(s) or identifier(s) to be used while
-      transitioning to the route.
+    @param {...Object} models the model(s) or identifier(s)
+      to be used while transitioning to the route.
     @param {Object} [options] optional hash with a queryParams property
       containing a mapping of query parameters
     @return {Transition} the transition object associated with this
@@ -1067,8 +1072,8 @@ class EmberRouter extends EmberObject {
         set(location, 'rootURL', rootURL);
       }
 
-      // ensure that initState is called AFTER the rootURL is set on
-      // the location instance
+      // ensure that initState is called AFTER the rootURL is set
+      // on the location instance
       if (typeof location.initState === 'function') {
         location.initState();
       }
@@ -1332,7 +1337,7 @@ class EmberRouter extends EmberObject {
         continue;
       }
 
-      // Loop over each QP to make sure we don't have any collisions by urlKey
+      // Two QPs with the same urlKey would collide in the URL
       for (let qp of qpMeta.qps) {
         if (DEBUG) {
           urlKey = qp.urlKey;
@@ -1404,8 +1409,9 @@ class EmberRouter extends EmberObject {
   }
 
   /**
-    Hydrates (adds/restores) any query params that have pre-existing values into
-    the given queryParams hash. This is what allows query params to be "sticky"
+    Hydrates any query params that have pre-existing values
+    into the given queryParams hash, by adding or restoring them.
+    This is what allows query params to be "sticky",
     and restore their last known values for their scope.
 
     @private
@@ -1621,13 +1627,13 @@ let defaultActionHandlers = {
 
   // Attempt to find an appropriate error route or substate to enter.
   error(this: EmberRouter, routeInfos: InternalRouteInfo[], error: Error, transition: Transition) {
-    // Error substates are classic machinery; the router only forwards the
-    // unhandled error through the classic-interop contract. The event's
-    // routeInfos are sliced to end at the route that errored, so its leaf
-    // is the origin of the substate walk. That route may never have been
-    // created (e.g. across an engine's async boundary) — dispatch then
-    // falls to the deepest route with a classic manager, and the manager
-    // walks from the transition's leaf.
+    // Error substates are classic machinery.
+    // The router only forwards the unhandled error through the classic-interop contract.
+    // The event's routeInfos are sliced to end at the route that errored,
+    // so its leaf is the origin of the substate walk.
+    // That route may never have been created, e.g. across an engine's async boundary.
+    // Then dispatch falls to the deepest route with a classic manager,
+    // and the manager walks from the transition's leaf.
     let originBucket = routeInfos[routeInfos.length - 1]?.bucket;
     let dispatch = dispatchRouteInfoFor(routeInfos);
     let manager = dispatch?.manager;

@@ -12,11 +12,11 @@ export type ScopeSlot = Reference | ScopeBlock | null;
 
 export interface Scope {
   /**
-   * A single program can mix and match multiple owners. This can happen component is curried from a
-   * template with one owner and then rendered in a second owner.
+   * A single program can mix and match multiple owners. This can happen component is curried
+   * from a template with one owner and then rendered in a second owner.
    *
-   * Note: Owners can change when new root scopes are created (including when rendering a
-   * component), but not in child scopes.
+   * Note: Owners can change when new root scopes are created (including when rendering
+   * a component), but not in child scopes.
    */
   readonly owner: Owner;
   // for debug only

@@ -19,9 +19,9 @@ export interface PositionData {
 }
 
 /**
- * Used to indicate that an attempt to convert a `SourcePosition` to a character offset failed. It
- * is separate from `null` so that `null` can be used to indicate that the computation wasn't yet
- * attempted (and therefore to cache the failure)
+ * Used to indicate that an attempt to convert a `SourcePosition` to a character offset failed.
+ * It is separate from `null`, so that `null` can indicate that the computation wasn't yet attempted.
+ * This lets us cache the failure.
  */
 export const BROKEN = 'BROKEN';
 export type BROKEN = 'BROKEN';
@@ -34,24 +34,25 @@ export type AnyPosition = HbsPosition | CharPosition | InvisiblePosition;
  * There are three kinds of backing data for `SourceOffset` objects:
  *
  * - `CharPosition`, which contains a character offset into the raw source string
- * - `HbsPosition`, which contains a `SourcePosition` from the Handlebars AST, which can be
- *   converted to a `CharPosition` on demand.
+ * - `HbsPosition`, which contains a `SourcePosition` from the Handlebars AST.
+ *   It can be converted to a `CharPosition` on demand.
  * - `InvisiblePosition`, which represents a position not in source (@see {InvisiblePosition})
  */
 export class SourceOffset {
   /**
-   * Create a `SourceOffset` from a Handlebars `SourcePosition`. It's stored as-is, and converted
-   * into a character offset on demand, which avoids unnecessarily computing the offset of every
-   * `SourceLocation`, but also means that broken `SourcePosition`s are not always detected.
+   * Create a `SourceOffset` from a Handlebars `SourcePosition`.
+   * It's stored as-is, and converted into a character offset on demand.
+   * This avoids unnecessarily computing the offset of every `SourceLocation`,
+   * but also means that broken `SourcePosition`s are not always detected.
    */
   static forHbsPos(source: Source, pos: SourcePosition): SourceOffset {
     return new HbsPosition(source, pos, null).wrap();
   }
 
   /**
-   * Create a `SourceOffset` that corresponds to a broken `SourcePosition`. This means that the
-   * calling code determined (or knows) that the `SourceLocation` doesn't correspond correctly to
-   * any part of the source.
+   * Create a `SourceOffset` that corresponds to a broken `SourcePosition`.
+   * This means that the calling code determined or knows
+   * that the `SourceLocation` doesn't correspond correctly to any part of the source.
    */
   static broken(pos: SourcePosition = UNKNOWN_POSITION): SourceOffset {
     return new InvisiblePosition(BROKEN_KIND, pos).wrap();
@@ -60,7 +61,7 @@ export class SourceOffset {
   constructor(readonly data: PositionData & AnyPosition) {}
 
   /**
-   * Get the character offset for this `SourceOffset`, if possible.
+   * Returns the character offset for this `SourceOffset`, if possible.
    */
   get offset(): number | null {
     const charPos = this.data.toCharPos();
@@ -70,11 +71,12 @@ export class SourceOffset {
   /**
    * Compare this offset with another one.
    *
-   * If both offsets are `HbsPosition`s, they're equivalent as long as their lines and columns are
-   * the same. This avoids computing offsets unnecessarily.
+   * If both offsets are `HbsPosition`s,
+   * they're equivalent as long as their lines and columns are the same.
+   * This avoids computing offsets unnecessarily.
    *
-   * Otherwise, two `SourceOffset`s are equivalent if their successfully computed character offsets
-   * are the same.
+   * Otherwise, two `SourceOffset`s are equivalent
+   * if their successfully computed character offsets are the same.
    */
   eql(right: SourceOffset): boolean {
     return eql(this.data, right.data);
@@ -114,16 +116,16 @@ export class SourceOffset {
   }
 
   /**
-   * Create a new `SourceSpan` that represents a collapsed range at this source offset. Avoid
-   * computing the character offset if it has not already been computed.
+   * Returns a `SourceSpan` that represents a collapsed range at this source offset.
+   * Avoid computing the character offset if it has not already been computed.
    */
   collapsed(): SourceSpan {
     return span(this.data, this.data);
   }
 
   /**
-   * Convert this `SourceOffset` into a Handlebars {@see SourcePosition} for compatibility with
-   * existing plugins.
+   * Convert this `SourceOffset` into a Handlebars {@see SourcePosition},
+   * for compatibility with existing plugins.
    */
   toJSON(): SourcePosition {
     return this.data.toJSON();
@@ -151,8 +153,9 @@ export class CharPosition implements PositionData {
   }
 
   /**
-   * Produce a Handlebars {@see SourcePosition} for this `CharPosition`. If this `CharPosition` was
-   * computed using {@see SourceOffset#move}, this will compute the `SourcePosition` for the offset.
+   * Produce a Handlebars {@see SourcePosition} for this `CharPosition`.
+   * If this `CharPosition` was computed using {@see SourceOffset#move},
+   * this will compute the `SourcePosition` for the offset.
    */
   toJSON(): SourcePosition {
     const hbs = this.toHbsPos();
@@ -171,10 +174,10 @@ export class CharPosition implements PositionData {
   }
 
   /**
-   * Convert the current character offset to an `HbsPosition`, if it was not already computed. Once
-   * a `CharPosition` has computed its `HbsPosition`, it will not need to do compute it again, and
-   * the same `CharPosition` is retained when used as one of the ends of a `SourceSpan`, so
-   * computing the `HbsPosition` should be a one-time operation.
+   * Convert the current character offset to an `HbsPosition`, if it was not already computed.
+   * Once a `CharPosition` has computed its `HbsPosition`, it will not need to compute it again.
+   * The same `CharPosition` is retained when used as one of the ends of a `SourceSpan`,
+   * so computing the `HbsPosition` should be a one-time operation.
    */
   toHbsPos(): HbsPosition | null {
     let locPos = this._locPos;
@@ -207,10 +210,10 @@ export class HbsPosition implements PositionData {
   }
 
   /**
-   * Lazily compute the character offset from the {@see SourcePosition}. Once an `HbsPosition` has
-   * computed its `CharPosition`, it will not need to do compute it again, and the same
-   * `HbsPosition` is retained when used as one of the ends of a `SourceSpan`, so computing the
-   * `CharPosition` should be a one-time operation.
+   * Lazily compute the character offset from the {@see SourcePosition}.
+   * Once an `HbsPosition` has computed its `CharPosition`, it will not need to compute it again.
+   * The same `HbsPosition` is retained when used as one of the ends of a `SourceSpan`,
+   * so computing the `CharPosition` should be a one-time operation.
    */
   toCharPos(): CharPosition | null {
     let charPos = this._charPos;
@@ -265,8 +268,8 @@ export class InvisiblePosition implements PositionData {
   }
 
   /**
-   * The serialization of an `InvisiblePosition is whatever Handlebars {@see SourcePosition} was
-   * originally identified as broken, non-existent or synthetic.
+   * The serialization of an `InvisiblePosition is whatever Handlebars {@see SourcePosition}
+   * was first identified as broken, non-existent or synthetic.
    *
    * If an `InvisiblePosition` never had an source offset at all, this method returns
    * {@see UNKNOWN_POSITION} for compatibility.

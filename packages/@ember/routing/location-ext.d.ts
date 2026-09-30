@@ -1,8 +1,7 @@
-// This module provides an 'extension' to the `@ember/routing/location` module
-// from the `@ember/routing` package, so that users can rely on
-// `owner.lookup('location:hash')` type checking and returning `HashLocation`
-// (and the same for other location types). Our type publishing infrastructure
-// will pass it through unchanged, so end users will get this extension.
+// An 'extension' to the `@ember/routing/location` module from the `@ember/routing` package.
+// With it, users can rely on `owner.lookup('location:hash')` to type check and return `HashLocation`.
+// The other location types work the same way.
+// Our type publishing infrastructure passes it through unchanged, so end users get this extension.
 
 import '@ember/routing/location';
 import type HashLocation from '@ember/routing/hash-location';

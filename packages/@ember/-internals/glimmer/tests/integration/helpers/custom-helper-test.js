@@ -44,8 +44,8 @@ moduleFor(
 
       this.registerHelper('hello.world', () => 'hello world');
 
-      // cannot use `expectAssertion` because the error is thrown in glimmer-vm
-      // (and doesn't go through Ember's own assertion internals)
+      // cannot use `expectAssertion`, because the error is thrown in glimmer-vm.
+      // It doesn't go through Ember's own assertion internals.
       assert.throws(() => {
         this.render('{{hello.world}}');
       }, /You attempted to render a path \(`\{\{hello\.world\}\}`\), but hello was not in scope/);

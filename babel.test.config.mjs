@@ -1,10 +1,9 @@
 /*
-  This babel config governs Ember's test suite. It transpiles some things that
-  our published build should not (because those things are left for apps to
-  decide).
+  This babel config governs Ember's test suite.
+  It transpiles some things that our published build should not,
+  because apps decide those things for themselves.
 
-  See babel.config.mjs for the base config that's used for building for
-  publication.
+  See babel.config.mjs for the base config that the published build uses.
 */
 
 import { createRequire } from 'node:module';

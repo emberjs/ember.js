@@ -214,6 +214,9 @@ importers:
       mocha:
         specifier: ^11.0.0
         version: 11.7.6
+      nollm:
+        specifier: ^0.7.0
+        version: 0.7.0
       npm-run-all2:
         specifier: ^8.0.0
         version: 8.0.4
@@ -9784,6 +9787,10 @@ packages:
     resolution: {integrity: sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==}
     engines: {node: '>= 12.0.0'}
 
+  lilconfig@3.1.3:
+    resolution: {integrity: sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==}
+    engines: {node: '>=14'}
+
   line-column@1.0.2:
     resolution: {integrity: sha512-Ktrjk5noGYlHsVnYWh62FLVs4hTb8A3e+vucNZMgPeAOITdshMSgv4cCZQeRDjm7+goqmo6+liZwTXo+U3sVww==}
 
@@ -10347,6 +10354,11 @@ packages:
   node-watch@0.7.3:
     resolution: {integrity: sha512-3l4E8uMPY1HdMMryPRUAl+oIHtXtyiTlIiESNSVSNxcPfzAFzeTbXFQkZfAwBbo0B1qMSG8nUABx+Gd+YrbKrQ==}
     engines: {node: '>=6'}
+
+  nollm@0.7.0:
+    resolution: {integrity: sha512-l9H2wokTwL80LuGtfhOBGQ9SUSZQE7FxOfV2dW8Mhhvxil3yrFoSm7+ts7uXVTT9Q0H3kzgiMNPzq3Zl2h8Tdw==}
+    engines: {node: '>= 24'}
+    hasBin: true
 
   nomnom@1.5.2:
     resolution: {integrity: sha512-fiVbT7BqxiQqjlR9U3FDGOSERFCKoXVCdxV2FwZuNN7/cmJ42iQx35nUFOAFDcyvemu9Adp+IlsCGlKQYLmBKw==}
@@ -12109,6 +12121,10 @@ packages:
   tinyglobby@0.2.17:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
+
+  tinypool@2.2.0:
+    resolution: {integrity: sha512-jBrmx4lYmaC9k/mgPbylxs7kBUxHtD8256up+HjLaDFfXScKJQyil+SWXSvhAtT7XHo+yTVlpB81PGmHP8oLSQ==}
+    engines: {node: ^20.0.0 || >=22.0.0}
 
   tinyrainbow@3.1.0:
     resolution: {integrity: sha512-Bf+ILmBgretUrdJxzXM0SgXLZ3XfiaUuOj/IKQHuTXip+05Xn+uyEYdVg0kYDipTBcLrCVyUzAPz7QmArb0mmw==}
@@ -21670,6 +21686,8 @@ snapshots:
       lightningcss-win32-arm64-msvc: 1.33.0
       lightningcss-win32-x64-msvc: 1.33.0
 
+  lilconfig@3.1.3: {}
+
   line-column@1.0.2:
     dependencies:
       isarray: 1.0.0
@@ -22272,6 +22290,12 @@ snapshots:
   node-uuid@1.4.8: {}
 
   node-watch@0.7.3: {}
+
+  nollm@0.7.0:
+    dependencies:
+      ignore: 7.0.10
+      lilconfig: 3.1.3
+      tinypool: 2.2.0
 
   nomnom@1.5.2:
     dependencies:
@@ -24441,6 +24465,8 @@ snapshots:
     dependencies:
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
+
+  tinypool@2.2.0: {}
 
   tinyrainbow@3.1.0: {}
 

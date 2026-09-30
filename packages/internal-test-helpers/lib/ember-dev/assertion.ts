@@ -19,14 +19,14 @@ const BREAK = {};
 
   - expectAssertion(func: Function, [expectedMessage: String | RegExp])
 
-  This function calls `func` and asserts that `Ember.assert` is invoked during
-  the execution. Moreover, it takes a String or a RegExp as a second optional
-  argument that can be used to test if a specific assertion message was
-  generated.
+  Calls `func` and asserts that `Ember.assert` is invoked
+  during the execution. Moreover, it takes a String or a RegExp as a second
+  optional argument that can be used to test if a specific assertion message
+  was generated.
 
   - ignoreAssertion(func: Function)
 
-  This function calls `func` and disables `Ember.assert` during the execution.
+  Calls `func` and disables `Ember.assert` during the execution.
   In particular, this prevents `Ember.assert` from throw errors that would
   disrupt the control flow.
 */

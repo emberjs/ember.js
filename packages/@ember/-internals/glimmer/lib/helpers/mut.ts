@@ -13,9 +13,10 @@ import { internalHelper } from './internal-helper';
     
   More directly: Don't use `mut`. 
 
-  The `mut` helper, when used with `fn`, will return a function that
-  sets the value passed to `mut` to its first argument. As an example, we can create a
-  button that increments a value passing the value directly to the `fn`:
+  When used with `fn`, the `mut` helper returns a function.
+  Calling that function with an argument updates the value passed to `mut`.
+  As an example, we can create a button that increments a value
+  by passing the value directly to the `fn`:
 
   ```handlebars
   <MyChild @childClickCount={{this.totalClicks}} @clickCountChange={{fn (mut this.totalClicks)}} />

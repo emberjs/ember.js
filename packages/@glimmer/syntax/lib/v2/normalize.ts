@@ -168,8 +168,8 @@ class ExpressionNormalizer {
   constructor(private block: BlockContext) {}
 
   /**
-   * The `normalize` method takes an arbitrary expression and its original syntax context and
-   * normalizes it to an ASTv2 expression.
+   * The `normalize` method takes an arbitrary expression and its original syntax context,
+   * and normalizes it to an ASTv2 expression.
    *
    * @see {SyntaxContext}
    */
@@ -306,13 +306,14 @@ class ExpressionNormalizer {
 
   /**
    * The `ref` method normalizes an `ASTv1.PathHead` into an `ASTv2.VariableReference`.
-   * This method is extremely important, because it is responsible for normalizing free
-   * variables into an an ASTv2.PathHead *with appropriate context*.
+   * It is extremely important,
+   * because it normalizes free variables into an ASTv2.PathHead *with appropriate context*.
    *
-   * The syntax context is originally determined by the syntactic position that this `PathHead`
-   * came from, and is ultimately attached to the `ASTv2.VariableReference` here. In ASTv2,
-   * the `VariableReference` node bears full responsibility for loose mode rules that control
-   * the behavior of free variables.
+   * The syntax context is originally determined by the syntactic position
+   * that this `PathHead` came from.
+   * It is ultimately attached to the `ASTv2.VariableReference` here.
+   * In ASTv2, the `VariableReference` node bears full responsibility for loose mode rules
+   * that control the behavior of free variables.
    */
   private ref(head: ASTv1.PathHead, resolution: ASTv2.FreeVarResolution): ASTv2.VariableReference {
     let { block } = this;
@@ -628,8 +629,8 @@ class ElementNormalizer {
   }
 
   /**
-   * This method handles attribute values that are curlies, as well as curlies nested inside of
-   * interpolations:
+   * Handles attribute values that are curlies,
+   * as well as curlies nested inside of interpolations:
    *
    * ```hbs
    * <a href={{url}} />
@@ -723,8 +724,8 @@ class ElementNormalizer {
     );
   }
 
-  // An arg curly <Foo @bar={{...}} /> is the same as an attribute curly for
-  // our purposes, except that in loose mode <Foo @bar={{baz}} /> is an error:
+  // An arg curly <Foo @bar={{...}} /> is the same as an attribute curly for our purposes,
+  // except that in loose mode <Foo @bar={{baz}} /> is an error:
   private checkArgCall(arg: ASTv1.AttrNode): void {
     let { value } = arg;
 
@@ -747,9 +748,9 @@ class ElementNormalizer {
     }
 
     let resolution = this.ctx.resolutionFor(path, () => {
-      // We deliberately don't want this to resolve anything. The purpose of
-      // calling `resolutionFor` here is to check for strict mode, in-scope
-      // local variables, etc.
+      // We deliberately don't want this to resolve anything.
+      // The purpose of calling `resolutionFor` here is to check for strict mode,
+      // in-scope local variables, etc.
       return null;
     });
 
@@ -779,8 +780,9 @@ class ElementNormalizer {
   }
 
   /**
-   * This function classifies the head of an ASTv1.Element into an ASTv2.PathHead (if the
-   * element is a component) or `'ElementHead'` (if the element is a simple element).
+   * Classifies the head of an ASTv1.Element.
+   * A component element becomes an ASTv2.PathHead.
+   * A simple element becomes `'ElementHead'`.
    *
    * Rules:
    *
@@ -813,9 +815,9 @@ class ElementNormalizer {
       return 'ElementHead';
     }
 
-    // Since the parser handed us the HTML element name as a string, we need
-    // to convert it into an ASTv1 path so it can be processed using the
-    // expression normalizer.
+    // Since the parser handed us the HTML element name as a string,
+    // we need to convert it into an ASTv1 path,
+    // so it can be processed using the expression normalizer.
     let isComponent = inScope || uppercase;
 
     let variableLoc = loc.sliceStartChars({ skipStart: 1, chars: variable.length });

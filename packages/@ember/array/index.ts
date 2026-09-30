@@ -155,25 +155,24 @@ function mapBy<T>(this: EmberArray<T>, key: string) {
 // ARRAY
 //
 /**
-  This mixin implements Observer-friendly Array-like behavior. It is not a
-  concrete implementation, but it can be used up by other classes that want
-  to appear like arrays.
+  This mixin implements Observer-friendly Array-like behavior.
+  It is not a concrete implementation,
+  but it can be used by other classes that want to appear like arrays.
 
-  For example, ArrayProxy is a concrete class that can be instantiated to
-  implement array-like behavior. This class uses the Array Mixin by way of
-  the MutableArray mixin, which allows observable changes to be made to the
-  underlying array.
+  For example, ArrayProxy is a concrete class
+  that can be instantiated to implement array-like behavior.
+  It uses the Array Mixin by way of the MutableArray mixin,
+  which allows observable changes to be made to the underlying array.
 
-  This mixin defines methods specifically for collections that provide
-  index-ordered access to their contents. When you are designing code that
-  needs to accept any kind of Array-like object, you should use these methods
-  instead of Array primitives because these will properly notify observers of
-  changes to the array.
+  This mixin defines methods specifically for collections
+  that provide index-ordered access to their contents.
+  Some code needs to accept any kind of Array-like object.
+  There, you should use these methods instead of Array primitives,
+  because these will properly notify observers of changes to the array.
 
-  Although these methods are efficient, they do add a layer of indirection to
-  your application so it is a good idea to use them only when you need the
-  flexibility of using both true JavaScript arrays and "virtual" arrays such
-  as controllers and collections.
+  These methods are efficient, but they add a layer of indirection to your application.
+  So it is a good idea to use them only when you need the flexibility
+  of using both true JavaScript arrays and "virtual" arrays, such as controllers and collections.
 
   You can use the methods defined in this module to access and modify array
   contents in an observable-friendly way. You can also be notified whenever
@@ -304,7 +303,7 @@ interface EmberArray<T> extends Enumerable {
 
     @method slice
     @param {Number} beginIndex (Optional) index to begin slicing from.
-    @param {Number} endIndex (Optional) index to end the slice at (but not included).
+    @param {Number} endIndex (Optional) index to end the slice at. The slice excludes it.
     @return {Array} New array with specified slice
     @public
   */
@@ -313,11 +312,11 @@ interface EmberArray<T> extends Enumerable {
     Used to determine the passed object's first occurrence in the array.
     Returns the index if found, -1 if no match is found.
 
-    The optional `startAt` argument can be used to pass a starting
-    index to search from, effectively slicing the searchable portion
-    of the array. If it's negative it will add the array length to
-    the startAt value passed in as the index to search from. If less
-    than or equal to `-1 * array.length` the entire array is searched.
+    The optional `startAt` argument can be used to pass a starting index to search from,
+    effectively slicing the searchable portion of the array.
+    If it's negative, it will add the array length to the startAt value
+    passed in as the index to search from.
+    If less than or equal to `-1 * array.length`, the entire array is searched.
 
     ```javascript
     let arr = ['a', 'b', 'c', 'd', 'a'];
@@ -350,8 +349,8 @@ interface EmberArray<T> extends Enumerable {
   /**
     Returns the index of the given `object`'s last occurrence.
 
-    - If no `startAt` argument is given, the search starts from
-    the last position.
+    - If no `startAt` argument is given,
+    the search starts from the last position.
     - If it's greater than or equal to the length of the array,
     the search starts from the last position.
     - If it's negative, it is taken as the offset from the end
@@ -375,8 +374,8 @@ interface EmberArray<T> extends Enumerable {
 
     @method lastIndexOf
     @param {Object} object the item to search for
-    @param {Number} startAt optional starting location to search from
-    backwards, defaults to `(array.length - 1)`
+    @param {Number} startAt optional starting location to search backwards from,
+    defaults to `(array.length - 1)`
     @return {Number} The last index of the `object` in the array or -1
     if not found
     @public
@@ -456,10 +455,10 @@ interface EmberArray<T> extends Enumerable {
   */
   getEach<K extends keyof T>(key: K): NativeArray<T[K]>;
   /**
-    Sets the value on the named property for each member. This is more
-    ergonomic than using other methods defined on this helper. If the object
-    implements Observable, the value will be changed to `set(),` otherwise
-    it will be set directly. `null` objects are skipped.
+    Assigns the value to the named property on each member.
+    This is more ergonomic than using other methods defined on this helper.
+    If the object implements Observable, the value is assigned with `set()`.
+    Otherwise it is assigned directly. `null` objects are skipped.
 
     ```javascript
     let people = [{name: 'Joe'}, {name: 'Matt'}];
@@ -564,9 +563,10 @@ interface EmberArray<T> extends Enumerable {
     people.filter(isAdult); // returns [{ name: 'Joan', age: 45 }];
     ```
 
-    Note that in addition to a callback, you can pass an optional target object
-    that will be set as `this` on the context. This is a good way to give your
-    iterator function access to the current object. For example:
+    In addition to a callback, you can pass an optional target object
+    that will be set as `this` on the context.
+    This is a good way to give your iterator function access to the current object.
+    For example:
 
     ```javascript
     function isAdultAndEngineer(person) {
@@ -643,9 +643,9 @@ interface EmberArray<T> extends Enumerable {
     target?: Target
   ): NativeArray<T>;
   /**
-    Filters the array by the property and an optional value. If a value is given, it returns
-    the items that have said value for the property. If not, it returns all the items that
-    have a truthy value for the property.
+    Filters the array by the property and an optional value.
+    If a value is given, it returns the items that have said value for the property.
+    If not, it returns all the items that have a truthy value for the property.
 
     Example Usage:
 
@@ -690,10 +690,10 @@ interface EmberArray<T> extends Enumerable {
   rejectBy(key: string, value?: unknown): NativeArray<T>;
   /**
     Returns the first item in the array for which the callback returns true.
-    This method is similar to the `find()` method defined in ECMAScript 2015.
+    It is similar to the `find()` method defined in ECMAScript 2015.
 
-    The callback method you provide should have the following signature (all
-    parameters are optional):
+    The callback method you provide should have the following signature.
+    All parameters are optional:
 
     ```javascript
     function(item, index, array);
@@ -739,11 +739,11 @@ interface EmberArray<T> extends Enumerable {
     target?: Target
   ): T | undefined;
   /**
-    Returns the first item with a property matching the passed value. You
-    can pass an optional second argument with the target value. Otherwise
-    this will match any property that evaluates to `true`.
+    Returns the first item with a property matching the passed value.
+    You can pass an optional second argument with the target value.
+    Otherwise, this will match any property that evaluates to `true`.
 
-    This method works much like the more generic `find()` method.
+    It works much like the more generic `find()` method.
 
     Usage Example:
 
@@ -769,8 +769,8 @@ interface EmberArray<T> extends Enumerable {
   findBy<K extends keyof T>(key: K, value?: T[K]): T | undefined;
   findBy(key: string, value?: unknown): T | undefined;
   /**
-    Returns `true` if the passed function returns true for every item in the
-    enumeration. This corresponds with the `Array.prototype.every()` method defined in ES5.
+    Returns `true` if the passed function returns true for every item in the enumeration.
+    This corresponds with the `Array.prototype.every()` method defined in ES5.
 
     The callback method should have the following signature:
 
@@ -938,13 +938,12 @@ interface EmberArray<T> extends Enumerable {
 
     Return the new cumulative value.
 
-    In addition to the callback you can also pass an `initialValue`. An error
-    will be raised if you do not pass an initial value and the enumerator is
-    empty.
+    In addition to the callback, you can also pass an `initialValue`.
+    An error will be raised if you do not pass an initial value and the enumerator is empty.
 
-    Note that unlike the other methods, this method does not allow you to
-    pass a target object to set as this for the callback. It's part of the
-    spec. Sorry.
+    Unlike the other methods, this method does not allow you
+    to pass a target object to set as this for the callback.
+    It's part of the spec. Sorry.
 
     Example Usage:
 
@@ -978,9 +977,8 @@ interface EmberArray<T> extends Enumerable {
     initialValue?: V
   ): V;
   /**
-    Invokes the named method on every object in the receiver that
-    implements it. This method corresponds to the implementation in
-    Prototype 1.6.
+    Invokes the named method on every object in the receiver that implements it.
+    It corresponds to the implementation in Prototype 1.6.
 
     ```javascript
     class Person {
@@ -1012,8 +1010,8 @@ interface EmberArray<T> extends Enumerable {
     ...args: MethodParams<T, M>
   ): NativeArray<MethodReturns<T, M>>;
   /**
-    Simply converts the object into a genuine array. The order is not
-    guaranteed. Corresponds to the method implemented by Prototype.
+    Converts the object into a genuine array.
+    The order is not guaranteed. Corresponds to the method implemented by Prototype.
 
     @method toArray
     @return {Array} the object as an array.
@@ -1037,13 +1035,13 @@ interface EmberArray<T> extends Enumerable {
     Used to determine if the array contains the passed object.
     Returns `true` if found, `false` otherwise.
 
-    The optional `startAt` argument can be used to pass a starting
-    index to search from, effectively slicing the searchable portion
-    of the array. If it's negative it will add the array length to
-    the startAt value passed in as the index to search from. If less
-    than or equal to `-1 * array.length` the entire array is searched.
+    The optional `startAt` argument can be used to pass a starting index to search from,
+    effectively slicing the searchable portion of the array.
+    If it's negative, it will add the array length to the startAt value
+    passed in as the index to search from.
+    If less than or equal to `-1 * array.length`, the entire array is searched.
 
-    This method has the same behavior of JavaScript's [Array.includes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes).
+    It has the same behavior as JavaScript's [Array.includes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes).
 
     ```javascript
     [1, 2, 3].includes(2);     // true
@@ -1418,9 +1416,8 @@ const EmberArray = Mixin[INTERNAL_MIXIN_CREATE](Enumerable, {
   It builds upon the Array mixin and adds methods to modify the array.
   One concrete implementations of this class include ArrayProxy.
 
-  It is important to use the methods in this class to modify arrays so that
-  changes are observable. This allows the binding system in Ember to function
-  correctly.
+  Use the methods in this class to modify arrays, so that changes are observable.
+  This allows the binding system in Ember to function correctly.
 
 
   Note that an Array can change even if it does not implement this mixin.
@@ -1437,16 +1434,16 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
     __Required.__ You must implement this method to apply this mixin.
 
     This is one of the primitives you must implement to support `Array`.
-    You should replace amt objects started at idx with the objects in the
-    passed array.
+    You should replace amt objects started at idx
+    with the objects in the passed array.
 
     Note that this method is expected to validate the type(s) of objects that it expects.
 
     @method replace
-    @param {Number} idx Starting index in the array to replace. If
-      idx >= length, then append to the end of the array.
-    @param {Number} amt Number of elements that should be removed from
-      the array, starting at *idx*.
+    @param {Number} idx Starting index in the array to replace.
+      If idx >= length, then append to the end of the array.
+    @param {Number} amt Number of elements to remove from the array,
+      starting at *idx*.
     @param {EmberArray} [objects] An optional array of zero or more objects that should be
       inserted into the array at *idx*
     @public
@@ -1470,8 +1467,8 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   */
   clear(): this;
   /**
-    This will use the primitive `replace()` method to insert an object at the
-    specified index.
+    This will use the primitive `replace()` method
+    to insert an object at the specified index.
 
     ```javascript
     let colors = ['red', 'green', 'blue'];
@@ -1488,11 +1485,11 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   */
   insertAt(idx: number, object: T): this;
   /**
-    Remove an object at the specified index using the `replace()` primitive
-    method. You can pass either a single index, or a start and a length.
+    Remove an object at the specified index using the `replace()` primitive method.
+    You can pass either a single index, or a start and a length.
 
-    If you pass a start and length that is beyond the
-    length this method will throw an assertion.
+    If you pass a start and length that is beyond the length,
+    it will throw an assertion.
 
     ```javascript
     let colors = ['red', 'green', 'blue', 'yellow', 'orange'];
@@ -1543,8 +1540,8 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   */
   pushObjects(objects: T[]): this;
   /**
-    Pop object from array or nil if none are left. Works just like `pop()` but
-    it is KVO-compliant.
+    Pop object from array or nil if none are left.
+    Works just like `pop()`, but it is KVO-compliant.
 
     ```javascript
     let colors = ['red', 'green', 'blue'];
@@ -1575,8 +1572,8 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   */
   shiftObject(): T | null | undefined;
   /**
-    Unshift an object to start of array. Works just like `unshift()` but it is
-    KVO-compliant.
+    Unshift an object to start of array.
+    Works just like `unshift()`, but it is KVO-compliant.
 
     ```javascript
     let colors = ['red'];
@@ -1609,8 +1606,8 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   */
   unshiftObjects(objects: T[]): this;
   /**
-    Reverse objects in the array. Works just like `reverse()` but it is
-    KVO-compliant.
+    Reverse objects in the array.
+    Works just like `reverse()`, but it is KVO-compliant.
 
     @method reverseObjects
     @return {EmberArray} receiver
@@ -1871,8 +1868,8 @@ type IGNORED_MUTABLE_ARRAY_METHODS =
   | 'includes';
 
 /**
- * These additional items must be redefined since `Omit` causes methods that return `this` to return the
- * type at the time of the Omit.
+ * These additional items must be redefined,
+ * since `Omit` causes methods that return `this` to return the type at the time of the Omit.
  */
 type RETURN_SELF_ARRAY_METHODS =
   | '[]'
@@ -1900,8 +1897,8 @@ interface MutableArrayWithoutNative<T> extends Omit<
    */
   clear(): this;
   /**
-   * This will use the primitive `replace()` method to insert an object at the
-   * specified index.
+   * This will use the primitive `replace()` method
+   * to insert an object at the specified index.
    */
   insertAt(idx: number, object: T): this;
   /**
@@ -1920,8 +1917,8 @@ interface MutableArrayWithoutNative<T> extends Omit<
    */
   unshiftObjects(objects: AnyArray<T>): this;
   /**
-   * Reverse objects in the array. Works just like `reverse()` but it is
-   * KVO-compliant.
+   * Reverse objects in the array.
+   * Works just like `reverse()`, but it is KVO-compliant.
    */
   reverseObjects(): this;
   /**
@@ -1972,10 +1969,10 @@ interface MutableArrayWithoutNative<T> extends Omit<
    */
   addObjects(objects: AnyArray<T>): this;
   /**
-    Sets the value on the named property for each member. This is more
-    ergonomic than using other methods defined on this helper. If the object
-    implements Observable, the value will be changed to `set(),` otherwise
-    it will be set directly. `null` objects are skipped.
+    Assigns the value to the named property on each member.
+    This is more ergonomic than using other methods defined on this helper.
+    If the object implements Observable, the value is assigned with `set()`.
+    Otherwise it is assigned directly. `null` objects are skipped.
 
     ```javascript
     let people = [{name: 'Joe'}, {name: 'Matt'}];

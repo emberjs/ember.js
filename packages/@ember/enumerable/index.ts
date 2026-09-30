@@ -7,8 +7,8 @@ import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixi
 */
 
 /**
-  The methods in this mixin have been moved to [MutableArray](/ember/release/classes/MutableArray). This mixin has
-  been intentionally preserved to avoid breaking Enumerable.detect checks
+  The methods for this mixin live in [MutableArray](/ember/release/classes/MutableArray).
+  This mixin is intentionally preserved to avoid breaking Enumerable.detect checks,
   until the community migrates away from them.
 
   @class Enumerable

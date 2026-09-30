@@ -6,19 +6,18 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '.';
 
-// Here we have runtime shenanigans to add debug-only errors to the class in dev
-// builds. Those runtime shenanigans produce the need for type-level shenanigans
-// to match: if we just assign without an explicit type annotation on the `let`
-// binding below for `FrameworkObject`, TS gets stuck because this creates
-// `FrameworkObject` with a class expression (rather than the usual class
-// declaration form). That in turn means TS needs to be able to fully name the
-// type produced by the class expression, which includes the `OWNER` symbol from
-// `@glimmer/owner`.
+// Here we have runtime shenanigans to add debug-only errors to the class in dev builds.
+// Those runtime shenanigans need matching type-level shenanigans.
+// The `let` binding below creates `FrameworkObject` with a class expression,
+// not the usual class declaration form.
+// Without an explicit type annotation on that binding, TS gets stuck.
+// TS would need to fully name the type produced by the class expression,
+// and that type includes the `OWNER` symbol from `@glimmer/owner`.
 //
-// By explicitly giving the declaration a type when assigning it the class
-// expression, instead of relying on inference, TS no longer needs to name the
-// `OWNER` property key from the super class, eliminating the private name
-// shenanigans.
+// So we give the declaration an explicit type when assigning it the class expression,
+// instead of relying on inference.
+// Then TS does not need to name the `OWNER` property key from the super class,
+// which avoids the private name shenanigans.
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface FrameworkObject extends EmberObject {}

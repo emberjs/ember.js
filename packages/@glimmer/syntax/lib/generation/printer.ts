@@ -34,9 +34,8 @@ export interface PrinterOptions {
    * Used to override the mechanism of printing a given AST.Node.
    *
    * This will generally only be useful to source -> source codemods
-   * where you would like to specialize/override the way a given node is
-   * printed (e.g. you would like to preserve as much of the original
-   * formatting as possible).
+   * where you would like to specialize/override the way a given node is printed.
+   * For example, you may want to preserve as much of the original formatting as possible.
    *
    * When the provided override returns undefined, the default built in printing
    * will be done for the AST.Node.
@@ -68,9 +67,9 @@ export default class Printer {
   }
 
   /*
-    This is used by _all_ methods on this Printer class that add to `this.buffer`,
-    it allows consumers of the printer to use alternate string representations for
-    a given node.
+    This is used by _all_ methods on this Printer class that add to `this.buffer`.
+    It allows consumers of the printer to use alternate string representations
+    for a given node.
 
     The primary use case for this are things like source -> source codemod utilities.
     For example, ember-template-recast attempts to always preserve the original string
@@ -208,11 +207,10 @@ export default class Printer {
       {{/if}}{{/if}}
       ```
 
-      The only way we can tell if that is the case is by checking for
-      `block.chained`, but unfortunately when the actual statements are
-      processed the `block.body[0]` node (which will always be a
-      `BlockStatement`) has no clue that its ancestor `Block` node was
-      chained.
+      The only way we can tell if that is the case is by checking for `block.chained`.
+      Unfortunately, when the actual statements are processed,
+      the `block.body[0]` node has no clue that its ancestor `Block` node was chained.
+      That node is always a `BlockStatement`.
 
       This "forwards" the `chained` setting so that we can check
       it later when processing the `BlockStatement`.

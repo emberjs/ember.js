@@ -13,8 +13,8 @@ import type RouterState from './router_state';
 import { ROUTER } from '@ember/routing/router-service';
 
 /**
-  The Routing service is used by LinkTo, and provides facilities for
-  the component/view layer to interact with the router.
+  The Routing service is used by LinkTo.
+  It lets the component/view layer interact with the router.
 
   This is a private service for internal usage only. For public usage,
   refer to the `Router` service.
@@ -110,13 +110,11 @@ export default class RoutingService<R extends Route> extends Service {
     let leafName = handlers[handlers.length - 1].handler;
     let maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
 
-    // NOTE: any ugliness in the calculation of activeness is largely
-    // due to the fact that we support automatic normalizing of
-    // `resource` -> `resource.index`, even though there might be
-    // dynamic segments / query params defined on `resource.index`
-    // which complicates (and makes somewhat ambiguous) the calculation
-    // of activeness for links that link to `resource` instead of
-    // directly to `resource.index`.
+    // NOTE: automatic normalizing of `resource` -> `resource.index` causes most of the ugliness
+    // in the activeness calculation.
+    // Dynamic segments / query params might be defined on `resource.index`.
+    // That makes activeness complicated and somewhat ambiguous
+    // for links that link to `resource` instead of directly to `resource.index`.
 
     // if we don't have enough contexts revert back to full route name
     // this is because the leaf route will use one of the contexts

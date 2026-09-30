@@ -394,9 +394,9 @@ export class Meta {
       i = -1;
     }
 
-    // if not found, push. Note that we must always push if a listener is not
-    // found, even in the case of a function listener remove, because we may be
-    // attempting to add or remove listeners _before_ flattening has occurred.
+    // If not found, push. We must push even for a function listener remove,
+    // because we may be attempting to add or remove listeners
+    // _before_ flattening has occurred.
     if (i === -1) {
       assert(
         'You cannot add function listeners to prototypes. Convert the listener to a string listener, or add it to the instance instead.',
@@ -449,10 +449,10 @@ export class Meta {
   }
 
   private writableListeners(): Listener[] {
-    // Check if we need to invalidate and reflatten. We need to do this if we
-    // have already flattened (flattened version is the current version) and
-    // we are either writing to a prototype meta OR we have never inherited, and
-    // may have cached the parent's listeners.
+    // Invalidate and reflatten if we have already flattened,
+    // meaning the flattened version is the current version.
+    // We also need to be either writing to a prototype meta,
+    // OR have never inherited and may have cached the parent's listeners.
     if (
       this._flattenedVersion === currentListenerVersion &&
       (this.source === this.proto || this._inheritedEnd === -1)
@@ -475,13 +475,13 @@ export class Meta {
   }
 
   /**
-    Flattening is based on a global revision counter. If the revision has
-    bumped it means that somewhere in a class inheritance chain something has
-    changed, so we need to reflatten everything. This can only happen if:
+    Flattening is based on a global revision counter. If the revision has bumped
+    it means that somewhere in a class inheritance chain something has changed,
+    so we need to reflatten everything. This can only happen if:
 
     1. A meta has been flattened (listener has been called)
-    2. The meta is a prototype meta with children who have inherited its
-       listeners
+    2. The meta is a prototype meta with children who have inherited
+       its listeners
     3. A new listener is subsequently added to the meta (e.g. via `.reopen()`)
 
     This is a very rare occurrence, so while the counter is global it shouldn't
@@ -559,15 +559,15 @@ export class Meta {
 
     if (listeners !== undefined) {
       for (let listener of listeners) {
-        // REMOVE listeners are placeholders that tell us not to
-        // inherit, so they never match. Only ADD and ONCE can match.
+        // REMOVE listeners are placeholders that tell us not to inherit,
+        // so they never match. Only ADD and ONCE can match.
         if (
           listener.event === eventName &&
           (listener.kind === ListenerKind.ADD || listener.kind === ListenerKind.ONCE)
         ) {
           if (result === undefined) {
-            // we create this array only after we've found a listener that
-            // matches to avoid allocations when no matches are found.
+            // we create this array only after we've found a listener
+            // that matches to avoid allocations when no matches are found.
             result = [] as any[];
           }
 
@@ -590,15 +590,15 @@ export class Meta {
 
     if (listeners !== undefined) {
       for (let listener of listeners) {
-        // REMOVE listeners are placeholders that tell us not to
-        // inherit, so they never match. Only ADD and ONCE can match.
+        // REMOVE listeners are placeholders that tell us not to inherit,
+        // so they never match. Only ADD and ONCE can match.
         if (
           (listener.kind === ListenerKind.ADD || listener.kind === ListenerKind.ONCE) &&
           listener.event.indexOf(':change') !== -1
         ) {
           if (result === undefined) {
-            // we create this array only after we've found a listener that
-            // matches to avoid allocations when no matches are found.
+            // we create this array only after we've found a listener
+            // that matches to avoid allocations when no matches are found.
             result = [] as any[];
           }
 
@@ -658,8 +658,8 @@ export function peekMeta(obj: object): Meta | null {
     if (meta !== undefined) {
       if (meta.proto !== pointer) {
         // The meta was a prototype meta which was not marked as initializing.
-        // This can happen when a prototype chain was created manually via
-        // Object.create() and the source object does not have a constructor.
+        // This can happen when a prototype chain was created manually
+        // via Object.create() and the source object does not have a constructor.
         meta.proto = pointer;
       }
       return meta;
@@ -672,8 +672,8 @@ export function peekMeta(obj: object): Meta | null {
 }
 
 /**
-  Retrieves the meta hash for an object. If `writable` is true ensures the
-  hash is writable for this object as well.
+  Retrieves the meta hash for an object. If `writable` is true ensures
+  the hash is writable for this object as well.
 
   The meta object contains information about computed property descriptors as
   well as any watched properties and other information. You generally will

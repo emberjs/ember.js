@@ -1,8 +1,9 @@
 /**
- * Mitata benchmark for `@glimmer/syntax` parse (`preprocess`), normalize
- * (ASTv1 → ASTv2 — where the loc-conversion hot path lives), and full
- * `precompile()` (via `ember-template-compiler`, which inlines
- * `@glimmer/compiler`).
+ * Mitata benchmark for three steps:
+ *   parse: `@glimmer/syntax` `preprocess`
+ *   normalize: ASTv1 → ASTv2, where the loc-conversion hot path lives
+ *   precompile: full `precompile()` via `ember-template-compiler`,
+ *               which inlines `@glimmer/compiler`
  *
  * Run:
  *   pnpm build     # produces the dist artifacts this bench imports
@@ -12,10 +13,11 @@
  * the ms/iter numbers.
  *
  * Sizes:
- *   small  — ~1.5k chars (route-template fragment)
- *   medium — small × 3   (~4.5k chars)
- *   large  — small × 22  (~33k chars, scale of the largest real route
- *                         templates, e.g. Discourse's admin-user/index.gjs)
+ *   small:  ~1.5k chars, a route-template fragment
+ *   medium: small × 3, ~4.5k chars
+ *   large:  small × 22, ~33k chars.
+ *           This is the scale of the largest real route templates,
+ *           e.g. Discourse's admin-user/index.gjs
  */
 
 import { bench, do_not_optimize as doNotOptimize, run } from 'mitata';

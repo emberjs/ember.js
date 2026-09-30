@@ -1406,10 +1406,10 @@ moduleFor(
         this.route('other');
       });
 
-      // This causes the params hash, which is returned as a route's
-      // model if no other model could be resolved given the provided
-      // params (and no custom model hook was defined), to be watched,
-      // unless we return a copy of the params hash.
+      // A route returns the params hash as its model
+      // if no custom model hook was defined,
+      // and no other model could be resolved given the provided params.
+      // This causes that params hash to be watched, unless we return a copy of it.
       this.setSingleQPController('application', 'woot', 'wat');
 
       this.add(

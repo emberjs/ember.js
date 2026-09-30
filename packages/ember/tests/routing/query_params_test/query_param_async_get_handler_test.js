@@ -29,8 +29,8 @@ moduleFor(
             this._routerMicrolib.getRoute = function (routeName) {
               fetchedHandlers.push(routeName);
 
-              // Cache the returns so we don't have more than one Promise for a
-              // given handler.
+              // Cache the returns,
+              // so we don't have more than one Promise for a given handler.
               return (
                 handlerPromises[routeName] ||
                 (handlerPromises[routeName] = new RSVP.Promise((resolve) => {

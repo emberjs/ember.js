@@ -38,8 +38,8 @@ export interface DebugVmTrace {
 }
 
 /**
- * All parts of `DebugVmState` are _snapshots_. They will not change if the piece of VM state that
- * they reference changes.
+ * All parts of `DebugVmState` are _snapshots_.
+ * They will not change if the piece of VM state that they reference changes.
  */
 export interface DebugVmSnapshot {
   /**

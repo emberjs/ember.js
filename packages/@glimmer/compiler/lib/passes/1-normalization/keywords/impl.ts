@@ -225,21 +225,20 @@ function generateTypesMessage(name: string, types: readonly KeywordType[]): stri
 }
 
 /**
- * This function builds keyword definitions for a particular type of AST node (`KeywordType`).
+ * Builds keyword definitions for a particular type of AST node (`KeywordType`).
  *
  * You can build keyword definitions for:
  *
  * - `Expr`: A `SubExpression` or `PathExpression`
  * - `Block`: A `BlockStatement`
- *   - A `BlockStatement` is a keyword candidate if its head is a
- *     `PathExpression`
+ *   - A `BlockStatement` is a keyword candidate if its head is a `PathExpression`
  * - `Append`: An `AppendStatement`
  *
  * A node is a keyword candidate if:
  *
- * - A `PathExpression` is a keyword candidate if it has no tail, and its
- *   head expression is a `LocalVarHead` or `FreeVarHead` whose name is
- *   the keyword's name.
+ * - A `PathExpression` is a keyword candidate if it has no tail,
+ *   and its head expression is a `LocalVarHead` or `FreeVarHead`
+ *   whose name is the keyword's name.
  * - A `SubExpression`, `AppendStatement`, or `BlockStatement` is a keyword
  *   candidate if its head is a keyword candidate.
  *
@@ -300,10 +299,10 @@ function generateTypesMessage(name: string, types: readonly KeywordType[]): stri
  * and `PathExpression` here. It also checks to make sure that the node passed
  * to `assert` has the keyword name in the right place.
  *
- * Note the important difference between returning `false` from `assert`,
- * which just means that the node didn't match, and returning `Err`, which
- * means that the node matched, but there was a keyword-specific syntax
- * error.
+ * Note the important difference between returning `false` from `assert`
+ * and returning `Err`.
+ * `false` means that the node didn't match.
+ * `Err` means that the node matched, but there was a keyword-specific syntax error.
  */
 export function keywords<K extends KeywordType>(type: K): Keywords<K> {
   return new Keywords(type);

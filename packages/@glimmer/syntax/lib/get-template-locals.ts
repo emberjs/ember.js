@@ -10,7 +10,8 @@ interface GetTemplateLocalsOptions {
 }
 
 /**
- * Gets the correct Token from the Node based on it's type
+ * Paths and element tags store their local name in different places,
+ * so each node type needs its own lookup.
  */
 function getPathName(
   node: ASTv1.Node,

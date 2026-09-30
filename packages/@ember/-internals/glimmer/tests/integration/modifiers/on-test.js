@@ -16,8 +16,8 @@ moduleFor(
     }
 
     getOnManagerInstance() {
-      // leveraging private APIs, this can be deleted if these APIs change
-      // but it has been useful to verify some internal details
+      // This uses private APIs to verify some internal details.
+      // If those APIs change, drop this helper and the tests that use it.
       return getInternalModifierManager(on);
     }
 
@@ -312,8 +312,8 @@ moduleFor(
     }
 
     getOnManagerInstance() {
-      // leveraging private APIs, this can be deleted if these APIs change
-      // but it has been useful to verify some internal details
+      // This uses private APIs to verify some internal details.
+      // If those APIs change, drop this helper and the tests that use it.
       return getInternalModifierManager(on);
     }
 

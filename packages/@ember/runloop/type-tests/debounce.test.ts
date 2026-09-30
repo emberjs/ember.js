@@ -21,13 +21,13 @@ debounce(myContext, whoRan, 150, true);
 // 100ms passes
 debounce(myContext, whoRan, 150, true);
 
-// 150ms passes and nothing else is logged to the console and
-// the debouncee is no longer being watched
+// 150ms passes, nothing else is logged to the console,
+// and the debouncee is not watched after that
 debounce(myContext, whoRan, 150, true);
 
 // console logs 'debounce ran.' one time immediately.
-// 150ms passes and nothing else is logged to the console and
-// the debouncee is no longer being watched
+// 150ms passes, nothing else is logged to the console,
+// and the debouncee is not watched after that
 
 // Method only
 expectTypeOf(

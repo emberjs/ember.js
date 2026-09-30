@@ -10,8 +10,8 @@ import { node } from './node';
  *
  * 1. `HtmlAttr`, which means a regular HTML attribute in Glimmer
  * 2. `SplatAttr`, which means `...attributes`
- * 3. `ComponentArg`, which means an attribute whose name begins with `@`, and it is therefore a
- *    component argument.
+ * 3. `ComponentArg`, which means an attribute whose name begins with `@`,
+ *    and it is therefore a component argument.
  */
 export type AttrNode = HtmlAttr | SplatAttr | ComponentArg;
 
@@ -22,8 +22,8 @@ export type AttrNode = HtmlAttr | SplatAttr | ComponentArg;
 export type HtmlOrSplatAttr = HtmlAttr | SplatAttr;
 
 /**
- * "Attr Block" nodes are allowed inside an open element tag in templates. They interact with the
- * element (or component).
+ * "Attr Block" nodes are allowed inside an open element tag in templates.
+ * They interact with the element (or component).
  */
 export type AttrBlockNode = AttrNode | ElementModifier;
 

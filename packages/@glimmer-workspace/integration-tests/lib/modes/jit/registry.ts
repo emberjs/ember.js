@@ -12,10 +12,10 @@ import { assert } from '@glimmer/debug-util';
 import { getComponentTemplate } from '@glimmer/manager';
 import { dict } from '@glimmer/util';
 
-// This is used to replicate a requirement of Ember's template referrers, which
-// assign the `owner` to the template meta. The requirement is that the template
-// metas should not be serialized, and this prevents serialization by adding a
-// circular reference to the template meta.
+// Replicates a requirement of Ember's template referrers,
+// which assign the `owner` to the template meta.
+// The requirement is that the template metas should not be serialized.
+// A circular reference in the template meta prevents serialization.
 const CIRCULAR_OBJECT: { inner: { outer?: object } } = { inner: {} };
 CIRCULAR_OBJECT.inner.outer = CIRCULAR_OBJECT;
 

@@ -28,9 +28,9 @@ export function generateControllerFactory(
     factoryManager !== undefined
   );
 
-  // SAFETY: This is *not* safe, and the cast should be removed in favor of the
-  // `assert()` below after altering *tests*. It is left in this state for the
-  // moment in the interest of keeping type-only changes separate from changes
+  // SAFETY: This is *not* safe.
+  // TODO: replace the cast with the `assert()` below after altering *tests*.
+  // The cast keeps type-only changes separate from changes
   // to the runtime behavior of the system, even for tests.
   let Factory = factoryManager.class as typeof Controller<unknown>;
   // assert(

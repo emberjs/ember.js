@@ -1,6 +1,6 @@
-// This module provides an 'extension' to the `@ember/owner` module from the
-// `@ember/controller` module. Our type publishing infrastructure will pass it
-// through unchanged, so end users will get this extension.
+// An 'extension' to the `@ember/owner` module, from `@ember/controller`.
+// Our type publishing infrastructure passes it through unchanged,
+// so end users get this extension.
 
 import type { Registry } from '@ember/controller';
 

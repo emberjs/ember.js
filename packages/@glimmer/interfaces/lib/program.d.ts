@@ -41,8 +41,8 @@ export interface ProgramHeap {
   setbyaddr(address: number, value: number): void;
 
   /**
-   * Return the number of entries in the table. A handle is legal if
-   * it is less than this number.
+   * Return the number of entries in the table.
+   * A handle is legal if it is less than this number.
    *
    * @debugging
    */
@@ -50,11 +50,12 @@ export interface ProgramHeap {
 }
 
 /**
- * The `EvaluationContext` is the context that remains the same across all of the templates and
- * evaluations in a single program.
+ * The `EvaluationContext` is the context that remains the same
+ * across all of the templates and evaluations in a single program.
  *
- * Note that multiple programs can co-exist on the same page, sharing tracking logic (and the
- * global tracking context) but having different *evaluation* contexts.
+ * Note that multiple programs can co-exist on the same page.
+ * They share tracking logic and the global tracking context,
+ * but have different *evaluation* contexts.
  */
 export interface EvaluationContext {
   /**

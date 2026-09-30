@@ -1,5 +1,5 @@
 /**
- * Declare import.meta.env in state, since it's the root package.
+ * The types for import.meta.env live here because this is the root package.
  */
 
 interface ImportMetaEnv {

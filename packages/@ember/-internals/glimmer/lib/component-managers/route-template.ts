@@ -92,9 +92,9 @@ class RouteTemplateManager
 const ROUTE_TEMPLATE_MANAGER = /*@__PURE__*/ new RouteTemplateManager();
 
 /**
- * This "upgrades" a route template into an invokable component. A
- * `RouteTemplate` *is* its own definition state; the VM turns it into a
- * `ComponentDefinition` via the manager on the prototype below.
+ * This "upgrades" a route template into an invokable component.
+ * A `RouteTemplate` *is* its own definition state.
+ * The VM turns it into a `ComponentDefinition` via the manager on the prototype below.
  *
  * Conceptually it can be 1:1 for each unique `Template`, but it's also cheap
  * to construct, so unless the stability is desirable for other reasons, it's

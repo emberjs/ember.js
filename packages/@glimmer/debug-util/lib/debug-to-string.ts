@@ -33,10 +33,10 @@ if (DEBUG) {
       name = obj.toString();
     }
 
-    // If the class has a decent looking name, and the `toString` is one of the
-    // default Ember toStrings, replace the constructor portion of the toString
-    // with the class name. We check the length of the class name to prevent doing
-    // this when the value is minified.
+    // If the class has a decent looking name,
+    // and the `toString` is one of the default Ember toStrings,
+    // replace the constructor portion of the toString with the class name.
+    // We check the length of the class name to prevent doing this when the value is minified.
     if (
       name &&
       /<.*:ember\d+>/u.test(name) &&

@@ -718,9 +718,9 @@ moduleFor(
       assert.equal(count, 1, 'should not trigger observer again');
     }
 
-    // The issue here is when a computed property is directly set with a value, then has a
-    // dependent key change (which triggers a cache expiration and recomputation), observers will
-    // not be fired if the CP setter is called with the last set value.
+    // The issue: a computed property is directly set with a value,
+    // then a dependent key changes, which triggers a cache expiration and recomputation.
+    // If the CP setter is then called with the last set value, observers do not fire.
     async ['@test setting a cached computed property whose value has changed should trigger'](
       assert
     ) {

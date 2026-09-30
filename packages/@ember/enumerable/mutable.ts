@@ -7,9 +7,9 @@ import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixi
 */
 
 /**
-  The methods in this mixin have been moved to MutableArray. This mixin has
-  been intentionally preserved to avoid breaking MutableEnumerable.detect
-  checks until the community migrates away from them.
+  The methods of this mixin live on MutableArray.
+  This mixin stays to avoid breaking MutableEnumerable.detect checks
+  until the community migrates away from them.
 
   @class MutableEnumerable
   @namespace Ember

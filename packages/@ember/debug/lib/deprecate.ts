@@ -5,10 +5,10 @@ import { assert } from './assert';
 import type { HandlerCallback } from './handlers';
 import { invoke, registerHandler as genericRegisterHandler } from './handlers';
 
-// This is a "global", but instead of declaring it as `declare global`, which
-// will expose it to all other modules, declare it *locally* (and don't export
-// it) so that it has the desired "private global" semantics -- however odd that
-// particular notion is.
+// This is a "global", but we do not declare it as `declare global`,
+// because that would expose it to all other modules.
+// Declaring it *locally* without exporting it gives the desired "private global" semantics,
+// however odd that particular notion is.
 declare const __fail__: {
   fail(): void;
 };
@@ -39,8 +39,9 @@ export type MissingOptionDeprecateFunc = (id: string, missingOption: string) => 
 /**
   Allows for runtime registration of handler functions that override the default deprecation behavior.
   Deprecations are invoked by calls to [@ember/debug/deprecate](/ember/release/classes/@ember%2Fdebug/methods/deprecate?anchor=deprecate).
-  The following example demonstrates its usage by registering a handler that throws an error if the
-  message contains the word "should", otherwise defers to the default handler.
+  The following example demonstrates its usage by registering a handler.
+  The handler throws an error if the message contains the word "should",
+  otherwise it defers to the default handler.
 
   ```javascript
   import { registerDeprecationHandler } from '@ember/debug';
@@ -62,7 +63,7 @@ export type MissingOptionDeprecateFunc = (id: string, missingOption: string) => 
     <li> <code>options</code> - An object passed in with the deprecation call containing additional information including:</li>
       <ul>
         <li> <code>id</code> - An id of the deprecation in the form of <code>package-name.specific-deprecation</code>.</li>
-        <li> <code>until</code> - The Ember version number the feature and deprecation will be removed in.</li>
+        <li> <code>until</code> - The Ember version number that removes the feature and deprecation.</li>
       </ul>
     <li> <code>next</code> - A function that calls into the previously registered handler.</li>
   </ul>
@@ -186,20 +187,19 @@ if (DEBUG) {
     Display a deprecation warning with the provided message and a stack trace
     (Chrome and Firefox only).
 
-    Ember itself leverages [Semantic Versioning](https://semver.org) to aid
-    projects in keeping up with changes to the framework. Before any
-    functionality or API is removed, it first flows linearly through a
-    deprecation staging process. The staging process currently contains two
-    stages: available and enabled.
+    Ember itself leverages [Semantic Versioning](https://semver.org)
+    to aid projects in keeping up with changes to the framework.
+    Before any functionality or API is removed,
+    it first flows linearly through a deprecation staging process.
+    The staging process contains two stages: available and enabled.
 
     Deprecations are initially released into the 'available' stage.
     Deprecations will stay in this stage until the replacement API has been
-    marked as a recommended practice via the RFC process and the addon
-    ecosystem has generally adopted the change.
+    marked as a recommended practice via the RFC process,
+    and the addon ecosystem has generally adopted the change.
 
-    Once a deprecation meets the above criteria, it will move into the
-    'enabled' stage where it will remain until the functionality or API is
-    eventually removed.
+    Once a deprecation meets the above criteria, it will move into the 'enabled' stage.
+    It remains there until the functionality or API is eventually removed.
 
     For application and addon developers, "available" deprecations are not
     urgent and "enabled" deprecations require action.
@@ -235,12 +235,12 @@ if (DEBUG) {
       used by Ember debugging tools to change the behavior (raise, log or silence)
       for that specific deprecation. The id should be namespaced by dots, e.g.
       "view.helper.select".
-    @param {string} options.until The version of Ember when this deprecation
-      warning will be removed.
+    @param {string} options.until The version of Ember that removes this
+      deprecation warning.
     @param {String} options.for A namespace for the deprecation, usually the package name
     @param {Object} options.since Describes when the deprecation became available and enabled.
-    @param {String} [options.url] An optional url to the transition guide on the
-          emberjs.com website.
+    @param {String} [options.url] An optional url to the transition guide
+          on the emberjs.com website.
     @static
     @public
     @since 1.0.0

@@ -183,8 +183,8 @@ module('StrictResolver', function (hooks) {
 
   module('weird scenarios', function () {
     test('shorthand class with a falsy or missing `default` falls back to the class itself', function (assert) {
-      // `.default` being falsy (undefined / null / 0 / '') means the shorthand
-      // value is used directly — matching the "if there's a default use it,
+      // When `.default` is falsy (undefined, null, 0, or ''), the shorthand
+      // value is used directly. This matches the "if there's a default use it,
       // else use the value" rule from the other direction.
       class ClassWithUndefinedDefault {
         static default = undefined;
@@ -217,11 +217,10 @@ module('StrictResolver', function (hooks) {
     });
 
     test('ES-module-shaped module with extra named exports still unwraps to `default`', function (assert) {
-      // A normal `import * as mod from './...'` yields an object whose
-      // `default` is the default export plus any named exports. The resolver
-      // returns the default; everything else on the namespace object is
-      // ignored. Documenting this so authors know the named exports don't
-      // leak through.
+      // A normal `import * as mod from './...'` yields an object whose `default`
+      // is the default export plus any named exports. The resolver returns
+      // the default; everything else on the namespace object is ignored.
+      // Documenting this so authors know the named exports don't leak through.
       let defaultExport = { isDefault: true };
       let registered = {
         default: defaultExport,

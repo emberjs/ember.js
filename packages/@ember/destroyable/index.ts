@@ -13,24 +13,24 @@ import {
 } from '@glimmer/destroyable';
 
 /**
-  Ember manages the lifecycles and lifetimes of many built in constructs, such
-  as components, and does so in a hierarchical way - when a parent component is
-  destroyed, all of its children are destroyed as well.
+  Ember manages the lifecycles and lifetimes of many built in constructs,
+  such as components, and does so in a hierarchical way.
+  When a parent component is destroyed, all of its children are destroyed as well.
 
   This destroyables API exposes the basic building blocks for destruction:
 
-  * registering a function to be ran when an object is destroyed
-  * checking if an object is in a destroying state
-  * associate an object as a child of another so that the child object will be destroyed
-    when the associated parent object is destroyed.
+  * Registering a function to run when an object is destroyed.
+  * Checking if an object is in a destroying state.
+  * Associating an object as a child of another,
+    so that the child is destroyed when the parent is destroyed.
 
   @module @ember/destroyable
   @public
 */
 
 /**
-  This function is used to associate a destroyable object with a parent. When the parent
-  is destroyed, all registered children will also be destroyed.
+  Associates a destroyable object with a parent.
+  When the parent is destroyed, all registered children will also be destroyed.
 
   ```js
   class CustomSelect extends Component {
@@ -118,15 +118,15 @@ import {
 
   Destruction via `destroy()` follows these steps:
 
-  1, Mark the destroyable such that `isDestroying(destroyable)` returns `true`
-  2, Call `destroy()` on each of the destroyable's associated children
-  3, Schedule calling the destroyable's destructors
-  4, Schedule setting destroyable such that `isDestroyed(destroyable)` returns `true`
+  1. Mark the destroyable such that `isDestroying(destroyable)` returns `true`.
+  2. Call `destroy()` on each of the destroyable's associated children.
+  3. Schedule calling the destroyable's destructors.
+  4. Schedule setting destroyable such that `isDestroyed(destroyable)` returns `true`.
 
   This results in the entire tree of destroyables being first marked as destroying,
   then having all of their destructors called, and finally all being marked as isDestroyed.
-  There won't be any in between states where some items are marked as `isDestroying` while
-  destroying, while others are not.
+  There won't be any in between states where some items are marked as `isDestroying`
+  while destroying, while others are not.
 
   @method destroy
   @for @ember/destroyable
@@ -136,12 +136,13 @@ import {
 */
 
 /**
-  This function asserts that all objects which have associated destructors or associated children
-  have been destroyed at the time it is called. It is meant to be a low level hook that testing
-  frameworks can use to hook into and validate that all destroyables have in fact been destroyed.
+  Asserts that all objects which have associated destructors or associated children
+  have been destroyed at the time it is called.
+  It is a low level hook that testing frameworks can use
+  to validate that all destroyables have in fact been destroyed.
 
-  This function requires that `enableDestroyableTracking` was called previously, and is only
-  available in non-production builds.
+  It requires an earlier call to `enableDestroyableTracking`,
+  and is only available in non-production builds.
 
   @method assertDestroyablesDestroyed
   @for @ember/destroyable
@@ -150,10 +151,10 @@ import {
 */
 
 /**
-  This function instructs the destroyable system to keep track of all destroyables (their
-  children, destructors, etc). This enables a future usage of `assertDestroyablesDestroyed`
-  to be used to ensure that all destroyable tasks (registered destructors and associated children)
-  have completed when `assertDestroyablesDestroyed` is called.
+  Instructs the destroyable system to keep track of all destroyables,
+  including their children and destructors.
+  A later call to `assertDestroyablesDestroyed` can then ensure
+  that all registered destructors and associated children have completed.
 
   @method enableDestroyableTracking
   @for @ember/destroyable
@@ -162,9 +163,9 @@ import {
 */
 
 /**
-  Receives a destroyable object and a destructor function, and associates the
-  function with it. When the destroyable is destroyed with destroy, or when its
-  parent is destroyed, the destructor function will be called.
+  Receives a destroyable object and a destructor function,
+  and associates the function with it. When the destroyable is destroyed with destroy,
+  or when its parent is destroyed, the destructor function will be called.
 
   ```js
   import Component from '@glimmer/component';

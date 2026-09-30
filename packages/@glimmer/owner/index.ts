@@ -7,8 +7,9 @@ interface OwnedObject<O extends object> {
 
 /**
   Framework objects in a Glimmer application may receive an owner object.
-  Glimmer is unopinionated about this owner, but will forward it through its
-  internal resolution system, and through its managers if it is provided.
+  Glimmer is unopinionated about this owner.
+  If it is provided, Glimmer forwards it through its internal resolution system,
+  and through its managers.
 */
 export function getOwner(object: object): object | undefined {
   return (object as OwnedObject<object>)[OWNER];

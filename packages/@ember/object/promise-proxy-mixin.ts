@@ -69,8 +69,7 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
   });
   ```
 
-  the proxy has bindable attributes which
-  track the promises life cycle
+  the proxy has bindable attributes which track the promises life cycle
 
   ```javascript
   proxy.get('isPending')   //=> true

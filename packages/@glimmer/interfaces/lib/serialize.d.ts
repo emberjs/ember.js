@@ -1,14 +1,13 @@
 /**
- * This file describes the interface between compilation time
- * and runtime.
+ * The interface between compilation time and runtime.
  *
  * # Locators
  *
- * Compile time and runtime must share the same Locator. A Locator is an
- * object that describes the location of a template, and is roughly a
- * module name. The compiler and runtime may use the Locator to locally
- * resolve names relative to the template the name was found in, but must
- * share resolution rules between compilation time and runtime.
+ * Compile time and runtime must share the same Locator.
+ * A Locator is an object that describes the location of a template,
+ * and is roughly a module name. The compiler and runtime may use the Locator
+ * to locally resolve names relative to the template the name was found in.
+ * They must share resolution rules between compilation time and runtime.
  *
  * For example, given this template with Locator
  * `{ module: 'components/Articles/Container' }:
@@ -17,8 +16,8 @@
  * <TabBar />
  * ```
  *
- * The compiler may resolve `<TabBar>` to `components/Articles/TabBar`. The
- * important thing is that the compiler and runtime share resolution rules.
+ * The compiler may resolve `<TabBar>` to `components/Articles/TabBar`.
+ * The important thing is that the compiler and runtime share resolution rules.
  *
  * # CompileTimeLookup
  *
@@ -32,8 +31,8 @@
  *
  * 1. To turn handles created by the `CompileTimeLookup` into live helpers,
  *    modifiers, and components.
- * 2. To resolve dynamic components at runtime that come from
- *    calls to `{{component dynamic}}`.
+ * 2. To resolve dynamic components at runtime that come
+ *    from calls to `{{component dynamic}}`.
  *
  * The `CompileTimeLookup` and `RuntimeResolver` must maintain symmetry
  * between:
@@ -44,9 +43,8 @@
  * # Coupling
  *
  * In practice, the `CompileTimeLookup` and `RuntimeResolver` are two parts
- * of one system. The goal of this system is to allow the `CompileTimeLookup`
- * to do as much resolution as possible ahead of time, while still allowing
- * the `RuntimeResolver` to do dynamic resolution when necessary.
+ * of one system. The `CompileTimeLookup` does as much resolution as possible
+ * ahead of time. The `RuntimeResolver` still does dynamic resolution when necessary.
  */
 
 import type {

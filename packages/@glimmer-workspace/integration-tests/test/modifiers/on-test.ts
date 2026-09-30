@@ -5,7 +5,7 @@ import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests
 import { consume } from '@glimmer-workspace/test-utils';
 import { DEBUG } from '@glimmer/env';
 
-// check if window exists and actually is the global
+// These tests need a real browser window as the global, not only a DOM shim.
 const hasDom =
   typeof self === 'object' &&
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

@@ -89,9 +89,8 @@ function initialize(obj: CoreObject, properties?: unknown) {
     let keyNames = Object.keys(properties);
 
     for (let keyName of keyNames) {
-      // SAFETY: this cast as a Record is safe because all object types can be
-      // indexed in JS, and we explicitly type it as returning `unknown`, so the
-      // result *must* be checked below.
+      // SAFETY: this cast as a Record is safe because all object types can be indexed in JS.
+      // We explicitly type it as returning `unknown`, so the result *must* be checked below.
       let value: unknown = (properties as Record<string, unknown>)[keyName];
 
       assert(
@@ -171,15 +170,14 @@ function initialize(obj: CoreObject, properties?: unknown) {
 }
 
 /**
-  `CoreObject` is the base class for all Ember constructs. It establishes a
-  class system based on Ember's Mixin system, and provides the basis for the
-  Ember Object Model. `CoreObject` should generally not be used directly,
-  instead you should use `EmberObject`.
+  `CoreObject` is the base class for all Ember constructs.
+  It establishes a class system based on Ember's Mixin system,
+  and provides the basis for the Ember Object Model.
+  `CoreObject` should generally not be used directly. Instead, you should use `EmberObject`.
 
   ## Usage
 
-  You can define a class by extending from `CoreObject` using the `extend`
-  method:
+  You can define a class by extending from `CoreObject` using the `extend` method:
 
   ```js
   const Person = CoreObject.extend({
@@ -192,8 +190,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
 
   ## Usage with Native Classes
 
-  Native JavaScript `class` syntax can be used to extend from any `CoreObject`
-  based class:
+  Native JavaScript `class` syntax can be used to extend from any `CoreObject` based class:
 
   ```js
   class Person extends CoreObject {
@@ -206,27 +203,27 @@ function initialize(obj: CoreObject, properties?: unknown) {
 
   Some notes about `class` usage:
 
-  * `new` syntax is not currently supported with classes that extend from
-    `EmberObject` or `CoreObject`. You must continue to use the `create` method
-    when making new instances of classes, even if they are defined using native
-    class syntax. If you want to use `new` syntax, consider creating classes
-    which do _not_ extend from `EmberObject` or `CoreObject`. Ember features,
-    such as computed properties and decorators, will still work with base-less
-    classes.
-  * Instead of using `this._super()`, you must use standard `super` syntax in
-    native classes. See the [MDN docs on classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Super_class_calls_with_super)
+  * `new` syntax is not supported with classes that extend from `EmberObject` or `CoreObject`.
+    Use the `create` method, even for classes defined with native class syntax.
+    If you want to use `new` syntax,
+    consider creating classes which do _not_ extend from `EmberObject` or `CoreObject`.
+    Computed properties, decorators, and other Ember features still work there.
+
+  * Instead of using `this._super()`, you must use standard `super` syntax in native classes.
+    See the [MDN docs on classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Super_class_calls_with_super)
     for more details.
+
   * Native classes support using [constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Constructor)
-    to set up newly-created instances. Ember uses these to, among other things,
-    support features that need to retrieve other entities by name, like Service
-    injection and `getOwner`. To ensure your custom instance setup logic takes
-    place after this important work is done, avoid using the `constructor` in
-    favor of `init`.
-  * Properties passed to `create` will be available on the instance by the time
-    `init` runs, so any code that requires these values should work at that
-    time.
-  * Using native classes, and switching back to the old Ember Object model is
-    fully supported.
+    to set up newly-created instances.
+    Ember uses these to, among other things, support features that need to retrieve
+    other entities by name, like Service injection and `getOwner`.
+    To ensure your custom instance setup logic takes place after this important work is done,
+    avoid using the `constructor` in favor of `init`.
+
+  * Properties passed to `create` will be available on the instance by the time `init` runs,
+    so any code that requires these values should work at that time.
+
+  * Using native classes, and switching back to the old Ember Object model is fully supported.
 
   @class CoreObject
   @public
@@ -338,12 +335,10 @@ class CoreObject {
     // alerts 'Name is Steve'.
     ```
 
-    NOTE: If you do override `init` for a framework class like `Component`
-    from `@ember/component`, be sure to call `this._super(...arguments)`
-    in your `init` declaration!
-    If you don't, Ember may not have an opportunity to
-    do important setup work, and you'll see strange behavior in your
-    application.
+    NOTE: If you do override `init` for a framework class like `Component` from `@ember/component`,
+    be sure to call `this._super(...arguments)` in your `init` declaration!
+    If you don't, Ember may not have an opportunity to do important setup work,
+    and you'll see strange behavior in your application.
 
     @method init
     @public
@@ -351,18 +346,18 @@ class CoreObject {
   init(_properties?: object) {}
 
   /**
-    Defines the properties that will be concatenated from the superclass
-    (instead of overridden).
+    Properties listed here are concatenated with the superclass value, instead of overridden.
 
-    By default, when you extend an Ember class a property defined in
-    the subclass overrides a property with the same name that is defined
-    in the superclass. However, there are some cases where it is preferable
-    to build up a property's value by combining the superclass' property
-    value with the subclass' value. An example of this in use within Ember
-    is the `classNames` property of `Component` from `@ember/component`.
+    By default, when you extend an Ember class,
+    a property defined in the subclass overrides a property with the same name
+    that is defined in the superclass.
+    However, there are some cases where it is preferable to build up a property's value
+    by combining the superclass' property value with the subclass' value.
+    An example of this in use within Ember is the `classNames` property of `Component`
+    from `@ember/component`.
 
-    Here is some sample code showing the difference between a concatenated
-    property and a normal one:
+    Here is some sample code showing the difference between a concatenated property
+    and a normal one:
 
     ```javascript
     import EmberObject from '@ember/object';
@@ -385,8 +380,7 @@ class CoreObject {
     fooBar.get('concatenatedProperty'); // ['bar', 'foo']
     ```
 
-    This behavior extends to object creation as well. Continuing the
-    above example:
+    This behavior extends to object creation as well. Continuing the above example:
 
     ```javascript
     let fooBar = FooBar.create({
@@ -406,17 +400,17 @@ class CoreObject {
     view.get('concatenatedProperty'); // ['bar', 'foo', 'baz']
     ```
 
-    Using the `concatenatedProperties` property, we can tell Ember to mix the
-    content of the properties.
+    Using the `concatenatedProperties` property,
+    we can tell Ember to mix the content of the properties.
 
-    In `Component` the `classNames`, `classNameBindings` and
-    `attributeBindings` properties are concatenated.
+    In `Component` the `classNames`, `classNameBindings` and `attributeBindings` properties
+    are concatenated.
 
     This feature is available for you to use throughout the Ember object model,
-    although typical app developers are likely to use it infrequently. Since
-    it changes expectations about behavior of properties, you should properly
-    document its usage in each individual concatenated property (to not
-    mislead your users to think they can override the property in a subclass).
+    although typical app developers are likely to use it infrequently.
+    It changes expectations about behavior of properties,
+    so you should document its usage in each individual concatenated property.
+    Otherwise, your users may think they can override the property in a subclass.
 
     @property concatenatedProperties
     @type Array
@@ -425,18 +419,17 @@ class CoreObject {
   */
 
   /**
-    Defines the properties that will be merged from the superclass
-    (instead of overridden).
+    Properties listed here are merged with the superclass value, instead of overridden.
 
-    By default, when you extend an Ember class a property defined in
-    the subclass overrides a property with the same name that is defined
-    in the superclass. However, there are some cases where it is preferable
-    to build up a property's value by merging the superclass property value
-    with the subclass property's value. An example of this in use within Ember
-    is the `queryParams` property of routes.
+    By default, when you extend an Ember class,
+    a property defined in the subclass overrides a property with the same name
+    that is defined in the superclass.
+    However, there are some cases where it is preferable to build up a property's value
+    by merging the superclass property value with the subclass property's value.
+    An example of this in use within Ember is the `queryParams` property of routes.
 
-    Here is some sample code showing the difference between a merged
-    property and a normal one:
+    Here is some sample code showing the difference between a merged property
+    and a normal one:
 
     ```javascript
     import EmberObject from '@ember/object';
@@ -482,16 +475,16 @@ class CoreObject {
     // the subclass.
     ```
 
-    This behavior is not available during object `create` calls. It is only
-    available at `extend` time.
+    This behavior is not available during object `create` calls.
+    It is only available at `extend` time.
 
     In `Route` the `queryParams` property is merged.
 
     This feature is available for you to use throughout the Ember object model,
-    although typical app developers are likely to use it infrequently. Since
-    it changes expectations about behavior of properties, you should properly
-    document its usage in each individual merged property (to not
-    mislead your users to think they can override the property in a subclass).
+    although typical app developers are likely to use it infrequently.
+    It changes expectations about behavior of properties,
+    so you should document its usage in each individual merged property.
+    Otherwise, your users may think they can override the property in a subclass.
 
     @property mergedProperties
     @type Array
@@ -536,11 +529,10 @@ class CoreObject {
   }
 
   /**
-    Destroys an object by setting the `isDestroyed` flag and removing its
-    metadata, which effectively destroys observers and bindings.
+    Destroys an object by setting the `isDestroyed` flag and removing its metadata,
+    which effectively destroys observers and bindings.
 
-    If you try to set a property on a destroyed object, an exception will be
-    raised.
+    If you try to set a property on a destroyed object, an exception will be raised.
 
     Note that destruction is scheduled for the end of the run loop and does not
     happen immediately.  It will set an isDestroying flag immediately.
@@ -616,7 +608,7 @@ class CoreObject {
   }
 
   /**
-    Creates a new subclass.
+    Returns a subclass of this class.
 
     ```javascript
     import EmberObject from '@ember/object';
@@ -642,8 +634,9 @@ class CoreObject {
     });
     ```
 
-    When defining a subclass, you can override methods but still access the
-    implementation of your parent class by calling the special `_super()` method:
+    When defining a subclass, you can override methods,
+    but still access the implementation of your parent class
+    by calling the special `_super()` method:
 
     ```javascript
     import EmberObject from '@ember/object';
@@ -739,11 +732,10 @@ class CoreObject {
     tom.helloWorld(); // alerts "Hi, my name is Tom Dale".
     ```
 
-    `create` will call the `init` function if defined during
-    `AnyObject.extend`
+    `create` will call the `init` function if defined during `AnyObject.extend`
 
-    If no arguments are passed to `create`, it will not set values to the new
-    instance during initialization:
+    If no arguments are passed to `create`,
+    it will not set values to the new instance during initialization:
 
     ```javascript
     let noName = Person.create();
@@ -778,13 +770,13 @@ class CoreObject {
 
     if (props !== undefined) {
       instance = new this(getOwner(props)) as InstanceType<C>;
-      // TODO(SAFETY): at present, we cannot actually rely on this being set,
-      // because a number of acceptance tests are (incorrectly? Unclear!)
-      // relying on the ability to run through this path with `factory` being
-      // `undefined`. It's *possible* that actually means that the type for
-      // `setFactoryFor()` should allow `undefined`, but we typed it the other
-      // way for good reason! Accordingly, this *casts* `factory`, and the
-      // commented-out `assert()` is here in the hope that we can enable it
+      // TODO(SAFETY): we cannot actually rely on this being set.
+      // A number of acceptance tests are (incorrectly? Unclear!) relying on the ability
+      // to run through this path with `factory` being `undefined`.
+      // It's *possible* that actually means that the type for `setFactoryFor()`
+      // should allow `undefined`, but we typed it the other way for good reason!
+      // Accordingly, this *casts* `factory`.
+      // The commented-out `assert()` is here in the hope that we can enable it,
       // after addressing tests *or* updating the call signature here.
       let factory = getFactoryFor(props);
       // assert(`missing factory when creating object ${instance}`, factory !== undefined);
@@ -849,9 +841,9 @@ class CoreObject {
     if (wasApplied.has(p)) {
       wasApplied.delete(p);
 
-      // If the base mixin already exists and was applied, create a new mixin to
-      // make sure that it gets properly applied. Reusing the same mixin after
-      // the first `proto` call will cause it to get skipped.
+      // Reusing the same mixin after the first `proto` call will cause it to get skipped.
+      // So if the base mixin already exists and was applied,
+      // a fresh mixin makes sure that it gets properly applied.
       if (prototypeMixinMap.has(this)) {
         prototypeMixinMap.set(this, Mixin[INTERNAL_MIXIN_CREATE](this.PrototypeMixin));
       }
@@ -910,9 +902,8 @@ class CoreObject {
     Note that `species` and `createPerson` are *not* valid on the `tom` and `yehuda`
     variables. They are only valid on `Person`.
 
-    To add functions and properties to instances of
-    a constructor by extending the constructor's prototype
-    see `reopen`
+    To add functions and properties to instances of a constructor,
+    by extending the constructor's prototype, see `reopen`
 
     @method reopenClass
     @for @ember/object
@@ -945,10 +936,10 @@ class CoreObject {
   }
 
   /**
-    In some cases, you may want to annotate computed properties with additional
-    metadata about how they function or what values they operate on. For
-    example, computed property functions may close over variables that are then
-    no longer available for introspection.
+    In some cases, you may want to annotate computed properties with additional metadata
+    about how they function or what values they operate on.
+    For example, computed property functions may close over variables
+    that introspection cannot reach.
 
     You can pass a hash of these values to a computed property like this:
 
@@ -988,8 +979,8 @@ class CoreObject {
   }
 
   /**
-    Iterate over each computed property for the class, passing its name
-    and any associated metadata (see `metaForProperty`) to the callback.
+    Visits each computed property on the class.
+    The callback receives its name and any associated metadata (see `metaForProperty`).
 
     @static
     @method eachComputedProperty

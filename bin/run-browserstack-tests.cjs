@@ -14,9 +14,8 @@ async function run(command, args = []) {
 
   try {
     try {
-      // Calling testem directly here instead of `ember test` so that
-      // we do not have to do a double build (by the time this is run
-      // we have already ran `ember build`).
+      // Call testem directly instead of `ember test` to avoid a double build.
+      // By the time this runs, `ember build` has already run.
       const testemArgs = [
         'ci',
         '-f',

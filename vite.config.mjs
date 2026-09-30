@@ -45,10 +45,10 @@ export default defineConfig(({ mode }) => {
         {
           ...exposedDependencies(),
           ...hiddenDependencies(),
-          // @glimmer/component is published separately and gets its own rollup
-          // build, so it's not part of ember-source's build graph. Point the
-          // test suite at its source, so tests exercise what's in git instead
-          // of whatever happens to be sitting in its dist/ directory.
+          // @glimmer/component is published separately and gets its own rollup build,
+          // so it's not part of ember-source's build graph.
+          // Point the test suite at its source,
+          // so tests exercise what's in git instead of whatever is in its dist/ directory.
           '@glimmer/component': resolve(projectRoot, 'packages/@glimmer/component/src/index.ts'),
         },
         { enableLocalDebug: true }
@@ -71,8 +71,8 @@ export default defineConfig(({ mode }) => {
     publicDir: 'tests/public',
     build,
 
-    // the stock esbuild support for typescript is horribly broken. For example,
-    // it will simply remove your decorators.
+    // the stock esbuild support for typescript is horribly broken.
+    // For example, it will remove your decorators.
     esbuild: false,
     envPrefix: ['VM_', 'VITE_'],
   };
@@ -103,8 +103,8 @@ function typescriptEmit() {
         return;
       }
       let { outputText, sourceMapText } = ts.transpileModule(code, {
-        // TypeScript doesn't know about .gjs/.gts, which templateTag() has
-        // already turned into plain JS/TS by now.
+        // TypeScript doesn't know about .gjs/.gts,
+        // which templateTag() has already turned into plain JS/TS by this point.
         fileName: file.replace(/\.gjs$/, '.js').replace(/\.gts$/, '.ts'),
         compilerOptions: {
           // ES2022 rather than ESNext, since for ESNext TypeScript leaves
@@ -134,9 +134,9 @@ function viteResolverBug() {
       if (packageName && importer) {
         let owner = packageCache.ownerOfFile(importer);
         if (owner?.name === packageName) {
-          // Our workaround for a vite bug also hits an actual node bug.🤡 You'd
-          // think we could pass `paths` to require.resolve in order to do the
-          // self-reference resolution ourselves, but you'd be wrong.
+          // Our workaround for a vite bug also hits an actual node bug 🤡.
+          // You'd think we could pass `paths` to require.resolve,
+          // in order to do the self-reference resolution ourselves, but you'd be wrong.
           // https://github.com/nodejs/node/issues/47681
           //
           // So instead we have a very minimalist and incomplete implementation

@@ -1745,9 +1745,9 @@ if (ENV._DEBUG_RENDER_TREE) {
           let inActual = key in (actual as object);
 
           if (inExpected && inActual) {
-            // TODO we should probably not rely on qunit's version of deepEqual here but at least now we're not
-            // trying to print full render trees (32MB of string) to the browser unless the key exists in both
-            // places and is different
+            // TODO: we should probably not rely on qunit's version of deepEqual here.
+            // Checking the key first avoids printing full render trees (32MB of string)
+            // to the browser, unless the key exists in both places and is different.
             this.assert.deepEqual((actual as any)[key], (expected as any)[key], `${path}.${key}`);
           }
         }
@@ -1790,9 +1790,9 @@ if (ENV._DEBUG_RENDER_TREE) {
             // We have can't compare functions
             this.assertArgs(
               actual,
-              // SAFETY: these types are getting in the way more than helping,
-              //         there doesn't seem to be a way to correlate the shape via narrowing of actual
-              //         to the shape of expected
+              // SAFETY: these types are getting in the way more than helping.
+              //         There doesn't seem to be a way to correlate the shape of actual
+              //         to the shape of expected via narrowing.
               expected as unknown as { named: unknown; positional: unknown },
               path
             );

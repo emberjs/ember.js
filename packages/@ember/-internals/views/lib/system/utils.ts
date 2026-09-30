@@ -93,10 +93,10 @@ export function setViewElement(view: View, element: Element): void {
   VIEW_ELEMENT.set(view, element);
 }
 
-// These are not needed for GC, but for correctness. We want to be able to
-// null-out these links while the objects are still live. Specifically, in
-// this case, we want to prevent access to the element (and vice verse) during
-// destruction.
+// These are not needed for GC, but for correctness.
+// We want to be able to null-out these links while the objects are still live.
+// Specifically, we want to prevent access from the view to the element,
+// and from the element to the view, during destruction.
 
 export function clearElementView(element: Element): void {
   ELEMENT_VIEW.delete(element);
@@ -191,8 +191,8 @@ export function getViewClientRects(view: View): DOMRectList {
 }
 
 /**
-  `getViewBoundingClientRect` provides information about the position of the
-  bounding border box edges of a view relative to the viewport.
+  `getViewBoundingClientRect` provides information about the position
+  of the bounding border box edges of a view relative to the viewport.
 
   It is only intended to be used by development tools like the Ember Inspector.
 

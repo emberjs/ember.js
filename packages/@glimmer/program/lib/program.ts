@@ -12,11 +12,11 @@ const PAGE_SIZE = 0x100000;
 
 /**
  * The Program Heap is responsible for dynamically allocating
- * memory in which we read/write the VM's instructions
- * from/to. When we malloc we pass out a VMHandle, which
- * is used as an indirect way of accessing the memory during
- * execution of the VM. Internally we track the different
- * regions of the memory in an int array known as the table.
+ * memory in which we read/write the VM's instructions from/to.
+ * When we malloc we pass out a VMHandle, which is used as
+ * an indirect way of accessing the memory during execution
+ * of the VM. Internally we track the different regions
+ * of the memory in an int array known as the table.
  *
  * The table 32-bit aligned and has the following layout:
  *
@@ -24,8 +24,8 @@ const PAGE_SIZE = 0x100000;
  * | ... |  Handle  | Scope Size | State | Size       |
  * | ... | 32bits   | 30bits     | 2bits | 32bit      |
  *
- * Memory is never reclaimed: templates live for the lifetime of the
- * application, so the heap only ever grows.
+ * Memory is never reclaimed: templates live for the lifetime
+ * of the application, so the heap only ever grows.
  */
 export class ProgramHeapImpl implements ProgramHeap {
   offset = 0;

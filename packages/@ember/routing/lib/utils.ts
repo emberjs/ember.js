@@ -60,7 +60,7 @@ export function extractRouteArgs(args: RouteArgs): ExtractedArgs {
     assert('routeName is a string', typeof routeName === 'string');
   }
 
-  // SAFTEY: We removed the name and options if they existed, only models left.
+  // SAFETY: The name and options were shifted off above if they existed, so only models are left.
   let models = args;
 
   return { routeName, models, queryParams };
@@ -83,9 +83,8 @@ export function stashParamNames(
     return;
   }
 
-  // This helper exists because router.js/route-recognizer.js awkwardly
-  // keeps separate a routeInfo's list of parameter names depending
-  // on whether a URL transition or named transition is happening.
+  // router.js/route-recognizer.js awkwardly keeps a routeInfo's list of parameter names
+  // in separate places, depending on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
   let routeInfo = routeInfos[routeInfos.length - 1];
   assert('has route info', routeInfo);
@@ -195,8 +194,8 @@ export function calculateCacheKey(prefix: string, parts: string[] = [], values: 
       }
     ]
 
-  This helper normalizes all three possible styles into the
-  'Array of fully defined objects' style.
+  The rest of the query param code expects only one shape:
+  the 'Array of fully defined objects' style.
 */
 export function normalizeControllerQueryParams(queryParams: Readonly<ControllerQueryParam[]>) {
   let qpMap: Record<string, ExpandedControllerQueryParam> = {};
@@ -229,11 +228,6 @@ function accumulateQueryParamDescriptors(
   }
 }
 
-/*
-  Check if a routeName resembles a url instead
-
-  @private
-*/
 export function resemblesURL(str: unknown): str is string {
   return typeof str === 'string' && (str === '' || str[0] === '/');
 }

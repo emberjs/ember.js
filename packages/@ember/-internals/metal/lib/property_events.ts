@@ -30,7 +30,7 @@ export function hasPropertyDidChange(obj: unknown): obj is PropertyDidChange {
 let deferred = 0;
 
 /**
-  This function is called just after an object property has changed.
+  Call `notifyPropertyChange` just after an object property has changed.
   It will notify any observers and clear caches among other things.
 
   Normally you will not need to call this method directly but if for some
@@ -69,9 +69,8 @@ function notifyPropertyChange(
     // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
     assert('property did change hook is invalid', hasPropertyDidChange(obj));
 
-    // we need to check the arguments length here; there's a check in Component's `PROPERTY_DID_CHANGE`
-    // that checks its arguments length, so we have to explicitly not call this with `value`
-    // if it is not passed to `notifyPropertyChange`
+    // Component's `PROPERTY_DID_CHANGE` checks its arguments length.
+    // So we must not pass `value` if the caller did not pass it to `notifyPropertyChange`.
     if (arguments.length === 4) {
       obj[PROPERTY_DID_CHANGE](keyName, value);
     } else {
@@ -103,8 +102,7 @@ function endPropertyChanges(): void {
 }
 
 /**
-  Make a series of property changes together in an
-  exception-safe way.
+  Make a series of property changes together in an exception-safe way.
 
   ```javascript
   Ember.changeProperties(function() {

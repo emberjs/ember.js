@@ -4,9 +4,9 @@ import { assert } from '@ember/debug';
 
 export class StrictResolver implements Resolver {
   // Ember's router uses this flag to decide whether to auto-generate
-  // `${name}_loading` and `${name}_error` substates for routes defined in
-  // `Router.map(...)`. Since we always resolve against an ES module registry,
-  // we unconditionally opt in.
+  // `${name}_loading` and `${name}_error` substates
+  // for routes defined in `Router.map(...)`.
+  // Since we always resolve against an ES module registry, we unconditionally opt in.
   moduleBasedResolver = true;
 
   #modules = new Map<string, unknown>();
@@ -115,9 +115,9 @@ export class StrictResolver implements Resolver {
   }
 
   // Supports the nested colocation pattern where `component:my-widget`
-  // resolves to `./components/my-widget/index.{js,ts,gjs,gts}`. The index
-  // file is typically the component class, and it's commonly paired with a
-  // sibling `index.hbs` inside the same folder.
+  // resolves to `./components/my-widget/index.{js,ts,gjs,gts}`.
+  // The index file is typically the component class,
+  // and it's commonly paired with a sibling `index.hbs` inside the same folder.
   #nestedColocationLookup(type: string, name: string): Result {
     if (type !== 'component') return undefined;
 

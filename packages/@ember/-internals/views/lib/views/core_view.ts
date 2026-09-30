@@ -34,8 +34,8 @@ import states from './states';
 interface CoreView extends ActionHandler, View {}
 class CoreView extends FrameworkObject.extend(ActionHandler) {
   static {
-    // The deprecated Evented mixin is no longer applied, but instances still
-    // provide its methods, so `Evented.detect` must keep returning true.
+    // CoreView does not apply the deprecated Evented mixin.
+    // Instances still provide its methods, so `Evented.detect` must keep returning true.
     metaFor(this.prototype).addMixin(Evented);
   }
 
@@ -99,8 +99,8 @@ class CoreView extends FrameworkObject.extend(ActionHandler) {
   }
 
   /**
-    Override the default event firing from `Evented` to
-    also call methods with the given name.
+    Override the default event firing from `Evented`,
+    so that it also calls methods with the given name.
 
     @method trigger
     @param name {String}
@@ -132,7 +132,7 @@ class CoreView extends FrameworkObject.extend(ActionHandler) {
   static isViewFactory = true;
 }
 
-// Declare on the prototype to have a single shared value.
+// Every instance shares one states table, so it lives on the prototype.
 CoreView.prototype._states = states;
 
 export default CoreView;

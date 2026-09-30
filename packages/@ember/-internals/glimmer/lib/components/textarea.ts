@@ -57,13 +57,13 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   </textarea>
   ```
 
-  If you wanted a one way binding, you could use the `<textarea>` element directly, and use the
-  `value` DOM property and the `input` event.
+  If you wanted a one way binding, you could use the `<textarea>` element directly,
+  and use the `value` DOM property and the `input` event.
 
   ### Actions
 
-  The `Textarea` component takes a number of arguments with callbacks that are invoked in
-  response to user events.
+  The `Textarea` component takes a number of arguments with callbacks
+  that are invoked in response to user events.
 
   * `enter`
   * `insert-newline`
@@ -100,8 +100,8 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   invocation. Curly brace invocation, on the other hand, only has a single syntax for arguments,
   and components must manually map attributes onto component arguments.
 
-  When using classic invocation with `{{textarea}}`, only the following attributes are mapped onto
-  arguments:
+  When using classic invocation with `{{textarea}}`,
+  only the following attributes are mapped onto arguments:
 
   * rows
   * cols
@@ -116,8 +116,8 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 
   ## Classic `layout` and `layoutName` properties
 
-  Because HTML `textarea` elements do not contain inner HTML the `layout` and
-  `layoutName` properties will not be applied.
+  Because HTML `textarea` elements do not contain inner HTML,
+  the `layout` and `layoutName` properties will not be applied.
 
   @method Textarea
   @for @ember/component

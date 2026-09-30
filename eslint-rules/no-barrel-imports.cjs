@@ -11,11 +11,10 @@ const moduleCache = new Map();
 const owningPackageCache = new Map();
 const wildcardExportsCache = new Map();
 
-// Barrels we deliberately don't rewrite imports from. `@glimmer/component`
-// has its own legacy-resolution tsconfig that can't follow deep paths;
-// `@ember/version` is a one-line shim that re-exports from `ember/version`
-// (a different package), and we want to keep `@ember/version` as the canonical
-// import path for the framework version.
+// Barrels we deliberately don't rewrite imports from.
+// `@glimmer/component` has its own legacy-resolution tsconfig that can't follow deep paths.
+// `@ember/version` is a one-line shim that re-exports from `ember/version`, a different package.
+// We want to keep `@ember/version` as the canonical import path for the framework version.
 const EXCLUDED_BARRELS = new Set(['@glimmer/component', '@ember/version']);
 
 const idOrStr = (n) => (n.type === 'Identifier' ? n.name : n.value);
@@ -134,8 +133,8 @@ function collectLocalImports(body) {
   return map;
 }
 
-// Strip TS `as`/type-assertion wrappers from an initializer and return the
-// inner identifier name if the whole expression is just `Ident (as T)*`.
+// Strip TS `as`/type-assertion wrappers from an initializer.
+// Return the inner identifier name if the whole expression is just `Ident (as T)*`.
 function unwrapAliasInit(node) {
   let cur = node;
   while (cur && (cur.type === 'TSAsExpression' || cur.type === 'TSTypeAssertion')) {
@@ -175,10 +174,10 @@ function collectNamedExports(stmt, exports, filepath, stack, localImports) {
   const stmtIsType = stmt.exportKind === 'type';
 
   if (stmt.declaration) {
-    // `export const X = Y [as T]` where Y is a top-level imported binding is
-    // treated as a re-export of Y's original source. This intentionally drops
-    // any branding/cast type — internal call sites don't need it, and it lets
-    // consumers import the implementation directly for tree-shaking.
+    // `export const X = Y [as T]`, where Y is a top-level imported binding,
+    // is treated as a re-export of Y's original source.
+    // This intentionally drops any branding/cast type. Internal call sites don't need it,
+    // and it lets consumers import the implementation directly for tree-shaking.
     if (stmt.declaration.type === 'VariableDeclaration') {
       for (const v of stmt.declaration.declarations) {
         if (v.id?.type !== 'Identifier') continue;
@@ -571,8 +570,8 @@ module.exports = {
         return;
       }
 
-      // Locally-defined symbols stay with the original barrel — they can't
-      // be sourced from a sub-file because they don't live in one.
+      // Locally-defined symbols stay with the original barrel.
+      // They can't be sourced from a sub-file because they don't live in one.
       for (const item of kept) pushGroup(groups, spec, item);
 
       const statements = namespaceImports.map((ns) => {

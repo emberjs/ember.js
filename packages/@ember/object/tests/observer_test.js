@@ -291,8 +291,8 @@ moduleFor(
         bar: 0,
 
         get foo() {
-          // side effects during creation, setting a value and running through
-          // sync observers for a second time.
+          // side effects during creation:
+          // setting a value and running through sync observers for a second time.
           return this.incrementProperty('bar');
         },
 

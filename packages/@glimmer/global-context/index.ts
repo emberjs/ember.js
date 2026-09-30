@@ -7,10 +7,10 @@ import { DEBUG } from '@glimmer/env';
  *
  * These functions should meet the following criteria:
  *
- * - Must be provided by the embedder, due to having framework specific
- *   behaviors (e.g. interop with classic Ember behaviors that should not be
- *   upstreamed) or to being out of scope for the VM (e.g. scheduling a
- *   revalidation)
+ * - Must be provided by the embedder.
+ *   Some have framework specific behaviors,
+ *   such as interop with classic Ember behaviors that should not be upstreamed.
+ *   Others are not the VM's job, such as scheduling a revalidation.
  * - Never differ between render roots
  * - Never change over time
  *
@@ -230,8 +230,8 @@ if (DEBUG) {
       globalContextWasSet = true;
     }
 
-    // We use `undefined as any` here to unset the values when resetting the
-    // context at the end of a test.
+    // We use `undefined as any` here to unset the values,
+    // when resetting the context at the end of a test.
     scheduleRevalidate = context?.scheduleRevalidate || (undefined as any);
     scheduleDestroy = context?.scheduleDestroy || (undefined as any);
     scheduleDestroyed = context?.scheduleDestroyed || (undefined as any);

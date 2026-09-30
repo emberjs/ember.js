@@ -77,10 +77,9 @@ class MountManager
     args: VMArguments,
     env: Environment
   ) {
-    // TODO
-    // mount is a runtime helper, this shouldn't use dynamic layout
-    // we should resolve the engine app template in the helper
-    // it also should use the owner that looked up the mount helper.
+    // TODO: mount is a runtime helper, so this shouldn't use dynamic layout.
+    // We should resolve the engine app template in the helper.
+    // It also should use the owner that looked up the mount helper.
 
     assert('Expected owner to be an EngineInstance', 'buildChildEngineInstance' in owner);
     let engine = (owner as EngineInstance).buildChildEngineInstance(name);

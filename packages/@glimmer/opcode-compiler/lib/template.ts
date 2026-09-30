@@ -48,13 +48,13 @@ export default function templateFactory({
   scope,
   isStrictMode,
 }: SerializedTemplateWithLazyBlock): TemplateFactory {
-  // TODO(template-refactors): This should be removed in the near future, as it
-  // appears that id is unused. It is currently kept for backwards compat reasons.
+  // TODO(template-refactors): Remove this, since it appears that id is unused.
+  // It is kept for backwards compat reasons.
   let id = templateId || `client-${clientId++}`;
 
-  // TODO: This caches JSON serialized output once in case a template is
-  // compiled by multiple owners, but we haven't verified if this is actually
-  // helpful. We should benchmark this in the future.
+  // TODO: This caches JSON serialized output once,
+  // in case a template is compiled by multiple owners.
+  // We haven't verified if this is helpful, so we should benchmark it.
   let parsedBlock: Initializable<SerializedTemplateBlock>;
 
   let ownerlessTemplate: Template | null = null;
@@ -118,8 +118,8 @@ class TemplateImpl implements TemplateWithIdAndReferrer {
     return this.parsedLayout.id;
   }
 
-  // TODO(template-refactors): This should be removed in the near future, it is
-  // only being exposed for backwards compatibility
+  // TODO(template-refactors): Remove this.
+  // It is only exposed for backwards compatibility.
   get referrer() {
     return {
       moduleName: this.parsedLayout.moduleName,

@@ -582,9 +582,9 @@ moduleFor(
       });
     }
 
-    // This comes into play when using the {{#each}} helper. If the
-    // passed array item is a String, it will be converted into a
-    // String object instead of a normal string.
+    // This comes into play when using the {{#each}} helper.
+    // If the passed array item is a String,
+    // it will be converted into a String object instead of a normal string.
     ['@test should allow for String objects']() {
       let FooBarComponent = class extends Component {
         attributeBindings = ['foo'];

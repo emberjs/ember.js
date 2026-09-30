@@ -105,19 +105,20 @@ const BUILTIN_HELPERS: Record<string, object> = {
   get,
   hash,
   'unique-id': uniqueId,
-  // In prod builds, this is a no-op helper and is unused in practice. We shouldn't need
-  // to add it at all, but the current test build doesn't produce a "prod compiler", so
-  // we ended up running the debug-build for the template compliler in prod tests. Once
-  // that is fixed, this can be conditionally included only in DEBUG. For now, this
-  // allows the test to work and does not really harm anything, since it's just a no-op
-  // pass-through helper. Keeping it inside the object literal (rather than a top-level
-  // conditional assignment) keeps this module free of top-level side effects so that
-  // consumers that never resolve anything dynamically can tree-shake the whole table.
+  // In prod builds, this is a no-op helper and is unused in practice.
+  // We shouldn't need to add it at all.
+  // But the test build doesn't produce a "prod compiler",
+  // so prod tests run the debug-build of the template compiler.
+  // TODO: once the test build has a prod compiler, include this only in DEBUG.
+  // It does no harm here, since it's just a no-op pass-through helper.
+  // It lives inside the object literal, not in a top-level conditional assignment.
+  // That keeps this module free of top-level side effects,
+  // so consumers that never resolve anything dynamically can tree-shake the whole table.
   '-disallow-dynamic-resolution': disallowDynamicResolution,
 };
 
-// With the implementation of RFC #1006(https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper), the `action` modifer was removed. It was the
-// only built-in keyword modifier, so this object is currently empty.
+// RFC #1006(https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper) removed the `action` modifer.
+// It was the only built-in keyword modifier, so this object is empty.
 const BUILTIN_KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {};
 
 const BUILTIN_MODIFIERS: Record<string, object> = {
@@ -162,10 +163,10 @@ export default class ResolverImpl implements ClassicResolver<InternalOwner> {
       // than the raw value (`factoryFor(...).class`). This is because injections are already
       // bound in the factoryFor result, including type-based injections
 
-      // The classic helper manager is registered on the classic `Helper` base
-      // class; deriving it from the definition (rather than importing it from
-      // the module that defines `Helper`) keeps this module from pulling in
-      // the classic object model when no classic helpers are in use.
+      // The classic helper manager is registered on the classic `Helper` base class.
+      // We derive it from the definition, and do not import it from the module that defines `Helper`.
+      // This keeps this module from pulling in the classic object model
+      // when no classic helpers are in use.
       let manager = getInternalHelperManager(definition);
 
       if (DEBUG) {

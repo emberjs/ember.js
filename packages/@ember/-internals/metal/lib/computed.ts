@@ -78,11 +78,12 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
 function noop(): void {}
 /**
-  `@computed` is a decorator that turns a JavaScript getter and setter into a
-  computed property, which is a _cached, trackable value_. By default the getter
-  will only be called once and the result will be cached. You can specify
-  various properties that your computed property depends on. This will force the
-  cached result to be cleared if the dependencies are modified, and lazily recomputed the next time something asks for it.
+  `@computed` is a decorator that turns a JavaScript getter and setter
+  into a computed property, which is a _cached, trackable value_.
+  By default the getter will only be called once and the result will be cached.
+  You can specify various properties that your computed property depends on.
+  If the dependencies are modified, this forces the cached result to be cleared,
+  and lazily recomputed the next time something asks for it.
 
   In the following example we decorate a getter - `fullName` -  by calling
   `computed` with the property dependencies (`firstName` and `lastName`) as
@@ -164,10 +165,10 @@ function noop(): void {}
   }
   ```
 
-  Note that when defined this way, getters and setters receive the _key_ of the
-  property they are decorating as the first argument. Setters receive the value
-  they are setting to as the second argument instead. Additionally, setters must
-  _return_ the value that should be cached:
+  Note that when defined this way,
+  getters and setters receive the _key_ of the property they are decorating as the first argument.
+  Setters receive the value they are setting to as the second argument instead.
+  Additionally, setters must _return_ the value that should be cached:
 
   ```javascript
   import { computed, set } from '@ember/object';
@@ -458,9 +459,10 @@ export class ComputedProperty extends ComputedDescriptor {
 
     let meta = metaFor(obj);
 
-    // ensure two way binding works when the component has defined a computed
-    // property with both a setter and dependent keys, in that scenario without
-    // the sync observer added below the caller's value will never be updated
+    // ensure two way binding works when the component has defined a computed property
+    // with both a setter and dependent keys.
+    // In that scenario, without the sync observer added below,
+    // the caller's value will never be updated.
     //
     // See GH#18147 / GH#19028 for details.
     if (
@@ -663,11 +665,11 @@ class ComputedDecoratorImpl extends Function {
   }
 
   /**
-    In some cases, you may want to annotate computed properties with additional
-    metadata about how they function or what values they operate on. For example,
-    computed property functions may close over variables that are then no longer
-    available for introspection. You can pass a hash of these values to a
-    computed property.
+    In some cases, you may want to annotate computed properties with additional metadata
+    about how they function or what values they operate on.
+    For example, computed property functions may close over variables
+    that are not available for introspection.
+    You can pass a hash of these values to a computed property.
 
     Example:
 
@@ -698,9 +700,9 @@ class ComputedDecoratorImpl extends Function {
     });
     ```
 
-    The hash that you pass to the `meta()` function will be saved on the
-    computed property descriptor under the `_meta` key. Ember runtime
-    exposes a public API for retrieving these values from classes,
+    The hash that you pass to the `meta()` function will be saved
+    on the computed property descriptor under the `_meta` key.
+    Ember runtime exposes a public API for retrieving these values from classes,
     via the `metaForProperty()` function.
 
     @method meta
@@ -721,8 +723,8 @@ class ComputedDecoratorImpl extends Function {
     }
   }
 
-  // TODO: Remove this when we can provide alternatives in the ecosystem to
-  // addons such as ember-macro-helpers that use it.
+  // TODO: Addons such as ember-macro-helpers use this.
+  // Delete it after the ecosystem offers them an alternative.
   /** @internal */
   get _getter() {
     return (descriptorForDecorator(this) as ComputedProperty)._getter;
@@ -738,9 +740,8 @@ class ComputedDecoratorImpl extends Function {
 type ComputedDecoratorKeysAndConfig = [...keys: string[], config: ComputedPropertyCallback];
 
 /**
-  This helper returns a new property descriptor that wraps the passed
-  computed property function. You can use this helper to define properties with
-  native decorator syntax, mixins, or via `defineProperty()`.
+  Wrapping the passed computed property function in a new property descriptor
+  lets you define properties with native decorator syntax, mixins, or via `defineProperty()`.
 
   Example:
 
@@ -863,12 +864,12 @@ type ComputedDecoratorKeysAndConfig = [...keys: string[], config: ComputedProper
   ```
 
   When passed as an argument, the `set` function should accept two parameters,
-  `key` and `value`. The value returned from `set` will be the new value of the
-  property.
+  `key` and `value`.
+  The value returned from `set` will be the new value of the property.
 
-  _Note: This is the preferred way to define computed properties when writing third-party
-  libraries that depend on or use Ember, since there is no guarantee that the user
-  will have [prototype Extensions](https://guides.emberjs.com/release/configuring-ember/disabling-prototype-extensions/) enabled._
+  _Note: This is the preferred way to define computed properties
+  when writing third-party libraries that depend on or use Ember.
+  There is no guarantee that the user will have [prototype Extensions](https://guides.emberjs.com/release/configuring-ember/disabling-prototype-extensions/) enabled._
 
   @method computed
   @for @ember/object
@@ -945,10 +946,11 @@ export function autoComputed(
 }
 
 /**
-  Allows checking if a given property on an object is a computed property. For the most part,
-  this doesn't matter (you would normally just access the property directly and use its value),
-  but for some tooling specific scenarios (e.g. the ember-inspector) it is important to
-  differentiate if a property is a computed property or a "normal" property.
+  Allows checking if a given property on an object is a computed property.
+  For the most part, this doesn't matter,
+  because you would normally just access the property directly and use its value.
+  But for some tooling specific scenarios, such as the ember-inspector,
+  it is important to differentiate a computed property from a "normal" property.
 
   This will work on either a class's prototype or an instance itself.
 

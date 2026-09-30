@@ -36,8 +36,8 @@ class WarningAssert extends DebugAssert {
   }
 
   inject() {
-    // Expects no warning to happen within a function, or if no function is
-    // passed, from the time of calling until the end of the test.
+    // Expects no warning to happen within a function,
+    // or if no function is passed, from the time of calling until the end of the test.
     //
     // expectNoWarning(function() {
     //   fancyNewThing();
@@ -60,10 +60,9 @@ class WarningAssert extends DebugAssert {
       });
     };
 
-    // Expect a warning to happen within a function, or if no function is
-    // passed, from the time of calling until the end of the test. Can be called
-    // multiple times to assert warnings with different specific messages
-    // happened.
+    // Expect a warning to happen within a function,
+    // or if no function is passed, from the time of calling until the end of the test.
+    // Can be called multiple times to assert warnings with different specific messages happened.
     //
     // expectWarning(function() {
     //   Ember.warn("Times they are a-changin'");

@@ -5,11 +5,12 @@ import { resolve } from 'node:path';
 import * as QUnit from 'qunit';
 const { module: Qmodule, test } = QUnit;
 
-// Compiles the app's own code with TypeScript's standard decorator emit before
-// babel sees it. TypeScript only provides decorator metadata if
-// `Symbol.metadata` exists, which it doesn't in browsers yet, and Ember relies
-// on that metadata, so apps using TypeScript's emit must polyfill it. This
-// plugin does that too.
+// Compiles the app's own code with TypeScript's standard decorator emit,
+// before babel sees it.
+// TypeScript only provides decorator metadata if `Symbol.metadata` exists,
+// which it doesn't in browsers yet.
+// Ember relies on that metadata, so apps using TypeScript's emit must polyfill it.
+// This plugin does that too.
 const typescriptEmitPlugin = `
 function typescriptEmit() {
   return {

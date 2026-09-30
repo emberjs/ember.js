@@ -15,9 +15,9 @@ import { VISIT_STMTS } from './visitors/statements';
 import StrictModeValidationPass from './visitors/strict-mode';
 
 /**
- * Normalize the AST from @glimmer/syntax into the HIR. The HIR has special
- * instructions for keywords like `{{yield}}`, `(has-block)` and
- * `{{#in-element}}`.
+ * Normalize the AST from @glimmer/syntax into the HIR.
+ * The HIR has special instructions for keywords like `{{yield}}`, `(has-block)`
+ * and `{{#in-element}}`.
  *
  * Most importantly, it also classifies HTML element syntax into:
  *
@@ -57,7 +57,6 @@ export default function normalize(
   root: ASTv2.Template,
   isStrict: boolean
 ): Result<mir.Template> {
-  // create a new context for the normalization pass
   let state = new NormalizationState(root.table, isStrict);
 
   if (LOCAL_TRACE_LOGGING) {

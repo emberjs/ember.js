@@ -264,10 +264,10 @@ export default class InternalRouteInfo<R = unknown> {
           );
         }
 
-        // RFC NavigationState: transition-level from/to, populated by
-        // routeWillChange before any lifecycle hook runs. Hand-built
-        // transitions in unit tests may lack `to`; fall back to this route's
-        // own public info.
+        // RFC NavigationState: transition-level from/to,
+        // populated by routeWillChange before any lifecycle hook runs.
+        // Hand-built transitions in unit tests may lack `to`.
+        // In that case, fall back to this route's own public info.
         const to =
           (transition.to as RouteInfo | undefined) ??
           (ROUTE_INFOS.get(this as unknown as RouteInfosKey) as RouteInfo | undefined) ??
@@ -281,10 +281,11 @@ export default class InternalRouteInfo<R = unknown> {
           signal: transition.signal,
           getAncestorPromise: (ancestor: RouteInfo) => {
             const routeInfos = transition[STATE_SYMBOL]?.routeInfos ?? [];
-            // Only true ancestors count: searching the whole hierarchy would
-            // hand a route its own (or a descendant's) pending enter promise —
-            // an easy deadlock for a manager that awaits it. When this info
-            // isn't in the transition state (hand-built test transitions),
+            // Only true ancestors count.
+            // Searching the whole hierarchy could hand a route the pending enter promise
+            // of itself or a descendant.
+            // That is an easy deadlock for a manager that awaits it.
+            // When this info isn't in the transition state, as in hand-built test transitions,
             // fall back to searching the full list.
             const selfIndex = routeInfos.indexOf(this);
             const ancestors = selfIndex === -1 ? routeInfos : routeInfos.slice(0, selfIndex);
@@ -445,8 +446,8 @@ export default class InternalRouteInfo<R = unknown> {
     // Setup a managementPromise so that we can wait for asynchronously loaded routes
     this.managementPromise = Promise.resolve(management);
 
-    // Wait until the 'management' property has been updated when chaining to a
-    // route that is a promise
+    // Wait until the 'management' property has been updated
+    // when chaining to a route that is a promise
     if (isPromise(management)) {
       this.managementPromise = this.managementPromise.then((m) => {
         this.management = m;
@@ -553,9 +554,9 @@ export class UnresolvedRouteInfoByObject<R = unknown> extends InternalRouteInfo<
   /**
     @private
 
-    Serializes a route using its custom `serialize` method or
-    by a default that looks up the expected property name from
-    the dynamic segment.
+    Serializes a route using its custom `serialize` method,
+    or by a default that looks up the expected property name
+    from the dynamic segment.
 
     @param {Object} model the model to be serialized for this route
   */
@@ -612,9 +613,8 @@ function paramsMatch(a: Dict<unknown> | undefined, b: Dict<unknown> | undefined)
     return false;
   }
 
-  // Note: this assumes that both params have the same
-  // number of keys, but since we're comparing the
-  // same routes, they should.
+  // Note: this assumes that both params have the same number of keys.
+  // Since we're comparing the same routes, they should.
   for (let k in a) {
     if (a.hasOwnProperty(k) && a[k] !== b[k]) {
       return false;

@@ -95,9 +95,10 @@ function generateComputedWithPredicate(name: string, predicate: (value: unknown)
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @return {ComputedProperty} computed property which returns true if the value
-  of the dependent property is null, an empty string, empty array, or empty
-  function and false if the underlying value is not empty.
+  @return {ComputedProperty} computed property
+  which returns true if the value of the dependent property is null,
+  an empty string, empty array, or empty function.
+  It returns false if the underlying value is not empty.
 
   @public
 */
@@ -143,8 +144,8 @@ export function empty(dependentKey: string) {
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @return {ComputedProperty} computed property which returns true if original
-  value for property is not empty.
+  @return {ComputedProperty} computed property
+  which returns true if original value for property is not empty.
   @public
 */
 export function notEmpty(dependentKey: string) {
@@ -159,9 +160,8 @@ export function notEmpty(dependentKey: string) {
 }
 
 /**
-  A computed property that returns true if the value of the dependent property
-  is null or undefined. This avoids errors from JSLint complaining about use of
-  ==, which can be technically confusing.
+  A computed property that returns true if the value of the dependent property is null or undefined.
+  This avoids errors from JSLint complaining about use of ==, which can be technically confusing.
 
   ```javascript
   import { set } from '@ember/object';
@@ -186,8 +186,8 @@ export function notEmpty(dependentKey: string) {
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @return {ComputedProperty} computed property which returns true if original
-  value for property is null or undefined.
+  @return {ComputedProperty} computed property
+  which returns true if original value for property is null or undefined.
   @public
 */
 export function none(dependentKey: string) {
@@ -228,8 +228,8 @@ export function none(dependentKey: string) {
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @return {ComputedProperty} computed property which returns inverse of the
-  original value for property
+  @return {ComputedProperty} computed property
+  which returns inverse of the original value for property
   @public
 */
 export function not(dependentKey: string) {
@@ -244,8 +244,7 @@ export function not(dependentKey: string) {
 }
 
 /**
-  A computed property that converts the provided dependent property into a
-  boolean value.
+  A computed property that converts the provided dependent property into a boolean value.
 
   Example:
 
@@ -276,8 +275,8 @@ export function not(dependentKey: string) {
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @return {ComputedProperty} computed property which converts to boolean the
-  original value for property
+  @return {ComputedProperty} computed property
+  which converts to boolean the original value for property
   @public
 */
 export function bool(dependentKey: string) {
@@ -292,9 +291,9 @@ export function bool(dependentKey: string) {
 }
 
 /**
-  A computed property which matches the original value for the dependent
-  property against a given RegExp, returning `true` if the value matches the
-  RegExp and `false` if it does not.
+  A computed property which matches the original value for the dependent property
+  against a given RegExp.
+  It returns `true` if the value matches the RegExp and `false` if it does not.
 
   Example:
 
@@ -322,8 +321,8 @@ export function bool(dependentKey: string) {
   @for @ember/object/computed
   @param {String} dependentKey
   @param {RegExp} regexp
-  @return {ComputedProperty} computed property which match the original value
-  for property against a given RegExp
+  @return {ComputedProperty} computed property
+  which match the original value for property against a given RegExp
   @public
 */
 export function match(dependentKey: string, regexp: RegExp) {
@@ -339,8 +338,8 @@ export function match(dependentKey: string, regexp: RegExp) {
 }
 
 /**
-  A computed property that returns true if the provided dependent property is
-  equal to the given value.
+  A computed property that returns true
+  if the provided dependent property is equal to the given value.
 
   Example:
 
@@ -368,8 +367,8 @@ export function match(dependentKey: string, regexp: RegExp) {
   @for @ember/object/computed
   @param {String} dependentKey
   @param {String|Number|Object} value
-  @return {ComputedProperty} computed property which returns true if the
-  original value for property is equal to the given value.
+  @return {ComputedProperty} computed property
+  which returns true if the original value for property is equal to the given value.
   @public
 */
 export function equal(dependentKey: string, value: unknown) {
@@ -384,8 +383,8 @@ export function equal(dependentKey: string, value: unknown) {
 }
 
 /**
-  A computed property that returns true if the provided dependent property is
-  greater than the provided value.
+  A computed property that returns true
+  if the provided dependent property is greater than the provided value.
 
   Example:
 
@@ -413,8 +412,8 @@ export function equal(dependentKey: string, value: unknown) {
   @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {ComputedProperty} computed property which returns true if the
-  original value for property is greater than given value.
+  @return {ComputedProperty} computed property
+  which returns true if the original value for property is greater than given value.
   @public
 */
 export function gt(dependentKey: string, value: number) {
@@ -429,8 +428,8 @@ export function gt(dependentKey: string, value: number) {
 }
 
 /**
-  A computed property that returns true if the provided dependent property is
-  greater than or equal to the provided value.
+  A computed property that returns true
+  if the provided dependent property is greater than or equal to the provided value.
 
   Example:
 
@@ -458,8 +457,8 @@ export function gt(dependentKey: string, value: number) {
   @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {ComputedProperty} computed property which returns true if the
-  original value for property is greater or equal then given value.
+  @return {ComputedProperty} computed property
+  which returns true if the original value for property is greater or equal then given value.
   @public
 */
 export function gte(dependentKey: string, value: number) {
@@ -474,8 +473,8 @@ export function gte(dependentKey: string, value: number) {
 }
 
 /**
-  A computed property that returns true if the provided dependent property is
-  less than the provided value.
+  A computed property that returns true
+  if the provided dependent property is less than the provided value.
 
   Example:
 
@@ -503,8 +502,8 @@ export function gte(dependentKey: string, value: number) {
   @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {ComputedProperty} computed property which returns true if the
-  original value for property is less then given value.
+  @return {ComputedProperty} computed property
+  which returns true if the original value for property is less then given value.
   @public
 */
 export function lt(dependentKey: string, value: number) {
@@ -519,8 +518,8 @@ export function lt(dependentKey: string, value: number) {
 }
 
 /**
-  A computed property that returns true if the provided dependent property is
-  less than or equal to the provided value.
+  A computed property that returns true
+  if the provided dependent property is less than or equal to the provided value.
 
   Example:
 
@@ -548,8 +547,8 @@ export function lt(dependentKey: string, value: number) {
   @for @ember/object/computed
   @param {String} dependentKey
   @param {Number} value
-  @return {ComputedProperty} computed property which returns true if the
-  original value for property is less or equal than given value.
+  @return {ComputedProperty} computed property
+  which returns true if the original value for property is less or equal than given value.
   @public
 */
 export function lte(dependentKey: string, value: number) {
@@ -564,8 +563,8 @@ export function lte(dependentKey: string, value: number) {
 }
 
 /**
-  A computed property that performs a logical `and` on the original values for
-  the provided dependent properties.
+  A computed property that performs a logical `and`
+  on the original values for the provided dependent properties.
 
   You may pass in more than two properties and even use property brace
   expansion.  The computed property will return the first falsy value or last
@@ -603,15 +602,15 @@ export function lte(dependentKey: string, value: number) {
   @static
   @for @ember/object/computed
   @param {String} dependentKey*
-  @return {ComputedProperty} computed property which performs a logical `and` on
-  the values of all the original values for properties.
+  @return {ComputedProperty} computed property
+  which performs a logical `and` on the values of all the original values for properties.
   @public
 */
 export const and = generateComputedWithPredicate('and', (value) => value);
 
 /**
-  A computed property which performs a logical `or` on the original values for
-  the provided dependent properties.
+  A computed property which performs a logical `or`
+  on the original values for the provided dependent properties.
 
   You may pass in more than two properties and even use property brace
   expansion.  The computed property will return the first truthy value or last
@@ -646,16 +645,15 @@ export const and = generateComputedWithPredicate('and', (value) => value);
   @static
   @for @ember/object/computed
   @param {String} dependentKey*
-  @return {ComputedProperty} computed property which performs a logical `or` on
-  the values of all the original values for properties.
+  @return {ComputedProperty} computed property
+  which performs a logical `or` on the values of all the original values for properties.
   @public
 */
 export const or = generateComputedWithPredicate('or', (value) => !value);
 
 /**
-  Creates a new property that is an alias for another property on an object.
-  Calls to `get` or `set` this property behave as though they were called on the
-  original property.
+  Aliases another property on an object.
+  Calls to `get` or `set` this property behave as though they were called on the original property.
 
   Example:
 
@@ -682,17 +680,17 @@ export const or = generateComputedWithPredicate('or', (value) => !value);
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @return {ComputedProperty} computed property which creates an alias to the
-  original value for property.
+  @return {ComputedProperty} computed property
+  which creates an alias to the original value for property.
   @public
 */
 
 /**
-  Where the `alias` computed macro aliases `get` and `set`, and allows for
-  bidirectional data flow, the `oneWay` computed macro only provides an aliased
-  `get`. The `set` will not mutate the upstream property, rather causes the
-  current property to become the value set. This causes the downstream property
-  to permanently diverge from the upstream property.
+  The `alias` computed macro aliases `get` and `set`, and allows for bidirectional data flow.
+  The `oneWay` computed macro only provides an aliased `get`.
+  The `set` will not mutate the upstream property,
+  but instead causes the current property to become the value set.
+  So the downstream property permanently diverges from the upstream property.
 
   Example:
 
@@ -722,8 +720,8 @@ export const or = generateComputedWithPredicate('or', (value) => !value);
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @return {ComputedProperty} computed property which creates a one way computed
-  property to the original value for property.
+  @return {ComputedProperty} computed property
+  which creates a one way computed property to the original value for property.
   @public
 */
 export function oneWay(dependentKey: string) {
@@ -743,8 +741,8 @@ export function oneWay(dependentKey: string) {
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @return {ComputedProperty} computed property which creates a one way computed
-    property to the original value for property.
+  @return {ComputedProperty} computed property
+  which creates a one way computed   property to the original value for property.
   @public
  */
 
@@ -785,8 +783,8 @@ export function oneWay(dependentKey: string) {
   @static
   @for @ember/object/computed
   @param {String} dependentKey
-  @return {ComputedProperty} computed property which creates a one way computed
-  property to the original value for property.
+  @return {ComputedProperty} computed property
+  which creates a one way computed property to the original value for property.
   @since 1.5.0
   @public
 */
@@ -800,9 +798,9 @@ export function readOnly(dependentKey: string) {
 }
 
 /**
-  Creates a new property that is an alias for another property on an object.
-  Calls to `get` or `set` this property behave as though they were called on the
-  original property, but also print a deprecation warning.
+  Aliases another property on an object.
+  Calls to `get` or `set` this property behave as though they were called on the original property,
+  but also print a deprecation warning.
 
   Example:
 
@@ -829,8 +827,8 @@ export function readOnly(dependentKey: string) {
   @for @ember/object/computed
   @param {String} dependentKey
   @param {Object} options Options for `deprecate`.
-  @return {ComputedProperty} computed property which creates an alias with a
-  deprecation to the original value for property.
+  @return {ComputedProperty} computed property
+  which creates an alias with a deprecation to the original value for property.
   @since 1.7.0
   @public
 */

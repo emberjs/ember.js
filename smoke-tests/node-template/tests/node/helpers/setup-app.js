@@ -21,9 +21,8 @@ function compile(templateString, options) {
 }
 
 /*
- * This helper sets up a QUnit test module with all of the environment and
- * helper methods necessary to test an Ember.js application running in the
- * server-side environment.
+ * Sets up a QUnit test module with all of the environment and helper methods
+ * necessary to test an Ember.js application running in the server-side environment.
  *
  * It uses direct ESM imports from ember-source. It uses the `visit()` API
  * to simulate a FastBoot environment.
@@ -58,12 +57,11 @@ function compile(templateString, options) {
  *       });
  *     });
  *
- * Once all of the constituent parts of the app are registered, you can kick off
- * app boot by calling either `this.visit(url)` or `this.renderToHTML(url)`.
+ * Once all of the constituent parts of the app are registered,
+ * you can kick off app boot by calling either `this.visit(url)` or `this.renderToHTML(url)`.
  *
- * `visit` returns a promise that resolves to the application instance, and
- * `renderToHTML` returns a promise that resolves to the rendered HTML of the
- * application.
+ * `visit` returns a promise that resolves to the application instance.
+ * `renderToHTML` returns a promise that resolves to the rendered HTML of the application.
  *
  *     return this.renderToHTML('/photos').then(function(html) {
  *       assert.ok(html.matches('<h1>Hello world</h1>'));

@@ -13,8 +13,8 @@ proxy.get('firstObject'); // 'amoeba'
 const overridden = ArrayProxy.create({
   content: A(pets),
   objectAtContent(this: ArrayProxy<string>, idx: number): string | undefined {
-    // NOTE: cast is necessary because `this` is not managed correctly in the
-    // `.create()` body anymore.
+    // NOTE: cast is necessary because `this` is not managed correctly
+    // in the `.create()` body.
     return (this.get('content') as unknown as EmberArray<string>).objectAt(idx)?.toUpperCase();
   },
 });

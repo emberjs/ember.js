@@ -6,7 +6,7 @@ export function setupRunLoopCheck(hooks: NestedHooks) {
       let done = assert.async();
       // use a setTimeout to allow the current run loop to flush via autorun
       setTimeout(() => {
-        // increment expected assertion count for the assertions just below
+        // the two assertions below would otherwise fail tests that declared `assert.expect()`
         let test = (assert as any)['test'];
         if (test.expected !== null) {
           test.expected += 2;

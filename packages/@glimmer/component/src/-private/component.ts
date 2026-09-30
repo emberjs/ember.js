@@ -3,10 +3,10 @@ import { DEBUG } from '@glimmer/env';
 export const IS_DESTROYING_KEY = Symbol('__is_destroying__');
 export const IS_DESTROYED_KEY = Symbol('__is_destroyed__');
 
-// This provides a type-safe `WeakMap`: the getter and setter link the key to a
-// specific value. This is how `WeakMap`s actually behave, but the TS type
-// system does not (yet!) have a good way to capture that for types like
-// `WeakMap` where the type is generic over another generic type (here, `Args`).
+// This provides a type-safe `WeakMap`: the getter and setter link the key to a specific value.
+// This is how `WeakMap`s actually behave, but the TS type system does not (yet!) have a good way
+// to capture that for types like `WeakMap`,
+// where the type is generic over another generic type (here, `Args`).
 interface ArgsSetMap extends WeakMap<Args<unknown>, boolean> {
   get<S>(key: Args<S>): boolean | undefined;
   set<S>(key: Args<S>, value: boolean): this;
@@ -28,17 +28,18 @@ declare const Empty: unique symbol;
 
 /**
  * This provides us a way to have a "fallback" which represents an empty object,
- * without the downsides of how TS treats `{}`. Specifically: this will
- * correctly leverage "excess property checking" so that, given a component
- * which has no named args, if someone invokes it with any named args, they will
- * get a type error.
+ * without the downsides of how TS treats `{}`.
+ * Specifically: this will correctly leverage "excess property checking".
+ * Given a component which has no named args,
+ * if someone invokes it with any named args, they will get a type error.
  *
- * @internal This is exported so declaration emit works (if it were not emitted,
- *   declarations which fall back to it would not work). It is *not* intended for
- *   public usage, and the specific mechanics it uses may change at any time.
- *   The location of this export *is* part of the public API, because moving it
- *   will break existing declarations, but is not legal for end users to import
- *   themselves, so ***DO NOT RELY ON IT***.
+ * @internal This is exported so declaration emit works.
+ *   If it were not emitted, declarations which fall back to it would not work.
+ *   It is *not* intended for public usage,
+ *   and the specific mechanics it uses may change at any time.
+ *   The location of this export *is* part of the public API,
+ *   because moving it will break existing declarations.
+ *   It is not legal for end users to import it themselves, so ***DO NOT RELY ON IT***.
  */
 export type EmptyObject = { [Empty]?: true };
 
@@ -70,21 +71,20 @@ type _ExpandSignature<T> = {
     : EmptyObject;
 };
 /**
- * Given any allowed shorthand form of a signature, desugars it to its full
- * expanded type.
+ * Given any allowed shorthand form of a signature, desugars it to its full expanded type.
  *
- * @internal This is only exported so we can avoid duplicating it in
- *   [Glint](https://github.com/typed-ember/glint) or other such tooling. It is
- *   *not* intended for public usage, and the specific mechanics it uses may
- *   change at any time. Although the signature produced by is part of Glimmer's
- *   public API the existence and mechanics of this specific symbol are *not*,
+ * @internal This is only exported so we can avoid duplicating it
+ *   in [Glint](https://github.com/typed-ember/glint) or other such tooling.
+ *   It is *not* intended for public usage,
+ *   and the specific mechanics it uses may change at any time.
+ *   Although the signature produced by is part of Glimmer's public API,
+ *   the existence and mechanics of this specific symbol are *not*,
  *   so ***DO NOT RELY ON IT***.
  */
-// The conditional type here is because TS applies conditional types
-// distributively. This means that for union types, checks like `keyof T` get
-// all the keys from all elements of the union, instead of ending up as `never`
-// and then always falling into the `Signature` path instead of falling back to
-// the legacy args handling path.
+// The conditional type here is because TS applies conditional types distributively.
+// For union types, checks like `keyof T` get all the keys from all elements of the union.
+// Without it, they would end up as `never` and always fall into the `Signature` path,
+// instead of falling back to the legacy args handling path.
 export type ExpandSignature<T> = T extends any ? _ExpandSignature<T> : never;
 
 /**
@@ -94,9 +94,8 @@ export type ExpandSignature<T> = T extends any ? _ExpandSignature<T> : never;
 export type Args<S> = ExpandSignature<S>['Args']['Named'];
 
 /**
- * The `Component` class defines an encapsulated UI element that is rendered to
- * the DOM. A component is made up of a template and, optionally, this component
- * object.
+ * The `Component` class defines an encapsulated UI element that is rendered to the DOM.
+ * A component is made up of a template and, optionally, this component object.
  *
  * ## Defining a Component
  *
@@ -112,12 +111,13 @@ export type Args<S> = ExpandSignature<S>['Args']['Named'];
  *
  * ## Lifecycle Hooks
  *
- * Lifecycle hooks allow you to respond to changes to a component, such as when
- * it gets created, rendered, updated or destroyed. To add a lifecycle hook to a
- * component, implement the hook as a method on your component subclass.
+ * Lifecycle hooks allow you to respond to changes to a component,
+ * such as when it gets created, rendered, updated or destroyed.
+ * To add a lifecycle hook to a component,
+ * implement the hook as a method on your component subclass.
  *
- * For example, to be notified when Glimmer has rendered your component so you
- * can attach a legacy jQuery plugin, implement the `didInsertElement()` method:
+ * For example, to be notified when Glimmer has rendered your component,
+ * so you can attach a legacy jQuery plugin, implement the `didInsertElement()` method:
  *
  * ```ts
  * import Component from '@glimmer/component';
@@ -137,16 +137,15 @@ export type Args<S> = ExpandSignature<S>['Args']['Named'];
  * 1. Arguments
  * 2. Properties
  *
- * Arguments are data that is passed in to a component from its parent
- * component. For example, if I have a `UserGreeting` component, I can pass it
- * a name and greeting to use:
+ * Arguments are data that is passed in to a component from its parent component.
+ * For example, if I have a `UserGreeting` component, I can pass it a name and greeting to use:
  *
  * ```hbs
  * <UserGreeting @name="Ricardo" @greeting="Olá" />
  * ```
  *
- * Inside my `UserGreeting` template, I can access the `@name` and `@greeting`
- * arguments that I've been given:
+ * Inside my `UserGreeting` template,
+ * I can access the `@name` and `@greeting` arguments that I've been given:
  *
  * ```hbs
  * {{@greeting}}, {{@name}}!
@@ -158,9 +157,9 @@ export type Args<S> = ExpandSignature<S>['Args']['Named'];
  * console.log(this.args.greeting); // prints "Olá"
  * ```
  *
- * Properties, on the other hand, are internal to the component and declared in
- * the class. You can use properties to store data that you want to show in the
- * template, or pass to another component as an argument.
+ * Properties, on the other hand, are internal to the component and declared in the class.
+ * You can use properties to store data that you want to show in the template,
+ * or pass to another component as an argument.
  *
  * ```ts
  * import Component from '@glimmer/component';
@@ -172,8 +171,8 @@ export type Args<S> = ExpandSignature<S>['Args']['Named'];
  * }
  * ```
  *
- * In the above example, we've defined a component with a `user` property that
- * contains an object with its own `name` property.
+ * In the above example, we've defined a component with a `user` property,
+ * which contains an object with its own `name` property.
  *
  * We can render that property in our template:
  *
@@ -181,8 +180,8 @@ export type Args<S> = ExpandSignature<S>['Args']['Named'];
  * Hello, {{user.name}}!
  * ```
  *
- * We can also take that property and pass it as an argument to the
- * `UserGreeting` component we defined above:
+ * We can also take that property,
+ * and pass it as an argument to the `UserGreeting` component we defined above:
  *
  * ```hbs
  * <UserGreeting @greeting="Hello" @name={{user.name}} />

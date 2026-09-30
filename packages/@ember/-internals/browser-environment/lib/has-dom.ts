@@ -1,4 +1,4 @@
-// check if window exists and actually is the global
+// `window` can exist without being the global, for example in some test and SSR environments.
 export default typeof self === 'object' &&
   self !== null &&
   self.Object === Object &&

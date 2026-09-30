@@ -198,8 +198,9 @@ moduleFor(
             }
 
             get isRouteActive() {
-              // This used to throw "Cannot read properties of undefined (reading 'isActiveIntent')"
-              // before setupRouter() was added to the isActive method
+              // The router may not be set up yet when a component reads this.
+              // isActive calls setupRouter(),
+              // so it does not read router state that is still undefined.
               return this.routerService.isActive('parent.child');
             }
           }

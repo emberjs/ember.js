@@ -15,10 +15,9 @@ const ROOT_ELEMENT_CLASS = 'ember-application';
 const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
 
 /**
-  `EventDispatcher` handles delegating browser events to their
-  corresponding `Ember.Views.` For example, when you click on a view,
-  `EventDispatcher` ensures that that view's `mouseDown` method gets
-  called.
+  `EventDispatcher` handles delegating browser events to their corresponding
+  `Ember.Views.` For example, when you click on a view,
+  `EventDispatcher` ensures that that view's `mouseDown` method gets called.
 
   @class EventDispatcher
   @namespace Ember
@@ -27,9 +26,10 @@ const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
 */
 export default class EventDispatcher extends EmberObject {
   /**
-    The set of events names (and associated handler function names) to be setup
-    and dispatched by the `EventDispatcher`. Modifications to this list can be done
-    at setup time, generally via the `Application.customEvents` hash.
+    The set of events names and their handler function names.
+    The `EventDispatcher` sets up and dispatches these events.
+    Modifications to this list can be done at setup time,
+    generally via the `Application.customEvents` hash.
 
     To add new events to be listened to:
 
@@ -112,10 +112,10 @@ export default class EventDispatcher extends EmberObject {
   /**
     Sets up event listeners for standard browser events.
 
-    This will be called after the browser sends a `DOMContentReady` event. By
-    default, it will set up all of the listeners on the document body. If you
-    would like to register the listeners on a different element, set the event
-    dispatcher's `root` property.
+    This will be called after the browser sends a `DOMContentReady` event.
+    By default, it will set up all of the listeners on the document body.
+    To register the listeners on a different element, set
+    the event dispatcher's `root` property.
 
     @private
     @method setup
@@ -234,12 +234,12 @@ export default class EventDispatcher extends EmberObject {
   }
 
   /**
-    Registers an event listener on the rootElement. If the given event is
-    triggered, the provided event handler will be triggered on the target view.
+    Registers an event listener on the rootElement. If the given event is triggered,
+    the provided event handler will be triggered on the target view.
 
     If the target view does not implement the event handler, or if the handler
-    returns `false`, the parent view will be called. The event will continue to
-    bubble to each successive parent view until it reaches the top.
+    returns `false`, the parent view will be called. The event will continue
+    to bubble to each successive parent view until it reaches the top.
 
     @private
     @method setupHandler

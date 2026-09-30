@@ -66,19 +66,17 @@ moduleFor(
       let route = class extends EmberRoute {
         queryParams = {
           'nested.foo': {
-            // By default, controller query param properties don't
-            // cause a full transition when they are changed, but
-            // rather only cause the URL to update. Setting
-            // `refreshModel` to true will cause an "in-place"
-            // transition to occur, whereby the model hooks for
-            // this route (and any child routes) will re-fire, allowing
-            // you to reload models (e.g., from the server) using the
-            // updated query param values.
+            // By default, controller query param properties don't cause
+            // a full transition when they are changed. They only cause the URL to update.
+            // Setting `refreshModel` to true will cause an "in-place" transition.
+            // The model hooks for this route and any child routes will re-fire.
+            // This lets you reload models, for example from the server,
+            // using the updated query param values.
             refreshModel: true,
 
-            // By default, the query param URL key is the same name as
-            // the controller property name. Use `as` to specify a
-            // different URL key.
+            // By default, the query param URL key is the same name
+            // as the controller property name. Use `as` to specify
+            // a different URL key.
             as: 'foobar',
           },
         };

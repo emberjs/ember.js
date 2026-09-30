@@ -6,8 +6,9 @@
  */
 
 /**
- * A utility for creating tracked arrays, copying the original data so that
- * mutations to the tracked data don't mutate the original untracked data.
+ * A utility for creating tracked arrays,
+ * copying the original data,
+ * so that mutations to the tracked data don't mutate the original untracked data.
  *
  * `trackedArray` can be used in templates and in JavaScript via import.
  * All property accesses entangle with that property, all property sets dirty
@@ -48,8 +49,9 @@
 export { trackedArray } from '@glimmer/validator/lib/collections/array';
 
 /**
- * A utility for creating tracked objects, copying the original data so that
- * mutations to the tracked data don't mutate the original untracked data.
+ * A utility for creating tracked objects,
+ * copying the original data,
+ * so that mutations to the tracked data don't mutate the original untracked data.
  *
  * `trackedObject` can be used in templates and in JavaScript via import.
  * All property accesses entangle with that property, all property sets dirty
@@ -90,8 +92,9 @@ export { trackedArray } from '@glimmer/validator/lib/collections/array';
 export { trackedObject } from '@glimmer/validator/lib/collections/object';
 
 /**
- * A utility for creating tracked sets, copying the original data so that
- * mutations to the tracked data don't mutate the original untracked data.
+ * A utility for creating tracked sets,
+ * copying the original data,
+ * so that mutations to the tracked data don't mutate the original untracked data.
  *
  * `trackedSet` can be used in templates and in JavaScript via import.
  * All property accesses entangle with that property, all property sets dirty
@@ -133,16 +136,17 @@ export { trackedObject } from '@glimmer/validator/lib/collections/object';
 export { trackedSet } from '@glimmer/validator/lib/collections/set';
 
 /**
- * A utility for creating tracked weak sets, copying the original data so that
- * mutations to the tracked data don't mutate the original untracked data.
+ * A utility for creating tracked weak sets,
+ * copying the original data,
+ * so that mutations to the tracked data don't mutate the original untracked data.
  *
  * `trackedWeakSet` can be used in templates and in JavaScript via import.
  * All property accesses entangle with that property, all property sets dirty
  * that property, and changes to the collection only render what changed
  * without causing unneeded renders.
  *
- * WeakSets hold weak references to their values, allowing garbage collection
- * when objects are no longer referenced elsewhere.
+ * WeakSets hold weak references to their values,
+ * so a value can be garbage collected when nothing else references it.
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet)
  *
@@ -173,8 +177,9 @@ export { trackedSet } from '@glimmer/validator/lib/collections/set';
 export { trackedWeakSet } from '@glimmer/validator/lib/collections/weak-set';
 
 /**
- * A utility for creating tracked maps, copying the original data so that
- * mutations to the tracked data don't mutate the original untracked data.
+ * A utility for creating tracked maps,
+ * copying the original data,
+ * so that mutations to the tracked data don't mutate the original untracked data.
  *
  * `trackedMap` can be used in templates and in JavaScript via import.
  * All property accesses entangle with that property, all property sets dirty
@@ -216,16 +221,17 @@ export { trackedWeakSet } from '@glimmer/validator/lib/collections/weak-set';
 export { trackedMap } from '@glimmer/validator/lib/collections/map';
 
 /**
- * A utility for creating tracked weak maps, copying the original data so that
- * mutations to the tracked data don't mutate the original untracked data.
+ * A utility for creating tracked weak maps,
+ * copying the original data,
+ * so that mutations to the tracked data don't mutate the original untracked data.
  *
  * `trackedWeakMap` can be used in templates and in JavaScript via import.
  * All property accesses entangle with that property, all property sets dirty
  * that property, and changes to the collection only render what changed
  * without causing unneeded renders.
  *
- * WeakMaps hold weak references to their keys, allowing garbage collection
- * when key objects are no longer referenced elsewhere.
+ * WeakMaps hold weak references to their keys,
+ * so a key object can be garbage collected when nothing else references it.
  *
  * See [MDN for more information](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap)
  *

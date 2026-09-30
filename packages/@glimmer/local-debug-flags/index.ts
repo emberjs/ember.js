@@ -106,8 +106,8 @@ if (LOCAL_INTERNALS_LOGGING || LOCAL_EXPLAIN_LOGGING) {
   }
 }
 
-// This function should turn into a constant `return false` in `import.meta.env?.PROD`,
-// which should inline properly via terser, swc and esbuild.
+// Written so that it becomes a constant `return false` in `import.meta.env?.PROD`,
+// which terser, swc and esbuild can inline.
 //
 // https://tiny.katz.zone/BNqN3F
 function hasFlag(flag: string): true | false {

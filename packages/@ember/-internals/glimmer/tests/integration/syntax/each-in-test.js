@@ -44,8 +44,8 @@ class BasicSyntaxTest extends BasicEachInTest {
 
 class EachInProxyTest extends TogglingEachInTest {}
 
-// `ObjectProxy` is deprecated; the deprecation itself is asserted by the
-// dedicated `ObjectProxy` tests, so it is silenced in these rendering fixtures.
+// `ObjectProxy` is deprecated. The dedicated `ObjectProxy` tests assert the deprecation itself,
+// so it is silenced in these rendering fixtures.
 const OBJECT_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_OBJECT_PROXY.isRemoved;
 
 function objectProxy(props) {
@@ -764,9 +764,9 @@ moduleFor(
       this.assert.strictEqual(after[1], before[1], 'changed entry keeps its node');
     }
 
-    // `@index` is accepted here and #16719 calls it public API, though docs omit it and
-    // rfc #321 was never accepted. These two record what it resolves to, ensuring a
-    // future change is deliberate.
+    // `@index` is accepted here, and #16719 calls it public API.
+    // But the docs omit it, and rfc #321 was never accepted.
+    // These two record what it resolves to, ensuring a future change is deliberate.
     [`@test key="@index" keys on the property name, not the position or the value`]() {
       this.render(
         `<ul>{{#each-in this.hash key="@index" as |name value|}}<li>{{name}}: {{value}}</li>{{/each-in}}</ul>`,
@@ -776,8 +776,8 @@ moduleFor(
 
       let before = this.items();
 
-      // reordering while changing a value: keying by name moves both nodes, a
-      // position would keep them put, and the value would replace the changed one
+      // reordering while changing a value: keying by name moves both nodes,
+      // a position would keep them put, and the value would replace the changed one
       runTask(() => set(this.context, 'hash', { b: 2, a: 9 }));
       this.assertText('b: 2a: 9');
 

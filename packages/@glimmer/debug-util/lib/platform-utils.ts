@@ -11,9 +11,8 @@ export function unwrap<T>(val: Maybe<T>): T {
 }
 
 /**
- * This function takes an optional function and returns its result. It's
- * expected to be used with optional debug methods, in the context of an
- * existing `LOCAL_DEBUG` check.
+ * Intended for optional debug methods, in the context of an existing `LOCAL_DEBUG` check.
+ * Throws if the method is missing.
  */
 export function dev<T>(val: Optional<() => T>): T {
   if (val === undefined) {

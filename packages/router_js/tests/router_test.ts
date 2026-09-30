@@ -1894,7 +1894,7 @@ scenarios.forEach(function (scenario) {
       router
         .handleURL('/')
         .then(function () {
-          // This is a crucial part of the test
+          // This is the core of the test.
           // In some cases, calling `generate` was preventing `model` from being called
           router.generate('postDetails', { id: 1 });
 

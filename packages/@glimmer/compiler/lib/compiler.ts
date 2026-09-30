@@ -100,8 +100,8 @@ export function precompileJSON(
   }
 }
 
-// UUID used as a unique placeholder for placing a snippet of JS code into
-// the otherwise JSON stringified value below.
+// UUID used as a unique placeholder,
+// so that a snippet of JS code can be placed into the otherwise JSON stringified value below.
 const SCOPE_PLACEHOLDER = '796d24e6-2450-4fb0-8cdf-b65638b5ef70';
 
 /*
@@ -131,8 +131,8 @@ export function precompile(
     id: idFn(JSON.stringify(options.meta) + blockJSON),
     block: blockJSON,
     moduleName: moduleName ?? '(unknown template module)',
-    // lying to the type checker here because we're going to
-    // replace it just below, after stringification
+    // lying to the type checker here,
+    // because we replace it just below, after stringification
     scope: SCOPE_PLACEHOLDER as unknown as null,
     isStrictMode: options.strictMode ?? false,
   };

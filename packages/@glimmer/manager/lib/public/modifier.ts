@@ -48,12 +48,11 @@ export interface CustomModifierState<ModifierInstance> {
 }
 
 /**
-  The CustomModifierManager allows addons to provide custom modifier
-  implementations that integrate seamlessly into Ember. This is accomplished
-  through a delegate, registered with the custom modifier manager, which
-  implements a set of hooks that determine modifier behavior.
-  To create a custom modifier manager, instantiate a new CustomModifierManager
-  class and pass the delegate as the first argument:
+  The CustomModifierManager allows addons to provide custom modifier implementations
+  that integrate into Ember. This works through a delegate registered with the manager.
+  The delegate implements a set of hooks that determine modifier behavior.
+  To create a custom modifier manager, instantiate a new CustomModifierManager class,
+  and pass the delegate as the first argument:
 
   ```js
   let manager = new CustomModifierManager({
@@ -63,13 +62,13 @@ export interface CustomModifierState<ModifierInstance> {
 
   ## Delegate Hooks
 
-  Throughout the lifecycle of a modifier, the modifier manager will invoke
-  delegate hooks that are responsible for surfacing those lifecycle changes to
-  the end developer.
-  * `createModifier()` - invoked when a new instance of a modifier should be created
-  * `installModifier()` - invoked when the modifier is installed on the element
-  * `updateModifier()` - invoked when the arguments passed to a modifier change
-  * `destroyModifier()` - invoked when the modifier is about to be destroyed
+  Throughout the lifecycle of a modifier, the modifier manager will invoke delegate hooks.
+  These hooks surface those lifecycle changes to the end developer.
+
+  * `createModifier()`: invoked when a new instance of a modifier should be created.
+  * `installModifier()`: invoked when the modifier is installed on the element.
+  * `updateModifier()`: invoked when its arguments change.
+  * `destroyModifier()`: invoked when the modifier is about to be destroyed.
 */
 export class CustomModifierManager<
   O extends Owner,

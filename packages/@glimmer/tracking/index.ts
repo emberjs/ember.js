@@ -21,11 +21,12 @@ export type {
 */
 
 /**
-  Marks a property as tracked. By default, values that are rendered in Ember app
-  templates are _static_, meaning that updates to them won't cause the
-  application to rerender. Marking a property as tracked means that when that
-  property changes, any templates that used that property, directly or
-  indirectly, will rerender. For instance, consider this component:
+  Marks a property as tracked.
+  By default, values that are rendered in Ember app templates are _static_,
+  meaning that updates to them won't cause the application to rerender.
+  Marking a property as tracked means that when that property changes,
+  any templates that used that property, directly or indirectly, will rerender.
+  For instance, consider this component:
 
   ```gjs
   import Component from '@glimmer/component';
@@ -56,11 +57,11 @@ export type {
   }
   ```
 
-  Both the `{{this.count}}` and the `{{this.timesTen}}` properties in the
-  template will update whenever the button is clicked. Any tracked properties
-  that are used in any way to calculate a value that is used in the template
-  will cause a rerender when updated - this includes through method calls and
-  other means:
+  Both the `{{this.count}}` and the `{{this.timesTen}}` properties in the template
+  will update whenever the button is clicked.
+  Any tracked property used in any way to calculate a value used in the template
+  will cause a rerender when updated.
+  This includes method calls and other means:
 
   ```gjs
   import Component from '@glimmer/component';
@@ -107,8 +108,8 @@ export type {
   }
   ```
 
-  It's important to note that setting tracked properties will always trigger an
-  update, even if the property is set to the same value as it was before.
+  Setting tracked properties will always trigger an update,
+  even if the property is set to the same value as it was before.
 
   ```js
   let entry = new Entry('Pizza Palace', 5551234);
@@ -117,8 +118,8 @@ export type {
   entry.name = entry.name;
   ```
 
-  `tracked` can also be used with the classic Ember object model in a similar
-  manner to classic computed properties:
+  `tracked` can also be used with the classic Ember object model,
+  in a similar manner to classic computed properties:
 
   ```javascript
   import EmberObject from '@ember/object';
@@ -130,11 +131,10 @@ export type {
   });
   ```
 
-  Often this is unnecessary, but to ensure robust auto-tracking behavior it is
-  advisable to mark tracked state appropriately wherever possible.
-  This form of `tracked` also accepts an optional configuration object
-  containing either an initial `value` or an `initializer` function (but not
-  both).
+  Often this is unnecessary, but to ensure correct auto-tracking behavior,
+  it is advisable to mark tracked state appropriately wherever possible.
+  This form of `tracked` also accepts an optional configuration object.
+  It can contain either an initial `value` or an `initializer` function, but not both.
 
   ```javascript
   import EmberObject from '@ember/object';
@@ -148,8 +148,8 @@ export type {
   });
   ```
 
-  Calling `tracked` with an initial value creates a standalone reactive
-  value, usable outside of classes:
+  Calling `tracked` with an initial value creates a standalone reactive value,
+  usable outside of classes:
 
   ```js
   import { tracked } from '@glimmer/tracking';
@@ -164,8 +164,8 @@ export type {
   count.freeze();             // prevent all future writes
   ```
 
-  Reading `value` in a template (or in a getter used by a template) will
-  rerender just like a `@tracked` property:
+  Reading `value` in a template, or in a getter used by a template,
+  will rerender just like a `@tracked` property:
 
   ```gjs
   import { tracked } from '@glimmer/tracking';
@@ -181,9 +181,10 @@ export type {
   </template>
   ```
 
-  This form accepts an options object containing an `equals` function, which
-  decides whether a written value should notify consumers (it defaults to
-  `Object.is`), and a `description` used for debugging:
+  This form accepts an options object with two fields.
+  The `equals` function decides whether a written value should notify consumers.
+  It defaults to `Object.is`.
+  The `description` is used for debugging:
 
   ```js
   const count = tracked(0, { equals: (a, b) => a === b });
@@ -191,17 +192,18 @@ export type {
   count.value = 0; // does not notify consumers, the value did not change
   ```
 
-  Note: when `tracked` is called with a single plain object whose keys are all
-  drawn from `value`, `initializer`, `equals`, and `description`, it is treated
-  as the configuration object for a decorator (or classic-class field), not as a
-  standalone value wrapping that object. To create a standalone reactive value
-  around such an object, pass it as an initial value and include a (possibly
-  empty) options argument: `tracked({ value: 5 }, {})`.
+  Note: `tracked` may be called with a single plain object
+  whose keys all come from `value`, `initializer`, `equals`, and `description`.
+  Then it is treated as the configuration object for a decorator or classic-class field.
+  It is not treated as a standalone value wrapping that object.
+  To create a standalone reactive value around such an object,
+  pass it as an initial value and include an options argument, which may be empty:
+  `tracked({ value: 5 }, {})`.
 
-  The `@tracked` decorator accepts the same options. By default, setting a
-  `@tracked` property always notifies consumers, even when setting the
-  property to the same value; passing `equals` opts in to equality-based
-  notification instead:
+  The `@tracked` decorator accepts the same options.
+  By default, setting a `@tracked` property always notifies consumers,
+  even when setting the property to the same value.
+  Passing `equals` opts in to equality-based notification instead:
 
   ```js
   import { tracked } from '@glimmer/tracking';
@@ -223,10 +225,10 @@ export type {
 */
 
 /**
-  The `@cached` decorator can be used on getters in order to cache the return
-  value of the getter. This is useful when a getter is expensive and used very
-  often. For instance, in this guest list class, we have the `sortedGuests`
-  getter that sorts the guests alphabetically:
+  The `@cached` decorator can be used on getters to cache the return value of the getter.
+  This is useful when a getter is expensive and used very often.
+  For instance, in this guest list class,
+  we have the `sortedGuests` getter that sorts the guests alphabetically:
 
   ```js
   import { tracked } from '@glimmer/tracking';
@@ -241,11 +243,11 @@ export type {
   ```
 
   Every time `sortedGuests` is accessed, a new array will be created and sorted,
-  because JavaScript getters do not cache by default. When the guest list is
-  small, like the one in the example, this is not a problem. However, if the guest
-  list were to grow very large, it would mean that we would be doing a large
-  amount of work each time we accessed `sortedGetters`. With `@cached`, we can
-  cache the value instead:
+  because JavaScript getters do not cache by default.
+  When the guest list is small, like the one in the example, this is not a problem.
+  However, if the guest list were to grow very large,
+  we would be doing a large amount of work each time we accessed `sortedGetters`.
+  With `@cached`, we can cache the value instead:
 
   ```js
   import { tracked, cached } from '@glimmer/tracking';
@@ -260,17 +262,16 @@ export type {
   }
   ```
 
-  Now the `sortedGuests` getter will be cached based on _autotracking_. It will
-  only rerun and create a new sorted array when the `guests` tracked property is
-  updated.
+  Now the `sortedGuests` getter will be cached based on _autotracking_.
+  It will only rerun and create a new sorted array
+  when the `guests` tracked property is updated.
 
-  In general, you should avoid using `@cached` unless you have confirmed that the
-  getter you are decorating is computationally expensive. `@cached` adds a small
-  amount of overhead to the getter, making it more expensive. While this overhead
-  is small, if `@cached` is overused it can add up to a large impact overall in
-  your app. Many getters and tracked properties are only accessed once, rendered,
-  and then never rerendered, so adding `@cached` when it is unnecessary can
-  negatively impact performance.
+  In general, you should avoid using `@cached`
+  unless you have confirmed that the getter you are decorating is computationally expensive.
+  `@cached` adds a small amount of overhead to the getter, making it more expensive.
+  While this overhead is small, overusing `@cached` can add up to a large impact on your app.
+  Many getters and tracked properties are only accessed once, rendered, and then never rerendered.
+  So adding `@cached` when it is unnecessary can hurt performance.
 
   @method cached
   @static

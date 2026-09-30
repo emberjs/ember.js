@@ -105,12 +105,11 @@ moduleFor(
         });
     }
 
-    // This tests whether the application is "autobooted" by registering an
-    // instance initializer and asserting it never gets run. Since this is
-    // inherently testing that async behavior *doesn't* happen, we set a
-    // 500ms timeout to verify that when autoboot is set to false, the
-    // instance initializer that would normally get called on DOM ready
-    // does not fire.
+    // This tests whether the application is "autobooted".
+    // It registers an instance initializer and asserts it never gets run.
+    // This is inherently testing that async behavior *doesn't* happen.
+    // So we set a 500ms timeout to verify that when autoboot is set to false,
+    // the instance initializer that would normally get called on DOM ready does not fire.
     [`@test Applications with autoboot set to false do not autoboot`](assert) {
       function delay(time) {
         return new RSVP.Promise((resolve) => later(resolve, time));

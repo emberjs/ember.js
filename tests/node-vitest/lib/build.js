@@ -11,11 +11,12 @@ const worker = resolve(here, 'find-side-effects.js');
 let cached;
 
 /**
- * Builds ember-source from source (with `preserveModules: true`) and returns
- * the sorted list of source modules that still have side effects, for the
- * `dev` and `prod` builds. The actual work runs in a subprocess so the real
- * rollup.config.mjs executes in plain node with cwd = repo root (it globs
- * `packages/` relative to cwd at import time).
+ * Builds ember-source from source (with `preserveModules: true`),
+ * and returns the sorted list of source modules that still have side effects,
+ * for the `dev` and `prod` builds.
+ * The actual work runs in a subprocess,
+ * so the real rollup.config.mjs executes in plain node with cwd = repo root.
+ * It globs `packages/` relative to cwd at import time.
  */
 export function findSideEffectfulModules() {
   if (cached) return cached;

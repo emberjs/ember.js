@@ -13,10 +13,9 @@ import { DEBUG } from '@glimmer/env';
 
 /**
 `TargetActionSupport` is a mixin that can be included in a class
-to add a `triggerAction` method with semantics similar to the
-`{{action}}` helper. In normal Ember usage, the `{{action}}` helper is
-usually the best choice. This mixin is most often useful when you are
-doing more complex event handling in Components.
+to add a `triggerAction` method with semantics similar to the `{{action}}` helper.
+In normal Ember usage, the `{{action}}` helper is usually the best choice.
+This mixin is most often useful when you are doing more complex event handling in Components.
 
 @class TargetActionSupport
 @namespace Ember
@@ -71,8 +70,8 @@ const TargetActionSupport = Mixin[INTERNAL_MIXIN_CREATE]({
   });
   ```
 
-  The `target`, `action`, and `actionContext` can be provided as properties of
-  an optional object argument to `triggerAction` as well.
+  The `target`, `action`, and `actionContext` can also be provided
+  as properties of an optional object argument to `triggerAction`.
 
   ```javascript
   App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {

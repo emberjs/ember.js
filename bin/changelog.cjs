@@ -158,9 +158,9 @@ async function getCommitMessage(commitInfo) {
   }
 
   if ((matches = message.match(/^Merge pull request #(\d+)/))) {
-    // if the commit was a merge from a PR and there's no additional content in
-    // the commit message (which is normally the title of the merged PR) then
-    // hit the Github API for the PR to get the title.
+    // A merge commit from a PR may have no additional content in its message.
+    // That content is normally the title of the merged PR,
+    // so we hit the Github API for the PR to get the title.
     let prNumber = matches[1];
 
     let lines = message.split(/\n\n/);

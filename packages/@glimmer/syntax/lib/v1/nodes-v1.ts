@@ -330,18 +330,18 @@ export type Node = Nodes[NodeType];
 // those that implemented an `All` visitor may not be expecting these new types
 // of nodes).
 //
-// Conceptually, the idea of "sub-node" does make sense, and you can say source
-// locations are another kind of these things. However, in these cases, they
-// actually fully implement the `BaseNode` interface, and only not extending
-// `BaseNode` because the `type` field is not `keyof Nodes` (which is circular
-// reasoning). If these are not "real" nodes because they can only appear in
-// very limited context, then the same reasoning probably applies for, say,
-// HashPair.
+// Conceptually, the idea of "sub-node" does make sense,
+// and you can say source locations are another kind of these things.
+// However, in these cases, they actually fully implement the `BaseNode` interface.
+// They only don't extend `BaseNode` because the `type` field is not `keyof Nodes`,
+// which is circular reasoning.
+// If these are not "real" nodes because they can only appear in very limited context,
+// then the same reasoning probably applies for, say, HashPair.
 //
-// If we do eventually make some kind of breaking change here, perhaps with
-// some kind of opt-in, then we can consider upgrading these into "real" nodes,
-// but for now, this is where they go, and it isn't a huge problem in practice
-// because there are little utility in traversing these kind of nodes anyway.
+// A breaking change here, perhaps with some kind of opt-in,
+// could upgrade these into "real" nodes.
+// Until then, this is where they go.
+// It isn't a huge problem in practice, because there is little utility in traversing these nodes.
 export type SubNodes = {
   ThisHead: ThisHead;
   AtHead: AtHead;

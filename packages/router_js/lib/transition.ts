@@ -29,11 +29,11 @@ export const QUERY_PARAMS_SYMBOL = `__QPS__-2619863929824844-32323`;
 export const REDIRECT_DESTINATION_SYMBOL = `__RDS__-2619863929824844-32323`;
 
 /**
-  A Transition is a thenable (a promise-like object) that represents
-  an attempt to transition to another route. It can be aborted, either
-  explicitly via `abort` or by attempting another transition while a
-  previous one is still underway. An aborted transition can also
-  be `retry()`d later.
+  A Transition is a thenable (a promise-like object)
+  that represents an attempt to transition to another route.
+  It can be aborted, either explicitly via `abort`,
+  or by attempting another transition while a previous one is still underway.
+  An aborted transition can also be `retry()`d later.
 
   @class Transition
   @constructor
@@ -72,17 +72,17 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
   isIntermediate = false;
   [REDIRECT_DESTINATION_SYMBOL]?: Transition<any>;
 
-  // AbortController for the navigation. Managers receive its `signal` via
-  // `AsyncNavigationState` and can pass it to `fetch()` or any other
-  // AbortSignal consumer. The signal aborts whenever the transition is no
-  // longer the active one (explicit cancel or superseded by a newer
-  // transition).
+  // AbortController for the navigation.
+  // Managers receive its `signal` via `AsyncNavigationState`,
+  // and can pass it to `fetch()` or any other AbortSignal consumer.
+  // The signal aborts whenever the transition stops being the active one,
+  // by an explicit cancel or when a newer transition supersedes it.
   abortController = new AbortController();
   signal: AbortSignal = this.abortController.signal;
 
   /**
-    In non-production builds, this function will return the stack that this Transition was
-    created within. In production builds, this function will not be present.
+    Returns the stack that this Transition was created within, to help debug where it came from.
+    Only present in non-production builds.
 
     @method debugCreationStack
     @return string
@@ -90,9 +90,9 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
   declare debugCreationStack?: () => string | undefined;
 
   /**
-    In non-production builds, this function will return the stack that this Transition was
-    aborted within (or `undefined` if the Transition has not been aborted yet). In production
-    builds, this function will not be present.
+    Returns the stack that this Transition was aborted within, to help debug what aborted it.
+    It returns `undefined` if the Transition has not been aborted yet.
+    Only present in non-production builds.
 
     @method debugAbortStack
     @return string
@@ -100,9 +100,10 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
   declare debugAbortStack?: () => string | undefined;
 
   /**
-    In non-production builds, this property references the Transition that _this_ Transition
-    was derived from or `undefined` if this transition did not derive from another. In
-    production builds, this property will not be present.
+    In non-production builds,
+    this property references the Transition that _this_ Transition was derived from,
+    or `undefined` if this transition did not derive from another.
+    In production builds, this property will not be present.
 
     @property debugPreviousTransition
     @type {Transition | undefined}
@@ -147,10 +148,10 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
       return;
     }
 
-    // if you're doing multiple redirects, need the new transition to know if it
-    // is actually part of the first transition or not. Any further redirects
-    // in the initial transition also need to know if they are part of the
-    // initial transition
+    // if you're doing multiple redirects,
+    // the new transition needs to know if it is actually part of the first transition or not.
+    // Any further redirects in the initial transition
+    // also need to know if they are part of the initial transition
     this.isCausedByAbortingTransition = Boolean(previousTransition);
     this.isCausedByInitialTransition =
       Boolean(previousTransition) &&
@@ -195,12 +196,12 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
   }
 
   /**
-    The Transition's internal promise. Calling `.then` on this property
-    is that same as calling `.then` on the Transition object itself, but
-    this property is exposed for when you want to pass around a
-    Transition's promise, but not the Transition object itself, since
-    Transition object can be externally `abort`ed, while the promise
-    cannot.
+    The Transition's internal promise.
+    Calling `.then` on this property is that same
+    as calling `.then` on the Transition object itself.
+    This property is exposed for when you want to pass around a Transition's promise,
+    but not the Transition object itself.
+    The Transition object can be externally `abort`ed, while the promise cannot.
 
     @property promise
     @type {Object}
@@ -326,9 +327,9 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
 
   /**
 
-    Retries a previously-aborted transition (making sure to abort the
-    transition if it's still active). Returns a new transition that
-    represents the new attempt to transition.
+    Retries a previously-aborted transition,
+    making sure to abort the transition if it's still active.
+    Returns a new transition that represents the new attempt to transition.
 
     @method retry
     @return {Transition} new transition
@@ -340,9 +341,9 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
     let newTransition = this.router.transitionByIntent(this.intent as OpaqueIntent, false);
 
     // inheriting a `null` urlMethod is not valid
-    // the urlMethod is only set to `null` when
-    // the transition is initiated *after* the url
-    // has been updated (i.e. `router.handleURL`)
+    // the urlMethod is only set to `null`
+    // when the transition is initiated *after* the url has been updated,
+    // i.e. `router.handleURL`
     //
     // in that scenario, the url method cannot be
     // inherited for a new transition because then
@@ -355,20 +356,17 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
 
   /**
 
-    Sets the URL-changing method to be employed at the end of a
-    successful transition. By default, a new Transition will just
-    use `updateURL`, but passing 'replace' to this method will
-    cause the URL to update using 'replaceWith' instead. Omitting
-    a parameter will disable the URL change, allowing for transitions
-    that don't update the URL at completion (this is also used for
-    handleURL, since the URL has already changed before the
-    transition took place).
+    Call this to choose how the URL changes at the end of a successful transition.
+    By default, a new Transition will use `updateURL`.
+    Passing 'replace' to this method will cause the URL to update using 'replaceWith' instead.
+    Omitting a parameter will disable the URL change,
+    allowing for transitions that don't update the URL at completion.
+    handleURL also uses this, since the URL has already changed before the transition took place.
 
     @method method
-    @param {String} method the type of URL-changing method to use
-      at the end of a transition. Accepted values are 'replace',
-      falsy values, or any other non-falsy value (which is
-      interpreted as an updateURL transition).
+    @param {String} method the type of URL-changing method to use at the end of a transition.
+      Accepted values are 'replace', falsy values,
+      or any other non-falsy value, which is interpreted as an updateURL transition.
 
     @return {Transition} this transition
     @public
@@ -418,11 +416,9 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
   }
 
   /**
-    Transitions are aborted and their promises rejected
-    when redirects occur; this method returns a promise
-    that will follow any redirects that occur and fulfill
-    with the value fulfilled by any redirecting transitions
-    that occur.
+    Transitions are aborted and their promises rejected when redirects occur.
+    Use this to get a promise that follows any redirects that occur,
+    and fulfills with the value fulfilled by any redirecting transitions that occur.
 
     @method followRedirects
     @return {Promise} a promise that fulfills with the same

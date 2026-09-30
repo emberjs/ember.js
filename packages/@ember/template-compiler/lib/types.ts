@@ -10,8 +10,9 @@ export type Builders = typeof builders;
 
 /*
  * It seems like it should be possible to reepxport the `ASTPluginBuilder`
- * interface with a new named export, but the I wasn't able to figure out the
- * typing. Here export the interface subclass with no modification.
+ * interface with a new named export,
+ * but the I wasn't able to figure out the typing.
+ * Here export the interface subclass with no modification.
  */
 
 export type PluginFunc = ASTPluginBuilder<EmberASTPluginEnvironment>;

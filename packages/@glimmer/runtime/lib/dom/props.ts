@@ -52,9 +52,10 @@ export function normalizePropertyValue(value: unknown): unknown {
 const ATTR_OVERRIDES: Dict<Dict> = {
   INPUT: {
     form: true,
-    // HTMLElement.autocorrect is a boolean DOM property, but the HTML attribute
-    // uses "on"/"off" strings. Setting `element.autocorrect = "off"` coerces to
-    // `true` (truthy string). Must use setAttribute for correct "on"/"off" behavior.
+    // HTMLElement.autocorrect is a boolean DOM property,
+    // but the HTML attribute uses "on"/"off" strings.
+    // Setting `element.autocorrect = "off"` coerces the truthy string to `true`.
+    // Must use setAttribute for correct "on"/"off" behavior.
     // See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/autocorrect
     autocorrect: true,
     // HTMLInputElement.list is a read-only DOM property that returns the associated

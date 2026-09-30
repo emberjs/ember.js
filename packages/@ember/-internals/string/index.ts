@@ -1,7 +1,6 @@
 /*
-  This module exists to separate the @ember/string methods used
-  internally in ember-source, from those public methods that are
-  now deprecated and to be removed.
+  The public @ember/string methods are deprecated,
+  so the methods that ember-source uses internally are kept separate from them.
 */
 
 import Cache from '@ember/-internals/utils/lib/cache';

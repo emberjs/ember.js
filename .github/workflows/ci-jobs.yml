@@ -17,6 +17,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+        with:
+          # nollm requires Node 24
+          node-version: 24
       - name: linting
         run: pnpm lint
       - id: set-matrix

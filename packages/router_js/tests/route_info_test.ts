@@ -115,12 +115,10 @@ QUnit.test('RouteInfo#resolve runs getModel hook', async function (assert) {
 });
 
 /**
- * This test file was not being run before it was integrated from upstream and a number of these
- * tests were failing as soon as we started running it again.
+ * Several tests in this file, which came from upstream, fail when run.
  *
- * This test has some strange timing issues with the strange backburner wrapper it's doing in the
- * test-helpers. We could not figure this out and really the solution should be to remove the strange
- * wrapper.
+ * This test has strange timing issues caused by the backburner wrapper in the test-helpers.
+ * The solution should be to remove that wrapper.
  *
  * TODO: unskip this test
  */
@@ -441,9 +439,10 @@ QUnit.test(
     await resolve();
 
     assert.equal(resolved.context, model, 'the resolved info still receives the entered context');
-    // `shouldSupersede` treats `'context' in routeInfo` as meaningful when
-    // route infos are reused across transitions; the enter-promise plumbing
-    // must not fabricate an own context the info never had (main parity).
+    // `shouldSupersede` treats `'context' in routeInfo` as meaningful
+    // when route infos are reused across transitions.
+    // The enter-promise plumbing must not fabricate an own context the info never had.
+    // This matches the behavior on main.
     assert.false(
       'context' in routeInfo,
       'resolution does not write a context onto the unresolved info'
@@ -462,8 +461,8 @@ QUnit.test('getAncestorPromise only matches true ancestors', async function (ass
     enterPromise: resolve(ancestorModel),
     context: undefined,
   };
-  // A pending descendant: handing out its enter promise would deadlock a
-  // manager that awaited it.
+  // A pending descendant: handing out its enter promise would deadlock
+  // a manager that awaited it.
   let descendantInfo = {
     name: 'parent.child.grand',
     enterPromise: new Promise(() => {}),

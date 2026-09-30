@@ -1,16 +1,17 @@
 // Builds ember-source straight from source and reports which modules still
 // have side effects after tree-shaking.
 //
-// The shipped build (rollup.config.mjs) emits shared chunks, so a surviving
-// side-effect shows up against a mangled chunk name and you can't tell which
-// source file caused it. Here we re-run that *same* config with
-// `preserveModules: true`, which keeps a 1:1 module->file mapping and leaves
-// names unmangled, so every flagged file is the source file actually
-// responsible. We deliberately do not put preserveModules in rollup.config.mjs
-// itself — the shipped build wants its chunks.
+// The shipped build (rollup.config.mjs) emits shared chunks.
+// So a surviving side-effect shows up against a mangled chunk name,
+// and you can't tell which source file caused it.
+// Here we re-run that *same* config with `preserveModules: true`.
+// That keeps a 1:1 module->file mapping and leaves names unmangled,
+// so every flagged file is the source file actually responsible.
+// We deliberately do not put preserveModules in rollup.config.mjs itself,
+// because the shipped build wants its chunks.
 //
-// This runs as a subprocess (see build.js) with cwd = repo root, because
-// rollup.config.mjs globs `packages/` relative to cwd when it is imported.
+// This runs as a subprocess (see build.js) with cwd = repo root,
+// because rollup.config.mjs globs `packages/` relative to cwd when it is imported.
 // Results are written as JSON to the path given in argv[2].
 import { rollup } from 'rollup';
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
@@ -25,9 +26,10 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const manifestPath = resolve(repoRoot, 'package.json');
 
 // rollup.config.mjs's `package-meta` plugin rewrites package.json's
-// `ember-addon.renamed-modules` during a build; the probe must leave the
-// manifest alone, so we drop it. We also assert below that nothing else touched
-// package.json, which catches this plugin being renamed out from under us.
+// `ember-addon.renamed-modules` during a build.
+// The probe must leave the manifest alone, so we drop it.
+// We also assert below that nothing else touched package.json,
+// which catches this plugin being renamed out from under us.
 const MANIFEST_PLUGINS = new Set(['package-meta']);
 
 async function buildPreservedModules(buildConfig, outDir) {
@@ -56,10 +58,11 @@ function sourceName(rel) {
   // per-file entrypoints keep a leading `packages/`; submodules of rolled-up
   // packages (e.g. @glimmer/runtime/*) are emitted without it
   if (rel.startsWith('packages/')) rel = rel.slice('packages/'.length);
-  // dormant guard: with the current config every module emits under `packages/`,
-  // but a config that externalizes a dependency differently can emit it under
-  // node_modules/.pnpm/<pkg>@<version>/node_modules/<pkg>/... — collapse that to
-  // the bare package path so the snapshot doesn't churn on dependency versions.
+  // Dormant guard: with the current config every module emits under `packages/`.
+  // A config that externalizes a dependency differently can emit it under
+  // node_modules/.pnpm/<pkg>@<version>/node_modules/<pkg>/...
+  // Collapse that to the bare package path,
+  // so the snapshot doesn't churn on dependency versions.
   let match = rel.match(/node_modules\/\.pnpm\/[^/]+\/node_modules\/(.+)$/);
   return match ? match[1] : rel;
 }

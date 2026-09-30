@@ -56,10 +56,10 @@ function customTagForArrayProxy(proxy: object, key: string) {
 }
 
 /**
-  An ArrayProxy wraps any other object that implements `Array` and/or
-  `MutableArray,` forwarding all requests. This makes it very useful for
-  a number of binding use cases or other cases where being able to swap
-  out the underlying array is useful.
+  An ArrayProxy wraps any other object that implements
+  `Array` and/or `MutableArray,` forwarding all requests. This makes it very useful
+  for a number of binding use cases or other cases where being able
+  to swap out the underlying array is useful.
 
   A simple example of usage:
 
@@ -75,8 +75,8 @@ function customTagForArrayProxy(proxy: object, key: string) {
   ap.get('firstObject');                        // 'amoeba'
   ```
 
-  This class can also be useful as a layer to transform the contents of
-  an array, as they are accessed. This can be done by overriding
+  ArrayProxy can also be useful as a layer to transform the contents
+  of an array, as they are accessed. This can be done by overriding
   `objectAtContent`:
 
   ```javascript
@@ -94,9 +94,9 @@ function customTagForArrayProxy(proxy: object, key: string) {
   ap.get('firstObject'); // . 'DOG'
   ```
 
-  When overriding this class, it is important to place the call to
-  `_super` *after* setting `content` so the internal observers have
-  a chance to fire properly:
+  When overriding this class, it is important to place the call
+  to `_super` *after* setting `content` so the internal observers
+  have a chance to fire properly:
 
   ```javascript
   import { A } from '@ember/array';
@@ -118,8 +118,8 @@ function customTagForArrayProxy(proxy: object, key: string) {
 */
 interface ArrayProxy<T> extends MutableArray<T> {
   /**
-    The content array. Must be an object that implements `Array` and/or
-    `MutableArray.`
+    The content array. Must be an object that implements
+    `Array` and/or `MutableArray.`
 
     @property content
     @type EmberArray
@@ -136,11 +136,11 @@ interface ArrayProxy<T> extends MutableArray<T> {
   */
   arrangedContent: EmberArray<T> | null;
   /**
-    Should actually retrieve the object at the specified index from the
-    content. You can override this method in subclasses to transform the
-    content item to something new.
+    Should actually retrieve the object at the specified index from the content.
+    You can override this method in subclasses to transform the content
+    item to something new.
 
-    This method will only be called if content is non-`null`.
+    Ember only calls it if content is non-`null`.
 
     @method objectAtContent
     @param {Number} idx The index to retrieve.
@@ -153,7 +153,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
     You can override this method in subclasses to transform the content item
     into something new.
 
-    This method will only be called if content is non-`null`.
+    Ember only calls it if content is non-`null`.
 
     @method replaceContent
     @param {Number} idx The starting index

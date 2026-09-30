@@ -9,22 +9,23 @@
 
   ### Caching a getter value
 
-  The `@cached` decorator can be used on getters in order to cache the
-  return value of the getter.
+  The `@cached` decorator can be used on getters
+  in order to cache the return value of the getter.
 
-  This method adds an extra overhead to each memoized getter, therefore caching
-  the values should not be the default strategy, but used in last resort.
+  Caching adds an extra overhead to each memoized getter.
+  So it should not be the default strategy, but used as a last resort.
 
   @module @glimmer/tracking
   @public
 */
 
 /**
-  Marks a property as tracked. By default, values that are rendered in Ember app
-  templates are _static_, meaning that updates to them won't cause the
-  application to rerender. Marking a property as tracked means that when that
-  property changes, any templates that used that property, directly or
-  indirectly, will rerender. For instance, consider this component:
+  Marks a property as tracked.
+  By default, values that are rendered in Ember app templates are _static_,
+  meaning that updates to them won't cause the application to rerender.
+  Marking a property as tracked means that when that property changes,
+  any templates that used that property, directly or indirectly, will rerender.
+  For instance, consider this component:
 
   ```gjs
   import Component from '@glimmer/component';
@@ -55,11 +56,11 @@
   }
   ```
 
-  Both the `{{this.count}}` and the `{{this.timesTen}}` properties in the
-  template will update whenever the button is clicked. Any tracked properties
-  that are used in any way to calculate a value that is used in the template
-  will cause a rerender when updated - this includes through method calls and
-  other means:
+  Both the `{{this.count}}` and the `{{this.timesTen}}` properties
+  in the template will update whenever the button is clicked.
+  Any tracked properties used in any way to calculate a value used in the template
+  will cause a rerender when updated.
+  This includes method calls and other means:
 
   ```gjs
   import Component from '@glimmer/component';
@@ -106,8 +107,8 @@
   }
   ```
 
-  It's important to note that setting tracked properties will always trigger an
-  update, even if the property is set to the same value as it was before.
+  Setting tracked properties will always trigger an update,
+  even if the property is set to the same value as it was before.
 
   ```js
   let entry = new Entry('Pizza Palace', 5551234);
@@ -130,12 +131,12 @@
   });
   ```
 
-  Often this is unnecessary, but to ensure robust auto-tracking behavior it is
-  advisable to mark tracked state appropriately wherever possible.
+  Often this is unnecessary,
+  but to ensure correct auto-tracking behavior,
+  mark tracked state appropriately wherever possible.
 
-  This form of `tracked` also accepts an optional configuration object
-  containing either an initial `value` or an `initializer` function (but not
-  both).
+  This form of `tracked` also accepts an optional configuration object.
+  It may contain either an initial `value` or an `initializer` function, but not both.
 
   ```javascript
   import EmberObject from '@ember/object';
@@ -182,9 +183,10 @@
   </template>
   ```
 
-  This form accepts an options object containing an `equals` function, which
-  decides whether a written value should notify consumers (it defaults to
-  `Object.is`), and a `description` used for debugging:
+  This form accepts an options object with two keys.
+  The `equals` function decides whether a written value should notify consumers.
+  It defaults to `Object.is`.
+  The `description` is used for debugging:
 
   ```js
   const count = tracked(0, { equals: (a, b) => a === b });
@@ -192,17 +194,18 @@
   count.value = 0; // does not notify consumers, the value did not change
   ```
 
-  Note: when `tracked` is called with a single plain object whose keys are all
-  drawn from `value`, `initializer`, `equals`, and `description`, it is treated
-  as the configuration object for a decorator (or classic-class field), not as a
-  standalone value wrapping that object. To create a standalone reactive value
-  around such an object, pass it as an initial value and include a (possibly
-  empty) options argument: `tracked({ value: 5 }, {})`.
+  Note: `tracked` may be called with a single plain object
+  whose keys are all drawn from `value`, `initializer`, `equals`, and `description`.
+  That object is treated as the configuration object for a decorator or classic-class field.
+  It is not treated as a standalone value wrapping that object.
+  To create a standalone reactive value around such an object,
+  pass it as an initial value and include an options argument, which may be empty:
+  `tracked({ value: 5 }, {})`.
 
-  The `@tracked` decorator accepts the same options. By default, setting a
-  `@tracked` property always notifies consumers, even when setting the
-  property to the same value; passing `equals` opts in to equality-based
-  notification instead:
+  The `@tracked` decorator accepts the same options.
+  By default, setting a `@tracked` property always notifies consumers,
+  even when setting the property to the same value.
+  Passing `equals` opts in to equality-based notification instead:
 
   ```js
   import { tracked } from '@glimmer/tracking';
@@ -224,13 +227,13 @@
 */
 
 /**
-  Gives the getter a caching behavior. The return value of the getter
-  will be cached until any of the properties it is entangled with
-  are invalidated. This is useful when a getter is expensive and
-  used very often.
+  Gives the getter a caching behavior.
+  The return value of the getter will be cached
+  until any of the properties it is entangled with are invalidated.
+  This is useful when a getter is expensive and used very often.
 
-  For instance, in this `GuestList` class, we have the `sortedGuests`
-  getter that sorts the guests alphabetically:
+  For instance, in this `GuestList` class,
+  we have the `sortedGuests` getter that sorts the guests alphabetically:
 
   ```javascript
     import { tracked } from '@glimmer/tracking';
@@ -245,11 +248,11 @@
   ```
 
   Every time `sortedGuests` is accessed, a new array will be created and sorted,
-  because JavaScript getters do not cache by default. When the guest list
-  is small, like the one in the example, this is not a problem. However, if
-  the guest list were to grow very large, it would mean that we would be doing
-  a large amount of work each time we accessed `sortedGuests`. With `@cached`,
-  we can cache the value instead:
+  because JavaScript getters do not cache by default.
+  When the guest list is small, like the one in the example, this is not a problem.
+  However, if the guest list were to grow very large,
+  we would be doing a large amount of work each time we accessed `sortedGuests`.
+  With `@cached`, we can cache the value instead:
 
   ```javascript
     import { tracked, cached } from '@glimmer/tracking';
@@ -273,9 +276,9 @@
 
   Overuse is discouraged.
 
-  In general, you should avoid using `@cached` unless you have confirmed that
-  the getter you are decorating is computationally expensive, since `@cached`
-  adds a small amount of overhead to the getter.
+  In general, you should avoid using `@cached`,
+  unless you have confirmed that the getter you are decorating is computationally expensive.
+  `@cached` adds a small amount of overhead to the getter.
   While the individual costs are small, a systematic use of the `@cached`
   decorator can add up to a large impact overall in your app.
   Many getters and tracked properties are only accessed once during rendering,
@@ -287,9 +290,9 @@
   For example updating an integer value from `5` to an other `5` will trigger
   a rerun of the cached properties building from this integer.
 
-  Avoiding a cache invalidation in this case is not something that can
-  be achieved on the `@cached` decorator itself, but rather when updating
-  the underlying tracked values, by applying some diff checking mechanisms:
+  Avoiding a cache invalidation in this case cannot be achieved
+  on the `@cached` decorator itself.
+  Instead, apply some diff checking mechanisms when updating the underlying tracked values:
 
   ```javascript
   if (nextValue !== this.trackedProp) {
@@ -297,9 +300,9 @@
   }
   ```
 
-  Here equal values won't update the property, therefore not triggering
-  the subsequent cache invalidations of the `@cached` properties who were
-  using this `trackedProp`.
+  Here equal values won't update the property,
+  therefore not triggering the subsequent cache invalidations
+  of the `@cached` properties that were using this `trackedProp`.
 
   Remember that setting tracked data should only be done during initialization,
   or as the result of a user action. Setting tracked data during render

@@ -953,9 +953,9 @@ moduleFor(
           }
           afterModel(resolvedModel, transition) {
             assert.equal(resolvedModel.name, 'original', 'afterModel received the resolved model');
-            // Classic router.js contract: `model()`'s result is stashed in
-            // `transition.resolvedModels` before afterModel runs, and re-read
-            // afterwards — so afterModel may swap the model out.
+            // Classic router.js contract:
+            // `model()`'s result is stashed in `transition.resolvedModels` before afterModel runs,
+            // and re-read afterwards, so afterModel may swap the model out.
             transition.resolvedModels['post'] = swapped;
           }
           setupController(controller, model) {

@@ -104,8 +104,8 @@ function giveDecoratorSuper(
       set = wrap(originalSetter, superSetter) as ComputedPropertySetter;
     } else {
       // If the super property has a setter, we default to using it no matter what.
-      // This is clearly very broken and weird, but it's what was here so we have
-      // to keep it until the next major at least.
+      // This is clearly very broken and weird,
+      // but it's what was here, so we have to keep it until the next major at least.
       //
       // TODO: Add a deprecation here.
       set = superSetter;
@@ -315,8 +315,8 @@ function mergeProps(
         // access it, because that will execute the decorator while we're
         // building the class.
         if (!isClassicDecorator(value)) {
-          // The superclass did not have a CP, which means it may have
-          // observers or listeners on that property.
+          // The superclass did not have a CP,
+          // which means it may have observers or listeners on that property.
           let prev = (values[key] = base[key]);
 
           if (typeof prev === 'function') {
@@ -326,9 +326,9 @@ function mergeProps(
       } else {
         descs[key] = desc;
 
-        // The super desc will be overwritten on descs, so save off the fact that
-        // there was a super so we know to Object.defineProperty when writing
-        // the value
+        // The super desc will be overwritten on descs,
+        // so save off the fact that there was a super,
+        // so we know to Object.defineProperty when writing the value
         keysWithSuper.push(key);
 
         desc.teardown(base, key, meta);
@@ -489,10 +489,11 @@ const MIXINS = new WeakSet();
   Note that Mixins are created with `Mixin.create`, not
   `Mixin.extend`.
 
-  Note that mixins extend a constructor's prototype so arrays and object literals
-  defined as properties will be shared amongst objects that implement the mixin.
-  If you want to define a property in a mixin that is not shared, you can define
-  it either as a computed property or have it be created on initialization of the object.
+  Note that mixins extend a constructor's prototype,
+  so arrays and object literals defined as properties will be shared amongst objects
+  that implement the mixin.
+  To define a property in a mixin that is not shared,
+  define it either as a computed property or have it be created on initialization of the object.
 
   ```javascript
   // filters array will be shared amongst any object implementing mixin
@@ -644,9 +645,12 @@ export default class Mixin {
     @internal
   */
   apply(obj: object, _hideKeys = false) {
-    // Ember.NativeArray is a normal Ember.Mixin that we mix into `Array.prototype` when prototype extensions are enabled
-    // mutating a native object prototype like this should _not_ result in enumerable properties being added (or we have significant
-    // issues with things like deep equality checks from test frameworks, or things like jQuery.extend(true, [], [])).
+    // Ember.NativeArray is a normal Ember.Mixin.
+    // We mix it into `Array.prototype` when prototype extensions are enabled.
+    // Mutating a native object prototype like this
+    // should _not_ result in enumerable properties being added.
+    // Otherwise we have significant issues with things like deep equality checks
+    // from test frameworks, or things like jQuery.extend(true, [], []).
     //
     // _hideKeys disables enumerablity when applying the mixin. This is a hack, and we should stop mutating the array prototype by default 😫
     return applyMixin(obj, [this], _hideKeys);

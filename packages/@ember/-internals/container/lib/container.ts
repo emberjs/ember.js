@@ -196,8 +196,8 @@ export default class Container {
   }
 
   /**
-   Returns an object that can be used to provide an owner to a
-   manually created instance.
+   Returns an object that can be used to provide an owner
+   to a manually created instance.
     @private
    @method ownerInjection
    @returns { Object }
@@ -210,9 +210,8 @@ export default class Container {
 
   /**
    Given a fullName, return the corresponding factory. The consumer of the factory
-   is responsible for the destruction of any factory instances, as there is no
-   way for the container to ensure instances are destroyed when it itself is
-   destroyed.
+   is responsible for the destruction of any factory instances.
+   The container has no way to ensure instances are destroyed when it itself is destroyed.
     @public
    @method factoryFor
    @param {String} fullName
@@ -393,8 +392,8 @@ function instantiateFactory(
   if (isSingletonInstance(container, fullName, options)) {
     let instance = (container.cache[normalizedName] = factoryManager.create());
 
-    // if this lookup happened _during_ destruction (emits a deprecation, but
-    // is still possible) ensure that it gets destroyed
+    // if this lookup happened _during_ destruction (emits a deprecation,
+    // but is still possible) ensure that it gets destroyed
     if (container.isDestroying) {
       if (typeof (instance as any).destroy === 'function') {
         (instance as any).destroy();
@@ -486,10 +485,10 @@ export function setFactoryFor<T extends object, C extends FactoryClass | object>
   obj: object,
   factory: InternalFactoryManager<T, C>
 ): void {
-  // SAFETY: since we know `obj` is an `object`, we also know we can safely set
-  // a key it safely at this location. (The only way this could be blocked is if
-  // someone has gone out of their way to use `Object.defineProperty()` with our
-  // internal-only symbol and made it `writable: false`.)
+  // SAFETY: since we know `obj` is an `object`, we also know we can safely
+  // set a key it safely at this location. (The only way this could be blocked
+  // is if someone has gone out of their way to use `Object.defineProperty()`
+  // with our internal-only symbol and made it `writable: false`.)
   (obj as MaybeHasInitFactory)[INIT_FACTORY] = factory;
 }
 

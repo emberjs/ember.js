@@ -474,7 +474,7 @@ describe('parser', function () {
         '    '
     );
 
-    // We really need a deep equals but for now this should be stable...
+    // A deep equals would be better, but this JSON comparison should be stable.
     equals(
       JSON.stringify(p.loc),
       JSON.stringify({

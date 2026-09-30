@@ -21,13 +21,13 @@ throttle(myContext, whoRan, 150, true);
 // 100ms passes
 throttle(myContext, whoRan, 150, true);
 
-// 150ms passes and nothing else is logged to the console and
-// the throttlee is no longer being watched
+// 150ms passes and nothing else is logged to the console,
+// and the throttle window for the throttlee has ended
 throttle(myContext, whoRan, 150, true);
 
 // console logs 'throttle ran.' one time immediately.
-// 150ms passes and nothing else is logged to the console and
-// the throttlee is no longer being watched
+// 150ms passes and nothing else is logged to the console,
+// and the throttle window for the throttlee has ended
 
 // Method only
 expectTypeOf(

@@ -5,8 +5,8 @@ import setupDeprecationWorkflow from 'ember-cli-deprecation-workflow';
  */
 setupDeprecationWorkflow({
   /**
-    false by default, but if a developer / team wants to be more aggressive about being proactive with
-    handling their deprecations, this should be set to "true"
+    false by default.
+    Set this to "true" if a developer / team wants to handle their deprecations more proactively.
   */
   throwOnUnhandled: false,
   workflow: [

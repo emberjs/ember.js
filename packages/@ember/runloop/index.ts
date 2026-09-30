@@ -59,10 +59,10 @@ function flush(queueName: string, next: () => void) {
 export const _rsvpErrorQueue = `${Math.random()}${Date.now()}`.replace('.', '');
 
 /**
-  Array of named queues. This array determines the order in which queues
-  are flushed at the end of the RunLoop. You can define your own queues by
-  simply adding the queue name to this array. Normally you should not need
-  to inspect or modify this property.
+  Array of named queues.
+  This array determines the order in which queues are flushed at the end of the RunLoop.
+  You can define your own queues by adding the queue name to this array.
+  Normally you should not need to inspect or modify this property.
 
   @property queues
   @type Array
@@ -106,14 +106,13 @@ export const _backburner = new Backburner(_queues, {
 //
 
 /**
-  Runs the passed target and method inside of a RunLoop, ensuring any
-  deferred actions including bindings and views updates are flushed at the
-  end.
+  Runs the passed target and method inside of a RunLoop,
+  ensuring any deferred actions including bindings and views updates are flushed at the end.
 
-  Normally you should not need to invoke this method yourself. However if
-  you are implementing raw event handlers when interfacing with other
-  libraries or plugins, you should probably wrap all of your code inside this
-  call.
+  Normally you should not need to invoke this method yourself.
+  However, you may be implementing raw event handlers
+  when interfacing with other libraries or plugins.
+  If so, you should probably wrap all of your code inside this call.
 
   ```javascript
   import { run } from '@ember/runloop';
@@ -151,9 +150,9 @@ export function run(...args: any[]): unknown {
 }
 
 /**
-  If no run-loop is present, it creates a new one. If a run loop is
-  present it will queue itself to run on the existing run-loops action
-  queue.
+  If no run-loop is present, it creates a new one.
+  If a run loop is present,
+  it will queue itself to run on the existing run-loops action queue.
 
   Please note: This is not for normal usage, and should be used sparingly.
 
@@ -210,14 +209,14 @@ export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: 
 }
 
 /**
-  Allows you to specify which context to call the specified function in while
-  adding the execution of that function to the Ember run loop. This ability
-  makes this method a great way to asynchronously integrate third-party libraries
+  Allows you to specify which context to call the specified function in,
+  while adding the execution of that function to the Ember run loop.
+  This ability makes this method a great way to asynchronously integrate third-party libraries
   into your Ember application.
 
-  `bind` takes two main arguments, the desired context and the function to
-  invoke in that context. Any additional arguments will be supplied as arguments
-  to the function that is passed in.
+  `bind` takes two main arguments,
+  the desired context and the function to invoke in that context.
+  Any additional arguments will be supplied as arguments to the function that is passed in.
 
   Let's use the creation of a TinyMCE component as an example. Currently,
   TinyMCE provides a setup configuration option we can use to do some processing
@@ -255,9 +254,9 @@ export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: 
   });
   ```
 
-  In this example, we use `bind` to bind the setupEditor method to the
-  context of the RichTextEditor component and to have the invocation of that
-  method be safely handled and executed by the Ember run loop.
+  In this example, we use `bind` to bind the setupEditor method
+  to the context of the RichTextEditor component.
+  This also has the invocation of that method be safely handled and executed by the Ember run loop.
 
   @method bind
   @static
@@ -295,9 +294,9 @@ export function bind<
 ): T[U] extends AnyFn
   ? (...args: RemainingParams<A, Parameters<T[U]>>) => ReturnType<T[U]> | void
   : never;
-// This final fallback is the equivalent of the (quite unsafe!) type for `bind`
-// from TS' defs for `Function.prototype.bind`. In general, it means we have a
-// loss of safety if we do not
+// This final fallback is the equivalent of the quite unsafe type for `bind`
+// from TS' defs for `Function.prototype.bind`.
+// In general, it means we lose type safety when a call reaches this overload.
 export function bind<T, M extends keyof T & PropertyKey>(
   target: T,
   methodName: M,
@@ -332,9 +331,10 @@ export function bind(...curried: any[]): any {
 }
 
 /**
-  Begins a new RunLoop. Any deferred actions invoked after the begin will
-  be buffered until you invoke a matching call to `end()`. This is
-  a lower-level way to use a RunLoop instead of using `run()`.
+  Begins a new RunLoop.
+  Any deferred actions invoked after the begin will be buffered,
+  until you invoke a matching call to `end()`.
+  This is a lower-level way to use a RunLoop instead of using `run()`.
 
   ```javascript
   import { begin, end } from '@ember/runloop';
@@ -384,8 +384,8 @@ export function end() {
   automatically.
 
   At the end of a RunLoop, any methods scheduled in this way will be invoked.
-  Methods will be invoked in an order matching the named queues defined in
-  the `queues` property.
+  Methods will be invoked in an order
+  matching the named queues defined in the `queues` property.
 
   ```javascript
   import { schedule } from '@ember/runloop';
@@ -411,9 +411,10 @@ export function end() {
   @for @ember/runloop
   @param {String} queue The name of the queue to schedule against. Default queues is 'actions'
   @param {Object} [target] target object to use as the context when invoking a method.
-  @param {String|Function} method The method to invoke. If you pass a string it
-    will be resolved on the target object at the time the scheduled item is
-    invoked allowing you to change the target function.
+  @param {String|Function} method The method to invoke.
+    If you pass a string, it will be resolved on the target object
+    at the time the scheduled item is invoked,
+    allowing you to change the target function.
   @param {Object} [arguments*] Optional arguments to be passed to the queued method.
   @return {*} Timer information for use in canceling, see `cancel`.
   @public
@@ -455,10 +456,10 @@ export function _cancelTimers() {
   period of time. The last parameter of this method must always be a number
   of milliseconds.
 
-  You should use this method whenever you need to run some action after a
-  period of time instead of using `setTimeout()`. This method will ensure that
-  items that expire during the same script execution cycle all execute
-  together, which is often more efficient than using a real setTimeout.
+  You should use this method whenever you need to run some action after a period of time,
+  instead of using `setTimeout()`.
+  Items that expire during the same script execution cycle all execute together,
+  which is often more efficient than using a real setTimeout.
 
   ```javascript
   import { later } from '@ember/runloop';
@@ -473,8 +474,8 @@ export function _cancelTimers() {
   @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
-    If you pass a string it will be resolved on the
-    target at the time the method is invoked.
+    If you pass a string,
+    it will be resolved on the target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
   @return {*} Timer information for use in canceling, see `cancel`.
@@ -507,8 +508,8 @@ export function later(...args: any): Timer {
   @for @ember/runloop
   @param {Object} [target] The target of the method to invoke.
   @param {Function|String} method The method to invoke.
-    If you pass a string it will be resolved on the
-    target at the time the method is invoked.
+    If you pass a string,
+    it will be resolved on the target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
@@ -531,8 +532,8 @@ export function once(...args: any[]): Timer {
 
 /**
   Schedules a function to run one time in a given queue of the current RunLoop.
-  Calling this method with the same queue/target/method combination will have
-  no effect (past the initial call).
+  Calling this method again with the same queue/target/method combination
+  will have no effect after the initial call.
 
   Note that although you can pass optional arguments these will not be
   considered when looking for duplicates. New arguments will replace previous
@@ -552,8 +553,8 @@ export function once(...args: any[]): Timer {
   });
   ```
 
-  Also note that for `scheduleOnce` to prevent additional calls, you need to
-  pass the same function instance. The following case works as expected:
+  Also note that for `scheduleOnce` to prevent additional calls,
+  you need to pass the same function instance. The following case works as expected:
 
   ```javascript
   function log() {
@@ -595,8 +596,8 @@ export function once(...args: any[]): Timer {
   @param {String} [queue] The name of the queue to schedule against. Default queues is 'actions'.
   @param {Object} [target] The target of the method to invoke.
   @param {Function|String} method The method to invoke.
-    If you pass a string it will be resolved on the
-    target at the time the method is invoked.
+    If you pass a string,
+    it will be resolved on the target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
@@ -624,9 +625,9 @@ export function scheduleOnce(...args: any[]): Timer {
 }
 
 /**
-  Schedules an item to run from within a separate run loop, after
-  control has been returned to the system. This is equivalent to calling
-  `later` with a wait time of 1ms.
+  Schedules an item to run from within a separate run loop,
+  after control has been returned to the system.
+  This is equivalent to calling `later` with a wait time of 1ms.
 
   ```javascript
   import { next } from '@ember/runloop';
@@ -637,17 +638,16 @@ export function scheduleOnce(...args: any[]): Timer {
   });
   ```
 
-  Multiple operations scheduled with `next` will coalesce
-  into the same later run loop, along with any other operations
-  scheduled by `later` that expire right around the same
-  time that `next` operations will fire.
+  Multiple operations scheduled with `next` will coalesce into the same later run loop.
+  Any other operations scheduled by `later` join that run loop too,
+  if they expire right around the same time that `next` operations will fire.
 
   Note that there are often alternatives to using `next`.
-  For instance, if you'd like to schedule an operation to happen
-  after all DOM element operations have completed within the current
-  run loop, you can make use of the `afterRender` run loop queue (added
-  by the `ember-views` package, along with the preceding `render` queue
-  where all the DOM element operations happen).
+  For instance, you may want to schedule an operation to happen
+  after all DOM element operations have completed within the current run loop.
+  For this, you can make use of the `afterRender` run loop queue.
+  The `ember-views` package adds this queue,
+  along with the preceding `render` queue where all the DOM element operations happen.
 
   Example:
 
@@ -671,24 +671,25 @@ export function scheduleOnce(...args: any[]): Timer {
   }
   ```
 
-  One benefit of the above approach compared to using `next` is
-  that you will be able to perform DOM/CSS operations before unprocessed
-  elements are rendered to the screen, which may prevent flickering or
-  other artifacts caused by delaying processing until after rendering.
+  One benefit of the above approach compared to using `next`:
+  you will be able to perform DOM/CSS operations
+  before unprocessed elements are rendered to the screen.
+  This may prevent flickering or other artifacts,
+  which are caused by delaying processing until after rendering.
 
-  The other major benefit to the above approach is that `next`
-  introduces an element of non-determinism, which can make things much
-  harder to test, due to its reliance on `setTimeout`; it's much harder
-  to guarantee the order of scheduled operations when they are scheduled
-  outside of the current run loop, i.e. with `next`.
+  The other major benefit to the above approach is determinism.
+  `next` introduces an element of non-determinism due to its reliance on `setTimeout`,
+  which can make things much harder to test.
+  It's much harder to guarantee the order of scheduled operations
+  when they are scheduled outside of the current run loop, i.e. with `next`.
 
   @method next
   @static
   @for @ember/runloop
   @param {Object} [target] target of method to invoke
   @param {Function|String} method The method to invoke.
-    If you pass a string it will be resolved on the
-    target at the time the method is invoked.
+    If you pass a string,
+    it will be resolved on the target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
@@ -709,9 +710,9 @@ export function next(...args: any[]) {
 }
 
 /**
-  Cancels a scheduled item. Must be a value returned by `later()`,
-  `once()`, `scheduleOnce()`, `next()`, `debounce()`, or
-  `throttle()`.
+  Cancels a scheduled item.
+  Must be a value returned by `later()`, `once()`, `scheduleOnce()`, `next()`, `debounce()`,
+  or `throttle()`.
 
   ```javascript
   import {
@@ -781,14 +782,14 @@ export function cancel(timer?: Timer): boolean {
 
 /**
   Delay calling the target method until the debounce period has elapsed
-  with no additional debounce calls. If `debounce` is called again before
-  the specified time has elapsed, the timer is reset and the entire period
-  must pass again before the target method is called.
+  with no additional debounce calls.
+  If `debounce` is called again before the specified time has elapsed,
+  the timer is reset, and the entire period must pass again before the target method is called.
 
-  This method should be used when an event may be called multiple times
+  Use `debounce` when an event may be called multiple times,
   but the action should only be called once when the event is done firing.
-  A common example is for scroll events where you only want updates to
-  happen once scrolling has ceased.
+  A common example is for scroll events,
+  where you only want updates to happen once scrolling has ceased.
 
   ```javascript
   import { debounce } from '@ember/runloop';
@@ -809,11 +810,11 @@ export function cancel(timer?: Timer): boolean {
   // console logs 'debounce ran.' one time.
   ```
 
-  Immediate allows you to run the function immediately, but debounce
-  other calls for this function until the wait time has elapsed. If
-  `debounce` is called again before the specified time has elapsed,
-  the timer is reset and the entire period must pass again before
-  the method can be called again.
+  Immediate allows you to run the function immediately,
+  but debounce other calls for this function until the wait time has elapsed.
+  If `debounce` is called again before the specified time has elapsed,
+  the timer is reset, and the entire period must pass again
+  before the method can be called again.
 
   ```javascript
   import { debounce } from '@ember/runloop';

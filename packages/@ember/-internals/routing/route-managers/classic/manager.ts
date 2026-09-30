@@ -101,10 +101,10 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     if (!transition.isActive) {
       return;
     }
-    // Schedule the classic `loading` event rather than entering the substate
-    // directly: the event bubbles through `actions.loading` handlers first,
-    // and only the router's default handler (dispatching back through
-    // `handleLoadingEvent` below) enters the substate.
+    // Schedule the classic `loading` event rather than entering the substate directly.
+    // The event bubbles through `actions.loading` handlers first.
+    // Only the router's default handler enters the substate,
+    // by dispatching back through `handleLoadingEvent` below.
     bucket.loadingSubstateTimer = scheduleOnce(
       'routerTransitions',
       this,
@@ -115,9 +115,9 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   enter(bucket: ClassicRouteBucket, state: ClassicEnterState): Promise<unknown> {
-    // Classic model chain: beforeModel → getModel → afterModel. The routeInfo
-    // (state.to) dispatches getModel polymorphically based on whether the
-    // transition was initiated with a model object or URL params.
+    // Classic model chain: beforeModel → getModel → afterModel.
+    // The routeInfo, `state.to`, dispatches getModel polymorphically,
+    // based on whether the transition was initiated with a model object or URL params.
     const route = bucket.route;
     const transition = state.transition as TransitionLike;
     const routeInfo = state.internalRouteInfo;
@@ -164,9 +164,9 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
         if (isTransitionObject(result)) {
           result = undefined;
         }
-        // Re-read the stash rather than closing over `resolvedModel`: classic
-        // router.js lets afterModel swap the model out by writing into
-        // `transition.resolvedModels`.
+        // Re-read the stash rather than closing over `resolvedModel`.
+        // Classic router.js lets afterModel swap the model out
+        // by writing into `transition.resolvedModels`.
         return RSVPPromise.resolve(result).then(() => transition.resolvedModels![routeInfo.name]);
       });
   }
@@ -288,11 +288,12 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
     transition: Transition
   ): unknown {
     const route = bucket.route;
-    // `deserialize` is the router-contract entry point: it scopes the full
-    // params down to this route's own params (via `paramsFor`) before
-    // delegating to the user's `model` hook. Calling `model` directly would
-    // pass it the un-scoped params, so `deserialize` is preferred and `model`
-    // is only a fallback for handlers that don't define `deserialize`.
+    // `deserialize` is the router-contract entry point.
+    // It uses `paramsFor` to scope the full params down to this route's own params,
+    // before delegating to the user's `model` hook.
+    // Calling `model` directly would pass it the un-scoped params.
+    // So `deserialize` is preferred,
+    // and `model` is only a fallback for handlers that don't define `deserialize`.
     if (route.deserialize) {
       return route.deserialize(params, transition);
     }
@@ -398,9 +399,9 @@ const OutletTemplate = precompileTemplate(`<@outlet />`, {
 });
 
 // Build invokable for a classic route: look up `template:<name>`,
-// upgrade a TemplateFactory into a Template, then wrap as a RouteTemplate. If the
-// lookup returns a component definition, use it directly. Falls back to the
-// shared top-level `{{outlet}}` template when no template is registered.
+// upgrade a TemplateFactory into a Template, then wrap as a RouteTemplate.
+// If the lookup returns a component definition, use it directly.
+// Falls back to the shared top-level `{{outlet}}` template when no template is registered.
 function buildClassicInvokable(bucket: ClassicRouteBucket): object {
   const route = bucket.route;
   const owner = getOwner(route);

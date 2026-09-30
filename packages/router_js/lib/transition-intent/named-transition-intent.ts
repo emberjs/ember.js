@@ -95,9 +95,9 @@ export default class NamedTransitionIntent<R = unknown> extends TransitionIntent
       }
 
       if (checkingIfActive) {
-        // If we're performing an isActive check, we want to
-        // serialize URL params with the provided context, but
-        // ignore mismatches between old and new context.
+        // If we're performing an isActive check, we want
+        // to serialize URL params with the provided context,
+        // but ignore mismatches between old and new context.
         newHandlerInfo = newHandlerInfo.becomeResolved(
           null,
           // SAFETY: This seems to imply that it would be resolved, but it's unclear if that's actually the case.
@@ -200,12 +200,11 @@ export default class NamedTransitionIntent<R = unknown> extends TransitionIntent
           | undefined;
         objectToUse = preTransitionHandlerInfo?.context;
       } else {
-        // Ideally we should throw this error to provide maximal
-        // information to the user that not enough context objects
-        // were provided, but this proves too cumbersome in Ember
-        // in cases where inner template helpers are evaluated
-        // before parent helpers un-render, in which cases this
-        // error somewhat prematurely fires.
+        // Ideally we should throw this error to tell the user
+        // that not enough context objects were provided.
+        // This proves too cumbersome in Ember when inner template helpers
+        // are evaluated before parent helpers un-render.
+        // In those cases this error fires too early.
         //throw new Error("Not enough context objects were provided to complete a transition to " + targetRouteName + ". Specifically, the " + name + " route needs an object that can be serialized into its dynamic URL segments [" + names.join(', ') + "]");
         return oldHandlerInfo;
       }

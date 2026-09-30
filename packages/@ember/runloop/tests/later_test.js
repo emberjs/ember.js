@@ -18,12 +18,11 @@ function wait(callback, maxWaitCount = 100) {
 }
 
 // Synchronous "sleep". This simulates work being done
-// after later was called but before the run loop
-// has flushed. In previous versions, this would have
-// caused the later callback to have run from
-// within the run loop flush, since by the time the
-// run loop has to flush, it would have considered
-// the timer already expired.
+// after later was called, but before the run loop has flushed.
+// This guards against a regression where the later callback ran
+// from within the run loop flush.
+// By the time the run loop had to flush,
+// it considered the timer already expired.
 function pauseUntil(time) {
   while (Date.now() < time) {
     /* do nothing - sleeping */
@@ -239,11 +238,11 @@ moduleFor(
           count++;
 
           // This will get run first. Waste some time.
-          // This is intended to break invokeLaterTimers code by taking a
-          // long enough time that other timers should technically expire. It's
-          // fine that they're not called in this run loop; just need to
-          // make sure that invokeLaterTimers doesn't end up scheduling
-          // a negative setTimeout.
+          // This is intended to break invokeLaterTimers code
+          // by taking long enough that other timers should technically expire.
+          // It's fine that they're not called in this run loop.
+          // We just need to make sure that invokeLaterTimers
+          // doesn't end up scheduling a negative setTimeout.
           pauseUntil(Date.now() + 60);
         }, 1);
 

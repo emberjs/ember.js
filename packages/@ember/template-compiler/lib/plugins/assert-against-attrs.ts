@@ -44,11 +44,12 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
             )}`
           );
         } else if (isThisDotAttrs(node)) {
-          // When removing this, ensure `{{this.attrs.foo}}` is left as-is, without triggering
-          // any assertions/deprecations. It's perfectly legal to reference `{{this.attrs.foo}}`
-          // in the template since it is a real property on the backing class – it will give you
-          // a `MutableCell` wrapper object, but maybe that's what you want. And in any case,
-          // there is no compelling to special case that property access.
+          // When removing this, ensure `{{this.attrs.foo}}` keeps working unchanged,
+          // without triggering any assertions/deprecations.
+          // It's perfectly legal to reference `{{this.attrs.foo}}` in the template,
+          // since it is a real property on the backing class.
+          // It gives you a `MutableCell` wrapper object. Maybe that's what you want.
+          // And in any case, there is no compelling reason to special case that property access.
           deprecate(
             `Using {{this.attrs}} to reference named arguments has been deprecated. {{${
               node.original

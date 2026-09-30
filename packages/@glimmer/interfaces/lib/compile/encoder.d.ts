@@ -6,8 +6,8 @@ import type { VmMachineOp as MachineOp, VmOp as Op } from '../vm-opcodes.js';
 import type { SingleBuilderOperand } from './operands.js';
 import type * as WireFormat from './wire-format/api.js';
 
-// These values are used in the same space as standard opcodes, so we need to
-// start them at a higher value to prevent collisions
+// These values are used in the same space as standard opcodes,
+// so we need to start them at a higher value to prevent collisions
 export type HighLevelLabel = 1000;
 export type HighLevelStartLabels = 1001;
 export type HighLevelStopLabels = 1002;
@@ -137,9 +137,10 @@ export interface EncoderError {
  */
 export interface Encoder {
   /**
-   * Finalize the current compilation unit, add a `(Return)`, and push the opcodes from
-   * the buffer into the program. At this point, some of the opcodes might still be
-   * placeholders, such as in the case of recursively compiled templates.
+   * Finalize the current compilation unit, add a `(Return)`,
+   * and push the opcodes from the buffer into the program.
+   * At this point, some of the opcodes might still be placeholders,
+   * such as in the case of recursively compiled templates.
    *
    * @param compiler
    * @param size
@@ -161,13 +162,13 @@ export interface Encoder {
   ): void;
 
   /**
-   * Start a new labels block. A labels block is a scope for labels that
-   * can be referred to before they are declared. For example, when compiling
-   * an `if`, the `JumpUnless` opcode occurs before the target label. To
-   * accommodate this use-case ergonomically, the `Encoder` allows a syntax
-   * to create a labels block and then refer to labels that have not yet
-   * been declared. Once the block is complete, a second pass replaces the
-   * label names with offsets.
+   * Start a new labels block.
+   * A labels block is a scope for labels that can be referred to before they are declared.
+   * For example, when compiling an `if`, the `JumpUnless` opcode occurs before the target label.
+   * To accommodate this use-case ergonomically,
+   * the `Encoder` allows a syntax to create a labels block,
+   * and then refer to labels that have not yet been declared.
+   * Once the block is complete, a second pass replaces the label names with offsets.
    *
    * The pattern is:
    *
@@ -176,9 +177,9 @@ export interface Encoder {
    * encoder.target(encoder.pos, 'ELSE');
    * ```
    *
-   * The `reserve` method creates a placeholder opcode with space for a target
-   * in the future, and the `target` method registers the blank operand position
-   * to be replaced with an offset to `ELSE`, once it's known.
+   * The `reserve` method creates a placeholder opcode with space for a future target.
+   * The `target` method registers the blank operand position,
+   * to be replaced with an offset to `ELSE` once it's known.
    */
   startLabels(): void;
 

@@ -35,8 +35,8 @@ export interface BaseTemplateOptions {
  * }
  * ```
  *
- * For the full explicit form, see {@linkcode ExplicitClassOptions}. For the
- * full implicit form, see {@linkcode ImplicitClassOptions}.
+ * For the full explicit form, see {@linkcode ExplicitClassOptions}.
+ * For the full implicit form, see {@linkcode ImplicitClassOptions}.
  */
 export interface BaseClassTemplateOptions<C extends ComponentClass> extends BaseTemplateOptions {
   component: C;
@@ -58,10 +58,10 @@ export interface ExplicitTemplateOnlyOptions extends BaseTemplateOptions {
 }
 
 /**
- * When using `template` *inside* a class (see
- * {@linkcode BaseClassTemplateOptions}), you can pass a `scope` option that
- * explicitly provides the lexical scope for the template, just like a template-only
- * component (see {@linkcode ExplicitTemplateOnlyOptions}).
+ * When using `template` *inside* a class, as in {@linkcode BaseClassTemplateOptions},
+ * you can pass a `scope` option that explicitly provides the lexical scope for the template.
+ * This works just like a template-only component,
+ * as in {@linkcode ExplicitTemplateOnlyOptions}.
  *
  * ```ts
  * class MyComponent extends Component {
@@ -100,10 +100,9 @@ export interface ExplicitClassOptions<
 }
 
 /**
- * The *implicit* form of the `template` function takes an `eval` option that
- * allows the runtime compiler to evaluate local template variables without
- * needing to maintain an explicit list of the local variables used in the
- * template scope.
+ * The *implicit* form of the `template` function takes an `eval` option.
+ * With it, the runtime compiler can evaluate local template variables,
+ * without an explicit list of the local variables used in the template scope.
  *
  * The eval options *must* be passed in the following form:
  *
@@ -115,44 +114,45 @@ export interface ExplicitClassOptions<
  *
  * ## Requirements of the `eval` Option
  *
- * **The syntactic form presented above is the only form you should use when
- * passing an `eval` option.**
+ * **The syntactic form presented above is the only form you should use
+ * when passing an `eval` option.**
  *
- * This is _required_ if you want your code to be compatible with the
- * compile-time implementation of `@ember/template-compiler`. While the runtime
- * compiler offers a tiny bit of additional wiggle room, you still need to follow
- * very strict rules.
+ * This is _required_ if you want your code to be compatible
+ * with the compile-time implementation of `@ember/template-compiler`.
+ * The runtime compiler offers a tiny bit of additional wiggle room,
+ * but you still need to follow very strict rules.
  *
- * We don't recommend trying to memorize the rules. Instead, we recommend using
- * the snippet presented above and supported by the compile-time implementation.
+ * We don't recommend trying to memorize the rules.
+ * Instead, we recommend using the snippet presented above,
+ * which the compile-time implementation supports.
  *
  * ### The Technical Requirements of the `eval` Option
  *
- * The `eval` function is passed a single parameter that is a JavaScript
- * identifier. This will be extended in the future to support private fields.
+ * The `eval` function is passed a single parameter that is a JavaScript identifier.
+ * This will be extended in the future to support private fields.
  *
- * Since keywords in JavaScript are contextual (e.g. `await` and `yield`), the
- * parameter might be a keyword. The `@ember/template-compiler/runtime` expects
- * the function to throw a `SyntaxError` if the identifier name is not valid in
- * the current scope. (The direct `eval` function takes care of this out of the
- * box.)
+ * Keywords in JavaScript are contextual, for example `await` and `yield`,
+ * so the parameter might be a keyword.
+ * The `@ember/template-compiler/runtime` expects the function to throw a `SyntaxError`
+ * if the identifier name is not valid in the current scope.
+ * The direct `eval` function takes care of this out of the box.
  *
  * Requirements:
  *
- * 1. The `eval` method must receive its parameter as `arguments[0]`, which
- *    ensures that the variable name passed to `eval()` is not shadowed by the
- *    function's parameter name.
+ * 1. The `eval` method must receive its parameter as `arguments[0]`.
+ *    This ensures that the function's parameter name
+ *    does not shadow the variable name passed to `eval()`.
  * 2. The `eval` option must be a function or concise method, and not an arrow.
- *    This is because arrows do not have their own `arguments`, which breaks
- *    (1).
+ *    This is because arrows do not have their own `arguments`, which breaks (1).
  * 3. The `eval` method must call "*direct* `eval`", and not an alias of `eval`.
- *    Direct `eval` evaluates the code in the scope it was called from, while
- *    aliased versions of `eval` (including `new Function`) evaluate the code in
- *    the global scope.
+ *    Direct `eval` evaluates the code in the scope it was called from.
+ *    Aliased versions of `eval`, including `new Function`,
+ *    evaluate the code in the global scope.
  * 4. The `eval` method must return the result of calling "direct `eval`".
  *
- * The easiest way to achieve these requirements is to use the exact syntax
- * presented above. This is *also* the only way to be compatible
+ * The easiest way to achieve these requirements
+ * is to use the exact syntax presented above.
+ * This is *also* the only way to be compatible with the compile-time implementation.
  *
  * ## Rationale
  *
@@ -160,22 +160,23 @@ export interface ExplicitClassOptions<
  *
  * 1. This form is a useful _intermediate_ form for the compile-time toolchain.
  *    It allows the content-tag preprocessor to convert the `<template>` syntax
- *    into valid JavaScript without needing to involve full-fledged lexical
- *    analysis.
- * 2. This form is a convenient form for manual prototyping when using the
- *    runtime compiler directly. While it requires some extra typing relative to
- *    `<template>`, it's a mechanical 1:1 transformation of the syntax.
+ *    into valid JavaScript, without full-fledged lexical analysis.
+ * 2. This form is a convenient form for manual prototyping
+ *    when using the runtime compiler directly.
+ *    It requires some extra typing relative to `<template>`,
+ *    but it's a mechanical 1:1 transformation of the syntax.
  *
- * In practice, implementations that use a runtime compiler (for example, a
- * playground running completely in the browser) should probably use the
- * `content-tag` preprocessor to convert the template into the implicit form,
- * and then rely on `@ember/template-compiler/runtime` to evaluate the template.
+ * In practice, implementations that use a runtime compiler should probably
+ * use the `content-tag` preprocessor to convert the template into the implicit form.
+ * A playground running completely in the browser is one example.
+ * They can then rely on `@ember/template-compiler/runtime` to evaluate the template.
  */
 export interface ImplicitEvalOption {
-  // the real type is (value: string) => unknown, but RFC #0921 specifies that
-  // the syntax is `eval() { return eval(arguments[1]) }`, which won't type
-  // check. If we need to verify this, a linter rule would probably be more
-  // helpful than types because of the peculiarity of the pattern.
+  // The real type is (value: string) => unknown,
+  // but RFC #0921 specifies the syntax `eval() { return eval(arguments[1]) }`,
+  // which won't type check.
+  // If we need to verify this, a linter rule would probably be more helpful than types,
+  // because of the peculiarity of the pattern.
   eval(): unknown;
 }
 
@@ -197,8 +198,9 @@ export interface ImplicitEvalOption {
 export type ImplicitTemplateOnlyOptions = BaseTemplateOptions & ImplicitEvalOption;
 
 /**
- * When using `template` inside of a class, you can pass an `eval` option that
- * _implicitly_ provides the lexical scope for the template, just as you can
+ * When using `template` inside of a class,
+ * you can pass an `eval` option that _implicitly_ provides the lexical scope for the template.
+ * This works just as it does
  * with a {@linkcode ImplicitTemplateOnlyOptions | template-only component}.
  *
  * This is called the "implicit form".
@@ -216,10 +218,10 @@ export type ImplicitTemplateOnlyOptions = BaseTemplateOptions & ImplicitEvalOpti
  *
  * ## Note  on Private Fields
  *
- * The current implementation of `@ember/template-compiler` does not support
- * private fields, but once the Handlebars parser adds support for private field
- * syntax and it's implemented in the Glimmer compiler, the implicit form should
- * be able to support them.
+ * `@ember/template-compiler` does not support private fields.
+ * The Handlebars parser would first need to support private field syntax,
+ * and the Glimmer compiler would need to implement it.
+ * After that, the implicit form should be able to support them.
  */
 export type ImplicitClassOptions<C extends ComponentClass> = BaseClassTemplateOptions<C> &
   ImplicitEvalOption;
@@ -263,10 +265,11 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions>) {
   if (options.eval) {
     const userEval = options.eval;
 
-    // Wrap the compiled source in a function that receives the keywords
-    // container as a parameter. The user's eval evaluates this in the
-    // caller's scope, so local variables (like `handleClick`) are captured
-    // via closure, while `__keywords__` comes from the function parameter.
+    // Wrap the compiled source in a function
+    // that receives the keywords container as a parameter.
+    // The user's eval evaluates this in the caller's scope,
+    // so local variables such as `handleClick` are captured by closure.
+    // `__keywords__` comes from the function parameter.
     return (source: string) => {
       let wrapperFn = userEval(`(function(${RUNTIME_KEYWORDS_NAME}){ return (${source}); })`) as (
         ...args: unknown[]

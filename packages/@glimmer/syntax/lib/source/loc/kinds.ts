@@ -4,8 +4,8 @@
 export type CharOffsetKind = 'CharPosition';
 export const CHAR_OFFSET_KIND: CharOffsetKind = 'CharPosition';
 /**
- * This offset or span was instantiated with a Handlebars SourcePosition or SourceLocation. Its
- * character position will be computed on demand.
+ * This offset or span was instantiated with a Handlebars SourcePosition or SourceLocation.
+ * Its character position will be computed on demand.
  */
 export type HbsPositionKind = 'HbsPosition';
 export const HBS_POSITION_KIND: HbsPositionKind = 'HbsPosition';
@@ -27,8 +27,9 @@ export type NonExistentKind = 'NonExistent';
 export const NON_EXISTENT_KIND: NonExistentKind = 'NonExistent';
 
 /**
- * For situations where a source location was expected, but it didn't correspond to the node in
- * the source. This happens if a plugin creates broken locations.
+ * For situations where a source location was expected,
+ * but it didn't correspond to the node in the source.
+ * This happens if a plugin creates broken locations.
  */
 export type BrokenKind = 'Broken';
 export const BROKEN_KIND: BrokenKind = 'Broken';

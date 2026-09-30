@@ -11,8 +11,8 @@ import { Args, NamedArguments } from './args';
 import { node } from './node';
 
 /**
- * Content Nodes are allowed in content positions in templates. They correspond to behavior in the
- * [Data][data] tokenization state in HTML.
+ * Content Nodes are allowed in content positions in templates.
+ * They correspond to behavior in the [Data][data] tokenization state in HTML.
  *
  * [data]: https://html.spec.whatwg.org/multipage/parsing.html#data-state
  */

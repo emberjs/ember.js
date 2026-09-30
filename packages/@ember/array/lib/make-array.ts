@@ -3,9 +3,9 @@ const { isArray } = Array;
  @module @ember/array
 */
 /**
- Forces the passed object to be part of an array. If the object is already
- an array, it will return the object. Otherwise, it will add the object to
- an array. If object is `null` or `undefined`, it will return an empty array.
+ Forces the passed object to be part of an array.
+ An array is returned as is, and any other object is wrapped in an array.
+ `null` and `undefined` become an empty array.
 
  ```javascript
  import { makeArray } from '@ember/array';

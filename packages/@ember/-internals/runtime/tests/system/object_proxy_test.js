@@ -15,9 +15,9 @@ moduleFor(
   'ObjectProxy',
   class extends AbstractTestCase {
     beforeEach() {
-      // `deprecate` is stripped from production builds, so there is nothing to
-      // expect there -- and a couple of tests below assert an exact count of
-      // zero assertions when running against a production build.
+      // `deprecate` is stripped from production builds, so there is nothing to expect there.
+      // A couple of tests below also assert an exact count of zero assertions
+      // when running against a production build.
       if (DEBUG) {
         expectDeprecation(
           /`ObjectProxy` is deprecated/,

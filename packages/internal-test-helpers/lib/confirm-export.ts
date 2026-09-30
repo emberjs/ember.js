@@ -41,9 +41,9 @@ export default function confirmExport(
     // Access early so we still trigger deprecation
     let actual = mod[exportName];
     // mod[exportName] has no name, but value has a name here.
-    // This could have something to do with how the proxy is working,
-    // but it's not all that important, as deprecate users will still have
-    // the same behavior, including the deprecation message
+    // This could have something to do with how the proxy is working.
+    // It's not all that important, because deprecate users will still
+    // have the same behavior, including the deprecation message.
     if (exportName !== 'deprecate') {
       assert.equal(value, actual, `Ember.${path} is exported correctly`);
     }

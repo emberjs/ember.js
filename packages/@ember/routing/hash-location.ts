@@ -8,12 +8,11 @@ import { getHash } from './lib/location-utils';
 */
 
 /**
-  `HashLocation` implements the location API using the browser's
-  hash. At present, it relies on a `hashchange` event existing in the
-  browser.
+  `HashLocation` implements the location API using the browser's hash.
+  It relies on a `hashchange` event existing in the browser.
 
-  Using `HashLocation` results in URLs with a `#` (hash sign) separating the
-  server side URL portion of the URL from the portion that is used by Ember.
+  Using `HashLocation` results in URLs with a `#` (hash sign),
+  separating the server side URL portion of the URL from the portion that is used by Ember.
 
   Example:
 
@@ -77,9 +76,8 @@ export default class HashLocation extends EmberObject implements EmberLocation {
       outPath = '/';
 
       // Only add the # if the path isn't empty.
-      // We do NOT want `/#` since the hash
-      // is only included (conventionally) when
-      // the location.hash has a value
+      // We do NOT want `/#`, since by convention the hash
+      // is only included when the location.hash has a value
       if (originalPath) {
         outPath += `#${originalPath}`;
       }
@@ -89,9 +87,8 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   }
 
   /**
-    Set the `location.hash` and remembers what was set. This prevents
-    `onUpdateURL` callbacks from triggering when the hash was set by
-    `HashLocation`.
+    Remembering what was set in `location.hash` prevents `onUpdateURL` callbacks
+    from triggering when the hash was set by `HashLocation`.
 
     @private
     @method setURL
