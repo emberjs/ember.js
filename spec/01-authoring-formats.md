@@ -803,7 +803,8 @@ Their individual semantics belong to §03 and §08. `STRICT_MODE_KEYWORDS`
 (`…/plugins/index.ts:56-70`) = `action`, `mut`, `readonly`, `unbound`, and the internal
 names `-each-in`, `-in-el-null`, `-track-array`, `-mount` introduced by the transforms.
 
-**AutoImportBuiltins** (strict mode only; `packages/@ember/template-compiler/lib/plugins/auto-import-builtins.ts:10-69`):
+**AutoImportBuiltins** (strict mode only; `packages/@ember/template-compiler/lib/plugins/auto-import-builtins.ts:10-69`;
+normative in §03-7.1, runtime meaning in §08-1.3):
 every `PathExpression` whose *entire* original text is one of
 `array eq element and fn hash neq gt gte lt lte not on or` and that is not a local (block
 param or lexical name, `…/plugins/utils.ts:28-65`) is rewritten to a lexical reference to the
@@ -1015,11 +1016,23 @@ no destroyable and no wrapper element (RFC 0278). `moduleName` / `name` are debu
 
 ### 1.8.5 When lexical scope is evaluated
 
-The payload's `scope` closure is called when a `Template`'s layout is first compiled — i.e.
-lazily, at first render per (template factory, owner) — and its values are snapshotted into
-the compiled layout (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/shared.ts:108-123`,
+This section is the owner of lexical-scope timing; §04-4.3.3 and §05-1.1 refer to it.
+
+The payload's `scope` closure is called when a `Template`'s layout is first built — i.e.
+lazily, per (template factory, owner) — and its values are snapshotted into the compiled
+layout (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/shared.ts:108-123`,
 called from `packages/@glimmer/opcode-compiler/lib/compilable-template.ts:57-60` and
-`packages/@glimmer/opcode-compiler/lib/template.ts:130-141`).
+`packages/@glimmer/opcode-compiler/lib/template.ts:130-141`). For a component template the
+layout is built when the component definition is first created
+(`packages/@glimmer/program/lib/constants.ts:197-219`). That is at the latest its first
+render, and can be earlier: when a template block that statically invokes the component is
+first compiled, even if the invocation itself is not rendered then.
+
+The closure may be *called* more than once per template object. A wrapped layout (classic
+components with a tag) calls it in its constructor and again when it compiles, so a thunk can
+run up to three times (§04-4.14 item 5). The values that the compiled code uses are those of
+a single call, made no earlier than the first build of the layout, and they never change
+afterwards: lexical values are constants for the life of the template object (§05-1.1).
 
 Normative consequences for build-time compiled templates:
 
@@ -1032,8 +1045,10 @@ Normative consequences for build-time compiled templates:
   is invoked eagerly (twice) at `template()` time (§1.6.5), so later-declared bindings throw
   a `ReferenceError` there and pre-render reassignment is not observed.
 
-A new implementation MUST preserve "evaluated no earlier than first use, and at most once per
-template instance" for build-time forms.
+A new implementation MUST preserve, for build-time forms, "evaluated no earlier than the
+template is first needed, and captured once per template instance". It MAY call the closure
+fewer times than the current implementation does (see §1.11 item 3 for the runtime explicit
+form, where the calls are observable).
 
 ---
 

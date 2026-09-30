@@ -27,8 +27,10 @@ so check the current text before editing.
   — probed: loose `{{action …}}` append is a keyword-misuse compile error, strict compiles all forms; §03-7.3 fixed, §08-2.20 now gives per-position runtime errors (modifier message says "it was not in scope"); 03-10 #15 points to §08-14 Q7.
 - [x] 8 loose-mode free names (argument position; silent `{{foo}}`)
   — chapters agreed (probed `{{foo bar}}` → `[31,1]`); §03-5.3 owns static side and cites §08-14 Q1/Q16; 04 Q2/Q3 now point to 08.
-- [ ] 9 auto-imported strict built-ins list identical everywhere
-- [ ] 10 lexical scope timing
+- [x] 9 auto-imported strict built-ins list identical everywhere
+  — all three lists match auto-import-builtins.ts:10-25 (14 names); §08-1.2/Q3 no longer call them "keywords"; 01-1.6.3 and 08-1.3(a) cite §03-7.1 as normative.
+- [x] 10 lexical scope timing
+  — §01-1.8.5 owns it; corrected "at most once" (thunk can run up to 3 times; values captured once) and added that a component's layout (and scope) is built at definition creation, possibly before it renders (constants.ts:197-219); 04-4.3.3 and 05-1.1 point there.
 - [x] 11 component-definition cache ignores owner
   — new §06-12 Q15 owns it (cache is per renderer, base-renderer.ts:627); §06-1.7, §01-1.8.2 note, 01 Q11 and 04 Q4 point there.
 - [ ] 12 trackLocals bug described once

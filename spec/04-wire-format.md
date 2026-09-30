@@ -258,7 +258,7 @@ A `GetLexicalSymbol` index `n` (§4.6.4) denotes `lexicalValues[n]`. **Only the 
 values is semantically significant**; names are used only in error messages and debug
 tooling (e.g. `lexical?.at(n)` as a debug name, `resolution.ts:119`, `215`).
 
-Current behavior:
+Current behavior (the timing is specified normatively in §01-1.8.5):
 
 - The consumer calls `scope` lazily (not before the template is first needed for
   rendering) and, on the ordinary path, calls it once per template object for the purpose of

@@ -118,10 +118,10 @@ Consequences:
 - **[Dev]** Registering a helper under one of the `BUILTIN_HELPERS` names and then resolving it
   fails with `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`
   (`resolver.ts:137-141`). Note the assertion fires on lookup, not on registration.
-- The strict-mode keywords `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `and`, `or`, `not`,
-  `element` are **not** in these tables; in loose mode those names resolve through the
-  registry like any user helper (and are therefore unavailable unless an app registers them).
-  See Open question Q3.
+- The strict-mode auto-imported built-ins `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `and`, `or`,
+  `not`, `element` (§1.3(a)) are **not** in these tables; in loose mode those names resolve
+  through the registry like any user helper (and are therefore unavailable unless an app
+  registers them). See Open question Q3.
 
 ### 1.3 Strict-mode keywords and auto-imported built-ins
 
@@ -130,7 +130,9 @@ available without an explicit import:
 
 **(a) Auto-imported built-ins.** The AST plugin `auto-import-builtins`
 (`packages/@ember/template-compiler/lib/plugins/auto-import-builtins.ts:10-69`) runs first in
-strict mode (`plugins/index.ts:44-54`). For every `PathExpression` whose `original` is one of
+strict mode (`plugins/index.ts:44-54`). §03-7.1 specifies the rewrite normatively; this
+section records its runtime meaning. They are not keywords (§03-4.7). For every
+`PathExpression` whose `original` is one of
 
 ```text
 array  eq  element  and  fn  hash  neq  gt  gte  lt  lte  not  on  or
@@ -1847,7 +1849,7 @@ template containing `{{outlet}}` now silently renders nothing; and a component p
 explicitly could render the outlet anywhere. Neither behaviour is tested. Also, `@outlet` is
 visible as an ordinary named argument (e.g. `{{#if @outlet}}`), which is new surface.
 
-**Q3. Loose vs strict availability of 7.1 keywords.** `eq`, `neq`, `gt`, `gte`, `lt`, `lte`,
+**Q3. Loose vs strict availability of the 7.1 built-ins.** `eq`, `neq`, `gt`, `gte`, `lt`, `lte`,
 `and`, `or`, `not`, `element` are auto-imported in strict mode but absent from the loose-mode
 built-in table (`resolver.ts:88-117`), so `{{#if (eq a b)}}` fails in a loose-mode template
 unless an addon registers `helper:eq`. Conversely `concat`, `get`, `unique-id` are built-in in
