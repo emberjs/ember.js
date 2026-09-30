@@ -1131,8 +1131,11 @@ is `each-in` (**no local check**):
 - The result is `{{#each ...}}` with the same hash, program, and inverse.
 
 Because `-each-in` wraps the value, `TransformEachTrackArray` later skips it. With no
-params (`{{#each-in}}{{/each-in}}`) the plugin crashes with a `TypeError` (`Cannot read
-properties of undefined (reading 'type')`; verified). See §03-10.
+params (`{{#each-in}}{{/each-in}}`) it is a syntax error, in every build:
+`{{#each-in}} requires an object to be passed as its first positional parameter, did not receive any parameters`
+(span: the block; `plugins/transform-each-in-into-each.ts:36-41`; test
+`packages/ember-template-compiler/tests/plugins/transform-each-in-into-each-test.js`). Before
+emberjs/ember.js#21635 this threw a `TypeError`.
 
 #### 03-7.7 `AssertInputHelperWithoutBlock` (loose) [Dev]
 
@@ -1296,9 +1299,8 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
 9. **Error text bug**: a single named block inside an HTML element always reports `<:foo>`
    (`normalize.ts:984-986`).
 10. **`-get-dynamic-var` errors say `(-get-dynamic-vars)`** (with an `s`).
-11. **`{{#each-in}}` with no params crashes** with a `TypeError` in `TransformEachInIntoEach`
-    (*fixed* on main in #21635: now a syntax error).
-    `{{#each}}` with no params gives the Ember assertion `has firstParam` instead of the Glimmer
+11. **`{{#each-in}}` with no params.** *Resolved* by emberjs/ember.js#21635: it is a syntax
+    error (§03-7.6) instead of a `TypeError`. Still open: `{{#each}}` with no params gives the Ember assertion `has firstParam` instead of the Glimmer
     error, and in production continues with an `undefined` param.
 12. **`trackLocals` counter bug** (`plugins/utils.ts:36` reads the count with the `VarHead`
     object as the map key but writes it under the name, so the count never exceeds 1).

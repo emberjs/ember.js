@@ -158,45 +158,59 @@ statement.
 The body text is normalized before being embedded (introduced by content-tag 4.1.0,
 "indentation stripping", referred to in tests as RFC #1121 —
 `content-tag/test/node/process.test.js` `describe("indentation stripping (RFC #1121)")`).
-The algorithm (`content-tag/src/transform.rs:81-144`), which a conforming preprocessor MUST
-reproduce exactly because it changes the template text (and hence text-node contents):
+The algorithm as of content-tag 4.2.1 (`content-tag/src/transform.rs:80-157`), which a
+conforming preprocessor MUST reproduce exactly because it changes the template text (and
+hence text-node contents). "Whitespace" here means only ASCII space and tab; every other
+character, including other Unicode whitespace such as U+00A0 or U+3000, is content.
 
 ```
+indentation(L) := the longest prefix of L made of ' ' and '\t'
+blank(L)       := indentation(L) is all of L
+
 strip_indent(input):
   lines := split input on "\n", removing a trailing "\r" from each line   (Rust str::lines)
   if count(lines) <= 1: return input unchanged          -- single-line bodies are untouched,
                                                         -- including their leading/trailing spaces
-  drop leading lines and trailing lines that are empty or whitespace-only
+  drop leading and trailing blank lines
   if nothing remains: return ""
   min_indent := none; has_spaces := false; has_tabs := false
-  for each remaining line L that is not whitespace-only:
-     indent := the leading whitespace of L (Unicode White_Space, via trim_start)
+  for each remaining line L that is not blank:
+     indent := indentation(L)
      has_spaces |= indent contains ' '
      has_tabs   |= indent contains '\t'
      if has_spaces and has_tabs:            -- cumulative across lines
         return remaining lines joined with "\n"      (no de-indent)
-     min_indent := min(min_indent, byte length of indent)
+     min_indent := min(min_indent, length of indent)
   if min_indent is none or 0: return remaining lines joined with "\n"
   for each remaining line L:
-     if byte length of L >= min_indent: L := L with first min_indent bytes removed
+     if length of L >= min_indent: L := L with its first min_indent characters removed
      (otherwise L is kept as is)
   return lines joined with "\n"
 ```
 
+Every character removed is a space or tab: a non-blank line has at least `min_indent` of
+indentation, and a blank line longer than `min_indent` consists only of spaces and tabs.
+
 Consequences pinned by tests:
 
 - `<template>\n  <span>Hello</span>\n</template>` → `<span>Hello</span>`
-  (`content-tag/src/transform.rs:353-359`).
-- Relative indentation is preserved (`content-tag/src/transform.rs:423-439`).
+  (`content-tag/src/transform.rs:366-372`).
+- Relative indentation is preserved (`content-tag/src/transform.rs:436-452`).
 - A body whose first non-blank line is at column 0 is not de-indented — this is the
   documented opt-out (`{{!-- prevent automatic de-indent --}}` on its own line at column 0;
-  `content-tag/src/transform.rs:441-453`). Leading/trailing blank lines are still removed.
+  `content-tag/src/transform.rs:454-466`). Leading/trailing blank lines are still removed.
 - A single-line body is emitted verbatim, e.g. `<template> <span>Hello</span> </template>`
   keeps both spaces (`content-tag/test/node/process.test.js` "prerves whitespace when
   component is one line").
 - Multi-line bodies have CRLF line endings converted to LF; single-line bodies keep any
   `\r`.
 - Whitespace-only interior lines longer than `min_indent` keep their excess whitespace.
+- A line that starts with non-ASCII whitespace is content with no indentation, so it
+  disables de-indenting for the whole body: `<template>\n\u3000<a></a>\n  <b></b>\n</template>`
+  → `\u3000<a></a>\n  <b></b>` (`content-tag/src/transform.rs:468-481`).
+- Before content-tag 4.2.1, indentation was measured with Unicode `trim_start` but removed by
+  byte count, so mixing multi-byte and ASCII whitespace could panic the preprocessor
+  (§1.11 item 7).
 
 `content-tag`'s `parse()` API returns the **raw, unstripped** body in `contents`
 (`content-tag/src/locate.rs:44`).
@@ -1193,15 +1207,15 @@ or pods lookup (§08-5). The one remaining registry lookup of a template is the 
 6. **`content-tag` claims `<template>` in any `<`-token position**, including TypeScript
    type arguments and relational expressions (`swc/crates/swc_ecma_parser/src/lexer/mod.rs:454-466`).
    Probably acceptable but unspecified.
-7. **Indentation stripping edge cases.** `min_indent` is computed in bytes over Unicode
-   whitespace, so mixing a multi-byte whitespace character (e.g. U+3000) in one line's
-   indent with ASCII spaces in another can make `&line[min_indent..]` slice inside a UTF-8
-   sequence (a Rust panic → likely a wasm trap) (`content-tag/src/transform.rs:109-143`).
-   The tab/space mixing check is cumulative and order-dependent. CRLF normalization happens
-   only for multi-line bodies. RFC #1121 is not in the local RFC repo, so the intended
-   specification cannot be checked against the implementation. *Fixed* in content-tag
-   4.2.1: only ASCII spaces and tabs count as indentation, so the panic can no longer happen
-   (STATUS.md, "Upstream fix branches").
+7. **Indentation stripping edge cases.** *Resolved* in content-tag 4.2.1
+   (embroider-build/content-tag#134): only ASCII spaces and tabs count as indentation or as
+   blank-line whitespace (§1.2.4). Before that, `min_indent` was computed in bytes over
+   Unicode whitespace, so mixing a multi-byte whitespace character (e.g. U+3000) with ASCII
+   spaces could slice inside a UTF-8 sequence and panic. Still unspecified elsewhere:
+   CRLF normalization happens only for multi-line bodies, and RFC #1121 is not in the local
+   RFC repo, so the intended specification cannot be checked against the implementation.
+   (The tab/space check stops at the first line that completes the mix, but the result, no
+   de-indent, does not depend on line order.)
 
 8. **No way to include `</template>` in a `<template>` body.** *Resolved: intentional.* The
    content tag assumes no interior syntax, so that it can serve as a language-neutral JS
