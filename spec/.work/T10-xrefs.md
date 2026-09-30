@@ -16,7 +16,7 @@ Resume from the first unticked item. Commit after each chapter: `spec(T10): <cha
 - [x] 01-authoring-formats.md (104 refs, 0 fixed)
 - [x] 02-syntax.md (77 refs, 0 fixed)
 - [x] 03-static-semantics.md (119 refs, 0 fixed)
-- [ ] 04-wire-format.md
+- [x] 04-wire-format.md (145 refs, 0 fixed)
 - [ ] 05-runtime-semantics.md
 - [ ] 06-managers.md
 - [ ] 07-reactivity.md
