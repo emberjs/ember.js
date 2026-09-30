@@ -13,6 +13,8 @@ import { precompileTemplate } from '@ember/template-compilation';
 import EmberObject, { set } from '@ember/object';
 import { tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/debug-stack';
+import templateOnly from '@ember/component/template-only';
+import { ENV } from '@ember/-internals/environment';
 
 class ModifierManagerTest extends RenderingTestCase {
   '@test throws a useful error when missing capabilities'(assert) {
@@ -636,6 +638,62 @@ moduleFor(
       runTask(() => this.context.set('baz', 'Hello'));
 
       this.assertHTML('<h1>hello world</h1>');
+    }
+  }
+);
+
+class ModifierDestructionOrderTest extends RenderingTestCase {
+  '@test modifiers are destroyed child-first, after the modifiers inside their element'(assert) {
+    let destroyed = [];
+
+    this.registerModifier(
+      'record-destroy',
+      setModifierManager(
+        () => ({
+          capabilities: modifierCapabilities('3.22'),
+          createModifier(_factory, args) {
+            return { name: args.positional[0] };
+          },
+          installModifier() {},
+          updateModifier() {},
+          destroyModifier(state) {
+            destroyed.push(state.name);
+          },
+        }),
+        {}
+      )
+    );
+
+    this.owner.register(
+      'component:child-with-modifier',
+      setComponentTemplate(precompileTemplate('<b {{record-destroy "child"}}></b>'), templateOnly())
+    );
+
+    this.render(
+      '{{#if this.show}}<div {{record-destroy "outer"}}><span {{record-destroy "inner"}}></span><ChildWithModifier /></div>{{/if}}',
+      { show: true }
+    );
+
+    runTask(() => set(this.context, 'show', false));
+
+    assert.deepEqual(destroyed, ['inner', 'child', 'outer']);
+  }
+}
+
+moduleFor('Custom modifier manager: destruction order', ModifierDestructionOrderTest);
+
+// The debug render tree is on by default in development builds, and must not change the order.
+moduleFor(
+  'Custom modifier manager: destruction order without the debug render tree',
+  class extends ModifierDestructionOrderTest {
+    constructor() {
+      let original = ENV._DEBUG_RENDER_TREE;
+      ENV._DEBUG_RENDER_TREE = false;
+      try {
+        super(...arguments);
+      } finally {
+        ENV._DEBUG_RENDER_TREE = original;
+      }
     }
   }
 );
