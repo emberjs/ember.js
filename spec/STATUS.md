@@ -68,12 +68,12 @@ none of those commits touch the files involved.
 | §01-1.11 item 7 | content-tag | `fix-multibyte-indentation-panic` | **Shipped in content-tag 4.2.1** (embroider-build/content-tag#134) | `strip_indent` counts only ASCII spaces and tabs as indentation. |
 | §07-5 item 8 | ember.js | `fix/tracked-accessor-object-tag` | Open for review. The accessor test now lives in the stable-decorator smoke tests (`smoke-tests/scenarios/stable-decorator-files.ts`). | The `@tracked accessor` setter also dirties the object-level cell. |
 
-When a branch is merged, update the owning item to describe the new behavior. **Still to do**
-for the two that have landed: the chapters' normative text (§02-6.9, §02-9, §01-1.2.4) still
-describes the pre-fix behavior, and citations into the changed files
-(`handlebars-node-visitors.ts`, `transform-each-in-into-each.ts`, content-tag
-`src/transform.rs`) predate the fixes. The chapters' open-question items (§02-11 items 1, 2,
-7; §03-10 item 11; §01-1.11 item 7) now say "Fixed" but have not been rewritten.
+When a branch is merged, update the owning item to describe the new behavior. Done for the two
+that have landed (T7, `.work/T6-feedback-8b34378.md`): §02-3.3, §02-3.8, §02-6.7, §02-6.9–6.11,
+§02-9, §02-11 items 1/2/7, §03-7.6, §03-10 item 11, §01-1.2.4 and §01-1.11 item 7 now
+describe the fixed behavior. The content-tag citations point at `src/transform.rs` as released
+in 4.2.1 (identical to the `fix-multibyte-indentation-panic` branch checked out beside this
+repo).
 
 ## Chapters
 

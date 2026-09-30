@@ -222,13 +222,12 @@ choice breaks someone.
 
 ### 0.7.2 Parser robustness
 
-11. Some inputs crash with a `TypeError` instead of a syntax error: `{{^foo}}…{{/foo}}`,
-    `{{foo=bar}}`, `{{(foo).bar}}`, `</div {{x}}>`, `</div {{! x}}>`, and `{{#each-in}}`
-    with no params. Others are misparsed: `<!--{{x}}-->` moves the mustache out of the
-    comment, `<!-- a -{{x}}-->` drops the whole comment, and `<div /{{x}}>`, `</div{{x}}>`
-    and `<!-{{x}}-->` put the mustache in the parent. (§02-11 items 1, 2, 7; §03-10 item 11)
-    *Fixed* on ember.js main (#21635); the owning items are not yet rewritten (STATUS.md,
-    "Upstream fix branches").
+11. *Resolved* by emberjs/ember.js#21635. Inputs that used to throw a `TypeError`
+    (`{{^foo}}…{{/foo}}`, `{{foo=bar}}`, `{{(foo).bar}}`, `</div {{x}}>`, `</div {{! x}}>`,
+    `{{#each-in}}` with no params) are now syntax errors. Inputs that used to be misparsed
+    (`<!--{{x}}-->`, `<!-- a -{{x}}-->`, `<div /{{x}}>`, `</div{{x}}>`, `<!-{{x}}-->`) now
+    parse as HTML would or are errors. Remaining: `{{^foo}}a{{else}}b{{/foo}}` is still
+    accepted, untested. (§02-11 items 1, 2, 7; §03-10 item 11)
 
 12. Some input is dropped silently: `a < b` becomes `"a "`, `<>` disappears, and so does an
     unterminated tag or comment at EOF. (§02-11 item 6)
@@ -240,10 +239,9 @@ choice breaks someone.
     case-sensitive (`<BR>` needs a close tag). Tag names such as `<_foo />` (compiled as
     `foo`) and `<É />` (compiled to nothing), and segments containing `.`
     (`{{foo.[bar.baz]}}`), give surprising results. (§02-11 items 5, 10–12; §03-10 item 20)
-15. Mixing multi-byte and ASCII indentation can make content-tag panic; *fixed* in
-    content-tag 4.2.1. (§01-1.11 item 7)
-    The lack of a way to write `</template>` inside a body is intentional (§01-1.2.2
-    rule 2, §01-1.11 item 8).
+15. *Resolved.* Mixing multi-byte and ASCII indentation no longer panics content-tag (fixed in
+    content-tag 4.2.1; §01-1.11 item 7). The lack of a way to write `</template>` inside a
+    body is intentional (§01-1.2.2 rule 2, §01-1.11 item 8).
 
 ### 0.7.3 Strict vs loose divergence
 

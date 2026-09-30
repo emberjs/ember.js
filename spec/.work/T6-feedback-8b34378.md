@@ -12,10 +12,10 @@ Resume from the first unticked item. Commit after each item: `spec(T6): ...` etc
       STATUS decisions.
 
 ## T7 — landed fixes (Opus)
-- [ ] §02-6.9, §02-9 (error catalogue), §02-11 items 1, 2, 7 rewritten for #21635
-- [ ] §03-10 item 11 and any §03 normative text on each-in
-- [ ] §01-1.2.4 and §01-1.11 item 7 for content-tag 4.2.1
-- [ ] §0.7 entries, STATUS "Still to do" cleared
+- [x] §02-6.9, §02-9 (error catalogue), §02-11 items 1, 2, 7 rewritten for #21635
+- [x] §03-10 item 11 and any §03 normative text on each-in
+- [x] §01-1.2.4 and §01-1.11 item 7 for content-tag 4.2.1
+- [x] §0.7 entries, STATUS "Still to do" cleared
 
 ## T8 — citation refresh after merging main (Sonnet agent) — checklist .work/T8-citations.md
 ## T9 — verification gaps (Sonnet agents, one at a time)
