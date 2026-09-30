@@ -271,7 +271,8 @@ choice breaks someone.
     (§08-14 Q16, §03-5.3)
 19. Reserved names: `{{#let v as |this|}}` rebinds `this`, although element block params
     forbid it, and `action` is still a reserved, rewritten keyword with no runtime
-    implementation. (§03-10 item 4, §08-14 Q7)
+    implementation (cleanup proposed, branch `cleanup/remove-action-keyword`).
+    (§03-10 item 4, §08-14 Q7)
 
 ### 0.7.4 Babel vs runtime compile paths
 
@@ -358,7 +359,9 @@ to addon tooling.
 40. Ember render timing: `renderComponent` called during a render defers the new root, so
     its `destroy()` does nothing and both renders stay live. Each outlet level renders one
     microtask late, and nothing tests whether the empty intermediate state can be observed.
-    (§08-14 Q9, Q14)
+    `{{outlet}}` inside a component stopped rendering with the route manager merge
+    (`4b5d79a6d7d1b`), a confirmed regression with tests on branch
+    `test/outlet-inside-component`. (§08-14 Q2, Q9, Q14)
 
 *Note:* §04-4.14 lists wire-format issues (no version marker, unused upvars, `InElement`
 guid collisions). The wire format is informative (§0.2), so these are not requirements.
