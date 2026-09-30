@@ -939,7 +939,7 @@ Ember's `toIterator` (`packages/@ember/-internals/glimmer/lib/utils/iterator.ts:
 | not an object/function (`null`, `undefined`, `false`, numbers, strings…) | none (empty); only an `undefined` path is tested (`each-test.js:1155-1182`) |
 | native array (only if not already handled above) | `(a[i], i)` — holes of sparse arrays are visited as `undefined` (`each-test.js:1187-1212`, via `emberA`) |
 | Ember array (`isEmberArray`) | `(objectAt(a, i), i)` (`each-test.js:1040-1048`) |
-| object with `Symbol.iterator` (Set, generator, Map…) | `(value, i)` — for a `Map`, value is the `[key, value]` entry (native `Set`: `each-test.js:1050-1066`; custom iterable: `each-test.js:1078-1084`, and, autotracked, `lib/suites/each.ts:49-95`; the `Map` entry shape is untested) |
+| object with `Symbol.iterator` (Set, generator, Map…) | `(value, i)` — for a `Map`, value is the `[key, value]` entry (native `Set`: `each-test.js:1050-1066`; custom iterable: `each-test.js:1078-1084`, and, autotracked, `lib/suites/each.ts:89-135`; the `Map` entry shape is untested) |
 | object with a `forEach` method | `forEach` is called once, eagerly; items collected as `(item, i)` (`each-test.js:1068-1076`) |
 | any other object | none (empty) (untested) |
 | wrapper produced by `-each-in` (§5.5) | see §5.5 |
@@ -966,10 +966,10 @@ expression's value has no effect until the whole `each` is re-rendered for some 
 
 | `key` | key of item `(value, memo)` |
 |---|---|
-| `"@identity"` (default) | `value` itself; `null` is mapped to a private sentinel object (primitives: `each-test.js:465-481`, mixed objects and primitives: `each-test.js:483-501`; untracked items with `@identity` are not re-read: `lib/suites/each.ts:296-312`) |
-| `"@index"` | `String(memo)` (`each-test.js:447-463`; `lib/suites/each.ts:123-149`) (for arrays: the index as a string; for `each-in`, the property/map key as a string — so `@index` in `each-in` keys by property name, and distinct object Map keys that stringify alike collide: `packages/@ember/-internals/glimmer/tests/integration/syntax/each-in-test.js:724-835`) |
+| `"@identity"` (default) | `value` itself; `null` is mapped to a private sentinel object (primitives: `each-test.js:465-481`, mixed objects and primitives: `each-test.js:483-501`; untracked items with `@identity` are not re-read: `lib/suites/each.ts:336-352`) |
+| `"@index"` | `String(memo)` (`each-test.js:447-463`; `lib/suites/each.ts:163-189`) (for arrays: the index as a string; for `each-in`, the property/map key as a string — so `@index` in `each-in` keys by property name, and distinct object Map keys that stringify alike collide: `packages/@ember/-internals/glimmer/tests/integration/syntax/each-in-test.js:724-835`) |
 | `"@key"` | `memo` (for arrays the index number; for `each-in` the property/map key; tested only for `each-in`, `each-in-test.js:750-768`) |
-| any other string `p` | `value == null ? value : getPath(value, p)` (Ember `get`, supports dotted paths; `each-test.js:411-445`, `lib/suites/each.ts:97-121`) |
+| any other string `p` | `value == null ? value : getPath(value, p)` (Ember `get`, supports dotted paths; `each-test.js:411-445`, `lib/suites/each.ts:137-161`) |
 | [Dev] string starting with `@` other than the above | throws `invalid keypath: '${path}', valid keys: @index, @identity, or a path` (untested) |
 
 (`iterable.ts:37-76`.) **Duplicate keys** are made unique within one iteration: the first
@@ -978,7 +978,7 @@ synthetic identity for the pair `(k, n)` that is the same object in every later 
 (`iterable.ts:78-139`). Thus the list `["a", "b", "a", "a"]` has keys `a, b, (a,1), (a,2)`,
 and removing the first `"a"` makes the old `(a,1)` item become key `a` — i.e. DOM is matched by
 occurrence number, not by position. Tests confirm only that every duplicate renders and
-survives updates (`each-test.js:503-523`, `573-595`, `653-669`; `lib/suites/each.ts:191-262`); the
+survives updates (`each-test.js:503-523`, `573-595`, `653-669`; `lib/suites/each.ts:231-302`); the
 occurrence-numbering rule itself is untested.
 
 Key comparison is by `===` (SameValueZero is **not** used: `NaN` keys never match; see Open
@@ -1002,7 +1002,7 @@ renderEach(L, key, bodyBlock, elseBlock):
 Block params: the first is the item value, the second is the memo (the index number for
 arrays/iterables; the key for `each-in`). Both are reactive: when the item is retained with a
 new value or a new index, positions that read them are updated in place
-(`lib/suites/each.ts:151-189`, `each-test.js:393-409`, `updating-test.ts:1666-1700`,
+(`lib/suites/each.ts:191-229`, `each-test.js:393-409`, `updating-test.ts:1666-1700`,
 `1825-1860`). Extra block params beyond two are `undefined` (untested).
 
 #### 5.4.4 Update algorithm
@@ -1013,7 +1013,7 @@ On an update pass, if the list computation is invalid, a new iterator is compute
    the whole outer region R is replaced: every existing item is destroyed and the list (or the
    `else` block) is rendered from scratch (`lists.ts:26`). *No* item DOM is reused across an
    empty/non-empty transition. Tests confirm the rendered output and that removed components
-   are destroyed on emptying (`updating-test.ts:1985-2022`; `lib/suites/each.ts:97-121`,
+   are destroyed on emptying (`updating-test.ts:1985-2022`; `lib/suites/each.ts:137-161`,
    `345-372`); node non-reuse across the transition is untested.
 2. Otherwise, if the iterator is a new one (the list computation was re-evaluated), the list is
    **synchronized** (below). If the list computation was valid, synchronization is skipped
@@ -1074,15 +1074,15 @@ Observable consequences:
 Tests: `updating-test.ts:1492-1531` (bounds after swap/delete/empty), `1548-1985` (keyed updates,
 `else`), `1985-2058` (a component's `willDestroy` has run by the time `rerender` returns, both
 for a removed item and for the whole list emptied; see §05-11.3); `updating-test.ts:563-573`
-(a helper passed to `each` is not torn down when the list toggles between empty and non-empty); `packages/@glimmer-workspace/integration-tests/lib/suites/each.ts:374-742`
+(a helper passed to `each` is not torn down when the list toggles between empty and non-empty); `packages/@glimmer-workspace/integration-tests/lib/suites/each.ts:414-782`
 pins the exact retain/move/insert/delete steps (in `LOCAL_DEBUG` builds only), e.g. swapping
 items 1 and 7 of `1..8` is `retain 1, move 8, retain 3..7, move 2`; rotating `[8,1..7]` →
 `move 8, move-retain 1, retain 2..7`; random shuffles perform no inserts or deletes and at most
 `length` moves+retains. Duplicate primitives, duplicate objects, and duplicate key values all
-render every occurrence (`each.ts:192-261`). Sync steps run only when `LOCAL_DEBUG` is set;
+render every occurrence (`each.ts:232-301`). Sync steps run only when `LOCAL_DEBUG` is set;
 in normal test runs those tests return early, so the step sequences are pinned only for
 developers who enable that flag. Insert and delete steps are asserted only as upper bounds
-(`each.ts:646-720`); that inserted items render before later retained items are revalidated,
+(`each.ts:686-760`); that inserted items render before later retained items are revalidated,
 and that deleted items are removed in old-list order, are untested.
 
 ### 5.5 `{{#each-in}}`

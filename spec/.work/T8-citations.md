@@ -14,7 +14,7 @@ Resume from the first unticked item. Commit after each item: `spec(T8): <file>`.
 
 - [x] (30 checked: 02/03 cites all verified; 28 renumbered, 2 already right + E42-E47/02-6.x already correct, catalogue E6-E22 renumbered; note: 02-6.7 `323-350`, E18 `270-274`, 02-6.9 `228-321` tightened) handlebars-node-visitors.ts (≈29 citations; §02 mostly, some §03). Note: §02-3.3, §02-3.8, §02-6.7, §02-6.9–6.11 and catalogue rows E18, E42–E47 were just rewritten against the new code — verify them too, but they should already be right. Catalogue rows E6–E21 still use pre-merge numbers.
 - [x] parser-node-test.ts (15 checked, 5 renumbered; 02:971 already pointed at the new tests)
-- [ ] integration-tests/lib/suites/each.ts (≈12)
+- [x] integration-tests/lib/suites/each.ts (10 checked, 10 renumbered +40 after two inserted tests)
 - [ ] reference/lib/iterable.ts (≈8)
 - [ ] syntax/lib/parser.ts (≈5; distinguish from @handlebars `lib/parser.js`)
 - [ ] parser-error-test.ts (≈4)
