@@ -586,7 +586,7 @@ is the name. Emitted for **every** free variable in "strict resolution", which c
 `packages/@glimmer/syntax/lib/v2/normalize.ts:225-236`, `320-345`):
 
 1. In strict mode, a host-provided *keyword* name (the `keywords` compile option; Ember
-   passes `STRICT_MODE_KEYWORDS`: `action`, `mut`, `readonly`, `unbound`, `-each-in`,
+   passes `STRICT_MODE_KEYWORDS`: `mut`, `readonly`, `unbound`, `-each-in`,
    `-in-el-null`, `-track-array`, `-mount`,
    `packages/@ember/template-compiler/lib/plugins/index.ts:56-70`).
 2. In loose mode, a free name in an *argument* position of a call, e.g. `bar` in

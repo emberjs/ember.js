@@ -844,18 +844,20 @@ The behavior these transforms produce is normative (it is specified in §03-7 an
 their existence and order as AST transforms is not (§00-0.1 "Non-goals"). The built-in transforms are selected by mode (`packages/@ember/template-compiler/lib/plugins/index.ts:29-54`), in this order:
 
 - **Loose** (`RESOLUTION_MODE_TRANSFORMS`): TransformQuotedBindingsIntoJustBindings,
-  AssertReservedNamedArguments, TransformActionSyntax, AssertAgainstAttrs,
+  AssertReservedNamedArguments, AssertAgainstAttrs,
   TransformEachInIntoEach, AssertInputHelperWithoutBlock, TransformInElement,
   TransformEachTrackArray, AssertAgainstNamedOutlets, TransformWrapMountAndOutlet,
   TransformResolutions.
 - **Strict** (`STRICT_MODE_TRANSFORMS`): **AutoImportBuiltins**, TransformQuotedBindingsIntoJustBindings,
-  AssertReservedNamedArguments, TransformActionSyntax, TransformEachInIntoEach,
+  AssertReservedNamedArguments, TransformEachInIntoEach,
   TransformInElement, TransformEachTrackArray, AssertAgainstNamedOutlets,
   TransformWrapMountAndOutlet.
 
 Their individual semantics belong to §03 and §08. `STRICT_MODE_KEYWORDS`
-(`…/plugins/index.ts:56-70`) = `action`, `mut`, `readonly`, `unbound`, and the internal
+(`…/plugins/index.ts:56-70`) = `mut`, `readonly`, `unbound`, and the internal
 names `-each-in`, `-in-el-null`, `-track-array`, `-mount` introduced by the transforms.
+(TransformActionSyntax, and `action` in `STRICT_MODE_KEYWORDS`, were removed by
+emberjs/ember.js#21641, after this checkout's base; §03-7.3.)
 
 **AutoImportBuiltins** (strict mode only; `packages/@ember/template-compiler/lib/plugins/auto-import-builtins.ts:10-69`;
 normative in §03-7.1, runtime meaning in §08-1.3):

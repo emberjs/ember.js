@@ -204,7 +204,7 @@ Shadowing rules that a conforming implementation MUST follow:
 - A block param or template local shadows the auto-imported built-ins (`on`, `fn`, `array`,
   ...; §03-7.1).
 - **Exception (strict mode, Ember keyword list)**: names in the `keywords` option
-  (`action`, `mut`, `readonly`, `unbound`, and the internal `-each-in`, `-in-el-null`,
+  (`mut`, `readonly`, `unbound`, and the internal `-each-in`, `-in-el-null`,
   `-track-array`, `-mount`) are shadowed **only** by `lexicalScope`. They are *not*
   shadowed by block params or by `locals` (`normalize.ts:127-129, 226-236`). This is
   observable: with `strictMode: true, locals: ['mut']`, `{{mut}}` compiles to the keyword
@@ -325,7 +325,6 @@ of Glimmer-native keyword names, with the positions in which each is *valid*:
 
 | Keyword | Append | Block | Call | Modifier | Implemented by Glimmer compiler? |
 |---|:-:|:-:|:-:|:-:|---|
-| `action` | | | ✓ | ✓ | No (Ember plugin §03-7.3; runtime helper removed, §03-10) |
 | `component` | ✓ | ✓ | ✓ | | Yes |
 | `debugger` | ✓ | | | | Yes |
 | `each` | | ✓ | | | Yes |
@@ -591,12 +590,11 @@ or `<div {{(if c (modifier on "click" f))}}>`.
 
 ### 03-4.5 Keywords that Glimmer recognizes but does not implement
 
-`action`, `each-in`, `mount`, `outlet`, `mut`, `readonly`, `unbound` are in `KEYWORDS_TYPES`
+`each-in`, `mount`, `outlet`, `mut`, `readonly`, `unbound` are in `KEYWORDS_TYPES`
 only for misuse diagnostics and `getTemplateLocals` filtering. Their meaning comes from:
 
 - Ember AST rewrites: `each-in` → `each` + `(-each-in)` (§03-7.6); `mount` →
-  `{{component (-mount ...)}}` and `outlet` → `<@outlet />` (§03-7.10); `action` gets `this`
-  prepended (§03-7.3).
+  `{{component (-mount ...)}}` and `outlet` → `<@outlet />` (§03-7.10).
 - Runtime built-in keyword helpers: `mut`, `readonly`, `unbound`, and the internal
   `-each-in`, `-track-array`, `-in-el-null`, `-resolve`, `-hash`, `-normalize-class`
   (`packages/@ember/-internals/glimmer/lib/resolver.ts:88-98`). In loose mode, a free
@@ -617,9 +615,10 @@ expression instead of a variable reference (`normalize.ts:226-236`). Such an exp
   (Ember: `lookupBuiltInHelper` / `lookupBuiltInModifier`, §08);
 - is **not** shadowed by block params or `locals` (§03-3.4, §03-10).
 
-Ember's list is `STRICT_MODE_KEYWORDS = ['action', 'mut', 'readonly', 'unbound', '-each-in',
+Ember's list is `STRICT_MODE_KEYWORDS = ['mut', 'readonly', 'unbound', '-each-in',
 '-in-el-null', '-track-array', '-mount']` (`packages/@ember/template-compiler/lib/plugins/index.ts:56-70`).
-The `-` names can only arise from the Ember rewrites (§03-7), because they are not valid
+(`action` was removed from this list and from `KEYWORDS_TYPES` by emberjs/ember.js#21641, after
+this checkout's base; the cited lines still include it. See §03-7.3.) The `-` names can only arise from the Ember rewrites (§03-7), because they are not valid
 JS identifiers. The Glimmer test `'Non-native keyword'` shows the generic mechanism
 (`strict-mode-test.ts:98-118`).
 
@@ -633,8 +632,9 @@ has-block, hasBlock, if, in-element, let, link-to, loc, log, mount, mut, outlet,
 readonly, unbound, unless, with, yield` (`rfcs/text/0496-handlebars-strict-mode.md`, "Keywords").
 The current implementation differs:
 
-- `hasBlock`, `link-to`, `loc`, `query-params`, and `with` are **not** keywords anymore
-  (`with` was removed, RFC 0445; the others were removed with their features). In strict mode
+- `action`, `hasBlock`, `link-to`, `loc`, `query-params`, and `with` are **not** keywords
+  anymore (`with` was removed, RFC 0445; `action` by emberjs/ember.js#21641 after its helper and
+  modifier were removed, RFC 1006; the others were removed with their features). In strict mode
   they are ordinary names and MUST be in scope.
 - `component`, `helper`, `modifier` (RFC 0432), `debugger`, and the internal
   `-get-dynamic-var` / `-with-dynamic-vars` are keywords.
@@ -644,7 +644,7 @@ be in scope, always shadowable by locals except as noted in §03-3.4):
 
 > `component`, `debugger`, `each`, `each-in`, `has-block`, `has-block-params`, `helper`,
 > `if`, `in-element`, `let`, `log`, `modifier` (Call only), `mount`, `outlet`, `unless`,
-> `yield`, `action`, `mut`, `readonly`, `unbound`, `-get-dynamic-var`, `-with-dynamic-vars`.
+> `yield`, `mut`, `readonly`, `unbound`, `-get-dynamic-var`, `-with-dynamic-vars`.
 
 Separately, these are **auto-imported built-ins** (RFCs 0997 `on`, 0998 `fn`, 0999 `hash`,
 1000 `array`, 0560 `eq`/`neq`, 0561 `gt`/`gte`/`lt`/`lte`, 0562 `and`/`or`/`not`, 0389
@@ -1079,19 +1079,16 @@ the value with that mustache. So `style="{{x}}"` behaves like `style={{x}}`, and
 no longer stringified by concatenation (see §05 for the effect on `SafeString` warnings).
 `style="a {{x}}"` is unchanged. No errors.
 
-#### 03-7.3 `TransformActionSyntax` (both) [Legacy]
+#### 03-7.3 `TransformActionSyntax` (removed)
 
-`plugins/transform-action-syntax.ts`. For every `ElementModifierStatement`,
-`MustacheStatement`, or `SubExpression` whose path's `original` is exactly `action` and
-`!hasLocal('action')`, insert the path `this` as the **first** positional parameter.
-`{{action "foo"}}` → `{{action this "foo"}}`. No errors. *Note:* the runtime `action`
-helper/modifier was removed (RFC 1006; `packages/@ember/-internals/glimmer/lib/resolver.ts:119-121`).
-The static consequences are: in loose mode `action` is an ordinary free name, so `(action …)`
-and `<div {{action …}}>` resolve a user-registered helper or modifier named `action`, while
-`{{action …}}` in append position is the keyword-misuse error of §03-4.3 (`action` is valid
-only in Call and Modifier position; verified). In strict mode `action` is a host keyword
-(§03-4.6), so all three forms compile, including the append form (verified). What happens
-at runtime is §08-2.20.
+This rewrite, which inserted `this` as the first argument of `{{action …}}`, `(action …)` and
+`<div {{action …}}>`, was removed together with `action`'s keyword status by
+emberjs/ember.js#21641 (after this checkout's base, which still has
+`plugins/transform-action-syntax.ts`). The runtime `action` helper and modifier had already been
+removed (RFC 1006). `action` is now an ordinary name: in strict mode it must be in scope, and a
+lexical `action` binding is used like any other; in loose mode `action` resolves through the
+registry like any other helper or modifier, and a registered `helper:action` receives exactly
+the arguments written. What an unresolved `action` does at runtime is §08-2.20.
 
 #### 03-7.4 `AssertReservedNamedArguments` (both) [Dev]
 
@@ -1273,14 +1270,14 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
 ## 03-10 Open questions / inconsistencies
 
 1. **Strict-mode host keywords ignore block params and `locals`.** `isKeyword` checks only
-   `lexicalScope` (`normalize.ts:127-129`), so `action`/`mut`/`readonly`/`unbound` cannot be
+   `lexicalScope` (`normalize.ts:127-129`), so `mut`/`readonly`/`unbound` cannot be
    shadowed by a block param, or by a JS binding passed through `locals` (the babel path).
    A lexical binding passed through `lexicalScope` (the runtime `template()`) does shadow.
    The two authoring paths therefore disagree (verified with `locals: ['mut']` against
    `scope: () => ({ mut })`). (verified: babel wire, runtime; T9a. Babel wire emits the keyword
-   opcode (31) for `{{mut 1}}`, `{{action 1}}`, `{{readonly 1}}` and `{{unbound 1}}` whether the name is in
-   `scope`, bound by `eval` capture, or a block param. At run time a `scope` or `eval` binding of
-   each of the four makes `{{k "x"}}` call the local and render its result, while a block param
+   opcode (31) for `{{mut 1}}`, `{{readonly 1}}` and `{{unbound 1}}` (and, before #21641, `{{action 1}}`)
+   whether the name is in `scope`, bound by `eval` capture, or a block param. At run time a `scope`
+   or `eval` binding of each of them makes `{{k "x"}}` call the local and render its result, while a block param
    `|mut|` still gets the keyword, which asserts "You can only pass a path to mut".)
 2. **Loose mode + `lexicalScope`**: `{{foo.bar}}` with a lexical `foo` is a "not in scope"
    error, because `isFreeVar` consults only `locals` (`normalize.ts:131-143`). Angle brackets
@@ -1331,7 +1328,7 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
     compiles to `each` over `(-each-in …)` and the block param is unused; at run time it renders like
     the control. With `|in-element|`, `{{#in-element this.x}}` gets the `-in-el-null` argument and
     invokes the block param as a component, which fails at run time with "Got 1, expected:".)
-15. **`action`** is still a keyword (`KEYWORDS_TYPES`, `STRICT_MODE_KEYWORDS`) and is still
+<!-- REMOVE -->15. **`action`** is still a keyword (`KEYWORDS_TYPES`, `STRICT_MODE_KEYWORDS`) and is still
     rewritten, but its runtime implementation has been removed (RFC 1006). In strict mode
     every `action` form compiles and then fails at runtime resolution (§03-7.3, §08-2.20).
     Recorded as §08-14 Q7, which owns it.

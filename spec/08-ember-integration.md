@@ -171,12 +171,12 @@ auto-imported; they must be imported (`import { concat, get, uniqueId } from '@e
 `keywords = STRICT_MODE_KEYWORDS` to the template compiler (`compile-options.ts:144-146`):
 
 ```text
-action, mut, readonly, unbound, -each-in, -in-el-null, -track-array, -mount
+mut, readonly, unbound, -each-in, -in-el-null, -track-array, -mount
 ```
 
 (`plugins/index.ts:56-70`). These free names compile to strict-keyword references
 (`GetStrictKeyword`, §04) and are resolved at runtime by `lookupBuiltInHelper`
-(§1.1). `action` is listed but no longer has an implementation (§2.20).
+(§1.1). `action` was removed from this list by emberjs/ember.js#21641 (§2.20).
 
 **(c) Syntax keywords** handled by the generic compiler — `if`, `unless`, `each`, `let`,
 `yield`, `has-block`, `has-block-params`, `component`, `helper`, `modifier`, `in-element`,
@@ -215,9 +215,8 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
 2. `assert-reserved-named-arguments` — **[Dev]** `@arguments`, `@args`, `@block`, `@else`, any
    `@` followed by a non-lowercase character, and `@__ARGS__` / `__ARGS__=` are compile errors
    `'${name}' is reserved.` (`assert-reserved-named-arguments.ts:19-48`).
-3. `transform-action-syntax` — inserts `this` as the first param of `{{action …}}`, `(action …)`
-   and `<el {{action …}}>` (`transform-action-syntax.ts:31-73`). **[Legacy]** No `action`
-   helper/modifier exists anymore (§2.20).
+3. *(removed)* `transform-action-syntax`, which inserted `this` as the first argument of
+   `action`, was removed by emberjs/ember.js#21641 (§03-7.3, §2.20).
 4. `assert-against-attrs` (loose only) — **[Dev]** `{{attrs.x}}` is a compile error
    `Using {{attrs}} to reference named arguments is not supported. {{attrs.x}} should be updated to {{@x}}. <loc>`;
    `{{this.attrs.x}}` emits deprecation `attrs-arg-access` and is **rewritten to `@x`**
@@ -246,7 +245,7 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
     (`transform-resolutions.ts:66-200`). **[Dev]** zero params is a compile error
     `The ${type} keyword requires at least one positional arguments <loc>`.
 
-Strict mode runs `auto-import-builtins` first, then steps 1, 2, 3, 5, 7, 8, 9, 10
+Strict mode runs `auto-import-builtins` first, then steps 1, 2, 5, 7, 8, 9, 10
 (`plugins/index.ts:44-54`) — i.e. no `attrs` assertion, no `input` assertion, no
 `transform-resolutions`.
 
@@ -627,25 +626,21 @@ The runtime `toIterator` for plain `{{#each}}` (§10.2) is also Ember's.
 
 The `{{action}}` helper and modifier were removed (RFC
 `rfcs/text/1006-deprecate-action-template-helper.md`; commit `c1c8b00f70` "Remove
-DEPRECATE_TEMPLATE_ACTION"). `action` remains a syntax keyword
-(`packages/@glimmer/syntax/lib/keywords.ts`), a strict keyword (§1.3(b)) and the target of
-`transform-action-syntax`, but no implementation exists in any resolver table. Which forms
-compile is specified in §03-7.3. At runtime:
+DEPRECATE_TEMPLATE_ACTION"), and emberjs/ember.js#21641 removed what was left: `action` is no
+longer a syntax keyword, a strict keyword (§1.3(b)), or rewritten by `transform-action-syntax`
+(§03-7.3). It is an ordinary name. At runtime:
 
-- **[Loose mode]** `(action …)` and `<div {{action …}}>` resolve `helper:action` /
-  `modifier:action` through the registry (§5.3, §5.4). Unless an app registers one, the
-  **[Dev]** error is the generic ``Attempted to resolve `action`, which was expected to be a
-  helper, but nothing was found.`` (or `…a modifier…`). `{{action …}}` in append position does
-  not compile in loose mode.
-- Strict mode: `action` is a strict keyword, looked up with `lookupBuiltInHelper` /
-  `lookupBuiltInModifier`, which return `null`. The **[Dev]** error is
-  `Attempted to resolve a helper in a strict mode template, but that value was not in scope: action`
-  for `{{action …}}` and `(action …)`, and
-  `Attempted to resolve a modifier in a strict mode template, but it was not in scope: action`
-  (note "it was") for `<div {{action …}}>`
-  (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts:165-168,217-229,425-454`).
+- **[Loose mode]** `{{action …}}`, `(action …)` and `<div {{action …}}>` resolve
+  `helper:action` / `modifier:action` through the registry (§5.3, §5.4), and a registered one
+  receives exactly the arguments written. Unless an app registers one, the **[Dev]** error is the
+  generic ``Attempted to resolve `action`, which was expected to be a component or helper, but
+  nothing was found.`` (or `…a helper…`, `…a modifier…`).
+- Strict mode: an unbound `action` is the ordinary compile-time "not in scope" error
+  (`Attempted to resolve a helper in a strict mode template, but that value was not in scope: action`,
+  and the component-or-helper and modifier variants), and a lexical `action` binding works.
 
-See Q7. The `@action` *decorator* from `@ember/object` is unrelated and remains.
+(This checkout predates #21641, so its code still has the keyword and rewrite.) The `@action`
+*decorator* from `@ember/object` is unrelated and remains.
 
 ### 2.21 `on` modifier
 
@@ -1908,7 +1903,7 @@ returns the *factory* for classic `Helper` subclasses so injections apply
 (`resolver.ts:160-183`). A classic helper obtained via `(helper "x")` is therefore created with
 `Class.create(ownerInjection)` rather than through the container. Untested.
 
-**Q7. `action` leftovers.** `action` is still a syntax keyword, a strict-mode keyword, and
+<!-- REMOVE -->**Q7. `action` leftovers.** `action` is still a syntax keyword, a strict-mode keyword, and
 the target of `transform-action-syntax`, but has no runtime implementation. Error messages
 users get are generic resolution failures. In strict mode every use, even a lexically bound
 `action`, fails with the internal error "Strict mode errors should already be handled at compile

@@ -269,14 +269,12 @@ choice breaks someone.
 18. In loose mode, a free name used as an argument (`{{foo bar}}`) is looked up as a strict
     keyword, and the error message says "strict mode". Should this be a compile-time error?
     (§08-14 Q16, §03-5.3)
-19. Reserved names: `{{#let v as |this|}}` rebinds `this`, although element block params
-    forbid it, and `action` is still a reserved, rewritten keyword with no runtime
-    implementation (cleanup proposed, branch `cleanup/remove-action-keyword`).
-    (§03-10 item 4, §08-14 Q7)
+19. `{{#let v as |this|}}` rebinds `this`, although element block params forbid it.
+    (§03-10 item 4)
 
 ### 0.7.4 Babel vs runtime compile paths
 
-20. `action`, `mut`, `readonly` and `unbound` can be shadowed by the runtime path's
+20. `mut`, `readonly` and `unbound` can be shadowed by the runtime path's
     `lexicalScope` but not by babel's `locals`. (§03-10 item 1)
 21. The runtime implicit form misses locals that are `undefined`, that shadow a global
     (`name`, `status`, …), or that are `this`. The explicit form uses `in`, so it accepts
