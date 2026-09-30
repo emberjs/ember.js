@@ -1863,12 +1863,16 @@ exception. Nothing replaced it when the fallback was removed, so today the typo 
 No test pins either outcome for the no-argument case. A
 **[Dev]** error would be one option. (Static side: §03-5.3.)
 
+> This is yucky but loose mode should be kept as stable as possible while it's being phased out. This is a perfect example of why loose mode is "loose" and no longer recommended. So we should maintain this behavior. In practice, the no-curly-component-invocation and no-implicit-this rules in ember-template-lint both flag the problematic case.
+
 **Q2. `{{outlet}}` outside route templates.** `{{outlet}}` is now `<@outlet />`, i.e.
 lexically scoped to the enclosing template's `@outlet` argument. Historically `{{outlet}}` was
 dynamically scoped (it worked inside any component rendered by a route template). A component
 template containing `{{outlet}}` now silently renders nothing; and a component passed `@outlet`
 explicitly could render the outlet anywhere. Neither behaviour is tested. Also, `@outlet` is
 visible as an ordinary named argument (e.g. `{{#if @outlet}}`), which is new surface.
+
+> If I understand this correctly, we recently introduced a breaking change here (when we landed the new route manager support). Can we produce a branch (against main) with a test that passed before 4b5d79a6d7d1b and fails after it?
 
 **Q3. Loose vs strict availability of the 7.1 built-ins.** `eq`, `neq`, `gt`, `gte`, `lt`, `lte`,
 `and`, `or`, `not`, `element` are auto-imported in strict mode but absent from the loose-mode
@@ -1899,6 +1903,8 @@ returns the *factory* for classic `Helper` subclasses so injections apply
 the target of `transform-action-syntax`, but has no runtime implementation. Error messages
 users get are generic resolution failures. A new implementation should decide whether to keep
 reserving the name.
+
+> Let's make a branch with a cleanup for this. 
 
 **Q8. Curly `{{input}}`/`{{textarea}}`/`{{link-to}}` and HTML attributes.** Internal
 components ignore unsupported named arguments, so `{{input placeholder="x" disabled=true}}`
