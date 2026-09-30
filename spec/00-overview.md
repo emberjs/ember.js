@@ -200,6 +200,9 @@ choice breaks someone.
 2. `template(src, { strict: false })` is loose through babel `hbs`, strict through babel
    `wire`, and strict at run time, because the runtime reads only `strictMode`. Which option
    name wins, and what does it mean? (§01-1.11 item 1; verified: babel hbs, babel wire, runtime)
+
+    > Is there actually an open question remaining here? The newest layer of public api is `template()` and that was written to use `strict` as the option. I think that works consistently. There are older low-level functions that use strictMode instead, but I don't think there's an ambiguity.
+
 3. `updateComponent` and the classic `willUpdate`/`didUpdate`/`didRender` hooks run on any
    invalidation inside the component's region, not only on argument changes. Tests pin this,
    so finer-grained regions would be incompatible. (§06-12 Q12, §08-14 Q11)
@@ -209,6 +212,9 @@ choice breaks someone.
    (§05-14 item 19)
 5. Triple curlies are ignored for literals and keyword appends: `{{{"<b>"}}}`,
    `{{{if c x}}}` and `{{{helper h}}}` render text. (§05-14 item 18)
+
+  > Let's make a bugfix branch for this.
+
 6. In loose mode, `{{foo}}` renders nothing, with no error, when neither `component:foo` nor
    `helper:foo` exists. (§08-14 Q1)
 7. *Resolved (accepted):* legacy and stage-3 `@tracked` differ observably in initialization
@@ -218,9 +224,15 @@ choice breaks someone.
    static invocation of a template-only component evaluates only the arguments its layout
    reads, while a dynamic one evaluates all of them. `createHelper` runs eagerly in static
    position but re-runs on tracked reads in dynamic position. (§06-12 Q5, Q6)
+
+    > User code is not supposed to make any assumptions about when or how often its tracked state gets consumed by the rendering engine. The rendering engine reserves the right to optimize that when possible.
+
 9. Path computations are shared per (parent, segment), so `{{this.foo}} {{this.foo}}` runs
    the `foo` getter once, and the sharing crosses component boundaries. §07-4.2 requires no
    more evaluations than today. Is that sharing a contract or an artifact? (§07-5 item 5)
+
+   > This is a consequence of the same point as above. The engine is allowed to optimize evaluation and user code isn't supposed to care. So no, we do not want to make evaluation counts or getter side-effects part of the contract with user code, and the spec can be clear about that.
+
 10. `&#128512;` decodes through `String.fromCharCode` to U+F600. Templates may depend on
     this. (§02-11 item 9)
 

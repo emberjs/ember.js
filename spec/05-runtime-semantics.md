@@ -2186,6 +2186,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    namespace (tested, `updating-svg-test.ts:108-134`), but `null` → value re-creates the
    attribute in the null namespace (untested). Property-mode removal does use
    `removeAttributeNS`. Should a new implementation fix this?
+
+   > Let's make a proposed bugfix branch for this.
+
 2. **`false` in merged `class`.** A lone `class={{false}}` removes the attribute; when several
    `class` values are merged (splattributes/modifiers), `false` becomes the class `"false"`
    (`packages/@glimmer/runtime/lib/references/class-list.ts:9-12` uses `normalizeStringValue`).
@@ -2198,6 +2201,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    consumed in the subtree changed, not only arguments. Recorded as §06-12 Q12.
 5. **`each` key read once.** The `key=` value is read only when the `each` region is (re)created;
    changing it later has no effect (`lists.ts:19-21`).
+
+   > This is OK, keep this behavior. 
+
 6. **`NaN` keys** never match (`===`), so an item keyed by `NaN` is re-created every sync.
 7. **Dynamic head with a primitive value and arguments** (`{{this.str 1}}`) silently renders
    nothing even in development, while an object without managers throws
@@ -2210,6 +2216,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    helper-position tests; content-position precedence needs a test.
 9. **`<svg>` inside `<foreignObject>`** is created in the HTML namespace, because the
    integration-point test runs before the `tag == "svg"` test (`operations.ts:53-79`).
+
+   > Let's create a proposed bugfix branch for this.
+
 10. **Serialize builder `in-element`** defaults `insertBefore` to `null`, so SSR never clears
     the destination, unlike the client and rehydration builders
     (`serialize-builder.ts:132-142`).
@@ -2242,6 +2251,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     Ember angle-bracket case, so the gap is small, but the reason for the skip is unrecorded.
 17. **`#each` visits sparse-array holes, `#each-in` skips them** — an inconsistency pinned by
     Ember tests (`each-test.js:1187-1212`, `each-in-test.js:459-475`).
+
+    > It's weird but that's the behavior and it doesn't need to change.
+
 18. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
     `{{{"<b>x</b>"}}}` compiles to a trusting append of a literal (`[2,"<b>x</b>"]`), but the
     literal fast path emits a text node, unlike `{{{this.x}}}` holding the same string.
@@ -2254,6 +2266,9 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     with `class` merging). For named arguments, a component's layout sees the first
     occurrence while its manager (e.g. a Glimmer component's `this.args`) sees the last. All
     of this is derived from source and untested. Should duplicates be a compile-time error?
+
+    > Lets create a bugfix branch proposing that these become compile errors. The commit description should have a complete explainer of the problem. I'll open the PR for team discussion before we decide whether this will land.
+
 20. **Claims with no test (T4).** These are derived from source only. The lifecycle and
     destruction orderings that used to be listed here (public-manager tree hook order,
     component hooks before modifier installs, `updateModifier` after `didUpdate`, modifier update

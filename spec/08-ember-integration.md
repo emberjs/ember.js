@@ -1854,8 +1854,13 @@ For debug labels in the backtracking message (§10.4) the outlet providers are n
 compiler emits an "optional component or helper" resolution; when neither
 `component:foo` nor `helper:foo` exists the resolution emits *nothing* — no error, no output
 (`packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/resolution.ts:403-422`, contrast
-the erroring `{{foo bar}}` path at `:316-341`). With implicit-`this` fallback removed this makes
-typos render empty silently. No test pins either outcome for the no-argument case. A
+the erroring `{{foo bar}}` path at `:316-341`). A typo rendering empty is not new: under the
+implicit-`this` fallback, `{{fooo}}` read `this.fooo`, which is `undefined`. What changed is
+the diagnostic. From Ember 3.26 until the fallback was removed in 4.0, that lookup raised the
+**[Dev]** `this-property-fallback` deprecation (commit `7b628fc857`, `since: { enabled: '3.26.0' }`,
+`until: '4.0.0'`), so a typo was reported; apps that treated deprecations as errors got an
+exception. Nothing replaced it when the fallback was removed, so today the typo is silent.
+No test pins either outcome for the no-argument case. A
 **[Dev]** error would be one option. (Static side: §03-5.3.)
 
 **Q2. `{{outlet}}` outside route templates.** `{{outlet}}` is now `<@outlet />`, i.e.

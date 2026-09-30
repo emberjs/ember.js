@@ -1513,6 +1513,9 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   incompatible. It is specified as normative. The same rule makes classic
   `willUpdate`/`willRender`/`didUpdate`/`didRender` fire on ancestors (§08-6.7, §08-14 Q11),
   which is long-standing documented classic behavior.
+
+  > We can keep the coarse granularity. All of these are compatibility for older component patterns and we want to maintain the old granularity for them. Typical modern components don't use any of these hooks and don't pay a cost for the coarse granularity.
+
 - **Q13: `hasScheduledEffect` / `runEffect`.** These are documented in `@ember/helper`, but
   they throw in dev and produce `undefined` in prod. `invokeHelper` throws for them in every
   build. The `@ember/helper` docs also mention a nonexistent `hasDestructor` option and a
