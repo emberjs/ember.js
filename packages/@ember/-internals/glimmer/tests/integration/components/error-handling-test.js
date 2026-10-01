@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask, defineSimpleModifier } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -106,6 +106,79 @@ moduleFor(
       } else {
         this.assertText('hello', 'it does rerender after error in production');
       }
+    }
+
+    ['@test it can recover resets the transaction when an error is thrown during modifier installation'](
+      assert
+    ) {
+      let shouldThrow = true;
+      let FooBarComponent = class extends Component {
+        inserted = defineSimpleModifier(() => {
+          if (shouldThrow) {
+            throw new Error('silly mistake!');
+          }
+        });
+      };
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div {{this.inserted}}>hello</div>'),
+          FooBarComponent
+        )
+      );
+
+      assert.throws(() => {
+        this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+          switch: true,
+        });
+      }, /silly mistake/);
+
+      assert.equal(
+        this.renderer._inRenderTransaction,
+        false,
+        'should not be in a transaction even though an error was thrown'
+      );
+
+      this.assertText('hello');
+
+      runTask(() => set(this.context, 'switch', false));
+
+      this.assertText('');
+    }
+
+    ['@test it can recover resets the transaction when an error is thrown during destroy'](assert) {
+      let shouldThrow = true;
+      let FooBarComponent = class extends Component {
+        willDestroy() {
+          super.willDestroy(...arguments);
+          if (shouldThrow) {
+            throw new Error('silly mistake!');
+          }
+        }
+      };
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+      );
+
+      this.render('{{#if this.switch}}{{#foo-bar}}{{foo-bar}}{{/foo-bar}}{{/if}}', {
+        switch: true,
+      });
+
+      this.assertText('hello');
+
+      assert.throws(() => {
+        runTask(() => set(this.context, 'switch', false));
+      }, /silly mistake/);
+
+      this.assertText('');
+
+      shouldThrow = false;
+      runTask(() => set(this.context, 'switch', true));
+
+      this.assertText('hello');
     }
   }
 );

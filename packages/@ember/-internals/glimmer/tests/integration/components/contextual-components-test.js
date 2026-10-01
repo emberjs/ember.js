@@ -757,6 +757,93 @@ moduleFor(
       this.assertText(`${expectedText},Hola`);
     }
 
+    ['@test renders with dot path and rest parameter does not leak'](assert) {
+      // In the original implementation, positional parameters were not handled
+      // correctly causing the first positional parameter to be the contextual
+      // component itself.
+      let value = false;
+
+      this.owner.register(
+        'component:my-component',
+        setComponentTemplate(
+          precompileTemplate(''),
+          class extends PositionalComponent {
+            static positionalParams = ['value'];
+
+            constructor(owner, args) {
+              super(owner, args);
+              value = this.value;
+            }
+          }
+        )
+      );
+
+      this.render(
+        strip`
+      {{#let (hash my-component=(component 'my-component' this.first)) as |c|}}
+        {{c.my-component}}
+      {{/let}}`,
+        { first: 'first' }
+      );
+
+      assert.equal(value, 'first', 'value is the expected parameter');
+    }
+
+    ['@test renders with dot path and updates attributes'](assert) {
+      this.owner.register(
+        'component:my-nested-component',
+        setComponentTemplate(
+          precompileTemplate('<span id="nested-prop">{{@my-parent-attr}}</span>'),
+          class extends Component {}
+        )
+      );
+
+      this.owner.register(
+        'component:my-component',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{yield (hash my-nested-component=(component "my-nested-component" my-parent-attr=@my-attr))}}'
+          ),
+          class extends Component {}
+        )
+      );
+
+      this.owner.register(
+        'component:my-action-component',
+        setComponentTemplate(
+          precompileTemplate(
+            '{{#my-component my-attr=@myProp as |api|}}{{api.my-nested-component}}{{/my-component}}<br><button onclick={{@changeValue}}>Change value</button>'
+          ),
+          class extends Component {}
+        )
+      );
+
+      this.render('{{my-action-component myProp=this.model.myProp changeValue=this.changeValue}}', {
+        model: {
+          myProp: 1,
+        },
+        changeValue: () => this.context.incrementProperty('model.myProp'),
+      });
+
+      assert.equal(this.$('#nested-prop').text(), '1');
+
+      runTask(() => this.rerender());
+
+      assert.equal(this.$('#nested-prop').text(), '1');
+
+      runTask(() => this.$('button').click());
+
+      assert.equal(this.$('#nested-prop').text(), '2');
+
+      runTask(() => this.$('button').click());
+
+      assert.equal(this.$('#nested-prop').text(), '3');
+
+      runTask(() => this.context.set('model', { myProp: 1 }));
+
+      assert.equal(this.$('#nested-prop').text(), '1');
+    }
+
     ["@test adding parameters to a contextual component's instance does not add it to other instances"]() {
       // If parameters and attributes are not handled correctly, setting a value
       // in an invokation can leak to others invocation.

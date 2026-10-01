@@ -1349,7 +1349,7 @@ moduleFor(
 );
 
 moduleFor(
-  'Run loop and lifecycle hooks',
+  'Run loop and lifecycle hooks (classic component)',
   class extends RenderingTestCase {
     ['@test afterRender set']() {
       let ComponentClass = class extends Component {
