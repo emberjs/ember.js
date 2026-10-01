@@ -21,7 +21,7 @@ import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { copyDefaultValue } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
-import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
+import InternalActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler-internal';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import lookupDescriptor from '@ember/-internals/utils/lib/lookup-descriptor';
 import type { AnyFn } from '@ember/-internals/utility-types';
@@ -106,7 +106,7 @@ type MaybeReturnType<T> = T extends AnyFn ? ReturnType<T> : unknown;
   @public
 */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface Route<Model = unknown> extends ActionHandler {
+interface Route<Model = unknown> extends InternalActionHandler {
   /**
     The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
@@ -280,7 +280,7 @@ interface Route<Model = unknown> extends ActionHandler {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
+class Route<Model = unknown> extends EmberObject.extend(InternalActionHandler) {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.
