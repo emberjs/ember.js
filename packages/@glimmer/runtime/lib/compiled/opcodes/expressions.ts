@@ -39,13 +39,19 @@ import {
 } from '@glimmer/debug/lib/stack-check';
 import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import assert from '@glimmer/debug-util/lib/assert';
-import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
+import {
+  _hasDestroyableChildren,
+  associateDestroyableChild,
+  destroy,
+  registerDestructor,
+} from '@glimmer/destroyable';
 import { debugAssert, toBool } from '@glimmer/global-context';
 import { getInternalHelperManager } from '@glimmer/manager/lib/internal/api';
 import {
   childRefFor,
   createComputeRef,
   FALSE_REFERENCE,
+  NULL_REFERENCE,
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
   valueForRef,
@@ -55,6 +61,7 @@ import { isIndexable } from '@glimmer/util/lib/collections';
 import { $v0 } from '@glimmer/vm/lib/registers';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
+import { isInternalHelper } from '../../helpers/internal-helper';
 import { APPEND_OPCODES } from '../../opcodes';
 import createCurryRef from '../../references/curry-value';
 import { reifyPositional } from '../../vm/arguments';
@@ -69,6 +76,7 @@ import {
   CheckScopeBlock,
   CheckUndefinedReference,
 } from './-debug-strip';
+import { DebugRenderTreeDidRenderOpcode, DebugRenderTreeUpdateOpcode } from './debug-render-tree';
 
 APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
   let stack = vm.stack;
@@ -143,6 +151,30 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
   });
 
   vm.associateDestroyable(helperInstanceRef);
+
+  let debugRenderTree = vm.env.debugRenderTree;
+
+  if (
+    DEBUG &&
+    debugRenderTree !== undefined &&
+    typeof ref.debugLabel === 'string' &&
+    ref.debugLabel &&
+    ref.debugLabel !== 'unknown'
+  ) {
+    debugRenderTree.create(helperInstanceRef, {
+      type: 'helper',
+      name: ref.debugLabel,
+      args,
+      instance: null,
+    });
+    debugRenderTree.didRender(helperInstanceRef, null);
+
+    registerDestructor(helperInstanceRef, () => debugRenderTree.willDestroy(helperInstanceRef));
+
+    vm.updateWith(new DebugRenderTreeUpdateOpcode(helperInstanceRef));
+    vm.updateWith(new DebugRenderTreeDidRenderOpcode(helperInstanceRef, null));
+  }
+
   vm.loadValue($v0, helperValueRef);
 });
 
@@ -176,14 +208,58 @@ APPEND_OPCODES.add(VM_HELPER_OP, (vm, { op1: handle }) => {
   let stack = vm.stack;
   let helper = check(vm.constants.getValue(handle), CheckHelper);
   let args = check(stack.pop(), CheckArguments);
-  let value = helper(args.capture(), vm.getOwner(), vm.dynamicScope());
+  let capturedArgs = args.capture();
+  let value = helper(capturedArgs, vm.getOwner(), vm.dynamicScope());
 
-  if (_hasDestroyableChildren(value)) {
+  let debugRenderTree = vm.env.debugRenderTree;
+
+  if (
+    DEBUG &&
+    debugRenderTree !== undefined &&
+    !isInternalHelper(helper) &&
+    isCapturableHelperRef(value)
+  ) {
+    debugRenderTree.create(value, {
+      type: 'helper',
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked in isCapturableHelperRef
+      name: value.debugName!,
+      args: capturedArgs,
+      instance: null,
+    });
+    debugRenderTree.didRender(value, null);
+
+    vm.associateDestroyable(value);
+    registerDestructor(value, () => debugRenderTree.willDestroy(value));
+
+    vm.updateWith(new DebugRenderTreeUpdateOpcode(value));
+    vm.updateWith(new DebugRenderTreeDidRenderOpcode(value, null));
+  } else if (_hasDestroyableChildren(value)) {
     vm.associateDestroyable(value);
   }
 
   vm.loadValue($v0, value);
 });
+
+/**
+ * Helper invocations only show up in the debug render tree when we can
+ * present them meaningfully:
+ *
+ * - shared singleton references cannot serve as tree buckets, because the
+ *   tree keys nodes and destructors on the reference's identity, and
+ * - references without a real debug name are implementation-detail refs
+ *   (e.g. the internal helpers behind `{{outlet}}` and `{{mount}}`), not
+ *   user-observable helper invocations.
+ */
+function isCapturableHelperRef(ref: Reference): boolean {
+  return (
+    ref !== UNDEFINED_REFERENCE &&
+    ref !== NULL_REFERENCE &&
+    ref !== TRUE_REFERENCE &&
+    ref !== FALSE_REFERENCE &&
+    typeof ref.debugName === 'string' &&
+    ref.debugName !== 'unknown'
+  );
+}
 
 APPEND_OPCODES.add(VM_GET_VARIABLE_OP, (vm, { op1: symbol }) => {
   let expr = vm.referenceForSymbol(symbol);
