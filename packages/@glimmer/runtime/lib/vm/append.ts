@@ -765,13 +765,11 @@ export class VM {
         // In a browser that page is already broken.
         // A server-side renderer such as FastBoot keeps going, so it leaks
         // until it runs out of heap (emberjs/ember.js#20130).
-        // The reset runs in every build. Only the report is DEBUG-only.
+        // The reset and the report run in every build.
         let message = resetTracking();
 
-        if (DEBUG) {
-          // eslint-disable-next-line no-console
-          console.error(`\n\nError occurred:\n\n${message}\n\n`);
-        }
+        // eslint-disable-next-line no-console
+        console.error(`\n\nError occurred:\n\n${message}\n\n`);
       }
     }
   }

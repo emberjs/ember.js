@@ -68,10 +68,8 @@ export class UpdatingVM implements IUpdatingVM {
         // so the reset runs in every build.
         let message = resetTracking();
 
-        if (DEBUG) {
-          // eslint-disable-next-line no-console
-          console.error(`\n\nError occurred:\n\n${message}\n\n`);
-        }
+        // eslint-disable-next-line no-console
+        console.error(`\n\nError occurred:\n\n${message}\n\n`);
       }
     }
   }
