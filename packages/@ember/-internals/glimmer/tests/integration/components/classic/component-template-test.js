@@ -1,26 +1,36 @@
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  runTask,
+  expectClassicComponentDeprecation,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { setComponentTemplate } from '@glimmer/manager';
 import { precompileTemplate } from '@ember/template-compilation';
 import { Component as EmberComponent } from '../../../utils/helpers';
 
-moduleFor(
-  'Components test: setComponentTemplate (classic component)',
-  class extends RenderingTestCase {
-    '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
-      let Parent = setComponentTemplate(
-        precompileTemplate('hello'),
-        class extends EmberComponent {}
-      );
+if (!DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved) {
+  moduleFor(
+    'Components test: setComponentTemplate (classic component)',
+    class extends RenderingTestCase {
+      '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
+        expectClassicComponentDeprecation();
 
-      this.owner.register('component:foo-bar', class extends Parent {});
+        let Parent = setComponentTemplate(
+          precompileTemplate('hello'),
+          class extends EmberComponent {}
+        );
 
-      this.render('<FooBar />');
+        this.owner.register('component:foo-bar', class extends Parent {});
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+        this.render('<FooBar />');
 
-      runTask(() => this.rerender());
+        this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, { content: 'hello' });
+      }
     }
-  }
-);
+  );
+}

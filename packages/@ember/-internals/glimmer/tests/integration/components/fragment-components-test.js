@@ -1,4 +1,12 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectClassicComponentDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
@@ -15,7 +23,9 @@ moduleFor(
       };
     }
 
-    ['@test fragments do not render an outer tag']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test fragments do not render an outer tag`]() {
+      expectClassicComponentDeprecation();
+
       let instance;
       let FooBarComponent = class extends Component {
         tagName = '';
@@ -55,7 +65,9 @@ moduleFor(
       });
     }
 
-    ['@test throws an error if an event function is defined in a tagless component']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test throws an error if an event function is defined in a tagless component`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
         click() {}
@@ -72,7 +84,9 @@ moduleFor(
       }, /You can not define `click` function\(s\) to handle DOM event in the .* tagless component since it doesn't have any DOM element./);
     }
 
-    ['@test throws an error if a custom defined event function is defined in a tagless component']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test throws an error if a custom defined event function is defined in a tagless component`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
         folks() {}
@@ -88,7 +102,9 @@ moduleFor(
       }, /You can not define `folks` function\(s\) to handle DOM event in the .* tagless component since it doesn't have any DOM element./);
     }
 
-    ['@test throws an error if `tagName` is an empty string and `classNameBindings` are specified']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test throws an error if \`tagName\` is an empty string and \`classNameBindings\` are specified`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
         foo = true;
@@ -105,7 +121,9 @@ moduleFor(
       }, /You cannot use `classNameBindings` on a tag-less component/);
     }
 
-    ['@test throws an error if `tagName` is an empty string and `attributeBindings` are specified']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test throws an error if \`tagName\` is an empty string and \`attributeBindings\` are specified`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
         attributeBindings = ['href'];
@@ -120,7 +138,9 @@ moduleFor(
       }, /You cannot use `attributeBindings` on a tag-less component/);
     }
 
-    ['@test throws an error if `tagName` is an empty string and `elementId` is specified via JS']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test throws an error if \`tagName\` is an empty string and \`elementId\` is specified via JS`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
         elementId = 'turntUp';
@@ -135,7 +155,9 @@ moduleFor(
       }, /You cannot use `elementId` on a tag-less component/);
     }
 
-    ['@test throws an error if `tagName` is an empty string and `elementId` is specified via template']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test throws an error if \`tagName\` is an empty string and \`elementId\` is specified via template`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
       };
@@ -149,7 +171,9 @@ moduleFor(
       }, /You cannot use `elementId` on a tag-less component/);
     }
 
-    ['@test does not throw an error if `tagName` is an empty string and `id` is specified via JS']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test does not throw an error if \`tagName\` is an empty string and \`id\` is specified via JS`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
         id = 'baz';
@@ -163,7 +187,9 @@ moduleFor(
       this.assertText('baz');
     }
 
-    ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test does not throw an error if \`tagName\` is an empty string and \`id\` is specified via template`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
       };
@@ -176,7 +202,9 @@ moduleFor(
       this.assertText('baz');
     }
 
-    ['@test does not throw an error if `tagName` is an empty string and `id` is bound property specified via template']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test does not throw an error if \`tagName\` is an empty string and \`id\` is bound property specified via template`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
       };
@@ -201,7 +229,9 @@ moduleFor(
       this.assertText('baz');
     }
 
-    ['@test does not throw an error if `tagName` is an empty string and `id` is specified via template and passed to child component']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test does not throw an error if \`tagName\` is an empty string and \`id\` is specified via template and passed to child component`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = '';
       };
@@ -222,7 +252,9 @@ moduleFor(
       this.assertText('baz');
     }
 
-    ['@test renders a contained view with omitted start tag and tagless parent view context']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test renders a contained view with omitted start tag and tagless parent view context`]() {
+      expectClassicComponentDeprecation();
+
       this.owner.register(
         'component:root-component',
         setComponentTemplate(

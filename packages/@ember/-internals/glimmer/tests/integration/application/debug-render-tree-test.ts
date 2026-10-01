@@ -1,4 +1,11 @@
-import { ApplicationTestCase, ModuleBasedTestResolver, moduleFor } from 'internal-test-helpers';
+import {
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  moduleFor,
+  expectClassicComponentDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { ENV } from '@ember/-internals/environment';
 import {
@@ -985,7 +992,9 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
-      async '@test classic components'() {
+      async [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test classic components`]() {
+        expectClassicComponentDeprecation();
+
         this.add(
           'template:application',
           precompileTemplate(

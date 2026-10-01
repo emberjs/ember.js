@@ -1,4 +1,12 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  expectClassicComponentDeprecation,
+  testUnless,
+} from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 import { set } from '@ember/object';
 
@@ -9,7 +17,9 @@ import { setComponentTemplate } from '@glimmer/manager';
 moduleFor(
   'Attribute bindings integration',
   class extends RenderingTestCase {
-    ['@test it can have attribute bindings']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it can have attribute bindings`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['foo:data-foo', 'bar:data-bar'];
       };
@@ -58,7 +68,9 @@ moduleFor(
       });
     }
 
-    ['@test it can have attribute bindings with attrs']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it can have attribute bindings with attrs`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['attrs.foo:data-foo', 'attrs.baz.bar:data-bar'];
       };
@@ -111,7 +123,9 @@ moduleFor(
       });
     }
 
-    ['@test it can have attribute bindings with a nested path']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it can have attribute bindings with a nested path`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['foo.bar:data-foo-bar'];
       };
@@ -170,7 +184,9 @@ moduleFor(
       });
     }
 
-    ['@test handles non-microsyntax attributeBindings']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test handles non-microsyntax attributeBindings`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['type'];
       };
@@ -223,7 +239,9 @@ moduleFor(
       });
     }
 
-    ['@test non-microsyntax attributeBindings cannot contain nested paths']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test non-microsyntax attributeBindings cannot contain nested paths`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['foo.bar'];
       };
@@ -238,7 +256,9 @@ moduleFor(
       }, /Illegal attributeBinding: 'foo.bar' is not a valid attribute name./);
     }
 
-    ['@test normalizes attributeBindings for property names']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test normalizes attributeBindings for property names`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['tiTLe'];
       };
@@ -277,7 +297,9 @@ moduleFor(
       });
     }
 
-    ['@test normalizes attributeBindings for attribute names']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test normalizes attributeBindings for attribute names`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['foo:data-FOO'];
       };
@@ -316,7 +338,9 @@ moduleFor(
       });
     }
 
-    ['@test  attributeBindings preserves case for mixed-case attributes']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test  attributeBindings preserves case for mixed-case attributes`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = 'svg';
         attributeBindings = ['viewBox'];
@@ -352,7 +376,9 @@ moduleFor(
       );
     }
 
-    ['@test attributeBindings handles null/undefined']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test attributeBindings handles null/undefined`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['fizz', 'bar'];
       };
@@ -404,7 +430,9 @@ moduleFor(
       });
     }
 
-    ['@test attributeBindings handles number value']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test attributeBindings handles number value`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['size'];
       };
@@ -449,7 +477,9 @@ moduleFor(
       });
     }
 
-    ['@test handles internal and external changes']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test handles internal and external changes`]() {
+      expectClassicComponentDeprecation();
+
       let component;
       let FooBarComponent = class extends Component {
         attributeBindings = ['type'];
@@ -498,7 +528,9 @@ moduleFor(
       });
     }
 
-    ['@test can set attributeBindings on component with a different tagName']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test can set attributeBindings on component with a different tagName`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = 'input';
         attributeBindings = ['type', 'isDisabled:disabled'];
@@ -544,7 +576,9 @@ moduleFor(
       });
     }
 
-    ['@test should allow namespaced attributes in micro syntax']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test should allow namespaced attributes in micro syntax`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['xlinkHref:xlink:href'];
       };
@@ -585,7 +619,9 @@ moduleFor(
     // This comes into play when using the {{#each}} helper. If the
     // passed array item is a String, it will be converted into a
     // String object instead of a normal string.
-    ['@test should allow for String objects']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test should allow for String objects`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['foo'];
       };
@@ -641,7 +677,9 @@ moduleFor(
       });
     }
 
-    ['@test can set id initially via attributeBindings ']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test can set id initially via attributeBindings`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['specialSauce:id'];
       };
@@ -679,7 +717,9 @@ moduleFor(
       });
     }
 
-    ['@test attributeBindings are overwritten']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test attributeBindings are overwritten`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['href'];
         href = 'a href';
@@ -715,7 +755,9 @@ moduleFor(
       });
     }
 
-    ['@test it can set attribute bindings in the constructor']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it can set attribute bindings in the constructor`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         init() {
           super.init(...arguments);
@@ -869,7 +911,9 @@ moduleFor(
       });
     }
 
-    ['@test asserts if an attributeBinding is setup on class']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test asserts if an attributeBinding is setup on class`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['class'];
       };
@@ -884,7 +928,9 @@ moduleFor(
       }, /You cannot use class as an attributeBinding, use classNameBindings instead./i);
     }
 
-    ['@test blacklists href bindings based on protocol']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test blacklists href bindings based on protocol`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         tagName = 'a';
         attributeBindings = ['href'];
@@ -905,7 +951,9 @@ moduleFor(
       });
     }
 
-    ['@test it can bind the role attribute (issue #14007)']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test it can bind the role attribute (issue #14007)`]() {
+      expectClassicComponentDeprecation();
+
       let FooBarComponent = class extends Component {
         attributeBindings = ['role'];
       };
@@ -941,7 +989,9 @@ moduleFor(
       this.assertComponentElement(this.firstChild, { tagName: 'div' });
     }
 
-    ['@test component with an `id` attribute binding of undefined']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test component with an \`id\` attribute binding of undefined`]() {
+      expectClassicComponentDeprecation();
+
       this.owner.register(
         'component:foo-bar',
         class extends Component {
@@ -968,7 +1018,9 @@ moduleFor(
       this.assert.ok(this.nthChild(1).id.match(/ember\d+/), 'a valid `id` was used');
     }
 
-    ['@test component with an `id` attribute binding of null']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved)} @test component with an \`id\` attribute binding of null`]() {
+      expectClassicComponentDeprecation();
+
       this.owner.register(
         'component:foo-bar',
         class extends Component {

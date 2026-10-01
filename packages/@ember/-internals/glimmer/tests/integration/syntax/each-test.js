@@ -5,6 +5,7 @@ import {
   strip,
   runTask,
   ignoreDeprecation,
+  defineSimpleModifier,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -17,7 +18,8 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
-import { Component as EmberComponent, htmlSafe } from '../../utils/helpers';
+import { tracked } from '@glimmer/tracking';
+import { htmlSafe } from '../../utils/helpers';
 import {
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,
@@ -525,26 +527,27 @@ class EachTest extends AbstractEachTest {
   [`@test updating and setting within #each`]() {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
-    let FooBarComponent = class extends EmberComponent {
-      init() {
-        super.init(...arguments);
-        this.isEven = true;
-        this.tagName = 'li';
-      }
+    let FooBarComponent = class extends Component {
+      @tracked isEven = true;
 
-      _isEven() {
-        this.set('isEven', this.get('item.value') % 2 === 0);
-      }
+      isInstalled = false;
 
-      didUpdate() {
-        this._isEven();
-      }
+      // Like the classic `didUpdate` hook, this sets state only after an update.
+      updateIsEven = defineSimpleModifier((element, [value]) => {
+        if (this.isInstalled) {
+          this.isEven = value % 2 === 0;
+        }
+
+        this.isInstalled = true;
+      });
     };
 
     this.owner.register(
       'component:foo-bar',
       setComponentTemplate(
-        precompileTemplate('{{#if this.isEven}}{{this.item.value}}{{/if}}'),
+        precompileTemplate(
+          '<li {{this.updateIsEven @item.value}}>{{#if this.isEven}}{{@item.value}}{{/if}}</li>'
+        ),
         FooBarComponent
       )
     );
