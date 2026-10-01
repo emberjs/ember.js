@@ -11,31 +11,35 @@ import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './v
  * An object that that tracks @tracked properties that were consumed.
  */
 class Tracker {
-  private tags = new Set<Tag>();
-  private last: Tag | null = null;
+  // Most frames consume zero or one tag, so the set only exists from the
+  // second tag on.
+  private first: Tag | null = null;
+  private tags: Set<Tag> | null = null;
 
   add(tag: Tag) {
     if (tag === CONSTANT_TAG) return;
-
-    this.tags.add(tag);
 
     if (DEBUG) {
       unwrap(debug.markTagAsConsumed)(tag);
     }
 
-    this.last = tag;
+    let { first } = this;
+
+    if (first === null) {
+      this.first = tag;
+    } else if (first !== tag) {
+      (this.tags ??= new Set([first])).add(tag);
+    }
   }
 
   combine(): Tag {
     let { tags } = this;
 
-    if (tags.size === 0) {
-      return CONSTANT_TAG;
-    } else if (tags.size === 1) {
-      return this.last as Tag;
-    } else {
-      return combine(Array.from(this.tags));
+    if (tags !== null) {
+      return combine(Array.from(tags));
     }
+
+    return this.first ?? CONSTANT_TAG;
   }
 }
 

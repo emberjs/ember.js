@@ -136,53 +136,56 @@ class PositionalArgsProxy implements ProxyHandler<[]> {
   }
 }
 
-export const argsProxyFor = (
-  capturedArgs: CapturedArguments,
-  type: 'component' | 'helper' | 'modifier'
-): Arguments => {
-  const { named, positional } = capturedArgs;
+function throwOnSet(_target: unknown, prop: symbol | string | number): never {
+  throw new Error(
+    `You attempted to set ${String(
+      prop
+    )} on the arguments of a component, helper, or modifier. Arguments are immutable and cannot be updated directly; they always represent the values that are passed down. If you want to set default values, you should use a getter and local tracked state instead.`
+  );
+}
 
-  let getNamedTag = (_obj: object, key: string) => tagForNamedArg(named, key);
-  let getPositionalTag = (_obj: object, key: string) => tagForPositionalArg(positional, key);
-
-  const namedHandler = new NamedArgsProxy(named);
-  const positionalHandler = new PositionalArgsProxy(positional);
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const namedTarget = Object.create(null);
-  const positionalTarget: unknown[] = [];
+export function namedArgsProxyFor(named: CapturedNamedArguments): Arguments['named'] {
+  const handler = new NamedArgsProxy(named);
 
   if (DEBUG) {
-    const setHandler = function (_target: unknown, prop: symbol | string | number): never {
-      throw new Error(
-        `You attempted to set ${String(
-          prop
-        )} on the arguments of a component, helper, or modifier. Arguments are immutable and cannot be updated directly; they always represent the values that are passed down. If you want to set default values, you should use a getter and local tracked state instead.`
-      );
-    };
+    handler.set = throwOnSet;
+  }
 
-    const forInDebugHandler = (): never => {
+  const proxy = new Proxy(Object.create(null) as Record<string, unknown>, handler);
+
+  setCustomTagFor(proxy, (_obj: object, key: string) => tagForNamedArg(named, key));
+
+  return proxy;
+}
+
+function positionalArgsProxyFor(
+  positional: CapturedPositionalArguments,
+  type: 'component' | 'helper' | 'modifier'
+): Arguments['positional'] {
+  const handler = new PositionalArgsProxy(positional);
+
+  if (DEBUG) {
+    handler.set = throwOnSet;
+    handler.ownKeys = (): never => {
       throw new Error(
         `Object.keys() was called on the positional arguments array for a ${type}, which is not supported. This function is a low-level function that should not need to be called for positional argument arrays. You may be attempting to iterate over the array using for...in instead of for...of.`
       );
     };
-
-    namedHandler.set = setHandler;
-    positionalHandler.set = setHandler;
-    positionalHandler.ownKeys = forInDebugHandler;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const namedProxy = new Proxy(namedTarget, namedHandler);
-  const positionalProxy = new Proxy(positionalTarget, positionalHandler);
+  const proxy = new Proxy([] as unknown[], handler);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  setCustomTagFor(namedProxy, getNamedTag);
-  setCustomTagFor(positionalProxy, getPositionalTag);
+  setCustomTagFor(proxy, (_obj: object, key: string) => tagForPositionalArg(positional, key));
 
+  return proxy;
+}
+
+export const argsProxyFor = (
+  capturedArgs: CapturedArguments,
+  type: 'component' | 'helper' | 'modifier'
+): Arguments => {
   return {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    named: namedProxy,
-    positional: positionalProxy,
+    named: namedArgsProxyFor(capturedArgs.named),
+    positional: positionalArgsProxyFor(capturedArgs.positional, type),
   };
 };

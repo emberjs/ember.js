@@ -40,7 +40,12 @@ import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager/lib/internal/api';
-import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
+import {
+  createComputeRef,
+  isConstRef,
+  tagForRef,
+  valueForRef,
+} from '@glimmer/reference/lib/reference';
 import { isIndexable } from '@glimmer/util/lib/collections';
 import { consumeTag } from '@glimmer/validator/lib/tracking';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
@@ -419,25 +424,29 @@ APPEND_OPCODES.add(VM_DYNAMIC_ATTR_OP, (vm, { op1: _name, op2: _trusting, op3: _
 });
 
 export class UpdateDynamicAttributeOpcode implements UpdatingOpcode {
-  private updateRef: Reference;
+  private tag: Tag;
+  private lastRevision: Revision;
 
-  constructor(reference: Reference, attribute: DynamicAttribute, env: Environment) {
-    let initialized = false;
-
-    this.updateRef = createComputeRef(() => {
-      let value = valueForRef(reference);
-
-      if (initialized) {
-        attribute.update(value, env);
-      } else {
-        initialized = true;
-      }
-    });
-
-    valueForRef(this.updateRef);
+  // The caller must read the reference before it creates this opcode.
+  constructor(
+    private reference: Reference,
+    private attribute: DynamicAttribute,
+    private env: Environment
+  ) {
+    this.tag = tagForRef(reference) as Tag;
+    this.lastRevision = valueForTag(this.tag);
   }
 
   evaluate() {
-    valueForRef(this.updateRef);
+    let { reference } = this;
+    let value = valueForRef(reference);
+    let tag = tagForRef(reference) as Tag;
+
+    // A new tag means that the reference computed again.
+    if (tag !== this.tag || !validateTag(tag, this.lastRevision)) {
+      this.tag = tag;
+      this.lastRevision = valueForTag(tag);
+      this.attribute.update(value, this.env);
+    }
   }
 }

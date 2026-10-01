@@ -10,13 +10,20 @@ import type {
   UnboundReference,
 } from '@glimmer/interfaces';
 import type { Revision } from '@glimmer/validator/lib/validators';
-import type { Tag } from '@glimmer/interfaces';
+import type { DirtyableTag, Tag } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { getProp, setProp } from '@glimmer/global-context';
 import { isDict } from '@glimmer/util/lib/collections';
-import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
-import { consumeTag, track } from '@glimmer/validator/lib/tracking';
+import {
+  CONSTANT_TAG,
+  createTag,
+  DIRTY_TAG as dirtyTag,
+  INITIAL,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator/lib/validators';
+import { beginTrackFrame, consumeTag, endTrackFrame } from '@glimmer/validator/lib/tracking';
 
 export const REFERENCE: ReferenceSymbol = Symbol('REFERENCE') as ReferenceSymbol;
 
@@ -44,8 +51,13 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
 
   public children: Nullable<Map<string | Reference, Reference>> = null;
 
-  public compute: Nullable<() => T> = null;
-  public update: Nullable<(val: T) => void> = null;
+  // Both receive the reference, so shared functions can serve many references.
+  public compute: Nullable<(ref: Reference) => T> = null;
+  public update: Nullable<(val: T, ref: Reference) => void> = null;
+
+  // For a property reference: the reference to the object, and the key.
+  public parent: Nullable<Reference> = null;
+  public path: Nullable<string> = null;
 
   public debugLabel?: string;
 
@@ -165,13 +177,20 @@ export function valueForRef<T>(_ref: Reference<T>): T {
   if (tag === null || !validateTag(tag, lastRevision)) {
     const { compute } = ref;
 
-    const newTag = track(() => {
+    // The frame is open here instead of in `track()`, which would need a
+    // closure for every computation.
+    beginTrackFrame(DEBUG && ref.debugLabel);
+
+    let newTag: Tag;
+
+    try {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      lastValue = ref.lastValue = compute!();
-    }, DEBUG && ref.debugLabel);
+      lastValue = ref.lastValue = compute!(ref);
+    } finally {
+      newTag = endTrackFrame();
+    }
 
     tag = ref.tag = newTag;
-
     ref.lastRevision = valueForTag(newTag);
   } else {
     lastValue = ref.lastValue;
@@ -182,12 +201,72 @@ export function valueForRef<T>(_ref: Reference<T>): T {
   return lastValue as T;
 }
 
+// The tag from the last time the reference computed its value. It is null
+// until the first `valueForRef`.
+export function tagForRef(_ref: Reference): Nullable<Tag> {
+  return (_ref as ReferenceImpl).tag;
+}
+
 export function updateRef(_ref: Reference, value: unknown) {
   const ref = _ref as ReferenceImpl;
 
   const update = expect(ref.update, 'called update on a non-updatable reference');
 
-  update(value);
+  update(value, ref);
+}
+
+function readProperty(_ref: Reference): unknown {
+  const ref = _ref as ReferenceImpl;
+  const parent = valueForRef(ref.parent as Reference);
+
+  if (isDict(parent)) {
+    return getProp(parent, ref.path as string);
+  }
+}
+
+function writeProperty(value: unknown, _ref: Reference): void {
+  const ref = _ref as ReferenceImpl;
+  const parent = valueForRef(ref.parent as Reference);
+
+  if (isDict(parent)) {
+    setProp(parent, ref.path as string, value);
+  }
+}
+
+function readValue(_ref: Reference): unknown {
+  const ref = _ref as ReferenceImpl;
+  consumeTag(ref.tag as Tag);
+  return ref.lastValue;
+}
+
+function writeValue(value: unknown, _ref: Reference): void {
+  const ref = _ref as ReferenceImpl;
+
+  if (ref.lastValue !== value) {
+    ref.lastValue = value;
+    dirtyTag(ref.tag as DirtyableTag);
+  }
+}
+
+/**
+ * A reference that holds a value until `updateRef` replaces it. The value
+ * lives in `lastValue` and the reference's own tag tracks it.
+ */
+export function createValueRef<T>(value: T): Reference<T> {
+  const ref = new ReferenceImpl<T>(COMPUTE);
+  const tag = createTag();
+
+  ref.tag = tag;
+  ref.lastRevision = valueForTag(tag);
+  ref.lastValue = value;
+  ref.compute = readValue as (ref: Reference) => T;
+  ref.update = writeValue;
+
+  if (DEBUG) {
+    ref.debugLabel = '(result of a `unknown` helper)';
+  }
+
+  return ref;
 }
 
 export function childRefFor(_parentRef: Reference, path: string): Reference {
@@ -218,26 +297,18 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
       child = UNDEFINED_REFERENCE;
     }
   } else {
-    child = createComputeRef(
-      () => {
-        const parent = valueForRef(parentRef);
+    const ref = new ReferenceImpl(COMPUTE);
 
-        if (isDict(parent)) {
-          return getProp(parent, path);
-        }
-      },
-      (val) => {
-        const parent = valueForRef(parentRef);
-
-        if (isDict(parent)) {
-          return setProp(parent, path, val);
-        }
-      }
-    );
+    ref.compute = readProperty;
+    ref.update = writeProperty;
+    ref.parent = parentRef;
+    ref.path = path;
 
     if (DEBUG) {
-      child.debugLabel = `${parentRef.debugLabel}.${path}`;
+      ref.debugLabel = `${parentRef.debugLabel}.${path}`;
     }
+
+    child = ref;
   }
 
   children.set(path, child);

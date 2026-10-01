@@ -24,6 +24,6 @@ export type ReferenceSymbol = typeof REFERENCE;
 export interface Reference<T = unknown> {
   [REFERENCE]: ReferenceType;
   debugLabel?: string | false | undefined;
-  compute: Nullable<() => T>;
+  compute: Nullable<(ref: Reference) => T>;
   children: null | Map<string | Reference, Reference>;
 }

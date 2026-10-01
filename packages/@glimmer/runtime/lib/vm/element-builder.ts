@@ -41,22 +41,6 @@ export interface LastNode {
   lastNode(): SimpleNode;
 }
 
-class First {
-  constructor(private node: SimpleNode) {}
-
-  firstNode(): SimpleNode {
-    return this.node;
-  }
-}
-
-class Last {
-  constructor(private node: SimpleNode) {}
-
-  lastNode(): SimpleNode {
-    return this.node;
-  }
-}
-
 export class Fragment implements Bounds {
   private bounds: Bounds;
 
@@ -401,8 +385,12 @@ export class AppendingBlockImpl implements AppendingBlock {
 
   [DESTROYABLE_META_KEY]: object | undefined;
 
-  protected first: Nullable<FirstNode> = null;
-  protected last: Nullable<LastNode> = null;
+  // A node, or the bounds of a nested block. The flags tell which, so a
+  // node needs no wrapper object.
+  protected first: Nullable<SimpleNode | FirstNode> = null;
+  protected last: Nullable<SimpleNode | LastNode> = null;
+  protected firstIsNode = false;
+  protected lastIsNode = false;
   protected nesting = 0;
 
   constructor(private parent: SimpleElement) {
@@ -410,8 +398,14 @@ export class AppendingBlockImpl implements AppendingBlock {
 
     if (LOCAL_DEBUG) {
       this.debug = {
-        first: () => this.first?.debug?.first() ?? null,
-        last: () => this.last?.debug?.last() ?? null,
+        first: () =>
+          this.firstIsNode
+            ? (this.first as SimpleNode)
+            : ((this.first as Nullable<FirstNode>)?.debug?.first() ?? null),
+        last: () =>
+          this.lastIsNode
+            ? (this.last as SimpleNode)
+            : ((this.last as Nullable<LastNode>)?.debug?.last() ?? null),
       };
     }
   }
@@ -426,7 +420,7 @@ export class AppendingBlockImpl implements AppendingBlock {
       'cannot call `firstNode()` while `AppendingBlock` is still initializing'
     );
 
-    return first.firstNode();
+    return this.firstIsNode ? (first as SimpleNode) : (first as FirstNode).firstNode();
   }
 
   lastNode(): SimpleNode {
@@ -435,7 +429,7 @@ export class AppendingBlockImpl implements AppendingBlock {
       'cannot call `lastNode()` while `AppendingBlock` is still initializing'
     );
 
-    return last.lastNode();
+    return this.lastIsNode ? (last as SimpleNode) : (last as LastNode).lastNode();
   }
 
   openElement(element: SimpleElement) {
@@ -450,21 +444,25 @@ export class AppendingBlockImpl implements AppendingBlock {
   didAppendNode(node: SimpleNode) {
     if (this.nesting !== 0) return;
 
-    if (!this.first) {
-      this.first = new First(node);
+    if (this.first === null) {
+      this.first = node;
+      this.firstIsNode = true;
     }
 
-    this.last = new Last(node);
+    this.last = node;
+    this.lastIsNode = true;
   }
 
   didAppendBounds(bounds: Bounds) {
     if (this.nesting !== 0) return;
 
-    if (!this.first) {
+    if (this.first === null) {
       this.first = bounds;
+      this.firstIsNode = false;
     }
 
     this.last = bounds;
+    this.lastIsNode = false;
   }
 
   finalize(stack: TreeBuilder) {
@@ -524,6 +522,8 @@ export class ResettableBlockImpl extends AppendingBlockImpl implements Resettabl
 
     this.first = null;
     this.last = null;
+    this.firstIsNode = false;
+    this.lastIsNode = false;
     this.nesting = 0;
 
     return nextSibling;

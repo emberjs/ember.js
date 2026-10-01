@@ -8,8 +8,8 @@ import type {
 import debugToString from '@glimmer/debug-util/lib/debug-to-string';
 import { debugAssert } from '@glimmer/global-context';
 
-import { CustomHelperManager } from '../public/helper';
-import { FunctionHelperManager } from './defaults';
+import type { CustomHelperManager } from '../public/helper';
+import { FunctionHelperInternalManager } from './defaults';
 
 type InternalManager =
   | InternalComponentManager
@@ -131,7 +131,7 @@ export function setInternalHelperManager<T extends object, O extends Owner>(
   return setManager(HELPER_MANAGERS, manager, definition);
 }
 
-const DEFAULT_MANAGER = new CustomHelperManager(() => new FunctionHelperManager());
+const DEFAULT_MANAGER = new FunctionHelperInternalManager();
 
 export function getInternalHelperManager(definition: object): CustomHelperManager | Helper;
 export function getInternalHelperManager(
