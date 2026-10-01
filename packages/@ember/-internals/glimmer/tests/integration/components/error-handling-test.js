@@ -1,13 +1,12 @@
 import { DEBUG } from '@glimmer/env';
 
-import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask, defineSimpleModifier } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
-import { Component as EmberComponent } from '../../utils/helpers';
 
 moduleFor(
   'Errors thrown during render',
@@ -109,22 +108,24 @@ moduleFor(
       }
     }
 
-    ['@test it can recover resets the transaction when an error is thrown during didInsertElement'](
+    ['@test it can recover resets the transaction when an error is thrown during modifier installation'](
       assert
     ) {
       let shouldThrow = true;
-      let FooBarComponent = class extends EmberComponent {
-        didInsertElement() {
-          super.didInsertElement(...arguments);
+      let FooBarComponent = class extends Component {
+        inserted = defineSimpleModifier(() => {
           if (shouldThrow) {
             throw new Error('silly mistake!');
           }
-        }
+        });
       };
 
       this.owner.register(
         'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
+        setComponentTemplate(
+          precompileTemplate('<div {{this.inserted}}>hello</div>'),
+          FooBarComponent
+        )
       );
 
       assert.throws(() => {
@@ -148,9 +149,9 @@ moduleFor(
 
     ['@test it can recover resets the transaction when an error is thrown during destroy'](assert) {
       let shouldThrow = true;
-      let FooBarComponent = class extends EmberComponent {
-        destroy() {
-          super.destroy(...arguments);
+      let FooBarComponent = class extends Component {
+        willDestroy() {
+          super.willDestroy(...arguments);
           if (shouldThrow) {
             throw new Error('silly mistake!');
           }

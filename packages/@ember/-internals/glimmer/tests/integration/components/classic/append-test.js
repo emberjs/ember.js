@@ -5,13 +5,13 @@ import {
   runTask,
   expectDeprecation,
 } from 'internal-test-helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
+import { DEPRECATIONS } from '../../../../../deprecations';
 
 import { set } from '@ember/object';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import { precompileTemplate } from '@ember/template-compilation';
-import { Component } from '../../utils/helpers';
+import { Component } from '../../../utils/helpers';
 
 class AbstractAppendTest extends RenderingTestCase {
   constructor() {
