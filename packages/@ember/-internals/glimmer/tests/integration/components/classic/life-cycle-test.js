@@ -7,7 +7,7 @@ import { getViewElement, getViewId } from '@ember/-internals/views';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
-import { Component } from '../../utils/helpers';
+import { Component } from '../../../utils/helpers';
 import { addListener } from '@ember/-internals/metal';
 
 class LifeCycleHooksTest extends RenderingTestCase {
