@@ -7,6 +7,7 @@ import type {
   ModifierInstance,
   Nullable,
   Owner,
+  Shell,
   UpdatingOpcode,
   UpdatingVM,
 } from '@glimmer/interfaces';
@@ -16,17 +17,21 @@ import type { Tag } from '@glimmer/interfaces';
 import { CURRIED_MODIFIER } from '@glimmer/constants/lib/curried';
 import {
   VM_CLOSE_ELEMENT_OP,
-  VM_COMMENT_OP,
+  VM_CLOSE_SHELL_OP,
   VM_DYNAMIC_ATTR_OP,
   VM_DYNAMIC_MODIFIER_OP,
   VM_FLUSH_ELEMENT_OP,
+  VM_FLUSH_SHELL_ELEMENT_OP,
+  VM_CLOSE_SHELL_ELEMENT_OP,
   VM_MODIFIER_OP,
   VM_OPEN_DYNAMIC_ELEMENT_OP,
-  VM_OPEN_ELEMENT_OP,
+  VM_OPEN_SHELL_ELEMENT_OP,
+  VM_OPEN_SHELL_OP,
   VM_POP_REMOTE_ELEMENT_OP,
+  VM_POP_SHELL_CURSOR_OP,
   VM_PUSH_REMOTE_ELEMENT_OP,
+  VM_PUSH_SHELL_CURSOR_OP,
   VM_STATIC_ATTR_OP,
-  VM_TEXT_OP,
 } from '@glimmer/constants/lib/syscall-ops';
 import {
   check,
@@ -52,6 +57,7 @@ import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/va
 import { $t0 } from '@glimmer/vm/lib/registers';
 
 import type { CurriedValue } from '../../curried-value';
+import type { VM } from '../../vm/append';
 import type { DynamicAttribute } from '../../vm/attributes/dynamic';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
@@ -60,16 +66,32 @@ import { createCapturedArgs } from '../../vm/arguments';
 import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
 import { Assert } from './vm';
 
-APPEND_OPCODES.add(VM_TEXT_OP, (vm, { op1: text }) => {
-  vm.tree().appendText(vm.constants.getValue(text));
+APPEND_OPCODES.add(VM_OPEN_SHELL_OP, (vm, { op1: shell }) => {
+  vm.tree().openShell(vm.constants.getValue<Shell>(shell));
 });
 
-APPEND_OPCODES.add(VM_COMMENT_OP, (vm, { op1: text }) => {
-  vm.tree().appendComment(vm.constants.getValue(text));
+APPEND_OPCODES.add(VM_OPEN_SHELL_ELEMENT_OP, (vm, { op1: anchor }) => {
+  vm.tree().openShellElement(anchor);
 });
 
-APPEND_OPCODES.add(VM_OPEN_ELEMENT_OP, (vm, { op1: tag }) => {
-  vm.tree().openElement(vm.constants.getValue(tag));
+APPEND_OPCODES.add(VM_FLUSH_SHELL_ELEMENT_OP, (vm) => {
+  vm.tree().flushShellElement(flushOperations(vm));
+});
+
+APPEND_OPCODES.add(VM_CLOSE_SHELL_ELEMENT_OP, (vm, { op1: anchor }) => {
+  installModifiers(vm, vm.tree().closeShellElement(anchor));
+});
+
+APPEND_OPCODES.add(VM_PUSH_SHELL_CURSOR_OP, (vm, { op1: parent, op2: next }) => {
+  vm.tree().pushShellCursor(parent, next);
+});
+
+APPEND_OPCODES.add(VM_POP_SHELL_CURSOR_OP, (vm, { op1: parent }) => {
+  vm.tree().popShellCursor(parent);
+});
+
+APPEND_OPCODES.add(VM_CLOSE_SHELL_OP, (vm) => {
+  vm.tree().closeShell();
 });
 
 APPEND_OPCODES.add(VM_OPEN_DYNAMIC_ELEMENT_OP, (vm) => {
@@ -129,20 +151,25 @@ APPEND_OPCODES.add(VM_POP_REMOTE_ELEMENT_OP, (vm) => {
 });
 
 APPEND_OPCODES.add(VM_FLUSH_ELEMENT_OP, (vm) => {
-  let operations = check(vm.fetchValue($t0), CheckOperations);
-  let modifiers: Nullable<ModifierInstance[]> = null;
-
-  if (operations) {
-    modifiers = operations.flush(vm);
-    vm.loadValue($t0, null);
-  }
-
-  vm.tree().flushElement(modifiers);
+  vm.tree().flushElement(flushOperations(vm));
 });
 
 APPEND_OPCODES.add(VM_CLOSE_ELEMENT_OP, (vm) => {
-  let modifiers = vm.tree().closeElement();
+  installModifiers(vm, vm.tree().closeElement());
+});
 
+// Sets the attributes that component operations collected, and returns the
+// element's modifiers.
+function flushOperations(vm: VM): Nullable<ModifierInstance[]> {
+  let operations = check(vm.fetchValue($t0), CheckOperations);
+
+  if (!operations) return null;
+
+  vm.loadValue($t0, null);
+  return operations.flush(vm);
+}
+
+function installModifiers(vm: VM, modifiers: Nullable<ModifierInstance[]>): void {
   if (modifiers !== null) {
     modifiers.forEach((modifier) => {
       vm.env.scheduleInstallModifier(modifier);
@@ -166,7 +193,7 @@ APPEND_OPCODES.add(VM_CLOSE_ELEMENT_OP, (vm) => {
       }
     });
   }
-});
+}
 
 APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
   let args = check(vm.stack.pop(), CheckArguments);

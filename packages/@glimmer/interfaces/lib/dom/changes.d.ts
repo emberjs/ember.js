@@ -1,6 +1,14 @@
 import type { Nullable } from '../core.js';
 import type { Bounds } from './bounds.js';
-import type { Namespace, SimpleComment, SimpleElement, SimpleNode, SimpleText } from './simple.js';
+import type { Shell } from './shell.js';
+import type {
+  Namespace,
+  SimpleComment,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
+} from './simple.js';
 
 export interface GlimmerDOMOperations {
   createElement(tag: string, context?: SimpleElement): SimpleElement;
@@ -23,4 +31,7 @@ export interface GlimmerTreeConstruction extends GlimmerDOMOperations {
     value: string,
     namespace?: Nullable<Namespace>
   ): void;
+
+  canCloneShells?(): boolean;
+  cloneShell?(shell: Shell, parent: SimpleElement): SimpleDocumentFragment;
 }

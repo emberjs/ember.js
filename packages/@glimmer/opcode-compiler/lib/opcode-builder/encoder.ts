@@ -213,6 +213,7 @@ export class EncoderImpl implements Encoder {
           case HighLevelOperands.NonSmallInt:
           case HighLevelOperands.SymbolTable:
           case HighLevelOperands.Layout:
+          case HighLevelOperands.Shell:
             return constants.value(operand.value);
         }
       }

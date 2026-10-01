@@ -10,7 +10,7 @@ import type {
   VmCaptureArgs,
   VmChildScope,
   VmCloseElement,
-  VmComment,
+  VmCloseShell,
   VmCommitComponentTransaction,
   VmCompileBlock,
   VmComponentAttr,
@@ -57,7 +57,7 @@ import type {
   VmNot,
   VmOp,
   VmOpenDynamicElement,
-  VmOpenElement,
+  VmOpenShellElement,
   VmPop,
   VmPopDynamicScope,
   VmPopRemoteElement,
@@ -85,10 +85,15 @@ import type {
   VmSetNamedVariables,
   VmSetVariable,
   VmSize,
+  VmPopShellCursor,
+  VmFlushShellElement,
+  VmCloseShellElement,
+  VmAppendCautiousText,
   VmSpreadBlock,
   VmStaticAttr,
+  VmPushShellCursor,
   VmStaticComponentAttr,
-  VmText,
+  VmOpenShell,
   VmToBoolean,
   VmVirtualRootScope,
 } from '@glimmer/interfaces';
@@ -118,14 +123,14 @@ export const VM_ROOT_SCOPE_OP = 37 satisfies VmRootScope;
 export const VM_VIRTUAL_ROOT_SCOPE_OP = 38 satisfies VmVirtualRootScope;
 export const VM_CHILD_SCOPE_OP = 39 satisfies VmChildScope;
 export const VM_POP_SCOPE_OP = 40 satisfies VmPopScope;
-export const VM_TEXT_OP = 41 satisfies VmText;
-export const VM_COMMENT_OP = 42 satisfies VmComment;
+export const VM_OPEN_SHELL_OP = 41 satisfies VmOpenShell;
+export const VM_CLOSE_SHELL_OP = 42 satisfies VmCloseShell;
 export const VM_APPEND_HTML_OP = 43 satisfies VmAppendHTML;
 export const VM_APPEND_SAFE_HTML_OP = 44 satisfies VmAppendSafeHTML;
 export const VM_APPEND_DOCUMENT_FRAGMENT_OP = 45 satisfies VmAppendDocumentFragment;
 export const VM_APPEND_NODE_OP = 46 satisfies VmAppendNode;
 export const VM_APPEND_TEXT_OP = 47 satisfies VmAppendText;
-export const VM_OPEN_ELEMENT_OP = 48 satisfies VmOpenElement;
+export const VM_OPEN_SHELL_ELEMENT_OP = 48 satisfies VmOpenShellElement;
 export const VM_OPEN_DYNAMIC_ELEMENT_OP = 49 satisfies VmOpenDynamicElement;
 export const VM_PUSH_REMOTE_ELEMENT_OP = 50 satisfies VmPushRemoteElement;
 export const VM_STATIC_ATTR_OP = 51 satisfies VmStaticAttr;
@@ -160,6 +165,7 @@ export const VM_RESOLVE_DYNAMIC_COMPONENT_OP = 80 satisfies VmResolveDynamicComp
 export const VM_RESOLVE_CURRIED_COMPONENT_OP = 81 satisfies VmResolveCurriedComponent;
 export const VM_PUSH_ARGS_OP = 82 satisfies VmPushArgs;
 export const VM_PUSH_EMPTY_ARGS_OP = 83 satisfies VmPushEmptyArgs;
+export const VM_POP_SHELL_CURSOR_OP = 84 satisfies VmPopShellCursor;
 export const VM_PREPARE_ARGS_OP = 85 satisfies VmPrepareArgs;
 export const VM_CAPTURE_ARGS_OP = 86 satisfies VmCaptureArgs;
 export const VM_CREATE_COMPONENT_OP = 87 satisfies VmCreateComponent;
@@ -168,12 +174,16 @@ export const VM_PUT_COMPONENT_OPERATIONS_OP = 89 satisfies VmPutComponentOperati
 export const VM_GET_COMPONENT_SELF_OP = 90 satisfies VmGetComponentSelf;
 export const VM_GET_COMPONENT_TAG_NAME_OP = 91 satisfies VmGetComponentTagName;
 export const VM_GET_COMPONENT_LAYOUT_OP = 92 satisfies VmGetComponentLayout;
+export const VM_FLUSH_SHELL_ELEMENT_OP = 93 satisfies VmFlushShellElement;
+export const VM_CLOSE_SHELL_ELEMENT_OP = 94 satisfies VmCloseShellElement;
 export const VM_POPULATE_LAYOUT_OP = 95 satisfies VmPopulateLayout;
 export const VM_INVOKE_COMPONENT_LAYOUT_OP = 96 satisfies VmInvokeComponentLayout;
 export const VM_BEGIN_COMPONENT_TRANSACTION_OP = 97 satisfies VmBeginComponentTransaction;
 export const VM_COMMIT_COMPONENT_TRANSACTION_OP = 98 satisfies VmCommitComponentTransaction;
 export const VM_DID_CREATE_ELEMENT_OP = 99 satisfies VmDidCreateElement;
 export const VM_DID_RENDER_LAYOUT_OP = 100 satisfies VmDidRenderLayout;
+export const VM_APPEND_CAUTIOUS_TEXT_OP = 101 satisfies VmAppendCautiousText;
+export const VM_PUSH_SHELL_CURSOR_OP = 102 satisfies VmPushShellCursor;
 export const VM_DEBUGGER_OP = 103 satisfies VmDebugger;
 export const VM_STATIC_COMPONENT_ATTR_OP = 105 satisfies VmStaticComponentAttr;
 export const VM_DYNAMIC_CONTENT_TYPE_OP = 106 satisfies VmDynamicContentType;

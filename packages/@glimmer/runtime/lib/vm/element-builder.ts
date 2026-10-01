@@ -11,6 +11,7 @@ import type {
   ModifierInstance,
   Nullable,
   ResettableBlock,
+  Shell,
   SimpleComment,
   SimpleDocumentFragment,
   SimpleElement,
@@ -29,6 +30,7 @@ import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import type { DynamicAttribute } from './attributes/dynamic';
 
 import { clear, ConcreteBounds, CursorImpl } from '../bounds';
+import { collectAnchors, ShellReplay } from '../dom/shells';
 import { dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
@@ -61,6 +63,15 @@ export class Fragment implements Bounds {
   }
 }
 
+interface ClonedShell {
+  // Holds the top-level nodes that are not in place yet.
+  copy: SimpleDocumentFragment;
+  anchors: SimpleNode[];
+  // The cursor where the shell starts, for its top-level nodes and content.
+  element: SimpleElement;
+  nextSibling: Nullable<SimpleNode>;
+}
+
 export class NewTreeBuilder implements TreeBuilder {
   declare debug?: () => {
     blocks: AppendingBlock[];
@@ -77,6 +88,12 @@ export class NewTreeBuilder implements TreeBuilder {
   readonly cursors = new Stack<Cursor>();
   private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
   private blockStack = new Stack<AppendingBlock>();
+
+  // Subclasses change how nodes are created, so only this class clones
+  // shells. The others replay them node by node.
+  readonly isPlain: boolean;
+  private cloneShells: boolean;
+  private shells: Array<ClonedShell | ShellReplay> = [];
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
@@ -97,6 +114,8 @@ export class NewTreeBuilder implements TreeBuilder {
     this.env = env;
     this.dom = env.getAppendOperations();
     this.updateOperations = env.getDOM();
+    this.isPlain = Object.getPrototypeOf(this) === NewTreeBuilder.prototype;
+    this.cloneShells = this.isPlain && this.dom.canCloneShells?.() === true;
 
     if (LOCAL_DEBUG) {
       this.debug = () => ({
@@ -211,6 +230,122 @@ export class NewTreeBuilder implements TreeBuilder {
     this.willCloseElement();
     this.popElement();
     return this.popModifiers();
+  }
+
+  openShell(shell: Shell): void {
+    if (!this.cloneShells || shell.live) {
+      this.shells.push(new ShellReplay(shell));
+      return;
+    }
+
+    let { element, nextSibling } = this;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- cloneShells checks it
+    let copy = this.dom.cloneShell!(shell, element);
+
+    this.shells.push({ copy, anchors: collectAnchors(copy, shell), element, nextSibling });
+  }
+
+  openShellElement(anchor: number): void {
+    let current = this.currentShell();
+
+    if (current instanceof ShellReplay) {
+      current.openAnchor(this, anchor);
+    } else {
+      this.constructing = current.anchors[anchor] as SimpleElement;
+    }
+  }
+
+  flushShellElement(modifiers: Nullable<ModifierInstance[]>): void {
+    let current = this.currentShell();
+
+    if (current instanceof ShellReplay) {
+      current.flushAnchor(this, modifiers);
+    } else {
+      this.constructing = null;
+      this.pushModifiers(modifiers);
+    }
+  }
+
+  closeShellElement(anchor: number): Nullable<ModifierInstance[]> {
+    let current = this.currentShell();
+
+    if (current instanceof ShellReplay) {
+      return current.closeAnchor(this, anchor);
+    } else {
+      return this.popModifiers();
+    }
+  }
+
+  pushShellCursor(parent: number, next: number): void {
+    let current = this.currentShell();
+
+    if (current instanceof ShellReplay) {
+      current.moveTo(this, parent, next);
+      return;
+    }
+
+    let { anchors } = current;
+    this.constructing = null;
+
+    if (parent === -1) {
+      // Content at the top level goes after the nodes before it, at the
+      // shell's own cursor.
+      this.insertShellNodes(current, next === -1 ? null : (anchors[next] as SimpleNode));
+    } else {
+      // The element joins the block's bounds with its top-level ancestor.
+      this.block().nest();
+      this.pushElement(anchors[parent] as SimpleElement, next === -1 ? null : anchors[next]);
+    }
+  }
+
+  popShellCursor(parent: number): void {
+    if (parent === -1 || this.currentShell() instanceof ShellReplay) return;
+
+    this.popElement();
+    this.block().closeElement();
+  }
+
+  closeShell(): void {
+    let current = this.shells.pop() as ClonedShell | ShellReplay;
+
+    if (current instanceof ShellReplay) {
+      current.close(this);
+    } else {
+      this.constructing = null;
+      this.insertShellNodes(current, null);
+    }
+  }
+
+  // Moves the copy's top-level nodes before `stop` into place, so the page
+  // and the block's bounds see nodes in document order.
+  private insertShellNodes(shell: ClonedShell, stop: Nullable<SimpleNode>): void {
+    let { copy, element, nextSibling } = shell;
+    let first = copy.firstChild;
+
+    if (first === null || first === stop) return;
+
+    let last: SimpleNode;
+
+    if (stop === null) {
+      last = copy.lastChild as SimpleNode;
+      this.dom.insertBefore(element, copy, nextSibling);
+    } else {
+      let node: SimpleNode = first;
+
+      do {
+        let next = node.nextSibling as SimpleNode;
+        this.dom.insertBefore(element, node, nextSibling);
+        last = node;
+        node = next;
+      } while (node !== stop);
+    }
+
+    this.didAppendNode(first);
+    if (last !== first) this.didAppendNode(last);
+  }
+
+  private currentShell(): ClonedShell | ShellReplay {
+    return this.shells[this.shells.length - 1] as ClonedShell | ShellReplay;
   }
 
   pushRemoteElement(
@@ -437,6 +572,10 @@ export class AppendingBlockImpl implements AppendingBlock {
     this.nesting++;
   }
 
+  nest() {
+    this.nesting++;
+  }
+
   closeElement() {
     this.nesting--;
   }
@@ -566,6 +705,10 @@ export class AppendingBlockList implements AppendingBlock {
 
   openElement(_element: SimpleElement) {
     assert(false, 'Cannot openElement directly inside a block list');
+  }
+
+  nest() {
+    assert(false, 'Cannot open an element directly inside a block list');
   }
 
   closeElement() {

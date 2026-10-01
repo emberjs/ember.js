@@ -1,3 +1,4 @@
+import type { Shell } from '../dom/shell.js';
 import type { CompilableTemplate } from '../template.js';
 import type { SymbolTable } from '../tier1/symbol-table.js';
 import type * as WireFormat from './wire-format/api.js';
@@ -10,6 +11,7 @@ export type StdLibOperandType = 5;
 export type NonSmallIntOperandType = 6;
 export type SymbolTableOperandType = 7;
 export type LayoutOperandType = 8;
+export type ShellOperandType = 9;
 
 export type OperandType =
   | LabelOperandType
@@ -19,7 +21,8 @@ export type OperandType =
   | StdLibOperandType
   | NonSmallIntOperandType
   | SymbolTableOperandType
-  | LayoutOperandType;
+  | LayoutOperandType
+  | ShellOperandType;
 
 export interface LabelOperand {
   type: LabelOperandType;
@@ -70,6 +73,11 @@ export interface LayoutOperand {
   value: CompilableTemplate;
 }
 
+export interface ShellOperand {
+  type: ShellOperandType;
+  value: Shell;
+}
+
 export type HighLevelBuilderOperand =
   | LabelOperand
   | IsStrictModeOperand
@@ -78,7 +86,8 @@ export type HighLevelBuilderOperand =
   | BlockOperand
   | NonSmallIntOperand
   | SymbolTableOperand
-  | LayoutOperand;
+  | LayoutOperand
+  | ShellOperand;
 
 export type SingleBuilderOperand =
   | HighLevelBuilderOperand

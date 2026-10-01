@@ -9,6 +9,7 @@ export type * from './lib/curry.d.ts';
 export type * from './lib/dom/attributes.d.ts';
 export type * from './lib/dom/bounds.d.ts';
 export type * from './lib/dom/changes.d.ts';
+export type * from './lib/dom/shell.d.ts';
 export type * from './lib/dom/simple.d.ts';
 export type * from './lib/dom/tree-construction.d.ts';
 export type * from './lib/managers.d.ts';

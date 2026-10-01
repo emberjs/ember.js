@@ -44,14 +44,14 @@ export type VmRootScope = 37;
 export type VmVirtualRootScope = 38;
 export type VmChildScope = 39;
 export type VmPopScope = 40;
-export type VmText = 41;
-export type VmComment = 42;
+export type VmOpenShell = 41;
+export type VmCloseShell = 42;
 export type VmAppendHTML = 43;
 export type VmAppendSafeHTML = 44;
 export type VmAppendDocumentFragment = 45;
 export type VmAppendNode = 46;
 export type VmAppendText = 47;
-export type VmOpenElement = 48;
+export type VmOpenShellElement = 48;
 export type VmOpenDynamicElement = 49;
 export type VmPushRemoteElement = 50;
 export type VmStaticAttr = 51;
@@ -86,6 +86,7 @@ export type VmResolveDynamicComponent = 80;
 export type VmResolveCurriedComponent = 81;
 export type VmPushArgs = 82;
 export type VmPushEmptyArgs = 83;
+export type VmPopShellCursor = 84;
 export type VmPrepareArgs = 85;
 export type VmCaptureArgs = 86;
 export type VmCreateComponent = 87;
@@ -94,12 +95,16 @@ export type VmPutComponentOperations = 89;
 export type VmGetComponentSelf = 90;
 export type VmGetComponentTagName = 91;
 export type VmGetComponentLayout = 92;
+export type VmFlushShellElement = 93;
+export type VmCloseShellElement = 94;
 export type VmPopulateLayout = 95;
 export type VmInvokeComponentLayout = 96;
 export type VmBeginComponentTransaction = 97;
 export type VmCommitComponentTransaction = 98;
 export type VmDidCreateElement = 99;
 export type VmDidRenderLayout = 100;
+export type VmAppendCautiousText = 101;
+export type VmPushShellCursor = 102;
 export type VmDebugger = 103;
 export type VmStaticComponentAttr = 105;
 export type VmDynamicContentType = 106;
@@ -137,14 +142,14 @@ export type VmOp =
   | VmVirtualRootScope
   | VmChildScope
   | VmPopScope
-  | VmText
-  | VmComment
+  | VmOpenShell
+  | VmCloseShell
   | VmAppendHTML
   | VmAppendSafeHTML
   | VmAppendDocumentFragment
   | VmAppendNode
   | VmAppendText
-  | VmOpenElement
+  | VmOpenShellElement
   | VmOpenDynamicElement
   | VmPushRemoteElement
   | VmStaticAttr
@@ -202,6 +207,11 @@ export type VmOp =
   | VmIfInline
   | VmNot
   | VmGetDynamicVar
-  | VmLog;
+  | VmLog
+  | VmPopShellCursor
+  | VmFlushShellElement
+  | VmCloseShellElement
+  | VmAppendCautiousText
+  | VmPushShellCursor;
 
 export type SomeVmOp = VmOp | VmMachineOp;

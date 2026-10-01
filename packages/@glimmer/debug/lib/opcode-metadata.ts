@@ -13,6 +13,7 @@ import {
   VM_RETURN_TO_OP,
 } from '@glimmer/constants/lib/vm-ops';
 import {
+  VM_APPEND_CAUTIOUS_TEXT_OP,
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
   VM_APPEND_HTML_OP,
   VM_APPEND_NODE_OP,
@@ -24,7 +25,8 @@ import {
   VM_CAPTURE_ARGS_OP,
   VM_CHILD_SCOPE_OP,
   VM_CLOSE_ELEMENT_OP,
-  VM_COMMENT_OP,
+  VM_CLOSE_SHELL_ELEMENT_OP,
+  VM_CLOSE_SHELL_OP,
   VM_COMMIT_COMPONENT_TRANSACTION_OP,
   VM_COMPILE_BLOCK_OP,
   VM_COMPONENT_ATTR_OP,
@@ -47,6 +49,7 @@ import {
   VM_EXIT_OP,
   VM_FETCH_OP,
   VM_FLUSH_ELEMENT_OP,
+  VM_FLUSH_SHELL_ELEMENT_OP,
   VM_GET_BLOCK_OP,
   VM_GET_COMPONENT_LAYOUT_OP,
   VM_GET_COMPONENT_SELF_OP,
@@ -67,12 +70,14 @@ import {
   VM_MODIFIER_OP,
   VM_NOT_OP,
   VM_OPEN_DYNAMIC_ELEMENT_OP,
-  VM_OPEN_ELEMENT_OP,
+  VM_OPEN_SHELL_ELEMENT_OP,
+  VM_OPEN_SHELL_OP,
+  VM_POPULATE_LAYOUT_OP,
   VM_POP_DYNAMIC_SCOPE_OP,
   VM_POP_OP,
   VM_POP_REMOTE_ELEMENT_OP,
   VM_POP_SCOPE_OP,
-  VM_POPULATE_LAYOUT_OP,
+  VM_POP_SHELL_CURSOR_OP,
   VM_PREPARE_ARGS_OP,
   VM_PRIMITIVE_OP,
   VM_PRIMITIVE_REFERENCE_OP,
@@ -83,20 +88,20 @@ import {
   VM_PUSH_DYNAMIC_SCOPE_OP,
   VM_PUSH_EMPTY_ARGS_OP,
   VM_PUSH_REMOTE_ELEMENT_OP,
+  VM_PUSH_SHELL_CURSOR_OP,
   VM_PUSH_SYMBOL_TABLE_OP,
   VM_PUT_COMPONENT_OPERATIONS_OP,
   VM_REGISTER_COMPONENT_DESTRUCTOR_OP,
   VM_REIFY_U32_OP,
   VM_RESOLVE_DYNAMIC_COMPONENT_OP,
   VM_ROOT_SCOPE_OP,
-  VM_SET_BLOCK_OP,
   VM_SET_BLOCKS_OP,
+  VM_SET_BLOCK_OP,
   VM_SET_NAMED_VARIABLES_OP,
   VM_SET_VARIABLE_OP,
   VM_SPREAD_BLOCK_OP,
   VM_STATIC_ATTR_OP,
   VM_SYSCALL_SIZE,
-  VM_TEXT_OP,
   VM_TO_BOOLEAN_OP,
   VM_VIRTUAL_ROOT_SCOPE_OP,
 } from '@glimmer/constants/lib/syscall-ops';
@@ -352,18 +357,59 @@ if (LOCAL_DEBUG) {
     stackChange: 0,
   };
 
-  METADATA[VM_TEXT_OP] = {
-    name: 'Text',
-    mnemonic: 'apnd_text',
+  METADATA[VM_OPEN_SHELL_OP] = {
+    name: 'OpenShell',
+    mnemonic: 'shell_open',
     stackChange: 0,
-    ops: ['contents:const/str'],
+    ops: ['shell:const/any'],
   };
 
-  METADATA[VM_COMMENT_OP] = {
-    name: 'Comment',
-    mnemonic: 'apnd_comment',
+  METADATA[VM_OPEN_SHELL_ELEMENT_OP] = {
+    name: 'OpenShellElement',
+    mnemonic: 'shell_elem',
     stackChange: 0,
-    ops: ['contents:const/str'],
+    ops: ['anchor:imm/u32'],
+  };
+
+  METADATA[VM_PUSH_SHELL_CURSOR_OP] = {
+    name: 'PushShellCursor',
+    mnemonic: 'shell_pushc',
+    stackChange: 0,
+    ops: ['parent:imm/i32', 'next:imm/i32'],
+  };
+
+  METADATA[VM_POP_SHELL_CURSOR_OP] = {
+    name: 'PopShellCursor',
+    mnemonic: 'shell_popc',
+    stackChange: 0,
+    ops: ['parent:imm/i32'],
+  };
+
+  METADATA[VM_FLUSH_SHELL_ELEMENT_OP] = {
+    name: 'FlushShellElement',
+    mnemonic: 'shell_flush',
+    stackChange: 0,
+  };
+
+  METADATA[VM_CLOSE_SHELL_ELEMENT_OP] = {
+    name: 'CloseShellElement',
+    mnemonic: 'shell_elem_close',
+    stackChange: 0,
+    ops: ['anchor:imm/u32'],
+  };
+
+  METADATA[VM_CLOSE_SHELL_OP] = {
+    name: 'CloseShell',
+    mnemonic: 'shell_close',
+    stackChange: 0,
+  };
+
+  METADATA[VM_APPEND_CAUTIOUS_TEXT_OP] = {
+    name: 'AppendCautiousText',
+    mnemonic: 'apnd_ctext',
+    // Pops the value for text, or calls the routine, which pops it later.
+    stackChange: null,
+    ops: ['routine:handle'],
   };
 
   METADATA[VM_APPEND_HTML_OP] = {
@@ -394,13 +440,6 @@ if (LOCAL_DEBUG) {
     name: 'AppendText',
     mnemonic: 'apnd_dyntext',
     stackChange: -1,
-  };
-
-  METADATA[VM_OPEN_ELEMENT_OP] = {
-    name: 'OpenElement',
-    mnemonic: 'apnd_tag',
-    stackChange: 0,
-    ops: ['tag:const/str'],
   };
 
   METADATA[VM_OPEN_DYNAMIC_ELEMENT_OP] = {

@@ -27,6 +27,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { CURRIED_COMPONENT } from '@glimmer/constants/lib/curried';
+import { ELEMENT_NODE } from '@glimmer/constants/lib/dom';
 import {
   VM_BEGIN_COMPONENT_TRANSACTION_OP,
   VM_CAPTURE_ARGS_OP,
@@ -566,7 +567,12 @@ export class ComponentElementOperations implements ElementOperations {
 
       assert(constructing, `Expected a constructing element in addModifier`);
 
-      let bounds = new ConcreteBounds(element, constructing, constructing);
+      // A shell's element can sit below the cursor's element already, or in
+      // the shell's copy, waiting to go in at the cursor.
+      let { parentNode } = constructing;
+      let parent =
+        parentNode !== null && parentNode.nodeType === ELEMENT_NODE ? parentNode : element;
+      let bounds = new ConcreteBounds(parent, constructing, constructing);
 
       vm.env.debugRenderTree.create(state, {
         type: 'modifier',

@@ -6,9 +6,8 @@ import type {
   WireFormat,
 } from '@glimmer/interfaces';
 import {
+  VM_APPEND_CAUTIOUS_TEXT_OP,
   VM_ASSERT_SAME_OP,
-  VM_CLOSE_ELEMENT_OP,
-  VM_COMMENT_OP,
   VM_COMPONENT_ATTR_OP,
   VM_CONSTANT_REFERENCE_OP,
   VM_DEBUGGER_OP,
@@ -18,19 +17,15 @@ import {
   VM_DYNAMIC_MODIFIER_OP,
   VM_ENTER_LIST_OP,
   VM_EXIT_LIST_OP,
-  VM_FLUSH_ELEMENT_OP,
   VM_ITERATE_OP,
   VM_MODIFIER_OP,
-  VM_OPEN_ELEMENT_OP,
   VM_POP_OP,
   VM_POP_REMOTE_ELEMENT_OP,
   VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
   VM_PUSH_REMOTE_ELEMENT_OP,
-  VM_PUT_COMPONENT_OPERATIONS_OP,
   VM_RESOLVE_CURRIED_COMPONENT_OP,
   VM_STATIC_ATTR_OP,
   VM_STATIC_COMPONENT_ATTR_OP,
-  VM_TEXT_OP,
   VM_TO_BOOLEAN_OP,
 } from '@glimmer/constants/lib/syscall-ops';
 import {
@@ -40,6 +35,7 @@ import {
   VM_PUSH_FRAME_OP,
   VM_RETURN_TO_OP,
 } from '@glimmer/constants/lib/vm-ops';
+import assert from '@glimmer/debug-util/lib/assert';
 import { $fp, $sp } from '@glimmer/vm/lib/registers';
 import { ContentType } from '@glimmer/vm/lib/content';
 import { opcodes as SexpOpcodes } from '@glimmer/wire-format/lib/opcodes';
@@ -92,10 +88,6 @@ export function inflateAttrName(attrName: string | WellKnownAttrName): string {
   return typeof attrName === 'string' ? attrName : INFLATE_ATTR_TABLE[attrName];
 }
 
-STATEMENTS.add(SexpOpcodes.Comment, (op, sexp) => op(VM_COMMENT_OP, sexp[1]));
-STATEMENTS.add(SexpOpcodes.CloseElement, (op) => op(VM_CLOSE_ELEMENT_OP));
-STATEMENTS.add(SexpOpcodes.FlushElement, (op) => op(VM_FLUSH_ELEMENT_OP));
-
 STATEMENTS.add(SexpOpcodes.Modifier, (op, [, expression, positional, named]) => {
   if (isGetFreeModifier(expression)) {
     op(HighLevelResolutionOpcodes.Modifier, expression, (handle: number) => {
@@ -142,15 +134,6 @@ STATEMENTS.add(SexpOpcodes.TrustingComponentAttr, (op, [, name, value, namespace
   op(VM_COMPONENT_ATTR_OP, inflateAttrName(name), true, namespace ?? null);
 });
 
-STATEMENTS.add(SexpOpcodes.OpenElement, (op, [, tag]) => {
-  op(VM_OPEN_ELEMENT_OP, inflateTagName(tag));
-});
-
-STATEMENTS.add(SexpOpcodes.OpenElementWithSplat, (op, [, tag]) => {
-  op(VM_PUT_COMPONENT_OPERATIONS_OP);
-  op(VM_OPEN_ELEMENT_OP, inflateTagName(tag));
-});
-
 STATEMENTS.add(SexpOpcodes.Component, (op, [, expr, elementBlock, named, blocks]) => {
   if (isGetFreeComponent(expr)) {
     op(HighLevelResolutionOpcodes.Component, expr, (component: CompileTimeComponent) => {
@@ -171,11 +154,12 @@ STATEMENTS.add(SexpOpcodes.Debugger, (op, [, locals, upvars, lexical]) => {
   op(VM_DEBUGGER_OP, debugSymbolsOperand(locals, upvars, lexical));
 });
 
+// Elements, comments and static text are part of the block's shell, see
+// `compileStatementList`.
 STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
-  // Special case for static values
-  if (!Array.isArray(value)) {
-    op(VM_TEXT_OP, value === null || value === undefined ? '' : String(value));
-  } else if (isGetFreeComponentOrHelper(value)) {
+  assert(Array.isArray(value), 'static text is part of the shell');
+
+  if (isGetFreeComponentOrHelper(value)) {
     op(HighLevelResolutionOpcodes.OptionalComponentOrHelper, value, {
       ifComponent(component: CompileTimeComponent) {
         InvokeComponent(op, component, null, null, null, null);
@@ -184,14 +168,14 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
       ifHelper(handle: number) {
         op(VM_PUSH_FRAME_OP);
         Call(op, handle, null, null);
-        op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-non-dynamic-append'));
+        CautiousAppend(op, 'cautious-non-dynamic-append');
         op(VM_POP_FRAME_OP);
       },
 
       ifValue(handle: number) {
         op(VM_PUSH_FRAME_OP);
         op(VM_CONSTANT_REFERENCE_OP, handle);
-        op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-non-dynamic-append'));
+        CautiousAppend(op, 'cautious-non-dynamic-append');
         op(VM_POP_FRAME_OP);
       },
     });
@@ -206,7 +190,7 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
         ifHelper(handle: number) {
           op(VM_PUSH_FRAME_OP);
           Call(op, handle, positional, named);
-          op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-non-dynamic-append'));
+          CautiousAppend(op, 'cautious-non-dynamic-append');
           op(VM_POP_FRAME_OP);
         },
       });
@@ -243,20 +227,24 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
   } else {
     op(VM_PUSH_FRAME_OP);
     expr(op, value);
-    op(VM_INVOKE_STATIC_OP, stdlibOperand('cautious-append'));
+    CautiousAppend(op, 'cautious-append');
     op(VM_POP_FRAME_OP);
   }
 });
 
+// Appends text directly, and calls the append routine for any other value.
+function CautiousAppend(
+  op: PushStatementOp,
+  routine: 'cautious-append' | 'cautious-non-dynamic-append'
+): void {
+  op(VM_APPEND_CAUTIOUS_TEXT_OP, stdlibOperand(routine));
+}
+
 STATEMENTS.add(SexpOpcodes.TrustingAppend, (op, [, value]) => {
-  if (!Array.isArray(value)) {
-    op(VM_TEXT_OP, value === null || value === undefined ? '' : String(value));
-  } else {
-    op(VM_PUSH_FRAME_OP);
-    expr(op, value);
-    op(VM_INVOKE_STATIC_OP, stdlibOperand('trusting-append'));
-    op(VM_POP_FRAME_OP);
-  }
+  op(VM_PUSH_FRAME_OP);
+  expr(op, value);
+  op(VM_INVOKE_STATIC_OP, stdlibOperand('trusting-append'));
+  op(VM_POP_FRAME_OP);
 });
 
 STATEMENTS.add(SexpOpcodes.Block, (op, [, expr, positional, named, blocks]) => {

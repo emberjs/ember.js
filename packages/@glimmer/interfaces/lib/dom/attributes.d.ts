@@ -3,6 +3,7 @@ import type { ElementOperations, Environment, ModifierInstance } from '../runtim
 import type { Stack } from '../stack.js';
 import type { Bounds, Cursor } from './bounds.js';
 import type { GlimmerTreeChanges, GlimmerTreeConstruction } from './changes.js';
+import type { ShellBuilder } from './shell.js';
 import type {
   AttrNamespace,
   SimpleComment,
@@ -21,6 +22,8 @@ export interface AppendingBlock extends Bounds {
   debug?: { first: () => Nullable<SimpleNode>; last: () => Nullable<SimpleNode> };
 
   openElement(element: SimpleElement): void;
+  /** Like `openElement`, for an element that the block already holds. */
+  nest(): void;
   closeElement(): void;
   didAppendNode(node: SimpleNode): void;
   didAppendBounds(bounds: Bounds): void;
@@ -89,8 +92,14 @@ export interface TreeOperations {
   __setProperty(name: string, value: unknown): void;
 }
 
-export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
+export interface TreeBuilder extends Cursor, DOMStack, TreeOperations, ShellBuilder {
   readonly cursors: Stack<Cursor>;
+
+  /**
+   * False for builders that add markers for the server or claim existing
+   * nodes. Those need every block that the VM opens.
+   */
+  readonly isPlain: boolean;
   readonly debug?: () => {
     blocks: AppendingBlock[];
     constructing: Nullable<SimpleElement>;

@@ -686,6 +686,10 @@ export class VM {
     associateDestroyableChild(parent, child);
   }
 
+  destroyableParent(): Destroyable {
+    return expect(this.#stacks.destroyable.current, 'Expected destructor parent');
+  }
+
   private updating(): UpdatingOpcode[] {
     return expect(
       this.#stacks.updating.current,

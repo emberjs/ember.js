@@ -14,6 +14,9 @@ import type {
   NonSmallIntOperandType,
   SerializedBlock,
   SerializedInlineBlock,
+  Shell,
+  ShellOperand,
+  ShellOperandType,
   StdLibOperand,
   StdLibOperandType,
   SymbolTable,
@@ -32,6 +35,7 @@ export const HighLevelOperands = {
   NonSmallInt: 6 satisfies NonSmallIntOperandType,
   SymbolTable: 7 satisfies SymbolTableOperandType,
   Layout: 8 satisfies LayoutOperandType,
+  Shell: 9 satisfies ShellOperandType,
 } as const;
 
 export function labelOperand(value: string): LabelOperand {
@@ -79,4 +83,8 @@ export function symbolTableOperand(value: SymbolTable): SymbolTableOperand {
 
 export function layoutOperand(value: CompilableTemplate): LayoutOperand {
   return { type: HighLevelOperands.Layout, value };
+}
+
+export function shellOperand(value: Shell): ShellOperand {
+  return { type: HighLevelOperands.Shell, value };
 }

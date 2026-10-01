@@ -25,7 +25,7 @@ import { debugCompiler } from './compiler';
 import { templateCompilationContext } from './opcode-builder/context';
 import { encodeOp } from './opcode-builder/encoder';
 import { meta } from './opcode-builder/helpers/shared';
-import { STATEMENTS } from './syntax/statements';
+import { compileStatementList } from './syntax/shells';
 
 export const PLACEHOLDER_HANDLE = -1;
 
@@ -88,7 +88,6 @@ export function compileStatements(
   meta: BlockMetadata,
   syntaxContext: EvaluationContext
 ): HandleResult {
-  let sCompiler = STATEMENTS;
   let context = templateCompilationContext(syntaxContext, meta);
 
   let { encoder, evaluation } = context;
@@ -97,9 +96,7 @@ export function compileStatements(
     encodeOp(encoder, evaluation, meta, op as BuilderOp | HighLevelOp);
   }
 
-  for (const statement of statements) {
-    sCompiler.compile(pushOp, statement);
-  }
+  compileStatementList(pushOp, statements);
 
   let handle = context.encoder.commit(meta.size);
 
