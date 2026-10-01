@@ -1,0 +1,11 @@
+# Unlabeled Changes
+
+* Other
+  * [#21642](https://github.com/emberjs/ember.js/pull/21642) [CLEANUP] Move classic Component tests into components/classic ([@NullVoxPopuli-ai-agent](https://github.com/NullVoxPopuli-ai-agent))
+  * [#21643](https://github.com/emberjs/ember.js/pull/21643) use queryParamType for serializing ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#21632](https://github.com/emberjs/ember.js/pull/21632) Implement RFC #334: Deprecate @ember/utils and the empty, notEmpty, none macros ([@NullVoxPopuli-ai-agent](https://github.com/NullVoxPopuli-ai-agent))
+* `@glimmer/syntax`
+  * [#21641](https://github.com/emberjs/ember.js/pull/21641) Cleanup: remove action keyword handling ([@ef4](https://github.com/ef4))
+
+
+*Cannot plan release until the above changes are labeled*.
