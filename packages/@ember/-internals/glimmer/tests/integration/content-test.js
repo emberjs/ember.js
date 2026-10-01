@@ -17,6 +17,9 @@ import EmberObject from '@ember/object';
 import { readOnly } from '@ember/object/computed';
 import ObjectProxy from '@ember/object/proxy';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
+import { precompileTemplate } from '@ember/template-compilation';
+import { setComponentTemplate } from '@glimmer/manager';
+import Component from '@glimmer/component';
 import { SafeString, htmlSafe } from '../utils/helpers';
 
 const EMPTY = Object.freeze({});
@@ -1726,6 +1729,22 @@ if (DEBUG) {
       ['@test specifying <div style={{this.userValue}}></div> generates a warning']() {
         let userValue = 'width: 42px';
         this.render('<div style={{this.userValue}}></div>', {
+          userValue,
+        });
+
+        this.assertStyleWarning(userValue);
+      }
+
+      ['@test specifying `style` on a component with `...attributes` generates a warning']() {
+        this.owner.register(
+          'component:foo-bar',
+          setComponentTemplate(
+            precompileTemplate('<div ...attributes>hello</div>'),
+            class extends Component {}
+          )
+        );
+        let userValue = 'width: 42px';
+        this.render('<FooBar style={{this.userValue}} />', {
           userValue,
         });
 

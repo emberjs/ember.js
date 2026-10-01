@@ -108,5 +108,53 @@ moduleFor(
         assert.equal(text, 'inner', 'The component is composed correctly');
       });
     }
+
+    ['@test an argument called `data` should not collide with internal structures'](assert) {
+      this.add(
+        'template:application',
+        precompileTemplate(`<div id='wrapper'>{{my-component data=this.foo}}</div>`)
+      );
+
+      this.add(
+        'controller:application',
+        class extends Controller {
+          text = 'outer';
+          foo = 'Some text inserted';
+        }
+      );
+      this.add(
+        'component:my-component',
+        setComponentTemplate(precompileTemplate('{{@data}}'), class extends Component {})
+      );
+
+      return this.visit('/').then(() => {
+        let text = getTextOf(this.element.querySelector('#wrapper'));
+        assert.equal(text, 'Some text inserted', 'The component is composed correctly');
+      });
+    }
+
+    ['@test an argument called `attrs` should not collide with internal structures'](assert) {
+      this.add(
+        'template:application',
+        precompileTemplate(`<div id='wrapper'>{{my-component attrs=this.foo}}</div>`)
+      );
+
+      this.add(
+        'controller:application',
+        class extends Controller {
+          text = 'outer';
+          foo = 'Some text inserted';
+        }
+      );
+      this.add(
+        'component:my-component',
+        setComponentTemplate(precompileTemplate('{{@attrs}}'), class extends Component {})
+      );
+
+      return this.visit('/').then(() => {
+        let text = getTextOf(this.element.querySelector('#wrapper'));
+        assert.equal(text, 'Some text inserted', 'The component is composed correctly');
+      });
+    }
   }
 );

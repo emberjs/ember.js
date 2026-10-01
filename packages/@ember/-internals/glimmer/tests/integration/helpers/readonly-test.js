@@ -80,5 +80,26 @@ moduleFor(
 
       this.assertStableRerender();
     }
+
+    ['@test {{mut}} of a {{readonly}} argument is not allowed']() {
+      this.owner.register(
+        'component:x-bottom',
+        setComponentTemplate(precompileTemplate('{{@bar}}'), class extends Component {})
+      );
+
+      this.owner.register(
+        'component:x-middle',
+        setComponentTemplate(
+          precompileTemplate('{{@foo}} {{x-bottom bar=(mut @foo)}}'),
+          class extends Component {}
+        )
+      );
+
+      expectAssertion(() => {
+        this.render('{{x-middle foo=(readonly this.val)}}', {
+          val: 12,
+        });
+      }, 'You can only pass a path to mut');
+    }
   }
 );
