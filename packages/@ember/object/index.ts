@@ -1,5 +1,4 @@
 import { assert } from '@ember/debug';
-import { ENV } from '@ember/-internals/environment/lib/env';
 import type {
   ElementDescriptor,
   ExtendedMethodDecorator,
@@ -297,7 +296,7 @@ export function observer<T extends AnyFn>(
   if (typeof funcOrDef === 'function') {
     func = funcOrDef;
     dependentKeys = args as string[];
-    sync = !ENV._DEFAULT_ASYNC_OBSERVERS;
+    sync = false;
   } else {
     func = funcOrDef.fn;
     dependentKeys = funcOrDef.dependentKeys;
