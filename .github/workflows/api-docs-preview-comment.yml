@@ -1,0 +1,77 @@
+name: API Docs Preview Comment
+
+on:
+  workflow_run: # This workflow has permissions on the repo, do NOT run code from PRs in this workflow. See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/ # zizmor: ignore[dangerous-triggers] we know what we are doing here
+    workflows: ["API Docs Preview"]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  comment:
+    name: Comment on PR with the preview link
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pull-requests: write
+    steps:
+      - name: Find the PR and the artifact
+        id: find
+        run: |
+          # The event has no PR number for a PR from a fork.
+          # GitHub supplies the head values, so the code of a PR cannot change them.
+          number=$(
+            gh api -X GET "repos/${REPO}/pulls" -f state=open -f head="${HEAD_OWNER}:${HEAD_BRANCH}" |
+              jq --arg sha "${HEAD_SHA}" 'first(.[] | select(.head.sha == $sha) | .number)'
+          )
+          artifact=$(
+            gh api "repos/${REPO}/actions/runs/${RUN_ID}/artifacts" \
+              --jq '[.artifacts[] | select(.name == "api-docs-preview")] | sort_by(.created_at) | last | .id // empty'
+          )
+
+          if [ -z "${number}" ] || [ -z "${artifact}" ]; then
+            echo "::notice::No open PR at ${HEAD_SHA} or no artifact. No comment."
+            exit 0
+          fi
+
+          echo "number=${number}" >> "$GITHUB_OUTPUT"
+          # gh does not extract over the files of an older preview, so each commit gets a folder.
+          echo "dir=api-docs-preview-${HEAD_SHA:0:7}" >> "$GITHUB_OUTPUT"
+          echo "artifact-url=${GITHUB_SERVER_URL}/${REPO}/actions/runs/${RUN_ID}/artifacts/${artifact}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+
+      - name: Create or update the comment
+        if: steps.find.outputs.number != ''
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: api-docs-preview
+          number_force: ${{ steps.find.outputs.number }}
+          message: |
+            ### API docs preview
+
+            The preview shows the API docs of ${{ github.event.workflow_run.head_sha }}, as https://api.emberjs.com will show them.
+
+            1. Download and extract the artifact.
+
+               ```sh
+               gh run download ${{ github.event.workflow_run.id }} --repo ${{ github.repository }} --name api-docs-preview --dir ${{ steps.find.outputs.dir }}
+               ```
+
+               Without `gh`, download [api-docs-preview.zip](${{ steps.find.outputs.artifact-url }}) and extract it into `${{ steps.find.outputs.dir }}`. The download needs a GitHub login.
+
+            2. Start a server.
+
+               ```sh
+               npx http-server ${{ steps.find.outputs.dir }} -c-1
+               ```
+
+            3. Open http://localhost:8080.
+
+            The preview has only the version of this PR. The search box shows results from the released docs.
