@@ -290,6 +290,24 @@ export function shallowEqual<A extends object, B extends object>(a: A, b: B): bo
   return aCount === bCount;
 }
 
+// Apps receive this as `defaultValueType` in `serializeQueryParam` and
+// `deserializeQueryParam`, so it keeps the type names of the common defaults.
+export function queryParamType(value: unknown): string {
+  if (value === null) {
+    return 'null';
+  }
+
+  if (Array.isArray(value)) {
+    return 'array';
+  }
+
+  if (value instanceof Date) {
+    return 'date';
+  }
+
+  return typeof value;
+}
+
 function isRouteOptions(value: unknown): value is RouteOptions {
   if (value && typeof value === 'object') {
     let qps = (value as RouteOptions).queryParams;
