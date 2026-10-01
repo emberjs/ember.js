@@ -22,10 +22,10 @@ function embroiderWebpack(project: Project) {
 function embroiderVite(project: Project) {}
 
 // Swap the v2-app-template's default app.js for a strict-resolver variant:
-// no ember-resolver, no compatModules, no modulePrefix — just a `modules =
-// {...import.meta.glob(...)}` literal. Making this a variant of
-// v2AppScenarios means every test that runs against v2AppScenarios also
-// runs against this configuration.
+// no ember-resolver, no compatModules, no modulePrefix.
+// It only has a `modules = {...import.meta.glob(...)}` literal.
+// Making this a variant of v2AppScenarios means every test that runs against v2AppScenarios
+// also runs against this configuration.
 function strictResolver(project: Project) {
   project.removeDependency('ember-resolver');
   project.mergeFiles({

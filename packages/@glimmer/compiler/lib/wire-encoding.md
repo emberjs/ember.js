@@ -99,10 +99,10 @@ The entire wire format is encoded using the characters that are valid in a JSON 
 In terms of bit patterns, anything from 0b000000 to 0b111111
 (0x00 to 0x3F) can be represented directly.
 
-The remaining available characters (0x40 to 0x5A) don't have a
-very useful bit representation, but can be used to represent
-standalone values between 0 and 90 and the high bit flag can be
-used on values between 0 and 26 (0x00 to 0x1a).
+The remaining available characters, 0x40 to 0x5A,
+don't have a very useful bit representation.
+But they can be used to represent standalone values between 0 and 90,
+and the high bit flag can be used on values between 0 and 26 (0x00 to 0x1a).
 
 Generally speaking, chars are assumed to encode 6 bits, except
 when otherwise explicitly stated.
@@ -221,7 +221,9 @@ qhello world"
 | 181-270 | 10   |
 | 271+    | 11   |
 
-Very small numbers are encoded by using the representation flag to indicate which range of 90 numbers is represented, and then using the immediate next char to encode the full range of 90 supported by our character set.
+Very small numbers are encoded by using the representation flag
+to indicate which range of 90 numbers is represented.
+The immediate next char then encodes the full range of 90 supported by our character set.
 
 Numbers larger than 270 are represented by a sequence of 6-bit numbers, terminated by 0x5A.
 

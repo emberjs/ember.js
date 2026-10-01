@@ -115,6 +115,6 @@ assert('Must pass a string', typeof str === 'string');
 expectTypeOf(str).toBeString();
 
 // Fail unconditionally
-// This has to be last because `assert never` will raise TS's checks for
-// unreachable code.
+// This has to be last,
+// because `assert never` will raise TS's checks for unreachable code.
 expectTypeOf(assert('This code path should never be run')).toBeNever();

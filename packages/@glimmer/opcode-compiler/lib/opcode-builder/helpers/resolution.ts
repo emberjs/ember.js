@@ -439,8 +439,8 @@ function lookupBuiltInHelper(
   if (DEBUG && helper === null) {
     assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
-    // Keyword helper did not exist, which means that we're attempting to use a
-    // value of some kind that is not in scope
+    // Keyword helper did not exist,
+    // which means that we're attempting to use a value of some kind that is not in scope
     throw new Error(
       `Attempted to resolve a ${type} in a strict mode template, but that value was not in scope: ${
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme

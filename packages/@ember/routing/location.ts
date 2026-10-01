@@ -3,14 +3,14 @@
 */
 
 /**
-  `Location` defines an interface to be implemented by `location` APIs. It is
-  not user-constructible; the only valid way to get a `Location` is via one of
-  its concrete implementations.
+  `Location` defines an interface to be implemented by `location` APIs.
+  It is not user-constructible.
+  The only valid way to get a `Location` is via one of its concrete implementations.
 
   ## Implementations
 
-  You can pass an implementation name (`hash`, `history`, `none`) to force a
-  particular implementation to be used in your application.
+  You can pass an implementation name, such as `hash`, `history`, or `none`,
+  to force a particular implementation to be used in your application.
 
   - See [HashLocation](/ember/release/classes/HashLocation).
   - See [HistoryLocation](/ember/release/classes/HistoryLocation).
@@ -80,8 +80,8 @@ export default interface Location {
   getURL(): string;
 
   /**
-   * Sets the current URL. Calling `setURL` will not trigger `onUpdateURL`
-   * callbacks.
+   * Updates the current URL.
+   * Calling `setURL` will not trigger `onUpdateURL` callbacks.
    *
    * @property setURL
    * @public

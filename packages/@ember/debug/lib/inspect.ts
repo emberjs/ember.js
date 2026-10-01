@@ -12,11 +12,11 @@ const SAFE_KEY = /^[\w$]+$/;
  @module @ember/debug
 */
 /**
-  Convenience method to inspect an object. This method will attempt to
-  convert the object into a useful string description.
+  Convenience method to inspect an object.
+  It attempts to convert the object into a useful string description.
 
-  It is a pretty simple implementation. If you want something more robust,
-  use something like JSDump: https://github.com/NV/jsDump
+  It is a pretty simple implementation.
+  If you want something more complete, use something like JSDump: https://github.com/NV/jsDump
 
   @method inspect
   @static

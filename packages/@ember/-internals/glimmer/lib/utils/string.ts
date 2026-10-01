@@ -5,22 +5,23 @@
 import type { SafeString as GlimmerSafeString } from '@glimmer/runtime/lib/upsert';
 
 /**
-  A wrapper around a string that has been marked as "trusted". **When
-  rendered in HTML, Ember will not perform any escaping.**
+  A wrapper around a string that has been marked as "trusted".
+  **When rendered in HTML, Ember will not perform any escaping.**
 
   Note:
 
-  1. This does not *make* the string safe; it means that some code in your
-     application has *marked* it as trusted using the `trustHTML()` function.
+  1. This does not *make* the string safe.
+     It means that some code in your application
+     has *marked* it as trusted using the `trustHTML()` function.
 
-  2. The only public API for getting a `TrustedHTML` is calling `trustHTML()`. It
-     is *not* user-constructible.
+  2. The only public API for getting a `TrustedHTML` is calling `trustHTML()`.
+     It is *not* user-constructible.
 
-  If a string contains user inputs or other untrusted data, you must sanitize
-  the string before using the `trustHTML` method. Otherwise your code is
-  vulnerable to [Cross-Site Scripting][xss]. There are many open source
-  sanitization libraries to choose from, both for front end and server-side
-  sanitization.
+  If a string contains user inputs or other untrusted data,
+  you must sanitize the string before using the `trustHTML` method.
+  Otherwise your code is vulnerable to [Cross-Site Scripting][xss].
+  There are many open source sanitization libraries to choose from,
+  both for front end and server-side sanitization.
 
   [xss]: https://owasp.org/www-community/attacks/DOM_Based_XSS
 
@@ -45,7 +46,7 @@ export class TrustedHTML implements GlimmerSafeString {
   }
 
   /**
-    Get the string back to use as a string.
+    Converts back to a plain string, for code that needs a primitive.
 
     @public
     @method toString
@@ -56,7 +57,7 @@ export class TrustedHTML implements GlimmerSafeString {
   }
 
   /**
-    Get the wrapped string as HTML to use without escaping.
+    Glimmer renders the result as HTML without escaping.
 
     @public
     @method toHTML
@@ -68,22 +69,23 @@ export class TrustedHTML implements GlimmerSafeString {
 }
 
 /**
-  A wrapper around a string that has been marked as safe ("trusted"). **When
-  rendered in HTML, Ember will not perform any escaping.**
+  A wrapper around a string that has been marked as safe, or "trusted".
+  **When rendered in HTML, Ember will not perform any escaping.**
 
   Note:
 
-  1. This does not *make* the string safe; it means that some code in your
-     application has *marked* it as safe using the `htmlSafe()` function.
+  1. This does not *make* the string safe.
+     It means that some code in your application
+     has *marked* it as safe using the `htmlSafe()` function.
 
-  2. The only public API for getting a `SafeString` is calling `htmlSafe()`. It
-     is *not* user-constructible.
+  2. The only public API for getting a `SafeString` is calling `htmlSafe()`.
+     It is *not* user-constructible.
 
-  If a string contains user inputs or other untrusted data, you must sanitize
-  the string before using the `htmlSafe` method. Otherwise your code is
-  vulnerable to [Cross-Site Scripting][xss]. There are many open source
-  sanitization libraries to choose from, both for front end and server-side
-  sanitization.
+  If a string contains user inputs or other untrusted data,
+  you must sanitize the string before using the `htmlSafe` method.
+  Otherwise your code is vulnerable to [Cross-Site Scripting][xss].
+  There are many open source sanitization libraries to choose from,
+  both for front end and server-side sanitization.
 
   [xss]: https://owasp.org/www-community/attacks/DOM_Based_XSS
 
@@ -105,17 +107,18 @@ export type SafeString = TrustedHTML;
 
 /**
   Use this method to indicate that a string should be rendered as HTML
-  when the string is used in a template. To say this another way,
-  strings marked with `htmlSafe` will not be HTML escaped.
+  when the string is used in a template.
+  To say this another way, strings marked with `htmlSafe` will not be HTML escaped.
 
-  A word of warning -   The `htmlSafe` method does not make the string safe;
-  it only tells the framework to treat the string as if it is safe to render
-  as HTML. If a string contains user inputs or other untrusted
-  data, you must sanitize the string before using the `htmlSafe` method.
-  Otherwise your code is vulnerable to
-  [Cross-Site Scripting](https://owasp.org/www-community/attacks/DOM_Based_XSS).
+  A word of warning: the `htmlSafe` method does not make the string safe.
+  It only tells the framework to treat the string as if it is safe to render as HTML.
+  If a string contains user inputs or other untrusted data,
+  you must sanitize the string before using the `htmlSafe` method.
+  Otherwise your code is vulnerable to [Cross-Site Scripting][xss].
   There are many open source sanitization libraries to choose from,
   both for front end and server-side sanitization.
+
+  [xss]: https://owasp.org/www-community/attacks/DOM_Based_XSS
 
   ```javascript
   import { htmlSafe } from '@ember/template';
@@ -136,17 +139,19 @@ export const htmlSafe = trustHTML;
 
 /**
   Use this method to indicate that a string should be rendered as HTML
-  without escaping when the string is used in a template. To say this another way,
-  strings marked with `trustHTML` will not be HTML escaped.
+  without escaping when the string is used in a template.
+  To say this another way, strings marked with `trustHTML` will not be HTML escaped.
 
-  A word of warning -   The `trustHTML` method does not make the string safe;
-  it only tells the framework to treat the string as if it is safe to render
-  as HTML - that we trust its contents to be safe. If a string contains user inputs or other untrusted
-  data, you must sanitize the string before using the `trustHTML` method.
-  Otherwise your code is vulnerable to
-  [Cross-Site Scripting](https://owasp.org/www-community/attacks/DOM_Based_XSS).
+  A word of warning: the `trustHTML` method does not make the string safe.
+  It only tells the framework to treat the string as if it is safe to render as HTML,
+  meaning that we trust its contents to be safe.
+  If a string contains user inputs or other untrusted data,
+  you must sanitize the string before using the `trustHTML` method.
+  Otherwise your code is vulnerable to [Cross-Site Scripting][xss].
   There are many open source sanitization libraries to choose from,
   both for front end and server-side sanitization.
+
+  [xss]: https://owasp.org/www-community/attacks/DOM_Based_XSS
 
   ```glimmer-js
   import { trustHTML } from '@ember/template';
@@ -216,10 +221,10 @@ export const isHTMLSafe = isTrustedHTML;
 */
 export function isTrustedHTML(str: unknown): str is TrustedHTML {
   return (
-    // SAFETY: cast `as SafeString` only present to make this check "legal"; we
-    // can further improve this by changing the behavior to do an `in` check
-    // instead, but that's worth landing as a separate change for bisecting if
-    // it happens to have an impact on e.g. perf.
+    // SAFETY: cast `as SafeString` only present to make this check "legal".
+    // We can further improve this by changing the behavior to do an `in` check instead.
+    // That's worth landing as a separate change,
+    // for bisecting if it happens to have an impact on e.g. perf.
     str !== null && typeof str === 'object' && typeof (str as TrustedHTML).toHTML === 'function'
   );
 }

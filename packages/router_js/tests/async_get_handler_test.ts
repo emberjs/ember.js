@@ -13,9 +13,9 @@ function map(router: TestRouter) {
   });
 }
 
-// Intentionally use QUnit.module instead of module from test_helpers
-// so that we avoid using Backburner to handle the async portions of
-// the test suite
+// Intentionally use QUnit.module instead of module from test_helpers,
+// so that we avoid using Backburner to handle the async portions
+// of the test suite
 let routes: Dict<object>;
 let router: TestRouter;
 QUnit.module('Async Get Handler', {

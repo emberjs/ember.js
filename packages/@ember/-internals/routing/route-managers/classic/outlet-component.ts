@@ -24,9 +24,8 @@ import { EMPTY_ARGS } from '@glimmer/runtime/lib/vm/arguments';
 import type { ClassicRouteBucket } from './bucket';
 
 /**
-  The `{{outlet}}` helper lets you specify where a child route will render in
-  your template. An important use of the `{{outlet}}` helper is in your
-  application's `application.gjs` file:
+  The `{{outlet}}` helper lets you specify where a child route will render in your template.
+  An important use of the `{{outlet}}` helper is in your application's `application.gjs` file:
 
   ```app/templates/application.gjs
   import MyHeader from '../components/my-header';
@@ -71,8 +70,8 @@ const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
-  // The wrapper is module-stable, so everything per-route arrives as an
-  // argument. `create` reads `@bucket` to recover this level's owner and name.
+  // The wrapper is module-stable, so everything per-route arrives as an argument.
+  // `create` reads `@bucket` to recover this level's owner and name.
   createArgs: true,
   attributeHook: false,
   elementHook: false,
@@ -84,8 +83,9 @@ const CAPABILITIES: InternalComponentCapabilities = {
   createInstance: true,
   wrapped: false,
   willDestroy: false,
-  // Engines swap the owner at a mount point. Classic's business, not the
-  // framework's: `render.owner` is the owner this level renders under.
+  // Engines swap the owner at a mount point.
+  // That is Classic's business, not the framework's.
+  // `render.owner` is the owner this level renders under.
   hasSubOwner: true,
 };
 

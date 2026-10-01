@@ -84,9 +84,9 @@ export function hasDestructors<ComponentInstance>(
 
 /**
   The CustomComponentManager allows addons to provide custom component
-  implementations that integrate seamlessly into Ember. This is accomplished
-  through a delegate, registered with the custom component manager, which
-  implements a set of hooks that determine component behavior.
+  implementations that integrate into Ember. This is accomplished
+  through a delegate, registered with the custom component manager,
+  which implements a set of hooks that determine component behavior.
 
   To create a custom component manager, instantiate a new CustomComponentManager
   class and pass the delegate as the first argument:
@@ -100,11 +100,11 @@ export function hasDestructors<ComponentInstance>(
   ## Delegate Hooks
 
   Throughout the lifecycle of a component, the component manager will invoke
-  delegate hooks that are responsible for surfacing those lifecycle changes to
-  the end developer.
+  delegate hooks that are responsible for surfacing those lifecycle changes
+  to the end developer.
 
-  * `create()` - invoked when a new instance of a component should be created
-  * `update()` - invoked when the arguments passed to a component change
+  * `create()` - invoked when a new instance of a component should be created.
+  * `update()` - invoked when the arguments passed to a component change.
   * `getContext()` - returns the object that should be
 */
 export class CustomComponentManager<

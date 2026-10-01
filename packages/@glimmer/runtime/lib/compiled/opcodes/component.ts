@@ -109,10 +109,10 @@ import { UpdateDynamicAttributeOpcode } from './dom';
  * The VM creates a new ComponentInstance data structure for every component
  * invocation it encounters.
  *
- * Similar to how a ComponentDefinition contains state about all components of a
- * particular type, a ComponentInstance contains state specific to a particular
- * instance of a component type. It also contains a pointer back to its
- * component type's ComponentDefinition.
+ * A ComponentDefinition contains state about all components of a particular type.
+ * In the same way, a ComponentInstance contains state specific to a particular
+ * instance of a component type.
+ * It also contains a pointer back to its component type's ComponentDefinition.
  */
 
 export interface InitialComponentInstance {
@@ -353,9 +353,9 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
     instance.manager = manager;
     instance.capabilities = definition.capabilities;
 
-    // Save off the owner that this component was curried with. Later on,
-    // we'll fetch the value of this register and set it as the owner on the
-    // new root scope.
+    // Save off the owner that this component was curried with.
+    // Later on, we'll fetch the value of this register,
+    // and set it as the owner on the new root scope.
     vm.loadValue($t1, owner);
   }
 
@@ -553,9 +553,10 @@ export class ComponentElementOperations implements ElementOperations {
     if (vm.env.debugRenderTree !== undefined) {
       const { manager, definition, state } = modifier;
 
-      // TODO: we need a stable object for the debugRenderTree as the key, add support for
-      // the case where the state is a primitive, or if in practice we always have/require
-      // an object, then change the internal types to reflect that
+      // TODO: we need a stable object for the debugRenderTree as the key.
+      // Add support for the case where the state is a primitive.
+      // Or, if in practice we always have/require an object,
+      // then change the internal types to reflect that.
       if (state === null || (typeof state !== 'object' && typeof state !== 'function')) {
         return;
       }

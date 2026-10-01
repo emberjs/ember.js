@@ -39,11 +39,11 @@ export interface Initializer<T> {
 */
 
 /**
-  The `Engine` class contains core functionality for both applications and
-  engines.
+  The `Engine` class contains core functionality for both applications
+  and engines.
 
-  Each engine manages a registry that's used for dependency injection and
-  exposed through `RegistryProxy`.
+  Each engine manages a registry that's used for dependency injection,
+  and exposed through `RegistryProxy`.
 
   Engines also manage initializers and instance initializers.
 
@@ -62,19 +62,19 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
 
   /**
     The goal of initializers should be to register dependencies and injections.
-    This phase runs once. Because these initializers may load code, they are
-    allowed to defer application readiness and advance it. If you need to access
-    the container or store you should use an InstanceInitializer that will be run
-    after all initializers and therefore after all code is loaded and the app is
-    ready.
+    This phase runs once. Because these initializers may load code,
+    they are allowed to defer application readiness and advance it.
+    If you need to access the container or store, use an InstanceInitializer.
+    It runs after all initializers,
+    and therefore after all code is loaded and the app is ready.
 
     Initializer receives an object which has the following attributes:
-    `name`, `before`, `after`, `initialize`. The only required attribute is
-    `initialize`, all others are optional.
+    `name`, `before`, `after`, `initialize`.
+    The only required attribute is `initialize`, all others are optional.
 
     * `name` allows you to specify under which name the initializer is registered.
-    This must be a unique name, as trying to register two initializers with the
-    same name will result in an error.
+    This must be a unique name,
+    as trying to register two initializers with the same name will result in an error.
 
     ```app/initializer/named-initializer.js
     import { debug } from '@ember/debug';
@@ -157,8 +157,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     // DEBUG: Second initializer!
     ```
 
-    Finally we add an initializer named `post`, specifying it should run after
-    both the `first` and the `second` initializers:
+    Finally we add an initializer named `post`,
+    specifying it should run after both the `first` and the `second` initializers:
 
     ```app/initializer/post.js
     import { debug } from '@ember/debug';
@@ -208,18 +208,19 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
   static initializer = buildInitializerMethod('initializers', 'initializer');
 
   /**
-    Instance initializers run after all initializers have run. Because
-    instance initializers run after the app is fully set up. We have access
-    to the store, container, and other items. However, these initializers run
-    after code has loaded and are not allowed to defer readiness.
+    Instance initializers run after all initializers have run.
+    Because instance initializers run after the app is fully set up,
+    we have access to the store, container, and other items.
+    However, these initializers run after code has loaded,
+    and are not allowed to defer readiness.
 
     Instance initializer receives an object which has the following attributes:
-    `name`, `before`, `after`, `initialize`. The only required attribute is
-    `initialize`, all others are optional.
+    `name`, `before`, `after`, `initialize`.
+    The only required attribute is `initialize`, all others are optional.
 
-    * `name` allows you to specify under which name the instanceInitializer is
-    registered. This must be a unique name, as trying to register two
-    instanceInitializer with the same name will result in an error.
+    * `name` allows you to specify under which name the instanceInitializer is registered.
+    This must be a unique name,
+    as trying to register two instanceInitializer with the same name will result in an error.
 
     ```app/initializer/named-instance-initializer.js
     import { debug } from '@ember/debug';
@@ -234,12 +235,12 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     };
     ```
 
-    * `before` and `after` are used to ensure that this initializer is ran prior
-    or after the one identified by the value. This value can be a single string
-    or an array of strings, referencing the `name` of other initializers.
+    * `before` and `after` are used to ensure that this initializer runs
+    before or after the one identified by the value.
+    This value can be a single string or an array of strings,
+    referencing the `name` of other initializers.
 
-    * See Application.initializer for discussion on the usage of before
-    and after.
+    * See Application.initializer for discussion on the usage of `before` and `after`.
 
     Example instanceInitializer to preload data into the store.
 
@@ -288,23 +289,23 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
 
     It also configures the registry:
 
-    * registered views are created every time they are looked up (they are
-      not singletons)
-    * registered templates are not factories; the registered value is
-      returned directly.
-    * the router receives the application as its `namespace` property
-    * all controllers receive the router as their `target` and `controllers`
-      properties
-    * all controllers receive the application as their `namespace` property
-    * the application view receives the application controller as its
-      `controller` property
-    * the application view receives the application template as its
-      `defaultTemplate` property
+    * Registered views are created every time they are looked up.
+      They are not singletons.
+    * Registered templates are not factories.
+      The registered value is returned directly.
+
+    It also sets up these injections:
+
+    * The router receives the application as its `namespace` property.
+    * All controllers receive the router as their `target` and `controllers` properties,
+      and the application as their `namespace` property.
+    * The application view receives the application controller as its `controller` property,
+      and the application template as its `defaultTemplate` property.
 
     @method buildRegistry
     @static
-    @param {Application} namespace the application for which to
-      build the registry
+    @param {Application} namespace the application
+      for which to build the registry
     @return {Ember.Registry} the built registry
     @private
   */
@@ -332,9 +333,10 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
   Resolver: ResolverClass = StrictResolver;
 
   /**
-    Set this to opt-in to using a strict resolver that will only return the
-    given set of ES modules. The names of the modules should all be relative to
-    the root of the app and start with "./"
+    Set this to opt-in to using a strict resolver
+    that will only return the given set of ES modules.
+    The names of the modules should all be relative to the root of the app,
+    and start with "./"
 
     @property modules
     @public
@@ -457,7 +459,7 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
 }
 
 /**
-  This function defines the default lookup rules for container lookups:
+  The default lookup rules for container lookups:
 
   * templates are looked up on `Ember.TEMPLATES`
   * other names are looked up on the application after classifying the name.
@@ -484,11 +486,12 @@ export function buildInitializerMethod<
   T extends B extends 'initializers' ? Engine : EngineInstance,
 >(bucketName: B, humanName: string) {
   return function (this: typeof Engine, initializer: Initializer<T>) {
-    // If this is the first initializer being added to a subclass, we are going to reopen the class
-    // to make sure we have a new `initializers` object, which extends from the parent class' using
-    // prototypal inheritance. Without this, attempting to add initializers to the subclass would
+    // For the first initializer added to a subclass, we reopen the class
+    // to make sure it has a new `initializers` object.
+    // That object extends from the parent class' using prototypal inheritance.
+    // Without this, attempting to add initializers to the subclass would
     // pollute the parent class as well as other subclasses.
-    // SAFETY: The superclass may be an Engine, we don't call unless we confirmed it was ok.
+    // SAFETY: The superclass may be an Engine. The check below guards the access.
     let superclass = this.superclass as typeof Engine;
     if (superclass[bucketName] !== undefined && superclass[bucketName] === this[bucketName]) {
       let attrs = {

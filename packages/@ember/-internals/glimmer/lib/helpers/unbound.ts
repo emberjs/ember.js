@@ -27,8 +27,7 @@ import { internalHelper } from './internal-helper';
   {{capitalize (unbound this.name)}}
   ```
 
-  The `unbound` helper only accepts a single argument, and it return an
-  unbound value.
+  The `unbound` helper only accepts a single argument, and it returns an unbound value.
  
  `unbound` is a template keyword and does not need to be imported.
 

@@ -5,9 +5,9 @@ export type Maybe<T> = Nullable<T> | Optional<T>;
 export type FIXME<T, _S extends string> = T;
 
 /**
- * A special version of `Optional` that is used for values that are expected to be initialized. This
- * documents the intent that the value will be initialized before it is used, and therefore that
- * null assertions or `?.` are not appropriate.
+ * A special version of `Optional` that is used for values that are expected to be initialized.
+ * This documents the intent that the value will be initialized before it is used,
+ * and therefore that null assertions or `?.` are not appropriate.
  */
 export type Initializable<T> = T | undefined;
 
@@ -31,9 +31,9 @@ export type Recast<T, U> = (T & U) | U;
 export type AnyFn = Function;
 
 /**
- * This is needed because the normal IteratorResult in the TypeScript
- * standard library is generic over the value in each tick and not over
- * the return value. It represents a standard ECMAScript IteratorResult.
+ * This is needed because the normal IteratorResult in the TypeScript standard library
+ * is generic over the value in each tick, and not over the return value.
+ * It represents a standard ECMAScript IteratorResult.
  */
 export type RichIteratorResult<Tick, Return> =
   | {

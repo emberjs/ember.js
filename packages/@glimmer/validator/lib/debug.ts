@@ -182,9 +182,9 @@ if (DEBUG) {
 
     CONSUMED_TAGS.set(_tag, getLast(asPresentArray(TRANSACTION_STACK)));
 
-    // We need to mark the tag and all of its subtags as consumed, so we need to
-    // cast it and access its internals. In the future this shouldn't be necessary,
-    // this is only for computed properties.
+    // We need to mark the tag and all of its subtags as consumed,
+    // so we need to cast it and access its internals.
+    // This is only for computed properties. Without them, this shouldn't be necessary.
     let subtag = (_tag as unknown as { subtag: Tag | Tag[] | null }).subtag;
 
     if (!subtag || !debug.markTagAsConsumed) return;

@@ -897,9 +897,8 @@ moduleFor(
         run(router, 'transitionTo', 'nork');
         run(router, 'transitionTo', 'index');
 
-        // Redirected transitions out of index to a route with a
-        // promise model should pause the transition and
-        // activate LoadingRoute
+        // Redirected transitions out of index to a route with a promise model
+        // should pause the transition and activate LoadingRoute
         deferred = RSVP.defer();
         run(router, 'transitionTo', 'nork');
         run(deferred.resolve);

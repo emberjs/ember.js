@@ -12,9 +12,8 @@ import { isObject } from './spec';
 let _uuid = 0;
 
 /**
- Generates a universally unique identifier. This method
- is used internally by Ember for assisting with
- the generation of GUID's and other unique identifiers.
+ Generates a universally unique identifier.
+ Ember uses it internally to help generate GUID's and other unique identifiers.
 
  @public
  @return {Number} [description]
@@ -66,8 +65,8 @@ export const GUID_KEY = intern(`__ember${Date.now()}`);
     again.
 
     If no object is passed, just generate a new guid.
-  @param {String} [prefix] Prefix to place in front of the guid. Useful when you want to
-    separate the guid into separate namespaces.
+  @param {String} [prefix] Prefix to place in front of the guid.
+    Useful when you want to separate the guid into separate namespaces.
   @return {String} the guid
 */
 // eslint-disable-next-line @typescript-eslint/no-wrapper-object-types

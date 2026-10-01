@@ -46,22 +46,23 @@ interface MaybeHasIsDestroyed {
 // GET AND SET
 //
 // If we are on a platform that supports accessors we can use those.
-// Otherwise simulate accessors by looking up the property directly on the
-// object.
+// Otherwise simulate accessors by looking up the property directly on the object.
 
 /**
-  Gets the value of a property on an object. If the property is computed,
-  the function will be invoked. If the property is not defined but the
-  object implements the `unknownProperty` method then that will be invoked.
+  Returns the value of a property on an object.
+  If the property is computed, the function will be invoked.
+  If the property is not defined but the object implements the `unknownProperty` method,
+  then that will be invoked.
 
   ```javascript
   import { get } from '@ember/object';
   get(obj, "name");
   ```
 
-  You only need to use this method to retrieve properties if the property
-  might not be defined on the object and you want to respect the
-  `unknownProperty` handler. Otherwise you can access the property directly.
+  You only need to use this method to retrieve properties
+  if the property might not be defined on the object,
+  and you want to respect the `unknownProperty` handler.
+  Otherwise you can access the property directly.
 
   Note that if the object itself is `undefined`, this method will throw
   an error.

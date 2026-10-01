@@ -38,8 +38,7 @@ Visitor.prototype = {
     }
   },
 
-  // Traverses a given array. If mutating, empty responses will be removed
-  // for child elements.
+  // When mutating, child elements with empty responses are removed.
   acceptArray: function (array) {
     for (let i = 0, l = array.length; i < l; i++) {
       this.acceptKey(array, i);

@@ -144,13 +144,14 @@ function getChainTags(
 
     chainTags.push(propertyTag);
 
-    // If we're at the end of the path, processing the last segment, and it's
-    // not an alias, we should _not_ get the last value, since we already have
-    // its tag. There's no reason to access it and do more work.
+    // If we're at the end of the path, processing the last segment,
+    // and it's not an alias, we should _not_ get the last value,
+    // since we already have its tag.
+    // There's no reason to access it and do more work.
     if (segmentEnd === pathLength) {
-      // If the key was an alias, we should always get the next value in order to
-      // bootstrap the alias. This is because aliases, unlike other CPs, should
-      // always be in sync with the aliased value.
+      // If the key was an alias, we should always get the next value
+      // in order to bootstrap the alias.
+      // This is because aliases, unlike other CPs, should always be in sync with the aliased value.
       if (CHAIN_PASS_THROUGH.has(descriptor)) {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         current[segment];
@@ -170,11 +171,12 @@ function getChainTags(
     } else if (CHAIN_PASS_THROUGH.has(descriptor)) {
       current = current[segment];
     } else {
-      // If the descriptor is defined, then its a normal CP (not an alias, which
-      // would have been handled earlier). We get the last revision to check if
-      // the CP is still valid, and if so we use the cached value. If not, then
-      // we create a lazy chain lookup, and the next time the CP is calculated,
-      // it will update that lazy chain.
+      // If the descriptor is defined, then its a normal CP.
+      // Aliases were handled earlier.
+      // We get the last revision to check if the CP is still valid,
+      // and if so we use the cached value.
+      // If not, then we create a lazy chain lookup,
+      // and the next time the CP is calculated, it will update that lazy chain.
       let instanceMeta = currentMeta!.source === current ? currentMeta! : metaFor(current);
       let lastRevision = instanceMeta.revisionFor(segment);
 
@@ -195,7 +197,7 @@ function getChainTags(
     }
 
     if (!isObject(current)) {
-      // we've hit the end of the chain for now, break out
+      // a non-object value has no further properties to chain through
       break;
     }
 

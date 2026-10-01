@@ -11,9 +11,8 @@ import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
 /**
   `ActionHandler` is available on some familiar classes including
   `Route`, `Component`, and `Controller`.
-  (Internally the mixin is used by `CoreView`, `ControllerMixin`,
-  and `Route` and available to the above classes through
-  inheritance.)
+  Internally, the mixin is used by `CoreView`, `ControllerMixin`, and `Route`.
+  The classes above get it through inheritance.
 
   @class ActionHandler
   @namespace Ember
@@ -33,12 +32,11 @@ const ActionHandler = Mixin[INTERNAL_MIXIN_CREATE]({
     These functions will be invoked when a matching `{{action}}` is triggered
     from within a template and the application's current route is this route.
 
-    Actions can also be invoked from other parts of your application
-    via `ActionHandler#send`.
+    Actions can also be invoked from other parts of your application via `ActionHandler#send`.
 
-    The `actions` hash will inherit action handlers from
-    the `actions` hash defined on extended parent classes
-    or mixins rather than just replace the entire hash, e.g.:
+    The `actions` hash will inherit action handlers from the `actions` hash
+    defined on extended parent classes or mixins,
+    rather than replace the entire hash. For example:
 
     ```app/mixins/can-display-banner.js
     import Mixin from '@ember/object/mixin';
@@ -72,8 +70,7 @@ const ActionHandler = Mixin[INTERNAL_MIXIN_CREATE]({
     ```
 
     Within a Controller, Route or Component's action handler,
-    the value of the `this` context is the Controller, Route or
-    Component object:
+    the value of the `this` context is the Controller, Route or Component object:
 
     ```app/routes/song.js
     import Route from '@ember/routing/route';
@@ -89,9 +86,8 @@ const ActionHandler = Mixin[INTERNAL_MIXIN_CREATE]({
     });
     ```
 
-    It is also possible to call `this._super(...arguments)` from within an
-    action handler if it overrides a handler defined on a parent
-    class or mixin:
+    It is also possible to call `this._super(...arguments)` from within an action handler,
+    if it overrides a handler defined on a parent class or mixin:
 
     Take for example the following routes:
 
@@ -177,10 +173,9 @@ const ActionHandler = Mixin[INTERNAL_MIXIN_CREATE]({
     supplied after the `actionName` string will be passed as arguments
     to the action target function.
 
-    If the `ActionHandler` has its `target` property set, actions may
-    bubble to the `target`. Bubbling happens when an `actionName` can
-    not be found in the `ActionHandler`'s `actions` hash or if the
-    action target function returns `true`.
+    If the `ActionHandler` has its `target` property set, actions may bubble to the `target`.
+    Bubbling happens when an `actionName` can not be found in the `ActionHandler`'s `actions` hash,
+    or if the action target function returns `true`.
 
     Example
 

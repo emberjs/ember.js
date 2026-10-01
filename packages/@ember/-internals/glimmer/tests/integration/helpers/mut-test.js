@@ -482,8 +482,8 @@ moduleFor(
         setComponentTemplate(
           precompileTemplate(
             // Use `this.x` here instead of `@x` to let `x-inner` mutate `this.x`.
-            // `@x` points to the literal binding from `x-outer`, which is of
-            // course immutable.
+            // `@x` points to the literal binding from `x-outer`,
+            // which is immutable.
             '{{x-inner model=this.x}}'
           ),
           class extends EmberComponent {}

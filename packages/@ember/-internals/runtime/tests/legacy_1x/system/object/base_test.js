@@ -8,15 +8,13 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
   CHANGES FROM 1.6:
 
-  * Changed get(obj, ) and set(obj, ) to Ember.get() and Ember.set()
-  * Removed obj.instanceOf() and obj.kindOf() tests.  use obj instanceof Foo
-    instead
-  * Removed respondsTo() and tryToPerform() tests.  Can be brought back in a
-    utils package.
-  * Removed destroy() test.  You can impl yourself but not built in
-  * Changed Class.subclassOf() test to Class.detect()
-  * Remove broken test for 'superclass' property.
-  * Removed obj.didChangeFor()
+  - Changed get(obj, ) and set(obj, ) to Ember.get() and Ember.set()
+  - Removed obj.instanceOf() and obj.kindOf() tests. Use obj instanceof Foo instead.
+  - Removed respondsTo() and tryToPerform() tests. They can come back in a utils package.
+  - Removed destroy() test. It is not built in, but you can implement it yourself.
+  - Changed Class.subclassOf() test to Class.detect()
+  - Remove broken test for 'superclass' property.
+  - Removed obj.didChangeFor()
 */
 
 // ========================================================================

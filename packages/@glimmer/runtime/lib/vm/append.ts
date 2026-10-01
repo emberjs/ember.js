@@ -366,8 +366,6 @@ export class VM {
    *
    * ## State Changes
    *
-   * Create a new `EndTrackFrameOpcode` (`end`)
-   *
    * [!] pop CacheStack -> `guard`
    * [!] pop Tracking Stack -> `tag`
    * [ ] create `end` (`EndTrackFrameOpcode`) with `guard`
@@ -417,9 +415,6 @@ export class VM {
    * - Update: `ListBlock`
    *
    * ## State changes
-   *
-   * Create a new ref for the iterator item (`value`).
-   * Create a new ref for the iterator key (`key`).
    *
    * [ ] create `valueRef` (`Reference`) from `value`
    * [ ] create `keyRef` (`Reference`) from `key`
@@ -819,8 +814,8 @@ function closureState(pc: number, scope: Scope, dynamicScope: DynamicScope): Clo
 
 export interface InitialVmState {
   /**
-   * The address of the compiled template. This is converted into a
-   * pc when the VM is created.
+   * The address of the compiled template.
+   * This is converted into a pc when the VM is created.
    */
   handle: number;
 
@@ -863,8 +858,8 @@ export interface ClosureState {
 }
 
 /**
- * A closure captures the state of the VM for a particular block of code that is necessary to
- * re-invoke the block in the future.
+ * A closure captures the state of the VM for a particular block of code
+ * that is necessary to re-invoke the block in the future.
  *
  * In practice, this allows us to clear the previous render and "replay" the block's execution,
  * rendering content in the same position as the first render.

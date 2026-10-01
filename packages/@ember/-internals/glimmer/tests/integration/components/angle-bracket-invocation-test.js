@@ -594,9 +594,8 @@ moduleFor(
         setComponentTemplate(precompileTemplate('{{this.first}}{{this.second}}'), TestComponent)
       );
 
-      // this is somewhat silly as the browser "corrects" for these as
-      // attribute names, but regardless the thing we care about here is that
-      // they are **not** used as positional params
+      // this is somewhat silly as the browser "corrects" for these as attribute names.
+      // Regardless, we only care here that they are **not** used as positional params
       this.render('<SampleComponent one two />');
 
       this.assertText('');
@@ -1442,9 +1441,9 @@ moduleFor(
   'Element modifiers on AngleBracket components',
   class extends RenderingTestCase {
     assertNamedArgs(actual, expected, message) {
-      // `actual` is likely to be a named args proxy, while the `deepEqual` below would see
-      // the values as the same it would still flag as not deep equals because the constructors
-      // of the two objects do not match (one is a proxy, one is Object)
+      // `actual` is likely to be a named args proxy.
+      // The `deepEqual` below would see the values as the same, but still flag them as not equal.
+      // The reason: one constructor is a proxy, and the other is Object.
       let reifiedActual = Object.assign({}, actual);
 
       this.assert.deepEqual(reifiedActual, expected, message);

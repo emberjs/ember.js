@@ -16,8 +16,8 @@ import type EmberArray from '@ember/array';
     - the object has an objectAt property
     - the object is an Object, and has a length property
 
-  Unlike `typeOf` this method returns true even if the passed object is
-  not formally an array but appears to be array-like (i.e. implements `Array`)
+  Unlike `typeOf`, this method returns true even if the passed object is not formally an array,
+  but appears to be array-like (i.e. implements `Array`)
 
   ```javascript
   import { isArray } from '@ember/array';
@@ -49,10 +49,10 @@ export default function isArray(obj: unknown): obj is ArrayLike<unknown> | Ember
     return false;
   }
 
-  // EmberArray's `init` brands every instance via `setEmberArray`; the only
-  // unbranded EmberArray objects are native arrays upgraded by `A()`, which
-  // `Array.isArray` catches. So this matches `EmberArray.detect` without
-  // pulling in the mixin's module.
+  // EmberArray's `init` brands every instance via `setEmberArray`.
+  // The only unbranded EmberArray objects are native arrays upgraded by `A()`,
+  // and `Array.isArray` catches those.
+  // So this matches `EmberArray.detect` without pulling in the mixin's module.
   if (Array.isArray(obj) || isEmberArray(obj)) {
     return true;
   }

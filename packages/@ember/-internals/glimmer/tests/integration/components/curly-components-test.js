@@ -1199,8 +1199,8 @@ moduleFor(
     ['@test late bound layouts return the same definition'](assert) {
       let templateIds = [];
 
-      // This is testing the scenario where you import a template and
-      // set it to the layout property:
+      // This is testing the scenario where you import a template
+      // and set it to the layout property:
       //
       // import Component from '@ember/component';
       // import layout from './template';
@@ -1968,8 +1968,8 @@ moduleFor(
     }
 
     ['@test without ariaRole defined initially']() {
-      // we are using the ability to lazily add a role as a sign that we are
-      // doing extra work
+      // we are using the ability to lazily add a role
+      // as a sign that we are doing extra work
       let instance;
       this.owner.register(
         'component:aria-test',
@@ -2836,15 +2836,15 @@ moduleFor(
         Click Me
       {{/some-clicky-thing}}`);
 
-      // TODO: ember-view is no longer viewable in the classNames array. Bug or
-      // feature?
+      // TODO: ember-view is not viewable in the classNames array.
+      // Bug or feature?
       let expectedClassNames = ['ember-view', 'foo', 'bar', 'baz'];
 
       assert.ok(
         this.$('button').is('.foo.bar.baz.ember-view'),
         `the element has the correct classes: ${this.$('button').attr('class')}`
       );
-      // `ember-view` is no longer in classNames.
+      // `ember-view` is not in classNames.
       // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined');
       this.assertComponentElement(this.firstChild, {
         tagName: 'button',
@@ -2857,7 +2857,7 @@ moduleFor(
         this.$('button').is('.foo.bar.baz.ember-view'),
         `the element has the correct classes: ${this.$('button').attr('class')} (rerender)`
       );
-      // `ember-view` is no longer in classNames.
+      // `ember-view` is not in classNames.
       // assert.deepEqual(clickyThing.get('classNames'), expectedClassNames, 'classNames are properly combined (rerender)');
       this.assertComponentElement(this.firstChild, {
         tagName: 'button',

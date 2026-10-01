@@ -40,17 +40,17 @@ class Tracker {
 }
 
 /**
- * Whenever a tracked computed property is entered, the current tracker is
- * saved off and a new tracker is replaced.
+ * Whenever a tracked computed property is entered,
+ * the current tracker is saved off and a new tracker is replaced.
  *
  * Any tracked properties consumed are added to the current tracker.
  *
- * When a tracked computed property is exited, the tracker's tags are
- * combined and added to the parent tracker.
+ * When a tracked computed property is exited,
+ * the tracker's tags are combined and added to the parent tracker.
  *
  * The consequence is that each tracked computed property has a tag
- * that corresponds to the tracked properties consumed inside of
- * itself, including child tracked computed properties.
+ * that corresponds to the tracked properties consumed inside of itself,
+ * including child tracked computed properties.
  */
 let CURRENT_TRACKER: Tracker | null = null;
 
@@ -95,7 +95,7 @@ export function endUntrackFrame(): void {
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 }
 
-// This function is only for handling errors and resetting to a valid state
+// Only for handling errors and resetting to a valid state
 export function resetTracking(): string | void {
   while (OPEN_TRACK_FRAMES.length > 0) {
     OPEN_TRACK_FRAMES.pop();
@@ -244,10 +244,9 @@ export function track(block: () => void, debugLabel?: string | false): Tag {
   return tag;
 }
 
-// untrack() is currently mainly used to handle places that were previously not
-// tracked, and that tracking now would cause backtracking rerender assertions.
-// I think once we move everyone forward onto modern APIs, we'll probably be
-// able to remove it, but I'm not sure yet.
+// untrack() is mainly used to handle places that were not tracked in the past,
+// where tracking would cause backtracking rerender assertions.
+// Once everyone moves forward onto modern APIs, we may be able to remove it.
 export function untrack<T>(callback: () => T): T {
   beginUntrackFrame();
 

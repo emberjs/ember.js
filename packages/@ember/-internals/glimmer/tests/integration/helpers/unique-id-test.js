@@ -156,11 +156,11 @@ moduleFor(
     }
 
     render(template, ...rest) {
-      // If there are three parameters to `render`, the second parameter is the
-      // template's arguments.
+      // If there are three parameters to `render`,
+      // the second parameter is the template's arguments.
       let args = rest.length === 2 ? rest[0] : {};
-      // If there are two parameters to `render`, the second parameter is the
-      // postcondition. Otherwise, the third parameter is the postcondition.
+      // If there are two parameters to `render`, the second parameter is the postcondition.
+      // Otherwise, the third parameter is the postcondition.
       let postcondition = rest.length === 2 ? rest[1] : rest[0];
 
       super.render(template, args);

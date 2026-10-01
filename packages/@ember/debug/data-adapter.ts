@@ -41,9 +41,9 @@ type WrappedRecord<T> = {
 
 type RecordCallback<T> = (records: Array<{ columnValues: object; object: T }>) => void;
 
-// Represents the base contract for iterables as understood in the GLimmer VM
-// historically. This is *not* the public API for it, because there *is* no
-// public API for it. Recent versions of Glimmer simply use `Symbol.iterator`,
+// Represents the base contract for iterables as understood in the GLimmer VM historically.
+// This is *not* the public API for it, because there *is* no public API for it.
+// Recent versions of Glimmer use `Symbol.iterator`,
 // but some older consumers still use this basic shape.
 interface GlimmerIterable<T> {
   length: number;
@@ -56,10 +56,9 @@ function iterate<T>(arr: Array<T>, fn: (value: T) => void): void {
       fn(item);
     }
   } else {
-    // SAFETY: this cast required to work this way to interop between TS 4.8
-    // and 4.9. When we drop support for 4.8, it will narrow correctly via the
-    // use of the `in` operator above. (Preferably we will solve this by just
-    // switching to require `Symbol.iterator` instead.)
+    // SAFETY: this cast required to work this way to interop between TS 4.8 and 4.9.
+    // When we drop support for 4.8, it will narrow correctly via the `in` operator above.
+    // Preferably, we will solve this by switching to require `Symbol.iterator` instead.
     assert('', typeof (arr as unknown as GlimmerIterable<T>).forEach === 'function');
     (arr as unknown as GlimmerIterable<T>).forEach(fn);
   }
@@ -186,9 +185,8 @@ class TypeWatcher {
   as the [Ember Inspector](https://github.com/emberjs/ember-inspector)
   for Chrome and Firefox.
 
-  This class will be extended by a persistence library
-  which will override some of the methods with
-  library-specific code.
+  A persistence library extends this class
+  and overrides some of the methods with library-specific code.
 
   The methods likely to be overridden are:
 
@@ -477,7 +475,7 @@ export default class DataAdapter<T> extends EmberObject {
   }
 
   /**
-    Get the columns for a given model type.
+    Returns the columns for a given model type.
 
     @public
     @method columnsForType
@@ -638,7 +636,7 @@ export default class DataAdapter<T> extends EmberObject {
   }
 
   /**
-    Gets the values for each column.
+    Returns the values for each column.
 
     @public
     @method getRecordColumnValues

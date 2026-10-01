@@ -61,11 +61,10 @@ export class Foo2 extends EmberObject {
   changeName(name: string) {
     expectTypeOf(set(this, 'name', name)).toBeString();
 
-    // For some reason, `this` type lookup does not resolve correctly here. Used
-    // outside a class, like `get(someFoo, 'name')`, this works correctly. Since
-    // there are basically no cases inside a class where you *have* to use `get`
-    // today, this is an acceptable workaround for now. It is assignable *or*
-    // castable.
+    // For some reason, `this` type lookup does not resolve correctly here.
+    // Used outside a class, like `get(someFoo, 'name')`, this works correctly.
+    // There are basically no cases inside a class where you *have* to use `get`,
+    // so this is an acceptable workaround. It is assignable *or* castable.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const s: string = this.get('name');
     expectTypeOf(get(this as Foo2, 'name')).toBeString();

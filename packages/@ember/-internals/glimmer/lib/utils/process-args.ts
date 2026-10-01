@@ -4,9 +4,9 @@ import type { Reference } from '@glimmer/reference/lib/reference';
 import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { assert } from '@ember/debug';
 
-// ComponentArgs takes EvaluatedNamedArgs and converts them into the
-// inputs needed by CurlyComponents (attrs and props, with mutable
-// cells, etc).
+// ComponentArgs takes EvaluatedNamedArgs
+// and converts them into the inputs needed by CurlyComponents:
+// attrs and props, with mutable cells, etc.
 export function processComponentArgs(namedArgs: CapturedNamedArguments) {
   let attrs = Object.create(null);
   let props = Object.create(null);

@@ -21,9 +21,9 @@ const TestArray = class extends EmberObject.extend(EmberArray) {
     this._content = this._content || [];
   }
 
-  // some methods to modify the array so we can test changes.  Note that
-  // arrays can be modified even if they don't implement MutableArray.  The
-  // MutableArray is just a standard API for mutation but not required.
+  // some methods to modify the array so we can test changes.
+  // Note that arrays can be modified even if they don't implement MutableArray.
+  // The MutableArray is just a standard API for mutation but not required.
   addObject(obj) {
     let idx = this._content.length;
     arrayContentWillChange(this, idx, 0, 1);

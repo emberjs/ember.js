@@ -9,8 +9,8 @@ import { assert } from '@ember/debug';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 /*
-  The event system uses a series of nested hashes to store listeners on an
-  object. When a listener is registered, or when an event arrives, these
+  The event system uses a series of nested hashes to store listeners on an object.
+  When a listener is registered, or when an event arrives, these
   hashes are consulted to determine which target and action pair to invoke.
 
   The hashes are stored in the object's meta hash, and look like this:
@@ -104,10 +104,10 @@ export function removeListener(
 }
 
 /**
-  Send an event. The execution of suspended listeners
-  is skipped, and once listeners are removed. A listener without
-  a target is executed on the passed object. If an array of actions
-  is not passed, the actions stored on the passed object are invoked.
+  Send an event. The execution of suspended listeners is skipped,
+  and once listeners are removed.
+  A listener without a target is executed on the passed object.
+  If an array of actions is not passed, the actions stored on the passed object are invoked.
 
   @method sendEvent
   @static
@@ -179,8 +179,8 @@ export function hasListeners(obj: object, eventName: string): boolean {
 }
 
 /**
-  Define a property as a function that should be executed when
-  a specified event or events are triggered.
+  Define a property as a function that should be executed
+  when a specified event or events are triggered.
 
   ``` javascript
   import EmberObject from '@ember/object';

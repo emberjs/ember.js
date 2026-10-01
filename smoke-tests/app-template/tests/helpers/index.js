@@ -4,9 +4,8 @@ import {
   setupTest as upstreamSetupTest,
 } from 'ember-qunit';
 
-// This file exists to provide wrappers around ember-qunit's
-// test setup functions. This way, you can easily extend the setup that is
-// needed per test type.
+// Wrapping ember-qunit's test setup functions
+// lets you extend the setup that each test type needs.
 
 function setupApplicationTest(hooks, options) {
   upstreamSetupApplicationTest(hooks, options);

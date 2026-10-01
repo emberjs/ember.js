@@ -37,9 +37,9 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
   /**
    * The underlying value.
    *
-   * Reading entangles with the current tracking frame, and writing notifies
-   * consumers (unless the configured `equals` deems the new value equal to
-   * the current one).
+   * Reading entangles with the current tracking frame.
+   * Writing notifies consumers,
+   * unless the configured `equals` deems the new value equal to the current one.
    */
   get value(): Value {
     consumeTag(this.#tag);
@@ -61,8 +61,8 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
   /**
    * Function short-hand for assigning `value`.
    *
-   * Returns `true` if the value changed (and consumers were notified),
-   * `false` if the new value was equal to the current one.
+   * Returns `true` if the value changed and consumers were notified.
+   * Returns `false` if the new value was equal to the current one.
    */
   set = (value: Value): boolean => {
     if (this.#isFrozen) {

@@ -112,8 +112,8 @@ function renderInvocation(
   const layoutHandle = unwrapHandle(compilable.compile(context));
   const invocation = { handle: layoutHandle, symbolTable: compilable.symbolTable };
 
-  // Needed for the Op.Main opcode: arguments, component invocation object, and
-  // component definition.
+  // Needed for the Op.Main opcode:
+  // arguments, component invocation object, and component definition.
   vm.stack.push(vm.args);
   vm.stack.push(invocation);
   vm.stack.push(reified);

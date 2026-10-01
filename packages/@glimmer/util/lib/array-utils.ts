@@ -8,8 +8,8 @@ export const EMPTY_STRING_ARRAY = emptyArray<string>();
 export const EMPTY_NUMBER_ARRAY = emptyArray<number>();
 
 /**
- * This function returns `true` if the input array is the special empty array sentinel,
- * which is sometimes used for optimizations.
+ * The special empty array sentinel is sometimes used for optimizations,
+ * so an identity check against it is enough.
  */
 export function isEmptyArray(input: unknown[] | readonly unknown[]): boolean {
   return input === EMPTY_ARRAY;

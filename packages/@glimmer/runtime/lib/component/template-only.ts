@@ -62,10 +62,10 @@ setInternalComponentManager(
   without adding a wrapping `<div>` (or any of the other element customization behaviors of [@ember/component](/ember/release/classes/Component)).
   Specifically, this means that the template will be rendered as "outer HTML".
 
-  In general, this method will be used by build time tooling and would not be directly written in an application. However,
-  at times it may be useful to use directly to leverage the "outer HTML" semantics mentioned above. For example, if an addon would like
-  to use these semantics for its templates but cannot be certain it will only be consumed by applications that have enabled the
-  `template-only-glimmer-components` optional feature.
+  In general, build time tooling calls this method, and an application does not call it directly.
+  Direct use can help when you want the "outer HTML" semantics mentioned above.
+  For example, an addon may want these semantics for its templates, but it cannot be certain
+  that all consuming applications enabled the `template-only-glimmer-components` optional feature.
 
   ```js
   import { templateOnlyComponent } from '@glimmer/runtime';

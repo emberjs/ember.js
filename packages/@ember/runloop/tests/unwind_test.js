@@ -20,9 +20,9 @@ moduleFor(
       );
 
       // The real danger at this point is that calls to autorun will stick
-      // tasks into the already-dead runloop, which will never get
-      // flushed. I can't easily demonstrate this in a unit test because
-      // autorun explicitly doesn't work in test mode. - ef4
+      // tasks into the already-dead runloop, which will never get flushed.
+      // I can't easily demonstrate this in a unit test,
+      // because autorun explicitly doesn't work in test mode. - ef4
       assert.equal(
         _getCurrentRunLoop(),
         initialRunLoop,

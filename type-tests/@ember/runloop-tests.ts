@@ -75,10 +75,10 @@ class TestBind extends EmberObject {
     // @ts-expect-error
     const badBind = bind(this, this.setupEditor, 123);
 
-    // We would like to make this safe in the same way as the version above,
-    // but TS cannot see the string relationship *specifically when doing a
-    // lookup against a `this` type*, so we fall back to the comparable types
-    // as in `Function.prototype.bind` here.
+    // We would like to make this safe in the same way as the version above.
+    // But TS cannot see the string relationship
+    // *specifically when doing a lookup against a `this` type*.
+    // So we fall back to the comparable types as in `Function.prototype.bind` here.
     const boundAgain = bind(this, 'setupEditor');
     boundAgain('hello');
   }
@@ -235,14 +235,13 @@ function testBegin() {
 
 function testJoin() {
   join(() => {
-    // creates a new run-loop
+    // no run-loop is active, so `join` starts one
   });
 
   run(() => {
-    // creates a new run-loop
     join(() => {
-      // joins with the existing run-loop, and queues for invocation on
-      // the existing run-loops action queue.
+      // `run` already started a run-loop, so `join` joins it
+      // and queues for invocation on that run-loop's action queue.
     });
   });
 

@@ -286,9 +286,8 @@ function addEventListener(
 
   The named arguments are:
 
-  - capture -- a `true` value indicates that events of this type will be dispatched
-    to the registered listener before being dispatched to any EventTarget beneath it
-    in the DOM tree.
+  - capture -- if `true`, events of this type go to the registered listener first.
+    After that, they go to any EventTarget beneath it in the DOM tree.
   - once -- indicates that the listener should be invoked at most once after being
     added. If true, the listener would be automatically removed when invoked.
   - passive -- if `true`, indicates that the function specified by listener will never
@@ -303,8 +302,8 @@ function addEventListener(
   If you would like to pass additional arguments to the function you should use
   the `{{fn}}` helper.
 
-  For example, in our example case above if you'd like to pass in the post that
-  was being liked when the button is clicked you could do something like:
+  For example, in our example case above,
+  you can pass in the post that was being liked when the button is clicked:
 
   ```hbs
   <button {{on 'click' (fn this.saveLike @post)}}>Like this post!</button>
@@ -315,9 +314,9 @@ function addEventListener(
 
   ### Function Context
 
-  In the example above, we used `@action` to ensure that `likePost` is
-  properly bound to the `LikePost` Component, but let's explore what happens if we
-  left out `@action`:
+  In the example above, we used `@action` to ensure that `likePost`
+  is properly bound to the `LikePost` Component.
+  Let's explore what happens if we leave out `@action`:
 
   ```gjs {data-filename="app/components/like-post.gjs"}
   import Component from '@glimmer/component';

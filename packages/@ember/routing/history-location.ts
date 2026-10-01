@@ -20,8 +20,8 @@ function _uuid() {
   HistoryLocation implements the location API using the browser's
   history.pushState API.
 
-  Using `HistoryLocation` results in URLs that are indistinguishable from a
-  standard URL. This relies upon the browser's `history` API.
+  Using `HistoryLocation` results in URLs that are indistinguishable from a standard URL.
+  This relies upon the browser's `history` API.
 
   Example:
 
@@ -42,8 +42,8 @@ function _uuid() {
   Keep in mind that your server must serve the Ember app at all the routes you
   define.
 
-  Using `HistoryLocation` will also result in location states being recorded by
-  the browser `history` API with the following schema:
+  Using `HistoryLocation` will also result in location states
+  being recorded by the browser `history` API with the following schema:
 
   ```
   window.history.state -> { path: '/', uuid: '3552e730-b4a6-46bd-b8bf-d8c3c1a97e0a' }

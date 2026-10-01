@@ -189,8 +189,8 @@ function visitKey<N extends ASTv1.Node>(
     let keyPath = new WalkerPath(value, path, key);
     let result = visitNode(visitor, keyPath);
     if (result !== undefined) {
-      // TODO: dynamically check the results by having a table of
-      // expected node types in value space, not just type space
+      // TODO: dynamically check the results,
+      // by having a table of expected node types in value space, not just type space
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       assignKey(node, key, value, result as any);

@@ -16,10 +16,10 @@ import { $fp, $pc, $ra, $sp } from '@glimmer/vm/lib/registers';
 import type { DebugState } from '../opcodes';
 import type { VM } from './append';
 
-// Loading the VM is what creates the demand for opcode handlers. Its
-// `evaluate` calls `APPEND_OPCODES.evaluate(...)`. Pull bootstrap in
-// here (rather than at the package barrel) so consumers using deep imports
-// still get every opcode handler registered before the VM runs.
+// Loading the VM is what creates the demand for opcode handlers.
+// Its `evaluate` calls `APPEND_OPCODES.evaluate(...)`.
+// Pull bootstrap in here instead of at the package barrel,
+// so consumers using deep imports still get every opcode handler registered before the VM runs.
 import '../bootstrap';
 import { APPEND_OPCODES } from '../opcodes';
 
@@ -128,11 +128,11 @@ export class LowLevelVM {
       return null;
     }
 
-    // We have to save off the current operations size so that
-    // when we do a jump we can calculate the correct offset
-    // to where we are going. We can't simply ask for the size
-    // in a jump because we have have already incremented the
-    // program counter to the next instruction prior to executing.
+    // We have to save off the current operations size,
+    // so that when we do a jump we can calculate the correct offset to where we are going.
+    // We can't ask for the size in a jump,
+    // because we have already incremented the program counter
+    // to the next instruction prior to executing.
     let opcode = context.program.opcode(pc);
     let operationSize = (this.currentOpSize = opcode.size);
     this.registers[$pc] += operationSize;

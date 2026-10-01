@@ -94,9 +94,10 @@ function isQueryParams(value: unknown): value is QueryParams {
 
   ### Handling current route
 
-  The `LinkTo` component will apply a CSS class name of 'active' when the application's current
-  route matches the supplied routeName. For example, if the application's current route is
-  'photoGallery.recent', then the following invocation of `LinkTo`:
+  The `LinkTo` component will apply a CSS class name of 'active'
+  when the application's current route matches the supplied routeName.
+  For example, if the application's current route is 'photoGallery.recent',
+  then the following invocation of `LinkTo`:
 
   ```handlebars
   <LinkTo @route='photoGallery.recent'>
@@ -128,8 +129,8 @@ function isQueryParams(value: unknown): value is QueryParams {
 
   ### Keeping a link active for other routes
 
-  If you need a link to be 'active' even when it doesn't match the current route, you can use the
-  `current-when` argument.
+  If you need a link to be 'active' even when it doesn't match the current route,
+  you can use the `current-when` argument.
 
   ```handlebars
   <LinkTo @route='photoGallery' @current-when='photos'>
@@ -156,9 +157,9 @@ function isQueryParams(value: unknown): value is QueryParams {
 
   ### Supplying a model
 
-  An optional `model` argument can be used for routes whose
-  paths contain dynamic segments. This argument will become
-  the model context of the linked route:
+  An optional `model` argument can be used
+  for routes whose paths contain dynamic segments.
+  This argument will become the model context of the linked route:
 
   ```javascript
   Router.map(function() {
@@ -183,9 +184,9 @@ function isQueryParams(value: unknown): value is QueryParams {
   For deep-linking to route paths that contain multiple
   dynamic segments, the `models` argument can be used.
 
-  As the router transitions through the route path, each
-  supplied model argument will become the context for the
-  route with the dynamic segments:
+  As the router transitions through the route path,
+  each supplied model argument will become the context
+  for the route with the dynamic segments:
 
   ```javascript
   Router.map(function() {
@@ -212,9 +213,9 @@ function isQueryParams(value: unknown): value is QueryParams {
   ### Supplying an explicit dynamic segment value
 
   If you don't have a model object available to pass to `LinkTo`,
-  an optional string or integer argument can be passed for routes whose
-  paths contain dynamic segments. This argument will become the value
-  of the dynamic segment:
+  an optional string or integer argument can be passed
+  for routes whose paths contain dynamic segments.
+  This argument will become the value of the dynamic segment:
 
   ```javascript
   Router.map(function() {
@@ -425,7 +426,7 @@ class _LinkTo extends InternalComponent {
     return getValue(this.currentRouteCache);
   }
 
-  // TODO: not sure why generateURL takes {}[] instead of unknown[]
+  // TODO: find out why generateURL takes {}[] instead of unknown[]
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   private get models(): {}[] {
     if ('models' in this.args.named) {

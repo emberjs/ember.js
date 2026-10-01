@@ -19,20 +19,22 @@ interface AbstractLeafFragment {
 /**
  * A leaf fragment that represents an arbitrary value.
  *
- * When the value is a primitive, the fragment is appended to the buffer as if it was an instance of
- * the appropriate leaf fragment type (e.g. strings are appended as if they were `StringFragment`).
+ * When the value is a primitive, the fragment is appended to the buffer
+ * as if it was an instance of the appropriate leaf fragment type.
+ * For example, strings are appended as if they were `StringFragment`.
  *
- * Otherwise, `ValueFragment` is appended to the current line as a footnote reference and the value
- * itself is appended to a later line that *defines* the footnote using the `%O` format specifier.
+ * Otherwise, `ValueFragment` is appended to the current line as a footnote reference.
+ * The value itself is appended to a later line that *defines* the footnote,
+ * using the `%O` format specifier.
  */
 export interface ValueFragment extends AbstractLeafFragment {
   readonly kind: 'value';
   readonly value: unknown;
 
   /**
-   * The `ValueFragment` is appended to the current line as a footnote reference (e.g. `[1]`) and
-   * the value itself is appended to a later line that *defines* the footnote (e.g. `[1]
-   * ObjectHere`).
+   * The `ValueFragment` is appended to the current line as a footnote reference, such as `[1]`.
+   * The value itself is appended to a later line that *defines* the footnote,
+   * such as `[1] ObjectHere`.
    *
    * By default, the footnote reference is an incrementing number per log line, and the footnote
    * value is formatted using the `%O` format specifier.

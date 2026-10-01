@@ -14,9 +14,9 @@ moduleFor(
     }
 
     ['@test allows setting/getting outletState']() {
-      // this is simply asserting that we can write and read outletState
-      // the actual value being used here is not what is used in real life
-      // feel free to change the value being set and asserted as needed
+      // this asserts that we can write and read outletState.
+      // The value used here is not what is used in real life,
+      // so the value being set and asserted can change as needed.
       this.render(strip`
       {{#-with-dynamic-vars outletState="bar"}}
         {{-get-dynamic-var 'outletState'}}

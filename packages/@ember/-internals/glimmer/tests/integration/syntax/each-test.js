@@ -151,8 +151,9 @@ class TogglingEachTest extends TogglingSyntaxConditionalsTest {
 
 class BasicEachTest extends TogglingEachTest {}
 
-// `ArrayProxy` is deprecated; the deprecation itself is asserted by the
-// dedicated `ArrayProxy` tests, so it is silenced in these rendering fixtures.
+// `ArrayProxy` is deprecated.
+// The deprecation itself is asserted by the dedicated `ArrayProxy` tests,
+// so it is silenced in these rendering fixtures.
 const ARRAY_PROXY_REMOVED = DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved;
 
 function arrayProxy(props) {
@@ -797,9 +798,9 @@ class EachTest extends AbstractEachTest {
 
   ['@test content that are not initially present updates correctly GH#13983']() {
     // The root cause of this bug is that Glimmer did not call `didInitializeChildren`
-    // on the inserted `TryOpcode`, causing that `TryOpcode` to have an uninitialized
-    // tag. Currently the only way to observe this the "JUMP-IF-NOT-MODIFIED", i.e. by
-    // wrapping it in an component.
+    // on the inserted `TryOpcode`, causing that `TryOpcode` to have an uninitialized tag.
+    // The only way to observe this is the "JUMP-IF-NOT-MODIFIED",
+    // i.e. by wrapping it in an component.
 
     this.owner.register(
       'component:x-wrapper',

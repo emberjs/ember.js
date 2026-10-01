@@ -1147,17 +1147,17 @@ moduleFor(
       assert.verifySteps(['handleClick']);
     }
 
-    // Ember currently uses AST plugins to implement certain features that
-    // glimmer-vm does not natively provide, such as {{#each-in}}, {{outlet}}
-    // {{mount}} and some features in {{#in-element}}. These rewrites the AST
-    // and insert private keywords e.g. `{{#each (-each-in)}}`. These tests
-    // ensures we have _some_ basic coverage for those features in strict mode.
+    // Ember uses AST plugins to implement certain features
+    // that glimmer-vm does not natively provide, such as {{#each-in}}, {{outlet}},
+    // {{mount}} and some features in {{#in-element}}. These rewrite the AST
+    // and insert private keywords, e.g. `{{#each (-each-in)}}`. These tests
+    // ensure we have _some_ basic coverage for those features in strict mode.
     //
-    // Ultimately, our test coverage for strict mode is quite inadequate. This
-    // is particularly important as we expect more apps to start adopting the
-    // feature. Ideally we would run our entire/most of our test suite against
-    // both strict and resolution modes, and these things would be implicitly
-    // covered elsewhere, but until then, these coverage are essential.
+    // Ultimately, our test coverage for strict mode is quite inadequate.
+    // This is particularly important as we expect more apps to adopt the feature.
+    // Ideally we would run most of our test suite against both strict and resolution modes,
+    // so these things would be implicitly covered elsewhere.
+    // Until then, these tests are essential.
 
     '@test Can use each-in'() {
       let obj = {

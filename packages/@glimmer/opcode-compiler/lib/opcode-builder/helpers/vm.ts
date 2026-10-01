@@ -106,9 +106,9 @@ export function CallDynamic(
 }
 
 /**
- * Evaluate statements in the context of new dynamic scope entries. Move entries from the
- * stack into named entries in the dynamic scope, then evaluate the statements, then pop
- * the dynamic scope
+ * Evaluate statements in the context of new dynamic scope entries. Move entries
+ * from the stack into named entries in the dynamic scope, then evaluate the statements,
+ * then pop the dynamic scope
  *
  * @param names a list of dynamic scope names
  * @param block a function that returns a list of statements to evaluate

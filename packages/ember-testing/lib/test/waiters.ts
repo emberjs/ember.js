@@ -68,8 +68,8 @@ export function registerWaiter<T>(
 }
 
 /**
-   `unregisterWaiter` is used to unregister a callback that was
-   registered with `registerWaiter`.
+   `unregisterWaiter` is used to unregister a callback
+   that was registered with `registerWaiter`.
 
    @public
    @for @ember/test

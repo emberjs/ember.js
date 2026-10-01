@@ -8,11 +8,11 @@ const ROUTER_KEYWORD_HELPERS: Record<string, object> = {
 };
 
 /**
- * The resolver used by the classic application `Renderer`. It extends the
- * shared `ResolverImpl` with the keywords that require the router and engine
- * infrastructure (`{{outlet}}` and `{{mount}}`). Keeping these out of the
- * base resolver means renderers that have no router (e.g. `renderComponent`)
- * do not pull the outlet/engine machinery into the build.
+ * The resolver used by the classic application `Renderer`.
+ * It extends the shared `ResolverImpl` with the keywords
+ * that require the router and engine infrastructure: `{{outlet}}` and `{{mount}}`.
+ * Keeping these out of the base resolver means renderers that have no router,
+ * such as `renderComponent`, do not pull the outlet/engine machinery into the build.
  */
 export default class RouterResolver extends ResolverImpl {
   override lookupBuiltInHelper(name: string): Nullable<HelperDefinitionState> {

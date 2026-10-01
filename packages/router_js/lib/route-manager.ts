@@ -7,8 +7,8 @@
   reference `router_js`'s own `RouteInfo`/`Transition` directly, with no upward
   dependency on `@ember/routing`.
 
-  Apps and addons author managers against the public re-export from
-  `@ember/routing`.
+  Apps and addons author managers against the public re-export
+  from `@ember/routing`.
 */
 
 import type { RouteInfo } from './route-info';
@@ -18,15 +18,15 @@ import type { PublicTransition as Transition } from './transition';
 // -- RouteStateBucket ---------------------------------------------------------
 
 /**
-  Marker interface for the opaque state object a `RouteManager` returns from
-  `createRoute`. Its shape and contents are defined entirely by the specific
-  manager implementation, the router holds the bucket and passes it back to
-  the manager without inspecting it.
+  Marker interface for the opaque state object a `RouteManager` returns
+  from `createRoute`.
+  Its shape and contents are defined entirely by the specific manager implementation.
+  The router holds the bucket and passes it back to the manager without inspecting it.
 
-  The bucket carries stable identity for a route definition. Per-navigation
-  state (e.g. the resolved model, the in-flight enter promise) lives on the
-  matching `RouteInfo`, keeping the bucket free to back multiple concurrent
-  renders.
+  The bucket carries stable identity for a route definition.
+  Per-navigation state lives on the matching `RouteInfo`,
+  keeping the bucket free to back multiple concurrent renders.
+  Examples of such state are the resolved model and the in-flight enter promise.
  */
 export type RouteStateBucket = object;
 
@@ -42,9 +42,9 @@ export interface RouteCapabilitiesVersions {
     to manager hooks via the `ClassicInteropArgs` mix-in, and the manager
     must implement the methods on `RouteManagerWithClassicInterop`.
 
-    This capability exists to bridge the classic router to the new manager
-    surface. It is not intended to be used by managers outside the
-    framework-provided `ClassicRouteManager`.
+    This capability exists to bridge the classic router to the new manager surface.
+    It is not intended to be used by managers outside
+    the framework-provided `ClassicRouteManager`.
    */
   '1.0': {
     classicInterop?: boolean;
@@ -109,10 +109,12 @@ export function invokableFor<B extends object>(
 // -- Navigation state ---------------------------------------------------------
 
 /**
-  Common navigation context passed to the manager lifecycle hooks, as
-  specified by the RFC. Both route infos are transition-level: `from` is the
-  leaf route info of the state being navigated away from (`undefined` on the
-  initial transition) and `to` is the leaf route info of the destination.
+  Common navigation context passed to the manager lifecycle hooks,
+  as specified by the RFC.
+  Both route infos are transition-level.
+  `from` is the leaf route info of the state being navigated away from.
+  It is `undefined` on the initial transition.
+  `to` is the leaf route info of the destination.
   Both are populated from the transition before any lifecycle hook runs.
  */
 export interface NavigationState {
@@ -121,8 +123,8 @@ export interface NavigationState {
 }
 
 /**
-  Actions the router lends to certain hooks. Currently only `cancel`, which
-  aborts the active navigation.
+  Actions the router lends to certain hooks.
+  The only action is `cancel`, which aborts the active navigation.
  */
 export interface NavigationActions {
   /** Cancels the current navigation. */
@@ -135,15 +137,15 @@ export interface NavigationActions {
  */
 export interface AsyncNavigationState {
   /**
-    Aborts when the navigation is no longer the active one, e.g. because it
-    was cancelled or superseded by a newer transition.
+    Aborts when the navigation is not the active one anymore,
+    e.g. because it was cancelled or superseded by a newer transition.
    */
   signal: AbortSignal;
 
   /**
-    Returns a promise that resolves with an ancestor route's context once that
-    ancestor's `enter` has settled. Resolves with `undefined` if the named
-    route is not an ancestor in the active transition.
+    Returns a promise that resolves with an ancestor route's context,
+    once that ancestor's `enter` has settled.
+    Resolves with `undefined` if the named route is not an ancestor in the active transition.
 
     A `RouteInfo` for the desired ancestor must always be passed explicitly.
    */
@@ -151,11 +153,11 @@ export interface AsyncNavigationState {
 }
 
 /**
-  Classic-interop additions on the navigation state, provided **only** when
-  the manager declares the `classicInterop: true` capability. Holds the raw
-  `router_js` `Transition` (so the manager can drive the legacy event system)
-  and the internal route info the hook fires for (so the manager can reach
-  internal operations such as `getModel` and the resolved `context`).
+  Classic-interop additions on the navigation state,
+  provided **only** when the manager declares the `classicInterop: true` capability.
+  It holds the raw `router_js` `Transition`, so the manager can drive the legacy event system.
+  It also holds the internal route info the hook fires for,
+  which lets the manager reach internal operations such as `getModel` and the resolved `context`.
  */
 export interface ClassicInteropArgs {
   transition: Transition;
@@ -164,10 +166,11 @@ export interface ClassicInteropArgs {
 
 // -- Hook argument shapes -----------------------------------------------------
 //
-// The base state interfaces match the RFC: `NavigationState` (+ actions/async
-// where specified) and nothing else. Managers with the `classicInterop`
-// capability receive the widened `Classic*` shapes below instead — the
-// interop fields are genuinely capability-gated at every dispatch site.
+// The base state interfaces match the RFC:
+// `NavigationState` (+ actions/async where specified) and nothing else.
+// Managers with the `classicInterop` capability
+// receive the widened `Classic*` shapes below instead.
+// The interop fields are capability-gated at every dispatch site.
 
 export interface WillEnterState extends NavigationState, NavigationActions {}
 
@@ -178,10 +181,10 @@ export type DidEnterState = NavigationState;
 export interface WillExitState extends NavigationState, NavigationActions {}
 
 /**
-  State for the `exit` hook. A normal exit happens during a navigation and
-  provides `from`/`to`, but an exit can also happen during router teardown
-  (`reset`), where there is no navigation at all — hence, unlike the RFC's
-  `NavigationState`, everything here is optional.
+  State for the `exit` hook.
+  A normal exit happens during a navigation and provides `from`/`to`.
+  An exit can also happen during router teardown (`reset`), where there is no navigation at all.
+  So, unlike the RFC's `NavigationState`, everything here is optional.
  */
 export interface ExitState {
   from?: RouteInfo;
@@ -193,12 +196,12 @@ export type DidExitState = NavigationState;
 // -- Classic-interop hook argument shapes -------------------------------------
 //
 // What a `classicInterop: true` manager receives instead of the base shapes.
-// Beyond `ClassicInteropArgs`, the enter/exit flags encode the classic
-// "update" distinction (re-entering the route you are already on): the RFC
-// treats that as a manager-internal concern, so it only exists on the
-// interop side. Likewise, the router only dispatches the update-flavoured
-// calls (`willExit` with `isExiting: false`, `didEnter` with `enter: false`,
-// intermediate-transition `didEnter`) to interop managers at all.
+// Beyond `ClassicInteropArgs`, the enter/exit flags encode the classic "update" distinction:
+// re-entering the route you are already on.
+// The RFC treats that as a manager-internal concern, so it only exists on the interop side.
+// Likewise, the router dispatches the update-flavoured calls only to interop managers:
+// `willExit` with `isExiting: false`, `didEnter` with `enter: false`,
+// and intermediate-transition `didEnter`.
 
 export type ClassicWillEnterState = WillEnterState & ClassicInteropArgs;
 
@@ -207,9 +210,9 @@ export type ClassicEnterState = EnterState & ClassicInteropArgs;
 export type ClassicDidEnterState = DidEnterState &
   ClassicInteropArgs & {
     /**
-      `true` if this hook is firing for a fresh entry into the route, `false`
-      if the route stayed mounted and only its context changed (a classic
-      "update").
+      `true` if this hook is firing for a fresh entry into the route.
+      `false` if the route stayed mounted and only its context changed,
+      which is a classic "update".
      */
     enter: boolean;
   };
@@ -217,9 +220,9 @@ export type ClassicDidEnterState = DidEnterState &
 export type ClassicWillExitState = WillExitState &
   ClassicInteropArgs & {
     /**
-      `true` if the route is leaving the hierarchy entirely, `false` if it is
-      staying mounted but its context is being reset (the classic
-      "context updated" path).
+      `true` if the route is leaving the hierarchy entirely.
+      `false` if it is staying mounted but its context is being reset,
+      which is the classic "context updated" path.
      */
     isExiting: boolean;
   };
@@ -250,9 +253,9 @@ export interface CreateRouteArgs {
   drives this interface; nothing else in user code should.
 
 
-  @template Bucket The shape of the bucket the manager returns from
-    `createRoute`. Defaults to the empty marker, override for a concrete
-    manager implementation.
+  @template Bucket The shape of the bucket the manager returns
+    from `createRoute`. Defaults to the empty marker,
+    override for a concrete manager implementation.
  */
 export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket> {
   /**
@@ -262,18 +265,18 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   capabilities: RouteCapabilities;
 
   /**
-    Returns a stable bucket the router will pass back to every other hook on
-    this manager. Whether `factory` is instantiated now or later is up to the
-    manager.
+    Returns a stable bucket the router will pass back to every other hook on this manager.
+    Whether `factory` is instantiated now or later is up to the manager.
    */
   createRoute(factory: object, args: CreateRouteArgs): Bucket;
 
   /**
-    Returns the destroyable (if any) associated with the bucket. When a
-    manager creates route state that is not otherwise owner-managed, the
-    framework associates the returned destroyable with the owner so it is
-    destroyed at teardown. Return `null` when the state is already managed
-    elsewhere (e.g. container-owned), to avoid double management.
+    Returns the destroyable associated with the bucket, if any.
+    A manager may create route state that is not otherwise owner-managed.
+    Then the framework associates the returned destroyable with the owner,
+    so it is destroyed at teardown.
+    Return `null` when the state is already managed elsewhere (e.g. container-owned),
+    to avoid double management.
    */
   getDestroyable(bucket: Bucket): object | null;
 
@@ -303,9 +306,10 @@ export interface RouteManager<Bucket extends RouteStateBucket = RouteStateBucket
   willExit(bucket: Bucket, state: WillExitState): void;
 
   /**
-    Called when the route is exited. Classic routes run `deactivate` and
-    `resetController` here. `state` is omitted during router teardown
-    (`reset`), where there is no destination or active transition.
+    Called when the route is exited.
+    Classic routes run `deactivate` and `resetController` here.
+    `state` is omitted during router teardown (`reset`),
+    where there is no destination or active transition.
    */
   exit(bucket: Bucket, state?: ExitState): void;
 
@@ -339,8 +343,8 @@ export interface RouteManagerWithClassicInterop<
 > extends RouteManager<Bucket> {
   isInaccessibleByURL(bucket: Bucket): boolean;
 
-  // Lifecycle hooks, widened with the capability-gated interop state. The
-  // router narrows via `hasClassicInterop` before dispatching these shapes.
+  // Lifecycle hooks, widened with the capability-gated interop state.
+  // The router narrows via `hasClassicInterop` before dispatching these shapes.
   willEnter(bucket: Bucket, state: ClassicWillEnterState): void;
   enter(bucket: Bucket, state: ClassicEnterState): Promise<unknown>;
   didEnter(bucket: Bucket, state: ClassicDidEnterState): void;
@@ -349,18 +353,19 @@ export interface RouteManagerWithClassicInterop<
   didExit(bucket: Bucket, state: ClassicDidExitState): void;
 
   /**
-    Returns the query-param meta for the route. Backs the classic protected
-    `_qp` getter; the router reads it to assemble the query-param state for a
-    route hierarchy. Typed as `unknown` here because the concrete
-    `QueryParamMeta` shape is a classic-`@ember` concern that `router_js` never
-    inspects; the `@ember` layer narrows the result.
+    Returns the query-param meta for the route.
+    Backs the classic protected `_qp` getter.
+    The router reads it to assemble the query-param state for a route hierarchy.
+    Typed as `unknown` here,
+    because the concrete `QueryParamMeta` shape is a classic-`@ember` concern
+    that `router_js` never inspects. The `@ember` layer narrows the result.
    */
   qp(bucket: Bucket): unknown;
 
   /**
-    Stashes the dynamic-segment names onto the route's query-param meta so
-    `model`-scoped query params resolve to the right path. Called by the
-    router while walking the active route hierarchy.
+    Stashes the dynamic-segment names onto the route's query-param meta,
+    so `model`-scoped query params resolve to the right path.
+    Called by the router while walking the active route hierarchy.
    */
   stashNames(
     bucket: Bucket,
@@ -401,8 +406,8 @@ export interface RouteManagerWithClassicInterop<
   ): Record<string, unknown> | undefined;
 
   /**
-    Classic `queryParamsDidChange` event handler. Returns `true` to let the
-    event keep bubbling through the route hierarchy.
+    Classic `queryParamsDidChange` event handler.
+    Returns `true` to let the event keep bubbling through the route hierarchy.
    */
   queryParamsDidChange(
     bucket: Bucket,
@@ -433,8 +438,8 @@ export interface RouteManagerWithClassicInterop<
   getContext(bucket: Bucket, params: Record<string, unknown>, transition: Transition): unknown;
 
   /**
-    Classic `Route.redirect` hook. Called once the route's context has
-    resolved.
+    Classic `Route.redirect` hook.
+    Called once the route's context has resolved.
    */
   redirect(bucket: Bucket, routeInfo: RouteInfo, context: unknown, transition: Transition): void;
 

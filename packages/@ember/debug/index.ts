@@ -169,9 +169,9 @@ if (DEBUG) {
   /**
     Display an info notice.
 
-    Calls to this function are removed from production builds, so they can be
-    freely added for documentation and debugging purposes without worries of
-    incuring any performance penalty.
+    Calls to this function are removed from production builds.
+    So they can be freely added for documentation and debugging purposes,
+    without worries of incurring any performance penalty.
 
     @method info
     @private
@@ -191,9 +191,9 @@ if (DEBUG) {
     Display a deprecation warning with the provided message and a stack trace
     (Chrome and Firefox only) when the assigned method is called.
 
-    Calls to this function are removed from production builds, so they can be
-    freely added for documentation and debugging purposes without worries of
-    incuring any performance penalty.
+    Calls to this function are removed from production builds.
+    So they can be freely added for documentation and debugging purposes,
+    without worries of incurring any performance penalty.
 
     ```javascript
     import { deprecateFunc } from '@ember/debug';
@@ -233,9 +233,9 @@ if (DEBUG) {
   /**
     Run a function meant for debugging.
 
-    Calls to this function are removed from production builds, so they can be
-    freely added for documentation and debugging purposes without worries of
-    incuring any performance penalty.
+    Calls to this function are removed from production builds.
+    So they can be freely added for documentation and debugging purposes,
+    without worries of incurring any performance penalty.
 
     ```javascript
     import Component from '@ember/component';

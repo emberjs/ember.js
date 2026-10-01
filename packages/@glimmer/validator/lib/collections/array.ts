@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Unfortunately, TypeScript's ability to do inference *or* type-checking in a
-// `Proxy`'s body is very limited, so we have to use a number of casts `as any`
-// to make the internal accesses work. The type safety of these is guaranteed at
-// the *call site* instead of within the body: you cannot do `Array.blah` in TS,
-// and it will blow up in JS in exactly the same way, so it is safe to assume
-// that properties within the getter have the correct type in TS.
+// TypeScript's ability to do inference *or* type-checking in a `Proxy`'s body is very limited,
+// so we cast `as any` to make the internal accesses work.
+// The type safety of these is guaranteed at the *call site* instead of within the body.
+// You cannot do `Array.blah` in TS, and it throws in JS in exactly the same way.
+// Thus, properties within the getter have the correct type in TS.
 
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
@@ -64,9 +63,9 @@ class TrackedArray<T = unknown> {
     const boundFns = new Map<string | symbol, (...args: any[]) => any>();
 
     /**
-      Flag to track whether we have *just* intercepted a call to `.push()` or
-      `.unshift()`, since in those cases (and only those cases!) the `Array`
-      itself checks `.length` to return from the function call.
+      Flag to track whether we have *just* intercepted a call to `.push()` or `.unshift()`.
+      Only in those cases does the `Array` itself check `.length`
+      to return from the function call.
      */
     let nativelyAccessingLengthFromWriteMethod = false;
 
@@ -82,14 +81,15 @@ class TrackedArray<T = unknown> {
         }
 
         if (prop === 'length') {
-          // If we are reading `.length`, it may be a normal user-triggered
-          // read, or it may be a read triggered by Array itself. In the latter
-          // case, it is because we have just done `.push()` or `.unshift()`; in
-          // that case it is safe not to mark this as a *read* operation, since
-          // calling `.push()` or `.unshift()` cannot otherwise be part of a
-          // "read" operation safely, and if done during an *existing* read
-          // (e.g. if the user has already checked `.length` *prior* to this),
-          // that will still trigger the mutation-after-consumption assertion.
+          // If we are reading `.length`, it may be a normal user-triggered read,
+          // or it may be a read triggered by Array itself.
+          // In the latter case, it is because we have just done `.push()` or `.unshift()`.
+          // Then it is safe not to mark this as a *read* operation,
+          // because calling `.push()` or `.unshift()` cannot otherwise be
+          // part of a "read" operation safely.
+          // If done during an *existing* read,
+          // it will still trigger the mutation-after-consumption assertion.
+          // For example, the user may have already checked `.length` *prior* to this.
           if (nativelyAccessingLengthFromWriteMethod) {
             nativelyAccessingLengthFromWriteMethod = false;
           } else {
@@ -99,9 +99,9 @@ class TrackedArray<T = unknown> {
           return target[prop];
         }
 
-        // Here, track that we are doing a `.push()` or `.unshift()` by setting
-        // the flag to `true` so that when the `.length` is read by `Array` (see
-        // immediately above), it knows not to dirty the collection.
+        // Track that we are doing a `.push()` or `.unshift()` by setting the flag to `true`.
+        // When `Array` then reads `.length` (see immediately above),
+        // it knows not to dirty the collection.
         if (ARRAY_WRITE_THEN_READ_METHODS.has(prop)) {
           nativelyAccessingLengthFromWriteMethod = true;
         }
@@ -181,14 +181,13 @@ class TrackedArray<T = unknown> {
   }
 }
 
-// This rule is correct in the general case, but it doesn't understand
-// declaration merging, which is how we're using the interface here. This says
-// `TrackedArray` acts just like `Array<T>`, but also has the properties
-// declared via the `class` declaration above -- but without the cost of a
-// subclass, which is much slower that the proxied array behavior. That is: a
-// `TrackedArray` *is* an `Array`, just with a proxy in front of accessors and
-// setters, rather than a subclass of an `Array` which would be de-optimized by
-// the browsers.
+// This rule is correct in the general case,
+// but it doesn't understand declaration merging, which is how we're using the interface here.
+// This says `TrackedArray` acts just like `Array<T>`,
+// but also has the properties declared via the `class` declaration above.
+// It avoids the cost of a subclass, which is much slower than the proxied array behavior.
+// That is: a `TrackedArray` *is* an `Array`, just with a proxy in front of accessors and setters.
+// A subclass of an `Array` would be de-optimized by the browsers.
 //
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

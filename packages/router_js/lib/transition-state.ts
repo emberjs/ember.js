@@ -58,15 +58,13 @@ function proceed<R>(
 ): void | Promise<void> {
   let wasAlreadyResolved = currentState.routeInfos[transition.resolveIndex]!.isResolved;
   const routeIndex = transition.resolveIndex;
-  // Swap the previously unresolved routeInfo with
-  // the resolved routeInfo
+  // Swap the unresolved routeInfo with the resolved routeInfo
   currentState.routeInfos[transition.resolveIndex++] = resolvedRouteInfo;
 
   if (!wasAlreadyResolved) {
-    // Call the redirect hook. The reason we call it here
-    // vs. afterModel is so that redirects into child
-    // routes don't re-run the model hooks for this
-    // already-resolved route.
+    // We call the redirect hook here instead of in afterModel,
+    // so that redirects into child routes
+    // don't re-run the model hooks for this already-resolved route.
     let { manager, bucket } = resolvedRouteInfo;
     if (manager !== undefined && hasClassicInterop(manager) && bucket !== undefined) {
       manager.redirect(

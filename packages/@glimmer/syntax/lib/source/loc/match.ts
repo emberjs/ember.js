@@ -7,12 +7,11 @@ import type { CharPosition, HbsPosition, InvisiblePosition, PositionData } from 
 import { BROKEN_KIND, INTERNAL_SYNTHETIC_KIND, NON_EXISTENT_KIND } from './kinds';
 
 /**
- * This file implements the DSL used by span and offset in places where they need to exhaustively
- * consider all combinations of states (Handlebars offsets, character offsets and invisible/broken
- * offsets).
+ * Span and offset use this DSL where they need to exhaustively consider all combinations of states:
+ * Handlebars offsets, character offsets and invisible/broken offsets.
  *
- * It's probably overkill, but it makes the code that uses it clear. It could be refactored or
- * removed.
+ * It's probably overkill, but it makes the code that uses it clear.
+ * It could be refactored or removed.
  */
 
 export const MatchAny = 'MATCH_ANY';
@@ -135,9 +134,10 @@ class Matcher<Out, M extends Matches = Matches> {
     return callback;
   }
 
-  // This big block is the bulk of the heavy lifting in this file. It facilitates exhaustiveness
-  // checking so that matchers can ensure they've actually covered all the cases (and TypeScript
-  // will treat it as an exhaustive match).
+  // This big block is the bulk of the heavy lifting in this file.
+  // It facilitates exhaustiveness checking,
+  // so that matchers can ensure they've actually covered all the cases.
+  // TypeScript will also treat it as an exhaustive match.
   when(
     left: CharOffsetKind,
     right: HbsPositionKind,

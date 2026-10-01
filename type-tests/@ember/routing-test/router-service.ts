@@ -71,10 +71,10 @@ expectTypeOf(transition.to?.metadata).toEqualTypeOf<unknown>();
 // @ts-expect-error
 transition.to.metadata = 'foo';
 
-// NOTE: we cannot check the validity of invocations with just route name and
-// query params beyond that the second argument is an object of some sort,
-// because TS will always resolve it to the `models` variant if the
-// `queryParams` variant fails.
+// NOTE: for invocations with just route name and query params,
+// we can only check that the second argument is an object of some sort.
+// TS will always resolve it to the `models` variant
+// if the `queryParams` variant fails.
 expectTypeOf(
   router.transitionTo('someRoute', { queryParams: { shouldWork: true } })
 ).toEqualTypeOf<Transition>();

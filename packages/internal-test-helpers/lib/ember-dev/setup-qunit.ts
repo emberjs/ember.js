@@ -75,12 +75,12 @@ export default function setupQUnit() {
   };
 }
 
-// since all of the glimmer-vm tests are synchronous, the QUnit UI never has a
-// chance to rerender / update. This leads to a very long "white screen" when
-// running the tests
+// since all of the glimmer-vm tests are synchronous,
+// the QUnit UI never has a chance to rerender / update.
+// This leads to a very long "white screen" when running the tests.
 //
-// this adds a very small amount of async, just to allow the QUnit UI to
-// rerender once per module completed
+// this adds a very small amount of async,
+// just to allow the QUnit UI to rerender once per module completed
 QUnit.moduleDone(
   () =>
     new Promise<void>((res) => {

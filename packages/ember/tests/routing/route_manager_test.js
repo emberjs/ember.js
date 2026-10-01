@@ -23,9 +23,10 @@ const ContextOutlet = setComponentTemplate(
   templateOnly()
 );
 
-// A manager that delegates everything to the ClassicRouteManager so existing
-// routing behaviour is preserved, but records every hook into a shared log so
-// the tests can assert the routing pipeline goes through the manager.
+// A manager that delegates everything to the ClassicRouteManager,
+// so existing routing behaviour is preserved.
+// It records every hook into a shared log,
+// so the tests can assert the routing pipeline goes through the manager.
 class RecordingRouteManager extends ClassicRouteManager {
   constructor(owner, log) {
     super(owner);
@@ -152,8 +153,8 @@ moduleFor(
       this.destroyedBuckets = [];
 
       // Simulates a manager whose per-route state is not container-managed:
-      // it returns the bucket as its destroyable, so the router is
-      // responsible for tying it to the owner's lifetime.
+      // it returns the bucket as its destroyable,
+      // so the router is responsible for tying it to the owner's lifetime.
       class DestroyableRouteManager extends ClassicRouteManager {
         createRoute(factory, args) {
           let bucket = super.createRoute(factory, args);
@@ -400,20 +401,21 @@ moduleFor(
   }
 );
 
-// Real-world resolvers (ember-resolver, the strict resolver) normalize a
-// dotted route name like `posts.show` to the slashed module path
-// `posts/show`. The default test resolver does NOT, which is why this never
-// surfaced in the rest of the suite: the router and a `route:` container
-// lookup ended up with the same spelling, so the route manager's per-name
-// bucket cache only ever held one instance.
+// Real-world resolvers, such as ember-resolver and the strict resolver,
+// normalize a dotted route name like `posts.show` to the slashed module path `posts/show`.
+// The default test resolver does NOT.
+// That is why this never surfaced in the rest of the suite.
+// The router and a `route:` container lookup ended up with the same spelling.
+// So the route manager's per-name bucket cache only ever held one instance.
 //
-// With a normalizing resolver the two callers disagree: router_js calls
-// `getRoute('parent.child')` (dotted, straight from the recognizer) while a
-// `paramsFor`/`modelFor` container lookup is intercepted and calls
-// `getRoute('parent/child')` (slashed, post-normalize). If the bucket cache
-// keys on the raw name those become two different route instances with
-// different `fullRouteName`s, and `paramsFor` reads `state.params` under the
-// wrong key, so a nested dynamic route resolves with empty params.
+// With a normalizing resolver, the two callers disagree.
+// router_js calls `getRoute('parent.child')`, dotted, straight from the recognizer.
+// A `paramsFor`/`modelFor` container lookup is intercepted,
+// and calls `getRoute('parent/child')`, slashed, after normalizing.
+// If the bucket cache keys on the raw name,
+// those become two different route instances with different `fullRouteName`s.
+// Then `paramsFor` reads `state.params` under the wrong key,
+// so a nested dynamic route resolves with empty params.
 class NormalizingResolver extends ModuleBasedTestResolver {
   normalize(fullName) {
     let [type, name] = fullName.split(':');
@@ -489,11 +491,11 @@ moduleFor(
   }
 );
 
-// Lifecycle ordering. A single recording manager instance (one per
-// owner) logs every hook in call order so the tests can assert the router
-// drives willEnter -> enter -> didEnter on the way in and
-// willExit -> exit -> didExit on the way out, plus the context-update and
-// enter-gates-didEnter guarantees.
+// Lifecycle ordering.
+// A single recording manager instance per owner logs every hook in call order.
+// The tests use it to assert the router drives willEnter -> enter -> didEnter on the way in,
+// and willExit -> exit -> didExit on the way out.
+// They also assert the context-update and enter-gates-didEnter guarantees.
 moduleFor(
   'Route manager - lifecycle ordering',
   class extends ApplicationTestCase {
@@ -512,8 +514,8 @@ moduleFor(
         'route:parent.child',
         class extends TestRoute {
           model(params) {
-            // Mark when this route's async model work settles so the
-            // enter-gates-didEnter test can assert ordering against it.
+            // Mark when this route's async model work settles,
+            // so the enter-gates-didEnter test can assert ordering against it.
             return resolve().then(() => {
               test.log.push(['model-settled', 'parent.child']);
               return params;
@@ -615,9 +617,9 @@ moduleFor(
   }
 );
 
-// Classic-interop surface. Asserts the router resolves models
-// (getContext), serializes URLs (serializeContext), runs redirects, and
-// surfaces metadata (getRouteInfoMetadata) through the manager boundary.
+// Classic-interop surface.
+// Asserts the router resolves models (getContext), serializes URLs (serializeContext),
+// runs redirects, and surfaces metadata (getRouteInfoMetadata) through the manager boundary.
 moduleFor(
   'Route manager - classic interop surface',
   class extends ApplicationTestCase {
@@ -712,10 +714,11 @@ moduleFor(
   }
 );
 
-// Substates. A pending model enters the loading substate and a
-// rejected model enters the error substate. Both substate routes extend the
-// tracked base class, so the recording manager proves the router drives them
-// (via the intermediate transition) through the manager boundary.
+// Substates.
+// A pending model enters the loading substate, and a rejected model enters the error substate.
+// Both substate routes extend the tracked base class.
+// So the recording manager proves the router drives them through the manager boundary,
+// via the intermediate transition.
 moduleFor(
   'Route manager - substates',
   class extends ApplicationTestCase {

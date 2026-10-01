@@ -13,8 +13,8 @@ import type {
 } from './simple.js';
 
 /**
- * `AppendingBlock` is the interface used by the `ElementBuilder` to keep track of which nodes have
- * been appended to a block. Ultimately, an `AppendingBlock` is finalized and used as a `FixedBlock`
+ * `AppendingBlock` is the interface used by the `ElementBuilder`
+ * to keep track of which nodes have been appended to a block. Ultimately, an `AppendingBlock` is finalized and used as a `FixedBlock`
  * or `ResettableBlock` during the updating phase.
  */
 export interface AppendingBlock extends Bounds {

@@ -40,7 +40,7 @@ test('single newline', (assert) => {
 
 test('multi-line fixtures round-trip at boundaries', (assert) => {
   // For each fixture: [offset, expected {line, column} | null] pairs cover
-  // every offset from 0 to length+1 — start, middles, the '\n', and past-end.
+  // every offset from 0 to length+1: start, middles, the '\n', and past-end.
   const cases: Array<[string, Array<[number, { line: number; column: number } | null]>]> = [
     [
       'a\n',
@@ -118,8 +118,8 @@ test('hbsPosFor returns null for negative or out-of-range offsets', (assert) => 
 test('hbsPosFor at exact newline offset points to that line', (assert) => {
   const s = new src.Source('ab\ncd');
 
-  // Offset 2 *is* the '\n' — it belongs to line 1 at column 2.
+  // Offset 2 *is* the '\n', so it belongs to line 1 at column 2.
   assert.deepEqual(s.hbsPosFor(2), { line: 1, column: 2 });
-  // Offset 3 is the first char after the newline — line 2, column 0.
+  // Offset 3 is the first char after the newline: line 2, column 0.
   assert.deepEqual(s.hbsPosFor(3), { line: 2, column: 0 });
 });

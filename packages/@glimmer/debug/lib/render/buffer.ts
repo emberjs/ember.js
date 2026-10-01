@@ -4,20 +4,21 @@ import type { DisplayFragmentOptions, FlushedLines } from './logger';
 import { ANNOTATION_STYLES } from './annotations';
 
 /**
- * The `LogFragmentBuffer` is responsible for collecting the fragments that are logged to the
- * `DebugLogger` so that they can be accumulated during a group and flushed together.
+ * The `LogFragmentBuffer` is responsible for collecting the fragments logged to the `DebugLogger`,
+ * so that they can be accumulated during a group and flushed together.
  *
  * This queuing serves two purposes:
  *
- * 1. To allow the individual fragments that make up a single line to append their values to
- *    the current line. To accomplish this, each fragment can append static content and its
- *    formatting specifier (e.g. `%o`) to the accumulated {@link #template} *and* append the
- *    value to format to the {@link #substitutions} array.
+ * 1. To allow the individual fragments that make up a single line
+ *    to append their values to the current line.
+ *    To accomplish this, each fragment can append static content and its formatting specifier,
+ *    e.g. `%o`, to the accumulated {@link #template}.
+ *    It *also* appends the value to format to the {@link #substitutions} array.
  * 2. To allow logs that refer to objects to be represented as footnotes in the current line,
  *    with the footnote to be printed in a later line.
  *
- * This allows a list of fragments, each of which represent formattable values, to be flattened
- * into a single template string and an array of values to format.
+ * This allows a list of fragments, each of which represent formattable values,
+ * to be flattened into a single template string and an array of values to format.
  *
  * ## Footnotes
  *
@@ -34,45 +35,45 @@ import { ANNOTATION_STYLES } from './annotations';
  * ...
  * ```
  *
- * The fragment for line `366` includes an `ObjectFragment` for the helper value. When logged,
- * the object will be represented as a footnote and the value will be printed in a later
- * line.
+ * The fragment for line `366` includes an `ObjectFragment` for the helper value.
+ * When logged, the object will be represented as a footnote,
+ * and the value will be printed in a later line.
  */
 export class LogFragmentBuffer {
   /**
-   * The first parameter to the `console.log` family of APIs is a *template* that can use
-   * format specifiers (e.g. `%c`, `%o`, and `%O`) to refer to subsequent parameters.
+   * The first parameter to the `console.log` family of APIs is a *template*.
+   * It can use format specifiers, e.g. `%c`, `%o`, and `%O`, to refer to subsequent parameters.
    *
    * When a fragment is appended to a line,
    */
   #template = '';
 
   /**
-   * Each format specified in the {@link #template} corresponds to a value in the
-   * `#substitutions` array.
+   * Each format specified in the {@link #template}
+   * corresponds to a value in the `#substitutions` array.
    */
   readonly #substitutions: unknown[] = [];
 
   /**
    * The logging options for the buffer, which currently only contains `showSubtle`.
    *
-   * When fragments call the buffer's {@linkcode append} method, they specify whether the
-   * content to append is subtle or not. If the buffer is not configured to show subtle
-   * content, the content is not appended.
+   * When fragments call the buffer's {@linkcode append} method,
+   * they specify whether the content to append is subtle or not.
+   * If the buffer is not configured to show subtle content, the content is not appended.
    *
-   * This allows fragments to append content to the buffer without having to know how the
-   * buffer is configured.
+   * This allows fragments to append content to the buffer
+   * without having to know how the buffer is configured.
    */
   readonly #options: DisplayFragmentOptions;
 
   /**
-   * A single line can produce multiple queued log entries. This happens when fragments
-   * append *footnotes* to the buffer. A *reference* to the footnote is appended to the
-   * primary line, and a line containing the *value* of the footnote is appended to the
-   * `#queued` array.
+   * A single line can produce multiple queued log entries.
+   * This happens when fragments append *footnotes* to the buffer.
+   * A *reference* to the footnote is appended to the primary line,
+   * and a line containing the *value* of the footnote is appended to the `#queued` array.
    *
-   * Both the primary line and any queued footnotes are flushed together when the buffer
-   * is flushed.
+   * Both the primary line and any queued footnotes are flushed together
+   * when the buffer is flushed.
    */
   readonly #footnotes: QueuedEntry[] = [];
   #nextFootnote = 1;
@@ -85,25 +86,25 @@ export class LogFragmentBuffer {
   /**
    * Add a footnoted value to the current buffer.
    *
-   * If the `subtle` option is set, the fragment will only be printed if the buffer is configured
-   * to show subtle content.
+   * If the `subtle` option is set,
+   * the fragment will only be printed if the buffer is configured to show subtle content.
    *
-   * This method takes two callbacks: `add` and `append`.
+   * It takes two callbacks: `add` and `append`.
    *
-   * The `append` callback behaves like {@linkcode append}, but without the `subtle` argument. If
-   * `addFootnoted` is called with `subtle: false`, then the callback will never be called, so
-   * there is no need to pass the `subtle` argument again.
+   * The `append` callback behaves like {@linkcode append}, but without the `subtle` argument.
+   * If `addFootnoted` is called with `subtle: false`, then the callback will never be called,
+   * so there is no need to pass the `subtle` argument again.
    *
-   * The `add` callback is responsible for appending the footnote itself to the buffer. The first
-   * parameter to `add` (`useNumber`) specifies whether the caller has used the footnote number
+   * The `add` callback is responsible for appending the footnote itself to the buffer.
+   * Its first parameter, `useNumber`, specifies whether the caller has used the footnote number
    * to refer to the footnote.
    *
-   * This is typically true, but fragments can specify an alternative annotation that should be used
-   * instead of the default footnote number. In that case, the footnote number is not used, and the
-   * next footnote is free to use it.
+   * This is typically true, but fragments can specify an alternative annotation
+   * that should be used instead of the default footnote number.
+   * In that case, the footnote number is not used, and the next footnote is free to use it.
    *
-   * The `add` callback also takes a template string and an optional list of substitutions, which
-   * describe the way the footnote itself should be formatted.
+   * The `add` callback also takes a template string and an optional list of substitutions.
+   * They describe the way the footnote itself should be formatted.
    */
   addFootnoted(
     subtle: boolean,

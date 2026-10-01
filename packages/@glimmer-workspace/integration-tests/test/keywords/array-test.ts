@@ -32,10 +32,9 @@ class KeywordArray extends RenderTest {
 jitSuite(KeywordArray);
 
 /**
- * This function is used to hide a variable from the transpiler, so that it
- * doesn't get removed as "unused". It does not actually do anything with the
- * variable, it just makes it be part of an expression that the transpiler
- * won't remove.
+ * The transpiler removes variables that look unused.
+ * Putting the variable in an expression that the transpiler keeps
+ * hides it from the transpiler without doing anything else with it.
  *
  * It's a bit of a hack, but it's necessary for testing.
  *

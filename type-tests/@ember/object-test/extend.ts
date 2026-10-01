@@ -16,8 +16,8 @@ class Person extends EmberObject {
 expectTypeOf(Person.prototype.firstName).toBeString();
 expectTypeOf(Person.prototype.fullName).toBeString();
 
-// We cannot forbid extra properties, but we do at least smush them onto the
-// resulting type.
+// We cannot forbid extra properties,
+// but we do at least smush them onto the resulting type.
 const person = Person.create({
   firstName: 'Joe',
   lastName: 'Blow',

@@ -1,6 +1,5 @@
-// These symbols represent "friend" properties that are used inside of
-// the VM in other classes, but are not intended to be a part of
-// Glimmer's API.
+// These symbols represent "friend" properties that are used inside of the VM in other classes,
+// but are not intended to be a part of Glimmer's API.
 
 export const INNER_VM: unique symbol = Symbol('INNER_VM');
 export const DESTROYABLE_STACK: unique symbol = Symbol('DESTROYABLE_STACK');

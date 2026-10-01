@@ -2,12 +2,15 @@ import { DEBUG } from '@glimmer/env';
 import type { TemplateFactory } from '@glimmer/interfaces';
 import type * as ETC from 'ember-template-compiler';
 
-// (UN)SAFETY: the public API is that people can import and use this (and indeed
-// it is emitted as part of Ember's build!), so we define it as having the type
-// which makes that work. However, in practice it is supplied by the build,
-// *for* the build, and will *not* be present at runtime, so the actual value
-// here is `undefined` in prod; in dev it is a function which throws a somewhat
-// nicer error. This is janky, but... here we are.
+// (UN)SAFETY: the public API is that people can import and use this.
+// Ember's own build even emits it.
+// So we define it as having the type which makes that work.
+//
+// However, in practice it is supplied by the build, *for* the build,
+// and will *not* be present at runtime.
+// The actual value here is `undefined` in prod.
+// In dev it is a function which throws a somewhat nicer error.
+// This is janky, but... here we are.
 interface PrecompileTemplate {
   (
     templateString: string,

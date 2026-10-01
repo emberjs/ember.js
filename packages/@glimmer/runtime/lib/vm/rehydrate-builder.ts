@@ -64,9 +64,10 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     this.candidate = node;
     const startingBlockOffset = getBlockDepth(node);
     if (startingBlockOffset !== 0) {
-      // We are rehydrating from a partial tree and not the root component
-      // We need to add an extra block before the first block to rehydrate correctly
-      // The extra block is needed since the renderComponent API creates a synthetic component invocation which generates the extra block
+      // We are rehydrating from a partial tree and not the root component.
+      // The renderComponent API creates a synthetic component invocation,
+      // which generates an extra block.
+      // To rehydrate correctly, we add a matching block before the first block.
       const newBlockDepth = startingBlockOffset - 1;
       const newCandidate = this.dom.createComment(`%+b:${newBlockDepth}%`);
 
@@ -116,7 +117,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     const currentCursor = this.currentCursor!;
 
     // rehydration will be disabled until we either:
-    // * hit popElement (and return to using the parent elements cursor)
+    // * hit popElement, which returns to using the parent element's cursor
     // * hit closeBlock and the next sibling is a close block comment
     //   matching the expected openBlockDepth
     currentCursor.candidate = null;
@@ -249,9 +250,8 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     }
 
     if (!isRehydrating) {
-      // check if nextSibling matches our expected close block
-      // if so, we remove the close block comment and
-      // restore rehydration after clearMismatch disabled
+      // clearMismatch disabled rehydration.
+      // A matching close block comment marks where rehydration can resume.
       const nextSibling = currentCursor.nextSibling;
       if (
         nextSibling !== null &&

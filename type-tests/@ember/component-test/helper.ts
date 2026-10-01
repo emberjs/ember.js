@@ -25,10 +25,10 @@ class SignatureForm extends Helper<DemoSig> {
   }
 }
 
-// Type-safe helpers require you to pass a signature so that it is visible to
-// external callers (via Glint) *or* to handle the fact that your callers may
-// pass you anything if there is no signature. Unfortunately, the only way to
-// make that safe would be to make the signature *required*.
+// Type-safe helpers require you to pass a signature,
+// so that it is visible to external callers via Glint.
+// Without a signature, you must handle the fact that your callers may pass you anything.
+// Unfortunately, the only way to make that safe would be to make the signature *required*.
 class BadNoSigForm extends Helper {
   compute(
     [i18nizer]: [i18nizer: (s: string) => string],

@@ -14,16 +14,19 @@ import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpe
   CHANGES FROM 1.6:
 
   * Added ObservableObject which applies the Ember.Observable mixin.
-  * Changed reference to Ember.T_FUNCTION to 'function'
-  * Changed all references to sc_super to this._super(...arguments)
-  * Changed Ember.objectForPropertyPath() to Ember.getPath()
-  * Removed allPropertiesDidChange test - no longer supported
-  * Changed test that uses 'ObjectE' as path to 'objectE' to reflect new
-    rule on using capital letters for property paths.
-  * Removed test passing context to addObserver.  context param is no longer
-    supported.
-  * removed test in observer around line 862 that expected key/value to be
-    the last item in the chained path.  Should be root and chained path
+  * Changed reference to Ember.T_FUNCTION to 'function'.
+  * Changed all references to sc_super to this._super(...arguments).
+  * Changed Ember.objectForPropertyPath() to Ember.getPath().
+
+  * Removed allPropertiesDidChange test, because Ember does not support it.
+  * Changed test that uses 'ObjectE' as path to 'objectE',
+    to reflect the rule on using capital letters for property paths.
+
+  * Removed test passing context to addObserver.
+    Ember does not support the context param.
+  * removed test in observer around line 862,
+    which expected key/value to be the last item in the chained path.
+    Should be root and chained path.
 
 */
 
@@ -401,8 +404,8 @@ moduleFor(
         let calls = object[key + 'Calls'];
         let idx, expectedLength;
 
-        // Cached properties first check their cached value before setting the
-        // property. Other properties blindly call set.
+        // Cached properties first check their cached value before setting the property.
+        // Other properties blindly call set.
         expectedLength = 3;
         assert.equal(
           calls.length,
@@ -664,15 +667,15 @@ moduleFor(
       assert.equal(25, newValue, 'zero numerical value incremented by specified increment');
 
       expectAssertion(function () {
-        newValue = object.incrementProperty('numberVal', 0 - void 0); // Increment by NaN
+        newValue = object.incrementProperty('numberVal', 0 - void 0); // 0 - void 0 is NaN
       }, /Must pass a numeric value to incrementProperty/i);
 
       expectAssertion(function () {
-        newValue = object.incrementProperty('numberVal', 'Ember'); // Increment by non-numeric String
+        newValue = object.incrementProperty('numberVal', 'Ember');
       }, /Must pass a numeric value to incrementProperty/i);
 
       expectAssertion(function () {
-        newValue = object.incrementProperty('numberVal', 1 / 0); // Increment by Infinity
+        newValue = object.incrementProperty('numberVal', 1 / 0);
       }, /Must pass a numeric value to incrementProperty/i);
 
       assert.equal(
@@ -692,15 +695,15 @@ moduleFor(
       assert.equal(25, newValue, 'zero numerical value decremented by specified increment');
 
       expectAssertion(function () {
-        newValue = object.decrementProperty('numberVal', 0 - void 0); // Decrement by NaN
+        newValue = object.decrementProperty('numberVal', 0 - void 0); // 0 - void 0 is NaN
       }, /Must pass a numeric value to decrementProperty/i);
 
       expectAssertion(function () {
-        newValue = object.decrementProperty('numberVal', 'Ember'); // Decrement by non-numeric String
+        newValue = object.decrementProperty('numberVal', 'Ember');
       }, /Must pass a numeric value to decrementProperty/i);
 
       expectAssertion(function () {
-        newValue = object.decrementProperty('numberVal', 1 / 0); // Decrement by Infinity
+        newValue = object.decrementProperty('numberVal', 1 / 0);
       }, /Must pass a numeric value to decrementProperty/i);
 
       assert.equal(

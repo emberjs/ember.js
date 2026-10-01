@@ -36,11 +36,10 @@ export interface RegistryOptions {
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
 
 /**
- A registry used to store factory and option information keyed
- by type.
+ A registry used to store factory and option information keyed by type.
 
- A `Registry` stores the factory and option information needed by a
- `Container` to instantiate and cache objects.
+ A `Registry` stores the factory and option information
+ needed by a `Container` to instantiate and cache objects.
 
  The API for `Registry` is still in flux and should not be considered stable.
 
@@ -216,8 +215,7 @@ export default class Registry {
   /**
    Given a fullName return the corresponding factory.
 
-   By default `resolve` will retrieve the factory from
-   the registry.
+   By default `resolve` will retrieve the factory from the registry.
 
    ```javascript
    let registry = new Registry();

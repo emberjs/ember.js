@@ -61,13 +61,12 @@ function esmInputs() {
   return {
     ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
     ...renameEntrypoints(packages(), (name) => join('packages', name)),
-    // the actual authored "./packages/ember-template-compiler/index.ts" is
-    // part of what powers the historical dist/ember-template-compiler.js AMD
-    // bundle. It has historical cruft that has never been present in our ESM
-    // builds.
+    // the actual authored "./packages/ember-template-compiler/index.ts"
+    // is part of what powers the historical dist/ember-template-compiler.js AMD bundle.
+    // It has historical cruft that has never been present in our ESM builds.
     //
-    // On the ESM build, the main entrypoint of ember-template-compiler is the
-    // "minimal.ts" version, which has a lot less in it.
+    // On the ESM build, the main entrypoint of ember-template-compiler
+    // is the "minimal.ts" version, which has a lot less in it.
     'packages/ember-template-compiler/index': 'ember-template-compiler/minimal.ts',
   };
 }
@@ -269,9 +268,9 @@ function rolledUpPackages() {
   ];
 }
 
-// these are the external packages that we historically "provided" from within
-// ember-source. That is, other packages could actually depend on the copies of
-// these that we publish.
+// these are the external packages that we historically "provided"
+// from within ember-source.
+// That is, other packages could actually depend on the copies of these that we publish.
 export function exposedDependencies() {
   return {
     'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
@@ -356,8 +355,8 @@ function findFromProject(...names) {
   let glimmerVmTarget = resolve(packageCache.appRoot, 'packages', names[0]);
   if (existsSync(glimmerVmTarget)) {
     // the glimmer-vm packages were historically deps but are now in our repo.
-    // We don't list them as actual NPM deps of the top-level workspace because
-    // we don't want their types leaking into our type-tests.
+    // We don't list them as actual NPM deps of the top-level workspace,
+    // because we don't want their types leaking into our type-tests.
     names.shift();
     current = packageCache.get(glimmerVmTarget);
   } else {
@@ -587,9 +586,8 @@ function handleRollupWarnings(level, log, handler) {
       throw new Error(`Circular dependencies are forbidden`);
     case 'EMPTY_BUNDLE':
       // Some of our entrypoints are type-only and result in empty bundles.
-      // We prune the actual empty files elsewhere in this config (see
-      // pruneEmptyBundles). This silences the warning from rollup about
-      // them.
+      // We prune the actual empty files elsewhere in this config, in pruneEmptyBundles.
+      // This silences the warning from rollup about them.
       return;
     default:
       handler(level, log);

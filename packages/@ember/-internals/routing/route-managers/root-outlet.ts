@@ -59,7 +59,8 @@ class RootOutletManager
     return '-top-level-outlet';
   }
 
-  // Empty, not absent: hides the shim.
+  // Defining this method at all makes the debug render tree use custom nodes.
+  // Returning none of them hides the shim.
   getDebugCustomRenderTree(): CustomRenderNode[] {
     return [];
   }

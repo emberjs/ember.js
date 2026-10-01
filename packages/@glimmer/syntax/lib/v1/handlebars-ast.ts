@@ -1,5 +1,5 @@
 /**
- * This file contains types for the raw AST returned from the Handlebars parser.
+ * Types for the raw AST returned from the Handlebars parser.
  * These types were originally imported from
  * https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/handlebars/index.d.ts.
  */
@@ -176,8 +176,8 @@ export interface PathExpression extends CommonNode {
 }
 
 /**
- * A `key=value` list outside of a mustache's named-argument position, e.g. `(foo=bar)`. The
- * upstream parser accepts it, but Glimmer does not support it.
+ * A `key=value` list outside of a mustache's named-argument position, e.g. `(foo=bar)`.
+ * The upstream parser accepts it, but Glimmer does not support it.
  */
 export interface HashLiteral extends CommonNode {
   type: 'HashLiteral';

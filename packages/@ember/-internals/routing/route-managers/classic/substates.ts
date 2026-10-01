@@ -1,12 +1,12 @@
 /**
-  Classic substate detection for the route manager. Walks the active
-  transition's route hierarchy looking for a `*_<state>` or `*.<state>` route
-  matching the route currently resolving (or erroring) and returns its name.
+  Classic substate detection for the route manager.
+  Walks the active transition's route hierarchy looking for a `*_<state>` or `*.<state>` route
+  that matches the route currently resolving or erroring, and returns its name.
   Entering the substate is the manager's job.
 
-  Mirrors the original `defaultActionHandlers.loading` and
-  `defaultActionHandlers.error` + `forEachRouteAbove` machinery that lived
-  in `router_js`. Moved here because substates are a classic-interop concern,
+  Mirrors the `router_js` machinery of `defaultActionHandlers.loading`,
+  `defaultActionHandlers.error`, and `forEachRouteAbove`.
+  It lives here because substates are a classic-interop concern,
   not a router_js responsibility.
 */
 
@@ -52,8 +52,8 @@ export function ancestorRouteInfos(
 }
 
 /**
-  Finds the name of the substate route if it exists for the given route. A
-  substate route is of the form `route_state`, such as `foo_loading`.
+  Finds the name of the substate route if it exists for the given route.
+  A substate route is of the form `route_state`, such as `foo_loading`.
 
   @private
   @param {Route} route
@@ -113,26 +113,27 @@ function routeHasBeenDefined(owner: Owner, router: any, localName: string, fullN
 }
 
 /**
-  Walk up from the route currently being resolved (or erroring) through the
-  transition's route hierarchy, returning the name of the closest matching
-  `*_<state>` or `*.<state>` substate, or an empty string if none is
-  defined.
+  Walk up from the route currently being resolved or erroring,
+  through the transition's route hierarchy.
+  Returns the name of the closest matching `*_<state>` or `*.<state>` substate,
+  or an empty string if none is defined.
 
   Rules:
-  - For the originating route itself, only the substate form
-    (`foo_loading` / `foo_error`) is considered. The state form
-    (`foo.loading` / `foo.error`) is conceptually a child route and is
-    "below" where we are, so it should not be entered.
+  - For the originating route itself,
+    only the substate form `foo_loading` / `foo_error` is considered.
+    The state form `foo.loading` / `foo.error` is conceptually a child route,
+    and is "below" where we are, so it should not be entered.
   - For ancestor routes, both forms are considered.
-  - A `loading` walk stops at the transition's pivot route; an `error` walk
-    does not. This matches the classic router's asymmetry: loading substates
-    never appear above the pivot, but an error can be handled arbitrarily
-    far up.
+  - A `loading` walk stops at the transition's pivot route, but an `error` walk does not.
+    This matches the classic router's asymmetry:
+    loading substates never appear above the pivot,
+    but an error can be handled arbitrarily far up.
 
   @private
   @param {RouteStateBucket|undefined} originBucket the bucket of the route
-    currently resolving (or erroring); when `undefined` the walk starts at the
-    transition's leaf and considers both substate forms everywhere
+    currently resolving or erroring.
+    When `undefined`, the walk starts at the transition's leaf
+    and considers both substate forms everywhere
   @param {Transition} transition the active transition
   @param {String} state the substate to look for, e.g. `loading` or `error`
  */

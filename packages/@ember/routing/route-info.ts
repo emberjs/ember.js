@@ -8,9 +8,9 @@
   @module @ember/routing/route-info
  */
 
-// TODO: these docs should actually live on their own interface definitions, so
-// when we migrate to using TSDoc let's move them there and make sure the tool
-// correctly picks them up as re-exports.
+// TODO: these docs should actually live on their own interface definitions.
+// When we migrate to using TSDoc, let's move them there,
+// and make sure the tool correctly picks them up as re-exports.
 
 // NOTE: ordering matters here, since this particular way of defining the docs
 // "attaches" the methods and properties to the most-recently defined item.
@@ -19,13 +19,14 @@
 
 /**
   A `RouteInfo` is an object that contains metadata about a specific route
-  within a `Transition`. It is read-only and internally immutable. It is also
-  not observable, because a `Transition` instance is never changed after
-  creation.
+  within a `Transition`. It is read-only and internally immutable.
+  It is also not observable,
+  because a `Transition` instance is never changed after creation.
 
-  A `RouteInfo` is not user-constructible; the only legal way to get one is from
-  a valid `Transition`. However, you can import the type by using `import type`
-  syntax with TypeScript or `import()` in JSDoc comments.
+  A `RouteInfo` is not user-constructible.
+  The only legal way to get one is from a valid `Transition`.
+  However, you can import the type by using `import type` syntax with TypeScript,
+  or `import()` in JSDoc comments.
 
   @class RouteInfo
   @public
@@ -44,19 +45,19 @@
  */
 
 /**
-  The values of the route's parameters. These are the same params that are
-  received as arguments to the route's `model` hook. Contains only the
-  parameters valid for this route, if any (params for parent or child routes are
-  not merged).
+  The values of the route's parameters.
+  These are the same params that are received as arguments to the route's `model` hook.
+  Contains only the parameters valid for this route, if any.
+  Params for parent or child routes are not merged.
   @property {Object} params
   @public
  */
 
 /**
-  The ordered list of the names of the params required for this route. It will
-  contain the same strings as Object.keys(params), but here the order is
-  significant. This allows users to correctly pass params into routes
-  programmatically.
+  The ordered list of the names of the params required for this route.
+  It will contain the same strings as Object.keys(params),
+  but here the order is significant.
+  This allows users to correctly pass params into routes programmatically.
   @property {Array} paramNames
   @public
  */
@@ -89,14 +90,13 @@
  */
 
 /**
-  Allows you to traverse through the linked list of `RouteInfo`s from the
-  topmost to leafmost. Returns the first `RouteInfo` in the linked list for
-  which the callback returns true.
+  Traverses the linked list of `RouteInfo`s from the topmost to leafmost.
+  Returns the first `RouteInfo` in the linked list for which the callback returns true.
 
-  This method is similar to the `find()` method defined in ECMAScript 2015.
+  It is similar to the `find()` method defined in ECMAScript 2015.
 
-  The callback method you provide should have the following signature (all
-  parameters are optional):
+  The callback method you provide should have the following signature.
+  All parameters are optional.
 
   ```javascript
   function(item, index, array);
@@ -106,11 +106,10 @@
   - `index` is the current index in the iteration.
   - `array` is the array itself.
 
-  It should return the `true` to include the item in the results, `false`
-  otherwise.
+  It should return `true` to include the item in the results, `false` otherwise.
 
-  Note that in addition to a callback, you can also pass an optional target
-  object that will be set as `this` on the context.
+  In addition to a callback, you can also pass an optional target object
+  that will be set as `this` on the context.
 
   @method find
   @param {Function} callback the callback to execute
@@ -122,15 +121,16 @@
 // ----- RouteInfoWithAttributes ------------------------------------------- //
 
 /**
-  A `RouteInfoWithAttributes` is an object that contains metadata, including the
-  resolved value from the routes `model` hook. Like `RouteInfo`, a
-  `RouteInfoWithAttributes` represents a specific route within a Transition. It
-  is read-only and internally immutable. It is also not observable, because a
-  Transition instance is never changed after creation.
+  A `RouteInfoWithAttributes` is an object that contains metadata,
+  including the resolved value from the routes `model` hook.
+  Like `RouteInfo`, a `RouteInfoWithAttributes` represents a specific route within a Transition.
+  It is read-only and internally immutable.
+  It is also not observable, because a Transition instance is never changed after creation.
 
-  A `RouteInfoWithAttributes` is not user-constructible; the only legal way to
-  get one is from a valid `Transition`. However, you can import the type by
-  using `import type` syntax with TypeScript or `import()` in JSDoc comments.
+  A `RouteInfoWithAttributes` is not user-constructible.
+  The only legal way to get one is from a valid `Transition`.
+  However, you can import the type by using `import type` syntax with TypeScript,
+  or `import()` in JSDoc comments.
 
   @class RouteInfoWithAttributes
   @extends RouteInfo
@@ -138,8 +138,7 @@
  */
 
 /**
-   This is the resolved return value from the
-   route's model hook.
+   This is the resolved return value from the route's model hook.
    @property {Object|Array|String|undefined} attributes
    @public
  */

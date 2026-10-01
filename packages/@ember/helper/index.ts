@@ -24,14 +24,15 @@ import { uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer/lib/helpe
 import { type Opaque } from '@ember/-internals/utility-types';
 
 /**
-  `capabilities` returns a capabilities configuration which can be used to modify
-  the behavior of the manager. Manager capabilities _must_ be provided using the
-  `capabilities` function, as the underlying implementation can change over time.
+  `capabilities` returns a capabilities configuration which can be used
+  to modify the behavior of the manager.
+  Manager capabilities _must_ be provided using the `capabilities` function,
+  as the underlying implementation can change over time.
 
-  The first argument to capabilities is a version string, which is the version of
-  Ember that the capabilities were defined in. Ember can add new versions at any
-  time, and these may have entirely different behaviors, but it will not remove
-  old versions until the next major version.
+  The first argument to capabilities is a version string,
+  which is the version of Ember that the capabilities were defined in.
+  Ember can add new versions at any time, and these may have entirely different behaviors.
+  But it will not remove old versions until the next major version.
 
   ```js
   capabilities('3.23');
@@ -55,17 +56,17 @@ import { type Opaque } from '@ember/-internals/utility-types';
 
   - Default value: false
 
-  Determines if the helper has a destroyable to include in the destructor
-  hierarchy. If enabled, the `getDestroyable` hook will be called, and its result
-  will be associated with the destroyable parent block.
+  Determines if the helper has a destroyable to include in the destructor hierarchy.
+  If enabled, the `getDestroyable` hook will be called,
+  and its result will be associated with the destroyable parent block.
 
   #### `hasValue`
 
   - Default value: false
 
-  Determines if the helper has a value which can be used externally. The helper's
-  `getValue` hook will be run whenever the value of the helper is accessed if this
-  capability is enabled.
+  Determines if the helper has a value which can be used externally.
+  If this capability is enabled, the helper's `getValue` hook will be run
+  whenever the value of the helper is accessed.
 
   @method capabilities
   @static
@@ -79,42 +80,41 @@ import { type Opaque } from '@ember/-internals/utility-types';
 export const capabilities = helperCapabilities;
 
 /**
-  Sets the helper manager for an object or function.
+  Associates a helper manager with an object or function.
 
   ```js
   setHelperManager((owner) => new ClassHelperManager(owner), Helper)
   ```
 
-  When a value is used as a helper in a template, the helper manager is looked up
-  on the object by walking up its prototype chain and finding the first helper
-  manager. This manager then receives the value and can create and manage an
-  instance of a helper from it. This provides a layer of indirection that allows
-  users to design high-level helper APIs, without Ember needing to worry about the
-  details. High-level APIs can be experimented with and iterated on while the
-  core of Ember helpers remains stable, and new APIs can be introduced gradually
-  over time to existing code bases.
+  When a value is used as a helper in a template, Ember walks up its prototype chain,
+  and uses the first helper manager that it finds.
+  This manager then receives the value, and can create and manage an instance of a helper from it.
+  This layer of indirection allows users to design high-level helper APIs,
+  without Ember needing to worry about the details.
+  High-level APIs can be experimented with and iterated on,
+  while the core of Ember helpers remains stable.
+  New APIs can be introduced gradually over time to existing code bases.
 
   `setHelperManager` receives two arguments:
 
-  1. A factory function, which receives the `owner` and returns an instance of a
-    helper manager.
+  1. A factory function, which receives the `owner` and returns an instance of a helper manager.
   2. A helper definition, which is the object or function to associate the factory function with.
 
-  The first time the object is looked up, the factory function will be called to
-  create the helper manager. It will be cached, and in subsequent lookups the
-  cached helper manager will be used instead.
+  The first time the object is looked up, the factory function will be called
+  to create the helper manager. It will be cached,
+  and subsequent lookups will use the cached helper manager instead.
 
-  Only one helper manager is guaranteed to exist per `owner` and per usage of
-  `setHelperManager`, so many helpers will end up using the same instance of the
-  helper manager. As such, you should only store state that is related to the
-  manager itself. If you want to store state specific to a particular helper
-  definition, you should assign a unique helper manager to that helper. In
-  general, most managers should either be stateless, or only have the `owner` they
-  were created with as state.
+  Only one helper manager is guaranteed to exist per `owner` and per usage of `setHelperManager`,
+  so many helpers will end up using the same instance of the helper manager.
+  As such, you should only store state that is related to the manager itself.
+  If you want to store state specific to a particular helper definition,
+  you should assign a unique helper manager to that helper.
+  In general, most managers should either be stateless,
+  or only have the `owner` they were created with as state.
 
-  Helper managers must fulfill the following interface (This example uses
-  [TypeScript interfaces](https://www.typescriptlang.org/docs/handbook/interfaces.html)
-  for precision, you do not need to write helper managers using TypeScript):
+  Helper managers must fulfill the following interface.
+  This example uses [TypeScript interfaces](https://www.typescriptlang.org/docs/handbook/interfaces.html)
+  for precision. You do not need to write helper managers using TypeScript.
 
   ```ts
   interface HelperManager<HelperStateBucket> {
@@ -130,7 +130,7 @@ export const capabilities = helperCapabilities;
   }
   ```
 
-  The capabilities property _must_ be provided using the `capabilities()` function
+  The capabilities property _must_ be provided using the `capabilities()` function,
   imported from the same module as `setHelperManager`:
 
   ```js
@@ -143,18 +143,17 @@ export const capabilities = helperCapabilities;
   }
   ```
 
-  Below is a description of each of the methods on the interface and their
-  functions.
+  Below is a description of each of the methods on the interface, and their functions.
 
   #### `createHelper`
 
-  `createHelper` is a required hook on the HelperManager interface. The hook is
-  passed the definition of the helper that is currently being created, and is
-  expected to return a _state bucket_. This state bucket is what represents the
-  current state of the helper, and will be passed to the other lifecycle hooks at
-  appropriate times. It is not necessarily related to the definition of the
-  helper itself - for instance, you could return an object _containing_ an
-  instance of the helper:
+  `createHelper` is a required hook on the HelperManager interface.
+  It receives the definition of the helper that is currently being created,
+  and must return a _state bucket_.
+  This state bucket represents the current state of the helper,
+  and will be passed to the other lifecycle hooks at appropriate times.
+  It is not necessarily related to the definition of the helper itself.
+  For instance, you could return an object _containing_ an instance of the helper:
 
   ```js
   class MyManager {
@@ -166,22 +165,20 @@ export const capabilities = helperCapabilities;
   }
   ```
 
-  This allows the manager to store metadata that it doesn't want to expose to the
-  user.
+  This allows the manager to store metadata that it doesn't want to expose to the user.
 
-  This hook is _not_ autotracked - changes to tracked values used within this hook
-  will _not_ result in a call to any of the other lifecycle hooks. This is because
-  it is unclear what should happen if it invalidates, and rather than make a
-  decision at this point, the initial API is aiming to allow as much expressivity
-  as possible. This could change in the future with changes to capabilities and
-  their behaviors.
+  `createHelper` is _not_ autotracked.
+  Changes to tracked values used within it will _not_ result in a call to any of the other lifecycle hooks.
+  It is unclear what should happen if it invalidates.
+  Instead of making a decision, the initial API aims to allow as much expressivity as possible.
+  Future changes to capabilities and their behaviors could change this.
 
-  If users do want to autotrack some values used during construction, they can
-  either create the instance of the helper in `runEffect` or `getValue`, or they
-  can use the `cache` API to autotrack the `createHelper` hook themselves. This
-  provides maximum flexibility and expressiveness to manager authors.
+  To autotrack some values used during construction,
+  create the instance of the helper in `runEffect` or `getValue`,
+  or use the `cache` API to autotrack the `createHelper` hook yourself.
+  This gives manager authors maximum flexibility.
 
-  This hook has the following timing semantics:
+  `createHelper` has the following timing semantics:
 
   **Always**
   - called as discovered during DOM construction
@@ -189,19 +186,19 @@ export const capabilities = helperCapabilities;
 
   #### `getValue`
 
-  `getValue` is an optional hook that should return the value of the helper. This
-  is the value that is returned from the helper and passed into the template.
+  `getValue` is an optional hook that should return the value of the helper.
+  This is the value that is returned from the helper and passed into the template.
 
-  This hook is called when the value is requested from the helper (e.g. when the
-  template is rendering and the helper value is needed). The hook is autotracked,
-  and will rerun whenever any tracked values used inside of it are updated.
+  Ember calls `getValue` when the value is requested from the helper,
+  for example when the template is rendering and needs the helper value.
+  The hook is autotracked, and will rerun whenever any tracked values used inside of it are updated.
   Otherwise it does not rerun.
 
-  > Note: This means that arguments which are not _consumed_ within the hook will
-  > not trigger updates.
+  > Note: This means that arguments which are not _consumed_ within the hook
+  > will not trigger updates.
 
-  This hook is only called for helpers with the `hasValue` capability enabled.
-  This hook has the following timing semantics:
+  Ember only calls `getValue` for helpers with the `hasValue` capability enabled.
+  It has the following timing semantics:
 
   **Always**
   - called the first time the helper value is requested
@@ -212,27 +209,25 @@ export const capabilities = helperCapabilities;
 
   #### `runEffect`
 
-  `runEffect` is an optional hook that should run the effect that the helper is
-  applying, setting it up or updating it.
+  `runEffect` is an optional hook that should run the effect that the helper is applying,
+  setting it up or updating it.
 
-  This hook is scheduled to be called some time after render and prior to paint.
-  There is not a guaranteed, 1-to-1 relationship between a render pass and this
-  hook firing. For instance, multiple render passes could occur, and the hook may
-  only trigger once. It may also never trigger if it was dirtied in one render
-  pass and then destroyed in the next.
+  Ember schedules `runEffect` to run some time after render and prior to paint.
+  There is not a guaranteed, 1-to-1 relationship between a render pass and the hook firing.
+  For instance, the hook may only trigger once after multiple render passes.
+  If it was dirtied in one render pass and then destroyed in the next, it may never trigger at all.
 
-  The hook is autotracked, and will rerun whenever any tracked values used inside
-  of it are updated. Otherwise it does not rerun.
+  The hook is autotracked, and will rerun whenever any tracked values used inside of it are updated.
+  Otherwise it does not rerun.
 
-  The hook is also run during a time period where state mutations are _disabled_
-  in Ember. Any tracked state mutation will throw an error during this time,
-  including changes to tracked properties, changes made using `set`, updates
-  to computed properties, etc. This is meant to prevent infinite rerenders and
-  other antipatterns.
+  The hook also runs during a time period where state mutations are _disabled_ in Ember.
+  Any tracked state mutation will throw an error during this time:
+  changes to tracked properties, changes made using `set`, updates to computed properties, etc.
+  This prevents infinite rerenders and other antipatterns.
 
-  This hook is only called for helpers with the `hasScheduledEffect` capability
-  enabled. This hook is also not called in SSR currently, though this could be
-  added as a capability in the future. It has the following timing semantics:
+  Ember only calls `runEffect` for helpers with the `hasScheduledEffect` capability enabled.
+  It is not called in SSR, though a future capability could add that.
+  It has the following timing semantics:
 
   **Always**
   - called after the helper was first created, if the helper has not been
@@ -246,15 +241,15 @@ export const capabilities = helperCapabilities;
 
   #### `getDestroyable`
 
-  `getDestroyable` is an optional hook that users can use to register a
-  destroyable object for the helper. This destroyable will be registered to the
-  containing block or template parent, and will be destroyed when it is destroyed.
+  `getDestroyable` is an optional hook that users can use to register a destroyable object for the helper.
+  This destroyable will be registered to the containing block or template parent,
+  and will be destroyed when it is destroyed.
   See the [Destroyables RFC](https://github.com/emberjs/rfcs/blob/master/text/0580-destroyables.md)
   for more details.
 
   `getDestroyable` is only called if the `hasDestroyable` capability is enabled.
 
-  This hook has the following timing semantics:
+  `getDestroyable` has the following timing semantics:
 
   **Always**
   - called immediately after the `createHelper` hook is called
@@ -274,11 +269,10 @@ export const capabilities = helperCapabilities;
 export const setHelperManager = glimmerSetHelperManager;
 
 /**
-  The `invokeHelper` function can be used to create a helper instance in
-  JavaScript.
+  The `invokeHelper` function can be used to create a helper instance in JavaScript.
 
-  To access a helper's value you have to use `getValue` from
-  `@glimmer/tracking/primitives/cache`.
+  To access a helper's value, you have to use `getValue`
+  from `@glimmer/tracking/primitives/cache`.
 
   ```gjs {data-filename="app/components/data-loader.js"}
   import Component from '@glimmer/component';
@@ -311,18 +305,18 @@ export const setHelperManager = glimmerSetHelperManager;
 
   It receives three arguments:
 
-  * `context`: The parent context of the helper. When the parent is torn down and
-    removed, the helper will be as well.
+  * `context`: The parent context of the helper.
+    When the parent is torn down and removed, the helper will be as well.
   * `definition`: The definition of the helper.
   * `computeArgs`: An optional function that produces the arguments to the helper.
-    The function receives the parent context as an argument, and must return an
-    object with a `positional` property that is an array and/or a `named`
-    property that is an object.
+    The function receives the parent context as an argument.
+    It must return an object with a `positional` property that is an array,
+    and/or a `named` property that is an object.
 
-  And it returns a Cache instance that contains the most recent value of the
-  helper. You can access the helper using `getValue()` like any other cache. The
-  cache is also destroyable, and using the `destroy()` function on it will cause
-  the helper to be torn down.
+  And it returns a Cache instance that contains the most recent value of the helper.
+  You can access the helper using `getValue()` like any other cache.
+  The cache is also destroyable,
+  and using the `destroy()` function on it will cause the helper to be torn down.
 
   Note that using `getValue()` on helpers that have scheduled effects will not
   trigger the effect early. Effects will continue to run at their scheduled time.
@@ -339,11 +333,11 @@ export const setHelperManager = glimmerSetHelperManager;
 */
 export const invokeHelper = glimmerInvokeHelper;
 
-// SAFETY: we need to provide interfaces that Glint can declaration-merge with
-// to provide appropriate completions. In each case, the imported item is
-// currently typed only as `object`, and we are replacing it with a similarly
-// low-information interface type: these are empty objects which are simply able
-// to be distinguished so that Glint can provide the relevant extensions.
+// SAFETY: we need to provide interfaces that Glint can declaration-merge with,
+// to provide appropriate completions.
+// In each case, the imported item is typed only as `object`,
+// and we are replacing it with a similarly low-information interface type.
+// These are empty objects, which Glint can distinguish to provide the relevant extensions.
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 
 /**
@@ -443,9 +437,10 @@ export const concat = glimmerConcat as ConcatHelper;
 export interface ConcatHelper extends Opaque<'helper:concat'> {}
 
 /**
- * The `{{get}}` helper makes it easy to dynamically look up a property on an
- * object or an element in an array. The second argument to `{{get}}` can be a
- * string or a number, depending on the object being accessed.
+ * The `{{get}}` helper makes it easy to dynamically look up a property on an object,
+ * or an element in an array.
+ * The second argument to `{{get}}` can be a string or a number,
+ * depending on the object being accessed.
  *
  * To access a property on an object with a string key:
  *
@@ -477,8 +472,8 @@ export interface ConcatHelper extends Opaque<'helper:concat'> {}
  * </template>
  * ```
  *
- * This will display the result of `@foo.item1` when `index` is `1`, and
- * `this.foo.item2` when `index` is `2`, etc.
+ * This will display the result of `@foo.item1` when `index` is `1`,
+ * and `this.foo.item2` when `index` is `2`, etc.
  *
  * @method get
  * @for @ember/helper
@@ -491,9 +486,9 @@ export const get = glimmerGet as GetHelper;
 export interface GetHelper extends Opaque<'helper:get'> {}
 
 /**
- * `{{fn}}` is a helper that receives a function and some arguments, and returns
- * a new function that combines. This allows you to pass parameters along to
- * functions in your templates:
+ * `{{fn}}` is a helper that receives a function and some arguments,
+ * and returns a new function that combines them.
+ * This allows you to pass parameters along to functions in your templates:
  *
  * ```gjs
  * function showAlert(message) {
@@ -507,10 +502,9 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  * </template>
  * ```
  *
- * For example, if you have an `each` helper looping over a number of items, you
- * may need to pass a function that expects to receive the item as an argument
- * to a component invoked within the loop. Here's how you could use the `fn`
- * helper to pass both the function and its arguments together:
+ * For example, you may have an `each` helper looping over a number of items.
+ * A component invoked within the loop may need a function that expects to receive the item as an argument.
+ * Here's how you could use the `fn` helper to pass both the function and its arguments together:
  *
  * ```gjs {data-filename="app/components/items-listing.gjs"}
  * <template>
@@ -532,18 +526,17 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  * }
  * ```
  *
- * In this case the `DisplayItem` component will receive a normal function
- * that it can invoke. When it invokes the function, the `handleSelected`
- * function will receive the `item` and any arguments passed, thanks to the
- * `fn` helper.
+ * In this case the `DisplayItem` component will receive a normal function that it can invoke.
+ * When it invokes the function, thanks to the `fn` helper,
+ * the `handleSelected` function will receive the `item` and any arguments passed.
  *
  * Let's take a look at what that means in a couple circumstances:
  *
  * - When invoked as `this.args.select()` the `handleSelected` function will
  * receive the `item` from the loop as its first and only argument.
  * - When invoked as `this.args.select('foo')` the `handleSelected` function
- * will receive the `item` from the loop as its first argument and the
- * string `'foo'` as its second argument.
+ * will receive the `item` from the loop as its first argument,
+ * and the string `'foo'` as its second argument.
  *
  * See also [partial application](https://en.wikipedia.org/wiki/Partial_application).
  *
@@ -671,8 +664,8 @@ export interface LteHelper extends Opaque<'helper:lte'> {}
  * ```
  *
  * When `@tagName` is `"h1"`, this renders `<h1 class="my-element">Hello</h1>`.
- * When `@tagName` is an empty string, the block content is rendered without a
- * wrapping element. When `@tagName` is `null` or `undefined`, nothing is rendered.
+ * When `@tagName` is an empty string,
+ * the block content is rendered without a wrapping element. When `@tagName` is `null` or `undefined`, nothing is rendered.
  *
  * The `element` helper is available as a keyword and does not need to be imported.
  *
@@ -801,8 +794,8 @@ export interface AndHelper extends Opaque<'helper:and'> {}
  * </template>
  * ```
  *
- * In strict-mode (gjs/gts) templates, `or` is available as a keyword and
- * does not need to be imported.
+ * In strict-mode (gjs/gts) templates, `or` is available as a keyword,
+ * and does not need to be imported.
  *
  * @method or
  * @param {unknown} args Two or more values to evaluate
@@ -826,8 +819,8 @@ export interface OrHelper extends Opaque<'helper:or'> {}
  * </template>
  * ```
  *
- * In strict-mode (gjs/gts) templates, `not` is available as a keyword and
- * does not need to be imported.
+ * In strict-mode (gjs/gts) templates, `not` is available as a keyword,
+ * and does not need to be imported.
  *
  * @method not
  * @param {unknown} value The value to negate
@@ -1109,7 +1102,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 /**
   `{{(has-block)}}` indicates if the component was invoked with a block.
 
-  This component is invoked with a block:
+  Here, `MyComponent` is invoked with a block:
 
   ```handlebars
   <MyComponent>
@@ -1117,7 +1110,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   </MyComponent>
   ```
 
-  This component is invoked without a block:
+  Here, `MyComponent` is invoked without a block:
 
   ```handlebars
   <MyComponent />
@@ -1139,7 +1132,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   `has-block` is available as a keyword and does not need to be imported.
 
   @method has-block
-  @param {String} blockName the name of the block. The name is either "main" or "inverse" (though only curly components support inverse) or the name given to a named block.
+  @param {String} blockName the name of the block. The name is either "main", "inverse", or the name given to a named block. Only curly components support "inverse".
   @return {Boolean} `true` if the component was invoked with a block
   @static
   @for Keywords
@@ -1150,7 +1143,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 /**
   `{{(has-block-params)}}` indicates if the component was invoked with block params.
 
-  This component is invoked with block params:
+  Here, `MyComponent` is invoked with block params:
     
   ```handlebars
   <MyComponent as |favoriteFlavor|>
@@ -1185,7 +1178,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   @static
   @for Keywords
   @noimport
-  @param {String} blockName the name of the block. The name is either "main" or "inverse" (though only curly components support inverse) or the name given to a named block.
+  @param {String} blockName the name of the block. The name is either "main", "inverse", or the name given to a named block. Only curly components support "inverse".
   @return {Boolean} `true` if the component was invoked with block params
   @public
  */
@@ -1197,11 +1190,11 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   {{debugger}}
   ```
 
-  When using the debugger helper you will have access to a `get` function. This
-  function retrieves values available in the context of the template.
-  For example, if you're wondering why a value `{{foo}}` isn't rendering as
-  expected within a template, you could place a `{{debugger}}` statement and,
-  when the `debugger;` breakpoint is hit, you can attempt to retrieve this value:
+  When using the debugger helper you will have access to a `get` function.
+  It retrieves values available in the context of the template.
+  For example, you may wonder why a value `{{foo}}` isn't rendering as expected within a template.
+  Place a `{{debugger}}` statement, and when the `debugger;` breakpoint is hit,
+  you can attempt to retrieve this value:
 
   ```
   > get('foo')
@@ -1221,8 +1214,8 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   > get('item.name')
   ```
 
-  You can also access the context of the view to make sure it is the object that
-  you expect:
+  You can also access the context of the view,
+  to make sure it is the object that you expect:
 
   ```
   > context
@@ -1239,8 +1232,8 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   The `component` helper is used to package a Component with initial arguments.
   The included arguments can then be merged during the final invocation.
 
-  See [Component](/ember/release/modules/@glimmer%2Fcomponent/) for
-  additional information on how a `Component` functions.
+  See [Component](/ember/release/modules/@glimmer%2Fcomponent/)
+  for additional information on how a `Component` functions.
 
   This is similar to the concept of Partial Application.
     
@@ -1270,8 +1263,8 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   Which will output an input whose value is already bound to `@model.name` and `placeholder`
   is "Username".
     
-  Any arguments passed at the invocation site of the component will override those applied via
-  the `component` helper. For example, if the invocation site of the component is:
+  Any arguments passed at the invocation site of the component
+  will override those applied via the `component` helper. For example, if the invocation site of the component is:
 
   ```gjs {data-filename="app/components/person-form.gjs"}
   import FullName from './full-name';
@@ -1288,8 +1281,8 @@ export interface NotHelper extends Opaque<'helper:not'> {}
     
   The `component` helper is built-in and does not need to be imported. 
     
-  Prior to Strict Mode aka "Template Tag" or gjs, the component helper was also used to invoke
-  components dynamically. This is no longer necessary, and they can be directly invoked, as above.
+  Before Strict Mode aka "Template Tag" or gjs, the component helper was also used to invoke
+  components dynamically. In Strict Mode, components can be directly invoked, as above.
 
   ### Dynamic Component Invocation
 
@@ -1345,8 +1338,8 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
  ### Arguments
 
- The `{{helper}}` helper works similarly to the [`{{component}}`](./component?anchor=component) and
- [`{{modifier}}`](./modifier?anchor=modifier) helper:
+ The `{{helper}}` helper works similarly to the [`{{component}}`](./component?anchor=component)
+ and [`{{modifier}}`](./modifier?anchor=modifier) helper:
 
  * When passed a string (e.g. `(helper "foo")`) as the first argument,
    it will produce an opaque, internal "helper definition" object
@@ -1370,7 +1363,7 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   depending on the "truthiness" of a property.
   For example the following values are all falsey: `false`, `undefined`, `null`, `""`, `0`, `NaN` or an empty array.
 
-  This helper has two forms, block and inline.
+  `if` has two forms, block and inline.
 
   ## Block form
 
@@ -1482,16 +1475,17 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 */
 
 /**
-  The `unless` helper is the inverse of the `if` helper. It displays if a value
-  is falsey ("not true" or "is false"). Example values that will display with
-  `unless`: `false`, `undefined`, `null`, `""`, `0`, `NaN` or an empty array.
+  The `unless` helper is the inverse of the `if` helper.
+  It displays if a value is falsey ("not true" or "is false").
+  Example values that will display with `unless`:
+  `false`, `undefined`, `null`, `""`, `0`, `NaN` or an empty array.
 
   ## Inline form
 
   The inline `unless` helper conditionally renders a single property or string.
-  This helper acts like a ternary operator. If the first property is falsy,
-  the second argument will be displayed, otherwise, the third argument will be
-  displayed
+  It acts like a ternary operator. If the first property is falsy,
+  the second argument will be displayed.
+  Otherwise, the third argument will be displayed.
 
   For example, if you pass a falsey `useLongGreeting` to the `Greeting` component:
 
@@ -1537,8 +1531,8 @@ export interface NotHelper extends Opaque<'helper:not'> {}
   </template>
   ```
 
-  You can also use an `else` helper with the `unless` block. The
-  `else` will display if the value is truthy.
+  You can also use an `else` helper with the `unless` block.
+  The `else` will display if the value is truthy.
 
   If you have the following component:
 
@@ -1631,8 +1625,8 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
  ### Arguments
 
- The `{{modifier}}` helper works similarly to the [`{{component}}`](./component?anchor=component) and
- [`{{helper}}`](./helper?anchor=helper) helper:
+ The `{{modifier}}` helper works similarly to the [`{{component}}`](./component?anchor=component)
+ and [`{{helper}}`](./helper?anchor=helper) helper:
 
  * When passed a string (e.g. `(modifier "foo")`) as the first argument,
    it will produce an opaque, internal "modifier definition" object
@@ -1652,9 +1646,9 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  */
 
 /**
-  `pageTitle` allows you to set the title of any page in your application and
-  append additional titles for each route. For complete documentation, see
-  https://github.com/ember-cli/ember-page-title.
+  `pageTitle` allows you to set the title of any page in your application,
+  and append additional titles for each route.
+  For complete documentation, see https://github.com/ember-cli/ember-page-title.
 
   ```gjs
   import { pageTitle } from 'ember-page-title';
@@ -1681,12 +1675,12 @@ export interface NotHelper extends Opaque<'helper:not'> {}
     This is especially useful if you are passing properties to a component
     that receives a lot of options and you want to clean up the invocation.
 
-    For the following example, the template receives a `post` object with
-    `content` and `title` properties.
+    For the following example, the template receives a `post` object
+    with `content` and `title` properties.
 
-    We are going to call the `my-post` component, passing a title which is
-    the title of the post suffixed with the name of the blog, the content
-    of the post, and a series of options defined in-place.
+    We are going to call the `my-post` component, and pass it three things.
+    The first is the title of the post suffixed with the name of the blog.
+    The others are the content of the post, and a series of options defined in-place.
 
     ```handlebars
     {{#let
@@ -1715,10 +1709,10 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  The `in-element` helper renders its block content outside of the regular flow,
  into a DOM element given by its `destinationElement` positional argument.
 
- Common use cases - often referred to as "portals" or "wormholes" - are rendering
- dropdowns, modals or tooltips close to the root of the page to bypass CSS overflow
- rules, or to render content to parts of the page that are outside of the control
- of the Ember app itself (e.g. embedded into a static or server rendered HTML page).
+ Common use cases are often called "portals" or "wormholes".
+ One is rendering dropdowns, modals or tooltips close to the root of the page, to bypass CSS overflow rules.
+ Another is rendering content to parts of the page that the Ember app itself does not control,
+ such as a static or server rendered HTML page that embeds the app.
 
  ```handlebars
  {{#in-element this.destinationElement}}
@@ -1735,10 +1729,10 @@ export interface NotHelper extends Opaque<'helper:not'> {}
 
  It also supports an optional named argument:
 
- - `insertBefore` -- by default the DOM element's content is replaced when used as
- `destinationElement`. Passing `null` to `insertBefore` changes the behaviour to
- append the block content to the end of any existing content. Any other value than
- `null` is currently not supported.
+ - `insertBefore` -- by default the DOM element's content is replaced when used as `destinationElement`.
+ Passing `null` to `insertBefore` changes the behaviour,
+ to append the block content to the end of any existing content.
+ Any other value than `null` is not supported.
 
      For example:
 
@@ -1755,9 +1749,9 @@ export interface NotHelper extends Opaque<'helper:not'> {}
  @param {Element} destinationElement the DOM element to render into. It must exist at the time
   of rendering.
  @param {Boolean} insertBefore named argument, by default the DOM element's content is replaced when used as
-  `destinationElement`. Passing `null` to `insertBefore` changes the behaviour to
-  append the block content to the end of any existing content. Any other value than
-  `null` is currently not supported.
+  `destinationElement`. Passing `null` to `insertBefore` changes the behaviour,
+  to append the block content to the end of any existing content.
+  Any other value than `null` is not supported.
  @static
  @noimport
  @public

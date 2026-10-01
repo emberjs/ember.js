@@ -11,9 +11,9 @@ export type CONSTANT_TAG_ID = 3;
 
 /**
  * This union represents all of the possible tag types for the monomorphic tag class.
- * Other custom tag classes can exist, such as CurrentTag and VolatileTag, but for
- * performance reasons, any type of tag that is meant to be used frequently should
- * be added to the monomorphic tag.
+ * Other custom tag classes can exist, such as CurrentTag and VolatileTag.
+ * For performance reasons, any type of tag that is meant to be used frequently
+ * should be added to the monomorphic tag.
  */
 export type MonomorphicTagId =
   | DIRTYABLE_TAG_ID

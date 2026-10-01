@@ -43,9 +43,9 @@ aFactory.create({
   hasProps: false,
 });
 
-// NOTE: it would be nice if these could be rejected by way of EPC, but alas: it
-// cannot, because the public contract for `create` allows implementors to
-// define their `create` config object basically however they like. :-/
+// NOTE: it would be nice if EPC could reject these, but alas: it cannot.
+// The public contract for `create` allows implementors
+// to define their `create` config object basically however they like. :-/
 aFactory.create({ unrelatedNonsense: 'yep yep yep' });
 aFactory.create({ hasProps: true, unrelatedNonsense: 'yep yep yep' });
 
@@ -157,8 +157,8 @@ let aTypedName: FullName;
 aTypedName = 'type:name';
 expectTypeOf(owner.lookup(aTypedName)).toBeUnknown();
 
-// Nor will callbacks work "out of the box". But they can work if they have the
-// correct type.
+// Nor will callbacks work "out of the box".
+// But they can work if they have the correct type.
 declare const justStrings: string[];
 // @ts-expect-error
 justStrings.map((aString) => owner.lookup(aString));
@@ -169,8 +169,8 @@ typedStrings.map((aString) => owner.lookup(aString));
 const aConstName = 'type:name';
 expectTypeOf(owner.lookup(aConstName)).toBeUnknown();
 
-// Check handling with Glimmer components carrying a Signature: they should
-// properly resolve to `Owner`, *not* `Owner | undefined`.
+// Check handling with Glimmer components that have a Signature:
+// they should properly resolve to `Owner`, *not* `Owner | undefined`.
 interface Sig<T> {
   Args: {
     name: string;
@@ -200,13 +200,14 @@ const Creatable = {
 };
 
 const pojoFactory: Factory<typeof Creatable> = {
-  // If you want *real* safety here, alas: you cannot have it. The public
-  // contract for `create` allows implementors to define their `create` config
-  // object basically however they like. As a result, this is the safest version
-  // possible: Making it be `Partial<Thing>` is *compatible* with `object`, and
-  // requires full checking *inside* the function body. It does not, alas, give
-  // any safety *outside* the class. A future rationalization of this would be
-  // very welcome.
+  // If you want *real* safety here, alas: you cannot have it.
+  // The public contract for `create` allows implementors
+  // to define their `create` config object basically however they like.
+  // As a result, this is the safest version possible:
+  // Making it be `Partial<Thing>` is *compatible* with `object`,
+  // and requires full checking *inside* the function body.
+  // It does not, alas, give any safety *outside* the class.
+  // A future rationalization of this would be very welcome.
   create(initialValues?: Partial<typeof Creatable>) {
     const instance = Creatable;
     if (initialValues) {

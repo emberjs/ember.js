@@ -112,18 +112,16 @@ function _processNamespace<N extends Namespace>(
   NAMESPACES_BY_ID[id] = root;
   setName(root, id);
 
-  // Loop over all of the keys in the namespace, looking for classes
   for (let key in root) {
     if (!hasOwnProperty.call(root, key)) {
       continue;
     }
     let obj: unknown = root[key];
 
-    // If we are processing the `Ember` namespace, for example, the
-    // `paths` will start with `["Ember"]`. Every iteration through
-    // the loop will update the **second** element of this list with
-    // the key, so processing `Ember.View` will make the Array
-    // `['Ember', 'View']`.
+    // If we are processing the `Ember` namespace, for example,
+    // the `paths` will start with `["Ember"]`.
+    // Every iteration through the loop will update the **second** element of this list
+    // with the key, so processing `Ember.View` will make the Array `['Ember', 'View']`.
     paths[idx] = key;
 
     // If we have found an unprocessed class
@@ -150,9 +148,8 @@ function isNamespace(obj: unknown): obj is Namespace {
 }
 
 function isUppercase(code: number): boolean {
-  return (
-    code >= 65 && code <= 90 // A
-  ); // Z
+  // char codes of A to Z
+  return code >= 65 && code <= 90;
 }
 
 function tryIsNamespace(lookup: { [k: string]: any }, prop: string): Namespace | void {

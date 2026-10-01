@@ -38,8 +38,7 @@ const Adapter = EmberObject.extend({
 
   /**
     Override this method with your testing framework's false assertion.
-    This function is called whenever an exception occurs causing the testing
-    promise to fail.
+    Ember calls it whenever an exception causes the testing promise to fail.
 
     QUnit example:
 

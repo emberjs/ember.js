@@ -91,8 +91,9 @@ moduleFor(
 
     ['@test Loading substate template can access its controller via {{this}}'](assert) {
       // Regression test: substate routes enter via intermediate transitions
-      // that skip the manager's willEnter, so the controller must be read
-      // through the route rather than cached on the bucket at willEnter time.
+      // that skip the manager's willEnter.
+      // So the controller must be read through the route,
+      // rather than cached on the bucket at willEnter time.
       let turtleDeferred = RSVP.defer();
 
       this.router.map(function () {
@@ -826,9 +827,9 @@ moduleFor(
       let puppiesDeferred = RSVP.defer();
       let loadingActionCalls = 0;
 
-      // Registered before the initial visit: the application route is
-      // instantiated (and cached) during the first boot, so adding it later
-      // would leave the action-less default instance in place.
+      // Registered before the initial visit.
+      // The application route is instantiated and cached during the first boot,
+      // so adding it later would leave the action-less default instance in place.
       this.add(
         'route:application',
         class extends Route {
@@ -859,9 +860,9 @@ moduleFor(
 
       await this.visit('/');
 
-      // Drive the transition inside a run loop so resolution genuinely parks
-      // on sally's pending model; otherwise the deferred resolves before the
-      // waterfall reaches it and the transition is never actually slow.
+      // Drive the transition inside a run loop, so resolution parks on sally's pending model.
+      // Otherwise the deferred resolves before the waterfall reaches it,
+      // and the transition is never actually slow.
       let promise = runTask(() => this.visit('/grandma/mom/sally'));
       assert.equal(this.appRouter.currentPath, 'index', 'Initial route fully loaded');
       assert.ok(

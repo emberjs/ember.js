@@ -36,9 +36,10 @@ export function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrec
   if ('locals' in options && !options.locals) {
     // Glimmer's precompile options declare `locals` like:
     //    locals?: string[]
-    // but many in-use versions of babel-plugin-htmlbars-inline-precompile will
-    // set locals to `null`. This used to work but only because glimmer was
-    // ignoring locals for non-strict templates, and now it supports that case.
+    // but many in-use versions of babel-plugin-htmlbars-inline-precompile
+    // will set locals to `null`.
+    // That worked only while glimmer ignored locals for non-strict templates.
+    // Glimmer supports locals in that case, so `null` must be removed.
     delete options.locals;
   }
 

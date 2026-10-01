@@ -26,34 +26,33 @@ export type ObserverMethod<Target, Sender> =
 /**
   ## Overview
 
-  This mixin provides properties and property observing functionality, core
-  features of the Ember object model.
+  This mixin provides properties and property observing functionality,
+  core features of the Ember object model.
 
-  Properties and observers allow one object to observe changes to a
-  property on another object. This is one of the fundamental ways that
-  models, controllers and views communicate with each other in an Ember
-  application.
+  Properties and observers allow one object to observe changes to a property on another object.
+  This is one of the fundamental ways that models, controllers and views communicate
+  with each other in an Ember application.
 
-  Any object that has this mixin applied can be used in observer
-  operations. That includes `EmberObject` and most objects you will
-  interact with as you write your Ember application.
+  Any object that has this mixin applied can be used in observer operations.
+  That includes `EmberObject` and most objects
+  you will interact with as you write your Ember application.
 
-  Note that you will not generally apply this mixin to classes yourself,
-  but you will use the features provided by this module frequently, so it
-  is important to understand how to use it.
+  You will not generally apply this mixin to classes yourself.
+  But you will use the features provided by this module frequently,
+  so it is important to understand how to use it.
 
   ## Using `get()` and `set()`
 
-  Because of Ember's support for bindings and observers, you will always
-  access properties using the get method, and set properties using the
-  set method. This allows the observing objects to be notified and
-  computed properties to be handled properly.
+  Because of Ember's support for bindings and observers,
+  you will always access properties with the get method and set them with the set method.
+  This allows the observing objects to be notified
+  and computed properties to be handled properly.
 
   More documentation about `get` and `set` are below.
 
   ## Observing Property Changes
 
-  You typically observe property changes simply by using the `observer`
+  You typically observe property changes by using the `observer`
   function in classes that you write.
 
   For example:
@@ -70,11 +69,10 @@ export type ObserverMethod<Target, Sender> =
   });
   ```
 
-  Although this is the most common way to add an observer, this capability
-  is actually built into the `EmberObject` class on top of two methods
-  defined in this mixin: `addObserver` and `removeObserver`. You can use
-  these two methods to add and remove observers yourself if you need to
-  do so at runtime.
+  This is the most common way to add an observer.
+  Under the hood, `EmberObject` builds it on two methods from this mixin:
+  `addObserver` and `removeObserver`.
+  You can call these two methods yourself to add and remove observers at runtime.
 
   To add an observer for a property, call:
 
@@ -82,13 +80,13 @@ export type ObserverMethod<Target, Sender> =
   object.addObserver('propertyKey', targetObject, targetAction)
   ```
 
-  This will call the `targetAction` method on the `targetObject` whenever
-  the value of the `propertyKey` changes.
+  This will call the `targetAction` method on the `targetObject`
+  whenever the value of the `propertyKey` changes.
 
-  Note that if `propertyKey` is a computed property, the observer will be
-  called when any of the property dependencies are changed, even if the
-  resulting value of the computed property is unchanged. This is necessary
-  because computed properties are not computed until `get` is called.
+  If `propertyKey` is a computed property,
+  the observer will be called when any property dependency changes,
+  even if the resulting value of the computed property is unchanged.
+  This is necessary because computed properties are not computed until `get` is called.
 
   @class Observable
   @public
@@ -97,13 +95,12 @@ interface Observable {
   /**
     Retrieves the value of a property from the object.
 
-    This method is usually similar to using `object[keyName]` or `object.keyName`,
-    however it supports both computed properties and the unknownProperty
-    handler.
+    `get` usually works like `object[keyName]` or `object.keyName`,
+    but it also supports computed properties and the unknownProperty handler.
 
-    Because `get` unifies the syntax for accessing all these kinds
-    of properties, it can make many refactorings easier, such as replacing a
-    simple property with a computed property, or vice versa.
+    Because `get` unifies the syntax for accessing all these kinds of properties,
+    it can make many refactorings easier.
+    For example, you can replace a simple property with a computed property, or vice versa.
 
     ### Computed Properties
 
@@ -124,11 +121,10 @@ interface Observable {
 
     ### Unknown Properties
 
-    Likewise, if you try to call `get` on a property whose value is
-    `undefined`, the `unknownProperty()` method will be called on the object.
-    If this method returns any value other than `undefined`, it will be returned
-    instead. This allows you to implement "virtual" properties that are
-    not defined upfront.
+    Likewise, if you try to call `get` on a property whose value is `undefined`,
+    the `unknownProperty()` method will be called on the object.
+    If this method returns any value other than `undefined`, it will be returned instead.
+    This allows you to implement "virtual" properties that are not defined upfront.
 
     @method get
     @param {String} keyName The property to retrieve
@@ -166,42 +162,42 @@ interface Observable {
 
   // NOT TYPE SAFE!
   /**
-    Sets the provided key or path to the value.
+    Use `set` to change the value at a key or path.
 
     ```javascript
     record.set("key", value);
     ```
 
-    This method is generally very similar to calling `object["key"] = value` or
-    `object.key = value`, except that it provides support for computed
-    properties, the `setUnknownProperty()` method and property observers.
+    `set` works like `object["key"] = value` or `object.key = value`,
+    but it also supports computed properties,
+    the `setUnknownProperty()` method and property observers.
 
     ### Computed Properties
 
-    If you try to set a value on a key that has a computed property handler
-    defined (see the `get()` method for an example), then `set()` will call
-    that method, passing both the value and key instead of simply changing
-    the value itself. This is useful for those times when you need to
-    implement a property that is composed of one or more member
-    properties.
+    If a key has a computed property handler, `set()` on that key will call the handler,
+    passing both the value and key,
+    instead of changing the value itself.
+    See the `get()` method for an example of a computed property.
+    This is useful when you need to implement a property
+    that is composed of one or more member properties.
 
     ### Unknown Properties
 
-    If you try to set a value on a key that is undefined in the target
-    object, then the `setUnknownProperty()` handler will be called instead. This
-    gives you an opportunity to implement complex "virtual" properties that
-    are not predefined on the object. If `setUnknownProperty()` returns
-    undefined, then `set()` will simply set the value on the object.
+    If you try to set a value on a key that is undefined in the target object,
+    then the `setUnknownProperty()` handler will be called instead.
+    This gives you an opportunity to implement complex "virtual" properties
+    that are not predefined on the object.
+    If `setUnknownProperty()` returns undefined, then `set()` will set the value on the object.
 
     ### Property Observers
 
-    In addition to changing the property, `set()` will also register a property
-    change with the object. Unless you have placed this call inside of a
-    `beginPropertyChanges()` and `endPropertyChanges(),` any "local" observers
-    (i.e. observer methods declared on the same object), will be called
-    immediately. Any "remote" observers (i.e. observer methods declared on
-    another object) will be placed in a queue and called at a later time in a
-    coalesced manner.
+    In addition to changing the property,
+    `set()` will also register a property change with the object.
+    Sometimes this call is not inside a `beginPropertyChanges()` and `endPropertyChanges()` pair.
+    In that case, "local" observers, meaning observer methods declared on the same object,
+    will be called immediately.
+    "Remote" observers, meaning observer methods declared on another object,
+    will be placed in a queue and called at a later time in a coalesced manner.
 
     @method set
     @param {String} keyName The property to set
@@ -231,15 +227,14 @@ interface Observable {
   setProperties<T extends Record<string, unknown>>(hash: T): T;
 
   /**
-    Convenience method to call `propertyWillChange` and `propertyDidChange` in
-    succession.
+    Convenience method to call `propertyWillChange` and `propertyDidChange` in succession.
 
     Notify the observer system that a property has just changed.
 
-    Sometimes you need to change a value directly or indirectly without
-    actually calling `get()` or `set()` on it. In this case, you can use this
-    method instead. Calling this method will notify all observers that the
-    property has potentially changed value.
+    Sometimes you need to change a value directly or indirectly,
+    without calling `get()` or `set()` on it.
+    In this case, you can use this method instead.
+    Calling this method will notify all observers that the property has potentially changed value.
 
     @method notifyPropertyChange
     @param {String} keyName The property key to be notified about.
@@ -253,10 +248,10 @@ interface Observable {
 
     This is the core method used to register an observer for a property.
 
-    Once you call this method, any time the key's value is set, your observer
-    will be notified. Note that the observers are triggered any time the
-    value is set, regardless of whether it has actually changed. Your
-    observer should be prepared to handle that.
+    Once you call this method, any time the key's value is set, your observer will be notified.
+    Note that the observers are triggered any time the value is set,
+    regardless of whether it has actually changed.
+    Your observer should be prepared to handle that.
 
     There are two common invocation patterns for `.addObserver()`:
 
@@ -265,8 +260,7 @@ interface Observable {
       - the function to invoke (an actual function)
     - Passing three arguments:
       - the name of the property to observe (as a string)
-      - the target object (will be used to look up and invoke a
-        function on)
+      - the target object, which is used to look up the function and invoke it
       - the name of the function to invoke on the target object
         (as a string).
 
@@ -313,15 +307,17 @@ interface Observable {
     });
     ```
 
-    The `sender` is the object that changed. The `key` is the property that
-    changes. The `value` property is currently reserved and unused. The `rev`
-    is the last property revision of the object when it changed, which you can
-    use to detect if the key value has really changed or not.
+    The `sender` is the object that changed.
+    The `key` is the property that changes.
+    The `value` property is reserved and unused.
+    The `rev` is the last property revision of the object when it changed.
+    You can use it to detect if the key value has really changed or not.
 
-    Usually you will not need the value or revision parameters at
-    the end. In this case, it is common to write observer methods that take
-    only a sender and key value as parameters or, if you aren't interested in
-    any of these values, to write an observer that has no parameters at all.
+    Usually you will not need the value or revision parameters at the end.
+    In this case, it is common to write observer methods
+    that take only a sender and key value as parameters.
+    If you aren't interested in any of these values,
+    you can write an observer that has no parameters at all.
 
     While observers are still supported, there are [plans to deprecate them](https://github.com/emberjs/rfcs/pull/1115)
     See the [in-progress deprecation guide](https://github.com/ember-learn/deprecation-app/pull/1407)
@@ -339,9 +335,9 @@ interface Observable {
   addObserver(key: keyof this, method: ObserverMethod<this, this>): this;
 
   /**
-    Remove an observer you have previously registered on this object. Pass
-    the same key, target, and method you passed to `addObserver()` and your
-    target will no longer receive notifications.
+    Remove an observer that you registered on this object.
+    Pass the same key, target, and method you passed to `addObserver()`,
+    and your target will stop receiving notifications.
 
     @method removeObserver
     @param {String} key The key to observe
@@ -360,7 +356,7 @@ interface Observable {
 
   // NOT TYPE SAFE!
   /**
-    Set the value of a property to the current value plus some amount.
+    Increase the value of a property by some amount.
 
     ```javascript
     person.incrementProperty('age');
@@ -377,7 +373,7 @@ interface Observable {
 
   // NOT TYPE SAFE!
   /**
-    Set the value of a property to the current value minus some amount.
+    Decrease the value of a property by some amount.
 
     ```javascript
     player.decrementProperty('lives');
@@ -394,8 +390,7 @@ interface Observable {
 
   // NOT TYPE SAFE!
   /**
-    Set the value of a boolean property to the opposite of its
-    current value.
+    Flip a boolean property to the opposite of its current value.
 
     ```javascript
     starship.toggleProperty('warpDriveEngaged');
@@ -441,13 +436,12 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
   /**
     Begins a grouping of property changes.
 
-    You can use this method to group property changes so that notifications
-    will not be sent until the changes are finished. If you plan to make a
-    large number of changes to an object at one time, you should call this
-    method at the beginning of the changes to begin deferring change
-    notifications. When you are done making changes, call
-    `endPropertyChanges()` to deliver the deferred change notifications and end
-    deferring.
+    You can use this method to group property changes,
+    so that notifications will not be sent until the changes are finished.
+    If you plan to make many changes to an object at one time,
+    call this method at the beginning of the changes to begin deferring change notifications.
+    When you are done making changes, call `endPropertyChanges()`
+    to deliver the deferred change notifications and end deferring.
 
     @method beginPropertyChanges
     @return {Observable}
@@ -461,12 +455,12 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
   /**
     Ends a grouping of property changes.
 
-    You can use this method to group property changes so that notifications
-    will not be sent until the changes are finished. If you plan to make a
-    large number of changes to an object at one time, you should call
-    `beginPropertyChanges()` at the beginning of the changes to defer change
-    notifications. When you are done making changes, call this method to
-    deliver the deferred change notifications and end deferring.
+    You can use this method to group property changes,
+    so that notifications will not be sent until the changes are finished.
+    If you plan to make many changes to an object at one time,
+    call `beginPropertyChanges()` at the beginning of the changes to defer change notifications.
+    When you are done making changes, call this method
+    to deliver the deferred change notifications and end deferring.
 
     @method endPropertyChanges
     @return {Observable}
@@ -503,10 +497,9 @@ const Observable = Mixin[INTERNAL_MIXIN_CREATE]({
   },
 
   /**
-    Returns `true` if the object currently has observers registered for a
-    particular key. You can use this method to potentially defer performing
-    an expensive action until someone begins observing a particular property
-    on the object.
+    Returns `true` if the object currently has observers registered for a particular key.
+    You can use this method to defer an expensive action
+    until someone begins observing a particular property on the object.
 
     @method hasObserverFor
     @param {String} key Key to check

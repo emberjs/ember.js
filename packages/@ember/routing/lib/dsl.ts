@@ -226,8 +226,8 @@ export default class DSLImpl implements DSL {
     let routeInfo = Object.assign({ localFullName }, engineInfo);
 
     if (this.enableLoadingSubstates) {
-      // These values are important to register the loading routes under their
-      // proper names for the Router and within the Engine's registry.
+      // These values are important to register the loading routes
+      // under their proper names for the Router and within the Engine's registry.
       let substateName = `${name}_loading`;
       let localFullName = `application_loading`;
       let routeInfo = Object.assign({ localFullName }, engineInfo);

@@ -378,9 +378,8 @@ moduleFor(
       assert.equal(this.$('#bad-link').length, 1, 'bad-link should be in the DOM');
 
       goodLink = this.$('#good-link');
-      // should still be / because we never entered /bad (it errored before being fully entered)
-      // and error states do not get represented in the URL, so we are _effectively_ still
-      // on /
+      // The URL should still be /, because /bad errored before it was fully entered.
+      // Error states are not represented in the URL, so we are _effectively_ still on /.
       assert.equal(goodLink.attr('href'), '/?baz=lol');
 
       runTask(() => this.click('#good-link'));

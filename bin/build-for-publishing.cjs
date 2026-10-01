@@ -12,8 +12,8 @@ async function exec(command, args) {
 }
 
 /*
-  Updates the `package.json`'s `version` string to be the same value that
-  the built assets will have as `Ember.VERSION`.
+  Updates the `package.json`'s `version` string
+  to be the same value that the built assets will have as `Ember.VERSION`.
 */
 function updatePackageJSONVersion() {
   let packageJSONPath = path.join(__dirname, '..', 'package.json');
@@ -34,9 +34,8 @@ function updatePackageJSONVersion() {
   Updates the version number listed within the docs/data.json file to match
   `Ember.VERSION` and `package.json` version.
 
-  This is needed because ember-cli-yuidoc automatically sets the version string
-  property in the generated `docs/data.json` to
-`${packageJsonVersion}.${gitSha}`.
+  This is needed because ember-cli-yuidoc automatically sets the version string property
+  in the generated `docs/data.json` to `${packageJsonVersion}.${gitSha}`.
 */
 function updateDocumentationVersion() {
   let docsPath = path.join(__dirname, '..', 'docs', 'data.json');

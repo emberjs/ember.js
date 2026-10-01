@@ -734,7 +734,6 @@ moduleFor(
         let suffix = '/blog/category/1337';
         let href = this.element.querySelector('a').href;
 
-        // check if link ends with the suffix
         assert.ok(this.stringsEndWith(href, suffix));
       });
     }
@@ -754,7 +753,6 @@ moduleFor(
         let suffix = '/blog/category/1?type=news';
         let href = this.element.querySelector('a').href;
 
-        // check if link ends with the suffix
         assert.ok(this.stringsEndWith(href, suffix));
       });
     }
@@ -780,7 +778,6 @@ moduleFor(
       let suffix1337 = '/blog/author/1337';
       let href1337 = this.element.querySelector('.author-1337').href;
 
-      // check if link ends with the suffix
       assert.ok(this.stringsEndWith(href1, suffix1), `${href1} ends with ${suffix1}`);
       assert.ok(this.stringsEndWith(href1337, suffix1337), `${href1337} ends with ${suffix1337}`);
     }

@@ -1,5 +1,5 @@
-// App and test files shared by the smoke-test scenarios that run an app under
-// standard (stage 3) decorators, whichever compiler implements them.
+// App and test files shared by the smoke-test scenarios
+// that run an app under standard (stage 3) decorators, whichever compiler implements them.
 export const stableDecoratorFiles = {
   app: {
     services: {

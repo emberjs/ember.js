@@ -242,9 +242,9 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   appendToAttributeName(char: string): void {
     this.currentAttr.name += char;
 
-    // The block params parsing code can actually handle peek=non-space just
-    // fine, but this check was added as an optimization, as there is a little
-    // bit of setup overhead for the parsing logic just to immediately bail
+    // The block params parsing code can actually handle peek=non-space just fine.
+    // This check is an optimization:
+    // the parsing logic has a little bit of setup overhead just to immediately bail
     if (this.currentAttr.name === 'as') {
       this.parsePossibleBlockParams();
     }
@@ -631,8 +631,8 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
 }
 
 /**
-  ASTPlugins can make changes to the Glimmer template AST before
-  compilation begins.
+  ASTPlugins can make changes to the Glimmer template AST
+  before compilation begins.
 */
 export interface ASTPluginBuilder<TEnv extends ASTPluginEnvironment = ASTPluginEnvironment> {
   (env: TEnv): ASTPlugin;
@@ -676,12 +676,13 @@ export interface PrecompileOptions extends PreprocessOptions {
   keywords?: readonly string[];
 
   /**
-   * In loose mode, this hook allows embedding environments to customize the name of an
-   * angle-bracket component. In practice, this means that `<HelloWorld />` in Ember is
-   * compiled by Glimmer as an invocation of a component named `hello-world`.
+   * In loose mode, this hook allows embedding environments
+   * to customize the name of an angle-bracket component.
+   * In practice, this means that `<HelloWorld />` in Ember
+   * is compiled by Glimmer as an invocation of a component named `hello-world`.
    *
-   * It's a little weird that this is needed in addition to the resolver, but it's a
-   * classic-only feature and it seems fine to leave it alone for classic consumers.
+   * It's a little weird that this is needed in addition to the resolver,
+   * but it's a classic-only feature and it seems fine to leave it alone for classic consumers.
    */
   customizeComponentName?: ((input: string) => string) | undefined;
 }

@@ -32,20 +32,17 @@ interface SpanData {
    */
   asString(): string;
 
-  /**
-   * Gets the module the span was located in.
-   */
   getModule(): string;
 
   /**
-   * Get the starting position for this span. Try to avoid creating new position objects, as they
-   * cache computations.
+   * Position objects cache computations, so prefer reusing this start position
+   * over creating a new position object.
    */
   getStart(): AnyPosition;
 
   /**
-   * Get the ending position for this span. Try to avoid creating new position objects, as they
-   * cache computations.
+   * Position objects cache computations, so prefer reusing this end position
+   * over creating a new position object.
    */
   getEnd(): AnyPosition;
 
@@ -55,15 +52,16 @@ interface SpanData {
   toHbsSpan(): HbsSpan | null;
 
   /**
-   * For compatibility, whenever the `start` or `end` of a {@see SourceOffset} changes, spans are
-   * notified of the change so they can update themselves. This shouldn't happen outside of AST
-   * plugins.
+   * For compatibility, whenever the `start` or `end` of a {@see SourceOffset} changes,
+   * spans are notified of the change so they can update themselves.
+   * This shouldn't happen outside of AST plugins.
    */
   locDidUpdate(changes: { start?: SourcePosition; end?: SourcePosition }): void;
 
   /**
-   * Serialize into a {@see SerializedSourceSpan}, which is compact and designed for readability in
-   * context like AST Explorer. If you need a {@see SourceLocation}, use {@see toJSON}.
+   * Serialize into a {@see SerializedSourceSpan},
+   * which is compact and designed for readability in contexts like AST Explorer.
+   * If you need a {@see SourceLocation}, use {@see toJSON}.
    */
   serialize(): SerializedSourceSpan;
 }
@@ -74,14 +72,14 @@ interface SpanData {
  * There are three kinds of `SourceSpan` objects:
  *
  * - `ConcreteSourceSpan`, which contains byte offsets
- * - `LazySourceSpan`, which contains `SourceLocation`s from the Handlebars AST, which can be
- *   converted to byte offsets on demand.
+ * - `LazySourceSpan`, which contains `SourceLocation`s from the Handlebars AST,
+ *   which can be converted to byte offsets on demand.
  * - `InvisibleSourceSpan`, which represent source strings that aren't present in the source,
  *   because:
  *     - they were created synthetically
- *     - their location is nonsensical (the span is broken)
- *     - they represent nothing in the source (this currently happens only when a bug in the
- *       upstream Handlebars parser fails to assign a location to empty blocks)
+ *     - their location is nonsensical, meaning the span is broken
+ *     - they represent nothing in the source. This happens only when a bug
+ *       in the upstream Handlebars parser fails to assign a location to empty blocks.
  *
  * At a high level, all `SourceSpan` objects provide:
  *
@@ -97,8 +95,8 @@ interface SpanData {
  * All SourceSpan objects implement `SourceLocation`, for compatibility. All SourceSpan
  * objects have a `toJSON` that emits `SourceLocation`, also for compatibility.
  *
- * For compatibility, subclasses of `AbstractSourceSpan` must implement `locDidUpdate`, which
- * happens when an AST plugin attempts to modify the `start` or `end` of a span directly.
+ * For compatibility, subclasses of `AbstractSourceSpan` must implement `locDidUpdate`.
+ * It runs when an AST plugin attempts to modify the `start` or `end` of a span directly.
  *
  * The goal is to avoid creating any problems for use-cases like AST Explorer.
  */
@@ -168,14 +166,14 @@ export class SourceSpan implements SourceLocation {
   }
 
   /**
-   * Get the starting `SourcePosition` for this `SourceSpan`, lazily computing it if needed.
+   * Computed lazily, so spans that never need a line/column position do not pay for one.
    */
   get startPosition(): SourcePosition {
     return this.loc.start;
   }
 
   /**
-   * Get the ending `SourcePosition` for this `SourceSpan`, lazily computing it if needed.
+   * Computed lazily, so spans that never need a line/column position do not pay for one.
    */
   get endPosition(): SourcePosition {
     return this.loc.end;
@@ -189,14 +187,14 @@ export class SourceSpan implements SourceLocation {
   }
 
   /**
-   * Create a new span with the current span's end and a new beginning.
+   * Returns a new span, keeping this span's end.
    */
   withStart(other: SourceOffset): SourceSpan {
     return span(other.data, this.data.getEnd());
   }
 
   /**
-   * Create a new span with the current span's beginning and a new ending.
+   * Returns a new span, keeping this span's beginning.
    */
   withEnd(other: SourceOffset): SourceSpan {
     return span(this.data.getStart(), other.data);

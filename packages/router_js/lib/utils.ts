@@ -42,7 +42,7 @@ export function extractQueryParams<T>(array: ModelsAndQueryParams<T>): [T[], Que
     }
   }
 
-  // SAFETY: We confirmed that the last item isn't a QP container
+  // SAFETY: the check above ensures that the last item isn't a QP container
   return [array as T[], null];
 }
 

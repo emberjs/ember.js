@@ -254,11 +254,11 @@ interface TestFunction {
 }
 
 /*
-  Finds the test methods on a suite's prototype chain, in the same order a
-  `for...in` loop would visit them. We don't use `for...in` itself because
-  methods marked with `@test` under stable (2023-11) decorators remain
-  non-enumerable: those decorators can only tag the function, not change the
-  property descriptor.
+  Finds the test methods on a suite's prototype chain,
+  in the same order that a `for...in` loop would visit them.
+  We don't use `for...in` itself, because methods marked with `@test`
+  under stable (2023-11) decorators remain non-enumerable.
+  Those decorators can only tag the function. They cannot change the property descriptor.
 */
 function testFunctions(proto: object): Array<[string, TestFunction]> {
   let seen = new Set<string>();

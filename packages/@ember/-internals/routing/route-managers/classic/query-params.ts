@@ -1,9 +1,9 @@
 /**
-  Classic query-param event handling, lifted out of the classic `Route`'s
-  `actions` hash so the logic lives behind the `RouteManager` boundary. The
-  router reaches these via `ClassicRouteManager.queryParamsDidChange` and
-  `ClassicRouteManager.finalizeQueryParamChange`, which forward to the
-  functions below.
+  Classic query-param event handling, lifted out of the classic `Route`'s `actions` hash,
+  so the logic lives behind the `RouteManager` boundary.
+  The router reaches these via `ClassicRouteManager.queryParamsDidChange`
+  and `ClassicRouteManager.finalizeQueryParamChange`,
+  which forward to the functions below.
 */
 
 import { A as emberA } from '@ember/array';
@@ -81,9 +81,9 @@ function managementForQp(routeInfos: InternalRouteInfo[], qp: QueryParam) {
 }
 
 /**
-  Classic `finalizeQueryParamChange`. Only the `application` route does the
-  work: it reconciles every controller's query-param values with the URL and
-  collects the final serialized params.
+  Classic `finalizeQueryParamChange`. Only the `application` route does the work:
+  it reconciles every controller's query-param values with the URL,
+  and collects the final serialized params.
  */
 export function finalizeQueryParamChange(
   bucket: ClassicRouteBucket,
@@ -116,9 +116,8 @@ export function finalizeQueryParamChange(
     let controller = qpBucket.route.controller;
     let presentKey = qp.urlKey in params && qp.urlKey;
 
-    // Do a reverse lookup to see if the changed query
-    // param URL key corresponds to a QP property on
-    // this controller.
+    // Do a reverse lookup to see
+    // if the changed query param URL key corresponds to a QP property on this controller.
     let value;
     let svalue: string | null | undefined;
     if (changes.has(qp.urlKey)) {

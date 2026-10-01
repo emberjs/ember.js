@@ -5,9 +5,9 @@ export { modifierCapabilities } from '@glimmer/manager/lib/public/modifier';
 export { componentCapabilities } from '@glimmer/manager/lib/public/component';
 
 /**
-   Associate a class with a component manager (an object that is responsible for
-   coordinating the lifecycle events that occurs when invoking, rendering and
-   re-rendering a component).
+   Associate a class with a component manager (an object that is responsible
+   for coordinating the lifecycle events that occurs when invoking,
+   rendering and re-rendering a component).
 
    @method setComponentManager
    @param {Function} factory a function to create the owner for an object

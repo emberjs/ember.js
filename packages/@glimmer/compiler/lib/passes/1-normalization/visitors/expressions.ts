@@ -51,8 +51,8 @@ export class NormalizeExpressions {
   /**
    * Normalize paths into `hir.Path` or a `hir.Expr` that corresponds to the ref.
    *
-   * TODO since keywords don't support tails anyway, distinguish PathExpression from
-   * VariableReference in ASTv2.
+   * TODO since keywords don't support tails anyway,
+   * distinguish PathExpression from VariableReference in ASTv2.
    */
   PathExpression(path: ASTv2.PathExpression): Result<mir.ExpressionNode> {
     let ref = this.VariableReference(path.ref);

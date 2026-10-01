@@ -3,25 +3,26 @@
 
   Ember ships with two types of JavaScript classes for components:
 
-  1. Glimmer components, imported from `@glimmer/component`, which are the
-  default component's for Ember Octane (3.15) and more recent editions.
-  2. Classic components, imported from `@ember/component`, which were the
-  default for older editions of Ember (pre 3.15) but are still supported.
+  1. Glimmer components, imported from `@glimmer/component`,
+  which are the default components for Ember Octane (3.15) and more recent editions.
+  2. Classic components, imported from `@ember/component`,
+  which were the default for Ember editions before 3.15, and are still supported.
 
-  Below is the documentation for Classic components. If you are looking for the
-  API documentation for Template-only or Glimmer components, it is [available
-  here](/ember/release/modules/@glimmer%2Fcomponent).
+  Below is the documentation for Classic components.
+  For the API documentation for Template-only or Glimmer components,
+  see [the Glimmer component docs](/ember/release/modules/@glimmer%2Fcomponent).
 
-  Note: Prior to Ember 6.8, by default, components were authored in paired `.hbs` and `.js`
-  files. This is still supported, but the default authoring format is now `.gjs` or "template tag".
-  The documentation for `@ember/component` still refers to the older authoring format. To read about
-  the new authoring format, see the
-  [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
+  Note: Before Ember 6.8, components were authored by default in paired `.hbs` and `.js` files.
+  Ember still supports that format, but from Ember 6.8 the default authoring format is `.gjs`,
+  also called "template tag".
+  The documentation for `@ember/component` uses the paired-file format.
+  To read about the `.gjs` format,
+  see the [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
 
   ### Showing a property
 
-  Templates manage the flow of an application's UI, and display state (through
-  the DOM) to a user. For example, given a component with the property "name",
+  Templates manage the flow of an application's UI, and display state to a user through the DOM.
+  For example, given a component with the property "name",
   that component's template can use the name in several ways:
 
   ```app/components/person-profile.js
@@ -59,8 +60,9 @@
   <span data-has-name={{if this.name true}}></span>
   ```
 
-  The returned value is placed where the `{{}}` is called. The above style is
-  called "inline". A second style of helper usage is called "block". For example:
+  The returned value is placed where the `{{}}` is called.
+  The above style is called "inline".
+  A second style of helper usage is called "block". For example:
 
   ```handlebars
   {{#if this.name}}
@@ -81,11 +83,12 @@
   )}}></span>
   ```
 
-  Ember's built-in and importable helpers are described under the [@ember/helper](../modules/@ember%2Fhelper).
-  module. Documentation on creating custom helpers can be found under
-  [helper](/ember/release/functions/@ember%2Fcomponent%2Fhelper/helper) (or
-  under [Helper](/ember/release/classes/Helper) if a helper requires access to
-  dependency injection).
+  Ember's built-in and importable helpers are described
+  under the [@ember/helper](../modules/@ember%2Fhelper) module.
+  Documentation on creating custom helpers can be found under
+  [helper](/ember/release/functions/@ember%2Fcomponent%2Fhelper/helper).
+  If a helper requires access to dependency injection,
+  see [Helper](/ember/release/classes/Helper).
 
   ### Invoking a Component
 

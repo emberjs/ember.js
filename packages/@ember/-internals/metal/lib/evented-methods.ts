@@ -2,10 +2,10 @@ import { addListener, removeListener, hasListeners, sendEvent } from './events';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 /*
-  Standalone implementations of the deprecated `Evented` methods. They are
-  shared between the `Evented` mixin and the framework classes (`Component`,
-  `Route`, `EmberRouter`) that historically included it, so that the framework
-  itself no longer applies the deprecated mixin.
+  Standalone implementations of the deprecated `Evented` methods.
+  The `Evented` mixin and the framework classes that historically included it
+  (`Component`, `Route`, `EmberRouter`) share them.
+  This way the framework itself does not apply the deprecated mixin.
 */
 
 export function eventedOn(

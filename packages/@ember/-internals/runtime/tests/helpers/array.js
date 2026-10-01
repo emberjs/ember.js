@@ -153,9 +153,9 @@ class NativeArrayHelpers extends AbstractArrayHelper {
 
 class ArrayProxyHelpers extends AbstractArrayHelper {
   newObject(ary) {
-    // These suites exercise the shared array APIs rather than `ArrayProxy`
-    // itself, so we let the `ArrayProxy` deprecation pass silently here. The
-    // deprecation itself is covered by the dedicated `ArrayProxy` tests.
+    // These suites exercise the shared array APIs rather than `ArrayProxy` itself,
+    // so we let the `ArrayProxy` deprecation pass silently here.
+    // The dedicated `ArrayProxy` tests cover the deprecation itself.
     return ignoreDeprecation(() => ArrayProxy.create({ content: emberA(super.newObject(ary)) }));
   }
 
@@ -179,9 +179,9 @@ const TestArray = EmberObject.extend(EmberArray, {
     this._content = this._content || [];
   },
 
-  // some methods to modify the array so we can test changes.  Note that
-  // arrays can be modified even if they don't implement MutableArray.  The
-  // MutableArray is just a standard API for mutation but not required.
+  // some methods to modify the array so we can test changes.
+  // Arrays can be modified even if they don't implement MutableArray.
+  // MutableArray is a standard API for mutation, but it is not required.
   addObject(obj) {
     let idx = this._content.length;
     arrayContentWillChange(this, idx, 0, 1);
@@ -277,15 +277,17 @@ export function runArrayTests(name, Tests, ...types) {
     }
   }
 
-  // NOTE: `moduleFor` mixes each helper onto the prototype of the *shared*
-  // `Tests` class, so the helper registered last supplies `newObject` for every
-  // module here -- in practice these suites all run against `ArrayProxy`. That
-  // means they cannot be split apart one type at a time: dropping `ArrayProxy`
-  // hands `newObject` to a helper that has never actually run, and those
-  // helpers have rotted (`EmberObject.create` with `_super`, `destroy` on
-  // native arrays). Until that is untangled, skip the whole family once
-  // `ArrayProxy` is removed rather than run it against helpers it was never
-  // really exercising. See the `deprecate-array-proxy` deprecation.
+  // NOTE: `moduleFor` mixes each helper onto the prototype of the *shared* `Tests` class.
+  // So the helper registered last supplies `newObject` for every module here.
+  // In practice, these suites all run against `ArrayProxy`.
+  //
+  // That means they cannot be split apart one type at a time.
+  // Dropping `ArrayProxy` hands `newObject` to a helper that has never actually run.
+  // Those helpers have rotted: `EmberObject.create` with `_super`, `destroy` on native arrays.
+  //
+  // Until that is untangled, skip the whole family once `ArrayProxy` is removed.
+  // Running it against helpers it was never really exercising has no value.
+  // See the `deprecate-array-proxy` deprecation.
   if (requested.includes('ArrayProxy') && DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved) {
     return;
   }

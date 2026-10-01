@@ -202,8 +202,8 @@ moduleFor(
     }
 
     '@test removed listeners are removed from the underlying structure GH#1112213'(assert) {
-      // this is using private API to confirm the underlying data structure is properly maintained
-      // and should be changed to match the data structure as needed
+      // this is using private API to confirm the underlying data structure is properly maintained.
+      // Update this test whenever that data structure changes.
 
       class Class1 {}
       let class1Meta = meta(Class1.prototype);

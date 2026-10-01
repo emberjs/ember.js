@@ -83,8 +83,8 @@ interface ComponentMethods {
     */
 
   /**
-   Called after a component has been rendered, both on initial render and
-    in subsequent rerenders.
+   Called after a component has been rendered,
+    both on initial render and in subsequent rerenders.
     @method didRender
     @public
     @since 1.13.0
@@ -92,16 +92,16 @@ interface ComponentMethods {
   didRender(): void;
 
   /**
-   Called after a component has been rendered, both on initial render and
-    in subsequent rerenders.
+   Called after a component has been rendered,
+    both on initial render and in subsequent rerenders.
     @event didRender
     @public
     @since 1.13.0
     */
 
   /**
-   Called before a component has been rendered, both on initial render and
-    in subsequent rerenders.
+   Called before a component has been rendered,
+    both on initial render and in subsequent rerenders.
     @method willRender
     @public
     @since 1.13.0
@@ -109,8 +109,8 @@ interface ComponentMethods {
   willRender(): void;
 
   /**
-   Called before a component has been rendered, both on initial render and
-    in subsequent rerenders.
+   Called before a component has been rendered,
+    both on initial render and in subsequent rerenders.
     @event willRender
     @public
     @since 1.13.0
@@ -168,8 +168,8 @@ interface ComponentMethods {
     */
 
   /**
-    The HTML `id` of the component's element in the DOM. You can provide this
-    value yourself but it must be unique (just as in HTML):
+    The HTML `id` of the component's element in the DOM.
+    You can provide this value yourself, but it must be unique, just as in HTML:
 
     ```handlebars
     {{my-component elementId="a-really-cool-id"}}
@@ -178,11 +178,11 @@ interface ComponentMethods {
     ```handlebars
     <MyComponent @elementId="a-really-cool-id" />
     ```
-    If not manually set a default value will be provided by the framework.
-    Once rendered an element's `elementId` is considered immutable and you
-    should never change it. If you need to compute a dynamic value for the
-    `elementId`, you should do this when the component or element is being
-    instantiated:
+    If not manually set, the framework provides a default value.
+    Once rendered, an element's `elementId` is considered immutable,
+    and you should never change it.
+    If you need to compute a dynamic value for the `elementId`,
+    you should do this when the component or element is being instantiated:
 
     ```javascript
     export default class extends Component {
@@ -202,39 +202,39 @@ interface ComponentMethods {
   layoutName?: string;
 }
 
-// A zero-runtime-overhead private symbol to use in branding the component to
-// preserve its type parameter.
+// A zero-runtime-overhead private symbol to use in branding the component,
+// to preserve its type parameter.
 declare const SIGNATURE: unique symbol;
 
 /**
-  A component is a reusable UI element that consists of a `.hbs` template and an
-  optional JavaScript class that defines its behavior. For example, someone
-  might make a `button` in the template and handle the click behavior in the
-  JavaScript file that shares the same name as the template.
+  A component is a reusable UI element that consists of a `.hbs` template
+  and an optional JavaScript class that defines its behavior.
+  For example, someone might make a `button` in the template
+  and handle the click behavior in the JavaScript file that shares the same name as the template.
 
   Components are broken down into two categories:
 
-  - Components _without_ JavaScript, that are based only on a template. These
-    are called Template-only or TO components.
-  - Components _with_ JavaScript, which consist of a template and a backing
-    class.
+  - Components _without_ JavaScript, that are based only on a template.
+    These are called Template-only or TO components.
+  - Components _with_ JavaScript, which consist of a template and a backing class.
 
   Ember ships with two types of JavaScript classes for components:
 
-  1. Glimmer components, imported from `@glimmer/component`, which are the
-     default component's for Ember Octane (3.15) and more recent editions.
-  2. Classic components, imported from `@ember/component`, which were the
-     default for older editions of Ember (pre 3.15).
+  1. Glimmer components, imported from `@glimmer/component`,
+     which are the default component's for Ember Octane (3.15) and more recent editions.
+  2. Classic components, imported from `@ember/component`,
+     which were the default for older editions of Ember (pre 3.15).
 
-  Below is the documentation for Classic components. If you are looking for the
-  API documentation for Template-only or Glimmer components, it is [available
-  here](/ember/release/modules/@glimmer%2Fcomponent).
+  Below is the documentation for Classic components.
+  The API documentation for Template-only or Glimmer components
+  is [available here](/ember/release/modules/@glimmer%2Fcomponent).
 
-  Note: Prior to Ember 6.8, by default, components were authored in paired `.hbs` and `.js`
-  files. This is still supported, but the default authoring format is now `.gjs` or "template tag".
-  The documentation for `@ember/component` still refers to the older authoring format. To read about
-  the new authoring format, see the 
-  [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
+  Note: Prior to Ember 6.8, by default, components were authored in paired `.hbs` and `.js` files.
+  This is still supported.
+  Since Ember 6.8, the default authoring format is `.gjs` or "template tag".
+  The documentation for `@ember/component` refers to the paired-file authoring format.
+  To read about the template tag authoring format,
+  see the [Glimmer Component API documentation](/ember/release/modules/@glimmer%2Fcomponent).
     
   ## Defining a Classic Component
 
@@ -293,8 +293,8 @@ declare const SIGNATURE: unique symbol;
 
   ### HTML `class` Attribute
 
-  The HTML `class` attribute of a component's tag can be set by providing a
-  `classNames` property that is set to an array of strings:
+  The HTML `class` attribute of a component's tag can be set
+  by providing a `classNames` property that is set to an array of strings:
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -310,10 +310,11 @@ declare const SIGNATURE: unique symbol;
   <div id="ember1" class="ember-view my-class my-other-class"></div>
   ```
 
-  `class` attribute values can also be set by providing a `classNameBindings`
-  property set to an array of properties names for the component. The return
-  value of these properties will be added as part of the value for the
-  components's `class` attribute. These properties can be computed properties:
+  `class` attribute values can also be set by providing a `classNameBindings` property,
+  set to an array of properties names for the component.
+  The return value of these properties will be added
+  as part of the value for the components's `class` attribute.
+  These properties can be computed properties:
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -337,9 +338,9 @@ declare const SIGNATURE: unique symbol;
   <div id="ember1" class="ember-view my-class my-other-class from-a from-b"></div>
   ```
 
-  Note that `classNames` and `classNameBindings` is in addition to the `class`
-  attribute passed with the angle bracket invocation syntax. Therefore, if this
-  component was invoked like so:
+  Note that `classNames` and `classNameBindings` add to the `class` attribute
+  passed with the angle bracket invocation syntax.
+  Therefore, if this component was invoked like so:
 
   ```handlebars
   <MyWidget class="from-invocation" />
@@ -351,9 +352,9 @@ declare const SIGNATURE: unique symbol;
   <div id="ember1" class="from-invocation ember-view my-class my-other-class from-a from-b"></div>
   ```
 
-  If the value of a class name binding returns a boolean the property name
-  itself will be used as the class name if the property is true. The class name
-  will not be added if the value is `false` or `undefined`.
+  If the value of a class name binding returns a boolean,
+  the property name itself will be used as the class name if the property is true.
+  The class name will not be added if the value is `false` or `undefined`.
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -373,9 +374,10 @@ declare const SIGNATURE: unique symbol;
 
   ### Custom Class Names for Boolean Values
 
-  When using boolean class name bindings you can supply a string value other
-  than the property name for use as the `class` HTML attribute by appending the
-  preferred value after a ":" character when defining the binding:
+  When using boolean class name bindings,
+  you can supply a string value other than the property name
+  for use as the `class` HTML attribute.
+  Append the preferred value after a ":" character when defining the binding:
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -393,8 +395,9 @@ declare const SIGNATURE: unique symbol;
   <div id="ember1" class="ember-view so-very-cool"></div>
   ```
 
-  Boolean value class name bindings whose property names are in a
-  camelCase-style format will be converted to a dasherized format:
+  Boolean value class name bindings
+  whose property names are in a camelCase-style format
+  will be converted to a dasherized format:
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -412,8 +415,8 @@ declare const SIGNATURE: unique symbol;
   <div id="ember1" class="ember-view is-urgent"></div>
   ```
 
-  Class name bindings can also refer to object values that are found by
-  traversing a path relative to the component itself:
+  Class name bindings can also refer to object values
+  that are found by traversing a path relative to the component itself:
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -434,9 +437,9 @@ declare const SIGNATURE: unique symbol;
   <div id="ember1" class="ember-view empty"></div>
   ```
 
-  If you want to add a class name for a property which evaluates to true and and
-  a different class name if it evaluates to false, you can pass a binding like
-  this:
+  You might want to add a class name for a property which evaluates to true,
+  and a different class name if it evaluates to false.
+  In that case, you can pass a binding like this:
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -473,35 +476,35 @@ declare const SIGNATURE: unique symbol;
   }
   ```
 
-  Invoking this component when the `isEnabled` property is true will produce
-  HTML that looks like:
+  Invoking this component when the `isEnabled` property is true
+  will produce HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view"></div>
   ```
 
-  Invoking it when the `isEnabled` property on the component is `false` will
-  produce HTML that looks like:
+  Invoking it when the `isEnabled` property on the component is `false`
+  will produce HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view disabled"></div>
   ```
 
   Updates to the value of a class name binding will result in automatic update
-  of the  HTML `class` attribute in the component's rendered HTML
-  representation. If the value becomes `false` or `undefined` the class name
-  will be removed.
+  of the  HTML `class` attribute in the component's rendered HTML representation.
+  If the value becomes `false` or `undefined`, the element loses the class name.
 
-  Both `classNames` and `classNameBindings` are concatenated properties. See
-  [EmberObject](/ember/release/classes/EmberObject) documentation for more
-  information about concatenated properties.
+  Both `classNames` and `classNameBindings` are concatenated properties.
+  See [EmberObject](/ember/release/classes/EmberObject) documentation
+  for more information about concatenated properties.
 
   ### Other HTML Attributes
 
-  The HTML attribute section of a component's tag can be set by providing an
-  `attributeBindings` property set to an array of property names on the
-  component. The return value of these properties will be used as the value of
-  the component's HTML associated attribute:
+  The HTML attribute section of a component's tag can be set
+  by providing an `attributeBindings` property,
+  set to an array of property names on the component.
+  The return value of these properties
+  will be used as the value of the component's HTML associated attribute:
 
   ```app/components/my-anchor.js
   import Component from '@ember/component';
@@ -520,8 +523,8 @@ declare const SIGNATURE: unique symbol;
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
 
-  One property can be mapped on to another by placing a ":" between the source
-  property and the destination property:
+  One property can be mapped on to another
+  by placing a ":" between the source property and the destination property:
 
   ```app/components/my-anchor.js
   import Component from '@ember/component';
@@ -540,9 +543,9 @@ declare const SIGNATURE: unique symbol;
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
 
-  HTML attributes passed with angle bracket invocations will take precedence
-  over those specified in `attributeBindings`. Therefore, if this component was
-  invoked like so:
+  HTML attributes passed with angle bracket invocations
+  will take precedence over those specified in `attributeBindings`.
+  Therefore, if this component was invoked like so:
 
   ```handlebars
   <MyAnchor href="http://bing.com" @url="http://google.com" />
@@ -554,12 +557,12 @@ declare const SIGNATURE: unique symbol;
   <a id="ember1" class="ember-view" href="http://bing.com"></a>
   ```
 
-  Note that the `href` attribute is ultimately set to `http://bing.com`, despite
-  it having attribute binidng to the `url` property, which was set to
-  `http://google.com`.
+  Note that the `href` attribute is ultimately set to `http://bing.com`,
+  despite it having attribute binidng to the `url` property,
+  which was set to `http://google.com`.
 
-  Namespaced attributes (e.g. `xlink:href`) are supported, but have to be
-  mapped, since `:` is not a valid character for properties in Javascript:
+  Namespaced attributes such as `xlink:href` are supported, but have to be mapped,
+  since `:` is not a valid character for properties in Javascript:
 
   ```app/components/my-use.js
   import Component from '@ember/component';
@@ -578,8 +581,8 @@ declare const SIGNATURE: unique symbol;
   <use xlink:href="#triangle"></use>
   ```
 
-  If the value of a property monitored by `attributeBindings` is a boolean, the
-  attribute will be present or absent depending on the value:
+  If the value of a property monitored by `attributeBindings` is a boolean,
+  the attribute will be present or absent depending on the value:
 
   ```app/components/my-text-input.js
   import Component from '@ember/component';
@@ -618,8 +621,8 @@ declare const SIGNATURE: unique symbol;
   };
   ```
 
-  To prevent setting an attribute altogether, use `null` or `undefined` as the
-  value of the property used in `attributeBindings`:
+  To prevent setting an attribute altogether,
+  use `null` or `undefined` as the value of the property used in `attributeBindings`:
 
   ```app/components/my-text-input.js
   import Component from '@ember/component';
@@ -631,24 +634,23 @@ declare const SIGNATURE: unique symbol;
   };
   ```
 
-  Updates to the property of an attribute binding will result in automatic
-  update of the  HTML attribute in the component's HTML output.
+  Updates to the property of an attribute binding
+  will result in automatic update of the  HTML attribute in the component's HTML output.
 
-  `attributeBindings` is a concatenated property. See
-  [EmberObject](/ember/release/classes/EmberObject) documentation for more
-  information about concatenated properties.
+  `attributeBindings` is a concatenated property.
+  See [EmberObject](/ember/release/classes/EmberObject) documentation
+  for more information about concatenated properties.
 
   ## Layouts
 
-  The `layout` property can be used to dynamically specify a template associated
-  with a component class, instead of relying on Ember to link together a
-  component class and a template based on file names.
+  The `layout` property can dynamically specify a template associated with a component class.
+  Without it, Ember links together a component class and a template based on file names.
 
-  In general, applications should not use this feature, but it's commonly used
-  in addons for historical reasons.
+  In general, applications should not use this feature,
+  but it's commonly used in addons for historical reasons.
 
-  The `layout` property should be set to the default export of a template
-  module, which is the name of a template file without the `.hbs` extension.
+  The `layout` property should be set to the default export of a template module,
+  which is the name of a template file without the `.hbs` extension.
 
   ```app/components/person-profile.hbs
   <h1>Person's Title</h1>
@@ -724,9 +726,10 @@ declare const SIGNATURE: unique symbol;
 
   ### Event Handler Methods
 
-  Components can also respond to user-initiated events by implementing a method
-  that matches the event name. This approach is appropriate when the same event
-  should be handled by all instances of the same component.
+  Components can also respond to user-initiated events
+  by implementing a method that matches the event name.
+  This approach is appropriate when all instances of the same component
+  should handle the same event.
 
   An event object will be passed as the argument to the event handler method.
 
@@ -742,12 +745,12 @@ declare const SIGNATURE: unique symbol;
   }
   ```
 
-  In this example, whenever the user clicked anywhere inside the component, it
-  will log a message to the console.
+  In this example, whenever the user clicked anywhere inside the component,
+  it will log a message to the console.
 
-  It is possible to handle event types other than `click` by implementing the
-  following event handler methods. In addition, custom events can be registered
-  by using `Application.customEvents`.
+  It is possible to handle event types other than `click`
+  by implementing the following event handler methods.
+  In addition, custom events can be registered by using `Application.customEvents`.
 
   Touch events:
 
@@ -806,8 +809,9 @@ class Component<S = unknown>
     TargetActionSupport,
     ActionSupport,
     {
-      // These need to be overridable via extend/create but should still
-      // have a default. Defining them here is the best way to achieve that.
+      // These need to be overridable via extend/create,
+      // but should still have a default.
+      // Defining them here is the best way to achieve that.
       didReceiveAttrs() {},
       didRender() {},
       didUpdate() {},
@@ -825,8 +829,8 @@ class Component<S = unknown>
 {
   isComponent = true;
 
-  // SAFETY: this has no runtime existence whatsoever; it is a "phantom type"
-  // here to preserve the type param.
+  // SAFETY: this has no runtime existence whatsoever.
+  // It is a "phantom type" here to preserve the type param.
   declare private [SIGNATURE]: S;
 
   // SAFTEY: This is set in `init`.
@@ -836,9 +840,9 @@ class Component<S = unknown>
   declare [DIRTY_TAG]: DirtyableTag;
 
   /**
-    Standard CSS class names to apply to the view's outer element. This
-    property automatically inherits any class names defined by the view's
-    superclasses as well.
+    Standard CSS class names to apply to the view's outer element.
+    This property automatically inherits any class names
+    defined by the view's superclasses as well.
 
     @property classNames
     @type Array
@@ -848,9 +852,9 @@ class Component<S = unknown>
   declare classNames: string[];
 
   /**
-    A list of properties of the view to apply as class names. If the property
-    is a string value, the value of that string will be applied as a class
-    name.
+    A list of properties of the view to apply as class names.
+    If the property is a string value,
+    the value of that string will be applied as a class name.
 
     ```javascript
     // Applies the 'high' class to the view element
@@ -861,8 +865,8 @@ class Component<S = unknown>
     });
     ```
 
-    If the value of the property is a Boolean, the name of that property is
-    added as a dasherized class name.
+    If the value of the property is a Boolean,
+    the name of that property is added as a dasherized class name.
 
     ```javascript
     // Applies the 'is-urgent' class to the view element
@@ -873,8 +877,8 @@ class Component<S = unknown>
     });
     ```
 
-    If you would prefer to use a custom value instead of the dasherized
-    property name, you can pass a binding like this:
+    If you would prefer to use a custom value instead of the dasherized property name,
+    you can pass a binding like this:
 
     ```javascript
     // Applies the 'urgent' class to the view element
@@ -885,8 +889,8 @@ class Component<S = unknown>
     });
     ```
 
-    If you would like to specify a class that should only be added when the
-    property is false, you can declare a binding like this:
+    If you would like to specify a class that should only be added when the property is false,
+    you can declare a binding like this:
 
     ```javascript
     // Applies the 'disabled' class to the view element
@@ -910,9 +914,9 @@ class Component<S = unknown>
     super.init(properties);
 
     // Handle methods from ViewMixin.
-    // The native class inheritance will not work for mixins. To work around this,
-    // we copy the existing rerender method provided by the mixin and swap in the
-    // new rerender method from our class.
+    // The native class inheritance will not work for mixins.
+    // To work around this, we copy the existing rerender method provided by the mixin,
+    // and swap in the new rerender method from our class.
     this._superRerender = this.rerender;
     this.rerender = this._rerender;
 
@@ -1024,13 +1028,13 @@ class Component<S = unknown>
   on(name: string, method: ((...args: any[]) => void) | string): this;
   on(name: string, target: any, method?: any) {
     this._dispatcher?.setupHandlerForEmberEvent(name);
-    // The `on` method here comes from the Evented mixin. Since this mixin
-    // is applied to the parent of this class, however, we are still able
-    // to use `super`.
+    // The `on` method here comes from the Evented mixin.
+    // Since this mixin is applied to the parent of this class,
+    // we are still able to use `super`.
     return super.on(name, target, method);
   }
 
-  // Changed to `rerender` on init
+  // `init` installs this as `rerender`
   _rerender() {
     dirtyTag(this[DIRTY_TAG]);
     this._superRerender();
@@ -1055,30 +1059,30 @@ class Component<S = unknown>
   }
 
   /**
-    Normally, Ember's component model is "write-only". The component takes a
-    bunch of attributes that it got passed in, and uses them to render its
-    template.
+    Normally, Ember's component model is "write-only".
+    The component takes a bunch of attributes that it got passed in,
+    and uses them to render its template.
 
-    One nice thing about this model is that if you try to set a value to the
-    same thing as last time, Ember (through HTMLBars) will avoid doing any
-    work on the DOM.
+    This model has one nice property.
+    If you try to set a value to the same thing as last time,
+    Ember (through HTMLBars) will avoid doing any work on the DOM.
 
-    This is not just a performance optimization. If an attribute has not
-    changed, it is important not to clobber the element's "hidden state".
+    This is not just a performance optimization.
+    If an attribute has not changed, it is important not to clobber the element's "hidden state".
     For example, if you set an input's `value` to the same value as before,
-    it will clobber selection state and cursor position. In other words,
-    setting an attribute is not **always** idempotent.
+    it will clobber selection state and cursor position.
+    In other words, setting an attribute is not **always** idempotent.
 
-    This method provides a way to read an element's attribute and also
-    update the last value Ember knows about at the same time. This makes
-    setting an attribute idempotent.
+    Reading an element's attribute through `readDOMAttr`
+    also updates the last value Ember knows about at the same time.
+    This makes setting an attribute idempotent.
 
-    In particular, what this means is that if you get an `<input>` element's
-    `value` attribute and then re-render the template with the same value,
-    it will avoid clobbering the cursor and selection position.
-    Since most attribute sets are idempotent in the browser, you typically
-    can get away with reading attributes using jQuery, but the most reliable
-    way to do so is through this method.
+    For example, you might get an `<input>` element's `value` attribute
+    and then re-render the template with the same value.
+    Ember will avoid clobbering the cursor and selection position.
+    Since most attribute sets are idempotent in the browser,
+    you typically can get away with reading attributes using jQuery.
+    But the most reliable way to do so is through `readDOMAttr`.
     @method readDOMAttr
 
     @param {String} name the name of the attribute
@@ -1106,11 +1110,10 @@ class Component<S = unknown>
   }
 
   // --- Declarations which support mixins ---
-  // We use `declare` on these properties, even though they are optional, so
-  // that they do not get created on the class *at all* when emitting the
-  // transpiled code. Otherwise, since declared class properties are equivalent
-  // to calling `defineProperty` in the class constructor, they would "stomp"
-  // the properties supplied by mixins.
+  // We use `declare` on these properties, even though they are optional.
+  // This way they do not get created on the class *at all* when emitting the transpiled code.
+  // Declared class properties are equivalent to calling `defineProperty` in the class constructor.
+  // Without `declare`, they would "stomp" the properties supplied by mixins.
 
   /**
    A list of properties of the view to apply as attributes. If the property
@@ -1191,8 +1194,7 @@ class Component<S = unknown>
     Name: {{name}}, Age: {{age}}.
     ```
 
-    Using a string instead of an array allows for an arbitrary number of
-    parameters:
+    Using a string instead of an array allows for an arbitrary number of parameters:
 
     ```app/components/my-component.js
     import Component from '@ember/component';
@@ -1242,8 +1244,7 @@ class Component<S = unknown>
     Name: {{name}}, Age: {{age}}.
     ```
 
-    Using a string instead of an array allows for an arbitrary number of
-    parameters:
+    Using a string instead of an array allows for an arbitrary number of parameters:
 
     ```app/components/my-component.js
     import Component from '@ember/component';
@@ -1281,8 +1282,8 @@ class Component<S = unknown>
 
   /**
     The name of the layout to lookup if no layout is provided.
-    By default `Component` will lookup a template with this name in
-    `Ember.TEMPLATES` (a shared global object).
+    By default `Component` will lookup a template with this name
+    in `Ember.TEMPLATES`, a shared global object.
     @property layoutName
     @type String
     @default undefined
@@ -1291,10 +1292,11 @@ class Component<S = unknown>
   declare layoutName?: string;
 
   /**
-   The WAI-ARIA role of the control represented by this view. For example, a
-    button may have a role of type 'button', or a pane may have a role of
-    type 'alertdialog'. This property is used by assistive software to help
-    visually challenged users navigate rich web applications.
+   The WAI-ARIA role of the control represented by this view.
+    For example, a button may have a role of type 'button',
+    or a pane may have a role of type 'alertdialog'.
+    Assistive software uses this property
+    to help visually challenged users navigate rich web applications.
 
     The full list of valid WAI-ARIA roles is available at:
     [https://www.w3.org/TR/wai-aria/#roles_categorization](https://www.w3.org/TR/wai-aria/#roles_categorization)
@@ -1392,18 +1394,18 @@ class Component<S = unknown>
   }
 
   /**
-   Renders the view again. This will work regardless of whether the
-   view is already in the DOM or not. If the view is in the DOM, the
-   rendering process will be deferred to give bindings a chance
-   to synchronize.
+   Renders the view again.
+   This will work regardless of whether the view is already in the DOM or not.
+   If the view is in the DOM,
+   the rendering process will be deferred to give bindings a chance to synchronize.
 
    If children were added during the rendering process using `appendChild`,
-   `rerender` will remove them, because they will be added again
-   if needed by the next `render`.
+   `rerender` will remove them,
+   because they will be added again if needed by the next `render`.
 
-   In general, if the display of your view changes, you should modify
-   the DOM element directly instead of manually calling `rerender`, which can
-   be slow.
+   In general, if the display of your view changes,
+   you should modify the DOM element directly instead of manually calling `rerender`,
+   which can be slow.
 
    @method rerender
    @public
@@ -1431,14 +1433,15 @@ class Component<S = unknown>
   /**
    Appends the view's element to the specified parent element.
 
-   Note that this method just schedules the view to be appended; the DOM
-   element will not be appended to the given element until all bindings have
-   finished synchronizing.
+   Note that this method just schedules the view to be appended.
+   The DOM element will not be appended to the given element
+   until all bindings have finished synchronizing.
 
-   This is not typically a function that you will need to call directly when
-   building your application. If you do need to use `appendTo`, be sure that
-   the target element you are providing is associated with an `Application`
-   and does not have an ancestor element that is associated with an Ember view.
+   This is not typically a function that you will need to call directly
+   when building your application.
+   If you do need to use `appendTo`,
+   be sure that the target element you are providing is associated with an `Application`.
+   It must also not have an ancestor element that is associated with an Ember view.
 
    @method appendTo
    @param {String|DOMElement} A selector, element, HTML string
@@ -1494,17 +1497,17 @@ class Component<S = unknown>
   }
 
   /**
-   Appends the view's element to the document body. If the view does
-   not have an HTML representation yet
+   Appends the view's element to the document body.
+   If the view does not have an HTML representation yet,
    the element will be generated automatically.
 
-   If your application uses the `rootElement` property, you must append
-   the view within that element. Rendering views outside of the `rootElement`
-   is not supported.
+   If your application uses the `rootElement` property,
+   you must append the view within that element.
+   Rendering views outside of the `rootElement` is not supported.
 
-   Note that this method just schedules the view to be appended; the DOM
-   element will not be appended to the document body until all bindings have
-   finished synchronizing.
+   Note that this method just schedules the view to be appended.
+   The DOM element will not be appended to the document body
+   until all bindings have finished synchronizing.
 
    @method append
    @return {Ember.View} receiver
@@ -1515,19 +1518,19 @@ class Component<S = unknown>
   }
 
   /**
-   The HTML `id` of the view's element in the DOM. You can provide this
-   value yourself but it must be unique (just as in HTML):
+   The HTML `id` of the view's element in the DOM.
+   You can provide this value yourself, but it must be unique, just as in HTML:
 
    ```handlebars
    {{my-component elementId="a-really-cool-id"}}
    ```
 
-   If not manually set a default value will be provided by the framework.
+   If not manually set, the framework provides a default value.
 
-   Once rendered an element's `elementId` is considered immutable and you
-   should never change it. If you need to compute a dynamic value for the
-   `elementId`, you should do this when the component or element is being
-   instantiated:
+   Once rendered, an element's `elementId` is considered immutable,
+   and you should never change it.
+   If you need to compute a dynamic value for the `elementId`,
+   you should do this when the component or element is being instantiated:
 
    ```app/components/my-component.js
    import Component from '@ember/component';
@@ -1562,8 +1565,8 @@ class Component<S = unknown>
    Override this function to do any set up that requires an element
    in the document body.
 
-   When a view has children, didInsertElement will be called on the
-   child view(s) first and on itself afterwards.
+   When a view has children,
+   didInsertElement will be called on the child view(s) first and on itself afterwards.
 
    @event didInsertElement
    @public
@@ -1573,9 +1576,9 @@ class Component<S = unknown>
   }
 
   /**
-   Called when the view is about to rerender, but before anything has
-   been torn down. This is a good opportunity to tear down any manual
-   observers you have installed based on the DOM state
+   Called when the view is about to rerender, but before anything has been torn down.
+   This is a good opportunity to tear down any manual observers
+   you have installed based on the DOM state
 
    @event willClearRender
    @public
@@ -1585,10 +1588,9 @@ class Component<S = unknown>
   }
 
   /**
-   You must call `destroy` on a view to destroy the view (and all of its
-   child views). This will remove the view from any parent node, then make
-   sure that the DOM element managed by the view can be released by the
-   memory manager.
+   You must call `destroy` on a view to destroy the view and all of its child views.
+   This will remove the view from any parent node.
+   It then makes sure that the memory manager can release the DOM element managed by the view.
 
    @method destroy
    @private
@@ -1600,12 +1602,11 @@ class Component<S = unknown>
   }
 
   /**
-   Called when the element of the view is going to be destroyed. Override
-   this function to do any teardown that requires an element, like removing
-   event listeners.
+   Called when the element of the view is going to be destroyed.
+   Override it to do any teardown that requires an element, like removing event listeners.
 
-   Please note: any property changes made during this event will have no
-   effect on object observers.
+   Please note: any property changes made during this event
+   will have no effect on object observers.
 
    @event willDestroyElement
    @public
@@ -1639,16 +1640,17 @@ class Component<S = unknown>
   //
 
   /**
-   Tag name for the view's outer element. The tag name is only used when an
-   element is first created. If you change the `tagName` for an element, you
-   must destroy and recreate the view element.
+   Tag name for the view's outer element.
+   The tag name is only used when an element is first created.
+   If you change the `tagName` for an element,
+   you must destroy and recreate the view element.
 
    By default, the render buffer will use a `<div>` tag for views.
 
    If the tagName is `''`, the view will be tagless, with no outer element.
-   Component properties that depend on the presence of an outer element, such
-   as `classNameBindings` and `attributeBindings`, do not work with tagless
-   components. Tagless components cannot implement methods to handle events,
+   Component properties that depend on the presence of an outer element,
+   such as `classNameBindings` and `attributeBindings`, do not work with tagless components.
+   Tagless components cannot implement methods to handle events,
    and their `element` property has a `null` value.
 
    @property tagName
@@ -1657,8 +1659,8 @@ class Component<S = unknown>
    @public
    */
 
-  // We leave this null by default so we can tell the difference between
-  // the default case and a user-specified tag.
+  // We leave this null by default,
+  // so we can tell the difference between the default case and a user-specified tag.
   declare tagName: string | null;
 
   // .......................................................

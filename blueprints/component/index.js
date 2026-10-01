@@ -62,8 +62,8 @@ export default {
 
   install(options) {
     // Normalize the `componentClass` option. This is usually handled for us,
-    // but we wanted to show '--no-component-class' as the default so that is
-    // what's passed to us literally if the user didn't override it.
+    // but we wanted to show '--no-component-class' as the default,
+    // so that is what's passed to us literally if the user didn't override it.
     if (options.componentClass === '--no-component-class') {
       options.componentClass = '';
     }

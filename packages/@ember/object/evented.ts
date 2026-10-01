@@ -65,10 +65,10 @@ interface Evented {
     });
     ```
 
-    An optional target can be passed in as the 2nd argument that will
-    be set as the "this" for the callback. This is a good way to give your
-    function access to the object triggering the event. When the target
-    parameter is used the callback method becomes the third argument.
+    An optional target can be passed in as the 2nd argument,
+    and it will be set as the "this" for the callback.
+    This gives your function access to the object triggering the event.
+    When the target parameter is used, the callback method becomes the third argument.
 
     @method on
     @deprecated Use native JavaScript events or a dedicated event library instead.
@@ -86,12 +86,11 @@ interface Evented {
   on(name: string, method: ((...args: any[]) => void) | string): this;
   /**
     Subscribes a function to a named event and then cancels the subscription
-    after the first time the event is triggered. It is good to use ``one`` when
-    you only care about the first time an event has taken place.
+    after the first time the event is triggered.
+    It is good to use ``one`` when you only care about the first time an event has taken place.
 
-    This function takes an optional 2nd argument that will become the "this"
-    value for the callback. When the target parameter is used the callback method
-    becomes the third argument.
+    An optional 2nd argument will become the "this" value for the callback.
+    When the target parameter is used, the callback method becomes the third argument.
 
     @method one
     @deprecated Use native JavaScript events or a dedicated event library instead.
@@ -108,9 +107,9 @@ interface Evented {
   ): this;
   one(name: string, method: string | ((...args: any[]) => void)): this;
   /**
-    Triggers a named event for the object. Any additional arguments
-    will be passed as parameters to the functions that are subscribed to the
-    event.
+    Triggers a named event for the object.
+    Any additional arguments will be passed as parameters
+    to the functions that are subscribed to the event.
 
     ```javascript
     person.on('didEat', function(food) {

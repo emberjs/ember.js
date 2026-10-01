@@ -24,13 +24,13 @@ export class LocalVarReference extends node('Local').fields<{
 }>() {}
 
 /**
- * Corresponds to `<ident>` at the beginning of an expression, when `<ident>` is *not* in the
- * current block's scope.
+ * Corresponds to `<ident>` at the beginning of an expression,
+ * when `<ident>` is *not* in the current block's scope.
  *
  * The `resolution: FreeVarResolution` field describes how to resolve the free variable.
  *
- * Note: In strict mode, it must always be a variable that is in a concrete JavaScript scope that
- * the template will be installed into.
+ * Note: In strict mode, it must always be a variable
+ * that is in a concrete JavaScript scope that the template will be installed into.
  */
 export class FreeVarReference extends node('Free').fields<{
   name: string;

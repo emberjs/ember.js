@@ -1,20 +1,20 @@
 export { createCache, getValue, isConst } from '@glimmer/validator/lib/tracking';
 
 /**
-  Ember uses caching based on trackable values to avoid updating large portions
-  of the application. This caching is exposed via a cache primitive that can be
-  used to cache a specific computation, so that it will not update and will
-  return the cached value until a tracked value used in its computation has
-  updated.
+  Ember uses caching based on trackable values to avoid updating large portions of the application.
+  This caching is exposed via a cache primitive that can be used to cache a specific computation.
+  The cache will not update, and will return the cached value,
+  until a tracked value used in its computation has updated.
 
   @module @glimmer/tracking/primitives/cache
   @public
 */
 
 /**
-  Receives a function, and returns a wrapped version of it that memoizes based on
-  _autotracking_. The function will only rerun whenever any tracked values used
-  within it have changed. Otherwise, it will return the previous value.
+  Receives a function, and returns a wrapped version of it
+  that memoizes based on _autotracking_.
+  The function will only rerun whenever any tracked values used within it have changed.
+  Otherwise, it will return the previous value.
 
   ```js
   import { tracked } from '@glimmer/tracking';
@@ -54,7 +54,8 @@ export { createCache, getValue, isConst } from '@glimmer/validator/lib/tracking'
 */
 
 /**
-  Gets the value of a cache created with `createCache`.
+  Returns the value of a cache created with `createCache`.
+  The function reruns only when a tracked value it used has changed.
 
   ```js
   import { tracked } from '@glimmer/tracking';
@@ -76,11 +77,11 @@ export { createCache, getValue, isConst } from '@glimmer/validator/lib/tracking'
 */
 
 /**
-  Can be used to check if a memoized function is _constant_. If no tracked state
-  was used while running a memoized function, it will never rerun, because nothing
-  can invalidate its result. `isConst` can be used to determine if a memoized
-  function is constant or not, in order to optimize code surrounding that
-  function.
+  Can be used to check if a memoized function is _constant_.
+  If no tracked state was used while running a memoized function, it will never rerun,
+  because nothing can invalidate its result.
+  `isConst` can be used to determine if a memoized function is constant or not,
+  in order to optimize code surrounding that function.
 
   ```js
   import { tracked } from '@glimmer/tracking';
@@ -111,10 +112,9 @@ export { createCache, getValue, isConst } from '@glimmer/validator/lib/tracking'
   isConst(constCounter); // true
   ```
 
-  If called on a cache that hasn't been accessed yet, it will throw an
-  error. This is because there's no way to know if the function will be constant
-  or not yet, and so this helps prevent missing an optimization opportunity on
-  accident.
+  If called on a cache that hasn't been accessed yet, it will throw an error.
+  This is because there's no way to know if the function will be constant or not yet,
+  and so this helps prevent missing an optimization opportunity on accident.
 
   @method isConst
   @static

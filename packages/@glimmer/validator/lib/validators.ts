@@ -47,10 +47,9 @@ export const COMPUTE: TagComputeSymbol = Symbol('TAG_COMPUTE') as TagComputeSymb
 //////////
 
 /**
- * `value` receives a tag and returns an opaque Revision based on that tag. This
- * snapshot can then later be passed to `validate` with the same tag to
- * determine if the tag has changed at all since the time that `value` was
- * called.
+ * `value` receives a tag and returns an opaque Revision based on that tag.
+ * This snapshot can then later be passed to `validate` with the same tag,
+ * to determine if the tag has changed at all since the time that `value` was called.
  *
  * @param tag
  */
@@ -59,11 +58,11 @@ export function valueForTag(tag: Tag): Revision {
 }
 
 /**
- * `validate` receives a tag and a snapshot from a previous call to `value` with
- * the same tag, and determines if the tag is still valid compared to the
- * snapshot. If the tag's state has changed at all since then, `validate` will
- * return false, otherwise it will return true. This is used to determine if a
- * calculation related to the tags should be rerun.
+ * `validate` receives a tag and a snapshot from a previous call to `value` with the same tag,
+ * and determines if the tag is still valid compared to the snapshot.
+ * If the tag's state has changed at all since then, `validate` will return false,
+ * otherwise it will return true.
+ * This is used to determine if a calculation related to the tags should be rerun.
  *
  * @param tag
  * @param snapshot
@@ -183,18 +182,19 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
       // 1. subtag[COMPUTE]() <= tag[COMPUTE]();
       // 2. subtag[COMPUTE]() > tag[COMPUTE]();
       //
-      // The first possibility is completely fine within our caching model, but
-      // the second possibility presents a problem. If the parent tag has
-      // already been read, then it's value is cached and will not update to
-      // reflect the subtag's greater value. Next time the cache is busted, the
-      // subtag's value _will_ be read, and it's value will be _greater_ than
-      // the saved snapshot of the parent, causing the resulting calculation to
-      // be rerun erroneously.
+      // The first possibility is completely fine within our caching model,
+      // but the second possibility presents a problem.
+      // If the parent tag has already been read, then it's value is cached,
+      // and will not update to reflect the subtag's greater value.
+      // Next time the cache is busted, the subtag's value _will_ be read.
+      // Its value will be _greater_ than the saved snapshot of the parent,
+      // causing the resulting calculation to be rerun erroneously.
       //
-      // In order to prevent this, when we first update to a new subtag we store
-      // its computed value, and then check against that computed value on
-      // subsequent updates. If its value hasn't changed, then we return the
-      // parent's previous value. Once the subtag changes for the first time,
+      // In order to prevent this, when we first update to a new subtag,
+      // we store its computed value,
+      // and then check against that computed value on subsequent updates.
+      // If its value hasn't changed, then we return the parent's previous value.
+      // Once the subtag changes for the first time,
       // we clear the cache and everything is finally in sync with the parent.
       tag.subtagBufferCache = subtag[COMPUTE]();
       tag.subtag = subtag;

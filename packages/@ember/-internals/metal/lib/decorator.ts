@@ -72,8 +72,8 @@ export function nativeDescDecorator(
 }
 
 /**
-  Objects of this type can implement an interface to respond to requests to
-  get and set. The default implementation handles simple properties.
+  Objects of this type can implement an interface to respond to requests
+  to get and set. The default implementation handles simple properties.
 
   @class Descriptor
   @private
@@ -218,8 +218,8 @@ function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescri
         `@computed can only be used on accessors or fields, attempted to use it with ${dec.context.name.toString()} but that was a method. Try converting it to a getter (e.g. \`get ${dec.context.name.toString()}() {}\`)`,
         false
       );
-    // TS knows "assert()" is terminal and will complain about unreachable code if
-    // I use a break here. ESLint complains if I *don't* use a break here.
+    // TS knows "assert()" is terminal and will complain about unreachable code
+    // if I use a break here. ESLint complains if I *don't* use a break here.
     // eslint-disable-next-line no-fallthrough
     default:
       throw new Error(
@@ -228,9 +228,9 @@ function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescri
   }
 }
 
-// Under legacy decorators, the descriptor returned by `nativeDescDecorator` gets
-// passed to `Object.defineProperty` on the prototype, which merges it into the
-// existing descriptor (e.g. keeping a getter while making it non-enumerable).
+// Under legacy decorators, the descriptor returned by `nativeDescDecorator`
+// gets passed to `Object.defineProperty` on the prototype, which merges it
+// into the existing descriptor (e.g. keeping a getter while making it non-enumerable).
 // Stage 3 decorators can't return descriptors, so we apply it ourselves.
 function nativeDescDecorator2023(args: Parameters<Decorator>, propertyDesc: PropertyDescriptor) {
   const dec = identifyModernDecoratorArgs(args);

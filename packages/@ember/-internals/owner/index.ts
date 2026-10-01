@@ -8,9 +8,9 @@ import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimm
   The name for a factory consists of a namespace and the name of a specific type
   within that namespace, like `'service:session'`.
 
-  **Note:** `FullName` is *not* a class, just a contract for strings used in the
-  DI system. It is currently documented as a class only due to limits in our
-  documentation infrastructure.
+  **Note:** `FullName` is *not* a class,
+  just a contract for strings used in the DI system.
+  It is documented as a class only due to limits in our documentation infrastructure.
 
   @for @ember/owner
   @class FullName
@@ -22,11 +22,11 @@ export type FullName<
 > = `${Type}:${Name}`;
 
 /**
-  A type registry for the DI system, which other participants in the DI system
-  can register themselves into with declaration merging. The contract for this
-  type is that its keys are the `Type` from a `FullName`, and each value for a
-  `Type` is another registry whose keys are the `Name` from a `FullName`. The
-  mechanic for providing a registry is [declaration merging][handbook].
+  A type registry for the DI system,
+  which other participants in the DI system can register themselves into with declaration merging.
+  The keys of this type are the `Type` from a `FullName`.
+  Each value for a `Type` is another registry whose keys are the `Name` from a `FullName`.
+  The mechanic for providing a registry is [declaration merging][handbook].
 
   [handbook]: https://www.typescriptlang.org/docs/handbook/declaration-merging.html
 
@@ -96,8 +96,8 @@ type Lookup<Type extends string, Name extends string> = Type extends ValidType
   : unknown;
 
 /**
-  The common interface for the ability to `register()` an item, shared by the
-  `Owner` and `RegistryProxy` interfaces.
+  The common interface for the ability to `register()` an item,
+  shared by the `Owner` and `RegistryProxy` interfaces.
 
   @for @ember/owner
   @class BasicRegistry
@@ -105,9 +105,9 @@ type Lookup<Type extends string, Name extends string> = Type extends ValidType
  */
 interface BasicRegistry {
   /**
-    Registers a factory that can be used for dependency injection (with
-    `inject`) or for service lookup. Each factory is registered with
-    a full name including two parts: `type:name`.
+    Registers a factory that can be used for dependency injection with `inject`,
+    or for service lookup.
+    Each factory is registered with a full name including two parts: `type:name`.
 
     A simple example:
 
@@ -122,8 +122,8 @@ interface BasicRegistry {
     ```
 
     Ember will resolve factories from the `App` namespace automatically.
-    For example `App.CarsController` will be discovered and returned if
-    an application requests `controller:cars`.
+    For example, `App.CarsController` will be discovered and returned
+    if an application requests `controller:cars`.
 
     An example of registering a controller with a non-standard name:
 
@@ -172,14 +172,13 @@ interface BasicRegistry {
     @param  options {Object} (optional) disable instantiation or singleton usage
     @public
    */
-  // Dear future maintainer: yes, `Factory<object> | object` is an exceedingly
-  // weird type here. We actually allow more or less *anything* to be passed
-  // here. In the future, we may possibly be able to update this to actually
-  // take advantage of the `FullName` here to require that the registered
-  // factory and corresponding options do the right thing (passing an *actual*
-  // factory, not needing `create` if `options.instantiate` is `false`, etc.)
-  // but doing so will require rationalizing Ember's own internals and may need
-  // a full Ember RFC.
+  // Dear future maintainer: yes, `Factory<object> | object` is an exceedingly weird type here.
+  // We actually allow more or less *anything* to be passed here.
+  // In the future, this could use the `FullName`
+  // to require that the registered factory and corresponding options do the right thing.
+  // For example: passing an *actual* factory,
+  // or not needing `create` if `options.instantiate` is `false`.
+  // Doing so will require rationalizing Ember's own internals, and may need a full Ember RFC.
   register(fullName: FullName, factory: Factory<object> | object, options?: RegisterOptions): void;
 }
 
@@ -187,8 +186,8 @@ type ValidType = keyof DIRegistry & string;
 type ValidName<Type extends ValidType> = keyof DIRegistry[Type] & string;
 
 /**
-  The common interface for the ability to `lookup()` or get the `factoryFor` an
-  item, shared by the `Owner` and `ContainerProxy` interfaces.
+  The common interface for the ability to `lookup()` or get the `factoryFor` an item,
+  shared by the `Owner` and `ContainerProxy` interfaces.
 
   @for @ember/owner
   @class BasicContainer
@@ -247,13 +246,13 @@ interface BasicContainer {
   /**
     Given a `FullName`, of the form `"type:name"` return a `FactoryManager`.
 
-    This method returns a manager which can be used for introspection of the
-    factory's class or for the creation of factory instances with initial
-    properties. The manager is an object with the following properties:
+    The returned manager can be used for introspection of the factory's class,
+    or for the creation of factory instances with initial properties.
+    The manager is an object with the following properties:
 
     * `class` - The registered or resolved class.
-    * `create` - A function that will create an instance of the class with
-      any dependencies injected.
+    * `create` - A function that will create an instance of the class
+      with any dependencies injected.
 
     For example:
 
@@ -292,14 +291,13 @@ interface BasicContainer {
 }
 
 /**
-  Framework objects in an Ember application (components, services, routes,
-  etc.) are created via a factory and dependency injection system. Each of
-  these objects is the responsibility of an "owner", which handles its
-  instantiation and manages its lifetime.
+  Framework objects in an Ember application, such as components, services, and routes,
+  are created via a factory and dependency injection system.
+  Each of these objects is the responsibility of an "owner",
+  which handles its instantiation and manages its lifetime.
 
-  An `Owner` is not a class you construct; it is one the framework constructs
-  for you. The normal way to get access to the relevant `Owner` is using the
-  `getOwner` function.
+  An `Owner` is not a class you construct. The framework constructs it for you.
+  The normal way to get access to the relevant `Owner` is using the `getOwner` function.
 
   @for @ember/owner
   @uses BasicRegistry
@@ -330,8 +328,9 @@ export interface RegisterOptions {
    */
   instantiate?: boolean | undefined;
   /**
-    Whether the item is a singleton (like a service) and so should return the
-    same instance every time, or should generate a new instance on each call.
+    Whether the item is a singleton, like a service,
+    and so should return the same instance every time,
+    or should generate a new instance on each call.
     Defaults to `true`.
 
     @property singleton
@@ -357,17 +356,16 @@ export interface RegisterOptions {
   @public
  */
 export interface Factory<T extends object> {
-  // NOTE: this does not check against the types of the target object in any
-  // way, unfortunately. However, we actually *cannot* constrain it further than
-  // this without going down a *very* deep rabbit hole (see the historic types
-  // for `.create()` on DefinitelyTyped if you're curious), because we need (for
-  // historical reasons) to support classes which implement this contract to be
-  // able to provide a *narrower* interface than "exactly the public fields on
-  // the class" while still falling back to the "exactly the public fields on
-  // the class" for the general case. :sigh:
+  // NOTE: this does not check against the types of the target object in any way, unfortunately.
+  // However, we actually *cannot* constrain it further
+  // without going down a *very* deep rabbit hole.
+  // If you're curious, see the historic types for `.create()` on DefinitelyTyped.
+  // For historical reasons, classes which implement this contract
+  // must be able to provide a *narrower* interface than "exactly the public fields on the class".
+  // The general case still falls back to "exactly the public fields on the class". :sigh:
   /**
-   * A function that will create an instance of the class with any
-   * dependencies injected.
+   * A function that will create an instance of the class
+   * with any dependencies injected.
    *
    * @method create
    * @param  initialValues {Object} Any values to set on an instance of the class
@@ -378,9 +376,10 @@ export interface Factory<T extends object> {
 }
 
 /**
-  The interface representing a manager which can be used for introspection of
-  the factory's class or for the creation of factory instances with initial
-  properties. The manager is an object with the following properties:
+  The interface representing a manager
+  which can be used for introspection of the factory's class,
+  or for the creation of factory instances with initial properties.
+  The manager is an object with the following properties:
 
   - `class` - The registered or resolved class.
   - `create` - A function that will create an instance of the class with any
@@ -414,18 +413,20 @@ export type KnownForTypeResult<Type extends string> = {
 };
 
 /**
-  A `Resolver` is the mechanism responsible for looking up code in your
-  application and converting its naming conventions into the actual classes,
-  functions, and templates that Ember needs to resolve its dependencies, for
-  example, what template to render for a given route. It is a system that helps
-  the app resolve the lookup of JavaScript modules agnostic of what kind of
-  module system is used, which can be AMD, CommonJS or just plain globals. It
-  is used to lookup routes, models, components, templates, or anything that is
-  used in your Ember app.
+  A `Resolver` is the mechanism responsible for looking up code in your application.
+  It converts your application's naming conventions into the actual classes,
+  functions, and templates that Ember needs to resolve its dependencies.
+  For example, it finds what template to render for a given route.
+  It helps the app resolve the lookup of JavaScript modules,
+  agnostic of what kind of module system is used:
+  AMD, CommonJS, or just plain globals.
+  It is used to lookup routes, models, components, templates,
+  or anything that is used in your Ember app.
 
-  This interface is not a concrete class; instead, it represents the contract a
-  custom resolver must implement. Most apps never need to think about this: in
-  the default blueprint, this is supplied by the `ember-resolver` package.
+  This interface is not a concrete class.
+  Instead, it represents the contract a custom resolver must implement.
+  Most apps never need to think about this:
+  in the default blueprint, the `ember-resolver` package supplies it.
 
   @for @ember/owner
   @class Resolver
@@ -434,8 +435,8 @@ export type KnownForTypeResult<Type extends string> = {
  */
 export interface Resolver {
   /**
-    The one required method for a `Resolver`. Given a string, resolve it to a
-    `Factory`, if one exists.
+    The one required method for a `Resolver`.
+    Given a string, resolve it to a `Factory`, if one exists.
 
     @method resolve
     @param name {String}
@@ -482,8 +483,8 @@ export interface FactoryClass {
 }
 
 /**
-  The internal representation of a `Factory`, for the extra detail available for
-  private use internally than we expose to consumers.
+  The internal representation of a `Factory`.
+  It has extra detail for private internal use that we do not expose to consumers.
 
   @for @ember/owner
   @class InternalFactory
@@ -536,9 +537,9 @@ export function isFactory(obj: unknown): obj is InternalFactory<object> {
   return obj != null && typeof (obj as InternalFactory<object>).create === 'function';
 }
 
-// NOTE: For docs, see the definition at the public API site in `@ember/owner`;
-// we document it there for the sake of public API docs and for TS consumption,
-// while having the richer `InternalOwner` representation for Ember itself.
+// NOTE: For docs, see the definition at the public API site in `@ember/owner`.
+// We document it there for the sake of public API docs and for TS consumption,
+// and keep the richer `InternalOwner` representation for Ember itself.
 export function getOwner(object: object): InternalOwner | undefined {
   // SAFETY: this is a convention. From the glimmer perspective, the owner really can be any object.
   return glimmerGetOwner(object) as InternalOwner;
@@ -560,13 +561,13 @@ export function setOwner(object: object, owner: Owner): void {
   glimmerSetOwner(object, owner);
 }
 
-// Defines the type for the ContainerProxyMixin. When we rationalize our Owner
-// *not* to work via mixins, we will be able to delete this entirely, in favor
-// of just using the Owner class itself.
+// This type exists only because Owner works via the ContainerProxyMixin.
+// When we rationalize our Owner *not* to work via mixins,
+// we will be able to delete this entirely, in favor of just using the Owner class itself.
 /**
- * The interface for a container proxy, which is itself a private API used
- * by the private `ContainerProxyMixin` as part of the base definition of
- * `EngineInstance`.
+ * The interface for a container proxy, which is itself a private API.
+ * The private `ContainerProxyMixin` uses it
+ * as part of the base definition of `EngineInstance`.
  *
  * @class ContainerProxy
  * @for @ember/owner
@@ -575,8 +576,8 @@ export function setOwner(object: object, owner: Owner): void {
  */
 export interface ContainerProxy extends BasicContainer {
   /**
-   Returns an object that can be used to provide an owner to a
-   manually created instance.
+   Returns an object that can be used to provide an owner
+   to a manually created instance.
 
    Example:
 
@@ -640,7 +641,7 @@ export interface RegistryProxy extends BasicRegistry {
   unregister(fullName: FullName): void;
 
   /**
-    Check if a factory is registered.
+    Whether a factory is registered under `fullName`.
 
     @public
     @method hasRegistration
@@ -728,10 +729,10 @@ export interface RegistryProxy extends BasicRegistry {
 }
 
 /**
- * @internal This is the same basic interface which is implemented (via the
- *   mixins) by `EngineInstance` and therefore `ApplicationInstance`, which are
- *   the normal interfaces to an `Owner` for end user applications now. However,
- *   going forward, we expect to progressively deprecate and remove the "extra"
- *   APIs which are not exposed on `Owner` itself.
+ * @internal `EngineInstance` implements this same basic interface via the mixins,
+ *   and therefore `ApplicationInstance` does too.
+ *   Those are the normal interfaces to an `Owner` for end user applications.
+ *   However, we expect to progressively deprecate and remove the "extra" APIs
+ *   which are not exposed on `Owner` itself.
  */
 export interface InternalOwner extends RegistryProxy, ContainerProxy {}

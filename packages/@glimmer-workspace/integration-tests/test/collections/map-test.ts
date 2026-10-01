@@ -380,7 +380,7 @@ class TrackedMapTest extends RenderTest {
     );
   }
 
-  // SKIPPED for now because glimmer-vm doesn't implement each-in
+  // SKIPPED because glimmer-vm doesn't implement each-in
   // @test
   'each-in: set'() {
     this.assertEachInReactivity(
@@ -394,7 +394,7 @@ class TrackedMapTest extends RenderTest {
     );
   }
 
-  // SKIPPED for now because glimmer-vm doesn't implement each-in
+  // SKIPPED because glimmer-vm doesn't implement each-in
   // @test
   'each-in: set existing value'() {
     this.assertEachInReactivity(

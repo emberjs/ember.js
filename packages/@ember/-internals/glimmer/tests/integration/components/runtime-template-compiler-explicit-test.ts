@@ -300,17 +300,16 @@ moduleFor(
     // Test some of the additional keywords not built-in to glimmer-vm (those
     // we specifically enable them when calling `precompile`)
 
-    // Ember currently uses AST plugins to implement certain features that
-    // glimmer-vm does not natively provide, such as {{#each-in}}, {{outlet}}
-    // {{mount}} and some features in {{#in-element}}. These rewrites the AST
-    // and insert private keywords e.g. `{{#each (-each-in)}}`. These tests
-    // ensures we have _some_ basic coverage for those features in strict mode.
+    // Ember uses AST plugins for features that glimmer-vm does not natively provide,
+    // such as {{#each-in}}, {{outlet}}, {{mount}} and some features in {{#in-element}}.
+    // These plugins rewrite the AST and insert private keywords, e.g. `{{#each (-each-in)}}`.
+    // These tests ensure we have _some_ basic coverage for those features in strict mode.
     //
-    // Ultimately, our test coverage for strict mode is quite inadequate. This
-    // is particularly important as we expect more apps to start adopting the
-    // feature. Ideally we would run our entire/most of our test suite against
-    // both strict and resolution modes, and these things would be implicitly
-    // covered elsewhere, but until then, these coverage are essential.
+    // Ultimately, our test coverage for strict mode is quite inadequate.
+    // This matters more as we expect more apps to adopt the feature.
+    // Ideally we would run most of our test suite against both strict and resolution modes,
+    // and these things would be implicitly covered elsewhere.
+    // Until then, this coverage is essential.
 
     async '@test Can use each-in'() {
       let obj = {
@@ -351,10 +350,9 @@ moduleFor(
   }
 );
 
-// These tests are more to ensure that we don't accidentally break anything from
-// RFC#1070 -- but explicit scope does not _implicitly_ get access to anything
-// so the globals here are still just passed in to the scope bag, as if they were
-// normal variables.
+// These tests ensure that we don't accidentally break anything from RFC#1070.
+// Explicit scope does not _implicitly_ get access to anything,
+// so the globals here are passed in to the scope bag, as if they were normal variables.
 moduleFor(
   'Strict Mode - Runtime Template Compiler (explicit) - allowed globals from RFC#1070',
   class AllowedGlobalsTest extends RenderingTestCase {

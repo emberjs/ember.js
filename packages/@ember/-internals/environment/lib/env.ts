@@ -1,11 +1,11 @@
 import { DEBUG } from '@glimmer/env';
 
 /**
-  The hash of environment variables used to control various configuration
-  settings. To specify your own or override default settings, add the
-  desired properties to a global hash named `EmberENV` (or `ENV` for
-  backwards compatibility with earlier versions of Ember). The `EmberENV`
-  hash must be created before loading Ember.
+  The hash of environment variables used to control various configuration settings.
+  To specify your own or override default settings,
+  add the desired properties to a global hash named `EmberENV`.
+  A hash named `ENV` also works, for backwards compatibility with earlier versions of Ember.
+  The `EmberENV` hash must be created before loading Ember.
 
   @class EmberENV
   @type Object
@@ -58,25 +58,25 @@ export const ENV = {
     Whether to perform extra bookkeeping needed to make the `captureRenderTree`
     API work.
 
-    This has to be set before the ember JavaScript code is evaluated. This is
-    usually done by setting `window.EmberENV = { _DEBUG_RENDER_TREE: true };`
+    This has to be set before the ember JavaScript code is evaluated.
+    This is usually done by setting `window.EmberENV = { _DEBUG_RENDER_TREE: true };`
     before the "vendor" `<script>` tag in `index.html`.
 
-    Setting the flag after Ember is already loaded will not work correctly. It
-    may appear to work somewhat, but fundamentally broken.
+    Setting the flag after Ember is already loaded will not work correctly.
+    It may appear to work somewhat, but fundamentally broken.
 
-    This is not intended to be set directly. Ember Inspector will enable the
-    flag on behalf of the user as needed.
+    This is not intended to be set directly.
+    Ember Inspector will enable the flag on behalf of the user as needed.
 
     This flag is always on in development mode.
 
-    The flag is off by default in production mode, due to the cost associated
-    with the the bookkeeping work.
+    The flag is off by default in production mode,
+    due to the cost associated with the the bookkeeping work.
 
-    The expected flow is that Ember Inspector will ask the user to refresh the
-    page after enabling the feature. It could also offer a feature where the
-    user add some domains to the "always on" list. In either case, Ember
-    Inspector will inject the code on the page to set the flag if needed.
+    The expected flow is that Ember Inspector will ask the user
+    to refresh the page after enabling the feature.
+    It could also offer a feature where the user add some domains to the "always on" list.
+    In either case, Ember Inspector will inject the code on the page to set the flag if needed.
 
     @property _DEBUG_RENDER_TREE
     @for EmberENV
@@ -87,9 +87,9 @@ export const ENV = {
   _DEBUG_RENDER_TREE: DEBUG,
 
   /**
-   Whether to force all deprecations to be enabled. This is used internally by
-   Ember to enable deprecations in tests. It is not intended to be set in
-   projects.
+   Whether to force all deprecations to be enabled.
+   Ember uses this internally to enable deprecations in tests.
+   It is not intended to be set in projects.
 
    @property _ALL_DEPRECATIONS_ENABLED
    @for EmberENV
@@ -114,8 +114,9 @@ export const ENV = {
   /**
     Whether the app defaults to using async observers.
 
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
+    This is not intended to be set directly,
+    as the implementation may change in the future.
+    Use `@ember/optional-features` instead.
 
     @property _DEFAULT_ASYNC_OBSERVERS
     @for EmberENV

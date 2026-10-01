@@ -52,8 +52,8 @@ function getProperties<K extends string>(
   }
 
   for (; i < propertyNames.length; i++) {
-    // SAFETY: we are just walking the list of property names, so we know the
-    // index access never produces `undefined`.
+    // SAFETY: we are just walking the list of property names,
+    // so we know the index access never produces `undefined`.
     let name = propertyNames[i] as K;
     ret[name] = get(obj, name);
   }

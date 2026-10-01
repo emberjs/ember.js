@@ -508,8 +508,8 @@ moduleFor(
     }
 
     ['@test conflicting positional and hash parameters does not raise an assertion if rerendered']() {
-      // In some cases, rerendering with a positional param used to cause an
-      // assertion. This test checks it does not.
+      // Regression test: in some cases,
+      // rerendering with a positional param caused an assertion.
       this.owner.register(
         'component:-looked-up',
         setComponentTemplate(
@@ -919,8 +919,8 @@ moduleFor(
     }
 
     ['@test parameters in a contextual component are mutable when value is a param'](assert) {
-      // This checks that a `(mut)` is added to parameters and attributes to
-      // contextual components when it is a param.
+      // This checks that a `(mut)` is added to parameters and attributes
+      // of contextual components when it is a param.
       this.owner.register(
         'component:change-button',
         setComponentTemplate(

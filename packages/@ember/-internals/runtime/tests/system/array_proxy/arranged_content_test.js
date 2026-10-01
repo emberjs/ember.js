@@ -70,7 +70,7 @@ moduleFor(
       assert.equal(objectAt(array, 1), 4, 'returns object at index');
     }
 
-    // Not sure if we need a specific test for it, since it's internal
+    // objectAtContent is internal, so a dedicated test may be unnecessary.
     [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test objectAtContent - returns object at index in arrangedContent`](
       assert
     ) {
@@ -236,7 +236,7 @@ moduleFor(
       assert.equal(objectAt(array, 1), '4', 'returns object at index');
     }
 
-    // Not sure if we need a specific test for it, since it's internal
+    // objectAtContent is internal, so a dedicated test may be unnecessary.
     [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test objectAtContent - returns object at index in arrangedContent`](
       assert
     ) {

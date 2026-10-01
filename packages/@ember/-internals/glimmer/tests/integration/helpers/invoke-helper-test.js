@@ -614,7 +614,7 @@ moduleFor(
           }
         }
 
-        // get the value to trigger the assertion
+        // the assertion only fires when the value is read
         new PlusOne(4).value;
       }
     }

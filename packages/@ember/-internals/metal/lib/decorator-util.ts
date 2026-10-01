@@ -1,6 +1,6 @@
 /*
-  Types and utilities for working with 2023-11 decorators -- the ones that are
-  currently (as of 2025-05-05) in Stage 3.
+  Types and utilities for working with 2023-11 decorators,
+  the ones that are in Stage 3 as of 2025-05-05.
 
   TypeScript provides built-in types for all the Context objects, but not a way
   to do type discrimination against the `value` argument.
@@ -44,10 +44,10 @@ export type Decorator =
   | ClassAutoAccessorDecorator;
 
 /*
-  Public-facing signatures for Ember's decorators as TypeScript sees them when
-  `experimentalDecorators` is off (standard, stage 3 decorators). Our public
-  decorator types include these alongside their legacy signatures, so that
-  they type check under either mode.
+  Public-facing signatures for Ember's decorators as TypeScript sees them
+  when `experimentalDecorators` is off, meaning standard, stage 3 decorators.
+  Our public decorator types include these alongside their legacy signatures,
+  so that they type check under either mode.
 
   These all return `void` because, from the caller's point of view, we never
   replace the decorated element (any replacement is an implementation detail).
@@ -84,9 +84,9 @@ export type StandardMethodDecorator = (
 export type FieldDecorator = PropertyDecorator & StandardFieldDecorator;
 
 /**
-  The decorator returned by `service()`, `inject()`, etc. Works on fields with
-  both legacy and standard decorators, and on auto-accessors with standard
-  decorators.
+  The decorator returned by `service()`, `inject()`, etc.
+  Works on fields with both legacy and standard decorators,
+  and on auto-accessors with standard decorators.
 */
 export type InjectionDecorator = FieldDecorator & StandardAccessorDecorator;
 
@@ -135,23 +135,22 @@ export function identifyModernDecoratorArgs(args: Parameters<Decorator>):
 }
 
 /*
-  Stage 3 decorators on non-static class elements never see the class or its
-  prototype: their `addInitializer` callbacks only run once per instance, at
-  construction. But much of Ember's decorator machinery (computed property
-  setup, `metaForProperty`, injection validation, etc) needs to happen once per
-  class, against the prototype, and must be available before any instance
-  exists.
+  Stage 3 decorators on non-static class elements never see the class or its prototype:
+  their `addInitializer` callbacks only run once per instance, at construction.
+  But much of Ember's decorator machinery needs to happen once per class,
+  against the prototype, and must be available before any instance exists.
+  Examples are computed property setup, `metaForProperty`, and injection validation.
 
-  So we queue that per-class work on the decorator metadata object, which ends
-  up as `Class[Symbol.metadata]`, and flush it the first time we encounter the
-  class: either when Ember inspects it (see `CoreObject.proto()`) or when an
-  instance is constructed.
+  So we queue that per-class work on the decorator metadata object,
+  which ends up as `Class[Symbol.metadata]`.
+  We flush it the first time we encounter the class:
+  either when Ember inspects it (see `CoreObject.proto()`) or when an instance is constructed.
 
-  This relies on `Symbol.metadata`, which browsers don't implement yet. Babel's
-  decorator helpers fall back to `Symbol.for('Symbol.metadata')` when it's
-  missing, but TypeScript's emit skips decorator metadata entirely unless
-  `Symbol.metadata` exists, so apps using TypeScript's emit must polyfill it
-  themselves. We look it up lazily, so we use whatever the app installed.
+  This relies on `Symbol.metadata`, which browsers don't implement yet.
+  Babel's decorator helpers fall back to `Symbol.for('Symbol.metadata')` when it's missing.
+  TypeScript's emit skips decorator metadata entirely unless `Symbol.metadata` exists,
+  so apps using TypeScript's emit must polyfill it themselves.
+  We look it up lazily, so we use whatever the app installed.
 */
 function metadataKey(): symbol {
   return (Symbol as unknown as { metadata?: symbol }).metadata ?? Symbol.for('Symbol.metadata');

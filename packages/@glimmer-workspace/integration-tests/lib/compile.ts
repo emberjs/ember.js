@@ -8,9 +8,9 @@ import type { PrecompileOptions, PrecompileOptionsWithLexicalScope } from '@glim
 import { precompileJSON } from '@glimmer/compiler';
 import { templateFactory } from '@glimmer/opcode-compiler';
 
-// TODO: This fundamentally has little to do with testing and
-// most tests should just use a more generic preprocess, extracted
-// out of the test environment.
+// TODO: This fundamentally has little to do with testing
+// and most tests should just use a more generic preprocess,
+// extracted out of the test environment.
 export function preprocess(templateSource: string, options?: PrecompileOptions): Template {
   return createTemplate(templateSource, options)({});
 }

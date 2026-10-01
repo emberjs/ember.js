@@ -65,14 +65,13 @@ if (hasDOM) {
   <Input @value={{this.searchWord}} />
   ```
 
-  In this example, the initial value in the `<input>` will be set to the value of
-  `this.searchWord`. If the user changes the text, the value of `this.searchWord` will also be
-  updated.
+  In this example, the initial value in the `<input>` will be set to the value of `this.searchWord`.
+  If the user changes the text, the value of `this.searchWord` will also be updated.
 
   ### Actions
 
-  The `Input` component takes a number of arguments with callbacks that are invoked in response to
-  user events.
+  The `Input` component takes a number of arguments with callbacks,
+  which are invoked in response to user events.
 
   * `enter`
   * `insert-newline`
@@ -113,17 +112,19 @@ if (hasDOM) {
   <Input @type="text" size="10" />
   ```
 
-  In this example, the `size` attribute will be applied to the underlying `<input>` element in the
-  outputted HTML.
+  In this example, the `size` attribute will be applied
+  to the underlying `<input>` element in the outputted HTML.
 
   However, there are a few attributes where you **must** use the `@` version.
 
   * `@type`: This argument is used to control which Ember component is used under the hood
-  * `@value`: The `@value` argument installs a two-way binding onto the element. If you wanted a
-    one-way binding, use `<input>` with the `value` property and the `input` event instead.
-  * `@checked` (for checkboxes): like `@value`, the `@checked` argument installs a two-way binding
-    onto the element. If you wanted a one-way binding, use `<input type="checkbox">` with
-    `checked` and the `input` event instead.
+  * `@value`: The `@value` argument installs a two-way binding onto the element.
+    If you wanted a one-way binding,
+    use `<input>` with the `value` property and the `input` event instead.
+  * `@checked` (for checkboxes): like `@value`,
+    the `@checked` argument installs a two-way binding onto the element.
+    If you wanted a one-way binding,
+    use `<input type="checkbox">` with `checked` and the `input` event instead.
 
   ### Checkbox
 

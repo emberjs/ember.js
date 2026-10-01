@@ -1,10 +1,10 @@
 /**
- * These snapshot tests track how "tree-shakable" ember-source is. Ideally, over
- * time, fewer and fewer files appear in these lists.
+ * These snapshot tests track how "tree-shakable" ember-source is.
+ * Ideally, over time, fewer and fewer files appear in these lists.
  *
- * Rather than inspecting the published (chunked) build, we re-run our own rollup
- * config with `preserveModules: true` so that every source module maps to a
- * single output file with an unmangled name. The side-effect probe (see
+ * We do not inspect the published, chunked build.
+ * We re-run our own rollup config with `preserveModules: true`,
+ * so that every source module maps to a single output file with an unmangled name. The side-effect probe (see
  * ./lib/detect.js) then attributes each surviving side-effect to the specific
  * source file that caused it, instead of to a shared chunk.
  */

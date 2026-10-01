@@ -8,11 +8,11 @@ The input to the preprocessor is _the AST_. The AST is the result of parsing a t
 
 **Normalization**: The normalization pass turns the AST into the HIR (high-level IR). While the AST treats all blocks, curlies and expressions equally, the HIR has special instructions for keywords (such as `#in-element`, `{{yield}}` and `(has-block)`).
 
-**Symbol Allocation**: The symbol allocation pass turns the HIR into the MIR (mid-level IR). While HIR instructions use strings to identify variable bindings and references, the MIR uses unique symbols for each binding and reference, eliminating the need to understand the current scope stack in order to resolve the location of a variable reference.
+**Symbol Allocation**: The symbol allocation pass turns the HIR into the MIR (mid-level IR). HIR instructions use strings to identify variable bindings and references. The MIR uses unique symbols for each binding and reference instead. This removes the need to understand the current scope stack to resolve the location of a variable reference.
 
 > The MIR is a representation of the encoded wire format before serializing the instructions, and with source offsets still attached to each instruction.
 
-In addition to allocating symbols for variable references that refer to in-scope bindings (introduced by block parameters), this pass also allocates symbols for `@arg` references, as well as blocks that are references via the `{{yield}}`, `(has-block)` and `(has-block-params)` keywords.
+This pass allocates symbols for variable references that refer to in-scope bindings, which block parameters introduce. It also allocates symbols for `@arg` references, and for blocks referenced via the `{{yield}}`, `(has-block)` and `(has-block-params)` keywords.
 
 Finally, this pass is responsible for identifying the presence of the `{{debugger}}` keyword, which require symbol maps at runtime.
 

@@ -75,7 +75,7 @@ class Namespace extends EmberObject {
   }
 }
 
-// Declare on the prototype to have a single shared value.
+// A prototype property gives every instance a single shared value.
 Namespace.prototype.isNamespace = true;
 
 export default Namespace;

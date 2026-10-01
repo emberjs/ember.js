@@ -41,15 +41,14 @@ export const getOwner = actualGetOwner;
 export const setOwner = actualSetOwner;
 
 /**
-  An instance of `Application` is the starting point for every Ember
-  application. It instantiates, initializes and coordinates the
-  objects that make up your app.
+  An instance of `Application` is the starting point for every Ember application.
+  It instantiates, initializes and coordinates the objects that make up your app.
 
-  Each Ember app has one and only one `Application` object. Although
-  Ember CLI creates this object implicitly, the `Application` class
-  is defined in the `app/app.js`. You can define a `ready` method on the
-  `Application` class, which will be run by Ember when the application is
-  initialized.
+  Each Ember app has one and only one `Application` object.
+  Although Ember CLI creates this object implicitly,
+  the `Application` class is defined in the `app/app.js`.
+  You can define a `ready` method on the `Application` class,
+  which will be run by Ember when the application is initialized.
 
   ```app/app.js
   export default class App extends Application {
@@ -63,32 +62,32 @@ export const setOwner = actualSetOwner;
   you create will have useful string representations when calling `toString()`.
   See the `Ember.Namespace` documentation for more information.
 
-  While you can think of your `Application` as a container that holds the
-  other classes in your application, there are several other responsibilities
-  going on under-the-hood that you may want to understand. It is also important
-  to understand that an `Application` is different from an `ApplicationInstance`.
+  You can think of your `Application` as a container
+  that holds the other classes in your application.
+  It also has other responsibilities under-the-hood that you may want to understand.
+  Note that an `Application` is different from an `ApplicationInstance`.
   Refer to the Guides to understand the difference between these.
 
   ### Event Delegation
 
-  Ember uses a technique called _event delegation_. This allows the framework
-  to set up a global, shared event listener instead of requiring each view to
-  do it manually. For example, instead of each view registering its own
-  `mousedown` listener on its associated element, Ember sets up a `mousedown`
-  listener on the `body`.
+  Ember uses a technique called _event delegation_.
+  This allows the framework to set up a global, shared event listener,
+  instead of requiring each view to do it manually.
+  For example, instead of each view registering its own `mousedown` listener
+  on its associated element, Ember sets up a `mousedown` listener on the `body`.
 
-  If a `mousedown` event occurs, Ember will look at the target of the event and
-  start walking up the DOM node tree, finding corresponding views and invoking
-  their `mouseDown` method as it goes.
+  If a `mousedown` event occurs, Ember will look at the target of the event.
+  It then walks up the DOM node tree,
+  finding corresponding views and invoking their `mouseDown` method as it goes.
 
-  `Application` has a number of default events that it listens for, as
-  well as a mapping from lowercase events to camel-cased view method names. For
-  example, the `keypress` event causes the `keyPress` method on the view to be
-  called, the `dblclick` event causes `doubleClick` to be called, and so on.
+  `Application` has a number of default events that it listens for,
+  as well as a mapping from lowercase events to camel-cased view method names.
+  For example, the `keypress` event causes the `keyPress` method on the view to be called,
+  the `dblclick` event causes `doubleClick` to be called, and so on.
 
-  If there is a bubbling browser event that Ember does not listen for by
-  default, you can specify custom events and their corresponding view method
-  names by setting the application's `customEvents` property:
+  Ember may not listen for some bubbling browser event by default.
+  Then you can specify custom events and their corresponding view method names
+  by setting the application's `customEvents` property:
 
   ```app/app.js
   import Application from '@ember/application';
@@ -144,10 +143,11 @@ export const setOwner = actualSetOwner;
 
   ### Initializers
 
-  To add behavior to the Application's boot process, you can define initializers in
-  the `app/initializers` directory, or with `ember generate initializer` using Ember CLI.
-  These files should export a named `initialize` function which will receive the created `application`
-  object as its first argument.
+  To add behavior to the Application's boot process,
+  you can define initializers in the `app/initializers` directory,
+  or with `ember generate initializer` using Ember CLI.
+  These files should export a named `initialize` function,
+  which will receive the created `application` object as its first argument.
 
   ```javascript
   export function initialize(application) {
@@ -164,11 +164,10 @@ export const setOwner = actualSetOwner;
 
   ### Routing
 
-  In addition to creating your application's router, `Application` is
-  also responsible for telling the router when to start routing. Transitions
-  between routes can be logged with the `LOG_TRANSITIONS` flag, and more
-  detailed intra-transition logging can be logged with
-  the `LOG_TRANSITIONS_INTERNAL` flag:
+  In addition to creating your application's router,
+  `Application` is also responsible for telling the router when to start routing.
+  Transitions between routes can be logged with the `LOG_TRANSITIONS` flag.
+  More detailed intra-transition logging can be logged with the `LOG_TRANSITIONS_INTERNAL` flag:
 
   ```javascript
   import Application from '@ember/application';
@@ -179,14 +178,14 @@ export const setOwner = actualSetOwner;
   });
   ```
 
-  By default, the router will begin trying to translate the current URL into
-  application state once the browser emits the `DOMContentReady` event. If you
-  need to defer routing, you can call the application's `deferReadiness()`
-  method. Once routing can begin, call the `advanceReadiness()` method.
+  By default, the router will begin trying to translate the current URL into application state,
+  once the browser emits the `DOMContentReady` event.
+  If you need to defer routing, you can call the application's `deferReadiness()` method.
+  Once routing can begin, call the `advanceReadiness()` method.
 
-  If there is any setup required before routing begins, you can implement a
-  `ready()` method on your app that will be invoked immediately before routing
-  begins.
+  If there is any setup required before routing begins,
+  you can implement a `ready()` method on your app.
+  It will be invoked immediately before routing begins.
 
   @class Application
   @extends Engine
@@ -199,23 +198,24 @@ class Application extends Engine {
 
     It also configures the registry:
 
-    * registered views are created every time they are looked up (they are
-      not singletons)
-    * registered templates are not factories; the registered value is
-      returned directly.
+    * registered views are created every time they are looked up, so they are not singletons
+
+    * registered templates are not factories, so the registered value is returned directly
+
     * the router receives the application as its `namespace` property
-    * all controllers receive the router as their `target` and `controllers`
-      properties
+
+    * all controllers receive the router as their `target` and `controllers` properties
+
     * all controllers receive the application as their `namespace` property
-    * the application view receives the application controller as its
-      `controller` property
-    * the application view receives the application template as its
-      `defaultTemplate` property
+
+    * the application view receives the application controller as its `controller` property
+
+    * the application view receives the application template as its `defaultTemplate` property
 
     @method buildRegistry
     @static
-    @param {Application} namespace the application for which to
-      build the registry
+    @param {Application} namespace the application
+      for which to build the registry
     @return {Ember.Registry} the built registry
     @private
   */
@@ -240,12 +240,12 @@ class Application extends Engine {
   );
 
   /**
-    The root DOM element of the Application. This can be specified as an
-    element or a [selector string](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors#reference_table_of_selectors).
+    The root DOM element of the Application.
+    This can be specified as an element or a [selector string](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors#reference_table_of_selectors).
 
-    This is the element that will be passed to the Application's,
-    `eventDispatcher`, which sets up the listeners for event delegation. Every
-    view in your application should be a child of the element you specify here.
+    This is the element that will be passed to the Application's `eventDispatcher`,
+    which sets up the listeners for event delegation.
+    Every view in your application should be a child of the element you specify here.
 
     @property rootElement
     @type DOMElement
@@ -264,12 +264,11 @@ class Application extends Engine {
   declare _document: SimpleDocument | Document | null;
 
   /**
-    The `EventDispatcher` responsible for delegating events to this
-    application's views.
+    The `EventDispatcher` responsible for delegating events to this application's views.
 
-    The event dispatcher is created by the application at initialization time
-    and sets up event listeners on the DOM element described by the
-    application's `rootElement` property.
+    The event dispatcher is created by the application at initialization time.
+    It sets up event listeners on the DOM element
+    described by the application's `rootElement` property.
 
     See the documentation for `EventDispatcher` for more information.
 
@@ -284,16 +283,14 @@ class Application extends Engine {
     The DOM events for which the event dispatcher should listen.
 
     By default, the application's `Ember.EventDispatcher` listens
-    for a set of standard DOM events, such as `mousedown` and
-    `keyup`, and delegates them to your application's `Ember.View`
-    instances.
+    for a set of standard DOM events, such as `mousedown` and `keyup`.
+    It delegates them to your application's `Ember.View` instances.
 
-    If you would like additional bubbling events to be delegated to your
-    views, set your `Application`'s `customEvents` property
-    to a hash containing the DOM event name as the key and the
-    corresponding view method name as the value. Setting an event to
-    a value of `null` will prevent a default event listener from being
-    added for that event.
+    To delegate additional bubbling events to your views,
+    set your `Application`'s `customEvents` property to a hash.
+    Use the DOM event name as the key and the corresponding view method name as the value.
+    Setting an event to a value of `null` will prevent a default event listener
+    from being added for that event.
 
     To add new events to be listened to:
 
@@ -374,8 +371,8 @@ class Application extends Engine {
       }
     }
 
-    // Start off the number of deferrals at 1. This will be decremented by
-    // the Application's own `boot` method.
+    // Start off the number of deferrals at 1,
+    // because the Application's own `boot` method decrements it.
     this._readinessDeferrals = 1;
     this._booted = false;
     this._applicationInstances = new Set();
@@ -449,12 +446,12 @@ class Application extends Engine {
     Build the deprecated instance for legacy globals mode support.
     Called when creating and resetting the application.
 
-    This is orthogonal to autoboot: the deprecated instance needs to
-    be created at Application construction (not boot) time to expose
-    App.__container__. If autoboot sees that this instance exists,
-    it will continue booting it to avoid doing unncessary work (as
-    opposed to building a new instance at boot time), but they are
-    otherwise unrelated.
+    This is orthogonal to autoboot.
+    The deprecated instance needs to be created at Application construction time,
+    not boot time, to expose App.__container__.
+    If autoboot sees that this instance exists, it will continue booting it.
+    That avoids the unnecessary work of building a new instance at boot time.
+    Apart from that, they are unrelated.
 
     @private
     @method _buildDeprecatedInstance
@@ -470,11 +467,11 @@ class Application extends Engine {
   }
 
   /**
-    Automatically kick-off the boot process for the application once the
-    DOM has become ready.
+    Automatically kick-off the boot process for the application
+    once the DOM has become ready.
 
-    The initialization itself is scheduled on the actions queue which
-    ensures that code-loading finishes before booting.
+    The initialization itself is scheduled on the actions queue,
+    which ensures that code-loading finishes before booting.
 
     If you are asynchronously loading code, you should call `deferReadiness()`
     to defer booting, and then call `advanceReadiness()` once all of your code
@@ -486,9 +483,9 @@ class Application extends Engine {
   waitForDOMReady(): void {
     const document = this._document;
 
-    // SAFETY: Casting as Document should be safe since we're just reading a property.
-    // If it's not actually a Document then it will evaluate false which is fine for our
-    // purposes.
+    // SAFETY: Casting as Document should be safe since we're only reading a property.
+    // If it's not actually a Document, then it will evaluate false,
+    // which is fine for our purposes.
     if (document === null || (document as Document).readyState !== 'loading') {
       schedule('actions', this, this.domReady);
     } else {
@@ -532,11 +529,11 @@ class Application extends Engine {
     }
     ```
 
-    Unfortunately, we cannot actually write this because we need to participate
-    in the "synchronous" boot process. While the code above would work fine on
-    the initial boot (i.e. DOM ready), when `App.reset()` is called, we need to
-    boot a new instance synchronously (see the documentation on `_bootSync()`
-    for details).
+    Unfortunately, we cannot write this,
+    because we need to participate in the "synchronous" boot process.
+    The code above would work fine on the initial boot (i.e. DOM ready).
+    But when `App.reset()` is called, we need to boot a new instance synchronously.
+    See the documentation on `_bootSync()` for details.
 
     Because of this restriction, the actual logic of this method is located
     inside `didBecomeReady()`.
@@ -644,16 +641,17 @@ class Application extends Engine {
   _bootPromise: Promise<this> | null = null;
 
   /**
-    Initialize the application and return a promise that resolves with the `Application`
-    object when the boot process is complete.
+    Returns a promise that resolves with the `Application` object
+    when the boot process is complete.
 
-    Run any application initializers and run the application load hook. These hooks may
-    choose to defer readiness. For example, an authentication hook might want to defer
-    readiness until the auth token has been retrieved.
+    Booting runs any application initializers and the application load hook.
+    These hooks may choose to defer readiness.
+    For example, an authentication hook might want to defer readiness
+    until the auth token has been retrieved.
 
-    By default, this method is called automatically on "DOM ready"; however, if autoboot
-    is disabled, this is automatically called when the first application instance is
-    created via `visit`.
+    By default, this method is called automatically on "DOM ready".
+    However, if autoboot is disabled, this is automatically called
+    when the first application instance is created via `visit`.
 
     @public
     @method boot
@@ -686,15 +684,16 @@ class Application extends Engine {
   _bootResolver: ReturnType<(typeof RSVP)['defer']> | null = null;
 
   /**
-    Unfortunately, a lot of existing code assumes the booting process is
-    "synchronous". Specifically, a lot of tests assumes the last call to
-    `app.advanceReadiness()` or `app.reset()` will result in the app being
-    fully-booted when the current runloop completes.
+    Unfortunately, a lot of existing code assumes the booting process is "synchronous".
+    Specifically, a lot of tests assume that after the last call
+    to `app.advanceReadiness()` or `app.reset()`,
+    the app will be fully-booted when the current runloop completes.
 
     We would like new code (like the `visit` API) to stop making this assumption,
-    so we created the asynchronous version above that returns a promise. But until
-    we have migrated all the code, we would have to expose this method for use
-    *internally* in places where we need to boot an app "synchronously".
+    so we created the asynchronous version above that returns a promise.
+    But until we have migrated all the code,
+    we have to expose this method for use *internally*,
+    in places where we need to boot an app "synchronously".
 
     @private
   */
@@ -703,10 +702,11 @@ class Application extends Engine {
       return;
     }
 
-    // Even though this returns synchronously, we still need to make sure the
-    // boot promise exists for book-keeping purposes: if anything went wrong in
-    // the boot process, we need to store the error as a rejection on the boot
-    // promise so that a future caller of `boot()` can tell what failed.
+    // Even though this returns synchronously,
+    // we still need to make sure the boot promise exists for book-keeping purposes.
+    // If anything went wrong in the boot process,
+    // we store the error as a rejection on the boot promise.
+    // Then a future caller of `boot()` can tell what failed.
     let defer = (this._bootResolver = RSVP.defer());
     this._bootPromise = defer.promise as Promise<this>;
 
@@ -759,9 +759,9 @@ class Application extends Engine {
 
     Advanced Example:
 
-    Occasionally you may want to prevent the app from initializing during
-    setup. This could enable extra configuration, or enable asserting prior
-    to the app becoming ready.
+    Occasionally you may want to prevent the app from initializing during setup.
+    This could enable extra configuration,
+    or enable asserting prior to the app becoming ready.
 
     ```javascript
     import Application from '@ember/application';
@@ -841,8 +841,8 @@ class Application extends Engine {
     try {
       // See documentation on `_autoboot()` for details
       if (this.autoboot) {
-        // If we already have the __deprecatedInstance__ lying around, boot it to
-        // avoid unnecessary work
+        // If we already have the __deprecatedInstance__ lying around,
+        // boot it to avoid unnecessary work
         let instance = this.__deprecatedInstance__;
         assert('expected instance', instance);
 
@@ -879,7 +879,7 @@ class Application extends Engine {
     return this;
   }
 
-  // This method must be moved to the application instance object
+  // TODO: this belongs on the application instance object
   willDestroy() {
     super.willDestroy();
 
@@ -890,22 +890,23 @@ class Application extends Engine {
   }
 
   /**
-    Boot a new instance of `ApplicationInstance` for the current
-    application and navigate it to the given `url`. Returns a `Promise` that
-    resolves with the instance when the initial routing and rendering is
-    complete, or rejects with any error that occurred during the boot process.
+    Boot a new instance of `ApplicationInstance` for the current application,
+    and navigate it to the given `url`.
+    Returns a `Promise` that resolves with the instance
+    when the initial routing and rendering is complete.
+    It rejects with any error that occurred during the boot process.
 
-    When `autoboot` is disabled, calling `visit` would first cause the
-    application to boot, which runs the application initializers.
+    When `autoboot` is disabled, calling `visit` would first cause the application to boot,
+    which runs the application initializers.
 
-    This method also takes a hash of boot-time configuration options for
-    customizing the instance's behavior. See the documentation on
-    `ApplicationInstance.BootOptions` for details.
+    `visit` also takes a hash of boot-time configuration options
+    for customizing the instance's behavior.
+    See the documentation on `ApplicationInstance.BootOptions` for details.
 
     `ApplicationInstance.BootOptions` is an interface class that exists
-    purely to document the available options; you do not need to construct it
-    manually. Simply pass a regular JavaScript object containing of the
-    desired options:
+    only to document the available options.
+    You do not need to construct it manually.
+    Pass a regular JavaScript object containing the desired options:
 
     ```javascript
     MyApp.visit("/", { location: "none", rootElement: "#container" });
@@ -922,10 +923,10 @@ class Application extends Engine {
     document: iframe.contentDocument }`) does not work correctly today,
     largely due to Ember's jQuery dependency.
 
-    Currently, there are three officially supported scenarios/configurations.
-    Usages outside of these scenarios are not guaranteed to work, but please
-    feel free to file bug reports documenting your experience and any issues
-    you encountered to help expand support.
+    There are three officially supported scenarios/configurations.
+    Usages outside of these scenarios are not guaranteed to work.
+    To help expand support, please file bug reports
+    documenting your experience and any issues you encountered.
 
     #### Browser Applications (Manual Boot)
 
@@ -1004,15 +1005,15 @@ class Application extends Engine {
     }
     ```
 
-    In this scenario, because Ember does not have access to a global `document`
-    object in the Node.js environment, you must provide one explicitly. In practice,
-    in the non-browser environment, the stand-in `document` object only needs to
-    implement a limited subset of the full DOM API. The `SimpleDOM` library is known
-    to work.
+    In this scenario, Ember does not have access to a global `document` object
+    in the Node.js environment, so you must provide one explicitly.
+    In practice, in the non-browser environment,
+    the stand-in `document` object only needs to implement a limited subset of the full DOM API.
+    The `SimpleDOM` library is known to work.
 
-    Since there is no DOM access in the non-browser environment, you must also
-    specify a DOM `Element` object in the same `document` for the `rootElement` option
-    (as opposed to a selector string like `"body"`).
+    There is no DOM access in the non-browser environment.
+    So you must also specify a DOM `Element` object in the same `document`
+    for the `rootElement` option, instead of a selector string like `"body"`.
 
     See the documentation on the `isBrowser`, `document` and `rootElement` properties
     on `ApplicationInstance.BootOptions` for details.

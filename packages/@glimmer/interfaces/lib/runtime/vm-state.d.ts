@@ -13,8 +13,8 @@ export type SyscallRegisters = [
 /**
  * Registers
  *
- * For the most part, these follows MIPS naming conventions, however the
- * register numbers are different.
+ * For the most part, these follow MIPS naming conventions.
+ * However, the register numbers are different.
  */
 
 // $0 or $pc (program counter): pointer into `program` for the next insturction; -1 means exit

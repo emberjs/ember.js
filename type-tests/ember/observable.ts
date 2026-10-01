@@ -131,10 +131,10 @@ function testDynamic() {
   const obj: Record<string, string> = {};
   const dynamicKey = 'dummy' as string;
 
-  // These all are "too loose" in `noUncheckedIndexedAccess`, but `get` has
-  // never properly supported that flag, and there is no path to doing so. If
-  // someone wants that support, they should switch to using direct property
-  // access instead of using `get` (which has many other advantages).
+  // These all are "too loose" in `noUncheckedIndexedAccess`,
+  // but `get` has never properly supported that flag, and there is no path to doing so.
+  // If someone wants that support, they should switch to direct property access
+  // instead of using `get`. Direct access has many other advantages too.
   expectTypeOf(get(obj, 'dummy')).toEqualTypeOf<string>();
   expectTypeOf(get(obj, dynamicKey)).toEqualTypeOf<string>();
   expectTypeOf(getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: string }>();

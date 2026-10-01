@@ -33,8 +33,8 @@ const END_WITH_EACH_REGEX = /\.@each$/;
   @for @ember/object/computed
   @public
   @param {String} pattern The property pattern to expand.
-  @param {Function} callback The callback to invoke.  It is invoked once per
-  expansion, and is passed the expansion.
+  @param {Function} callback The callback to invoke.
+  It is invoked once per expansion, and is passed the expansion.
 */
 export default function expandProperties(
   pattern: string,

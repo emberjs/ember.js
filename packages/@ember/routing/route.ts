@@ -96,8 +96,8 @@ type MaybeReturnType<T> = T extends AnyFn ? ReturnType<T> : unknown;
 */
 
 /**
-  The `Route` class is used to define individual routes. Refer to
-  the [routing guide](https://guides.emberjs.com/release/routing/) for documentation.
+  The `Route` class is used to define individual routes. Refer to the [routing
+  guide](https://guides.emberjs.com/release/routing/) for documentation.
 
   @class Route
   @extends EmberObject
@@ -114,8 +114,8 @@ interface Route<Model = unknown> extends ActionHandler {
     argument. This action can be used for aborting, redirecting,
     or decorating the transition from the currently active routes.
 
-    A good example is preventing navigation when a form is
-    half-filled out:
+    A good example is preventing navigation when a form
+    is half-filled out:
 
     ```app/routes/contact-form.js
     import Route from '@ember/routing/route';
@@ -134,17 +134,16 @@ interface Route<Model = unknown> extends ActionHandler {
 
     You can also redirect elsewhere by calling
     `this.router.transitionTo('elsewhere')` from within `willTransition`.
-    Note that `willTransition` will not be fired for the
-    redirecting `transitionTo`, since `willTransition` doesn't
-    fire when there is already a transition underway. If you want
-    subsequent `willTransition` actions to fire for the redirecting
-    transition, you must first explicitly call
-    `transition.abort()`.
+    Note that `willTransition` will not be fired for the redirecting
+    `transitionTo`, since `willTransition` doesn't fire when there
+    is already a transition underway. If you want subsequent
+    `willTransition` actions to fire for the redirecting transition,
+    you must first explicitly call `transition.abort()`.
 
-    To allow the `willTransition` event to continue bubbling to the parent
-    route, use `return true;`. When the `willTransition` method has a
-    return value of `true` then the parent route's `willTransition` method
-    will be fired, enabling "bubbling" behavior for the event.
+    To allow the `willTransition` event to continue bubbling to the parent route,
+    use `return true;`. When the `willTransition` method has a return value
+    of `true` then the parent route's `willTransition` method will be fired,
+    enabling "bubbling" behavior for the event.
 
     @event willTransition
     @param {Transition} transition
@@ -154,8 +153,8 @@ interface Route<Model = unknown> extends ActionHandler {
   willTransition?(transition: Transition): boolean | void;
 
   /**
-    The `didTransition` action is fired after a transition has
-    successfully been completed. This occurs after the normal model
+    The `didTransition` action is fired after a transition
+    has successfully been completed. This occurs after the normal model
     hooks (`beforeModel`, `model`, `afterModel`, `setupController`)
     have resolved. The `didTransition` action has no arguments,
     however, it can be useful for tracking page views or resetting
@@ -181,10 +180,10 @@ interface Route<Model = unknown> extends ActionHandler {
   didTransition?(): boolean | void;
 
   /**
-    The `loading` action is fired on the route when a route's `model`
-    hook returns a promise that is not already resolved. The current
-    `Transition` object is the first parameter and the route that
-    triggered the loading event is the second parameter.
+    The `loading` action is fired on the route when a route's
+    `model` hook returns a promise that is not already resolved.
+    The current `Transition` object is the first parameter and the route
+    that triggered the loading event is the second parameter.
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
@@ -217,14 +216,14 @@ interface Route<Model = unknown> extends ActionHandler {
 
   /**
     When attempting to transition into a route, any of the hooks
-    may return a promise that rejects, at which point an `error`
-    action will be fired on the partially-entered routes, allowing
-    for per-route error handling logic, or shared error handling
-    logic defined on a parent route.
+    may return a promise that rejects. When that happens, an `error`
+    action will be fired on the partially-entered routes.
+    This allows for per-route error handling logic,
+    or shared error handling logic defined on a parent route.
 
-    Here is an example of an error handler that will be invoked
+    Here is an example of an error handler. It will be invoked
     for rejected promises from the various hooks on the route,
-    as well as any unhandled errors from child routes:
+    and for any unhandled errors from child routes:
 
     ```app/routes/admin.js
     import { reject } from 'rsvp';
@@ -257,9 +256,9 @@ interface Route<Model = unknown> extends ActionHandler {
     ```
 
     `error` actions that bubble up all the way to `ApplicationRoute`
-    will fire a default error handler that logs the error. You can
-    specify your own global default error handler by overriding the
-    `error` handler on `ApplicationRoute`:
+    will fire a default error handler that logs the error.
+    You can specify your own global default error handler by overriding
+    the `error` handler on `ApplicationRoute`:
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
@@ -283,7 +282,7 @@ interface Route<Model = unknown> extends ActionHandler {
 
 class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   static {
-    // The deprecated Evented mixin is no longer applied, but instances still
+    // Route does not apply the deprecated Evented mixin, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.
     metaFor(this.prototype).addMixin(Evented);
   }
@@ -341,12 +340,12 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     }
     ```
 
-    The default `serialize` method will insert the model's `id` into the
-    route's dynamic segment (in this case, `:post_id`) if the segment contains '_id'.
-    If the route has multiple dynamic segments or does not contain '_id', `serialize`
-    will return `getProperties(model, params)`
+    The default `serialize` method will insert the model's `id` into the route's
+    dynamic segment (in this case, `:post_id`) if the segment contains '_id'.
+    If the route has multiple dynamic segments or does not contain '_id',
+    `serialize` will return `getProperties(model, params)`
 
-    This method is called when `transitionTo` is called with a context
+    Ember calls `serialize` when `transitionTo` is called with a context,
     in order to populate the URL.
 
     @method serialize
@@ -523,8 +522,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   /**
     The name of the route, dot-delimited.
 
-    For example, a route found at `app/routes/posts/post.js` will have
-    a `routeName` of `posts.post`.
+    For example, a route found at `app/routes/posts/post.js` will
+    have a `routeName` of `posts.post`.
 
     @property routeName
     @for Route
@@ -538,8 +537,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     The name of the route, dot-delimited, including the engine prefix
     if applicable.
 
-    For example, a route found at `addon/routes/posts/post.js` within an
-    engine named `admin` will have a `fullRouteName` of `admin.posts.post`.
+    For example, a route found at `addon/routes/posts/post.js` within an engine
+    named `admin` will have a `fullRouteName` of `admin.posts.post`.
 
     @property fullRouteName
     @for Route
@@ -550,7 +549,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   declare fullRouteName: string;
 
   /**
-    Sets the name for this route, including a fully resolved name for routes
+    Names this route, including a fully resolved name for routes
     inside engines.
 
     @private
@@ -618,9 +617,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   /**
     Returns a hash containing the parameters of an ancestor route.
 
-    You may notice that `this.paramsFor` sometimes works when referring to a
-    child route, but this behavior should not be relied upon as only ancestor
-    routes are certain to be loaded in time.
+    You may notice that `this.paramsFor` sometimes works when referring
+    to a child route. Do not rely on this behavior,
+    because only ancestor routes are certain to be loaded in time.
 
     Example
 
@@ -658,8 +657,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     }
     ```
 
-    If we visit `/turing/maths?memberQp=member&interestQp=interest` the model for
-    the `member.interest` route is a hash with:
+    If we visit `/turing/maths?memberQp=member&interestQp=interest` the model
+    for the `member.interest` route is a hash with:
 
     * `name`: `turing`
     * `memberQp`: `member`
@@ -780,9 +779,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     @public
   */
   resetController(_controller: Controller, _isExiting: boolean, _transition: Transition): void {
-    // We document that subclasses do not have to return *anything* and in fact
-    // do not even have to call super, so whiel we *do* return `this`, we need
-    // to be explicit in the types that our return type is *effectively* `void`.
+    // We document that subclasses do not have to return *anything*.
+    // In fact they do not even have to call super. So while we *do* return `this`,
+    // the types must say that our return type is *effectively* `void`.
     return this as unknown as void;
   }
 
@@ -842,8 +841,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   }
 
   /**
-    This event is triggered when the router enters the route. It is
-    not executed when the model for the route changes.
+    This event is triggered when the router enters the route.
+    It is not executed when the model for the route changes.
 
     ```app/routes/application.js
     import { on } from '@ember/object/evented';
@@ -882,8 +881,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   */
 
   /**
-    This hook is executed when the router completely exits this route. It is
-    not executed when the model for the route changes.
+    Executed when the router completely exits this route.
+    It is not executed when the model for the route changes.
 
     @method deactivate
     @param {Transition} transition
@@ -893,7 +892,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   deactivate(_transition?: Transition) {}
 
   /**
-    This hook is executed when the router enters the route. It is not executed
+    Executed when the router enters the route. It is not executed
     when the model for the route changes.
 
     @method activate
@@ -906,12 +905,12 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   /**
     Perform a synchronous transition into another route without attempting
     to resolve promises, update the URL, or abort any currently active
-    asynchronous transitions (i.e. regular transitions caused by
-    `transitionTo` or URL changes).
+    asynchronous transitions (i.e. regular transitions caused by `transitionTo`
+    or URL changes).
 
-    This method is handy for performing intermediate transitions on the
-    way to a final destination route, and is called internally by the
-    default implementations of the `error` and `loading` handlers.
+    `intermediateTransitionTo` is handy for performing intermediate transitions
+    on the way to a final destination route, and is called internally
+    by the default implementations of the `error` and `loading` handlers.
 
     @method intermediateTransitionTo
     @param {String} name the name of the route
@@ -926,15 +925,15 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   }
 
   /**
-    Refresh the model on this route and any child routes, firing the
-    `beforeModel`, `model`, and `afterModel` hooks in a similar fashion
+    Refresh the model on this route and any child routes.
+    This fires the `beforeModel`, `model`, and `afterModel` hooks in a similar fashion
     to how routes are entered when transitioning in from other route.
-    The current route params (e.g. `article_id`) will be passed in
-    to the respective model hooks, and if a different model is returned,
+    The current route params (e.g. `article_id`) will be passed
+    in to the respective model hooks, and if a different model is returned,
     `setupController` and associated route hooks will re-fire as well.
 
-    An example usage of this method is re-querying the server for the
-    latest information using the same parameters as when the route
+    An example usage of this method is re-querying the server
+    for the latest information using the same parameters as when the route
     was first entered.
 
     Note that this will cause `model` hooks to fire even on routes
@@ -954,9 +953,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   }
 
   /**
-    Resolve and assign this route's controller. Used by the route
-    manager during `willEnter` so the controller is available when the
-    route template renders, before `setup` runs
+    Resolve and assign this route's controller. Used by the route manager
+    during `willEnter` so the controller is available when the route
+    template renders, before `setup` runs
 
     @method _initController
     @private
@@ -975,7 +974,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   }
 
   /**
-    This hook is the entry point for router.js
+    The entry point for router.js
 
     @private
     @method setup
@@ -1018,8 +1017,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     // early when the app was booted with `shouldRender: false`).
     once(this._router, '_setOutlets');
 
-    // Setup can cause changes to QPs which need to be propogated immediately in
-    // some situations. Eventually, we should work on making these async somehow.
+    // Setup can cause changes to QPs which need to be propogated immediately
+    // in some situations. Eventually, we should work on making these async somehow.
     flushAsyncObservers(false);
   }
 
@@ -1040,34 +1039,32 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   }
 
   /**
-    This hook is the first of the route entry validation hooks
-    called when an attempt is made to transition into a route
-    or one of its children. It is called before `model` and
-    `afterModel`, and is appropriate for cases when:
+    `beforeModel` is the first of the route entry validation hooks
+    called when an attempt is made to transition into a route or one
+    of its children. It is called before `model` and `afterModel`,
+    and is appropriate for cases when:
 
-    1) A decision can be made to redirect elsewhere without
-       needing to resolve the model first.
-    2) Any async operations need to occur first before the
-       model is attempted to be resolved.
+    1) A decision can be made to redirect elsewhere
+       without needing to resolve the model first.
+    2) Any async operations need to occur first before the model
+       is attempted to be resolved.
 
-    This hook is provided the current `transition` attempt
-    as a parameter, which can be used to `.abort()` the transition,
-    save it for a later `.retry()`, or retrieve values set
-    on it from a previous hook. You can also just call
+    It receives the current `transition` attempt as a parameter.
+    You can use it to `.abort()` the transition, save it for a later `.retry()`,
+    or retrieve values set on it from a previous hook. You can also just call
     `router.transitionTo` to another route to implicitly
     abort the `transition`.
 
-    You can return a promise from this hook to pause the
-    transition until the promise resolves (or rejects). This could
-    be useful, for instance, for retrieving async code from
-    the server that is required to enter a route.
+    You can return a promise from this hook to pause the transition
+    until the promise resolves (or rejects). This could be useful,
+    for instance, for retrieving async code from the server
+    that is required to enter a route.
 
     @method beforeModel
     @param {Transition} transition
-    @return {any | Promise<any>} if the value returned from this hook is
-      a promise, the transition will pause until the transition
-      resolves. Otherwise, non-promise return values are not
-      utilized in any way.
+    @return {any | Promise<any>} if the value returned from this hook
+      is a promise, the transition will pause until the transition resolves.
+      Otherwise, non-promise return values are not utilized in any way.
     @since 1.0.0
     @public
   */
@@ -1075,12 +1072,11 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   beforeModel(_transition: Transition): void {}
 
   /**
-    This hook is called after this route's model has resolved.
-    It follows identical async/promise semantics to `beforeModel`
-    but is provided the route's resolved model in addition to
-    the `transition`, and is therefore suited to performing
-    logic that can only take place after the model has already
-    resolved.
+    Called after this route's model has resolved.
+    It follows identical async/promise semantics to `beforeModel`.
+    It also receives the route's resolved model in addition to the `transition`.
+    This makes it suited to logic that can only take place
+    after the model has already resolved.
 
     ```app/routes/posts.js
     import Route from '@ember/routing/route';
@@ -1105,10 +1101,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     @param {Object} resolvedModel the value returned from `model`,
       or its resolved value if it was a promise
     @param {Transition} transition
-    @return {any | Promise<any>} if the value returned from this hook is
-      a promise, the transition will pause until the transition
-      resolves. Otherwise, non-promise return values are not
-      utilized in any way.
+    @return {any | Promise<any>} if the value returned from this hook
+      is a promise, the transition will pause until the transition resolves.
+      Otherwise, non-promise return values are not utilized in any way.
     @since 1.0.0
     @public
    */
@@ -1124,16 +1119,16 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     Calling `this.router.transitionTo` from inside of the `redirect` hook will
     abort the current transition (into the route that has implemented `redirect`).
 
-    `redirect` and `afterModel` behave very similarly and are
-    called almost at the same time, but they have an important
-    distinction when calling `this.router.transitionTo` to a child route
+    `redirect` and `afterModel` behave very similarly and are called
+    almost at the same time. They have an important distinction
+    when calling `this.router.transitionTo` to a child route
     of the current route. From `afterModel`, this new transition
-    invalidates the current transition, causing `beforeModel`,
-    `model`, and `afterModel` hooks to be called again. But the
-    same transition started from `redirect` does _not_ invalidate
-    the current transition. In other words, by the time the `redirect`
-    hook has been called, both the resolved model and the attempted
-    entry into this route are considered fully validated.
+    invalidates the current transition, causing `beforeModel`, `model`,
+    and `afterModel` hooks to be called again. But the same transition
+    started from `redirect` does _not_ invalidate the current transition.
+    In other words, by the time the `redirect` hook has been called,
+    both the resolved model and the attempted entry into this route
+    are considered fully validated.
 
     @method redirect
     @param {Object} model the model for this route
@@ -1154,8 +1149,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   }
 
   /**
-    A hook you can implement to convert the URL into the model for
-    this route.
+    A hook you can implement to convert the URL into the model
+    for this route.
 
     ```app/router.js
     // ...
@@ -1168,10 +1163,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     ```
 
     Note that for routes with dynamic segments, this hook is not always
-    executed. If the route is entered through a transition (e.g. when
-    using the `link-to` helper or the `transitionTo` method
-    of routes), and a model context is already provided this hook
-    is not called.
+    executed. If the route is entered through a transition (e.g.
+    when using the `link-to` helper or the `transitionTo` method of routes),
+    and a model context is already provided this hook is not called.
 
     A model context does not include a primitive string or number,
     which does cause the model hook to be called.
@@ -1195,16 +1189,15 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     this.router.transitionTo('post', thePost.id);
     ```
 
-    This hook follows the asynchronous/promise semantics
+    `model` follows the asynchronous/promise semantics
     described in the documentation for `beforeModel`. In particular,
     if a promise returned from `model` fails, the error will be
     handled by the `error` hook on `Route`.
 
-    Note that the legacy behavior of automatically defining a model
-    hook when a dynamic segment ending in `_id` is present is
-    [deprecated](https://deprecations.emberjs.com/v5.x#toc_deprecate-implicit-route-model).
-    You should explicitly define a model hook whenever any segments are
-    present.
+    Note that the legacy behavior of automatically defining
+    a model hook when a dynamic segment ending in `_id` is present
+    is [deprecated](https://deprecations.emberjs.com/v5.x#toc_deprecate-implicit-route-model).
+    You should explicitly define a model hook whenever any segments are present.
 
     Example
 
@@ -1224,10 +1217,10 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     @method model
     @param {Object} params the parameters extracted from the URL
     @param {Transition} transition
-    @return {any | Promise<any>} the model for this route. If
-      a promise is returned, the transition will pause until
-      the promise resolves, and the resolved value of the promise
-      will be used as the model for this route.
+    @return {any | Promise<any>} the model for this route. If a promise
+      is returned, the transition will pause until the promise resolves,
+      and the resolved value of the promise will be used as the model
+      for this route.
     @since 1.0.0
     @public
   */
@@ -1286,11 +1279,11 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   /**
     A hook you can use to setup the controller for the current route.
 
-    This method is called with the controller for the current route and the
-    model supplied by the `model` hook.
+    It receives the controller for the current route
+    and the model supplied by the `model` hook.
 
-    By default, the `setupController` hook sets the `model` property of
-    the controller to the specified `model` when it is not `undefined`.
+    By default, the `setupController` hook sets the `model` property
+    of the controller to the specified `model` when it is not `undefined`.
 
     If you implement the `setupController` hook in your Route, it will
     prevent this default behavior. If you want to preserve that behavior
@@ -1366,8 +1359,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     Returns the controller of the current route, or a parent (or any ancestor)
     route in a route hierarchy.
 
-    The controller instance must already have been created, either through entering the
-    associated route or using `generateController`.
+    The controller instance must already have been created, either through entering
+    the associated route or using `generateController`.
 
     ```app/routes/post.js
     import Route from '@ember/routing/route';
@@ -1400,9 +1393,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
 
     let controller = owner.lookup(`controller:${name}`);
 
-    // NOTE: We're specifically checking that skipAssert is true, because according
-    //   to the old API the second parameter was model. We do not want people who
-    //   passed a model to skip the assertion.
+    // NOTE: We're specifically checking that skipAssert is true,
+    //   because according to the old API the second parameter was model.
+    //   We do not want people who passed a model to skip the assertion.
     assert(
       `The controller named '${name}' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.`,
       controller !== undefined || _skipAssert === true
@@ -1446,13 +1439,11 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
 
   /**
     Returns the resolved model of a parent (or any ancestor) route
-    in a route hierarchy.  During a transition, all routes
-    must resolve a model object, and if a route
-    needs access to a parent route's model in order to
-    resolve a model (or just reuse the model from a parent),
-    it can call `this.modelFor(theNameOfParentRoute)` to
-    retrieve it. If the ancestor route's model was a promise,
-    its resolved result is returned.
+    in a route hierarchy. During a transition, all routes must resolve
+    a model object. A route may need a parent route's model to resolve
+    its own model, or to reuse the parent's model.
+    It can call `this.modelFor(theNameOfParentRoute)` to retrieve it.
+    If the ancestor route's model was a promise, its resolved result is returned.
 
     Example
 
@@ -1533,8 +1524,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
 
   /**
     Allows you to produce custom metadata for the route.
-    The return value of this method will be attached to
-    its corresponding RouteInfoWithAttributes object.
+    The return value of this method will be attached
+    to its corresponding RouteInfoWithAttributes object.
 
     Example
 
@@ -1649,10 +1640,10 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
     if (controller) {
       assert('Expected an instance of controller', controller instanceof Controller);
 
-      // the developer has authored a controller class in their application for
-      // this route find its query params and normalize their object shape them
-      // merge in the query params for the route. As a mergedProperty,
-      // Route#queryParams is always at least `{}`
+      // The developer has authored a controller class in their application
+      // for this route. Find its query params and normalize their object shape,
+      // then merge in the query params for the route.
+      // As a mergedProperty, Route#queryParams is always at least `{}`
 
       let controllerDefinedQueryParameterConfiguration =
         (get(controller, 'queryParams') as Controller['queryParams']) || [];
@@ -1845,9 +1836,8 @@ export function getFullQueryParams(router: EmberRouter, state: RouteTransitionSt
 
   router._deserializeQueryParams(state.routeInfos, fullQueryParamsState);
 
-  // only cache query params state if all routeinfos have resolved; it's possible
-  // for lazy routes to not have resolved when `getFullQueryParams` is called, so
-  // we wait until all routes have resolved prior to caching query params state
+  // Lazy routes may not have resolved when `getFullQueryParams` is called.
+  // So we only cache query params state once all routeinfos have resolved.
   if (haveAllRouteInfosResolved) {
     state.fullQueryParams = fullQueryParamsState;
   }
@@ -1884,9 +1874,9 @@ function getQueryParamsFor(route: Route, state: RouteTransitionState): Record<st
 }
 
 /*
-  Merges all query parameters from a controller with those from
-  a route, returning a new object and avoiding any mutations to
-  the existing objects.
+  Merges all query parameters from a controller with those
+  from a route, returning a new object and avoiding any mutations
+  to the existing objects.
 */
 function mergeEachQueryParams(
   controllerQP: Record<string, ExpandedControllerQueryParam>,
@@ -1922,7 +1912,7 @@ function mergeEachQueryParams(
     keysAlreadyMergedOrSkippable[cqpName] = true;
   }
 
-  // loop over all route qps, skipping those that were merged in the first pass
+  // Skip route qps that were merged in the first pass,
   // because they also appear in controller qps
   for (let rqpName in routeQP) {
     if (

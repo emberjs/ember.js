@@ -47,10 +47,10 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
 };
 
 /**
-  `@dependentKeyCompat` is decorator that can be used on _native getters_ that
-  use tracked properties. It exposes the getter to Ember's classic computed
-  property and observer systems, so they can watch it for changes. It can be
-  used in both native and classic classes.
+  `@dependentKeyCompat` is a decorator for _native getters_ that use tracked properties.
+  It exposes the getter to Ember's classic computed property and observer systems,
+  so they can watch it for changes.
+  It can be used in both native and classic classes.
 
   Native Example:
 
@@ -81,21 +81,21 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
   }
   ```
 
-  In general, only properties which you _expect_ to be watched by older,
-  untracked clases should be marked as dependency compatible. The decorator is
-  meant as an interop layer for parts of Ember's older classic APIs, and should
-  not be applied to every possible getter/setter in classes. The number of
-  dependency compatible getters should be _minimized_ wherever possible. New
-  application code should not need to use `@dependentKeyCompat`, since it is
-  only for interoperation with older code.
+  In general, only properties which you _expect_ to be watched by older, untracked classes
+  should be marked as dependency compatible.
+  The decorator is meant as an interop layer for parts of Ember's older classic APIs.
+  Do not apply it to every possible getter/setter in classes.
+  _Minimize_ the number of dependency compatible getters wherever possible.
+  New application code should not need `@dependentKeyCompat`,
+  since it is only for interoperation with older code.
 
   @public
   @method dependentKeyCompat
   @for @ember/object/compat
   @static
-  @param {PropertyDescriptor|undefined} desc A property descriptor containing
-                                             the getter and setter (when used in
-                                             classic classes)
+  @param {PropertyDescriptor|undefined} desc A property descriptor
+                                             containing the getter and setter,
+                                             when used in classic classes
   @return {PropertyDecorator} property decorator instance
  */
 export function dependentKeyCompat(

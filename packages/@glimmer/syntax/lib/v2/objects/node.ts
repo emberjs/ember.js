@@ -15,8 +15,8 @@ export interface BaseNodeFields {
  * export class HtmlText extends node('HtmlText').fields<{ chars: string }>() {}
  * ```
  *
- * This creates a new ASTv2 node with the name `'HtmlText'` and one field `chars: string` (in
- * addition to a `loc: SourceOffsets` field, which all nodes have).
+ * This creates a new ASTv2 node with the name `'HtmlText'` and one field `chars: string`.
+ * It also has a `loc: SourceOffsets` field, which all nodes have.
  *
  * ```ts
  * export class Args extends node().fields<{

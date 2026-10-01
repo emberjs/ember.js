@@ -252,8 +252,8 @@ function InvokeStaticComponent(
   }
 
   // Next up we have arguments. If the component has the `createArgs` capability,
-  // then it wants access to the arguments in JavaScript. We can't know whether
-  // or not an argument is used, so we have to give access to all of them.
+  // then it wants access to the arguments in JavaScript.
+  // We can't know if an argument is used, so we have to give access to all of them.
   if (hasCapability(capabilities, InternalComponentCapabilities.createArgs)) {
     // First we push positional arguments
     let count = CompilePositional(op, positional);
@@ -265,10 +265,11 @@ function InvokeStaticComponent(
 
     let names: string[] = EMPTY_STRING_ARRAY;
 
-    // Next, if named args exist, push them all. If they have an associated symbol
-    // in the invoked component (e.g. they are used within its template), we push
-    // that symbol. If not, we still push the expression as it may be used, and
-    // we store the symbol as -1 (this is used later).
+    // Next, if named args exist, push them all.
+    // If an arg has an associated symbol in the invoked component,
+    // because its template uses the arg, we push that symbol.
+    // If not, we still push the expression as it may be used,
+    // and we store the symbol as -1 for later use.
     if (named !== null) {
       names = named[0];
       let val = named[1];
@@ -281,18 +282,18 @@ function InvokeStaticComponent(
       }
     }
 
-    // Finally, push the VM arguments themselves. These args won't need access
-    // to blocks (they aren't accessible from userland anyways), so we push an
-    // empty array instead of the actual block names.
+    // Finally, push the VM arguments themselves.
+    // These args won't need access to blocks, because userland cannot access them anyway.
+    // So we push an empty array instead of the actual block names.
     op(VM_PUSH_ARGS_OP, names, EMPTY_STRING_ARRAY, flags);
 
     // And push an extra pop operation to remove the args before we begin setting
     // variables on the local context
     argSymbols.push(-1);
   } else if (named !== null) {
-    // If the component does not have the `createArgs` capability, then the only
-    // expressions we need to push onto the stack are those that are actually
-    // referenced in the template of the invoked component (e.g. have symbols).
+    // Without the `createArgs` capability, we only need to push the expressions
+    // that the template of the invoked component references.
+    // Those are the ones that have symbols.
     let names = named[0];
     let val = named[1];
 
@@ -334,8 +335,8 @@ function InvokeStaticComponent(
   // in the new scope. This is why all subsequent symbols are increased by one.
   op(VM_SET_VARIABLE_OP, 0);
 
-  // Going in reverse, now we pop the args/blocks off the stack, starting with
-  // arguments, and assign them to their symbols in the new scope.
+  // Going in reverse, now we pop the args/blocks off the stack,
+  // starting with arguments, and assign them to their symbols in the new scope.
   for (const symbol of reverse(argSymbols)) {
     // for (let i = argSymbols.length - 1; i >= 0; i--) {
     //   let symbol = argSymbols[i];
@@ -451,9 +452,8 @@ export function invokePreparedComponent(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   op(VM_CREATE_COMPONENT_OP, (hasBlock as any) | 0);
 
-  // this has to run after createComponent to allow
-  // for late-bound layouts, but a caller is free
-  // to populate the layout earlier if it wants to
+  // this has to run after createComponent to allow for late-bound layouts.
+  // A caller is free to populate the layout earlier if it wants to,
   // and do nothing here.
   if (populateLayout) {
     populateLayout();

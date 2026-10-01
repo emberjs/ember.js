@@ -57,8 +57,9 @@ export function castToBrowser<S extends SugaryNodeCheck<BrowserElementTag>>(
   node: BrowserNode | SimpleNode,
   check: S
 ): NodeForSugaryCheck<S>;
-// Finally, if it's a more generic check, the cast will mandate that it's a
-// browser node and return a BrowserNodeUtils corresponding to the check
+// Finally, if it's a more generic check,
+// the cast will mandate that it's a browser node
+// and return a BrowserNodeUtils corresponding to the check
 export function castToBrowser<S extends SugaryNodeCheck<GenericNodeTag>>(
   element: BrowserNode | SimpleNode,
   check: S

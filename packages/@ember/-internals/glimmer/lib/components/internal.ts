@@ -43,17 +43,18 @@ export default class InternalComponent {
    * present, and it doens't really hurt.
    *
    * However, don't rely on this internally, like passing it to `getElementId`.
-   * This can be (and often is) overriden by passing an `id` attribute on the
-   * invocation, which shadows this default id via `...attributes`.
+   * It is often overriden by passing an `id` attribute on the invocation,
+   * which shadows this default id via `...attributes`.
    */
   get id(): string {
     return guidFor(this);
   }
 
   /**
-   * The default HTML class attribute. Similar to the above, we don't _need_
-   * them, they are just added for compatibility as it's similarly hard to tell
-   * if people rely on it in their CSS etc, and it doens't really hurt.
+   * The default HTML class attribute. Similar to the above, we don't _need_ them.
+   * They are just added for compatibility,
+   * as it's similarly hard to tell if people rely on it in their CSS etc,
+   * and it doens't really hurt.
    */
   get class(): string {
     return 'ember-view';

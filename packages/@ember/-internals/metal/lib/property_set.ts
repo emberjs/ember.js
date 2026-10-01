@@ -17,12 +17,13 @@ interface ExtendedObject {
  @module @ember/object
 */
 /**
-  Sets the value of a property on an object, respecting computed properties
-  and notifying observers and other listeners of the change.
-  If the specified property is not defined on the object and the object
-  implements the `setUnknownProperty` method, then instead of setting the
-  value of the property on the object, its `setUnknownProperty` handler
-  will be invoked with the two parameters `keyName` and `value`.
+  Use `set` to change the value of a property on an object.
+  It respects computed properties and notifies observers and other listeners of the change.
+
+  Sometimes the specified property is not defined on the object,
+  and the object implements the `setUnknownProperty` method.
+  In that case, `set` invokes the `setUnknownProperty` handler
+  with the two parameters `keyName` and `value`, instead of setting the property on the object.
 
   ```javascript
   import { set } from '@ember/object';
@@ -121,11 +122,11 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
 }
 
 /**
-  Error-tolerant form of `set`. Will not blow up if any part of the
-  chain is `undefined`, `null`, or destroyed.
+  Error-tolerant form of `set`.
+  It does not throw if any part of the chain is `undefined`, `null`, or destroyed.
 
-  This is primarily used when syncing bindings, which may try to update after
-  an object has been destroyed.
+  This is primarily used when syncing bindings,
+  which may try to update an object after it has been destroyed.
 
   ```javascript
   import { trySet } from '@ember/object';

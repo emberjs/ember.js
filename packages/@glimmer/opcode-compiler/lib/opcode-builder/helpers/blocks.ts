@@ -77,8 +77,8 @@ export function InvokeStaticBlock(
 }
 
 /**
- * Invoke a static block, preserving some number of stack entries for use in
- * updating.
+ * Invoke a static block,
+ * preserving some number of stack entries for use in updating.
  *
  * @param block A compilable block
  * @param callerCount A number of stack entries to preserve

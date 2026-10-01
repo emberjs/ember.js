@@ -3,8 +3,8 @@ import { equals, shouldThrow } from './utils.js';
 
 describe('Visitor', function () {
   it('should provide coverage', function () {
-    // Simply run the thing and make sure it does not fail and that all of the
-    // stub methods are executed
+    // Run the thing and make sure it does not fail,
+    // and that all of the stub methods are executed
     let visitor = new Visitor();
     visitor.accept(
       parse(

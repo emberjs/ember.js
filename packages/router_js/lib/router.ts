@@ -77,10 +77,10 @@ export default abstract class Router<R = unknown> {
 
   // -- Manager-driven transition lifecycle -------------------------------------
   //
-  // The three `on*` methods below drive the RouteManager lifecycle for every
-  // router. Host routers (EmberRouter's microlib, the test router) customize
-  // behaviour through the small protected hooks rather than re-implementing
-  // the orchestration.
+  // The three `on*` methods below drive the RouteManager lifecycle for every router.
+  // Host routers, such as EmberRouter's microlib and the test router,
+  // customize behaviour through the small protected hooks,
+  // rather than re-implementing the orchestration.
 
   /**
     Whether the host application is tearing down. A destroyed router skips
@@ -91,18 +91,17 @@ export default abstract class Router<R = unknown> {
   }
 
   /**
-    Host hook: schedule a render-tree update because `currentRouteInfos`
-    changed. EmberRouter renders by scheduling `_setOutlets`; the default is
-    a no-op for hosts that don't render.
+    Host hook: schedule a render-tree update because `currentRouteInfos` changed.
+    EmberRouter renders by scheduling `_setOutlets`.
+    The default is a no-op for hosts that don't render.
 
-    Called with `immediate: true` when the update must render right away for
-    correctness — the transition settled, or a loading/error substate was
-    entered.
+    Called with `immediate: true` when the update must render right away for correctness:
+    the transition settled, or a loading/error substate was entered.
 
-    Called with `immediate: false` for the incremental updates fired as each
-    route in an in-flight transition resolves. These are an optimization
-    (render parent routes while a child's model is still loading), and a host
-    is free to delay or batch them.
+    Called with `immediate: false` for the incremental updates
+    fired as each route in an in-flight transition resolves.
+    These are an optimization, to render parent routes while a child's model is still loading.
+    A host is free to delay or batch them.
    */
   protected scheduleOutletUpdate(_immediate = false): void {}
 
@@ -116,11 +115,11 @@ export default abstract class Router<R = unknown> {
   }
 
   /**
-    Handles an error thrown synchronously by a `didEnter` hook (classic
-    `activate`/`setupController`). The default routes it through
-    `transitionDidError` — so it reaches error actions/substates the same way
-    `enter` rejections do — and throws the resulting reason so the transition
-    promise rejects.
+    Handles an error thrown synchronously by a `didEnter` hook,
+    such as classic `activate`/`setupController`.
+    The default routes it through `transitionDidError`,
+    so it reaches error actions/substates the same way `enter` rejections do.
+    Then it throws the resulting reason, so the transition promise rejects.
    */
   protected handleDidEnterError(
     error: unknown,
@@ -136,11 +135,11 @@ export default abstract class Router<R = unknown> {
     throw reason;
   }
 
-  // Called when `intermediateTransitionTo` fires (a classic loading or error
-  // substate). Splices the substate into `currentRouteInfos` without
-  // disturbing already-rendering ancestor routes and fires `didEnter` so
-  // classic activate/setup runs. Substates are classic machinery, so the
-  // didEnter only goes to classic-interop managers.
+  // Called when `intermediateTransitionTo` fires for a classic loading or error substate.
+  // Splices the substate into `currentRouteInfos`,
+  // without disturbing already-rendering ancestor routes.
+  // Fires `didEnter` so classic activate/setup runs.
+  // Substates are classic machinery, so the didEnter only goes to classic-interop managers.
   onIntermediateTransition(newState: TransitionState<R>, transition: InternalTransition<R>): void {
     const partition = this.partitionRoutes(this.state!, newState);
     this.currentRouteInfos = [...partition.unchanged, ...partition.entered];
@@ -177,13 +176,13 @@ export default abstract class Router<R = unknown> {
     this.scheduleOutletUpdate(true);
   }
 
-  // Called once every route in the transition has resolved. Runs the rest of
-  // the lifecycle through the RouteManager API:
+  // Called once every route in the transition has resolved.
+  // Runs the rest of the lifecycle through the RouteManager API:
   //
   //   1. `willExit` + `exit` on routes leaving the hierarchy
   //   2. classic-interop `willExit(isExiting=false)` on updated routes
   //   3. awaits every entering/updating route's `enterPromise`
-  //   4. `didEnter` on entered routes (and, interop-only, updated routes)
+  //   4. `didEnter` on entered routes, and on updated routes for interop managers
   //   5. `didExit` on exited routes
   //   6. query-param finalisation, URL update, didTransition events
   onTransitionSettled(
@@ -223,9 +222,9 @@ export default abstract class Router<R = unknown> {
       }
     }
 
-    // Filter exited routes out of currentRouteInfos. Truncating to
-    // `unchanged.length` would lose entering routes that `onRouteResolved`
-    // already wrote at higher indices.
+    // Filter exited routes out of currentRouteInfos.
+    // Truncating to `unchanged.length` would lose entering routes
+    // that `onRouteResolved` already wrote at higher indices.
     const exitedBuckets = new Set(partition.exited.map((ri) => ri.bucket));
     if (this.currentRouteInfos) {
       this.currentRouteInfos = this.currentRouteInfos.filter(
@@ -233,9 +232,9 @@ export default abstract class Router<R = unknown> {
       );
     }
 
-    // "Context updated while staying mounted" is the classic update path; the
-    // RFC treats updates as a manager-internal concern, so only interop
-    // managers receive this willExit.
+    // "Context updated while staying mounted" is the classic update path.
+    // The RFC treats updates as a manager-internal concern,
+    // so only interop managers receive this willExit.
     for (const resetRouteInfo of partition.reset) {
       const { manager, bucket } = resetRouteInfo;
       if (manager !== undefined && bucket !== undefined && hasClassicInterop(manager)) {
@@ -250,10 +249,10 @@ export default abstract class Router<R = unknown> {
       }
     }
 
-    // Await all entering/updating routes' enter promises. Swallow rejections
-    // here: a rejected enterPromise has already been routed through
-    // `transitionDidError`; rethrowing would fire the global unhandled
-    // rejection handler on subsequent transitions.
+    // Await all entering/updating routes' enter promises.
+    // Swallow rejections here: a rejected enterPromise has already been routed
+    // through `transitionDidError`.
+    // Rethrowing would fire the global unhandled rejection handler on subsequent transitions.
     const enteringRouteInfos = [...partition.entered, ...partition.updatedContext];
     const enterPromises = enteringRouteInfos.map((routeInfo) => {
       const p = routeInfo.enterPromise ?? Promise.resolve(undefined);
@@ -287,8 +286,8 @@ export default abstract class Router<R = unknown> {
           }
         }
 
-        // The `enter: false` didEnter is the classic update path (see the
-        // reset loop above); only interop managers receive it.
+        // The `enter: false` didEnter is the classic update path, as in the reset loop above.
+        // Only interop managers receive it.
         for (const updatedRouteInfo of partition.updatedContext) {
           const { manager, bucket } = updatedRouteInfo;
           if (manager !== undefined && bucket !== undefined && hasClassicInterop(manager)) {
@@ -359,11 +358,10 @@ export default abstract class Router<R = unknown> {
   }
 
   /**
-    The main entry point into the router. The API is essentially
-    the same as the `map` method in `route-recognizer`.
+    The main entry point into the router.
+    The API is essentially the same as the `map` method in `route-recognizer`.
 
-    This method extracts the String handler at the last `.to()`
-    call and uses it as the name of the whole route.
+    The String handler at the last `.to()` call becomes the name of the whole route.
 
     @param {Function} callback
   */
@@ -508,7 +506,7 @@ export default abstract class Router<R = unknown> {
       // This is a no-op transition. See if query params changed.
       if (queryParamChangelist) {
         if (!wasTransitioning) {
-          // Not in an active transition — use the QP-only fast path
+          // Not in an active transition, so use the QP-only fast path,
           // which updates the URL without re-resolving route hooks.
           let newTransition = this.queryParamsTransition(
             queryParamChangelist,
@@ -520,10 +518,10 @@ export default abstract class Router<R = unknown> {
           // SAFETY: The returned OpaqueTransition should actually be this.
           return newTransition as InternalTransition<R>;
         }
-        // When a query-param-only transition is started during an active
-        // transition (for example, from beforeModel/afterModel), avoid the
-        // QP-only fast path and intentionally fall through to the normal
-        // transition path so it can abort and replace the active transition.
+        // A query-param-only transition can start during an active transition,
+        // for example from beforeModel/afterModel.
+        // Then we avoid the QP-only fast path, and intentionally fall through to the normal
+        // transition path, so it can abort and replace the active transition.
       } else {
         // No-op. No need to create a new transition.
         return this.activeTransition || new InternalTransition<R>(this, undefined, undefined);
@@ -540,7 +538,6 @@ export default abstract class Router<R = unknown> {
       return this.activeTransition!;
     }
 
-    // Create a new transition to the destination route.
     newTransition = new InternalTransition<R>(
       this,
       intent,
@@ -631,7 +628,7 @@ export default abstract class Router<R = unknown> {
         this,
         name,
         undefined,
-        // SAFETY: We know this to be the case since we removed the last item if it was QPs
+        // SAFETY: We know this to be the case, since the last item was popped above if it was QPs
         modelsArray as R[],
         queryParams
       );
@@ -664,41 +661,32 @@ export default abstract class Router<R = unknown> {
   /**
   @private
 
-  This function is called when transitioning from one URL to
-  another to determine which routes are no longer active,
-  which routes are newly active, and which routes remain
-  active but have their context changed.
+  Transitioning from one URL to another needs to know which routes became inactive,
+  which routes are newly active,
+  and which routes remain active but have their context changed.
 
-  Take a list of old routes and new routes and partition
-  them into four buckets:
+  Take a list of old routes and new routes, and partition them into four buckets:
 
-  * unchanged: the route was active in both the old and
-    new URL, and its context remains the same
-  * updated context: the route was active in both the
-    old and new URL, but its context changed. The route's
-    `setup` method, if any, will be called with the new
-    context.
-  * exited: the route was active in the old URL, but is
-    no longer active.
-  * entered: the route was not active in the old URL, but
-    is now active.
+  * unchanged: the route was active in both the old and new URL,
+    and its context remains the same.
+  * updated context: the route was active in both the old and new URL,
+    but its context changed.
+    The route's `setup` method, if any, will be called with the new context.
+  * exited: the route was active in the old URL only.
+  * entered: the route was not active in the old URL, but is active in the new URL.
 
   The PartitionedRoutes structure has four fields:
 
-  * `updatedContext`: a list of `RouteInfo` objects that
-    represent routes that remain active but have a changed
-    context
-  * `entered`: a list of `RouteInfo` objects that represent
-    routes that are newly active
-  * `exited`: a list of `RouteInfo` objects that are no
-    longer active.
+  * `updatedContext`: a list of `RouteInfo` objects
+    that represent routes that remain active but have a changed context.
+  * `entered`: a list of `RouteInfo` objects that represent routes that are newly active.
+  * `exited`: a list of `RouteInfo` objects that became inactive.
   * `unchanged`: a list of `RouteInfo` objects that remain active.
 
-  @param {Array[InternalRouteInfo<R>]} oldRoutes a list of the route
-    information for the previous URL (or `[]` if this is the
-    first handled transition)
-  @param {Array[InternalRouteInfo<R>]} newRoutes a list of the route
-    information for the new URL
+  @param {Array[InternalRouteInfo<R>]} oldRoutes a list of the route information
+    for the previous URL, or `[]` if this is the first handled transition
+  @param {Array[InternalRouteInfo<R>]} newRoutes a list of the route information
+    for the new URL
 
   @return {Partition}
 */
@@ -778,34 +766,32 @@ export default abstract class Router<R = unknown> {
       let url = this.recognizer.generate(routeName, params as Params);
 
       // transitions during the initial transition must always use replaceURL.
-      // When the app boots, you are at a url, e.g. /foo. If some route
-      // redirects to bar as part of the initial transition, you don't want to
-      // add a history entry for /foo. If you do, pressing back will immediately
-      // hit the redirect again and take you back to /bar, thus killing the back
-      // button
+      // When the app boots, you are at a url, e.g. /foo.
+      // If some route redirects to bar as part of the initial transition,
+      // you don't want to add a history entry for /foo.
+      // If you do, pressing back will immediately hit the redirect again,
+      // and take you back to /bar, thus killing the back button
       let initial = transition.isCausedByInitialTransition;
 
-      // say you are at / and you click a link to route /foo. In /foo's
-      // route, the transition is aborted using replaceWith('/bar').
-      // Because the current url is still /, the history entry for / is
-      // removed from the history. Clicking back will take you to the page
-      // you were on before /, which is often not even the app, thus killing
-      // the back button. That's why updateURL is always correct for an
-      // aborting transition that's not the initial transition
+      // say you are at / and you click a link to route /foo.
+      // In /foo's route, the transition is aborted using replaceWith('/bar').
+      // Because the current url is still /, the history entry for / is removed from the history.
+      // Clicking back will take you to the page you were on before /,
+      // which is often not even the app, thus killing the back button.
+      // That's why updateURL is always correct for an aborting transition
+      // that's not the initial transition
       let replaceAndNotAborting =
         urlMethod === 'replace' && !transition.isCausedByAbortingTransition;
 
-      // because calling refresh causes an aborted transition, this needs to be
-      // special cased - if the initial transition is a replace transition, the
-      // urlMethod should be honored here.
+      // because calling refresh causes an aborted transition, this needs to be special cased.
+      // If the initial transition is a replace transition, the urlMethod should be honored here.
       let isQueryParamsRefreshTransition = transition.queryParamsOnly && urlMethod === 'replace';
 
-      // say you are at / and you a `replaceWith(/foo)` is called. Then, that
-      // transition is aborted with `replaceWith(/bar)`. At the end, we should
-      // end up with /bar replacing /. We are replacing the replace. We only
-      // will replace the initial route if all subsequent aborts are also
-      // replaces. However, there is some ambiguity around the correct behavior
-      // here.
+      // say you are at / and `replaceWith(/foo)` is called.
+      // Then, that transition is aborted with `replaceWith(/bar)`.
+      // At the end, we should end up with /bar replacing /. We are replacing the replace.
+      // We only will replace the initial route if all subsequent aborts are also replaces.
+      // However, there is some ambiguity around the correct behavior here.
       let replacingReplace =
         urlMethod === 'replace' && transition.isCausedByAbortingReplaceTransition;
 
@@ -817,20 +803,18 @@ export default abstract class Router<R = unknown> {
     }
   }
 
-  // Exposed so manager-driven routers can finalize QPs as part of their
-  // own transition settlement.
+  // Exposed so manager-driven routers can finalize QPs
+  // as part of their own transition settlement.
   finalizeQueryParamChange(
     resolvedHandlers: InternalRouteInfo<R>[],
     newQueryParams: Dict<unknown>,
     transition: OpaqueTransition
   ) {
-    // We fire a finalizeQueryParamChange event which
-    // gives the new route hierarchy a chance to tell
-    // us which query params it's consuming and what
-    // their final values are. If a query param is
-    // no longer consumed in the final route hierarchy,
-    // its serialized segment will be removed
-    // from the URL.
+    // We fire a finalizeQueryParamChange event,
+    // which gives the new route hierarchy a chance to tell us
+    // which query params it's consuming and what their final values are.
+    // If the final route hierarchy does not consume a query param,
+    // its serialized segment is dropped from the URL.
 
     for (let k in newQueryParams) {
       if (newQueryParams.hasOwnProperty(k) && newQueryParams[k] === null) {
@@ -928,9 +912,9 @@ export default abstract class Router<R = unknown> {
   }
 
   /**
-    Clears the current and target route routes and triggers exit
-    on each of them starting at the leaf and traversing up through
-    its ancestors.
+    Clears the current and target route routes,
+    and triggers exit on each of them,
+    starting at the leaf and traversing up through its ancestors.
   */
   reset() {
     if (this.state) {
@@ -974,7 +958,7 @@ export default abstract class Router<R = unknown> {
     Transition into the specified named route.
 
     If necessary, trigger the exit callback on any routes
-    that are no longer represented by the target route.
+    that the target route does not represent.
 
     @param {String} name the name of the route
   */
@@ -1026,10 +1010,9 @@ export default abstract class Router<R = unknown> {
   }
 
   /**
-    Identical to `transitionTo` except that the current URL will be replaced
-    if possible.
+    Identical to `transitionTo`, except that the current URL will be replaced if possible.
 
-    This method is intended primarily for use with `replaceState`.
+    Intended primarily for use with `replaceState`.
 
     @param {String} name the name of the route
   */
@@ -1038,8 +1021,7 @@ export default abstract class Router<R = unknown> {
   }
 
   /**
-    Take a named route and context objects and generate a
-    URL.
+    Take a named route and context objects and generate a URL.
 
     @param {String} name the name of the route to generate
       a URL for

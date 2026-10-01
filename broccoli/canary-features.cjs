@@ -10,9 +10,10 @@ module.exports = function canaryFeatures() {
         {
           source: '@ember/canary-features',
           flags: Object.assign(
-            // explicit list of additional exports within @ember/canary-features
-            // without adding this (with a null value) an error is thrown during
-            // the feature replacement process (e.g. XYZ is not a supported flag)
+            // Each additional export of @ember/canary-features
+            // must be listed here with a null value.
+            // Without it, the feature replacement process throws an error,
+            // for example "XYZ is not a supported flag".
             {
               FEATURES: null,
               DEFAULT_FEATURES: null,

@@ -22,7 +22,7 @@ function scheduledDestroyComponent(component: GlimmerComponent): void {
 }
 
 /**
- * This component manager runs in Ember.js environments and extends the base component manager to:
+ * Ember.js environments need more than the base component manager provides:
  *
  * 1. Properly destroy the component's associated `meta` data structure
  * 2. Schedule destruction using Ember's runloop

@@ -116,9 +116,9 @@ export function trackedObject<ObjectType extends object>(
     equals: options?.equals ?? Object.is,
     description: options?.description,
     /**
-     * SAFETY: we are trying to mimic the same behavior as a plain object, so if anything about
-     *         the object that is returned behaves differently from a native object in a surprising
-     *         way, we should fix that and make the behavior match native objects.
+     * SAFETY: we are trying to mimic the same behavior as a plain object.
+     *         If the returned object behaves differently from a native object in a surprising way,
+     *         we should fix that and make the behavior match native objects.
      */
   }) as unknown as ObjectType;
 }

@@ -1,14 +1,14 @@
 const FailureOnlyReporter = require('testem-failure-only-reporter');
 
 const variants = [
-  // When true, even deprecations that are not yet at the "enabled" version will
-  // be enabled, so we can ensure that they and their tests will continue to
-  // function correctly when we hit the enabled version.
+  // When true, even deprecations that are not yet at the "enabled" version will be enabled.
+  // This ensures that they and their tests will continue to function correctly
+  // when we hit the enabled version.
   'ALL_DEPRECATIONS_ENABLED',
 
-  // This overrides the current version of ember for purposes of seeing how
-  // deprecations behave. We use it in CI to prove that after a deprecation has
-  // hit its "until" version, the tests for it will behave correctly.
+  // This overrides the current version of ember for purposes of seeing how deprecations behave.
+  // We use it in CI to prove that after a deprecation has hit its "until" version,
+  // the tests for it will behave correctly.
   'OVERRIDE_DEPRECATION_VERSION',
 
   // This enables all canary feature flags for unreleased feature within Ember

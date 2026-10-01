@@ -13,7 +13,7 @@ import { set } from './property_set';
 
   @method deprecateProperty
   @param {Object} object The object to add the deprecated property to.
-  @param {String} deprecatedKey The property to add (and print deprecation warnings upon accessing).
+  @param {String} deprecatedKey The property to add. Accessing it prints a deprecation warning.
   @param {String} newKey The property that will be aliased.
   @private
   @since 1.7.0

@@ -81,8 +81,8 @@ export function buildLegacyPath({ head, tail, loc }: PathExpressionParams): ASTv
 
       let parts = [...values];
 
-      // you are not supposed to already have `this` or `@` in the parts, but since this is
-      // deprecated anyway, we will infer what you meant and allow it
+      // you are not supposed to already have `this` or `@` in the parts,
+      // but since this is deprecated anyway, we will infer what you meant and allow it
       if (parts[0] !== 'this' && !parts[0]?.startsWith('@')) {
         if (this.head.type === 'ThisHead') {
           parts.unshift('this');

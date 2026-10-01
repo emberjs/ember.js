@@ -17,13 +17,12 @@ import {
 } from './constants';
 
 export default class StrictModeValidationPass {
-  // This is done at the end of all the keyword normalizations
-  // At this point any free variables that isn't a valid keyword
-  // in its context should be considered a syntax error. We
-  // probably had various opportunities to do this inline in the
-  // earlier passes, but this aims to produce a better syntax
-  // error as we don't always have the right loc-context to do
-  // so in the other spots.
+  // This is done at the end of all the keyword normalizations.
+  // At this point, any free variable that isn't a valid keyword in its context
+  // should be considered a syntax error.
+  // We probably had various opportunities to do this inline in the earlier passes.
+  // Doing it here produces a better syntax error,
+  // as we don't always have the right loc-context to do so in the other spots.
   static validate(template: mir.Template): Result<mir.Template> {
     return new this(template).validate();
   }

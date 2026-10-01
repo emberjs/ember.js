@@ -1970,11 +1970,10 @@ moduleFor(
 
       await expectWarning(() => this.click(contextLink[0]), warningMessage);
 
-      // Set the destinationRoute (context is still null).
+      // context is still null
       runTask(() => controller.set('destinationRoute', 'thing'));
       assertLinkStatus(contextLink);
 
-      // Set the routeContext to an id
       runTask(() => controller.set('routeContext', '456'));
       assertLinkStatus(contextLink, '/thing/456');
 
@@ -1982,11 +1981,9 @@ moduleFor(
       runTask(() => controller.set('routeContext', 0));
       assertLinkStatus(contextLink, '/thing/0');
 
-      // Set the routeContext to an object
       runTask(() => controller.set('routeContext', { id: 123 }));
       assertLinkStatus(contextLink, '/thing/123');
 
-      // Set the destinationRoute back to null.
       runTask(() => controller.set('destinationRoute', null));
       assertLinkStatus(contextLink);
 

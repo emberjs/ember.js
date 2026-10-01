@@ -99,8 +99,8 @@ function multiArrayMacro(
   @for @ember/object/computed
   @static
   @param {String} dependentKey
-  @return {ComputedProperty} computes the sum of all values in the
-  dependentKey's array
+  @return {ComputedProperty} computes the sum of all values
+  in the dependentKey's array
   @since 1.4.0
   @public
 */
@@ -155,9 +155,9 @@ export function sum(dependentKey: string) {
   lordByron.maxChildAge; // 8
   ```
 
-  If the types of the arguments are not numbers, they will be converted to
-  numbers and the type of the return value will always be `Number`. For example,
-  the max of a list of Date objects will be the highest timestamp as a `Number`.
+  If the types of the arguments are not numbers, they will be converted
+  to numbers, and the type of the return value will always be `Number`.
+  For example, the max of a list of Date objects will be the highest timestamp as a `Number`.
   This behavior is consistent with `Math.max`.
 
   @method max
@@ -219,9 +219,9 @@ export function max(dependentKey: string) {
   lordByron.minChildAge; // 5
   ```
 
-  If the types of the arguments are not numbers, they will be converted to
-  numbers and the type of the return value will always be `Number`. For example,
-  the min of a list of Date objects will be the lowest timestamp as a `Number`.
+  If the types of the arguments are not numbers, they will be converted
+  to numbers, and the type of the return value will always be `Number`.
+  For example, the min of a list of Date objects will be the lowest timestamp as a `Number`.
   This behavior is consistent with `Math.min`.
 
   @method min
@@ -443,8 +443,8 @@ export function mapBy(dependentKey: string, propertyKey: string) {
   function filterCallback(item, index, array);
   ```
 
-  In the callback, return a truthy value that coerces to true to keep the
-  element, or a falsy to reject it.
+  In the callback, return a truthy value that coerces to true
+  to keep the element, or a falsy to reject it.
 
   Example:
 
@@ -501,9 +501,9 @@ export function mapBy(dependentKey: string, propertyKey: string) {
   hamster.remainingChores; // []
   ```
 
-  Finally, you can optionally pass an array of additional dependent keys as the
-  second parameter to the macro, if your filter function relies on any external
-  values:
+  Finally, you can optionally pass an array of additional dependent keys
+  as the second parameter to the macro,
+  if your filter function relies on any external values:
 
   ```javascript
   import { filter } from '@ember/object/computed';
@@ -689,7 +689,7 @@ export function filterBy(dependentKey: string, propertyKey: string, value?: unkn
   @for @ember/object/computed
   @static
   @param {String} propertyKey*
-  @return {ComputedProperty} computes a new array with all the
+  @return {ComputedProperty} computes a new array with all
   unique elements from the dependent array
   @public
 */
@@ -908,8 +908,8 @@ export function intersect(dependentKey: string, ...additionalDependentKeys: stri
 }
 
 /**
-  A computed property which returns a new array with all the properties from the
-  first dependent array that are not in the second dependent array.
+  A computed property which returns a new array with all the properties
+  from the first dependent array that are not in the second dependent array.
 
   Example:
 
@@ -1037,9 +1037,9 @@ export function collect(dependentKey: string, ...additionalDependentKeys: string
 type SortDefinition = (itemA: any, itemB: any) => number;
 
 /**
-  A computed property which returns a new array with all the properties from the
-  first dependent array sorted based on a property or sort function. The sort
-  macro can be used in two different ways:
+  A computed property which returns a new array with all the properties
+  from the first dependent array sorted based on a property or sort function.
+  The sort macro can be used in two different ways:
 
   1. By providing a sort callback function
   2. By providing an array of keys to sort the array
@@ -1054,14 +1054,13 @@ type SortDefinition = (itemA: any, itemB: any) => number;
   - `itemA` the first item to compare.
   - `itemB` the second item to compare.
 
-  This function should return negative number (e.g. `-1`) when `itemA` should
-  come before `itemB`. It should return positive number (e.g. `1`) when `itemA`
-  should come after `itemB`. If the `itemA` and `itemB` are equal this function
-  should return `0`.
+  Return a negative number, for example `-1`, when `itemA` should come before `itemB`.
+  Return a positive number, for example `1`, when `itemA` should come after `itemB`.
+  If `itemA` and `itemB` are equal, return `0`.
 
-  Therefore, if this function is comparing some numeric values, simple `itemA -
-  itemB` or `itemA.get( 'foo' ) - itemB.get( 'foo' )` can be used instead of
-  series of `if`.
+  Therefore, if the sort function compares numeric values,
+  a simple `itemA - itemB` or `itemA.get( 'foo' ) - itemB.get( 'foo' )`
+  can be used instead of a series of `if`.
 
   Example:
 
@@ -1096,9 +1095,9 @@ type SortDefinition = (itemA: any, itemB: any) => number;
   todoList.priorityTodos; // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
   ```
 
-  You can also optionally pass an array of additional dependent keys as the
-  second parameter, if your sort function is dependent on additional values that
-  could changes:
+  You can also optionally pass an array of additional dependent keys
+  as the second parameter,
+  if your sort function is dependent on additional values that could change:
 
   ```js
   import EmberObject, { set } from '@ember/object';

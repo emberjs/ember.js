@@ -32,8 +32,8 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
   exampleObject.get('description');  // 'Foo is a whizboo baz'
   ```
 
-  While `content` is unset, setting a property to be delegated will throw an
-  Error.
+  While `content` is unset,
+  setting a property to be delegated will throw an Error.
 
   ```javascript
   import ObjectProxy from '@ember/object/proxy';
@@ -85,11 +85,13 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
   @deprecated Use tracked properties or a native `Proxy` instead.
 */
 interface ObjectProxy<Content = unknown> extends _ProxyMixin<Content> {
-  // Proxies forward to their content. This behavior *actually* comes from the
-  // ProxyMixin type itself, via its `unknownProperty` implementation, but if we
-  // try to apply it there, `ObjectProxy` does not correctly extend both the
-  // `EmberObject` and `ProxyMixin` types. Instead, we apply it here, and that
-  // gives us the desired behavior for this which actually *use* `ObjectProxy`.
+  // Proxies forward to their content.
+  // This behavior *actually* comes from the ProxyMixin type itself,
+  // via its `unknownProperty` implementation.
+  // But if we try to apply it there,
+  // `ObjectProxy` does not correctly extend both the `EmberObject` and `ProxyMixin` types.
+  // Instead, we apply it here,
+  // and that gives us the desired behavior for this which actually *use* `ObjectProxy`.
   get<K extends keyof Content>(keyName: K): Content[K];
   get<K extends keyof this>(keyname: K): this[K];
   get(keyName: string): unknown;
@@ -98,9 +100,9 @@ interface ObjectProxy<Content = unknown> extends _ProxyMixin<Content> {
   set<K extends keyof this>(keyName: K, value: this[K]): this[K];
   set(keyName: string): unknown;
 
-  // These types for `getProperties` and `setProperties` properly merge the
-  // Content and `this` type for the proxy so callers actually get the safe
-  // result.
+  // These types for `getProperties` and `setProperties`
+  // properly merge the Content and `this` type for the proxy,
+  // so callers actually get the safe result.
   getProperties<K extends keyof Content | keyof this>(
     list: K[]
   ): Pick<Content, Exclude<K, keyof this>> & Pick<this, Exclude<K, keyof Content>>;

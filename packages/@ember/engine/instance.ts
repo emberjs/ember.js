@@ -41,8 +41,8 @@ export interface EngineInstanceOptions {
 }
 
 /**
-  The `EngineInstance` encapsulates all of the stateful aspects of a
-  running `Engine`.
+  The `EngineInstance` encapsulates all of the stateful aspects
+  of a running `Engine`.
 
   @public
   @class EngineInstance
@@ -51,13 +51,13 @@ export interface EngineInstanceOptions {
   @uses ContainerProxyMixin
 */
 
-// Note on types: since `EngineInstance` uses `RegistryProxyMixin` and
-// `ContainerProxyMixin`, which respectively implement the same `RegistryMixin`
-// and `ContainerMixin` types used to define `InternalOwner`, this is the same
-// type as `InternalOwner` from TS's POV. The point of the explicit `extends`
-// clauses for `InternalOwner` and `Owner` is to keep us honest: if this stops
-// type checking, we have broken part of our public API contract. Medium-term,
-// the goal here is to `EngineInstance` simple be `Owner`.
+// Note on types: `EngineInstance` uses `RegistryProxyMixin` and `ContainerProxyMixin`.
+// They respectively implement the same `RegistryMixin` and `ContainerMixin` types
+// used to define `InternalOwner`.
+// So this is the same type as `InternalOwner` from TS's POV.
+// The explicit `extends` clauses for `InternalOwner` and `Owner` keep us honest:
+// if this stops type checking, we have broken part of our public API contract.
+// Medium-term, the goal here is for `EngineInstance` to be `Owner`.
 interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
 class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
   /**
@@ -66,9 +66,10 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
    @param {Registry} registry
    @param {BootOptions} options
    */
-  // This is effectively an "abstract" method: it defines the contract a
-  // subclass (e.g. `ApplicationInstance`) must follow to implement this
-  // behavior, but an `EngineInstance` has no behavior of its own here.
+  // This is effectively an "abstract" method.
+  // It defines the contract a subclass, e.g. `ApplicationInstance`,
+  // must follow to implement this behavior.
+  // An `EngineInstance` has no behavior of its own here.
   static setupRegistry(_registry: Registry, _options?: BootOptions) {}
 
   /**
@@ -111,8 +112,9 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
   _bootPromise: RSVP.Promise<this> | null = null;
 
   /**
-    Initialize the `EngineInstance` and return a promise that resolves
-    with the instance itself when the boot process is complete.
+    Boots the `EngineInstance`.
+    Returns a promise that resolves with the instance itself
+    when the boot process is complete.
 
     The primary task here is to run any registered instance initializers.
 
@@ -136,16 +138,14 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
   }
 
   /**
-    Unfortunately, a lot of existing code assumes booting an instance is
-    synchronous – specifically, a lot of tests assume the last call to
-    `app.advanceReadiness()` or `app.reset()` will result in a new instance
-    being fully-booted when the current runloop completes.
+    A lot of existing code assumes booting an instance is synchronous.
+    Specifically, a lot of tests assume the last call to `app.advanceReadiness()` or `app.reset()`
+    will result in a new instance being fully-booted when the current runloop completes.
 
-    We would like new code (like the `visit` API) to stop making this
-    assumption, so we created the asynchronous version above that returns a
-    promise. But until we have migrated all the code, we would have to expose
-    this method for use *internally* in places where we need to boot an instance
-    synchronously.
+    We would like new code, such as the `visit` API, to stop making this assumption.
+    So we created the asynchronous version above that returns a promise.
+    But until we have migrated all the code, we expose this method for use *internally*,
+    in places where we need to boot an instance synchronously.
 
     @private
   */

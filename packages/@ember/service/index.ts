@@ -17,8 +17,8 @@ import type { InjectionDecorator } from '@ember/-internals/metal/lib/decorator-u
   @static
   @since 1.10.0
   @for @ember/service
-  @param {String} name (optional) name of the service to inject, defaults to
-         the property's name
+  @param {String} name (optional) name of the service to inject,
+         defaults to the property's name
   @return {ComputedDecorator} injection decorator instance
   @public
   @deprecated Please import `service` instead.
@@ -44,8 +44,8 @@ export function inject(
 }
 
 /**
-  Creates a property that lazily looks up a service in the container. There are
-  no restrictions as to what objects a service can be injected into.
+  Creates a property that lazily looks up a service in the container.
+  There are no restrictions as to what objects a service can be injected into.
 
   Example:
 
@@ -85,8 +85,8 @@ export function inject(
   @static
   @since 4.1.0
   @for @ember/service
-  @param {String} name (optional) name of the service to inject, defaults to
-         the property's name
+  @param {String} name (optional) name of the service to inject,
+         defaults to the property's name
   @return {ComputedDecorator} injection decorator instance
   @public
 */
@@ -138,9 +138,9 @@ export default class Service extends FrameworkObject {
   Then `@service` can check that the service is registered correctly, and APIs
   like `owner.lookup('service:example')` can return `ExampleService`.
  */
-// NOTE: this cannot be `Record<string, Service | undefined>`, convenient as
-// that would be for end users, because there is no actual contract to that
-// effect with Ember -- and in the future this choice would allow us to have
-// registered services which have no base class.
+// NOTE: this cannot be `Record<string, Service | undefined>`,
+// convenient as that would be for end users.
+// Ember has no actual contract to that effect.
+// This choice also leaves room for registered services which have no base class.
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Registry extends Record<string, object | undefined> {}

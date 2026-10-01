@@ -7,8 +7,8 @@ import Mixin from '@ember/object/mixin';
 import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixin-create';
 import type { ContainerProxy } from '@ember/-internals/owner';
 
-// This is defined as a separate interface so that it can be used in the definition of
-// `Owner` without also including the `__container__` property.
+// This is defined as a separate interface, so that it can be used in the definition of `Owner`
+// without also including the `__container__` property.
 
 /**
   ContainerProxyMixin is used to provide public access to specific

@@ -4,8 +4,9 @@ interface NestedHooks {
   test: (name: string, callback: (assert: Assert) => void) => void;
 
   /**
-   * Runs after the last test. If additional tests are defined after the
-   * module's queue has emptied, it will not run this hook again.
+   * Runs after the last test.
+   * If additional tests are defined after the module's queue has emptied,
+   * it will not run this hook again.
    */
   after: (fn: (assert: Assert) => void) => void;
 

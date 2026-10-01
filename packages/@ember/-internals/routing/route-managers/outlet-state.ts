@@ -13,9 +13,8 @@ export interface OutletParent {
    * Represents what, if any, should be rendered into the next {{outlet}} found
    * at this level.
    *
-   * This used to be a dictionary of children outlets, including the {{outlet}}
-   * "main" outlet any {{outlet "named"}} named outlets. Since named outlets
-   * are not a thing anymore, this can now just be a single`child`.
+   * Ember does not support named outlets,
+   * so this is a single `child` and not a dictionary of child outlets.
    */
   outlets: {
     main: OutletState | undefined;

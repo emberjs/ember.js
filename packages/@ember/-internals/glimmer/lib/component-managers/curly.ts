@@ -87,9 +87,9 @@ function aliasIdToElementId(args: VMArguments, props: any) {
   }
 }
 
-// We must traverse the attributeBindings in reverse keeping track of
-// what has already been applied. This is essentially refining the concatenated
-// properties applying right to left.
+// We must traverse the attributeBindings in reverse,
+// keeping track of what has already been applied.
+// This refines the concatenated properties, applying right to left.
 function applyAttributeBindings(
   attributeBindings: Array<string>,
   component: Component,
@@ -254,10 +254,8 @@ export default class CurlyComponentManager
   }
 
   /*
-   * This hook is responsible for actually instantiating the component instance.
-   * It also is where we perform additional bookkeeping to support legacy
-   * features like exposed by view mixins like ChildViewSupport, ActionSupport,
-   * etc.
+   * Legacy features from view mixins, like ChildViewSupport and ActionSupport,
+   * need bookkeeping at instantiation time, so that bookkeeping lives here.
    */
   create(
     owner: Owner,
@@ -267,8 +265,8 @@ export default class CurlyComponentManager
     dynamicScope: DynamicScope,
     callerSelfRef: Reference
   ): ComponentStateBucket {
-    // Get the nearest concrete component instance from the scope. "Virtual"
-    // components will be skipped.
+    // "Virtual" components are skipped,
+    // so this is the nearest concrete component instance.
     let parentView = dynamicScope.view;
 
     // Capture the arguments, which tells Glimmer to give us our own, stable
@@ -303,18 +301,18 @@ export default class CurlyComponentManager
     beginUntrackFrame();
     let component = ComponentClass.create(props);
 
-    // Store capturedArgs in a WeakMap keyed by the component instance so that
-    // PROPERTY_DID_CHANGE can look them up
+    // Store capturedArgs in a WeakMap keyed by the component instance,
+    // so that PROPERTY_DID_CHANGE can look them up
     COMPONENT_ARGS_MAP.set(component, capturedArgs);
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
-    // We become the new parentView for downstream components, so save our
-    // component off on the dynamic scope.
+    // We become the new parentView for downstream components,
+    // so save our component off on the dynamic scope.
     dynamicScope.view = component;
 
-    // Unless we're the root component, we need to add ourselves to our parent
-    // component's childViews array.
+    // Unless we're the root component,
+    // we need to add ourselves to our parent component's childViews array.
     if (parentView !== null && parentView !== undefined) {
       addChildView(parentView, component);
     }

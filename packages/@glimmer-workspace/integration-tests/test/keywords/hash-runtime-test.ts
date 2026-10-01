@@ -139,10 +139,8 @@ class KeywordHashRuntime extends RenderTest {
 jitSuite(KeywordHashRuntime);
 
 /**
- * This function is used to hide a variable from the transpiler, so that it
- * doesn't get removed as "unused". It does not actually do anything with the
- * variable, it just makes it be part of an expression that the transpiler
- * won't remove.
+ * Hides a variable from the transpiler, so that it doesn't get removed as "unused".
+ * The variable becomes part of an expression that the transpiler won't remove.
  *
  * It's a bit of a hack, but it's necessary for testing.
  *

@@ -10,9 +10,9 @@ import type { RouteManagerFactory } from './api';
 const ROUTE_MANAGERS = new WeakMap<object, RouteManagerFactory>();
 
 /**
-  Associates a `RouteManagerFactory` with `definition`. The router calls the
-  factory the first time it needs a manager for any route whose class extends
-  (directly or via prototype chain) `definition`.
+  Associates a `RouteManagerFactory` with `definition`.
+  The router calls the factory the first time it needs a manager
+  for any route whose class extends `definition`, directly or via prototype chain.
 
   ```ts
   import { setRouteManager } from '@ember/routing';
@@ -22,9 +22,8 @@ const ROUTE_MANAGERS = new WeakMap<object, RouteManagerFactory>();
   setRouteManager((owner) => new MyRouteManager(owner), MyRoute);
   ```
 
-  @param factory Factory invoked once per owner with that owner as its only
-    argument. Must return an object whose `capabilities` field was produced by
-    `routeCapabilities`.
+  @param factory Factory invoked once per owner, with that owner as its only argument.
+    Must return an object whose `capabilities` field was produced by `routeCapabilities`.
   @param definition The route class or object the manager applies to.
  */
 export function setRouteManager<Def extends object>(
@@ -48,19 +47,20 @@ export function setRouteManager<Def extends object>(
 }
 
 /**
-  Returns the `RouteManagerFactory` registered for `definition`, walking the
-  prototype chain. Returns `undefined` if no manager is registered.
+  Returns the `RouteManagerFactory` registered for `definition`,
+  walking the prototype chain. Returns `undefined` if no manager is registered.
 
-  Note that this only returns the factory, the router is responsible for
-  invoking it (typically once per owner) and caching the resulting manager
-  instance.
+  Note that this only returns the factory.
+  The router is responsible for invoking it, typically once per owner,
+  and caching the resulting manager instance.
 
-  Not to be confused with `getRouteManagement` (the route-managers layer): this registry is keyed by the route **class** and answers "which kind
-  of manager handles routes of this class?", while `getRouteManagement` is keyed
-  by a route **instance** and returns the live manager instance + bucket driving
-  it. `EmberRouter.getRoute` resolves the factory here and instantiates the
-  manager and bucket; `ClassicRouteManager.createRoute` records the
-  per-instance result via `associateRouteManagement`.
+  Not to be confused with `getRouteManagement` in the route-managers layer.
+  This registry is keyed by the route **class**,
+  and answers "which kind of manager handles routes of this class?".
+  `getRouteManagement` is keyed by a route **instance**,
+  and returns the live manager instance + bucket driving it.
+  `EmberRouter.getRoute` resolves the factory here and instantiates the manager and bucket.
+  `ClassicRouteManager.createRoute` records the per-instance result via `associateRouteManagement`.
  */
 export function getRouteManager(definition: object): RouteManagerFactory | undefined {
   let pointer: object | null = definition;

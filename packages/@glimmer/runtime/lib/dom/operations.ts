@@ -61,9 +61,8 @@ export class DOMOperations {
     }
 
     if ((isElementInMathMlNamespace || isElementInSVGNamespace) && !isHTMLIntegrationPoint) {
-      // FIXME: This does not properly handle <font> with color, face, or
-      // size attributes, which is also disallowed by the spec. We should fix
-      // this.
+      // FIXME: This does not properly handle <font> with color, face, or size attributes,
+      // which is also disallowed by the spec. We should fix this.
       if (BLACKLIST_TABLE[tag]) {
         throw new Error(`Cannot create a ${tag} inside an SVG context`);
       }
@@ -100,8 +99,8 @@ export class DOMOperations {
       nextSibling.insertAdjacentHTML('beforebegin', html);
       last = expect(nextSibling.previousSibling, 'bug in insertAdjacentHTML?');
     } else {
-      // Non-element nodes do not support insertAdjacentHTML, so add an
-      // element and call it on that element. Then remove the element.
+      // Non-element nodes do not support insertAdjacentHTML,
+      // so add an element and call it on that element. Then remove the element.
       const { uselessElement } = this;
 
       parent.insertBefore(uselessElement, nextSibling);

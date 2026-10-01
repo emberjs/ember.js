@@ -163,10 +163,11 @@ interface RenderSettledDeferred {
 
 let renderSettledDeferred: RenderSettledDeferred | null = null;
 /*
-  Returns a promise which will resolve when rendering has settled. Settled in
-  this context is defined as when all of the tags in use are "current" (e.g.
-  `renderers.every(r => r._isValid())`). When this is checked at the _end_ of
-  the run loop, this essentially guarantees that all rendering is completed.
+  Returns a promise which will resolve when rendering has settled.
+  Settled in this context means that all of the tags in use are "current",
+  e.g. `renderers.every(r => r._isValid())`.
+  When this is checked at the _end_ of the run loop,
+  this essentially guarantees that all rendering is completed.
 
   @method renderSettled
   @returns {Promise<void>} a promise which fulfills when rendering has settled
@@ -176,8 +177,8 @@ export function renderSettled() {
     let resolve!: () => void;
     let promise = new Promise<void>((r) => (resolve = r));
     renderSettledDeferred = { promise, resolve };
-    // if there is no current runloop, the promise created above will not have
-    // a chance to resolve (because its resolved in backburner's "end" event)
+    // if there is no current runloop, the promise created above will not have a chance to resolve,
+    // because it's resolved in backburner's "end" event
     if (!_getCurrentRunLoop()) {
       // ensure a runloop has been kicked off
       _backburner.schedule('actions', null, NO_OP);
@@ -333,8 +334,8 @@ export class RendererState {
           assert('has root', root);
 
           if (root.destroyed) {
-            // add to the list of roots to be removed
-            // they will be removed from `this._roots` later
+            // `this.#roots` is being iterated,
+            // so destroyed roots are spliced out after the loop
             removedRoots.push(root);
 
             // skip over roots that have been marked as destroyed
@@ -490,8 +491,8 @@ export function renderComponent(
       isInteractive?: boolean;
       /**
        * All other options are forwarded to the underlying renderer.
-       * (its API is currently private and out of scope for this RFC,
-       *  so passing additional things here is also considered private API)
+       * Its API is private and is not covered by the RFC,
+       * so passing additional things here is also considered private API.
        */
       [rendererOption: string]: unknown;
     };
@@ -540,19 +541,18 @@ export function renderComponent(
   existing?.result.destroy();
   /**
    * We can only replace the inner HTML the first time.
-   * Because destruction is async, it won't be safe to
-   * do this again, and we'll have to rely on the above destroy.
+   * Because destruction is async, it won't be safe to do this again,
+   * and we'll have to rely on the above destroy.
    */
   if (!existing && isDOMElement(into)) {
     into.innerHTML = '';
   }
 
   /**
-   * If there's an existing render result with valid bounds, use its
-   * firstNode as the nextSibling so that new content is inserted at
-   * the same DOM position. This ensures stable ordering when multiple
-   * renderComponent calls target the same element and one is re-invoked
-   * (e.g., due to tracked dependency changes).
+   * If there's an existing render result with valid bounds,
+   * use its firstNode as the nextSibling, so that new content is inserted at the same DOM position.
+   * This ensures stable ordering when multiple renderComponent calls target the same element,
+   * and one is re-invoked (e.g., due to tracked dependency changes).
    *
    * The old content's DOM nodes are still present (destruction is async),
    * so firstNode() is a valid position reference. The new content is placed
@@ -593,8 +593,8 @@ const RENDER_CACHE = new WeakMap<RendererCacheKey, RenderCacheEntry>();
 const RENDERER_CACHE = new WeakMap<object, BaseRenderer>();
 
 /**
- * The application seeds its `renderer:-dom` service which allows for
- * router-aware resolver to resolve {{mount}}
+ * The application seeds its `renderer:-dom` service,
+ * which allows for router-aware resolver to resolve {{mount}}
  */
 export function setRenderer(owner: object, renderer: BaseRenderer): void {
   RENDERER_CACHE.set(owner, renderer);

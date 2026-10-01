@@ -36,9 +36,9 @@ type EventName = 'routeWillChange' | 'routeDidChange';
 /**
    The Router service is the public API that provides access to the router.
 
-   The immediate benefit of the Router service is that you can inject it into components,
-   giving them a friendly way to initiate transitions and ask questions about the current
-   global router state.
+   The immediate benefit of the Router service is that you can inject it into components.
+   This gives them a friendly way to initiate transitions,
+   and to ask questions about the current global router state.
 
    In this example, the Router service is injected into a component to initiate a transition
    to a dedicated route:
@@ -197,9 +197,9 @@ class RouterService extends Service {
      This behavior is different from calling `transitionTo` on a route or `transitionToRoute` on a controller.
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
 
-     In the following example we use the Router service to navigate to a route with a
-     specific model from a Component in the first action, and in the second we trigger
-     a query-params only transition.
+     In the following example, the first action uses the Router service
+     to navigate from a Component to a route with a specific model.
+     The second action triggers a query-params only transition.
 
      ```gjs {data-filename="app/components/example.gjs"}
      import Component from '@glimmer/component';
@@ -225,8 +225,8 @@ class RouterService extends Service {
 
      @method transitionTo
      @param {String} [routeNameOrUrl] the name of the route or a URL
-     @param {...Object} [models] the model(s) or identifier(s) to be used while
-       transitioning to the route.
+     @param {...Object} [models] the model(s) or identifier(s) to be used
+       while transitioning to the route.
      @param {Object} [options] optional hash with a queryParams property
        containing a mapping of query parameters. May be supplied as the only
       parameter to trigger a query-parameter-only transition.
@@ -236,8 +236,6 @@ class RouterService extends Service {
    */
   transitionTo(...args: RouteArgs): Transition {
     if (resemblesURL(args[0])) {
-      // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
-      // in 3.6+, so it can be removed when TS is upgraded.
       return this._router._doURLTransition('transitionTo', args[0]);
     }
 
@@ -277,8 +275,8 @@ class RouterService extends Service {
 
      @method replaceWith
      @param {String} routeNameOrUrl the name of the route or a URL of the desired destination
-     @param {...Object} models the model(s) or identifier(s) to be used while
-       transitioning to the route i.e. an object of params to pass to the destination route
+     @param {...Object} models the model(s) or identifier(s) to be used
+       while transitioning to the route i.e. an object of params to pass to the destination route
      @param {Object} [options] optional hash with a queryParams property
        containing a mapping of query parameters
      @return {Transition} the transition object associated with this
@@ -290,8 +288,8 @@ class RouterService extends Service {
   }
 
   /**
-    Generate a URL based on the supplied route name and optionally a model. The
-    URL is returned as a string that can be used for any purpose.
+    Generate a URL based on the supplied route name and optionally a model.
+    The URL is returned as a string that can be used for any purpose.
 
     In this example, the URL for the `author.books` route for a given author
     is copied to the clipboard.
@@ -375,8 +373,8 @@ class RouterService extends Service {
 
   /**
      Returns `true` if `routeName/models/queryParams` is the active route, where `models` and `queryParams` are optional.
-     See [model](api/ember/release/classes/Route/methods/model?anchor=model) and
-     [queryParams](/api/ember/3.7/classes/Route/properties/queryParams?anchor=queryParams) for more information about these arguments.
+     See [model](api/ember/release/classes/Route/methods/model?anchor=model)
+     and [queryParams](/api/ember/3.7/classes/Route/properties/queryParams?anchor=queryParams) for more information about these arguments.
 
      In the following example, `isActive` will return `true` if the current route is `/posts`.
 
@@ -452,8 +450,8 @@ class RouterService extends Service {
       // assumption but may be wrong: `extractRouteArgs` correctly returns it
       // as `string | undefined`. There may be bugs if `_prepareQueryParams`
       // does not correctly account for `undefined` values for `routeName`.
-      //  Spoilers: under the hood this currently uses router.js APIs which
-      // *do not* account for this being `undefined`.
+      // Spoilers: under the hood this uses router.js APIs,
+      // which *do not* account for this being `undefined`.
       let targetRouteName = routeName as string;
 
       queryParams = Object.assign({}, queryParams);
@@ -479,14 +477,14 @@ class RouterService extends Service {
   }
 
   /**
-     Takes a string URL and returns a `RouteInfo` for the leafmost route represented
-     by the URL. Returns `null` if the URL is not recognized. This method expects to
-     receive the actual URL as seen by the browser including the app's `rootURL`.
+     Takes a string URL and returns a `RouteInfo` for the leafmost route represented by the URL.
+     Returns `null` if the URL is not recognized.
+     Pass the actual URL as seen by the browser, including the app's `rootURL`.
 
      See [RouteInfo](/ember/release/classes/RouteInfo) for more info.
 
-     In the following example `recognize` is used to verify if a path belongs to our
-     application before transitioning to it.
+     In the following example, `recognize` verifies if a path belongs to our application
+     before transitioning to it.
 
      ```js
      import Component from '@ember/component';
@@ -520,11 +518,11 @@ class RouterService extends Service {
   }
 
   /**
-    Takes a string URL and returns a promise that resolves to a
-    `RouteInfoWithAttributes` for the leafmost route represented by the URL.
-    The promise rejects if the URL is not recognized or an unhandled exception
-    is encountered. This method expects to receive the actual URL as seen by
-    the browser including the app's `rootURL`.
+    Takes a string URL, and returns a promise.
+    The promise resolves to a `RouteInfoWithAttributes` for the leafmost route represented by the URL.
+    The promise rejects if the URL is not recognized,
+    or if an unhandled exception is encountered.
+    Pass the actual URL as seen by the browser, including the app's `rootURL`.
 
       @method recognizeAndLoad
       @param {String} url
@@ -607,8 +605,7 @@ class RouterService extends Service {
     argument. This action can be used for aborting, redirecting,
     or decorating the transition from the currently active routes.
 
-    A good example is preventing navigation when a form is
-    half-filled out:
+    A good example is preventing navigation when a form is half-filled out:
 
     ```app/routes/contact-form.js
     import Route from '@ember/routing';
@@ -764,8 +761,8 @@ class RouterService extends Service {
 
     See [Location](/ember/release/classes/Location) for more information.
 
-    To force a particular `location` API implementation to be used in your
-    application you can set a location type on your `config/environment`.
+    To force a particular `location` API implementation to be used in your application,
+    you can set a location type on your `config/environment`.
     For example, to set the `history` type:
 
     ```config/environment.js
@@ -798,8 +795,8 @@ class RouterService extends Service {
   readonly location!: this['_router']['location'];
 
   /**
-    The `rootURL` property represents the URL of the root of
-    the application, '/' by default.
+    The `rootURL` property represents the URL of the application root.
+    It is '/' by default.
     This prefix is assumed on all routes defined on this app.
 
     If you change the `rootURL` in your environment configuration

@@ -32,9 +32,9 @@ export let expectDeprecation: DeprecationAssert['expectDeprecation'] = () => {
   );
 };
 
-// Unlike the other helpers, this one does not touch the deprecation tracker, so
-// it also works outside of a test -- e.g. when a test module builds fixtures at
-// import time.
+// Unlike the other helpers, this one does not touch the deprecation tracker,
+// so it also works outside of a test.
+// For example, when a test module builds fixtures at import time.
 export let ignoreDeprecation: DeprecationAssert['ignoreDeprecation'] = (func) =>
   callWithStub({ getDebugFunction, setDebugFunction } as DebugEnv, 'deprecate', func);
 

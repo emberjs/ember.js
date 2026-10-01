@@ -13,8 +13,8 @@ import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
   True, False, Undefined and Null are pushed as handles into the symbol table,
   with well known handles (0, 1, 2, 3)
 
-  The negative space is divided into positives and negatives. Positives are
-  higher numbers (-1, -2, -3, etc), negatives are lower.
+  The negative space is divided into positives and negatives.
+  Positives are higher numbers (-1, -2, -3, etc), negatives are lower.
 
   We only encode immediates for two reasons:
 
@@ -27,11 +27,10 @@ import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
   Externally, most code pushes values as JS values, except when being pulled
   from the append byte code where it was already encoded.
 
-  Logically, this is because the low level VM doesn't really care about these
-  higher level values. For instance, the result of a userland helper may be a
-  number, or a boolean, or undefined/null, but it's extra work to figure that
-  out and push it correctly, vs. just pushing the value as a JS value with a
-  handle.
+  Logically, this is because the low level VM doesn't care about these higher level values.
+  For instance, the result of a userland helper may be a number, a boolean, or undefined/null.
+  Detecting the type and pushing it correctly is more work
+  than pushing the value as a JS value with a handle.
 
   Note: The details could change here in the future, this is just the current
   strategy.

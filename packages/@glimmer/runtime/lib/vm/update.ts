@@ -285,16 +285,12 @@ export class ListBlockOpcode extends BlockOpcode {
         if (itemOpcode.index < seenIndex) {
           this.moveItem(itemOpcode, item, opcode);
         } else {
-          // Update the seen index, we are going to be moving this item around
-          // so any other items that come before it will likely need to move as
-          // well.
+          // Update the seen index. We are going to be moving this item around,
+          // so any other items that come before it will likely need to move as well.
           seenIndex = itemOpcode.index;
 
           let seenUnretained = false;
 
-          // iterate through all of the opcodes between the current position and
-          // the position of the item's opcode, and determine if they are all
-          // retained.
           for (let i = currentOpcodeIndex + 1; i < seenIndex; i++) {
             if (!unwrap(children[i]).retained) {
               seenUnretained = true;
@@ -302,9 +298,9 @@ export class ListBlockOpcode extends BlockOpcode {
             }
           }
 
-          // If we have seen only retained opcodes between this and the matching
-          // opcode, it means that all the opcodes in between have been moved
-          // already, and we can safely retain this item's opcode.
+          // Seeing only retained opcodes between this and the matching opcode
+          // means that all the opcodes in between have been moved already.
+          // So we can safely retain this item's opcode.
           if (!seenUnretained) {
             this.retainItem(itemOpcode, item);
             currentOpcodeIndex = seenIndex + 1;
@@ -395,10 +391,10 @@ export class ListBlockOpcode extends BlockOpcode {
       currentSibling = opcode.lastNode().nextSibling;
       nextSibling = before.firstNode();
 
-      // Items are moved throughout the algorithm, so there are cases where the
-      // the items already happen to be siblings (e.g. an item in between was
-      // moved before this move happened). Check to see if they are siblings
-      // first before doing the move.
+      // Items are moved throughout the algorithm,
+      // so there are cases where the items already happen to be siblings.
+      // For example, an item in between was moved before this move happened.
+      // Check to see if they are siblings first before doing the move.
       if (currentSibling !== nextSibling) {
         moveBounds(opcode, nextSibling);
       }
