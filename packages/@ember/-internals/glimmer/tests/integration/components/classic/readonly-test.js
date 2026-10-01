@@ -4,10 +4,10 @@ import { setComponentTemplate } from '@glimmer/manager';
 
 import { set, get } from '@ember/object';
 
-import { Component } from '../../utils/helpers';
+import { Component } from '../../../utils/helpers';
 
 moduleFor(
-  'Helpers test: {{readonly}}',
+  'Helpers test: {{readonly}} (classic component)',
   class extends RenderingTestCase {
     ['@test {{readonly}} of a path should work']() {
       let component;
