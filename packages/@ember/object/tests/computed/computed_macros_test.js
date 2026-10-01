@@ -2,6 +2,7 @@ import {
   alias,
   empty,
   notEmpty,
+  none,
   not,
   bool,
   match,
@@ -18,12 +19,18 @@ import {
 } from '@ember/object/computed';
 import EmberObject, { get, set, computed, defineProperty } from '@ember/object';
 import { A as emberA } from '@ember/array';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+
+const { isEnabled, isRemoved } = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
 
 moduleFor(
   'CP macros',
   class extends AbstractTestCase {
-    ['@test empty part 1/2'](assert) {
+    [`${testUnless(isRemoved)} @test empty part 1/2`](assert) {
+      expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
+
       let obj = class extends EmberObject {
         bestLannister = null;
         lannisters = null;
@@ -44,7 +51,10 @@ moduleFor(
       assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
     }
 
-    ['@test notEmpty part 1/2'](assert) {
+    [`${testUnless(isRemoved)} @test notEmpty part 1/2`](assert) {
+      expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
+
       let obj = class extends EmberObject {
         bestLannister = null;
         lannisters = null;
@@ -75,7 +85,10 @@ moduleFor(
       assert.equal(get(obj, 'notFoo'), false);
     }
 
-    ['@test empty part 2/2'](assert) {
+    [`${testUnless(isRemoved)} @test empty part 2/2`](assert) {
+      expectDeprecation(/`empty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
+
       let obj = { foo: [], bar: undefined, baz: null, quz: '' };
       defineProperty(obj, 'fooEmpty', empty('foo'));
       defineProperty(obj, 'barEmpty', empty('bar'));
@@ -175,7 +188,10 @@ moduleFor(
       assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
-    ['@test notEmpty part 2/2'](assert) {
+    [`${testUnless(isRemoved)} @test notEmpty part 2/2`](assert) {
+      expectDeprecation(/`notEmpty` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isEmpty` from `@ember\/utils` is deprecated/, isEnabled);
+
       let obj = { items: [1] };
       defineProperty(obj, 'hasItems', notEmpty('items'));
 
@@ -184,6 +200,24 @@ moduleFor(
       set(obj, 'items', []);
 
       assert.equal(get(obj, 'hasItems'), false, 'is empty');
+    }
+
+    [`${testUnless(isRemoved)} @test none`](assert) {
+      expectDeprecation(/`none` from `@ember\/object\/computed` is deprecated/, isEnabled);
+      expectDeprecation(/`isNone` from `@ember\/utils` is deprecated/, isEnabled);
+
+      let obj = { food: null };
+      defineProperty(obj, 'isHungry', none('food'));
+
+      assert.true(get(obj, 'isHungry'), 'null is none');
+
+      set(obj, 'food', 'Banana');
+
+      assert.false(get(obj, 'isHungry'), 'a string is not none');
+
+      set(obj, 'food', undefined);
+
+      assert.true(get(obj, 'isHungry'), 'undefined is none');
     }
 
     ['@test equal'](assert) {

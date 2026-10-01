@@ -29,7 +29,6 @@ import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
-import typeOf from '@ember/utils/lib/type-of';
 import { assert, info } from '@ember/debug';
 import { cancel, later, once, run } from '@ember/runloop';
 import { associateDestroyableChild } from '@glimmer/destroyable';
@@ -1100,7 +1099,10 @@ class EmberRouter extends EmberObject {
         } else if (value === undefined) {
           return; // We don't serialize undefined values
         } else {
-          queryParams[key] = this._serializeQueryParam(value, typeOf(value));
+          queryParams[key] = this._serializeQueryParam(
+            value,
+            Array.isArray(value) ? 'array' : typeof value
+          );
         }
       }
     );

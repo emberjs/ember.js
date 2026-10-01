@@ -22,7 +22,6 @@ import Evented from '@ember/object/evented';
 import { copyDefaultValue } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
-import typeOf from '@ember/utils/lib/type-of';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import lookupDescriptor from '@ember/-internals/utils/lib/lookup-descriptor';
 import type { AnyFn } from '@ember/-internals/utility-types';
@@ -1701,7 +1700,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
 
       defaultValue = copyDefaultValue(defaultValue);
 
-      let type = desc.type || typeOf(defaultValue);
+      let type = desc.type || queryParamType(defaultValue);
 
       let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
       let scopedPropertyName = `${controllerName}:${propName}`;
@@ -1957,6 +1956,24 @@ function addQueryParamsObservers(controller: any, propNames: string[]) {
 
     addObserver(controller, `${prop}.[]`, controller, controller._qpChanged, false);
   });
+}
+
+// Apps receive this as `defaultValueType` in `serializeQueryParam` and
+// `deserializeQueryParam`, so it keeps the type names of the common defaults.
+function queryParamType(value: unknown): string {
+  if (value === null) {
+    return 'null';
+  }
+
+  if (Array.isArray(value)) {
+    return 'array';
+  }
+
+  if (value instanceof Date) {
+    return 'date';
+  }
+
+  return typeof value;
 }
 
 function getEngineRouteName(engine: EngineInstance, routeName: string) {

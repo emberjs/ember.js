@@ -5,12 +5,16 @@ import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
+const UTILS = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
+
 moduleFor(
   'Ember.isEmpty',
   class extends AbstractTestCase {
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test Ember.isEmpty ArrayProxy`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || UTILS.isRemoved)} @test Ember.isEmpty ArrayProxy`](
       assert
     ) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
 
       let arrayProxy = ArrayProxy.create({ content: emberA() });
@@ -18,9 +22,11 @@ moduleFor(
       assert.equal(true, isEmpty(arrayProxy), 'for an ArrayProxy that has empty content');
     }
 
-    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test Ember.isEmpty ObjectProxy ArrayProxy`](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || UTILS.isRemoved)} @test Ember.isEmpty ObjectProxy ArrayProxy`](
       assert
     ) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
       expectDeprecation(
         /`ObjectProxy` is deprecated/,

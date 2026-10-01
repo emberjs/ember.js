@@ -1,6 +1,6 @@
 import { classify, dasherize } from '@ember/-internals/string';
 import EmberObject from '@ember/object';
-import typeOf from '@ember/utils/lib/type-of';
+import CoreObject from '@ember/object/core';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { Resolver } from '@ember/-internals/owner';
@@ -98,7 +98,7 @@ export default class ContainerDebugAdapter extends EmberObject {
         }
         if (typeSuffixRegex.test(key)) {
           let klass = (namespace as any)[key];
-          if (typeOf(klass) === 'class') {
+          if (CoreObject.detect(klass)) {
             types.push(dasherize(key.replace(typeSuffixRegex, '')));
           }
         }
