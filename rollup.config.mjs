@@ -295,6 +295,9 @@ export function exposedDependencies() {
       'packages/@glimmer/tracking/primitives/cache.ts'
     ),
     '@glimmer/env': resolve(packageCache.appRoot, 'packages/@glimmer/env/index.ts'),
+    // EXPERIMENTAL: the runtime for templates compiled directly to DOM operations
+    '@glimmer/dom': resolve(packageCache.appRoot, 'packages/@glimmer/dom/index.ts'),
+    '@glimmer/dom/vm': resolve(packageCache.appRoot, 'packages/@glimmer/dom/vm.ts'),
   };
 }
 

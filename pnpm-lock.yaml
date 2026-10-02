@@ -1752,6 +1752,87 @@ importers:
         specifier: workspace:*
         version: link:../../debug-util
 
+  packages/@glimmer/dom:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../../@ember/-internals
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../../@ember/component
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../../@ember/runloop
+      '@ember/template-compilation':
+        specifier: workspace:*
+        version: link:../../@ember/template-compilation
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@glimmer/destroyable':
+        specifier: workspace:*
+        version: link:../destroyable
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/manager':
+        specifier: workspace:*
+        version: link:../manager
+      '@glimmer/owner':
+        specifier: workspace:*
+        version: link:../owner
+      '@glimmer/reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@glimmer/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:../validator
+
+  packages/@glimmer/dom/test:
+    dependencies:
+      '@ember/helper':
+        specifier: workspace:*
+        version: link:../../../@ember/helper
+      '@ember/modifier':
+        specifier: workspace:*
+        version: link:../../../@ember/modifier
+      '@ember/renderer':
+        specifier: workspace:*
+        version: link:../../../@ember/renderer
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../../../@ember/runloop
+      '@ember/template':
+        specifier: workspace:*
+        version: link:../../../@ember/template
+      '@ember/template-compiler':
+        specifier: workspace:*
+        version: link:../../../@ember/template-compiler
+      '@glimmer/compiler':
+        specifier: workspace:*
+        version: link:../../compiler
+      '@glimmer/dom':
+        specifier: workspace:*
+        version: link:..
+      '@glimmer/manager':
+        specifier: workspace:*
+        version: link:../../manager
+      '@glimmer/syntax':
+        specifier: workspace:*
+        version: link:../../syntax
+      '@glimmer/tracking':
+        specifier: workspace:*
+        version: link:../../tracking
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:../../validator
+
   packages/@glimmer/encoder:
     dependencies:
       '@glimmer/interfaces':

@@ -1,0 +1,20 @@
+{
+  "private": true,
+  "name": "@glimmer-test/dom",
+  "version": "0.94.0",
+  "scripts": {},
+  "dependencies": {
+    "@ember/helper": "workspace:*",
+    "@ember/modifier": "workspace:*",
+    "@ember/renderer": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/template": "workspace:*",
+    "@ember/template-compiler": "workspace:*",
+    "@glimmer/compiler": "workspace:*",
+    "@glimmer/dom": "workspace:*",
+    "@glimmer/manager": "workspace:*",
+    "@glimmer/syntax": "workspace:*",
+    "@glimmer/tracking": "workspace:*",
+    "@glimmer/validator": "workspace:*"
+  }
+}
