@@ -313,6 +313,45 @@ function addEventListener(
   In this case, the `saveLike` function will receive two arguments: the click event
   and the value of `@post`.
 
+  ### Listener Order
+
+  Listeners added with `{{on}}` are regular DOM event listeners, so they run in
+  the order they were added to an element, and an event reaches listeners on the
+  target element before it bubbles up to listeners on its ancestors.
+
+  When a component forwards modifiers to an element with `...attributes`, the
+  `{{on}}` listeners passed in by the caller run before the listeners that the
+  component puts on that element itself. This is true wherever `...attributes`
+  appears in the element's attribute list:
+
+  ```gjs {data-filename="app/components/my-button.gjs"}
+  <template>
+    <button {{on 'click' @onInnerClick}} ...attributes>
+      {{yield}}
+    </button>
+  </template>
+  ```
+
+  ```gjs
+  <template>
+    {{! When clicked, onOuterClick runs first, then onInnerClick }}
+    <MyButton {{on 'click' onOuterClick}} @onInnerClick={{onInnerClick}}>
+      Click me
+    </MyButton>
+  </template>
+  ```
+
+  If a component needs its own handler to run first, for example to decide
+  whether the caller's handler should run, have the caller pass the handler as
+  an argument and call it from the component's handler instead of passing it
+  with `{{on}}`.
+
+  Event handler methods on classic components, such as `click()`, are run by
+  Ember's event dispatcher, which listens on the application's root element.
+  They run after any `{{on}}` listeners on the component's element and its
+  descendants, and calling `event.stopPropagation()` in one of those listeners
+  prevents them from running.
+
   ### Function Context
 
   In the example above, we used `@action` to ensure that `likePost` is

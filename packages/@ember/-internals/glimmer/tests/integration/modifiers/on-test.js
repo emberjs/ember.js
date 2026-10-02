@@ -6,6 +6,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
 
 import Component from '@glimmer/component';
+import ClassicComponent from '@ember/component';
 
 moduleFor(
   '{{on}} Modifier',
@@ -295,6 +296,83 @@ moduleFor(
 
       this.assertStableRerender();
       this.assertCounts({ adds: 2, removes: 0 });
+    }
+
+    "@test listeners from the invocation run before the element's own listeners, wherever ...attributes is (GH#17877)"(
+      assert
+    ) {
+      let calls = [];
+
+      this.owner.register(
+        'component:before-splat',
+        setComponentTemplate(
+          precompileTemplate(`<button {{on 'click' this.inner}} ...attributes>Click</button>`),
+          class extends Component {
+            inner = () => calls.push('inner');
+          }
+        )
+      );
+
+      this.owner.register(
+        'component:after-splat',
+        setComponentTemplate(
+          precompileTemplate(`<button ...attributes {{on 'click' this.inner}}>Click</button>`),
+          class extends Component {
+            inner = () => calls.push('inner');
+          }
+        )
+      );
+
+      this.render(
+        `<BeforeSplat id="before" {{on 'click' this.outer}} /><AfterSplat id="after" {{on 'click' this.outer}} />`,
+        { outer: () => calls.push('outer') }
+      );
+
+      runTask(() => this.$('#before').click());
+      assert.deepEqual(calls, ['outer', 'inner'], 'own modifier before ...attributes');
+
+      calls = [];
+      runTask(() => this.$('#after').click());
+      assert.deepEqual(calls, ['outer', 'inner'], 'own modifier after ...attributes');
+    }
+
+    '@test {{on}} listeners run before classic component event handler methods (GH#17877)'(assert) {
+      let calls = [];
+
+      this.owner.register(
+        'component:classic-clicker',
+        setComponentTemplate(
+          precompileTemplate(`<span {{on 'click' this.inner}}>Click</span>`),
+          class extends ClassicComponent {
+            inner = () => calls.push('inner');
+
+            click() {
+              calls.push('click()');
+            }
+          }
+        )
+      );
+
+      this.render(`<ClassicClicker {{on 'click' this.outer}} />`, {
+        outer: () => calls.push('outer'),
+      });
+
+      runTask(() => this.$('span').click());
+      assert.deepEqual(calls, ['inner', 'outer', 'click()'], 'click() runs last');
+
+      calls = [];
+      runTask(() =>
+        this.context.set('outer', (event) => {
+          calls.push('outer');
+          event.stopPropagation();
+        })
+      );
+      runTask(() => this.$('span').click());
+      assert.deepEqual(
+        calls,
+        ['inner', 'outer'],
+        'stopping propagation in an {{on}} listener prevents click()'
+      );
     }
   }
 );
