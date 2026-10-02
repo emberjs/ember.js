@@ -53,8 +53,8 @@ export interface GenerateOptions {
   prefix?: string;
 
   /**
-   * Support `{{outlet}}` (via `outlet` from `@glimmer/dom/vm`), so that the
-   * compiled template can be used as a route template.
+   * Import `template`/`setTemplate` from `@glimmer/dom/vm`, so that compiled
+   * components can be rendered by the VM too (see the babel plugin).
    */
   vmInterop?: boolean;
 }
@@ -574,10 +574,17 @@ class Generator {
         return;
 
       case 'outlet':
-        if (!this.options.vmInterop) {
-          throw new CodegenError('`{{outlet}}` requires compiling with `vmInterop`', node);
+        if (this.options.vmInterop) {
+          // The VM renders the route's `<@outlet />` into this spot, in the
+          // same render tree as the route (see `@glimmer/dom/vm`).
+          body.lines.push(`${this.rt('outlet')}($_b, ${anchor});`);
+        } else {
+          // Route templates receive their outlet as `@outlet` (the same as
+          // ember's own compiler turning `{{outlet}}` into `<@outlet />`).
+          body.lines.push(
+            `${this.rt('invokeDyn')}($_b, ${anchor}, () => $_a.outlet, {}, null, null);`
+          );
         }
-        body.lines.push(`${this.rt('outlet')}($_b, ${anchor});`);
         return;
 
       case 'component': {

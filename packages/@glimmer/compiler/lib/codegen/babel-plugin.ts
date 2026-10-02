@@ -19,7 +19,7 @@ export interface CodegenBabelPluginOptions {
 
   /**
    * Make compiled templates renderable by the VM too (e.g. as route
-   * templates, with `{{outlet}}`), via `${runtimeModule}/vm`.
+   * templates), via `${runtimeModule}/vm`.
    */
   vmInterop?: boolean;
 

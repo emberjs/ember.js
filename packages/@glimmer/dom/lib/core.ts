@@ -34,7 +34,7 @@ export interface Ctx {
 
 export interface OutletSink {
   /**
-   * Registers an element for the router to render the child route into.
+   * Registers an element for the VM to render the route's `@outlet` into.
    * Returns a function that unregisters it.
    */
   add(element: Element): () => void;
@@ -47,8 +47,8 @@ export class Root {
   #queue: Array<() => void> = [];
 
   /**
-   * Where `{{outlet}}`s go, when this tree is rendered from a route template
-   * (see `@glimmer/dom/vm`).
+   * Where `{{outlet}}`s go, when the VM renders this tree as a route
+   * template (see `@glimmer/dom/vm`).
    */
   outlets: OutletSink | null = null;
 

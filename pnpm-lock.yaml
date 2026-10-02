@@ -1757,12 +1757,18 @@ importers:
       '@ember/-internals':
         specifier: workspace:*
         version: link:../../@ember/-internals
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../../@ember/component
       '@ember/runloop':
         specifier: workspace:*
         version: link:../../@ember/runloop
       '@ember/template-compilation':
         specifier: workspace:*
         version: link:../../@ember/template-compilation
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@glimmer/destroyable':
         specifier: workspace:*
         version: link:../destroyable
@@ -1781,6 +1787,9 @@ importers:
       '@glimmer/reference':
         specifier: workspace:*
         version: link:../reference
+      '@glimmer/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@glimmer/validator':
         specifier: workspace:*
         version: link:../validator

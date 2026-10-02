@@ -1,8 +1,10 @@
 import type { CapturedArguments, Reference } from '@glimmer/interfaces';
-import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
+import { associateDestroyableChild } from '@glimmer/destroyable';
 import { getInternalComponentManager } from '@glimmer/manager/lib/internal/api';
+import { getComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { valueForRef } from '@glimmer/reference/lib/reference';
-import { createCache, getValue } from '@glimmer/validator/lib/tracking';
+import { consumeTag, createCache, getValue } from '@glimmer/validator/lib/tracking';
+import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
 
 import type { AttrsFn, Block, Blocks, Thunk } from './core';
 import type { Named } from './managers';
@@ -36,12 +38,25 @@ export function isComponentDefinition(value: unknown): value is object {
  * Renders components that were not compiled with this compiler (e.g. from
  * addons) via the VM. Registered by the Ember integration (see `render.ts`).
  */
-export type VMFallback = (
-  definition: object,
-  into: Element,
-  owner: object,
-  args: Record<string, unknown>
-) => { destroy(): void };
+export interface VMFallback {
+  /**
+   * Render `definition()` with the VM into `into`, and return a destroyable
+   * for the render. `definition` is tracked, so values that the VM can
+   * update in place (see `canUpdate`) don't require a new render.
+   */
+  render(
+    definition: Thunk<object>,
+    into: Element,
+    owner: object,
+    invocation: { named: Named; blocks: Blocks | null; attrs: AttrsFn | null }
+  ): object;
+
+  /**
+   * Can the VM render switch from `from` to `to` by itself (like it does for
+   * `<@outlet />` getting a new curried value)?
+   */
+  canUpdate(from: unknown, to: unknown): boolean;
+}
 
 let vmFallback: VMFallback | null = null;
 
@@ -65,17 +80,18 @@ function argsFor(captured: CapturedArguments): Record<string, unknown> {
   return args;
 }
 
-function island(b: Block, definition: object, named: Named): Node {
+function island(
+  b: Block,
+  definition: object,
+  named: Named,
+  blocks: Blocks | null,
+  attrs: AttrsFn | null,
+  current?: Thunk<object>
+): Node {
   if (!vmFallback) {
     throw new Error(
       `${describe(definition)} does not have a compiled template. To render it with the VM, import '@glimmer/dom/vm' (or compile with \`vmInterop\`).`
     );
-  }
-
-  let args = Object.create(null) as Record<string, unknown>;
-  for (let key of Object.keys(named)) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- iterating own keys
-    Object.defineProperty(args, key, { enumerable: true, get: named[key]! });
   }
 
   // The VM needs an element it owns, so that our DOM moves and removals
@@ -83,10 +99,16 @@ function island(b: Block, definition: object, named: Named): Node {
   let element = b.root.document.createElement('glimmer-island');
   element.style.display = 'contents';
 
-  let result = vmFallback(definition, element, b.root.owner, args);
-  registerDestructor(b, () => {
-    result.destroy();
-  });
+  // A destroyable child, so the VM's render is torn down in the same pass
+  // as this block (not a scheduling round later).
+  associateDestroyableChild(
+    b,
+    vmFallback.render(current ?? (() => definition), element, b.root.owner, {
+      named,
+      blocks,
+      attrs,
+    })
+  );
 
   return element;
 }
@@ -106,7 +128,8 @@ export function instantiate(
   definition: object,
   named: Named,
   blocks: Blocks | null,
-  attrs: AttrsFn | null
+  attrs: AttrsFn | null,
+  current?: Thunk<object>
 ): Node {
   while (definition instanceof Curried) {
     named = { ...definition.named, ...named };
@@ -115,7 +138,14 @@ export function instantiate(
 
   let compiled = templateFor(definition);
 
-  if (!compiled) return island(b, definition, named);
+  // A component without any template (e.g. a Glimmer component used only
+  // for its lifecycle) doesn't need the VM: it renders nothing.
+  let templateless =
+    !compiled &&
+    !getComponentTemplate(definition) &&
+    'getDelegateFor' in (getInternalComponentManager(definition, true) ?? {});
+
+  if (!compiled && !templateless) return island(b, definition, named, blocks, attrs, current);
 
   let captured = capture(named, null);
   let args = argsFor(captured);
@@ -142,6 +172,8 @@ export function instantiate(
   b.root.schedule(() => {
     manager.didCreate(state);
   });
+
+  if (!compiled) return b.root.document.createDocumentFragment();
 
   return compiled.render(b, { self, args, blocks, attrs });
 }
@@ -177,8 +209,17 @@ export function invokeDyn(
   let cache = createCache(definition);
   let current = getValue(cache);
 
+  // What the VM reads, when it renders the definition (see VMFallback)
+  let tag = createTag();
+  let read = () => {
+    consumeTag(tag);
+    return current as object;
+  };
+
   let render = (value: unknown) =>
-    value ? mount(b, anchor, (child) => instantiate(child, value, named, blocks, attrs)) : null;
+    value
+      ? mount(b, anchor, (child) => instantiate(child, value, named, blocks, attrs, read))
+      : null;
 
   let m = render(current);
 
@@ -186,6 +227,13 @@ export function invokeDyn(
     let next = getValue(cache);
     if (next === current) {
       m?.b.update();
+      return;
+    }
+
+    if (m && vmFallback?.canUpdate(current, next)) {
+      current = next;
+      dirtyTag(tag);
+      m.b.update();
       return;
     }
 

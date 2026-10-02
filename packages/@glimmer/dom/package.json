@@ -11,14 +11,17 @@
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
+    "@ember/component": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/template-compilation": "workspace:*",
+    "@glimmer/constants": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
     "@glimmer/global-context": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/owner": "workspace:*",
     "@glimmer/reference": "workspace:*",
+    "@glimmer/runtime": "workspace:*",
     "@glimmer/validator": "workspace:*"
   }
 }

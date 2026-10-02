@@ -430,8 +430,32 @@ module('@glimmer/dom | codegen', (hooks) => {
     run(() => vmResult?.destroy());
   });
 
-  test('{{outlet}} requires vmInterop', (assert) => {
-    assert.throws(() => compile(`{{outlet}}`), /requires compiling with `vmInterop`/u);
+  test('VM-only components get attributes, named args, and blocks', (assert) => {
+    let Wrapper = vmTemplate(`<section ...attributes>{{@title}}: {{yield "from VM"}}</section>`);
+    let state = new State();
+
+    render(
+      compile(
+        `<Wrapper class="w" data-test @title={{state.name}} as |v|>{{v}} + {{state.count}}</Wrapper>`,
+        { Wrapper, state }
+      )
+    );
+    let section = fixture().querySelector('section');
+    assert.strictEqual(section?.getAttribute('class'), 'w');
+    assert.true(section?.hasAttribute('data-test'));
+    assert.strictEqual(section?.textContent, 'world: from VM + 0');
+
+    change(() => {
+      state.name = 'there';
+      state.count = 1;
+    });
+    assert.strictEqual(fixture().querySelector('section')?.textContent, 'there: from VM + 1');
+  });
+
+  test('{{outlet}} renders @outlet', (assert) => {
+    let Outlet = compile(`<i>child</i>`);
+    render(compile(`<p>{{outlet}}</p>`), { outlet: Outlet });
+    assert.strictEqual(html(), '<p><i>child</i></p>');
   });
 
   test('strict mode: unknown names are a compile error', (assert) => {
