@@ -28,6 +28,18 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
   readonly #options: ReactiveOptions<Value>;
   readonly #tag: UpdatableTag;
 
+  /**
+   * `get`, `set`, `update` and `freeze` are bound to the instance,
+   * so that they can be detached from it.
+   *
+   * Each one is made the first time that it is read,
+   * so an instance that only uses `value` makes no function.
+   */
+  #get: (() => Value) | undefined;
+  #set: ((value: Value) => boolean) | undefined;
+  #update: ((updater: (value: Value) => Value) => void) | undefined;
+  #freeze: (() => void) | undefined;
+
   constructor(value: Value, options: ReactiveOptions<Value>) {
     this.#value = value;
     this.#options = options;
@@ -48,15 +60,15 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
   }
 
   set value(value: Value) {
-    this.set(value);
+    this.#write(value);
   }
 
   /**
    * Function short-hand for reading `value`.
    */
-  get = (): Value => {
-    return this.value;
-  };
+  get get(): () => Value {
+    return (this.#get ??= () => this.value);
+  }
 
   /**
    * Function short-hand for assigning `value`.
@@ -64,7 +76,30 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
    * Returns `true` if the value changed (and consumers were notified),
    * `false` if the new value was equal to the current one.
    */
-  set = (value: Value): boolean => {
+  get set(): (value: Value) => boolean {
+    return (this.#set ??= (value) => this.#write(value));
+  }
+
+  /**
+   * Update the value based on the current value, without consuming it.
+   */
+  get update(): (updater: (value: Value) => Value) => void {
+    return (this.#update ??= (updater) => {
+      this.#write(updater(this.#value));
+    });
+  }
+
+  /**
+   * Prevents further updates, making the TrackedValue behave as a
+   * ReadOnlyReactive.
+   */
+  get freeze(): () => void {
+    return (this.#freeze ??= () => {
+      this.#isFrozen = true;
+    });
+  }
+
+  #write(value: Value): boolean {
     if (this.#isFrozen) {
       throw new Error(
         `Cannot update a frozen TrackedValue${
@@ -82,30 +117,24 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
     DIRTY_TAG(this.#tag);
 
     return true;
-  };
-
-  /**
-   * Update the value based on the current value, without consuming it.
-   */
-  update = (updater: (value: Value) => Value): void => {
-    this.set(updater(this.#value));
-  };
-
-  /**
-   * Prevents further updates, making the TrackedValue behave as a
-   * ReadOnlyReactive.
-   */
-  freeze = (): void => {
-    this.#isFrozen = true;
-  };
+  }
 }
+
+const DEFAULT_OPTIONS: ReactiveOptions<unknown> = {
+  equals: Object.is,
+  description: undefined,
+};
 
 export function trackedValue<Value>(
   value: Value,
   options?: { equals?: (a: Value, b: Value) => boolean; description?: string }
 ): TrackedValue<Value> {
+  if (options === undefined) {
+    return new TrackedValue(value, DEFAULT_OPTIONS);
+  }
+
   return new TrackedValue(value, {
-    equals: options?.equals ?? Object.is,
-    description: options?.description,
+    equals: options.equals ?? Object.is,
+    description: options.description,
   });
 }
