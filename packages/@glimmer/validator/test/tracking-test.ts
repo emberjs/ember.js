@@ -10,6 +10,7 @@ import {
   getValue,
   isConst,
   isTracking,
+  resetTracking,
   track,
   trackedData,
   untrack,
@@ -252,6 +253,114 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(validateTag(combined, snapshot));
     });
 
+    test('it returns the tag itself if the frame consumed one tag many times', (assert) => {
+      let tag = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag);
+      consumeTag(tag);
+
+      assert.strictEqual(endTrackFrame(), tag);
+    });
+
+    test('it keeps a tag that a nested frame consumed between two consumptions', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag1);
+      consumeTag(tag2);
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      let inner = endTrackFrame();
+
+      consumeTag(tag1);
+
+      let outer = endTrackFrame();
+
+      assert.strictEqual(inner, tag1);
+
+      let snapshot = valueForTag(outer);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(outer, snapshot));
+
+      snapshot = valueForTag(outer);
+      dirtyTag(tag2);
+      assert.notOk(validateTag(outer, snapshot));
+    });
+
+    test('it returns the previous tag if the frame consumed the same tags', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag2);
+      let first = endTrackFrame();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag2);
+      let second = endTrackFrame(first);
+
+      assert.strictEqual(second, first);
+    });
+
+    test('it returns a new tag if the frame consumed other tags', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag2);
+      let first = endTrackFrame();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag3);
+      let second = endTrackFrame(first);
+
+      assert.notStrictEqual(second, first);
+
+      let snapshot = valueForTag(second);
+      dirtyTag(tag2);
+      assert.ok(validateTag(second, snapshot));
+
+      dirtyTag(tag3);
+      assert.notOk(validateTag(second, snapshot));
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag3);
+      consumeTag(tag2);
+      let third = endTrackFrame(second);
+
+      assert.notStrictEqual(third, second);
+
+      snapshot = valueForTag(third);
+      dirtyTag(tag2);
+      assert.notOk(validateTag(third, snapshot));
+    });
+
+    test('it does not keep the tags of a frame that did not end', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+
+      resetTracking();
+
+      beginTrackFrame();
+      consumeTag(tag2);
+
+      assert.strictEqual(endTrackFrame(), tag2);
+    });
+
     test('isTracking works within a track', (assert) => {
       assert.notOk(isTracking());
 
@@ -360,6 +469,39 @@ module('@glimmer/validator: tracking', () => {
 
       assert.deepEqual(getValue(outerCache), [3, 2], 'both inner and outer result updated');
       assert.deepEqual(getValue(outerCache), [3, 2], 'memoized result returned correctly');
+    });
+
+    test('it tracks the new tags if the tags change between two runs', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+      let useThird = false;
+      let count = 0;
+
+      let cache = createCache(() => {
+        consumeTag(tag1);
+        consumeTag(useThird ? tag3 : tag2);
+
+        return ++count;
+      });
+
+      assert.strictEqual(getValue(cache), 1);
+
+      dirtyTag(tag2);
+      assert.strictEqual(getValue(cache), 2, 'the cache ran again with the same tags');
+
+      dirtyTag(tag2);
+      assert.strictEqual(getValue(cache), 3, 'the reused tag is still dirtied by its tags');
+
+      useThird = true;
+      dirtyTag(tag1);
+      assert.strictEqual(getValue(cache), 4);
+
+      dirtyTag(tag2);
+      assert.strictEqual(getValue(cache), 4, 'the cache does not depend on the old tag');
+
+      dirtyTag(tag3);
+      assert.strictEqual(getValue(cache), 5, 'the cache depends on the new tag');
     });
 
     test('isTracking works within a memoized function and untrack frame', (assert) => {

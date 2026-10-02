@@ -5,37 +5,97 @@ import type { Revision } from './validators';
 
 import { debug } from './debug';
 import { unwrap } from './utils';
-import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './validators';
+import {
+  combine,
+  CONSTANT_TAG,
+  isCombinationOf,
+  isConstTag,
+  validateTag,
+  valueForTag,
+} from './validators';
 
 /**
- * An object that that tracks @tracked properties that were consumed.
+ * A tag, with the number of the last tracking frame that consumed it.
+ *
+ * The tag classes of this package declare `lastFrame`.
+ * A tag from another implementation gets the property on its first consumption.
+ */
+interface ConsumedTag extends Tag {
+  lastFrame?: number;
+}
+
+/**
+ * An object that tracks @tracked properties that were consumed.
+ *
+ * Trackers are pooled by frame depth (see `beginTrackFrame`),
+ * so a tracker holds no tag after its frame ends.
  */
 class Tracker {
-  private tags = new Set<Tag>();
-  private last: Tag | null = null;
+  /**
+   * The consumed tags. `size` counts the live entries.
+   *
+   * The array never shrinks, because a write to `length` is a slow path in V8,
+   * and this code runs for every frame.
+   */
+  private tags: (Tag | null)[] = [];
+  private size = 0;
 
-  add(tag: Tag) {
+  /**
+   * The number of the frame that uses this tracker.
+   *
+   * `add` writes it on each tag that it takes,
+   * so a tag that the frame consumes again costs one comparison.
+   *
+   * A tag that a nested frame consumes between two consumptions of this frame
+   * is taken two times. A combined tag with a duplicate has the same revision.
+   */
+  frame = 0;
+
+  add(tag: ConsumedTag) {
     if (tag === CONSTANT_TAG) return;
-
-    this.tags.add(tag);
 
     if (DEBUG) {
       unwrap(debug.markTagAsConsumed)(tag);
     }
 
-    this.last = tag;
+    if (tag.lastFrame === this.frame) return;
+
+    tag.lastFrame = this.frame;
+    this.tags[this.size++] = tag;
   }
 
-  combine(): Tag {
-    let { tags } = this;
+  /**
+   * `previous` is the tag that this frame produced the last time it ran.
+   * If the frame consumed the same tags again, the result is `previous`,
+   * which keeps its memoized revision and needs no allocation.
+   */
+  combine(previous: Tag | undefined): Tag {
+    let { tags, size } = this;
+    let result: Tag;
 
-    if (tags.size === 0) {
-      return CONSTANT_TAG;
-    } else if (tags.size === 1) {
-      return this.last as Tag;
+    if (size === 0) {
+      result = CONSTANT_TAG;
+    } else if (size === 1) {
+      result = tags[0] as Tag;
+    } else if (previous !== undefined && isCombinationOf(previous, tags, size)) {
+      result = previous;
     } else {
-      return combine(Array.from(this.tags));
+      result = combine(tags.slice(0, size) as Tag[]);
     }
+
+    this.clear();
+
+    return result;
+  }
+
+  clear(): void {
+    let { tags, size } = this;
+
+    for (let i = 0; i < size; i++) {
+      tags[i] = null;
+    }
+
+    this.size = 0;
   }
 }
 
@@ -56,17 +116,40 @@ let CURRENT_TRACKER: Tracker | null = null;
 
 const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 
+/**
+ * Frames are strictly nested, so the tracker of a frame at depth `n` is free
+ * when that frame ends. One tracker for each depth is enough.
+ */
+const TRACKER_POOL: Tracker[] = [];
+
+let FRAME_COUNT = 0;
+
 export function beginTrackFrame(debuggingContext?: string | false): void {
+  let depth = OPEN_TRACK_FRAMES.length;
+
   OPEN_TRACK_FRAMES.push(CURRENT_TRACKER);
 
-  CURRENT_TRACKER = new Tracker();
+  let tracker = TRACKER_POOL[depth];
+
+  if (tracker === undefined) {
+    tracker = TRACKER_POOL[depth] = new Tracker();
+  }
+
+  tracker.frame = ++FRAME_COUNT;
+  CURRENT_TRACKER = tracker;
 
   if (DEBUG) {
     unwrap(debug.beginTrackingTransaction)(debuggingContext);
   }
 }
 
-export function endTrackFrame(): Tag {
+/**
+ * Closes the current frame and returns its combined tag.
+ *
+ * Pass the tag that the same frame produced the last time it ran.
+ * If the frame consumed the same tags again, that tag is the result.
+ */
+export function endTrackFrame(previous?: Tag): Tag {
   let current = CURRENT_TRACKER;
 
   if (DEBUG) {
@@ -79,7 +162,7 @@ export function endTrackFrame(): Tag {
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  return unwrap(current).combine();
+  return unwrap(current).combine(previous);
 }
 
 export function beginUntrackFrame(): void {
@@ -99,6 +182,10 @@ export function endUntrackFrame(): void {
 export function resetTracking(): string | void {
   while (OPEN_TRACK_FRAMES.length > 0) {
     OPEN_TRACK_FRAMES.pop();
+  }
+
+  for (let tracker of TRACKER_POOL) {
+    tracker.clear();
   }
 
   CURRENT_TRACKER = null;
@@ -175,7 +262,7 @@ export function getValue<T>(cache: Cache<T>): T | undefined {
     try {
       cache[LAST_VALUE] = fn();
     } finally {
-      tag = endTrackFrame();
+      tag = endTrackFrame(tag);
       cache[TAG] = tag;
       cache[SNAPSHOT] = valueForTag(tag);
       consumeTag(tag);
