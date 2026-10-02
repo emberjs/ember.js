@@ -29,7 +29,16 @@ export function emitDomClickEvent(selector) {
 
 export function waitForIdle() {
   return new Promise((resolve) => {
-    requestIdleCallback(resolve);
+    requestIdleCallback(() => {
+      // Collect the previous phase's garbage outside of any measured phase.
+      // Chrome only exposes gc() with --js-flags=--expose-gc.
+      if (typeof globalThis.gc === 'function') {
+        globalThis.gc();
+        requestIdleCallback(resolve);
+      } else {
+        resolve();
+      }
+    });
   });
 }
 
