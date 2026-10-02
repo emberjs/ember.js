@@ -114,6 +114,11 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   public subtag: Tag | Tag[] | null = null;
   private subtagBufferCache: Revision | null = null;
 
+  /**
+   * The number of the last tracking frame that consumed this tag.
+   */
+  public lastFrame = 0;
+
   declare [TYPE]: T;
 
   constructor(type: T) {
@@ -138,9 +143,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
 
         if (subtag !== null) {
           if (Array.isArray(subtag)) {
-            for (const tag of subtag) {
-              let value = tag[COMPUTE]();
-              revision = Math.max(value, revision);
+            for (let i = 0; i < subtag.length; i++) {
+              revision = Math.max((subtag[i] as Tag)[COMPUTE](), revision);
             }
           } else {
             let subtagValue = subtag[COMPUTE]();
@@ -254,6 +258,7 @@ const VOLATILE_TAG_ID: IVOLATILE_TAG_ID = 100;
 
 export class VolatileTag implements Tag {
   readonly [TYPE] = VOLATILE_TAG_ID;
+  lastFrame = 0;
   [COMPUTE](): Revision {
     return VOLATILE;
   }
@@ -267,6 +272,7 @@ const CURRENT_TAG_ID: ICURRENT_TAG_ID = 101;
 
 export class CurrentTag implements Tag {
   readonly [TYPE] = CURRENT_TAG_ID;
+  lastFrame = 0;
   [COMPUTE](): Revision {
     return $REVISION;
   }
@@ -277,6 +283,23 @@ export const CURRENT_TAG = new CurrentTag();
 //////////
 
 export const combine = MonomorphicTagImpl.combine;
+
+/**
+ * Whether `tag` is the combination of the first `size` entries of `tags`, in order.
+ */
+export function isCombinationOf(tag: Tag, tags: (Tag | null)[], size: number): boolean {
+  if (tag[TYPE] !== COMBINATOR_TAG_ID) return false;
+
+  let subtags = (tag as MonomorphicTagImpl).subtag as Tag[];
+
+  if (subtags.length !== size) return false;
+
+  for (let i = 0; i < size; i++) {
+    if (subtags[i] !== tags[i]) return false;
+  }
+
+  return true;
+}
 
 // Warm
 
