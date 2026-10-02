@@ -6,7 +6,6 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
 
 import Component from '@glimmer/component';
-import ClassicComponent from '@ember/component';
 
 moduleFor(
   '{{on}} Modifier',
@@ -336,42 +335,43 @@ moduleFor(
       assert.deepEqual(calls, ['outer', 'inner'], 'own modifier after ...attributes');
     }
 
-    '@test {{on}} listeners run before classic component event handler methods (GH#17877)'(assert) {
+    "@test listeners on ancestors in a component run after the caller's listeners, unless propagation is stopped (GH#17877)"(
+      assert
+    ) {
       let calls = [];
 
       this.owner.register(
-        'component:classic-clicker',
+        'component:wrapped-button',
         setComponentTemplate(
-          precompileTemplate(`<span {{on 'click' this.inner}}>Click</span>`),
-          class extends ClassicComponent {
+          precompileTemplate(
+            `<div {{on 'click' this.wrapper}}><button {{on 'click' this.inner}} ...attributes>Click</button></div>`
+          ),
+          class extends Component {
             inner = () => calls.push('inner');
-
-            click() {
-              calls.push('click()');
-            }
+            wrapper = () => calls.push('wrapper');
           }
         )
       );
 
-      this.render(`<ClassicClicker {{on 'click' this.outer}} />`, {
-        outer: () => calls.push('outer'),
+      let stop = false;
+
+      this.render(`<WrappedButton {{on 'click' this.outer}} />`, {
+        outer: (event) => {
+          calls.push('outer');
+          if (stop) event.stopPropagation();
+        },
       });
 
-      runTask(() => this.$('span').click());
-      assert.deepEqual(calls, ['inner', 'outer', 'click()'], 'click() runs last');
+      runTask(() => this.$('button').click());
+      assert.deepEqual(calls, ['outer', 'inner', 'wrapper'], 'the ancestor listener runs last');
 
       calls = [];
-      runTask(() =>
-        this.context.set('outer', (event) => {
-          calls.push('outer');
-          event.stopPropagation();
-        })
-      );
-      runTask(() => this.$('span').click());
+      stop = true;
+      runTask(() => this.$('button').click());
       assert.deepEqual(
         calls,
-        ['inner', 'outer'],
-        'stopping propagation in an {{on}} listener prevents click()'
+        ['outer', 'inner'],
+        "stopping propagation in the caller's listener prevents the ancestor listener"
       );
     }
   }

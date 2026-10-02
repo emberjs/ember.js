@@ -341,16 +341,20 @@ function addEventListener(
   </template>
   ```
 
+  This order is set when the listeners are first added. When the arguments to an
+  `{{on}}` change, for example because a different callback is passed in, that
+  listener is removed and added again, so it moves after the other listeners on
+  the element.
+
   If a component needs its own handler to run first, for example to decide
   whether the caller's handler should run, have the caller pass the handler as
   an argument and call it from the component's handler instead of passing it
   with `{{on}}`.
 
-  Event handler methods on classic components, such as `click()`, are run by
-  Ember's event dispatcher, which listens on the application's root element.
-  They run after any `{{on}}` listeners on the component's element and its
-  descendants, and calling `event.stopPropagation()` in one of those listeners
-  prevents them from running.
+  Calling `event.stopPropagation()` in any of these listeners stops the event
+  from reaching listeners on ancestor elements, including ones the component
+  put on a wrapping element in its own template. It does not stop the other
+  listeners on the same element.
 
   ### Function Context
 
