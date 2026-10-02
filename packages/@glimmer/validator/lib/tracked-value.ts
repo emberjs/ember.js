@@ -34,6 +34,8 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
    *
    * Each one is made the first time that it is read,
    * so an instance that only uses `value` makes no function.
+   *
+   * Each one can be assigned, for example by a test that replaces it.
    */
   #get: (() => Value) | undefined;
   #set: ((value: Value) => boolean) | undefined;
@@ -60,7 +62,13 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
   }
 
   set value(value: Value) {
-    this.#write(value);
+    let set = this.#set;
+
+    if (set === undefined) {
+      this.#write(value);
+    } else {
+      set(value);
+    }
   }
 
   /**
@@ -68,6 +76,10 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
    */
   get get(): () => Value {
     return (this.#get ??= () => this.value);
+  }
+
+  set get(fn: () => Value) {
+    this.#get = fn;
   }
 
   /**
@@ -80,6 +92,10 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
     return (this.#set ??= (value) => this.#write(value));
   }
 
+  set set(fn: (value: Value) => boolean) {
+    this.#set = fn;
+  }
+
   /**
    * Update the value based on the current value, without consuming it.
    */
@@ -87,6 +103,10 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
     return (this.#update ??= (updater) => {
       this.#write(updater(this.#value));
     });
+  }
+
+  set update(fn: (updater: (value: Value) => Value) => void) {
+    this.#update = fn;
   }
 
   /**
@@ -97,6 +117,10 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
     return (this.#freeze ??= () => {
       this.#isFrozen = true;
     });
+  }
+
+  set freeze(fn: () => void) {
+    this.#freeze = fn;
   }
 
   #write(value: Value): boolean {
@@ -120,10 +144,10 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
   }
 }
 
-const DEFAULT_OPTIONS: ReactiveOptions<unknown> = {
+const DEFAULT_OPTIONS: ReactiveOptions<unknown> = Object.freeze({
   equals: Object.is,
   description: undefined,
-};
+});
 
 export function trackedValue<Value>(
   value: Value,
