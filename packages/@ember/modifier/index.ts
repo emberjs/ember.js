@@ -29,6 +29,10 @@ export { on, type OnModifier } from './on';
   `ember-modifier` design their own high-level modifier APIs on top of a small,
   stable primitive.
 
+  Modifier managers were introduced in
+  [RFC #373, Element Modifier Managers](https://rfcs.emberjs.com/id/0373-element-modifier-managers),
+  which describes the design and motivation in more detail.
+
   `setModifierManager` receives two arguments:
 
   1. A factory function, which receives the `owner` and returns an instance of a
@@ -129,6 +133,7 @@ export { on, type OnModifier } from './on';
   @param {Function} factory A factory function which receives the owner, and returns a modifier manager
   @param {object} definition The definition to associate the manager factory with
   @return {object} The definition passed into setModifierManager
+  @since 3.8.0
   @public
 */
 // NOTE: this uses assignment to *require* that the `glimmerSetModifierManager`
