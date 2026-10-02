@@ -6,6 +6,7 @@
   "dependencies": {
     "@ember/helper": "workspace:*",
     "@ember/modifier": "workspace:*",
+    "@ember/renderer": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/template": "workspace:*",
     "@ember/template-compiler": "workspace:*",

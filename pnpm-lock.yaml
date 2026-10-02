@@ -1760,6 +1760,9 @@ importers:
       '@ember/runloop':
         specifier: workspace:*
         version: link:../../@ember/runloop
+      '@ember/template-compilation':
+        specifier: workspace:*
+        version: link:../../@ember/template-compilation
       '@glimmer/destroyable':
         specifier: workspace:*
         version: link:../destroyable
@@ -1772,6 +1775,9 @@ importers:
       '@glimmer/manager':
         specifier: workspace:*
         version: link:../manager
+      '@glimmer/owner':
+        specifier: workspace:*
+        version: link:../owner
       '@glimmer/reference':
         specifier: workspace:*
         version: link:../reference
@@ -1787,6 +1793,9 @@ importers:
       '@ember/modifier':
         specifier: workspace:*
         version: link:../../../@ember/modifier
+      '@ember/renderer':
+        specifier: workspace:*
+        version: link:../../../@ember/renderer
       '@ember/runloop':
         specifier: workspace:*
         version: link:../../../@ember/runloop

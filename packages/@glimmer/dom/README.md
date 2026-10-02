@@ -43,20 +43,60 @@ template(($_b, $_ctx) => {
 - Well-known built-ins (`on`, `fn`, `hash`, `array`, `concat`, `get`, `eq`,
   `not`, `and`, `or`, `if`, ...) are compiled inline. Everything else goes
   through the existing helper, modifier and component managers.
-- Components that don't have a compiled template (e.g. from addons) are
-  rendered by the VM, inside a `<glimmer-island>` element.
+
+## Using it in an app
+
+Add the babel plugin before `babel-plugin-ember-template-compilation` (which
+then only handles templates this one doesn't, such as `hbs` in tests):
+
+```js
+import { _codegenBabelPlugin } from 'ember-source/ember-template-compiler/index.js';
+
+export default {
+  plugins: [
+    _codegenBabelPlugin, // or [_codegenBabelPlugin, { vmInterop: true }]
+    ['babel-plugin-ember-template-compilation', {}],
+    // ...
+  ],
+};
+```
+
+and render with `renderComponent` from `@glimmer/dom`. Nothing from the VM is
+loaded unless something needs it.
+
+## Interop with the VM (`@glimmer/dom/vm`)
+
+Apps that also use the VM (the router, `@ember/renderer`, addons with VM
+templates) compile with `{ vmInterop: true }`. Compiled templates then import
+`template`/`setTemplate` from `@glimmer/dom/vm`, which makes them renderable
+by the VM too (as route templates, with `{{outlet}}`, or from
+`renderComponent` in `@ember/renderer` and VM-rendered components). Importing
+`@glimmer/dom/vm` also lets compiled templates render components that only
+have a VM template, inside a `<glimmer-island>` element.
+
+## Size
+
+The two smoke-test apps whose sizes CI reports
+(`smoke-tests/v2-app-hello-world-template` and `smoke-tests/v2-app-template`)
+are compiled with this. JS in `dist/` (bytes, raw / gzip):
+
+| app                                    | wire format + VM  | compiled to DOM   |
+| -------------------------------------- | ----------------- | ----------------- |
+| v2-app-hello-world-template            | 132,266 / 41,801  | 26,285 / 9,304    |
+| v2-app-template (router, `{{outlet}}`) | 349,060 / 110,323 | 356,809 / 113,006 |
+
+The full app gets slightly bigger: it still needs the VM for the router and
+for `{{outlet}}`, and adds this runtime and the interop on top.
 
 ## Status
 
-This is a prototype for exploring the idea. It is not part of the published
-ember-source build. Not supported yet:
+This is a prototype for exploring the idea. Not supported yet:
 
 - loose mode (by design: this is for strict mode only)
 - positional arguments to components, the `helper`/`modifier` keywords,
-  `{{outlet}}`, `{{mount}}`
-- rendering compiled components from inside the VM (only the other way
-  around)
-- SSR / rehydration, the debug render tree
+  `{{mount}}`
+- blocks and `...attributes` when the VM renders a compiled component
+- SSR / rehydration, the debug render tree (Ember Inspector)
 - foreign content at the root of a template (e.g. a component whose template
   is just `<path>`), and HTML that the parser restructures (`<table><tr>`
   without a `<tbody>`)

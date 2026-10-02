@@ -41,10 +41,22 @@ export interface GenerateOptions {
   importBinding(module: string, name: string): string;
 
   /**
+   * JavaScript globals that strict-mode templates may reference without
+   * importing them (e.g. `JSON`, `console`; see RFC 1070).
+   */
+  isGlobal?(name: string): boolean;
+
+  /**
    * Prefix for generated identifiers (including hoisted declarations), so
    * that several templates can be compiled into one module.
    */
   prefix?: string;
+
+  /**
+   * Support `{{outlet}}` (via `outlet` from `@glimmer/dom/vm`), so that the
+   * compiled template can be used as a route template.
+   */
+  vmInterop?: boolean;
 }
 
 export interface Generated {
@@ -143,6 +155,7 @@ const SPECIALIZED: Record<string, Set<string>> = {
     'and',
     'array',
     'concat',
+    'element',
     'eq',
     'fn',
     'get',
@@ -485,17 +498,15 @@ class Generator {
     let builtin = this.builtin(node.path, body.scope);
 
     if (builtin === 'on') {
+      // missing arguments are reported at runtime, like the `on` modifier does
       let [event, handler] = node.params;
-      if (!event || !handler) {
-        throw new CodegenError('`on` requires an event name and a handler', node);
-      }
 
       let options = node.hash.pairs.length
         ? `, { ${node.hash.pairs.map((p) => `${key(p.key)}: ${this.expr(p.value, body)}`).join(', ')} }`
         : '';
 
       body.lines.push(
-        `${this.rt('listen')}($_b, ${element}, ${this.expr(event, body)}, () => ${this.expr(handler, body)}${options});`
+        `${this.rt('listen')}($_b, ${element}, ${event ? this.expr(event, body) : 'undefined'}, () => ${handler ? this.expr(handler, body) : 'undefined'}${options});`
       );
       return;
     }
@@ -560,6 +571,13 @@ class Generator {
 
       case 'debugger':
         body.lines.push('debugger;');
+        return;
+
+      case 'outlet':
+        if (!this.options.vmInterop) {
+          throw new CodegenError('`{{outlet}}` requires compiling with `vmInterop`', node);
+        }
+        body.lines.push(`${this.rt('outlet')}($_b, ${anchor});`);
         return;
 
       case 'component': {
@@ -901,6 +919,8 @@ class Generator {
         } else if (head.name in AUTO_IMPORTED) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked above
           base = this.options.importBinding(AUTO_IMPORTED[head.name]!, head.name);
+        } else if (this.options.isGlobal?.(head.name)) {
+          base = head.name;
         } else {
           throw new CodegenError(
             `Attempted to use \`${head.name}\`, but it is not in scope. In strict mode, values must be imported or defined in JavaScript`,
@@ -990,7 +1010,7 @@ class Generator {
       case 'log':
         return `${this.rt('log')}(${all().join(', ')})`;
       case 'element':
-        break;
+        return `${this.rt('element')}(${arg(0)})`;
       default:
         throw new CodegenError(`\`${builtin}\` is not supported by the codegen compiler yet`, node);
     }

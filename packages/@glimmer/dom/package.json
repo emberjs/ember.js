@@ -12,10 +12,12 @@
   "dependencies": {
     "@ember/-internals": "workspace:*",
     "@ember/runloop": "workspace:*",
+    "@ember/template-compilation": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
     "@glimmer/global-context": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
+    "@glimmer/owner": "workspace:*",
     "@glimmer/reference": "workspace:*",
     "@glimmer/validator": "workspace:*"
   }

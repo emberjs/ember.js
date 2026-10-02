@@ -2,17 +2,14 @@ import type { Tag } from '@glimmer/interfaces';
 import { destroy } from '@glimmer/destroyable';
 import { track } from '@glimmer/validator/lib/tracking';
 import { validateTag, valueForTag } from '@glimmer/validator/lib/validators';
-import { renderComponent as renderWithVM } from '@ember/-internals/glimmer/lib/base-renderer';
 import { _backburner } from '@ember/runloop';
 
+import type { OutletSink, Template } from './core';
 import type { Named } from './managers';
 
+import './setup';
 import { Block, marker, mount, removeRange, Root } from './core';
-import { instantiate, setVMFallback } from './invoke';
-
-// Components that were not compiled with the codegen compiler (e.g. from
-// addons) are rendered with the VM, into an element we own.
-setVMFallback((definition, into, owner, args) => renderWithVM(definition, { into, owner, args }));
+import { instantiate } from './invoke';
 
 export interface RenderResult {
   /**
@@ -23,30 +20,19 @@ export interface RenderResult {
   destroy(): void;
 }
 
-/**
- * Render a component (compiled with the codegen compiler) into an element.
- *
- * Mirrors `renderComponent` from `@ember/renderer`.
- */
-export function renderComponent(
-  component: object,
-  {
-    into,
-    owner = {},
-    args,
-  }: {
-    into: Element;
-    owner?: object;
-    args?: Record<string, unknown>;
-  }
+interface RootOptions {
+  into: Element;
+  owner?: object;
+  outlets?: OutletSink | undefined;
+}
+
+function renderRoot(
+  { into, owner = {}, outlets }: RootOptions,
+  render: (b: Block) => Node
 ): RenderResult {
   let root = new Root(owner, into.ownerDocument);
+  root.outlets = outlets ?? null;
   let b = new Block(root, null);
-
-  let named: Named = {};
-  if (args) {
-    for (let key of Object.keys(args)) named[key] = () => args[key];
-  }
 
   into.innerHTML = '';
   let end = marker(root);
@@ -67,7 +53,7 @@ export function renderComponent(
   };
 
   pass(() => {
-    let m = mount(b, end, (child) => instantiate(child, component, named, null, null));
+    let m = mount(b, end, render);
     b.updaters.push(() => {
       m.b.update();
     });
@@ -94,4 +80,44 @@ export function renderComponent(
       destroy(b);
     },
   };
+}
+
+/**
+ * Render a component (compiled with the codegen compiler) into an element.
+ *
+ * Mirrors `renderComponent` from `@ember/renderer`.
+ */
+export function renderComponent(
+  component: object,
+  {
+    into,
+    owner,
+    args,
+  }: {
+    into: Element;
+    owner?: object;
+    args?: Record<string, unknown>;
+  }
+): RenderResult {
+  let named: Named = {};
+  if (args) {
+    for (let key of Object.keys(args)) named[key] = () => args[key];
+  }
+
+  return renderRoot(owner ? { into, owner } : { into }, (child) =>
+    instantiate(child, component, named, null, null)
+  );
+}
+
+/**
+ * Render a compiled template for an already-created component instance
+ * (used when the VM renders a compiled component, see `@glimmer/dom/vm`).
+ */
+export function renderTemplate(
+  template: Template,
+  options: RootOptions & { self: unknown; args: Record<string, unknown> }
+): RenderResult {
+  return renderRoot(options, (child) =>
+    template.render(child, { self: options.self, args: options.args, blocks: null, attrs: null })
+  );
 }

@@ -11,6 +11,8 @@ import * as emberModifier from '@ember/modifier';
 import { htmlSafe } from '@ember/template';
 import { template as vmTemplate } from '@ember/template-compiler/runtime';
 import { run } from '@ember/runloop';
+import { renderComponent as renderWithVM } from '@ember/renderer';
+import * as vm from '@glimmer/dom/vm';
 
 const { module, test } = QUnit;
 
@@ -23,7 +25,13 @@ const IMPORTS: Record<string, Record<string, unknown>> = {
  * Compile a template the way the babel plugin would, with `scope` as the
  * JavaScript bindings that are in scope for it.
  */
-function compile(source: string, scope: Record<string, unknown> = {}): runtime.Template {
+const VM_NAMES = new Set(['template', 'setTemplate', 'outlet']);
+
+function compile(
+  source: string,
+  scope: Record<string, unknown> = {},
+  { vmInterop = false } = {}
+): runtime.Template {
   let { hoisted, expression } = generateDOM(preprocess(source, { strictMode: true }), {
     isLexical: (name) => name in scope,
     importOf: (name) => {
@@ -32,7 +40,8 @@ function compile(source: string, scope: Record<string, unknown> = {}): runtime.T
       }
       return undefined;
     },
-    runtime: (name) => `$rt.${name}`,
+    runtime: (name) => (vmInterop && VM_NAMES.has(name) ? `$vm.${name}` : `$rt.${name}`),
+    vmInterop,
     importBinding: (m, name) => `$imports[${JSON.stringify(m)}][${JSON.stringify(name)}]`,
   });
 
@@ -40,11 +49,12 @@ function compile(source: string, scope: Record<string, unknown> = {}): runtime.T
   // eslint-disable-next-line @typescript-eslint/no-implied-eval -- this is a compiler test
   let factory = new Function(
     '$rt',
+    '$vm',
     '$imports',
     ...names,
     `${hoisted.join('\n')}\nreturn ${expression};`
   );
-  return factory(runtime, IMPORTS, ...names.map((n) => scope[n])) as runtime.Template;
+  return factory(runtime, vm, IMPORTS, ...names.map((n) => scope[n])) as runtime.Template;
 }
 
 let result: RenderResult | null = null;
@@ -379,6 +389,49 @@ module('@glimmer/dom | codegen', (hooks) => {
       html(),
       '<glimmer-island style="display: contents;"><p>vm: reactive</p></glimmer-island>'
     );
+  });
+
+  test('element', (assert) => {
+    render(
+      compile(
+        `{{#let (element "h1") as |Tag|}}<Tag class="greeting">hello</Tag>{{/let}}{{#let (element "") as |None|}}<None>bare</None>{{/let}}`
+      )
+    );
+    assert.strictEqual(html(), '<h1 class="greeting">hello</h1>bare');
+  });
+
+  test('the VM can render compiled components (vmInterop)', (assert) => {
+    let state = new State();
+    let Greeting = compile(`<p>hello {{@name}}</p>`, {}, { vmInterop: true });
+
+    class Counter extends Component {
+      get doubled() {
+        return state.count * 2;
+      }
+    }
+    vm.setTemplate(Counter, compile(`<b>{{this.doubled}}</b>`, {}, { vmInterop: true }));
+
+    let Root = vmTemplate(`<Greeting @name={{state.name}} /><Counter />`, {
+      scope: () => ({ Greeting, Counter, state }),
+    });
+
+    let vmResult: { destroy(): void } | undefined;
+    run(() => {
+      vmResult = renderWithVM(Root, { into: fixture() });
+    });
+    assert.strictEqual(fixture().textContent, 'hello world0');
+
+    change(() => {
+      state.name = 'VM';
+      state.count = 2;
+    });
+    assert.strictEqual(fixture().textContent, 'hello VM4');
+
+    run(() => vmResult?.destroy());
+  });
+
+  test('{{outlet}} requires vmInterop', (assert) => {
+    assert.throws(() => compile(`{{outlet}}`), /requires compiling with `vmInterop`/u);
   });
 
   test('strict mode: unknown names are a compile error', (assert) => {

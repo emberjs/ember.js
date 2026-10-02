@@ -139,26 +139,54 @@ export function splat(b: Block, element: Element, ctx: Ctx): void {
  * The handler is read when the event fires, so changing it never requires
  * re-binding the listener.
  */
+function describeElement(element: Element): string {
+  return (
+    element.tagName.toLowerCase() +
+    (element.id ? `#${element.id}` : '') +
+    Array.from(element.classList)
+      .map((c) => `.${c}`)
+      .join('')
+  );
+}
+
+function assertHandler(fn: unknown, element: Element): asserts fn is (event: Event) => unknown {
+  if (typeof fn !== 'function') {
+    throw new Error(
+      `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+        fn === null ? 'null' : typeof fn
+      }. While rendering:\n\n(unknown) on ${describeElement(element)}`
+    );
+  }
+}
+
 export function listen(
   b: Block,
   element: Element,
-  eventName: string,
+  eventName: unknown,
   handler: Thunk,
   options?: AddEventListenerOptions
 ): void {
   let cache = createCache(handler);
   let listener = (event: Event) => {
     let fn = getValue(cache);
-    if (typeof fn === 'function') {
-      return (fn as (event: Event) => unknown)(event);
-    }
-    throw new Error(
-      `You must pass a function as the second argument to the \`on\` modifier; you passed ${String(fn)}.`
-    );
+    assertHandler(fn, element);
+    return fn(event);
   };
 
-  element.addEventListener(eventName, listener, options);
-  registerDestructor(b, () => {
-    element.removeEventListener(eventName, listener, options);
+  // Validated once the element is fully set up (like modifiers are installed),
+  // so that messages describe the element with all of its attributes.
+  b.root.schedule(() => {
+    if (typeof eventName !== 'string' || !eventName) {
+      throw new Error(
+        `You must pass a valid DOM event name as the first argument to the \`on\` modifier on ${describeElement(element)}`
+      );
+    }
+
+    assertHandler(getValue(cache), element);
+
+    element.addEventListener(eventName, listener, options);
+    registerDestructor(b, () => {
+      element.removeEventListener(eventName, listener, options);
+    });
   });
 }

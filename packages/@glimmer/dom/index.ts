@@ -14,6 +14,7 @@ export { at, clone, html, setTemplate, template, Template } from './lib/core';
 export { attr, listen, splat } from './lib/attributes';
 export { appendCall, content, MAY_CALL, TRUSTING } from './lib/content';
 export { each, inElement, scope, when, yieldTo } from './lib/control-flow';
+export { element } from './lib/element';
 export { curry, invoke, invokeDyn, setVMFallback } from './lib/invoke';
 export { helper, helperDyn, modifier } from './lib/managers';
 export { renderComponent, type RenderResult } from './lib/render';

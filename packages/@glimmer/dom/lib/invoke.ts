@@ -68,7 +68,7 @@ function argsFor(captured: CapturedArguments): Record<string, unknown> {
 function island(b: Block, definition: object, named: Named): Node {
   if (!vmFallback) {
     throw new Error(
-      `${describe(definition)} does not have a compiled template, and there is no VM fallback registered to render it.`
+      `${describe(definition)} does not have a compiled template. To render it with the VM, import '@glimmer/dom/vm' (or compile with \`vmInterop\`).`
     );
   }
 

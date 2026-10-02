@@ -32,11 +32,25 @@ export interface Ctx {
   attrs: AttrsFn | null;
 }
 
+export interface OutletSink {
+  /**
+   * Registers an element for the router to render the child route into.
+   * Returns a function that unregisters it.
+   */
+  add(element: Element): () => void;
+}
+
 /**
  * Shared state for one render tree (one `renderComponent` call).
  */
 export class Root {
   #queue: Array<() => void> = [];
+
+  /**
+   * Where `{{outlet}}`s go, when this tree is rendered from a route template
+   * (see `@glimmer/dom/vm`).
+   */
+  outlets: OutletSink | null = null;
 
   constructor(
     readonly owner: object,
