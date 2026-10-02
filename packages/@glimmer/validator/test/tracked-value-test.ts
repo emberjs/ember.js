@@ -110,6 +110,24 @@ module('@glimmer/validator: trackedValue()', () => {
     assert.strictEqual(x.freeze, x.freeze);
   });
 
+  test('each method can be replaced', (assert) => {
+    const x = trackedValue(0);
+    const calls: number[] = [];
+
+    x.set = (value) => {
+      calls.push(value);
+
+      return false;
+    };
+
+    assert.false(x.set(1));
+
+    x.value = 2;
+
+    assert.deepEqual(calls, [1, 2], 'a write through `value` uses the replacement');
+    assert.strictEqual(x.value, 0, 'the replacement did not write the value');
+  });
+
   test('a detached freeze() prevents updates', (assert) => {
     const x = trackedValue(0);
     const { freeze, set } = x;
