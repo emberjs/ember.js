@@ -292,6 +292,20 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(validateTag(outer, snapshot));
     });
 
+    test('it takes a tag one time if nested frames consume it at the same index', (assert) => {
+      let tag = createTag();
+
+      beginTrackFrame();
+
+      for (let i = 0; i < 3; i++) {
+        beginTrackFrame();
+        consumeTag(tag);
+        consumeTag(endTrackFrame());
+      }
+
+      assert.strictEqual(endTrackFrame(), tag);
+    });
+
     test('it returns the previous tag if the frame consumed the same tags', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
@@ -502,6 +516,46 @@ module('@glimmer/validator: tracking', () => {
 
       dirtyTag(tag3);
       assert.strictEqual(getValue(cache), 5, 'the cache depends on the new tag');
+    });
+
+    test('an outer cache runs again if a tag of a reused inner tag changes', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+      let innerCount = 0;
+      let outerCount = 0;
+
+      let inner = createCache(() => {
+        consumeTag(tag1);
+        consumeTag(tag2);
+
+        return ++innerCount;
+      });
+
+      let outer = createCache(() => {
+        consumeTag(tag3);
+        getValue(inner);
+
+        return ++outerCount;
+      });
+
+      assert.strictEqual(getValue(outer), 1);
+
+      dirtyTag(tag1);
+      assert.strictEqual(getValue(outer), 2, 'the inner cache ran again with the same tags');
+      assert.strictEqual(innerCount, 2);
+
+      dirtyTag(tag2);
+      assert.strictEqual(getValue(outer), 3, 'the outer cache follows the reused inner tag');
+      assert.strictEqual(innerCount, 3);
+
+      dirtyTag(tag3);
+      assert.strictEqual(getValue(outer), 4);
+      assert.strictEqual(innerCount, 3, 'the inner cache did not run again');
+
+      dirtyTag(tag1);
+      assert.strictEqual(getValue(outer), 5, 'the outer cache still follows the inner tag');
+      assert.strictEqual(innerCount, 4);
     });
 
     test('isTracking works within a memoized function and untrack frame', (assert) => {
