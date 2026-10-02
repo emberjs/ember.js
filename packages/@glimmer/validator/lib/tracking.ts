@@ -15,13 +15,11 @@ import {
 } from './validators';
 
 /**
- * A tag, with the number of the last tracking frame that consumed it.
- *
- * The tag classes of this package declare `lastFrame`.
- * A tag from another implementation gets the property on its first consumption.
+ * A tag of this package. Each tag class declares `slot`:
+ * the index of the tag in the tracker that took it last.
  */
 interface ConsumedTag extends Tag {
-  lastFrame?: number;
+  slot: number;
 }
 
 /**
@@ -41,27 +39,29 @@ class Tracker {
   private size = 0;
 
   /**
-   * The number of the frame that uses this tracker.
-   *
-   * `add` writes it on each tag that it takes,
+   * A tag keeps the index at which a tracker took it last.
+   * If this tracker has the tag at that index, the frame consumed the tag before,
    * so a tag that the frame consumes again costs one comparison.
    *
-   * A tag that a nested frame consumes between two consumptions of this frame
-   * is taken two times. A combined tag with a duplicate has the same revision.
+   * The index can come from another tracker.
+   * The entry at that index is then another tag or no tag, and this tracker takes the tag.
+   * So a tag that a nested frame takes at another index, between two consumptions
+   * of this frame, is taken two times. A combined tag with a duplicate has the same revision.
    */
-  frame = 0;
-
-  add(tag: ConsumedTag) {
+  add(tag: Tag) {
     if (tag === CONSTANT_TAG) return;
 
     if (DEBUG) {
       unwrap(debug.markTagAsConsumed)(tag);
     }
 
-    if (tag.lastFrame === this.frame) return;
+    let { tags, size } = this;
 
-    tag.lastFrame = this.frame;
-    this.tags[this.size++] = tag;
+    if (tags[(tag as ConsumedTag).slot] === tag) return;
+
+    (tag as ConsumedTag).slot = size;
+    tags[size] = tag;
+    this.size = size + 1;
   }
 
   /**
@@ -122,8 +122,6 @@ const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
  */
 const TRACKER_POOL: Tracker[] = [];
 
-let FRAME_COUNT = 0;
-
 export function beginTrackFrame(debuggingContext?: string | false): void {
   let depth = OPEN_TRACK_FRAMES.length;
 
@@ -135,7 +133,6 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
     tracker = TRACKER_POOL[depth] = new Tracker();
   }
 
-  tracker.frame = ++FRAME_COUNT;
   CURRENT_TRACKER = tracker;
 
   if (DEBUG) {
