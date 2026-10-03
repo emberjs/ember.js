@@ -36,7 +36,7 @@ function hasSuper(func: Function) {
 
 class ObserverListenerMeta {
   listeners?: string[] = undefined;
-  observers?: { paths: string[]; sync: boolean } = undefined;
+  observers?: { paths: string[] } = undefined;
 }
 
 const OBSERVERS_LISTENERS_MAP = new WeakMap<Function, ObserverListenerMeta>();
@@ -56,7 +56,7 @@ export function observerListenerMetaFor(fn: Function): ObserverListenerMeta | un
   return OBSERVERS_LISTENERS_MAP.get(fn);
 }
 
-export function setObservers(func: Function, observers: { paths: string[]; sync: boolean }): void {
+export function setObservers(func: Function, observers: { paths: string[] }): void {
   let meta = createObserverListenerMetaFor(func);
   meta.observers = observers;
 }
