@@ -119,8 +119,10 @@ const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 /**
  * Frames are strictly nested, so the tracker of a frame at depth `n` is free
  * when that frame ends. One tracker for each depth is enough.
+ *
+ * An untrack frame takes a depth but no tracker, so the pool can have holes.
  */
-const TRACKER_POOL: Tracker[] = [];
+const TRACKER_POOL: (Tracker | undefined)[] = [];
 
 export function beginTrackFrame(debuggingContext?: string | false): void {
   let depth = OPEN_TRACK_FRAMES.length;
@@ -182,7 +184,9 @@ export function resetTracking(): string | void {
   }
 
   for (let tracker of TRACKER_POOL) {
-    tracker.clear();
+    if (tracker !== undefined) {
+      tracker.clear();
+    }
   }
 
   CURRENT_TRACKER = null;
