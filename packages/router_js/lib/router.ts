@@ -1,7 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 import type { MatchCallback, Params, QueryParams } from 'route-recognizer';
 import RouteRecognizer from 'route-recognizer';
-import { Promise } from 'rsvp';
 import type { Dict, Maybe, Option } from './core';
 import type { RouteInfo, RouteInfoWithAttributes } from './route-info';
 import type InternalRouteInfo from './route-info';
@@ -22,7 +21,7 @@ import URLTransitionIntent from './transition-intent/url-transition-intent';
 import type { TransitionError } from './transition-state';
 import TransitionState from './transition-state';
 import type { ChangeList, ModelsAndQueryParams } from './utils';
-import { extractQueryParams, forEach, getChangelist, log, merge, promiseLabel } from './utils';
+import { extractQueryParams, forEach, getChangelist, log, merge } from './utils';
 
 export interface SerializerFunc<T> {
   (model: T, params: string[]): Dict<unknown>;
@@ -427,8 +426,7 @@ export default abstract class Router<R = unknown> {
           }
           return result;
         },
-        null,
-        promiseLabel('Transition complete')
+        null
       );
 
       return newTransition;
@@ -565,13 +563,9 @@ export default abstract class Router<R = unknown> {
     // Transition promises by default resolve with resolved state.
     // For our purposes, swap out the promise to resolve
     // after the transition has been finalized.
-    newTransition.promise = newTransition.promise!.then(
-      (result: TransitionState<R>) => {
-        return this.onTransitionSettled(newTransition, result);
-      },
-      null,
-      promiseLabel('Settle transition promise when transition is finalized')
-    );
+    newTransition.promise = newTransition.promise!.then((result: TransitionState<R>) => {
+      return this.onTransitionSettled(newTransition, result);
+    }, null);
 
     if (!wasTransitioning) {
       this.notifyExistingHandlers(newState, newTransition);

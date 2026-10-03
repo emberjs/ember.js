@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import { RSVP } from '@ember/-internals/runtime';
+import * as RSVP from 'rsvp';
 import Route from '@ember/routing/route';
 import { precompileTemplate } from '@ember/template-compilation';
 import {

@@ -1,4 +1,3 @@
-import { Promise } from 'rsvp';
 import type { Dict, Maybe, Option } from './core';
 import type { RouteInfo, RouteInfoWithAttributes } from './route-info';
 import type InternalRouteInfo from './route-info';
@@ -8,7 +7,7 @@ import { buildTransitionAborted } from './transition-aborted-error';
 import type { OpaqueIntent } from './transition-intent';
 import type { TransitionError } from './transition-state';
 import type TransitionState from './transition-state';
-import { log, promiseLabel } from './utils';
+import { log } from './utils';
 import { DEBUG } from '@glimmer/env';
 
 export type OnFulfilled<T, TResult1> =
@@ -187,7 +186,7 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
         let error = this.router.transitionDidError(result, this);
 
         throw error;
-      }, promiseLabel('Handle Abort'));
+      });
     } else {
       this.promise = Promise.resolve(this[STATE_SYMBOL]!);
       this[PARAMS_SYMBOL] = {};
@@ -238,9 +237,9 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
   then<TResult1 = unknown, TResult2 = never>(
     onFulfilled?: ((value: unknown) => TResult1 | PromiseLike<TResult1>) | undefined | null,
     onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
-    label?: string
+    _label?: string
   ): Promise<TResult1 | TResult2> {
-    return this.promise!.then(onFulfilled, onRejected, label);
+    return this.promise!.then(onFulfilled, onRejected);
   }
 
   /**
@@ -256,8 +255,8 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
     @return {Promise}
     @public
    */
-  catch<T>(onRejection?: OnRejected<TransitionState<R>, T>, label?: string) {
-    return this.promise!.catch(onRejection, label);
+  catch<T>(onRejection?: OnRejected<TransitionState<R>, T>, _label?: string) {
+    return this.promise!.catch(onRejection);
   }
 
   /**
@@ -273,9 +272,8 @@ export default class Transition<R = unknown> implements Partial<Promise<unknown>
     @return {Promise}
     @public
    */
-  finally<T>(callback?: T | undefined, label?: string) {
-    // @ts-expect-error @types/rsvp doesn't have the correct signature for RSVP.Promise.finally
-    return this.promise!.finally(callback, label);
+  finally<T>(callback?: T | undefined, _label?: string) {
+    return this.promise!.finally(callback as (() => void) | undefined);
   }
 
   /**
