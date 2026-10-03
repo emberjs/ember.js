@@ -33,6 +33,7 @@ import {
   _drainScheduledDestroys,
   _endRenderTransaction,
   _hasScheduledDestroys,
+  _resetInvalidationNotified,
   _setDestroyQueueObserver,
 } from './environment';
 import ResolverImpl from './resolver';
@@ -147,6 +148,8 @@ export function _resetRenderers() {
 function register(renderer: BaseRenderer): void {
   assert('Cannot register the same renderer twice', renderers.indexOf(renderer) === -1);
   renderers.push(renderer);
+  // a suppressed notification cannot have reached this renderer
+  _resetInvalidationNotified();
 }
 
 function deregister(renderer: BaseRenderer): void {
@@ -160,12 +163,17 @@ function deregister(renderer: BaseRenderer): void {
 // replaces the classic wiring where every dirty tag spun up a
 // backburner autorun whose `begin` hook rerendered the renderers.
 _setNotifyRevalidate(() => {
+  if (renderers.length === 0) return false;
+
   for (let renderer of renderers) {
     renderer.rerender();
   }
 
+  // first dirt after a flush (the notify latch dedupes the rest) --
   // the pending edge for the settledness observer
   sampleSettledState();
+
+  return true;
 });
 
 // Settledness edges. Work is outstanding while any renderer awaits its
@@ -512,6 +520,12 @@ export class RendererState {
     } else {
       this.#armStreamTick(renderer, performance.now());
     }
+
+    // dirt from here on is new information again -- the next set must
+    // notify the scheduler. Reset at the END of the tick so dirt that
+    // arrived during revalidation (which latched the flag but was
+    // absorbed by this tick or its settle rounds) can't leave it stuck.
+    _resetInvalidationNotified();
 
     // the quiet edge for the settledness observer (a no-op while the
     // settle rounds above still hold the renderer invalid)
