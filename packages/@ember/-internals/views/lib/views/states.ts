@@ -2,7 +2,6 @@ import { teardownMandatorySetter } from '@ember/-internals/utils/lib/mandatory-s
 import type Component from '@ember/-internals/glimmer/lib/component';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
-import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { hasCoreViewListener, sendCoreViewEvent } from './core-view-utils';
 
@@ -50,9 +49,7 @@ const HAS_ELEMENT: Readonly<ViewState> = Object.freeze({
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
       return flaggedInstrument(`interaction.${eventName}`, { event, view }, () => {
-        return join(() => {
-          return sendCoreViewEvent(view, eventName, [event]);
-        });
+        return sendCoreViewEvent(view, eventName, [event]);
       });
     } else {
       return true; // continue event propagation

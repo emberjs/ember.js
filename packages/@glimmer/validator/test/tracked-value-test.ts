@@ -101,6 +101,43 @@ module('@glimmer/validator: trackedValue()', () => {
     assert.true(validateTag(tag, snapshot), 'update() did not entangle with the value');
   });
 
+  test('each method is the same function on each read', (assert) => {
+    const x = trackedValue(0);
+
+    assert.strictEqual(x.get, x.get);
+    assert.strictEqual(x.set, x.set);
+    assert.strictEqual(x.update, x.update);
+    assert.strictEqual(x.freeze, x.freeze);
+  });
+
+  test('each method can be replaced', (assert) => {
+    const x = trackedValue(0);
+    const calls: number[] = [];
+
+    x.set = (value) => {
+      calls.push(value);
+
+      return false;
+    };
+
+    assert.false(x.set(1));
+
+    x.value = 2;
+
+    assert.deepEqual(calls, [1, 2], 'a write through `value` uses the replacement');
+    assert.strictEqual(x.value, 0, 'the replacement did not write the value');
+  });
+
+  test('a detached freeze() prevents updates', (assert) => {
+    const x = trackedValue(0);
+    const { freeze, set } = x;
+
+    freeze();
+
+    assert.throws(() => set(1), /frozen/u);
+    assert.throws(() => (x.value = 1), /frozen/u);
+  });
+
   test('methods can be detached from the instance', (assert) => {
     const x = trackedValue(0);
     const { get, set, update } = x;

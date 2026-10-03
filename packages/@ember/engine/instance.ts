@@ -3,7 +3,6 @@
 */
 
 import EmberObject from '@ember/object';
-import RSVP from '@ember/-internals/runtime/lib/ext/rsvp';
 import { assert } from '@ember/debug';
 import { default as Registry, privatize as P } from '@ember/-internals/container/lib/registry';
 import { guidFor } from '@ember/-internals/utils/lib/guid';
@@ -108,7 +107,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     this._booted = false;
   }
 
-  _bootPromise: RSVP.Promise<this> | null = null;
+  _bootPromise: Promise<this> | null = null;
 
   /**
     Initialize the `EngineInstance` and return a promise that resolves
@@ -128,7 +127,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
       return this._bootPromise;
     }
 
-    this._bootPromise = new RSVP.Promise((resolve) => {
+    this._bootPromise = new Promise((resolve) => {
       resolve(this._bootSync(options));
     });
 

@@ -31,7 +31,8 @@ import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
 import { assert, info } from '@ember/debug';
-import { cancel, later, once, run } from '@ember/runloop';
+import { cancel, later } from '@ember/runloop';
+import { scheduleMethodOnce } from '@ember/-internals/utils/lib/microtask-scheduling';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -503,7 +504,7 @@ class EmberRouter extends EmberObject {
       }
 
       updateURL(path: string) {
-        once(() => {
+        queueMicrotask(() => {
           location.setURL(path);
           set(router, 'currentURL', path);
         });
@@ -554,7 +555,7 @@ class EmberRouter extends EmberObject {
 
       routeDidChange(transition: Transition) {
         router.set('currentRoute', transition.to);
-        once(() => {
+        queueMicrotask(() => {
           sendEvent(router, 'routeDidChange', [transition]);
 
           if (DEBUG) {
@@ -601,7 +602,7 @@ class EmberRouter extends EmberObject {
             location.replaceURL!(url);
             set(router, 'currentURL', url);
           };
-          once(doReplaceURL);
+          queueMicrotask(doReplaceURL);
         } else {
           this.updateURL(url);
         }
@@ -623,7 +624,7 @@ class EmberRouter extends EmberObject {
             cancel(this.#pendingOutletFlush);
             this.#pendingOutletFlush = null;
           }
-          once(router as any, '_setOutlets');
+          scheduleMethodOnce(router, '_setOutlets');
           return;
         }
 
@@ -1008,7 +1009,7 @@ class EmberRouter extends EmberObject {
       for (let id in instanceMap) {
         let instance: EngineInstance | undefined = instanceMap[id];
         assert('has instance', instance);
-        run(instance, 'destroy');
+        instance.destroy();
       }
     }
   }
@@ -1020,7 +1021,7 @@ class EmberRouter extends EmberObject {
   */
   _activeQPChanged(queryParameterName: string, newValue: unknown) {
     this._queuedQPChanges[queryParameterName] = newValue;
-    once(this, this._fireQueryParamTransition);
+    scheduleMethodOnce(this, '_fireQueryParamTransition');
   }
 
   // The queryParameterName is QueryParam['urlKey']

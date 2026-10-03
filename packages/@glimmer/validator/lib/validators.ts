@@ -99,8 +99,37 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
       case 1:
         return tags[0] as Tag;
       default: {
+        // Flatten nested combinators and drop constants, so validating a
+        // combined tag is one flat loop instead of a tree walk. Capped so
+        // that a huge frame does not build a huge array.
+        let flattened: Tag[] = [];
+        let budget = 64;
+
+        for (const t of tags) {
+          const impl = t as MonomorphicTagImpl;
+
+          if (impl === CONSTANT_TAG) continue;
+
+          if (
+            impl[TYPE] === COMBINATOR_TAG_ID &&
+            Array.isArray(impl.subtag) &&
+            impl.subtag.length <= budget
+          ) {
+            for (const sub of impl.subtag) {
+              if (sub !== CONSTANT_TAG) flattened.push(sub);
+            }
+            budget -= impl.subtag.length;
+          } else {
+            flattened.push(t);
+          }
+        }
+
+        if (flattened.length === 0) return CONSTANT_TAG;
+        if (flattened.length === 1) return flattened[0] as Tag;
+
         let tag: MonomorphicTagImpl = new MonomorphicTagImpl(COMBINATOR_TAG_ID);
-        tag.subtag = tags;
+        tag.subtag = flattened;
+        tag.inputs = tags;
         return tag;
       }
     }
@@ -112,7 +141,18 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
 
   private isUpdating = false;
   public subtag: Tag | Tag[] | null = null;
+
+  /**
+   * The tags a combinator was made from, before flattening. A tracker
+   * compares its frame's tags with these to reuse the combinator.
+   */
+  public inputs: Tag[] | null = null;
   private subtagBufferCache: Revision | null = null;
+
+  /**
+   * The index of this tag in the tracker that took it last.
+   */
+  public slot = 0;
 
   declare [TYPE]: T;
 
@@ -138,9 +178,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
 
         if (subtag !== null) {
           if (Array.isArray(subtag)) {
-            for (const tag of subtag) {
-              let value = tag[COMPUTE]();
-              revision = Math.max(value, revision);
+            for (let i = 0; i < subtag.length; i++) {
+              revision = Math.max((subtag[i] as Tag)[COMPUTE](), revision);
             }
           } else {
             let subtagValue = subtag[COMPUTE]();
@@ -254,6 +293,7 @@ const VOLATILE_TAG_ID: IVOLATILE_TAG_ID = 100;
 
 export class VolatileTag implements Tag {
   readonly [TYPE] = VOLATILE_TAG_ID;
+  slot = 0;
   [COMPUTE](): Revision {
     return VOLATILE;
   }
@@ -267,6 +307,7 @@ const CURRENT_TAG_ID: ICURRENT_TAG_ID = 101;
 
 export class CurrentTag implements Tag {
   readonly [TYPE] = CURRENT_TAG_ID;
+  slot = 0;
   [COMPUTE](): Revision {
     return $REVISION;
   }
@@ -277,6 +318,24 @@ export const CURRENT_TAG = new CurrentTag();
 //////////
 
 export const combine = MonomorphicTagImpl.combine;
+
+/**
+ * Whether `tag` is the combination of the first `size` entries of `tags`, in order.
+ */
+export function isCombinationOf(tag: Tag, tags: (Tag | null)[], size: number): boolean {
+  if (tag[TYPE] !== COMBINATOR_TAG_ID) return false;
+
+  let impl = tag as MonomorphicTagImpl;
+  let subtags = impl.inputs ?? (impl.subtag as Tag[]);
+
+  if (subtags.length !== size) return false;
+
+  for (let i = 0; i < size; i++) {
+    if (subtags[i] !== tags[i]) return false;
+  }
+
+  return true;
+}
 
 // Warm
 

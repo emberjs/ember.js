@@ -1,6 +1,6 @@
 import { destroy } from '@ember/destroyable';
 import { capabilities } from '@ember/component';
-import { schedule } from '@ember/runloop';
+import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 import BaseComponentManager from './base-component-manager';
 
 import { type default as GlimmerComponent, IS_DESTROYING_KEY, IS_DESTROYED_KEY } from './component';
@@ -11,6 +11,10 @@ const CAPABILITIES = capabilities('3.13', {
   asyncLifecycleCallbacks: false,
   updateHook: false,
 });
+
+function invokeWillDestroy(component: GlimmerComponent): void {
+  component.willDestroy();
+}
 
 function scheduledDestroyComponent(component: GlimmerComponent): void {
   if (component.isDestroyed) {
@@ -37,8 +41,10 @@ class EmberGlimmerComponentManager extends BaseComponentManager<GlimmerComponent
 
     component[IS_DESTROYING_KEY] = true;
 
-    schedule('actions', component, component.willDestroy);
-    schedule('destroy', this, scheduledDestroyComponent, component);
+    scheduleDestroy(component, invokeWillDestroy);
+    scheduleDestroyed(() => {
+      scheduledDestroyComponent(component);
+    });
   }
 }
 
