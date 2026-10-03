@@ -24,7 +24,7 @@ const TRACKED_TAGS = new WeakMap<object, TagMeta>();
  * property chains -- observe the same tag object the field itself
  * consumes and dirties.
  */
-export function registerTagFor(obj: object, key: PropertyKey, tag: UpdatableTag): void {
+export function registerTagFor(obj: object, key: PropertyKey, tag: UpdatableTag): TagMeta {
   let tags = TRACKED_TAGS.get(obj);
 
   if (tags === undefined) {
@@ -33,6 +33,8 @@ export function registerTagFor(obj: object, key: PropertyKey, tag: UpdatableTag)
   }
 
   tags.set(key, tag);
+
+  return tags;
 }
 
 export function dirtyTagFor<T extends object>(
