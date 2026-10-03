@@ -45,14 +45,17 @@ moduleFor(
       _clearRegisteredStrategy();
     }
 
-    ['@test phase functions assert when no strategy is registered'](assert) {
-      for (let phase of [render, layout, composite, next, idle]) {
-        expectAssertion(() => {
-          phase();
-        }, /no scheduling strategy is registered/);
-      }
+    async ['@test phase functions fall back to the default renderer-clock strategy'](assert) {
+      // no registerStrategy call: the ambient default handles phases
+      let order = [];
 
-      assert.expect(5);
+      await Promise.all([
+        composite().then(() => order.push('composite')),
+        render().then(() => order.push('render')),
+        layout().then(() => order.push('layout')),
+      ]);
+
+      assert.deepEqual(order, ['render', 'layout', 'composite']);
     }
 
     ['@test phase functions delegate to the registered strategy'](assert) {

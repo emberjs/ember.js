@@ -1,4 +1,4 @@
-import { RSVP } from '@ember/-internals/runtime';
+import * as RSVP from 'rsvp';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import { action } from '@ember/object';

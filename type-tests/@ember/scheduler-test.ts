@@ -1,6 +1,6 @@
 import { render, layout, composite, next, idle, registerStrategy } from '@ember/scheduler';
 import type { Strategy } from '@ember/scheduler';
-import strategy, { FrameStrategy } from '@ember/scheduler/strategy';
+import strategy, { RenderClockStrategy } from '@ember/scheduler/strategy';
 import { expectTypeOf } from 'expect-type';
 
 expectTypeOf(render()).toEqualTypeOf<Promise<void>>();
@@ -11,7 +11,7 @@ expectTypeOf(idle()).toEqualTypeOf<Promise<void>>();
 
 expectTypeOf(registerStrategy(strategy)).toEqualTypeOf<void>();
 expectTypeOf(strategy).toMatchTypeOf<Strategy>();
-expectTypeOf(new FrameStrategy()).toMatchTypeOf<Strategy>();
+expectTypeOf(new RenderClockStrategy()).toMatchTypeOf<Strategy>();
 
 // @ts-expect-error requires a strategy
 registerStrategy();

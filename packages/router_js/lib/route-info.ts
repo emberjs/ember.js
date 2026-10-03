@@ -1,5 +1,4 @@
 /* eslint-disable no-prototype-builtins */
-import { Promise } from 'rsvp';
 import type { Dict, Option } from './core';
 import type { SerializerFunc } from './router';
 import type Router from './router';

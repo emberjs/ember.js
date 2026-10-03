@@ -4,27 +4,27 @@ import type { Strategy } from '@ember/scheduler';
   The default implementation of the scheduler interface described by
   [RFC 0957](https://rfcs.emberjs.com/id/0957-modernized-scheduler).
 
-  ```js
-  import { registerStrategy } from '@ember/scheduler';
-  import strategy from '@ember/scheduler/strategy';
+  This strategy IS the renderer's clock. The renderer schedules its own
+  ticks (microtask-speed for render-coupled continuations, frame-paced
+  for streams); each tick that leaves the renderer valid drives this
+  strategy's phase windows, so `await render()` resolves against the
+  tick that actually updated the DOM -- there is exactly one clock.
 
-  registerStrategy(strategy);
-  ```
+  - `render` resolves immediately after a tick's revalidation, before
+    the next paint when the tick rode the frame
+  - `layout` and `composite` resolve in subsequent microtask
+    checkpoints of the same tick, so each phase's awaiters run before
+    the next window opens
+  - scheduling into `render` while the render window is flushing
+    resolves within the current window (recursive render)
+  - scheduling into a phase whose window has already flushed this tick
+    resolves in the next tick
+  - `next()` resolves in a task after the tick completes; `idle()` uses
+    `requestIdleCallback` where available
 
-  This strategy conceptualizes work as belonging to a "Frame", where a Frame
-  constitutes the time between when states of the DOM are observable to a
-  user. Each Frame flushes the `render`, `layout` and `composite` phases in
-  order via `requestAnimationFrame`, prior to the browser's next paint.
-
-  - work scheduled while no Frame is flushing resolves in the corresponding
-    phase of the upcoming Frame
-  - scheduling into a phase that the flushing Frame has not yet reached
-    resolves "just-in-time" within the current Frame
-  - scheduling into `render` while `render` is flushing resolves recursively
-    within the current Frame's render phase
-  - scheduling into a phase the flushing Frame has already passed (or into
-    `layout`/`composite` while that same phase is flushing) resolves in the
-    next Frame
+  Awaiting a phase when the renderer has no pending work requests a
+  tick, so the promise always resolves; environments with no renderer
+  at all (unit tests, workers) fall back to a self-driven tick.
 
   @module @ember/scheduler/strategy
   @public
@@ -38,9 +38,9 @@ const PHASE_ORDER: Record<FramePhase, number> = {
   composite: 2,
 };
 
-// requestAnimationFrame is unavailable in SSR environments such as FastBoot.
-// There is no paint to schedule against there, so degrade to timers: phases
-// still resolve in order, since equal-delay timeouts run FIFO.
+// requestAnimationFrame is unavailable in SSR environments such as
+// FastBoot; there is no paint there, so the self-driven fallback
+// degrades to a timer.
 function onFrameTask(callback: () => void): void {
   if (typeof requestAnimationFrame === 'function') {
     requestAnimationFrame(() => callback());
@@ -60,126 +60,175 @@ class Deferred {
   }
 }
 
-class Frame {
-  render = new Deferred();
-  layout = new Deferred();
-  composite = new Deferred();
-  complete = new Deferred();
-}
-
-export class FrameStrategy implements Strategy {
-  /** the frame whose phase callbacks are registered but have not yet completed */
-  private _frame: Frame | null = null;
-
-  /** while a frame is flushing, the frame scheduled to run after it */
-  private _nextFrame: Frame | null = null;
+export class RenderClockStrategy implements Strategy {
+  /** lazily-created pending windows for the upcoming tick */
+  #render: Deferred | null = null;
+  #layout: Deferred | null = null;
+  #composite: Deferred | null = null;
+  #complete: Deferred | null = null;
 
   /** the phase window currently being flushed, if any */
-  private _flushing: FramePhase | null = null;
+  #flushing: FramePhase | null = null;
 
-  render(): Promise<void> {
-    if (this._flushing === 'render') {
+  /** bumped per driven tick; lets the self-driven fallback stand down */
+  #tickCount = 0;
+
+  /**
+   * Injected by the renderer: ensures a tick is scheduled even when no
+   * reactive state is dirty, so awaited phases always resolve.
+   */
+  #requestTick: (() => void) | null = null;
+
+  /** @internal wired up by the renderer at module initialization */
+  _setTickRequester(requestTick: () => void): void {
+    this.#requestTick = requestTick;
+  }
+
+  #ensureTick(): void {
+    if (this.#requestTick !== null) {
+      this.#requestTick();
+    }
+
+    // With no renderer connected (unit tests, workers, pre-boot), or a
+    // connected renderer with no roots to tick, self-drive: fire the
+    // windows at the next frame opportunity unless a real tick beat us
+    // to it.
+    const tickAtArm = this.#tickCount;
+    onFrameTask(() => {
+      if (this.#tickCount === tickAtArm) {
+        this._onRendererTick();
+      }
+    });
+  }
+
+  /**
+   * Drives the phase windows. Called by the renderer at the end of
+   * every tick that leaves it valid; a no-op unless something awaited
+   * a phase, so ticks with no scheduled work pay one null check.
+   *
+   * @internal
+   */
+  _onRendererTick(): void {
+    this.#tickCount++;
+
+    if (
+      this.#render === null &&
+      this.#layout === null &&
+      this.#composite === null &&
+      this.#complete === null
+    ) {
+      return;
+    }
+
+    // Each window resolves in its own microtask checkpoint so one
+    // phase's awaiters observe their window before the next opens --
+    // all within the tick's task, before the next paint when the tick
+    // rode the frame.
+    this.#openWindow('render');
+    queueMicrotask(() => {
+      this.#openWindow('layout');
+      queueMicrotask(() => {
+        this.#openWindow('composite');
+        queueMicrotask(() => {
+          this.#flushing = null;
+          const complete = this.#complete;
+          this.#complete = null;
+          complete?.resolve();
+        });
+      });
+    });
+  }
+
+  #openWindow(phase: FramePhase): void {
+    this.#flushing = phase;
+
+    let deferred: Deferred | null;
+
+    if (phase === 'render') {
+      deferred = this.#render;
+      this.#render = null;
+    } else if (phase === 'layout') {
+      deferred = this.#layout;
+      this.#layout = null;
+    } else {
+      deferred = this.#composite;
+      this.#composite = null;
+    }
+
+    deferred?.resolve();
+  }
+
+  #phase(name: FramePhase): Promise<void> {
+    const flushing = this.#flushing;
+
+    if (flushing === 'render' && name === 'render') {
       // recursive scheduling into `render` resolves within the current
       // render window
       return Promise.resolve();
     }
-    return this._phase('render');
+
+    // Scheduling into a phase the current tick's cascade has not yet
+    // reached joins this tick just-in-time; a phase at or behind the
+    // window being flushed gets a fresh deferred, which the NEXT tick's
+    // cascade resolves. Either way the bookkeeping is the same: take or
+    // create the pending deferred and make sure a tick is coming.
+    let deferred: Deferred;
+
+    if (name === 'render') {
+      deferred = this.#render ??= new Deferred();
+    } else if (name === 'layout') {
+      deferred = this.#layout ??= new Deferred();
+    } else {
+      deferred = this.#composite ??= new Deferred();
+    }
+
+    // a phase still ahead of the running cascade resolves within it;
+    // anything else needs a tick to be coming
+    if (flushing === null || PHASE_ORDER[name] <= PHASE_ORDER[flushing]) {
+      this.#ensureTick();
+    }
+
+    return deferred.promise;
+  }
+
+  render(): Promise<void> {
+    return this.#phase('render');
   }
 
   layout(): Promise<void> {
-    return this._phase('layout');
+    return this.#phase('layout');
   }
 
   composite(): Promise<void> {
-    return this._phase('composite');
+    return this.#phase('composite');
   }
 
   next(): Promise<void> {
-    // once the frame in flight (or the upcoming frame) has completed, yield
-    // to a new task. `requestAnimationFrame` callbacks run before the paint,
-    // so a timer scheduled from `complete` lands after it.
-    return this._ensureFrame().complete.promise.then(
-      () => new Promise((resolve) => setTimeout(resolve, 0))
-    );
+    const complete = (this.#complete ??= new Deferred());
+
+    if (this.#flushing === null) {
+      this.#ensureTick();
+    }
+
+    // the tick's windows all flush before the paint when riding the
+    // frame; a timer scheduled from `complete` lands after it
+    return complete.promise.then(() => new Promise((resolve) => setTimeout(resolve, 0)));
   }
 
   idle(): Promise<void> {
     return new Promise((resolve) => {
       if (typeof requestIdleCallback === 'function') {
-        // an idle period may never arrive: fully-idle or backgrounded pages
-        // can starve requestIdleCallback indefinitely, so cap the wait to
-        // keep the promise resolvable
+        // an idle period may never arrive: fully-idle or backgrounded
+        // pages can starve requestIdleCallback indefinitely, so cap the
+        // wait to keep the promise resolvable
         requestIdleCallback(() => resolve(), { timeout: 500 });
       } else {
         setTimeout(resolve, 0);
       }
     });
   }
-
-  private _phase(name: FramePhase): Promise<void> {
-    let flushing = this._flushing;
-
-    if (flushing === null) {
-      return this._ensureFrame()[name].promise;
-    }
-
-    if (PHASE_ORDER[name] > PHASE_ORDER[flushing]) {
-      // this phase of the flushing frame is still upcoming, resolve
-      // just-in-time within the current frame
-      return this._frame![name].promise;
-    }
-
-    // the window for this phase has already flushed this frame
-    return this._ensureNextFrame()[name].promise;
-  }
-
-  private _ensureFrame(): Frame {
-    if (this._frame === null) {
-      this._frame = this._scheduleFrame();
-    }
-    return this._frame;
-  }
-
-  private _ensureNextFrame(): Frame {
-    if (this._nextFrame === null) {
-      this._nextFrame = this._scheduleFrame();
-    }
-    return this._nextFrame;
-  }
-
-  private _scheduleFrame(): Frame {
-    let frame = new Frame();
-
-    // callbacks registered with the browser in the same frame run in
-    // registration order, giving us ordered phase windows within a single
-    // frame, all before the next paint. Microtasks (and thus work awaiting a
-    // phase) flush between callbacks. When a frame is scheduled while another
-    // frame is flushing, the browser runs these callbacks in the next frame.
-    onFrameTask(() => {
-      this._flushing = 'render';
-      frame.render.resolve();
-    });
-    onFrameTask(() => {
-      this._flushing = 'layout';
-      frame.layout.resolve();
-    });
-    onFrameTask(() => {
-      this._flushing = 'composite';
-      frame.composite.resolve();
-    });
-    onFrameTask(() => {
-      this._flushing = null;
-      if (this._frame === frame) {
-        this._frame = this._nextFrame;
-        this._nextFrame = null;
-      }
-      frame.complete.resolve();
-    });
-
-    return frame;
-  }
 }
 
-const strategy: Strategy = new FrameStrategy();
+const strategy: RenderClockStrategy = new RenderClockStrategy();
 
 export default strategy;
