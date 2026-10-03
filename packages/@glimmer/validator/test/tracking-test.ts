@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import {
   beginTrackFrame,
+  beginUntrackFrame,
   consumeTag,
   createCache,
   createTag,
@@ -373,6 +374,19 @@ module('@glimmer/validator: tracking', () => {
       consumeTag(tag2);
 
       assert.strictEqual(endTrackFrame(), tag2);
+    });
+
+    test('it resets after a frame that began inside untrack frames', (assert) => {
+      // deeper than any other test goes, so these depths have no tracker yet
+      for (let i = 0; i < 100; i++) {
+        beginUntrackFrame();
+      }
+
+      beginTrackFrame();
+
+      resetTracking();
+
+      assert.notOk(isTracking());
     });
 
     test('isTracking works within a track', (assert) => {
