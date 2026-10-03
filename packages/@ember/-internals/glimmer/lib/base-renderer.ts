@@ -1,7 +1,9 @@
 import { ENV } from '@ember/-internals/environment/lib/env';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
+import { _backburner, _getCurrentRunLoop, schedule } from '@ember/runloop';
+import { flushAsyncObservers } from '@ember/-internals/metal/lib/observer';
+import { _scheduleAsyncRevalidate, _setAsyncRenderFlush } from './async-revalidate';
 import {
   associateDestroyableChild,
   destroy,
@@ -176,10 +178,14 @@ export function renderSettled() {
     let resolve!: () => void;
     let promise = new Promise<void>((r) => (resolve = r));
     renderSettledDeferred = { promise, resolve };
-    // if there is no current runloop, the promise created above will not have
-    // a chance to resolve (because its resolved in backburner's "end" event)
-    if (!_getCurrentRunLoop()) {
-      // ensure a runloop has been kicked off
+    if (ENV._USE_ASYNC_SCHEDULER) {
+      // ensure a revalidation pass is scheduled; it resolves the promise
+      // once every renderer is valid
+      _scheduleAsyncRevalidate();
+    } else if (!_getCurrentRunLoop()) {
+      // if there is no current runloop, the promise created above will not
+      // have a chance to resolve (because its resolved in backburner's "end"
+      // event); ensure a runloop has been kicked off
       _backburner.schedule('actions', null, NO_OP);
     }
   }
@@ -192,7 +198,11 @@ function resolveRenderPromise() {
     let resolve = renderSettledDeferred.resolve;
     renderSettledDeferred = null;
 
-    _backburner.join(null, resolve);
+    if (ENV._USE_ASYNC_SCHEDULER) {
+      resolve();
+    } else {
+      _backburner.join(null, resolve);
+    }
   }
 }
 
@@ -216,6 +226,38 @@ function loopEnd() {
 
 _backburner.on('begin', loopBegin);
 _backburner.on('end', loopEnd);
+
+// The async rendering pass used when the `use-async-scheduler` optional
+// feature is enabled: revalidation is scheduled into the scheduler's render
+// phase instead of backburner's `render` queue, so rendering happens before
+// the next paint rather than at the end of the current runloop.
+function flushAsyncRendering(): void {
+  flushAsyncObservers(schedule);
+
+  for (let renderer of renderers) {
+    renderer.state.revalidate(renderer);
+  }
+
+  for (let renderer of renderers) {
+    if (!renderer.isValid()) {
+      if (loops > ENV._RERENDER_LOOP_LIMIT) {
+        loops = 0;
+        // TODO: do something better
+        renderer.destroy();
+        throw new Error('infinite rendering invalidation detected');
+      }
+      loops++;
+      // the render phase resolves in-window when awaited during its own
+      // flush, so this reflush happens within the same frame
+      _scheduleAsyncRevalidate();
+      return;
+    }
+  }
+  loops = 0;
+  resolveRenderPromise();
+}
+
+_setAsyncRenderFlush(flushAsyncRendering);
 
 type Resolver = ClassicResolver;
 
@@ -368,6 +410,10 @@ export class RendererState {
   }
 
   scheduleRevalidate(renderer: BaseRenderer): void {
+    if (ENV._USE_ASYNC_SCHEDULER) {
+      _scheduleAsyncRevalidate();
+      return;
+    }
     _backburner.scheduleOnce('render', this, this.revalidate, renderer);
   }
 
