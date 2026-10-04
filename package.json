@@ -106,6 +106,7 @@
     "@babel/plugin-transform-typescript": "^7.26.8",
     "@babel/preset-env": "^7.16.11",
     "@babel/types": "^7.22.5",
+    "@ember/test-helpers": "^5.5.0",
     "@embroider/macros": "^1.20.2",
     "@embroider/shared-internals": "^3.0.2",
     "@embroider/vite": "^1.7.2",
