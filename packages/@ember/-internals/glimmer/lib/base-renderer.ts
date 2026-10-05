@@ -442,8 +442,20 @@ export class RendererState {
    */
   #microtaskWindow = false;
 
+  /**
+   * Set when dirt arrives inside the microtask window. The microtask
+   * that closes the window then runs the next tick, so a chain of ticks
+   * queues one microtask per tick, not two.
+   */
+  #chainTick = false;
+
   #closeMicrotaskWindow = () => {
     this.#microtaskWindow = false;
+
+    if (this.#chainTick) {
+      this.#chainTick = false;
+      this.#flush(false);
+    }
   };
 
   // scheduling must not allocate per dirt event: dependent chains
@@ -516,7 +528,7 @@ export class RendererState {
     } else if (this.#settleRounds < 3) {
       this.#settleRounds++;
       this.#flushScheduled = true;
-      queueMicrotask(this.#microtaskFlush);
+      this.#chainTick = true;
     } else {
       this.#armStreamTick(renderer, performance.now());
     }
@@ -563,7 +575,12 @@ export class RendererState {
     // ever runs. Everything else is stream dirt and takes the
     // frame-paced legs. SSR has no paint to schedule against, so it
     // always ticks on a microtask.
-    if (this.#microtaskWindow || typeof requestAnimationFrame !== 'function') {
+    if (this.#microtaskWindow) {
+      this.#chainTick = true;
+      return;
+    }
+
+    if (typeof requestAnimationFrame !== 'function') {
       queueMicrotask(this.#microtaskFlush);
       return;
     }
