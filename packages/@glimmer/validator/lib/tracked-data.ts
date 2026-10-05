@@ -2,38 +2,38 @@ import { DEBUG } from '@glimmer/env';
 import type { UpdatableTag } from '@glimmer/interfaces';
 
 import { debug } from './debug';
-import { registerTagFor, type TagMeta } from './meta';
+import { tagFor, type TagMeta, tagMetaFor } from './meta';
 import { consumeTag } from './tracking';
 import { unwrap } from './utils';
-import { createUpdatableTag, DIRTY_TAG } from './validators';
+import { DIRTY_TAG } from './validators';
 
 export type Getter<T, K extends keyof T> = (self: T) => T[K] | undefined;
 export type Setter<T, K extends keyof T> = (self: T, value: T[K]) => void;
 
 /**
- * Value and tag live in one cell per (field, instance): a read is one
- * WeakMap hop + consumeTag, a write is one hop + DIRTY_TAG. The
- * previous shape went through the central tag registry
- * (`TRACKED_TAGS` WeakMap -> per-object Map) plus a separate values
- * WeakMap -- three map hops on every tracked read and write, which is
- * the hottest path in data-heavy rendering.
+ * The value and the tag of one field of one instance. A read or a write
+ * finds both with one WeakMap lookup.
+ *
+ * The tag is the one that the tag registry has for the field, so `tagFor`
+ * and `dirtyTagFor` work on the same tag as the field.
  */
 interface TrackedCell<V> {
   value: V;
   tag: UpdatableTag;
-  initialized: boolean;
   /**
-   * The instance's map in the central tag registry. It is made once per
-   * object and never replaced, so a write reaches other tags of the
-   * object without a WeakMap lookup.
+   * The map that the tag registry has for the instance. It is made once
+   * per object and never replaced, so a write reaches other tags of the
+   * object with no WeakMap lookup.
    */
   tags: TagMeta;
+  initialized: boolean;
 }
 
 /**
- * With `selfKey`, a write also dirties the instance's tag for that key,
- * if one exists -- the decorator passes Ember's SELF_TAG.
+ * With `selfKey`, a write also dirties the tag that the instance has for
+ * that key, if one exists. The `@tracked` decorator passes Ember's SELF_TAG.
  */
+
 export function trackedData<T extends object, K extends keyof T>(
   key: K,
   initializer?: (this: T) => T[K],
@@ -46,16 +46,15 @@ export function trackedData<T extends object, K extends keyof T>(
     let cell = cells.get(self);
 
     if (cell === undefined) {
-      let tag = createUpdatableTag();
+      let tags = tagMetaFor(self);
 
       cell = {
         value: undefined,
-        tag,
+        // Other code can ask the registry for this tag before the first read
+        // or write of the field, so the cell takes the tag from there.
+        tag: tagFor(self, key, tags) as UpdatableTag,
+        tags,
         initialized: !hasInitializer,
-        // one-time bridge: notifyPropertyChange / computed chains resolve
-        // tags through the central registry; hand them this cell's tag so
-        // both worlds dirty and consume the same object
-        tags: registerTagFor(self, key, tag),
       };
       cells.set(self, cell);
     }
@@ -85,7 +84,7 @@ export function trackedData<T extends object, K extends keyof T>(
       unwrap(debug.assertTagNotConsumed)(cell.tag, self, key);
     }
 
-    DIRTY_TAG(cell.tag);
+    DIRTY_TAG(cell.tag, true);
     cell.initialized = true;
     cell.value = value;
 

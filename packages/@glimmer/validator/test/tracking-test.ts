@@ -7,11 +7,14 @@ import {
   createTag,
   debug,
   dirtyTag,
+  dirtyTagFor,
   endTrackFrame,
   getValue,
   isConst,
   isTracking,
   resetTracking,
+  tagFor,
+  tagMetaFor,
   track,
   trackedData,
   untrack,
@@ -693,6 +696,82 @@ module('@glimmer/validator: tracking', () => {
 
       setter(foo, 789);
       assert.notOk(validateTag(tag, snapshot));
+    });
+
+    test('a write dirties the tag that tagFor gave before the first read', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      let { setter } = trackedData<Foo, keyof Foo>('foo');
+
+      let foo = new Foo();
+      let tag = tagFor(foo, 'foo');
+      let snapshot = valueForTag(tag);
+
+      setter(foo, 456);
+      assert.notOk(validateTag(tag, snapshot));
+    });
+
+    test('a read consumes the tag that tagFor gave before it', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      let { getter } = trackedData<Foo, keyof Foo>('foo');
+
+      let foo = new Foo();
+      let registered = tagFor(foo, 'foo');
+      let tag = track(() => getter(foo));
+
+      assert.strictEqual(tag, registered);
+    });
+
+    test('dirtyTagFor dirties the tag that a read consumed', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      let { getter } = trackedData<Foo, keyof Foo>('foo');
+
+      let foo = new Foo();
+      let tag = track(() => getter(foo));
+      let snapshot = valueForTag(tag);
+
+      dirtyTagFor(foo, 'foo');
+      assert.notOk(validateTag(tag, snapshot));
+    });
+
+    test('with a self key, a write dirties the tag that the instance has for that key', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      const SELF = Symbol('SELF');
+
+      let { setter } = trackedData<Foo, keyof Foo>('foo', undefined, SELF);
+
+      let foo = new Foo();
+      let selfTag = tagFor(foo, SELF);
+      let snapshot = valueForTag(selfTag);
+
+      setter(foo, 456);
+      assert.notOk(validateTag(selfTag, snapshot));
+    });
+
+    test('with a self key, a write makes no tag for that key', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      const SELF = Symbol('SELF');
+
+      let { setter } = trackedData<Foo, keyof Foo>('foo', undefined, SELF);
+
+      let foo = new Foo();
+
+      setter(foo, 456);
+      assert.false(tagMetaFor(foo).has(SELF));
     });
 
     if (DEBUG) {
