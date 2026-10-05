@@ -8,7 +8,6 @@ import { setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/object/-internals';
 import getDebugName from '@ember/-internals/utils/lib/get-debug-name';
 import { assert } from '@ember/debug';
-import { join } from '@ember/runloop';
 import type { Arguments, HelperManager } from '@glimmer/interfaces';
 import { helperCapabilities } from '@glimmer/manager/lib/public/helper';
 import { setHelperManager } from '@glimmer/manager/lib/public/api';
@@ -188,7 +187,7 @@ export default class Helper<S = unknown> extends FrameworkObject {
     @since 1.13.0
   */
   recompute() {
-    join(() => dirtyTag(this[RECOMPUTE_TAG]));
+    dirtyTag(this[RECOMPUTE_TAG]);
   }
 }
 /* eslint-enable import/export */

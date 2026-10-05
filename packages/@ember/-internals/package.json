@@ -42,6 +42,7 @@
     "@ember/reactive": "workspace:*",
     "@ember/routing": "workspace:*",
     "@ember/runloop": "workspace:*",
+    "@ember/scheduler": "workspace:*",
     "@ember/service": "workspace:*",
     "@ember/template-factory": "workspace:*",
     "@ember/utils": "workspace:*",

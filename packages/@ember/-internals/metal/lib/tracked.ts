@@ -333,7 +333,11 @@ function descriptorForField(
     !desc || (!desc.value && !desc.get && !desc.set)
   );
 
-  let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
+  let { getter, setter } = trackedData<any, any>(
+    key,
+    desc ? desc.initializer : undefined,
+    SELF_TAG
+  );
   let equals = options?.equals;
 
   function get(this: object): unknown {
@@ -359,8 +363,8 @@ function descriptorForField(
       return;
     }
 
+    // also dirties SELF_TAG, through the field's cell
     setter(this, newValue);
-    dirtyTagFor(this, SELF_TAG);
   }
 
   let newDesc = {

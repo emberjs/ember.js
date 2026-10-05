@@ -31,7 +31,7 @@ import { isTesting } from '@ember/debug/lib/testing';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
-import { once } from '@ember/runloop';
+import { scheduleMethodOnce } from '@ember/-internals/utils/lib/microtask-scheduling';
 import { setRouteManager } from '@ember/-internals/routing/route-managers/registry';
 import { ClassicRouteManager } from '@ember/-internals/routing/route-managers/classic/manager';
 import { hasClassicInterop } from '@ember/-internals/routing/route-managers/api';
@@ -1016,7 +1016,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
 
     // `_setOutlets` itself is the single `shouldRender` gate (it returns
     // early when the app was booted with `shouldRender: false`).
-    once(this._router, '_setOutlets');
+    scheduleMethodOnce(this._router, '_setOutlets');
 
     // Setup can cause changes to QPs which need to be propogated immediately in
     // some situations. Eventually, we should work on making these async somehow.
@@ -1527,7 +1527,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
   */
   teardownViews() {
     if (this._router) {
-      once(this._router, '_setOutlets');
+      scheduleMethodOnce(this._router, '_setOutlets');
     }
   }
 

@@ -1,15 +1,20 @@
 import { DEBUG } from '@glimmer/env';
 import {
   beginTrackFrame,
+  beginUntrackFrame,
   consumeTag,
   createCache,
   createTag,
   debug,
   dirtyTag,
+  dirtyTagFor,
   endTrackFrame,
   getValue,
   isConst,
   isTracking,
+  resetTracking,
+  tagFor,
+  tagMetaFor,
   track,
   trackedData,
   untrack,
@@ -252,6 +257,141 @@ module('@glimmer/validator: tracking', () => {
       assert.notOk(validateTag(combined, snapshot));
     });
 
+    test('it returns the tag itself if the frame consumed one tag many times', (assert) => {
+      let tag = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag);
+      consumeTag(tag);
+
+      assert.strictEqual(endTrackFrame(), tag);
+    });
+
+    test('it keeps a tag that a nested frame consumed between two consumptions', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag1);
+      consumeTag(tag2);
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      let inner = endTrackFrame();
+
+      consumeTag(tag1);
+
+      let outer = endTrackFrame();
+
+      assert.strictEqual(inner, tag1);
+
+      let snapshot = valueForTag(outer);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(outer, snapshot));
+
+      snapshot = valueForTag(outer);
+      dirtyTag(tag2);
+      assert.notOk(validateTag(outer, snapshot));
+    });
+
+    test('it takes a tag one time if nested frames consume it at the same index', (assert) => {
+      let tag = createTag();
+
+      beginTrackFrame();
+
+      for (let i = 0; i < 3; i++) {
+        beginTrackFrame();
+        consumeTag(tag);
+        consumeTag(endTrackFrame());
+      }
+
+      assert.strictEqual(endTrackFrame(), tag);
+    });
+
+    test('it returns the previous tag if the frame consumed the same tags', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag2);
+      let first = endTrackFrame();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag2);
+      let second = endTrackFrame(first);
+
+      assert.strictEqual(second, first);
+    });
+
+    test('it returns a new tag if the frame consumed other tags', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag2);
+      let first = endTrackFrame();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag3);
+      let second = endTrackFrame(first);
+
+      assert.notStrictEqual(second, first);
+
+      let snapshot = valueForTag(second);
+      dirtyTag(tag2);
+      assert.ok(validateTag(second, snapshot));
+
+      dirtyTag(tag3);
+      assert.notOk(validateTag(second, snapshot));
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      consumeTag(tag3);
+      consumeTag(tag2);
+      let third = endTrackFrame(second);
+
+      assert.notStrictEqual(third, second);
+
+      snapshot = valueForTag(third);
+      dirtyTag(tag2);
+      assert.notOk(validateTag(third, snapshot));
+    });
+
+    test('it does not keep the tags of a frame that did not end', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+
+      resetTracking();
+
+      beginTrackFrame();
+      consumeTag(tag2);
+
+      assert.strictEqual(endTrackFrame(), tag2);
+    });
+
+    test('it resets after a frame that began inside untrack frames', (assert) => {
+      // deeper than any other test goes, so these depths have no tracker yet
+      for (let i = 0; i < 100; i++) {
+        beginUntrackFrame();
+      }
+
+      beginTrackFrame();
+
+      resetTracking();
+
+      assert.notOk(isTracking());
+    });
+
     test('isTracking works within a track', (assert) => {
       assert.notOk(isTracking());
 
@@ -360,6 +500,79 @@ module('@glimmer/validator: tracking', () => {
 
       assert.deepEqual(getValue(outerCache), [3, 2], 'both inner and outer result updated');
       assert.deepEqual(getValue(outerCache), [3, 2], 'memoized result returned correctly');
+    });
+
+    test('it tracks the new tags if the tags change between two runs', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+      let useThird = false;
+      let count = 0;
+
+      let cache = createCache(() => {
+        consumeTag(tag1);
+        consumeTag(useThird ? tag3 : tag2);
+
+        return ++count;
+      });
+
+      assert.strictEqual(getValue(cache), 1);
+
+      dirtyTag(tag2);
+      assert.strictEqual(getValue(cache), 2, 'the cache ran again with the same tags');
+
+      dirtyTag(tag2);
+      assert.strictEqual(getValue(cache), 3, 'the reused tag is still dirtied by its tags');
+
+      useThird = true;
+      dirtyTag(tag1);
+      assert.strictEqual(getValue(cache), 4);
+
+      dirtyTag(tag2);
+      assert.strictEqual(getValue(cache), 4, 'the cache does not depend on the old tag');
+
+      dirtyTag(tag3);
+      assert.strictEqual(getValue(cache), 5, 'the cache depends on the new tag');
+    });
+
+    test('an outer cache runs again if a tag of a reused inner tag changes', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+      let innerCount = 0;
+      let outerCount = 0;
+
+      let inner = createCache(() => {
+        consumeTag(tag1);
+        consumeTag(tag2);
+
+        return ++innerCount;
+      });
+
+      let outer = createCache(() => {
+        consumeTag(tag3);
+        getValue(inner);
+
+        return ++outerCount;
+      });
+
+      assert.strictEqual(getValue(outer), 1);
+
+      dirtyTag(tag1);
+      assert.strictEqual(getValue(outer), 2, 'the inner cache ran again with the same tags');
+      assert.strictEqual(innerCount, 2);
+
+      dirtyTag(tag2);
+      assert.strictEqual(getValue(outer), 3, 'the outer cache follows the reused inner tag');
+      assert.strictEqual(innerCount, 3);
+
+      dirtyTag(tag3);
+      assert.strictEqual(getValue(outer), 4);
+      assert.strictEqual(innerCount, 3, 'the inner cache did not run again');
+
+      dirtyTag(tag1);
+      assert.strictEqual(getValue(outer), 5, 'the outer cache still follows the inner tag');
+      assert.strictEqual(innerCount, 4);
     });
 
     test('isTracking works within a memoized function and untrack frame', (assert) => {
@@ -483,6 +696,82 @@ module('@glimmer/validator: tracking', () => {
 
       setter(foo, 789);
       assert.notOk(validateTag(tag, snapshot));
+    });
+
+    test('a write dirties the tag that tagFor gave before the first read', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      let { setter } = trackedData<Foo, keyof Foo>('foo');
+
+      let foo = new Foo();
+      let tag = tagFor(foo, 'foo');
+      let snapshot = valueForTag(tag);
+
+      setter(foo, 456);
+      assert.notOk(validateTag(tag, snapshot));
+    });
+
+    test('a read consumes the tag that tagFor gave before it', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      let { getter } = trackedData<Foo, keyof Foo>('foo');
+
+      let foo = new Foo();
+      let registered = tagFor(foo, 'foo');
+      let tag = track(() => getter(foo));
+
+      assert.strictEqual(tag, registered);
+    });
+
+    test('dirtyTagFor dirties the tag that a read consumed', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      let { getter } = trackedData<Foo, keyof Foo>('foo');
+
+      let foo = new Foo();
+      let tag = track(() => getter(foo));
+      let snapshot = valueForTag(tag);
+
+      dirtyTagFor(foo, 'foo');
+      assert.notOk(validateTag(tag, snapshot));
+    });
+
+    test('with a self key, a write dirties the tag that the instance has for that key', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      const SELF = Symbol('SELF');
+
+      let { setter } = trackedData<Foo, keyof Foo>('foo', undefined, SELF);
+
+      let foo = new Foo();
+      let selfTag = tagFor(foo, SELF);
+      let snapshot = valueForTag(selfTag);
+
+      setter(foo, 456);
+      assert.notOk(validateTag(selfTag, snapshot));
+    });
+
+    test('with a self key, a write makes no tag for that key', (assert) => {
+      class Foo {
+        foo = 123;
+      }
+
+      const SELF = Symbol('SELF');
+
+      let { setter } = trackedData<Foo, keyof Foo>('foo', undefined, SELF);
+
+      let foo = new Foo();
+
+      setter(foo, 456);
+      assert.false(tagMetaFor(foo).has(SELF));
     });
 
     if (DEBUG) {
