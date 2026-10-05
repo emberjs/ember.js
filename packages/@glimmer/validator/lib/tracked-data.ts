@@ -23,6 +23,22 @@ interface TrackedCell<V> {
   initialized: boolean;
 }
 
+/**
+ * All cells have one hidden class, and V8 records which kind of value the
+ * `value` field held so far. The first value of another kind makes V8 throw
+ * away the optimized code that reads the field.
+ *
+ * A number and then `undefined` make the field general from the first cell
+ * on, before that code is optimized.
+ */
+function createCell<V>(tag: UpdatableTag, initialized: boolean): TrackedCell<V | undefined> {
+  let cell: TrackedCell<unknown> = { value: 0, tag, initialized };
+
+  cell.value = undefined;
+
+  return cell as TrackedCell<V | undefined>;
+}
+
 export function trackedData<T extends object, K extends keyof T>(
   key: K,
   initializer?: (this: T) => T[K]
@@ -34,13 +50,9 @@ export function trackedData<T extends object, K extends keyof T>(
     let cell = cells.get(self);
 
     if (cell === undefined) {
-      cell = {
-        value: undefined,
-        // Other code can ask the registry for this tag before the first read
-        // or write of the field, so the cell takes the tag from there.
-        tag: tagFor(self, key) as UpdatableTag,
-        initialized: !hasInitializer,
-      };
+      // Other code can ask the registry for this tag before the first read
+      // or write of the field, so the cell takes the tag from there.
+      cell = createCell(tagFor(self, key) as UpdatableTag, !hasInitializer);
       cells.set(self, cell);
     }
 
