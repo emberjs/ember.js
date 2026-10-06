@@ -114,6 +114,11 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   public subtag: Tag | Tag[] | null = null;
   private subtagBufferCache: Revision | null = null;
 
+  /**
+   * The index of this tag in the tracker that took it last.
+   */
+  public slot = 0;
+
   declare [TYPE]: T;
 
   constructor(type: T) {
@@ -254,6 +259,7 @@ const VOLATILE_TAG_ID: IVOLATILE_TAG_ID = 100;
 
 export class VolatileTag implements Tag {
   readonly [TYPE] = VOLATILE_TAG_ID;
+  slot = 0;
   [COMPUTE](): Revision {
     return VOLATILE;
   }
@@ -267,6 +273,7 @@ const CURRENT_TAG_ID: ICURRENT_TAG_ID = 101;
 
 export class CurrentTag implements Tag {
   readonly [TYPE] = CURRENT_TAG_ID;
+  slot = 0;
   [COMPUTE](): Revision {
     return $REVISION;
   }
