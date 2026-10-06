@@ -147,9 +147,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
 
         if (subtag !== null) {
           if (Array.isArray(subtag)) {
-            for (const tag of subtag) {
-              let value = tag[COMPUTE]();
-              revision = Math.max(value, revision);
+            for (let i = 0; i < subtag.length; i++) {
+              revision = Math.max((subtag[i] as Tag)[COMPUTE](), revision);
             }
           } else {
             let subtagValue = subtag[COMPUTE]();
