@@ -6,6 +6,7 @@
 // and it will blow up in JS in exactly the same way, so it is safe to assume
 // that properties within the getter have the correct type in TS.
 
+import { dirtyTagFor, tagFor } from '../meta';
 import { consumeTag } from '../tracking';
 import { createUpdatableTag, DIRTY_TAG } from '../validators';
 
@@ -75,7 +76,7 @@ class TrackedArray<T = unknown> {
         const index = convertToInt(prop);
 
         if (index !== null) {
-          self.#readStorageFor(index);
+          consumeTag(tagFor(self, index, self.#storages));
           consumeTag(self.#collection);
 
           return target[index];
@@ -137,7 +138,7 @@ class TrackedArray<T = unknown> {
         const index = convertToInt(prop);
 
         if (index !== null) {
-          self.#dirtyStorageFor(index);
+          dirtyTagFor(self, index, self.#storages);
           self.#dirtyCollection();
         } else if (prop === 'length') {
           self.#dirtyCollection();
@@ -155,25 +156,6 @@ class TrackedArray<T = unknown> {
   #collection = createUpdatableTag();
 
   #storages = new Map<number, ReturnType<typeof createUpdatableTag>>();
-
-  #readStorageFor(index: number) {
-    let storage = this.#storages.get(index);
-
-    if (storage === undefined) {
-      storage = createUpdatableTag();
-      this.#storages.set(index, storage);
-    }
-
-    consumeTag(storage);
-  }
-
-  #dirtyStorageFor(index: number): void {
-    const storage = this.#storages.get(index);
-
-    if (storage) {
-      DIRTY_TAG(storage);
-    }
-  }
 
   #dirtyCollection() {
     DIRTY_TAG(this.#collection);

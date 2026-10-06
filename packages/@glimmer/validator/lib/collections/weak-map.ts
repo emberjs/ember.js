@@ -2,8 +2,9 @@
 // interface (like getOrInsert, getOrInsertComputed, etc.) are automatically
 // supported without needing to manually re-implement each one.
 
+import { dirtyTagFor, tagFor } from '../meta';
 import { consumeTag } from '../tracking';
-import { createUpdatableTag, DIRTY_TAG } from '../validators';
+import type { createUpdatableTag } from '../validators';
 
 type Tag = ReturnType<typeof createUpdatableTag>;
 
@@ -21,25 +22,6 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
     existing instanceof WeakMap ? existing : new WeakMap<Key, Value>(existing);
   const storages = new WeakMap<Key, Tag>();
 
-  function storageFor(key: Key): Tag {
-    let storage = storages.get(key);
-
-    if (storage === undefined) {
-      storage = createUpdatableTag();
-      storages.set(key, storage);
-    }
-
-    return storage;
-  }
-
-  function dirtyStorageFor(key: Key): void {
-    const storage = storages.get(key);
-
-    if (storage) {
-      DIRTY_TAG(storage);
-    }
-  }
-
   const proxy: WeakMap<Key, Value> = new Proxy(target, {
     get(target, prop, receiver) {
       if (prop === 'set') {
@@ -52,7 +34,7 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
             if (isUnchanged) return proxy;
           }
 
-          dirtyStorageFor(key);
+          dirtyTagFor(target, key, storages);
 
           target.set(key, value);
 
@@ -64,7 +46,7 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
         return function (key: Key): boolean {
           if (!target.has(key)) return false;
 
-          dirtyStorageFor(key);
+          dirtyTagFor(target, key, storages);
 
           storages.delete(key);
           return target.delete(key);
@@ -73,7 +55,7 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
 
       if (prop === 'get') {
         return function (key: Key): Value | undefined {
-          consumeTag(storageFor(key));
+          consumeTag(tagFor(target, key, storages));
 
           return target.get(key);
         };
@@ -81,7 +63,7 @@ export function trackedWeakMap<Key extends WeakKey, Value = unknown>(
 
       if (prop === 'has') {
         return function (key: Key): boolean {
-          consumeTag(storageFor(key));
+          consumeTag(tagFor(target, key, storages));
 
           return target.has(key);
         };
