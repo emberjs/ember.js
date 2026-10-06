@@ -1,6 +1,6 @@
 import type { OpaqueIterationItem, Reference } from '@glimmer/reference';
 import { createComputeRef, createIteratorRef, valueForRef } from '@glimmer/reference';
-import { consumeTag, VOLATILE_TAG } from '@glimmer/validator';
+import { consumeTag, VOLATILE_TAG } from '@glimmer/signals';
 
 import { module, test } from './utils/qunit';
 

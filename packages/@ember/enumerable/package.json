@@ -16,7 +16,7 @@
     "@glimmer/env": "workspace:*",
     "@glimmer/owner": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "internal-test-helpers": "workspace:*"
   }
 }

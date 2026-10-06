@@ -6,8 +6,8 @@ import { setProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag, isTracking, track } from '@glimmer/validator/lib/tracking';
-import { tagFor } from '@glimmer/validator/lib/meta';
+import { consumeTag, isTracking, track } from '@glimmer/signals/lib/tags';
+import { tagFor } from '@glimmer/signals/lib/meta';
 import { isPath } from './path_cache';
 
 export const PROXY_CONTENT = Symbol('PROXY_CONTENT');

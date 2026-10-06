@@ -1,6 +1,6 @@
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import { DEBUG } from '@glimmer/env';
-import { resetTracking } from '@glimmer/validator';
+import { resetTracking } from '@glimmer/signals';
 
 declare global {
   interface Assert {

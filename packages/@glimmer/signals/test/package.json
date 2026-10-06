@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@glimmer-test/validator",
+  "name": "@glimmer-test/signals",
   "repo-meta": {
     "strictness": "strict"
   },
@@ -9,7 +9,7 @@
   "dependencies": {
     "@glimmer/global-context": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "expect-type": "^1.1.0"
   }
 }

@@ -46,8 +46,9 @@ import {
   consumeTag,
   endTrackFrame,
   endUntrackFrame,
-} from '@glimmer/validator/lib/tracking';
-import { validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+  validateTag,
+  valueForTag,
+} from '@glimmer/signals/lib/tags';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
 import type RuntimeResolver from '../resolver';

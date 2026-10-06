@@ -1,4 +1,4 @@
-import { trackedSet } from '@glimmer/validator';
+import { trackedSet } from '@glimmer/signals';
 import { expectTypeOf } from 'expect-type';
 
 import { module, test } from '../-utils';
@@ -7,7 +7,7 @@ expectTypeOf<ReturnType<typeof trackedSet<string>>>().toMatchTypeOf<Set<string>>
 
 type AnyFn = (...args: any[]) => any;
 
-module('@glimmer/validator: trackedSet', function () {
+module('@glimmer/signals: trackedSet', function () {
   test('constructor', (assert) => {
     const set = trackedSet(['foo', 123]);
 

@@ -56,7 +56,7 @@ export const stableDecoratorFiles = {
         import { module, test } from 'qunit';
         import { tracked } from '@glimmer/tracking';
         import { tagForObject } from '@ember/-internals/metal';
-        import { valueForTag, validateTag } from '@glimmer/validator';
+        import { valueForTag, validateTag } from '@glimmer/signals';
 
         // {{#each-in}} and ObjectProxy depend on the object's own tag, which
         // every form of @tracked must dirty when it is set.

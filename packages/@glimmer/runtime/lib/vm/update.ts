@@ -23,8 +23,8 @@ import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { logStep } from '@glimmer/util/lib/debug-steps';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
-import { debug } from '@glimmer/validator/lib/debug';
-import { resetTracking } from '@glimmer/validator/lib/tracking';
+import { debug } from '@glimmer/signals/lib/debug';
+import { resetTracking } from '@glimmer/signals/lib/tags';
 
 import type { Closure } from './append';
 import type { AppendingBlockList } from './element-builder';

@@ -7,7 +7,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Tag } from '@glimmer/interfaces';
 import { valueForRef } from '@glimmer/reference/lib/reference';
-import { track } from '@glimmer/validator/lib/tracking';
+import { track } from '@glimmer/signals/lib/tags';
 
 const CUSTOM_TAG_FOR = new WeakMap<object, (obj: object, key: string) => Tag>();
 

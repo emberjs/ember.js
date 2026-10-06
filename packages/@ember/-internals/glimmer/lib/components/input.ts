@@ -6,7 +6,7 @@ import { type Opaque } from '@ember/-internals/utility-types';
 import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
 import { valueForRef } from '@glimmer/reference/lib/reference';
-import { untrack } from '@glimmer/validator/lib/tracking';
+import { untrack } from '@glimmer/signals/lib/tags';
 import InputTemplate from '../templates/input';
 import AbstractInput, { valueFrom } from './abstract-input';
 import { type OpaqueInternalComponentConstructor, opaquify } from './internal';

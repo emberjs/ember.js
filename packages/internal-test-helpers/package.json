@@ -34,7 +34,7 @@
     "@glimmer/runtime": "workspace:*",
     "@glimmer/syntax": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "backburner.js": "^2.7.0",
     "dag-map": "^2.0.2",
     "ember": "workspace:*",

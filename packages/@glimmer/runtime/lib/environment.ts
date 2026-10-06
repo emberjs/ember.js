@@ -16,8 +16,7 @@ import type {
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { ProgramImpl } from '@glimmer/program/lib/program';
-import { track } from '@glimmer/validator/lib/tracking';
-import { UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
+import { track, updateTag } from '@glimmer/signals/lib/tags';
 
 import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';

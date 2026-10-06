@@ -1,8 +1,8 @@
-import { track, trackedValue, validateTag, valueForTag } from '@glimmer/validator';
+import { track, trackedValue, validateTag, valueForTag } from '@glimmer/signals';
 
 import { module, test } from './-utils';
 
-module('@glimmer/validator: trackedValue()', () => {
+module('@glimmer/signals: trackedValue()', () => {
   test('creates reactive storage', (assert) => {
     const x = trackedValue('hello');
 

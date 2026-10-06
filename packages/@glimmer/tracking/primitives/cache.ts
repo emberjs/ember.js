@@ -1,1 +1,1 @@
-export { createCache, getValue, isConst } from '@glimmer/validator/lib/tracking';
+export { createCache, getValue, isConst } from '@glimmer/signals/lib/tags';

@@ -4,7 +4,7 @@ import type { JitRenderDelegate } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { createComputeRef, createConstRef, createPrimitiveRef } from '@glimmer/reference';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/signals';
 import {
   assertNodeTagName,
   getElementByClassName,

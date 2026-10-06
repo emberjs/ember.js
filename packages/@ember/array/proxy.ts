@@ -22,12 +22,12 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
 import {
   combine,
+  consumeTag,
   validateTag,
   valueForTag,
   type Revision,
-} from '@glimmer/validator/lib/validators';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { tagFor } from '@glimmer/validator/lib/meta';
+} from '@glimmer/signals/lib/tags';
+import { tagFor } from '@glimmer/signals/lib/meta';
 import type { Tag } from '@glimmer/interfaces';
 
 function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {

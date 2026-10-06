@@ -6,9 +6,9 @@ import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import { getCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
 import type { Tag } from '@glimmer/interfaces';
-import type { TagMeta } from '@glimmer/validator/lib/meta';
-import { CONSTANT_TAG } from '@glimmer/validator/lib/validators';
-import { dirtyTagFor, tagFor } from '@glimmer/validator/lib/meta';
+import type { TagMeta } from '@glimmer/signals/lib/meta';
+import { CONSTANT_TAG } from '@glimmer/signals/lib/tags';
+import { dirtyTagFor, tagFor } from '@glimmer/signals/lib/meta';
 
 /////////
 

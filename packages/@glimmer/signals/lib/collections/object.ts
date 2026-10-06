@@ -1,18 +1,17 @@
 import type { ReactiveOptions } from './types';
 
-import { consumeTag } from '../tracking';
-import { createUpdatableTag, DIRTY_TAG } from '../validators';
+import { consumeTag, createTag, dirtyTag } from '../tags';
 
 class TrackedObject<ObjectType extends NonNullable<object>> {
   #options: ReactiveOptions<ObjectType[keyof ObjectType]>;
-  #storages = new Map<PropertyKey, ReturnType<typeof createUpdatableTag>>();
-  #collection = createUpdatableTag();
+  #storages = new Map<PropertyKey, ReturnType<typeof createTag>>();
+  #collection = createTag();
 
   #readStorageFor(key: PropertyKey) {
     let storage = this.#storages.get(key);
 
     if (storage === undefined) {
-      storage = createUpdatableTag();
+      storage = createTag();
       this.#storages.set(key, storage);
     }
 
@@ -23,12 +22,12 @@ class TrackedObject<ObjectType extends NonNullable<object>> {
     const storage = this.#storages.get(key);
 
     if (storage) {
-      DIRTY_TAG(storage);
+      dirtyTag(storage);
     }
   }
 
   #dirtyCollection() {
-    DIRTY_TAG(this.#collection);
+    dirtyTag(this.#collection);
   }
 
   /**

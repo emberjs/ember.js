@@ -25,7 +25,7 @@ import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
+import { currentRevision } from '@glimmer/signals/lib/tags';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
@@ -295,7 +295,7 @@ export class RendererState {
        * and that run loop throws the same error again.
        */
       if (!completedWithoutError) {
-        this.#lastRevision = valueForTag(CURRENT_TAG);
+        this.#lastRevision = currentRevision();
       }
       this.#inRenderTransaction = false;
     }
@@ -342,7 +342,7 @@ export class RendererState {
           root.render();
         }
 
-        this.#lastRevision = valueForTag(CURRENT_TAG);
+        this.#lastRevision = currentRevision();
       });
     } while (roots.length > initialRootsLength);
 
@@ -386,12 +386,12 @@ export class RendererState {
    * True when there is nothing to render:
    * no roots, or no tracked value changed after the last render.
    *
-   * `CURRENT_TAG` stands for every tag,
+   * `currentRevision()` changes with a write to any tag,
    * so one changed value anywhere in the app makes every renderer invalid.
    * Each root then finds out for itself if the change applies to it.
    */
   isValid(): boolean {
-    return this.#roots.length === 0 || validateTag(CURRENT_TAG, this.#lastRevision);
+    return this.#roots.length === 0 || this.#lastRevision === currentRevision();
   }
 
   revalidate(): void {

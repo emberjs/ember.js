@@ -3,8 +3,8 @@ import { peekMeta } from '@ember/-internals/meta/lib/meta';
 import type { schedule } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
 import type { Tag } from '@glimmer/interfaces';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
-import { tagMetaFor } from '@glimmer/validator/lib/meta';
+import { currentRevision, validateTag, valueForTag } from '@glimmer/signals/lib/tags';
+import { tagMetaFor } from '@glimmer/signals/lib/meta';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';
@@ -189,11 +189,11 @@ export function revalidateObservers(target: object) {
 let lastKnownRevision = 0;
 
 export function flushAsyncObservers(_schedule: typeof schedule | false) {
-  let currentRevision = valueForTag(CURRENT_TAG);
-  if (lastKnownRevision === currentRevision) {
+  let revision = currentRevision();
+  if (lastKnownRevision === revision) {
     return;
   }
-  lastKnownRevision = currentRevision;
+  lastKnownRevision = revision;
 
   ASYNC_OBSERVERS.forEach((activeObservers, target) => {
     let meta = peekMeta(target);

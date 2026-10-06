@@ -291,7 +291,6 @@ export function exposedDependencies() {
       '@glimmer/owner',
       '@glimmer/opcode-compiler',
       '@glimmer/runtime',
-      '@glimmer/validator',
     ]),
     '@glimmer/tracking': resolve(packageCache.appRoot, 'packages/@glimmer/tracking/index.ts'),
     '@glimmer/tracking/primitives/cache': resolve(
@@ -311,6 +310,10 @@ export function hiddenDependencies() {
       'module'
     ).path,
     '@handlebars/parser': resolve(packageCache.appRoot, 'packages/@handlebars/parser/lib/index.js'),
+    'alien-signals/system': resolve(
+      findFromProject('@glimmer/signals', 'alien-signals').root,
+      'esm/system.mjs'
+    ),
     ...walkGlimmerDeps(['@glimmer/compiler']),
     ...(process.env.VITE_STABLE_DECORATORS
       ? {}

@@ -23,7 +23,7 @@
     "@glimmer/env": "workspace:*",
     "@glimmer/owner": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "backburner.js": "^2.7.0",
     "ember": "workspace:*",
     "internal-test-helpers": "workspace:*",

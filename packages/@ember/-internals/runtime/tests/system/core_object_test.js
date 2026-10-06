@@ -8,7 +8,7 @@ import {
   runDestroy,
   runLoopSettled,
 } from 'internal-test-helpers';
-import { track } from '@glimmer/validator';
+import { track } from '@glimmer/signals';
 import { destroy } from '@glimmer/destroyable';
 import { run } from '@ember/runloop';
 

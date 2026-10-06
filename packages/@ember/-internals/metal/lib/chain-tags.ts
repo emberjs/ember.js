@@ -3,14 +3,9 @@ import { meta as metaFor, peekMeta } from '@ember/-internals/meta/lib/meta';
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import { assert } from '@ember/debug';
 import type { Tag } from '@glimmer/interfaces';
-import type { TagMeta } from '@glimmer/validator/lib/meta';
-import {
-  combine,
-  createUpdatableTag,
-  UPDATE_TAG as updateTag,
-  validateTag,
-} from '@glimmer/validator/lib/validators';
-import { tagMetaFor } from '@glimmer/validator/lib/meta';
+import type { TagMeta } from '@glimmer/signals/lib/meta';
+import { combine, createTag, updateTag, validateTag } from '@glimmer/signals/lib/tags';
+import { tagMetaFor } from '@glimmer/signals/lib/meta';
 import { objectAt } from './object-at';
 import { tagForProperty } from './tags';
 
@@ -185,7 +180,7 @@ function getChainTags(
         let lazyChains = instanceMeta.writableLazyChainsFor(segment);
         let rest = path.substring(segmentEnd + 1);
 
-        let placeholderTag = createUpdatableTag();
+        let placeholderTag = createTag();
 
         lazyChains.push([placeholderTag, rest]);
         chainTags.push(placeholderTag);

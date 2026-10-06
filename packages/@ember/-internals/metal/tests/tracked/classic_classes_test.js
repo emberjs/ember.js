@@ -1,7 +1,7 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { defineProperty, tracked, nativeDescDecorator } from '../..';
 
-import { track, valueForTag, validateTag } from '@glimmer/validator';
+import { track, valueForTag, validateTag } from '@glimmer/signals';
 
 moduleFor(
   '@tracked decorator - classic classes',

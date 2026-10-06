@@ -8,6 +8,6 @@
     "./*": "./*.ts"
   },
   "dependencies": {
-    "@glimmer/validator": "workspace:*"
+    "@glimmer/signals": "workspace:*"
   }
 }

@@ -4,16 +4,16 @@ import toString from '@ember/-internals/utils/lib/to-string';
 import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import type { UpdatableTag } from '@glimmer/interfaces';
 import {
-  ALLOW_CYCLES,
-  UPDATE_TAG as updateTag,
+  consumeTag,
+  track,
+  untrack,
+  updateTag,
   validateTag,
   valueForTag,
-} from '@glimmer/validator/lib/validators';
-import { consumeTag, track, untrack } from '@glimmer/validator/lib/tracking';
-import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
+} from '@glimmer/signals/lib/tags';
+import { tagFor, tagMetaFor } from '@glimmer/signals/lib/meta';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import type {
   ExtendedMethodDecorator,
@@ -423,10 +423,6 @@ export class ComputedProperty extends ComputedDescriptor {
 
       if (_dependentKeys !== undefined) {
         updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
-
-        if (DEBUG) {
-          ALLOW_CYCLES!.set(propertyTag, true);
-        }
       }
 
       meta.setValueFor(keyName, ret);
@@ -501,10 +497,6 @@ export class ComputedProperty extends ComputedDescriptor {
 
       if (_dependentKeys !== undefined) {
         updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
-
-        if (DEBUG) {
-          ALLOW_CYCLES!.set(propertyTag, true);
-        }
       }
 
       meta.setRevisionFor(keyName, valueForTag(propertyTag));

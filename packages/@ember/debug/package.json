@@ -25,7 +25,7 @@
     "@glimmer/manager": "workspace:*",
     "@glimmer/owner": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "backburner.js": "^2.7.0",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*"

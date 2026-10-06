@@ -42,7 +42,7 @@
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/reference": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "@glimmer/vm": "workspace:*"
   },
   "devDependencies": {

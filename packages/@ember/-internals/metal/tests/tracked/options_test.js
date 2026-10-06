@@ -1,7 +1,7 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { tracked } from '../..';
 
-import { track, valueForTag, validateTag } from '@glimmer/validator';
+import { track, valueForTag, validateTag } from '@glimmer/signals';
 
 moduleFor(
   '@tracked decorator - options',

@@ -11,8 +11,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
-import { CONSTANT_TAG } from '@glimmer/validator/lib/validators';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { CONSTANT_TAG, consumeTag } from '@glimmer/signals/lib/tags';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';

@@ -1,11 +1,11 @@
-import { trackedWeakSet } from '@glimmer/validator';
+import { trackedWeakSet } from '@glimmer/signals';
 import { expectTypeOf } from 'expect-type';
 
 import { module, test } from '../-utils';
 
 expectTypeOf<ReturnType<typeof trackedWeakSet<object>>>().toMatchTypeOf<WeakSet<object>>();
 
-module('@glimmer/validator: trackedWeakSet()', function () {
+module('@glimmer/signals: trackedWeakSet()', function () {
   test('constructor', (assert) => {
     const obj = {};
     const set = trackedWeakSet([obj]);

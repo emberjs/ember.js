@@ -16,8 +16,7 @@ import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { precompileTemplate } from '@ember/template-compilation';
 import { DEBUG } from '@glimmer/env';
 import type { OutletParent, OutletState } from './outlet-state';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/signals/lib/tags';
 
 // `this` == <@outlet />; returned by `getSelf`
 const ROOT_OUTLET_TEMPLATE = precompileTemplate('{{this}}', {

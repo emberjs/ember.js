@@ -912,7 +912,7 @@ function basicTest(scenarios: Scenarios, appName: string) {
         'index.js': 'module.exports = { name: "v1-addon-without-eai" }',
         addon: {
           'index.js': `
-            import { consumeTag } from '@glimmer/validator';
+            import { consumeTag } from '@glimmer/signals';
             export function accessGlimmerValidator() {
               if (typeof consumeTag === 'function') {
                 return "it works"

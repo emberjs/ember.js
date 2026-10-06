@@ -8,10 +8,13 @@ import { registerDestructor } from '@glimmer/destroyable';
 import type { CapturedNamedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef } from '@glimmer/reference/lib/reference';
-import type { Revision } from '@glimmer/validator/lib/validators';
+import {
+  beginUntrackFrame,
+  endUntrackFrame,
+  valueForTag,
+  type Revision,
+} from '@glimmer/signals/lib/tags';
 import type { Tag } from '@glimmer/interfaces';
-import { beginUntrackFrame, endUntrackFrame } from '@glimmer/validator/lib/tracking';
-import { valueForTag } from '@glimmer/validator/lib/validators';
 import type Component from '../component';
 
 type Finalizer = () => void;

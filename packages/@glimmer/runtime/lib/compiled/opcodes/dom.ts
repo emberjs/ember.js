@@ -11,7 +11,13 @@ import type {
   UpdatingVM,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import type { Revision } from '@glimmer/validator/lib/validators';
+import {
+  consumeTag,
+  validateTag,
+  valueForTag,
+  type Revision,
+  INITIAL,
+} from '@glimmer/signals/lib/tags';
 import type { Tag } from '@glimmer/interfaces';
 import { CURRIED_MODIFIER } from '@glimmer/constants/lib/curried';
 import {
@@ -42,8 +48,6 @@ import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer
 import { getInternalModifierManager } from '@glimmer/manager/lib/internal/api';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { isIndexable } from '@glimmer/util/lib/collections';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import { $t0 } from '@glimmer/vm/lib/registers';
 
 import type { CurriedValue } from '../../curried-value';
@@ -348,7 +352,7 @@ export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
     private instance: ModifierInstance | undefined,
     private instanceRef: Reference<ModifierInstance | undefined>
   ) {
-    this.lastUpdated = valueForTag(tag ?? CURRENT_TAG);
+    this.lastUpdated = tag === null ? INITIAL : valueForTag(tag);
   }
 
   evaluate(vm: UpdatingVM) {

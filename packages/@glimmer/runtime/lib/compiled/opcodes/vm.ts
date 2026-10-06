@@ -1,7 +1,12 @@
 import type { CompilableTemplate, Nullable, UpdatingOpcode } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import type { Revision } from '@glimmer/validator/lib/validators';
-import type { Tag } from '@glimmer/interfaces';
+import {
+  beginFrame,
+  consumeFrame,
+  createFrame,
+  endFrame,
+  isFrameStale,
+} from '@glimmer/signals/lib/tags';
 import { decodeHandle, decodeImmediate, isHandle } from '@glimmer/constants/lib/immediate';
 import {
   VM_ASSERT_SAME_OP,
@@ -53,8 +58,6 @@ import {
   UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference/lib/reference';
-import { beginTrackFrame, consumeTag, endTrackFrame } from '@glimmer/validator/lib/tracking';
-import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 
 import type { UpdatingVM } from '../../vm';
 import type { VM } from '../../vm/append';
@@ -284,36 +287,34 @@ export class AssertFilter<T, U> implements UpdatingOpcode {
 }
 
 export class JumpIfNotModifiedOpcode implements UpdatingOpcode {
-  private tag: Tag = CONSTANT_TAG;
-  private lastRevision: Revision = INITIAL;
+  /**
+   * The subscriber for the opcodes between this opcode and `target`.
+   */
+  readonly frame = createFrame();
   private target?: number;
 
-  finalize(tag: Tag, target: number) {
+  finalize(target: number) {
     this.target = target;
-    this.didModify(tag);
   }
 
   evaluate(vm: UpdatingVM) {
-    let { tag, target, lastRevision } = this;
+    let { frame, target } = this;
 
-    if (!vm.alwaysRevalidate && validateTag(tag, lastRevision)) {
-      consumeTag(tag);
+    if (!vm.alwaysRevalidate && !isFrameStale(frame)) {
+      consumeFrame(frame);
       vm.goto(expect(target, 'VM BUG: Target must be set before attempting to jump'));
     }
-  }
-
-  didModify(tag: Tag) {
-    this.tag = tag;
-    this.lastRevision = valueForTag(this.tag);
-    consumeTag(tag);
   }
 }
 
 export class BeginTrackFrameOpcode implements UpdatingOpcode {
-  constructor(private debugLabel?: string) {}
+  constructor(
+    private target: JumpIfNotModifiedOpcode,
+    private debugLabel?: string
+  ) {}
 
   evaluate() {
-    beginTrackFrame(this.debugLabel);
+    beginFrame(this.target.frame, this.debugLabel);
   }
 }
 
@@ -321,7 +322,7 @@ export class EndTrackFrameOpcode implements UpdatingOpcode {
   constructor(private target: JumpIfNotModifiedOpcode) {}
 
   evaluate() {
-    let tag = endTrackFrame();
-    this.target.didModify(tag);
+    endFrame();
+    consumeFrame(this.target.frame);
   }
 }

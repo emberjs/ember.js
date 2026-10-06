@@ -9,14 +9,11 @@ import type {
   ReferenceType,
   UnboundReference,
 } from '@glimmer/interfaces';
-import type { Revision } from '@glimmer/validator/lib/validators';
-import type { Tag } from '@glimmer/interfaces';
+import { isConstComputed, readComputed, TagNode } from '@glimmer/signals/lib/tags';
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import { DESTROYABLE_META_KEY } from '@glimmer/util/lib/destroyable-key';
 import { getProp, setProp } from '@glimmer/global-context';
 import { isDict } from '@glimmer/util/lib/collections';
-import { CONSTANT_TAG, INITIAL, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
-import { consumeTag, track } from '@glimmer/validator/lib/tracking';
 
 export const REFERENCE: ReferenceSymbol = Symbol('REFERENCE') as ReferenceSymbol;
 
@@ -35,21 +32,33 @@ export interface ReferenceEnvironment {
   setProp(obj: unknown, path: string, value: unknown): unknown;
 }
 
-class ReferenceImpl<T = unknown> implements Reference<T> {
+/**
+ * The value of `kind` for a COMPUTED node, and the flags of a node that has a
+ * valid value. See `@glimmer/signals/lib/tags`.
+ */
+const COMPUTED_NODE = 2;
+const NOT_EVALUATED = 0;
+const EVALUATED = 1;
+
+/**
+ * A reference is a node of the reactive graph.
+ *
+ * - `fn` computes the value.
+ * - `value` holds the last value.
+ */
+class ReferenceImpl<T = unknown> extends TagNode implements Reference<T> {
   [DESTROYABLE_META_KEY]: object | undefined;
   [REFERENCE]: ReferenceType;
-  public tag: Nullable<Tag> = null;
-  public lastRevision: Revision = INITIAL;
-  public lastValue?: T;
 
   public children: Nullable<Map<string | Reference, Reference>> = null;
 
-  public compute: Nullable<() => T> = null;
   public update: Nullable<(val: T) => void> = null;
 
-  public debugLabel?: string;
+  declare public debugLabel?: string;
+  declare public value: T | undefined;
 
-  constructor(type: ReferenceType) {
+  constructor(type: ReferenceType, flags: number) {
+    super(COMPUTED_NODE, flags);
     this[REFERENCE] = type;
   }
 }
@@ -57,10 +66,9 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
 export function createPrimitiveRef<T extends string | symbol | number | boolean | null | undefined>(
   value: T
 ): Reference<T> {
-  const ref = new ReferenceImpl<T>(UNBOUND);
+  const ref = new ReferenceImpl<T>(UNBOUND, EVALUATED);
 
-  ref.tag = CONSTANT_TAG;
-  ref.lastValue = value;
+  ref.value = value;
 
   if (DEBUG) {
     ref.debugLabel = String(value);
@@ -75,10 +83,9 @@ export const TRUE_REFERENCE = createPrimitiveRef(true as const);
 export const FALSE_REFERENCE = createPrimitiveRef(false as const);
 
 export function createConstRef<T>(value: T, debugLabel: false | string): Reference<T> {
-  const ref = new ReferenceImpl<T>(CONSTANT);
+  const ref = new ReferenceImpl<T>(CONSTANT, EVALUATED);
 
-  ref.lastValue = value;
-  ref.tag = CONSTANT_TAG;
+  ref.value = value;
 
   if (DEBUG) {
     ref.debugLabel = debugLabel as string;
@@ -88,10 +95,9 @@ export function createConstRef<T>(value: T, debugLabel: false | string): Referen
 }
 
 export function createUnboundRef<T>(value: T, debugLabel: false | string): Reference<T> {
-  const ref = new ReferenceImpl<T>(UNBOUND);
+  const ref = new ReferenceImpl<T>(UNBOUND, EVALUATED);
 
-  ref.lastValue = value;
-  ref.tag = CONSTANT_TAG;
+  ref.value = value;
 
   if (DEBUG) {
     ref.debugLabel = debugLabel as string;
@@ -105,9 +111,9 @@ export function createComputeRef<T = unknown>(
   update: Nullable<(value: T) => void> = null,
   debugLabel: false | string = 'unknown'
 ): Reference<T> {
-  const ref = new ReferenceImpl<T>(COMPUTE);
+  const ref = new ReferenceImpl<T>(COMPUTE, NOT_EVALUATED);
 
-  ref.compute = compute;
+  ref.fn = compute;
   ref.update = update;
 
   if (DEBUG) {
@@ -139,9 +145,7 @@ export function createInvokableRef(inner: Reference): Reference {
 }
 
 export function isConstRef(_ref: Reference) {
-  const ref = _ref as ReferenceImpl;
-
-  return ref.tag === CONSTANT_TAG;
+  return isConstComputed(_ref as ReferenceImpl);
 }
 
 export function isUpdatableRef(_ref: Reference) {
@@ -151,35 +155,7 @@ export function isUpdatableRef(_ref: Reference) {
 }
 
 export function valueForRef<T>(_ref: Reference<T>): T {
-  const ref = _ref as ReferenceImpl<T>;
-
-  let { tag } = ref;
-
-  if (tag === CONSTANT_TAG) {
-    return ref.lastValue as T;
-  }
-
-  const { lastRevision } = ref;
-  let lastValue;
-
-  if (tag === null || !validateTag(tag, lastRevision)) {
-    const { compute } = ref;
-
-    const newTag = track(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      lastValue = ref.lastValue = compute!();
-    }, DEBUG && ref.debugLabel);
-
-    tag = ref.tag = newTag;
-
-    ref.lastRevision = valueForTag(newTag);
-  } else {
-    lastValue = ref.lastValue;
-  }
-
-  consumeTag(tag);
-
-  return lastValue as T;
+  return readComputed<T>(_ref as ReferenceImpl<T>);
 }
 
 export function updateRef(_ref: Reference, value: unknown) {

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import type { Expand } from '@glimmer/interfaces';
 import type { Runner } from 'js-reporters';
-import { debug } from '@glimmer/validator';
+import { debug } from '@glimmer/signals';
 
 export async function runTests(packages: Record<string, () => Promise<void>>) {
   const { smokeTest } = await setupQunit();

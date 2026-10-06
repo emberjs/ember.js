@@ -17,11 +17,11 @@ import {
   untrack,
   validateTag,
   valueForTag,
-} from '@glimmer/validator';
+} from '@glimmer/signals';
 
 import { module, test } from './-utils';
 
-module('@glimmer/validator: tracking', () => {
+module('@glimmer/signals: tracking', () => {
   module('track', () => {
     test('it combines tags that are consumed within a track frame', (assert) => {
       let tag1 = createTag();

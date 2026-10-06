@@ -1,4 +1,4 @@
-export { createCache, getValue, isConst } from '@glimmer/validator/lib/tracking';
+export { createCache, getValue, isConst } from '@glimmer/signals/lib/tags';
 
 /**
   Ember uses caching based on trackable values to avoid updating large portions

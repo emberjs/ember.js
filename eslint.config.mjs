@@ -450,7 +450,7 @@ export default [
     },
   },
   {
-    files: ['packages/@glimmer/validator/**/*.ts'],
+    files: ['packages/@glimmer/signals/**/*.ts'],
     rules: {
       '@typescript-eslint/no-deprecated': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',

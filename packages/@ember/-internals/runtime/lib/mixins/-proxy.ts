@@ -17,12 +17,12 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
 import type { UpdatableTag, Tag } from '@glimmer/interfaces';
-import { combine, UPDATE_TAG as updateTag } from '@glimmer/validator/lib/validators';
-import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
+import { combine, updateTag } from '@glimmer/signals/lib/tags';
+import { tagFor, tagMetaFor } from '@glimmer/signals/lib/meta';
 
 export function contentFor<T>(proxy: ProxyMixin<T>): T | null {
   let content = get(proxy, 'content');
-  // SAFETY: Ideally we'd assert instead of casting, but @glimmer/validator doesn't give us
+  // SAFETY: Ideally we'd assert instead of casting, but @glimmer/signals doesn't give us
   // sufficient public types for this. Previously this code was .js and worked correctly so
   // hopefully this is sufficiently reliable.
   updateTag(tagForObject(proxy) as UpdatableTag, tagForObject(content));

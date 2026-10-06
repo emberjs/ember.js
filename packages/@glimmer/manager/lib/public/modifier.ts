@@ -15,8 +15,7 @@ import { registerDestructor } from '@glimmer/destroyable';
 import { debugAssert } from '@glimmer/global-context';
 import { valueForRef } from '@glimmer/reference/lib/reference';
 import { dict } from '@glimmer/util/lib/collections';
-import { createUpdatableTag } from '@glimmer/validator/lib/validators';
-import { untrack } from '@glimmer/validator/lib/tracking';
+import { createTag, untrack } from '@glimmer/signals/lib/tags';
 
 import type { ManagerFactory } from '.';
 
@@ -110,7 +109,7 @@ export class CustomModifierManager<
     let args = argsProxyFor(capturedArgs, 'modifier');
     let instance: ModifierInstance = delegate.createModifier(definition, args);
 
-    let tag = createUpdatableTag();
+    let tag = createTag();
     let state: CustomModifierState<ModifierInstance>;
 
     state = {

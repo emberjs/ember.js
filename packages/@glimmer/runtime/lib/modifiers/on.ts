@@ -18,7 +18,7 @@ import buildUntouchableThis from '@glimmer/debug-util/lib/untouchable-this';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager/lib/internal/api';
 import { valueForRef } from '@glimmer/reference/lib/reference';
-import { createUpdatableTag } from '@glimmer/validator/lib/validators';
+import { createTag } from '@glimmer/signals/lib/tags';
 
 import { reifyNamed } from '../vm/arguments';
 
@@ -35,7 +35,7 @@ interface Listener {
 }
 
 export class OnModifierState {
-  public tag = createUpdatableTag();
+  public tag = createTag();
   public element: Element;
   public args: CapturedArguments;
   public listener: Listener | null = null;

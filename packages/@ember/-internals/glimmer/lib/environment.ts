@@ -10,7 +10,7 @@ import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
 import type { EnvironmentDelegate } from '@glimmer/runtime/lib/environment';
-import { debug } from '@glimmer/validator/lib/debug';
+import { debug } from '@glimmer/signals/lib/debug';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';

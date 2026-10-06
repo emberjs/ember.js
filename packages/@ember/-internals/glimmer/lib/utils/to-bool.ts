@@ -3,7 +3,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { tagForProperty } from '@ember/-internals/metal/lib/tags';
 import isArray from '@ember/array/lib/is-array';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { consumeTag } from '@glimmer/signals/lib/tags';
 
 export default function toBool(predicate: unknown): boolean {
   if (isProxy(predicate)) {

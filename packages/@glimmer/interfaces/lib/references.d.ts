@@ -1,5 +1,3 @@
-import type { Nullable } from './core.js';
-
 export type ConstantReference = 0;
 export type ComputeReference = 1;
 export type UnboundReference = 2;
@@ -24,6 +22,6 @@ export type ReferenceSymbol = typeof REFERENCE;
 export interface Reference<T = unknown> {
   [REFERENCE]: ReferenceType;
   debugLabel?: string | false | undefined;
-  compute: Nullable<() => T>;
+  value: T | undefined;
   children: null | Map<string | Reference, Reference>;
 }

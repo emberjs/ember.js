@@ -3,10 +3,9 @@
 // interface are automatically supported without needing to manually
 // re-implement each one.
 
-import { consumeTag } from '../tracking';
-import { createUpdatableTag, DIRTY_TAG } from '../validators';
+import { consumeTag, createTag, dirtyTag } from '../tags';
 
-type Tag = ReturnType<typeof createUpdatableTag>;
+type Tag = ReturnType<typeof createTag>;
 
 export function trackedSet<Value = unknown>(
   data?: Set<Value> | Value[] | Iterable<Value> | null,
@@ -14,14 +13,14 @@ export function trackedSet<Value = unknown>(
 ): Set<Value> {
   const equals = options?.equals ?? Object.is;
   const target = new Set<Value>(data ?? []);
-  const collection = createUpdatableTag();
+  const collection = createTag();
   const storages = new Map<Value, Tag>();
 
   function storageFor(key: Value): Tag {
     let storage = storages.get(key);
 
     if (storage === undefined) {
-      storage = createUpdatableTag();
+      storage = createTag();
       storages.set(key, storage);
     }
 
@@ -32,7 +31,7 @@ export function trackedSet<Value = unknown>(
     const storage = storages.get(key);
 
     if (storage) {
-      DIRTY_TAG(storage);
+      dirtyTag(storage);
     }
   }
 
@@ -44,7 +43,7 @@ export function trackedSet<Value = unknown>(
             const isUnchanged = equals(value, value);
             if (isUnchanged) return proxy;
           } else {
-            DIRTY_TAG(collection);
+            dirtyTag(collection);
           }
 
           dirtyStorageFor(value);
@@ -60,7 +59,7 @@ export function trackedSet<Value = unknown>(
           if (!target.has(value)) return false;
 
           dirtyStorageFor(value);
-          DIRTY_TAG(collection);
+          dirtyTag(collection);
 
           storages.delete(value);
           return target.delete(value);
@@ -71,8 +70,8 @@ export function trackedSet<Value = unknown>(
         return function (): void {
           if (target.size === 0) return;
 
-          storages.forEach((s) => DIRTY_TAG(s));
-          DIRTY_TAG(collection);
+          storages.forEach((s) => dirtyTag(s));
+          dirtyTag(collection);
 
           storages.clear();
           target.clear();

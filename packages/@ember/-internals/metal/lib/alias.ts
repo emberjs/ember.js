@@ -3,13 +3,14 @@ import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/interfaces';
-import { consumeTag, untrack } from '@glimmer/validator/lib/tracking';
-import { tagFor, tagMetaFor } from '@glimmer/validator/lib/meta';
 import {
-  UPDATE_TAG as updateTag,
+  consumeTag,
+  untrack,
+  updateTag,
   validateTag,
   valueForTag,
-} from '@glimmer/validator/lib/validators';
+} from '@glimmer/signals/lib/tags';
+import { tagFor, tagMetaFor } from '@glimmer/signals/lib/meta';
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
 import type { ExtendedMethodDecorator } from './decorator';
 import {

@@ -1,4 +1,4 @@
-import { trackedWeakMap } from '@glimmer/validator';
+import { trackedWeakMap } from '@glimmer/signals';
 import { expectTypeOf } from 'expect-type';
 
 import { module, test } from '../-utils';
@@ -7,7 +7,7 @@ expectTypeOf<ReturnType<typeof trackedWeakMap<object, number>>>().toMatchTypeOf<
   WeakMap<object, number>
 >();
 
-module('@glimmer/validator: trackedWeakMap()', function () {
+module('@glimmer/signals: trackedWeakMap()', function () {
   test('constructor', (assert) => {
     const obj = {};
     const map = trackedWeakMap([[obj, 123]]);

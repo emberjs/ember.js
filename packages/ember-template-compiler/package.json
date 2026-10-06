@@ -32,7 +32,7 @@
     "@glimmer/manager": "workspace:*",
     "@glimmer/runtime": "workspace:*",
     "@glimmer/syntax": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "backburner.js": "^2.7.0",
     "ember": "workspace:*",
     "internal-test-helpers": "workspace:*"

@@ -3,10 +3,9 @@
 // interface (like getOrInsert, getOrInsertComputed, etc.) are automatically
 // supported without needing to manually re-implement each one.
 
-import { consumeTag } from '../tracking';
-import { createUpdatableTag, DIRTY_TAG } from '../validators';
+import { consumeTag, createTag, dirtyTag } from '../tags';
 
-type Tag = ReturnType<typeof createUpdatableTag>;
+type Tag = ReturnType<typeof createTag>;
 
 export function trackedMap<Key = any, Value = any>(
   data?:
@@ -21,14 +20,14 @@ export function trackedMap<Key = any, Value = any>(
   // constructor for the no-value constructor. This resolves that.
   const target: Map<Key, Value> =
     data instanceof Map ? new Map(data.entries()) : new Map(data ?? []);
-  const collection = createUpdatableTag();
+  const collection = createTag();
   const storages = new Map<Key, Tag>();
 
   function storageFor(key: Key): Tag {
     let storage = storages.get(key);
 
     if (storage === undefined) {
-      storage = createUpdatableTag();
+      storage = createTag();
       storages.set(key, storage);
     }
 
@@ -39,7 +38,7 @@ export function trackedMap<Key = any, Value = any>(
     const storage = storages.get(key);
 
     if (storage) {
-      DIRTY_TAG(storage);
+      dirtyTag(storage);
     }
   }
 
@@ -58,7 +57,7 @@ export function trackedMap<Key = any, Value = any>(
           }
 
           dirtyStorageFor(key);
-          DIRTY_TAG(collection);
+          dirtyTag(collection);
 
           target.set(key, value);
 
@@ -71,7 +70,7 @@ export function trackedMap<Key = any, Value = any>(
           if (!target.has(key)) return false;
 
           dirtyStorageFor(key);
-          DIRTY_TAG(collection);
+          dirtyTag(collection);
 
           storages.delete(key);
           return target.delete(key);
@@ -82,10 +81,10 @@ export function trackedMap<Key = any, Value = any>(
         return function (): void {
           if (target.size === 0) return;
 
-          storages.forEach((s) => DIRTY_TAG(s));
+          storages.forEach((s) => dirtyTag(s));
           storages.clear();
 
-          DIRTY_TAG(collection);
+          dirtyTag(collection);
           target.clear();
         };
       }

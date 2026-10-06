@@ -1,5 +1,5 @@
 import type { Dict, Owner } from '@glimmer/interfaces';
-import { trackedArray } from '@glimmer/validator';
+import { trackedArray } from '@glimmer/signals';
 import {
   GlimmerishComponent as Component,
   jitSuite,
