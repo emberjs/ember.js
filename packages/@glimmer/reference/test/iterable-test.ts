@@ -1,15 +1,16 @@
 import type { OpaqueIterationItem, Reference } from '@glimmer/reference';
 import { createComputeRef, createIteratorRef, valueForRef } from '@glimmer/reference';
-import { consumeTag, VOLATILE_TAG } from '@glimmer/signals';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/signals';
 
 import { module, test } from './utils/qunit';
 
 class IterableWrapper {
   private iterable: Reference<{ next(): OpaqueIterationItem | null }>;
+  private tag = createTag();
 
   constructor(obj: unknown, key = '@identity') {
     let valueRef = createComputeRef(() => {
-      consumeTag(VOLATILE_TAG);
+      consumeTag(this.tag);
       return obj;
     });
     this.iterable = createIteratorRef(valueRef, key);
@@ -17,6 +18,9 @@ class IterableWrapper {
 
   private iterate() {
     let result: OpaqueIterationItem[] = [];
+
+    // the object has no tags of its own, so each iteration starts with a write
+    dirtyTag(this.tag);
 
     // bootstrap
     let iterator = valueForRef(this.iterable);

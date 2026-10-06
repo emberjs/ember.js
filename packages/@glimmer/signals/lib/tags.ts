@@ -7,25 +7,15 @@ import type { Link, ReactiveNode } from 'alien-signals/system';
 import { debug } from './debug';
 import { unwrap } from './utils';
 
-export type Revision = number;
-
-export const CONSTANT: Revision = 0;
-export const INITIAL: Revision = 1;
-export const VOLATILE: Revision = NaN;
-
-let $REVISION = INITIAL;
+let writes = 0;
 
 /**
- * The revision of the last write to a tag.
+ * The number of writes to tags since the start of the program.
  *
- * A caller can keep this number to learn later if a write occurred.
+ * A caller can keep this number to learn later if any write occurred.
  */
-export function currentRevision(): Revision {
-  return $REVISION;
-}
-
-export function bump(): void {
-  $REVISION++;
+export function writeCount(): number {
+  return writes;
 }
 
 /**
@@ -42,7 +32,7 @@ const STALE = DIRTY | PENDING;
 
 /**
  * - TAG: a value that code can write. It has subscribers and no dependencies.
- * - LIST: a set of tags. It is not in the graph. A check reads the revisions.
+ * - LIST: a set of tags. It is not in the graph. A subscriber links to its members.
  * - COMPUTED: a cached function (`createCache`, compute references).
  * - FRAME: a block of updating opcodes that the VM runs again when it is stale.
  * - WATCHER: forwards the writes of its dependencies to one TAG (`updateTag`).
@@ -55,7 +45,6 @@ const FRAME_KIND = 3;
 const WATCHER_KIND = 4;
 const COLLECTOR_KIND = 5;
 const CONSTANT_KIND = 6;
-const VOLATILE_KIND = 7;
 
 /**
  * One class for all kinds keeps the graph walk of alien-signals monomorphic.
@@ -69,15 +58,7 @@ export class TagNode implements ReactiveNode, Tag {
   kind: number;
 
   /**
-   * - TAG: the revision of the last write.
-   * - LIST: the revision that the last check found.
-   * - COMPUTED without subscribers: the revision at which the value was valid.
-   */
-  revision: Revision = INITIAL;
-
-  /**
-   * - LIST, COLLECTOR: the members.
-   * - COMPUTED without subscribers: the tags that the last run read.
+   * LIST, COLLECTOR: the members.
    */
   tags: TagNode[] | undefined = undefined;
 
@@ -90,23 +71,22 @@ export class TagNode implements ReactiveNode, Tag {
   /**
    * - COLLECTOR: its id.
    * - other kinds: the id of the last collector that took this tag.
-   * - LIST: the revision of the last check.
    */
   mark = 0;
 
   /**
-   * `true` when the last run read `VOLATILE_TAG`. Such a node is always stale.
+   * FRAME, COMPUTED: `true` when the run read a cache that had lost its links.
+   *
+   * No write can reach such a node, so it is stale until its next run.
    */
-  volatile = false;
+  forced = false;
 
   /**
-   * COMPUTED, FRAME: the answer of the last `valueForTag`, and its revision.
+   * FRAME: `true` when an owner removes the links with `disposeFrame`.
    *
-   * Without it, each cache in a chain walks the full chain,
-   * when nobody subscribes to the chain.
+   * Such a frame keeps its links when its last subscriber goes away.
    */
-  checked = -1;
-  max: Revision = CONSTANT;
+  owned = false;
 
   fn: (() => unknown) | undefined = undefined;
   value: unknown = undefined;
@@ -148,8 +128,14 @@ const { link, unlink, propagate } = createReactiveSystem({
     let tag = node as TagNode;
 
     if (tag.kind === COMPUTED_KIND) {
-      park(tag);
-    } else if (tag.kind === FRAME_KIND) {
+      /**
+       * The next read runs the function again.
+       */
+      if (tag.deps !== undefined) {
+        disposeDeps(tag);
+        tag.flags = MUTABLE | DIRTY;
+      }
+    } else if (tag.kind === FRAME_KIND && !tag.owned) {
       disposeDeps(tag);
       tag.flags = MUTABLE | DIRTY;
     }
@@ -182,78 +168,9 @@ export function createTag(): TagNode {
 }
 
 export const CONSTANT_TAG = new TagNode(CONSTANT_KIND, MUTABLE);
-CONSTANT_TAG.revision = CONSTANT;
-
-export const VOLATILE_TAG = new TagNode(VOLATILE_KIND, MUTABLE);
-VOLATILE_TAG.revision = VOLATILE;
-VOLATILE_TAG.volatile = true;
 
 export function isConstTag(tag: Tag): boolean {
   return tag === CONSTANT_TAG;
-}
-
-/**
- * Returns a number for the present state of the tag.
- *
- * Give the number to `validateTag` later to learn if the tag changed.
- */
-export function valueForTag(_tag: Tag): Revision {
-  let tag = _tag as TagNode;
-
-  switch (tag.kind) {
-    case TAG_KIND:
-    case CONSTANT_KIND:
-    case VOLATILE_KIND:
-      return tag.revision;
-
-    case LIST_KIND: {
-      if (tag.mark !== $REVISION) {
-        tag.mark = $REVISION;
-        tag.revision = maxRevision(unwrap(tag.tags));
-      }
-
-      return tag.revision;
-    }
-
-    default: {
-      if (tag.volatile) {
-        return VOLATILE;
-      }
-
-      if (tag.checked === $REVISION) {
-        return tag.max;
-      }
-
-      let revision = CONSTANT;
-
-      if (tag.tags !== undefined) {
-        revision = maxRevision(tag.tags);
-      } else {
-        for (let dep = tag.deps; dep !== undefined; dep = dep.nextDep) {
-          revision = Math.max(revision, valueForTag(dep.dep as TagNode));
-        }
-      }
-
-      tag.checked = $REVISION;
-      tag.max = revision;
-
-      return revision;
-    }
-  }
-}
-
-function maxRevision(tags: TagNode[]): Revision {
-  let revision = CONSTANT;
-
-  for (let i = 0; i < tags.length; i++) {
-    revision = Math.max(revision, valueForTag(tags[i] as TagNode));
-  }
-
-  return revision;
-}
-
-export function validateTag(tag: Tag, snapshot: Revision): boolean {
-  return snapshot >= valueForTag(tag);
 }
 
 export function combine(tags: Tag[]): Tag {
@@ -265,8 +182,6 @@ export function combine(tags: Tag[]): Tag {
     default: {
       let list = new TagNode(LIST_KIND, MUTABLE);
       list.tags = tags as TagNode[];
-      list.mark = -1;
-      list.volatile = (tags as TagNode[]).some((tag) => tag.volatile);
       return list;
     }
   }
@@ -283,7 +198,7 @@ export function dirtyTag(_tag: Tag, disableConsumptionAssertion?: boolean): void
     unwrap(debug.assertTagNotConsumed)(tag);
   }
 
-  tag.revision = ++$REVISION;
+  writes++;
 
   let subs = tag.subs;
 
@@ -308,14 +223,10 @@ function flushWatchers(): void {
   for (let i = 0; i < FIRED.length; i++) {
     let tag = (FIRED[i] as TagNode).peer;
 
-    if (tag !== undefined) {
-      tag.revision = $REVISION;
+    let subs = tag?.subs;
 
-      let subs = tag.subs;
-
-      if (subs !== undefined) {
-        propagate(subs, false);
-      }
+    if (subs !== undefined) {
+      propagate(subs, false);
     }
   }
 
@@ -384,14 +295,15 @@ function linkLeaves(sub: TagNode, tag: TagNode): void {
     case CONSTANT_KIND:
       break;
 
-    case VOLATILE_KIND:
-      sub.volatile = true;
-      break;
-
     default: {
       let tags = tag.tags;
 
-      if (tag.volatile) sub.volatile = true;
+      if (
+        tag.forced ||
+        (tag.kind === COMPUTED_KIND && tag.deps === undefined && tag.flags !== MUTABLE)
+      ) {
+        sub.forced = true;
+      }
 
       if (tags !== undefined) {
         for (let i = 0; i < tags.length; i++) {
@@ -423,32 +335,17 @@ function linkTag(sub: TagNode, tag: TagNode): void {
 
     case COMPUTED_KIND:
     case FRAME_KIND:
-      if (tag.tags === undefined && tag.flags === MUTABLE) {
-        if (tag.volatile) sub.volatile = true;
+      if (tag.flags === MUTABLE && !tag.forced) {
         if (tag.deps !== undefined) link(tag, sub, cycle);
       } else {
         linkLeaves(sub, tag);
       }
       break;
-
-    case VOLATILE_KIND:
-      /**
-       * `sub` can never be valid, and no write will tell it so.
-       */
-      sub.volatile = true;
-      break;
   }
 }
 
 function collect(collector: TagNode, tag: TagNode): void {
-  if (tag.volatile) collector.volatile = true;
-
-  /**
-   * A LIST uses `mark` for its own check, so it can go in two times.
-   */
-  if (tag.kind === LIST_KIND) {
-    unwrap(collector.tags).push(tag);
-  } else if (tag.mark !== collector.mark) {
+  if (tag.mark !== collector.mark) {
     tag.mark = collector.mark;
     unwrap(collector.tags).push(tag);
   }
@@ -512,7 +409,6 @@ function collectorToTag(collector: TagNode): TagNode {
   }
 
   collector.kind = LIST_KIND;
-  collector.mark = -1;
 
   return collector;
 }
@@ -586,8 +482,10 @@ export function untrack<T>(callback: () => T): T {
  * The owner runs the block between `beginFrame` and `endFrame`.
  * When `isFrameStale` answers `true`, the owner runs the block again.
  */
-export function createFrame(): TagNode {
-  return new TagNode(FRAME_KIND, MUTABLE);
+export function createFrame(owned = false): TagNode {
+  let frame = new TagNode(FRAME_KIND, MUTABLE);
+  frame.owned = owned;
+  return frame;
 }
 
 export function beginFrame(frame: TagNode, debuggingContext?: string | false): void {
@@ -595,8 +493,7 @@ export function beginFrame(frame: TagNode, debuggingContext?: string | false): v
 
   cycle++;
   frame.depsTail = undefined;
-  frame.checked = -1;
-  frame.volatile = false;
+  frame.forced = false;
   frame.flags = MUTABLE | RECURSED_CHECK;
   activeSub = frame;
 
@@ -660,7 +557,7 @@ export function abandonFrame(frame: TagNode): void {
 }
 
 export function isFrameStale(frame: TagNode): boolean {
-  return (frame.flags & STALE) !== 0 || frame.volatile;
+  return (frame.flags & STALE) !== 0 || frame.forced;
 }
 
 /**
@@ -669,7 +566,7 @@ export function isFrameStale(frame: TagNode): boolean {
 export function consumeFrame(frame: TagNode): void {
   let sub = activeSub;
 
-  if (sub === undefined || (frame.deps === undefined && !frame.volatile)) return;
+  if (sub === undefined || (frame.deps === undefined && !frame.forced)) return;
 
   if (DEBUG) {
     unwrap(debug.markTagAsConsumed)(frame);
@@ -678,7 +575,7 @@ export function consumeFrame(frame: TagNode): void {
   if (sub.kind === COLLECTOR_KIND) {
     collect(sub, frame);
   } else {
-    if (frame.volatile) sub.volatile = true;
+    if (frame.forced) sub.forced = true;
     if (frame.deps !== undefined) link(frame, sub, cycle);
   }
 }
@@ -691,30 +588,33 @@ export function disposeFrame(frame: TagNode): void {
 //////////
 
 /**
+ * Makes `frame` depend on `tag` only, and makes it not stale.
+ *
+ * Use it for a subscriber that has no block to run:
+ * the owner asks `isFrameStale` later, and then calls this function again.
+ */
+export function watchTag(frame: TagNode, _tag: Tag): void {
+  cycle++;
+  frame.depsTail = undefined;
+  frame.forced = false;
+  linkTag(frame, _tag as TagNode);
+  purgeDeps(frame);
+  frame.flags = MUTABLE;
+}
+
+//////////
+
+/**
  * Reads a COMPUTED node, and runs its function first if the value is stale.
- *
- * The node has links to its dependencies only while it has a subscriber.
- * Without a subscriber, it keeps a list of the tags and a revision.
- *
- * Thus a long-lived tag does not keep each cache that read it one time.
  */
 export function readComputed<T>(node: TagNode): T {
-  let sub = activeSub;
-  let watched = (sub !== undefined && sub.kind !== COLLECTOR_KIND) || node.subs !== undefined;
   let flags = node.flags;
 
-  if (flags === 0) {
-    evaluate(node, watched);
-  } else if (node.tags !== undefined) {
-    if (node.volatile || (node.revision !== $REVISION && !(node.revision >= valueForTag(node)))) {
-      evaluate(node, watched);
-    } else {
-      node.revision = $REVISION;
-      if (watched) unpark(node);
-    }
-  } else if ((flags & STALE) !== 0 || node.volatile) {
-    evaluate(node, watched);
+  if (flags === 0 || (flags & STALE) !== 0 || node.forced) {
+    evaluate(node);
   }
+
+  let sub = activeSub;
 
   /**
    * A node that reads itself during its run gets no link to itself.
@@ -722,7 +622,7 @@ export function readComputed<T>(node: TagNode): T {
   if (
     sub !== undefined &&
     (node.flags & RECURSED_CHECK) === 0 &&
-    (node.deps !== undefined || node.tags !== undefined || node.volatile)
+    (node.deps !== undefined || node.forced)
   ) {
     if (DEBUG) {
       unwrap(debug.markTagAsConsumed)(node);
@@ -731,7 +631,7 @@ export function readComputed<T>(node: TagNode): T {
     if (sub.kind === COLLECTOR_KIND) {
       collect(sub, node);
     } else {
-      if (node.volatile) sub.volatile = true;
+      if (node.forced) sub.forced = true;
       if (node.deps !== undefined) link(node, sub, cycle);
     }
   }
@@ -739,32 +639,17 @@ export function readComputed<T>(node: TagNode): T {
   return node.value as T;
 }
 
-function evaluate(node: TagNode, watched: boolean): void {
+function evaluate(node: TagNode): void {
   let first = node.flags === 0;
   let done = false;
-  let collector: TagNode | undefined;
 
   SUB_STACK.push(activeSub);
 
-  node.volatile = false;
-  node.checked = -1;
-
-  if (watched) {
-    node.tags = undefined;
-    cycle++;
-    node.depsTail = undefined;
-    node.flags = MUTABLE | RECURSED_CHECK;
-    activeSub = node;
-  } else {
-    if (node.deps !== undefined) disposeDeps(node);
-
-    node.flags = MUTABLE | RECURSED_CHECK;
-
-    collector = new TagNode(COLLECTOR_KIND, MUTABLE);
-    collector.tags = [];
-    collector.mark = ++collectorId;
-    activeSub = collector;
-  }
+  cycle++;
+  node.forced = false;
+  node.depsTail = undefined;
+  node.flags = MUTABLE | RECURSED_CHECK;
+  activeSub = node;
 
   if (DEBUG) {
     unwrap(debug.beginTrackingTransaction)(node.debugLabel);
@@ -777,7 +662,7 @@ function evaluate(node: TagNode, watched: boolean): void {
     /**
      * `resetTracking` can empty the stack before this point, after an error.
      */
-    if (activeSub === node || activeSub === collector) {
+    if (activeSub === node) {
       if (DEBUG) {
         unwrap(debug.endTrackingTransaction)();
       }
@@ -785,17 +670,7 @@ function evaluate(node: TagNode, watched: boolean): void {
       activeSub = SUB_STACK.pop();
     }
 
-    if (collector === undefined) {
-      purgeDeps(node);
-    } else if (done) {
-      let tags = collector.tags as TagNode[];
-
-      node.tags = tags.length === 0 ? undefined : tags;
-      node.volatile = collector.volatile;
-      node.revision = $REVISION;
-    } else {
-      node.tags = undefined;
-    }
+    purgeDeps(node);
 
     if (done) {
       settle(node);
@@ -805,59 +680,8 @@ function evaluate(node: TagNode, watched: boolean): void {
   }
 }
 
-/**
- * Replaces the links of a COMPUTED that lost its last subscriber by a list.
- */
-function park(node: TagNode): void {
-  if (node.deps === undefined) return;
-
-  let tags: TagNode[] = [];
-
-  for (let dep: Link | undefined = node.deps; dep !== undefined; dep = dep.nextDep) {
-    tags.push(dep.dep as TagNode);
-  }
-
-  node.tags = tags;
-  node.checked = -1;
-  node.revision = (node.flags & STALE) !== 0 ? -1 : $REVISION;
-  node.flags = MUTABLE;
-
-  disposeDeps(node);
-}
-
-/**
- * Gives a valid COMPUTED its links back, because a subscriber reads it now.
- */
-function unpark(node: TagNode): void {
-  let tags = node.tags as TagNode[];
-
-  node.tags = undefined;
-  node.depsTail = undefined;
-  cycle++;
-
-  for (let i = 0; i < tags.length; i++) {
-    linkSource(node, tags[i] as TagNode);
-  }
-}
-
-function linkSource(sub: TagNode, tag: TagNode): void {
-  if (tag.kind === COMPUTED_KIND) {
-    if (tag.tags !== undefined) {
-      unpark(tag);
-    }
-
-    if (tag.flags === MUTABLE) {
-      if (tag.volatile) sub.volatile = true;
-      if (tag.deps !== undefined) link(tag, sub, cycle);
-      return;
-    }
-  }
-
-  linkTag(sub, tag);
-}
-
 export function isConstComputed(node: TagNode): boolean {
-  return node.flags !== 0 && node.deps === undefined && node.tags === undefined && !node.volatile;
+  return node.flags !== 0 && node.deps === undefined && !node.forced;
 }
 
 export function createComputed<T>(fn: () => T, debugLabel?: string | false): TagNode {

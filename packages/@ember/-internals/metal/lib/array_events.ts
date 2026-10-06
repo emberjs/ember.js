@@ -68,11 +68,11 @@ export function arrayContentDidChange<T extends { length: number }>(
     let previousLength = length - delta;
 
     let normalStartIdx = startIdx < 0 ? previousLength + startIdx : startIdx;
-    if (meta.revisionFor('firstObject') !== undefined && normalStartIdx === 0) {
+    if (meta.hasCacheFor('firstObject') && normalStartIdx === 0) {
       notifyPropertyChange(array, 'firstObject', meta);
     }
 
-    if (meta.revisionFor('lastObject') !== undefined) {
+    if (meta.hasCacheFor('lastObject')) {
       let previousLastIndex = previousLength - 1;
       let lastAffectedIndex = normalStartIdx + removedAmount;
       if (previousLastIndex < lastAffectedIndex) {

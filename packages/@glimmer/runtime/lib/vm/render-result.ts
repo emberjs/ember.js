@@ -49,7 +49,7 @@ export default class RenderResultImpl implements RenderResult {
 
   rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {
     let { env, updating } = this;
-    let root = (this.root ??= createFrame());
+    let root = (this.root ??= createFrame(true));
     let vm = new UpdatingVM(env, { alwaysRevalidate });
     let done = false;
 

@@ -23,10 +23,11 @@ import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
 import {
   combine,
   consumeTag,
-  validateTag,
-  valueForTag,
-  type Revision,
+  createFrame,
+  isFrameStale,
+  watchTag,
 } from '@glimmer/signals/lib/tags';
+import type { TagNode } from '@glimmer/signals/lib/tags';
 import { tagFor } from '@glimmer/signals/lib/meta';
 import type { Tag } from '@glimmer/interfaces';
 
@@ -192,9 +193,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   /** @internal */
   _arrangedContentIsUpdating = false;
   /** @internal */
-  _arrangedContentTag: Tag | null = null;
-  /** @internal */
-  _arrangedContentRevision: Revision | null = null;
+  _arrangedContentWatch: TagNode | null = null;
   /** @internal */
   _lengthTag: Tag | null = null;
   /** @internal */
@@ -383,13 +382,12 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   _revalidate() {
     if (this._arrangedContentIsUpdating === true) return;
 
-    if (
-      this._arrangedContentTag === null ||
-      !validateTag(this._arrangedContentTag, this._arrangedContentRevision!)
-    ) {
+    let watch = this._arrangedContentWatch;
+
+    if (watch === null || isFrameStale(watch)) {
       let arrangedContent = this.get('arrangedContent');
 
-      if (this._arrangedContentTag === null) {
+      if (watch === null) {
         // This is the first time the proxy has been setup, only add the observer
         // don't trigger any events
         this._addArrangedContentArrayObserver(arrangedContent);
@@ -399,8 +397,10 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
         this._arrangedContentIsUpdating = false;
       }
 
-      let arrangedContentTag = (this._arrangedContentTag = tagFor(this, 'arrangedContent'));
-      this._arrangedContentRevision = valueForTag(this._arrangedContentTag);
+      let arrangedContentTag = tagFor(this, 'arrangedContent');
+
+      watch = this._arrangedContentWatch ??= createFrame();
+      watchTag(watch, arrangedContentTag);
 
       if (isObject(arrangedContent)) {
         this._lengthTag = combine([arrangedContentTag, tagForProperty(arrangedContent, 'length')]);

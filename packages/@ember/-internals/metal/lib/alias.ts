@@ -3,13 +3,7 @@ import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/interfaces';
-import {
-  consumeTag,
-  untrack,
-  updateTag,
-  validateTag,
-  valueForTag,
-} from '@glimmer/signals/lib/tags';
+import { consumeTag, untrack, updateTag } from '@glimmer/signals/lib/tags';
 import { tagFor, tagMetaFor } from '@glimmer/signals/lib/meta';
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
 import type { ExtendedMethodDecorator } from './decorator';
@@ -90,11 +84,9 @@ class AliasedProperty extends ComputedDescriptor {
       ret = get(obj, this.altKey);
     });
 
-    let lastRevision = meta.revisionFor(keyName);
-
-    if (lastRevision === undefined || !validateTag(propertyTag, lastRevision)) {
+    if (!meta.isCachedFor(keyName)) {
       updateTag(propertyTag, getChainTagsForKey(obj, this.altKey, tagMeta, meta));
-      meta.setRevisionFor(keyName, valueForTag(propertyTag));
+      meta.setCachedFor(keyName, propertyTag);
       finishLazyChains(meta, keyName, ret);
     }
 

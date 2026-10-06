@@ -1,5 +1,3 @@
-export type Revision = number;
-
 /**
  * A node of the reactive graph.
  *

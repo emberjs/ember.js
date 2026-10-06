@@ -56,7 +56,7 @@ export const stableDecoratorFiles = {
         import { module, test } from 'qunit';
         import { tracked } from '@glimmer/tracking';
         import { tagForObject } from '@ember/-internals/metal';
-        import { valueForTag, validateTag } from '@glimmer/signals';
+        import { createFrame, isFrameStale, watchTag } from '@glimmer/signals';
 
         // {{#each-in}} and ObjectProxy depend on the object's own tag, which
         // every form of @tracked must dirty when it is set.
@@ -67,9 +67,10 @@ export const stableDecoratorFiles = {
             }
             let obj = new Example();
             let tag = tagForObject(obj);
-            let snapshot = valueForTag(tag);
+            let frame = createFrame();
+            watchTag(frame, tag);
             obj.count = 1;
-            assert.false(validateTag(tag, snapshot));
+            assert.true(isFrameStale(frame));
           });
 
           test('setting a tracked accessor dirties the object tag', function(assert) {
@@ -78,9 +79,10 @@ export const stableDecoratorFiles = {
             }
             let obj = new Example();
             let tag = tagForObject(obj);
-            let snapshot = valueForTag(tag);
+            let frame = createFrame();
+            watchTag(frame, tag);
             obj.count = 1;
-            assert.false(validateTag(tag, snapshot));
+            assert.true(isFrameStale(frame));
           });
         });
       `,

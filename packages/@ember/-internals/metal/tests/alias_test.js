@@ -12,7 +12,17 @@ import EmberObject from '@ember/object';
 import { A } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
-import { valueForTag, validateTag } from '@glimmer/signals';
+import { createFrame, isFrameStale, watchTag } from '@glimmer/signals';
+
+function watch(tag) {
+  let frame = createFrame();
+  watchTag(frame, tag);
+  return frame;
+}
+
+function isValid(frame) {
+  return !isFrameStale(frame);
+}
 
 let obj, count;
 
@@ -146,10 +156,10 @@ moduleFor(
       get(obj, 'bar');
 
       let tag = tagForProperty(obj, 'bar');
-      let tagValue = valueForTag(tag);
+      let tagValue = watch(tag);
       set(obj, 'foo.faz', 'BAR');
 
-      assert.ok(!validateTag(tag, tagValue), 'setting the aliased key should dirty the object');
+      assert.ok(!isValid(tagValue), 'setting the aliased key should dirty the object');
     }
 
     ['@test setting alias on self should fail assertion']() {
@@ -162,20 +172,20 @@ moduleFor(
     ['@test property tags are bumped when the source changes [GH#17243]'](assert) {
       function assertPropertyTagChanged(obj, keyName, callback) {
         let tag = tagForProperty(obj, keyName);
-        let before = valueForTag(tag);
+        let before = watch(tag);
 
         callback();
 
-        assert.notOk(validateTag(tag, before), `tagForProperty ${keyName} should change`);
+        assert.notOk(isValid(before), `tagForProperty ${keyName} should change`);
       }
 
       function assertPropertyTagUnchanged(obj, keyName, callback) {
         let tag = tagForProperty(obj, keyName);
-        let before = valueForTag(tag);
+        let before = watch(tag);
 
         callback();
 
-        assert.ok(validateTag(tag, before), `tagForProperty ${keyName} should not change`);
+        assert.ok(isValid(before), `tagForProperty ${keyName} should not change`);
       }
 
       defineProperty(obj, 'bar', alias('foo.faz'));

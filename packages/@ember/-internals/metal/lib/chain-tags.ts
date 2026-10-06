@@ -4,7 +4,7 @@ import { isObject } from '@ember/-internals/utils/lib/spec';
 import { assert } from '@ember/debug';
 import type { Tag } from '@glimmer/interfaces';
 import type { TagMeta } from '@glimmer/signals/lib/meta';
-import { combine, createTag, updateTag, validateTag } from '@glimmer/signals/lib/tags';
+import { combine, createTag, updateTag } from '@glimmer/signals/lib/tags';
 import { tagMetaFor } from '@glimmer/signals/lib/meta';
 import { objectAt } from './object-at';
 import { tagForProperty } from './tags';
@@ -171,9 +171,7 @@ function getChainTags(
       // we create a lazy chain lookup, and the next time the CP is calculated,
       // it will update that lazy chain.
       let instanceMeta = currentMeta!.source === current ? currentMeta! : metaFor(current);
-      let lastRevision = instanceMeta.revisionFor(segment);
-
-      if (lastRevision !== undefined && validateTag(propertyTag, lastRevision)) {
+      if (instanceMeta.isCachedFor(segment)) {
         current = instanceMeta.valueFor(segment);
       } else {
         // use metaFor here to ensure we have the meta for the instance

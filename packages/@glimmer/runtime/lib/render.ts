@@ -44,7 +44,7 @@ class TemplateIteratorImpl implements TemplateIterator {
     let root = this.#root;
 
     if (root === undefined) {
-      root = this.#root = createFrame();
+      root = this.#root = createFrame(true);
       beginFrame(root);
     }
 
@@ -67,7 +67,7 @@ class TemplateIteratorImpl implements TemplateIterator {
   }
 
   sync(): RenderResult {
-    let root = (this.#root = createFrame());
+    let root = (this.#root = createFrame(true));
     let result: RenderResult | undefined;
 
     beginFrame(root);

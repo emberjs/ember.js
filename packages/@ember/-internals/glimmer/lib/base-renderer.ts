@@ -25,7 +25,7 @@ import { RuntimeOpImpl } from '@glimmer/program/lib/opcode';
 import { clientBuilder } from '@glimmer/runtime/lib/vm/element-builder';
 import { inTransaction, runtimeOptions } from '@glimmer/runtime/lib/environment';
 import { renderComponent as glimmerRenderComponent } from '@glimmer/runtime/lib/render';
-import { currentRevision } from '@glimmer/signals/lib/tags';
+import { writeCount } from '@glimmer/signals/lib/tags';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { hasDOM } from '../../browser-environment';
 import { EmberEnvironmentDelegate } from './environment';
@@ -295,7 +295,7 @@ export class RendererState {
        * and that run loop throws the same error again.
        */
       if (!completedWithoutError) {
-        this.#lastRevision = currentRevision();
+        this.#lastRevision = writeCount();
       }
       this.#inRenderTransaction = false;
     }
@@ -342,7 +342,7 @@ export class RendererState {
           root.render();
         }
 
-        this.#lastRevision = currentRevision();
+        this.#lastRevision = writeCount();
       });
     } while (roots.length > initialRootsLength);
 
@@ -386,12 +386,12 @@ export class RendererState {
    * True when there is nothing to render:
    * no roots, or no tracked value changed after the last render.
    *
-   * `currentRevision()` changes with a write to any tag,
+   * `writeCount()` changes with a write to any tag,
    * so one changed value anywhere in the app makes every renderer invalid.
    * Each root then finds out for itself if the change applies to it.
    */
   isValid(): boolean {
-    return this.#roots.length === 0 || this.#lastRevision === currentRevision();
+    return this.#roots.length === 0 || this.#lastRevision === writeCount();
   }
 
   revalidate(): void {

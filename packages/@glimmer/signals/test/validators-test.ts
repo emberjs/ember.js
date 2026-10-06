@@ -1,19 +1,32 @@
 import { DEBUG } from '@glimmer/env';
 import { testOverrideGlobalContext } from '@glimmer/global-context';
+import type { Tag, TagNode } from '@glimmer/signals';
 import {
-  bump,
   combine,
   CONSTANT_TAG,
+  createFrame,
   createTag,
-  currentRevision,
+  writeCount,
   dirtyTag,
+  isFrameStale,
   updateTag,
-  validateTag,
-  valueForTag,
-  VOLATILE_TAG,
+  watchTag,
 } from '@glimmer/signals';
 
 import { module, test } from './-utils';
+
+/**
+ * A subscriber for `tag`. `isValid` answers `false` after a write to the tag.
+ */
+function watch(tag: Tag) {
+  let frame = createFrame();
+  watchTag(frame, tag);
+  return frame;
+}
+
+function isValid(frame: TagNode) {
+  return !isFrameStale(frame);
+}
 
 function unwrap<T>(value: T | null | undefined): T {
   if (value === null || value === undefined) {
@@ -27,15 +40,15 @@ module('@glimmer/signals: validators', () => {
   module('DirtyableTag', () => {
     test('it can be dirtied', (assert) => {
       let tag = createTag();
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
-      assert.ok(validateTag(tag, snapshot));
+      assert.ok(isValid(snapshot));
 
       dirtyTag(tag);
-      assert.notOk(validateTag(tag, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(tag);
-      assert.ok(validateTag(tag, snapshot));
+      snapshot = watch(tag);
+      assert.ok(isValid(snapshot));
     });
 
     if (DEBUG) {
@@ -63,15 +76,15 @@ module('@glimmer/signals: validators', () => {
   module('UpdatableTag', () => {
     test('it can be dirtied', (assert) => {
       let tag = createTag();
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
-      assert.ok(validateTag(tag, snapshot));
+      assert.ok(isValid(snapshot));
 
       dirtyTag(tag);
-      assert.notOk(validateTag(tag, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(tag);
-      assert.ok(validateTag(tag, snapshot));
+      snapshot = watch(tag);
+      assert.ok(isValid(snapshot));
     });
 
     test('it can be updated', (assert) => {
@@ -80,14 +93,14 @@ module('@glimmer/signals: validators', () => {
 
       updateTag(tag, subtag);
 
-      let snapshot = valueForTag(tag);
-      assert.ok(validateTag(tag, snapshot));
+      let snapshot = watch(tag);
+      assert.ok(isValid(snapshot));
 
       dirtyTag(subtag);
-      assert.notOk(validateTag(tag, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(tag);
-      assert.ok(validateTag(tag, snapshot));
+      snapshot = watch(tag);
+      assert.ok(isValid(snapshot));
     });
 
     test('it correctly buffers updates when subtag has a less recent value', (assert) => {
@@ -98,17 +111,17 @@ module('@glimmer/signals: validators', () => {
       dirtyTag(tag);
 
       // Then, we get a snapshot of the parent
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       // Now, we update the parent tag with the subtag, and revalidate it
       updateTag(tag, subtag);
 
-      assert.ok(validateTag(tag, snapshot), 'tag is still valid after being updated');
+      assert.ok(isValid(snapshot), 'tag is still valid after being updated');
 
       // Finally, dirty the subtag one final time to bust the buffer cache
       dirtyTag(subtag);
 
-      assert.notOk(validateTag(tag, snapshot), 'tag is invalid after subtag is dirtied again');
+      assert.notOk(isValid(snapshot), 'tag is invalid after subtag is dirtied again');
     });
 
     test('it correctly buffers updates when subtag has a more recent value', (assert) => {
@@ -116,7 +129,7 @@ module('@glimmer/signals: validators', () => {
       let subtag = createTag();
 
       // First, we get a snapshot of the parent
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       // Then we dirty the currently unrelated subtag
       dirtyTag(subtag);
@@ -124,28 +137,28 @@ module('@glimmer/signals: validators', () => {
       // Now, we update the parent tag with the subtag, and revalidate it
       updateTag(tag, subtag);
 
-      assert.ok(validateTag(tag, snapshot), 'tag is still valid after being updated');
+      assert.ok(isValid(snapshot), 'tag is still valid after being updated');
 
       // Finally, dirty the subtag one final time to bust the buffer cache
       dirtyTag(subtag);
 
-      assert.notOk(validateTag(tag, snapshot), 'tag is invalid after subtag is dirtied again');
+      assert.notOk(isValid(snapshot), 'tag is invalid after subtag is dirtied again');
     });
 
     test('two tags can follow each other', (assert) => {
       let tag = createTag();
       let subtag = createTag();
 
-      let snapshot = valueForTag(tag);
-      let subtagSnapshot = valueForTag(subtag);
+      let snapshot = watch(tag);
+      let subtagSnapshot = watch(subtag);
 
       updateTag(tag, subtag);
       updateTag(subtag, tag);
 
       dirtyTag(tag);
 
-      assert.notOk(validateTag(tag, snapshot));
-      assert.notOk(validateTag(subtag, subtagSnapshot));
+      assert.notOk(isValid(snapshot));
+      assert.notOk(isValid(subtagSnapshot));
     });
   });
 
@@ -156,13 +169,13 @@ module('@glimmer/signals: validators', () => {
 
       let combined = combine([tag1, tag2]);
 
-      let snapshot = valueForTag(combined);
+      let snapshot = watch(combined);
       dirtyTag(tag1);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(combined);
+      snapshot = watch(combined);
       dirtyTag(tag2);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
     });
 
     if (DEBUG) {
@@ -212,50 +225,14 @@ module('@glimmer/signals: validators', () => {
     }
   });
 
-  module('VolatileTag', () => {
-    test('it is always invalid', (assert) => {
-      let snapshot = valueForTag(VOLATILE_TAG);
-      assert.notOk(validateTag(VOLATILE_TAG, snapshot));
-    });
-
-    test('it ensures that any tags which it is combined with are also always invalid', (assert) => {
-      let tag2 = createTag();
-
-      let combined = combine([VOLATILE_TAG, tag2]);
-
-      bump();
-
-      let snapshot = valueForTag(combined);
-      assert.notOk(validateTag(combined, snapshot));
-    });
-
-    if (DEBUG) {
-      test('it cannot be dirtied', (assert) => {
-        assert.throws(
-          () => dirtyTag(VOLATILE_TAG),
-          /Error: Attempted to dirty a tag that was not dirtyable/u
-        );
-      });
-
-      test('it cannot be updated', (assert) => {
-        let subtag = createTag();
-
-        assert.throws(
-          () => updateTag(VOLATILE_TAG, subtag),
-          /Error: Attempted to update a tag that was not updatable/u
-        );
-      });
-    }
-  });
-
-  module('currentRevision', () => {
+  module('writeCount', () => {
     test('it changes when a tag is dirtied', (assert) => {
-      let snapshot = currentRevision();
+      let snapshot = writeCount();
 
       let tag = createTag();
       dirtyTag(tag);
 
-      assert.notStrictEqual(currentRevision(), snapshot);
+      assert.notStrictEqual(writeCount(), snapshot);
     });
   });
 });

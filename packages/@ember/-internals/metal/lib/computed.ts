@@ -5,14 +5,7 @@ import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import type { UpdatableTag } from '@glimmer/interfaces';
-import {
-  consumeTag,
-  track,
-  untrack,
-  updateTag,
-  validateTag,
-  valueForTag,
-} from '@glimmer/signals/lib/tags';
+import { consumeTag, track, untrack, updateTag } from '@glimmer/signals/lib/tags';
 import { tagFor, tagMetaFor } from '@glimmer/signals/lib/meta';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import type {
@@ -402,9 +395,7 @@ export class ComputedProperty extends ComputedDescriptor {
 
     let ret;
 
-    let revision = meta.revisionFor(keyName);
-
-    if (revision !== undefined && validateTag(propertyTag, revision)) {
+    if (meta.isCachedFor(keyName)) {
       ret = meta.valueFor(keyName);
     } else {
       // For backwards compatibility, we only throw if the CP has any dependencies. CPs without dependencies
@@ -426,7 +417,7 @@ export class ComputedProperty extends ComputedDescriptor {
       }
 
       meta.setValueFor(keyName, ret);
-      meta.setRevisionFor(keyName, valueForTag(propertyTag));
+      meta.setCachedFor(keyName, propertyTag);
 
       finishLazyChains(meta, keyName, ret);
     }
@@ -499,7 +490,7 @@ export class ComputedProperty extends ComputedDescriptor {
         updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
       }
 
-      meta.setRevisionFor(keyName, valueForTag(propertyTag));
+      meta.setCachedFor(keyName, propertyTag);
     } finally {
       endPropertyChanges();
     }
@@ -512,7 +503,7 @@ export class ComputedProperty extends ComputedDescriptor {
   }
 
   _set(obj: object, keyName: string, value: unknown, meta: Meta): unknown {
-    let hadCachedValue = meta.revisionFor(keyName) !== undefined;
+    let hadCachedValue = meta.hasCacheFor(keyName);
     let cachedValue = meta.valueFor(keyName);
 
     let ret;
@@ -540,8 +531,8 @@ export class ComputedProperty extends ComputedDescriptor {
 
   /* called before property is overridden */
   teardown(obj: object, keyName: string, meta: Meta): void {
-    if (meta.revisionFor(keyName) !== undefined) {
-      meta.setRevisionFor(keyName, undefined);
+    if (meta.hasCacheFor(keyName)) {
+      meta.clearCachedFor(keyName);
       meta.setValueFor(keyName, undefined);
     }
 
@@ -558,9 +549,7 @@ class AutoComputedProperty extends ComputedProperty {
 
     let ret;
 
-    let revision = meta.revisionFor(keyName);
-
-    if (revision !== undefined && validateTag(propertyTag, revision)) {
+    if (meta.isCachedFor(keyName)) {
       ret = meta.valueFor(keyName);
     } else {
       assert(
@@ -578,7 +567,7 @@ class AutoComputedProperty extends ComputedProperty {
       updateTag(propertyTag, tag);
 
       meta.setValueFor(keyName, ret);
-      meta.setRevisionFor(keyName, valueForTag(propertyTag));
+      meta.setCachedFor(keyName, propertyTag);
 
       finishLazyChains(meta, keyName, ret);
     }

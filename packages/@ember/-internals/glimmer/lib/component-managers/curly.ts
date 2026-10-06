@@ -41,13 +41,14 @@ import { reifyPositional } from '@glimmer/runtime/lib/vm/arguments';
 import { EMPTY_ARRAY } from '@glimmer/util/lib/array-utils';
 import { unwrapTemplate } from './unwrap-template';
 import {
-  beginTrackFrame,
+  beginFrame,
   beginUntrackFrame,
+  consumeFrame,
   consumeTag,
-  endTrackFrame,
+  createFrame,
+  endFrame,
   endUntrackFrame,
-  validateTag,
-  valueForTag,
+  isFrameStale,
 } from '@glimmer/signals/lib/tags';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
@@ -276,9 +277,11 @@ export default class CurlyComponentManager
     // copy of the Arguments object that is safe to hold on to between renders.
     let capturedArgs = args.named.capture();
 
-    beginTrackFrame();
+    let argsFrame = createFrame();
+
+    beginFrame(argsFrame);
     let props = processComponentArgs(capturedArgs);
-    let argsTag = endTrackFrame();
+    endFrame();
 
     // Alias `id` argument to `elementId` property on the component instance.
     aliasIdToElementId(args, props);
@@ -342,7 +345,7 @@ export default class CurlyComponentManager
     let bucket = new ComponentStateBucket(
       component,
       capturedArgs,
-      argsTag,
+      argsFrame,
       finalizer,
       hasWrappedElement,
       isInteractive
@@ -363,7 +366,7 @@ export default class CurlyComponentManager
     endUntrackFrame();
 
     // consume every argument so we always run again
-    consumeTag(bucket.argsTag);
+    consumeFrame(bucket.argsFrame);
     consumeTag(component[DIRTY_TAG]);
 
     return bucket;
@@ -441,18 +444,16 @@ export default class CurlyComponentManager
   }
 
   update(bucket: ComponentStateBucket): void {
-    let { component, args, argsTag, argsRevision, isInteractive } = bucket;
+    let { component, args, argsFrame, isInteractive } = bucket;
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
     beginUntrackFrame();
 
-    if (args !== null && !validateTag(argsTag, argsRevision)) {
-      beginTrackFrame();
+    if (args !== null && isFrameStale(argsFrame)) {
+      beginFrame(argsFrame);
       let props = processComponentArgs(args);
-      argsTag = bucket.argsTag = endTrackFrame();
-
-      bucket.argsRevision = valueForTag(argsTag);
+      endFrame();
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);
@@ -469,7 +470,7 @@ export default class CurlyComponentManager
 
     endUntrackFrame();
 
-    consumeTag(argsTag);
+    consumeFrame(argsFrame);
     consumeTag(component[DIRTY_TAG]);
   }
 

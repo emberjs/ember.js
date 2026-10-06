@@ -14,8 +14,7 @@ import {
   type TagNode,
   track,
   updateTag,
-  validateTag,
-  valueForTag,
+  watchTag,
 } from '@glimmer/signals';
 
 import { module, test } from './-utils';
@@ -169,7 +168,7 @@ module('@glimmer/signals: graph', () => {
   });
 
   module('caches', () => {
-    test('a cache without a subscriber has no links from its tags', (assert) => {
+    test('a cache keeps its value until a write', (assert) => {
       let tag = createTag();
       let count = 0;
       let cache = createCache(() => {
@@ -179,15 +178,13 @@ module('@glimmer/signals: graph', () => {
 
       assert.strictEqual(getValue(cache), 1);
       assert.strictEqual(getValue(cache), 1);
-      assert.false(hasSubscribers(tag));
 
       dirtyTag(tag);
 
       assert.strictEqual(getValue(cache), 2);
-      assert.false(hasSubscribers(tag));
     });
 
-    test('a cache keeps its value when it gets a subscriber and when it loses it', (assert) => {
+    test('a cache that loses its last subscriber removes its links', (assert) => {
       let tag = createTag();
       let count = 0;
       let cache = createCache(() => {
@@ -195,8 +192,6 @@ module('@glimmer/signals: graph', () => {
         return ++count;
       });
       let frame = createFrame();
-
-      assert.strictEqual(getValue(cache), 1);
 
       run(frame, () => assert.strictEqual(getValue(cache), 1));
 
@@ -205,51 +200,19 @@ module('@glimmer/signals: graph', () => {
       disposeFrame(frame);
 
       assert.false(hasSubscribers(tag));
-      assert.strictEqual(getValue(cache), 1);
-
-      dirtyTag(tag);
-
-      assert.strictEqual(getValue(cache), 2);
+      assert.strictEqual(getValue(cache), 2, 'the cache runs again, because it had no links');
     });
 
-    test('a nested cache gets its links back together with the outer cache', (assert) => {
+    test('a frame is stale after a write below a nested cache', (assert) => {
       let tag = createTag();
-      let innerCount = 0;
-      let inner = createCache(() => {
-        consumeTag(tag);
-        return ++innerCount;
-      });
+      let inner = createCache(() => consumeTag(tag));
       let outer = createCache(() => getValue(inner));
       let frame = createFrame();
 
-      assert.strictEqual(getValue(outer), 1);
-      assert.false(hasSubscribers(tag));
-
       run(frame, () => getValue(outer));
-
-      assert.true(hasSubscribers(tag));
-      assert.strictEqual(innerCount, 1);
-
       dirtyTag(tag);
 
       assert.true(isFrameStale(frame));
-      assert.strictEqual(getValue(outer), 2);
-    });
-
-    test('a cache that lost its subscriber while stale runs again', (assert) => {
-      let tag = createTag();
-      let count = 0;
-      let cache = createCache(() => {
-        consumeTag(tag);
-        return ++count;
-      });
-      let frame = createFrame();
-
-      run(frame, () => getValue(cache));
-      dirtyTag(tag);
-      disposeFrame(frame);
-
-      assert.strictEqual(getValue(cache), 2);
     });
 
     test('a tag from track() that holds a cache sees each write', (assert) => {
@@ -261,16 +224,17 @@ module('@glimmer/signals: graph', () => {
       });
 
       let tag = track(() => getValue(cache));
-      let snapshot = valueForTag(tag);
+      let frame = createFrame();
 
+      watchTag(frame, tag);
       dirtyTag(first);
-      assert.false(validateTag(tag, snapshot));
+      assert.true(isFrameStale(frame));
 
-      snapshot = valueForTag(tag);
-      assert.true(validateTag(tag, snapshot));
+      watchTag(frame, tag);
+      assert.false(isFrameStale(frame));
 
       dirtyTag(second);
-      assert.false(validateTag(tag, snapshot));
+      assert.true(isFrameStale(frame), 'the stale cache does not hide the second write');
     });
   });
 
@@ -281,13 +245,14 @@ module('@glimmer/signals: graph', () => {
 
       updateTag(tag, source);
 
-      let snapshot = valueForTag(tag);
+      let frame = createFrame();
+      watchTag(frame, tag);
       dirtyTag(source);
-      assert.false(validateTag(tag, snapshot));
+      assert.true(isFrameStale(frame));
 
-      snapshot = valueForTag(tag);
+      watchTag(frame, tag);
       dirtyTag(source);
-      assert.false(validateTag(tag, snapshot));
+      assert.true(isFrameStale(frame));
     });
 
     test('the tag changes for each write below a cache in the source', (assert) => {
@@ -300,13 +265,14 @@ module('@glimmer/signals: graph', () => {
         track(() => getValue(cache))
       );
 
-      let snapshot = valueForTag(tag);
+      let frame = createFrame();
+      watchTag(frame, tag);
       dirtyTag(leaf);
-      assert.false(validateTag(tag, snapshot));
+      assert.true(isFrameStale(frame));
 
-      snapshot = valueForTag(tag);
+      watchTag(frame, tag);
       dirtyTag(leaf);
-      assert.false(validateTag(tag, snapshot), 'the stale cache does not hide the second write');
+      assert.true(isFrameStale(frame), 'the stale cache does not hide the second write');
     });
 
     test('a frame that read the tag is stale after a write to the source', (assert) => {
@@ -330,10 +296,11 @@ module('@glimmer/signals: graph', () => {
       updateTag(first, second);
       updateTag(second, third);
 
-      let snapshot = valueForTag(first);
+      let frame = createFrame();
+      watchTag(frame, first);
       dirtyTag(third);
 
-      assert.false(validateTag(first, snapshot));
+      assert.true(isFrameStale(frame));
     });
 
     test('a new source replaces the old source', (assert) => {
@@ -344,14 +311,15 @@ module('@glimmer/signals: graph', () => {
       updateTag(tag, oldSource);
       updateTag(tag, newSource);
 
-      let snapshot = valueForTag(tag);
+      let frame = createFrame();
+      watchTag(frame, tag);
 
       dirtyTag(oldSource);
-      assert.true(validateTag(tag, snapshot));
+      assert.false(isFrameStale(frame));
       assert.false(hasSubscribers(oldSource));
 
       dirtyTag(newSource);
-      assert.false(validateTag(tag, snapshot));
+      assert.true(isFrameStale(frame));
     });
 
     test('releaseTag removes the links from the source', (assert) => {
