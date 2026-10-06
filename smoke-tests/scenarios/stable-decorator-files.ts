@@ -55,8 +55,17 @@ export const stableDecoratorFiles = {
       'tracked-object-tag-test.js': `
         import { module, test } from 'qunit';
         import { tracked } from '@glimmer/tracking';
-        import { tagForObject } from '@ember/-internals/metal';
-        import { createFrame, isFrameStale, watchTag } from '@glimmer/signals';
+        import { createCache, getValue } from '@glimmer/tracking/primitives/cache';
+        import { consumeTag, tagForObject } from '@ember/-internals/metal';
+
+        function countRuns(obj) {
+          let runs = 0;
+
+          return createCache(() => {
+            consumeTag(tagForObject(obj));
+            return ++runs;
+          });
+        }
 
         // {{#each-in}} and ObjectProxy depend on the object's own tag, which
         // every form of @tracked must dirty when it is set.
@@ -66,11 +75,10 @@ export const stableDecoratorFiles = {
               @tracked count = 0;
             }
             let obj = new Example();
-            let tag = tagForObject(obj);
-            let frame = createFrame();
-            watchTag(frame, tag);
+            let cache = countRuns(obj);
+            assert.strictEqual(getValue(cache), 1);
             obj.count = 1;
-            assert.true(isFrameStale(frame));
+            assert.strictEqual(getValue(cache), 2);
           });
 
           test('setting a tracked accessor dirties the object tag', function(assert) {
@@ -78,11 +86,10 @@ export const stableDecoratorFiles = {
               @tracked accessor count = 0;
             }
             let obj = new Example();
-            let tag = tagForObject(obj);
-            let frame = createFrame();
-            watchTag(frame, tag);
+            let cache = countRuns(obj);
+            assert.strictEqual(getValue(cache), 1);
             obj.count = 1;
-            assert.true(isFrameStale(frame));
+            assert.strictEqual(getValue(cache), 2);
           });
         });
       `,

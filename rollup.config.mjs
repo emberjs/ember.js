@@ -277,6 +277,22 @@ function rolledUpPackages() {
 // ember-source. That is, other packages could actually depend on the copies of
 // these that we publish.
 export function exposedDependencies() {
+  let deps = exposedAndPrivateDependencies();
+
+  for (let name of privatePackages()) {
+    delete deps[name];
+  }
+
+  return deps;
+}
+
+// these packages are dependencies of the exposed ones, and no code outside of
+// ember-source can import them.
+function privatePackages() {
+  return ['@glimmer/signals'];
+}
+
+function exposedAndPrivateDependencies() {
   return {
     'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
     rsvp: require.resolve('rsvp/lib/rsvp.js'),
@@ -310,6 +326,9 @@ export function hiddenDependencies() {
       'module'
     ).path,
     '@handlebars/parser': resolve(packageCache.appRoot, 'packages/@handlebars/parser/lib/index.js'),
+    ...Object.fromEntries(
+      privatePackages().map((name) => [name, exposedAndPrivateDependencies()[name]])
+    ),
     'alien-signals/system': resolve(
       findFromProject('@glimmer/signals', 'alien-signals').root,
       'esm/system.mjs'

@@ -366,7 +366,6 @@
       "@glimmer/program/index.js": "ember-source/@glimmer/program/index.js",
       "@glimmer/reference/index.js": "ember-source/@glimmer/reference/index.js",
       "@glimmer/runtime/index.js": "ember-source/@glimmer/runtime/index.js",
-      "@glimmer/signals/index.js": "ember-source/@glimmer/signals/index.js",
       "@glimmer/tracking/index.js": "ember-source/@glimmer/tracking/index.js",
       "@glimmer/tracking/primitives/cache/index.js": "ember-source/@glimmer/tracking/primitives/cache/index.js",
       "@glimmer/util/index.js": "ember-source/@glimmer/util/index.js",
