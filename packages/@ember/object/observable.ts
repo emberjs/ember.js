@@ -76,6 +76,7 @@ export type { ObserverMethod } from '@ember/object/observable-internal';
   resulting value of the computed property is unchanged. This is necessary
   because computed properties are not computed until `get` is called.
 
+  @deprecated
   @class Observable
   @public
 */
