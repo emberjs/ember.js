@@ -331,6 +331,40 @@ function neverEqual(): boolean {
   return false;
 }
 
+function readCell(cell: TrackedValue<unknown>): unknown {
+  let value = cell.value;
+
+  // Add the tag of the returned value if it is an array, since arrays
+  // should always cause updates if they are consumed and then changed
+  if (Array.isArray(value) || isEmberArray(value)) {
+    consumeTag(tagFor(value, '[]'));
+  }
+
+  return value;
+}
+
+function writeCell(
+  self: object,
+  key: string | symbol,
+  cell: TrackedValue<unknown>,
+  newValue: unknown,
+  hasEquals: boolean
+): void {
+  if (DEBUG) {
+    // TrackedValue has the same assertion, but it cannot name the object
+    // and the key.
+    debug.assertTagNotConsumed?.(tagFor(self, key), self, key);
+  }
+
+  if (!hasEquals) {
+    cell.value = newValue;
+  } else if (!cell.set(newValue)) {
+    return;
+  }
+
+  dirtyTagFor(self, SELF_TAG);
+}
+
 function descriptorForField(
   [target, key, desc]: ElementDescriptor,
   options?: { equals?: (a: any, b: any) => boolean; description?: string }
@@ -366,15 +400,7 @@ function descriptorForField(
       cell = createCell(this, hasInitializer ? initializer!.call(this) : undefined);
     }
 
-    let value = cell.value;
-
-    // Add the tag of the returned value if it is an array, since arrays
-    // should always cause updates if they are consumed and then changed
-    if (Array.isArray(value) || isEmberArray(value)) {
-      consumeTag(tagFor(value, '[]'));
-    }
-
-    return value;
+    return readCell(cell);
   }
 
   function set(this: object, newValue: unknown): void {
@@ -389,19 +415,7 @@ function descriptorForField(
       );
     }
 
-    if (DEBUG) {
-      // TrackedValue has the same assertion, but it cannot name the object
-      // and the key.
-      debug.assertTagNotConsumed?.(tagFor(this, key), this, key);
-    }
-
-    if (equals === undefined) {
-      cell.value = newValue;
-    } else if (!cell.set(newValue)) {
-      return;
-    }
-
-    dirtyTagFor(this, SELF_TAG);
+    writeCell(this, key, cell, newValue, equals !== undefined);
   }
 
   let newDesc = {
@@ -457,29 +471,30 @@ function tracked2023(
       });
       return;
     case 'accessor': {
-      let equals = options?.equals;
+      let name = dec.context.name;
+      let hasEquals = options?.equals !== undefined;
+      let cellOptions = {
+        equals: options?.equals ?? neverEqual,
+        description: options?.description,
+      };
+
+      // The storage of the accessor holds the TrackedValue, so a read or a
+      // write needs no map lookup.
       return {
+        init(this: object, initial: unknown) {
+          return new TrackedValue(initial, cellOptions, tagFor(this, name) as UpdatableTag);
+        },
         get(this: object) {
-          consumeTag(tagFor(this, dec.context.name));
-          let value = dec.value.get.call(this);
-          if (Array.isArray(value) || isEmberArray(value)) {
-            consumeTag(tagFor(value, '[]'));
-          }
-          return value;
+          return readCell(dec.value.get.call(this) as TrackedValue<unknown>);
         },
         set(this: object, value: unknown) {
-          if (
-            equals !== undefined &&
-            equals(
-              untrack(() => dec.value.get.call(this)),
-              value
-            )
-          ) {
-            return;
-          }
-          dirtyTagFor(this, dec.context.name);
-          dirtyTagFor(this, SELF_TAG);
-          return dec.value.set.call(this, value);
+          writeCell(
+            this,
+            name,
+            dec.value.get.call(this) as TrackedValue<unknown>,
+            value,
+            hasEquals
+          );
         },
       };
     }
