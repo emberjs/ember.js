@@ -78,10 +78,6 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
     return (this.#get ??= () => this.value);
   }
 
-  set get(fn: () => Value) {
-    this.#get = fn;
-  }
-
   /**
    * Function short-hand for assigning `value`.
    *
@@ -90,10 +86,6 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
    */
   get set(): (value: Value) => boolean {
     return (this.#set ??= (value) => this.#write(value));
-  }
-
-  set set(fn: (value: Value) => boolean) {
-    this.#set = fn;
   }
 
   /**
@@ -105,10 +97,6 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
     });
   }
 
-  set update(fn: (updater: (value: Value) => Value) => void) {
-    this.#update = fn;
-  }
-
   /**
    * Prevents further updates, making the TrackedValue behave as a
    * ReadOnlyReactive.
@@ -117,10 +105,6 @@ export class TrackedValue<Value = unknown> implements Reactive<Value> {
     return (this.#freeze ??= () => {
       this.#isFrozen = true;
     });
-  }
-
-  set freeze(fn: () => void) {
-    this.#freeze = fn;
   }
 
   #write(value: Value): boolean {
