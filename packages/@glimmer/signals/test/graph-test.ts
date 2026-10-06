@@ -10,9 +10,11 @@ import {
   endFrame,
   getValue,
   isFrameStale,
+  isTagFresh,
   releaseTag,
   type TagNode,
   track,
+  trackInto,
   updateTag,
   watchTag,
 } from '@glimmer/signals';
@@ -319,6 +321,49 @@ module('@glimmer/signals: graph', () => {
       assert.false(hasSubscribers(oldSource));
 
       dirtyTag(newSource);
+      assert.true(isFrameStale(frame));
+    });
+
+    test('a subscriber that links to a stale tag follows the next source only', (assert) => {
+      let tag = createTag();
+      let first = createTag();
+      let second = createTag();
+      let frame = createFrame();
+
+      trackInto(tag, () => consumeTag(first));
+      watchTag(frame, tag);
+
+      dirtyTag(first);
+      assert.true(isFrameStale(frame));
+      assert.false(isTagFresh(tag));
+
+      watchTag(frame, tag);
+      trackInto(tag, () => consumeTag(second));
+
+      assert.true(isTagFresh(tag));
+
+      dirtyTag(first);
+      assert.false(isFrameStale(frame), 'the old source has no link');
+
+      dirtyTag(second);
+      assert.true(isFrameStale(frame));
+    });
+
+    test('a subscriber sees a second write when the tag stays stale', (assert) => {
+      let tag = createTag();
+      let source = createTag();
+      let frame = createFrame();
+
+      updateTag(tag, source);
+      watchTag(frame, tag);
+
+      dirtyTag(source);
+      assert.true(isFrameStale(frame));
+
+      watchTag(frame, tag);
+      assert.false(isFrameStale(frame));
+
+      dirtyTag(source);
       assert.true(isFrameStale(frame));
     });
 

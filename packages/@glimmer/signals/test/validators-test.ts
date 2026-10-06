@@ -2,7 +2,6 @@ import { DEBUG } from '@glimmer/env';
 import { testOverrideGlobalContext } from '@glimmer/global-context';
 import type { Tag, TagNode } from '@glimmer/signals';
 import {
-  combine,
   CONSTANT_TAG,
   createFrame,
   createTag,
@@ -167,7 +166,7 @@ module('@glimmer/signals: validators', () => {
       let tag1 = createTag();
       let tag2 = createTag();
 
-      let combined = combine([tag1, tag2]);
+      let combined = [tag1, tag2];
 
       let snapshot = watch(combined);
       dirtyTag(tag1);
@@ -183,7 +182,7 @@ module('@glimmer/signals: validators', () => {
         let tag1 = createTag();
         let tag2 = createTag();
 
-        let combined = combine([tag1, tag2]);
+        let combined = [tag1, tag2];
 
         assert.throws(
           () => dirtyTag(combined),
@@ -195,7 +194,7 @@ module('@glimmer/signals: validators', () => {
         let tag1 = createTag();
         let tag2 = createTag();
 
-        let combined = combine([tag1, tag2]);
+        let combined = [tag1, tag2];
 
         assert.throws(
           () => updateTag(combined, tag1),

@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import type { Tag } from '@glimmer/interfaces';
+import type { Tag, TagNode as TagNodeInterface } from '@glimmer/interfaces';
 import { scheduleRevalidate } from '@glimmer/global-context';
 import { createReactiveSystem } from 'alien-signals/system';
 import type { Link, ReactiveNode } from 'alien-signals/system';
@@ -31,25 +31,18 @@ const PENDING = 32;
 const STALE = DIRTY | PENDING;
 
 /**
- * - TAG: a value that code can write. It has subscribers and no dependencies.
- * - LIST: a set of tags. It is not in the graph. A subscriber links to its members.
+ * - TAG: a value that code can write. A TAG can follow other tags (`updateTag`).
  * - COMPUTED: a cached function (`createCache`, compute references).
- * - FRAME: a block of updating opcodes that the VM runs again when it is stale.
- * - WATCHER: forwards the writes of its dependencies to one TAG (`updateTag`).
- * - COLLECTOR: an open `track()` frame. It becomes a LIST at the end.
+ * - FRAME: a subscriber that its owner runs again, or links again, when it is stale.
  */
 const TAG_KIND = 0;
-const LIST_KIND = 1;
 const COMPUTED_KIND = 2;
 const FRAME_KIND = 3;
-const WATCHER_KIND = 4;
-const COLLECTOR_KIND = 5;
-const CONSTANT_KIND = 6;
 
 /**
  * One class for all kinds keeps the graph walk of alien-signals monomorphic.
  */
-export class TagNode implements ReactiveNode, Tag {
+export class TagNode implements ReactiveNode, TagNodeInterface {
   deps: Link | undefined = undefined;
   depsTail: Link | undefined = undefined;
   subs: Link | undefined = undefined;
@@ -58,19 +51,7 @@ export class TagNode implements ReactiveNode, Tag {
   kind: number;
 
   /**
-   * LIST, COLLECTOR: the members.
-   */
-  tags: TagNode[] | undefined = undefined;
-
-  /**
-   * - TAG: its watcher.
-   * - WATCHER: its tag.
-   */
-  peer: TagNode | undefined = undefined;
-
-  /**
-   * - COLLECTOR: its id.
-   * - other kinds: the id of the last collector that took this tag.
+   * The number of the last walk that passed this node.
    */
   mark = 0;
 
@@ -80,6 +61,11 @@ export class TagNode implements ReactiveNode, Tag {
    * No write can reach such a node, so it is stale until its next run.
    */
   forced = false;
+
+  /**
+   * TAG: `true` after a write to the tag, or to a tag that it follows.
+   */
+  stale = false;
 
   /**
    * FRAME: `true` when an owner removes the links with `disposeFrame`.
@@ -106,9 +92,11 @@ const SUB_STACK: (TagNode | undefined)[] = [];
  */
 let cycle = 0;
 
-let collectorId = 0;
-
-const FIRED: TagNode[] = [];
+/**
+ * A walk over the dependencies of a node skips a node that it passed before.
+ * Two tags can follow each other, so a walk can come back to its start.
+ */
+let walk = 0;
 
 const { link, unlink, propagate } = createReactiveSystem({
   /**
@@ -120,8 +108,11 @@ const { link, unlink, propagate } = createReactiveSystem({
     return true;
   },
 
-  notify(watcher: ReactiveNode) {
-    FIRED.push(watcher as TagNode);
+  /**
+   * `propagate` calls this for a TAG that follows other tags.
+   */
+  notify(tag: ReactiveNode) {
+    (tag as TagNode).stale = true;
   },
 
   unwatched(node: ReactiveNode) {
@@ -167,24 +158,13 @@ export function createTag(): TagNode {
   return new TagNode(TAG_KIND, MUTABLE);
 }
 
-export const CONSTANT_TAG = new TagNode(CONSTANT_KIND, MUTABLE);
+/**
+ * A tag that never changes: a list of tags with no member.
+ */
+export const CONSTANT_TAG: Tag = Object.freeze([]);
 
 export function isConstTag(tag: Tag): boolean {
   return tag === CONSTANT_TAG;
-}
-
-export function combine(tags: Tag[]): Tag {
-  switch (tags.length) {
-    case 0:
-      return CONSTANT_TAG;
-    case 1:
-      return tags[0] as Tag;
-    default: {
-      let list = new TagNode(LIST_KIND, MUTABLE);
-      list.tags = tags as TagNode[];
-      return list;
-    }
-  }
 }
 
 export function dirtyTag(_tag: Tag, disableConsumptionAssertion?: boolean): void {
@@ -199,219 +179,147 @@ export function dirtyTag(_tag: Tag, disableConsumptionAssertion?: boolean): void
   }
 
   writes++;
+  tag.stale = true;
 
   let subs = tag.subs;
 
   if (subs !== undefined) {
     propagate(subs, false);
-
-    if (FIRED.length > 0) {
-      flushWatchers();
-    }
   }
 
   scheduleRevalidate();
 }
 
 /**
- * Writes the tag of each watcher that the last `propagate` reached.
- *
- * A watcher fires one time for each write, so two tags that forward to each
- * other do not loop.
- */
-function flushWatchers(): void {
-  for (let i = 0; i < FIRED.length; i++) {
-    let tag = (FIRED[i] as TagNode).peer;
-
-    let subs = tag?.subs;
-
-    if (subs !== undefined) {
-      propagate(subs, false);
-    }
-  }
-
-  for (let i = 0; i < FIRED.length; i++) {
-    let watcher = FIRED[i] as TagNode;
-    watcher.flags = watcher.peer === undefined ? 0 : WATCHING;
-  }
-
-  FIRED.length = 0;
-}
-
-/**
- * Makes `tag` change when `source` changes.
+ * Makes `tag` change when `source` changes, and makes `tag` fresh.
  *
  * A later call replaces the source of the tag.
  */
-export function updateTag(_tag: Tag, _source: Tag): void {
+export function updateTag(_tag: Tag, source: Tag): void {
   let tag = _tag as TagNode;
-  let source = _source as TagNode;
 
   if (DEBUG && tag.kind !== TAG_KIND) {
     throw new Error('Attempted to update a tag that was not updatable');
   }
 
-  let watcher = tag.peer;
-
-  if (watcher === undefined) {
-    if (source === CONSTANT_TAG) return;
-
-    watcher = tag.peer = new TagNode(WATCHER_KIND, WATCHING);
-    watcher.peer = tag;
-  }
-
   cycle++;
-  watcher.depsTail = undefined;
-  linkLeaves(watcher, source);
-  purgeDeps(watcher);
-  watcher.flags = WATCHING;
+  walk++;
+  tag.depsTail = undefined;
+  linkLeaves(tag, source);
+  purgeDeps(tag);
+  settle(tag);
 }
 
 /**
- * Removes the links from other tags to the watcher of `tag`.
+ * `false` after a write to the tag, or to a tag that it follows.
  *
- * A watcher that stays linked keeps memory and slows each write of its sources.
+ * `updateTag`, `freshenTag`, and a run between `beginFrame` and `endFrame`
+ * make the tag fresh again.
  */
-export function releaseTag(_tag: Tag): void {
-  let watcher = (_tag as TagNode).peer;
+export function isTagFresh(tag: Tag): boolean {
+  return !(tag as TagNode).stale;
+}
 
-  if (watcher !== undefined) {
-    disposeDeps(watcher);
-  }
+export function freshenTag(tag: Tag): void {
+  (tag as TagNode).stale = false;
 }
 
 /**
- * Links `sub` to each TAG that `tag` reads at this time.
+ * Removes the links from other tags to `tag`.
  *
- * A stale COMPUTED between a TAG and `sub` stops `propagate`,
- * so the links go to the TAGs directly.
+ * A tag that stays linked keeps memory and slows each write to its sources.
  */
-function linkLeaves(sub: TagNode, tag: TagNode): void {
-  switch (tag.kind) {
-    case TAG_KIND:
-      link(tag, sub, cycle);
-      break;
+export function releaseTag(tag: Tag): void {
+  disposeDeps(tag as TagNode);
+}
 
-    case CONSTANT_KIND:
-      break;
+/**
+ * `propagate` stops at a node that it marked before.
+ *
+ * A TAG has no function to run again, so it can let the next write through at once.
+ * Its `stale` field keeps the fact that a write reached it.
+ */
+function linkLeaf(sub: TagNode, tag: TagNode): void {
+  if ((tag.flags & STALE) !== 0) {
+    tag.flags = MUTABLE | WATCHING;
+  }
 
-    default: {
-      let tags = tag.tags;
+  link(tag, sub, cycle);
+}
 
-      if (
-        tag.forced ||
-        (tag.kind === COMPUTED_KIND && tag.deps === undefined && tag.flags !== MUTABLE)
-      ) {
-        sub.forced = true;
-      }
-
-      if (tags !== undefined) {
-        for (let i = 0; i < tags.length; i++) {
-          linkLeaves(sub, tags[i] as TagNode);
-        }
-      } else {
-        for (let dep = tag.deps; dep !== undefined; dep = dep.nextDep) {
-          linkLeaves(sub, dep.dep as TagNode);
-        }
-      }
+/**
+ * Links `sub` to each TAG that `tag` depends on at this time.
+ *
+ * A stale COMPUTED or FRAME between a TAG and `sub` stops `propagate`,
+ * so `sub` needs its own link to each TAG below it.
+ *
+ * The caller increments `walk` first.
+ */
+function linkLeaves(sub: TagNode, tag: Tag): void {
+  if (Array.isArray(tag)) {
+    for (let i = 0; i < tag.length; i++) {
+      linkLeaves(sub, tag[i] as Tag);
     }
+    return;
+  }
+
+  let node = tag as TagNode;
+
+  if (node === sub) return;
+
+  if (node.kind === TAG_KIND) {
+    linkLeaf(sub, node);
+    return;
+  }
+
+  if (node.mark === walk) return;
+
+  node.mark = walk;
+
+  if (node.forced || (node.deps === undefined && node.flags !== MUTABLE)) {
+    sub.forced = true;
+  }
+
+  for (let dep = node.deps; dep !== undefined; dep = dep.nextDep) {
+    linkLeaves(sub, dep.dep as TagNode);
   }
 }
 
-function linkTag(sub: TagNode, tag: TagNode): void {
-  switch (tag.kind) {
-    case TAG_KIND:
-      link(tag, sub, cycle);
-      break;
-
-    case LIST_KIND: {
-      let tags = unwrap(tag.tags);
-
-      for (let i = 0; i < tags.length; i++) {
-        linkTag(sub, tags[i] as TagNode);
-      }
-      break;
+function linkTag(sub: TagNode, tag: Tag): void {
+  if (Array.isArray(tag)) {
+    for (let i = 0; i < tag.length; i++) {
+      linkTag(sub, tag[i] as Tag);
     }
-
-    case COMPUTED_KIND:
-    case FRAME_KIND:
-      if (tag.flags === MUTABLE && !tag.forced) {
-        if (tag.deps !== undefined) link(tag, sub, cycle);
-      } else {
-        linkLeaves(sub, tag);
-      }
-      break;
+    return;
   }
-}
 
-function collect(collector: TagNode, tag: TagNode): void {
-  if (tag.mark !== collector.mark) {
-    tag.mark = collector.mark;
-    unwrap(collector.tags).push(tag);
+  let node = tag as TagNode;
+
+  if (node === sub) return;
+
+  if (node.kind === TAG_KIND) {
+    linkLeaf(sub, node);
+  } else if (node.flags === MUTABLE && !node.forced) {
+    if (node.deps !== undefined) link(node, sub, cycle);
+  } else {
+    walk++;
+    linkLeaves(sub, node);
   }
 }
 
 export function consumeTag(_tag: Tag): void {
   let sub = activeSub;
-  let tag = _tag as TagNode;
 
-  if (sub === undefined || tag === CONSTANT_TAG) return;
+  if (sub === undefined) return;
 
   if (DEBUG) {
-    unwrap(debug.markTagAsConsumed)(tag);
+    unwrap(debug.markTagAsConsumed)(_tag);
   }
 
-  if (sub.kind === COLLECTOR_KIND) {
-    collect(sub, tag);
-  } else {
-    linkTag(sub, tag);
-  }
+  linkTag(sub, _tag);
 }
 
 //////////
-
-export function beginTrackFrame(debuggingContext?: string | false): void {
-  SUB_STACK.push(activeSub);
-
-  let collector = new TagNode(COLLECTOR_KIND, MUTABLE);
-  collector.tags = [];
-  collector.mark = ++collectorId;
-  activeSub = collector;
-
-  if (DEBUG) {
-    unwrap(debug.beginTrackingTransaction)(debuggingContext);
-  }
-}
-
-export function endTrackFrame(): Tag {
-  let collector = activeSub;
-
-  if (DEBUG) {
-    if (SUB_STACK.length === 0 || collector?.kind !== COLLECTOR_KIND) {
-      throw new Error('attempted to close a tracking frame, but one was not open');
-    }
-
-    unwrap(debug.endTrackingTransaction)();
-  }
-
-  activeSub = SUB_STACK.pop();
-
-  return collectorToTag(collector as TagNode);
-}
-
-function collectorToTag(collector: TagNode): TagNode {
-  let tags = collector.tags as TagNode[];
-
-  if (tags.length === 0) {
-    return CONSTANT_TAG;
-  } else if (tags.length === 1) {
-    return tags[0] as TagNode;
-  }
-
-  collector.kind = LIST_KIND;
-
-  return collector;
-}
 
 export function beginUntrackFrame(): void {
   SUB_STACK.push(activeSub);
@@ -441,7 +349,8 @@ export function resetTracking(): string | void {
 }
 
 function abandon(sub: TagNode | undefined): void {
-  if (sub !== undefined && (sub.kind === FRAME_KIND || sub.kind === COMPUTED_KIND)) {
+  if (sub !== undefined) {
+    sub.stale = true;
     sub.flags = sub.flags === 0 ? 0 : MUTABLE | DIRTY;
   }
 }
@@ -450,18 +359,36 @@ export function isTracking(): boolean {
   return activeSub !== undefined;
 }
 
-export function track(block: () => void, debugLabel?: string | false): Tag {
-  beginTrackFrame(debugLabel);
-
-  let tag;
+/**
+ * Runs `block` with `tag` as the subscriber.
+ *
+ * After the run, `tag` is fresh, and it changes when a tag that `block` read changes.
+ */
+export function trackInto(tag: Tag, block: () => void, debugLabel?: string | false): void {
+  beginFrame(tag as TagNode, debugLabel);
 
   try {
     block();
   } finally {
-    tag = endTrackFrame();
+    endFrame();
+  }
+}
+
+/**
+ * Runs `block` in a new frame, and returns the frame.
+ */
+export function track(block: () => void, debugLabel?: string | false): TagNode {
+  let frame = createFrame();
+
+  beginFrame(frame, debugLabel);
+
+  try {
+    block();
+  } finally {
+    endFrame();
   }
 
-  return tag;
+  return frame;
 }
 
 export function untrack<T>(callback: () => T): T {
@@ -506,7 +433,7 @@ export function endFrame(): void {
   let frame = activeSub;
 
   if (DEBUG) {
-    if (frame?.kind !== FRAME_KIND) {
+    if (frame === undefined || frame.kind === COMPUTED_KIND) {
       throw new Error('attempted to close a frame, but one was not open');
     }
 
@@ -530,16 +457,19 @@ export function endFrame(): void {
  */
 function settle(node: TagNode): void {
   if ((node.flags & PENDING) !== 0) {
+    walk++;
+
     for (let dep = node.deps; dep !== undefined; dep = dep.nextDep) {
       let tag = dep.dep as TagNode;
 
-      if (tag.kind !== TAG_KIND && (tag.flags & STALE) !== 0) {
+      if ((tag.flags & STALE) !== 0) {
         linkLeaves(node, tag);
       }
     }
   }
 
-  node.flags = MUTABLE;
+  node.stale = false;
+  node.flags = node.kind === TAG_KIND && node.deps !== undefined ? MUTABLE | WATCHING : MUTABLE;
 }
 
 /**
@@ -572,12 +502,8 @@ export function consumeFrame(frame: TagNode): void {
     unwrap(debug.markTagAsConsumed)(frame);
   }
 
-  if (sub.kind === COLLECTOR_KIND) {
-    collect(sub, frame);
-  } else {
-    if (frame.forced) sub.forced = true;
-    if (frame.deps !== undefined) link(frame, sub, cycle);
-  }
+  if (frame.forced) sub.forced = true;
+  if (frame.deps !== undefined) link(frame, sub, cycle);
 }
 
 export function disposeFrame(frame: TagNode): void {
@@ -593,11 +519,11 @@ export function disposeFrame(frame: TagNode): void {
  * Use it for a subscriber that has no block to run:
  * the owner asks `isFrameStale` later, and then calls this function again.
  */
-export function watchTag(frame: TagNode, _tag: Tag): void {
+export function watchTag(frame: TagNode, tag: Tag): void {
   cycle++;
   frame.depsTail = undefined;
   frame.forced = false;
-  linkTag(frame, _tag as TagNode);
+  linkTag(frame, tag);
   purgeDeps(frame);
   frame.flags = MUTABLE;
 }
@@ -628,12 +554,8 @@ export function readComputed<T>(node: TagNode): T {
       unwrap(debug.markTagAsConsumed)(node);
     }
 
-    if (sub.kind === COLLECTOR_KIND) {
-      collect(sub, node);
-    } else {
-      if (node.forced) sub.forced = true;
-      if (node.deps !== undefined) link(node, sub, cycle);
-    }
+    if (node.forced) sub.forced = true;
+    if (node.deps !== undefined) link(node, sub, cycle);
   }
 
   return node.value as T;

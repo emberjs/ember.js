@@ -4,7 +4,7 @@ import { isObject } from '@ember/-internals/utils/lib/spec';
 import { assert } from '@ember/debug';
 import type { Tag } from '@glimmer/interfaces';
 import type { TagMeta } from '@glimmer/signals/lib/meta';
-import { combine, createTag, updateTag } from '@glimmer/signals/lib/tags';
+import { createTag, isTagFresh, updateTag } from '@glimmer/signals/lib/tags';
 import { tagMetaFor } from '@glimmer/signals/lib/meta';
 import { objectAt } from './object-at';
 import { tagForProperty } from './tags';
@@ -39,7 +39,7 @@ export function getChainTagsForKeys(
     getChainTags(tags, obj, key, tagMeta, meta);
   }
 
-  return combine(tags);
+  return tags;
 }
 
 export function getChainTagsForKey(
@@ -48,7 +48,7 @@ export function getChainTagsForKey(
   tagMeta: TagMeta,
   meta: Meta | null
 ): Tag {
-  return combine(getChainTags([], obj, key, tagMeta, meta));
+  return getChainTags([], obj, key, tagMeta, meta);
 }
 
 function getChainTags(
@@ -171,7 +171,7 @@ function getChainTags(
       // we create a lazy chain lookup, and the next time the CP is calculated,
       // it will update that lazy chain.
       let instanceMeta = currentMeta!.source === current ? currentMeta! : metaFor(current);
-      if (instanceMeta.isCachedFor(segment)) {
+      if (instanceMeta.hasCacheFor(segment) && isTagFresh(propertyTag)) {
         current = instanceMeta.valueFor(segment);
       } else {
         // use metaFor here to ensure we have the meta for the instance

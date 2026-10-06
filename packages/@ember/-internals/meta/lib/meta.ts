@@ -3,9 +3,7 @@ import toString from '@ember/-internals/utils/lib/to-string';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import { createFrame, disposeFrame, isFrameStale, watchTag } from '@glimmer/signals/lib/tags';
-import type { TagNode } from '@glimmer/signals/lib/tags';
-import type { Tag, UpdatableTag } from '@glimmer/interfaces';
+import type { UpdatableTag } from '@glimmer/interfaces';
 
 type ObjMap<T> = { [key: string]: T };
 
@@ -100,7 +98,7 @@ export class Meta {
   /** @internal */
   _values: ObjMap<unknown> | undefined;
   /** @internal */
-  _watches: ObjMap<TagNode | undefined> | undefined;
+  _cached: ObjMap<boolean> | undefined;
   /** @internal */
   source: object;
   /** @internal */
@@ -128,7 +126,7 @@ export class Meta {
     this._mixins = undefined;
     this._lazyChains = undefined;
     this._values = undefined;
-    this._watches = undefined;
+    this._cached = undefined;
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
@@ -171,7 +169,7 @@ export class Meta {
   }
 
   /** @internal */
-  _getOrCreateOwnMap(key: '_values' | '_watches' | '_lazyChains') {
+  _getOrCreateOwnMap(key: '_values' | '_cached' | '_lazyChains') {
     return this[key] || (this[key] = Object.create(null));
   }
 
@@ -223,50 +221,21 @@ export class Meta {
   }
 
   /**
-   * `true` when `setCachedFor` ran for the key, also when the value is stale.
+   * `true` when `valueFor` holds a computed value for the key.
+   *
+   * The value is valid while the tag of the property is fresh.
    *
    * @internal
    */
   hasCacheFor(key: string): boolean {
-    let watches = this._watches;
+    let cached = this._cached;
 
-    return watches !== undefined && watches[key] !== undefined;
-  }
-
-  /**
-   * `true` when the value from `valueFor` is valid:
-   * no write reached the tag since `setCachedFor`.
-   *
-   * @internal
-   */
-  isCachedFor(key: string): boolean {
-    let watches = this._watches;
-    let watch = watches !== undefined ? watches[key] : undefined;
-
-    return watch !== undefined && !isFrameStale(watch);
-  }
-
-  /**
-   * Marks the value for the key as valid until the next write to `tag`.
-   *
-   * @internal
-   */
-  setCachedFor(key: string, tag: Tag) {
-    let watches = this._getOrCreateOwnMap('_watches');
-    let watch = (watches[key] ??= createFrame());
-
-    watchTag(watch, tag);
+    return cached !== undefined && cached[key] === true;
   }
 
   /** @internal */
-  clearCachedFor(key: string) {
-    let watches = this._watches;
-    let watch = watches !== undefined ? watches[key] : undefined;
-
-    if (watch !== undefined) {
-      disposeFrame(watch);
-      watches![key] = undefined;
-    }
+  setCachedFor(key: string, isCached: boolean) {
+    this._getOrCreateOwnMap('_cached')[key] = isCached;
   }
 
   /** @internal */

@@ -178,7 +178,16 @@ if (DEBUG) {
   };
 
   debug.markTagAsConsumed = (_tag: Tag) => {
-    if (!CONSUMED_TAGS || CONSUMED_TAGS.has(_tag)) return;
+    if (!CONSUMED_TAGS) return;
+
+    let mark = debug.markTagAsConsumed!;
+
+    if (Array.isArray(_tag)) {
+      _tag.forEach(mark);
+      return;
+    }
+
+    if (CONSUMED_TAGS.has(_tag)) return;
 
     CONSUMED_TAGS.set(_tag, getLast(asPresentArray(TRANSACTION_STACK)));
 
@@ -187,23 +196,10 @@ if (DEBUG) {
      *
      * The fields belong to `TagNode` in `tags.ts`.
      */
-    let node = _tag as unknown as {
-      kind: number;
-      tags: Tag[] | undefined;
-      deps: { dep: Tag; nextDep: unknown } | undefined;
-      peer: Tag | undefined;
-    };
-
-    let mark = debug.markTagAsConsumed!;
-
-    node.tags?.forEach(mark);
+    let node = _tag as unknown as { deps: { dep: Tag; nextDep: unknown } | undefined };
 
     for (let dep = node.deps; dep !== undefined; dep = dep.nextDep as typeof dep) {
       mark(dep.dep);
-    }
-
-    if (node.kind === 0 && node.peer !== undefined) {
-      mark(node.peer);
     }
   };
 

@@ -1,3 +1,4 @@
+import type { Reference } from '@glimmer/reference/lib/reference';
 import { DEBUG } from '@glimmer/env';
 import type {
   Arguments,
@@ -7,7 +8,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Tag } from '@glimmer/interfaces';
 import { valueForRef } from '@glimmer/reference/lib/reference';
-import { track } from '@glimmer/signals/lib/tags';
+import { CONSTANT_TAG, untrack } from '@glimmer/signals/lib/tags';
 
 const CUSTOM_TAG_FOR = new WeakMap<object, (obj: object, key: string) => Tag>();
 
@@ -29,30 +30,32 @@ function convertToInt(prop: number | string | symbol): number | null {
   return num % 1 === 0 ? num : null;
 }
 
+/**
+ * A reference is a node of the reactive graph, so it is the tag of its argument.
+ *
+ * The read makes sure that the reference has its dependencies.
+ */
+function tagForRef(ref: Reference): Tag {
+  untrack(() => valueForRef(ref));
+
+  return ref as unknown as Tag;
+}
+
 function tagForNamedArg(namedArgs: CapturedNamedArguments, key: string): Tag {
-  return track(() => {
-    if (key in namedArgs) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      valueForRef(namedArgs[key]!);
-    }
-  });
+  let ref = namedArgs[key];
+
+  return ref === undefined ? CONSTANT_TAG : tagForRef(ref);
 }
 
 function tagForPositionalArg(positionalArgs: CapturedPositionalArguments, key: string): Tag {
-  return track(() => {
-    if (key === '[]') {
-      // consume all of the tags in the positional array
-      positionalArgs.forEach(valueForRef);
-    }
+  if (key === '[]') {
+    return positionalArgs.map(tagForRef);
+  }
 
-    const parsed = convertToInt(key);
+  const parsed = convertToInt(key);
+  const ref = parsed === null ? undefined : positionalArgs[parsed];
 
-    if (parsed !== null && parsed >= 0 && parsed < positionalArgs.length) {
-      // consume the tag of the referenced index
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      valueForRef(positionalArgs[parsed]!);
-    }
-  });
+  return ref === undefined ? CONSTANT_TAG : tagForRef(ref);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- @fixme

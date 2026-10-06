@@ -20,13 +20,7 @@ import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
 import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
-import {
-  combine,
-  consumeTag,
-  createFrame,
-  isFrameStale,
-  watchTag,
-} from '@glimmer/signals/lib/tags';
+import { consumeTag, createFrame, isFrameStale, watchTag } from '@glimmer/signals/lib/tags';
 import type { TagNode } from '@glimmer/signals/lib/tags';
 import { tagFor } from '@glimmer/signals/lib/meta';
 import type { Tag } from '@glimmer/interfaces';
@@ -403,8 +397,8 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
       watchTag(watch, arrangedContentTag);
 
       if (isObject(arrangedContent)) {
-        this._lengthTag = combine([arrangedContentTag, tagForProperty(arrangedContent, 'length')]);
-        this._arrTag = combine([arrangedContentTag, tagForProperty(arrangedContent, '[]')]);
+        this._lengthTag = [arrangedContentTag, tagForProperty(arrangedContent, 'length')];
+        this._arrTag = [arrangedContentTag, tagForProperty(arrangedContent, '[]')];
       } else {
         this._lengthTag = this._arrTag = arrangedContentTag;
       }

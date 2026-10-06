@@ -11,7 +11,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager/lib/util/capabilities';
-import { CONSTANT_TAG, consumeTag } from '@glimmer/signals/lib/tags';
+import { consumeTag, createFrame } from '@glimmer/signals/lib/tags';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
@@ -65,7 +65,7 @@ class RootComponentManager extends CurlyComponentManager {
     let bucket = new ComponentStateBucket(
       component,
       null,
-      CONSTANT_TAG,
+      createFrame(),
       finalizer,
       hasWrappedElement,
       isInteractive

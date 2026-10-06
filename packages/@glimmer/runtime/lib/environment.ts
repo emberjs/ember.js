@@ -16,7 +16,7 @@ import type {
 import { expect } from '@glimmer/debug-util/lib/platform-utils';
 import assert from '@glimmer/debug-util/lib/assert';
 import { ProgramImpl } from '@glimmer/program/lib/program';
-import { track, updateTag } from '@glimmer/signals/lib/tags';
+import { trackInto } from '@glimmer/signals/lib/tags';
 
 import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
@@ -63,14 +63,14 @@ class TransactionImpl implements Transaction {
       let modifierTag = manager.getTag(state);
 
       if (modifierTag !== null) {
-        let tag = track(
+        trackInto(
+          modifierTag,
           () => manager.install(state),
           DEBUG &&
             `- While rendering:\n  (instance of a \`${
               definition.resolvedName || manager.getDebugName(definition.state)
             }\` modifier)`
         );
-        updateTag(modifierTag, tag);
       } else {
         manager.install(state);
       }
@@ -80,14 +80,14 @@ class TransactionImpl implements Transaction {
       let modifierTag = manager.getTag(state);
 
       if (modifierTag !== null) {
-        let tag = track(
+        trackInto(
+          modifierTag,
           () => manager.update(state),
           DEBUG &&
             `- While rendering:\n  (instance of a \`${
               definition.resolvedName || manager.getDebugName(definition.state)
             }\` modifier)`
         );
-        updateTag(modifierTag, tag);
       } else {
         manager.update(state);
       }

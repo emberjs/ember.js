@@ -17,7 +17,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { setCustomTagFor } from '@glimmer/manager/lib/util/args-proxy';
 import type { UpdatableTag, Tag } from '@glimmer/interfaces';
-import { combine, updateTag } from '@glimmer/signals/lib/tags';
+import { updateTag } from '@glimmer/signals/lib/tags';
 import { tagFor, tagMetaFor } from '@glimmer/signals/lib/meta';
 
 export function contentFor<T>(proxy: ProxyMixin<T>): T | null {
@@ -57,7 +57,7 @@ function customTagForProxy(proxy: object, key: string, addMandatorySetter?: bool
       tags.push(tagForProperty(content, key, addMandatorySetter));
     }
 
-    return combine(tags);
+    return tags;
   }
 }
 

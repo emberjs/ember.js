@@ -15,7 +15,7 @@ import {
 } from '@ember/-internals/metal/lib/decorator-util';
 import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/interfaces';
-import { consumeTag, track, updateTag } from '@glimmer/signals/lib/tags';
+import { consumeTag, trackInto } from '@glimmer/signals/lib/tags';
 import { tagFor } from '@glimmer/signals/lib/meta';
 
 let wrapGetterSetter = function (target: object, key: string, desc: PropertyDescriptor) {
@@ -31,12 +31,11 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
       let propertyTag = tagFor(this, key) as UpdatableTag;
       let ret;
 
-      let tag = track(() => {
+      trackInto(propertyTag, () => {
         ret = originalGet!.call(this);
       });
 
-      updateTag(propertyTag, tag);
-      consumeTag(tag);
+      consumeTag(propertyTag);
 
       return ret;
     };
@@ -129,12 +128,11 @@ export function dependentKeyCompat(
       let propertyTag = tagFor(this, dec.context.name as string) as UpdatableTag;
       let ret;
 
-      let tag = track(() => {
+      trackInto(propertyTag, () => {
         ret = dec.value.call(this);
       });
 
-      updateTag(propertyTag, tag);
-      consumeTag(tag);
+      consumeTag(propertyTag);
 
       return ret;
     };

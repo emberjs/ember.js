@@ -5,7 +5,14 @@ import inspect from '@ember/debug/lib/inspect';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import type { UpdatableTag } from '@glimmer/interfaces';
-import { consumeTag, track, untrack, updateTag } from '@glimmer/signals/lib/tags';
+import {
+  consumeTag,
+  freshenTag,
+  isTagFresh,
+  trackInto,
+  untrack,
+  updateTag,
+} from '@glimmer/signals/lib/tags';
 import { tagFor, tagMetaFor } from '@glimmer/signals/lib/meta';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import type {
@@ -395,7 +402,7 @@ export class ComputedProperty extends ComputedDescriptor {
 
     let ret;
 
-    if (meta.isCachedFor(keyName)) {
+    if (meta.hasCacheFor(keyName) && isTagFresh(propertyTag)) {
       ret = meta.valueFor(keyName);
     } else {
       // For backwards compatibility, we only throw if the CP has any dependencies. CPs without dependencies
@@ -414,10 +421,12 @@ export class ComputedProperty extends ComputedDescriptor {
 
       if (_dependentKeys !== undefined) {
         updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
+      } else {
+        freshenTag(propertyTag);
       }
 
       meta.setValueFor(keyName, ret);
-      meta.setCachedFor(keyName, propertyTag);
+      meta.setCachedFor(keyName, true);
 
       finishLazyChains(meta, keyName, ret);
     }
@@ -488,9 +497,11 @@ export class ComputedProperty extends ComputedDescriptor {
 
       if (_dependentKeys !== undefined) {
         updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
+      } else {
+        freshenTag(propertyTag);
       }
 
-      meta.setCachedFor(keyName, propertyTag);
+      meta.setCachedFor(keyName, true);
     } finally {
       endPropertyChanges();
     }
@@ -532,7 +543,7 @@ export class ComputedProperty extends ComputedDescriptor {
   /* called before property is overridden */
   teardown(obj: object, keyName: string, meta: Meta): void {
     if (meta.hasCacheFor(keyName)) {
-      meta.clearCachedFor(keyName);
+      meta.setCachedFor(keyName, false);
       meta.setValueFor(keyName, undefined);
     }
 
@@ -549,7 +560,7 @@ class AutoComputedProperty extends ComputedProperty {
 
     let ret;
 
-    if (meta.isCachedFor(keyName)) {
+    if (meta.hasCacheFor(keyName) && isTagFresh(propertyTag)) {
       ret = meta.valueFor(keyName);
     } else {
       assert(
@@ -560,14 +571,12 @@ class AutoComputedProperty extends ComputedProperty {
       let { _getter } = this;
 
       // Create a tracker that absorbs any trackable actions inside the CP
-      let tag = track(() => {
+      trackInto(propertyTag, () => {
         ret = _getter!.call(obj, keyName);
       });
 
-      updateTag(propertyTag, tag);
-
       meta.setValueFor(keyName, ret);
-      meta.setCachedFor(keyName, propertyTag);
+      meta.setCachedFor(keyName, true);
 
       finishLazyChains(meta, keyName, ret);
     }
