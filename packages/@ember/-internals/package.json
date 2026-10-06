@@ -12,6 +12,7 @@
     "./error-handling": "./error-handling/index.ts",
     "./glimmer": "./glimmer/index.ts",
     "./glimmer/lib/components/internal": "./glimmer/lib/components/internal.ts",
+    "./glimmer/lib/renderers": "./glimmer/lib/renderers.ts",
     "./meta": "./meta/index.ts",
     "./metal": "./metal/index.ts",
     "./owner": "./owner/index.ts",
