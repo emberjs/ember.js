@@ -5,6 +5,7 @@ import {
   equalTokens,
   equalsElement,
   runTask,
+  defineSimpleModifier,
 } from 'internal-test-helpers';
 
 import { tracked } from '@ember/-internals/metal';
@@ -1646,6 +1647,114 @@ moduleFor(
       runTask(() => this.rerender());
 
       this.assertText('foo component');
+    }
+
+    ['@test class is applied before modifiers are installed'](assert) {
+      assert.expect(1);
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div class={{@class}} {{this.inserted}}></div>'),
+          class extends GlimmerComponent {
+            inserted = defineSimpleModifier((element) => {
+              assert.ok(element.classList.contains('foo-bar'), 'the class is on the element');
+            });
+          }
+        )
+      );
+
+      this.render('{{foo-bar class="foo-bar"}}');
+    }
+
+    ['@test child triggers revalidate during parent destruction (GH#13846)']() {
+      this.owner.register(
+        'component:x-select',
+        setComponentTemplate(
+          precompileTemplate('<select>{{yield this}}</select>'),
+          class extends GlimmerComponent {
+            @tracked value = null;
+
+            options = [];
+
+            updateValue() {
+              let last = this.options[this.options.length - 1];
+
+              this.value = last ? last.args.value : null;
+            }
+
+            registerOption(option) {
+              this.options.push(option);
+            }
+
+            unregisterOption(option) {
+              this.options.splice(this.options.indexOf(option), 1);
+
+              this.updateValue();
+            }
+          }
+        )
+      );
+
+      this.owner.register(
+        'component:x-option',
+        setComponentTemplate(
+          precompileTemplate('<option selected={{this.selected}}>{{yield}}</option>'),
+          class extends GlimmerComponent {
+            constructor(owner, args) {
+              super(owner, args);
+
+              this.args.select.registerOption(this);
+            }
+
+            get selected() {
+              return this.args.value === this.args.select.value;
+            }
+
+            willDestroy() {
+              super.willDestroy();
+
+              this.args.select.unregisterOption(this);
+            }
+          }
+        )
+      );
+
+      this.render(strip`
+      {{#x-select as |select|}}
+        {{#x-option value="1" select=select}}1{{/x-option}}
+        {{#x-option value="2" select=select}}2{{/x-option}}
+      {{/x-select}}
+    `);
+
+      this.teardown();
+
+      this.assert.ok(true, 'no errors during teardown');
+    }
+
+    ['@test setting a tracked property in willDestroy does not assert (GH#14273)'](assert) {
+      assert.expect(2);
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{#if this.showFoo}}things{{/if}}`),
+          class extends GlimmerComponent {
+            @tracked showFoo = true;
+
+            willDestroy() {
+              super.willDestroy();
+
+              this.showFoo = false;
+              assert.ok(true, 'willDestroy was fired');
+            }
+          }
+        )
+      );
+
+      this.render(`{{foo-bar}}`);
+
+      this.assertText('things');
     }
   }
 );

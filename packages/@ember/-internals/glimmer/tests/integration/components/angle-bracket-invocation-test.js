@@ -169,6 +169,71 @@ moduleFor(
       this.assertText('Hola');
     }
 
+    '@test it can have a custom id attribute and it is bound'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate('<div ...attributes>hello</div>'),
+          class extends Component {}
+        )
+      );
+
+      this.render('<FooBar id={{this.customId}} />', {
+        customId: 'bizz',
+      });
+
+      this.assertElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { id: 'bizz' },
+        content: 'hello',
+      });
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'customId', 'bar'));
+
+      this.assertElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { id: 'bar' },
+        content: 'hello',
+      });
+
+      runTask(() => set(this.context, 'customId', 'bizz'));
+
+      this.assertElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { id: 'bizz' },
+        content: 'hello',
+      });
+    }
+
+    '@test it reflects named arguments on `this.args`'() {
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(precompileTemplate('{{this.args.foo}}'), class extends Component {})
+      );
+
+      this.render('<FooBar @foo={{this.model.bar}} />', {
+        model: {
+          bar: 'Hola',
+        },
+      });
+
+      this.assertText('Hola');
+
+      runTask(() => this.rerender());
+
+      this.assertText('Hola');
+
+      runTask(() => this.context.set('model.bar', 'Hello'));
+
+      this.assertText('Hello');
+
+      runTask(() => this.context.set('model', { bar: 'Hola' }));
+
+      this.assertText('Hola');
+    }
+
     '@test it can render a basic component with a block'() {
       this.owner.register(
         'component:foo-bar',
