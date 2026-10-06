@@ -5,7 +5,14 @@ import type { Revision } from './validators';
 
 import { debug } from './debug';
 import { unwrap } from './utils';
-import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './validators';
+import {
+  combine,
+  CONSTANT_TAG,
+  isCombinationOf,
+  isConstTag,
+  validateTag,
+  valueForTag,
+} from './validators';
 
 /**
  * A tag with the `slot` field that `Tracker#add` reads and writes.
@@ -92,7 +99,12 @@ class Tracker {
     this.size = size + 1;
   }
 
-  combine(): Tag {
+  /**
+   * `previous` is the tag that this frame produced the last time it ran.
+   * If the frame consumed the same tags again, the result is `previous`,
+   * which keeps its memoized revision and needs no allocation.
+   */
+  combine(previous: Tag | undefined): Tag {
     let { tags, size } = this;
     let result: Tag;
 
@@ -100,6 +112,8 @@ class Tracker {
       result = CONSTANT_TAG;
     } else if (size === 1) {
       result = tags[0] as Tag;
+    } else if (previous !== undefined && isCombinationOf(previous, tags, size)) {
+      result = previous;
     } else {
       result = combine(tags.slice(0, size) as Tag[]);
     }
@@ -192,7 +206,13 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
   }
 }
 
-export function endTrackFrame(): Tag {
+/**
+ * Closes the current frame and returns its combined tag.
+ *
+ * Pass the tag that the same frame produced the last time it ran.
+ * If the frame consumed the same tags again, that tag is the result.
+ */
+export function endTrackFrame(previous?: Tag): Tag {
   let current = CURRENT_TRACKER;
 
   if (DEBUG) {
@@ -205,7 +225,7 @@ export function endTrackFrame(): Tag {
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  return unwrap(current).combine();
+  return unwrap(current).combine(previous);
 }
 
 export function beginUntrackFrame(): void {
@@ -313,7 +333,7 @@ export function getValue<T>(cache: Cache<T>): T | undefined {
     try {
       cache[LAST_VALUE] = fn();
     } finally {
-      tag = endTrackFrame();
+      tag = endTrackFrame(tag);
       cache[TAG] = tag;
       cache[SNAPSHOT] = valueForTag(tag);
       consumeTag(tag);
