@@ -8,8 +8,10 @@ import { unwrap } from './utils';
 import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './validators';
 
 /**
- * A tag of this package. Each tag class declares `slot`:
- * the index of the tag in the tracker that took it last.
+ * A tag with the `slot` field that `Tracker#add` reads and writes.
+ *
+ * Each tag class of this package declares the field,
+ * so a tag has it from its construction.
  */
 interface ConsumedTag extends Tag {
   slot: number;
@@ -18,28 +20,61 @@ interface ConsumedTag extends Tag {
 /**
  * An object that tracks @tracked properties that were consumed.
  *
- * Trackers are pooled by frame depth (see `beginTrackFrame`),
- * so a tracker holds no tag after its frame ends.
+ * A tracker collects the tags that one tracking frame consumes.
+ * When the frame ends, `combine()` makes one tag from them.
+ *
+ * A tracker is not made for each frame.
+ * `beginTrackFrame` takes it from `TRACKER_POOL`, so the next frame
+ * at the same depth uses the same tracker again.
  */
 class Tracker {
   /**
-   * The consumed tags. `size` counts the live entries.
+   * The tags that the current frame consumed.
+   * Each tag is at the position of its first consumption.
+   * `size` is the number of tags.
    *
-   * The array never shrinks, because a write to `length` is a slow path in V8,
-   * and this code runs for every frame.
+   *   tags:  [ a, b, c, null, null ]
+   *   size:  3
+   *
+   * The entries from `size` up are `null`.
+   * They are left from an earlier frame that consumed more tags.
+   *
+   * The array never shrinks.
+   * A write to `length` is a slow path in V8, and this code runs for every frame.
    */
   private tags: (Tag | null)[] = [];
   private size = 0;
 
   /**
-   * A tag keeps the index at which a tracker took it last.
-   * If this tracker has the tag at that index, the frame consumed the tag before,
-   * so a tag that the frame consumes again costs one comparison.
+   * Adds a tag to the frame, one time.
    *
-   * The index can come from another tracker.
-   * The entry at that index is then another tag or no tag, and this tracker takes the tag.
-   * So a tag that a nested frame takes at another index, between two consumptions
-   * of this frame, is taken two times. A combined tag with a duplicate has the same revision.
+   * A frame can consume one tag many times,
+   * so the tracker must find out if it has the tag already.
+   * It does that with no `Set`: the tag keeps the index
+   * at which a tracker put it last, in `tag.slot`.
+   *
+   *   consume a    tags: [ a ]       a.slot = 0
+   *   consume b    tags: [ a, b ]    b.slot = 1
+   *   consume a    tags[a.slot] is a, so the frame has it. No change.
+   *
+   * The check is `tags[tag.slot] === tag`.
+   * It compares the entry with the tag, so a `slot` that is out of date
+   * cannot hide a tag. The worst case is a tag that is in the array two times.
+   *
+   * That case needs a nested frame.
+   * The nested frame has its own tracker, and that tracker also writes `slot`:
+   *
+   *   1. outer frame consumes a, b    outer tags: [ a, b ]       b.slot = 1
+   *   2. inner frame consumes b       inner tags: [ b ]          b.slot = 0
+   *   3. outer frame consumes b       outer tags[0] is a, not b.
+   *                                   outer tags: [ a, b, b ]    b.slot = 2
+   *
+   * The duplicate does no harm.
+   * The revision of a combined tag is the highest revision of its tags,
+   * and a tag that is there two times does not change the highest.
+   *
+   * If the inner frame puts the tag at the index that the outer frame used,
+   * the check of the outer frame still passes, and there is no duplicate.
    */
   add(tag: Tag) {
     if (tag === CONSTANT_TAG) return;
@@ -74,6 +109,18 @@ class Tracker {
     return result;
   }
 
+  /**
+   * Empties the tracker for the next frame at the same depth.
+   *
+   *   before:  tags: [ a, b, c ]             size: 3
+   *   after:   tags: [ null, null, null ]    size: 0
+   *
+   * The entries must be `null`, and not only ignored:
+   *
+   * - an entry that stays is a match for `tags[tag.slot] === tag`,
+   *   so the next frame would not add that tag
+   * - an entry that stays keeps its tag alive after the frame
+   */
   clear(): void {
     let { tags, size } = this;
 
@@ -103,10 +150,27 @@ let CURRENT_TRACKER: Tracker | null = null;
 const OPEN_TRACK_FRAMES: (Tracker | null)[] = [];
 
 /**
- * Frames are strictly nested, so the tracker of a frame at depth `n` is free
- * when that frame ends. One tracker for each depth is enough.
+ * The trackers, by the depth of the frame that uses them.
+ * The depth of a frame is the number of frames that are open around it.
  *
- * An untrack frame takes a depth but no tracker, so the pool can have holes.
+ * Frames are strictly nested: a frame ends before the frame around it ends.
+ * So two frames at the same depth are never open at the same time,
+ * and one tracker for each depth is enough.
+ *
+ *   frame A              depth 0    TRACKER_POOL[0]
+ *   |- frame B           depth 1    TRACKER_POOL[1]
+ *   |  `- frame C        depth 2    TRACKER_POOL[2]
+ *   `- frame D           depth 1    TRACKER_POOL[1], which B used before
+ *
+ * A tracker is made the first time that a frame opens at its depth.
+ * After that, a frame at that depth allocates no tracker.
+ *
+ * An untrack frame takes a depth but no tracker, so the pool can have holes:
+ *
+ *   untrack frame        depth 0    no tracker
+ *   `- frame E           depth 1    TRACKER_POOL[1]
+ *
+ *   TRACKER_POOL:  [ <empty>, tracker ]
  */
 const TRACKER_POOL: (Tracker | undefined)[] = [];
 
@@ -163,6 +227,12 @@ export function resetTracking(): string | void {
     OPEN_TRACK_FRAMES.pop();
   }
 
+  /**
+   * A frame that did not end left its tags in its tracker.
+   * The next frame at that depth must start with no tag.
+   *
+   * The pool can have holes, see `TRACKER_POOL`.
+   */
   for (let tracker of TRACKER_POOL) {
     if (tracker !== undefined) {
       tracker.clear();
