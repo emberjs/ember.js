@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import {
   beginTrackFrame,
+  beginUntrackFrame,
   consumeTag,
   createCache,
   createTag,
@@ -10,6 +11,7 @@ import {
   getValue,
   isConst,
   isTracking,
+  resetTracking,
   track,
   trackedData,
   untrack,
@@ -250,6 +252,90 @@ module('@glimmer/validator: tracking', () => {
       snapshot = valueForTag(combined);
       dirtyTag(tag2);
       assert.notOk(validateTag(combined, snapshot));
+    });
+
+    test('it returns the tag itself if the frame consumed one tag many times', (assert) => {
+      let tag = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag);
+      consumeTag(tag);
+
+      assert.strictEqual(endTrackFrame(), tag);
+    });
+
+    test('it keeps a tag that a nested frame consumed between two consumptions', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+
+      consumeTag(tag1);
+      consumeTag(tag2);
+
+      beginTrackFrame();
+      consumeTag(tag1);
+      let inner = endTrackFrame();
+
+      consumeTag(tag1);
+
+      let outer = endTrackFrame();
+
+      assert.strictEqual(inner, tag1);
+
+      let snapshot = valueForTag(outer);
+      dirtyTag(tag1);
+      assert.notOk(validateTag(outer, snapshot));
+
+      snapshot = valueForTag(outer);
+      dirtyTag(tag2);
+      assert.notOk(validateTag(outer, snapshot));
+    });
+
+    test('it takes a tag one time if nested frames consume it at the same index', (assert) => {
+      let tag = createTag();
+
+      beginTrackFrame();
+
+      for (let i = 0; i < 3; i++) {
+        beginTrackFrame();
+        consumeTag(tag);
+        consumeTag(endTrackFrame());
+      }
+
+      assert.strictEqual(endTrackFrame(), tag);
+    });
+
+    test('it does not keep the tags of a frame that did not end', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+
+      beginTrackFrame();
+      consumeTag(tag1);
+
+      resetTracking();
+
+      beginTrackFrame();
+      consumeTag(tag2);
+
+      assert.strictEqual(endTrackFrame(), tag2);
+    });
+
+    test('it resets after a frame that began inside untrack frames', (assert) => {
+      /**
+       * Deeper than any other test goes,
+       * so these depths have no tracker yet.
+       */
+      for (let i = 0; i < 100; i++) {
+        beginUntrackFrame();
+      }
+
+      beginTrackFrame();
+
+      resetTracking();
+
+      assert.notOk(isTracking());
     });
 
     test('isTracking works within a track', (assert) => {
