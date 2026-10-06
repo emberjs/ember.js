@@ -12,8 +12,6 @@ import {
   schedule,
   scheduleOnce,
   throttle,
-  // private, supported via `declare module` below
-  _backburner,
 } from '@ember/runloop';
 import EmberObject, { action } from '@ember/object';
 import type { AnyFn, MethodsOf } from '@ember/-internals/utility-types';

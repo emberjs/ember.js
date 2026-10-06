@@ -64,6 +64,22 @@
 export { renderSettled } from '@ember/-internals/glimmer/lib/base-renderer';
 
 /**
+  Registers an observer notified at the edges of rendering work: called
+  with `true` when rendering (or destruction) becomes outstanding, and
+  with `false` when it has completed. Test infrastructure uses this to
+  represent rendering as a test waiter, so settledness stays a single
+  push-based protocol rather than something that must be polled.
+
+  Only one observer is registered at a time; registering replaces the
+  previous one.
+
+  @method _onRenderSettledChange
+  @param {Function} observer called with `true` on pending, `false` on quiet
+  @private
+*/
+export { _onRenderSettledChange } from '@ember/-internals/glimmer/lib/base-renderer';
+
+/**
  * Render a component into a DOM element.
  *
  * See also: [RFC#1099](https://github.com/emberjs/rfcs/blob/main/text/1099-renderComponent.md)

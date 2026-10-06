@@ -1,4 +1,3 @@
-import { Promise } from 'rsvp';
 import type { Dict } from './core';
 import type { ResolvedRouteInfo, RouteInfo } from './route-info';
 import type InternalRouteInfo from './route-info';
@@ -48,7 +47,7 @@ function resolveOneRouteInfo<R>(
   let callback = (resolvedRouteInfo: ResolvedRouteInfo<R>) =>
     proceed(currentState, transition, resolvedRouteInfo);
 
-  return routeInfo.resolve(transition).then(callback, null, currentState.promiseLabel('Proceed'));
+  return routeInfo.resolve(transition).then(callback, null);
 }
 
 function proceed<R>(
@@ -122,9 +121,9 @@ export default class TransitionState<R = unknown> {
     let errorHandler = (error: Error) => handleError(this, transition, error);
 
     // The prelude RSVP.resolve() async moves us into the promise land.
-    return Promise.resolve(null, this.promiseLabel('Start transition'))
-      .then(callback, null, this.promiseLabel('Resolve route'))
-      .catch(errorHandler, this.promiseLabel('Handle error'))
+    return Promise.resolve(null)
+      .then(callback, null)
+      .catch(errorHandler)
       .then(() => this);
   }
 }

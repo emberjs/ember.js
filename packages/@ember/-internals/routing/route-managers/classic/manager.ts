@@ -15,7 +15,6 @@ import { makeRouteTemplate } from '@ember/-internals/glimmer/lib/component-manag
 import { precompileTemplate } from '@ember/template-compilation';
 import { createConstRef } from '@glimmer/reference/lib/reference';
 import { CLASSIC_OUTLET } from './outlet-component';
-import { Promise as RSVPPromise } from 'rsvp';
 import { cancel, scheduleOnce } from '@ember/runloop';
 import type { InternalRouteInfo, RouteInfo, Transition } from 'router_js';
 import { throwIfAborted } from 'router_js';
@@ -132,7 +131,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
       return false;
     });
 
-    return RSVPPromise.all(ancestorPromises)
+    return Promise.all(ancestorPromises)
       .then(() => {
         throwIfAborted(transition);
       })
@@ -167,7 +166,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
         // Re-read the stash rather than closing over `resolvedModel`: classic
         // router.js lets afterModel swap the model out by writing into
         // `transition.resolvedModels`.
-        return RSVPPromise.resolve(result).then(() => transition.resolvedModels![routeInfo.name]);
+        return Promise.resolve(result).then(() => transition.resolvedModels![routeInfo.name]);
       });
   }
 
@@ -215,7 +214,7 @@ export class ClassicRouteManager implements RouteManagerWithClassicInterop<Class
   }
 
   getInvokable(bucket: ClassicRouteBucket): Promise<object> {
-    return RSVPPromise.resolve(buildClassicInvokable(bucket));
+    return Promise.resolve(buildClassicInvokable(bucket));
   }
 
   qp(bucket: ClassicRouteBucket): QueryParamMeta {
