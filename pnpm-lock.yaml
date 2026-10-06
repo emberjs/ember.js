@@ -1063,6 +1063,9 @@ importers:
       '@ember/object':
         specifier: workspace:*
         version: link:../object
+      '@ember/scheduler':
+        specifier: workspace:*
+        version: link:../scheduler
       '@ember/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1078,6 +1081,15 @@ importers:
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/scheduler:
+    dependencies:
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers

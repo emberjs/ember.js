@@ -1,13 +1,24 @@
 import * as RSVP from 'rsvp';
+import { ENV } from '@ember/-internals/environment/lib/env';
 import { _backburner, _rsvpErrorQueue } from '@ember/runloop';
 import { getDispatchOverride } from '@ember/-internals/error-handling';
 import { assert } from '@ember/debug';
 
-RSVP.configure('async', (callback: unknown, promise: unknown) => {
+RSVP.configure('async', (callback: Function, promise: unknown) => {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    // RFC 0957: Ember no longer routes RSVP's flush through the runloop;
+    // resolution happens on the microtask queue like a native promise.
+    void Promise.resolve().then(() => callback(promise));
+    return;
+  }
   _backburner.schedule('actions', null, callback, promise);
 });
 
-RSVP.configure('after', (cb: unknown) => {
+RSVP.configure('after', (cb: () => void) => {
+  if (ENV._USE_ASYNC_SCHEDULER) {
+    setTimeout(cb, 0);
+    return;
+  }
   _backburner.schedule(_rsvpErrorQueue, null, cb);
 });
 
