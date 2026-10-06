@@ -60,9 +60,9 @@ There are a few systems at play for autotracking:
             5. the low-level VM is the actual VirtualMachine which inteprets all our opcodes -- it iterates until there are no more opcodes
 
 - **read: count**
-    - access `count`, which  `@tracked`'s getter [defers to `trackedData`](https://github.com/emberjs/ember.js/blob/132b66a768a9cabd461908682ef331f35637d5e9/packages/%40ember/-internals/metal/lib/tracked.ts#L155C28-L155C39)
-        - the [`trackedData`](https://github.com/emberjs/ember.js/blob/132b66a768a9cabd461908682ef331f35637d5e9/packages/%40ember/-internals/metal/lib/tracked.ts#L5) is in `@glimmer/validator` instead of using tags _directly_.
-            - `trackedData` calls `consumeTag` when [the value is access](https://github.com/glimmerjs/glimmer-vm/blob/main/packages/%40glimmer/validator/lib/tracked-data.ts#L15)
+    - access `count`, which goes to the getter of `@tracked` in `packages/@ember/-internals/metal/lib/tracked.ts`
+        - the getter reads the `TrackedValue` that holds the field for this instance (`packages/@glimmer/validator/lib/tracked-value.ts`)
+            - `TrackedValue` calls `consumeTag` when the value is read
             - `consumeTag` adds the tag to the [`CURRENT_TRACKER`](https://github.com/glimmerjs/glimmer-vm/blob/main/packages/%40glimmer/validator/lib/tracking.ts#L116)
                 - this is so that when any `{{ }}` regions of a template "detect" a dirty tag, they can individually re-render
 
