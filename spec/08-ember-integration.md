@@ -1561,7 +1561,7 @@ DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:228-
   "last validated" point in the reactivity timeline.
 - A renderer is *valid* iff it is destroyed, has no roots, or no tracked storage has changed
   since its last validated point (the renderer's own `isValid` method, `base-renderer.ts:374-378`;
-  not the **[Proposed]** primitive of §07-2.2.2).
+  not the **[Proposed]** `isValid` of §07-2.2.3).
 - **[Dev]** If a render throws, that root's render function is replaced by one that only logs
   `Attempted to rerender, but the Ember application has had an unrecoverable error occur during render. You should reload the application after fixing the cause of the error.`
   (`errorLoopTransaction`, `base-renderer.ts:43-67`); the renderer is marked validated so it

@@ -30,9 +30,9 @@ The feedback (now removed from §00-0.7.10; the full text is in `git show 391b17
       effects; conclusion updated.
 - [x] §07-2.5 Signals comparison and §07-2.6 updated.
 - [x] New §07-2.7 (non-normative): asynchronous consumption, strategies and the prototype.
-- [ ] §07 intro, §07-0 terminology (invalidation hook is now internal), §07-1.1/§07-1.10
+- [x] §07 intro, §07-0 terminology (invalidation hook is now internal), §07-1.1/§07-1.10
       wording where they mention the hook, §07-3.3 (`@cached` as sugar), §07-3.4 (compat),
       §07-5 open questions for the new review points.
-- [ ] Other chapters: §00-0.4, §00-0.7.10 (replace the feedback with the new review points),
+- [x] Other chapters: §00-0.4, §00-0.7.10 (replace the feedback with the new review points),
       §08 (the reference to §07-2.2.2), any other `§07-2.2.x` references.
-- [ ] STATUS.md: decision, task row, next steps. `xref.py` and `check-citations.py` clean.
+- [x] STATUS.md: decision, task row, next steps. `xref.py` and `check-citations.py` clean.

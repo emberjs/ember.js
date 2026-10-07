@@ -64,5 +64,5 @@ it *is* behavior and must be specified.
 | `04-wire-format.md` | **Informative.** The current serialized precompiled template format and the meaning of each construct. Documents the current encoding only; wire format is not a compatibility requirement (§00-0.2) |
 | `05-runtime-semantics.md` | Evaluation: content, attributes/properties, elements, blocks, control flow keywords, component invocation, yield, curried values, destruction & ordering, rehydration/SSR |
 | `06-managers.md` | Component, helper, modifier manager APIs (public + internal capabilities), default managers, arguments, owner |
-| `07-reactivity.md` | Abstract reactivity model, `tracked`, caches, update semantics, proposed consumption primitive |
+| `07-reactivity.md` | Abstract reactivity model, `tracked`, caches, update semantics, proposed reactive core (`cached`, `effect`) |
 | `08-ember-integration.md` | Ember-specific keywords, built-in helpers/components/modifiers, loose-mode resolution, classic component behaviors, outlets/mount/routing, render entry points |

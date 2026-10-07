@@ -77,6 +77,8 @@ cell ≈ `DirtyableTag`/`UpdatableTag` plus its value slot; computation ≈ `tra
    computation currently depends on the cell.
    *Source:* `DIRTY_TAG` increments the global revision and calls `scheduleRevalidate()`
    unconditionally (`packages/@glimmer/validator/lib/validators.ts:204-227`).
+   Under the **[Proposed]** core the hook is internal: it drives effect scheduling
+   (§07-2.2.5), and the renderer is one of those effects (§07-2.4.10).
 6. Cells have identity. Two reads of "the same" cell (for example `obj.x` twice on the same `obj`)
    consume the same cell. Cells MAY be created lazily on first read or first write. A write to a
    cell that has never been read has no observable effect other than updating the value and
@@ -414,7 +416,7 @@ revalidate once → commit hooks → (if they wrote: another loop) → settle.**
 
 ---
 
-## 07-2 The consumption primitive
+## 07-2 The reactive core
 
 ### 07-2.1 Goals
 
@@ -1734,6 +1736,7 @@ yielder (§07-4.2 "Sharing"; tests
    partial dependency set and keeps `LAST_VALUE`. Later reads silently return the previous (or
    `undefined`) value without rethrowing until a dependency changes (`tracking.ts:173-182`).
    Template computations re-evaluate instead. This looks unintentional, and it is untested.
+   `cached()` inherits it unless item 15 decides otherwise.
 4. **Validity snapshot vs. writes during evaluation.** In production builds, a write to a
    dependency during a computation's own evaluation is invisible to that computation, because
    the snapshot is taken after the frame ends (§07-1.5, item 2). The computation can then stay

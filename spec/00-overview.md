@@ -111,7 +111,7 @@ primary scope (§0.1 "Non-goals").
 | [04 Wire format](./04-wire-format.md) *(informative)* | Serialized template object, template factory contract, block/symbol layout, every opcode, caller/callee binding, version history | `@glimmer/wire-format`, `@glimmer/compiler` pass 2, `@glimmer/opcode-compiler` |
 | [05 Runtime semantics](./05-runtime-semantics.md) | Render model and cursors, expressions, content, elements/attributes, truthiness and control flow, blocks/yield, component invocation, curried values, helpers, modifiers, destruction, runtime errors, SSR & rehydration | `@glimmer/runtime`, `@glimmer/reference`, `@glimmer/node`, integration tests |
 | [06 Managers](./06-managers.md) | Associating values with managers, owners, args proxies, component/helper/modifier manager APIs and capabilities, template-only components, internal capabilities, `@glimmer/component`, destroyables, commit phase | `@glimmer/manager`, `@glimmer/component`, `@glimmer/destroyable`, Ember component managers |
-| [07 Reactivity](./07-reactivity.md) | Abstract reactivity model, proposed consumption primitive, `tracked` in all forms, `@cached`, cache primitives, tracked collections, Ember object-model interop, mapping of template evaluation onto the model, render timing | `@glimmer/validator`, `@glimmer/tracking`, `@ember/-internals/metal`, `@ember/reactive` |
+| [07 Reactivity](./07-reactivity.md) | Abstract reactivity model, proposed reactive core (`cached`, `effect`), `tracked` in all forms, `@cached`, cache primitives, tracked collections, Ember object-model interop, mapping of template evaluation onto the model, render timing | `@glimmer/validator`, `@glimmer/tracking`, `@ember/-internals/metal`, `@ember/reactive` |
 | [08 Ember integration](./08-ember-integration.md) | Built-in helpers/modifiers/components, loose-mode resolution, classic components, `Input`/`Textarea`/`LinkTo`, outlets/routing/engines, renderer & run loop, global-context hooks, trusted HTML, event dispatcher, debug render tree | `@ember/-internals/glimmer`, `@ember/helper`, `@ember/modifier`, `@ember/component`, `@ember/routing` |
 
 ### Reading guide
@@ -130,7 +130,7 @@ Each chapter defines its own terms. These are the cross-cutting ones:
 
 | Term | Defined in |
 |---|---|
-| tracked storage / cell, read/consume, write/invalidate, reactive computation, tracking frame, untracked frame, dependency set, valid/invalid, constant, equality policy, render transaction, commit phase, revalidation, write-after-consume assertion, invalidation hook | §07-0 |
+| tracked storage / cell, read/consume, write/invalidate, reactive computation, tracking frame, untracked frame, dependency set, valid/invalid, constant, equality policy, render transaction, commit phase, revalidation, write-after-consume assertion, invalidation hook, effect | §07-0 |
 | template source, template factory, component definition, template-only component, strict / loose mode, lexical scope, explicit / implicit form | §01-1.1 |
 | evaluation context (self, scope slots, lexical scope values, owner, dynamic scope), block, reactive value, cursor, bounds | §05-1 |
 | keyword, free variable, upvar, lexical variable, resolution | §03-3, §03-4 |
@@ -138,7 +138,7 @@ Each chapter defines its own terms. These are the cross-cutting ones:
 | wire format, serialized template, template block, symbol table | §04 |
 
 Chapters use "**[Proposed]**" to mark new API that this spec introduces. That is chiefly the
-consumption primitive in §07-2.2 (`isValid`, a public `untrack`, `onInvalidate`). Chapter 07
+reactive core in §07-2.2 (`cached`, `effect`, `isValid`, `isConst`, a public `untrack`). Chapter 07
 uses it (§07-2.4) to show that every renderer need can be expressed without references or
 tags. The other chapters describe updates with the abstract model of §07-1 and do not call the
 proposed API. Existing behavior never depends on a **[Proposed]** API.
@@ -325,29 +325,21 @@ guid collisions). The wire format is informative (§0.2), so these are not requi
 
 ### 0.7.10 Proposed API to review
 
-§07-2.2 introduces a **[Proposed]** consumption primitive. It keeps the existing
-`createCache`, `getValue` and `isConst`, and adds `isValid(cache)`, a public `untrack(fn)`
-and a host-level `onInvalidate(listener)`. §07-2.4 uses it to show that updates can be
-described without references or tags; the other chapters rely only on the abstract model
-of §07-1. This is a design decision for the plan's author, not a
-record of existing behavior. Points to review: whether `isValid` of a never-evaluated cache
-should return `false` (while `isConst` throws), whether a parameterless global
-`onInvalidate` is enough or a per-computation watcher is wanted (§07-2.5), and whether
-these should replace the private tag APIs that addons use today (§07-2.6).
+§07-2 proposes a **[Proposed]** reactive core, rebuilt in T14 from the plan author's feedback
+of 2026-10-07 (commit `391b17239c`; `.work/T14-reactive-api.md`):
 
-#### Initial feedback: 
- 
-1. I'd like to incorporate this (proposed but not yet accepted) RFC into our design:
-   https://github.com/NullVoxPopuli/rfcs/blob/1f99b3a673a71014356e0c1743b1eb64cddc1ad0/text/1218-overload-cached-for-non-class-use.md
-   With that, we have a function form of `cached()` to match the function form of `tracked()`. I would want to treat these as the foundational primitives. `isConst` and `isValid` should work on the return value of `cached()`, and `createCache` is not part of our core primivites (it can of course continue to exist for compat, but be implemented in terms of `cached()`. 
+- `tracked(v)` (root state, exists) and `cached(fn)` (derived state, RFC 1218, not yet
+  accepted) are the primitives. `createCache`/`getValue`/`isConst` and the `@cached` decorator
+  remain as thin layers over `cached()` (§07-2.2.6).
+- `isValid(c)` and `isConst(c)` are low-level free functions on `cached()` values (§07-2.2.3).
+- `effect(fn, { schedule })` replaces the earlier global `onInvalidate`. The core schedules
+  stale effects in batches, once, for every effect implementation (§07-2.2.5). The renderer
+  and each modifier are effects (§07-2.4.6, §07-2.4.10).
+- Asynchronous consumption is left to libraries; §07-2.7 builds an asynchronous resource from
+  the core, with two change policies.
 
-   Rationale: `createCache` and `cached` both existing is confusingly redundant. The user-facing `cached()` should be a powerful enough primitive to be *the* primitive, no need for a second underlying layer. `isConst` and `isValid` can be as low-level specialty utilty functions for introspecting cached values. They're not methods because they're low-level and shouldn't be the first thing end users reach for (they should normally stick to just getting the value).
-
-2. One kind of consumption API that current Ember lacks is a way to implement effectful behaviors. This proposal correctly identifies the need for `onInvalidate`, which closes this gap, but in a very coarse way. I can see how it's possible to combine `onInvalidate` and `cached` to build an effectful primitive, but I suspect such a primitive should be in the core. The reason to include it in the core would be to avoid multiple different effectful implementations all debouncing every single tracked write and scheduling their own checking of `isValid` (or re-pulling of a cached value).
-
-  We could do that work once in the core and offer a declarative API for implementing effects that only run when necessary. This would replace the need for the global `onInvalidate`. A renderer like glimmer can use the effectful primitive around its re-rendering logic, thus causing that logic to re-run whenever consumed tracked state changes.
-
-3. Asynchronous consumption tracking: `cached` with a synchronous function argument is nice and can readily track all the consumption that happens inside, based on the actual synchronous stack. The same story would apply to some `effect` variant as alluded to above. But in both cases, it would be nice to also have a story for tracking consumption during asynchronous work. This has nuance in terms of what we want to happen when there are changes (cancellation issues, deciding what remains stable). I don't think we necessary want to commit to one strategy as part of our core, but it would be good to show that our primitives are good enough to build asynchronous reactive resources, as an exploratory exercise.
-
-
-
+A prototype on top of today's `@glimmer/validator` passes tests for each rule
+(`spec/prototype/reactive/`). This is a design decision for the plan's author, not a record of
+existing behavior. Points to review are §07-5 items 14–19: Ember's default effect schedule,
+whether `cached()` should rethrow a stored error, the scheduled (not synchronous) first run,
+ordering within a batch, equality cut-off, and implicit async tracking.

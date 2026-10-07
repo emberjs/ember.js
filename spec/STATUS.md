@@ -2,7 +2,7 @@
 
 This file is the single source of truth for resuming work on the spec. Keep it current: an
 agent or session that has only this file, `plan.md`, and the git history must be able to
-continue the work. Last updated: 2026-09-30.
+continue the work. Last updated: 2026-10-07.
 
 ## Working protocol
 
@@ -37,9 +37,14 @@ continue the work. Last updated: 2026-09-30.
     outside the primary scope; already-published source must run faithfully (§0.1 "Non-goals",
     §01-1.5.6, §02-10). This reverses the earlier note that the re-printing was part
     of the compatibility surface.
-- **Reactivity is spec'd abstractly** (§07-0). The **[Proposed]** consumption primitive is
-  `isValid(cache)`, a public `untrack(fn)`, and a host-level `onInvalidate(listener)`
-  (§07-2.2). It builds on the existing `createCache`, `getValue` and `isConst`.
+- **Reactivity is spec'd abstractly** (§07-0). The **[Proposed]** reactive core (§07-2.2,
+  author's feedback of 2026-10-07, commit `391b17239c`, T14) is `tracked` (root state),
+  `cached(fn)` (derived state, RFC 1218, not yet accepted) and `effect(fn, { schedule })`
+  (consumption, run and batched by the core), plus the free functions `isValid`, `isConst` and
+  `untrack`. `createCache`/`getValue` and `@cached` are compatibility layers over `cached()`.
+  The global `onInvalidate` is gone: the renderer and each modifier are effects. Asynchronous
+  consumption is not in the core; §07-2.7 shows a library can build it. A prototype with tests
+  is in `spec/prototype/reactive/`.
 - **Loose mode and classic components are in scope,** marked **[Loose mode]** or **[Legacy]**.
 - **Author rulings of 2026-09-30** (commit `a135fe1862`):
   - `</template>` cannot appear in a content-tag body, by design: the content tag assumes no
@@ -128,6 +133,7 @@ Run these in order, one at a time.
 | T11 | Author feedback `fa282f6d78` (Q1 ruling, outlet regression test, `action` cleanup) | Opus | `.work/T11-feedback-fa282f6.md` | done |
 | T12 | The ten notes swept into `8e838d47cd`; four bugfix/proposal branches; open-question cleanup | Opus | `.work/T12-cleanup.md` | done; resolved items removed from every list, lists renumbered and references rewritten (`tools/prune-open-questions.py`) |
 | T13 | Merge `origin/main` (`98fa794473`: #21636, #21639, #21641) and follow up | Opus | — | done; 68 citations shifted with `tools/remap-citations.py`, the "after this checkout's base" notes rewritten against the new code |
+| T14 | Author feedback `391b17239c` on the reactive API: `cached()` as the derived primitive, a core `effect`, async exploration | Opus | `.work/T14-reactive-api.md` | done; §07-2 rewritten, prototype + 31 tests, review points §07-5 items 14–19 |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -209,9 +215,9 @@ Suggestions for the plan's author, based on what is still open:
 1. **Decide the remaining "preserve or change" items in §00-0.7.1** (item 1 is resolved).
    The most urgent is the `strict`/`strictMode` option split (item 2; T9a confirmed all three
    behaviors). Each decision changes normative text in the owning chapter.
-2. **Review the [Proposed] consumption primitive** (§07-2.2, the review points in §00-0.7.10).
-   Only chapter 07 uses it. If it is accepted, other chapters could state update rules with it
-   directly; if it is rejected, §07-2.4 needs another way to show sufficiency.
+2. **Review the rebuilt [Proposed] reactive core** (§07-2.2, §07-2.7; review points §07-5
+   items 14–19, summarized in §00-0.7.10). Only chapter 07 uses it. If it is accepted, other
+   chapters could state update rules with it directly.
 3. **Rule on the suspected bugs** in §00-0.7.2–0.7.8, deciding for each whether a new
    implementation must keep it. The babel-vs-runtime differences (§0.7.4) are confirmed by
    running both paths (T9a).
