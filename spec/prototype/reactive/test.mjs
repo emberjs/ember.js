@@ -489,3 +489,115 @@ test('resource: destroy aborts the run and stops watching', async () => {
   await tick();
   assert.equal(signals.length, 1);
 });
+
+// --- a promise-based scheduler strategy (RFC 957) §07-2.8 --------------------------------------
+
+// RFC 957 Example 1, reduced to `render` and `layout`, with the frame driven by the test instead
+// of requestAnimationFrame. Scheduling into `render` while it flushes resolves in this frame.
+class FakeFrameStrategy {
+  frame = null;
+  flushing = null;
+  phase(name) {
+    if (name === 'render' && this.flushing === 'render') return Promise.resolve();
+    this.frame ??= { render: Promise.withResolvers(), layout: Promise.withResolvers() };
+    return this.frame[name].promise;
+  }
+  render() {
+    return this.phase('render');
+  }
+  layout() {
+    return this.phase('layout');
+  }
+  async runFrame(log) {
+    let frame = this.frame;
+    this.frame = null;
+    for (let name of ['render', 'layout']) {
+      this.flushing = name;
+      log.push(`-- ${name}`);
+      frame[name].resolve();
+      await tick(); // drains the microtasks of this phase
+    }
+    this.flushing = null;
+    log.push('-- paint');
+  }
+}
+
+test('RFC 957: effects sharing the renderer schedule run after it, and re-render in the same frame', async () => {
+  let strategy = new FakeFrameStrategy();
+  let renderPhase = (flush) => strategy.render().then(flush);
+  let count = tracked(0);
+  let doubled = tracked(0);
+  let log = [];
+  let renderer = effect(() => void log.push(`render ${count.value}/${doubled.value}`), {
+    schedule: renderPhase,
+  });
+  let user = effect(
+    () => {
+      let c = count.value;
+      log.push(`user ${c}`);
+      untrack(() => (doubled.value = c * 2));
+    },
+    { schedule: renderPhase }
+  );
+  await strategy.runFrame(log);
+  count.value = 1;
+  await strategy.runFrame(log);
+  assert.deepEqual(log, [
+    '-- render', 'render 0/0', 'user 0', '-- layout', '-- paint',
+    '-- render', 'render 1/0', 'user 1', 'render 1/2', '-- layout', '-- paint',
+  ]);
+  destroy(renderer);
+  destroy(user);
+});
+
+function renderingSetup(strategy, { hostPass }) {
+  let a = tracked(0);
+  let dom = { a: 0 };
+  let log = [];
+  let rendererSchedule, userSchedule;
+  if (hostPass) {
+    // The host owns one render pass per frame: the renderer's batch, then user effects.
+    let pending = { renderer: [], user: [] };
+    let passScheduled = false;
+    let pass = () => {
+      passScheduled = false;
+      for (let f of pending.renderer.splice(0)) f();
+      for (let f of pending.user.splice(0)) f();
+    };
+    let ensurePass = () => {
+      if (!passScheduled) (passScheduled = true), strategy.render().then(pass);
+    };
+    rendererSchedule = (flush) => (pending.renderer.push(flush), ensurePass());
+    userSchedule = (flush) => (pending.user.push(flush), ensurePass());
+  } else {
+    rendererSchedule = (flush) => strategy.render().then(flush);
+    userSchedule = (flush) => strategy.render().then(flush);
+  }
+  // The user effect is created first, e.g. at module scope before the app boots.
+  let user = effect(() => void log.push(`user: state ${a.value}, DOM ${dom.a}`), {
+    schedule: userSchedule,
+  });
+  let renderer = effect(() => void (dom.a = a.value), { schedule: rendererSchedule });
+  return { a, log, effects: [user, renderer] };
+}
+
+test('RFC 957: with separate schedules, an effect can run before the renderer and see stale DOM', async () => {
+  let strategy = new FakeFrameStrategy();
+  let { a, log, effects } = renderingSetup(strategy, { hostPass: false });
+  await strategy.runFrame(log);
+  a.value = 1;
+  await strategy.runFrame(log);
+  assert.ok(log.includes('user: state 1, DOM 0'), log.join('\n'));
+  effects.forEach(destroy);
+});
+
+test('RFC 957: a host render pass runs the renderer before user effects', async () => {
+  let strategy = new FakeFrameStrategy();
+  let { a, log, effects } = renderingSetup(strategy, { hostPass: true });
+  await strategy.runFrame(log);
+  a.value = 1;
+  await strategy.runFrame(log);
+  assert.ok(log.includes('user: state 1, DOM 1'), log.join('\n'));
+  assert.ok(!log.some((l) => l.includes('DOM 0') && l.includes('state 1')));
+  effects.forEach(destroy);
+});

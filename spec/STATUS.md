@@ -44,7 +44,8 @@ continue the work. Last updated: 2026-10-07.
   `untrack`. `createCache`/`getValue` and `@cached` are compatibility layers over `cached()`.
   The global `onInvalidate` is gone: the renderer and each modifier are effects. Asynchronous
   consumption is not in the core; §07-2.7 shows a library can build it. A prototype with tests
-  is in `spec/prototype/reactive/`.
+  is in `spec/prototype/reactive/`. §07-2.8 relates it to RFC 957 (`@ember/scheduler`;
+  author's question of 2026-10-07, commit `59f71505b9`, T15).
 - **Loose mode and classic components are in scope,** marked **[Loose mode]** or **[Legacy]**.
 - **Author rulings of 2026-09-30** (commit `a135fe1862`):
   - `</template>` cannot appear in a content-tag body, by design: the content tag assumes no
@@ -134,6 +135,7 @@ Run these in order, one at a time.
 | T12 | The ten notes swept into `8e838d47cd`; four bugfix/proposal branches; open-question cleanup | Opus | `.work/T12-cleanup.md` | done; resolved items removed from every list, lists renumbered and references rewritten (`tools/prune-open-questions.py`) |
 | T13 | Merge `origin/main` (`98fa794473`: #21636, #21639, #21641) and follow up | Opus | — | done; 68 citations shifted with `tools/remap-citations.py`, the "after this checkout's base" notes rewritten against the new code |
 | T14 | Author feedback `391b17239c` on the reactive API: `cached()` as the derived primitive, a core `effect`, async exploration | Opus | `.work/T14-reactive-api.md` | done; §07-2 rewritten, prototype + 31 tests, review points §07-5 items 14–19 |
+| T15 | Author feedback `59f71505b9`: relate the core to RFC 957 (scheduler) | Opus | `.work/T15-scheduler-rfc.md` | done; new §07-2.8, §07-5 items 14 and 17 updated, 3 strategy tests |
 
 ## Cross-chapter findings (from chapter authors' reports)
 

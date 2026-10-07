@@ -874,6 +874,9 @@ This reproduces §07-1.10:
   that the effect reads, so the next run consumes the new root's region. Roots added during a
   run are handled inside that run, as today (item 5.1).
 
+Under RFC 957's scheduler (§07-2.8), the renderer's `schedule` becomes a once-per-frame render
+pass that awaits the strategy's `render()`; nothing else in this skeleton changes.
+
 **Conclusion.** `tracked`, `cached` with `isValid` and `isConst`, `untrack`, and `effect` are
 sufficient to express every update behavior of the renderer. No other chapter needs tags,
 references, revisions, or a global invalidation hook.
@@ -987,6 +990,92 @@ variable. The core cannot provide that, and it would change what a frame is: fra
 concurrent runs would interleave instead of nesting (§07-1.2); a frame would close when its
 promise settles, not when `fn` returns; and the write-after-consume transaction (§07-1.9) would
 span `await`s. It is recorded as a review point (§07-5, item 19).
+
+### 07-2.8 Relation to the scheduler RFC (RFC 957, non-normative)
+
+RFC 957, "Render Aware Scheduler Interface" (`runspired/rfcs`, branch `modernized-scheduler`,
+`text/0957-modernized-scheduler.md`), proposes `@ember/scheduler`: a registered *strategy*
+whose functions `render()`, `layout()`, `composite()`, `next()` and `idle()` return promises
+that resolve in phases of the browser frame. Its roadmap (deprecating the run loop, RFCs 1219
+and 1220, then an optional feature that renders through the strategy) would replace the run
+loop timing of §07-1.10. This section records how the reactive core of §07-2.2 relates to it.
+It is the plan author's question of 2026-10-07 (commit `59f71505b9`), not an endorsement of
+the RFC. The claims marked "(test)" are checked by the "RFC 957" tests in
+`spec/prototype/reactive/test.mjs`, which use a promise-based strategy with the semantics of
+the RFC's Example 1.
+
+**The core is the piece the RFC asks the reactivity system for.** The RFC requires that "the
+reactivity primitives become responsible for triggering the render schedule … whenever
+reactive state has changed", in place of the run loop's `begin`/`end` hooks. That is what
+`effect` does: a write schedules the renderer effect through its `schedule` (§07-2.4.10), with
+no run loop. The RFC's strategy stores no callbacks and cannot deduplicate or cancel, and it
+leaves those to the call site. The effect core is that call site for reactive work: it
+coalesces every write before a flush into one batch per `schedule` function (§07-2.2.5,
+item 4), and it skips destroyed effects at flush time, which is the only cancellation a
+promise-based strategy needs (item 5).
+
+**The API fits without change.** `schedule` is a callback and the strategy returns promises,
+so the adapter is `schedule: flush => render().then(flush)` (or `layout()`, …). Because the
+core calls `schedule` synchronously inside the write that starts a batch, the native async
+stack trace the RFC values links each effect run back to that first write. Later writes in the
+same batch are coalesced, as with any batching.
+
+**Phases map onto kinds of effect:**
+
+| Effect | Phase | Why |
+|---|---|---|
+| The renderer | `render`, first | The RFC requires the renderer to await `render` before application code does |
+| Modifier `install`/`update` | the renderer's commit, inside the same pass | §07-2.4.6 |
+| Effects that read the new DOM or write reactive state | `render`, after the renderer | Writes are allowed there; a strategy that resolves recursive `render` calls in the current frame re-renders before paint (test: "effects sharing the renderer schedule … re-render in the same frame") |
+| Effects that only measure DOM | `layout` | The RFC forbids reactive writes there; the core allows them (§07-2.2.5, item 6), so the strategy's dev check is what catches them |
+| Effects that only write DOM (animation) | `composite` | Forbids reactive writes, as above |
+| Background effects | `next`, `idle` | |
+
+**Ordering across `schedule` functions is a trap.** A flush runs its own batch in creation
+order, but different `schedule` functions resolve in the order their batches were started. An
+effect created before the renderer (for example at module scope) whose schedule is also
+`render().then(flush)` runs *before* the renderer in the same phase and sees the old DOM
+(test: "with separate schedules, an effect can run before the renderer"). The fix is for the
+host to own one **render pass** per frame: every render-phase `schedule` function records its
+flush and asks for the pass; the pass awaits `render()` once, then runs the renderer's flush,
+the commit phase, and then the other effects' flushes (test: "a host render pass runs the
+renderer before user effects"). This is also why §07-5 item 17 matters: the core orders only
+within a batch.
+
+**Performance traps the RFC describes, and where the core stands:**
+
+1. *Several renders per frame.* The RFC's main complaint is that Ember re-renders on every run
+   loop flush, so interleaved promises and each `fetch` completion render separately. The core
+   avoids this only if the renderer's `schedule` is frame-aligned: with
+   `render().then(flush)`, all writes before the frame are one batch and one render. With
+   today's `scheduleOnce('render', …)` (§07-2.4.10) it keeps the run loop's behavior, which is
+   correct while §07-1.10 stays normative.
+2. *Effects that run on a microtask.* A microtask default (§07-2.2.7, outside Ember) brings the
+   same problem back for user effects: they run after each task, possibly before data from
+   later tasks has arrived (the RFC's "calculate too early" risk), and several times per
+   frame. Inside Ember the default should be frame-aligned, in the render pass after the
+   renderer (§07-5, item 14).
+3. *Write-after-consume errors from extra renders.* The RFC's second risk shrinks with fewer
+   renders. Effect runs are their own consumption transactions (§07-2.2.5, item 6), so an
+   effect's writes never trip the assertion on account of the renderer's reads.
+4. *Our own cost: scheduling every effect.* With tags and no reverse edges, the first write of
+   a frame schedules every live effect, and the flush checks each one with `isValid`
+   (§07-2.3). Today's renderer already walks every update position per revalidation, so this
+   is no worse for rendering, but every user effect and every modifier adds to it. The RFC's
+   benchmark found scheduling to be the largest performance lever it measured, so an
+   implementation SHOULD consider reverse edges (a push-pull graph) so that only stale
+   effects are scheduled.
+5. *Our own cost: one `schedule` per modifier.* §07-2.4.6 gives each modifier its own
+   `schedule` function, to keep the order of §06-11. Under a promise-based strategy, a naive
+   `render().then(flush)` per modifier allocates one promise per modifier per frame. The
+   modifier's `schedule` must instead be a plain push into the render pass, which awaits the
+   strategy once.
+
+**What the RFC would change in this specification.** Under its optional feature, §07-1.10
+(run-loop timing) and the synchronous initial render (§07-1.10, item 10) would no longer
+describe Ember's rendering, and the renderer's `schedule` would become the render pass. The
+reactive core itself needs no change. Its scheduled first run (§07-5, item 16) already fits an
+asynchronous initial render.
 
 ---
 
@@ -1776,12 +1865,10 @@ author, not records of existing behavior.
 
 14. **Ember's default effect schedule.** Effects created without `schedule` need a default
     (§07-2.2.7). Candidates: a microtask (as outside Ember), the run loop's `actions` queue, or
-    `afterRender` so user effects see the updated DOM. Whichever it is, test settledness
-    (`settled()`, `renderSettled()`) should also wait for pending effect batches.
-
-  > To get more context on this question, consider the proposed RFC https://github.com/runspired/rfcs/blob/modernized-scheduler/text/0957-modernized-scheduler.md
-  > I'm not endorsing this as "the plan", but it makes some good arguments about requirements. If this RFC is approved, would it effect our design? Is our design flexible enough to cover the range of requirements discussed here? Are we falling into any performance traps that this RFC complains about?
-
+    a render pass after the renderer, so user effects see the updated DOM. §07-2.8 recommends
+    the last: a microtask default re-runs effects after every task, the trap RFC 957 describes,
+    and the render pass works both with today's run loop and with an RFC 957 strategy. Test
+    settledness (`settled()`, `renderSettled()`) should also wait for pending effect batches.
 15. **`cached()` and errors.** Item 3 describes today's `getValue`: after a throw, reads return
     the previous value without rethrowing. `cached()` inherits it (§07-2.2.2, item 4). As the
     new foundation, it could instead store the error and rethrow it on every read until a
@@ -1793,8 +1880,10 @@ author, not records of existing behavior.
     code which wants the first run now has to wait for the flush. Is this the right default?
 17. **Ordering within a batch.** A batch runs in effect creation order. A host that needs
     another order (modifier updates run in document pre-order, §06-11) gives each effect its
-    own `schedule` function and orders the flushes itself (§07-2.4.6). Should the core offer an
-    ordering hook instead?
+    own `schedule` function and orders the flushes itself (§07-2.4.6). Batches of *different*
+    `schedule` functions are not ordered by the core at all, so the host needs a render pass
+    to run the renderer before user effects (§07-2.8). Should the core offer an ordering hook
+    (or phases) instead?
 18. **Equality cut-off.** With effects in the core, the missing cut-off (§07-1.3, item 5)
     becomes more visible: an effect that reads a `cached()` value re-runs whenever that value
     recomputes, even to an equal result. RFC 1218 defers an `equals` option; adding one would
