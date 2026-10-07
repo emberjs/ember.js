@@ -334,3 +334,20 @@ record of existing behavior. Points to review: whether `isValid` of a never-eval
 should return `false` (while `isConst` throws), whether a parameterless global
 `onInvalidate` is enough or a per-computation watcher is wanted (§07-2.5), and whether
 these should replace the private tag APIs that addons use today (§07-2.6).
+
+#### Initial feedback: 
+ 
+1. I'd like to incorporate this (proposed but not yet accepted) RFC into our design:
+   https://github.com/NullVoxPopuli/rfcs/blob/1f99b3a673a71014356e0c1743b1eb64cddc1ad0/text/1218-overload-cached-for-non-class-use.md
+   With that, we have a function form of `cached()` to match the function form of `tracked()`. I would want to treat these as the foundational primitives. `isConst` and `isValid` should work on the return value of `cached()`, and `createCache` is not part of our core primivites (it can of course continue to exist for compat, but be implemented in terms of `cached()`. 
+
+   Rationale: `createCache` and `cached` both existing is confusingly redundant. The user-facing `cached()` should be a powerful enough primitive to be *the* primitive, no need for a second underlying layer. `isConst` and `isValid` can be as low-level specialty utilty functions for introspecting cached values. They're not methods because they're low-level and shouldn't be the first thing end users reach for (they should normally stick to just getting the value).
+
+2. One kind of consumption API that current Ember lacks is a way to implement effectful behaviors. This proposal correctly identifies the need for `onInvalidate`, which closes this gap, but in a very coarse way. I can see how it's possible to combine `onInvalidate` and `cached` to build an effectful primitive, but I suspect such a primitive should be in the core. The reason to include it in the core would be to avoid multiple different effectful implementations all debouncing every single tracked write and scheduling their own checking of `isValid` (or re-pulling of a cached value).
+
+  We could do that work once in the core and offer a declarative API for implementing effects that only run when necessary. This would replace the need for the global `onInvalidate`. A renderer like glimmer can use the effectful primitive around its re-rendering logic, thus causing that logic to re-run whenever consumed tracked state changes.
+
+3. Asynchronous consumption tracking: `cached` with a synchronous function argument is nice and can readily track all the consumption that happens inside, based on the actual synchronous stack. The same story would apply to some `effect` variant as alluded to above. But in both cases, it would be nice to also have a story for tracking consumption during asynchronous work. This has nuance in terms of what we want to happen when there are changes (cancellation issues, deciding what remains stable). I don't think we necessary want to commit to one strategy as part of our core, but it would be good to show that our primitives are good enough to build asynchronous reactive resources, as an exploratory exercise.
+
+
+
