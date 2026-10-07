@@ -448,6 +448,95 @@ module('@glimmer/validator: tracking', () => {
       assert.deepEqual(getValue(outerCache), [3, 2], 'memoized result returned correctly');
     });
 
+    /**
+     * The tag that a cache has after a read.
+     *
+     * The outer frame consumes only the tag of the cache,
+     * and a frame with one tag returns that tag.
+     */
+    function tagOf(cache: ReturnType<typeof createCache>) {
+      beginTrackFrame();
+      getValue(cache);
+
+      return endTrackFrame();
+    }
+
+    test('it keeps its tag if it consumes the same tags in the next run', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let count = 0;
+
+      let cache = createCache(() => {
+        consumeTag(tag1);
+        consumeTag(tag2);
+
+        return ++count;
+      });
+
+      let first = tagOf(cache);
+
+      dirtyTag(tag1);
+
+      let second = tagOf(cache);
+
+      assert.strictEqual(count, 2, 'the cache ran again');
+      assert.strictEqual(second, first, 'the cache has the tag of its first run');
+    });
+
+    test('it gets a new tag if it consumes other tags in the next run', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let tag3 = createTag();
+      let useThird = false;
+      let count = 0;
+
+      let cache = createCache(() => {
+        consumeTag(tag1);
+        consumeTag(useThird ? tag3 : tag2);
+
+        return ++count;
+      });
+
+      let first = tagOf(cache);
+
+      useThird = true;
+      dirtyTag(tag1);
+
+      let second = tagOf(cache);
+
+      assert.strictEqual(count, 2, 'the cache ran again');
+      assert.notStrictEqual(second, first);
+    });
+
+    test('it gets a new tag if it consumes the same tags in another order', (assert) => {
+      let tag1 = createTag();
+      let tag2 = createTag();
+      let swap = false;
+      let count = 0;
+
+      let cache = createCache(() => {
+        consumeTag(swap ? tag2 : tag1);
+        consumeTag(swap ? tag1 : tag2);
+
+        return ++count;
+      });
+
+      let first = tagOf(cache);
+
+      swap = true;
+      dirtyTag(tag1);
+
+      let second = tagOf(cache);
+
+      assert.strictEqual(count, 2, 'the cache ran again');
+      assert.notStrictEqual(second, first);
+
+      let snapshot = valueForTag(second);
+
+      dirtyTag(tag2);
+      assert.notOk(validateTag(second, snapshot), 'the new tag follows both tags');
+    });
+
     test('it tracks the new tags if the tags change between two runs', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
