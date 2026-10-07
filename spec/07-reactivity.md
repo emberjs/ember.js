@@ -5,9 +5,10 @@ This chapter defines the reactivity model of the Ember template language. It has
 1. An **abstract model** (§07-1) of tracked storage, reactive computations, validity, and
    invalidation. It uses no tags, references, or revisions. Every other chapter describes
    template updates in terms of this model.
-2. A **consumption primitive** (§07-2). It is the existing `createCache` / `getValue` /
-   `isConst`, plus two **[Proposed]** additions (`isValid` and an invalidation hook). The chapter
-   shows that these are enough to express everything the renderer needs.
+2. A **[Proposed] reactive core** (§07-2): `tracked` for root state, `cached` for derived state,
+   `effect` for consumption, plus `isValid`, `isConst` and `untrack`. The existing
+   `createCache` / `getValue` / `isConst` and `@cached` become thin layers over `cached`. The
+   chapter shows that the core is enough to express everything the renderer needs.
 3. A **normative specification of the user-facing reactivity APIs** that exist today (§07-3):
    `tracked` in all its forms, `TrackedValue`, `@cached`, the cache primitives,
    `@ember/reactive/collections`, and the interop with the classic Ember object model.
@@ -46,7 +47,8 @@ verbatim.
 | **commit phase** | The final step of a render transaction, after all DOM updates of the transaction: component `didCreate`/`didUpdate` hooks, then modifier installs, then modifier updates. The order is specified in §06-11. |
 | **component region** | Everything consumed while one component invocation was created and rendered, including its layout, blocks rendered inside it, and descendants. It is valid iff none of those cells has been invalidated. §05-1.6 defines it (as the *component update region*) and its skipping rule. §07-2.4.7 gives its reactive skeleton. A region is **revalidated** (§06 also writes "re-validated") when a revalidation finds it invalid and descends into it. |
 | **write-after-consume assertion** (the **backtracking rerender assertion**) | The development-mode error thrown when a cell that was already consumed during the current render transaction (or the current outermost tracking frame) is written (§07-1.9). |
-| **invalidation hook** | The host callback invoked on every invalidation. The renderer uses it to schedule revalidation (§07-1.10, §07-2.2.4). |
+| **invalidation hook** | The notification the core receives on every invalidation. Today it is the host callback with which Ember schedules revalidation (§07-1.10). Under the **[Proposed]** core it is internal and drives effect scheduling (§07-2.2.5); it is not public API. |
+| **effect** **[Proposed]** | A reactive computation that the core runs again, through its scheduler, after something it read has changed (§07-2.2.5). |
 
 Informal mapping to the current implementation, for readers of the source (non-normative):
 cell ≈ `DirtyableTag`/`UpdatableTag` plus its value slot; computation ≈ `track()` /
@@ -693,24 +695,24 @@ are actually stale.
 
 ### 07-2.4 Sufficiency: expressing every renderer need
 
-Below, `C(expr)` means `createCache(() => evaluate(expr))`. Each subsection names the current
+Below, `C(expr)` means `cached(() => evaluate(expr))`, read with `.value`. Each subsection names the current
 mechanism it replaces. Detailed DOM semantics live in §05. Only the reactive skeleton is given
 here.
 
 #### 07-2.4.1 Content (text / dynamic content)
 
 ```
-initial:  c := C(expr); v := getValue(c); append DOM for v;
+initial:  c := C(expr); v := c.value; append DOM for v;
           if isConst(c): done (the position is static)
-update:   if !isValid(c): v' := getValue(c); if content *type* changed → re-render the
+update:   if !isValid(c): v' := c.value; if content *type* changed → re-render the
           enclosing block (§05); else apply the §05 update rule for v' (text: write only if
           normalized string differs)
 ```
 
 Replaces `DynamicTextContent` (`packages/@glimmer/runtime/lib/vm/content/text.ts:7-36`) and the
 content-type `AssertFilter` (`packages/@glimmer/runtime/lib/compiled/opcodes/content.ts:71-87`,
-`vm.ts:266-284`). Calling `getValue(c)` unconditionally on every revalidation is equivalent to
-the `isValid` check, because a valid cache returns its old value.
+`vm.ts:266-284`). Reading `c.value` unconditionally on every revalidation is equivalent to
+the `isValid` check, because a valid computation returns its old value.
 
 #### 07-2.4.2 Attributes and properties
 
@@ -722,7 +724,7 @@ value. See §05 and `packages/@glimmer/runtime/lib/vm/attributes/dynamic.ts:97-1
 
 #### 07-2.4.3 Conditionals
 
-`c := C(toBool(condExpr))`. On update, if `!isValid(c)` and `getValue(c)` differs from the last
+`c := C(toBool(condExpr))`. On update, if `!isValid(c)` and `c.value` differs from the last
 branch decision, tear down and re-render the block. Otherwise descend into the current branch.
 Replaces `VM_TO_BOOLEAN_OP` + `Assert` (`vm.ts:209-264`).
 
@@ -730,7 +732,7 @@ Replaces `VM_TO_BOOLEAN_OP` + `Assert` (`vm.ts:209-264`).
 
 Each argument expression at an invocation site becomes `cᵢ := C(argExprᵢ)`, created when the
 invocation is first rendered and **not** evaluated at that time. Every consumer of the argument
-calls `getValue(cᵢ)`: `@name` in the callee's template, `this.args.name` through the args proxy,
+reads `cᵢ.value`: `@name` in the callee's template, `this.args.name` through the args proxy,
 a helper reading `named.name`, and so on. Consequences:
 
 - An argument that is never read is never evaluated, and one read many times while valid is
@@ -747,8 +749,8 @@ Replaces the per-argument compute references and `argsProxyFor`
 #### 07-2.4.5 Helper re-evaluation
 
 For a helper with a value (`hasValue`): `bucket := manager.createHelper(def, argsProxy)` once,
-eagerly, when the invocation is first rendered. Then `c := createCache(() => manager.getValue(bucket))`.
-The helper's value position consumes `getValue(c)`. The helper re-runs `getValue` iff any cell
+eagerly, when the invocation is first rendered. Then `c := cached(() => manager.getValue(bucket))`.
+The helper's value position reads `c.value`. The manager's `getValue` runs again iff any cell
 it consumed (including arguments it read) is invalidated. Replaces `createComputeRef(() =>
 manager.getValue(bucket))` (`packages/@glimmer/manager/lib/public/helper.ts:122-150`).
 `invokeHelper` already works exactly this way on top of `createCache`
@@ -756,20 +758,35 @@ manager.getValue(bucket))` (`packages/@glimmer/manager/lib/public/helper.ts:122-
 
 #### 07-2.4.6 Modifiers
 
-Modifier hooks are side effects, not values. They are expressed by re-arming a fresh cache for
-each hook call:
+Modifier hooks are side effects, not values. Each modifier instance is an effect (§07-2.2.5)
+whose first run is `install` and whose later runs are `update`. Its `schedule` hands the run to
+the renderer's commit phase:
 
 ```
-commit (install):   m.cache := createCache(() => manager.install(state)); getValue(m.cache)
-revalidation:       if m.cache !== undefined && !isValid(m.cache):
-                        schedule update for this transaction's commit phase
-commit (update):    m.cache := createCache(() => manager.update(state)); getValue(m.cache)
+element closed (render):  m.effect := effect(
+                              () => m.installed ? manager.update(state)
+                                                : (manager.install(state), m.installed := true),
+                              { schedule: flush => renderer.queueModifier(m, flush) })
+queueModifier(m, flush):  record (m, flush) for the commit phase of the open render
+                          transaction, or of the next one (scheduling it if none is pending)
+commit phase:             call the recorded flushes: installs in record order, then updates in
+                          document pre-order (§06-11)
+element removed:          destroy(m.effect), then manager.destroyModifier (§05-11)
 ```
+
+Each modifier has its own `schedule` closure, so its flush is a batch of one and the renderer,
+not the core, decides the order (§07-5, item 17). The effect rules give the current behavior:
+each hook is its own tracking frame in the commit phase, so it may write state the render read
+but not state it read itself (§07-1.9, item 5); a write that the render read schedules the
+renderer again (§07-1.11); and a manager with `disableAutoTracking` runs its hook inside
+`untrack`, so the effect is constant and `update` never runs because of tracked state
+(§07-4.9). With today's tag-based core every write schedules every modifier, and the flush
+skips the valid ones (§07-2.2.5, item 5): the same work as today's revalidation walk over
+`UpdateModifierOpcode`s.
 
 Replaces the modifier `UpdatableTag` + `updateTag(modifierTag, track(install))`
 (`packages/@glimmer/runtime/lib/environment.ts:61-100`) and `UpdateModifierOpcode`
-(`dom.ts:321-341`). A manager with `disableAutoTracking` runs its hook inside `untrack`. The
-cache is then constant, and `update` never runs because of tracked state. See §07-4.9.
+(`dom.ts:321-341`).
 
 #### 07-2.4.7 Component regions, `updateComponent`, and `didUpdate`
 
@@ -781,9 +798,9 @@ entirely (`vm.ts:286-326`, `append.ts:351-385`,
 thing can be expressed by re-arming:
 
 ```
-initial:  g := createCache(() => renderComponentRegion()); getValue(g)
+initial:  g := cached(() => renderComponentRegion()); g.value
 update:   if isValid(g): skip region (its dependencies are still consumed by the enclosing region)
-          else g := createCache(() => { manager.update?(state); revalidateChildren(); }); getValue(g)
+          else g := cached(() => { manager.update?(state); revalidateChildren(); }); g.value
 ```
 
 This matters for observable hooks. A manager's `update` hook (capability `updateHook`), and the
@@ -805,7 +822,7 @@ itself cached.
 list := C(() => toIterator(evaluate(listExpr)))   // obtaining the iterator happens INSIDE the computation
 initial:  iterate list's result; for each item create an item cell (tracked, `!==` policy)
           holding the item value, and a memo/index cell
-update:   if !isValid(list): obtain the new iterator via getValue(list) and run the keyed diff
+update:   if !isValid(list): obtain the new iterator via list.value and run the keyed diff
           (§05): retained items get their item cell written with the new value; new items
           render; removed items are destroyed
           then revalidate each item region
@@ -828,33 +845,58 @@ definition, the instance is kept. (`packages/@glimmer/runtime/lib/compiled/opcod
 
 #### 07-2.4.10 The renderer loop
 
-`onInvalidate(() => ensureRunLoop())` plus, per run loop, `revalidate()` in the `render` queue
-(§07-1.10). The renderer's global validity check (§07-1.10, item 4) becomes "is any root region
-cache invalid?" (`!isValid(rootᵢ)` for some root). That is *finer* than the current global clock
-comparison, but it is equivalent for DOM output.
+The renderer is an effect around its re-rendering logic:
 
-**Conclusion.** `createCache`, `getValue`, `isConst`, `untrack`, **`isValid`**, and a global
-**invalidation hook** are sufficient to express every update behavior of the renderer. No other
-chapter needs tags, references, or revisions.
+```
+renderer.effect := effect(
+    () => for each root r, in insertion order: revalidate r's region (§07-2.4.7),
+    { schedule: flush => scheduleOnce('render', flush) })     // Ember: the run loop's render queue
+commit phase:  after each run, outside the effect's frame (§06-11, §07-2.4.6)
+```
+
+This reproduces §07-1.10:
+
+- A write schedules the renderer through its `schedule`. Outside a run loop, `scheduleOnce`
+  starts one and flushes it in a microtask autorun, as the invalidation hook does today
+  (items 1–3).
+- The effect's run is the render body, so its validity snapshot is taken at the end of the
+  body and *before* the commit phase, exactly where "last validated" is recorded today
+  (item 5.2). A commit-phase write to state the render read leaves the effect stale, and it is
+  scheduled again in the same run loop (item 6). Bounding that loop (item 7) stays the host's
+  job (§07-2.2.5, item 6).
+- The renderer's validity check (item 4) becomes the effect's staleness. That is *finer* than
+  the current global clock comparison (only cells the renderer read count), which item 4
+  allows, and it is equivalent for DOM output. `renderSettled()` resolves when neither the
+  renderer nor any modifier effect has a pending batch.
+- A root added outside a render renders synchronously (item 10) and then writes a private cell
+  that the effect reads, so the next run consumes the new root's region. Roots added during a
+  run are handled inside that run, as today (item 5.1).
+
+**Conclusion.** `tracked`, `cached` with `isValid` and `isConst`, `untrack`, and `effect` are
+sufficient to express every update behavior of the renderer. No other chapter needs tags,
+references, revisions, or a global invalidation hook.
 
 ### 07-2.5 Design context: comparison with the TC39 Signals proposal (non-normative)
 
 | Concept | This model | TC39 Signals (stage 1) |
 |---|---|---|
 | Root state | tracked storage cell; `tracked(v, {equals})` | `new Signal.State(v, {equals})` |
-| Derived | `createCache(fn)` + `getValue` | `new Signal.Computed(fn, {equals})` + `.get()` |
+| Derived | `cached(fn)` + `.value` [Proposed] | `new Signal.Computed(fn, {equals})` + `.get()` |
 | Untracked read | `untrack(fn)` [Proposed public] | `Signal.subtle.untrack(fn)` |
-| Constant detection | `isConst(cache)` | none (introspection: `Signal.subtle.introspectSources`) |
-| Validity check without recompute | `isValid(cache)` [Proposed] | none directly. Watchers get notified instead |
-| Change notification | global parameterless `onInvalidate` [Proposed] | `new Signal.subtle.Watcher(notify)` + `watch(signal)`, `getPending()`: per-signal, synchronous, push |
+| Constant detection | `isConst(c)` | none (introspection: `Signal.subtle.introspectSources`) |
+| Validity check without recompute | `isValid(c)` [Proposed] | none directly. Watchers get notified instead |
+| Change notification | `effect(fn, { schedule })` [Proposed]: the core schedules stale effects in batches and runs them | `new Signal.subtle.Watcher(notify)` + `watch(signal)`, `getPending()`: per-signal, synchronous, push; effects are left to libraries |
 | Equality cut-off for derived values | **none** (§07-1.3, item 5) | yes. A `Computed` whose recomputed value is `equals` to the previous one does not invalidate its dependents |
 | Default equality for root writes | per API: `@tracked` always invalidates; `tracked(v)` and collections use `Object.is` (§07-1.6) | `Object.is` |
 | Writes during computation | dev-mode assertion (§07-1.9) | throws when writing inside a `Computed` |
 
 A future implementation could build the model on Signals. `tracked(v)` would map to `State`
-(with `equals` forced to "always different" for `@tracked`), and `createCache` to `Computed`
+(with `equals` forced to "always different" for `@tracked`), and `cached` to `Computed`
 with `equals: () => false`, which reproduces the lack of cut-off. `isValid` would be implemented
-through a watcher's dirty bit.
+through a watcher's dirty bit, and `effect` as a `Computed` watched by one watcher per
+`schedule` function, whose `notify` calls `schedule(flush)` and whose `flush` re-reads the
+`getPending()` effects in creation order. The core then does with Signals what the TC39
+proposal leaves to each library.
 
 ### 07-2.6 Explicitly not part of the model
 
@@ -869,8 +911,80 @@ Some addons nevertheless import it directly: ember-modifier (classic modifier ar
 consumption), `tracked-built-ins` and ember-resources use `consumeTag`, `tagFor` and
 `dirtyTagFor`. A new implementation SHOULD provide a compatibility shim for these where that
 is cheap. It is not required: the main users are packages the project can influence, and they
-can be required to migrate to the public primitives (§07-2.2) plus `tracked(v)` before they run
-on a new renderer (author ruling, 2026-09-30).
+can be required to migrate to the public core (§07-2.2: `tracked`, `cached`, `effect`, …)
+before they run on a new renderer (author ruling, 2026-09-30). ember-resources in particular
+maps onto `cached` and `effect`, and §07-2.7 builds an asynchronous resource from them.
+
+### 07-2.7 Asynchronous consumption (non-normative exploration)
+
+A reactive computation tracks what it reads on the synchronous stack: its frame is open from
+the call of `fn` until `fn` returns (§07-1.2). An `async` function returns at its first
+`await`, so reads made after it happen with no frame open and consume nothing. This holds for
+`cached` and `effect` alike.
+
+The core does not commit to one strategy for asynchronous work, because the right answer
+depends on the use: what to do with a run that is in flight when an input changes (cancel it,
+or let it finish), and what readers see meanwhile (the previous result, or nothing). This
+section shows that the core is enough to build such strategies in a library. The prototype
+`spec/prototype/reactive/async.mjs` implements the design below; its tests are in `test.mjs`.
+
+**Strategy 1: track the synchronous prefix.** `cached(() => load(this.id))` tracks the reads
+made before `load`'s first `await` and returns a new promise whenever they change. A library
+wraps the promise in tracked state (pending, value, error). The pitfall is silent: a read after
+the first `await` is not tracked, and the result goes stale (test "a plain read after an
+await is not tracked").
+
+**Strategy 2: explicit reads across `await`.** The run receives a `read` function and wraps
+later reads in it:
+
+```js
+let r = resource(async ({ signal, read }) => {
+  let id = this.id;                           // before the first await: tracked
+  let res = await fetch(`/items/${id}`, { signal });
+  let filter = read(() => this.filter);       // after an await: tracked through read()
+  return (await res.json()).filter(filter);
+}, { onChange: 'restart' });
+
+r.value; r.error; r.isPending;                // tracked state, usable in templates
+```
+
+It is built from the core like this:
+
+1. Each run records the computations it read as `cached()` values: one for the synchronous
+   prefix of `fn`, and one per `read(thunk)`, which creates `cached(thunk)`, reads it untracked
+   and appends it to the run's list (a tracked cell).
+2. A per-run **watcher effect** reads that list. For each recorded value it asks `isValid`. If
+   one is invalid, an input of the run has changed since the run read it, and the watcher
+   applies the change policy. Otherwise it reads `.value`, which re-runs nothing and consumes
+   that value's dependencies, so the watcher runs again when any of them changes.
+3. A `read` made later appends to the list, so the watcher runs again and starts watching it.
+   Because the check is `isValid` and not "has the watcher seen a change", a change that
+   happens between a `read` and the watcher's next run is not lost (test "a change between a
+   read and the watcher's first run is still seen").
+4. Change policies decide what stays stable:
+
+   | `onChange` | Run in flight | Its result | Next run |
+   |---|---|---|---|
+   | `'restart'` | aborted through its `AbortSignal` | discarded | starts at once |
+   | `'finish'` | runs to completion | published | starts when it settles |
+
+   In both, `value` keeps the last published result while a run is pending
+   (stale-while-revalidate). Other policies (drop changes until the run settles, queue runs, a
+   debounce in `schedule`) fit the same shape.
+5. The resource is a destroyable. Destroying it aborts the run and destroys the watcher.
+
+Each primitive does one job: `cached` turns each read into a value with its own dependency
+set; `isValid` asks "changed since it was read?" without re-running the read; `effect` lets
+the core schedule the watcher, so the resource neither polls nor hooks writes; and `untrack`
+keeps the run's own reads out of the watcher's frame and out of whatever frame started the
+run.
+
+**Strategy 3: implicit tracking across `await`.** Tracking later reads without `read()` needs
+the active tracking frame carried across `await`, for example in a TC39 `AsyncContext`
+variable. The core cannot provide that, and it would change what a frame is: frames of
+concurrent runs would interleave instead of nesting (§07-1.2); a frame would close when its
+promise settles, not when `fn` returns; and the write-after-consume transaction (§07-1.9) would
+span `await`s. It is recorded as a review point (§07-5, item 19).
 
 ---
 
@@ -1078,6 +1192,13 @@ tracked<V>(initial: V, options?: { equals?: (a: V, b: V) => boolean; description
   ``unsupported use of @cached on ${kind} ${name}`` (`cached.ts:148-150`).
 - Any setter on the same property is left untouched.
 - Tests: `packages/@ember/-internals/metal/tests/cached/get_test.js:7,49`.
+- **[Proposed]** (RFC 1218, §07-2.2.2.) `cached(fn)` or `cached(fn, options)` with a function as
+  the first argument, and not in a decorator's argument shape, returns a `ReadOnlyReactive`.
+  The 2023 decorator shape is recognized by a second argument with a `kind` property
+  (`packages/@ember/-internals/metal/lib/decorator-util.ts:93-95`), which an options object
+  does not have. Today, `cached(fn)` throws the **[Dev]** "with an argument" error above, and in
+  production it fails with a `TypeError` on `descriptor.get`. The decorator itself becomes sugar
+  over the function form (§07-2.2.6).
 
 ### 07-3.4 Cache primitives (`@glimmer/tracking/primitives/cache`)
 
@@ -1110,7 +1231,8 @@ tracked<V>(initial: V, options?: { equals?: (a: V, b: V) => boolean; description
 
 Tests: `packages/@glimmer/validator/test/tracking-test.ts:275-434`.
 
-**[Proposed]** `isValid(cache)`: §07-2.2.2.
+**[Proposed]** `isValid(cache)`: §07-2.2.3. Under the proposal, these functions are a
+compatibility layer over `cached()` (§07-2.2.6): a `createCache` cache is a `cached()` value.
 
 **`invokeHelper(context, definition, computeArgs?)`** (`@ember/helper`, RFC 0626) returns a
 `Cache` read with `getValue`. The arguments are computed lazily through a nested cache over
@@ -1392,8 +1514,8 @@ computations (`packages/@glimmer/manager/lib/util/args-proxy.ts:139-188`):
    `{{…}}` content position; each dynamic attribute or property value (including each
    concatenated attribute); each block condition; each `{{#each}}` list; each dynamic
    component, helper, or modifier *definition*; each helper invocation's value; each modifier
-   hook call; and each argument expression. These are evaluated with `getValue` semantics
-   (§07-2.2.1).
+   hook call; and each argument expression. These are evaluated with the semantics of reading
+   a `cached()` value (§07-2.2.2), which are those of `getValue` (§07-3.4).
 2. **Sub-expressions are nested computations.** A helper call `(h a b)` inside a content
    position is its own computation (§07-4.5). Each argument is its own computation (§07-4.4).
    Each path segment is its own computation (§07-4.2). The enclosing position depends on the
@@ -1418,12 +1540,12 @@ head computation H:
   @arg       → the argument's computation (§07-4.4)
   local      → whatever the block parameter / let binding is bound to (itself a computation)
   lexical    → constant (the captured JS value)
-segment computation Sᵢ (i ≥ 1) := createCache(() => {
-    let parent = getValue(Sᵢ₋₁)          // consumes the parent's dependencies
+segment computation Sᵢ (i ≥ 1) := cached(() => {
+    let parent = Sᵢ₋₁.value              // consumes the parent's dependencies
     if (parent === null || parent === undefined) return undefined
     return getProp(parent, sᵢ)            // Ember `_getProp` semantics, §07-3.6.2
 })
-the position's value = getValue(Sₙ)
+the position's value = Sₙ.value
 ```
 
 - `getProp` is exactly Ember's per-segment `get` (§07-3.6.2). It reads the property with a normal

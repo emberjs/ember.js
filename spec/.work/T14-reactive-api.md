@@ -26,10 +26,10 @@ The feedback (now removed from §00-0.7.10; the full text is in `git show 391b17
       (introspection), `untrack`, `effect` (consumption), compat layer, module placement.
       `onInvalidate` removed.
 - [x] §07-2.3 reference semantics: add effect scheduling to the clock sketch.
-- [ ] §07-2.4: `C(expr)` is `cached(...)`; modifiers (2.4.6) and the renderer loop (2.4.10) as
+- [x] §07-2.4: `C(expr)` is `cached(...)`; modifiers (2.4.6) and the renderer loop (2.4.10) as
       effects; conclusion updated.
-- [ ] §07-2.5 Signals comparison and §07-2.6 updated.
-- [ ] New §07-2.7 (non-normative): asynchronous consumption, strategies and the prototype.
+- [x] §07-2.5 Signals comparison and §07-2.6 updated.
+- [x] New §07-2.7 (non-normative): asynchronous consumption, strategies and the prototype.
 - [ ] §07 intro, §07-0 terminology (invalidation hook is now internal), §07-1.1/§07-1.10
       wording where they mention the hook, §07-3.3 (`@cached` as sugar), §07-3.4 (compat),
       §07-5 open questions for the new review points.
