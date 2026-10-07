@@ -1,11 +1,7 @@
 export { tracked } from '@ember/-internals/metal/lib/tracked';
 export { cached } from '@ember/-internals/metal/lib/cached';
 
-export type {
-  Reactive,
-  ReadOnlyReactive,
-  TrackedValue,
-} from '@glimmer/validator/lib/tracked-value';
+export type { Reactive, ReadOnlyReactive, TrackedValue } from '@glimmer/signals/lib/tracked-value';
 
 /**
   In order to tell Ember a value might change, we need to mark it as trackable.

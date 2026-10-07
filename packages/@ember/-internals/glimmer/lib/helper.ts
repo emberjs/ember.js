@@ -13,8 +13,7 @@ import type { Arguments, HelperManager } from '@glimmer/interfaces';
 import { helperCapabilities } from '@glimmer/manager/lib/public/helper';
 import { setHelperManager } from '@glimmer/manager/lib/public/api';
 import type { DirtyableTag } from '@glimmer/interfaces';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/signals/lib/tags';
 import { IS_CLASSIC_HELPER } from './helper-brand';
 
 export { isClassicHelper } from './helper-brand';

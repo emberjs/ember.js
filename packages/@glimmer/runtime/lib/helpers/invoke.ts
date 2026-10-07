@@ -1,11 +1,10 @@
 import { DEBUG } from '@glimmer/env';
 import type { Arguments, InternalHelperManager } from '@glimmer/interfaces';
-import type { Cache } from '@glimmer/validator/lib/tracking';
+import { createCache, getValue, type Cache } from '@glimmer/signals/lib/tags';
 import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
 import { getInternalHelperManager } from '@glimmer/manager/lib/internal/api';
 import { hasDestroyable, hasValue } from '@glimmer/manager/lib/public/helper';
 import { getOwner } from '@glimmer/owner';
-import { createCache, getValue } from '@glimmer/validator/lib/tracking';
 
 import { EMPTY_ARGS, EMPTY_NAMED, EMPTY_POSITIONAL } from '../vm/arguments';
 

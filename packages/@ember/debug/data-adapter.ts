@@ -7,9 +7,8 @@ import Namespace from '@ember/application/namespace';
 import type { NativeArray } from '@ember/array';
 import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
-import type { Cache } from '@glimmer/validator/lib/tracking';
-import { consumeTag, createCache, getValue, untrack } from '@glimmer/validator/lib/tracking';
-import { tagFor } from '@glimmer/validator/lib/meta';
+import { consumeTag, createCache, getValue, untrack, type Cache } from '@glimmer/signals/lib/tags';
+import { tagFor } from '@glimmer/signals/lib/meta';
 import type ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import { assert } from '.';
 

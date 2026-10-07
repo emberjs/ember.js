@@ -1,7 +1,17 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { tracked } from '../..';
 
-import { track, valueForTag, validateTag } from '@glimmer/validator';
+import { createFrame, isFrameStale, track, watchTag } from '@glimmer/signals';
+
+function watch(tag) {
+  let frame = createFrame();
+  watchTag(frame, tag);
+  return frame;
+}
+
+function isValid(frame) {
+  return !isFrameStale(frame);
+}
 
 moduleFor(
   '@tracked decorator - options',
@@ -14,15 +24,15 @@ moduleFor(
       let obj = new Tracked();
 
       let tag = track(() => obj.value);
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       assert.strictEqual(obj.value, 0, 'initializer ran');
 
       obj.value = 0;
-      assert.true(validateTag(tag, snapshot), 'setting an equal value does not invalidate');
+      assert.true(isValid(snapshot), 'setting an equal value does not invalidate');
 
       obj.value = 1;
-      assert.false(validateTag(tag, snapshot), 'setting a new value invalidates');
+      assert.false(isValid(snapshot), 'setting a new value invalidates');
       assert.strictEqual(obj.value, 1);
     }
 
@@ -34,11 +44,11 @@ moduleFor(
       let obj = new Tracked();
 
       let tag = track(() => obj.value);
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       let current = obj.value;
       obj.value = current;
-      assert.false(validateTag(tag, snapshot), 'a no-op set invalidates');
+      assert.false(isValid(snapshot), 'a no-op set invalidates');
     }
 
     ['@test equals option is compared against the initial value before any read'](assert) {

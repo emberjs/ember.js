@@ -1,4 +1,4 @@
-import { trackedWeakMap } from '@glimmer/validator';
+import { trackedWeakMap } from '@glimmer/signals';
 import {
   defineComponent,
   GlimmerishComponent as Component,

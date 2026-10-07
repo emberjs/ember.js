@@ -4,8 +4,8 @@ import { isEmberArray } from '@ember/array/-internals';
 import { isObject } from '@ember/-internals/utils/lib/spec';
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { IteratorDelegate } from '@glimmer/reference/lib/iterable';
-import { consumeTag, isTracking } from '@glimmer/validator/lib/tracking';
-import { tagFor } from '@glimmer/validator/lib/meta';
+import { consumeTag, isTracking } from '@glimmer/signals/lib/tags';
+import { tagFor } from '@glimmer/signals/lib/meta';
 import { EachInWrapper } from '../helpers/each-in';
 import type { NativeArray } from '@ember/array';
 

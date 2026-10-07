@@ -7,7 +7,7 @@ import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference/lib/reference';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
+import { consumeTag } from '@glimmer/signals/lib/tags';
 import { internalHelper } from './internal-helper';
 
 /**

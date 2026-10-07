@@ -11,7 +11,7 @@ import {
   testUnless,
 } from 'internal-test-helpers';
 import { set, get } from '@ember/object';
-import { createCache, getValue } from '@glimmer/validator';
+import { createCache, getValue } from '@glimmer/signals';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 moduleFor(

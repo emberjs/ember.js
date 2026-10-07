@@ -23,6 +23,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
+import { releaseTagsFor } from '@glimmer/signals/lib/meta';
 
 type EmberClassConstructor<T> = new (owner?: Owner) => T;
 
@@ -299,6 +300,7 @@ class CoreObject {
     const destroyable = self;
     registerDestructor(self, ensureDestroyCalled, true);
     registerDestructor(self, () => destroyable.willDestroy());
+    registerDestructor(self, releaseTagsFor);
 
     // disable chains
     let m = meta(self);

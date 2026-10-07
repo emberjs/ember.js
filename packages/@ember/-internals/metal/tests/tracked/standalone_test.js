@@ -1,7 +1,17 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { tracked } from '../..';
 
-import { track, valueForTag, validateTag } from '@glimmer/validator';
+import { createFrame, isFrameStale, track, watchTag } from '@glimmer/signals';
+
+function watch(tag) {
+  let frame = createFrame();
+  watchTag(frame, tag);
+  return frame;
+}
+
+function isValid(frame) {
+  return !isFrameStale(frame);
+}
 
 moduleFor(
   'tracked() - standalone usage',
@@ -26,48 +36,48 @@ moduleFor(
       let count = tracked(0);
 
       let tag = track(() => count.value);
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
-      assert.true(validateTag(tag, snapshot), 'tag is valid before a change');
+      assert.true(isValid(snapshot), 'tag is valid before a change');
 
       count.value = 1;
-      assert.false(validateTag(tag, snapshot), 'tag is invalidated by a change');
+      assert.false(isValid(snapshot), 'tag is invalidated by a change');
     }
 
     ['@test default equality is Object.is'](assert) {
       let count = tracked(0);
 
       let tag = track(() => count.value);
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       count.value = 0;
-      assert.true(validateTag(tag, snapshot), 'setting an equal value does not invalidate');
+      assert.true(isValid(snapshot), 'setting an equal value does not invalidate');
 
       count.value = 1;
-      assert.false(validateTag(tag, snapshot), 'setting a new value invalidates');
+      assert.false(isValid(snapshot), 'setting a new value invalidates');
     }
 
     ['@test equality can be customized'](assert) {
       let state = tracked({ id: 1 }, { equals: (a, b) => a.id === b.id });
 
       let tag = track(() => state.value);
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       state.value = { id: 1 };
-      assert.true(validateTag(tag, snapshot), 'setting an equal value does not invalidate');
+      assert.true(isValid(snapshot), 'setting an equal value does not invalidate');
 
       state.value = { id: 2 };
-      assert.false(validateTag(tag, snapshot), 'setting a different value invalidates');
+      assert.false(isValid(snapshot), 'setting a different value invalidates');
     }
 
     ['@test always-dirty equality'](assert) {
       let count = tracked(0, { equals: () => false });
 
       let tag = track(() => count.value);
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       count.value = 0;
-      assert.false(validateTag(tag, snapshot), 'a no-op set invalidates');
+      assert.false(isValid(snapshot), 'a no-op set invalidates');
     }
 
     ['@test freeze() prevents further updates'](assert) {

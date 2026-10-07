@@ -1,11 +1,11 @@
-import { trackedMap } from '@glimmer/validator';
+import { trackedMap } from '@glimmer/signals';
 import { expectTypeOf } from 'expect-type';
 
 import { module, test } from '../-utils';
 
 expectTypeOf<ReturnType<typeof trackedMap<string, number>>>().toMatchTypeOf<Map<string, number>>();
 
-module('@glimmer/validator: trackedMap', function () {
+module('@glimmer/signals: trackedMap', function () {
   test('constructor', (assert) => {
     const map = trackedMap([['foo', 123]]);
 

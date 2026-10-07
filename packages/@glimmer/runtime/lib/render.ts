@@ -16,25 +16,80 @@ import { dev, expect } from '@glimmer/debug-util/lib/platform-utils';
 import { unwrapHandle } from '@glimmer/debug-util/lib/template';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { childRefFor, createConstRef } from '@glimmer/reference/lib/reference';
-import { debug } from '@glimmer/validator/lib/debug';
+import { debug } from '@glimmer/signals/lib/debug';
+import {
+  abandonFrame,
+  beginFrame,
+  consumeFrame,
+  createFrame,
+  endFrame,
+} from '@glimmer/signals/lib/tags';
+import type { TagNode } from '@glimmer/signals/lib/tags';
+
+import type RenderResultImpl from './vm/render-result';
 
 import { inTransaction } from './environment';
 import { DynamicScopeImpl } from './scope';
 import { VM } from './vm/append';
 
 class TemplateIteratorImpl implements TemplateIterator {
+  /**
+   * The frame for the initial render. The render result keeps it.
+   */
+  #root: TagNode | undefined = undefined;
+
   constructor(private vm: VM) {}
+
   next(): RichIteratorResult<null, RenderResult> {
-    return this.vm.next();
+    let root = this.#root;
+
+    if (root === undefined) {
+      root = this.#root = createFrame(true);
+      beginFrame(root);
+    }
+
+    let done = false;
+
+    try {
+      let result = this.vm.next();
+      done = true;
+
+      if (result.done) {
+        endFrame();
+        consumeFrame(root);
+        (result.value as RenderResultImpl).root = root;
+      }
+
+      return result;
+    } finally {
+      if (!done) abandonFrame(root);
+    }
   }
 
   sync(): RenderResult {
-    if (DEBUG) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
-      return debug.runInTrackingTransaction!(() => this.vm.execute(), '- While rendering:');
-    } else {
-      return this.vm.execute();
+    let root = (this.#root = createFrame(true));
+    let result: RenderResult | undefined;
+
+    beginFrame(root);
+
+    try {
+      if (DEBUG) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+        result = debug.runInTrackingTransaction!(() => this.vm.execute(), '- While rendering:');
+      } else {
+        result = this.vm.execute();
+      }
+    } finally {
+      if (result === undefined) {
+        abandonFrame(root);
+      } else {
+        endFrame();
+        consumeFrame(root);
+        (result as RenderResultImpl).root = root;
+      }
     }
+
+    return result;
   }
 }
 

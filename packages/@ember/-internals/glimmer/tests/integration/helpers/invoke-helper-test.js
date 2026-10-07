@@ -8,7 +8,7 @@ import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import { getValue } from '@glimmer/validator';
+import { getValue } from '@glimmer/signals';
 import { destroy, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { invokeHelper } from '@glimmer/runtime';
 

@@ -1,11 +1,11 @@
 import { DEBUG } from '@glimmer/env';
-import type { ConstantTag, UpdatableTag } from '@glimmer/interfaces';
+import type { Tag } from '@glimmer/interfaces';
 
 import type { Indexable } from './utils';
 
 import { debug } from './debug';
 import { unwrap } from './utils';
-import { createUpdatableTag, DIRTY_TAG } from './validators';
+import { createTag, dirtyTag, releaseTag } from './tags';
 
 function isObjectLike<T>(u: T): u is Indexable & T {
   return (typeof u === 'object' && u !== null) || typeof u === 'function';
@@ -13,7 +13,7 @@ function isObjectLike<T>(u: T): u is Indexable & T {
 
 ///////////
 
-export type TagMeta = Map<PropertyKey, UpdatableTag>;
+export type TagMeta = Map<PropertyKey, Tag>;
 
 const TRACKED_TAGS = new WeakMap<object, TagMeta>();
 
@@ -39,7 +39,7 @@ export function dirtyTagFor<T extends object>(
       unwrap(debug.assertTagNotConsumed)(propertyTag, obj, key);
     }
 
-    DIRTY_TAG(propertyTag, true);
+    dirtyTag(propertyTag, true);
   }
 }
 
@@ -59,14 +59,28 @@ export function tagFor<T extends object>(
   obj: T,
   key: keyof T | string | symbol,
   meta?: TagMeta
-): UpdatableTag | ConstantTag {
+): Tag {
   let tags = meta === undefined ? tagMetaFor(obj) : meta;
   let tag = tags.get(key);
 
   if (tag === undefined) {
-    tag = createUpdatableTag();
+    tag = createTag();
     tags.set(key, tag);
   }
 
   return tag;
+}
+
+/**
+ * Call this function when `obj` will get no more reads.
+ *
+ * A tag of `obj` that follows other tags has links from those tags. The links
+ * keep memory, and each write to those tags visits them.
+ */
+export function releaseTagsFor(obj: object): void {
+  let tags = TRACKED_TAGS.get(obj);
+
+  if (tags !== undefined) {
+    tags.forEach(releaseTag);
+  }
 }

@@ -10,7 +10,7 @@
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
     "@glimmer/reference": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "@glimmer/vm": "workspace:*"
   }
 }

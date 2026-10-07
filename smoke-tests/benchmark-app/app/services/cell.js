@@ -4,7 +4,7 @@
  *
  * Needed for equality-based dirty checking, rather than identity-based.
  */
-import { consumeTag, createUpdatableTag, dirtyTag } from '@glimmer/validator';
+import { tracked } from '@glimmer/tracking';
 
 export function cell(initial, options = { equals: Object.is }) {
   return new Cell(initial, options);
@@ -12,40 +12,24 @@ export function cell(initial, options = { equals: Object.is }) {
 
 class Cell {
   #value;
-  #equals;
-  #tag;
 
   constructor(value, options) {
-    this.#value = value;
-    this.#equals = options.equals;
-    this.#tag = createUpdatableTag();
+    this.#value = tracked(value, options);
   }
 
   get current() {
-    consumeTag(this.#tag);
-
-    return this.#value;
+    return this.#value.value;
   }
 
   read() {
-    consumeTag(this.#tag);
-
-    return this.#value;
+    return this.#value.value;
   }
 
   set(value) {
-    if (this.#equals?.(this.#value, value)) {
-      return false;
-    }
-
-    this.#value = value;
-
-    dirtyTag(this.#tag);
-
-    return true;
+    return this.#value.set(value);
   }
 
   update(updater) {
-    this.set(updater(this.#value));
+    this.#value.update(updater);
   }
 }

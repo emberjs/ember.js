@@ -62,7 +62,7 @@
     "@glimmer/syntax": "workspace:*",
     "@glimmer/tracking": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "@glimmer/vm": "workspace:*",
     "@simple-dom/interface": "^1.4.0",
     "backburner.js": "^2.7.0",

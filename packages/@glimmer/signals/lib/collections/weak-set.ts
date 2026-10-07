@@ -2,10 +2,9 @@
 // interface are automatically supported without needing to manually
 // re-implement each one.
 
-import { consumeTag } from '../tracking';
-import { createUpdatableTag, DIRTY_TAG } from '../validators';
+import { consumeTag, createTag, dirtyTag } from '../tags';
 
-type Tag = ReturnType<typeof createUpdatableTag>;
+type Tag = ReturnType<typeof createTag>;
 
 /**
  * NOTE: we cannot pass a WeakSet because WeakSets are not iterable
@@ -26,7 +25,7 @@ export function trackedWeakSet<Value extends WeakKey>(
     let storage = storages.get(key);
 
     if (storage === undefined) {
-      storage = createUpdatableTag();
+      storage = createTag();
       storages.set(key, storage);
     }
 
@@ -37,7 +36,7 @@ export function trackedWeakSet<Value extends WeakKey>(
     const storage = storages.get(key);
 
     if (storage) {
-      DIRTY_TAG(storage);
+      dirtyTag(storage);
     }
   }
 

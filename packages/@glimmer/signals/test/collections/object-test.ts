@@ -1,4 +1,4 @@
-import { trackedObject } from '@glimmer/validator';
+import { trackedObject } from '@glimmer/signals';
 import { expectTypeOf } from 'expect-type';
 
 import { module, test } from '../-utils';
@@ -12,7 +12,7 @@ trackedObject<{ foo: number }>({});
 // Optional keys should not require a value
 trackedObject<{ foo?: number }>();
 
-module('@glimmer/validator: trackedObject', function () {
+module('@glimmer/signals: trackedObject', function () {
   test('basic usage', (assert) => {
     let original = { foo: 123 };
     let obj = trackedObject(original);

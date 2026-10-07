@@ -178,21 +178,28 @@ if (DEBUG) {
   };
 
   debug.markTagAsConsumed = (_tag: Tag) => {
-    if (!CONSUMED_TAGS || CONSUMED_TAGS.has(_tag)) return;
+    if (!CONSUMED_TAGS) return;
+
+    let mark = debug.markTagAsConsumed!;
+
+    if (Array.isArray(_tag)) {
+      _tag.forEach(mark);
+      return;
+    }
+
+    if (CONSUMED_TAGS.has(_tag)) return;
 
     CONSUMED_TAGS.set(_tag, getLast(asPresentArray(TRANSACTION_STACK)));
 
-    // We need to mark the tag and all of its subtags as consumed, so we need to
-    // cast it and access its internals. In the future this shouldn't be necessary,
-    // this is only for computed properties.
-    let subtag = (_tag as unknown as { subtag: Tag | Tag[] | null }).subtag;
+    /**
+     * A write to a tag below `_tag` also counts as a write after a read.
+     *
+     * The fields belong to `TagNode` in `tags.ts`.
+     */
+    let node = _tag as unknown as { deps: { dep: Tag; nextDep: unknown } | undefined };
 
-    if (!subtag || !debug.markTagAsConsumed) return;
-
-    if (Array.isArray(subtag)) {
-      subtag.forEach(debug.markTagAsConsumed);
-    } else {
-      debug.markTagAsConsumed(subtag);
+    for (let dep = node.deps; dep !== undefined; dep = dep.nextDep as typeof dep) {
+      mark(dep.dep);
     }
   };
 

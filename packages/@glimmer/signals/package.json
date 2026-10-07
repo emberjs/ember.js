@@ -1,13 +1,13 @@
 {
-  "name": "@glimmer/validator",
+  "name": "@glimmer/signals",
   "version": "0.95.0",
   "license": "MIT",
   "private": true,
-  "description": "Objects used to track values and their dirtiness in Glimmer",
+  "description": "The reactive graph of Glimmer, on top of alien-signals",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
-    "directory": "packages/@glimmer/validator"
+    "directory": "packages/@glimmer/signals"
   },
   "type": "module",
   "exports": {
@@ -39,7 +39,8 @@
   },
   "dependencies": {
     "@glimmer/global-context": "workspace:*",
-    "@glimmer/interfaces": "workspace:*"
+    "@glimmer/interfaces": "workspace:*",
+    "alien-signals": "^3.2.1"
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",

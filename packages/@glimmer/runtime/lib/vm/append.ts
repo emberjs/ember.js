@@ -34,7 +34,7 @@ import { UNDEFINED_REFERENCE } from '@glimmer/reference/lib/reference';
 import { reverse } from '@glimmer/util/lib/array-utils';
 import { StackImpl as Stack } from '@glimmer/util/lib/collections';
 import { LOCAL_LOGGER } from '@glimmer/util';
-import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator/lib/tracking';
+import { beginFrame, consumeFrame, endFrame, resetTracking } from '@glimmer/signals/lib/tags';
 import { $pc, isLowLevelRegister } from '@glimmer/vm/lib/registers';
 
 import type { ScopeOptions } from '../scope';
@@ -353,10 +353,10 @@ export class VM {
     let guard = new JumpIfNotModifiedOpcode();
 
     opcodes.push(guard);
-    opcodes.push(new BeginTrackFrameOpcode(name));
+    opcodes.push(new BeginTrackFrameOpcode(guard, name));
     this.#stacks.cache.push(guard);
 
-    beginTrackFrame(name);
+    beginFrame(guard.frame, name);
   }
 
   /**
@@ -377,10 +377,11 @@ export class VM {
     let opcodes = this.updating();
     let guard = expect(this.#stacks.cache.pop(), 'VM BUG: Expected a cache group');
 
-    let tag = endTrackFrame();
+    endFrame();
+    consumeFrame(guard.frame);
     opcodes.push(new EndTrackFrameOpcode(guard));
 
-    guard.finalize(tag, opcodes.length);
+    guard.finalize(opcodes.length);
   }
 
   /**

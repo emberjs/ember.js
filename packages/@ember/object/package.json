@@ -33,7 +33,7 @@
     "@glimmer/manager": "workspace:*",
     "@glimmer/owner": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*"
   },

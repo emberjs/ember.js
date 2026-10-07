@@ -1,4 +1,4 @@
-import { trackedWeakSet } from '@glimmer/validator';
+import { trackedWeakSet } from '@glimmer/signals';
 import {
   defineComponent,
   GlimmerishComponent as Component,

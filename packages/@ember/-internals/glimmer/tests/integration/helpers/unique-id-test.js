@@ -7,7 +7,7 @@ import {
 } from 'internal-test-helpers';
 import { setProperties } from '@ember/object';
 import { uniqueId, invokeHelper } from '@ember/helper';
-import { getValue } from '@glimmer/validator';
+import { getValue } from '@glimmer/signals';
 
 moduleFor(
   'Helpers test: {{unique-id}} JS',

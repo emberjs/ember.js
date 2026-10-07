@@ -2,17 +2,25 @@ import { ENV } from '@ember/-internals/environment/lib/env';
 import { peekMeta } from '@ember/-internals/meta/lib/meta';
 import type { schedule } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
-import type { Tag } from '@glimmer/interfaces';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
-import { tagMetaFor } from '@glimmer/validator/lib/meta';
+import {
+  createFrame,
+  disposeFrame,
+  isFrameStale,
+  watchTag,
+  writeCount,
+} from '@glimmer/signals/lib/tags';
+import type { TagNode } from '@glimmer/signals/lib/tags';
+import { tagMetaFor } from '@glimmer/signals/lib/meta';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';
 
 interface ActiveObserver {
-  tag: Tag;
+  /**
+   * The subscriber for the tags of `path`. It is stale after a write to one of them.
+   */
+  watch: TagNode;
   path: string;
-  lastRevision: number;
   count: number;
   suspended: boolean;
 }
@@ -99,15 +107,10 @@ export function activateObserver(target: object, eventName: string, sync = false
     activeObservers.get(eventName)!.count++;
   } else {
     let path = eventName.substring(0, eventName.lastIndexOf(':'));
-    let tag = getChainTagsForKey(target, path, tagMetaFor(target), peekMeta(target));
+    let observer = { count: 1, path, watch: createFrame(), suspended: false };
 
-    activeObservers.set(eventName, {
-      count: 1,
-      path,
-      tag,
-      lastRevision: valueForTag(tag),
-      suspended: false,
-    });
+    rewatch(target, observer);
+    activeObservers.set(eventName, observer);
   }
 }
 
@@ -130,6 +133,7 @@ function deactivateObserver(target: object, eventName: string, sync = false) {
     observer.count--;
 
     if (observer.count === 0) {
+      disposeFrame(observer.watch);
       activeObservers.delete(eventName);
 
       if (activeObservers.size === 0) {
@@ -163,54 +167,36 @@ export function resumeObserverDeactivation() {
 export function revalidateObservers(target: object) {
   if (ASYNC_OBSERVERS.has(target)) {
     ASYNC_OBSERVERS.get(target)!.forEach((observer) => {
-      observer.tag = getChainTagsForKey(
-        target,
-        observer.path,
-        tagMetaFor(target),
-        peekMeta(target)
-      );
-      observer.lastRevision = valueForTag(observer.tag);
+      rewatch(target, observer);
     });
   }
 
   if (SYNC_OBSERVERS.has(target)) {
     SYNC_OBSERVERS.get(target)!.forEach((observer) => {
-      observer.tag = getChainTagsForKey(
-        target,
-        observer.path,
-        tagMetaFor(target),
-        peekMeta(target)
-      );
-      observer.lastRevision = valueForTag(observer.tag);
+      rewatch(target, observer);
     });
   }
 }
 
-let lastKnownRevision = 0;
+let lastKnownWrites = 0;
 
 export function flushAsyncObservers(_schedule: typeof schedule | false) {
-  let currentRevision = valueForTag(CURRENT_TAG);
-  if (lastKnownRevision === currentRevision) {
+  let writes = writeCount();
+  if (lastKnownWrites === writes) {
     return;
   }
-  lastKnownRevision = currentRevision;
+  lastKnownWrites = writes;
 
   ASYNC_OBSERVERS.forEach((activeObservers, target) => {
     let meta = peekMeta(target);
 
     activeObservers.forEach((observer, eventName) => {
-      if (!validateTag(observer.tag, observer.lastRevision)) {
+      if (isFrameStale(observer.watch)) {
         let sendObserver = () => {
           try {
             sendEvent(target, eventName, [target, observer.path], undefined, meta);
           } finally {
-            observer.tag = getChainTagsForKey(
-              target,
-              observer.path,
-              tagMetaFor(target),
-              peekMeta(target)
-            );
-            observer.lastRevision = valueForTag(observer.tag);
+            rewatch(target, observer);
           }
         };
 
@@ -233,18 +219,12 @@ export function flushSyncObservers() {
     let meta = peekMeta(target);
 
     activeObservers.forEach((observer, eventName) => {
-      if (!observer.suspended && !validateTag(observer.tag, observer.lastRevision)) {
+      if (!observer.suspended && isFrameStale(observer.watch)) {
         try {
           observer.suspended = true;
           sendEvent(target, eventName, [target, observer.path], undefined, meta);
         } finally {
-          observer.tag = getChainTagsForKey(
-            target,
-            observer.path,
-            tagMetaFor(target),
-            peekMeta(target)
-          );
-          observer.lastRevision = valueForTag(observer.tag);
+          rewatch(target, observer);
           observer.suspended = false;
         }
       }
@@ -266,7 +246,21 @@ export function setObserverSuspended(target: object, property: string, suspended
   }
 }
 
+function rewatch(target: object, observer: ActiveObserver) {
+  watchTag(
+    observer.watch,
+    getChainTagsForKey(target, observer.path, tagMetaFor(target), peekMeta(target))
+  );
+}
+
 function destroyObservers(target: object) {
+  SYNC_OBSERVERS.get(target)?.forEach(disposeWatch);
+  ASYNC_OBSERVERS.get(target)?.forEach(disposeWatch);
+
   if (SYNC_OBSERVERS.size > 0) SYNC_OBSERVERS.delete(target);
   if (ASYNC_OBSERVERS.size > 0) ASYNC_OBSERVERS.delete(target);
+}
+
+function disposeWatch(observer: ActiveObserver) {
+  disposeFrame(observer.watch);
 }

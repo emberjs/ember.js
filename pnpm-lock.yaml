@@ -373,6 +373,9 @@ importers:
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../../@glimmer/runtime
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/syntax':
         specifier: workspace:*
         version: link:../../@glimmer/syntax
@@ -382,9 +385,6 @@ importers:
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       '@glimmer/vm':
         specifier: workspace:*
         version: link:../../@glimmer/vm
@@ -467,12 +467,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -533,12 +533,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -609,12 +609,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -673,12 +673,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -744,12 +744,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       dag-map:
         specifier: ^2.0.2
         version: 2.0.2
@@ -786,12 +786,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
@@ -813,9 +813,9 @@ importers:
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../../@glimmer/runtime
-      '@glimmer/validator':
+      '@glimmer/signals':
         specifier: workspace:*
-        version: link:../../@glimmer/validator
+        version: link:../../@glimmer/signals
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -846,9 +846,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
-      '@glimmer/validator':
+      '@glimmer/signals':
         specifier: workspace:*
-        version: link:../../@glimmer/validator
+        version: link:../../@glimmer/signals
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
@@ -912,12 +912,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -964,9 +964,9 @@ importers:
 
   packages/@ember/reactive:
     dependencies:
-      '@glimmer/validator':
+      '@glimmer/signals':
         specifier: workspace:*
-        version: link:../../@glimmer/validator
+        version: link:../../@glimmer/signals
 
   packages/@ember/renderer:
     dependencies:
@@ -1027,12 +1027,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1072,9 +1072,9 @@ importers:
       '@glimmer/env':
         specifier: workspace:*
         version: link:../../@glimmer/env
-      '@glimmer/validator':
+      '@glimmer/signals':
         specifier: workspace:*
-        version: link:../../@glimmer/validator
+        version: link:../../@glimmer/signals
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1108,12 +1108,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1254,12 +1254,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1373,6 +1373,9 @@ importers:
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../../@glimmer/runtime
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../@glimmer/signals
       '@glimmer/syntax':
         specifier: workspace:*
         version: link:../../@glimmer/syntax
@@ -1382,9 +1385,6 @@ importers:
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../@glimmer/validator
       '@glimmer/vm':
         specifier: workspace:*
         version: link:../../@glimmer/vm
@@ -1485,15 +1485,15 @@ importers:
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../../../@glimmer/runtime
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../../@glimmer/signals
       '@glimmer/syntax':
         specifier: workspace:*
         version: link:../../../@glimmer/syntax
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../../@glimmer/validator
       '@glimmer/wire-format':
         specifier: workspace:*
         version: link:../../../@glimmer/wire-format
@@ -1844,12 +1844,12 @@ importers:
       '@glimmer/reference':
         specifier: workspace:*
         version: link:../reference
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../validator
       '@glimmer/vm':
         specifier: workspace:*
         version: link:../vm
@@ -1887,9 +1887,9 @@ importers:
       '@glimmer/reference':
         specifier: workspace:*
         version: link:../../reference
-      '@glimmer/validator':
+      '@glimmer/signals':
         specifier: workspace:*
-        version: link:../../validator
+        version: link:../../signals
       '@glimmer/vm':
         specifier: workspace:*
         version: link:../../vm
@@ -2058,12 +2058,12 @@ importers:
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../validator
     devDependencies:
       '@glimmer/debug-util':
         specifier: workspace:*
@@ -2095,12 +2095,12 @@ importers:
       '@glimmer/reference':
         specifier: workspace:*
         version: link:..
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../../signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../../validator
     devDependencies:
       '@glimmer/debug-util':
         specifier: workspace:*
@@ -2129,12 +2129,12 @@ importers:
       '@glimmer/reference':
         specifier: workspace:*
         version: link:../reference
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../validator
       '@glimmer/vm':
         specifier: workspace:*
         version: link:../vm
@@ -2166,6 +2166,55 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
+
+  packages/@glimmer/signals:
+    dependencies:
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      alien-signals:
+        specifier: ^3.2.1
+        version: 3.2.1
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../env
+      eslint:
+        specifier: ^9.20.1
+        version: 9.39.5
+      expect-type:
+        specifier: ^1.1.0
+        version: 1.3.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.21
+      rollup:
+        specifier: ^4.2.0
+        version: 4.61.0
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/@glimmer/signals/test:
+    dependencies:
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../../global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../interfaces
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:..
+      expect-type:
+        specifier: ^1.1.0
+        version: 1.3.0
 
   packages/@glimmer/syntax:
     dependencies:
@@ -2234,9 +2283,9 @@ importers:
       '@ember/-internals':
         specifier: workspace:*
         version: link:../../@ember/-internals
-      '@glimmer/validator':
+      '@glimmer/signals':
         specifier: workspace:*
-        version: link:../validator
+        version: link:../signals
 
   packages/@glimmer/util:
     dependencies:
@@ -2271,52 +2320,6 @@ importers:
       '@glimmer/util':
         specifier: workspace:*
         version: link:..
-
-  packages/@glimmer/validator:
-    dependencies:
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../global-context
-      '@glimmer/interfaces':
-        specifier: workspace:*
-        version: link:../interfaces
-    devDependencies:
-      '@glimmer/debug-util':
-        specifier: workspace:*
-        version: link:../debug-util
-      '@glimmer/env':
-        specifier: workspace:*
-        version: link:../env
-      eslint:
-        specifier: ^9.20.1
-        version: 9.39.4
-      expect-type:
-        specifier: ^1.1.0
-        version: 1.3.0
-      publint:
-        specifier: ^0.3.2
-        version: 0.3.21
-      rollup:
-        specifier: ^4.2.0
-        version: 4.61.0
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-
-  packages/@glimmer/validator/test:
-    dependencies:
-      '@glimmer/global-context':
-        specifier: workspace:*
-        version: link:../../global-context
-      '@glimmer/interfaces':
-        specifier: workspace:*
-        version: link:../../interfaces
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:..
-      expect-type:
-        specifier: ^1.1.0
-        version: 1.3.0
 
   packages/@glimmer/vm:
     dependencies:
@@ -2465,15 +2468,15 @@ importers:
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../@glimmer/runtime
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../@glimmer/signals
       '@glimmer/tracking':
         specifier: workspace:*
         version: link:../@glimmer/tracking
       '@glimmer/util':
         specifier: workspace:*
         version: link:../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -2570,12 +2573,12 @@ importers:
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../@glimmer/runtime
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../@glimmer/signals
       '@glimmer/syntax':
         specifier: workspace:*
         version: link:../@glimmer/syntax
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -2636,12 +2639,12 @@ importers:
       '@glimmer/owner':
         specifier: workspace:*
         version: link:../@glimmer/owner
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../@glimmer/signals
       '@glimmer/util':
         specifier: workspace:*
         version: link:../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -2732,15 +2735,15 @@ importers:
       '@glimmer/runtime':
         specifier: workspace:*
         version: link:../@glimmer/runtime
+      '@glimmer/signals':
+        specifier: workspace:*
+        version: link:../@glimmer/signals
       '@glimmer/syntax':
         specifier: workspace:*
         version: link:../@glimmer/syntax
       '@glimmer/util':
         specifier: workspace:*
         version: link:../@glimmer/util
-      '@glimmer/validator':
-        specifier: workspace:*
-        version: link:../@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -6165,6 +6168,9 @@ packages:
 
   ajv@8.20.0:
     resolution: {integrity: sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==}
+
+  alien-signals@3.2.1:
+    resolution: {integrity: sha512-I8FjmltrfnDFoZedi5CG8DghVYNhzb/Ijluz7tCSJH0xpd0484Kowhbb1XDYOxfJpU1p5wnM2X54dA+IfGyD1g==}
 
   amd-name-resolver@1.3.1:
     resolution: {integrity: sha512-26qTEWqZQ+cxSYygZ4Cf8tsjDBLceJahhtewxtKZA3SRa4PluuqYCuheemDQD+7Mf5B7sr+zhTDWAHDh02a1Dw==}
@@ -16773,6 +16779,8 @@ snapshots:
       fast-uri: 3.1.2
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
+
+  alien-signals@3.2.1: {}
 
   amd-name-resolver@1.3.1:
     dependencies:

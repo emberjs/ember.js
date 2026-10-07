@@ -16,7 +16,7 @@ import {
   valueForRef,
 } from '@glimmer/reference';
 import { dict } from '@glimmer/util';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/signals';
 
 import { tracked } from './support';
 

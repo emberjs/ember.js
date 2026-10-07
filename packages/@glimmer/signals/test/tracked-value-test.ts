@@ -1,8 +1,22 @@
-import { track, trackedValue, validateTag, valueForTag } from '@glimmer/validator';
+import type { Tag, TagNode } from '@glimmer/signals';
+import { createFrame, isFrameStale, track, trackedValue, watchTag } from '@glimmer/signals';
 
 import { module, test } from './-utils';
 
-module('@glimmer/validator: trackedValue()', () => {
+/**
+ * A subscriber for `tag`. `isValid` answers `false` after a write to the tag.
+ */
+function watch(tag: Tag) {
+  let frame = createFrame();
+  watchTag(frame, tag);
+  return frame;
+}
+
+function isValid(frame: TagNode) {
+  return !isFrameStale(frame);
+}
+
+module('@glimmer/signals: trackedValue()', () => {
   test('creates reactive storage', (assert) => {
     const x = trackedValue('hello');
 
@@ -47,58 +61,58 @@ module('@glimmer/validator: trackedValue()', () => {
     const x = trackedValue(0);
 
     const tag = track(() => x.value);
-    let snapshot = valueForTag(tag);
+    let snapshot = watch(tag);
 
-    assert.true(validateTag(tag, snapshot), 'tag is valid before a change');
+    assert.true(isValid(snapshot), 'tag is valid before a change');
 
     x.value = 1;
-    assert.false(validateTag(tag, snapshot), 'tag is invalidated by a change');
+    assert.false(isValid(snapshot), 'tag is invalidated by a change');
 
-    snapshot = valueForTag(tag);
-    assert.true(validateTag(tag, snapshot), 'tag is valid after snapshotting');
+    snapshot = watch(tag);
+    assert.true(isValid(snapshot), 'tag is valid after snapshotting');
   });
 
   test('default equals (Object.is) does not dirty on no-op changes', (assert) => {
     const x = trackedValue(0);
 
     const tag = track(() => x.value);
-    const snapshot = valueForTag(tag);
+    const snapshot = watch(tag);
 
     x.value = 0;
-    assert.true(validateTag(tag, snapshot), 'tag is still valid after setting an equal value');
+    assert.true(isValid(snapshot), 'tag is still valid after setting an equal value');
   });
 
   test('options.equals: () => false dirties on every set', (assert) => {
     const x = trackedValue(0, { equals: () => false });
 
     const tag = track(() => x.value);
-    const snapshot = valueForTag(tag);
+    const snapshot = watch(tag);
 
     x.value = 0;
-    assert.false(validateTag(tag, snapshot), 'tag is invalidated by a no-op set');
+    assert.false(isValid(snapshot), 'tag is invalidated by a no-op set');
   });
 
   test('options.equals: custom comparisons are respected', (assert) => {
     const x = trackedValue({ id: 1 }, { equals: (a, b) => a.id === b.id });
 
     const tag = track(() => x.value);
-    const snapshot = valueForTag(tag);
+    const snapshot = watch(tag);
 
     x.value = { id: 1 };
-    assert.true(validateTag(tag, snapshot), 'tag is still valid after setting an equal value');
+    assert.true(isValid(snapshot), 'tag is still valid after setting an equal value');
 
     x.value = { id: 2 };
-    assert.false(validateTag(tag, snapshot), 'tag is invalidated by a different value');
+    assert.false(isValid(snapshot), 'tag is invalidated by a different value');
   });
 
   test('update() reads without consuming', (assert) => {
     const x = trackedValue(0);
 
     const tag = track(() => x.update((value) => value));
-    const snapshot = valueForTag(tag);
+    const snapshot = watch(tag);
 
     x.value = 1;
-    assert.true(validateTag(tag, snapshot), 'update() did not entangle with the value');
+    assert.true(isValid(snapshot), 'update() did not entangle with the value');
   });
 
   test('each method is the same function on each read', (assert) => {

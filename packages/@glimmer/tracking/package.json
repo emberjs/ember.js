@@ -9,6 +9,6 @@
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
-    "@glimmer/validator": "workspace:*"
+    "@glimmer/signals": "workspace:*"
   }
 }

@@ -187,13 +187,13 @@ function basicTest(scenarios: Scenarios, appName: string) {
           unit: {
             'v1-addon-without-eai-test.js': `
               import { module, test } from 'qunit';
-              import { accessGlimmerValidator } from 'v1-addon-without-eai';
+              import { accessGlimmerPackage } from 'v1-addon-without-eai';
               module('Acceptance | v1-addon-without-eai', function (hooks) {
                 // a v1 addon without ember-auto-import needs to maintain access
                 // to all the backward-compatible ember-provided packages, regardless
                 // of our build environment and optional-features.
                 test('can access things from ember', function(assert) {
-                  assert.strictEqual(accessGlimmerValidator(), 'it works');
+                  assert.strictEqual(accessGlimmerPackage(), 'it works');
                 })
               });
             `,
@@ -912,9 +912,9 @@ function basicTest(scenarios: Scenarios, appName: string) {
         'index.js': 'module.exports = { name: "v1-addon-without-eai" }',
         addon: {
           'index.js': `
-            import { consumeTag } from '@glimmer/validator';
-            export function accessGlimmerValidator() {
-              if (typeof consumeTag === 'function') {
+            import { destroy } from '@glimmer/destroyable';
+            export function accessGlimmerPackage() {
+              if (typeof destroy === 'function') {
                 return "it works"
               }
             }

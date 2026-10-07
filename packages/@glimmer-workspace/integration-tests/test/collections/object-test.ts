@@ -1,4 +1,4 @@
-import { trackedObject } from '@glimmer/validator';
+import { trackedObject } from '@glimmer/signals';
 import {
   defineComponent,
   GlimmerishComponent as Component,

@@ -3,7 +3,6 @@ import toString from '@ember/-internals/utils/lib/to-string';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import type { Revision } from '@glimmer/validator/lib/validators';
 import type { UpdatableTag } from '@glimmer/interfaces';
 
 type ObjMap<T> = { [key: string]: T };
@@ -99,7 +98,7 @@ export class Meta {
   /** @internal */
   _values: ObjMap<unknown> | undefined;
   /** @internal */
-  _revisions: ObjMap<Revision> | undefined;
+  _cached: ObjMap<boolean> | undefined;
   /** @internal */
   source: object;
   /** @internal */
@@ -127,7 +126,7 @@ export class Meta {
     this._mixins = undefined;
     this._lazyChains = undefined;
     this._values = undefined;
-    this._revisions = undefined;
+    this._cached = undefined;
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
@@ -170,7 +169,7 @@ export class Meta {
   }
 
   /** @internal */
-  _getOrCreateOwnMap(key: '_values' | '_revisions' | '_lazyChains') {
+  _getOrCreateOwnMap(key: '_values' | '_cached' | '_lazyChains') {
     return this[key] || (this[key] = Object.create(null));
   }
 
@@ -221,18 +220,22 @@ export class Meta {
     values[key] = value;
   }
 
-  /** @internal */
-  revisionFor(key: string): Revision | undefined {
-    let revisions = this._revisions;
+  /**
+   * `true` when `valueFor` holds a computed value for the key.
+   *
+   * The value is valid while the tag of the property is fresh.
+   *
+   * @internal
+   */
+  hasCacheFor(key: string): boolean {
+    let cached = this._cached;
 
-    return revisions !== undefined ? revisions[key] : undefined;
+    return cached !== undefined && cached[key] === true;
   }
 
   /** @internal */
-  setRevisionFor(key: string, revision: Revision | undefined) {
-    let revisions = this._getOrCreateOwnMap('_revisions');
-
-    revisions[key] = revision;
+  setCachedFor(key: string, isCached: boolean) {
+    this._getOrCreateOwnMap('_cached')[key] = isCached;
   }
 
   /** @internal */

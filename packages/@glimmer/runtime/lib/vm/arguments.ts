@@ -35,7 +35,7 @@ import {
 } from '@glimmer/reference/lib/reference';
 import { dict } from '@glimmer/util/lib/collections';
 import { EMPTY_STRING_ARRAY, emptyArray, enumerate } from '@glimmer/util/lib/array-utils';
-import { CONSTANT_TAG } from '@glimmer/validator/lib/validators';
+import { CONSTANT_TAG } from '@glimmer/signals/lib/tags';
 import { $sp } from '@glimmer/vm/lib/registers';
 
 import type { EvaluationStack } from './stack';

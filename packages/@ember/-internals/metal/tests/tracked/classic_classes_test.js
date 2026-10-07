@@ -1,7 +1,17 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { defineProperty, tracked, nativeDescDecorator } from '../..';
 
-import { track, valueForTag, validateTag } from '@glimmer/validator';
+import { createFrame, isFrameStale, track, watchTag } from '@glimmer/signals';
+
+function watch(tag) {
+  let frame = createFrame();
+  watchTag(frame, tag);
+  return frame;
+}
+
+function isValid(frame) {
+  return !isFrameStale(frame);
+}
 
 moduleFor(
   '@tracked decorator - classic classes',
@@ -35,24 +45,24 @@ moduleFor(
       obj.last = 'Dale';
 
       let tag = track(() => obj.full);
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
-      assert.equal(validateTag(tag, snapshot), true);
+      assert.equal(isValid(snapshot), true);
 
-      snapshot = valueForTag(tag);
-      assert.equal(validateTag(tag, snapshot), true);
+      snapshot = watch(tag);
+      assert.equal(isValid(snapshot), true);
 
       obj.full = 'Melanie Sumner';
 
-      assert.equal(validateTag(tag, snapshot), false);
+      assert.equal(isValid(snapshot), false);
 
       assert.equal(obj.full, 'Melanie Sumner');
       assert.equal(obj.first, 'Melanie');
       assert.equal(obj.last, 'Sumner');
-      snapshot = valueForTag(tag);
+      snapshot = watch(tag);
 
-      assert.equal(validateTag(tag, snapshot), true);
+      assert.equal(isValid(snapshot), true);
     }
 
     [`@test can pass a default value to the tracked decorator`](assert) {
@@ -113,15 +123,15 @@ moduleFor(
       let obj = new Tracked();
 
       let tag = track(() => obj.first);
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       assert.equal(obj.first, 'Tom', 'default value is assigned');
 
       obj.first = 'Tom';
-      assert.equal(validateTag(tag, snapshot), true, 'setting an equal value does not invalidate');
+      assert.equal(isValid(snapshot), true, 'setting an equal value does not invalidate');
 
       obj.first = 'Thomas';
-      assert.equal(validateTag(tag, snapshot), false, 'setting a new value invalidates');
+      assert.equal(isValid(snapshot), false, 'setting a new value invalidates');
     }
   }
 );
@@ -151,13 +161,13 @@ moduleFor(
       let obj = new Tracked();
 
       let tag = track(() => obj.value);
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       assert.equal(obj.value, 1, 'initial value is assigned');
 
       obj.value = 2;
 
-      assert.equal(validateTag(tag, snapshot), false, 'setting a value invalidates');
+      assert.equal(isValid(snapshot), false, 'setting a value invalidates');
       assert.equal(obj.value, 2);
     }
 

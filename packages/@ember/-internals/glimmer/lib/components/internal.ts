@@ -17,7 +17,7 @@ import { setComponentTemplate } from '@glimmer/manager/lib/public/template';
 import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
-import { untrack } from '@glimmer/validator/lib/tracking';
+import { untrack } from '@glimmer/signals/lib/tags';
 
 function NOOP(): void {}
 

@@ -19,7 +19,7 @@
     "@glimmer/runtime": "workspace:*",
     "@glimmer/syntax": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "@glimmer/wire-format": "workspace:*",
     "@ember/helper": "workspace:*",
     "@ember/modifier": "workspace:*",

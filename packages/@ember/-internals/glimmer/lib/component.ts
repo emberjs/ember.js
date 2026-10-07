@@ -22,7 +22,7 @@ import { setInternalComponentManager } from '@glimmer/manager/lib/internal/api';
 import { isUpdatableRef, updateRef } from '@glimmer/reference/lib/reference';
 import { normalizeProperty } from '@glimmer/runtime/lib/dom/props';
 import type { DirtyableTag } from '@glimmer/interfaces';
-import { createTag, DIRTY_TAG as dirtyTag } from '@glimmer/validator/lib/validators';
+import { createTag, dirtyTag } from '@glimmer/signals/lib/tags';
 import type { SimpleElement } from '@simple-dom/interface';
 import {
   BOUNDS,

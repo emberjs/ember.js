@@ -1,27 +1,55 @@
 import { DEBUG } from '@glimmer/env';
+import type { Tag, TagNode } from '@glimmer/signals';
 import {
-  beginTrackFrame,
+  beginFrame,
   beginUntrackFrame,
   consumeTag,
   createCache,
+  createFrame,
   createTag,
   debug,
   dirtyTag,
-  endTrackFrame,
+  endFrame,
   getValue,
   isConst,
+  isFrameStale,
   isTracking,
   resetTracking,
   track,
   trackedData,
   untrack,
-  validateTag,
-  valueForTag,
-} from '@glimmer/validator';
+  watchTag,
+} from '@glimmer/signals';
 
 import { module, test } from './-utils';
 
-module('@glimmer/validator: tracking', () => {
+/**
+ * A subscriber for `tag`. `isValid` answers `false` after a write to the tag.
+ */
+function watch(tag: Tag) {
+  let frame = createFrame();
+  watchTag(frame, tag);
+  return frame;
+}
+
+const OPEN_FRAMES: TagNode[] = [];
+
+function beginTrackFrame() {
+  let frame = createFrame();
+  OPEN_FRAMES.push(frame);
+  beginFrame(frame);
+}
+
+function endTrackFrame() {
+  endFrame();
+  return OPEN_FRAMES.pop() as TagNode;
+}
+
+function isValid(frame: TagNode) {
+  return !isFrameStale(frame);
+}
+
+module('@glimmer/signals: tracking', () => {
   module('track', () => {
     test('it combines tags that are consumed within a track frame', (assert) => {
       let tag1 = createTag();
@@ -32,13 +60,13 @@ module('@glimmer/validator: tracking', () => {
         consumeTag(tag2);
       });
 
-      let snapshot = valueForTag(combined);
+      let snapshot = watch(combined);
       dirtyTag(tag1);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(combined);
+      snapshot = watch(combined);
       dirtyTag(tag2);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
     });
 
     test('it ignores tags consumed within an untrack frame', (assert) => {
@@ -53,13 +81,13 @@ module('@glimmer/validator: tracking', () => {
         });
       });
 
-      let snapshot = valueForTag(combined);
+      let snapshot = watch(combined);
       dirtyTag(tag1);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(combined);
+      snapshot = watch(combined);
       dirtyTag(tag2);
-      assert.ok(validateTag(combined, snapshot));
+      assert.ok(isValid(snapshot));
     });
 
     test('it does not automatically consume tags in nested tracking frames', (assert) => {
@@ -74,13 +102,13 @@ module('@glimmer/validator: tracking', () => {
         });
       });
 
-      let snapshot = valueForTag(combined);
+      let snapshot = watch(combined);
       dirtyTag(tag1);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(combined);
+      snapshot = watch(combined);
       dirtyTag(tag2);
-      assert.ok(validateTag(combined, snapshot));
+      assert.ok(isValid(snapshot));
     });
 
     test('it works for nested tags', (assert) => {
@@ -97,13 +125,13 @@ module('@glimmer/validator: tracking', () => {
         consumeTag(tag3);
       });
 
-      let snapshot = valueForTag(combined);
+      let snapshot = watch(combined);
       dirtyTag(tag1);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(combined);
+      snapshot = watch(combined);
       dirtyTag(tag2);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
     });
 
     test('isTracking works within a track and untrack frame', (assert) => {
@@ -166,13 +194,13 @@ module('@glimmer/validator: tracking', () => {
 
       let combined = endTrackFrame();
 
-      let snapshot = valueForTag(combined);
+      let snapshot = watch(combined);
       dirtyTag(tag1);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(combined);
+      snapshot = watch(combined);
       dirtyTag(tag2);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
     });
 
     test('it ignores tags consumed within an untrack frame', (assert) => {
@@ -189,13 +217,13 @@ module('@glimmer/validator: tracking', () => {
 
       let combined = endTrackFrame();
 
-      let snapshot = valueForTag(combined);
+      let snapshot = watch(combined);
       dirtyTag(tag1);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(combined);
+      snapshot = watch(combined);
       dirtyTag(tag2);
-      assert.ok(validateTag(combined, snapshot));
+      assert.ok(isValid(snapshot));
     });
 
     test('it does not automatically consume tags in nested tracking frames', (assert) => {
@@ -216,13 +244,13 @@ module('@glimmer/validator: tracking', () => {
 
       let combined = endTrackFrame();
 
-      let snapshot = valueForTag(combined);
+      let snapshot = watch(combined);
       dirtyTag(tag1);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(combined);
+      snapshot = watch(combined);
       dirtyTag(tag2);
-      assert.ok(validateTag(combined, snapshot));
+      assert.ok(isValid(snapshot));
     });
 
     test('it works for nested tags', (assert) => {
@@ -245,24 +273,13 @@ module('@glimmer/validator: tracking', () => {
 
       let combined = endTrackFrame();
 
-      let snapshot = valueForTag(combined);
+      let snapshot = watch(combined);
       dirtyTag(tag1);
-      assert.notOk(validateTag(combined, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(combined);
+      snapshot = watch(combined);
       dirtyTag(tag2);
-      assert.notOk(validateTag(combined, snapshot));
-    });
-
-    test('it returns the tag itself if the frame consumed one tag many times', (assert) => {
-      let tag = createTag();
-
-      beginTrackFrame();
-
-      consumeTag(tag);
-      consumeTag(tag);
-
-      assert.strictEqual(endTrackFrame(), tag);
+      assert.notOk(isValid(snapshot));
     });
 
     test('it keeps a tag that a nested frame consumed between two consumptions', (assert) => {
@@ -276,35 +293,19 @@ module('@glimmer/validator: tracking', () => {
 
       beginTrackFrame();
       consumeTag(tag1);
-      let inner = endTrackFrame();
+      endTrackFrame();
 
       consumeTag(tag1);
 
       let outer = endTrackFrame();
 
-      assert.strictEqual(inner, tag1);
-
-      let snapshot = valueForTag(outer);
+      let snapshot = watch(outer);
       dirtyTag(tag1);
-      assert.notOk(validateTag(outer, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(outer);
+      snapshot = watch(outer);
       dirtyTag(tag2);
-      assert.notOk(validateTag(outer, snapshot));
-    });
-
-    test('it takes a tag one time if nested frames consume it at the same index', (assert) => {
-      let tag = createTag();
-
-      beginTrackFrame();
-
-      for (let i = 0; i < 3; i++) {
-        beginTrackFrame();
-        consumeTag(tag);
-        consumeTag(endTrackFrame());
-      }
-
-      assert.strictEqual(endTrackFrame(), tag);
+      assert.notOk(isValid(snapshot));
     });
 
     test('it does not keep the tags of a frame that did not end', (assert) => {
@@ -315,18 +316,24 @@ module('@glimmer/validator: tracking', () => {
       consumeTag(tag1);
 
       resetTracking();
+      OPEN_FRAMES.length = 0;
 
       beginTrackFrame();
       consumeTag(tag2);
 
-      assert.strictEqual(endTrackFrame(), tag2);
+      let snapshot = watch(endTrackFrame());
+
+      dirtyTag(tag1);
+      assert.ok(
+        isValid(snapshot),
+        'the frame does not follow the tag of the frame that did not end'
+      );
+
+      dirtyTag(tag2);
+      assert.notOk(isValid(snapshot));
     });
 
     test('it resets after a frame that began inside untrack frames', (assert) => {
-      /**
-       * Deeper than any other test goes,
-       * so these depths have no tracker yet.
-       */
       for (let i = 0; i < 100; i++) {
         beginUntrackFrame();
       }
@@ -334,6 +341,7 @@ module('@glimmer/validator: tracking', () => {
       beginTrackFrame();
 
       resetTracking();
+      OPEN_FRAMES.length = 0;
 
       assert.notOk(isTracking());
     });
@@ -350,10 +358,7 @@ module('@glimmer/validator: tracking', () => {
 
     if (DEBUG) {
       test('asserts if track frame was ended without one existing', (assert) => {
-        assert.throws(
-          () => endTrackFrame(),
-          /attempted to close a tracking frame, but one was not open/u
-        );
+        assert.throws(() => endTrackFrame(), /attempted to close a frame, but one was not open/u);
       });
     }
   });
@@ -565,10 +570,10 @@ module('@glimmer/validator: tracking', () => {
         assert.strictEqual(getter(foo), 456, 'value is set correctly');
       });
 
-      let snapshot = valueForTag(tag);
+      let snapshot = watch(tag);
 
       setter(foo, 789);
-      assert.notOk(validateTag(tag, snapshot));
+      assert.notOk(isValid(snapshot));
     });
 
     if (DEBUG) {

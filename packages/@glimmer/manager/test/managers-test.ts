@@ -24,7 +24,7 @@ import {
   setModifierManager,
 } from '@glimmer/manager';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { createUpdatableTag } from '@glimmer/validator';
+import { createTag } from '@glimmer/signals';
 
 const { module, test } = QUnit;
 
@@ -299,7 +299,7 @@ module('Managers', () => {
         }
 
         getTag() {
-          return createUpdatableTag();
+          return createTag();
         }
 
         install() {}

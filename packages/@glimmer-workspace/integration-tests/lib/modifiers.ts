@@ -7,10 +7,10 @@ import type {
   Owner,
   SimpleElement,
 } from '@glimmer/interfaces';
-import type { UpdatableTag } from '@glimmer/validator';
+import type { UpdatableTag } from '@glimmer/signals';
 import { registerDestructor } from '@glimmer/destroyable';
 import { reifyNamed, reifyPositional } from '@glimmer/runtime';
-import { createUpdatableTag } from '@glimmer/validator';
+import { createTag } from '@glimmer/signals';
 
 export interface TestModifierConstructor {
   new (): TestModifierInstance;
@@ -84,7 +84,7 @@ export class TestModifierManager implements InternalModifierManager<
 }
 
 export class TestModifier {
-  public tag = createUpdatableTag();
+  public tag = createTag();
 
   constructor(
     public element: SimpleElement,

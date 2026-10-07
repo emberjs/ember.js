@@ -8,10 +8,8 @@ import { registerDestructor } from '@glimmer/destroyable';
 import type { CapturedNamedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
 import { createConstRef } from '@glimmer/reference/lib/reference';
-import type { Revision } from '@glimmer/validator/lib/validators';
-import type { Tag } from '@glimmer/interfaces';
-import { beginUntrackFrame, endUntrackFrame } from '@glimmer/validator/lib/tracking';
-import { valueForTag } from '@glimmer/validator/lib/validators';
+import { beginUntrackFrame, endUntrackFrame } from '@glimmer/signals/lib/tags';
+import type { TagNode } from '@glimmer/signals/lib/tags';
 import type Component from '../component';
 
 type Finalizer = () => void;
@@ -30,18 +28,16 @@ function NOOP() {}
 export default class ComponentStateBucket {
   public classRef: Reference | null = null;
   public rootRef: Reference<Component>;
-  public argsRevision: Revision;
 
   constructor(
     public component: Component,
     public args: CapturedNamedArguments | null,
-    public argsTag: Tag,
+    public argsFrame: TagNode,
     public finalizer: Finalizer,
     public hasWrappedElement: boolean,
     public isInteractive: boolean
   ) {
     this.classRef = null;
-    this.argsRevision = args === null ? 0 : valueForTag(argsTag);
     this.rootRef = createConstRef(component, 'this');
 
     registerDestructor(this, () => this.willDestroy(), true);

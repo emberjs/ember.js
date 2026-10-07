@@ -11,7 +11,13 @@ import type {
   UpdatingVM,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference/lib/reference';
-import type { Revision } from '@glimmer/validator/lib/validators';
+import {
+  CONSTANT_TAG,
+  consumeTag,
+  createFrame,
+  isFrameStale,
+  watchTag,
+} from '@glimmer/signals/lib/tags';
 import type { Tag } from '@glimmer/interfaces';
 import { CURRIED_MODIFIER } from '@glimmer/constants/lib/curried';
 import {
@@ -42,8 +48,6 @@ import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer
 import { getInternalModifierManager } from '@glimmer/manager/lib/internal/api';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference/lib/reference';
 import { isIndexable } from '@glimmer/util/lib/collections';
-import { consumeTag } from '@glimmer/validator/lib/tracking';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator/lib/validators';
 import { $t0 } from '@glimmer/vm/lib/registers';
 
 import type { CurriedValue } from '../../curried-value';
@@ -319,40 +323,43 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
 });
 
 export class UpdateModifierOpcode implements UpdatingOpcode {
-  private lastUpdated: Revision;
+  /**
+   * Stale after a write to `tag`.
+   */
+  private watch = createFrame();
 
   constructor(
     private tag: Tag,
     private modifier: ModifierInstance
   ) {
-    this.lastUpdated = valueForTag(tag);
+    watchTag(this.watch, tag);
   }
 
   evaluate(vm: UpdatingVM) {
-    let { modifier, tag, lastUpdated } = this;
+    let { modifier, tag, watch } = this;
 
     consumeTag(tag);
 
-    if (!validateTag(tag, lastUpdated)) {
+    if (isFrameStale(watch)) {
       vm.env.scheduleUpdateModifier(modifier);
-      this.lastUpdated = valueForTag(tag);
+      watchTag(watch, tag);
     }
   }
 }
 
 export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
-  private lastUpdated: Revision;
+  private watch = createFrame();
 
   constructor(
     private tag: Tag | null,
     private instance: ModifierInstance | undefined,
     private instanceRef: Reference<ModifierInstance | undefined>
   ) {
-    this.lastUpdated = valueForTag(tag ?? CURRENT_TAG);
+    if (tag !== null) watchTag(this.watch, tag);
   }
 
   evaluate(vm: UpdatingVM) {
-    let { tag, lastUpdated, instance, instanceRef } = this;
+    let { tag, watch, instance, instanceRef } = this;
 
     let newInstance = valueForRef(instanceRef);
 
@@ -375,19 +382,17 @@ export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
 
         tag = manager.getTag(state);
 
-        if (tag !== null) {
-          this.lastUpdated = valueForTag(tag);
-        }
+        watchTag(watch, tag ?? CONSTANT_TAG);
 
         this.tag = tag;
         vm.env.scheduleInstallModifier(newInstance);
       }
 
       this.instance = newInstance;
-    } else if (tag !== null && !validateTag(tag, lastUpdated)) {
+    } else if (tag !== null && isFrameStale(watch)) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       vm.env.scheduleUpdateModifier(instance!);
-      this.lastUpdated = valueForTag(tag);
+      watchTag(watch, tag);
     }
 
     if (tag !== null) {

@@ -15,7 +15,7 @@ import { expect, isPresent, assert, unwrap } from '@glimmer/debug-util';
 import { destroy } from '@glimmer/destroyable';
 import { inTransaction } from '@glimmer/runtime';
 import { clearElement, dict } from '@glimmer/util';
-import { dirtyTagFor } from '@glimmer/validator';
+import { dirtyTagFor } from '@glimmer/signals';
 import { run } from '@ember/runloop';
 
 import type { ComponentBlueprint, ComponentKind, ComponentTypes } from './components';

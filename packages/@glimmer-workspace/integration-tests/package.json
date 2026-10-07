@@ -29,7 +29,7 @@
     "@glimmer/syntax": "workspace:*",
     "@glimmer/tracking": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/validator": "workspace:*",
+    "@glimmer/signals": "workspace:*",
     "@glimmer/vm": "workspace:*",
     "@glimmer/wire-format": "workspace:*",
     "@simple-dom/document": "^1.4.0",
