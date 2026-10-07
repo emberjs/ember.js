@@ -1955,7 +1955,7 @@ function addQueryParamsObservers(controller: any, propNames: string[]) {
       }
     }
 
-    addObserver(controller, `${prop}.[]`, controller, controller._qpChanged, false);
+    addObserver(controller, `${prop}.[]`, controller, controller._qpChanged);
   });
 }
 

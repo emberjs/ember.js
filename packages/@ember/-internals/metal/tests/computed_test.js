@@ -1158,7 +1158,7 @@ moduleFor(
 
       assert.equal(get(obj, 'someProp'), 456, '');
 
-      addObserver(obj, 'anotherProp', obj, () => {}, false);
+      addObserver(obj, 'anotherProp', obj, () => {});
       set(obj, 'anotherProp', 123);
 
       await runLoopSettled();
