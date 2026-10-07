@@ -4,6 +4,7 @@ import { get } from '@ember/-internals/metal/lib/property_get';
 import { PROPERTY_DID_CHANGE } from '@ember/-internals/metal/lib/property_events';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import TargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
 import type ViewStates from '@ember/-internals/views/lib/views/states';
 import ActionSupport from '@ember/-internals/views/lib/mixins/action_support';
@@ -37,6 +38,23 @@ import hasDOM from '@ember/-internals/browser-environment/lib/has-dom';
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
 const EMPTY_ARRAY = Object.freeze([]);
+
+const DEPRECATION_MESSAGE =
+  'The classic `Component` class from `@ember/component` is deprecated. Use a Glimmer component from `@glimmer/component`, or a template-only component, instead.';
+
+/**
+  Set this key to `true` on a subclass prototype, and its instances do not
+  trigger the `ember-component` deprecation.
+
+  The rendering test harness renders each test template through a classic
+  top-level component. That is test infrastructure, not a use of the
+  deprecated API.
+
+  This is a Symbol so that application code cannot reach it by name.
+
+  @private
+*/
+export const SKIP_DEPRECATION = Symbol('SKIP_DEPRECATION');
 
 /**
   Determines if the element matches the specified selector.
@@ -795,6 +813,7 @@ declare const SIGNATURE: unique symbol;
   @uses Ember.TargetActionSupport
   @uses Ember.ActionSupport
   @public
+  @deprecated Use a Glimmer component (`@glimmer/component`) or a template-only component instead.
 */
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -834,6 +853,7 @@ class Component<S = unknown>
 
   declare [IS_DISPATCHING_ATTRS]: boolean;
   declare [DIRTY_TAG]: DirtyableTag;
+  declare [SKIP_DEPRECATION]?: true;
 
   /**
     Standard CSS class names to apply to the view's outer element. This
@@ -908,6 +928,10 @@ class Component<S = unknown>
 
   init(properties?: object | undefined) {
     super.init(properties);
+
+    if (this[SKIP_DEPRECATION] !== true) {
+      deprecateUntil(DEPRECATION_MESSAGE, DEPRECATIONS.DEPRECATE_EMBER_COMPONENT);
+    }
 
     // Handle methods from ViewMixin.
     // The native class inheritance will not work for mixins. To work around this,

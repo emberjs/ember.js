@@ -4,6 +4,7 @@ import {
   RenderingTestCase,
   runTask,
   testUnless,
+  expectClassicComponentDeprecation,
 } from 'internal-test-helpers';
 
 import { action, set } from '@ember/object';
@@ -17,9 +18,12 @@ moduleFor(
   'Components test: send',
   class extends RenderingTestCase {
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved
     )} @test sending to undefined actions triggers an error`](assert) {
-      assert.expect(3);
+      expectClassicComponentDeprecation();
+
+      assert.expect(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isEnabled ? 4 : 3);
 
       expectDeprecation(
         /Calling `\.send\(\)` on/,
@@ -53,8 +57,11 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved
     )} @test \`send\` will call send from a target if it is defined`]() {
+      expectClassicComponentDeprecation();
+
       expectDeprecation(
         /Calling `\.send\(\)` on/,
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled
@@ -85,9 +92,12 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved
     )} @test a handled action can be bubbled to the target for continued processing`]() {
-      this.assert.expect(3);
+      expectClassicComponentDeprecation();
+
+      this.assert.expect(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isEnabled ? 4 : 3);
 
       expectDeprecation(
         /Calling `\.send\(\)` on/,
@@ -125,9 +135,12 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved
     )} @test action can be handled by a superclass' actions object`](assert) {
-      this.assert.expect(5);
+      expectClassicComponentDeprecation();
+
+      this.assert.expect(DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isEnabled ? 6 : 5);
 
       expectDeprecation(
         /Calling `\.send\(\)` on/,
@@ -199,8 +212,11 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
+      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved ||
+        DEPRECATIONS.DEPRECATE_EMBER_COMPONENT.isRemoved
     )} @test asserts if called on a destroyed component`]() {
+      expectClassicComponentDeprecation();
+
       expectDeprecation(
         /Calling `\.send\(\)` on/,
         DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isEnabled

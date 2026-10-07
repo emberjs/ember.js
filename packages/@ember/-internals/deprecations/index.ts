@@ -168,6 +168,13 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-ember-utils',
   }),
+  DEPRECATE_EMBER_COMPONENT: deprecation({
+    id: 'ember-component',
+    for: 'ember-source',
+    since: { available: '7.5.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/ember-component',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

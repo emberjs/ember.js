@@ -127,7 +127,8 @@ if (DEBUG) {
       case 'debug':
         return debug;
       case 'deprecate':
-        return deprecate;
+        // Callers save this value and restore it later with `setDebugFunction`.
+        return currentDeprecate ?? deprecate;
       case 'debugSeal':
         return debugSeal;
       case 'debugFreeze':

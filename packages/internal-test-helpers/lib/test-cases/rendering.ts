@@ -1,7 +1,7 @@
 import type { Renderer } from '@ember/-internals/glimmer';
 import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
 import { EventDispatcher } from '@ember/-internals/views';
-import Component from '@ember/component';
+import Component, { SKIP_DEPRECATION } from '@ember/-internals/glimmer/lib/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import compile from '../compile';
 import type Resolver from '../test-resolver';
@@ -111,7 +111,10 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       layoutName: '-top-level',
     });
 
-    owner.register('component:-top-level', Component.extend(attrs));
+    let TopLevel = Component.extend(attrs);
+    TopLevel.prototype[SKIP_DEPRECATION] = true;
+
+    owner.register('component:-top-level', TopLevel);
 
     this.component = owner.lookup('component:-top-level');
 
