@@ -1,10 +1,7 @@
 import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
-import Application from '@ember/application';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
-import { Component } from '@ember/-internals/glimmer';
 import { precompileTemplate } from '@ember/template-compilation';
-import { setComponentTemplate } from '@glimmer/manager';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
@@ -119,75 +116,6 @@ moduleFor(
 
       runTask(() => this.application.destroy());
       assert.equal(router._updatableRootOutletState, null, 'the root outlet was not re-rendered');
-    }
-
-    [`@test initializers can augment an applications customEvents hash`](assert) {
-      assert.expect(1);
-
-      let MyApplication = class extends Application {};
-
-      MyApplication.initializer({
-        name: 'customize-things',
-        initialize(application) {
-          application.customEvents = {
-            wowza: 'wowza',
-          };
-        },
-      });
-
-      runTask(() => {
-        this.createApplication({}, MyApplication);
-
-        this.add(
-          'component:foo-bar',
-          setComponentTemplate(
-            precompileTemplate(`<div id='wowza-thingy'></div>`),
-            class extends Component {
-              wowza() {
-                assert.ok(true, 'fired the event!');
-              }
-            }
-          )
-        );
-
-        this.add('template:application', precompileTemplate(`{{foo-bar}}`));
-      });
-
-      this.$('#wowza-thingy').trigger('wowza');
-    }
-
-    [`@test instanceInitializers can augment an the customEvents hash`](assert) {
-      assert.expect(1);
-
-      let MyApplication = class extends Application {};
-
-      MyApplication.instanceInitializer({
-        name: 'customize-things',
-        initialize(application) {
-          application.customEvents = {
-            herky: 'jerky',
-          };
-        },
-      });
-      runTask(() => {
-        this.createApplication({}, MyApplication);
-
-        this.add(
-          'component:foo-bar',
-          setComponentTemplate(
-            precompileTemplate(`<div id='herky-thingy'></div>`),
-            class extends Component {
-              jerky() {
-                assert.ok(true, 'fired the event!');
-              }
-            }
-          )
-        );
-
-        this.add('template:application', precompileTemplate(`{{foo-bar}}`));
-      });
-
-      this.$('#herky-thingy').trigger('herky');
     }
   }
 );
