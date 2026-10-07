@@ -307,60 +307,6 @@ module('@glimmer/validator: tracking', () => {
       assert.strictEqual(endTrackFrame(), tag);
     });
 
-    test('it returns the previous tag if the frame consumed the same tags', (assert) => {
-      let tag1 = createTag();
-      let tag2 = createTag();
-
-      beginTrackFrame();
-      consumeTag(tag1);
-      consumeTag(tag2);
-      let first = endTrackFrame();
-
-      beginTrackFrame();
-      consumeTag(tag1);
-      consumeTag(tag2);
-      let second = endTrackFrame(first);
-
-      assert.strictEqual(second, first);
-    });
-
-    test('it returns a new tag if the frame consumed other tags', (assert) => {
-      let tag1 = createTag();
-      let tag2 = createTag();
-      let tag3 = createTag();
-
-      beginTrackFrame();
-      consumeTag(tag1);
-      consumeTag(tag2);
-      let first = endTrackFrame();
-
-      beginTrackFrame();
-      consumeTag(tag1);
-      consumeTag(tag3);
-      let second = endTrackFrame(first);
-
-      assert.notStrictEqual(second, first);
-
-      let snapshot = valueForTag(second);
-      dirtyTag(tag2);
-      assert.ok(validateTag(second, snapshot));
-
-      dirtyTag(tag3);
-      assert.notOk(validateTag(second, snapshot));
-
-      beginTrackFrame();
-      consumeTag(tag1);
-      consumeTag(tag3);
-      consumeTag(tag2);
-      let third = endTrackFrame(second);
-
-      assert.notStrictEqual(third, second);
-
-      snapshot = valueForTag(third);
-      dirtyTag(tag2);
-      assert.notOk(validateTag(third, snapshot));
-    });
-
     test('it does not keep the tags of a frame that did not end', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();

@@ -36,8 +36,8 @@ interface ConsumedTag extends Tag {
  *   2. this run:  consumed [ a, b, c ]    result: tag X again.
  *   3. or:        consumed [ a, c ]       result: a new tag.
  *
- * This code is not in `Tracker#combine`, to keep that method small.
- * V8 puts a small `combine` inline into the end of the frame.
+ * This code is not in `Tracker#combineForCache`, to keep that method small.
+ * V8 puts a small method inline into the end of the frame.
  * With this code in it, a frame that consumed one tag was 6% slower.
  */
 function combineOrReuse(previous: Tag | undefined, tags: (Tag | null)[], size: number): Tag {
@@ -123,11 +123,30 @@ class Tracker {
     this.size = size + 1;
   }
 
+  combine(): Tag {
+    let { tags, size } = this;
+    let result: Tag;
+
+    if (size === 0) {
+      result = CONSTANT_TAG;
+    } else if (size === 1) {
+      result = tags[0] as Tag;
+    } else {
+      result = combine(tags.slice(0, size) as Tag[]);
+    }
+
+    this.clear();
+
+    return result;
+  }
+
   /**
-   * `previous` is the tag that this frame produced the last time it ran.
+   * `combine()` for the frame of a cache.
+   *
+   * `previous` is the tag that the cache has from its last run.
    * See `combineOrReuse`.
    */
-  combine(previous: Tag | undefined): Tag {
+  combineForCache(previous: Tag | undefined): Tag {
     let { tags, size } = this;
     let result: Tag;
 
@@ -227,13 +246,7 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
   }
 }
 
-/**
- * Closes the current frame and returns its combined tag.
- *
- * Pass the tag that the same frame produced the last time it ran.
- * If the frame consumed the same tags again, that tag is the result.
- */
-export function endTrackFrame(previous?: Tag): Tag {
+export function endTrackFrame(): Tag {
   let current = CURRENT_TRACKER;
 
   if (DEBUG) {
@@ -246,7 +259,33 @@ export function endTrackFrame(previous?: Tag): Tag {
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
 
-  return unwrap(current).combine(previous);
+  return unwrap(current).combine();
+}
+
+/**
+ * `endTrackFrame()` for the frame of a cache.
+ *
+ * `previous` is the tag that the cache has from its last run.
+ * If the cache consumed the same tags again, that tag is the result.
+ *
+ * Only `getValue` calls this.
+ * The frames of the render VM end in `endTrackFrame`,
+ * which has no code for the reuse.
+ */
+function endCacheFrame(previous: Tag | undefined): Tag {
+  let current = CURRENT_TRACKER;
+
+  if (DEBUG) {
+    if (OPEN_TRACK_FRAMES.length === 0) {
+      throw new Error('attempted to close a tracking frame, but one was not open');
+    }
+
+    unwrap(debug.endTrackingTransaction)();
+  }
+
+  CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
+
+  return unwrap(current).combineForCache(previous);
 }
 
 export function beginUntrackFrame(): void {
@@ -354,7 +393,7 @@ export function getValue<T>(cache: Cache<T>): T | undefined {
     try {
       cache[LAST_VALUE] = fn();
     } finally {
-      tag = endTrackFrame(tag);
+      tag = endCacheFrame(tag);
       cache[TAG] = tag;
       cache[SNAPSHOT] = valueForTag(tag);
       consumeTag(tag);
