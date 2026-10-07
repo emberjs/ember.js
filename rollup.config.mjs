@@ -19,6 +19,7 @@ const testDependencies = [
   '@ember/test-helpers',
   '@ember/test-waiters',
   'dom-element-descriptors',
+  'ember-qunit',
   'qunit',
   'vite',
   'js-reporters',
