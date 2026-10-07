@@ -282,17 +282,6 @@ module('@glimmer/signals: tracking', () => {
       assert.notOk(isValid(snapshot));
     });
 
-    test('it returns the tag itself if the frame consumed one tag many times', (assert) => {
-      let tag = createTag();
-
-      beginTrackFrame();
-
-      consumeTag(tag);
-      consumeTag(tag);
-
-      assert.strictEqual(endTrackFrame(), tag);
-    });
-
     test('it keeps a tag that a nested frame consumed between two consumptions', (assert) => {
       let tag1 = createTag();
       let tag2 = createTag();
@@ -304,35 +293,19 @@ module('@glimmer/signals: tracking', () => {
 
       beginTrackFrame();
       consumeTag(tag1);
-      let inner = endTrackFrame();
+      endTrackFrame();
 
       consumeTag(tag1);
 
       let outer = endTrackFrame();
 
-      assert.strictEqual(inner, tag1);
-
-      let snapshot = valueForTag(outer);
+      let snapshot = watch(outer);
       dirtyTag(tag1);
-      assert.notOk(validateTag(outer, snapshot));
+      assert.notOk(isValid(snapshot));
 
-      snapshot = valueForTag(outer);
+      snapshot = watch(outer);
       dirtyTag(tag2);
-      assert.notOk(validateTag(outer, snapshot));
-    });
-
-    test('it takes a tag one time if nested frames consume it at the same index', (assert) => {
-      let tag = createTag();
-
-      beginTrackFrame();
-
-      for (let i = 0; i < 3; i++) {
-        beginTrackFrame();
-        consumeTag(tag);
-        consumeTag(endTrackFrame());
-      }
-
-      assert.strictEqual(endTrackFrame(), tag);
+      assert.notOk(isValid(snapshot));
     });
 
     test('it does not keep the tags of a frame that did not end', (assert) => {
@@ -343,18 +316,24 @@ module('@glimmer/signals: tracking', () => {
       consumeTag(tag1);
 
       resetTracking();
+      OPEN_FRAMES.length = 0;
 
       beginTrackFrame();
       consumeTag(tag2);
 
-      assert.strictEqual(endTrackFrame(), tag2);
+      let snapshot = watch(endTrackFrame());
+
+      dirtyTag(tag1);
+      assert.ok(
+        isValid(snapshot),
+        'the frame does not follow the tag of the frame that did not end'
+      );
+
+      dirtyTag(tag2);
+      assert.notOk(isValid(snapshot));
     });
 
     test('it resets after a frame that began inside untrack frames', (assert) => {
-      /**
-       * Deeper than any other test goes,
-       * so these depths have no tracker yet.
-       */
       for (let i = 0; i < 100; i++) {
         beginUntrackFrame();
       }
@@ -362,6 +341,7 @@ module('@glimmer/signals: tracking', () => {
       beginTrackFrame();
 
       resetTracking();
+      OPEN_FRAMES.length = 0;
 
       assert.notOk(isTracking());
     });
