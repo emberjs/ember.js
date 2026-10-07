@@ -46,6 +46,10 @@ continue the work. Last updated: 2026-10-07.
   consumption is not in the core; §07-2.7 shows a library can build it. A prototype with tests
   is in `spec/prototype/reactive/`. §07-2.8 relates it to RFC 957 (`@ember/scheduler`;
   author's question of 2026-10-07, commit `59f71505b9`, T15).
+- **No dependent tracking** (author ruling, 2026-10-07). The model stays built around cheap
+  revalidation without reverse edges: the core may schedule effects that are not stale, and
+  filters them with `isValid` at flush time, so `fn` runs only when a dependency changed
+  (§07-2.2.5 item 4, §07-2.3, §07-2.8 item 4). Changing that architecture is out of scope.
 - **Loose mode and classic components are in scope,** marked **[Loose mode]** or **[Legacy]**.
 - **Author rulings of 2026-09-30** (commit `a135fe1862`):
   - `</template>` cannot appear in a content-tag body, by design: the content tag assumes no

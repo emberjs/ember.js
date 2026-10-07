@@ -339,8 +339,9 @@ of 2026-10-07 (commit `391b17239c`; `.work/T14-reactive-api.md`):
   the core, with two change policies.
 - §07-2.8 relates the core to RFC 957 (`@ember/scheduler`, commit `59f71505b9`): the core is
   the reactive scheduling layer that RFC asks for and needs no API change. The host must own a
-  render pass so the renderer runs before user effects. The tag-based "schedule every effect"
-  cost is the main performance risk.
+  render pass so the renderer runs before user effects. The tag-based core schedules every
+  effect and filters with `isValid`; that is a deliberate trade-off (cheap reads, no
+  dependent tracking; author ruling, 2026-10-07), and it never re-runs an effect needlessly.
 
 A prototype on top of today's `@glimmer/validator` passes tests for each rule
 (`spec/prototype/reactive/`). This is a design decision for the plan's author, not a record of

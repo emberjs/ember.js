@@ -601,7 +601,10 @@ effect, §07-2.4.10), a modifier's element (§07-2.4.6), a network request, a lo
    - The core MAY also schedule effects that are not stale. An implementation without reverse
      dependency edges (as with today's tags) cannot tell which effects a write affects, so it
      schedules them all. Item 5 makes this unobservable, except through extra `schedule`
-     calls.
+     calls: `fn` still runs only when something it read has changed. This is the intended
+     design, not a shortcut (author ruling, 2026-10-07): the model records no dependents, so
+     reads stay cheap, and it pays instead with one cheap validity check per live effect per
+     batch (§07-2.3).
    - All writes until the batch runs are coalesced: an effect runs at most once per batch.
 5. **Flush.** Calling `flush` takes the batch (later scheduling starts a new batch) and, for
    each of its effects in **creation order**, skips it if it was destroyed or is no longer
@@ -691,9 +694,10 @@ flush(batch) := for e in batch, by creation order: if e live ∧ ¬isValid(e): r
 
 With no reverse edges, `notifyEffects` schedules every live effect and `flush` filters with
 `isValid`. After the first write, every effect is scheduled, so later writes until the flush cost
-O(1). Implementations MAY use any other technique (dirty flags, push/pull graphs with reverse
-edges, signals) that is observably equivalent; a push-based one schedules only effects that
-are actually stale.
+O(1). This specification is designed around this approach: reads record no reverse edges,
+and revalidation is cheap. Implementations MAY use any other technique (dirty flags, push/pull
+graphs with reverse edges, signals) that is observably equivalent; a push-based one schedules
+only effects that are actually stale, at the cost of recording dependents on every read.
 
 ### 07-2.4 Sufficiency: expressing every renderer need
 
@@ -1058,13 +1062,16 @@ within a batch.
 3. *Write-after-consume errors from extra renders.* The RFC's second risk shrinks with fewer
    renders. Effect runs are their own consumption transactions (§07-2.2.5, item 6), so an
    effect's writes never trip the assertion on account of the renderer's reads.
-4. *Our own cost: scheduling every effect.* With tags and no reverse edges, the first write of
-   a frame schedules every live effect, and the flush checks each one with `isValid`
-   (§07-2.3). Today's renderer already walks every update position per revalidation, so this
-   is no worse for rendering, but every user effect and every modifier adds to it. The RFC's
-   benchmark found scheduling to be the largest performance lever it measured, so an
-   implementation SHOULD consider reverse edges (a push-pull graph) so that only stale
-   effects are scheduled.
+4. *A deliberate trade-off: scheduling every effect.* With tags and no reverse edges, the
+   first write of a frame schedules every live effect, and the flush checks each one with
+   `isValid` (§07-2.3). No effect's `fn` runs unless something it read changed (§07-2.2.5,
+   item 5); the cost is one validity check per live effect per frame, plus a render-pass
+   request for a write that no effect reads. This is the reactivity model's chosen trade-off:
+   reads record no dependents, so the bookkeeping is paid only at revalidation, which is cheap
+   (author ruling, 2026-10-07; changing it is out of scope). Today's renderer already walks
+   every update position per revalidation, so rendering costs no more than now; user effects
+   and modifiers each add one check. With the render pass, each `schedule` call is a plain
+   push (item 5), so the frame request is the only per-batch cost a strategy sees.
 5. *Our own cost: one `schedule` per modifier.* §07-2.4.6 gives each modifier its own
    `schedule` function, to keep the order of §06-11. Under a promise-based strategy, a naive
    `render().then(flush)` per modifier allocates one promise per modifier per frame. The
