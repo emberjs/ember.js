@@ -2165,7 +2165,7 @@ class CurlyBoundsTrackingTest extends CurlyTest {
     const { bounds, element } = instance.captured;
 
     assert.strictEqual(
-      bounds.parentElement(),
+      bounds.parentNode(),
       document.querySelector('#qunit-fixture') as unknown as SimpleElement
     );
     assert.strictEqual(bounds.firstNode(), castToSimple(element));
@@ -2201,7 +2201,7 @@ class CurlyBoundsTrackingTest extends CurlyTest {
     const { bounds } = instance.captured;
 
     assert.strictEqual(
-      check(bounds.parentElement(), HTMLElement),
+      check(bounds.parentNode(), HTMLElement),
       check(document.querySelector('#qunit-fixture'), HTMLElement)
     );
     assert.strictEqual(

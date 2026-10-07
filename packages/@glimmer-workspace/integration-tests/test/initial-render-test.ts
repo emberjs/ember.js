@@ -72,6 +72,15 @@ class AbstractRehydrationTests extends InitialRenderSuite {
   assertServerOutput(..._expected: Content[]) {
     this.assertExactServerOutput(content([OPEN, ..._expected, CLOSE]));
   }
+
+  assertServerOutputIncludes(fragment: string, message: string) {
+    let output = expect(
+      this.serverOutput,
+      'must renderServerSide before calling assertServerOutputIncludes'
+    );
+
+    this.assert.ok(output.includes(fragment), `${message}: ${fragment}`);
+  }
 }
 
 class Rehydration extends AbstractRehydrationTests {
@@ -632,6 +641,95 @@ class Rehydration extends AbstractRehydrationTests {
       toInnerHTML(clientRemote),
       '<prefix></prefix><inner>Wat Wat</inner><preexisting></preexisting>'
     );
+  }
+
+  @test
+  'a rendered DocumentFragment can rehydrate'() {
+    let template = '<div>{{this.fragment}}</div>';
+
+    let serverFragment = this.delegate.serverDoc.createDocumentFragment();
+    serverFragment.appendChild(this.delegate.serverDoc.createElement('p'));
+
+    this.renderServerSide(template, { fragment: serverFragment });
+    this.assertServerOutput('<div>', OPEN, '<!--%+f%--><p></p><!--%-f%-->', CLOSE, '</div>');
+
+    let clientFragment = this.delegate.clientDoc.createDocumentFragment();
+    clientFragment.appendChild(this.delegate.clientDoc.createElement('p'));
+
+    this.renderClientSide(template, { fragment: clientFragment });
+    this.assertHTML('<div><!----><p></p><!----></div>');
+    // The client fragment holds the live nodes, so its children win over the
+    // serialized ones.
+    this.assertRehydrationStats({ nodesRemoved: 1 });
+  }
+
+  @test
+  'an empty rendered DocumentFragment can rehydrate'() {
+    let template = '<div>{{this.fragment}}</div>';
+
+    this.renderServerSide(template, {
+      fragment: this.delegate.serverDoc.createDocumentFragment(),
+    });
+    this.assertServerOutput('<div>', OPEN, '<!--%+f%--><!--%-f%-->', CLOSE, '</div>');
+
+    this.renderClientSide(template, {
+      fragment: this.delegate.clientDoc.createDocumentFragment(),
+    });
+    this.assertHTML('<div><!----><!----></div>');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+  }
+
+  @test
+  '{{#in-element}} into a rendered DocumentFragment can rehydrate'() {
+    let template = strip`
+      <div>{{this.fragment}}</div>
+      {{#in-element this.fragment}}<inner>{{this.text}}</inner>{{/in-element}}
+      `;
+
+    this.renderServerSide(template, {
+      fragment: this.delegate.serverDoc.createDocumentFragment(),
+      text: 'Wat Wat',
+    });
+    this.assertServerOutputIncludes(
+      '<!--%+f%--><script glmr=',
+      'the in-element marker is serialized inside the region'
+    );
+
+    this.renderClientSide(template, {
+      fragment: this.delegate.clientDoc.createDocumentFragment(),
+      text: 'Wat Wat',
+    });
+    this.assertHTML('<div><!----><inner>Wat Wat</inner><!----></div><!---->');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertStableRerender();
+
+    this.rerender({ text: 'Wat Wat Wat' });
+    this.assertHTML('<div><!----><inner>Wat Wat Wat</inner><!----></div><!---->');
+  }
+
+  @test
+  'sibling DocumentFragments can rehydrate'() {
+    let template = strip`
+      <div>{{this.first}}{{this.second}}</div>
+      {{#in-element this.first}}<one></one>{{/in-element}}
+      {{#in-element this.second}}<two></two>{{/in-element}}
+      `;
+
+    this.renderServerSide(template, {
+      first: this.delegate.serverDoc.createDocumentFragment(),
+      second: this.delegate.serverDoc.createDocumentFragment(),
+    });
+    this.assertServerOutputIncludes(
+      '<!--%-f%--><!--%-b:1%--><!--%+b:1%--><!--%+f%-->',
+      'the two regions are serialized side by side'
+    );
+
+    this.renderClientSide(template, {
+      first: this.delegate.clientDoc.createDocumentFragment(),
+      second: this.delegate.clientDoc.createDocumentFragment(),
+    });
+    this.assertHTML('<div><!----><one></one><!----><!----><two></two><!----></div><!----><!---->');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
   }
 
   @test
