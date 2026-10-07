@@ -9,6 +9,7 @@ import type {
   SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
+  SimpleParentNode,
   SimpleText,
 } from './simple.js';
 
@@ -49,14 +50,14 @@ export interface ResettableBlock extends FixedBlock {
 
 export interface DOMStack {
   pushRemoteElement(
-    element: SimpleElement,
+    element: SimpleParentNode,
     guid: string,
     insertBefore: Maybe<SimpleNode>
   ): FixedBlock;
   popRemoteElement(): FixedBlock;
   popElement(): void;
   openElement(tag: string, _operations?: ElementOperations): SimpleElement;
-  flushElement(modifiers: Nullable<ModifierInstance[]>): void;
+  flushElement(modifiers: Nullable<ModifierInstance[]>): Nullable<FixedBlock>;
   appendText(string: string): SimpleText;
   appendComment(string: string): SimpleComment;
 
@@ -78,7 +79,7 @@ export interface DOMStack {
 
 export interface TreeOperations {
   __openElement(tag: string): SimpleElement;
-  __flushElement(parent: SimpleElement, constructing: SimpleElement): void;
+  __flushElement(parent: SimpleParentNode, constructing: SimpleElement): void;
   __openBlock(): void;
   __closeBlock(): void;
   __appendText(text: string): SimpleText;
@@ -101,7 +102,7 @@ export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
   dom: GlimmerTreeConstruction;
   updateOperations: GlimmerTreeChanges;
   constructing: Nullable<SimpleElement>;
-  element: SimpleElement;
+  element: SimpleParentNode;
 
   hasBlocks: boolean;
   debugBlocks(): AppendingBlock[];
