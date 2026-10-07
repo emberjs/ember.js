@@ -1778,6 +1778,10 @@ author, not records of existing behavior.
     (§07-2.2.7). Candidates: a microtask (as outside Ember), the run loop's `actions` queue, or
     `afterRender` so user effects see the updated DOM. Whichever it is, test settledness
     (`settled()`, `renderSettled()`) should also wait for pending effect batches.
+
+  > To get more context on this question, consider the proposed RFC https://github.com/runspired/rfcs/blob/modernized-scheduler/text/0957-modernized-scheduler.md
+  > I'm not endorsing this as "the plan", but it makes some good arguments about requirements. If this RFC is approved, would it effect our design? Is our design flexible enough to cover the range of requirements discussed here? Are we falling into any performance traps that this RFC complains about?
+
 15. **`cached()` and errors.** Item 3 describes today's `getValue`: after a throw, reads return
     the previous value without rethrowing. `cached()` inherits it (§07-2.2.2, item 4). As the
     new foundation, it could instead store the error and rethrow it on every read until a
