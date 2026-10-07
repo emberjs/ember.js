@@ -356,6 +356,8 @@
       "@ember/utils/lib/type-of.js": "ember-source/@ember/utils/lib/type-of.js",
       "@ember/version/index.js": "ember-source/@ember/version/index.js",
       "@glimmer/destroyable/index.js": "ember-source/@glimmer/destroyable/index.js",
+      "@glimmer/dom/index.js": "ember-source/@glimmer/dom/index.js",
+      "@glimmer/dom/vm/index.js": "ember-source/@glimmer/dom/vm/index.js",
       "@glimmer/encoder/index.js": "ember-source/@glimmer/encoder/index.js",
       "@glimmer/env/index.js": "ember-source/@glimmer/env/index.js",
       "@glimmer/global-context/index.js": "ember-source/@glimmer/global-context/index.js",

@@ -1,0 +1,27 @@
+{
+  "name": "@glimmer/dom",
+  "version": "0.94.0",
+  "private": true,
+  "license": "MIT",
+  "description": "EXPERIMENTAL: runtime helpers for templates compiled directly to DOM operations (strict mode only)",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/component": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/template-compilation": "workspace:*",
+    "@glimmer/constants": "workspace:*",
+    "@glimmer/destroyable": "workspace:*",
+    "@glimmer/global-context": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/manager": "workspace:*",
+    "@glimmer/owner": "workspace:*",
+    "@glimmer/reference": "workspace:*",
+    "@glimmer/runtime": "workspace:*",
+    "@glimmer/validator": "workspace:*"
+  }
+}
