@@ -22,10 +22,10 @@ The feedback (now removed from §00-0.7.10; the full text is in `git show 391b17
       claim of the new §07-2.2 and the async strategies of §07-2.7.
       *Done:* 31 tests pass. Effects are scheduled through the global-context
       `scheduleRevalidate` (the only private hook used).
-- [ ] §07-2.1/§07-2.2 rewritten: `tracked` (root), `cached` (derived), `isValid`/`isConst`
+- [x] §07-2.1/§07-2.2 rewritten: `tracked` (root), `cached` (derived), `isValid`/`isConst`
       (introspection), `untrack`, `effect` (consumption), compat layer, module placement.
       `onInvalidate` removed.
-- [ ] §07-2.3 reference semantics: add effect scheduling to the clock sketch.
+- [x] §07-2.3 reference semantics: add effect scheduling to the clock sketch.
 - [ ] §07-2.4: `C(expr)` is `cached(...)`; modifiers (2.4.6) and the renderer loop (2.4.10) as
       effects; conclusion updated.
 - [ ] §07-2.5 Signals comparison and §07-2.6 updated.

@@ -417,101 +417,255 @@ revalidate once → commit hooks → (if they wrote: another loop) → settle.**
 ### 07-2.1 Goals
 
 The rest of this specification needs a way to say "this DOM position shows the result of this
-expression and updates when needed", without referring to tags or references. The existing
-public API `@glimmer/tracking/primitives/cache` (RFC 0615, `rfcs/text/0615-autotracking-memoization.md`)
-is almost enough. It lacks two things:
+expression and updates when needed", without referring to tags or references. This section
+proposes a small public core with one primitive for each role:
 
-1. A way to ask *"is this computation still valid?"* **without** re-running it. Renderers need
-   this to skip whole regions, and to decide whether a side-effecting operation (a modifier
-   update, a component update hook) must run again. In the current implementation this is done
-   with private tag APIs (`validateTag`, `JumpIfNotModifiedOpcode`, `UpdateModifierOpcode`).
-2. A way for a host (a renderer, a test harness, a non-Ember embedding) to *learn that something
-   changed*, so it can schedule work. Currently this is the private global-context hook
-   `scheduleRevalidate` (`packages/@glimmer/global-context/index.ts:42,150,181`).
+| Role | Primitive | Status |
+|---|---|---|
+| Root state | `tracked(value, options?)` | Exists (RFC 1071, §07-3.2) |
+| Derived state | `cached(fn, options?)` | **[Proposed]** (RFC 1218, not yet accepted) |
+| Consumption (side effects) | `effect(fn, options?)` | **[Proposed]** |
+| Introspection of derived state | `isValid(c)`, `isConst(c)` | **[Proposed]** (`isConst` exists for `createCache` caches) |
+| Untracked reads | `untrack(fn)` | **[Proposed]** public (exists internally) |
+
+The existing public API has three gaps that this closes:
+
+1. **Two derived-state APIs.** `@cached` and `createCache`/`getValue` (RFC 0615) do the same
+   thing at two levels. The proposal makes the function form `cached(fn)` *the* derived
+   primitive. `createCache`, `getValue` and the `@cached` decorator remain, as thin layers over
+   it (§07-2.2.6).
+2. **No way to ask "is this still valid?"** without re-running. Renderers need it to skip
+   regions and to decide whether a side effect must run again. Today that is done with private
+   tag APIs (`validateTag`, `JumpIfNotModifiedOpcode`, `UpdateModifierOpcode`). `isValid` is a
+   low-level free function for this, not a method, because ordinary code should only read
+   values.
+3. **No way to react to change.** A host (a renderer, a test harness, a non-Ember embedding)
+   learns that something changed only through the private global-context hook
+   `scheduleRevalidate` (`packages/@glimmer/global-context/index.ts:42,150,181`). Building
+   effects on a global "something changed" hook would make every effect implementation
+   debounce every write and poll `isValid` on its own. The proposal moves that work into the
+   core, once, behind `effect` (§07-2.2.5). The renderer is itself an effect (§07-2.4.10). The
+   invalidation hook of §07-1.1 item 5 becomes an internal detail of the core, not public API.
+
+*Rationale* (the plan author's feedback of 2026-10-07, commit `391b17239c`): two
+derived-state primitives at different levels are confusingly redundant, so the user-facing
+`cached()` should be powerful enough to be the only one. Effects belong in the core so that
+the scheduling and validity checks are done once, with a declarative API whose effects run
+only when necessary.
 
 ### 07-2.2 API
 
-#### 07-2.2.1 Existing: `createCache`, `getValue`, `isConst`
+The prototype in `spec/prototype/reactive/` implements every **[Proposed]** function below on
+top of the current `@glimmer/validator`, and its tests (`test.mjs`) check each rule of this
+section.
 
-Module: `@glimmer/tracking/primitives/cache`
-(`packages/@glimmer/tracking/primitives/cache.ts:1`, implementation
-`packages/@glimmer/validator/lib/tracking.ts:123-223`). Full semantics are in §07-3.4.
+#### 07-2.2.1 Root state: `tracked(value, options?)`
 
-```ts
-interface Cache<T = unknown> {}                 // opaque
-function createCache<T>(fn: () => T, debuggingLabel?: string | false): Cache<T>;
-function getValue<T>(cache: Cache<T>): T | undefined;
-function isConst(cache: Cache): boolean;
-```
-
-`getValue` is the canonical way to *evaluate a reactive computation*:
-
-- If `cache` has never been evaluated, or is invalid, `getValue` evaluates `fn` as a
-  reactive computation (§07-1.2) and caches the result.
-- Otherwise it returns the cached result.
-- In both cases it consumes the cache's dependency set into the active computation (§07-1.3).
-
-#### 07-2.2.2 **[Proposed]** `isValid(cache)`
+The standalone form of `tracked` (§07-3.2) is the root primitive:
 
 ```ts
-function isValid(cache: Cache): boolean;
-```
-
-- Returns `true` iff `cache` has been evaluated at least once and is valid (§07-1.5).
-- Returns `false` for a never-evaluated cache. (The asymmetry with `isConst`, which throws, is
-  deliberate. "Not valid" is the correct answer for "would `getValue` run `fn`?")
-- MUST NOT evaluate `fn`, MUST NOT consume anything, and MUST NOT invalidate anything. It is
-  safe to call in any frame, including during a render transaction.
-- Equivalent in the current implementation to
-  `cache[TAG] !== undefined && validateTag(cache[TAG], cache[SNAPSHOT])`.
-
-Invariant: `isValid(c) === true` ⇒ the next `getValue(c)` returns the cached value without
-calling `fn`.
-
-#### 07-2.2.3 **[Proposed]** `untrack(fn)` made public
-
-```ts
-function untrack<T>(fn: () => T): T;
-```
-
-Runs `fn` in an untracked frame (§07-1.4). This already exists internally
-(`tracking.ts:251-259`), and Ember uses it for equality checks and classic computed getters. It
-is listed here so that other chapters can say "evaluated untracked" and have a user-visible
-equivalent.
-
-#### 07-2.2.4 **[Proposed]** Invalidation hook
-
-```ts
-// Host-level; one registration per host (renderer runtime).
-function onInvalidate(listener: () => void): () => void;   // returns an unsubscribe function
-```
-
-- `listener` is called **synchronously, after** every invalidation of any cell (§07-1.1,
-  item 5). Writes suppressed by the equality policy do not call it.
-- Inside `listener`, code MUST NOT read or write tracked storage. The listener exists only to
-  *schedule* work (for example `queueMicrotask`, or starting a run loop).
-- The listener receives no information about *which* cell changed. This matches the current
-  implementation, whose only notification is the parameterless `scheduleRevalidate()`.
-- Ember's renderer registers exactly the behavior of §07-1.10, item 1.
-
-*Rationale.* A global "something changed" hook together with pull-based `isValid`/`getValue` is
-exactly what the current tag system can provide cheaply, because tags have no reverse
-(dependent) edges. A per-computation push notification (a watcher) would need reverse edges.
-It is discussed in §07-2.5 as a possible future extension, not as a requirement.
-
-#### 07-2.2.5 Tracked storage for specification purposes
-
-To write storage, other chapters use the existing standalone form of `tracked`
-(§07-3.2):
-
-```ts
-const cell = tracked(initialValue, { equals?: (a, b) => boolean });
+const cell = tracked(initialValue, { equals?: (a, b) => boolean, description?: string });
 cell.value; cell.value = v;       // read / write per §07-1.1
 ```
 
 Wherever this spec says "a private tracked storage cell", an implementation MAY use any
 mechanism with the semantics of §07-1.1. For example, `{{#each}}` item values use `!==`
-equality (§07-4.7.2).
+equality (§07-4.7.2). The decorator forms of `@tracked` (§07-3.1) are sugar over cells with the
+"always invalidate" policy (§07-1.6).
+
+#### 07-2.2.2 **[Proposed]** Derived state: `cached(fn, options?)`
+
+RFC 1218, "Overload `cached` to work outside of classes" (proposed, not yet accepted;
+`NullVoxPopuli/rfcs@1f99b3a6`, `text/1218-overload-cached-for-non-class-use.md`). Module:
+`@glimmer/tracking`, the same export as the `@cached` decorator, which dispatches on its
+arguments like `tracked` does (§07-3.1.1).
+
+```ts
+interface ReadOnlyReactive<T> {
+  readonly value: T;           // read: evaluate if needed, consume (below)
+  get: () => T;                // same as reading .value; an own property, works detached
+}
+function cached<T>(fn: () => T, options?: { description?: string }): ReadOnlyReactive<T>;
+```
+
+Reading `value` (or calling `get()`) is the canonical way to *evaluate a reactive
+computation*:
+
+1. `cached` does not call `fn`.
+2. If the value has never been read, or is invalid (§07-1.5), a read evaluates `fn` with no
+   arguments as a reactive computation (§07-1.2) and stores the result. Otherwise it returns the
+   stored result without calling `fn`.
+3. In both cases the read consumes the computation's dependency set into the active computation
+   (§07-1.3, item 2).
+4. If `fn` throws, the read rethrows. The computation records the dependencies consumed before
+   the throw and keeps its previous result. A later read while those dependencies are valid
+   returns the previous result (or `undefined`) without calling `fn` and without rethrowing.
+   This is today's `getValue` behavior (§07-1.8, item 3); see §07-5, item 15 for whether
+   `cached()` should instead cache and rethrow the error.
+5. `value` has no setter. Writing it throws in strict-mode code.
+6. There is no equality cut-off (§07-1.3, item 5). RFC 1218 defers an `equals` option.
+7. `description` is used only in development, for debug labels (the tracking stack of
+   §07-1.9).
+8. Calling `cached` with a non-function throws a `TypeError` (the exact message is not
+   specified).
+
+*Example.*
+
+```js
+import { tracked, cached } from '@glimmer/tracking';
+
+const count = tracked(0);
+const doubled = cached(() => count.value * 2);
+// {{doubled.value}} in a template re-renders when count changes
+```
+
+#### 07-2.2.3 **[Proposed]** Introspection: `isValid(c)` and `isConst(c)`
+
+```ts
+function isValid(c: ReadOnlyReactive<unknown>): boolean;
+function isConst(c: ReadOnlyReactive<unknown>): boolean;
+```
+
+Both take a value returned by `cached()` (which includes a `createCache` cache, §07-2.2.6).
+For any other value they throw a `TypeError`. They are free functions, not methods: they are
+low-level tools for renderers and library authors, not the first thing application code should
+reach for.
+
+**`isValid(c)`**
+
+- Returns `true` iff `c` has been read at least once and is valid (§07-1.5).
+- Returns `false` for a never-read value. (The asymmetry with `isConst`, which throws, is
+  deliberate. "Not valid" is the correct answer for "would reading `c` call `fn`?")
+- MUST NOT evaluate `fn`, MUST NOT consume anything, and MUST NOT invalidate anything. It is
+  safe to call in any frame, including during a render transaction.
+- Invariant: `isValid(c) === true` ⇒ the next read of `c.value` returns the stored result
+  without calling `fn`.
+- Equivalent in the current implementation to `validateTag(tag, snapshot)` on the cache's tag.
+
+**`isConst(c)`**
+
+- **[Dev]** Throws if `c` has never been read (the message of §07-3.4, with "read" in place of
+  "`getValue()` has been called").
+- Returns `true` iff the most recent evaluation consumed nothing (§07-1.5, item 3). Such a value
+  can never become invalid.
+
+#### 07-2.2.4 **[Proposed]** `untrack(fn)` made public
+
+```ts
+function untrack<T>(fn: () => T): T;
+```
+
+Runs `fn` in an untracked frame (§07-1.4) and returns its result. This already exists
+internally (`tracking.ts:251-259`), and Ember uses it for equality checks and classic computed
+getters. It is public so that other chapters can say "evaluated untracked" and have a
+user-visible equivalent, and so that effects can read state without depending on it.
+
+#### 07-2.2.5 **[Proposed]** Consumption: `effect(fn, options?)`
+
+```ts
+interface EffectOptions {
+  schedule?: (flush: () => void) => void;   // default: the host's (a microtask outside Ember)
+  description?: string;
+}
+type Effect = object;                       // opaque; a destroyable
+function effect(fn: () => void | (() => void), options?: EffectOptions): Effect;
+```
+
+An effect is a reactive computation that is run again, by the core, whenever something it read
+has changed. It is how reactive state reaches the outside world: the DOM (the renderer is an
+effect, §07-2.4.10), a modifier's element (§07-2.4.6), a network request, a log.
+
+1. **Creation.** `effect` does not call `fn`. It records the effect as *stale* and schedules it
+   (item 4). Creating an effect consumes nothing, even inside an active computation.
+2. **Run.** Running an effect:
+   1. calls the cleanup returned by its previous run, if any, in an untracked frame;
+   2. evaluates `fn` as a reactive computation in a **fresh root frame**: what it reads becomes
+      the effect's dependency set and is *not* consumed by any frame that is active outside it;
+   3. stores `fn`'s return value as the next cleanup if it is a function.
+
+   Dependencies are re-collected on every run, so an effect that stops reading a cell stops
+   depending on it.
+3. **Staleness.** After a run, the effect is stale iff its run is invalid (§07-1.5). An effect
+   whose run consumed nothing is constant: it never runs again, though its cleanup still runs
+   on destruction.
+4. **Scheduling.** When a cell is invalidated, the core MUST schedule every live effect that
+   became stale and is not already scheduled. Scheduling an effect adds it to the pending batch
+   for its `schedule` function. When a batch goes from empty to non-empty, the core calls
+   `schedule(flush)` once, synchronously, inside the write that caused it. `schedule` MUST NOT
+   call `flush` synchronously; it exists to pick *when* the batch runs (a microtask, a run-loop
+   queue, a renderer's commit phase).
+   - The core MAY also schedule effects that are not stale. An implementation without reverse
+     dependency edges (as with today's tags) cannot tell which effects a write affects, so it
+     schedules them all. Item 5 makes this unobservable, except through extra `schedule`
+     calls.
+   - All writes until the batch runs are coalesced: an effect runs at most once per batch.
+5. **Flush.** Calling `flush` takes the batch (later scheduling starts a new batch) and, for
+   each of its effects in **creation order**, skips it if it was destroyed or is no longer
+   stale, and otherwise runs it (item 2). Calling `flush` a second time does nothing.
+6. **Writes inside a run.** A run is its own consumption transaction for the write-after-consume
+   assertion (§07-1.9): reading and then writing the same cell in one run asserts **[Dev]**.
+   Writing a cell the run did not read is allowed, and schedules the effects that read it in a
+   new batch (an effect that keeps invalidating itself loops through its scheduler; a host
+   SHOULD bound this, as Ember's run loop does, §07-1.10 item 7).
+7. **Errors.** If `fn` throws, the effect keeps the dependencies read before the throw (so a
+   change to them runs it again) and stays live. The flush runs the rest of the batch, then
+   throws the error; if several runs threw, it throws an `AggregateError` of them.
+8. **Destruction.** The returned handle is a destroyable (`@ember/destroyable`; §06). `destroy`
+   stops the effect at once: it is removed from any pending batch and never runs again. Its
+   last cleanup runs as a destructor. An effect destroyed during its own run finishes that
+   run, and the cleanup that run returns is called immediately. To tie an effect to an owner,
+   use `associateDestroyableChild(owner, effect)`.
+
+*Example.*
+
+```js
+import { tracked } from '@glimmer/tracking';
+import { effect } from '@ember/reactive';
+import { associateDestroyableChild } from '@ember/destroyable';
+
+class Title {
+  constructor(owner, page) {
+    associateDestroyableChild(owner, effect(() => {
+      document.title = page.title;            // re-runs when page.title changes
+    }));
+  }
+}
+```
+
+*Rationale.* Doing the scheduling in the core means a write costs one check ("is anything
+unscheduled?") once every live effect is scheduled, and validity is checked once per effect per
+batch, however many effect implementations exist. Effects are scheduled, not run on creation,
+so that creating one during a render (for example in a component constructor) never runs user
+code in the middle of that render. The per-effect `schedule` lets a host put different effects
+at different points of its own cycle (§07-2.4.6, §07-2.4.10).
+
+#### 07-2.2.6 Compatibility layer
+
+The existing APIs remain, with their current observable behavior (§07-3.3, §07-3.4), and are
+specified in terms of `cached()`:
+
+| Existing API | In terms of the core |
+|---|---|
+| `createCache(fn, label)` | `cached(fn, { description: label })`, after the `createCache` **[Dev]** type check |
+| `getValue(cache)` | `cache.value`, after the `getValue` **[Dev]** type check |
+| `isConst(cache)` from `@glimmer/tracking/primitives/cache` | `isConst(cache)` (§07-2.2.3), with the `createCache` error messages |
+| `@cached get x()` | one `cached(() => getter.call(this))` per instance, created on first access; every access reads `.value` (RFC 1218, "Re-implementing `@cached`") |
+| `invokeHelper(...)` (§07-3.4) | returns a `cached()` value |
+
+So a `createCache` cache *is* a `cached()` value: `isValid`, `isConst` and `.value` all work
+on it, and `getValue` accepts any `cached()` value. The prototype's `compat.mjs` implements
+this table and passes the `createCache`/`@cached` tests in `test.mjs`.
+
+#### 07-2.2.7 Module placement (proposal)
+
+| Export | Module |
+|---|---|
+| `tracked`, `cached` (both forms) | `@glimmer/tracking` (as today) |
+| `effect`, `untrack`, `isValid`, `isConst` | `@ember/reactive` (today an empty module, `packages/@ember/reactive/index.ts:9-10`) |
+| `createCache`, `getValue`, `isConst` | `@glimmer/tracking/primitives/cache` (compatibility) |
+
+A host-level setting chooses the default `schedule` of effects created without one. Ember sets
+it; how and to what is a review point (§07-5, item 14).
 
 ### 07-2.3 Reference semantics of the primitive (non-normative sketch)
 
@@ -523,11 +677,19 @@ clock := 1
 cell.changedAt := clock at last invalidation
 computation.deps := set of cells;  computation.validatedAt := clock at end of evaluation
 isValid(c) := c evaluated ∧ ∀ d ∈ c.deps: d.changedAt ≤ c.validatedAt
-invalidate(cell) := clock += 1; cell.changedAt := clock; notify onInvalidate listeners
+invalidate(cell) := clock += 1; cell.changedAt := clock; notifyEffects()
+
+live := effects not destroyed and not constant;  unscheduled := live effects in no batch
+notifyEffects() := if unscheduled ≠ ∅: for e in unscheduled: add e to batch[e.schedule]
+                   (calling e.schedule(flush) when that batch was empty)
+flush(batch) := for e in batch, by creation order: if e live ∧ ¬isValid(e): run(e)
 ```
 
-Implementations MAY use any other technique (dirty flags, push/pull graphs, signals) that is
-observably equivalent.
+With no reverse edges, `notifyEffects` schedules every live effect and `flush` filters with
+`isValid`. After the first write, every effect is scheduled, so later writes until the flush cost
+O(1). Implementations MAY use any other technique (dirty flags, push/pull graphs with reverse
+edges, signals) that is observably equivalent; a push-based one schedules only effects that
+are actually stale.
 
 ### 07-2.4 Sufficiency: expressing every renderer need
 
@@ -1483,3 +1645,32 @@ yielder (§07-4.2 "Sharing"; tests
     only arise through internal tag updating (classic computed chains, which are exempted with
     `ALLOW_CYCLES`). The abstract model has no counterpart. A computation that reads itself
     recurses instead (§07-3.4).
+
+*Review points for the **[Proposed]** core (§07-2.2).* These are design decisions for the plan's
+author, not records of existing behavior.
+
+14. **Ember's default effect schedule.** Effects created without `schedule` need a default
+    (§07-2.2.7). Candidates: a microtask (as outside Ember), the run loop's `actions` queue, or
+    `afterRender` so user effects see the updated DOM. Whichever it is, test settledness
+    (`settled()`, `renderSettled()`) should also wait for pending effect batches.
+15. **`cached()` and errors.** Item 3 describes today's `getValue`: after a throw, reads return
+    the previous value without rethrowing. `cached()` inherits it (§07-2.2.2, item 4). As the
+    new foundation, it could instead store the error and rethrow it on every read until a
+    dependency changes (as TC39 `Signal.Computed` does). The compatibility `getValue` could
+    still return the stale value, because it can tell a stored error from a fresh one with
+    `isValid`.
+16. **Scheduled first run.** An effect's first run is scheduled, not synchronous (§07-2.2.5,
+    item 1), so creating one during a render never runs user code mid-render. The cost is that
+    code which wants the first run now has to wait for the flush. Is this the right default?
+17. **Ordering within a batch.** A batch runs in effect creation order. A host that needs
+    another order (modifier updates run in document pre-order, §06-11) gives each effect its
+    own `schedule` function and orders the flushes itself (§07-2.4.6). Should the core offer an
+    ordering hook instead?
+18. **Equality cut-off.** With effects in the core, the missing cut-off (§07-1.3, item 5)
+    becomes more visible: an effect that reads a `cached()` value re-runs whenever that value
+    recomputes, even to an equal result. RFC 1218 defers an `equals` option; adding one would
+    need the cut-off to propagate through `isValid` and effect staleness.
+19. **Asynchronous consumption is left to libraries.** §07-2.7 shows that the core is enough
+    for asynchronous resources that track reads across `await`, with an explicit `read()`. Should
+    the core later offer implicit tracking across `await` (for example through TC39
+    `AsyncContext`)? That would change what a tracking frame is (§07-1.2).
