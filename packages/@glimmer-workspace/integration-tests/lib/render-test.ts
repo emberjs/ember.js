@@ -23,8 +23,8 @@ import type { TestModifierConstructor } from './modifiers';
 import type RenderDelegate from './render-delegate';
 import type { NodesSnapshot } from './snapshot';
 
-import { CURLY_TEST_COMPONENT, GLIMMER_TEST_COMPONENT } from './components';
-import { assertElementShape, assertEmberishElement } from './dom/assertions';
+import { GLIMMER_TEST_COMPONENT } from './components';
+import { assertElementShape } from './dom/assertions';
 import { assertingElement, toInnerHTML } from './dom/simple-utils';
 import { equalTokens, isServerMarker, normalizeSnapshot } from './snapshot';
 import { defineComponent } from './test-helpers/define';
@@ -111,12 +111,6 @@ export class RenderTest implements IRenderTest {
       case 'Glimmer':
         invocation = this.buildGlimmerComponent(blueprint);
         break;
-      case 'Curly':
-        invocation = this.buildCurlyComponent(blueprint);
-        break;
-      case 'Dynamic':
-        invocation = this.buildDynamicComponent(blueprint);
-        break;
       case 'TemplateOnly':
         invocation = this.buildTemplateOnlyComponent(blueprint);
         break;
@@ -129,42 +123,19 @@ export class RenderTest implements IRenderTest {
   }
 
   private buildArgs(args: Dict): string {
-    let { testType } = this;
-    let sigil = '';
-    let needsCurlies = false;
-
-    if (testType === 'Glimmer' || testType === 'TemplateOnly') {
-      sigil = '@';
-      needsCurlies = true;
-    }
-
     return Object.keys(args)
       .map((arg) => {
-        let rightSide: string;
-
         let value = args[arg] as Maybe<string[]>;
-        if (needsCurlies) {
-          let isString = value && (value[0] === "'" || value[0] === '"');
-          if (isString) {
-            rightSide = `${value}`;
-          } else {
-            rightSide = `{{${value}}}`;
-          }
-        } else {
-          rightSide = `${value}`;
-        }
+        let isString = value && (value[0] === "'" || value[0] === '"');
+        let rightSide = isString ? `${value}` : `{{${value}}}`;
 
-        return `${sigil}${arg}=${rightSide}`;
+        return `@${arg}=${rightSide}`;
       })
       .join(' ');
   }
 
   private buildBlockParams(blockParams: string[]): string {
     return blockParams.length > 0 ? ` as |${blockParams.join(' ')}|` : '';
-  }
-
-  private buildElse(elseBlock: string | undefined): string {
-    return elseBlock ? `{{else}}${elseBlock}` : '';
   }
 
   private buildAttributes(attrs: Dict = {}): string {
@@ -243,112 +214,12 @@ export class RenderTest implements IRenderTest {
     return invocation;
   }
 
-  private buildCurlyBlockTemplate(
-    name: string,
-    template: string,
-    blockParams: string[],
-    elseBlock?: string
-  ): string {
-    let block: string[] = [];
-    block.push(this.buildBlockParams(blockParams));
-    block.push('}}');
-    block.push(template);
-    block.push(this.buildElse(elseBlock));
-    block.push(`{{/${name}}}`);
-    return block.join('');
-  }
-
-  private buildCurlyComponent(blueprint: ComponentBlueprint): string {
-    let {
-      args = {},
-      layout,
-      template,
-      attributes,
-      else: elseBlock,
-      name = CURLY_TEST_COMPONENT,
-      blockParams = [],
-    } = blueprint;
-
-    if (attributes) {
-      throw new Error('Cannot pass attributes to curly components');
-    }
-
-    let invocation: string[] | string = [];
-
-    if (template) {
-      invocation.push(`{{#${name}`);
-    } else {
-      invocation.push(`{{${name}`);
-    }
-
-    let componentArgs = this.buildArgs(args);
-
-    if (componentArgs !== '') {
-      invocation.push(' ');
-      invocation.push(componentArgs);
-    }
-
-    if (template) {
-      invocation.push(this.buildCurlyBlockTemplate(name, template, blockParams, elseBlock));
-    } else {
-      invocation.push('}}');
-    }
-    this.assert.ok(true, `generated curly layout as ${layout}`);
-    this.delegate.registerComponent('Curly', this.testType, name, layout);
-    invocation = invocation.join('');
-    this.assert.ok(true, `generated curly invocation as ${invocation}`);
-    return invocation;
-  }
-
   private buildTemplateOnlyComponent(blueprint: ComponentBlueprint): string {
     let { layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated fragment layout as ${layout}`);
     this.delegate.registerComponent('TemplateOnly', this.testType, name, layout);
     this.assert.ok(true, `generated fragment invocation as ${invocation}`);
-    return invocation;
-  }
-
-  private buildDynamicComponent(blueprint: ComponentBlueprint): string {
-    let {
-      args = {},
-      layout,
-      template,
-      attributes,
-      else: elseBlock,
-      name = GLIMMER_TEST_COMPONENT,
-      blockParams = [],
-    } = blueprint;
-
-    if (attributes) {
-      throw new Error('Cannot pass attributes to curly components');
-    }
-
-    let invocation: string | string[] = [];
-    if (template) {
-      invocation.push('{{#component this.componentName');
-    } else {
-      invocation.push('{{component this.componentName');
-    }
-
-    let componentArgs = this.buildArgs(args);
-
-    if (componentArgs !== '') {
-      invocation.push(' ');
-      invocation.push(componentArgs);
-    }
-
-    if (template) {
-      invocation.push(this.buildCurlyBlockTemplate('component', template, blockParams, elseBlock));
-    } else {
-      invocation.push('}}');
-    }
-
-    this.assert.ok(true, `generated dynamic layout as ${layout}`);
-    this.delegate.registerComponent('Curly', this.testType, name, layout);
-    invocation = invocation.join('');
-    this.assert.ok(true, `generated dynamic invocation as ${invocation}`);
-
     return invocation;
   }
 
@@ -381,10 +252,6 @@ export class RenderTest implements IRenderTest {
     if (typeof template === 'object') {
       let blueprint = template;
       template = this.buildComponent(blueprint);
-
-      if (this.testType === 'Dynamic' && properties['componentName'] === undefined) {
-        properties['componentName'] = blueprint.name || GLIMMER_TEST_COMPONENT;
-      }
     }
 
     run(() => {
@@ -800,13 +667,7 @@ export class RenderTest implements IRenderTest {
   protected assertComponent(content: string, attrs: object = {}) {
     let element = assertingElement(this.element.firstChild);
 
-    switch (this.testType) {
-      case 'Glimmer':
-        assertElementShape(element, 'div', attrs, content);
-        break;
-      default:
-        assertEmberishElement(element, 'div', attrs, content);
-    }
+    assertElementShape(element, 'div', attrs, content);
 
     this.takeSnapshot();
   }

@@ -4,18 +4,6 @@ import { test } from '../test-decorator';
 export class HasBlockSuite extends RenderTest {
   static suiteName = 'has-block';
 
-  @test({ kind: 'curly' })
-  'parameterized has-block (subexpr, else) when else supplied'() {
-    this.render({
-      layout: '{{#if (has-block "inverse")}}Yes{{else}}No{{/if}}',
-      template: 'block here',
-      else: 'else here',
-    });
-
-    this.assertComponent('Yes');
-    this.assertStableRerender();
-  }
-
   @test
   'parameterized has-block (subexpr, else) when else not supplied'() {
     this.render({
@@ -35,28 +23,6 @@ export class HasBlockSuite extends RenderTest {
     });
 
     this.assertComponent('Yes');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block (subexpr, default) when block not supplied'() {
-    this.render({
-      layout: '{{#if (has-block)}}Yes{{else}}No{{/if}}',
-    });
-
-    this.assertComponent('No');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block (content, else) when else supplied'() {
-    this.render({
-      layout: '{{has-block "inverse"}}',
-      template: 'block here',
-      else: 'else here',
-    });
-
-    this.assertComponent('true');
     this.assertStableRerender();
   }
 
@@ -82,28 +48,6 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
-  'parameterized has-block (content, default) when block not supplied'() {
-    this.render({
-      layout: '{{has-block}}',
-    });
-
-    this.assertComponent('false');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block (prop, else) when else supplied'() {
-    this.render({
-      layout: '<button name={{has-block "inverse"}}></button>',
-      template: 'block here',
-      else: 'else here',
-    });
-
-    this.assertComponent('<button name="true"></button>');
-    this.assertStableRerender();
-  }
-
   @test
   'parameterized has-block (prop, else) when else not supplied'() {
     this.render({
@@ -123,16 +67,6 @@ export class HasBlockSuite extends RenderTest {
     });
 
     this.assertComponent('<button name="true"></button>');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block (prop, default) when block not supplied'() {
-    this.render({
-      layout: '<button name={{has-block}}></button>',
-    });
-
-    this.assertComponent('<button name="false"></button>');
     this.assertStableRerender();
   }
 
@@ -179,16 +113,6 @@ export class HasBlockSuite extends RenderTest {
     });
 
     this.assertComponent('<button data-has-block="true"></button>');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block (attr, default) when block not supplied'() {
-    this.render({
-      layout: '<button data-has-block="{{has-block}}"></button>',
-    });
-
-    this.assertComponent('<button data-has-block="false"></button>');
     this.assertStableRerender();
   }
 

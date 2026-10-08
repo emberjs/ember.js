@@ -11,7 +11,6 @@ import type { TestModifierConstructor } from '../../modifiers';
 import type { TestJitRegistry } from './registry';
 
 import { createTemplate } from '../../compile';
-import { EmberishCurlyComponent } from '../../components/emberish-curly';
 import { defineUserHelper } from '../../helpers';
 import { defineTestModifier } from '../../modifiers';
 
@@ -25,22 +24,6 @@ export function registerTemplateOnlyComponent(
     name,
     createTemplate(layoutSource),
     templateOnlyComponent(undefined, name)
-  );
-}
-
-export function registerEmberishCurlyComponent(
-  registry: TestJitRegistry,
-  name: string,
-  Component: Nullable<ComponentTypes['Curly']>,
-  layoutSource: Nullable<string>
-): void {
-  let ComponentClass = Component || class extends EmberishCurlyComponent {};
-
-  registerSomeComponent(
-    registry,
-    name,
-    layoutSource !== null ? createTemplate(layoutSource) : null,
-    ComponentClass
   );
 }
 
@@ -80,18 +63,6 @@ export function registerComponent<K extends ComponentKind>(
   switch (type) {
     case 'Glimmer':
       registerGlimmerishComponent(registry, name, Class as ComponentTypes['Glimmer'], layout);
-      break;
-    case 'Curly':
-      registerEmberishCurlyComponent(registry, name, Class as ComponentTypes['Curly'], layout);
-      break;
-
-    case 'Dynamic':
-      registerEmberishCurlyComponent(
-        registry,
-        name,
-        Class as any as typeof EmberishCurlyComponent,
-        layout
-      );
       break;
     case 'TemplateOnly':
       registerTemplateOnlyComponent(registry, name, layout ?? '');

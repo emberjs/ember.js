@@ -117,8 +117,6 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
 ) {
   let tests: ComponentTests = {
     glimmer: [],
-    curly: [],
-    dynamic: [],
     templateOnly: [],
   };
 
@@ -140,54 +138,11 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
   }
 
   for (let [prop, test] of testFunctions(klass.prototype)) {
-    if (test['kind'] === undefined) {
-      let skip = test['skip'];
-      switch (skip) {
-        case 'glimmer':
-          tests.curly.push(createTest(prop, test));
-          tests.dynamic.push(createTest(prop, test));
-          tests.glimmer.push(createTest(prop, test, true));
-          break;
-        case 'curly':
-          tests.glimmer.push(createTest(prop, test));
-          tests.dynamic.push(createTest(prop, test));
-          tests.curly.push(createTest(prop, test, true));
-          break;
-        case 'dynamic':
-          tests.glimmer.push(createTest(prop, test));
-          tests.curly.push(createTest(prop, test));
-          tests.dynamic.push(createTest(prop, test, true));
-          break;
-        case true:
-          ['glimmer', 'curly', 'dynamic'].forEach((kind) => {
-            tests[kind as DeclaredComponentKind].push(createTest(prop, test, true));
-          });
-          break;
-        default:
-          tests.glimmer.push(createTest(prop, test));
-          tests.curly.push(createTest(prop, test));
-          tests.dynamic.push(createTest(prop, test));
-      }
-      continue;
-    }
-
     let kind = test['kind'];
 
-    if (kind === 'curly') {
-      tests.curly.push(createTest(prop, test));
-      tests.dynamic.push(createTest(prop, test));
-    }
-
-    if (kind === 'glimmer') {
-      tests.glimmer.push(createTest(prop, test));
-    }
-
-    if (kind === 'dynamic') {
-      tests.curly.push(createTest(prop, test));
-      tests.dynamic.push(createTest(prop, test));
-    }
-
-    if (kind === 'templateOnly') {
+    if (kind === undefined || kind === 'glimmer') {
+      tests.glimmer.push(createTest(prop, test, test['skip'] === 'glimmer'));
+    } else if (kind === 'templateOnly') {
       tests.templateOnly.push(createTest(prop, test));
     }
   }
@@ -198,8 +153,6 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
 
 interface ComponentTests {
   glimmer: Function[];
-  curly: Function[];
-  dynamic: Function[];
   templateOnly: Function[];
 }
 

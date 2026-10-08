@@ -143,20 +143,6 @@ export class JitRenderDelegate implements RenderDelegate {
     this.plugins.push(plugin);
   }
 
-  registerComponent<K extends 'TemplateOnly' | 'Glimmer', L extends ComponentKind>(
-    type: K,
-    _testType: L,
-    name: string,
-    layout: string,
-    Class?: ComponentTypes[K]
-  ): void;
-  registerComponent<K extends 'Curly' | 'Dynamic', L extends ComponentKind>(
-    type: K,
-    _testType: L,
-    name: string,
-    layout: Nullable<string>,
-    Class?: ComponentTypes[K]
-  ): void;
   registerComponent<K extends ComponentKind, L extends ComponentKind>(
     type: K,
     _testType: L,

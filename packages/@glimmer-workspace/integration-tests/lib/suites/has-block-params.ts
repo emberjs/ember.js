@@ -31,40 +31,6 @@ export class HasBlockParamsHelperSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
-  'parameterized has-block-params (subexpr, else) when else not supplied'() {
-    this.render({
-      layout: '{{#if (has-block-params "inverse")}}Yes{{else}}No{{/if}}',
-      template: 'block here',
-    });
-
-    this.assertComponent('No');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block-params (subexpr, default) when block supplied with block params'() {
-    this.render({
-      layout: '{{#if (has-block-params)}}Yes{{else}}No{{/if}}',
-      blockParams: ['param'],
-      template: 'block here',
-    });
-
-    this.assertComponent('Yes');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block-params (subexpr, default) when block supplied without block params'() {
-    this.render({
-      layout: '{{#if (has-block-params)}}Yes{{else}}No{{/if}}',
-      template: 'block here',
-    });
-
-    this.assertComponent('No');
-    this.assertStableRerender();
-  }
-
   @test
   'parameterized has-block-params (subexpr, default) when block not supplied'() {
     this.render({
@@ -137,40 +103,6 @@ export class HasBlockParamsHelperSuite extends RenderTest {
       layout: '<button name={{has-block-params "inverse"}}></button>',
       template: 'block here',
       else: 'else here',
-    });
-
-    this.assertComponent('<button name="false"></button>');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block-params (prop, else) when else not supplied'() {
-    this.render({
-      layout: '<button name={{has-block-params "inverse"}}></button>',
-      template: 'block here',
-    });
-
-    this.assertComponent('<button name="false"></button>');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block-params (prop, default) when block supplied with block params'() {
-    this.render({
-      layout: '<button name={{has-block-params}}></button>',
-      blockParams: ['param'],
-      template: 'block here',
-    });
-
-    this.assertComponent('<button name="true"></button>');
-    this.assertStableRerender();
-  }
-
-  @test({ kind: 'curly' })
-  'parameterized has-block-params (prop, default) when block supplied without block params'() {
-    this.render({
-      layout: '<button name={{has-block-params}}></button>',
-      template: 'block here',
     });
 
     this.assertComponent('<button name="false"></button>');

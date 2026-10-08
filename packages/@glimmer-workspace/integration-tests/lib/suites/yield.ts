@@ -22,45 +22,6 @@ export class YieldSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test({
-    skip: 'glimmer',
-  })
-  'yield to "inverse"'() {
-    this.render(
-      {
-        layout:
-          '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
-        args: { predicate: 'this.activated', someValue: '42' },
-        blockParams: ['result'],
-        template: 'Hello{{result}}{{this.outer}}',
-        else: 'Goodbye{{this.outer}}',
-      },
-      { activated: false, outer: 'outer' }
-    );
-
-    this.assertComponent('No:Goodbyeouter');
-    this.assertStableRerender();
-  }
-
-  @test({
-    skip: 'glimmer',
-  })
-  'yield to "else"'() {
-    this.render(
-      {
-        layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="else"}}{{/if}}',
-        args: { predicate: 'this.activated', someValue: '42' },
-        blockParams: ['result'],
-        template: 'Hello{{result}}{{this.outer}}',
-        else: 'Goodbye{{this.outer}}',
-      },
-      { activated: false, outer: 'outer' }
-    );
-
-    this.assertComponent('No:Goodbyeouter');
-    this.assertStableRerender();
-  }
-
   @test
   'yielding to an non-existent block'() {
     this.render({

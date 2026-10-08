@@ -40,12 +40,6 @@ export class AbstractNodeTest extends RenderTest {
   override assertComponent(html: string) {
     let el = assertingElement(this.element.firstChild);
 
-    if (this.testType !== 'Glimmer') {
-      this.assert.strictEqual(el.getAttribute('class'), 'ember-view');
-      this.assert.ok(el.getAttribute('id'));
-      this.assert.ok(el.getAttribute('id')!.indexOf('ember') > -1);
-    }
-
     let serialized = toInnerHTML(el);
     this.assert.strictEqual(serialized, html);
   }

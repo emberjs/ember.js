@@ -1,6 +1,6 @@
 import { keys } from '@glimmer/util';
 
-export type DeclaredComponentKind = 'glimmer' | 'curly' | 'dynamic' | 'templateOnly';
+export type DeclaredComponentKind = 'glimmer' | 'templateOnly';
 
 export interface ComponentTestMeta {
   kind?: DeclaredComponentKind;
