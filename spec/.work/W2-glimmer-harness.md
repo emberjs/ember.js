@@ -627,7 +627,27 @@ keyword" went in 5.3b).
       has-block port) = 9014; renames change no count. Lint: `pnpm type-check:internals` clean; `pnpm lint`: eslint
       and docs clean, prettier fails only on the two untracked local testem configs (`testem.filter.cjs`,
       `testem.map.cjs`, never committed); prettier and eslint over the 101 files of `git diff origin/main` clean.
-- [ ] 8.4 Update §09 (C1, C2, C6, C18 rows; §9.7 W2 state) and STATUS.
+- [x] 8.4 Update §09 (C1, C2, C6, C18 rows; §9.7 W2 state) and STATUS.
+      Done (2026-10-08). §09: adopted 5.1 edits applied: 1 (`RenderHandle { destroy }`, adapter-level
+      `rerender()`, destructors run by the next `rerender()`/`settle()`), 4 (no `keywords` in `compile`), 5
+      (`createOwner?()`, teardown contract, dasherized `<FooBar>`), 6 (`debugRenderTree` render option and why), 7
+      (seam B after W2, deep imports, `renderComponent` replacing earlier renders), 8 (W2 exit criterion exempts
+      W1/W5 I files), 9 (C18: `BaseEnv` queues had no callers); edits 2 and 3 as open questions §9.8 Q7 and Q8
+      (findings 6, 7), W0 row and the §9.8 intro mention them. C1, C2, C6, C18 rows say what W2 did and what
+      remains; §9.7 W2 is "Done on branch `test/w2-glimmer-harness`, not yet upstreamed". Corrections: C18 row
+      (`BaseEnv`, duplication overstated) and `.work/T17-fake-stubs.md` (§1.4 `BaseEnv`, §2.3 `iterable-test`,
+      §3 `if`/`unless` row and a note on the Overlap column, §4 `BaseEnv` row). Findings carried: 1 -> §06-12 Q3
+      (observed engine owner, new mount test); 2 -> test citation for the `class` attributeBinding assertion in
+      §08-6.4 (fake-only behavior, no question); 3 -> §05-7.6 (observed: invocation attribute wins; `...attributes`
+      in a classic layout puts the attributes on both elements; W2 tests cited); 4 -> §08-6.6 (named blocks on
+      classic components, W2 tests cited, the `yield-test.js:35` comment explained); 5 -> new §05-14 item 17
+      (general dynamic scope vs Ember's `outletState`-only), linked from §05-5.8; 6, 7 -> §09-9.8 Q7, Q8; 8 ->
+      §08-6.1 (args assigned by `create` after the constructor, before `init()`). W2-branch tests cited by
+      branch and path without line numbers. `xref.py` and `check-citations.py` clean. STATUS: W2 row done, the
+      Decisions line lists Q7/Q8, Next steps item 6 lists the suggested upstream PRs by step and the citation
+      refresh to do once W2 lands. Commits `b29f3ff7f9`, `f6ac9b6ab6` and the STATUS commit.
+
+**W2 done** (2026-10-08): 8.1–8.4 ticked, nothing unresolved in 8.3.
 
 ### W5 classification list
 

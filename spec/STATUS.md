@@ -51,7 +51,8 @@ continue the work. Last updated: 2026-10-08.
   marker-walking of §05-13.2 are informative); [Dev] messages are verbatim; tests move to
   `await settled()` and the app-style form (§09-9.4.3); the suite stays in this repo, and a
   feature flag selects the implementation; fake Glimmer/Ember stubs of each other are
-  eliminated (§09-9.5 C18). Open: which profiles are required (Q2).
+  eliminated (§09-9.5 C18). Open: which profiles are required (Q2), and from W2 the Legacy
+  profile's top-level `this` (Q7) and serialize-mode interactivity (Q8).
 - **No dependent tracking** (author ruling, 2026-10-07). The model stays built around cheap
   revalidation without reverse edges: the core may schedule effects that are not stale, and
   filters them with `isValid` at flush time, so `fn` runs only when a dependency changed
@@ -149,7 +150,7 @@ Run these in order, one at a time.
 | T15 | Author feedback `59f71505b9`: relate the core to RFC 957 (scheduler) | Opus | `.work/T15-scheduler-rfc.md` | done; new §07-2.8, §07-5 items 14 and 17 updated, 3 strategy tests |
 | T16 | Author request: a testing chapter (refactors for an alternate implementation, coverage gaps) | Opus + 2 Sonnet surveys | `.work/T16-conformance-testing.md` | done; §09, `tools/test-coverage.py`; work plan W0–W9 and open questions Q1–Q6 in §9.7–9.8 |
 | T17 | Merge of `origin/main` (`def1faa2cf`, base `9bec1cb2a8`) and the §09 rulings (`5740b4aeb7`) | Opus + 2 Sonnet | `.work/T17-merge-and-09-rulings.md` | done; 122 citations remapped, 44 FLAGs and about 184 moved-test citations fixed by hand; TrackedValue, renderer root release, `get`, `{{on}}` prose; §09 rulings, post-merge counts, app-style target form, C18 fake stubs (`.work/T17-fake-stubs.md`); §05-13 markers informative |
-| W2 | §09-9.7 W2: eliminate the fake Ember/Glimmer stubs in the Glimmer harness, then the delegate refactor (C1, C2, C6, C18). Code in worktree `../ember.js-w2`, branch `test/w2-glimmer-harness` (from `origin/main` `9bec1cb2a8`); status and coverage ledger here | Sonnet per step; Opus for the step-5 API, the step-4 ledger review and the exit check | `.work/W2-glimmer-harness.md`, `.work/W2-coverage-ledger.md` | in progress: steps 0–6 done (fake classic component, fake registry/resolver/env, fake helpers/modifiers, `GlimmerishComponent`s and `PositionalComponent` gone; IT renders through Ember's `BaseRenderer` with a real owner and Ember's compile options); step 7 (merge duplicated suites) under way; step 8 exit check left. Suite at 9108 / 0 fail after 6.3. Resume from the first unticked item of the checklist; findings 1–8 there await the author |
+| W2 | §09-9.7 W2: eliminate the fake Ember/Glimmer stubs in the Glimmer harness, then the delegate refactor (C1, C2, C6, C18). Code in worktree `../ember.js-w2`, branch `test/w2-glimmer-harness` (from `origin/main` `9bec1cb2a8`); status and coverage ledger here | Sonnet per step; Opus for the step-5 API, the step-4 ledger review and the exit check | `.work/W2-glimmer-harness.md`, `.work/W2-coverage-ledger.md` | done (2026-10-08) on branch `test/w2-glimmer-harness` (worktree `../ember.js-w2`, 39 commits on `origin/main` `9bec1cb2a8`, last `246792a82d`), not yet upstreamed. No fake stubs left (C18 table empty, 8.2); the import boundary holds except for the W5-listed implementation tests (8.1); every removed test is in the coverage ledger (8.3: 0 unmatched, `tools/w2-coverage-diff.py`). Suite 9014 / 8996 pass / 0 fail / 18 skip (baseline 9541 / 9523 / 0 / 18). §09 updated (adapter, seam B, C1/C2/C6/C18, Q7/Q8); findings carried into §05-7.6, §05-14 item 17, §06-12 Q3, §08-6.1, §08-6.6. Ready to split into upstream PRs by step (Next steps item 6) |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -244,10 +245,38 @@ Suggestions for the plan's author, based on what is still open:
    `yield`/block claims with no test. Most of §01 and §03 beyond the T9a items is checked only
    against source and `dist/dev`.
 6. **Conformance suite (§09).** Answer §09-9.8 Q1–Q6 (W0), then run the workstreams of §09-9.7.
-   W2 (Glimmer harness) and W3 (Ember harness) need no decisions and can start now, as
-   separate tasks with checklists, upstreamable to ember.js on their own.
-   W2 is under way (task W2 above); its code is on branch `test/w2-glimmer-harness` in the
-   worktree `../ember.js-w2`, not on this branch.
+   W3 (Ember harness) needs no decisions and can start now, as a separate task with a
+   checklist, upstreamable to ember.js on its own. Q7 and Q8 came out of W2.
+   **W2 is done** on branch `test/w2-glimmer-harness` (worktree `../ember.js-w2`, from
+   `origin/main` `9bec1cb2a8`; not on this branch, not pushed). Suggested upstream PRs, one per
+   step, in this order (each was green on the whole suite with a per-test diff; the
+   `test(ember-glimmer)` commits touch only Ember tests and could go first):
+   1. *Use the real `@glimmer/component` and public imports* (step 1): `37682d8d97`,
+      `548bc5cdb3`, `c163fc1ba4`.
+   2. *Delete fakes that have twins* (step 2: fake `mut`, fake `SafeString`, per-template-owner
+      tests, 34 `ember-component-test.ts` tests): `c1e68fe3ff`, `1cbe9f6b78`, `fc8536394f`,
+      `93d54aa9f9`, `8d8030598c`.
+   3. *Helpers and modifiers through the public managers* (step 3): `e8163f76b0`, `29e2f90191`,
+      `cce8d18557`.
+   4. *Collapse the component fan-out; delete the fake classic component* (step 4; ports to real
+      classic components first): `f76a25d5ce`, `79517d806a`, `73aa8f83c3`, `dd4714ac3c`,
+      `eac1ad7182`, `bf935f7c7a`.
+   5. *Render through Ember's renderer with a real owner and resolver* (5.2a–5.4b):
+      `5f76825492`, `c562908ff0`, `5c0b5156be`, `e41d3c7792`, `3ebe247030`, `fedd0647fb`,
+      `f482d68ebb`.
+   6. *One compile for both harnesses, with Ember's compile options; classic rehydration*
+      (5.5a–5.6): `a6ae9273b9`, `0f5d5afdbe`, `bf7d0d21ec`.
+   7. *Move the remaining stubs* (step 6: style warnings, `PositionalComponent`,
+      `iterable-test`): `4b82b0fea8`, `545a412a29`, `62ccb8ba1f`.
+   8. *Merge duplicated suites* (step 7): `a135f9b3b0`, `9a486d218e`, `c7f204af33`,
+      `d669d705fe`, `68fcd3260a`, `8f427a1ed0`, `51887e1701`.
+   9. *Exit-check follow-ups* (step 8; small, can be folded into PRs 4 and 8): `13ed9f038c`
+      (rename the `Glimmerish`/`Emberish` suites), `246792a82d` (has-block port).
+   The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
+   Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
+   `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 13) need the T17-style refresh
+   (re-derive moved and deleted test citations), and the W2-branch citations added in 8.4
+   (§05-7.6, §06-12 Q3, §08-6.1, §08-6.6) can get line numbers.
 7. **Keep citations current.** Line numbers are accurate for this checkout (`origin/main`
    merged at `def1faa2cf`, upstream base `9bec1cb2a8`). After the next merge, run
    `python3 spec/tools/remap-citations.py 9bec1cb2a8 <new base> --apply` once, fix its FLAG lines
