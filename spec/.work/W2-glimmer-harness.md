@@ -472,7 +472,7 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
       Ember behavior is the specified one, change the expectation (e.g. `assert.throws` with
       the Ember message) and add a Finding; if it is a Glimmer-only capability, ledger it
       (implementation) for Opus review. Count change only by ledger rows.
-- [ ] 5.6 Restore the rehydration ports deferred from 4.2 (ledger rows "deferred to 5.6": the
+- [x] 5.6 (done, see notes) Restore the rehydration ports deferred from 4.2 (ledger rows "deferred to 5.6": the
       `RehydratingComponents` multiple/mismatched invocations with a real classic Component, and
       the `{{component}}` dynamic-form rehydration), now that curly invocation through a real
       owner exists. Until this item is done those behaviors are untested on the branch.
@@ -857,3 +857,12 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   fail / 18 skip, identical to 5.4b/5.5a (5 tests moved to a new module, none added or removed; the plain-compile VM module names are `jit (plain
   Glimmer compile)` and `rehydration (plain Glimmer compile)`). Per-test diff against `full55a`, ignoring date-stamped Helpers names: 5 renamed
   modules, 0 missing, 0 new. type-check and prettier clean.
+- 5.6 (2026-10-08): code `bf7d0d21ec`. `registerClassicComponent(owner, name, layout, Class = Component)` in `lib/modes/jit/register.ts` (a fresh
+  subclass per call: `setComponentTemplate` is once per class) and `RehydrationDelegate.registerClassicComponent` (phase rule as the other `register*`).
+  The 4 ledger rows became 4 new tests in the `Rehydration` class of `initial-render-test.ts` (module `rehydration :: rehydration`; not in
+  `RehydratingComponents`, which runs per Glimmer/TemplateOnly kind and builds angle-bracket invocations from blueprints): 'curly invocation of a
+  classic Component: multiple invocations' and '... mismatched multiple invocations' (`{{#foo-bar}}`, wrapper `class="ember-view"`, 0 nodes removed),
+  '{{component}} invocation: component invocations' and '... interacting with builtins' (a Glimmer component through `{{component this.componentName}}`;
+  server output has the angle-bracket form's markers shifted by one). The injected `renderer:-dom` caused no problem: the design-2 fallback was not
+  needed. Counts: 9110 -> 9114 total / 9096 pass / 0 fail / 18 skip; per-test diff against `full55b2`: 0 missing, 4 new (the 4 above); greps 0.
+  type-check and prettier clean (eslint ignores IT).
