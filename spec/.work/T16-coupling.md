@@ -364,7 +364,7 @@ Totals (aggregated, not per-file): of about 270 files, roughly 11 are directly r
 
 ## Summary — category to number of files and typical refactor action
 
-Files are counted from the group 1-4 per-file tables only (206 files classified); group 5 is directory-level.
+Files are counted from the group 1-4 per-file tables only (216 files classified); group 5 is directory-level.
 
 | category | files | typical refactor action |
 |---|---|---|
