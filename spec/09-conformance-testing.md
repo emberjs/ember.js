@@ -292,20 +292,34 @@ the profile list.
    both sides are always the same implementation, the SSR profile could require "rehydration
    reproduces the client render and reuses server nodes" and leave the markers to the
    implementation.
+
+    > Yes, let's leave markers to the implementation. We don't need to specificy interoperable markers.
+
 2. **Q2. Which profiles are required?** §9.2 proposes Core, Dev, Loose mode, Legacy and Ember
    integration as required, with SSR (Q1), Debug render tree and Proposed optional.
 3. **Q3. Are all [Dev] messages normative verbatim?** The harness matches them verbatim
    (C16), and this specification has treated them as normative. Requiring every message
    (about 145 assertion sites) commits a new implementation to Ember's exact wording,
    including location suffixes such as `('module' @ L1:C2)`.
+
+  > Let's assume verbatim is OK (it will keep the test suite simpler) and only re-address if it turns out to be inordinately difficult for a second implementation to follow.
+
 4. **Q4. Synchronous settling.** The harnesses assume rendering settles synchronously inside
    `runTask`/`rerender`. That is current behavior (§07-1.10), but RFC 957 would make rendering
    asynchronous (§07-2.8). Should conformance tests move to `await settled()` now (a larger W3
    and W4), or keep the synchronous form until RFC 957 decides?
+
+    > We are already beginning to land refactors that switch to `await settled()`, so let's plan on moving. I'm going to merge main into this branch now so we can re-evaluate because I think some of the counted cases have already been handled.
+
 5. **Q5. Where does the suite live?** In ember.js, as this chapter assumes, or extracted into
    its own package that both implementations depend on? Extraction is cleaner, but it would
    separate the tests from the code they currently guard.
+
+    > It stays in this repo. The new implementation will also be in this repo while it's under development. We'll test both via a feature flag strategy.
+
 6. **Q6. Classic components in the Glimmer harness.** The `Curly` and `Dynamic` component
    kinds emulate classic components with an internal manager (C6). Should they be rebuilt on
    the public manager API (portable, but an emulation of an emulation), or dropped in favor of
    the Ember harness's real classic components?
+
+   > Glimmer was originally written in a different repo, which caused both Ember and Glimmer to test fake stubs of each other. Any remaining cases like that should be flagged to be eliminated as part of our test cleanup.
