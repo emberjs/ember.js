@@ -549,9 +549,8 @@ keyword" went in 5.3b).
   - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): the split into 7.1a-7.1k is committed (`bd3712ea82`). No sub-item has been started: no per-test diff done,
-  no code changed in the worktree (clean at `62ccb8ba1f`), no ledger rows added. Next: 7.1a (`{{#each}}`). Last full run `full63`
-  (9108 / 9090 / 0 / 18) in the session scratchpad is the baseline for the first per-test diff; parse with `spec/tools/w2-baseline-parse.py`.
+  Progress note (7.1): 7.1a done (worktree `a135f9b3b0`). Next: 7.1b (`{{in-element}}`). Last full run `full71a` (9106 / 9088 / 0 / 18) in the session
+  scratchpad is the baseline for the next per-test diff (`cmp3.py full71a.txt fullNEW.txt`; `post.sh` wraps the diff and the greps). Ledger rows go in the `7.1 rows` section.
 
 ## 8. Exit check (Opus)
 
