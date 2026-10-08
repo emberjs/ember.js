@@ -12,7 +12,7 @@ Portability classes: P = portable with a harness adapter; R = portable after ref
 - [x] 2. @ember/-internals/glimmer/tests/**
 - [x] 3. @glimmer/*/test/**
 - [x] 4. template-compiler tests
-- [ ] 5. metal / object / other ember packages
+- [x] 5. metal / object / other ember packages
 
 ## Group 1 — `packages/@glimmer-workspace/integration-tests/test/**` (81 files: 79 tests + package.json + support.ts)
 
@@ -117,7 +117,7 @@ Paths below are relative to `packages/@glimmer-workspace/integration-tests/test/
 | Rehydration internals (`rehydrationStats`) | 1 | `partial-rehydration-test.ts:68` |
 | Environment / global-context | 2 | `env-test.ts:3`, `style-warnings-test.ts:18` |
 
-Totals for group 1 (79 test files, excluding `package.json`; `support.ts` counted P-support): P 55, R 17, M 4 (`compiler/compile-options-test.ts`, `debug-render-tree-test.ts`, `modifiers/on-test.ts`, `updating-test.ts`), I 4 (`env-test.ts`, `i-n-u-r-test.ts`, `owner-test.ts`, `precompile-test.ts`). (Counts approximate; keywords/* are 30 files: 3 R, 27 P.)
+Totals for group 1 (79 test files, excluding `package.json`/`support.ts`): P 52, R 19, M 4 (`compiler/compile-options-test.ts`, `debug-render-tree-test.ts`, `modifiers/on-test.ts`, `updating-test.ts`), I 4 (`env-test.ts`, `i-n-u-r-test.ts`, `owner-test.ts`, `precompile-test.ts`). The 30 `keywords/*` files are 28 P and 2 R.
 
 ## Group 2 — `packages/@ember/-internals/glimmer/tests/**` (89 files incl. 6 util files and 3 .gjs; paths relative to that dir)
 
@@ -332,4 +332,52 @@ Harness: `moduleFor` + `AbstractTestCase`/`RenderingTestCase`; most tests call `
 | AST plugin/ASTv1 deep-equal/`_preprocess`/`_print` | 4 | `basic-usage-test.js:1-43`, `utils/transform-test-case.ts:10` |
 | Internal lists (`*_TRANSFORMS`) | 1 | `system/compile_options_test.js:20-40` |
 
-Totals (13 test files; excluding the helper): P 7, R 2, M 1, I 2 (+ `compile_options_test.js` is 1 test P of 5 but counted I... see note). Note: of the 13 test files, `assert-against-attrs-test.js` is M and `compile_options_test.js` is I.
+Totals (13 test files; excluding the helper): P 8, R 2, M 1, I 2.
+
+## Group 5 — metal / object / runtime / ember / routing / application / engine / runloop (aggregated by directory)
+
+Only the template/reactivity-relevant share is relevant to §07/§08; most of these packages are about the classic object model, container, router and run loop, which are outside the template language and mostly out of conformance scope. Counts are files matching the pattern (grep, so approximate).
+
+| directory | files / lines | class | categories | note |
+|---|---|---|---|---|
+| `@ember/-internals/metal/tests/tracked/` (6 files, 960 lines incl. `cached/get_test.js`) | 7 | R | TAG, EMBER-PRIV | `@tracked` and `@cached` semantics (§07 core). `tracked/validation_test.js:12`, `standalone_test.js:4`, `classic_classes_test.js:4`, `options_test.js:4` assert via `track(() => obj.x)` + `valueForTag`/`validateTag` snapshot comparisons and `tagForProperty` (`validation_test.js:5`); refactor to `createCache`/`getValue` (public) or render-level observation. `cached/get_test.js` already uses public `@cached`. |
+| `@ember/-internals/metal/tests/` computed/alias/observers/events/properties (21 files) | 21 | M | EMBER-PRIV, TAG | Classic `computed`, `alias`, `addObserver`, `defineProperty`, `set`/`get` (sync observer firing, dependent keys). Relevant to §07-X (interop with `get`/`set`/`notifyPropertyChange` and tag consumption). `alias_test.js:15` uses `valueForTag`/`validateTag` + `tagForProperty` (6 hits) = R/I; `property_events_test.js:29-62` uses `meta(obj)` = I; `computed_test.js:347` `.meta()` (public descriptor meta). 16 files use `expectAssertion`. |
+| `@ember/object/tests/` (33 files, 8,788 lines) | 33 | M | EMBER-PRIV, BUILD | `EmberObject`, mixins, computed macros, observers, events, `action`. Template relevance: `action_test.js` (4 `precompileTemplate` tests with `{{action}}`/`{{on}}` through RenderingTestCase) and `computed/dependent-key-compat-test.js` (classic computed read from native tracked code; §07). `destroy_test.js:3` peeks `peekMeta` (I). 23 files use `expectAssertion`/`expectDeprecation`. Mostly outside template scope. |
+| `@ember/-internals/runtime/tests/` (64 files, 7,462 lines) | 64 | M | EMBER-PRIV, TAG | Array/proxy/mixins/observable. Reactivity-relevant: `system/array_proxy/length_test.js:14` (`createCache`/`getValue` over ArrayProxy), `system/core_object_test.js:11` (`track`), `system/array_proxy/*` content change autotracking. 11 files use `meta`/`peekMeta`. `RSVP` imported from here by glimmer tests. |
+| `ember/tests/` (34 files, 13,990 lines; 10 routing/query-params/router-service + 9 top-level) | 34 | P | RUNLOOP (mild), BUILD | Application-level tests with `ApplicationTestCase` and `precompileTemplate`: template rendering of routes/outlets (`routing/template_rendering_test.js`, `routing/toplevel_dom_test.js`), components registration, service injection. Router-heavy; only the rendering-related files are template-relevant (about 6 files). `production_build_test.js` is I (BUILD: `DEBUG` false only). `view_instrumentation_test.js` is I (`@ember/instrumentation`). |
+| `@ember/routing/tests/` (10 files), `@ember/application/tests/` (9), `@ember/engine/tests/` (7) | 26 | I (for template scope) | EMBER-PRIV, RUNTIME-PRIV (1 `@glimmer/manager` in application) | Router, location, application/engine boot. 4 `runTask` in application tests; `ENV` in 1; template relevance is only "outlet/mount rendered" covered elsewhere. |
+| `@ember/runloop/tests/` (9 files, 751 lines) | 9 | I | RUNLOOP | `_backburner._platform`, `_hasScheduledTimers`, `_getCurrentRunLoop` (`later_test.js:2-10`, `run_bind_test.js:1`, `once_test.js:1`); queue ordering (`schedule_test.js`) is Backburner. Exclude except as an adapter for "settle"; the spec treats the run loop as an environment (§07-2.8 / T15). |
+| `@ember/-internals/meta/tests/` (2), `@ember/-internals/utils/tests/` (8), `@ember/-internals/container/tests/` (3), `@ember/-internals/string/tests`, `@ember/-internals/deprecations/tests` | 16 | I | EMBER-PRIV | Private infrastructure. |
+| `@ember/controller|service|array|enumerable|utils|debug|instrumentation/tests` | ~16 | P/I | EMBER-PRIV | Public-API unit tests; `@ember/debug/tests` use `ENV`; `instrumentation` is I. Not template-relevant except `@ember/debug` `captureRenderTree`/assert behavior. |
+
+### Group 5 recurring patterns
+
+| pattern | files | examples |
+|---|---|---|
+| Direct tag snapshots (`track` + `valueForTag` + `validateTag`) to test `@tracked`/alias | 5 metal files (+1 runtime) | `-internals/metal/tests/tracked/validation_test.js:12-35`, `alias_test.js:15` |
+| `meta(obj)`/`peekMeta` | about 24 files across metal/object/runtime | `-internals/metal/tests/property_events_test.js:29`, `@ember/object/tests/destroy_test.js:3` |
+| Backburner/run-loop internals | 3 in runloop (plus 2 in runtime) | `@ember/runloop/tests/later_test.js:2-10` |
+| `expectAssertion`/`expectDeprecation` on dev messages | about 70 files in total | `@ember/-internals/metal/tests/` (16 files) |
+| Template involvement | about 30 files across all of group 5 | `@ember/object/tests/action_test.js:21`, `ember/tests/routing/template_rendering_test.js` |
+
+Totals (aggregated, not per-file): of about 270 files, roughly 11 are directly reactivity (tracked/cached/validation) = R, 45 mixed computed/observer/proxy tests relevant only for interop, about 30 involve templates through the app harness (P), the rest I or out of scope.
+
+## Summary — category to number of files and typical refactor action
+
+Files are counted from the group 1-4 per-file tables only (206 files classified); group 5 is directory-level.
+
+| category | files | typical refactor action |
+|---|---|---|
+| BUILD | 70 | Replace `DEBUG`/`LOCAL_TRACE_LOGGING` skip with a harness capability flag (`dev` / `prod`); keep [Dev] assertion messages only under dev. |
+| AST | 31 | Delete (plugins, ASTv1 shape, print, traversal, loc); keep parse-error/message tests via `precompile` throwing; convert whitespace/escape tests to rendered-text assertions. |
+| RUNTIME-PRIV | 29 | Swap `@glimmer/runtime`/`@glimmer/manager` imports for public equivalents (`@ember/helper`, `@ember/modifier`, `@ember/component`); drop tests of `EnvironmentImpl`, internal managers, `normalizeProperty`. |
+| TAG | 25 | Re-express `track`/`valueForTag`/`validateTag` tests with `createCache`/`getValue`/`@tracked`; delete raw tag/validator tests (`meta-test`, `validators-test`). |
+| EMBER-PRIV | 24 | Replace `@ember/-internals/*` imports with public re-exports (`tracked`, `getOwner`, `Helper`); drop view-registry, instrumentation, cache-counter, and meta tests. |
+| RUNLOOP | 11 | Map `runTask` to a harness `flush()`/`settled()` contract; drop queue-name (`afterRender`, `actions`) and `_backburner` tests. |
+| OPCODE | 7 | Exclude (`@glimmer/vm`, heap, program, immediates, capability bitmaps). |
+| DRT | 7 | Keep `captureRenderTree` tests behind an optional "debug render tree" conformance profile; drop `getDebugCustomRenderTree` internals and the `backtrackingMessageFor` format (`utils/debug-stack.js`). |
+| REF | 6 | Replace `createComputeRef`/`createConstRef` arguments with tracked properties/helpers; `IterableReference` key tests become `{{#each key=...}}` render tests. |
+| WIRE | 5 | Exclude (`precompile-test`, `compiler-test`, `compile-options-test`, `template-factory-test`, `runtime-resolver-cache-test`). |
+| STRING-HTML | 5 | Normalize via DOM comparison (harness `assertHTML` already does for most); SSR marker strings are normative (§05-13.1). |
+
+Grand totals over 216 test files in groups 1-4 (group 1: 79, group 2: 83, group 3: 41, group 4: 13): P 121, R 47, M 12, I 36 (of which 24 in group 3). Note the harness (not the tests) holds the dominant coupling: `packages/@glimmer-workspace/integration-tests/lib` (renderMain/renderSync/inTransaction, TestJitRuntimeResolver) and `packages/internal-test-helpers/lib/test-cases/rendering.ts` (`_resetRenderers`, `runAppend`, `runTask`).
