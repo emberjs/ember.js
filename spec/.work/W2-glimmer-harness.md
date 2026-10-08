@@ -96,7 +96,7 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
       `@glimmer/component`/template-only, plus a curly-invocation variant through a real owner.
 - [x] 4.3 (done, see notes) Port the `ember-component-test.ts` residue (step 2.4) and `input-range-test.ts`; delete
       `ember-component-test.ts`.
-- [ ] 4.4 Collapse `componentModule` to Glimmer + TemplateOnly; delete the Curly/Dynamic kinds,
+- [x] 4.4 (done, see notes) Collapse `componentModule` to Glimmer + TemplateOnly; delete the Curly/Dynamic kinds,
       `buildCurlyComponent`/`buildDynamicComponent`, `EmberishCurlyComponent` and its manager,
       `registerEmberishCurlyComponent`, the `ember-view` branches (`initial-render-test.ts`).
 
@@ -287,3 +287,18 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `recompute()`; real Ember: no `targetObject`; no dynamic-scope access for components; asserts on class binding; `rerender()` fires
   willUpdate/willRender/didUpdate/didRender but not didReceiveAttrs). Plus 5 input-range rows. Destruction order in the Glimmer
   teardown tests came out identical to the fake's (root before inner, outer before nested), no assertion had to change.
+- 4.4 (2026-10-08): code `bf935f7c7a` (+ EG fix `eac1ad7182`: my 4.3 append had truncated classic/contextual-components-test.js
+  after its first module, losing the applyMixins and mutable-params modules; caught by the count diff, restored, 10 tests). Removed:
+  Curly/Dynamic kinds (`componentModule` is Glimmer + TemplateOnly; `DeclaredComponentKind`, `ComponentKind`, `ComponentTypes`),
+  `lib/components/emberish-curly.ts` (fake component, manager, `Attrs`, `AttrsDiff`, factory types), `registerEmberishCurlyComponent`,
+  `buildCurlyComponent`/`buildDynamicComponent`/`buildCurlyBlockTemplate`/`buildElse`, `assertEmberishElement`, the `ember-view` and
+  `Dynamic` branches in `render-test.ts`, `initial-render-test.ts` (`_buildComponent`, id offsets, wrapper checks), `node/env.ts`,
+  `in-element.ts`; the 24 curly-only tests (has-block 7, has-block-params 6, yield 2, emberish 9 incl. 3 never-registered ariaRole),
+  14 curly/dynamic generation tests. `debug-render-tree-test`'s curly test is a Glimmer test now (see ledger). `RehydratingComponents`
+  keeps its 4 deferred-to-5.6 tests (Glimmer registrations only). Counts: 9504 (after 2.4) -> 9111 total / 9093 pass / 0 fail / 18 skip.
+  Arithmetic: 9504 - 378 (Curly/Dynamic registrations) - 14 (generation tests) - 33 (inherited attribute copies of the fake range
+  suite) - 5 (fake range tests) - 40 (ember-component-test.ts residue) - 1 (debug-render-tree curly) + 22 (EG: 7 in 4.2 + 15 in 4.3)
+  + 1 (generation with else) + 26 (components-test.ts) + 1 (debug-render-tree renamed) + 28 (re-kinded Glimmer registrations: 3 named
+  blocks, 4 has-block, 20 has-block-params, 1 yield) = 9111. Per-test diff against `W2-baseline-tests.tsv`: 509 missing (4 from 2.1/2.3 + 74 old
+  `[curly ...]` tests: 34 step 2.4 twins + 40 ports + 38 input-range module: 5 ported + 33 inherited + 378 + 14 + 1; all matched to rows) and 79 new (all matched to ports); no unmatched
+  names. `type-check:internals`, prettier, eslint (EG files) clean; eslint on IT shows only the pre-existing `Owner` unused import.
