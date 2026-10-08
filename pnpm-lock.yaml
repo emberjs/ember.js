@@ -1413,6 +1413,9 @@ importers:
       '@ember/runloop':
         specifier: workspace:*
         version: link:../../@ember/runloop
+      '@ember/template':
+        specifier: workspace:*
+        version: link:../../@ember/template
       '@glimmer/constants':
         specifier: workspace:*
         version: link:../../@glimmer/constants

@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@ember/runloop": "workspace:*",
+    "@ember/template": "workspace:*",
     "@glimmer/constants": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "@glimmer/env": "workspace:*",

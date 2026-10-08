@@ -1,4 +1,5 @@
 import type { SimpleElement } from '@glimmer/interfaces';
+import { htmlSafe } from '@ember/template';
 import { NS_SVG } from '@glimmer/constants';
 import { castToBrowser, checkNode, unwrap } from '@glimmer/debug-util';
 import { strip } from '@glimmer/util';
@@ -880,11 +881,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Safe HTML curlies'() {
-    const title = {
-      toHTML() {
-        return '<span>hello</span> <em>world</em>';
-      },
-    };
+    const title = htmlSafe('<span>hello</span> <em>world</em>');
     this.render('<div>{{this.title}}</div>', { title });
     this.assertHTML('<div><span>hello</span> <em>world</em></div>');
     this.assertStableRerender();
