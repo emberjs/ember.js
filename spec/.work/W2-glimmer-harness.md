@@ -413,7 +413,7 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
       follows). Move `JitSerializationDelegate` to `lib/modes/node/` and
       `debug.resetTrackingTransaction` into `lib/modes/env.ts`. Expected: zero change; watch
       `rehydration ::` and `Rehydration` modules and `clearedNodes` assertions.
-- [ ] 5.3a Real owner + teardown destroy (the risky step). `buildOwner()` per delegate (two in
+- [x] 5.3a (done, see notes) Real owner + teardown destroy (the risky step). `buildOwner()` per delegate (two in
       the rehydration delegate) + `-view-registry:main`; `associateDestroyableChild(owner,
       renderer)`; `teardown()` = `run(() => destroy(owner)); _resetRenderers()`. Fake resolver
       still in use. Fix the 3 P3 failures without weakening them: `initial render (client):
@@ -710,3 +710,17 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   renderer method public `renderComponent` uses, inside `lib/modes/`. For 5.3a: destroy both
   rehydration owners in `teardown()`. For 5.4a: the shared server/client context becomes
   tracked, so check that server roots revalidating on writes changes no rehydration result.
+- 5.3a (2026-10-08): code `5c0b5156be`. New `lib/modes/owner.ts` (`createOwner` = `buildOwner()` + `-view-registry:main`, `ownRenderer`
+  = `associateDestroyableChild(owner, renderer)`, called from `createRenderer`; `teardownOwners(...owners)` = `run(() => destroy(owner))` then
+  `_resetRenderers()`). Jit/node delegates have one owner, the rehydration delegate two (client, server), all destroyed in `teardown()`.
+  `package.json`: `@ember/destroyable`, `internal-test-helpers` added to IT devDependencies (+6 lock lines; `pnpm install --offline
+  --frozen-lockfile` accepts the lockfile). Fixes as designed: `shouldBeVoid` destroys the previous handle in `run()` before
+  `clearElement` (`RenderTest.voidHandle`); `Basic Custom Modifier Manager: 3.22` 'custom lifecycle hooks' ends with `this.destroy()` +
+  `verifySteps(['Called willDestroyElement'])`; 'can give consistent access to underlying DOM element' ends with `this.destroy()` and
+  `assert.expect(6)` -> `expect(7)` (the destructor's assertion). Nothing removed, no ledger row. NOT in the design: 4 `chaos-rehydration`
+  / `chaos-partial-rehydration` tests ('adjacent text nodes', '<p> invoking a block which emits a <div>') failed in `afterEach` with
+  `removeChild ... not a child` (same mechanism as Void Elements: each iteration renders, then `finally` resets `element.innerHTML`, and
+  the last root is destroyed at teardown on DOM that is gone). Same fix in kind: `runIterations`' `finally` destroys that iteration's
+  handle in `run()` before resetting the HTML (expectations untouched). Full suite 9111 / 9093 / 0 / 18; per-test diff against
+  `full52b`: 0 missing, 0 new; greps for `Expected assert.verifySteps`, `Expected N assertions`, `afterEach failed`, `NAMESPACES`: 0.
+  `type-check:internals` and prettier clean.
