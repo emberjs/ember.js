@@ -530,8 +530,24 @@ keyword" went in 5.3b).
 
 ## 7. Merge duplicated suites (step 7)
 
-- [ ] 7.1 For each row of T17-fake-stubs §3, diff the two copies, move unique cases into the
-      stronger copy, delete the weaker one; ledger every deletion.
+- [ ] 7.1 For each row of T17-fake-stubs §3, diff the two copies test by test (assertions, not
+      names), move unique cases into the stronger copy, delete the weaker duplicates; ledger every
+      deletion/move (`7.1x` rows). Split into the sub-items below (one commit each, full suite and
+      per-test diff after each). Rows of §3 already handled: classic/curly components (step 2.4/4.x),
+      has-block/has-block-params/yield (4.x), debug render tree (5.5b, 4.4), owner (2.3), style
+      warning (6.1), SSR (no twin). Pure-registry parts of `@glimmer/manager/test/managers-test.ts`
+      stay and go on the W5 list.
+  - [ ] 7.1a `{{#each}}`: `IT/lib/suites/each.ts` vs `EG/syntax/each-test.js`, `classic/each-test.js` (complementary: keep both, delete exact duplicates).
+  - [ ] 7.1b `{{in-element}}`: `IT/lib/suites/in-element.ts` vs `EG/syntax/public-in-element-test.js`.
+  - [ ] 7.1c `fn`/`hash`/`array`/`get`/`concat`: `IT/test/helpers/*.ts` vs `EG/helpers/*.js`.
+  - [ ] 7.1d `on`: `IT/test/modifiers/on-test.ts`, `keywords/on-runtime-test.ts` vs `EG/modifiers/on-test.js`.
+  - [ ] 7.1e custom modifier manager: `IT/test/managers/modifier-manager-test.ts`, `modifiers-test.ts`, `updating-modifiers-test.ts` vs `EG/custom-modifier-manager-test.js`.
+  - [ ] 7.1f custom helper manager: `IT/test/managers/helper-manager-test.ts` vs `EG/helpers/helper-manager-test.js`, `custom-helper-test.js`, `invoke-helper-test.js`.
+  - [ ] 7.1g custom component manager: `@glimmer/manager/test/managers-test.ts` vs `EG/custom-component-manager-test.js` (registry-only parts stay, W5 list).
+  - [ ] 7.1h strict mode and lexical scope: `IT/test/strict-mode-test.ts`, `lexical-scope-test.ts` vs `EG/components/strict-mode-test.js`, `runtime-template-compiler-*.ts`.
+  - [ ] 7.1i `if`/`unless`: `IT/test/syntax/if-unless-test.ts` vs `EG/syntax/if-unless-test.js`, `helpers/if-unless-test.js`, `shared-conditional-tests.js`.
+  - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
+  - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
 ## 8. Exit check (Opus)
 
