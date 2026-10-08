@@ -270,6 +270,149 @@ moduleFor(
       }
     }
 
+    '@test setting passive named argument prevents calling preventDefault'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      let matcher =
+        /You marked this listener as 'passive', meaning that you must not call 'event.preventDefault\(\)'/u;
+
+      this.render('<button {{on "click" this.callback passive=true}}>Click Me</button>', {
+        callback(event) {
+          assert.throws(() => {
+            event.preventDefault();
+          }, matcher);
+        },
+      });
+
+      runTask(() => this.$('button').click());
+    }
+
+    '@test unrelated updates to `this` context does not result in removing + re-adding'(assert) {
+      let called = false;
+
+      this.render('<button {{on "click" this.callback}}>Click Me</button>', {
+        callback() {
+          called = true;
+        },
+        otherThing: 0,
+      });
+
+      this.assertCounts({ adds: 1, removes: 0 });
+
+      runTask(() => this.$('button').click());
+
+      assert.strictEqual(called, true, 'callback is being invoked');
+
+      runTask(() => this.context.set('otherThing', 1));
+      this.assertCounts({ adds: 1, removes: 0 });
+    }
+
+    '@test asserts when eventName is missing'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`<button {{on undefined this.callback}}>Click Me</button>`, { callback() {} });
+      }, /You must pass a valid DOM event name as the first argument to the `on` modifier/u);
+    }
+
+    '@test asserts when eventName is a bound undefined value'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`<button {{on this.someUndefinedThing this.callback}}>Click Me</button>`, {
+          callback() {},
+        });
+      }, /You must pass a valid DOM event name as the first argument to the `on` modifier/u);
+    }
+
+    '@test asserts when eventName is a function'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`<button {{on this.callback}}>Click Me</button>`, { callback() {} });
+      }, /You must pass a valid DOM event name as the first argument to the `on` modifier/u);
+    }
+
+    '@test asserts when callback is missing'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`<button {{on 'click'}}>Click Me</button>`);
+      }, /You must pass a function as the second argument to the `on` modifier/u);
+    }
+
+    '@test asserts when callback is a bound undefined value'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`<button {{on 'click' this.foo}}>Click Me</button>`);
+      }, /You must pass a function as the second argument to the `on` modifier; you passed undefined. While rendering:\n{2}this.foo/u);
+    }
+
+    '@test asserts when callback is a bound null value'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`<button {{on 'click' this.foo}}>Click Me</button>`, { foo: null });
+      }, /You must pass a function as the second argument to the `on` modifier; you passed null. While rendering:\n{2}this.foo/u);
+    }
+
+    '@test asserts if the provided callback accesses `this` without being bound prior to passing to on'(
+      assert
+    ) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      this.render(`<button {{on 'click' this.myFunc}}>Click Me</button>`, {
+        myFunc() {
+          assert.throws(() => {
+            return this.arg1;
+          }, /You accessed `this.arg1` from a function passed to the `on` modifier, but the function itself was not bound to a valid `this` context. Consider updating to use a bound function/u);
+        },
+
+        arg1: 'foo',
+      });
+
+      runTask(() => this.$('button').click());
+    }
+
+    '@test asserts if more than 2 positional parameters are provided'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`<button {{on 'click' this.callback this.someArg}}>Click Me</button>`, {
+          callback() {},
+          someArg: 'foo',
+        });
+      }, /You can only pass two positional arguments \(event name and callback\) to the `on` modifier, but you provided 3. Consider using the `fn` helper to provide additional arguments to the `on` callback./u);
+    }
+
     '@test it does not clobber a static spellcheck attribute, before or after the modifier (GH#18758)'(
       assert
     ) {
