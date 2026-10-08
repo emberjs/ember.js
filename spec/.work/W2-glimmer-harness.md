@@ -705,3 +705,8 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   will also revalidate on writes; check that in `initial-render-test`/`chaos` (the server root could be destroyed after serialization if it
   matters, but that would run server-side destructors, so avoid unless needed). The `RehydrationDelegate` now exposes `clientRenderer`,
   `serverRenderer`, `clientOwner`, `serverOwner` (protected) instead of `clientContext`/`serverContext` (no test used them).
+- 5.2 review (Opus, 2026-10-08): both deviations accepted. Client-side partial rehydration
+  calling `BaseRenderer.render` directly (no replace/clear) stays within the design: same
+  renderer method public `renderComponent` uses, inside `lib/modes/`. For 5.3a: destroy both
+  rehydration owners in `teardown()`. For 5.4a: the shared server/client context becomes
+  tracked, so check that server roots revalidating on writes changes no rehydration result.
