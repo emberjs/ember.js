@@ -377,3 +377,15 @@ checks what its name says, and ledgers any that turn out to be exact duplicates.
 | 5.5b | IT/test/updating-test.ts › Updating: helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks | expectation changed to Ember's (switch between two elements) | EG/syntax/public-in-element-test.js 'does not allow null as a destination element' | The destination switches between two elements instead of to `null` (Ember asserts on null, §08-2.17). The test still asserts `didCreate` stays 1 and `didDestroy` 0 after the switch and after switching back, and now also that the content moved to the second element and back. Nothing removed. |
 
 Review (5.5b triage decisions): 19 rows; 5 moved (count neutral), 14 expectations changed to Ember's. Totals unchanged: 9110 / 9092 pass / 0 fail / 18 skip.
+
+### 6.1 rows
+
+| Step | Test | Action | Twin / new location | Notes |
+|---|---|---|---|---|
+| 6.1 | IT/test/style-warnings-test.ts › [integration] jit :: Style attributes: Standard element with static style and element modifier does not give you a warning | ported | ported → EG/content-test.js › Inline style tests - warnings (static styles, namespaced elements and element modifiers) › a static style and an element modifier do not warn | No twin (EG has no static-style case). Real `style` attribute, a real modifier (`defineSimpleModifier`), `expectNoWarning`; also asserts the HTML. |
+| 6.1 | IT/test/style-warnings-test.ts › [integration] jit :: Style attributes: Standard element with dynamic style and element modifier gives you 1 warning | ported | ported → EG/content-test.js › … › a dynamic style and an element modifier warn once | Twin `Inline style tests - warnings › specifying <div style={{this.userValue}}> generates a warning` has no modifier. The port uses `expectWarning` with the real message (`constructStyleDeprecationMessage`); DEBUG only, as before. |
+| 6.1 | IT/test/style-warnings-test.ts › [integration] jit :: Style attributes: using a static inline style on an element does not give you a warning | ported | ported → EG/content-test.js › … › a static style on an element does not warn | No twin. `expectNoWarning`, HTML and a stable rerender. |
+| 6.1 | IT/test/style-warnings-test.ts › [integration] jit :: Style attributes: triple curlies are trusted | deleted (twin) | EG/content-test.js › Inline style tests - warnings › specifying `<div style={{this.userValue}}></div>` works properly without a warning | Same: triple curlies produce the style with no warning. (The IT test also had an unrelated `foo={{this.foo}}` attribute.) |
+| 6.1 | IT/test/style-warnings-test.ts › [integration] jit :: Style attributes: using a static inline style on an namespaced element does not give you a warning | ported | ported → EG/content-test.js › … › a static style on a namespaced element does not warn | No twin. Same `svg` template and HTML assertion. |
+
+The fake `getProp`/`warnIfStyleNotTrusted` global-context override went with the file; the real `warnIfStyleNotTrusted` (global context of `@ember/-internals/glimmer`) is what the new tests exercise. 5 deleted, 4 added: total 9114 -> 9113.

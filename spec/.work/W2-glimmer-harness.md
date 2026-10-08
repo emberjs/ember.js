@@ -519,7 +519,7 @@ keyword" went in 5.3b).
 
 ## 6. Remaining stubs (step 6)
 
-- [ ] 6.1 `style-warnings-test.ts` → Ember harness with `expectWarning`.
+- [x] 6.1 (done, see notes) `style-warnings-test.ts` → Ember harness with `expectWarning`.
 - [ ] 6.2 `PositionalComponent` users → real classic components with `positionalParams`; delete
       `tests/utils/positional-component.js`.
       Then re-check every ledger row whose twin runs on `PositionalComponent` (grep the ledger
@@ -866,3 +866,9 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   server output has the angle-bracket form's markers shifted by one). The injected `renderer:-dom` caused no problem: the design-2 fallback was not
   needed. Counts: 9110 -> 9114 total / 9096 pass / 0 fail / 18 skip; per-test diff against `full55b2`: 0 missing, 4 new (the 4 above); greps 0.
   type-check and prettier clean (eslint ignores IT).
+- 6.1 (2026-10-08): code `4b82b0fea8`. The 5 IT tests compared with
+  `EG/content-test.js` 'Inline style tests - warnings' (which uses its own `setDebugFunction('warn')` stub, kept): only 'triple curlies are trusted'
+  has a twin. 4 ported to a new module in `content-test.js` (`expectWarning`/`expectNoWarning`, real modifier via `defineSimpleModifier`, real
+  `warnIfStyleNotTrusted`); IT file deleted (5.4a's `scheduleRevalidate` workaround went with it). Ledger: 5 rows (`6.1 rows`). Counts: 9114 -> 9113
+  total / 9095 pass / 0 fail / 18 skip; per-test diff against `full56`: 5 missing (the 5 rows), 4 new (the 4 ports); greps 0. type-check, prettier,
+  eslint (content-test.js) clean.
