@@ -546,10 +546,10 @@ keyword" went in 5.3b).
   - [x] 7.1g (done, no code change; nothing deleted or moved; file added to the W5 list) custom component manager: `@glimmer/manager/test/managers-test.ts` vs `EG/custom-component-manager-test.js` (registry-only parts stay, W5 list).
   - [x] 7.1h (done, code `51887e1701`; 8 IT tests deleted (twin), 86 kept) strict mode and lexical scope: `IT/test/strict-mode-test.ts`, `lexical-scope-test.ts` vs `EG/components/strict-mode-test.js`, `runtime-template-compiler-*.ts`.
   - [x] 7.1i (done, no code change; nothing overlaps, see notes) `if`/`unless`: `IT/test/syntax/if-unless-test.ts` vs `EG/syntax/if-unless-test.js`, `helpers/if-unless-test.js`, `shared-conditional-tests.js`.
-  - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
+  - [x] 7.1j (done, no code change; nothing overlaps, see notes) tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a-7.1i done (worktree commits `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`, `8f427a1ed0`, `51887e1701`; 7.1g and 7.1i changed no code). Next: 7.1j (tracked/collections). Last full run `full71h`
+  Progress note (7.1): 7.1a-7.1j done (worktree commits `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`, `8f427a1ed0`, `51887e1701`; 7.1g, 7.1i and 7.1j changed no code). Next: 7.1k (run-loop settle). Last full run `full71h`
   (9013 / 8995 / 0 / 18) in the session scratchpad is still the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
 
 ## 8. Exit check (Opus)
@@ -984,3 +984,7 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
 - 7.1i (2026-10-08): no code change, no run. `IT/test/syntax/if-unless-test.ts` (22 test runs: 11 per keyword) is a compile-time syntax-error suite, not a truthiness suite as T17 §3 says; it
   has no EG twin (EG has runtime truthiness only, which IT lacks), so nothing merges. One grouped `kept` ledger row. The Ember side is the one that is stronger for truthiness
   (real `toBool`); IT is the only place for the `if`/`unless` argument-count error messages (a candidate for the §03 keyword chapter's error list).
+- 7.1j (2026-10-08): no code change, no run. T17 §3 says Ember is stronger for tracked rendering and collections have no Ember twin; confirmed and refined: the EG tracked tests (`helpers/tracked-test.js`,
+  `components/tracked-test.js`, `metal/tests/tracked/*`) test the `@tracked` decorator and getters, IT `tracked-value-test.ts` tests `trackedValue` (not public) and the 6 collection files test
+  `@ember/reactive/collections` through rendering. No test overlaps, so nothing is merged (two grouped `kept` ledger rows). `@glimmer/validator/test/collections/*` (78 unit tests of the same collections, no
+  rendering) and `@glimmer/validator/test/tracked-value-test.ts` are complementary and outside this item; if the author wants them merged with the IT rendering tests it is a W5 question.
