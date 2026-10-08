@@ -9,6 +9,7 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
+  Template,
   TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
@@ -46,7 +47,7 @@ export interface RehydrationStats {
 
 export class RehydrationDelegate implements RenderDelegate {
   static readonly isEager = false;
-  static readonly style = 'rehydration';
+  static readonly style: string = 'rehydration';
 
   private plugins: ASTPluginBuilder[] = [];
 
@@ -153,7 +154,7 @@ export class RehydrationDelegate implements RenderDelegate {
     state.renderRoot(
       new TemplateRootState(
         state,
-        preprocess(template, this.precompileOptions, this.serverOwner),
+        this.compileTemplate(template, this.serverOwner),
         this.getSelf(state.env, context),
         cursor
       )
@@ -184,7 +185,7 @@ export class RehydrationDelegate implements RenderDelegate {
     let cursor = { element, nextSibling: null };
     let root = new TemplateRootState(
       state,
-      preprocess(template, this.precompileOptions, this.clientOwner),
+      this.compileTemplate(template, this.clientOwner),
       this.getSelf(state.env, context),
       cursor
     );
@@ -240,7 +241,11 @@ export class RehydrationDelegate implements RenderDelegate {
     if (!this.serverRendered) registerModifier(this.serverOwner, name, ModifierClass);
   }
 
-  private get precompileOptions(): PrecompileOptions {
+  protected compileTemplate(template: string, owner: object): Template {
+    return preprocess(template, this.precompileOptions, owner);
+  }
+
+  protected get precompileOptions(): PrecompileOptions {
     return {
       plugins: {
         ast: this.plugins,

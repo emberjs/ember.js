@@ -24,7 +24,7 @@ class DynamicComponentTest extends RenderTest {
     );
     this.assertHTML('<div><!----></div>');
 
-    this.rerender({ something: 'FooBar' });
+    this.rerender({ something: 'foo-bar' });
     this.assertHTML('<div><p>hello</p></div>');
 
     this.rerender({ something: undefined });
@@ -218,7 +218,7 @@ class ClosureComponentsTest extends RenderTest {
 
     this.render(
       stripTight`
-        {{#let (hash comp=(component 'FooBar')) as |my|}}
+        {{#let (hash comp=(component 'foo-bar')) as |my|}}
           {{#component my.comp arg1="World!"}}Test1{{/component}} Test2
         {{/let}}
       `
@@ -233,7 +233,7 @@ class ClosureComponentsTest extends RenderTest {
 
     this.render(
       stripTight`
-        {{#let (hash comp=(component 'FooBar')) as |my|}}
+        {{#let (hash comp=(component 'foo-bar')) as |my|}}
           {{#component my.comp}}World!{{/component}} Test
         {{/let}}
       `
@@ -244,7 +244,7 @@ class ClosureComponentsTest extends RenderTest {
 
   @test
   'component helper can handle higher order block components with args'() {
-    this.registerComponent('Glimmer', 'FooBar', '{{yield (hash comp=(component "BazBar"))}}');
+    this.registerComponent('Glimmer', 'FooBar', '{{yield (hash comp=(component "baz-bar"))}}');
     this.registerComponent('Glimmer', 'BazBar', 'Hello {{@arg1}} {{yield}}');
 
     this.render(
@@ -260,7 +260,7 @@ class ClosureComponentsTest extends RenderTest {
 
   @test
   'component helper can handle higher order block components without args'() {
-    this.registerComponent('Glimmer', 'FooBar', '{{yield (hash comp=(component "BazBar"))}}');
+    this.registerComponent('Glimmer', 'FooBar', '{{yield (hash comp=(component "baz-bar"))}}');
     this.registerComponent('Glimmer', 'BazBar', 'Hello {{@arg1}} {{yield}}');
 
     this.render(

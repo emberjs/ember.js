@@ -77,7 +77,7 @@ export class GlimmerishComponents extends RenderTest {
     this.render({
       layout: '<@foo />',
       args: {
-        foo: 'component "Foo"',
+        foo: 'component "foo"',
       },
     });
 
@@ -93,7 +93,7 @@ export class GlimmerishComponents extends RenderTest {
     this.render({
       layout: '<@stuff.Foo />',
       args: {
-        stuff: 'hash Foo=(component "Foo")',
+        stuff: 'hash Foo=(component "foo")',
       },
     });
 
@@ -113,7 +113,7 @@ export class GlimmerishComponents extends RenderTest {
     this.render({
       layout: '<@stuff.Foo data-foo="invocation" />',
       args: {
-        stuff: 'hash Foo=(component "Foo")',
+        stuff: 'hash Foo=(component "foo")',
       },
     });
 
@@ -129,7 +129,7 @@ export class GlimmerishComponents extends RenderTest {
     this.render({
       layout: '<@stuff.Foo class="invocation" />',
       args: {
-        stuff: 'hash Foo=(component "Foo")',
+        stuff: 'hash Foo=(component "foo")',
       },
     });
 
@@ -149,7 +149,7 @@ export class GlimmerishComponents extends RenderTest {
     this.render({
       layout: '<@foo data-test="foo"/>',
       args: {
-        foo: 'component "Foo"',
+        foo: 'component "foo"',
       },
     });
 
@@ -165,7 +165,7 @@ export class GlimmerishComponents extends RenderTest {
     this.render({
       layout: '<@foo data-test="foo"/>',
       args: {
-        foo: 'component "Foo"',
+        foo: 'component "foo"',
       },
     });
 
@@ -181,7 +181,7 @@ export class GlimmerishComponents extends RenderTest {
     this.render({
       layout: '<@foo @name="world" />',
       args: {
-        foo: 'component "Foo"',
+        foo: 'component "foo"',
       },
     });
 
@@ -197,7 +197,7 @@ export class GlimmerishComponents extends RenderTest {
     this.render({
       layout: '<@foo>world</@foo>',
       args: {
-        foo: 'component "Foo"',
+        foo: 'component "foo"',
       },
     });
 
@@ -231,7 +231,7 @@ export class GlimmerishComponents extends RenderTest {
       {
         layout: stripTight`<@foo @staticNamedArg="static" data-test1={{@outerArg}} data-test2="static" @dynamicNamedArg={{@outerArg}} />`,
         args: {
-          foo: 'component "Foo"',
+          foo: 'component "foo"',
           outerArg: 'this.outer',
         },
       },
@@ -266,7 +266,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
-    this.render(`{{#let (component 'Foo') as |Other|}}<Other />{{/let}}`);
+    this.render(`{{#let (component 'foo') as |Other|}}<Other />{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -277,7 +277,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local path) via angle brackets'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
-    this.render(`{{#let (hash Foo=(component 'Foo')) as |Other|}}<Other.Foo />{{/let}}`);
+    this.render(`{{#let (hash Foo=(component 'foo')) as |Other|}}<Other.Foo />{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -288,7 +288,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets (ill-advised "htmlish element name" but supported)'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
-    this.render(`{{#let (component 'Foo') as |div|}}<div />{{/let}}`);
+    this.render(`{{#let (component 'foo') as |div|}}<div />{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -299,7 +299,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets supports attributes'() {
     this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
-    this.render(`{{#let (component 'Foo') as |Other|}}<Other data-test="foo" />{{/let}}`);
+    this.render(`{{#let (component 'foo') as |Other|}}<Other data-test="foo" />{{/let}}`);
 
     this.assertHTML(`<div data-test="foo">hello world!</div>`);
     this.assertStableRerender();
@@ -310,7 +310,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets supports args'() {
     this.registerComponent('Glimmer', 'Foo', 'hello {{@name}}!');
-    this.render(`{{#let (component 'Foo') as |Other|}}<Other @name="world" />{{/let}}`);
+    this.render(`{{#let (component 'foo') as |Other|}}<Other @name="world" />{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -321,7 +321,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets supports passing a block'() {
     this.registerComponent('Glimmer', 'Foo', 'hello {{yield}}!');
-    this.render(`{{#let (component 'Foo') as |Other|}}<Other>world</Other>{{/let}}`);
+    this.render(`{{#let (component 'foo') as |Other|}}<Other>world</Other>{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -348,7 +348,7 @@ export class GlimmerishComponents extends RenderTest {
       Foo
     );
     this.render(
-      `{{#let (component 'Foo') as |Other|}}<Other @staticNamedArg="static" data-test1={{this.outer}} data-test2="static" @dynamicNamedArg={{this.outer}}>template</Other>{{/let}}`,
+      `{{#let (component 'foo') as |Other|}}<Other @staticNamedArg="static" data-test1={{this.outer}} data-test2="static" @dynamicNamedArg={{this.outer}}>template</Other>{{/let}}`,
       { outer: 'outer' }
     );
 
@@ -382,7 +382,7 @@ export class GlimmerishComponents extends RenderTest {
     this.registerComponent('Glimmer', 'TestHarness', '<this.args.Foo />');
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
 
-    this.render('<TestHarness @Foo={{component "Foo"}} />');
+    this.render('<TestHarness @Foo={{component "foo"}} />');
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -412,7 +412,7 @@ export class GlimmerishComponents extends RenderTest {
     );
     this.registerComponent('Glimmer', 'Foo', '{{yield to="bar"}}');
 
-    this.render('<TestHarness @Foo={{component "Foo"}} />');
+    this.render('<TestHarness @Foo={{component "foo"}} />');
 
     this.assertHTML(`Stuff!`);
     this.assertStableRerender();
@@ -441,7 +441,7 @@ export class GlimmerishComponents extends RenderTest {
     }
     this.registerComponent('Glimmer', 'TestHarness', '<this.Foo data-test="foo"/>', TestHarness);
     this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
-    this.render('<TestHarness @Foo={{component "Foo"}} />');
+    this.render('<TestHarness @Foo={{component "foo"}} />');
 
     this.assertHTML(`<div data-test="foo">hello world!</div>`);
     this.assertStableRerender();
@@ -461,7 +461,7 @@ export class GlimmerishComponents extends RenderTest {
     }
     this.registerComponent('Glimmer', 'TestHarness', '<this.Foo @name="world"/>', TestHarness);
     this.registerComponent('Glimmer', 'Foo', 'hello {{@name}}!');
-    this.render('<TestHarness @Foo={{component "Foo"}} />');
+    this.render('<TestHarness @Foo={{component "foo"}} />');
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -481,7 +481,7 @@ export class GlimmerishComponents extends RenderTest {
     }
     this.registerComponent('Glimmer', 'TestHarness', '<this.Foo>world</this.Foo>', TestHarness);
     this.registerComponent('Glimmer', 'Foo', 'hello {{yield}}!');
-    this.render('<TestHarness @Foo={{component "Foo"}} />');
+    this.render('<TestHarness @Foo={{component "foo"}} />');
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -523,7 +523,7 @@ export class GlimmerishComponents extends RenderTest {
       '<div ...attributes>[{{this.localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}] - {{yield}}</div>',
       Foo
     );
-    this.render('<TestHarness @outer={{this.outer}} @Foo={{component "Foo"}} />', {
+    this.render('<TestHarness @outer={{this.outer}} @Foo={{component "foo"}} />', {
       outer: 'outer',
     });
 
@@ -667,7 +667,7 @@ export class GlimmerishComponents extends RenderTest {
       '<div><HelloWorld @a={{@a}} as |wat|>{{wat}}</HelloWorld></div>',
       MainComponent
     );
-    this.registerComponent('Glimmer', 'HelloWorld', '{{yield (component "A" a=@a)}}');
+    this.registerComponent('Glimmer', 'HelloWorld', '{{yield (component "a" a=@a)}}');
     this.registerComponent('Glimmer', 'A', 'A {{@a}}');
     this.render('<Main @a={{this.a}} />', { a: 'a' });
     this.assertHTML('<div>A a</div>');
@@ -682,7 +682,7 @@ export class GlimmerishComponents extends RenderTest {
     this.registerComponent(
       'Glimmer',
       'A',
-      'A {{#component "B" arg1=@one arg2=@two arg3=@three}}{{/component}}'
+      'A {{#component "b" arg1=@one arg2=@two arg3=@three}}{{/component}}'
     );
     this.registerComponent('Glimmer', 'B', 'B {{@arg1}} {{@arg2}} {{@arg3}}');
     this.render('<A @one={{this.first}} @two={{this.second}} @three={{this.third}} />', {
@@ -699,7 +699,7 @@ export class GlimmerishComponents extends RenderTest {
 
   @test({ kind: 'glimmer' })
   'Static inline component helper'() {
-    this.registerComponent('Glimmer', 'A', 'A {{component "B" arg1=@one arg2=@two arg3=@three}}');
+    this.registerComponent('Glimmer', 'A', 'A {{component "b" arg1=@one arg2=@two arg3=@three}}');
     this.registerComponent('Glimmer', 'B', 'B {{@arg1}} {{@arg2}} {{@arg3}}');
     this.render('<A @one={{this.first}} @two={{this.second}} @three={{this.third}} />', {
       first: 1,
@@ -728,13 +728,13 @@ export class GlimmerishComponents extends RenderTest {
       {{/in-element}}
     {{/each}}
     `,
-      { components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] }
+      { components: [{ name: 'foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] }
     );
 
     let first = assertingElement(el.firstChild);
 
     assertElementShape(first, 'div', { 'data-bar': 'Bar' }, 'Hello World');
-    this.rerender({ components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] });
+    this.rerender({ components: [{ name: 'foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] });
     assertElementShape(first, 'div', { 'data-bar': 'Bar' }, 'Hello World');
   }
 

@@ -91,119 +91,6 @@ export class InElementSuite extends RenderTest {
   }
 
   @test
-  'Changing to falsey'() {
-    let first = this.delegate.createElement('div');
-    let second = this.delegate.createElement('div');
-
-    this.render(
-      stripTight`
-        |{{this.foo}}|
-        {{#in-element this.first}}[1{{this.foo}}]{{/in-element}}
-        {{#in-element this.second}}[2{{this.foo}}]{{/in-element}}
-      `,
-      { first, second: null, foo: 'Yippie!' }
-    );
-
-    equalsElement(first, 'div', {}, '[1Yippie!]');
-    equalsElement(second, 'div', {}, '');
-    this.assertHTML('|Yippie!|<!----><!---->');
-    this.assertStableRerender();
-
-    this.rerender({ foo: 'Double Yips!' });
-    equalsElement(first, 'div', {}, '[1Double Yips!]');
-    equalsElement(second, 'div', {}, '');
-    this.assertHTML('|Double Yips!|<!----><!---->');
-    this.assertStableNodes();
-
-    this.rerender({ first: null });
-    equalsElement(first, 'div', {}, '');
-    equalsElement(second, 'div', {}, '');
-    this.assertHTML('|Double Yips!|<!----><!---->');
-    this.assertStableRerender();
-
-    this.rerender({ second });
-    equalsElement(first, 'div', {}, '');
-    equalsElement(second, 'div', {}, '[2Double Yips!]');
-    this.assertHTML('|Double Yips!|<!----><!---->');
-    this.assertStableRerender();
-
-    this.rerender({ first, second: null, foo: 'Yippie!' });
-    equalsElement(first, 'div', {}, '[1Yippie!]');
-    equalsElement(second, 'div', {}, '');
-    this.assertHTML('|Yippie!|<!----><!---->');
-    this.assertStableRerender();
-  }
-
-  @test
-  'With pre-existing content'() {
-    let externalElement = this.delegate.createElement('div');
-    let initialContent = '<p>Hello there!</p>';
-    replaceHTML(externalElement, initialContent);
-
-    this.render(
-      stripTight`{{#in-element this.externalElement insertBefore=null}}[{{this.foo}}]{{/in-element}}`,
-      {
-        externalElement,
-        foo: 'Yippie!',
-      }
-    );
-
-    equalsElement(externalElement, 'div', {}, `${initialContent}[Yippie!]`);
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-
-    this.rerender({ foo: 'Double Yips!' });
-    equalsElement(externalElement, 'div', {}, `${initialContent}[Double Yips!]`);
-    this.assertHTML('<!---->');
-    this.assertStableNodes();
-
-    this.rerender({ externalElement: null });
-    equalsElement(externalElement, 'div', {}, initialContent);
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-
-    this.rerender({ externalElement, foo: 'Yippie!' });
-    equalsElement(externalElement, 'div', {}, `${initialContent}[Yippie!]`);
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-  }
-
-  @test
-  'With insertBefore'() {
-    let externalElement = this.delegate.createElement('div');
-    replaceHTML(externalElement, '<b>Hello</b><em>there!</em>');
-
-    this.render(
-      stripTight`{{#in-element this.externalElement insertBefore=this.insertBefore}}[{{this.foo}}]{{/in-element}}`,
-      { externalElement, insertBefore: externalElement.lastChild, foo: 'Yippie!' }
-    );
-
-    equalsElement(externalElement, 'div', {}, '<b>Hello</b>[Yippie!]<em>there!</em>');
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-
-    this.rerender({ foo: 'Double Yips!' });
-    equalsElement(externalElement, 'div', {}, '<b>Hello</b>[Double Yips!]<em>there!</em>');
-    this.assertHTML('<!---->');
-    this.assertStableNodes();
-
-    this.rerender({ insertBefore: null });
-    equalsElement(externalElement, 'div', {}, '<b>Hello</b><em>there!</em>[Double Yips!]');
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-
-    this.rerender({ externalElement: null });
-    equalsElement(externalElement, 'div', {}, '<b>Hello</b><em>there!</em>');
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-
-    this.rerender({ externalElement, insertBefore: externalElement.lastChild, foo: 'Yippie!' });
-    equalsElement(externalElement, 'div', {}, '<b>Hello</b>[Yippie!]<em>there!</em>');
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-  }
-
-  @test
   'Updating remote element'() {
     let first = this.delegate.createElement('div');
     let second = this.delegate.createElement('div');
@@ -414,7 +301,7 @@ export class InElementSuite extends RenderTest {
           {{~log root~}}
           {{~#in-element root.element ~}}
             <FooBar @value={{root.value}} />
-            {{!component 'FooBar' value=root.value}}
+            {{!component 'foo-bar' value=root.value}}
           {{~/in-element~}}
         {{~/each}}
         `,

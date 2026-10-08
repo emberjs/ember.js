@@ -1,3 +1,4 @@
+import { dasherize } from '@ember/-internals/string';
 import GlimmerComponent from '@glimmer/component';
 import type { Nullable, TemplateFactory } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -82,5 +83,5 @@ function registerSomeComponent(
     setComponentTemplate(templateFactory, ComponentClass);
   }
 
-  owner.register(`component:${name}`, ComponentClass, { instantiate: false });
+  owner.register(`component:${dasherize(name)}`, ComponentClass, { instantiate: false });
 }

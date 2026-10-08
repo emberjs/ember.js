@@ -14,16 +14,25 @@ export function preprocess(
 }
 
 /**
- * Compiles through the shared `compile`, with the Glimmer compiler's options as given
- * (`glimmerOnly`: not yet Ember's `compileOptions`).
+ * Compiles through the shared `compile` (Ember's `compileOptions`). The Glimmer options that
+ * IT call sites pass are mapped to the adapter shape: `meta.moduleName` to `moduleName`,
+ * `plugins.ast` to `plugins`; `locals` become scope entries (the names only); `keywords` has no Ember
+ * equivalent (the strict-mode keyword list is fixed) and is ignored.
  */
 export function createTemplate(
   templateSource: Nullable<string>,
   options: PrecompileOptions | PrecompileOptionsWithLexicalScope = {},
   scopeValues: Record<string, unknown> = {}
 ): TemplateFactory {
+  let locals = 'locals' in options && options.locals ? options.locals : [];
+  let moduleName = options.meta?.moduleName;
   return compile(templateSource as string, {
-    scope: () => scopeValues,
-    glimmerOnly: { options },
+    strictMode: options.strictMode,
+    moduleName: moduleName ?? undefined,
+    plugins: options.plugins?.ast,
+    scope: () => ({
+      ...Object.fromEntries(locals.map((name) => [name, undefined])),
+      ...scopeValues,
+    }),
   });
 }

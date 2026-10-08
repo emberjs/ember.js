@@ -8,6 +8,7 @@ export * from './lib/modes/env';
 export * from './lib/modes/jit/delegate';
 export * from './lib/modes/jit/register';
 export * from './lib/modes/node/env';
+export * from './lib/modes/plain/delegates';
 export * from './lib/modes/rehydration/delegate';
 export * from './lib/modes/rehydration/partial-rehydration-delegate';
 export type { default as RenderDelegate, RenderDelegateOptions } from './lib/render-delegate';

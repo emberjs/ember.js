@@ -1,3 +1,4 @@
+import { dasherize } from '@ember/-internals/string';
 import GlimmerComponent from '@glimmer/component';
 import type {
   CapturedArguments,
@@ -65,7 +66,7 @@ class DebugRenderTreeDelegate extends JitRenderDelegate {
 
     setInternalComponentManager(new Manager(), ComponentClass);
 
-    this.owner.register(`component:${name}`, ComponentClass, { instantiate: false });
+    this.owner.register(`component:${dasherize(name)}`, ComponentClass, { instantiate: false });
   }
 }
 
@@ -240,7 +241,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
@@ -253,7 +254,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
@@ -261,7 +262,7 @@ class DebugRenderTreeTest extends RenderTest {
       },
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'second' } },
         instance: null,
         bounds: this.nodeBounds(this.delegate.getInitialElement().lastChild),
@@ -274,7 +275,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
@@ -313,7 +314,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: (actual) => {
           const args = { positional: [], named: { arg: 'first', arg2: { error } } };
           this.assert.deepEqual(actual, args);
@@ -334,7 +335,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'first', arg2: undefined } },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
@@ -342,7 +343,7 @@ class DebugRenderTreeTest extends RenderTest {
       },
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'second' } },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'second',
         bounds: this.nodeBounds(this.element.lastChild),
@@ -355,7 +356,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'first', arg2: undefined } },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
@@ -377,7 +378,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'first' } },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
@@ -390,7 +391,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'first' } },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
@@ -398,7 +399,7 @@ class DebugRenderTreeTest extends RenderTest {
       },
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'second' } },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'second',
         bounds: this.nodeBounds(this.element.lastChild),
@@ -411,7 +412,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'first' } },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
@@ -438,7 +439,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: { arg: 'first' } },
         instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild!.nextSibling),
@@ -452,7 +453,7 @@ class DebugRenderTreeTest extends RenderTest {
             children: [
               {
                 type: 'component',
-                name: 'HiWorld',
+                name: 'hi-world',
                 args: { positional: [], named: {} },
                 instance: (instance: GlimmerComponent<Dict>) => instance,
                 bounds: this.nodeBounds(this.element.firstChild!.firstChild),
@@ -540,7 +541,7 @@ class DebugRenderTreeTest extends RenderTest {
       },
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: {} },
         instance: (instance: any) => instance !== undefined,
         bounds: this.nodeBounds(this.element.firstChild!.firstChild),
@@ -579,7 +580,7 @@ class DebugRenderTreeTest extends RenderTest {
       },
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: {} },
         instance: (instance: any) => instance !== undefined,
         bounds: this.nodeBounds(this.element.firstChild!.firstChild),
@@ -626,7 +627,7 @@ class DebugRenderTreeTest extends RenderTest {
       },
       {
         type: 'component',
-        name: 'HelloWorld',
+        name: 'hello-world',
         args: { positional: [], named: {} },
         instance: (instance: any) => instance !== undefined,
         bounds: this.nodeBounds(this.element.firstChild!.firstChild),
@@ -683,7 +684,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld2',
+        name: 'hello-world2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
@@ -696,7 +697,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld2',
+        name: 'hello-world2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
         bounds: this.nodeBounds(this.element.firstChild),
@@ -726,7 +727,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld2',
+        name: 'hello-world2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
         bounds: this.nodeBounds(this.element.firstChild),
@@ -758,7 +759,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld2',
+        name: 'hello-world2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
@@ -771,7 +772,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld2',
+        name: 'hello-world2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
         bounds: this.nodeBounds(this.element.firstChild),
@@ -784,7 +785,7 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'component',
-        name: 'HelloWorld2',
+        name: 'hello-world2',
         args: { positional: [], named: { arg: 'first' } },
         instance: null,
         bounds: this.nodeBounds(this.element.firstChild),

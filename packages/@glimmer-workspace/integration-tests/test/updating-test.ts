@@ -465,9 +465,11 @@ class UpdatingTest extends RenderTest {
       truthyValue: T;
       falsyValue: U;
       element?: SimpleElement;
+      /** where the content goes when switching to `falsyValue` (a second `in-element` destination) */
+      falsyElement?: SimpleElement;
     }
   ) {
-    let { template, truthyValue, falsyValue, element } = arg1;
+    let { template, truthyValue, falsyValue, element, falsyElement } = arg1;
     let didCreate = 0;
     let didDestroy = 0;
     let tag = trackedObject({ version: 0 });
@@ -511,6 +513,7 @@ class UpdatingTest extends RenderTest {
     this.rerender();
 
     this.assertHTML(element ? '' : '<!---->', element, 'after switching to falsy');
+    if (falsyElement) this.assertHTML('Yes', falsyElement, 'after switching to falsy: new element');
     assert.strictEqual(didCreate, 1, 'didCreate: after switching to falsy');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after switching to falsy');
 
@@ -519,6 +522,7 @@ class UpdatingTest extends RenderTest {
     this.rerender();
 
     this.assertHTML('Yes', element, 'after reset');
+    if (falsyElement) this.assertHTML('', falsyElement, 'after reset: other element');
     assert.strictEqual(didCreate, 1, 'didCreate: after reset');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after reset');
   }
@@ -562,7 +566,7 @@ class UpdatingTest extends RenderTest {
 
     let options = {
       template: '{{component (stateful-foo)}}',
-      truthyValue: 'XYasss',
+      truthyValue: 'xyasss',
       falsyValue: null,
     };
 
@@ -571,13 +575,17 @@ class UpdatingTest extends RenderTest {
 
   @test
   'helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks'() {
+    // Switches between two destinations: Ember asserts on a null destination in development
+    // builds (§08-2.17), which is what the earlier form of this test switched to.
     let externalElement = this.delegate.createElement('div');
+    let otherElement = this.delegate.createElement('div');
 
     let options = {
       template: '{{#in-element (stateful-foo)}}Yes{{/in-element}}',
       truthyValue: externalElement,
-      falsyValue: null,
+      falsyValue: otherElement,
       element: externalElement,
+      falsyElement: otherElement,
     };
 
     this.testStatefulHelper(assert, options);

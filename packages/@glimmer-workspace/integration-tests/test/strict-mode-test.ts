@@ -129,15 +129,15 @@ class GeneralStrictModeTest extends RenderTest {
   '{{component}} throws an error if a string is used indirectly in strict after first render (append position)'() {
     const Bar = defineComponent({}, 'Hello, world!');
 
-    const Foo = defineComponent({}, '{{component @Bar}}');
+    const Foo = defineComponent({}, '{{component @bar}}');
 
-    let args = trackedObj({ Bar });
+    let args = trackedObj({ bar: Bar });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args['Bar'] = 'bar';
+    args['bar'] = 'bar';
 
     this.assert.throws(() => {
       this.rerender();
@@ -168,15 +168,15 @@ class GeneralStrictModeTest extends RenderTest {
   '{{component}} throws an error if a string is used indirectly in strict after first render (block position)'() {
     const Bar = defineComponent({}, 'Hello, world!');
 
-    const Foo = defineComponent({}, '{{#component @Bar}}{{/component}}');
+    const Foo = defineComponent({}, '{{#component @bar}}{{/component}}');
 
-    let args = trackedObj({ Bar });
+    let args = trackedObj({ bar: Bar });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args['Bar'] = 'bar';
+    args['bar'] = 'bar';
 
     this.assert.throws(() => {
       this.rerender();
@@ -207,15 +207,15 @@ class GeneralStrictModeTest extends RenderTest {
   '{{component}} throws an error if a string is used indirectly in strict after first render (expression position)'() {
     const Bar = defineComponent({}, 'Hello, world!');
 
-    const Foo = defineComponent({}, '{{#let (component @Bar) as |bar|}}<bar/>{{/let}}');
+    const Foo = defineComponent({}, '{{#let (component @bar) as |bar|}}<bar/>{{/let}}');
 
-    let args = trackedObj({ Bar });
+    let args = trackedObj({ bar: Bar });
 
     this.renderComponent(Foo, args);
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args['Bar'] = 'bar';
+    args['bar'] = 'bar';
 
     this.assert.throws(() => {
       this.rerender();
@@ -226,7 +226,7 @@ class GeneralStrictModeTest extends RenderTest {
   'works with a curried string component defined in a resolution mode component'() {
     this.registerComponent('TemplateOnly', 'Hello', 'Hello, world!');
 
-    const Foo = defineComponent(null, '{{component "Hello"}}');
+    const Foo = defineComponent(null, '{{component "hello"}}');
     const Bar = defineComponent({ Foo }, '<Foo/>');
 
     this.renderComponent(Bar);
@@ -633,22 +633,22 @@ class DynamicStrictModeTest extends RenderTest {
       },
     });
 
-    const Baz = defineComponent({}, '{{@Foo}}');
+    const Baz = defineComponent({}, '{{@foo}}');
 
-    let args = trackedObj({ Foo });
+    let args = trackedObj({ foo: Foo });
 
     this.renderComponent(Baz, args);
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args['Foo'] = Bar;
+    args['foo'] = Bar;
 
     this.rerender();
     this.assertHTML('Hello, earth!');
     this.assertStableRerender();
     assert.verifySteps(['willDestroy 1 called']);
 
-    args['Foo'] = undefined;
+    args['foo'] = undefined;
 
     this.rerender();
     this.assertHTML('');
@@ -660,15 +660,15 @@ class DynamicStrictModeTest extends RenderTest {
   'Can use a dynamic component with a changing definition (append position, with args)'() {
     const Foo = defineComponent({}, 'Hello, {{@value}}!');
     const Bar = defineComponent({}, 'Goodbye, {{@value}}!');
-    const Baz = defineComponent({}, '{{@Foo value="world"}}');
+    const Baz = defineComponent({}, '{{@foo value="world"}}');
 
-    let args = trackedObj({ Foo });
+    let args = trackedObj({ foo: Foo });
 
     this.renderComponent(Baz, args);
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args['Foo'] = Bar;
+    args['foo'] = Bar;
 
     this.rerender();
     this.assertHTML('Goodbye, world!');

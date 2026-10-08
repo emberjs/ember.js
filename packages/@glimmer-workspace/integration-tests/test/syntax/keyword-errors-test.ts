@@ -168,10 +168,14 @@ for (const keyword of KEYWORDS) {
         () => {
           preprocess(`{{${keyword}}}`, { meta: { moduleName: 'test-module' } });
         },
-        new RegExp(
-          `The \`${keyword}\` keyword was used incorrectly. It was used as an append statement, but its valid usages are:`,
-          'u'
-        )
+        // Ember's `transform-resolutions` (§03-7.9 neighbours, "No first positional") asserts on a
+        // bare `{{modifier}}` before the Glimmer keyword validation is reached.
+        keyword === 'modifier'
+          ? /The modifier keyword requires at least one positional arguments/u
+          : new RegExp(
+              `The \`${keyword}\` keyword was used incorrectly. It was used as an append statement, but its valid usages are:`,
+              'u'
+            )
       );
     }
 

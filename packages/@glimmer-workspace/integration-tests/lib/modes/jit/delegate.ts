@@ -1,3 +1,4 @@
+import { dasherize } from '@ember/-internals/string';
 import type {
   CapturedRenderNode,
   Cursor,
@@ -10,6 +11,7 @@ import type {
   SimpleDocumentFragment,
   SimpleElement,
   SimpleText,
+  Template,
   TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
@@ -126,7 +128,7 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   createCurriedComponent(name: string): CurriedValue | null {
-    let definition = this.resolver.lookupComponent(name, this.owner);
+    let definition = this.resolver.lookupComponent(dasherize(name), this.owner);
 
     if (definition === null) return null;
 
@@ -183,7 +185,7 @@ export class JitRenderDelegate implements RenderDelegate {
 
     let root = new TemplateRootState(
       state,
-      preprocess(template, this.precompileOptions, this.owner),
+      this.compileTemplate(template, this.owner),
       this.getSelf(state.env, context),
       cursor
     );
@@ -222,7 +224,11 @@ export class JitRenderDelegate implements RenderDelegate {
     );
   }
 
-  private get precompileOptions(): PrecompileOptions {
+  protected compileTemplate(template: string, owner: object): Template {
+    return preprocess(template, this.precompileOptions, owner);
+  }
+
+  protected get precompileOptions(): PrecompileOptions {
     return {
       plugins: {
         ast: this.plugins,
