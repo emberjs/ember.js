@@ -115,6 +115,11 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 - [ ] 5.5 One `compile` shared by both harnesses (`IT/lib/compile.ts` and
       `internal-test-helpers/lib/compile.ts`; seam C).
 
+- [ ] 5.6 Restore the rehydration ports deferred from 4.2 (ledger rows "deferred to 5.6": the
+      `RehydratingComponents` multiple/mismatched invocations with a real classic Component, and
+      the `{{component}}` dynamic-form rehydration), now that curly invocation through a real
+      owner exists. Until this item is done those behaviors are untested on the branch.
+
 ## 6. Remaining stubs (step 6)
 
 - [ ] 6.1 `style-warnings-test.ts` → Ember harness with `expectWarning`.
