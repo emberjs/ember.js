@@ -2,7 +2,7 @@
 
 This file is the single source of truth for resuming work on the spec. Keep it current: an
 agent or session that has only this file, `plan.md`, and the git history must be able to
-continue the work. Last updated: 2026-10-07.
+continue the work. Last updated: 2026-10-08.
 
 ## Working protocol
 
@@ -149,6 +149,7 @@ Run these in order, one at a time.
 | T15 | Author feedback `59f71505b9`: relate the core to RFC 957 (scheduler) | Opus | `.work/T15-scheduler-rfc.md` | done; new §07-2.8, §07-5 items 14 and 17 updated, 3 strategy tests |
 | T16 | Author request: a testing chapter (refactors for an alternate implementation, coverage gaps) | Opus + 2 Sonnet surveys | `.work/T16-conformance-testing.md` | done; §09, `tools/test-coverage.py`; work plan W0–W9 and open questions Q1–Q6 in §9.7–9.8 |
 | T17 | Merge of `origin/main` (`def1faa2cf`, base `9bec1cb2a8`) and the §09 rulings (`5740b4aeb7`) | Opus + 2 Sonnet | `.work/T17-merge-and-09-rulings.md` | done; 122 citations remapped, 44 FLAGs and about 184 moved-test citations fixed by hand; TrackedValue, renderer root release, `get`, `{{on}}` prose; §09 rulings, post-merge counts, app-style target form, C18 fake stubs (`.work/T17-fake-stubs.md`); §05-13 markers informative |
+| W2 | §09-9.7 W2: eliminate the fake Ember/Glimmer stubs in the Glimmer harness, then the delegate refactor (C1, C2, C6, C18). Code in worktree `../ember.js-w2`, branch `test/w2-glimmer-harness` (from `origin/main` `9bec1cb2a8`); status and coverage ledger here | Sonnet per step; Opus for the step-5 API, the step-4 ledger review and the exit check | `.work/W2-glimmer-harness.md`, `.work/W2-coverage-ledger.md` | in progress (started 2026-10-08) |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -245,6 +246,8 @@ Suggestions for the plan's author, based on what is still open:
 6. **Conformance suite (§09).** Answer §09-9.8 Q1–Q6 (W0), then run the workstreams of §09-9.7.
    W2 (Glimmer harness) and W3 (Ember harness) need no decisions and can start now, as
    separate tasks with checklists, upstreamable to ember.js on their own.
+   W2 is under way (task W2 above); its code is on branch `test/w2-glimmer-harness` in the
+   worktree `../ember.js-w2`, not on this branch.
 7. **Keep citations current.** Line numbers are accurate for this checkout (`origin/main`
    merged at `def1faa2cf`, upstream base `9bec1cb2a8`). After the next merge, run
    `python3 spec/tools/remap-citations.py 9bec1cb2a8 <new base> --apply` once, fix its FLAG lines
