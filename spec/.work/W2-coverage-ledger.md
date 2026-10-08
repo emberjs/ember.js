@@ -282,3 +282,27 @@ registration removed; the Glimmer/template-only registration remains), `kept` (w
 | 4.1 | IT/lib/suites/initial-render.ts:31 › initial render (via RehydratingComponents) › HTML attributes, Curly+Dynamic (×2) | collapsed | Glimmer registration of the same test (remains); also `Rehydration` suite | Inherited from `InitialRenderSuite`: these tests render plain templates (no components, `registerComponent` is never called in `lib/suites/initial-render.ts`), so the Curly and Dynamic registrations are identical to the Glimmer one, and the same test also runs in the non-component `Rehydration` suite (`rehydration :` module, `suite(Rehydration, RehydrationDelegate)`) and `RenderTests`. The Glimmer registration of this suite remains. |
 | 4.1 | IT/lib/suites/initial-render.ts:24 › initial render (via RehydratingComponents) › HTML tags, Curly+Dynamic (×2) | collapsed | Glimmer registration of the same test (remains); also `Rehydration` suite | Inherited from `InitialRenderSuite`: these tests render plain templates (no components, `registerComponent` is never called in `lib/suites/initial-render.ts`), so the Curly and Dynamic registrations are identical to the Glimmer one, and the same test also runs in the non-component `Rehydration` suite (`rehydration :` module, `suite(Rehydration, RehydrationDelegate)`) and `RenderTests`. The Glimmer registration of this suite remains. |
 | 4.1 | IT/lib/suites/initial-render.ts:17 › initial render (via RehydratingComponents) › HTML text content, Curly+Dynamic (×2) | collapsed | Glimmer registration of the same test (remains); also `Rehydration` suite | Inherited from `InitialRenderSuite`: these tests render plain templates (no components, `registerComponent` is never called in `lib/suites/initial-render.ts`), so the Curly and Dynamic registrations are identical to the Glimmer one, and the same test also runs in the non-component `Rehydration` suite (`rehydration :` module, `suite(Rehydration, RehydrationDelegate)`) and `RenderTests`. The Glimmer registration of this suite remains. |
+
+## 4.1 summary (ledger drafted; awaiting Opus review)
+
+Registrations (Curly + Dynamic, each test counted once per kind) that step 4.4 removes, by ledger action. 189 tests x 2 kinds = 378 registrations; no other `componentSuite`/`jitComponentSuite`/`nodeComponentSuite` user has a Curly or Dynamic registration (`GlimmerishComponents`, `TemplateOnlyComponents`, `ShadowingSuite` and the `Debugger` template-only tests register Glimmer/TemplateOnly only, per `W2-baseline-tests.tsv`).
+
+| Suite | collapsed | deleted (twin) | port | drop (fake-only) | total |
+|---|---|---|---|---|---|
+| emberish-components.ts | 12 | 6 | 10 | 2 | 30 |
+| has-block.ts | 20 | 14 | 8 | 0 | 42 |
+| has-block-params.ts | 0 | 12 | 40 | 0 | 52 |
+| yield.ts | 24 | 2 | 4 | 0 | 30 |
+| scope.ts | 4 | 0 | 0 | 0 | 4 |
+| with-dynamic-vars.ts | 6 | 0 | 0 | 0 | 6 |
+| debugger.ts | 4 | 0 | 0 | 0 | 4 |
+| ssr.ts ServerSideComponentSuite | 8 | 0 | 0 | 0 | 8 |
+| RehydratingComponents own tests (13) | 20 | 0 | 6 | 0 | 26 |
+| RehydratingComponents inherited from InitialRenderSuite (88) | 176 | 0 | 0 | 0 | 176 |
+| **total** | 274 | 34 | 68 | 2 | 378 |
+
+Counting rows rather than registrations, the 68 `port` registrations are 35 ledger rows (5 emberish, 4 has-block, 20 has-block-params, 2 yield, 4 rehydrating). Notes for the reviewer:
+
+- `Dynamic` is the fan-out kind that invokes through `{{component this.componentName}}`. For a `kind: 'curly'` test that builds its own template (`<FooBar ...>`, no blueprint) the Dynamic registration is an exact duplicate of the Curly one; where it is not (blueprint tests), its only difference is the invocation form, which EG/components/dynamic-components-test.js and IT `components.ts` ("invoking dynamic component ...") cover for real components. The one place where the dynamic invocation form is pinned only by the Dynamic registration is rehydration (rows marked port).
+- Most `port` rows (has-block-params, has-block attr/concat) are not classic-specific and lose nothing if `kind: 'curly'` is simply removed so the test runs as Glimmer; they are `port` because step 4.4 would otherwise drop them (no Glimmer registration today). Several IT tests are mislabelled (see the has-block-params rows marked "Mislabelled"); 4.2 may delete the duplicates.
+- Twins from EG run on template-only layouts or glimmer `Component`s (none on `PositionalComponent`), so no 6.2 re-check is needed for the 4.1 rows.

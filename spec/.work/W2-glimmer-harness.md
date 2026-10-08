@@ -153,6 +153,19 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
    (`EG/components/attribute-bindings-test.js:872`) but worked on the fake classic component
    ("Setting class attributeBinding does not clobber ember-view"); fake-only behavior, no
    spec change, noted so step 4 does not port it.
+3. (4.1) Classic angle-bracket attribute precedence: IT's fake classic component lets an invocation
+   attribute (`<FooBar data-foo="outer" />`) win over `attributeBindings = ['data-foo']`, and puts
+   `data-foo` on both the wrapper `div` and an inner `<h1 ...attributes>` when the layout has an
+   explicit `...attributes`. No EG test pins either on a real classic `Component`. Ported to EG
+   classic in 4.2 to learn the real answer. Owner: §08 (splattributes) / classic-component chapter.
+4. (4.1) Named blocks on a classic `Component`: IT tests `<:baz>`, `<:default>`, `<:else as |v|>`
+   on the fake classic component; EG only tests named blocks on glimmer `Component`s
+   (`helpers/yield-test.js:35,60`), and the comment at `yield-test.js:37` claims it fails with the
+   default backing class. Unknown whether that is stale. Check in 4.2 with a real classic test.
+5. (4.1) `-with-dynamic-vars`/`-get-dynamic-var`: the IT tests (collapsed onto Glimmer) use arbitrary
+   keys such as `myKeyword`; real Ember allows only `outletState` (`EG/syntax/with-dynamic-var-test.js`).
+   So the VM supports a general dynamic scope that Ember's template language does not expose; no
+   change, noted for the dynamic-scope open question.
 
 ## Notes
 
@@ -250,4 +263,7 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   removes no test); `w2-baseline-parse`-style diff against `W2-baseline-tests.tsv`: exactly the same 38
   missing and 1 new as after step 2. `type-check:internals` and prettier clean; eslint on IT shows only 3
   pre-existing unused-var errors (`smokeTest`, `name`, `Owner`).
-- 4.1 progress (ledger rows, one batch per suite; resume at the first suite not listed): done: emberish, has-block, has-block-params, yield, scope, with-dynamic-vars, debugger, ssr, rehydrating-own, rehydrating-inherited; 0 suite batches left (order: emberish, has-block, has-block-params, yield, scope, with-dynamic-vars, debugger, ssr, rehydrating-own, rehydrating-inherited).
+- 4.1 (2026-10-08): ledger drafted; awaiting Opus review (item left unticked). 189 tests, 378 Curly/Dynamic
+  registrations, ledgered in 10 per-suite commits (`165f841a4a`..`52a1dfc191` on `template-language-spec`):
+  274 collapsed, 34 deleted (twin), 68 port, 2 drop (fake-only: `attributeBindings=['class']`, Finding 2).
+  Summary table and reviewer notes at the end of `W2-coverage-ledger.md`. No code touched; no test deleted.
