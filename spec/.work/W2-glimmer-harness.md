@@ -105,20 +105,368 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 - [ ] 5.1 Design (Opus): the `RenderDelegate` API additions `set`/`rerender`/`destroy`, the
       `RenderHandle` that replaces `RenderResult` in tests, the tracked test context, and how
       the delegate uses Ember's `EmberEnvironmentDelegate`, resolver/owner and renderer. Write
-      it into this file as sub-items before coding.
-- [ ] 5.2 Replace `BaseEnv` with Ember's environment delegate; remove the hand-driven
-      `env.begin()/commit()` and `inTransaction` from `RenderTest`.
-- [ ] 5.3 Replace `TestJitRuntimeResolver`/`TestJitRegistry`/`CIRCULAR_OBJECT` and the keyword
-      pre-registration with a real owner (`buildOwner` + `owner.register`).
-- [ ] 5.4 Tracked test context instead of `dirtyTagFor`; `delegate.set/rerender/destroy`;
-      `RenderHandle`.
-- [ ] 5.5 One `compile` shared by both harnesses (`IT/lib/compile.ts` and
-      `internal-test-helpers/lib/compile.ts`; seam C).
+      it into this file as sub-items before coding. Design drafted; awaiting review (see "5.1
+      design" below; sub-items 5.2a–5.6 replace the old 5.2–5.5).
 
+### 5.1 design
+
+Paths: `IT` as above; `EGL` = `packages/@ember/-internals/glimmer/lib`; `ITH` =
+`packages/internal-test-helpers/lib`. "Green" = whole suite, per-test diff against the previous
+run (`cmp.py`-style, see 2.4 notes), not only the totals.
+
+**Prototypes run for this design** (throwaway, reverted; worktree clean at `bf935f7c7a`):
+P2 = jit and node delegates render through an Ember `BaseRenderer` (fake resolver kept),
+templates through a root object in the renderer, components through public `renderComponent`,
+`RenderTest.rerender/destroy` through the handle: **full suite 9111 / 9093 pass / 0 fail / 18
+skip, identical to after 4.4.** P3 = P2 + a `buildOwner()` owner per delegate destroyed in
+`afterEach`: **3 failures** (listed under 5.3a). P4 = P3 + Ember's `ResolverImpl` with
+registrations on the owner: **15 failures** (the 3 + 12 listed under 5.3b). P5 = IT compile
+through Ember's `compileOptions` with the fake resolver: 115 failures, about 95 of them only
+because the fake resolver lacks Ember's private keyword helpers (see 5.5b).
+
+**Facts the design rests on (checked in source):**
+
+- `BaseEnv` is almost empty: its `scheduleWillDestroy`/`scheduleDidDestroy` queues have no
+  callers (T17 §1.4 is out of date there). Destruction already runs through Ember's
+  global-context `scheduleDestroy`/`scheduleDestroyed` (`EGL/environment.ts`, queues `actions`
+  and `destroy`), because `@ember/-internals/glimmer` is loaded in the page. What `BaseEnv`
+  still provides is `isInteractive: true`, `enableDebugTooling: false` and an
+  `onTransactionCommit` that drains empty arrays. `EmberEnvironmentDelegate` is the same with
+  `enableDebugTooling = ENV._DEBUG_RENDER_TREE` (read at construction) and an owner. So the
+  environment swap is trivial; the real change is *who drives transactions*.
+- `BaseRenderer` (`EGL/base-renderer.ts`) is the class behind both public `renderComponent`
+  and the application `Renderer`. Its constructor takes `(owner, {isInteractive, hasDOM},
+  document, resolver: ClassicResolver, builder: IBuilder)`: the document, the resolver and the
+  tree builder are parameters. It builds the `EmberEnvironmentDelegate`, the
+  `EvaluationContext` and a `RendererState` whose `renderRoot(root)` accepts any
+  `RendererRoot` (`ComponentRootState` and `ClassicRootState` are the two existing ones).
+  `setRenderer(owner, renderer)` (exported from `@ember/-internals/glimmer`) makes public
+  `renderComponent(def, {owner})` use that renderer. `BaseRenderer` and `ResolverImpl` are not
+  exported from the package index; deep imports (`@ember/-internals/glimmer/lib/base-renderer`,
+  `.../lib/resolver`) build fine, as Ember's own code does for `@glimmer/*`.
+- Ember's renderer **does** have serialize and rehydrate modes: the builder. The application
+  path picks it from `-environment:main._renderMode` (`EGL/setup-registry.ts`, the
+  `service:-dom-builder` factory; `@ember/application/tests/visit_test.js` "_renderMode:
+  rehydration"). So the SSR delegates need no separate VM render path, only their own builder
+  and document passed to `BaseRenderer`.
+- Public `renderComponent` clears a DOM-element target on its first render
+  (`replaceLastRender`, `into.innerHTML = ''`) but never clears a `Cursor` target. The
+  rehydration path must therefore pass `{ element, nextSibling: null }`, or it would wipe the
+  server HTML and rehydrate nothing while the "no cleared nodes" assertions still pass.
+- `EntryPointTest` (`IT/lib/suites/entry-point.ts`) is exported but never registered: it has
+  no row in `W2-baseline-tests.tsv`. `CompilationTests` (`lib/suites/custom-dom-helper.ts`)
+  runs only under a Node `process`, so never in the browser suite.
+- Classic components inject `renderer:-dom` (`views/lib/views/core_view.ts:69`), which needs
+  `-view-registry:main` registered on the owner (`ITH/test-cases/rendering.ts:36` does this).
+  They do not need that renderer to be the one rendering them (they use it for the view
+  registry, `getElement`, `getBounds`).
+
+**1. Environment and renderer (5.2).** Decision: **every IT render goes through an Ember
+`BaseRenderer`**, one per delegate (two for the rehydration delegate: client and server). Not
+`renderMain` with the real env alone.
+
+- Components: `JitRenderDelegate.renderComponent` calls public `renderComponent` from
+  `@ember/renderer` with `{ into: { element, nextSibling: null }, owner: this.owner, args }`,
+  after `setRenderer(this.owner, this.renderer)`. This is exactly seam A's path (what
+  `adapter.renderComponent` does in the reference adapter), so all `renderComponent`-based IT
+  tests (strict mode, managers, collections, tracked-value, debug render tree; 45 files) now
+  check the real entry point.
+- Loose templates with a `self`: Ember has no public "render this template with this `this`".
+  A new `TemplateRootState implements RendererRoot` in `IT/lib/modes/template-root.ts`, a copy
+  of `ComponentRootState` that calls `renderMain(context, owner, self, builder(env, cursor),
+  layout, dynamicScope?)` the way `ClassicRootState` does, added with
+  `renderer.state.renderRoot(root)`. This keeps top-level-template semantics (no wrapper
+  component, `this` is the test context; unlike the Ember harness's `-top-level` classic
+  component) while transactions, revalidation, error-loop guard and the run-loop hooks are
+  Ember's. Weighed alternative: wrap the template in a component with a custom manager whose
+  context is the test context and use public `renderComponent`; rejected because it changes
+  what the debug render tree, `{{yield}}`/`has-block` and `...attributes` see at the top level
+  (a behavior change in many tests, for no conformance gain: `renderTemplate` is
+  implementation glue in §09 anyway).
+- Rerender: `run(() => renderer.rerender())`; in fact any `run()` revalidates every
+  registered renderer (`loopBegin` → `scheduleOnce('render', revalidate)`), and a renderer
+  re-renders only if `CURRENT_TAG` moved. P2 shows no test depends on the old unconditional
+  `result.rerender()`.
+- Destroy: `run(() => handle.destroy())`. The root's `destroy` runs outside an env
+  transaction, as Ember's does; P2 shows the destruction-order tests unchanged.
+- SSR/serialization/rehydration: `BaseRenderer` with `serializeBuilder` + the simple-dom server
+  document, or `debugRehydrateTree` (`lib/modes/rehydration/builder.ts`, kept for
+  `clearedNodes`) + the client document. The builder argument is a closure
+  `(env, cursor) => this.getElementBuilder(env, cursor)` so `JitSerializationDelegate` and the
+  rehydration delegate keep overriding it; the rehydration delegate's closure also stores the
+  last `DebugRehydrateTree` to read `clearedNodes`. Partial rehydration renders components
+  through public `renderComponent` into a `Cursor` (see facts). What legitimately stays
+  VM-level inside `lib/modes/`: `TemplateRootState` (`renderMain`), `createConstRef` for
+  `self`, the builders, `DebugRehydrateTree`, the deep imports of `BaseRenderer`/`ResolverImpl`.
+- Kept as today, to change nothing in 5.x: `isInteractive: true` and `hasDOM: true` in every
+  mode, including serialize (real FastBoot serializes non-interactive; noted as a §09 edit,
+  not changed here); the VM's default `DynamicScopeImpl` (Finding 5).
+- Debug render tree: `EmberEnvironmentDelegate` reads `ENV._DEBUG_RENDER_TREE` when the
+  renderer is created. The delegate creates its renderer lazily and sets
+  `ENV._DEBUG_RENDER_TREE` to its `debugRenderTree` option around the constructor (restore in
+  `finally`). `getCapturedRenderTree()` becomes `captureRenderTree(owner)` from `@ember/debug`,
+  which captures every registered renderer: hence the per-test `_resetRenderers()`.
+- Teardown: renderers stay in the global `renderers` list while they have roots, and every
+  later `run()` would revalidate them. `suite()` and `componentModule()` in
+  `IT/lib/test-helpers/module.ts` get an `afterEach` that calls `delegate.teardown()`:
+  `_resetRenderers()` in 5.2a; plus `run(() => destroy(owner))` from 5.3a. In
+  `componentModule` the delegate is created inside `QUnit.test`, so keep it in a module-level
+  variable read by a `hooks.afterEach` of the `QUnit.module(name, (hooks) => …)` callback.
+
+**2. Owner and resolver (5.3).** Per delegate (per owner for the rehydration delegate's two
+renderers) one `buildOwner()` from `internal-test-helpers` (an `ApplicationInstance`, as the
+Ember harness uses), plus `owner.register('-view-registry:main', Object.create(null),
+{ instantiate: false })`. `associateDestroyableChild(owner, renderer)`; `teardown()` destroys
+the owner, which destroys the renderer, every root and the `Application` namespace (needed:
+Ember's `moduleFor` modules assert that no `NAMESPACES` leak, so leaked IT owners would fail
+later Ember tests). Resolver: `new ResolverImpl()` passed to `BaseRenderer`. Registration
+methods stay on `RenderTest`/the delegate as conveniences that register on the owner:
+`registerComponent(type, …, name, layout, Class)` → `setComponentTemplate(createTemplate(layout),
+Class ?? templateOnlyComponent())` then `owner.register(`component:${name}`, Class)`;
+`registerHelper(name, fn)` → `owner.register(`helper:${name}`, defineUserHelper(fn))`;
+`registerHelperDefinition` → `owner.register(`helper:${name}`, definition)`; `registerModifier`
+→ `owner.register(`modifier:${name}`, defineTestModifier(Class))`. The rehydration delegate
+registers on both owners. Loose templates find names through the owner in the template meta:
+`renderTemplate` instantiates its factory with the delegate's owner
+(`createTemplate(src, opts)(this.owner)`), registered layouts are instantiated by
+`ResolverImpl.lookupComponent` with the owner (`pair.layout(owner)`), and strict-mode
+factories by the manager at render time; `CIRCULAR_OBJECT` and `templateFactory({})` go.
+Keywords (`on`, `fn`, `hash`, `array`, `get`, `concat`, plus `mut`, `readonly`, `unique-id`,
+`-track-array`, …) come from `ResolverImpl`'s built-in tables; the pre-registration goes.
+Curly invocation through a real owner (5.6): register a classic `Component` (from
+`@ember/component`) with `setComponentTemplate` under `component:foo-bar` on the delegate's
+owner(s); `{{foo-bar}}`, `{{#foo-bar}}` and `{{component "foo-bar"}}` then resolve through
+`ResolverImpl`; the injected `renderer:-dom` works once `-view-registry:main` is registered.
+Fallback if a classic component misbehaves because its injected renderer is not the rendering
+one: make the delegate use `owner.lookup('renderer:-dom')` (an Ember `Renderer`, also a
+`BaseRenderer`) with `bootOptions: { document, isInteractive: true, _renderMode }` passed to
+`buildOwner`, and register the debug builder as `service:-dom-builder` before the lookup.
+
+**3. Test context and handle (5.4).**
+
+- Context: `RenderTest.context` becomes `trackedObject({})` from `@ember/reactive/collections`;
+  `set(key, value)` is `this.context[key] = value`; `dirtyTagFor` goes. Tests that assign a
+  plain object to `this.context` and render it themselves (`initial-render-test.ts:42-53,
+  392`, `chaos-rehydration-test.ts:187-198`) wrap it first: `let context =
+  trackedObject(props)`, pass that same object to the server and client render, then
+  `this.context = context` (`trackedObject` copies, so the rendered object and the written one
+  must be the same proxy). `lib/test-helpers/tracked-object.ts` (`trackedObj`, built on
+  `tagFor`/`dirtyTagFor`) becomes a re-export of `trackedObject`. No `delegate.set`: writing a
+  public tracked object needs no implementation hook.
+- `RenderHandle` (in `IT/lib/render-delegate.ts`): `{ rerender(): void; destroy(): void }`
+  as in §09, both synchronous because the delegate wraps them in `run()`; `rerender` is
+  renderer-wide. `RenderTest.renderResult` → `handle`. `RenderTest.rerender(props)` =
+  `run(() => this.setProperties(props)); this.handle.rerender()`; `destroy()` =
+  `this.handle.destroy()`. Optional impl-only hooks on the delegate, absent in a second
+  adapter and skipped then: `debugBounds?(handle): { firstNode, lastNode }` and
+  `isArgumentCaptureError?(value)`.
+- Reach-ins and what replaces them: `lib/suites/in-element.ts:344`
+  `destroy(unwrap(this.renderResult))` → `this.destroy()`; `test/updating-test.ts:1440`
+  `assertInvariants` (`result.firstNode()/lastNode()`, 2 tests, 9 calls) → `this.delegate.
+  debugBounds?.(this.handle)`; `test/debug-render-tree-test.ts`
+  `this.delegate.getCapturedRenderTree()` (4 sites) → `captureRenderTree(owner)` inside the
+  delegate's `getCapturedRenderTree()`, `this.delegate.context.env.isArgumentCaptureError`
+  (`:321-322`) → `this.delegate.isArgumentCaptureError?.(…)`, `env: assign({}, BaseEnv,
+  {enableDebugTooling: true})` (`:908`) → `{ debugRenderTree: true }`;
+  `test/updating-test.ts:866` `this.delegate.compileTemplate('{{helo world}}')` → assert the
+  throw from `this.render('{{helo world}}')` (Ember resolves at render, not at compile);
+  `test/components-test.ts:591-668` `createCurriedComponent('FooBar')` (5 tests) stays a
+  delegate method, reimplemented in `lib/modes` from `ResolverImpl.lookupComponent(name,
+  owner)` + `curry`; the rehydration tests' `this.renderResult = this.delegate.renderClientSide
+  /renderComponentClientSide(…)` just change type. `RenderDelegate` loses `getElementBuilder`,
+  `getSelf` (they stay as class members in `lib/modes`) and the `env`/`resolver` options.
+
+**4. Compile (5.5).** One function, `compile(source, options): TemplateFactory`, in
+`ITH/compile.ts` (IT will already depend on `internal-test-helpers` for `buildOwner`; one
+module is also what W6 aliases for seam C). Signature as the adapter's:
+`{ strictMode?, scope?: () => Record<string, unknown>, moduleName?, plugins? }` (`plugins`
+is impl-only, for `registerPlugin`; `keywords` dropped, see §09 edits). It calls
+`precompileJSON(source, compileOptions({ …, locals: Object.keys(scope?.() ?? {}) }))` and
+`templateFactory`, keeping only used locals in the scope, as both copies do now. Wrappers keep
+the call sites unchanged: `ITH/compile.ts`'s old `(source, options, scopeValues)` export and
+`IT/lib/compile.ts`'s `createTemplate`/`preprocess` become thin calls of it. After 5.5,
+`IT/lib/compile.ts` imports neither `@glimmer/compiler` nor `@glimmer/opcode-compiler`.
+
+**5. Import boundary** (no `@glimmer/{runtime,validator,reference,opcode-compiler,compiler}`
+import in IT outside `lib/modes/`; grep of `IT/lib`, `IT/test`, `IT/index.ts` at `bf935f7c7a`):
+
+| File | Import | Removed by |
+|---|---|---|
+| `lib/base-env.ts` | `EnvironmentDelegate` type | 5.2b (file deleted; `index.ts` export too) |
+| `lib/render-delegate.ts` | `Reference`, `EnvironmentDelegate` types | 5.2b (`env` option), 5.4b (`getSelf`, `getElementBuilder` leave the interface) |
+| `lib/render-test.ts` | `inTransaction`; `dirtyTagFor` | 5.2a; 5.4a |
+| `lib/test-helpers/module.ts` | `EnvironmentDelegate` type | 5.2b (`debugRenderTree` option) |
+| `lib/setup-harness.ts` | `debug.resetTrackingTransaction` | 5.2b (move the call into `lib/modes/env.ts`, call it from there) |
+| `lib/suites/custom-dom-helper.ts` | `precompile` (CompilationTests, C3; Node-only); `serializeBuilder` is `@glimmer/node` | 5.2b moves `JitSerializationDelegate` to `lib/modes/node/`; `CompilationTests` is an implementation test (W5) |
+| `lib/suites/entry-point.ts` | `createPrimitiveRef`, `DynamicScopeImpl` | 5.4b (delete: never registered, 0 tests) |
+| `lib/suites/each.ts`, `test/updating-test.ts` | `createTag/consumeTag/dirtyTag` (hand-made tracked iterable/value) | 5.4a (a `@tracked` version counter read in the iterator / getter) |
+| `lib/test-helpers/tracked-object.ts` | `consumeTag/dirtyTagFor/tagFor` | 5.4a |
+| `lib/test-helpers/define.ts`, `lib/components/types.ts` | `templateOnlyComponent`, `TemplateOnlyComponent` type | 5.3c (`@ember/component/template-only`) |
+| `lib/compile.ts` | `precompileJSON`, `templateFactory` | 5.5a |
+| `test/strict-mode-test.ts`, `test/modifiers/on-test.ts` | `array, concat, fn, get, hash, on` | 5.3c (`@ember/helper`, `@ember/modifier`; C8) |
+| `test/collections/*-test.ts` (6) | `tracked{Array,Map,Object,Set,WeakMap,WeakSet}` | 5.4a (`@ember/reactive/collections`; C5) |
+| `test/debug-render-tree-test.ts` | `templateOnlyComponent`, `TemplateOnlyComponent`; `EMPTY_ARGS`, `TemplateOnlyComponentManager` | 5.3c for the first two; the other two serve the 2 `getDebugCustomRenderTree` tests (internal manager API, C7): implementation, W5 split |
+| `lib/suites/debugger.ts` | `setDebuggerCallback/resetDebuggerCallback` | implementation (VM debug hook, no Ember API); W5 |
+| `test/owner-test.ts` | `Reference`, `NULL_REFERENCE` (fake internal `MountManager`) | implementation (internal manager API, C7); W5 |
+| `test/env-test.ts` | `EnvironmentImpl` | implementation (C7); W5 |
+| `test/attributes-test.ts` | `normalizeProperty` | implementation (C7); W5 |
+| `test/precompile-test.ts`, `test/compiler/compile-options-test.ts` | `precompile`, `templateFactory`, opcode-compiler types | implementation (C3); W5 |
+| `test/tracked-value-test.ts` | `trackedValue` | no public export (`@ember/reactive` is empty): [Proposed] §07-2 core or implementation; W1 decides |
+
+So after 5.x, the remaining offenders are all W5 implementation tests; 8.1 needs either the
+§09 edit below or W5 to have moved them.
+
+**6. Order and risk.** Sub-items below, each one commit (or a small run), each green with
+**zero count change** unless stated. The riskiest point is not `BaseEnv`'s queues (dead code)
+but **destruction at teardown** (5.3a): destroying the owner after each test runs component and
+modifier destructors after the test body, where an `assert.step`/`assert.ok` in a destructor
+counts against `assert.expect` or leaves unverified steps (P3: exactly 2 such tests), and a
+root whose DOM the test already removed fails in `clear` (P3: 1 test). Second risk: the
+render loop auto-flushes (a tracked write after the `render` queue starts another run loop);
+P2 found no test that observed stale DOM. Third: 5.5b changes compile semantics. How to
+detect: per-test diff against the previous full run (missing/new/failed by name); grep the
+TAP for `Expected assert.verifySteps`, `Expected N assertions`, `afterEach failed`,
+`NAMESPACES`; run the whole suite, not a filter (leaks show up in later Ember modules).
+
+**7. Proposed §09 edits** (for 8.4; not applied):
+
+1. §9.4.2 `RenderHandle`: Ember's `renderComponent` result has only `destroy()`; re-rendering
+   is renderer-wide (`renderer.rerender()`/any run loop), not per root. Proposal: `RenderHandle
+   { destroy(): void }`, and an adapter-level synchronous `rerender(): void` (flush every root;
+   what `run()`/`runTask` gives) next to async `settle()`. State that `destroy()` only
+   schedules destructors (run-loop `actions`/`destroy` queues) and they have run after
+   `rerender()`/`settle()`.
+2. §9.4.2 `renderTemplate`: no public Ember API renders a loose template with an arbitrary
+   `self`. The reference adapter does it with an internal root type in Ember's renderer (like
+   `ClassicRootState`); the Ember harness instead renders a `-top-level` classic component, so
+   `this` differs between the two harnesses. Say so, and say which one the Legacy profile means.
+3. §9.4.2 `mode`: Ember's serialize/rehydrate modes are the renderer's tree builder
+   (`_renderMode`, `service:-dom-builder`), not a `renderComponent` option. Also decide
+   `isInteractive` for `serialize`: FastBoot is non-interactive; the Glimmer SSR suites have
+   always serialized interactive (modifiers run on the server).
+4. §9.4.2 `compile` `keywords`: Ember fixes it (`STRICT_MODE_KEYWORDS`); extra keywords are a
+   VM host hook (`ClassicResolver.lookupBuiltInHelper`) with no Ember API. Drop it; the IT test
+   "Non-native keyword" is an implementation test.
+5. §9.4.2: loose/legacy profiles need an owner with `register()`; add `createOwner()` to the
+   adapter (reference: `buildOwner` + `-view-registry:main`) and say that destroying it tears
+   down every render made with it (C17 teardown contract). Also note that `<FooBar>` resolves
+   `component:foo-bar` because Ember's compile dasherizes (`customizeComponentName`).
+6. §9.4.2 `captureRenderTree`: Ember needs `ENV._DEBUG_RENDER_TREE` set before the renderer is
+   created, and `captureRenderTree(owner)` ignores the owner and captures every registered
+   renderer. The adapter needs a way to enable capture per test (an option on `render*`, or
+   the render-tree profile implies it).
+7. §9.4.1 seam B: after W2 the seam is `JitRenderDelegate` and its node/serialization/
+   rehydration variants over Ember's `BaseRenderer`; they differ only in document and builder.
+   Its `lib/modes` code deep-imports `BaseRenderer` and `ResolverImpl` (not exported), which
+   seam A must also replace.
+8. §9.7 W2 exit criterion: "no … import outside `lib/modes/`" should exempt files classified
+   I by W1/W5 (list in item 5 above), or W2 cannot meet it without doing W5's split.
+9. T17 §1.4 is wrong that `BaseEnv` drains real destroy queues: they had no callers (fix the
+   C18 row's wording).
+
+### 5.2–5.6 sub-items
+
+Dependencies: add each newly imported package to IT's `package.json` (and the matching
+`pnpm-lock.yaml` link lines, as in 2.2) — expected: `@ember/renderer`, `@ember/debug`,
+`@ember/-internals`, `internal-test-helpers`, `@ember/reactive`, `@ember/helper`,
+`@ember/modifier`, `@ember/component`, `ember-template-compiler`. Check `vite build`,
+`type-check:internals`, prettier, eslint each time.
+
+- [ ] 5.2a Jit + node delegates on Ember's renderer (P2). In `lib/modes/`: new
+      `template-root.ts` (`TemplateRootState`, see design 1); `JitRenderDelegate` gets
+      `owner = {}` (real owner in 5.3a) and a lazy `renderer` = `new BaseRenderer(owner,
+      {isInteractive: true, hasDOM: true}, doc, new JitCompileTimeLookup(this.resolver),
+      (env, cursor) => this.getElementBuilder(env, cursor))` with `ENV._DEBUG_RENDER_TREE` set
+      from `options.env?.enableDebugTooling` around construction, then `setRenderer`; `context`
+      = `renderer.state.context`; `renderTemplate` → `TemplateRootState`; `renderComponent` →
+      public `renderComponent` into a `Cursor` (drop the `dynamicScope` parameter: its only
+      caller is the unregistered `EntryPointTest`); both return a `RenderHandle` (add the type
+      to `lib/render-delegate.ts`; `updating-test` `assertInvariants` keeps working through a
+      `debugBounds` on the handle until 5.4b). `RenderTest.rerender/destroy` use the handle;
+      `inTransaction` leaves `render-test.ts`. The rehydration delegate keeps its VM path for
+      now but returns a handle from a `legacyHandle(result, env)` helper in
+      `lib/modes/rehydration/` (the old `begin/commit` and `inTransaction` code, moved). Add
+      `teardown()` (`_resetRenderers()`) and the `afterEach` hooks in `module.ts`. Expected:
+      9111 / 9093 / 0 / 18, no per-test change.
+- [ ] 5.2b Rehydration delegates on Ember's renderer; delete `BaseEnv`. Client `BaseRenderer`
+      (client doc, `debugRehydrateTree` builder that records the last tree for
+      `rehydrationStats`) and server `BaseRenderer` (server doc, `serializeBuilder`), separate
+      `{}` owners; `renderServerSide`/`renderClientSide` through `TemplateRootState`, partial
+      rehydration through public `renderComponent` with a `Cursor` (never an element: it would
+      be cleared). Delete `legacyHandle`, `JitDelegateContext`, `lib/base-env.ts` and its
+      `index.ts` export; `RenderDelegateOptions.env` → `debugRenderTree?: boolean`
+      (debug-render-tree suite passes `{ debugRenderTree: true }`; `module.ts` option type
+      follows). Move `JitSerializationDelegate` to `lib/modes/node/` and
+      `debug.resetTrackingTransaction` into `lib/modes/env.ts`. Expected: zero change; watch
+      `rehydration ::` and `Rehydration` modules and `clearedNodes` assertions.
+- [ ] 5.3a Real owner + teardown destroy (the risky step). `buildOwner()` per delegate (two in
+      the rehydration delegate) + `-view-registry:main`; `associateDestroyableChild(owner,
+      renderer)`; `teardown()` = `run(() => destroy(owner)); _resetRenderers()`. Fake resolver
+      still in use. Fix the 3 P3 failures without weakening them: `initial render (client):
+      Void Elements` (`RenderTest.shouldBeVoid` renders one template per void tag into one element with
+      `clearElement` between them; destroy each previous handle in `run()` instead of
+      clearing), `Basic Custom Modifier Manager: 3.22: custom lifecycle hooks` and `… can give
+      consistent access to underlying DOM element` (`test/managers/modifier-manager-test.ts`;
+      destructors assert: end the tests with `this.destroy()` and verify the
+      `willDestroyElement` step / raise `assert.expect` by the one destructor assertion). Note
+      each adjusted test in the notes (not a ledger row: nothing removed). Expected: zero count
+      change.
+- [ ] 5.3b Ember's resolver and owner registrations (P4). `new ResolverImpl()` replaces
+      `JitCompileTimeLookup(this.resolver)`; `registerComponent/Helper/HelperDefinition/
+      Modifier` register on the owner(s) (design 2; names as they are, dasherized in 5.5b);
+      `renderTemplate` and the rehydration renders instantiate templates with the owner;
+      partial rehydration finds components with `owner.factoryFor('component:' + name).class`.
+      Delete `registry.ts`, `resolver.ts`, `compilation-context.ts`, `CIRCULAR_OBJECT`, the
+      keyword pre-registration, `RenderDelegateOptions.resolver`. Fix the 12 P4 failures: the 8
+      `registerHelper('hash', …)` overrides (`lib/suites/components.ts:92,109,130,282`,
+      `test/components-test.ts:217,233,249,266`; Ember asserts on overriding a built-in):
+      delete the override, the real `hash` is what the tests mean; debug-render-tree
+      `registerCustomComponent` (2 `getDebugCustomRenderTree` tests):
+      `setInternalComponentManager(new Manager(), ComponentClass)` then `owner.register`;
+      `Updating: missing helper`: through `render` (design 3); `strict mode: general
+      properties: Non-native keyword`: no Ember equivalent (§09 edit 4) — ledger row "drop
+      (implementation: host keyword hook)", Opus confirms before deleting (count −1, the only
+      planned drop in step 5). `createCurriedComponent` on the owner (design 3). Expected:
+      9110 / 9092 / 0 / 18.
+- [ ] 5.3c Public imports (C8): `templateOnlyComponent`/`TemplateOnlyComponent` from
+      `@ember/component/template-only` in `lib/test-helpers/define.ts`, `lib/components/
+      types.ts`, `test/debug-render-tree-test.ts`; `array, concat, fn, get, hash` from
+      `@ember/helper` and `on` from `@ember/modifier` in `test/strict-mode-test.ts`,
+      `test/modifiers/on-test.ts`. Zero change.
+- [ ] 5.4a Tracked context (design 3): `trackedObject` context, `set` without `dirtyTagFor`,
+      the plain-context overrides in `initial-render-test.ts`/`chaos-rehydration-test.ts`
+      wrapped, `trackedObj` → `trackedObject`, collections tests from
+      `@ember/reactive/collections`, the hand-made tags in `lib/suites/each.ts` and
+      `test/updating-test.ts:473-518` → `@tracked` counters. Zero change; watch `#each`,
+      `Updating`, `log` (`{{log this}}` now logs the proxy, which is still `this.context`).
+- [ ] 5.4b Handle cleanup (design 3): `renderResult` → `handle`; the reach-ins listed there;
+      `debugBounds?`/`isArgumentCaptureError?` as optional delegate hooks; `captureRenderTree`
+      in `getCapturedRenderTree`; `getSelf`/`getElementBuilder` out of the `RenderDelegate`
+      interface; delete `lib/suites/entry-point.ts` and its `lib/suites.ts` export (never
+      registered; ledger note, 0 tests). Then grep: no `RenderResult`, `Reference`,
+      `EnvironmentDelegate` outside `lib/modes/`. Zero change.
+- [ ] 5.5a One compile (design 4) in `ITH/compile.ts`, both harnesses through it; IT passes
+      an internal `glimmerOnly: true` flag that skips `compileOptions()` so its output is
+      unchanged. Zero change (Ember harness: about 1,600 `this.render` sites, no test change).
+- [ ] 5.5b IT compiles with Ember's `compileOptions` (drop `glimmerOnly`); `registerComponent`
+      registers `component:${dasherize(name)}` (Ember's `customizeComponentName` dasherizes
+      `<FooBar>`). From P5, after 5.3b, expect about 20 real differences to triage one by one:
+      `{{in-element}}` with a non-null `insertBefore` (Ember asserts "Can only pass null to
+      insertBefore"; 3 tests in `lib/suites/in-element.ts`/rehydration), capitalized named
+      arguments `@Foo`/`@Bar` reserved in Ember (2), debug-render-tree names for registered
+      components, anything from `transform-each-in-into-each`/`-track-array`. For each: if the
+      Ember behavior is the specified one, change the expectation (e.g. `assert.throws` with
+      the Ember message) and add a Finding; if it is a Glimmer-only capability, ledger it
+      (implementation) for Opus review. Count change only by ledger rows.
 - [ ] 5.6 Restore the rehydration ports deferred from 4.2 (ledger rows "deferred to 5.6": the
       `RehydratingComponents` multiple/mismatched invocations with a real classic Component, and
       the `{{component}}` dynamic-form rehydration), now that curly invocation through a real
       owner exists. Until this item is done those behaviors are untested on the branch.
+      How (design 2): in the rehydration delegate, a `registerClassicComponent(name, layout,
+      Class = Component)` that does `setComponentTemplate` + `owner.register('component:' +
+      name, Class)` on both owners; the 4 deferred tests invoke `{{foo-bar}}`/`{{#foo-bar}}`/
+      `{{component "foo-bar"}}`. If the injected `renderer:-dom` breaks them, use the fallback
+      in design 2. Count +4 (or as the ledger rows say).
 
 ## 6. Remaining stubs (step 6)
 
