@@ -670,6 +670,43 @@ and 8.1 exempts them from the import boundary (5.1 review decision 3). Keep addi
 - `packages/@glimmer/manager/test/capabilities-test.ts`: `capabilityFlagsFrom`/`managerHasCapability` bitmaps, internal VM flags (seen while doing 7.1g; not part of the §3 table).
 - Not kept, so not on the list: `iterable-test.ts` (6.3: every case was observable through `{{#each}}`, ported or ledgered; deleted), `style-warnings-test.ts` (6.1), `entry-point.ts` (5.4b, never registered), the strict-mode "Non-native keyword" test (5.3b, deleted).
 
+## 9. Author rulings of `eb4f794d62` (2026-10-08)
+
+The author answered four open questions inline (notes in §05-14 item 17, §06-12 Q3, §09-9.8 Q7,
+Q8). Spec text first (Opus), then code on `test/w2-glimmer-harness` (Sonnet), with the same rules
+as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on surprises).
+
+- [ ] 9.1 Spec (Opus): turn each inline note into normative text and remove the note, as T11/T12
+      did. §05-5.8 + §05-14 item 17: dynamic scope keys other than `outletState` assert
+      (normative); implementations are encouraged to implement general dynamic scope but guard
+      it with the same assertion until a context RFC allows more; drop item 17 (renumber with
+      `tools/prune-open-questions.py` if needed). §06-12 Q3: the engine owner for a component
+      curried in the app and rendered in a mounted engine is normative, documented as a
+      compatibility quirk; remove Q3. §09-9.8 Q7: the adapter drops `renderTemplate`; loose
+      templates with a `this` are rendered through `renderComponent` plus a custom component
+      manager (public API) where tests need a `this`; remove Q7. Q8: the SSR profile serializes
+      non-interactive, as Ember does; §05-13 says so; remove Q8. STATUS "Decisions": record the
+      four rulings with the commit. `xref.py` and `check-citations.py` clean.
+- [ ] 9.2 Code, owner (Q3): the IT `owner-test.ts` tests "owner is preserved in curried closure
+      components" and "… non-curried component definitions that are passed around" contradict
+      the ruling. Add an EG conformance test pinning the engine-owner behavior for the curried
+      case (the 2.3 probe: `{{mount "e" model=(hash foo=(component "app-check"))}}`), next to
+      the 2.3 mount test; delete the two IT tests with ledger rows (`drop (contradicts ruling)`).
+- [ ] 9.3 Code, top-level `this` (Q7): replace the internal `TemplateRootState`
+      (`lib/modes/template-root.ts`) with `renderComponent` + a custom component manager
+      (`setComponentManager`, `componentCapabilities('3.13')`, `createComponent` returns the
+      test context, `getContext` returns it) so `this.render(template, ctx)` keeps working
+      through public API only. The 5.1 design warned that top-level `{{yield}}`, `has-block`,
+      `...attributes` and the render tree may differ: triage every changed test as in 5.5b
+      (do not change expectations without review).
+- [ ] 9.4 Code, non-interactive serialize (Q8): server renders in the rehydration/node delegates
+      use a non-interactive renderer. Triage every changed test (modifiers no longer running on
+      the server, rehydration results) as in 5.5b before changing expectations.
+- [ ] 9.5 Dynamic scope (§05-14 item 17 ruling): the IT `-with-dynamic-vars` suite with arbitrary
+      keys becomes an implementation test (W5 list); confirm an EG test pins the assertion for
+      non-`outletState` keys (`EG/syntax/with-dynamic-var-test.js`), or add one.
+- [ ] 9.6 Update the exit-check notes, §09 W2 row and STATUS (new commits, PR split).
+
 ## Findings for the author
 
 Behavior questions W2 turns up. Carry each into the owning chapter's open questions at 8.4.
