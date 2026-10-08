@@ -544,13 +544,13 @@ keyword" went in 5.3b).
   - [x] 7.1e (done, code `68fcd3260a`; 15 deleted (twin), 2 moved, 14 kept) custom modifier manager: `IT/test/managers/modifier-manager-test.ts`, `modifiers-test.ts`, `updating-modifiers-test.ts` vs `EG/custom-modifier-manager-test.js`.
   - [x] 7.1f (done, code `8f427a1ed0`; 14 deleted (twin), 9 kept) custom helper manager: `IT/test/managers/helper-manager-test.ts` vs `EG/helpers/helper-manager-test.js`, `custom-helper-test.js`, `invoke-helper-test.js`.
   - [x] 7.1g (done, no code change; nothing deleted or moved; file added to the W5 list) custom component manager: `@glimmer/manager/test/managers-test.ts` vs `EG/custom-component-manager-test.js` (registry-only parts stay, W5 list).
-  - [ ] 7.1h strict mode and lexical scope: `IT/test/strict-mode-test.ts`, `lexical-scope-test.ts` vs `EG/components/strict-mode-test.js`, `runtime-template-compiler-*.ts`.
+  - [x] 7.1h (done, code `51887e1701`; 8 IT tests deleted (twin), 86 kept) strict mode and lexical scope: `IT/test/strict-mode-test.ts`, `lexical-scope-test.ts` vs `EG/components/strict-mode-test.js`, `runtime-template-compiler-*.ts`.
   - [ ] 7.1i `if`/`unless`: `IT/test/syntax/if-unless-test.ts` vs `EG/syntax/if-unless-test.js`, `helpers/if-unless-test.js`, `shared-conditional-tests.js`.
   - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a-7.1g done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`, `8f427a1ed0`; 7.1g changed no code). Next: 7.1h (strict mode and lexical scope). Last full run `full71f`
-  (9021 / 9003 / 0 / 18) in the session scratchpad is still the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
+  Progress note (7.1): 7.1a-7.1h done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`, `8f427a1ed0`, 7.1g no code, `51887e1701`). Next: 7.1i (`if`/`unless`). Last full run `full71h`
+  (9013 / 8995 / 0 / 18) in the session scratchpad is the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
 
 ## 8. Exit check (Opus)
 
@@ -974,3 +974,10 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `EG/custom-component-manager-test.js` (23 render tests): the file is entirely registry level, so it stays as the item says (one grouped `kept` ledger row) and is on the W5 list, with
   `capabilities-test.ts` next to it. EG's render tests of the component manager (create/update/destroy hooks, args, positional params, async lifecycle, capabilities helper)
   have no IT twin, as IT has no render-level component-manager test.
+- 7.1h (2026-10-08): code `51887e1701`. IT `strict-mode-test.ts` (93) and `lexical-scope-test.ts` (1) vs EG `components/strict-mode-test.js` (22), `runtime-template-compiler-explicit-test.ts` (22),
+  `-implicit-test.ts` (23). DEVIATION from §3 (which names IT as the stronger copy): IT is far larger (85 of its tests have no EG counterpart and stay), but the EG files are three
+  *different compile entry points* of the same small smoke suite (build-time `precompileTemplate`, public runtime `template()` with `scope`, runtime with `eval`), so none of them can go;
+  the only overlap is 8 IT tests whose template, scope values and assertions are identical to the `explicit` runtime tests (the same path as IT's `defineComponent`): those 8 were deleted
+  from IT (the 5 built-ins hash/array/concat/get/on+fn, component and modifier in scope, constant values). Two same-name pairs differ (helper manager vs plain function; `if` vs `each`
+  shadowed) and are kept as unsure. The `BuiltInsStrictModeTest` class went with its last test. Ledger: 12 rows (8 deleted, 4 kept groups). Full suite 9021 -> 9013 total / 8995 pass /
+  0 fail / 18 skip (-8); per-test diff against `full71f`: exactly the 8 ledgered tests missing, 0 new; greps 0; type-check and prettier clean.
