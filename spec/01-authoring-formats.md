@@ -1048,9 +1048,9 @@ getComponentTemplate(obj):
 ```
 
 Pinned by `packages/@ember/-internals/glimmer/tests/integration/components/component-template-test.js`:
-primitives rejected (`:28-60`), double-set rejected (`:62-75`), templates inherited through
+primitives rejected (`:27-59`), double-set rejected (`:61-74`), templates inherited through
 both `EmberObject.extend` and native `extends` (`:77-104`, because a subclass constructor's
-prototype is its parent constructor), a factory may be shared between classes (`:106-119`).
+prototype is its parent constructor), a factory may be shared between classes (`:88-101`).
 In production builds the checks are skipped and a second `set` overwrites.
 
 The template is found only via this association: a component definition with a manager and

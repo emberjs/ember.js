@@ -221,7 +221,7 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
 4. `assert-against-attrs` (loose only) — **[Dev]** `{{attrs.x}}` is a compile error
    `Using {{attrs}} to reference named arguments is not supported. {{attrs.x}} should be updated to {{@x}}. <loc>`;
    `{{this.attrs.x}}` emits deprecation `attrs-arg-access` and is **rewritten to `@x`**
-   (`assert-against-attrs.ts:25-85`, test `curly-components-test.js:1315-1358,1554-1596`).
+   (`assert-against-attrs.ts:25-85`, test `curly-components-test.js:3609-3652,3848-3890`).
 5. `transform-each-in-into-each` — `{{#each-in X as |k v|}}` → `{{#each (-each-in X) as |v k|}}`;
    with a single block param `|k|` the params become `['( unused value )', k]`
    (`transform-each-in-into-each.ts:27-73`). The `key=` hash pair is preserved.
@@ -466,7 +466,7 @@ is reused otherwise (chapter 07 caching semantics).
 ### 2.10 `uniqueId` (strict) / `unique-id` (loose)
 
 - **Strict**: `import { uniqueId } from '@ember/helper'` is the *plain function*
-  `uniqueId()` (`packages/@ember/helper/index.ts:715`,
+  `uniqueId()` (`packages/@ember/helper/index.ts:742`,
   `packages/@ember/-internals/glimmer/lib/helpers/unique-id.ts:22-29`), invoked through the
   default helper manager. Since it takes no arguments, its value is computed once per
   invocation site instance and is stable thereafter (no tracked storage consumed).
@@ -490,7 +490,7 @@ is reused otherwise (chapter 07 caching semantics).
 - **Semantics**: `(mut path)` requires its single positional argument to be *updatable*
   (§2) — a path (`this.x`, `@x`, block param `.x`, `(get …)`, a `hash` child path, or
   another `mut`). **[Dev]** otherwise `You can only pass a path to mut`
-  (tests `mut-test.js:121-142`: literals and helper results assert).
+  (tests `mut-test.js:734-755`: literals and helper results assert).
 - The result's *value* is the current value of the path (reading it is reactive to the path).
   The result is additionally marked *invokable*, which has two observable effects:
   1. `fn` treats it specially (§2.4): `(fn (mut this.x))` returns a setter; `(fn (mut this.x) v)`
@@ -500,7 +500,7 @@ is reused otherwise (chapter 07 caching semantics).
 - Named arguments are ignored; extra positionals ignored.
 - *Note:* the old "mut cell" object (`{ value, update() }`) is not produced by `mut` itself; it
   appears in a classic component's `attrs` for *any* updatable argument (§6.5,
-  `mut-test.js:385-513`).
+  `mut-test.js:998-1126`).
 
 ### 2.12 `readonly` **[Legacy]**
 
@@ -511,8 +511,8 @@ is reused otherwise (chapter 07 caching semantics).
   *not updatable* (§2). If the argument is already non-updatable it is returned as-is. The
   result follows upstream changes but writes downstream (e.g. a classic child `set`ting the
   property) do not propagate upstream. Only the binding is protected — mutating properties of an
-  object value is still visible to all (tests `readonly-test.js:12-270`;
-  `mut-test.js:177-232` "{{readonly}} of a {{mut}} is converted into an immutable binding").
+  object value is still visible to all (tests `readonly-test.js:283-541`;
+  `mut-test.js:790-845` "{{readonly}} of a {{mut}} is converted into an immutable binding").
 
 ### 2.13 `each-in` (keyword) / `-each-in`
 
@@ -763,7 +763,7 @@ Paths with a free head and a tail (`{{foo.bar}}`) are compile-time errors in loo
 strict mode (e.g. `You attempted to render a path (\`{{hello.world}}\`), but hello was not in scope`,
 `custom-helper-test.js:38-52`). There is **no implicit-`this` fallback** in Ember 7: a free
 name never resolves to a property of `this` (RFC `rfcs/text/0308-deprecate-property-lookup-fallback.md`;
-test `curly-components-test.js:1274-1313` "lookup of component takes priority over property",
+test `curly-components-test.js:3568-3607` "lookup of component takes priority over property",
 "component without dash is looked up").
 
 ### 5.2 Components
@@ -826,7 +826,7 @@ execution (lazily, on first render of that block), not when the template module 
 **Dynamic string names.** `{{component this.name}}` / `(component "x")`: when the value is a
 non-empty string, it is resolved with `lookupComponent` at the time the value is (re)evaluated
 (`packages/@glimmer/runtime/lib/references/curry-value.ts:29-71`). **[Dev]** not found →
-the same "expected to be a component" error (`dynamic-components-test.js:552-572`). In strict
+the same "expected to be a component" error (`dynamic-components-test.js:476-496`). In strict
 mode a string value throws **[Dev]**
 `Attempted to resolve a dynamic component with a string definition, \`${value}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`
 
@@ -877,7 +877,7 @@ Strict-mode templates never consult the registry for free names; a free name tha
 lexically in scope nor a strict keyword is a compile-time error (§03) or, for names that reach
 the runtime as strict keywords, **[Dev]**
 `Attempted to resolve a <kind> in a strict mode template, but that value was not in scope: <name>`
-(`resolution.ts:425-454`; test `render-component-test.ts:991-1000`). A loose-mode component
+(`resolution.ts:425-454`; test `render-component-test.ts:1073-1082`). A loose-mode component
 invoked *from* a strict template still resolves through the owner passed down the tree
 (`render-component-test.ts:973-989`).
 
@@ -947,7 +947,7 @@ component = factory.create(props)        // untracked; init() runs, then `didRec
 So every named argument is reflected as an own property of the instance and available as
 `this.k`, `{{this.k}}`, `{{@k}}`, and `this.attrs.k` (value or mutable cell; *[Legacy]*
 `{{this.attrs.k}}` in templates is rewritten to `@k`, §1.4(4)). Tests
-`curly-components-test.js:724-777,1554-1596`.
+`curly-components-test.js:3018-3071,3848-3890`.
 
 **Updates** (`curly.ts:442-473`). When the component's update hook runs and the tracked
 computation that read the argument values is invalid (any argument changed):
@@ -967,7 +967,7 @@ In priority order (`curly.ts:146-173`; `packages/@glimmer/program/lib/constants.
 
 1. A template associated with the class via `setComponentTemplate` (colocated `.hbs`, template
    tag, or explicit) — inherited through the class hierarchy
-   (`component-template-test.js:77-107`). Determined once per definition; `layout` is ignored
+   (`component-template-test.js:103-133`). Determined once per definition; `layout` is ignored
    in this case.
 2. Otherwise the instance's `layout` property, if it is a template factory (a function).
 3. Otherwise, if `layoutName` is set, `owner.lookup("template:" + layoutName)`; **[Dev]**
@@ -976,7 +976,7 @@ In priority order (`curly.ts:146-173`; `packages/@glimmer/program/lib/constants.
    (`packages/@glimmer/program/lib/util/default-template.ts:7`).
 
 `layout`/`layoutName` are read per instance at render time (dynamic layout); both are
-**[Legacy]**. A `template` property on the class is ignored (`curly-components-test.js:2000-2041`).
+**[Legacy]**. A `template` property on the class is ignored (`curly-components-test.js:4294-4335`).
 
 ### 6.3 The wrapper element
 
@@ -986,7 +986,7 @@ form) and element modifiers are applied to that element (the "attribute hook", �
 
 - **Tag name**: `component.tagName || 'div'` (`curly.ts:175-183`). `tagName` may be passed as an
   argument (`{{foo-bar tagName="span"}}`), set in the class or in `init`
-  (`curly-components-test.js:270-343`). **[Dev]** `tagName` may not be a computed property
+  (`curly-components-test.js:2564-2637`). **[Dev]** `tagName` may not be a computed property
   (`component.ts:986-989`). It is read once when the element is created; later changes are
   ignored.
 - **Tagless** (`tagName === ''`): no element. **[Dev]** assertions
@@ -1009,10 +1009,10 @@ form) and element modifiers are applied to that element (the "attribute hook", �
   4. Each `classNameBindings` entry (§6.4).
   5. The static class `ember-view`.
   6. If `'ariaRole' in component`: attribute `role` bound reactively to `this.ariaRole`
-     (absent when `null`/`undefined`; `curly-components-test.js:1916-1999`).
+     (absent when `null`/`undefined`; `curly-components-test.js:4210-4293`).
 - **elementId**: if not provided and the component is not tagless, `init` sets
   `elementId = guidFor(this)` (`component.ts:991-993`). It is not reactive: changing the bound
-  `id`/`elementId` argument later does not change the DOM (`curly-components-test.js:52-166`).
+  `id`/`elementId` argument later does not change the DOM (`curly-components-test.js:2346-2460`).
   **[Dev]** after insertion, setting a different `elementId` throws
   `Changing a view's elementId after creation is not allowed`
   (`packages/@ember/-internals/views/lib/views/states.ts:66-94`). **[Dev]** `elementId` may
@@ -1073,23 +1073,23 @@ updatable (§2) (paths, `mut`, `get`, `hash` children …), not only `mut`:
   (`set`, `this.set`, tracked/`notifyPropertyChange`), and the component is not currently
   receiving attrs (§6.1 update), and `k` is an updatable named argument,
   the new value is written to that argument (`component.ts:1039-1050`). This propagates
-  through intermediate classic components (`mut-test.js:13-120, 144-175`,
-  `curly-components-test.js:2900-3113`).
-- `this.attrs.k.update(v)` (mutable cell) writes `v` upstream (`mut-test.js:385-513`).
+  through intermediate classic components (`mut-test.js:626-733,757-788`,
+  `curly-components-test.js:5194-5407`).
+- `this.attrs.k.update(v)` (mutable cell) writes `v` upstream (`mut-test.js:998-1126`).
 - `readonly` breaks the chain upward (§2.12).
 - Literal/helper-result arguments are not updatable; setting the property only changes the
-  local property ("tolerate constant inputs", `mut-test.js:465-513`).
+  local property ("tolerate constant inputs", `mut-test.js:1078-1126`).
 - Glimmer components (`@glimmer/component`) receive no such behaviour — arguments are
   read-only (§06).
 
 ### 6.6 `this`, blocks and `{{yield}}`
 
 - Inside the component's template `this` is the component instance; `{{this}}` renders its
-  `toString()` (`curly-components-test.js:3589-3643`).
+  `toString()` (`curly-components-test.js:5883-5937`).
 - A block passed to the component (`{{#foo-bar}}…{{/foo-bar}}`) is evaluated with the
   *caller's* `this` and scope ("it preserves the outer context when yielding",
-  `:827-849`); `{{yield a b}}` passes block params; `{{yield to="inverse"}}` renders the
-  `{{else}}` block; `(has-block)`/`(has-block-params)` work as in §05 (`:2043-2510`).
+  `:3121-3143`); `{{yield a b}}` passes block params; `{{yield to="inverse"}}` renders the
+  `{{else}}` block; `(has-block)`/`(has-block-params)` work as in §05 (`:4337-4804`).
 - `@component` or other `@`-names that are not passed are `undefined`.
 
 ### 6.7 Lifecycle hooks
@@ -1097,7 +1097,7 @@ updatable (§2) (paths, `mut`, `get`, `hash` children …), not only `mut`:
 Hooks are methods on the instance and are also sent as Evented events (so `on('didInsertElement', …)`
 listeners fire first, then the method; `packages/@ember/-internals/views/lib/views/core-view-utils.ts:4-10`).
 Hook invocations are not tracked (reads inside hooks do not become dependencies of the
-render; `curly-components-test.js:3808-3882`).
+render; `curly-components-test.js:6102-6176`).
 
 **"Interactive"** means the renderer's environment is interactive (browser, not FastBoot/SSR
 serialization). Hooks marked (I) fire only when interactive.
@@ -1116,7 +1116,7 @@ siblings in document order):
                (I) state → inDOM; didInsertElement; didRender
 ```
 
-Test: `life-cycle-test.js:305-420, 538-640` (the exact sequence including `on(init)`).
+Test: `life-cycle-test.js:1946-2061,2179-2281` (the exact sequence including `on(init)`).
 Non-interactive environments get only `init`, `on(init)`, `didReceiveAttrs` (and on update
 `didUpdateAttrs`, `didReceiveAttrs`).
 
@@ -1138,8 +1138,8 @@ private "dirty" storage (invalidated by `rerender()`):
   region is invalid, even when no argument changed (§06-8.5). Because the region includes
   descendants, calling `rerender()` on a component also runs
   `willUpdate/willRender/didUpdate/didRender` on **every ancestor classic component** (not
-  descendants): `life-cycle-test.js:380-470`. Changing an argument used only by the top
-  component runs hooks only on that component (`:470-501`). This ancestor behavior is
+  descendants): `life-cycle-test.js:2021-2111`. Changing an argument used only by the top
+  component runs hooks only on that component (`:2111-2142`). This ancestor behavior is
   required, for the same reason as `updateComponent`'s coarse granularity (§06-4.4): these
   hooks exist for older component patterns that depend on it. An implementation with
   finer-grained invalidation MUST still run them on every ancestor classic component.
@@ -1166,12 +1166,12 @@ later (runloop 'destroy' queue):
 ```
 
 (`packages/@ember/object/core.ts:300-301`, `packages/@ember/-internals/glimmer/lib/component.ts:1596-1600`;
-§06-10.2 gives the queue mapping.) Test: `life-cycle-test.js:502-534` — the full order for three nested components is
+§06-10.2 gives the queue mapping.) Test: `life-cycle-test.js:2143-2175` — the full order for three nested components is
 `top.willDestroyElement, top.willClearRender, middle.willDestroyElement, middle.willClearRender,
 bottom.willDestroyElement, bottom.willClearRender, top.didDestroyElement, middle.didDestroyElement,
 bottom.didDestroyElement, top.willDestroy, middle.willDestroy, bottom.willDestroy`.
 
-Setting properties in `willDestroyElement` must not assert (`curly-components-test.js:3322-3347`).
+Setting properties in `willDestroyElement` must not assert (`curly-components-test.js:5616-5641`).
 
 ### 6.8 Element access and view hierarchy
 
@@ -1429,7 +1429,7 @@ the lexically enclosing template's `@outlet` argument. `@outlet` is supplied by 
 machinery to each route template (below). Therefore:
 
 - `{{outlet}}` is meaningful only in a route template (or in a block lexically inside one,
-  e.g. passed to a classic component: `utils-test.js:118-132`). In an ordinary component's
+  e.g. passed to a classic component: `utils-test.js:512-526`). In an ordinary component's
   own template `@outlet` is not supplied and nothing renders (see Q2).
 - A block param named `outlet` shadows it (`refinements-test.js:19-21`).
 
@@ -1560,11 +1560,11 @@ DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:228-
   are removed afterwards; if none remain the renderer is deregistered. The renderer records the
   "last validated" point in the reactivity timeline.
 - A renderer is *valid* iff it is destroyed, has no roots, or no tracked storage has changed
-  since its last validated point (the renderer's own `isValid` method, `base-renderer.ts:374-378`;
+  since its last validated point (the renderer's own `isValid` method, `base-renderer.ts:393-395`;
   not the **[Proposed]** `isValid` of §07-2.2.3).
 - **[Dev]** If a render throws, that root's render function is replaced by one that only logs
   `Attempted to rerender, but the Ember application has had an unrecoverable error occur during render. You should reload the application after fixing the cause of the error.`
-  (`errorLoopTransaction`, `base-renderer.ts:43-67`); the renderer is marked validated so it
+  (`errorLoopTransaction`, `base-renderer.ts:71-93`); the renderer is marked validated so it
   does not immediately retry.
 
 ### 9.2 Scheduling (Backburner run loop)
@@ -1763,7 +1763,7 @@ Source `lib/utils/string.ts:40-225`.
 - `isTrustedHTML(v)` (alias `isHTMLSafe`): `v !== null && typeof v === 'object' && typeof v.toHTML === 'function'`
   — duck-typed, so any object with a `toHTML` method is treated as trusted by the runtime.
 - In content position (`{{v}}`) a trusted value is inserted as HTML (parsed), not text
-  (`curly-components-test.js:1164-1197`); in attribute position its `toString()` is used; as a
+  (`curly-components-test.js:3458-3491`); in attribute position its `toString()` is used; as a
   `style` value it suppresses the XSS warning; it is falsy iff its string is empty (§10.1).
   Chapter 05 defines the insertion semantics.
 
@@ -1814,8 +1814,8 @@ loop while target is an Element:
 ```
 
 So handlers bubble through ancestor classic components' elements (including form elements,
-`event-dispatcher-test.js:198-219`), returning `false` stops and prevents default, and
-handlers run inside a run loop (`:362-396`).
+`event-dispatcher-test.js:620-641`), returning `false` stops and prevents default, and
+handlers run inside a run loop (`:784-818`).
 
 ---
 
@@ -1866,7 +1866,7 @@ where the outlet renders as an empty comment. Whether to restore the dynamically
 behavior is open.
 
 **Q4. `element` with `null`/`undefined`.** The public docs say "When `@tagName` is `null` or
-`undefined`, nothing is rendered" (`packages/@ember/helper/index.ts:674-675`), but the
+`undefined`, nothing is rendered" (`packages/@ember/helper/index.ts:701-702`), but the
 implementation asserts in DEBUG (tests `element-test.js:27-56` expect a throw). In production,
 `null` produces a definition whose tag is `null`, which renders the block *without* a
 wrapper (same as `""`), not nothing. The three behaviours disagree.

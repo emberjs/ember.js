@@ -51,7 +51,7 @@ setModifierManager (factory: (owner) => ModifierManager, definition: T): T  // @
 
 Source: `packages/@glimmer/manager/lib/public/api.ts:16-35`. Ember re-exports these from
 `packages/@ember/-internals/glimmer/lib/utils/managers.ts:18-23`,
-`packages/@ember/helper/index.ts:274`, and `packages/@ember/modifier/index.ts:10-13`.
+`packages/@ember/helper/index.ts:274`, and `packages/@ember/modifier/index.ts:141-144`.
 
 Each setter returns its `definition` argument unchanged, so it can be used as an
 expression, for example `export default setComponentManager(f, class {})`.
@@ -899,7 +899,7 @@ element through `...attributes` (`05-runtime-semantics.md`).
 `isInteractive: false`), the modifier is **not created at all**. No hook is called and no
 argument is evaluated (`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:166-170,214-216`).
 Tests: `packages/@ember/-internals/glimmer/tests/integration/custom-modifier-manager-test.js:586-643`,
-and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:333`.
+and the `on` equivalent in `packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:411`.
 
 **Interactive environments:**
 
@@ -1389,7 +1389,7 @@ When a block is torn down:
 
 `destroy(block)` is called and the block's DOM is cleared **after** `destroy()` returns. So
 eager destructors, such as classic `willDestroyElement`, run while the DOM is still
-attached (tested, `life-cycle-test.js:1429-1587`), and deferred ones run after it is detached
+attached (tested, `life-cycle-test.js:3070-3228`), and deferred ones run after it is detached
 (verified by experiment, T9b; §05-11.2).
 
 ---
@@ -1430,7 +1430,7 @@ Installs run child-first and updates run parent-first. This section is the owner
 commit-phase order. §05-1.4 and §07-1.10 refer to it.
 
 Test status: the child-first order of creation and update hooks is pinned for classic
-components (`life-cycle-test.js:305-537`: `didInsertElement`/`didRender` bottom → top, `didUpdate`
+components (`life-cycle-test.js:1946-2178`: `didInsertElement`/`didRender` bottom → top, `didUpdate`
 bottom → top), and the child-first order of modifier installs by
 `packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-458`. The hook
 order across a tree of public-manager components was observed by experiment (T9b; the hook list in §05-7.4 is

@@ -15,7 +15,7 @@ Author rulings in `5740b4aeb7` (inline notes under §09-9.8):
 
 ## A. Citation refresh (agent; chapters 01–08 only)
 
-- [ ] A1. `python3 spec/tools/remap-citations.py 675744ab35 9bec1cb2a8 --apply`; record the count.
+- [x] A1. `python3 spec/tools/remap-citations.py 675744ab35 9bec1cb2a8 --apply`; record the count.
 - [ ] A2. Resolve every FLAG line by hand (44; list in the run's output), and every citation to a
       file that moved (e.g. `components/{ => classic}/…`, tests split out of `life-cycle-test.js`).
 - [ ] A3. `check-citations.py` clean.
@@ -43,3 +43,6 @@ Author rulings in `5740b4aeb7` (inline notes under §09-9.8):
 - [ ] C3. STATUS decisions + task row; `xref.py`/`check-citations.py` clean.
 
 ## Notes
+
+- A1: remap-citations moved 122 citations (44 FLAGs left for A2). The tool also moved one citation in
+  `09-conformance-testing.md` (C14, `abstract.ts:17-27` -> `18-28`), committed with A1.

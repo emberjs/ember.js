@@ -815,7 +815,7 @@ resolveStatic(position, [op, n]):
 (`resolution.ts:83-454`.) The exact **[Dev]** messages that tests assert on are:
 
 - ``Attempted to resolve `${name}`, which was expected to be a component, but nothing was found.``
-  (`resolution.ts:134-136`; asserted in `packages/@ember/-internals/glimmer/tests/integration/components/dynamic-components-test.js:560`)
+  (`resolution.ts:134-136`; asserted in `packages/@ember/-internals/glimmer/tests/integration/components/dynamic-components-test.js:484`)
 - ``Attempted to resolve `${name}`, which was expected to be a helper, but nothing was found.`` (`resolution.ts:181-183`)
 - ``Attempted to resolve `${name}`, which was expected to be a modifier, but nothing was found.`` (`resolution.ts:244-246`; `custom-helper-test.js:495`)
 - ``Attempted to resolve `${name}`, which was expected to be a component or helper, but nothing was found.``
