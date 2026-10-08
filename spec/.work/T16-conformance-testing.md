@@ -24,7 +24,7 @@ Output: `spec/09-conformance-testing.md`, plus survey data in `spec/.work/T16-*.
 - [ ] B. Coupling survey (Sonnet agent) → `.work/T16-coupling.md`: per test file in the
       template-relevant packages, the non-spec details it relies on, by category, with a
       portability class.
-- [ ] C. Spec coverage scan (script `tools/test-coverage.py`) → `.work/T16-coverage.md`:
+- [x] C. Spec coverage scan (script `tools/test-coverage.py`) → `.work/T16-coverage.md`:
       sections with no test citation, plus every existing "untested"/"by experiment" marker.
 - [ ] D. Write `spec/09-conformance-testing.md`: scope, test tiers, adapter interface, coupling
       catalogue with refactor actions, coverage gaps by reference, ordered work plan.
