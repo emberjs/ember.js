@@ -16,6 +16,7 @@ standard library, and Node probes need the repo built (`pnpm build`).
 | `probe-parser.mjs`, `probe-parser-locs.mjs` | Run the built `@glimmer/syntax` (`packages/@glimmer/syntax/dist/es`) on probe inputs (§02). |
 | `probe-precompile.mjs '<template>' ...` | Runs the built `ember-template-compiler` (`dist/dev`) `precompile` on each argument (§03, §04, §08). |
 | `w2-baseline-parse.py` | Parses a testem tap log (with source-chunk suffixes, recipe in its docstring) into `.work/W2-baseline*.tsv` (W2). |
+| `w2-coverage-diff.py RUN.tap [BASELINE.tsv] [LEDGER.md]` | W2 exit check: per-test diff of a full run against `.work/W2-baseline-tests.tsv`; pairs same-name missing/new tests as moves and looks every other name up in `.work/W2-coverage-ledger.md`. Prints unmatched names both ways (exit 1 if any). |
 
 `check-citations.py` and `check-citation-semantics.py` hard-code the sibling-repo root
 `/Users/edward/hacking`. Edit `HACK` at the top if your checkout lives elsewhere.

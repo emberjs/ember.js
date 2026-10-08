@@ -599,8 +599,34 @@ keyword" went in 5.3b).
       in `lib/suites/component-invocation.ts`). Module names change from `Components :: Glimmerish >`/`Components ::
       Emberish >` to `Components :: Glimmer >`/`Components :: Invocation >` (renames, see 8.3). Full suite after the
       rename 9013 / 8995 / 0 / 18; `type-check:internals` clean.
-- [ ] 8.3 Coverage diff: the ledger accounts for every removed test; whole suite green;
+- [x] 8.3 Coverage diff: the ledger accounts for every removed test; whole suite green;
       counts compared with the baseline.
+      Done (2026-10-08). Clean build + full suite (`full8b`, worktree `246792a82d`): **9014 total / 8996 pass / 0 fail /
+      18 skip** (baseline 9541 / 9523 / 0 / 18); greps for `Expected assert.verifySteps`, `Expected N assertions`,
+      `afterEach failed`, `NAMESPACES`, `already been resolved`: 0. New tool `spec/tools/w2-coverage-diff.py` (README
+      line): per-test diff against `W2-baseline-tests.tsv`, pairs missing/new tests with the same leaf name as moves,
+      looks every other name up in the ledger. Result: 694 missing, 167 new; 101 moves/renames (42 `Components ::
+      Glimmerish` -> `Glimmer` and 6 `Emberish` -> `Invocation` from the 8.2 rename; the 5.5b `#in-element (VM)` moves;
+      the 4.3 ports to `[components]`; the 7.1c/7.1d/7.1e moves into EG modules); of the other 593 missing, 561 match a
+      ledger row (Curly/Dynamic registrations only against rows that say Curly or Dynamic) and 32 are the grouped 4.4
+      row "33 tests inherited from AttributesTests" (the tool checks each still runs under another module); of the
+      other 66 new, all 66 match a port/move row. Unmatched after resolution: 0 in both directions. The 90 + 3 "weak"
+      (short-name) matches were checked by hand against the row's module. Resolved on the way: (1) new EG test
+      `AngleBracket Invocation (classic component) › it can yield to a named block` (4.2, `f76a25d5ce`) had no row:
+      added as the classic twin in the 4.1 `yields named block` row, which also resolves that row's `unsure`
+      (Finding 4). (2) Legacy-profile audit of every removed curly/classic row whose twin is not a classic component
+      (`deleted (twin)`/`drop` rows of 2.4, 4.1, 4.3, 4.4; 44 rows): all are keyword- or VM-level behaviors with a twin
+      of the same template shape, or fake-only (`targetObject`, `fromDynamicScope`, `attributeBindings=['class']`,
+      `recompute()`, the curly/dynamic string-builder tests), except 4.1 `has-block (content, else) when else supplied`:
+      no test anywhere pinned content-position `{{has-block "inverse"}}` with a curly `{{else}}` (it had no Glimmer
+      registration either). Ported: `EG/components/curly-components-test.js › (has-block "inverse") in content
+      position` (code `246792a82d`, +1 test; row annotated). (3) Every `unsure` row has a resolution or a note: 2.3
+      owner rows (kept, Finding 1), 2.4 rows 61/66/67/74 (ported or explained, 6.2 re-check), 4.1 rows 105/112 (Finding 3
+      observed), 111 and 132 (above), the rehydrating `{{component}}` rows 187-199 (two representative tests ported in
+      5.6), and the 7.1 kept rows (partial-overlap notes; nothing removed). Count arithmetic: 9013 after 7.1 + 1 (the
+      has-block port) = 9014; renames change no count. Lint: `pnpm type-check:internals` clean; `pnpm lint`: eslint
+      and docs clean, prettier fails only on the two untracked local testem configs (`testem.filter.cjs`,
+      `testem.map.cjs`, never committed); prettier and eslint over the 101 files of `git diff origin/main` clean.
 - [ ] 8.4 Update §09 (C1, C2, C6, C18 rows; §9.7 W2 state) and STATUS.
 
 ### W5 classification list
