@@ -42,6 +42,7 @@
   "devDependencies": {
     "@ember/-internals": "workspace:*",
     "@ember/component": "workspace:*",
+    "@ember/debug": "workspace:*",
     "@ember/destroyable": "workspace:*",
     "@ember/reactive": "workspace:*",
     "@ember/renderer": "workspace:*",

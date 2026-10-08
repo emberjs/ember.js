@@ -154,8 +154,8 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
           throw error;
         } finally {
           // destroy this iteration's render before its DOM is replaced
-          let handle = this.renderResult;
-          this.renderResult = null;
+          let handle = this.handle;
+          this.handle = null;
           if (handle) run(() => handle.destroy());
 
           // reset the HTML
@@ -204,11 +204,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
     // the same tracked object the server render got (see `trackedContext`), so that writes through
     // `this.context` are tracked
     this.context = trackedContext(context);
-    this.renderResult = this.delegate.renderClientSide(
-      template as string,
-      this.context,
-      this.element
-    );
+    this.handle = this.delegate.renderClientSide(template as string, this.context, this.element);
   }
 
   assertExactServerOutput(_expected: string) {
@@ -257,7 +253,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
   declare protected delegate: PartialRehydrationDelegate;
 
   renderClientSide(componentName: string, args: Dict): void {
-    this.renderResult = this.delegate.renderComponentClientSide(componentName, args, this.element);
+    this.handle = this.delegate.renderComponentClientSide(componentName, args, this.element);
   }
 
   @test

@@ -24,7 +24,7 @@ import type { ComponentKind } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
-import type { RenderDelegateOptions, RenderHandle } from '../../render-delegate';
+import type { DebugBounds, RenderDelegateOptions, RenderHandle } from '../../render-delegate';
 import type { DebugRehydrateTree } from './builder';
 
 import { preprocess } from '../../compile';
@@ -36,7 +36,7 @@ import {
   registerModifier,
 } from '../jit/register';
 import { createOwner, teardownOwners, type TestOwner } from '../owner';
-import { createRenderer } from '../renderer';
+import { boundsOf, createRenderer, handleWithBounds } from '../renderer';
 import { TemplateRootState } from '../template-root';
 import { debugRehydrateTree } from './builder';
 
@@ -127,6 +127,10 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.clientDoc.createDocumentFragment();
   }
 
+  debugBounds(handle: RenderHandle): DebugBounds {
+    return boundsOf(handle);
+  }
+
   getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
     if (cursor.element instanceof Node) {
       return debugRehydrateTree(env, cursor);
@@ -190,11 +194,13 @@ export class RehydrationDelegate implements RenderDelegate {
       clearedNodes: this.lastClientTree!.clearedNodes,
     };
 
-    return {
-      rerender: () => this.clientRenderer.rerender(),
-      destroy: () => root.destroy(),
-      debugBounds: () => root.result!,
-    };
+    return handleWithBounds(
+      {
+        rerender: () => this.clientRenderer.rerender(),
+        destroy: () => root.destroy(),
+      },
+      () => root.result!
+    );
   }
 
   renderTemplate(

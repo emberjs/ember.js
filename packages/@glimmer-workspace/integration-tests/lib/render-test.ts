@@ -60,7 +60,7 @@ export class RenderTest implements IRenderTest {
   // Every write dirties the property, even of an equal value: tests mutate nested plain objects and
   // then `set` the same object again to signal the change (`rerender({ person })`).
   protected context: Dict = trackedObject<Dict>({}, { equals: () => false });
-  protected renderResult: Nullable<RenderHandle> = null;
+  protected handle: Nullable<RenderHandle> = null;
   private voidHandle: Nullable<RenderHandle> = null;
   protected helpers = dict<UserHelper>();
   protected snapshot: NodesSnapshot = [];
@@ -263,7 +263,7 @@ export class RenderTest implements IRenderTest {
     run(() => {
       this.setProperties(properties);
 
-      this.renderResult = this.delegate.renderTemplate(template, this.context, this.element, () =>
+      this.handle = this.delegate.renderTemplate(template, this.context, this.element, () =>
         this.takeSnapshot()
       );
     });
@@ -283,7 +283,7 @@ export class RenderTest implements IRenderTest {
     );
 
     run(() => {
-      this.renderResult = this.delegate.renderComponent!(component, args, this.element);
+      this.handle = this.delegate.renderComponent!(component, args, this.element);
     });
   }
 
@@ -302,14 +302,14 @@ export class RenderTest implements IRenderTest {
     run(() => {
       this.setProperties(properties);
 
-      let result = expect(this.renderResult, 'the test should call render() before rerender()');
+      let result = expect(this.handle, 'the test should call render() before rerender()');
 
       result.rerender();
     });
   }
 
   destroy(): void {
-    let result = expect(this.renderResult, 'the test should call render() before destroy()');
+    let result = expect(this.handle, 'the test should call render() before destroy()');
 
     run(() => {
       result.destroy();

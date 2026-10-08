@@ -1416,6 +1416,9 @@ importers:
       '@ember/component':
         specifier: workspace:*
         version: link:../../@ember/component
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../../@ember/debug
       '@ember/destroyable':
         specifier: workspace:*
         version: link:../../@ember/destroyable

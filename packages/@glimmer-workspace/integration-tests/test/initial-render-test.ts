@@ -53,11 +53,7 @@ class AbstractRehydrationTests extends InitialRenderSuite {
     // the same tracked object the server render got (see `trackedContext`), so that writes through
     // `this.context` are tracked
     this.context = trackedContext(context);
-    this.renderResult = this.delegate.renderClientSide(
-      template as string,
-      this.context,
-      this.element
-    );
+    this.handle = this.delegate.renderClientSide(template as string, this.context, this.element);
   }
 
   assertRehydrationStats({ nodesRemoved: nodes }: { nodesRemoved: number }) {

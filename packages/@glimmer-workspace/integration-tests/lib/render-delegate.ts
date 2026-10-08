@@ -1,16 +1,14 @@
 import type {
-  Cursor,
+  CapturedRenderNode,
   Dict,
   ElementNamespace,
-  Environment,
-  RenderResult,
+  Nullable,
   SimpleDocument,
   SimpleDocumentFragment,
   SimpleElement,
+  SimpleNode,
   SimpleText,
-  TreeBuilder,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
 import type { ASTPluginBuilder } from '@glimmer/syntax';
 
 import type { ComponentKind, ComponentTypes } from './components';
@@ -24,8 +22,12 @@ import type { UserHelper } from './helpers';
 export interface RenderHandle {
   rerender(): void;
   destroy(): void;
-  /** Implementation-only: the first and last node of the render, for `assertInvariants`. */
-  debugBounds?(): Pick<RenderResult, 'firstNode' | 'lastNode'>;
+}
+
+/** The first and last node of a render's output. */
+export interface DebugBounds {
+  firstNode(): Nullable<SimpleNode>;
+  lastNode(): Nullable<SimpleNode>;
 }
 
 export interface RenderDelegateOptions {
@@ -64,6 +66,10 @@ export default interface RenderDelegate {
   ): RenderHandle;
   /** Called after each test: release whatever the delegate registered globally. */
   teardown?(): void;
-  getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder;
-  getSelf(env: Environment, context: unknown): Reference;
+  /** Implementation-only: the bounds of a render's output, for `assertInvariants`. */
+  debugBounds?(handle: RenderHandle): DebugBounds;
+  /** Implementation-only: whether a captured argument is an argument-capture error. */
+  isArgumentCaptureError?(value: unknown): boolean;
+  /** The debug render tree of every live renderer (needs the `debugRenderTree` option). */
+  getCapturedRenderTree?(): CapturedRenderNode[];
 }

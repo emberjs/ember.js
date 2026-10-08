@@ -21,13 +21,14 @@ import { createConstRef } from '@glimmer/reference';
 import { clientBuilder, curry } from '@glimmer/runtime';
 import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
+import { captureRenderTree } from '@ember/debug';
 import { renderComponent } from '@ember/renderer';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
-import type { RenderDelegateOptions, RenderHandle } from '../../render-delegate';
+import type { DebugBounds, RenderDelegateOptions, RenderHandle } from '../../render-delegate';
 import type { TemplateRootState as TemplateRoot } from '../template-root';
 
 import { preprocess } from '../../compile';
@@ -38,7 +39,7 @@ import {
   registerModifier,
 } from './register';
 import { createOwner, teardownOwners, type TestOwner } from '../owner';
-import { createRenderer } from '../renderer';
+import { boundsOf, createRenderer, handleWithBounds } from '../renderer';
 import { TemplateRootState } from '../template-root';
 
 export class JitRenderDelegate implements RenderDelegate {
@@ -89,10 +90,15 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   getCapturedRenderTree(): CapturedRenderNode[] {
-    return expect(
-      this.context.env.debugRenderTree,
-      'Attempted to capture the DebugRenderTree during tests, but it was not created. Did you enable it in the environment?'
-    ).capture();
+    return captureRenderTree(this.owner);
+  }
+
+  debugBounds(handle: RenderHandle): DebugBounds {
+    return boundsOf(handle);
+  }
+
+  isArgumentCaptureError(value: unknown): boolean {
+    return this.context.env.isArgumentCaptureError?.(value) ?? false;
   }
 
   getInitialElement(): SimpleElement {
@@ -207,11 +213,13 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   private handleFor(root: TemplateRoot): RenderHandle {
-    return {
-      rerender: () => this.renderer.rerender(),
-      destroy: () => root.destroy(),
-      debugBounds: () => expect(root.result, 'the template has rendered'),
-    };
+    return handleWithBounds(
+      {
+        rerender: () => this.renderer.rerender(),
+        destroy: () => root.destroy(),
+      },
+      () => expect(root.result, 'the template has rendered')
+    );
   }
 
   private get precompileOptions(): PrecompileOptions {
