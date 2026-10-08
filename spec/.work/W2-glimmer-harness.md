@@ -520,7 +520,7 @@ keyword" went in 5.3b).
 ## 6. Remaining stubs (step 6)
 
 - [x] 6.1 (done, see notes) `style-warnings-test.ts` → Ember harness with `expectWarning`.
-- [ ] 6.2 `PositionalComponent` users → real classic components with `positionalParams`; delete
+- [x] 6.2 (done, see notes) `PositionalComponent` users → real classic components with `positionalParams`; delete
       `tests/utils/positional-component.js`.
       Then re-check every ledger row whose twin runs on `PositionalComponent` (grep the ledger
       for the twin files; e.g. `curly-components-test.js:861`): the twin must now be a real
@@ -576,6 +576,10 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
 7. (5.1) **Serialize mode interactivity.** FastBoot serializes non-interactive; the Glimmer SSR
    suites always serialized with `isInteractive: true` (kept so in W2). Which is normative for
    the SSR profile? (§09-9.4.2 proposed edit 3; §05-13.)
+8. (6.2) **Classic components have no args at construction time.** A test that read the positional param in the constructor of the former
+   `PositionalComponent` (contextual-components-test 'renders with dot path and rest parameter does not leak') sees `undefined` on a real classic
+   `Component`: positional and named args are assigned as properties after the constructor and before `init()`. A glimmer `Component` has `this.args`
+   in the constructor. Owner: §08 (classic component lifecycle). Not a behavior change of the feature under test (the value is right at `init`).
 
 ## Notes
 
@@ -872,3 +876,11 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `warnIfStyleNotTrusted`); IT file deleted (5.4a's `scheduleRevalidate` workaround went with it). Ledger: 5 rows (`6.1 rows`). Counts: 9114 -> 9113
   total / 9095 pass / 0 fail / 18 skip; per-test diff against `full56`: 5 missing (the 5 rows), 4 new (the 4 ports); greps 0. type-check, prettier,
   eslint (content-test.js) clean.
+- 6.2 (2026-10-08): code `545a412a29`. 26 sites in 4 EG files (contextual 14, dynamic 6, curly 5, angle-bracket 1) went from `PositionalComponent` to `class extends ClassicComponent`
+  (`import ClassicComponent from '@ember/component'`, `static positionalParams` as before); `tests/utils/positional-component.js` deleted. No `tagName`
+  change was needed (all those tests assert text). One difference: 'renders with dot path and rest parameter does not leak' read `this.value` in the
+  constructor, which a classic component does not have yet (props are assigned after construction); it now reads it in `init()`, same expectation (see Finding 8).
+  Everything else passed unchanged: 0 failures in the first run apart from that one. Re-check: 9 ledger rows (42, 43, 45, 49, 50, 53, 55, 61, 62 of the
+  ledger) cited a twin that ran on the stub; each now cites a twin that runs on a real classic `Component` (note `6.2 re-check` in the row); the citation
+  `contextual-components-test.js:367` in the 'curry arguments' row never used the stub. Counts: 9113 / 9095 / 0 / 18, per-test diff against `full61`: 0
+  missing, 0 new; greps 0; type-check, prettier, eslint clean.
