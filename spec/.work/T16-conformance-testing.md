@@ -26,7 +26,7 @@ Output: `spec/09-conformance-testing.md`, plus survey data in `spec/.work/T16-*.
       portability class.
 - [x] C. Spec coverage scan (script `tools/test-coverage.py`) → `.work/T16-coverage.md`:
       sections with no test citation, plus every existing "untested"/"by experiment" marker.
-- [ ] D. Write `spec/09-conformance-testing.md`: scope, test tiers, adapter interface, coupling
+- [x] D. Write `spec/09-conformance-testing.md`: scope, test tiers, adapter interface, coupling
       catalogue with refactor actions, coverage gaps by reference, ordered work plan.
 - [ ] E. Wire it in: §00 chapter table/reading guide, CONVENTIONS chapter table, STATUS (task
       row, next steps), `xref.py` and `check-citations.py` clean.
