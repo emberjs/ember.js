@@ -102,10 +102,10 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 
 ## 5. Real environment, resolver and renderer (step 5; C1, C2)
 
-- [ ] 5.1 Design (Opus): the `RenderDelegate` API additions `set`/`rerender`/`destroy`, the
+- [x] 5.1 Design (Opus): the `RenderDelegate` API additions `set`/`rerender`/`destroy`, the
       `RenderHandle` that replaces `RenderResult` in tests, the tracked test context, and how
       the delegate uses Ember's `EmberEnvironmentDelegate`, resolver/owner and renderer. Write
-      it into this file as sub-items before coding. Design drafted; awaiting review (see "5.1
+      it into this file as sub-items before coding. Design drafted; reviewed and approved 2026-10-08 (see "5.1 review") (see "5.1
       design" below; sub-items 5.2a–5.6 replace the old 5.2–5.5).
 
 ### 5.1 design
@@ -364,6 +364,20 @@ TAP for `Expected assert.verifySteps`, `Expected N assertions`, `afterEach faile
 9. T17 §1.4 is wrong that `BaseEnv` drains real destroy queues: they had no callers (fix the
    C18 row's wording).
 
+### 5.1 review (Opus, 2026-10-08)
+
+Approved as written. Decisions:
+- Client rendering through Ember's `BaseRenderer` + public `renderComponent` (seam A path) is
+  accepted; the loose-template root stays inside `lib/modes/`.
+- 5.3b may drop `strict-mode-test.ts` › "Non-native keyword" as an implementation test (compiler
+  `keywords` option + `$keyword.` resolver lookup; no Ember API). Ledger it as
+  `kept → implementation test (W5)` if it can stay in a W5-classified file, else `drop
+  (implementation)`. The 8 `hash` overrides are ledgered as `drop (fake-only)` (Ember refuses
+  to override a built-in helper).
+- Proposed §09 edit 8 (exempt W1/W5 implementation-test files from the import-boundary exit
+  criterion) is adopted for 8.1: list each exempt file with its reason in the 8.1 note. Edits
+  1, 4–7 and 9 are applied at 8.4. Edits 2 and 3 need the author: added as findings 6 and 7.
+
 ### 5.2–5.6 sub-items
 
 Dependencies: add each newly imported package to IT's `package.json` (and the matching
@@ -519,6 +533,14 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
    keys such as `myKeyword`; real Ember allows only `outletState` (`EG/syntax/with-dynamic-var-test.js`).
    So the VM supports a general dynamic scope that Ember's template language does not expose; no
    change, noted for the dynamic-scope open question.
+
+6. (5.1) **Legacy-profile `this` at the top level.** §09 `renderTemplate` has no public Ember
+   equivalent. The Glimmer harness renders a loose template with an arbitrary `self` through an
+   internal root; the Ember harness renders a `-top-level` classic component, so `this` differs.
+   Which does the Legacy profile mean? (§09-9.4.2 proposed edit 2.)
+7. (5.1) **Serialize mode interactivity.** FastBoot serializes non-interactive; the Glimmer SSR
+   suites always serialized with `isInteractive: true` (kept so in W2). Which is normative for
+   the SSR profile? (§09-9.4.2 proposed edit 3; §05-13.)
 
 ## Notes
 
