@@ -78,12 +78,12 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 
 ## 3. Public-manager helpers and modifiers (step 3; C6)
 
-- [ ] 3.1 Port `registerHelper` call sites to `defineSimpleHelper` (about 55 sites).
-- [ ] 3.2 Port `registerModifier`/`registerInternalModifier` sites to `defineSimpleModifier` or a
-      class with `setModifierManager`; `modifiers-test.ts` (17) is ported, not deleted.
-- [ ] 3.3 Rewrite the 6 `registerInternalHelper` uses in `updating-test.ts` as plain helpers
-      (keep 1–2 destroyable cases as `@glimmer/destroyable` unit tests if needed).
-- [ ] 3.4 Delete `TestModifierManager`, `createHelperRef`, `registerInternalModifier`, and
+- [x] 3.1 Port `registerHelper` call sites to `defineSimpleHelper` (about 55 sites). Done at the harness level, see notes.
+- [x] 3.2 Port `registerModifier`/`registerInternalModifier` sites to `defineSimpleModifier` or a
+      class with `setModifierManager`; `modifiers-test.ts` (17) is ported, not deleted. Done, see notes.
+- [x] 3.3 Rewrite the 6 `registerInternalHelper` uses in `updating-test.ts` as plain helpers
+      (keep 1–2 destroyable cases as `@glimmer/destroyable` unit tests if needed). Done, none needed to be kept.
+- [x] 3.4 Delete `TestModifierManager`, `createHelperRef`, `registerInternalModifier`, and
       `registerInternalHelper` if unused.
 
 ## 4. Collapse the component fan-out (step 4; the big deletion)
@@ -218,3 +218,35 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   18; a per-test diff (module+name+chunk, dates normalised) shows exactly the 38 ledgered tests
   missing and the 1 port new. `type-check:internals` and prettier clean; eslint ignores IT files
   (the EG file is clean). Tooling in the scratchpad: `runfull.sh` (map.html + testem tap) and `cmp.py`.
+- 3.1-3.4 (2026-10-08, branch `test/w2-glimmer-harness`): commits `e8163f76b0` (3.1+3.2), `29e2f90191`
+  (3.3+3.4), `cce8d18557` (rename). Approach: no call site was edited (except the 6 in 3.3), the harness
+  was changed instead. 3.1: `IT/lib/helpers.ts` now has `defineUserHelper(fn)`, a `setHelperManager`
+  helper (`helperCapabilities('3.23', {hasValue})`) whose `getValue` calls `fn([...positional], {...named})`;
+  `registerHelper` registers that instead of `createHelperRef`/`setInternalHelperManager`. I did NOT route
+  through `defineSimpleHelper`: it spreads positional args and drops named args, and about 20 sites (the
+  `hash` overrides, `say-hello`, `testing` with a hash) read `named`; keeping the `(positional, named)`
+  signature means ~55 sites unchanged. Name-based registration on the fake resolver is kept until step 5.
+  `UserHelper` type stays. The EG `this.registerHelper` calls (~100) are the Ember harness's own, which
+  already uses real helpers; not touched. 3.2: `IT/lib/modifiers.ts` is now `defineTestModifier(Klass)`:
+  a `setModifierManager` 3.22 manager (`LegacyHookModifierManager`) mapping `didInsertElement` ->
+  `installModifier`, `didUpdate` -> `updateModifier`, `willDestroyElement` -> `destroyModifier`; the
+  definition is a named function so the default debug name is the class name, and the manager state is the
+  instance (the debug-render-tree test checks `instance`). No test needed adapting: the real manager also
+  updates only when consumed args change (the harness reads args eagerly in install/update), and
+  `modifiers-test.ts` (17), `updating-modifiers-test.ts`, `style-warnings-test.ts` etc. pass unchanged,
+  so they are "ported" by exercising the public manager. `registerInternalModifier` had no users; deleted.
+  3.3: the 6 `registerInternalHelper` tests are plain `registerHelper` (4 `const-foobar` tests) or
+  `TestHelper` subclasses (`destroy-me`, `stateful-foo`, the latter run by 5 tests; `TestHelper` is the
+  existing public-manager class in `define.ts`, `hasDestroyable`), registered through a new
+  `registerHelperDefinition(name, definition)` (delegates: jit, rehydration), replacing
+  `registerInternalHelper`. Destroy semantics are observed the same way (destructor count after
+  `destroy()`), no test kept as an implementation test. 3.4: deleted `createHelperRef`,
+  `registerInternalHelper` (+ delegate/RenderTest/interface methods), `registerInternalModifier`, the old
+  `TestModifierManager`/`TestModifierDefinitionState`/`TestModifier`. Remaining internal-ref use in IT, not
+  in scope here: `lib/components/emberish-curly.ts` (`createComputeRef`, `createConstRef`,
+  `reifyNamed/Positional`, goes in 4.4) and `createConstRef` for `self` in the jit and rehydration delegates
+  (step 5.4). No ledger rows: no test removed or changed in what it checks. Counts after: 9504 total /
+  9486 pass / 0 fail / 18 skip, equal to the after-step-2 totals (9541 - 38 + 1 = 9504; step 3 adds and
+  removes no test); `w2-baseline-parse`-style diff against `W2-baseline-tests.tsv`: exactly the same 38
+  missing and 1 new as after step 2. `type-check:internals` and prettier clean; eslint on IT shows only 3
+  pre-existing unused-var errors (`smokeTest`, `name`, `Owner`).
