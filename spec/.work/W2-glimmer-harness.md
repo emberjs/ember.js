@@ -386,7 +386,7 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
 `@ember/modifier`, `@ember/component`, `ember-template-compiler`. Check `vite build`,
 `type-check:internals`, prettier, eslint each time.
 
-- [ ] 5.2a Jit + node delegates on Ember's renderer (P2). In `lib/modes/`: new
+- [x] 5.2a (done, see notes) Jit + node delegates on Ember's renderer (P2). In `lib/modes/`: new
       `template-root.ts` (`TemplateRootState`, see design 1); `JitRenderDelegate` gets
       `owner = {}` (real owner in 5.3a) and a lazy `renderer` = `new BaseRenderer(owner,
       {isInteractive: true, hasDOM: true}, doc, new JitCompileTimeLookup(this.resolver),
@@ -402,7 +402,7 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
       `lib/modes/rehydration/` (the old `begin/commit` and `inTransaction` code, moved). Add
       `teardown()` (`_resetRenderers()`) and the `afterEach` hooks in `module.ts`. Expected:
       9111 / 9093 / 0 / 18, no per-test change.
-- [ ] 5.2b Rehydration delegates on Ember's renderer; delete `BaseEnv`. Client `BaseRenderer`
+- [x] 5.2b (done, see notes) Rehydration delegates on Ember's renderer; delete `BaseEnv`. Client `BaseRenderer`
       (client doc, `debugRehydrateTree` builder that records the last tree for
       `rehydrationStats`) and server `BaseRenderer` (server doc, `serializeBuilder`), separate
       `{}` owners; `renderServerSide`/`renderClientSide` through `TemplateRootState`, partial
@@ -672,3 +672,36 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   blocks, 4 has-block, 20 has-block-params, 1 yield) = 9111. Per-test diff against `W2-baseline-tests.tsv`: 509 missing (4 from 2.1/2.3 + 74 old
   `[curly ...]` tests: 34 step 2.4 twins + 40 ports + 38 input-range module: 5 ported + 33 inherited + 378 + 14 + 1; all matched to rows) and 79 new (all matched to ports); no unmatched
   names. `type-check:internals`, prettier, eslint (EG files) clean; eslint on IT shows only the pre-existing `Owner` unused import.
+- 5.2a (2026-10-08): code `5f76825492`. As designed (P2): `lib/modes/template-root.ts` (`TemplateRootState`), lazy
+  `JitRenderDelegate.renderer` (`BaseRenderer`, `owner = {}`, `_DEBUG_RENDER_TREE` around the constructor), templates through
+  `TemplateRootState`, components through public `renderComponent` with a `Cursor`; `RenderHandle` (`rerender`, `destroy`,
+  `debugBounds?`) in `lib/render-delegate.ts`; `RenderTest.rerender/destroy` use it (`inTransaction`, `destroy` imports gone);
+  `RenderDelegate.teardown?()` = `_resetRenderers()`, called through `RenderTest.teardownDelegate()` from `afterEach` in `suite()` and
+  from a `hooks.afterEach` in `componentModule()`. `updating-test` `assertInvariants` uses `debugBounds`, `in-element.ts:344` uses
+  `this.destroy()`. Rehydration got a temporary `legacyHandle` (deleted in 5.2b). Deviations: (1) the `dynamicScope` parameter is
+  dropped and the one test that used it ('supports passing in an initial dynamic context') is removed from `lib/suites/entry-point.ts`
+  (never registered, 0 tests run, the file goes in 5.4b). (2) `@ember/-internals` and `@ember/renderer` added to IT `devDependencies`
+  plus 6 `pnpm-lock.yaml` lines (`@ember/runloop` was already there; `@ember/debug` not needed yet). Full suite 9111 / 9093 / 0 / 18;
+  per-test diff against the P2 run: identical (7 name-only whitespace artifacts of the two logs' formats). No hit for `Expected
+  assert.verifySteps`, `Expected N assertions`, `afterEach failed`, `NAMESPACES`. `type-check:internals` and prettier clean.
+- 5.2b (2026-10-08): code `c562908ff0`. `RehydrationDelegate` has a client `BaseRenderer` (client doc, builder closure that stores the
+  last `DebugRehydrateTree` for `rehydrationStats`) and a server `BaseRenderer` (server doc, `serializeBuilder`), each with its own `{}`
+  owner, both through a new shared `createRenderer()` in `lib/modes/renderer.ts` (jit uses it too); templates through
+  `TemplateRootState`. Deleted: `legacyHandle`, `JitDelegateContext`, `lib/base-env.ts` + export, `lib/modes/jit/render.ts`.
+  `RenderDelegateOptions.env` is `debugRenderTree?: boolean` (`module.ts` options and the debug-render-tree suite follow);
+  `JitSerializationDelegate` moved into `lib/modes/node/env.ts` (still exported from the index); `resetTrackingTransaction()` is in
+  `lib/modes/env.ts`, called from `setup-harness.ts`. DEVIATION from the design (found by the first full run: 2 `chaos-partial-rehydration`
+  tests failed with "Rehydration with nextSibling not supported" and the run aborted at 6615 tests): public `renderComponent` replaces the
+  previous render into the same element by rendering *before its first node* (`replaceLastRender`, `LAST_RENDER_INTO` keyed by element),
+  which gives the rehydration builder a non-null `nextSibling`; the chaos tests render into one element once per iteration. So partial
+  rehydration on the client side calls `this.clientRenderer.render(component.state, { into: cursor, args })` (`BaseRenderer.render`, what
+  `renderComponent` itself uses, minus the replace/clear logic); server-side partial rendering uses the public `renderComponent` (fresh
+  element each time). Design 1's remark that public `renderComponent` into a Cursor is enough for rehydration is thus incomplete; the
+  §09 note (proposed edit 7 area) should say that `renderComponent` replaces earlier renders into the same element. Full suite
+  9111 / 9093 / 0 / 18; per-test diff against the 5.2a run: 0 missing, 0 new; same greps all zero. `type-check:internals`, prettier clean.
+  For 5.3a: the server `BaseRenderer`'s roots stay alive after `renderServerSide` (as the old VM results did, but now registered in
+  Ember's `renderers` until `teardown`'s `_resetRenderers()`); with a real owner, destroy both owners in `teardown()`. For 5.4a: the same
+  context object is passed to the server and the client render in the rehydration tests, so once it is a tracked object the server root
+  will also revalidate on writes; check that in `initial-render-test`/`chaos` (the server root could be destroyed after serialization if it
+  matters, but that would run server-side destructors, so avoid unless needed). The `RehydrationDelegate` now exposes `clientRenderer`,
+  `serverRenderer`, `clientOwner`, `serverOwner` (protected) instead of `clientContext`/`serverContext` (no test used them).
