@@ -20,7 +20,19 @@ Sources for this chapter (author's request of 2026-10-07, T16):
   `tools/test-coverage.py`, plus the gaps that the chapters already record.
 
 The counts below come from those surveys. They are based on grep and sampling, so they are
-approximate.
+approximate. The P/R/M/I classification (§9.3) was taken at upstream `675744ab35`; §9.3 item 6
+has the counts after the merge of upstream `9bec1cb2a8` (T17).
+
+**Author rulings of 2026-10-07** (commit `5740b4aeb7`, T17; the questions are in §9.8):
+
+- SSR markers are left to the implementation; there is no interoperable marker format (Q1).
+- [Dev] messages are matched verbatim, to be revisited only if a second implementation finds
+  that inordinately hard (Q3).
+- Tests move to `await settled()`; upstream has begun landing those refactors (Q4).
+- The suite stays in this repository. The new implementation is developed here too, and a
+  feature flag selects which implementation a test run uses (Q5).
+- Glimmer and Ember tests that exercise fake stubs of each other, a leftover from Glimmer's
+  separate repository, are flagged for elimination (Q6, §9.5 C18).
 
 ---
 
@@ -32,7 +44,9 @@ approximate.
 2. The conformance suite is the subset of ember.js's tests that checks behavior this
    specification makes normative, run through an **implementation adapter** (§9.4). It is not
    a separate test suite. The tests stay in ember.js, where they also keep checking the
-   current implementation, and the same files run against a new one through its adapter.
+   current implementation. The new implementation is developed in the same repository, and a
+   build-time feature flag selects which implementation a test run uses, so the same files
+   run against both (ruling Q5).
 3. Each conformance test names the specification sections it checks (§9.7, W8). A test that
    checks only behavior this specification leaves to the implementation is an
    **implementation test**. It stays in ember.js and is excluded from the conformance suite. It
@@ -54,11 +68,11 @@ which profiles it supports. The suite is organized so that each test belongs to 
 | Profile | Covers | Marker | Notes |
 |---|---|---|---|
 | **Core** | Strict-mode templates, runtime semantics, managers, reactivity (§01–§03 strict parts, §05 except §05-13, §06, §07) | — | Required |
-| **Dev** | Development-only assertions, deprecations, and their exact messages | **[Dev]** | Required. Messages are matched verbatim (§9.5, C16) |
+| **Dev** | Development-only assertions, deprecations, and their exact messages | **[Dev]** | Required. Messages are matched verbatim (ruling Q3; §9.5, C16) |
 | **Loose mode** | Resolution of free names through the owner, `{{foo}}` vs `this.foo` | **[Loose mode]** | Required for Ember compatibility |
 | **Legacy** | Classic components, `get`/`set` interop, curly invocation | **[Legacy]** | Required for Ember compatibility |
 | **Ember integration** | §08: owner and resolver, built-ins (`Input`, `LinkTo`, …), outlets, routing, engines, `renderComponent`, `renderSettled`, run-loop timing (§07-1.10) | — | Required for Ember. Partly depends on the run loop (§9.5, C11) |
-| **SSR** | Serialization and rehydration (§05-13), including the marker format of §05-13.1 | — | Open question Q1 (§9.8) |
+| **SSR** | Serialization and rehydration (§05-13). The marker format is implementation-defined (ruling Q1): tests check that the same implementation's server output, rehydrated, gives the client render's DOM and keeps the server's nodes, not marker strings | — | Required or optional: Q2 |
 | **Debug render tree** | `captureRenderTree` and the tree shape (§08-13) | **[Dev]** | Optional. Ember Inspector depends on it |
 | **Proposed** | The [Proposed] reactive core (§07-2) | **[Proposed]** | Only `spec/prototype/reactive/test.mjs` for now |
 
@@ -95,6 +109,30 @@ Facts an adapter has to work with (details and citations in `.work/T16-harness.m
    optional features and stable decorators (`.github/workflows/ci-jobs.yml`, `testem.cjs`). In a
    production build, `expectAssertion` degrades to `ok(true)` and `if (DEBUG)` tests are not
    defined.
+6. **App-style tests (new upstream, `9bec1cb2a8`).** ember-qunit is now in the test build
+   (a77fdba9b1), and `internal-test-helpers/lib/ember-dev/setup-test-helpers.js` gives each
+   test its own `Application` through `setApplication`. A test can be written as an app writes
+   it: `module`/`test` from `qunit`, `setupRenderingTest` from `ember-qunit`, `render` and
+   `settled` from `@ember/test-helpers`, and `<template>` in a `.gjs` file. The first such file
+   is `packages/@ember/-internals/glimmer/tests/integration/helpers/element-test.gjs`
+   (cab58a29a1). This form uses only public API and is asynchronous, so it is the target form
+   for the conformance suite (§9.4.3).
+
+   Counts across the merge (upstream `675744ab35` → `9bec1cb2a8`, template-relevant groups):
+
+   | Pattern | Before | After |
+   |---|---|---|
+   | `runTask(` call sites / files | 1,607 / 69 | 1,644 / 81 |
+   | `await settled()` | 0 | 4 / 1 |
+   | `renderSettled(` | 6 / 1 | 29 / 2 |
+   | `moduleFor(` files | 96 | 113 |
+   | files in `components/classic/` | 0 | 21 |
+
+   `runTask` grew because Glimmer-component versions of classic tests were added in the old
+   harness style (#21642, #21646, #21648), and classic-component tests moved to
+   `integration/components/classic/`, which lines up with the Legacy profile. The move to
+   `await settled()` (ruling Q4) has started, in `element-test.gjs` and
+   `render-component-test.ts` (379a7ca59f), but it is about 1% done by call sites.
 
 Classification of the template-relevant test files (`.work/T16-coupling.md`; P portable once
 the harness has an adapter, R portable after refactoring the test, M mixed, I implementation
@@ -121,6 +159,8 @@ outside the template language.
 
 **About 60% of the template-relevant tests are portable as written once the harnesses have an
 adapter.** The main work is in the harnesses (§9.4), then in about 60 test files (R and M).
+Converting tests to the app-style form (item 6) does both at once for the Ember harness: a
+converted test no longer depends on the harness.
 
 ## 9.4 The implementation adapter
 
@@ -133,9 +173,10 @@ implementation.
   (`precompileTemplate`, `template()`, `setComponentTemplate`, managers, `owner.register`) plus
   a handful of renderer entry points in `@ember/-internals/glimmer` (`renderComponent`,
   `setRenderer`, `_resetRenderers`, `renderSettled`, `Component#rerender`). The new
-  implementation replaces those packages and the build-time `compilerPath`, selected by an
-  environment variable in `vite.config.mjs`, as `VITE_STABLE_DECORATORS` already is. The tests
-  do not change. The constraint is that `@ember/-internals/glimmer/lib/renderer.ts` imports
+  implementation replaces those packages and the build-time `compilerPath`. A build-time
+  feature flag selects the implementation (ruling Q5): an environment variable read by
+  `vite.config.mjs`, as `VITE_STABLE_DECORATORS` already is, which aliases the packages and
+  picks the compiler. The tests do not change. The constraint is that `@ember/-internals/glimmer/lib/renderer.ts` imports
   deep VM paths, so it is part of what gets replaced, not a fixed point.
 - **Seam B: a `RenderDelegate` for the Glimmer harness.** A new delegate class next to
   `JitRenderDelegate`, picked by `jitSuite`/`jitComponentSuite`
@@ -174,8 +215,8 @@ interface ConformanceAdapter {
     into: Element; owner?: object; mode?: 'client' | 'serialize' | 'rehydrate';
   }): RenderHandle;
 
-  // Bring the DOM up to date after writes (§07-1.10). Synchronous today (C11).
-  settle(): void;
+  // Bring the DOM up to date after writes (§07-1.10); what `await settled()` waits for (C11).
+  settle(): Promise<void>;
 
   // Host hooks the suite may override per test (C15): warnIfStyleNotTrusted, assert, deprecate.
   withHost?(hooks: Partial<HostHooks>, fn: () => void): void;
@@ -196,6 +237,38 @@ A **reference adapter** wraps the current implementation (seam A as the identity
 `JitRenderDelegate`). Keeping it green is how the refactors of §9.7 are checked: they must not
 change what the current implementation passes.
 
+### 9.4.3 Target test form
+
+New and converted conformance tests use the app-style form of §9.3 item 6:
+
+```gjs
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render, settled } from '@ember/test-helpers';
+import { tracked } from '@glimmer/tracking';
+
+module('§05-3 content: text updates', function (hooks) {
+  setupRenderingTest(hooks);
+
+  test('a tracked write updates the text node in place', async function (assert) {
+    class State { @tracked name = 'a'; }
+    let state = new State();
+    await render(<template><p>{{state.name}}</p></template>);
+    let text = this.element.querySelector('p').firstChild;
+    state.name = 'b';
+    await settled();
+    assert.strictEqual(this.element.querySelector('p').firstChild, text);
+    assert.strictEqual(text.data, 'b');
+  });
+});
+```
+
+Such a test needs no adapter code at all: under the feature flag, `render`, `settled` and the
+`<template>` compilation go to whichever implementation is selected. For the Ember harness,
+converting a test to this form is therefore the refactor (W3). The Glimmer harness keeps its
+delegate seam (seam B) for the suites that are shared across component kinds and for the SSR
+modes, until those suites are converted too or retired (C18).
+
 ## 9.5 Coupling catalogue
 
 Each pattern: what the tests do, why it is not part of the specification, and the refactor.
@@ -213,12 +286,12 @@ Counts are files in the four template-relevant groups unless noted.
 | C8 | **Keywords and built-ins imported from `@glimmer/runtime`/`@glimmer/manager`** (`array`, `concat`, `fn`, `get`, `hash`, `on`, `setComponentTemplate`, capabilities) | about 10 files | Public equivalents exist | Import from `@ember/helper`, `@ember/modifier`, `@ember/component`. Mechanical |
 | C9 | **AST shape, plugins, traversal, printing, locations** | `@glimmer/syntax/test` (13 files, about 270 tests), `ember-template-compiler/tests/utils/transform-test-case.ts` users, `basic-usage-test.js`, `compile_options_test.js` (31) | Non-goals (§00-0.1) | Implementation tests. Keep what is normative: syntax-error messages (`syntaxErrorFor`, `parser-error-test.ts`, `invalid-html-test.ts`, `syntax/general-errors-test.ts`) through `adapter.compile`, and convert whitespace/entity tests to rendered-output assertions |
 | C10 | **Build-mode gating.** `if (DEBUG)` around tests, `@glimmer/env`, `LOCAL_DEBUG`/`LOCAL_TRACE_LOGGING`; `each` sync-step sequences asserted only with `LOCAL_DEBUG` (§05-14 item 16) | 70 files | The Dev profile is normative, the debug flags are not | Gate on `adapter.build` and the Dev profile instead of `@glimmer/env`; replace `LOCAL_DEBUG` sync-step assertions with DOM node-identity assertions (`assertStableNodes`) that check the same retain/move/insert behavior |
-| C11 | **Run-loop specifics.** `runTask` as "write, then synchronously flush" (1,606 call sites in 68 files); `schedule('afterRender')`, `next`, `_backburner`, `_getCurrentRunLoop` | Ember harness; 6 test files directly | §07-1.10 makes the run-loop timing normative for the Ember profile only; RFC 957 would replace it (§07-2.8) | Keep `runTask` as a harness function implemented by `adapter.settle()`. Tests that assert queue names belong to the Ember profile. New tests should `await settled()` rather than rely on a synchronous flush, so they survive an asynchronous renderer (Q4) |
+| C11 | **Run-loop specifics.** `runTask` as "write, then synchronously flush" (1,644 call sites in 81 files after the merge, §9.3 item 6); `schedule('afterRender')`, `next`, `_backburner`, `_getCurrentRunLoop` | Ember harness; 6 test files directly | §07-1.10 makes the run-loop timing normative for the Ember profile only; RFC 957 would replace it (§07-2.8) | Ruling Q4: move to `await settled()`. Convert tests to the app-style form (§9.4.3) rather than reimplementing `runTask`; until a file is converted, `runTask` stays a harness function. Tests that assert queue names belong to the Ember profile |
 | C12 | **Debug render tree.** `captureRenderTree`, `ENV._DEBUG_RENDER_TREE`, `getCapturedRenderTree()` on the JIT delegate, custom `getDebugCustomRenderTree` | `debug-render-tree-test.ts` (both harnesses; about 13 tests), 6 files toggle the flag | §08-13 specifies the tree; the toggles and internals are not | Render-tree profile through `adapter.captureRenderTree`; tests that only toggle the flag to reach other behavior should stop doing so (§05-11.3 is now flag-independent) |
 | C13 | **Ember private APIs.** `meta`/`peekMeta`, view registry (`getViewId`, `getViewBounds`), `@ember/instrumentation` render events, `templateCacheCounters`, `DEPRECATIONS.*` flags | about 24 files, mostly outside the template groups | Not specified | Implementation tests, except `DEPRECATIONS.*` gating, which becomes adapter-reported feature state |
-| C14 | **HTML strings and markers.** `assertHTML` compares tokens; the Ember harness's node helpers (`nthChild`, `nodesCount`, snapshots) skip empty text and comment nodes (`internal-test-helpers/lib/test-cases/abstract.ts:18-28`); `assertInnerHTML` compares strings; SSR suites compare exact marker strings | about 100 `assertInnerHTML` sites; SSR suites | The empty comment of an empty region is required (§05-1.3), but helpers that skip it cannot check it; SSR markers are specified (§05-13.1) | Prefer `assertHTML`; add direct tests of the §05-1.3 empty-region comment (W7); keep exact SSR strings in the SSR profile (Q1) |
+| C14 | **HTML strings and markers.** `assertHTML` compares tokens; the Ember harness's node helpers (`nthChild`, `nodesCount`, snapshots) skip empty text and comment nodes (`internal-test-helpers/lib/test-cases/abstract.ts:18-28`); `assertInnerHTML` compares strings; SSR suites compare exact marker strings and `rehydrationStats.clearedNodes` | about 100 `assertInnerHTML` sites; SSR suites | The empty comment of an empty region is required (§05-1.3), but helpers that skip it cannot check it. SSR markers are implementation-defined (ruling Q1) | Prefer `assertHTML`; add direct tests of the §05-1.3 empty-region comment (W7). In the SSR suites, exact marker strings become implementation tests; the conformance form renders on the server, rehydrates, and compares the result with a client render and checks that server nodes were kept |
 | C15 | **Global context as the host contract.** Glimmer tests run under Ember's `@glimmer/global-context` hooks; `style-warnings-test.ts` overrides them | whole Glimmer harness | The hook set is an implementation detail, but the behaviors behind it (style warning, `toBool`, iteration, assertions) are specified | `adapter.withHost` for the few tests that override hooks; nothing else depends on the hook names |
-| C16 | **Assertion plumbing.** `expectAssertion`/`expectDeprecation` stub `@ember/debug`'s functions and match messages verbatim; template-engine assertions reach them through the global context `assert` hook | about 145 sites in the Ember harness, about 70 files overall | Messages are normative [Dev]; the stubbing mechanism is not | Requirement on implementations: report every [Dev] assertion and deprecation through `@ember/debug` (`assert`, `deprecate`, `warn`). No test change |
+| C16 | **Assertion plumbing.** `expectAssertion`/`expectDeprecation` stub `@ember/debug`'s functions and match messages verbatim; template-engine assertions reach them through the global context `assert` hook | about 145 sites in the Ember harness, about 70 files overall | Messages are normative [Dev], verbatim (ruling Q3); the stubbing mechanism is not | Requirement on implementations: report every [Dev] assertion and deprecation through `@ember/debug` (`assert`, `deprecate`, `warn`), with Ember's exact text. No test change. App-style tests assert the same messages with `assert.rejects`/`assert.throws` |
 | C17 | **Leak and teardown checks.** Container, namespace, observer, run-loop and (optional) destroyable leak checks in `moduleFor` | every Ember-harness module | Harness hygiene | Keep. They are implementation-neutral as long as the adapter destroys what it created |
 
 ## 9.6 Coverage gaps
@@ -270,56 +343,41 @@ own, because they remove test dependencies on VM internals that Ember is itself 
 
 | # | Workstream | Depends on | Exit criterion | Model |
 |---|---|---|---|---|
-| W0 | **Author decisions** §9.8 Q1–Q6 | — | Recorded in STATUS "Decisions" | Author |
+| W0 | **Author decisions**: Q1, Q3–Q6 are ruled (2026-10-07); Q2 (required profiles) is open | — | Recorded in STATUS "Decisions" | Author |
 | W1 | **Manifest.** Tag every test file (later every test) with its profile and class (P/R/M/I) and the spec sections it checks, seeded from `.work/T16-coupling.md`. A QUnit module-name prefix or a checked-in manifest, plus a filter so `testem` can run one profile | W0 | Every template-relevant test file is classified; `profile=core` runs only conformance tests | Sonnet |
 | W2 | **Glimmer harness refactor** (C1, C2, C6): `delegate.set/rerender/destroy`; `RenderHandle`; one `compile`; helpers via the public helper manager; `EmberishCurlyComponent` on the public manager API; tracked test context | — | No `@glimmer/runtime`, `@glimmer/validator`, `@glimmer/reference`, `@glimmer/opcode-compiler` or `@glimmer/compiler` import outside `lib/modes/`; all Glimmer tests pass with `JitRenderDelegate` | Opus for the API, Sonnet for the edits |
-| W3 | **Ember harness refactor** (C2, C11): `compile` through the adapter; `runTask`/`runAppend`/`rerender` through `adapter.settle`/`RenderHandle`; the renderer entry points behind one module that seam A replaces | — | All Ember-harness tests pass; one file names the renderer entry points | Opus/Sonnet |
+| W3 | **Convert the Ember harness's tests to the app-style form** (§9.4.3; C2, C11, rulings Q4/Q5): `render` + `await settled()` instead of `this.render`/`runTask`; `<template>` and `.gjs` instead of string templates; `assert.rejects` for [Dev] messages. Upstream has started (§9.3 item 6). Files that must stay on `RenderingTestCase` (loose-mode registry tests, classic `this`) keep it, with its renderer entry points behind one module that seam A replaces | — | No `runTask` in the conformance-profile files of `@ember/-internals/glimmer/tests`; every converted test passes | Sonnet, one directory per task; Opus reviews |
 | W4 | **Test-level refactors** (C5, C7, C8, C10, C12, C14): public imports, reactivity tests without tags, `LOCAL_DEBUG` sync steps as node-identity assertions, `DEBUG` gating via the adapter | W1 | The 47 R files and the R part of the 12 M files are P | Sonnet, one package group at a time |
 | W5 | **Separate implementation tests** (C3, C4, C9, C13): mark them I in the manifest; split M files so each file is one class | W1 | No M files remain | Sonnet |
-| W6 | **Build wiring** (seams A–C): an environment variable selects the implementation for vite aliasing, `compilerPath` and the delegate; a CI row per profile set; development and production builds | W2, W3 | The reference adapter passes in CI under the new variable | Opus |
+| W6 | **Feature flag** (ruling Q5; seams A–C): one build-time flag selects the implementation for vite aliasing, `compilerPath` and the Glimmer delegate; a CI row per implementation and profile set; development and production builds | W2, W3 | The current implementation passes under both flag values' shared tests; the new one's row exists (expected to fail until W9) | Opus |
 | W7 | **Coverage**: (a) write the T9b upstream candidates and the §05-14 items 12, 13 and 16 tests; (b) turn the §02 probes and the T9a/§03 compiler probes into compile/render tests; (c) for each "source only" section, find an existing test and cite it, or write one; chapters in the order 07, 03, 08, 05, 01, 06, 02 | W1 (tags new tests) | `test-coverage.py` shows no "marked untested" sections and a falling "source only" count; each new test names its section | Sonnet per chapter; Opus reviews |
 | W8 | **Section index**: a tool that reads the manifest and reports, per section, the conformance tests that check it; it replaces the heuristic of `test-coverage.py` | W1, W7 | Every normative section has at least one test, or an entry in the chapter's open questions explaining why not | Sonnet |
 | W9 | **Second adapter**: when a new implementation exists, its adapter runs the same profiles. Failures are triaged as implementation bug, test that is really an implementation test (back to W5), or specification gap (an open question in the owning chapter) | W6 | — | — |
 
-W2 and W3 can start now and in either order; they need no decisions. W1 needs Q1–Q3 to know
-the profile list.
+W2 and W3 can start now and in either order; they need no decisions. W1 needs Q2 for the final
+profile list, but can start with the proposal of §9.2.
 
 ## 9.8 Open questions
 
-1. **Q1. Is the SSR marker format normative?** §05-13.1 specifies it, and the SSR suites assert
-   exact marker strings. The format matters only when the server and the client are different
-   implementations (for example a Glimmer server with a new client during a migration). If
-   both sides are always the same implementation, the SSR profile could require "rehydration
-   reproduces the client render and reuses server nodes" and leave the markers to the
-   implementation.
+Q1 and Q3–Q6 were ruled by the plan's author on 2026-10-07 (commit `5740b4aeb7`). They are kept
+here, with the ruling, so that the references above still resolve.
 
-    > Yes, let's leave markers to the implementation. We don't need to specificy interoperable markers.
-
-2. **Q2. Which profiles are required?** §9.2 proposes Core, Dev, Loose mode, Legacy and Ember
-   integration as required, with SSR (Q1), Debug render tree and Proposed optional.
-3. **Q3. Are all [Dev] messages normative verbatim?** The harness matches them verbatim
-   (C16), and this specification has treated them as normative. Requiring every message
-   (about 145 assertion sites) commits a new implementation to Ember's exact wording,
-   including location suffixes such as `('module' @ L1:C2)`.
-
-  > Let's assume verbatim is OK (it will keep the test suite simpler) and only re-address if it turns out to be inordinately difficult for a second implementation to follow.
-
-4. **Q4. Synchronous settling.** The harnesses assume rendering settles synchronously inside
-   `runTask`/`rerender`. That is current behavior (§07-1.10), but RFC 957 would make rendering
-   asynchronous (§07-2.8). Should conformance tests move to `await settled()` now (a larger W3
-   and W4), or keep the synchronous form until RFC 957 decides?
-
-    > We are already beginning to land refactors that switch to `await settled()`, so let's plan on moving. I'm going to merge main into this branch now so we can re-evaluate because I think some of the counted cases have already been handled.
-
-5. **Q5. Where does the suite live?** In ember.js, as this chapter assumes, or extracted into
-   its own package that both implementations depend on? Extraction is cleaner, but it would
-   separate the tests from the code they currently guard.
-
-    > It stays in this repo. The new implementation will also be in this repo while it's under development. We'll test both via a feature flag strategy.
-
-6. **Q6. Classic components in the Glimmer harness.** The `Curly` and `Dynamic` component
-   kinds emulate classic components with an internal manager (C6). Should they be rebuilt on
-   the public manager API (portable, but an emulation of an emulation), or dropped in favor of
-   the Ember harness's real classic components?
-
-   > Glimmer was originally written in a different repo, which caused both Ember and Glimmer to test fake stubs of each other. Any remaining cases like that should be flagged to be eliminated as part of our test cleanup.
+1. **Q1. Is the SSR marker format normative?** *Ruled: no.* Markers are left to the
+   implementation; there is no interoperable marker format. A server render and its
+   rehydration are always done by the same implementation. §05-13.1 now documents the current
+   markers as informative, and the SSR profile checks the rehydrated DOM and node reuse instead
+   (§9.2, C14).
+2. **Q2. Which profiles are required?** *Open.* §9.2 proposes Core, Dev, Loose mode, Legacy and
+   Ember integration as required, with SSR, Debug render tree and Proposed optional.
+3. **Q3. Are all [Dev] messages normative verbatim?** *Ruled: yes,* because it keeps the suite
+   simple. To be revisited only if following Ember's exact wording, including location
+   suffixes such as `('module' @ L1:C2)`, turns out to be inordinately hard for a second
+   implementation (C16).
+4. **Q4. Synchronous settling.** *Ruled: move to `await settled()`.* Upstream has begun landing
+   such refactors (§9.3 item 6). The plan converts tests to the app-style form (§9.4.3, W3).
+5. **Q5. Where does the suite live?** *Ruled: in this repository.* The new implementation is
+   developed here too, and both are tested through a feature flag (§9.1 item 2, W6).
+6. **Q6. Classic components in the Glimmer harness.** *Ruled:* Glimmer was originally written in
+   a separate repository, so Ember and Glimmer each tested fake stubs of the other. Every
+   remaining case is flagged for elimination in the test cleanup (C18; the survey is
+   `.work/T17-fake-stubs.md`).
