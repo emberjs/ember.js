@@ -2062,7 +2062,20 @@ inserted as a raw HTML section rather than parsed (`packages/@glimmer/node/lib/n
 elements are created without namespaces, and every attribute is set with `setAttribute`
 without namespace (`node-dom-helper.ts:32-40`).
 
-### 13.1 Serialization markers
+**What is normative** (author ruling, 2026-10-07, §09-9.8 Q1). A server render is always
+rehydrated by the same implementation, so the serialized markup is implementation-defined and
+need not interoperate. §13.1 and the marker-walking steps of §13.2 document the current
+implementation and are informative. A conforming implementation MUST guarantee the observable
+results instead:
+
+1. Rehydrating the serialized output gives DOM equal to a client render of the same template
+   and state, and leaves none of the nodes that serialization added behind.
+2. Server nodes that match the client render are kept (node identity); text and attribute
+   values are corrected in place; the remaining results listed at the end of §13.2 hold.
+3. Content of the container outside the rendered root is left alone, including for partial
+   rehydration through `renderComponent`.
+
+### 13.1 Serialization markers *(informative)*
 
 The serialize builder produces exactly the client DOM, plus comment markers
 (`serialize-builder.ts:33-143`). Let *d* be a counter of currently open regions (starting at 0):
@@ -2104,6 +2117,9 @@ elements; rehydration still converges (:1047-1066).
 destination (the default is `null`, `serialize-builder.ts:132-142`); see Open questions.
 
 ### 13.2 Rehydration algorithm
+
+The algorithm below is informative (see §05-13 "What is normative"); the list of results at
+the end of this section is normative.
 
 Rehydration evaluates the template exactly as a client initial render would, but instead of
 creating nodes it **adopts** matching existing nodes, walking a *candidate* pointer through the

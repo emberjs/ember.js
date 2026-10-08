@@ -46,6 +46,12 @@ continue the work. Last updated: 2026-10-07.
   consumption is not in the core; §07-2.7 shows a library can build it. A prototype with tests
   is in `spec/prototype/reactive/`. §07-2.8 relates it to RFC 957 (`@ember/scheduler`;
   author's question of 2026-10-07, commit `59f71505b9`, T15).
+- **Conformance testing rulings** (author, 2026-10-07, commit `5740b4aeb7`, T17; §09-9.8):
+  SSR markers are implementation-defined (§05-13 "What is normative"; §05-13.1 and the
+  marker-walking of §05-13.2 are informative); [Dev] messages are verbatim; tests move to
+  `await settled()` and the app-style form (§09-9.4.3); the suite stays in this repo, and a
+  feature flag selects the implementation; fake Glimmer/Ember stubs of each other are
+  eliminated (§09-9.5 C18). Open: which profiles are required (Q2).
 - **No dependent tracking** (author ruling, 2026-10-07). The model stays built around cheap
   revalidation without reverse edges: the core may schedule effects that are not stale, and
   filters them with `isValid` at flush time, so `fn` runs only when a dependency changed
@@ -142,6 +148,7 @@ Run these in order, one at a time.
 | T14 | Author feedback `391b17239c` on the reactive API: `cached()` as the derived primitive, a core `effect`, async exploration | Opus | `.work/T14-reactive-api.md` | done; §07-2 rewritten, prototype + 31 tests, review points §07-5 items 14–19 |
 | T15 | Author feedback `59f71505b9`: relate the core to RFC 957 (scheduler) | Opus | `.work/T15-scheduler-rfc.md` | done; new §07-2.8, §07-5 items 14 and 17 updated, 3 strategy tests |
 | T16 | Author request: a testing chapter (refactors for an alternate implementation, coverage gaps) | Opus + 2 Sonnet surveys | `.work/T16-conformance-testing.md` | done; §09, `tools/test-coverage.py`; work plan W0–W9 and open questions Q1–Q6 in §9.7–9.8 |
+| T17 | Merge of `origin/main` (`def1faa2cf`, base `9bec1cb2a8`) and the §09 rulings (`5740b4aeb7`) | Opus + 2 Sonnet | `.work/T17-merge-and-09-rulings.md` | done; 122 citations remapped, 44 FLAGs and about 184 moved-test citations fixed by hand; TrackedValue, renderer root release, `get`, `{{on}}` prose; §09 rulings, post-merge counts, app-style target form, C18 fake stubs (`.work/T17-fake-stubs.md`); §05-13 markers informative |
 
 ## Cross-chapter findings (from chapter authors' reports)
 

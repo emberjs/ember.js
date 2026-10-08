@@ -37,10 +37,10 @@ Author rulings in `5740b4aeb7` (inline notes under §09-9.8):
 - [x] C1. Re-count after the merge: `runTask`/`run(` vs `await settled()`/`renderSettled`
       call sites, classic vs Glimmer component tests, ember-qunit/`@ember/test-helpers` usage,
       files moved to `components/classic`.
-- [ ] C2. §09 rewritten for Q1, Q3, Q4, Q5, Q6 (rulings recorded, notes removed); §05-13.1
+- [x] C2. §09 rewritten for Q1, Q3, Q4, Q5, Q6 (rulings recorded, notes removed); §05-13.1
       markers become implementation-defined; C11/C14/C16 and the work plan updated; B1 result
       folded in.
-- [ ] C3. STATUS decisions + task row; `xref.py`/`check-citations.py` clean.
+- [x] C3. STATUS decisions + task row; `xref.py`/`check-citations.py` clean.
 
 ## Notes
 
