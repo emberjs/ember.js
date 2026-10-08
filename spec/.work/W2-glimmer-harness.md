@@ -425,7 +425,7 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
       `willDestroyElement` step / raise `assert.expect` by the one destructor assertion). Note
       each adjusted test in the notes (not a ledger row: nothing removed). Expected: zero count
       change.
-- [ ] 5.3b Ember's resolver and owner registrations (P4). `new ResolverImpl()` replaces
+- [x] 5.3b (done, see notes) Ember's resolver and owner registrations (P4); registration follows the phase: both owners until the server render, then client only. `new ResolverImpl()` replaces
       `JitCompileTimeLookup(this.resolver)`; `registerComponent/Helper/HelperDefinition/
       Modifier` register on the owner(s) (design 2; names as they are, dasherized in 5.5b);
       `renderTemplate` and the rehydration renders instantiate templates with the owner;
@@ -442,7 +442,7 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
       (implementation: host keyword hook)", Opus confirms before deleting (count −1, the only
       planned drop in step 5). `createCurriedComponent` on the owner (design 3). Expected:
       9110 / 9092 / 0 / 18.
-- [ ] 5.3c Public imports (C8): `templateOnlyComponent`/`TemplateOnlyComponent` from
+- [x] 5.3c (done, see notes) Public imports (C8): `templateOnlyComponent`/`TemplateOnlyComponent` from
       `@ember/component/template-only` in `lib/test-helpers/define.ts`, `lib/components/
       types.ts`, `test/debug-render-tree-test.ts`; `array, concat, fn, get, hash` from
       `@ember/helper` and `on` from `@ember/modifier` in `test/strict-mode-test.ts`,
@@ -477,8 +477,8 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
       the `{{component}}` dynamic-form rehydration), now that curly invocation through a real
       owner exists. Until this item is done those behaviors are untested on the branch.
       How (design 2): in the rehydration delegate, a `registerClassicComponent(name, layout,
-      Class = Component)` that does `setComponentTemplate` + `owner.register('component:' +
-      name, Class)` on both owners; the 4 deferred tests invoke `{{foo-bar}}`/`{{#foo-bar}}`/
+      Class = Component)` (registration follows the phase like the other `register*` methods: both owners until the server render, then client only; see 5.3b) that does `setComponentTemplate` + `owner.register('component:' +
+      name, Class)` (on both owners until the server render, then on the client owner only); the 4 deferred tests invoke `{{foo-bar}}`/`{{#foo-bar}}`/
       `{{component "foo-bar"}}`. If the injected `renderer:-dom` breaks them, use the fallback
       in design 2. Count +4 (or as the ledger rows say).
 
@@ -745,4 +745,15 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   refuses to re-register a resolved name. The 'Mismatched …' tests register a different layout for the client under the same name, so skipping the
   second registration is not an option: the registration must go to the side that is rendering (server registrations on the server owner at
   `renderServerSide`, client ones on the client owner at `renderClientSide`), or the delegate must replace a resolved registration. No test
-  expectation was changed. Needs a decision/fix before 5.3b can be ticked; 5.3c is not started.
+  expectation was changed. RESOLVED (coordinator decision): registration follows the phase, both owners until the server render, then client
+  only (`RehydrationDelegate.serverRendered`, set by `renderServerSide` and the partial `renderComponentServerSide`; every `register*` registers on
+  the client owner always and on the server owner only while the flag is unset). The client owner resolves nothing before `renderClientSide`, so a
+  client-phase registration replaces the first on it and the 'Mismatched …' tests keep their different client layout. Final 5.3b: code `e41d3c7792`
+  (the WIP commit amended). Full suite 9110 / 9092 pass / 0 fail / 18 skip; per-test diff against `full53a`: only 'Non-native keyword' missing;
+  greps (incl. `already been resolved`): 0. `type-check:internals` and prettier clean.
+- 5.3a review: the chaos-test fix (destroy each iteration's handle in `run()` before resetting innerHTML) is accepted in review.
+- 5.3c (2026-10-08): code `3ebe247030`. `templateOnlyComponent` / `TemplateOnlyComponent` from
+  `@ember/component/template-only` in `lib/test-helpers/define.ts`, `lib/components/types.ts`, `test/debug-render-tree-test.ts` (that file keeps
+  `EMPTY_ARGS`/`TemplateOnlyComponentManager` from `@glimmer/runtime`: implementation tests, W5); `array, concat, fn, get, hash` from `@ember/helper` and
+  `on` from `@ember/modifier` in `test/strict-mode-test.ts`, `test/modifiers/on-test.ts`. `@ember/component` added to IT devDependencies (+3 lock
+  lines). Full suite 9110 / 9092 / 0 / 18; per-test diff against the 5.3b run: 0 missing, 0 new; greps 0; type-check and prettier clean.
