@@ -2,6 +2,7 @@ import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
 import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
 import { isIndexable, LOCAL_LOGGER } from '@glimmer/util';
+import { run } from '@ember/runloop';
 import {
   blockStack,
   CLOSE,
@@ -151,6 +152,11 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
           throw error;
         } finally {
+          // destroy this iteration's render before its DOM is replaced
+          let handle = this.renderResult;
+          this.renderResult = null;
+          if (handle) run(() => handle.destroy());
+
           // reset the HTML
           element.innerHTML = elementResetValue;
         }

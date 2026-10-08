@@ -16,7 +16,6 @@ import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToSimple } from '@glimmer/debug-util';
 import { serializeBuilder } from '@glimmer/node';
 import { createConstRef } from '@glimmer/reference';
-import { _resetRenderers } from '@ember/-internals/glimmer';
 import type { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import createHTMLDocument from '@simple-dom/document';
 
@@ -32,6 +31,7 @@ import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
 import { registerComponent, registerHelper, registerModifier } from '../jit/register';
 import { TestJitRegistry } from '../jit/registry';
 import { TestJitRuntimeResolver } from '../jit/resolver';
+import { createOwner, teardownOwners } from '../owner';
 import { createRenderer } from '../renderer';
 import { TemplateRootState } from '../template-root';
 import { debugRehydrateTree } from './builder';
@@ -47,8 +47,8 @@ export class RehydrationDelegate implements RenderDelegate {
   private plugins: ASTPluginBuilder[] = [];
 
   /** The renderers are Ember's `BaseRenderer`, one per side, each with its own owner and document. */
-  protected clientOwner: object = {};
-  protected serverOwner: object = {};
+  protected clientOwner: object = createOwner();
+  protected serverOwner: object = createOwner();
   protected clientRenderer: BaseRenderer;
   protected serverRenderer: BaseRenderer;
 
@@ -100,7 +100,7 @@ export class RehydrationDelegate implements RenderDelegate {
 
   /** Called after each test: see `JitRenderDelegate.teardown`. */
   teardown(): void {
-    _resetRenderers();
+    teardownOwners(this.clientOwner, this.serverOwner);
   }
 
   getInitialElement(): SimpleElement {

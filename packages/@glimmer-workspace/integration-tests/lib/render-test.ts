@@ -59,6 +59,7 @@ export class RenderTest implements IRenderTest {
   assert = QUnit.assert;
   protected context: Dict = dict();
   protected renderResult: Nullable<RenderHandle> = null;
+  private voidHandle: Nullable<RenderHandle> = null;
   protected helpers = dict<UserHelper>();
   protected snapshot: NodesSnapshot = [];
   readonly count = new Count();
@@ -222,9 +223,14 @@ export class RenderTest implements IRenderTest {
   }
 
   shouldBeVoid(tagName: string) {
+    // Destroy the previous render instead of clearing its DOM out from under it.
+    let previous = this.voidHandle;
+    if (previous) run(() => previous.destroy());
     clearElement(this.element);
     let html = '<' + tagName + " data-foo='bar'><p>hello</p>";
-    this.delegate.renderTemplate(html, this.context, this.element, () => this.takeSnapshot());
+    this.voidHandle = this.delegate.renderTemplate(html, this.context, this.element, () =>
+      this.takeSnapshot()
+    );
 
     let tag = '<' + tagName + ' data-foo="bar">';
     let closing = '</' + tagName + '>';

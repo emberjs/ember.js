@@ -98,6 +98,10 @@ abstract class ModifierManagerTest extends RenderTest {
     args['truthy'] = true;
     this.rerender();
     assert.verifySteps(['Called didInsertElement']);
+
+    // the modifier is destroyed with the render, which the harness does after the test
+    this.destroy();
+    assert.verifySteps(['Called willDestroyElement']);
   }
 
   @test 'associates manager even through an inheritance structure'(assert: Assert) {
@@ -126,7 +130,7 @@ abstract class ModifierManagerTest extends RenderTest {
   }
 
   @test 'can give consistent access to underlying DOM element'(assert: Assert) {
-    assert.expect(6);
+    assert.expect(7);
 
     let foo = this.defineModifier(
       class extends CustomModifier {
@@ -160,6 +164,9 @@ abstract class ModifierManagerTest extends RenderTest {
 
     args['truthy'] = 'true';
     this.rerender();
+
+    // the destructor's assertion runs when the render is destroyed
+    this.destroy();
   }
 
   @test 'lifecycle hooks are autotracked by default'(assert: Assert) {

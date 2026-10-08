@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@ember/-internals": "workspace:*",
+    "@ember/destroyable": "workspace:*",
     "@ember/renderer": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/template": "workspace:*",
@@ -50,6 +51,7 @@
     "@glimmer/local-debug-flags": "workspace:*",
     "@types/js-reporters": "workspace:*",
     "@types/qunit": "^2.19.12",
-    "dom-types": "^1.1.2"
+    "dom-types": "^1.1.2",
+    "internal-test-helpers": "workspace:*"
   }
 }

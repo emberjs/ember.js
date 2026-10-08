@@ -19,7 +19,6 @@ import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/debug-util';
 import { createConstRef } from '@glimmer/reference';
 import { array, clientBuilder, concat, fn, get, hash, on } from '@glimmer/runtime';
-import { _resetRenderers } from '@ember/-internals/glimmer';
 import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import { renderComponent } from '@ember/renderer';
 
@@ -34,6 +33,7 @@ import { preprocess } from '../../compile';
 import { componentHelper, registerComponent, registerHelper, registerModifier } from './register';
 import { TestJitRegistry } from './registry';
 import { TestJitRuntimeResolver } from './resolver';
+import { createOwner, teardownOwners } from '../owner';
 import { createRenderer } from '../renderer';
 import { TemplateRootState } from '../template-root';
 
@@ -46,8 +46,8 @@ export class JitRenderDelegate implements RenderDelegate {
 
   private plugins: ASTPluginBuilder[] = [];
   private _renderer: Nullable<BaseRenderer> = null;
-  /** The owner for the renderer. A real owner arrives in 5.3a. */
-  protected owner: object = {};
+  /** A real owner, destroyed in `teardown()`. */
+  protected owner: object = createOwner();
   private self: Nullable<Reference> = null;
   private doc: SimpleDocument;
   private debugRenderTree: boolean;
@@ -89,11 +89,12 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   /**
-   * Called after each test. Renderers stay in Ember's global list while they
-   * have roots, and every later run loop would revalidate them.
+   * Called after each test. Destroys the owner and with it the renderer and its roots.
+   * Renderers stay in Ember's global list while they have roots, and every later run
+   * loop would revalidate them.
    */
   teardown(): void {
-    _resetRenderers();
+    teardownOwners(this.owner);
   }
 
   getCapturedRenderTree(): CapturedRenderNode[] {
