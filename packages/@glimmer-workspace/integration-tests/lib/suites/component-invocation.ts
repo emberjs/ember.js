@@ -6,8 +6,8 @@ import type { Count } from '../render-test';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 
-export class EmberishComponentTests extends RenderTest {
-  static suiteName = 'Emberish';
+export class ComponentInvocationTests extends RenderTest {
+  static suiteName = 'Invocation';
 
   @test
   'Element modifier with hooks'(assert: Assert, count: Count) {

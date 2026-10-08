@@ -27,7 +27,7 @@ export function registerTemplateOnlyComponent(
   );
 }
 
-export function registerGlimmerishComponent(
+export function registerGlimmerComponent(
   owner: TestOwner,
   name: string,
   Component: Nullable<ComponentTypes['Glimmer']>,
@@ -80,7 +80,7 @@ export function registerComponent<K extends ComponentKind>(
 ): void {
   switch (type) {
     case 'Glimmer':
-      registerGlimmerishComponent(owner, name, Class as ComponentTypes['Glimmer'], layout);
+      registerGlimmerComponent(owner, name, Class as ComponentTypes['Glimmer'], layout);
       break;
     case 'TemplateOnly':
       registerTemplateOnlyComponent(owner, name, layout ?? '');

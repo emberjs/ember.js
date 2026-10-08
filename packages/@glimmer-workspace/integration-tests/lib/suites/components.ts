@@ -66,8 +66,8 @@ export class TemplateOnlyComponents extends RenderTest {
   }
 }
 
-export class GlimmerishComponents extends RenderTest {
-  static suiteName = 'Glimmerish';
+export class GlimmerComponents extends RenderTest {
+  static suiteName = 'Glimmer';
 
   @test({
     kind: 'glimmer',
