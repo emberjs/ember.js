@@ -1155,6 +1155,156 @@ if (!ARRAY_PROXY_REMOVED) {
   );
 }
 
+// The key semantics of `{{#each}}` (`@identity`, `@key`, `@index`, paths), observed through which
+// DOM nodes are kept as the list changes. These went here from the unit tests of
+// `@glimmer/reference`'s `createIteratorRef`, which ran on a hand-made iterator protocol; the
+// iteration itself is Ember's `toIterator`.
+moduleFor(
+  'Syntax test: {{#each}} keys and DOM identity',
+  class extends RenderingTestCase {
+    items() {
+      return Array.from(this.element.querySelectorAll('li'));
+    }
+
+    ['@test @identity keeps the node of a null item as the list changes']() {
+      this.render(
+        `<ul>{{#each this.list key="@identity" as |item index|}}<li>{{index}}</li>{{/each}}</ul>`,
+        {
+          list: [null],
+        }
+      );
+
+      let [nullItem] = this.items();
+
+      runTask(() => set(this.context, 'list', [undefined, null]));
+
+      let items = this.items();
+      this.assert.strictEqual(items.length, 2);
+      this.assert.strictEqual(items[1], nullItem, 'the node of the null item moved with it');
+      this.assert.strictEqual(items[1].textContent, '1');
+    }
+
+    ['@test @identity gives each of several null items its own node']() {
+      this.render(
+        `<ul>{{#each this.list key="@identity" as |item index|}}<li>{{index}}</li>{{/each}}</ul>`,
+        {
+          list: [null],
+        }
+      );
+
+      let [first] = this.items();
+
+      runTask(() => set(this.context, 'list', [null, null]));
+
+      let items = this.items();
+      this.assert.strictEqual(items.length, 2);
+      this.assert.strictEqual(items[0], first, 'the first null keeps its node');
+      this.assert.notStrictEqual(items[1], first, 'the second null gets a node of its own');
+    }
+
+    ['@test @identity tells duplicate objects apart consistently across updates']() {
+      let yehuda = { name: 'Yehuda' };
+      let godfrey = { name: 'Godfrey' };
+
+      this.render(`<ul>{{#each this.list as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`, {
+        list: [yehuda, godfrey, godfrey],
+      });
+
+      let [y, g1, g2] = this.items();
+
+      // drop the last `godfrey`, add one at the front
+      runTask(() => set(this.context, 'list', [godfrey, yehuda, godfrey]));
+
+      let items = this.items();
+      this.assert.strictEqual(items.length, 3);
+      this.assert.strictEqual(items[0], g1, 'the first occurrence keeps its node');
+      this.assert.strictEqual(items[1], y);
+      this.assert.strictEqual(items[2], g2, 'the second occurrence keeps its node');
+    }
+
+    ['@test @identity works with every kind of primitive except null']() {
+      let symbol = Symbol('bar');
+
+      this.render(
+        `<ul>{{#each this.list key="@identity" as |item index|}}<li>{{index}}</li>{{/each}}</ul>`,
+        {
+          list: [undefined, 123, 'foo', symbol, true],
+        }
+      );
+
+      let [undef, num, , sym, bool] = this.items();
+      this.assert.strictEqual(this.items().length, 5);
+
+      runTask(() => set(this.context, 'list', [undefined, 123, symbol, true]));
+
+      let items = this.items();
+      this.assert.strictEqual(items.length, 4);
+      this.assert.deepEqual(
+        items,
+        [undef, num, sym, bool],
+        'the nodes of the other items are kept'
+      );
+    }
+
+    ['@test @key keys items by position']() {
+      let a = { name: 'a' };
+      let b = { name: 'b' };
+
+      this.render(
+        `<ul>{{#each this.list key="@key" as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`,
+        {
+          list: [a, b],
+        }
+      );
+
+      let before = this.items();
+
+      runTask(() => set(this.context, 'list', [b, a]));
+
+      let after = this.items();
+      this.assert.deepEqual(after, before, 'the nodes stay where they are');
+      this.assert.deepEqual(
+        after.map((li) => li.textContent),
+        ['b', 'a'],
+        'and show the new items'
+      );
+    }
+
+    ['@test @identity moves the nodes of objects when they are reordered']() {
+      let a = { name: 'a' };
+      let b = { name: 'b' };
+
+      this.render(`<ul>{{#each this.list as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`, {
+        list: [a, b],
+      });
+
+      let [first, second] = this.items();
+
+      runTask(() => set(this.context, 'list', [b, a]));
+
+      this.assert.deepEqual(this.items(), [second, first], 'the nodes follow their items');
+    }
+
+    ['@test it works with items that have no prototype']() {
+      let a = Object.assign(Object.create(null), { name: 'a' });
+      let b = Object.assign(Object.create(null), { name: 'b' });
+
+      this.render(`<ul>{{#each this.list as |item|}}<li>{{item.name}}</li>{{/each}}</ul>`, {
+        list: [a, b],
+      });
+
+      this.assertText('ab');
+
+      let [first, second] = this.items();
+
+      runTask(() => set(this.context, 'list', [b, a]));
+
+      this.assertText('ba');
+      this.assert.deepEqual(this.items(), [second, first], 'the nodes follow their items');
+    }
+  }
+);
+
 moduleFor(
   'Syntax test: {{#each as}} undefined path',
   class extends RenderingTestCase {
