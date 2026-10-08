@@ -109,7 +109,19 @@ evaluate(computation C):
   *Source:* `beginTrackFrame` / `endTrackFrame`
   (`packages/@glimmer/validator/lib/tracking.ts:177-209`), and `track`, which uses `try/finally`
   (`tracking.ts:371-383`).
+- The implementation does not allocate a tracker per frame. `beginTrackFrame` takes the tracker
+  for the frame's depth from a pool (`TRACKER_POOL`, `tracking.ts:175-193`; an untrack frame
+  takes a depth but no tracker), and `endTrackFrame` empties it when it combines the frame's
+  tags (`Tracker.combine` and `clear`, `tracking.ts:95-132`). `Tracker.add` finds out whether
+  the frame has a tag already from an index stored on the tag (`slot`) instead of a `Set`
+  (`tracking.ts:79-93`; `validators.ts:117-124`). None of this is observable beyond the
+  contract above: a frame that consumed one tag, any number of times, ends with that tag; a
+  frame that consumed none ends with `CONSTANT_TAG`; otherwise the result is a combined tag.
+  A tag that a nested frame consumed between two consumptions in the outer frame is still kept
+  (tests `tracking-test.ts:257-309`).
 - After an unrecoverable render error, the implementation resets all open frames.
+  It also empties every pooled tracker, so the tags of a frame that never ended do not appear in
+  the next frame at the same depth (`tracking.ts:236-240`; tests `tracking-test.ts:310-338`).
   *Source:* `resetTracking` (`tracking.ts:225-247`), called from the render error paths
   (`packages/@glimmer/runtime/lib/vm/update.ts:60-66`, `packages/@glimmer/runtime/lib/vm/append.ts:763`).
 
@@ -154,7 +166,7 @@ evaluate(computation C):
    inside an untracked frame to a cell that was consumed earlier in the same transaction still
    asserts. Reads inside an untracked frame are not recorded as consumed for the purposes of the
    assertion.
-   *Tests:* `tracking-test.ts:633` ("it ignores untrack for consumption"), `:649` ("it does not
+   *Tests:* `test/tracking-test.ts:633` ("it ignores untrack for consumption"), `:649` ("it does not
    ignore untrack for dirty").
 4. Some framework code paths evaluate user code in an untracked frame. They are listed where
    they occur. Examples: the getter of a classic computed property with explicit dependent keys
@@ -175,10 +187,10 @@ evaluate(computation C):
 3. An evaluated computation whose dependency set is **empty is constant**. It MUST never become
    invalid, so its cached value is final. Consumers MAY treat a constant computation as a static
    value and MAY discard any machinery for updating it.
-   *Source:* `Tracker.combine` returns `CONSTANT_TAG` for an empty set (`tracking.ts:95-132`);
+   *Source:* `Tracker.combine` returns `CONSTANT_TAG` for an empty set (`tracking.ts:95-110`);
    `isConst` (`tracking.ts:328-336`); `isConstRef` checks
    (`packages/@glimmer/runtime/lib/compiled/opcodes/content.ts:109-120`: no updating operation
-   is installed for a constant text position). *Test:* `tracking-test.ts:469`.
+   is installed for a constant text position). *Test:* `test/tracking-test.ts:469`.
 4. **Constant is decided per evaluation.** A computation that was non-constant can become
    constant after a re-evaluation that consumes nothing. From then on it is final.
    *Source:* `valueForRef` short-circuits permanently once `ref.tag === CONSTANT_TAG`
@@ -196,7 +208,7 @@ normative.
 | Cell kind | Default policy | Configurable? | Source / test |
 |---|---|---|---|
 | `@tracked` property (any decorator form) and classic `tracked()` | **Always invalidate**, even when the new value is identical (`===`) to the old | Yes: `@tracked({ equals })`. When `equals(old, new)` returns true, the write is skipped entirely (the value is *not* stored and nothing is invalidated) | `packages/@ember/-internals/metal/lib/tracked.ts:351-364`, `:429-442`; tests `packages/@ember/-internals/metal/tests/tracked/options_test.js:9,29,44` |
-| Standalone `tracked(value, options)` (`TrackedValue`) | `Object.is`: equal writes do not invalidate and do not store | Yes: `options.equals` | `packages/@glimmer/validator/lib/tracked-value.ts:67-85,103-111`; tests `packages/@ember/-internals/metal/tests/tracked/standalone_test.js:37,50,63`, `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:239` |
+| Standalone `tracked(value, options)` (`TrackedValue`) | `Object.is`: equal writes do not invalidate and do not store | Yes: `options.equals` | `packages/@glimmer/validator/lib/tracked-value.ts:123-141,149-161`; tests `packages/@ember/-internals/metal/tests/tracked/standalone_test.js:37,50,63`, `packages/@ember/-internals/glimmer/tests/integration/components/tracked-test.js:239` |
 | `trackedArray` element / `length`, `trackedObject` property, `trackedMap`/`trackedWeakMap` value, `trackedSet`/`trackedWeakSet` membership | `Object.is` against the current value | Yes: `options.equals` (per collection) | §07-3.5 |
 | Plain (untracked) property written with Ember `set()` | Invalidate iff `currentValue !== newValue` (strict inequality, so `NaN → NaN` invalidates and `+0 → -0` does not) | No | `packages/@ember/-internals/metal/lib/property_set.ts:85-103` |
 | `notifyPropertyChange(obj, key)` | Always invalidate (it is an explicit invalidation with no value) | No | `packages/@ember/-internals/metal/lib/property_events.ts:50-81` |
@@ -266,8 +278,8 @@ The consumed set is cleared only when the outermost transaction ends
 (`meta.ts:37-43`) and `DIRTY_TAG` (`validators.ts:226-230`). Render transactions are wrapped
 with `debug.runInTrackingTransaction` (`packages/@glimmer/runtime/lib/render.ts:31-38` for
 initial render; `packages/@glimmer/runtime/lib/vm/update.ts:46-70` for revalidation).
-*Tests:* `tracking-test.ts:575,602,616`; `packages/@ember/-internals/metal/tests/tracked/validation_test.js:372`;
-`packages/@ember/-internals/glimmer/tests/integration/components/curly-components-test.js:2680-2785`;
+*Tests:* `test/tracking-test.ts:575,602,616`; `packages/@ember/-internals/metal/tests/tracked/validation_test.js:372`;
+`packages/@ember/-internals/glimmer/tests/integration/components/curly-components-test.js:1208-1313`;
 `packages/@ember/-internals/glimmer/tests/integration/helpers/helper-manager-test.js:350-404`.
 
 Consequences, all normative for development builds:
@@ -277,7 +289,7 @@ Consequences, all normative for development builds:
 2. Reading a cell in one computation and writing it in a *later sibling* computation in the
    same render transaction asserts. The canonical case is a child component's constructor
    writing state that an ancestor's template already rendered. Tests: "when a shared dependency
-   is changed during children's rendering (tracked)", `curly-components-test.js:2740-2785`.
+   is changed during children's rendering (tracked)", `components/curly-components-test.js:1268-1313`.
 3. Reads made in an untracked frame are *not* recorded (§07-1.4, item 3).
 4. Reads made with *no* open tracking frame at all are not recorded.
 5. The **commit phase** of a render transaction runs *after* the render transaction's debug
@@ -348,17 +360,17 @@ DOM updates, `renderSettled()`, and the run loop.
    renderer (every renderer with at least one root) schedules its `revalidate` into the
    `'render'` queue, at most once per run loop.
    *Source:* `_backburner.on('begin', loopBegin)`; `loopBegin` calls `renderer.rerender()`,
-   which calls `scheduleOnce('render', …, revalidate)` (`base-renderer.ts:153-157,217,370-372,684-686`).
+   which calls `scheduleOnce('render', …, revalidate)` (`base-renderer.ts:546-550,574,381-383,503-505`).
 3. **Queue order.** The run loop queues are, in order: `actions`, `routerTransitions`, `render`,
    `afterRender`, `destroy`, plus an internal RSVP error queue (`packages/@ember/runloop/index.ts:72-90`).
    DOM updates caused by writes in `actions` are applied when the `render` queue flushes, before
    `afterRender`.
 4. **Revalidate.** `revalidate` is a no-op if the renderer is *valid*. Otherwise it runs a
-   render transaction over all its roots. A renderer is valid iff it is destroyed, it has no
-   roots, or **no cell anywhere has been invalidated** since the end of its last render
+   render transaction over all its roots. A renderer is valid iff it has no roots (a destroyed
+   renderer has none), or **no cell anywhere has been invalidated** since the end of its last render
    transaction. (This is a global check. The current implementation compares the global
    revision counter.)
-   *Source:* `isValid` (`base-renderer.ts:393-395`), `revalidate` (`:380-385`).
+   *Source:* `isValid` (`base-renderer.ts:393-395`), `revalidate` (`:397-402`).
    A conforming implementation MAY use a finer-grained validity check (for example, only cells
    the renderer depends on). The observable DOM result MUST be the same, and
    `renderSettled()`/loop-end behavior (items 6–7) MUST still hold with respect to cells the
@@ -368,8 +380,11 @@ DOM updates, `renderSettled()`, and the run loop.
       rendered before the pass ends: the loop repeats while the root count grew. Each
       iteration is its own runtime transaction with its own commit phase, and a repeated
       iteration renders the new roots and revalidates the earlier ones again
-      (`base-renderer.ts:320-355`). So the adding call (e.g. `renderComponent`) returns
-      before its root has rendered (§08-14 Q9).
+      (`base-renderer.ts:316-352`). So the adding call (e.g. `renderComponent`) returns
+      before its root has rendered (§08-14 Q9). A root that is destroyed in the meantime,
+      including one that has not rendered yet, is skipped, and the transaction removes it from
+      the renderer when it ends (`:154-163`, `:335-338`, `:349-351`). When the last root is
+      removed the renderer leaves the global renderer list (`:354-365`).
    2. Records "last validated" as *now*, at the end of the render body and **before** the commit
       phase (`base-renderer.ts:345`).
    3. Runs the **commit phase** (component `didCreate` then `didUpdate` hooks, then modifier
@@ -385,13 +400,13 @@ DOM updates, `renderSettled()`, and the run loop.
    run loop is started immediately (`_backburner.join(null, NO_OP)`). By item 2, it schedules
    another revalidation. When all renderers are valid, the pending `renderSettled()` promise
    resolves (inside a run loop) and the loop counter resets.
-   *Source:* `loopEnd` (`base-renderer.ts:199-215`).
+   *Source:* `loopEnd` (`base-renderer.ts:557-572`).
 7. **Infinite invalidation detection.** If run loops are re-entered for invalidity more than
    `ENV._RERENDER_LOOP_LIMIT` times in a row (default `1000`,
    `packages/@ember/-internals/environment/lib/env.ts:133-139`), the renderer is destroyed and
-   `Error('infinite rendering invalidation detected')` is thrown (`base-renderer.ts:203-207`).
+   `Error('infinite rendering invalidation detected')` is thrown (`base-renderer.ts:560-564`).
    This check is **not** debug-only.
-8. **`renderSettled()`** (`@ember/renderer`, `base-renderer.ts:174-188`) returns a promise that
+8. **`renderSettled()`** (`@ember/renderer`, `base-renderer.ts:590-606`) returns a promise that
    resolves at the end of the first run loop after which all renderers are valid. Repeated calls
    before resolution return the *same* promise. If no run loop is open when it is called, it
    schedules a no-op into `actions` to start one.
@@ -487,7 +502,7 @@ arguments like `tracked` does (§07-3.1.1).
 ```ts
 interface ReadOnlyReactive<T> {
   readonly value: T;           // read: evaluate if needed, consume (below)
-  get: () => T;                // same as reading .value; an own property, works detached
+  get: () => T;                // same as reading .value; works detached
 }
 function cached<T>(fn: () => T, options?: { description?: string }): ReadOnlyReactive<T>;
 ```
@@ -1260,12 +1275,17 @@ tracked<V>(initial: V, options?: { equals?: (a: V, b: V) => boolean; description
 
 - `equals` defaults to `Object.is`. When `equals(current, v)` is true, `set` returns `false` and
   does nothing (§07-1.6).
-- `get`, `set`, `update`, and `freeze` are own arrow-function properties, so they work detached
-  (test `packages/@glimmer/validator/test/tracked-value-test.ts:123`).
+- `get`, `set`, `update`, and `freeze` are accessors on the prototype, not own properties. Each
+  returns a function bound to the instance, so it works detached (test
+  `packages/@glimmer/validator/test/tracked-value-test.ts:123`). The function is created the
+  first time the accessor is read and cached, so reading it again returns the *same* function
+  (test `tracked-value-test.ts:104`), and an instance that only uses `value` never creates one.
+  A detached `freeze` still freezes the instance (test `:113`). The `value` setter and all four
+  functions share one write path, so the checks below behave the same through any of them.
 - After `freeze()`, `set`/`update` (and `.value =`) throw
   ``Error(`Cannot update a frozen TrackedValue${description ? ` (\`${description}\`)` : ''}`)``.
   This check happens **before** the equality check, so setting an equal value on a frozen
-  instance also throws (`tracked-value.ts:67-74`).
+  instance also throws (`tracked-value.ts:124-130`).
 - The value is not copied or wrapped. `tracked(obj)` holds a reference to `obj`, and mutating
   `obj`'s own properties is not tracked (test `standalone_test.js:96`).
 - `tracked` used as a **template helper** (`(tracked 0)`) works through the default function

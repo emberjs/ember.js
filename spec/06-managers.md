@@ -285,7 +285,7 @@ consequences:
    `getComponentTemplate` and then `templateFactory(owner)`. It is called with the owner
    in effect at the definition's *first* use (`constants.ts:197-208`). The cache is keyed
    by the definition only, not by owner (`constants.ts:183`), and there is one cache per
-   renderer (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:627`). So within one
+   renderer (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:453`). So within one
    renderer (an application and all its engines share one), a definition's template stays
    bound to the first owner that rendered it. For a loose-mode template this decides which
    owner resolves its free names. See Q15.
@@ -1356,7 +1356,7 @@ were observed by experiment (verified by experiment, T9b: deferred destructor in
 after DOM removal, `isDestroyed` false there and true after the `destroy` queue); the
 `@glimmer/destroyable` tests use their own two-queue flush, and no upstream test pins the Ember
 mapping. Eager-before-DOM-removal is pinned for classic
-components (`packages/@ember/-internals/glimmer/tests/integration/components/life-cycle-test.js:1429-1587`).
+components (`packages/@ember/-internals/glimmer/tests/integration/components/classic/life-cycle-test.js:1429-1587`).
 
 ### 10.3 How template-created objects join the tree
 
@@ -1389,7 +1389,7 @@ When a block is torn down:
 
 `destroy(block)` is called and the block's DOM is cleared **after** `destroy()` returns. So
 eager destructors, such as classic `willDestroyElement`, run while the DOM is still
-attached (tested, `life-cycle-test.js:3070-3228`), and deferred ones run after it is detached
+attached (tested, `classic/life-cycle-test.js:1429-1587`), and deferred ones run after it is detached
 (verified by experiment, T9b; §05-11.2).
 
 ---
@@ -1430,7 +1430,7 @@ Installs run child-first and updates run parent-first. This section is the owner
 commit-phase order. §05-1.4 and §07-1.10 refer to it.
 
 Test status: the child-first order of creation and update hooks is pinned for classic
-components (`life-cycle-test.js:1946-2178`: `didInsertElement`/`didRender` bottom → top, `didUpdate`
+components (`classic/life-cycle-test.js:305-537`: `didInsertElement`/`didRender` bottom → top, `didUpdate`
 bottom → top), and the child-first order of modifier installs by
 `packages/@glimmer-workspace/integration-tests/test/modifiers-test.ts:304-458`. The hook
 order across a tree of public-manager components was observed by experiment (T9b; the hook list in §05-7.4 is

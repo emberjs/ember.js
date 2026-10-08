@@ -16,9 +16,9 @@ Author rulings in `5740b4aeb7` (inline notes under §09-9.8):
 ## A. Citation refresh (agent; chapters 01–08 only)
 
 - [x] A1. `python3 spec/tools/remap-citations.py 675744ab35 9bec1cb2a8 --apply`; record the count.
-- [ ] A2. Resolve every FLAG line by hand (44; list in the run's output), and every citation to a
+- [x] A2. Resolve every FLAG line by hand (44; list in the run's output), and every citation to a
       file that moved (e.g. `components/{ => classic}/…`, tests split out of `life-cycle-test.js`).
-- [ ] A3. `check-citations.py` clean.
+- [x] A3. `check-citations.py` clean.
 - [ ] A4. Prose vs behavior: read `git diff 675744ab35 9bec1cb2a8 -- packages` for changes to
       cited behavior (TrackedValue functions/setters, renderComponent root release on destroy,
       base-renderer cleanup, tracker pool, `get` helper dotted keys, `{{on}}` ordering docs,
@@ -64,3 +64,16 @@ C1 (Opus), counts over `@ember/-internals/glimmer/tests`, `@glimmer-workspace`,
   `setupRenderingTest`, `render`/`settled` from `@ember/test-helpers`, `<template>`. Public API
   only and async: the target form for the conformance suite.
 - So Q4's migration has started but is about 1% done by call sites.
+- A2: remap-citations does not follow tests moved or split between files, and it even rewrote
+  some wrongly (e.g. `life-cycle-test.js:510-531` became `:2151-2172`). Re-derived every citation to a
+  changed test file (184 spans in chapters 01-08) by matching unique source lines of the old
+  file (`675744ab35`) against the new files, then checked each result by its first line. Kept
+  by hand: component-template-test (split between `components/` and `components/classic/`), element
+  tests (`element-test.js` is now `helpers/element-test.gjs`, `async` `test()` style), several
+  ranges split between `curly-components-test.js` and `classic/curly-components-test.js`,
+  `utils-test.js` (now `classic/utils-test.js`). Bare names that became ambiguous (`classic/X`
+  vs `components/X`) are now written with the distinguishing directory. 44 FLAGs (source
+  files: base-renderer.ts, tracking.ts, tracked-value.ts, helper/modifier index.ts) fixed by hand
+  against the new code; about 120 test spans re-pointed to `classic/` or new line numbers.
+- A3: `check-citations.py` reports every citation ok; `xref.py` prints nothing. (Heuristic
+  `check-citation-semantics.py` NEAR/MISS counts compared with the old tree: no new real misses.)

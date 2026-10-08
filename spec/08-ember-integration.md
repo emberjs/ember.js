@@ -78,7 +78,7 @@ supported.
 
 Two resolvers exist:
 
-- `ResolverImpl` — used by `renderComponent` (`base-renderer.ts:604-616`).
+- `ResolverImpl` — used by `renderComponent` (`base-renderer.ts:430-442`).
 - `RouterResolver extends ResolverImpl` — used by the application `Renderer`
   (`renderer.ts:200-212`). It adds the `-mount` keyword helper to *both*
   `lookupBuiltInHelper` and `lookupHelper` (`router-resolver.ts:6-28`).
@@ -156,7 +156,7 @@ import binding:
   unknown name asserts `${name} is not a known keyword. Available keywords: …`.
 
 Because the rewrite happens on `PathExpression.original`, a *local* named e.g. `on` or `fn`
-shadows the built-in (test: `render-component-test.ts:314-331` "Can shadow keywords").
+shadows the built-in (test: `render-component-test.ts:316-333` "Can shadow keywords").
 
 Observable requirement: in a strict-mode template, the free identifiers listed above MUST
 behave exactly as if the corresponding export had been imported from `@ember/helper` /
@@ -221,7 +221,7 @@ Chapter 03 specifies the Ember AST plugins precisely. This section records the r
 4. `assert-against-attrs` (loose only) — **[Dev]** `{{attrs.x}}` is a compile error
    `Using {{attrs}} to reference named arguments is not supported. {{attrs.x}} should be updated to {{@x}}. <loc>`;
    `{{this.attrs.x}}` emits deprecation `attrs-arg-access` and is **rewritten to `@x`**
-   (`assert-against-attrs.ts:25-85`, test `curly-components-test.js:3609-3652,3848-3890`).
+   (`assert-against-attrs.ts:25-85`, test `components/curly-components-test.js:574-584`, `classic/curly-components-test.js:762-790,960-1001`).
 5. `transform-each-in-into-each` — `{{#each-in X as |k v|}}` → `{{#each (-each-in X) as |v k|}}`;
    with a single block param `|k|` the params become `['( unused value )', k]`
    (`transform-each-in-into-each.ts:27-73`). The `key=` hash pair is preserved.
@@ -454,13 +454,13 @@ is reused otherwise (chapter 07 caching semantics).
   - for `""`: the block content with no wrapping element; attributes and modifiers are dropped.
   - Definitions are cached per tag name (`element.ts:70-80`), so `(element "h1")` evaluated twice
     yields the same identity, and changing the tag name produces a different definition (the
-    old element is torn down and a new one rendered: `element-test.js:79-106`).
+    old element is torn down and a new one rendered: `element-test.gjs:80-108`).
   - Debug name / `toString()` is `(element "<tag>")`.
 - **[Dev]** assertions (thrown during evaluation): exactly one positional argument
   (`The \`element\` helper takes a single positional argument`), no named arguments
   (`The \`element\` helper does not take any named arguments`), and the argument must be a
   string (`` The argument passed to the `element` helper must be a string (you passed `<v>`) ``, the
-  parenthetical omitted for `null`, `undefined` and objects). Tests `element-test.js:27-205`.
+  parenthetical omitted for `null`, `undefined` and objects). Tests `element-test.gjs:28-55,118-195`.
   See Q4 for a documentation mismatch about `null`/`undefined`.
 
 ### 2.10 `uniqueId` (strict) / `unique-id` (loose)
@@ -490,7 +490,7 @@ is reused otherwise (chapter 07 caching semantics).
 - **Semantics**: `(mut path)` requires its single positional argument to be *updatable*
   (§2) — a path (`this.x`, `@x`, block param `.x`, `(get …)`, a `hash` child path, or
   another `mut`). **[Dev]** otherwise `You can only pass a path to mut`
-  (tests `mut-test.js:734-755`: literals and helper results assert).
+  (tests `helpers/mut-test.js:83-104`: literals and helper results assert).
 - The result's *value* is the current value of the path (reading it is reactive to the path).
   The result is additionally marked *invokable*, which has two observable effects:
   1. `fn` treats it specially (§2.4): `(fn (mut this.x))` returns a setter; `(fn (mut this.x) v)`
@@ -500,7 +500,7 @@ is reused otherwise (chapter 07 caching semantics).
 - Named arguments are ignored; extra positionals ignored.
 - *Note:* the old "mut cell" object (`{ value, update() }`) is not produced by `mut` itself; it
   appears in a classic component's `attrs` for *any* updatable argument (§6.5,
-  `mut-test.js:998-1126`).
+  `classic/mut-test.js:329-457`).
 
 ### 2.12 `readonly` **[Legacy]**
 
@@ -511,8 +511,8 @@ is reused otherwise (chapter 07 caching semantics).
   *not updatable* (§2). If the argument is already non-updatable it is returned as-is. The
   result follows upstream changes but writes downstream (e.g. a classic child `set`ting the
   property) do not propagate upstream. Only the binding is protected — mutating properties of an
-  object value is still visible to all (tests `readonly-test.js:283-541`;
-  `mut-test.js:790-845` "{{readonly}} of a {{mut}} is converted into an immutable binding").
+  object value is still visible to all (tests `classic/readonly-test.js:12-270`;
+  `classic/mut-test.js:152-207` "{{readonly}} of a {{mut}} is converted into an immutable binding").
 
 ### 2.13 `each-in` (keyword) / `-each-in`
 
@@ -763,7 +763,7 @@ Paths with a free head and a tail (`{{foo.bar}}`) are compile-time errors in loo
 strict mode (e.g. `You attempted to render a path (\`{{hello.world}}\`), but hello was not in scope`,
 `custom-helper-test.js:38-52`). There is **no implicit-`this` fallback** in Ember 7: a free
 name never resolves to a property of `this` (RFC `rfcs/text/0308-deprecate-property-lookup-fallback.md`;
-test `curly-components-test.js:3568-3607` "lookup of component takes priority over property",
+test `components/curly-components-test.js:533-572` "lookup of component takes priority over property",
 "component without dash is looked up").
 
 ### 5.2 Components
@@ -826,7 +826,7 @@ execution (lazily, on first render of that block), not when the template module 
 **Dynamic string names.** `{{component this.name}}` / `(component "x")`: when the value is a
 non-empty string, it is resolved with `lookupComponent` at the time the value is (re)evaluated
 (`packages/@glimmer/runtime/lib/references/curry-value.ts:29-71`). **[Dev]** not found →
-the same "expected to be a component" error (`dynamic-components-test.js:476-496`). In strict
+the same "expected to be a component" error (`components/dynamic-components-test.js:476-496`). In strict
 mode a string value throws **[Dev]**
 `Attempted to resolve a dynamic component with a string definition, \`${value}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`
 
@@ -851,7 +851,7 @@ lookupHelper(name, owner):                               // resolver.ts:137-186
 
 The registry is configured with `helper: { instantiate: false }` (`setup-registry.ts:43`), so
 registering a plain function as `helper:foo` makes `{{foo}}` call it via the default helper
-manager (`render-component-test.ts:973-989`). Names without a dash resolve
+manager (`render-component-test.ts:1054-1070`). Names without a dash resolve
 (`custom-helper-test.js:30-36`); names containing `.` cannot be expressed (§5.1).
 **[Dev]** not found: `Attempted to resolve \`${name}\`, which was expected to be a helper, but nothing was found.`
 
@@ -879,7 +879,7 @@ the runtime as strict keywords, **[Dev]**
 `Attempted to resolve a <kind> in a strict mode template, but that value was not in scope: <name>`
 (`resolution.ts:425-454`; test `render-component-test.ts:1073-1082`). A loose-mode component
 invoked *from* a strict template still resolves through the owner passed down the tree
-(`render-component-test.ts:973-989`).
+(`render-component-test.ts:1054-1070`).
 
 ### 5.6 Built-in component registrations
 
@@ -947,7 +947,7 @@ component = factory.create(props)        // untracked; init() runs, then `didRec
 So every named argument is reflected as an own property of the instance and available as
 `this.k`, `{{this.k}}`, `{{@k}}`, and `this.attrs.k` (value or mutable cell; *[Legacy]*
 `{{this.attrs.k}}` in templates is rewritten to `@k`, §1.4(4)). Tests
-`curly-components-test.js:3018-3071,3848-3890`.
+`components/curly-components-test.js:44-69`, `classic/curly-components-test.js:700-725,960-1001`.
 
 **Updates** (`curly.ts:442-473`). When the component's update hook runs and the tracked
 computation that read the argument values is invalid (any argument changed):
@@ -967,7 +967,7 @@ In priority order (`curly.ts:146-173`; `packages/@glimmer/program/lib/constants.
 
 1. A template associated with the class via `setComponentTemplate` (colocated `.hbs`, template
    tag, or explicit) — inherited through the class hierarchy
-   (`component-template-test.js:103-133`). Determined once per definition; `layout` is ignored
+   (`classic/component-template-test.js:9-24`, `components/component-template-test.js:76-88`). Determined once per definition; `layout` is ignored
    in this case.
 2. Otherwise the instance's `layout` property, if it is a template factory (a function).
 3. Otherwise, if `layoutName` is set, `owner.lookup("template:" + layoutName)`; **[Dev]**
@@ -976,7 +976,7 @@ In priority order (`curly.ts:146-173`; `packages/@glimmer/program/lib/constants.
    (`packages/@glimmer/program/lib/util/default-template.ts:7`).
 
 `layout`/`layoutName` are read per instance at render time (dynamic layout); both are
-**[Legacy]**. A `template` property on the class is ignored (`curly-components-test.js:4294-4335`).
+**[Legacy]**. A `template` property on the class is ignored (`classic/curly-components-test.js:1284-1325`).
 
 ### 6.3 The wrapper element
 
@@ -986,7 +986,7 @@ form) and element modifiers are applied to that element (the "attribute hook", �
 
 - **Tag name**: `component.tagName || 'div'` (`curly.ts:175-183`). `tagName` may be passed as an
   argument (`{{foo-bar tagName="span"}}`), set in the class or in `init`
-  (`curly-components-test.js:2564-2637`). **[Dev]** `tagName` may not be a computed property
+  (`classic/curly-components-test.js:246-319`). **[Dev]** `tagName` may not be a computed property
   (`component.ts:986-989`). It is read once when the element is created; later changes are
   ignored.
 - **Tagless** (`tagName === ''`): no element. **[Dev]** assertions
@@ -1009,10 +1009,10 @@ form) and element modifiers are applied to that element (the "attribute hook", �
   4. Each `classNameBindings` entry (§6.4).
   5. The static class `ember-view`.
   6. If `'ariaRole' in component`: attribute `role` bound reactively to `this.ariaRole`
-     (absent when `null`/`undefined`; `curly-components-test.js:4210-4293`).
+     (absent when `null`/`undefined`; `classic/curly-components-test.js:1200-1283`).
 - **elementId**: if not provided and the component is not tagless, `init` sets
   `elementId = guidFor(this)` (`component.ts:991-993`). It is not reactive: changing the bound
-  `id`/`elementId` argument later does not change the DOM (`curly-components-test.js:2346-2460`).
+  `id`/`elementId` argument later does not change the DOM (`classic/curly-components-test.js:28-142`).
   **[Dev]** after insertion, setting a different `elementId` throws
   `Changing a view's elementId after creation is not allowed`
   (`packages/@ember/-internals/views/lib/views/states.ts:66-94`). **[Dev]** `elementId` may
@@ -1073,23 +1073,23 @@ updatable (§2) (paths, `mut`, `get`, `hash` children …), not only `mut`:
   (`set`, `this.set`, tracked/`notifyPropertyChange`), and the component is not currently
   receiving attrs (§6.1 update), and `k` is an updatable named argument,
   the new value is written to that argument (`component.ts:1039-1050`). This propagates
-  through intermediate classic components (`mut-test.js:626-733,757-788`,
-  `curly-components-test.js:5194-5407`).
-- `this.attrs.k.update(v)` (mutable cell) writes `v` upstream (`mut-test.js:998-1126`).
+  through intermediate classic components (`classic/mut-test.js:10-117,119-150`,
+  `classic/curly-components-test.js:1567-1780`).
+- `this.attrs.k.update(v)` (mutable cell) writes `v` upstream (`classic/mut-test.js:329-457`).
 - `readonly` breaks the chain upward (§2.12).
 - Literal/helper-result arguments are not updatable; setting the property only changes the
-  local property ("tolerate constant inputs", `mut-test.js:1078-1126`).
+  local property ("tolerate constant inputs", `classic/mut-test.js:409-457`).
 - Glimmer components (`@glimmer/component`) receive no such behaviour — arguments are
   read-only (§06).
 
 ### 6.6 `this`, blocks and `{{yield}}`
 
 - Inside the component's template `this` is the component instance; `{{this}}` renders its
-  `toString()` (`curly-components-test.js:5883-5937`).
+  `toString()` (`components/curly-components-test.js:1436-1490`).
 - A block passed to the component (`{{#foo-bar}}…{{/foo-bar}}`) is evaluated with the
   *caller's* `this` and scope ("it preserves the outer context when yielding",
-  `:3121-3143`); `{{yield a b}}` passes block params; `{{yield to="inverse"}}` renders the
-  `{{else}}` block; `(has-block)`/`(has-block-params)` work as in §05 (`:4337-4804`).
+  `:120-142`); `{{yield a b}}` passes block params; `{{yield to="inverse"}}` renders the
+  `{{else}}` block; `(has-block)`/`(has-block-params)` work as in §05 (`:736-1184`).
 - `@component` or other `@`-names that are not passed are `undefined`.
 
 ### 6.7 Lifecycle hooks
@@ -1097,7 +1097,7 @@ updatable (§2) (paths, `mut`, `get`, `hash` children …), not only `mut`:
 Hooks are methods on the instance and are also sent as Evented events (so `on('didInsertElement', …)`
 listeners fire first, then the method; `packages/@ember/-internals/views/lib/views/core-view-utils.ts:4-10`).
 Hook invocations are not tracked (reads inside hooks do not become dependencies of the
-render; `curly-components-test.js:6102-6176`).
+render; `classic/curly-components-test.js:2191-2265`).
 
 **"Interactive"** means the renderer's environment is interactive (browser, not FastBoot/SSR
 serialization). Hooks marked (I) fire only when interactive.
@@ -1116,7 +1116,7 @@ siblings in document order):
                (I) state → inDOM; didInsertElement; didRender
 ```
 
-Test: `life-cycle-test.js:1946-2061,2179-2281` (the exact sequence including `on(init)`).
+Test: `classic/life-cycle-test.js:305-420,538-640` (the exact sequence including `on(init)`).
 Non-interactive environments get only `init`, `on(init)`, `didReceiveAttrs` (and on update
 `didUpdateAttrs`, `didReceiveAttrs`).
 
@@ -1138,8 +1138,8 @@ private "dirty" storage (invalidated by `rerender()`):
   region is invalid, even when no argument changed (§06-8.5). Because the region includes
   descendants, calling `rerender()` on a component also runs
   `willUpdate/willRender/didUpdate/didRender` on **every ancestor classic component** (not
-  descendants): `life-cycle-test.js:2021-2111`. Changing an argument used only by the top
-  component runs hooks only on that component (`:2111-2142`). This ancestor behavior is
+  descendants): `classic/life-cycle-test.js:380-470`. Changing an argument used only by the top
+  component runs hooks only on that component (`:470-501`). This ancestor behavior is
   required, for the same reason as `updateComponent`'s coarse granularity (§06-4.4): these
   hooks exist for older component patterns that depend on it. An implementation with
   finer-grained invalidation MUST still run them on every ancestor classic component.
@@ -1166,12 +1166,12 @@ later (runloop 'destroy' queue):
 ```
 
 (`packages/@ember/object/core.ts:300-301`, `packages/@ember/-internals/glimmer/lib/component.ts:1596-1600`;
-§06-10.2 gives the queue mapping.) Test: `life-cycle-test.js:2143-2175` — the full order for three nested components is
+§06-10.2 gives the queue mapping.) Test: `classic/life-cycle-test.js:502-534` — the full order for three nested components is
 `top.willDestroyElement, top.willClearRender, middle.willDestroyElement, middle.willClearRender,
 bottom.willDestroyElement, bottom.willClearRender, top.didDestroyElement, middle.didDestroyElement,
 bottom.didDestroyElement, top.willDestroy, middle.willDestroy, bottom.willDestroy`.
 
-Setting properties in `willDestroyElement` must not assert (`curly-components-test.js:5616-5641`).
+Setting properties in `willDestroyElement` must not assert (`classic/curly-components-test.js:1944-1969`).
 
 ### 6.8 Element access and view hierarchy
 
@@ -1429,7 +1429,7 @@ the lexically enclosing template's `@outlet` argument. `@outlet` is supplied by 
 machinery to each route template (below). Therefore:
 
 - `{{outlet}}` is meaningful only in a route template (or in a block lexically inside one,
-  e.g. passed to a classic component: `utils-test.js:512-526`). In an ordinary component's
+  e.g. passed to a classic component: `classic/utils-test.js:118-132`). In an ordinary component's
   own template `@outlet` is not supplied and nothing renders (see Q2).
 - A block param named `outlet` shadows it (`refinements-test.js:19-21`).
 
@@ -1546,30 +1546,36 @@ engine owner throughout.
 ### 9.1 Renderers and roots
 
 A *renderer* owns an environment (owner, document, `isInteractive`, `hasDOM`), a resolver, a
-DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:228-402, 603-687`).
+DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:187-415, 423-506`).
 
-- Adding a root (`renderRoot`) appends it, registers the renderer in the global live-renderer
-  list when it becomes non-empty, and synchronously runs a *render transaction* — unless the
+- Adding a root (`renderRoot`) appends it, makes it a destroyable child of the renderer's
+  state, registers a destructor that removes it from the list when it is destroyed (below),
+  registers the renderer in the global live-renderer list if it is not there, and
+  synchronously runs a *render transaction* — unless the
   renderer is already inside one, in which case the new root is rendered by the ongoing
   transaction's loop and **the call returns before the root has rendered** (see Q9).
-- A render transaction (`renderRoots`, `base-renderer.ts:320-368`) repeats: inside one runtime
+- A render transaction (`renderRoots`, `base-renderer.ts:316-352`) repeats: inside one runtime
   transaction (§05: modifiers installed / `didInsertElement`-class hooks run at its commit
   phase, §06-11), render (first time) or revalidate every non-destroyed root that existed at
   the start of the iteration; if roots were added during the iteration, loop again, in a new
-  runtime transaction, which renders the new roots and revalidates the others. Destroyed roots
-  are removed afterwards; if none remain the renderer is deregistered. The renderer records the
-  "last validated" point in the reactivity timeline.
-- A renderer is *valid* iff it is destroyed, has no roots, or no tracked storage has changed
-  since its last validated point (the renderer's own `isValid` method, `base-renderer.ts:393-395`;
+  runtime transaction, which renders the new roots and revalidates the others. A root that is
+  destroyed is skipped and left out of the list: at once when no transaction is running, else
+  when the transaction ends (`base-renderer.ts:265-271, 335-338, 349-365`). A root can be
+  destroyed before its first render, and it then never renders (`:154-163`). When the list
+  becomes empty the renderer is deregistered. The renderer records the "last validated" point
+  in the reactivity timeline.
+- A renderer is *valid* iff it has no roots (a destroyed renderer has none), or no tracked
+  storage has changed since its last validated point (the renderer's own `isValid` method, `base-renderer.ts:393-395`;
   not the **[Proposed]** `isValid` of §07-2.2.3).
 - **[Dev]** If a render throws, that root's render function is replaced by one that only logs
   `Attempted to rerender, but the Ember application has had an unrecoverable error occur during render. You should reload the application after fixing the cause of the error.`
-  (`errorLoopTransaction`, `base-renderer.ts:71-93`); the renderer is marked validated so it
-  does not immediately retry.
+  (`errorLoopTransaction`, `base-renderer.ts:71-93`); one such guard covers a root's first render
+  and all its later re-renders (`:131-147`). The renderer is marked validated so it does not
+  immediately retry.
 
 ### 9.2 Scheduling (Backburner run loop)
 
-(`base-renderer.ts:153-218`, `environment.ts:22-41`)
+(`base-renderer.ts:546-575`, `environment.ts:22-41`)
 
 - At the **begin** of every run loop, every live renderer schedules (once) a `revalidate` into
   the run loop's `render` queue.
@@ -1588,18 +1594,19 @@ DOM tree-builder factory, and an ordered list of *roots* (`base-renderer.ts:228-
 
 ### 9.3 `renderComponent` (`@ember/renderer`)
 
-`renderComponent(component, { into, owner = {}, env, args })` (`base-renderer.ts:459-593`):
+`renderComponent(component, { into, owner = {}, env, args })` (`base-renderer.ts:656-839`):
 
 - `component`: any value with a component manager.
 - `into`: an `Element`, a `SimpleElement`, or a cursor `{ element, nextSibling }`.
 - `owner`: any object (default: a fresh `{}`); used for injections, resolution of loose-mode
-  names (§5), and lifetime: the render result is associated as a destroyable child of the
-  owner, so destroying the owner destroys the render (`render-component-test.ts:112-282`).
+  names (§5), and lifetime: the render's root is associated as a destroyable child of the
+  owner, so destroying the owner destroys the render and removes the root from the renderer
+  (`render-component-test.ts:113-282`).
 - `env.isInteractive` (default `true`), `env.hasDOM` (default `true`), `env.document`
   (default `globalThis.document`); other keys are forwarded (private).
 - `args`: an object whose properties become the component's named arguments; reads are
   reactive if the object's properties are tracked (e.g. `trackedObject`, getters reading
-  tracked state: `render-component-test.ts:438-465, 578-650`).
+  tracked state: `render-component-test.ts:440-467,652-723`).
 
 Algorithm:
 
@@ -1607,23 +1614,30 @@ Algorithm:
 renderer = per-owner cached renderer, or create one: BaseRenderer.strict(owner, document, env)
            (ResolverImpl, client DOM builder); a renderer set via setRenderer(owner, r) is reused
 key = into.element if cursor else into
-existing = cache[key];  existing?.destroy()           // destruction is asynchronous
-if no existing and `into` is a real DOM Element: into.innerHTML = ''     // first time only
-target = existing had a render result ? { element: key, nextSibling: existing.firstNode() } : into
+last = cache[key]
+if last has a glimmerResult: last.result.destroy()    // destruction is asynchronous
+                             target = { element: key, nextSibling: last.glimmerResult.firstNode() }
+else if no last and `into` is a real DOM Element: into.innerHTML = ''     // first time only; target = into
 root = renderer.render(component, { into: target, args })   // renders synchronously unless inside a transaction (§9.1)
-associate root's result with owner; cache[key] = { result, glimmerResult }
-return { destroy(): destroys the render result (clears its DOM) }
+glimmerResult = root.result                            // undefined if the root is waiting for a transaction
+associate root as a destroyable child of owner
+result = { destroy(): destroys the root }              // removes it from the renderer, then clears its DOM
+cache[key] = { result, glimmerResult }                 // entry deleted when glimmerResult is destroyed, if still its own
+return result
 ```
 
 Observable details pinned by tests (`render-component-test.ts`):
 - Existing children of `into` are removed on the first render into a DOM element
-  (`:546-576`).
+  (`:620-650`).
+- Destroying a result destroys its root, so the renderer does not keep the root (or the
+  element rendered into) alive afterwards, and a renderer whose last root is destroyed leaves
+  the global renderer list (`:487-557`).
 - Rendering again into the same element inserts the new content *before* the previous
-  content and destroys the previous render (`:747-917`, including the quirks listed in Q9).
+  content and destroys the previous render (`:825-996`, including the quirks listed in Q9).
 - Multiple `renderComponent` roots with the same owner share one renderer and therefore one
-  render loop/reactivity (`:651-746`). Rendering into a detached element works (`:485-545`).
-- Modifiers may call `renderComponent` (`:466-484`); `captureRenderTree` includes these roots
-  regardless of owner (`:126-199`).
+  render loop/reactivity (`:724-823`). Rendering into a detached element works (`:559-619`).
+- Modifiers may call `renderComponent` (`:468-486`); `captureRenderTree` includes these roots
+  regardless of owner (`:127-202`).
 - `{{mount}}` is not available (§1.1).
 
 ### 9.4 Application rendering
@@ -1647,7 +1661,7 @@ Observable details pinned by tests (`render-component-test.ts`):
 `renderSettled()` returns a promise resolved at the end of the first run loop in which all
 live renderers are valid (§9.2). Repeated calls before resolution return the *same* promise.
 If there is no current run loop, calling it schedules a no-op in the `actions` queue so that a
-run loop occurs (`base-renderer.ts:174-197`, tests `render-settled-test.js:11-74`).
+run loop occurs (`base-renderer.ts:590-615`, tests `render-settled-test.js:11-74`).
 
 ### 9.6 Dynamic scope
 
@@ -1763,7 +1777,7 @@ Source `lib/utils/string.ts:40-225`.
 - `isTrustedHTML(v)` (alias `isHTMLSafe`): `v !== null && typeof v === 'object' && typeof v.toHTML === 'function'`
   — duck-typed, so any object with a `toHTML` method is treated as trusted by the runtime.
 - In content position (`{{v}}`) a trusted value is inserted as HTML (parsed), not text
-  (`curly-components-test.js:3458-3491`); in attribute position its `toString()` is used; as a
+  (`components/curly-components-test.js:457-490`); in attribute position its `toString()` is used; as a
   `style` value it suppresses the XSS warning; it is falsy iff its string is empty (§10.1).
   Chapter 05 defines the insertion semantics.
 
@@ -1814,8 +1828,8 @@ loop while target is an Element:
 ```
 
 So handlers bubble through ancestor classic components' elements (including form elements,
-`event-dispatcher-test.js:620-641`), returning `false` stops and prevents default, and
-handlers run inside a run loop (`:784-818`).
+`classic/event-dispatcher-test.js:196-217`), returning `false` stops and prevents default, and
+handlers run inside a run loop (`:316-350`).
 
 ---
 
@@ -1867,7 +1881,7 @@ behavior is open.
 
 **Q4. `element` with `null`/`undefined`.** The public docs say "When `@tagName` is `null` or
 `undefined`, nothing is rendered" (`packages/@ember/helper/index.ts:701-702`), but the
-implementation asserts in DEBUG (tests `element-test.js:27-56` expect a throw). In production,
+implementation asserts in DEBUG (tests `element-test.gjs:28-55` expect a throw). In production,
 `null` produces a definition whose tag is `null`, which renders the block *without* a
 wrapper (same as `""`), not nothing. The three behaviours disagree.
 
@@ -1887,11 +1901,15 @@ ignored (the element gets the default guid id). No test covers these.
 **Q9. `renderComponent` during a render transaction.** When `renderComponent` is called
 while the target renderer (same owner) is already rendering (e.g. from a getter or modifier
 during render), `renderRoot` defers the new root and `root.result` is `undefined` at return
-(`base-renderer.ts:282-318`, `568-587`). Consequently the returned `destroy()` is a no-op,
-the "replace previous render into the same element" logic sees no previous render, and both
-renders remain live — which is exactly what `render-component-test.ts:791-917` asserts
-("appear as siblings", with a comment calling the resulting order "kinda bonkers"). The
-source comment claims "Replace all contents". The intended semantics are unclear.
+(`base-renderer.ts:254-277`, `808-809`). The returned `destroy()` works: it destroys the root,
+which is then skipped and removed (§9.1). (That `destroy()` did nothing here is resolved.) What
+remains is that the "replace previous render into the same
+element" logic still sees no previous render, because the cache entry records the missing
+result and is never updated (`:737-744`, `824`). The new render is not placed before the old
+content, the old render is not destroyed, and both renders remain live, which is exactly what
+`render-component-test.ts:869-996` asserts ("appear as siblings", with a comment calling the
+resulting order "kinda bonkers"). The doc comment on `replaceLastRender` (`:717-736`) describes
+the replacement without mentioning this case. The intended semantics are unclear.
 
 **Q10. `this.attrs` deprecation past its `until`.** `attrs-arg-access` has `until: '6.0.0'`
 but is still emitted (and rewritten) in 7.x (`assert-against-attrs.ts:52-72`).
