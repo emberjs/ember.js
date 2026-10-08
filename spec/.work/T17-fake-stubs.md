@@ -7,7 +7,7 @@ page (one `index.html`, Ember's global context), so the real thing is available 
 ## Checklist
 - [x] 1. Glimmer harness emulating Ember
 - [x] 2. Ember tests emulating Glimmer / bypassing it
-- [ ] 3. Duplicated suites
+- [x] 3. Duplicated suites
 - [ ] 4. Summary table and sequence
 
 Abbreviations: `IT` = `packages/@glimmer-workspace/integration-tests`, `EG` =
@@ -283,7 +283,7 @@ or of the identifier, not executed QUnit tests; "registrations" multiplies by th
 - `@glimmer/validator/test/validators-test.ts:46-58` (1 of 22): fake `scheduleRevalidate`
   to count calls; Ember's is `backburner` `_scheduleRevalidate`. Not a duplicate; keep it
   but make it observe the real Ember call.
-- `IT/test/style-warnings-test.ts:15-30` (about 4 tests): fake `getProp` and `warnIfStyleNotTrusted`.
+- `IT/test/style-warnings-test.ts:15-30` (5 tests): fake `getProp` and `warnIfStyleNotTrusted`.
   Real: Ember's `warn` for style bindings, tested in `EG/components/attribute-bindings-test.js`
   / `class-bindings-test.js` / `content-test.js` (grep `style`). Action: move to the Ember
   harness using `expectWarning`.
@@ -329,3 +329,79 @@ or of the identifier, not executed QUnit tests; "registrations" multiplies by th
   (`@ember/helper`, `@ember/modifier`, `@ember/component/template-only`). Mechanical (C8).
 - `debug-render-tree-test.ts:1196` (`owner = {}` passed to `renderComponent`): a bare object as
   owner; only valid because `renderComponent` does not look anything up. Low priority.
+
+## 3. Duplicated suites
+
+Counts are `@test` markers. "Stronger" is the copy I would keep.
+
+| Behavior | Glimmer copy | Ember copy | Overlap | Stronger |
+|---|---|---|---|---|
+| Classic/curly components: positional params, `{{component}}` currying, hooks, attributeBindings, tagName, ids, destruction | `IT/test/ember-component-test.ts` (74) + curly/dynamic fan-out of `IT/lib/suites/emberish-components.ts` (19) | `EG/components/curly-components-test.js` (58), `contextual-components-test.js` (43), `dynamic-components-test.js` (20), `life-cycle-test.js`/`classic/life-cycle-test.js`, `web-component-fallback-test.js`, `will-destroy-element-hook-test.js`, `classic/curly-components-test.js` | Same test names for roughly 40 of the 74 (positional-params block, `{{component}}` helper aliasing/currying block, hooks, attributeBinding null/class, "unique IDs", web-component NonBlock, tagless) | Ember (real classic `Component`, real hook order, real `ember-view`) |
+| has-block / has-block-params / yield | `IT/lib/suites/has-block.ts` (27), `has-block-params.ts` (26), `yield.ts` (15) run in 3 kinds | `EG/helpers/yield-test.js` (14), `classic/yield-test.js`, `curly-components-test.js` (`has-block`), `angle-bracket-invocation-test.js` (`has-block`) , `contextual-components-test.js` | Same behaviors; Glimmer is the more exhaustive matrix (every block/inverse/param combination) | Glimmer for coverage, once ported to one invocation form; Ember for the two or three classic-specific cases (`hasBlock` in a classic component's JS, `{{yield}}` with `this.get`) |
+| `{{#each}}` | `IT/lib/suites/each.ts` (27), run by `jitSuite(EachSuite)` | `EG/syntax/each-test.js` (28), `classic/each-test.js` | Ember has the same core cases (key, `@index`, `@identity`, duplicates, scope, inverse); Glimmer adds nine "re-iterated via swap #1-9" and "array grows/shrinks during iteration", "autotracked custom iterable". Ember adds ArrayProxy/native-array/holes/GH regressions | Complementary. Glimmer for iteration algorithm, Ember for host iteration protocol (`toIterator`). Merge into one spec chapter list (§05 each) |
+| `{{in-element}}` | `IT/lib/suites/in-element.ts` (13) | `EG/syntax/public-in-element-test.js` (8) | basic render, `insertBefore`, cleanup, "components are destroyed"/"cleaned up" | Glimmer (more cases: update remote element, loop, constructing element). Ember adds the 3 assertion cases (non-null insertBefore, null/undefined destination), which Glimmer lacks |
+| `fn`, `hash`, `array`, `get`, `concat` | `IT/test/helpers/*.ts` (13, 8, 11, 19, 4) | `EG/helpers/*.js` (10, 9, 12, 21, 4) | Near-identical names, e.g. `fn`: "updates when arguments change", "updates when the function changes", "partially applies each layer when nested [GH#17959]", "can be used on the result of `mut`" (+ falsy) | Ember: it uses real `mut` and real owner. Glimmer's two `mut` tests use a fake. Delete the Glimmer copies after diffing for any unique case |
+| `on` modifier | `IT/test/modifiers/on-test.ts` (19), `keywords/on-runtime-test.ts` (3) | `EG/modifiers/on-test.js` (15) | most | Glimmer is larger; both run the real `on`; merge |
+| Custom modifier manager | `IT/test/managers/modifier-manager-test.ts` (9), `modifiers-test.ts` (17), `updating-modifiers-test.ts` (3) | `EG/custom-modifier-manager-test.js` (17) | managers: capability and lifecycle behaviors | Ember for the owner-injection and error messages. `modifiers-test.ts` runs on the fake `TestModifierManager` and has no direct counterpart; port to `defineSimpleModifier`, not delete |
+| Custom helper manager | `IT/test/managers/helper-manager-test.ts` (23) | `EG/helpers/helper-manager-test.js` (15), `custom-helper-test.js` (44), `invoke-helper-test.js` | capabilities, tracking, destroy | Glimmer on capability combinations, Ember on `helper()`/class helper/owner |
+| Custom component manager | `@glimmer/manager/test/managers-test.ts` (20) | `EG/custom-component-manager-test.js` (23) | create/update/destroy hook order | Ember (through render); keep the manager-level pure tests |
+| Strict mode and lexical scope | `IT/test/strict-mode-test.ts` (94), `lexical-scope-test.ts` | `EG/components/strict-mode-test.js` (22), `runtime-template-compiler-*.ts` | strict-mode component/helper/modifier resolution | Glimmer by count; neither uses a stub except `registerHelper/registerModifier` (4 sites in the Glimmer copy) |
+| `if`/`unless` | `IT/test/syntax/if-unless-test.ts` (11) | `EG/syntax/if-unless-test.js` (2) + `helpers/if-unless-test.js` + `shared-conditional-tests.js` | truthiness cases | Ember (real `toBool`: `isArray`, proxies, `isTruthy`) |
+| Tracked / collections | `IT/test/tracked-value-test.ts` (3), `collections/*` (6 files) | `EG/helpers/tracked-test.js` (10), `components/tracked-test.js` (27), `@ember/-internals/metal/tests/tracked/*`, `@ember/reactive` | tracked rendering updates | Ember; collections are Glimmer-only (no Ember twin) |
+| Debug render tree | `IT/test/debug-render-tree-test.ts` (13 on `DebugRenderTreeDelegate` using `EmberishCurlyComponent`) | `EG/application/debug-render-tree-test.ts` (16) | same API, `captureRenderTree` | Ember (real owner, real classic component and `{{outlet}}`/engine nodes); keep Glimmer only for strict-mode/template-only shapes |
+| `owner` handling | `IT/test/owner-test.ts` (6) on fake resolver + fake classic | `EG/application/engine-test.js`, `mount-test.js`, `@glimmer/owner/test` | owner threaded to helper/modifier/component managers | Ember |
+| `style` warning | `IT/test/style-warnings-test.ts` (5) | style cases in `EG/components/attribute-bindings-test.js`, `content-test.js` | warn on untrusted style | Ember (real warn); move |
+| SSR / rehydration | `IT/lib/suites/ssr.ts` (30), `initial-render.ts` Rehydration (88 via 2 suites), `partial-rehydration-test.ts`, `chaos-rehydration-test.ts` | none (Ember has no SSR suite in this repo; FastBoot lives elsewhere) | n/a | Glimmer only. It uses the fake registry and fake classic component (`RehydratingComponents`, `ServerSideComponentSuite` x 3 kinds). Not a duplicate, but affected by 1.3 |
+| Run-loop settle | `IT/test/render-test.ts` | `EG/render-settled-test.js` | n/a | Ember |
+
+Also duplicated infrastructure rather than tests: two `GlimmerishComponent`s (2.1, 1.2), two
+`compile` helpers (2.4), two QUnit/fixture setups (`IT/lib/setup-harness.ts` vs
+`internal-test-helpers`), two `assertHTML`/`equalTokens` implementations
+(`IT/lib/dom/assertions.ts` vs `internal-test-helpers/lib/equal-tokens.ts`; not examined in detail).
+
+## 4. Summary
+
+Ordered by impact (dependent tests, then how fake the thing is).
+
+| Stub | Imitates | Real replacement | Dependent tests | Action |
+|---|---|---|---|---|
+| `EmberishCurlyComponent` + manager (`IT/lib/components/emberish-curly.ts`) | classic `Component` + `CurlyComponentManager` | `@ember/component` classic `Component` via the Ember harness | about 160 fan-out tests (Curly+Dynamic) + `ember-component-test.ts` 74 + `owner-test.ts` 6 + `input-range-test.ts` 5 + `debug-render-tree-test.ts` 5 uses + Rehydration/SSR component suites (about 100 more via 3 kinds) | Delete. Port the roughly 10 tests with no Ember twin to `@glimmer/component`; drop the rest as duplicates |
+| `Curly`/`Dynamic` kinds and `componentModule` fan-out (`module.ts:113-197`, `render-test.ts:221-310`) | running each test under classic invocation | one invocation form per test; curly invocation through a real owner | same as above | Stop the fan-out (collapse to Glimmer + TemplateOnly); delete `buildCurlyComponent`/`buildDynamicComponent` |
+| `BaseEnv` queues + hand-driven `env.begin()/commit()` (`base-env.ts`, `render-test.ts:431-446`) | `EmberEnvironmentDelegate` + Ember renderer transaction | Ember's delegate and renderer; `renderSettled` | every test in `IT/test` (about 79 files) | Replace by the real delegate (this is 09 C1/W2) |
+| `TestJitRuntimeResolver` / `TestJitRegistry` / `CIRCULAR_OBJECT` | `ResolverImpl` + owner `factoryFor` | `buildOwner` + `owner.register` | every test using `registerComponent/Helper/Modifier` (about 150 sites in 22 files), `owner-test.ts` 6 | Replace with real resolver; `owner-test.ts` delete (Ember has twins) |
+| `TestModifierManager`, `registerModifier`, `registerHelper`, `createHelperRef` | `ember-modifier`/`@ember/helper` | `defineSimpleHelper`/`defineSimpleModifier` (`IT/lib/test-helpers/define.ts:138-189`, public managers) | about 76 call sites in 13 test files | Port to the public-manager helpers (mechanical); delete the managers |
+| `registerInternalHelper` with `createInvokableRef` for `mut` (`fn-test.ts:243,263`) | Ember's `mut` helper | real `mut` | 2 tests | Delete (twins at `EG/helpers/fn-test.js:195,208`) |
+| `registerInternalHelper` with const/compute refs (`updating-test.ts:395-505`, 6) | reference-level helper | plain helpers via `defineSimpleHelper`; `htmlSafe` for SafeString | 6 tests + 3 (`makeSafeString`) | Rewrite as plain helpers (C6); keep 1-2 destroyable tests as `@glimmer/destroyable` unit tests |
+| `GlimmerishComponent` (Glimmer harness) | `@glimmer/component` | `@glimmer/component` | about 42 files, all `Glimmer`-kind registrations | Replace import; delete |
+| `GlimmerishComponent` (Ember tests, `tests/utils/glimmerish-component.js`) | `@glimmer/component` | `@glimmer/component` | 7 files, about 48 uses | Replace import; delete |
+| `PositionalComponent` (`tests/utils/positional-component.js`) | classic `positionalParams` on a non-classic class | real classic `Component` with `positionalParams` | 4 files, 30 uses | Port to classic components (the `classic/` twins already do) |
+| `makeSafeString`, `{toHTML}` literal | `htmlSafe`/`SafeString` | `htmlSafe` from `@ember/template` | about 5 tests | Replace |
+| Host-hook fakes in `@glimmer/*/test` (`TestContext`, `testOverrideGlobalContext` in `reference`, `validator`, `style-warnings`) | Ember's global-context hooks (`getProp`, `toIterator`, `scheduleRevalidate`, `warnIfStyleNotTrusted`) | Ember's real hooks (already installed in the shared page) | references-test 12 + iterable-test 12 + validators-test 1 + style-warnings 5 | `style-warnings` and `iterable-test` port to Ember harness; `references-test`/`validators-test` are implementation tests of the reactive core (keep, but they are exactly the "tags/references are not normative" class; leave outside the conformance suite) |
+| `internal-test-helpers/lib/compile.ts` + `IT/lib/compile.ts` | build-time template compiler | one shared `compile` (09 seam C) | about 1,600 `render` sites (no test change) | Unify, not delete |
+| Public keywords imported from `@glimmer/runtime` in Ember tests | `@ember/helper`, `@ember/modifier` | those | 8 files | Mechanical import swap (C8) |
+| `ember-view` branches in shared tests (`initial-render-test.ts:1199-1261`) | classic wrapper element | removed with 1.1 | 8 sites | Delete with the Curly kind |
+| `TestJitRegistry` pre-registration of `on/fn/hash/array/get/concat` (`delegate.ts:98-103`) | built-in keywords through the owner | real resolver | whole harness | Goes with the resolver |
+
+Keep (not fakes): tests of the public manager API (`custom-*-manager-test.js`, `managers-test.ts`
+registry-level parts), `internal-test-helpers/lib/test-resolver.ts` (Ember registry contract),
+`defineComponent`/`defComponent`/`defineSimpleHelper`/`defineSimpleModifier`,
+`templateOnlyComponent` (also public), `@glimmer/owner` and `@glimmer/destroyable` unit tests,
+Glimmer-only suites with no Ember twin (collections, rehydration, SSR, `each` swap sequences,
+`in-element` update cases), `@glimmer/validator`/`reference` core tests as implementation tests.
+
+### Recommended sequence
+1. Mechanical, no risk: swap both `GlimmerishComponent`s for `@glimmer/component`
+   (about 50 files); swap `@glimmer/runtime` keyword imports in Ember tests for `@ember/helper` and `@ember/modifier`.
+2. Delete the two fake-`mut` tests, the fake-SafeString cases and `owner-test.ts`; delete
+   `ember-component-test.ts` tests that have same-name twins in `EG` (diff first; keep about 10).
+3. Port `registerHelper`/`registerModifier` to `defineSimpleHelper`/`defineSimpleModifier`;
+   delete `TestModifierManager`, `createHelperRef`, `registerInternalModifier`; rewrite the 6
+   `updating-test.ts` internal helpers.
+4. Collapse `componentModule` to Glimmer + TemplateOnly (+ a curly-invocation variant through a
+   real owner); delete the Curly/Dynamic kinds, `EmberishCurlyComponent`, the `ember-view`
+   branches, `RehydratingComponents` curly cases. Biggest deletion (about 160 fan-out tests).
+5. Replace `BaseEnv`, the registry/resolver and the hand-driven transaction code by Ember's
+   `EmberEnvironmentDelegate`, resolver and renderer (09 W2/C1). Unify the two `compile` helpers.
+6. Port `style-warnings-test.ts` and `PositionalComponent` users to real classic components;
+   move `iterable-test.ts` onto Ember's `toIterator`.
+7. Merge the duplicated suites (table in section 3), keeping the stronger copy.
