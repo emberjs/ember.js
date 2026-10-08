@@ -250,4 +250,4 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   removes no test); `w2-baseline-parse`-style diff against `W2-baseline-tests.tsv`: exactly the same 38
   missing and 1 new as after step 2. `type-check:internals` and prettier clean; eslint on IT shows only 3
   pre-existing unused-var errors (`smokeTest`, `name`, `Owner`).
-- 4.1 progress (ledger rows, one batch per suite; resume at the first suite not listed): done: emberish, has-block; 8 suite batches left (order: emberish, has-block, has-block-params, yield, scope, with-dynamic-vars, debugger, ssr, rehydrating-own, rehydrating-inherited).
+- 4.1 progress (ledger rows, one batch per suite; resume at the first suite not listed): done: emberish, has-block, has-block-params; 7 suite batches left (order: emberish, has-block, has-block-params, yield, scope, with-dynamic-vars, debugger, ssr, rehydrating-own, rehydrating-inherited).
