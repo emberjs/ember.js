@@ -10,7 +10,7 @@ import type { ASTPluginBuilder } from '@glimmer/syntax';
 import type { NTuple } from '@glimmer-workspace/test-utils';
 import { expect, isPresent, assert, unwrap } from '@glimmer/debug-util';
 import { clearElement, dict } from '@glimmer/util';
-import { dirtyTagFor } from '@glimmer/validator';
+import { trackedObject } from '@ember/reactive/collections';
 import { run } from '@ember/runloop';
 
 import type { ComponentBlueprint, ComponentKind, ComponentTypes } from './components';
@@ -57,7 +57,9 @@ export class RenderTest implements IRenderTest {
 
   protected element: SimpleElement;
   assert = QUnit.assert;
-  protected context: Dict = dict();
+  // Every write dirties the property, even of an equal value: tests mutate nested plain objects and
+  // then `set` the same object again to signal the change (`rerender({ person })`).
+  protected context: Dict = trackedObject<Dict>({}, { equals: () => false });
   protected renderResult: Nullable<RenderHandle> = null;
   private voidHandle: Nullable<RenderHandle> = null;
   protected helpers = dict<UserHelper>();
@@ -497,7 +499,6 @@ export class RenderTest implements IRenderTest {
 
   protected set(key: string, value: unknown): void {
     this.context[key] = value;
-    dirtyTagFor(this.context, key);
   }
 
   protected setProperties(properties: Dict): void {

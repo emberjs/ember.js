@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import { trackedWeakSet } from '@glimmer/validator';
+import { trackedWeakSet } from '@ember/reactive/collections';
 import { defineComponent, jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 class TrackedWeakSetTest extends RenderTest {

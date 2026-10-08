@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
 import type { Dict, Owner } from '@glimmer/interfaces';
-import { trackedArray } from '@glimmer/validator';
+import { trackedArray } from '@ember/reactive/collections';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 const ARRAY_GETTER_METHODS = [

@@ -1419,6 +1419,9 @@ importers:
       '@ember/destroyable':
         specifier: workspace:*
         version: link:../../@ember/destroyable
+      '@ember/reactive':
+        specifier: workspace:*
+        version: link:../../@ember/reactive
       '@ember/renderer':
         specifier: workspace:*
         version: link:../../@ember/renderer

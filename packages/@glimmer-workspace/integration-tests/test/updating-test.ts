@@ -4,7 +4,7 @@ import { htmlSafe } from '@ember/template';
 import type { JitRenderDelegate } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { trackedObject } from '@ember/reactive/collections';
 import {
   assertNodeTagName,
   getElementByClassName,
@@ -470,7 +470,7 @@ class UpdatingTest extends RenderTest {
     let { template, truthyValue, falsyValue, element } = arg1;
     let didCreate = 0;
     let didDestroy = 0;
-    let tag = createTag();
+    let tag = trackedObject({ version: 0 });
     let currentValue: T | U = truthyValue;
 
     class StatefulHelper extends TestHelper {
@@ -480,7 +480,7 @@ class UpdatingTest extends RenderTest {
       }
 
       value() {
-        consumeTag(tag);
+        void tag['version'];
         return currentValue;
       }
 
@@ -507,7 +507,7 @@ class UpdatingTest extends RenderTest {
     assert.strictEqual(didDestroy, 0, 'didDestroy: after no-op re-render');
 
     currentValue = falsyValue;
-    dirtyTag(tag);
+    tag['version']!++;
     this.rerender();
 
     this.assertHTML(element ? '' : '<!---->', element, 'after switching to falsy');
@@ -515,7 +515,7 @@ class UpdatingTest extends RenderTest {
     assert.strictEqual(didDestroy, 0, 'didDestroy: after switching to falsy');
 
     currentValue = truthyValue;
-    dirtyTag(tag);
+    tag['version']!++;
     this.rerender();
 
     this.assertHTML('Yes', element, 'after reset');

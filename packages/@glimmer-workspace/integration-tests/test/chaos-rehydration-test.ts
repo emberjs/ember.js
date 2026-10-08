@@ -16,6 +16,7 @@ import {
   replaceHTML,
   suite,
   test,
+  trackedContext,
 } from '@glimmer-workspace/integration-tests';
 
 abstract class AbstractChaosMonkeyTest extends RenderTest {
@@ -192,7 +193,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
   ): void {
     this.serverOutput = this.delegate.renderServerSide(
       template as string,
-      context,
+      trackedContext(context),
       () => this.takeSnapshot(),
       element
     );
@@ -200,8 +201,14 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
   }
 
   renderClientSide(template: string | ComponentBlueprint, context: Dict): void {
-    this.context = context;
-    this.renderResult = this.delegate.renderClientSide(template as string, context, this.element);
+    // the same tracked object the server render got (see `trackedContext`), so that writes through
+    // `this.context` are tracked
+    this.context = trackedContext(context);
+    this.renderResult = this.delegate.renderClientSide(
+      template as string,
+      this.context,
+      this.element
+    );
   }
 
   assertExactServerOutput(_expected: string) {

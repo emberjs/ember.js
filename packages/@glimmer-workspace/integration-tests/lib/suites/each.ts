@@ -1,6 +1,6 @@
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { beginTestSteps, endTestSteps, verifySteps } from '@glimmer/util';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { trackedObject } from '@ember/reactive/collections';
 
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
@@ -95,20 +95,20 @@ export class EachSuite extends RenderTest {
 
     let list = {
       arr: [1, 2, 3, 4],
-      tag: createTag(),
+      version: trackedObject({ count: 0 }),
 
       [Symbol.iterator]() {
-        consumeTag(this.tag);
+        void this.version['count'];
         return this.arr[Symbol.iterator]();
       },
 
       push(...vals: number[]) {
-        dirtyTag(this.tag);
+        this.version['count']!++;
         this.arr.push(...vals);
       },
 
       clear() {
-        dirtyTag(this.tag);
+        this.version['count']!++;
         this.arr.splice(0, this.arr.length);
       },
     };
