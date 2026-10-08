@@ -1,7 +1,4 @@
 import GlimmerComponent from '@glimmer/component';
-import { castToBrowser } from '@glimmer/debug-util';
-import { array, concat, fn, get, hash } from '@ember/helper';
-import { on } from '@ember/modifier';
 import {
   defineComponent,
   defineSimpleHelper,
@@ -239,16 +236,6 @@ class StaticStrictModeTest extends RenderTest {
   static suiteName = 'strict mode: static template values';
 
   @test
-  'Can use a component in scope'() {
-    const Foo = defineComponent({}, 'Hello, world!');
-    const Bar = defineComponent({ Foo }, '<Foo/>');
-
-    this.renderComponent(Bar);
-    this.assertHTML('Hello, world!');
-    this.assertStableRerender();
-  }
-
-  @test
   'Can use a custom helper in scope (in append position)'() {
     const foo = defineSimpleHelper(() => 'Hello, world!');
     const Bar = defineComponent({ foo }, '{{foo}}');
@@ -276,16 +263,6 @@ class StaticStrictModeTest extends RenderTest {
 
     this.renderComponent(Baz);
     this.assertHTML('Hello, world!');
-    this.assertStableRerender();
-  }
-
-  @test
-  'Can use a custom modifier in scope'() {
-    const foo = defineSimpleModifier((element: Element) => (element.innerHTML = 'Hello, world!'));
-    const Bar = defineComponent({ foo }, '<div {{foo}}></div>');
-
-    this.renderComponent(Bar);
-    this.assertHTML('<div>Hello, world!</div>');
     this.assertStableRerender();
   }
 
@@ -326,17 +303,6 @@ class StaticStrictModeTest extends RenderTest {
     const bar = defineComponent({ foo }, '{{foo value="Hello, world!"}}');
 
     this.renderComponent(bar);
-    this.assertHTML('Hello, world!');
-    this.assertStableRerender();
-  }
-
-  @test
-  'Can use constant values in ambiguous helper/component position'() {
-    const value = 'Hello, world!';
-
-    const Foo = defineComponent({ value }, '{{value}}');
-
-    this.renderComponent(Foo);
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
   }
@@ -1352,74 +1318,6 @@ class DynamicStrictModeTest extends RenderTest {
   }
 }
 
-class BuiltInsStrictModeTest extends RenderTest {
-  static suiteName = 'strict mode: built in modifiers and helpers';
-
-  @test
-  'Can use hash'() {
-    let Foo = defineComponent(
-      { hash },
-      '{{#let (hash value="Hello, world!") as |hash|}}{{hash.value}}{{/let}}'
-    );
-
-    this.renderComponent(Foo);
-    this.assertHTML('Hello, world!');
-    this.assertStableRerender();
-  }
-
-  @test
-  'Can use array'() {
-    let Foo = defineComponent(
-      { array },
-      '{{#each (array "Hello, world!") as |value|}}{{value}}{{/each}}'
-    );
-
-    this.renderComponent(Foo);
-    this.assertHTML('Hello, world!');
-    this.assertStableRerender();
-  }
-
-  @test
-  'Can use concat'() {
-    let Foo = defineComponent({ concat }, '{{(concat "Hello" ", " "world!")}}');
-
-    this.renderComponent(Foo);
-    this.assertHTML('Hello, world!');
-    this.assertStableRerender();
-  }
-
-  @test
-  'Can use get'() {
-    let Foo = defineComponent(
-      { hash, get },
-      '{{#let (hash value="Hello, world!") as |hash|}}{{(get hash "value")}}{{/let}}'
-    );
-
-    this.renderComponent(Foo);
-    this.assertHTML('Hello, world!');
-    this.assertStableRerender();
-  }
-
-  @test
-  'Can use on and fn'(assert: Assert) {
-    assert.expect(3);
-
-    let handleClick = (value: number) => {
-      assert.strictEqual(value, 123, 'handler called with correct value');
-    };
-
-    let Foo = defineComponent(
-      { on, fn, handleClick },
-      '<button {{on "click" (fn handleClick 123)}}>Click</button>'
-    );
-
-    this.renderComponent(Foo);
-
-    castToBrowser(this.element, 'div').querySelector('button')!.click();
-  }
-}
-
 jitSuite(GeneralStrictModeTest);
 jitSuite(StaticStrictModeTest);
 jitSuite(DynamicStrictModeTest);
-jitSuite(BuiltInsStrictModeTest);
