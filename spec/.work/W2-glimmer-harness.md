@@ -660,6 +660,7 @@ and 8.1 exempts them from the import boundary (5.1 review decision 3). Keep addi
 - `IT/lib/suites/custom-dom-helper.ts` (`CompilationTests`): `precompile` plus `serializeBuilder`, Node-only (C3) (5.1 table).
 - `IT/test/tracked-value-test.ts`: `trackedValue` has no public export; W1 decides whether it is core or implementation (5.1 table).
 - `IT/test/attributes-test.ts`: `normalizeProperty`, a VM-internal DOM helper (C7) (5.1 table, 5.4b).
+- `IT/lib/suites/with-dynamic-vars.ts` (`WithDynamicVarsSuite`, 3 tests, exported in `lib/suites.ts`, registered by `jitComponentSuite(WithDynamicVarsSuite)` in `IT/test/jit-suites-test.ts:29`): `-with-dynamic-vars` / `-get-dynamic-var` with arbitrary keys (`myKeyword`); Ember allows only `outletState` and asserts otherwise (§05-5.8, ruling `eb4f794d62`), so the suite tests the VM's general dynamic scope, an implementation behavior (9.5). The assertion itself is pinned by `EG/syntax/with-dynamic-var-test.js`.
 - `IT/test/owner-test.ts`: a fake internal `MountManager` (`Reference`, `NULL_REFERENCE`), internal manager API (C7) (5.1 table, 2.3).
 - `IT/test/env-test.ts`: `EnvironmentImpl` (C7) (5.1 table).
 - `IT/test/debug-render-tree-test.ts`, the 2 `getDebugCustomRenderTree` tests only: `EMPTY_ARGS` and `TemplateOnlyComponentManager`, internal manager API (C7); the rest of the file is conformance (5.1 table, 5.3c).
@@ -721,9 +722,14 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
 - [ ] 9.4 Code, non-interactive serialize (Q8): server renders in the rehydration/node delegates
       use a non-interactive renderer. Triage every changed test (modifiers no longer running on
       the server, rehydration results) as in 5.5b before changing expectations.
-- [ ] 9.5 Dynamic scope (§05-5.8 ruling; was §05-14 item 17): the IT `-with-dynamic-vars` suite with arbitrary
+- [x] 9.5 Dynamic scope (§05-5.8 ruling; was §05-14 item 17): the IT `-with-dynamic-vars` suite with arbitrary
       keys becomes an implementation test (W5 list); confirm an EG test pins the assertion for
       non-`outletState` keys (`EG/syntax/with-dynamic-var-test.js`), or add one.
+      DONE: `EG/syntax/with-dynamic-var-test.js` already pins both verbatim messages for non-`outletState`
+      keys: `-with-dynamic-vars foo="bar"` (`Using \`-with-dynamic-scope\` is only supported for
+      \`outletState\` (you used \`foo\`).`, lines 6-14) and `-get-dynamic-var 'foo'` (`-get-dynamic-scope`,
+      lines 26-32), plus the `outletState` round trip (16-24). The IT suite is on the W5 list below
+      (3 tests, no code change). No code commit; no full run needed (no code change).
 - [ ] 9.6 Update the exit-check notes, §09 W2 row and STATUS (new commits, PR split).
 
 ## Findings for the author
