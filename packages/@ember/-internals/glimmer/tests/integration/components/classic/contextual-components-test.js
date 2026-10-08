@@ -373,3 +373,86 @@ moduleFor(
     }
   }
 );
+
+class ContextualComponentMutableParamsTest extends RenderingTestCase {
+  render(templateStr, context = {}) {
+    super.render(
+      `${templateStr}<span class="value">{{this.model.val2}}</span>`,
+      Object.assign(context, { model: { val2: 8 } })
+    );
+  }
+}
+
+class MutableParamTestGenerator {
+  constructor(cases) {
+    this.cases = cases;
+  }
+
+  generate({ title, setup }) {
+    return {
+      [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
+        this.owner.register(
+          'component:change-button',
+          setComponentTemplate(
+            precompileTemplate(
+              '<button {{on "click" (fn (mut this.val) 10)}} class="my-button">Change to 10</button>'
+            ),
+            class extends EmberComponent {
+              static positionalParams = ['val'];
+            }
+          )
+        );
+
+        setup.call(this, assert);
+
+        assert.equal(this.$('.value').text(), '8');
+
+        runTask(() => this.rerender());
+
+        assert.equal(this.$('.value').text(), '8');
+
+        runTask(() => this.$('.my-button').click());
+
+        assert.equal(this.$('.value').text(), '10');
+
+        runTask(() => this.context.set('model', { val2: 8 }));
+
+        assert.equal(this.$('.value').text(), '8');
+      },
+    };
+  }
+}
+
+applyMixins(
+  ContextualComponentMutableParamsTest,
+  new MutableParamTestGenerator([
+    {
+      title: 'param',
+      setup() {
+        this.render('{{component (component "change-button" this.model.val2)}}');
+      },
+    },
+
+    {
+      title: 'nested param',
+      setup() {
+        this.owner.register(
+          'component:my-comp',
+          setComponentTemplate(
+            precompileTemplate('{{component this.components.comp}}'),
+            class extends EmberComponent {
+              static positionalParams = ['components'];
+            }
+          )
+        );
+
+        this.render('{{my-comp (hash comp=(component "change-button" this.model.val2))}}');
+      },
+    },
+  ])
+);
+
+moduleFor(
+  'Components test: contextual components -- mutable params (classic component)',
+  ContextualComponentMutableParamsTest
+);
