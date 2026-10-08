@@ -6,7 +6,7 @@ page (one `index.html`, Ember's global context), so the real thing is available 
 
 ## Checklist
 - [x] 1. Glimmer harness emulating Ember
-- [ ] 2. Ember tests emulating Glimmer / bypassing it
+- [x] 2. Ember tests emulating Glimmer / bypassing it
 - [ ] 3. Duplicated suites
 - [ ] 4. Summary table and sequence
 
@@ -64,7 +64,7 @@ or of the identifier, not executed QUnit tests; "registrations" multiplies by th
 
 ### 1.2 `GlimmerishComponent` and `GlimmerComponentManager`
 - `IT/lib/components/emberish-glimmer.ts:8-65`. Imitates `@glimmer/component`
-  (`packages/@glimmer/component/src/addon/-private/component.ts` and its manager
+  (`packages/@glimmer/component/src/-private/component.ts` and its manager
   `ember-component-manager.ts`), which is in this repo. It uses only the public manager API
   (`componentCapabilities('3.13', {destructor:true})`, `setComponentManager`), so it is a
   legitimate emulation only in a repo without `@glimmer/component`.
@@ -215,7 +215,117 @@ or of the identifier, not executed QUnit tests; "registrations" multiplies by th
   `Renderer`), these three disappear; this is what the seam work in 09 §9.4 (C1) already
   proposes, and it also removes the fake.
 
-### 1.8 Things in the harness that are real (no action)
+### 1.8 Fake Ember values inside Glimmer tests
+- `mut`: `IT/test/helpers/fn-test.ts:242-282` registers a fake `mut` with
+  `registerInternalHelper('mut', args => createInvokableRef(first))` (two tests: "can be used on
+  the result of `mut`" and "... with a falsy value"). The real `mut` is
+  `packages/@ember/-internals/glimmer/lib/helpers/mut.ts` and the same two tests exist under
+  the same names at `EG/helpers/fn-test.js:195,208` (plus `EG/helpers/mut-test.js`).
+  Action: delete the two Glimmer copies.
+- `SafeString`: `makeSafeString` at `IT/test/updating-test.ts:24` (used at `:348,396,422`) and the
+  `{toHTML(){}}` literal at `IT/lib/suites/initial-render.ts:884` imitate Ember's `htmlSafe`
+  (`@ember/template`) and the `toHTML` protocol of the global context's `isTrusted`/`toHTML`
+  hooks. Real: `htmlSafe`; covered by `EG/content-test.js` and `EG/components/classic/content-test.js`.
+  Action: replace with `htmlSafe` from `@ember/template`.
+- `ember-view` assertions inside shared Glimmer tests: `IT/test/initial-render-test.ts:1199-1261`
+  branch on `emberishComponent` and assert `class === "ember-view"` (8 sites); `ember-component-test.ts`
+  has 33 `ember-view`/`emberish` hits. Action: goes with 1.1.
+- `style-warnings-test.ts:15-30` and `@glimmer/reference/test/references-test.ts:46-60`,
+  `@glimmer/validator/test/validators-test.ts:46-58`, `@glimmer/reference/test/utils/template.ts:62-80`
+  (`TestContext` with `getProp`, `getPath`, `setProp`, `toIterator`): the host hooks of
+  `@glimmer/global-context` re-implemented as plain `Reflect.get/set` and `ObjectIterator`. See 2.3.
+
+### 1.9 Things in the harness that are real (no action)
 - `defineComponent`/`defComponent`/`defineSimpleHelper`/`defineSimpleModifier` (public APIs).
 - `TemplateOnly` kind (`templateOnlyComponent` from `@glimmer/runtime`, also exported by `@ember/component/template-only`).
 - `@glimmer/destroyable`, `@glimmer/owner` (re-exported by `@ember/destroyable`, `@ember/owner`).
+
+## 2. Ember tests emulating Glimmer or bypassing it
+
+### 2.1 `GlimmerishComponent` in Ember's tests
+- `packages/@ember/-internals/glimmer/tests/utils/glimmerish-component.js:1-31`: a second,
+  weaker copy of the Glimmer harness's `GlimmerishComponent` (no `willDestroy`, no
+  `destroyComponent`, `componentCapabilities('3.13', {updateHook:false})`). Imitates
+  `@glimmer/component`, which is in this repo and which `EG` tests already import in 10+
+  files (`grep "@glimmer/component"`: `unit/template-factory-test.js:7`,
+  `unit/runtime-resolver-cache-test.js:8`, `content-test.js`, `mount-test.js`,
+  `event-dispatcher-test.js`, `components/life-cycle-test.js`, `contextual-components-test.js`,
+  `custom-modifier-manager-test.js`, `error-handling-test.js`, `on-test.js`).
+- Dependents (identifier count, file): `render-component-test.ts` 17, `tracked-test.js` 15,
+  `runtime-template-compiler-implicit-test.ts` 4, `runtime-template-compiler-explicit-test.ts` 4,
+  `strict-mode-test.js` 4, `dynamic-components-test.js` 2, `helpers/get-test.js` 2.
+  7 files, about 48 uses, one more shim than needed.
+- Action: replace with `import Component from '@glimmer/component'` (mechanical), delete the file.
+  Third copy: `IT/lib/components/emberish-glimmer.ts` (1.2). Three implementations of one
+  class, one of which is the real `@glimmer/component`.
+
+### 2.2 `PositionalComponent`
+- `EG/../utils/positional-component.js:1-60+`: a custom manager (`componentCapabilities('3.13')`,
+  `createComponent(Factory, args)`) that emulates classic `positionalParams` on a non-classic
+  class, because Glimmer components take only named arguments.
+- Dependents: `contextual-components-test.js` 15 uses, `dynamic-components-test.js` 7,
+  `curly-components-test.js` 6, `angle-bracket-invocation-test.js` 2 (4 files, 30 uses).
+- Imitates: the classic `Component` with `static positionalParams` (real,
+  `@ember/component`). These tests are about `{{component}}`/curly/angle invocation of
+  something that takes positional params; the real thing is a classic `Component.extend({}).reopenClass({positionalParams: [...]})`
+  (the files in `classic/` do that) and `{{helper}}`-style `invokeHelper` for non-component positional params.
+- Action: port to real classic components (already the pattern in the `classic/` twin of each
+  file); delete the shim. Note this is the reverse direction of 1.1: Ember tests fake classic-ness
+  for glimmer components, Glimmer tests fake classic-ness for the VM.
+
+### 2.3 Hand-written host hooks in `@glimmer/*/test`
+- `@glimmer/reference/test/references-test.ts:46-60` (12 tests): overrides `getProp`/`setProp`/
+  `scheduleRevalidate` with `Reflect`-like fakes; `utils/template.ts:62-80` `TestContext` imitates
+  Ember's `toIterator` (`@ember/-internals/glimmer/lib/utils/iterator.ts`) with `ObjectIterator`;
+  `iterable-test.ts` (12 tests) tests this fake iteration protocol. Real: Ember's
+  `toIterator`, which handles arrays, `ArrayProxy`, native iterables, `Symbol.iterator`, and
+  is tested by `EG/syntax/each-test.js` (28) and `components/classic/each-test.js`.
+- `@glimmer/validator/test/validators-test.ts:46-58` (1 of 22): fake `scheduleRevalidate`
+  to count calls; Ember's is `backburner` `_scheduleRevalidate`. Not a duplicate; keep it
+  but make it observe the real Ember call.
+- `IT/test/style-warnings-test.ts:15-30` (about 4 tests): fake `getProp` and `warnIfStyleNotTrusted`.
+  Real: Ember's `warn` for style bindings, tested in `EG/components/attribute-bindings-test.js`
+  / `class-bindings-test.js` / `content-test.js` (grep `style`). Action: move to the Ember
+  harness using `expectWarning`.
+- `@glimmer/manager/test/managers-test.ts` (20 tests): owners are literal `{}` and managers are
+  hand-written, and tests assert `getInternalComponentManager`, `instanceof CustomComponentManager`
+  (C7). The Ember copy: `EG/custom-component-manager-test.js` (23),
+  `custom-modifier-manager-test.js` (17), `helpers/helper-manager-test.js` (15). Action: keep
+  the pure-registry parts (they test `@glimmer/manager` in isolation); the render-behavior
+  parts duplicate the Ember ones.
+- `@glimmer/owner/test/owner-test.ts` (2 tests): not a stub (tests the real symbol), keep.
+  `@glimmer/destroyable/test` (24): no Ember stubs, but Ember's `@ember/destroyable` tests
+  re-test the same functions through the Ember re-export (not surveyed in detail).
+
+### 2.4 Hand-built templates and wire format in Ember's test infra
+- `packages/internal-test-helpers/lib/compile.ts:20-39`: `precompileJSON` + `templateFactory`
+  with a hand-assembled `SerializedTemplateWithLazyBlock` (`block: JSON.stringify(block)`,
+  `scope: () => reifiedScope`, `isStrictMode`). It imitates what
+  `babel-plugin-ember-template-compilation` emits and what `@ember/template-compilation`
+  `precompileTemplate` would produce at runtime; the Glimmer harness has an identical copy
+  (`IT/lib/compile.ts:20-41`). Consumers: `internal-test-helpers` `compile` export
+  (`RenderingTestCase.render` string templates, about 1,600 `this.render(...)` sites) and
+  `unit/template-factory-test.js` (checks `__id`/`__meta`).
+- Real replacement: `compileTemplate`/`template()` from `ember-template-compiler` via the public
+  `@ember/template-compilation` runtime path, or `adapter.compile` of 09 §9.4 seam C.
+  These two helpers should become one shared function used by both harnesses.
+- Action: unify into one helper (it is the adapter's seam C); no test rewrite.
+- `packages/internal-test-helpers/lib/test-resolver.ts:1-60`: a `Resolver` implementing
+  `@ember/-internals/owner` `Resolver` with `%`-delimited serialized keys. Real Ember apps use
+  `ember-resolver` (not in this repo); this test double is Ember's own registry contract
+  (`resolve`), not a Glimmer stub. Keep.
+- No fake renderers, fake component managers beyond 2.1 and 2.2, or stubbed `@glimmer/*` modules
+  were found in `EG`, `internal-test-helpers`, `@ember/*/tests`, `ember/tests`
+  (`grep` for `class (Fake|Mock|Stub)`, `setInternal*Manager`, `createComputeRef`,
+  `templateFactory`, `precompileJSON`, `opcode-compiler`: only the hits above). The custom
+  managers in `custom-component-manager-test.js:7-60`, `custom-modifier-manager-test.js`,
+  `helpers/helper-manager-test.js` are tests *of* the public manager API and should stay.
+- Imports of `@glimmer/runtime` for public keywords inside Ember tests: `EG/modifiers/on-test.js:3`
+  (`on`), `helpers/invoke-helper-test.js:13` (`invokeHelper`), `components/strict-mode-test.js:16`
+  (`hash, array, concat, get, on, fn`), `template-only-components-test.js:3`,
+  `application/engine-test.js:17`, `application/debug-render-tree-test.ts:19`
+  (`templateOnlyComponent`), `runtime-template-compiler-implicit-test.ts:315-365` (`hash`,
+  `array`, `concat`, `get`). Not stubs, but they reach past the public re-export
+  (`@ember/helper`, `@ember/modifier`, `@ember/component/template-only`). Mechanical (C8).
+- `debug-render-tree-test.ts:1196` (`owner = {}` passed to `renderComponent`): a bare object as
+  owner; only valid because `renderComponent` does not look anything up. Low priority.
