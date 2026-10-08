@@ -4,6 +4,7 @@ import { NodeDOMTreeConstruction } from '@glimmer/node';
 import { blockStack } from '../dom/blocks';
 import { toInnerHTML } from '../dom/simple-utils';
 import { AbstractNodeTest } from '../modes/node/env';
+import { withRoot } from '../markers';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { strip } from '../test-helpers/strings';
@@ -116,6 +117,6 @@ export class SerializedDOMHelperTests extends DOMHelperTests {
   override assertHTML(html: string) {
     let b = blockStack();
     let serialized = toInnerHTML(this.element);
-    this.assert.strictEqual(serialized, `${b(0)}${html}${b(0)}`);
+    this.assert.strictEqual(serialized, withRoot(`${b(0)}${html}${b(0)}`));
   }
 }

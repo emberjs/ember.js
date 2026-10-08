@@ -17,6 +17,7 @@ import {
   suite,
   test,
   trackedContext,
+  withRoot,
 } from '@glimmer-workspace/integration-tests';
 
 abstract class AbstractChaosMonkeyTest extends RenderTest {
@@ -212,7 +213,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
       this.serverOutput,
       'must renderServerSide before calling assertServerOutput'
     );
-    equalTokens(output, _expected);
+    equalTokens(output, withRoot(_expected));
   }
 
   assertServerOutput(..._expected: Content[]) {

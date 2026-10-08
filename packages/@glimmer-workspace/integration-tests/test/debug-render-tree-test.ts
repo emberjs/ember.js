@@ -10,6 +10,7 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
+import type { ComponentBlueprint } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -835,8 +836,24 @@ class DebugRenderTreeTest extends RenderTest {
     };
   }
 
+  // A loose template renders as the layout of a harness component (`renderLooseTemplate`), so
+  // the captured tree has that one root node above the nodes the test is about.
+  private renderedLoose = false;
+
+  override render(template: string | ComponentBlueprint, properties: Dict = {}): void {
+    this.renderedLoose = true;
+    super.render(template, properties);
+  }
+
   assertRenderTree(expected: ExpectedRenderNode[]): void {
     let actual = this.delegate.getCapturedRenderTree();
+
+    if (this.renderedLoose) {
+      this.assert.strictEqual(actual.length, 1, 'a loose render has one root node');
+      this.assert.strictEqual(actual[0]?.type, 'component', 'the root node is a component');
+      this.assert.strictEqual(actual[0]?.name, '{ROOT}', 'the root node is the harness root');
+      actual = actual[0]?.children ?? [];
+    }
 
     this.assertRenderNodes(actual, expected, 'root');
   }

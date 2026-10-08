@@ -3,6 +3,8 @@ import type { Dict, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { isSimpleElement } from '@glimmer/debug-util';
 import { dict } from '@glimmer/util';
 
+import { shiftBlockIds } from '../markers';
+
 export interface DebugElement {
   element: SimpleElement | null | undefined;
   description: string;
@@ -161,7 +163,7 @@ export function assertSerializedInElement(result: string, expected: string, mess
   if (matched) {
     QUnit.assert.ok(true, `has cursor ${matched[0]}`);
     let [, trimmed] = result.split(matched[0]);
-    QUnit.assert.strictEqual(trimmed, expected, message);
+    QUnit.assert.strictEqual(trimmed, shiftBlockIds(expected), message);
   } else {
     QUnit.assert.ok(false, `does not have a cursor`);
   }
