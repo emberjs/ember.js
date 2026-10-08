@@ -22,7 +22,7 @@ type TestModifierDefinition = (() => void) & { Klass?: TestModifierConstructor }
  * `didInsertElement` -> `installModifier`, `didUpdate` -> `updateModifier`,
  * `willDestroyElement` -> `destroyModifier`.
  */
-class TestModifierManager implements ModifierManager<TestModifierInstance> {
+class LegacyHookModifierManager implements ModifierManager<TestModifierInstance> {
   capabilities = modifierCapabilities('3.22');
 
   // The modifier instance is the manager's state, so it is also what the debug
@@ -58,7 +58,7 @@ class TestModifierManager implements ModifierManager<TestModifierInstance> {
   }
 }
 
-const TEST_MODIFIER_MANAGER = new TestModifierManager();
+const TEST_MODIFIER_MANAGER = new LegacyHookModifierManager();
 
 /** Wrap a legacy-hook class as a public-manager modifier definition. */
 export function defineTestModifier(Klass?: TestModifierConstructor): object {
