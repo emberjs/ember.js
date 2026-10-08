@@ -348,13 +348,17 @@ so Ember's behavior is the specification. Concretely:
   host's owner, while its layout, and helpers and modifiers created in it, use the engine
   instance (§08-8.6).
 
-Test: on branch `test/w2-glimmer-harness`,
+Tests: on branch `test/w2-glimmer-harness`,
 `packages/@ember/-internals/glimmer/tests/integration/mount-test.js` › "components rendered
-inside an engine are created with the engine as their owner" pins the non-curried case; no test
-pins the curried case yet (`.work/W2-glimmer-harness.md` 9.2). The Glimmer suite's
-`owner-test.ts` ("owner is preserved in curried closure components", and a non-curried variant
-that carries a TODO) expects the defining owner on an internal `MountManager`; it contradicts this
-rule and is not a conformance test. A third owner is involved too: the definition record for the
+inside an engine are created with the engine as their owner" pins the non-curried case,
+"a component curried in the application is created with the engine as owner when invoked in an
+engine" pins the first bullet, and "a component curried in an engine is created with the host
+owner when invoked in the host" pins the second (all under `{{mount}} owner tests`). The
+Glimmer suite's `owner-test.ts` tests that expected the defining owner on an internal
+`MountManager` contradicted this rule and were dropped (`.work/W2-coverage-ledger.md`, 9.2). The
+layout half of each bullet is pinned only for the second (the layout's probe component gets the
+engine instance); the first bullet's "layout resolves against the application" stays untested.
+A third owner is involved too: the definition record for the
 curried inner definition is created with the curried owner (`component.ts:337`), so its template
 factory is bound to the curried owner on the definition's first use and to whichever owner used
 it first otherwise (§1.7, Q15, still open).

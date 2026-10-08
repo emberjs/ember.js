@@ -700,11 +700,17 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
       normative result 4. For 9.4 note: Ember ties interactivity to `isBrowser`/`isInteractive`,
       not to `_renderMode`. §05-14 item 10 (unbound `-get-dynamic-var`) now concerns only the
       informative general mechanism; left for the author.
-- [ ] 9.2 Code, owner (Q3): the IT `owner-test.ts` tests "owner is preserved in curried closure
+- [x] 9.2 Code, owner (Q3): the IT `owner-test.ts` tests "owner is preserved in curried closure
       components" and "… non-curried component definitions that are passed around" contradict
       the ruling. Add an EG conformance test pinning the engine-owner behavior for the curried
       case (the 2.3 probe: `{{mount "e" model=(hash foo=(component "app-check"))}}`), next to
       the 2.3 mount test; delete the two IT tests with ledger rows (`drop (contradicts ruling)`).
+      DONE (code `79d130ff3b`): two new EG tests under `{{mount}} owner tests` (curried in the app,
+      invoked in the engine: created with the engine; curried in the engine, invoked in the host
+      via a stashing helper and a later render: created with the host, its layout probe with the
+      engine). Both IT tests deleted, ledger rows 9.2 (they replace the 2.3 `kept` rows).
+      §06-2.2 citation updated. Full run: 9014 / 8996 / 0 / 18, diff against `full8b`: exactly
+      the 2 IT tests missing and the 2 EG tests new; no verifySteps/afterEach/NAMESPACES hits.
 - [ ] 9.3 Code, top-level `this` (Q7): replace the internal `TemplateRootState`
       (`lib/modes/template-root.ts`) with `renderComponent` + a custom component manager
       (`setComponentManager`, `componentCapabilities('3.13')`, `createComponent` returns the
