@@ -1,16 +1,5 @@
-import type {
-  CapturedArguments,
-  Destroyable,
-  Dict,
-  InternalModifierManager,
-  Nullable,
-  Owner,
-  SimpleElement,
-} from '@glimmer/interfaces';
-import type { UpdatableTag } from '@glimmer/validator';
-import { registerDestructor } from '@glimmer/destroyable';
-import { reifyNamed, reifyPositional } from '@glimmer/runtime';
-import { createUpdatableTag } from '@glimmer/validator';
+import type { Arguments, Dict, ModifierManager, SimpleElement } from '@glimmer/interfaces';
+import { modifierCapabilities, setModifierManager } from '@glimmer/manager';
 
 export interface TestModifierConstructor {
   new (): TestModifierInstance;
@@ -23,72 +12,58 @@ export interface TestModifierInstance {
   willDestroyElement?(): void;
 }
 
-export class TestModifierDefinitionState {
-  constructor(public Klass?: TestModifierConstructor) {}
-}
+// The definition is a function so the public manager's default debug name
+// (`definition.name`) is the legacy class's name.
+type TestModifierDefinition = (() => void) & { Klass?: TestModifierConstructor };
 
-export class TestModifierManager implements InternalModifierManager<
-  TestModifier,
-  TestModifierDefinitionState
-> {
-  create(
-    _owner: Owner,
-    element: SimpleElement,
-    state: TestModifierDefinitionState,
-    args: CapturedArguments
-  ) {
-    let instance = state.Klass ? new state.Klass() : undefined;
-    return new TestModifier(element, instance, args);
+/**
+ * A public-API (`setModifierManager`, 3.22 capabilities) manager that maps the
+ * legacy hook names used by these tests onto the public lifecycle:
+ * `didInsertElement` -> `installModifier`, `didUpdate` -> `updateModifier`,
+ * `willDestroyElement` -> `destroyModifier`.
+ */
+class TestModifierManager implements ModifierManager<TestModifierInstance> {
+  capabilities = modifierCapabilities('3.22');
+
+  // The modifier instance is the manager's state, so it is also what the debug
+  // render tree reports as the modifier's instance.
+  createModifier(definition: TestModifierDefinition): TestModifierInstance {
+    return definition.Klass ? new definition.Klass() : {};
   }
 
-  getTag({ tag }: TestModifier): UpdatableTag {
-    return tag;
-  }
+  installModifier(instance: TestModifierInstance, element: Element, args: Arguments) {
+    // Read eagerly so the args are tracked
+    let positional = [...args.positional];
+    let named = { ...args.named };
 
-  getDebugName({ Klass }: TestModifierDefinitionState) {
-    return Klass?.name || '<unknown>';
-  }
-
-  getDebugInstance({ instance }: TestModifier) {
-    return instance;
-  }
-
-  install({ element, args, instance }: TestModifier) {
-    // Do this eagerly to ensure they are tracked
-    let positional = reifyPositional(args.positional);
-    let named = reifyNamed(args.named);
-
-    if (instance && instance.didInsertElement) {
-      instance.element = element;
+    if (instance.didInsertElement) {
+      instance.element = element as unknown as SimpleElement;
       instance.didInsertElement(positional, named);
     }
-
-    if (instance && instance.willDestroyElement) {
-      registerDestructor(instance, () => instance.willDestroyElement!(), true);
-    }
   }
 
-  update({ args, instance }: TestModifier) {
-    // Do this eagerly to ensure they are tracked
-    let positional = reifyPositional(args.positional);
-    let named = reifyNamed(args.named);
+  updateModifier(instance: TestModifierInstance, args: Arguments) {
+    let positional = [...args.positional];
+    let named = { ...args.named };
 
-    if (instance && instance.didUpdate) {
+    if (instance.didUpdate) {
       instance.didUpdate(positional, named);
     }
   }
 
-  getDestroyable(modifier: TestModifier): Nullable<Destroyable> {
-    return modifier.instance || null;
+  destroyModifier(instance: TestModifierInstance) {
+    if (instance.willDestroyElement) {
+      instance.willDestroyElement();
+    }
   }
 }
 
-export class TestModifier {
-  public tag = createUpdatableTag();
+const TEST_MODIFIER_MANAGER = new TestModifierManager();
 
-  constructor(
-    public element: SimpleElement,
-    public instance: TestModifierInstance | undefined,
-    public args: CapturedArguments
-  ) {}
+/** Wrap a legacy-hook class as a public-manager modifier definition. */
+export function defineTestModifier(Klass?: TestModifierConstructor): object {
+  let definition: TestModifierDefinition = () => {};
+  Object.defineProperty(definition, 'name', { value: Klass?.name || '<unknown>' });
+  definition.Klass = Klass;
+  return setModifierManager(() => TEST_MODIFIER_MANAGER, definition);
 }

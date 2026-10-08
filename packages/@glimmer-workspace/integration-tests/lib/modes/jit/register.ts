@@ -23,8 +23,8 @@ import type { TestJitRegistry } from './registry';
 
 import { createTemplate } from '../../compile';
 import { EmberishCurlyComponent } from '../../components/emberish-curly';
-import { createHelperRef } from '../../helpers';
-import { TestModifierDefinitionState, TestModifierManager } from '../../modifiers';
+import { defineUserHelper } from '../../helpers';
+import { defineTestModifier } from '../../modifiers';
 
 export function registerTemplateOnlyComponent(
   registry: TestJitRegistry,
@@ -70,10 +70,7 @@ export function registerGlimmerishComponent(
 }
 
 export function registerHelper(registry: TestJitRegistry, name: string, helper: UserHelper) {
-  let state = {};
-  let glimmerHelper: GlimmerHelper = (args) => createHelperRef(helper, args);
-  setInternalHelperManager(glimmerHelper, state);
-  registry.register('helper', name, state);
+  registry.register('helper', name, defineUserHelper(helper));
 }
 
 export function registerInternalHelper(
@@ -101,10 +98,7 @@ export function registerModifier(
   name: string,
   ModifierClass?: TestModifierConstructor
 ) {
-  let state = new TestModifierDefinitionState(ModifierClass);
-  let manager = new TestModifierManager();
-  setInternalModifierManager(manager, state);
-  registry.register('modifier', name, state);
+  registry.register('modifier', name, defineTestModifier(ModifierClass));
 }
 
 export function registerComponent<K extends ComponentKind>(
