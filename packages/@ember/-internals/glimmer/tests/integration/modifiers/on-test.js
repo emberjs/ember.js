@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { getInternalModifierManager, setComponentTemplate } from '@glimmer/manager';
-import { on } from '@glimmer/runtime';
+import { on } from '@ember/modifier';
 import { precompileTemplate } from '@ember/template-compilation';
 
 import { DEBUG } from '@glimmer/env';

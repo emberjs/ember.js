@@ -16,7 +16,8 @@ import { template } from '@ember/template-compiler/runtime';
 import { template as compileTimeTemplate } from '@ember/template-compiler';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
-import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
+import { array, concat, fn, get, hash } from '@ember/helper';
+import { on } from '@ember/modifier';
 import GlimmerComponent from '@glimmer/component';
 
 import { destroy, associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';

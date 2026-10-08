@@ -13,7 +13,8 @@ import { template } from '@ember/template-compiler/runtime';
 import { template as compileTimeTemplate } from '@ember/template-compiler';
 import { setComponentTemplate } from '@glimmer/manager';
 import templateOnly from '@ember/component/template-only';
-import { hash, array, concat, get, on, fn } from '@glimmer/runtime';
+import { hash, array, concat, get, fn } from '@ember/helper';
+import { on } from '@ember/modifier';
 import GlimmerComponent from '@glimmer/component';
 
 moduleFor(

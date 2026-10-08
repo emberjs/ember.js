@@ -16,7 +16,7 @@ import type { EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
 import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
-import { templateOnlyComponent } from '@glimmer/runtime';
+import templateOnlyComponent from '@ember/component/template-only';
 import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { precompileTemplate } from '@ember/template-compilation';
 import { runTask } from 'internal-test-helpers/lib/run';

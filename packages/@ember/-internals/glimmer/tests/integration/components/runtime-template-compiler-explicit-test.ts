@@ -228,7 +228,7 @@ moduleFor(
     }
 
     async '@test Can use hash'() {
-      const { hash } = await import('@glimmer/runtime');
+      const { hash } = await import('@ember/helper');
 
       await this.renderComponentModule(() => {
         return template('{{#let (hash value="Hello, world!") as |hash|}}{{hash.value}}{{/let}}', {
@@ -241,7 +241,7 @@ moduleFor(
     }
 
     async '@test Can use array'() {
-      const { array } = await import('@glimmer/runtime');
+      const { array } = await import('@ember/helper');
 
       await this.renderComponentModule(() => {
         return template('{{#each (array "Hello, world!") as |value|}}{{value}}{{/each}}', {
@@ -253,7 +253,7 @@ moduleFor(
     }
 
     async '@test Can use concat'() {
-      const { concat } = await import('@glimmer/runtime');
+      const { concat } = await import('@ember/helper');
 
       await this.renderComponentModule(() => {
         return template('{{(concat "Hello" ", " "world!")}}', {
@@ -266,7 +266,7 @@ moduleFor(
     }
 
     async '@test Can use get'() {
-      const { hash, get } = await import('@glimmer/runtime');
+      const { hash, get } = await import('@ember/helper');
 
       await this.renderComponentModule(() => {
         return template(
