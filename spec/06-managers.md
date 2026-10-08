@@ -324,13 +324,40 @@ Owners reach managers as follows:
 
 | Kind | Owner passed to the factory / `create` |
 |---|---|
-| Component | The owner of the **invoking** scope (`vm.getOwner()` at `create` time, `component.ts:429-437`). This holds even for curried components. See Open Question Q3. |
+| Component | The owner of the **invoking** scope (`vm.getOwner()` at `create` time, `component.ts:429-437`). This holds even for curried components (the compatibility quirk below). |
 | Helper (static) | The owner of the invoking scope (`expressions.ts:179`). |
 | Helper (dynamic, curried) | The owner captured when the helper was curried (`expressions.ts:111,124`). |
 | Helper (dynamic, not curried) | The invoking scope's owner (`expressions.ts:101,129`). |
 | Modifier (static) | The invoking scope's owner (`dom.ts:171`). |
 | Modifier (dynamic, curried) | The captured owner (`dom.ts:233-246`). |
 | `invokeHelper(context, …)` | `getOwner(context)`, which MAY be `undefined` (`invoke.ts:59`). |
+
+**Compatibility quirk: the owner of a curried component** (author ruling, 2026-10-08, commit
+`eb4f794d62`). A curried component's manager `create` receives the owner of the scope that
+*invokes* it, not the owner captured by currying, while its layout runs with the captured owner
+(above). Implementations MUST preserve this. It looks inconsistent, and the Glimmer test suite
+expected otherwise, but applications were built against Ember's behavior, not against that suite,
+so Ember's behavior is the specification. Concretely:
+
+- A component curried in the application (`(component "app-check")` passed in `{{mount}}`'s
+  `model`) and invoked inside a mounted engine is created with the **engine instance** as its
+  owner: a public manager's factory receives the engine instance, and `getOwner(this)` in a
+  `@glimmer/component` constructor returns it. Its layout resolves names against the
+  application, the curried owner (from source, `component.ts:826-854`; untested).
+- Conversely, a component curried inside an engine and invoked in the host is created with the
+  host's owner, while its layout, and helpers and modifiers created in it, use the engine
+  instance (§08-8.6).
+
+Test: on branch `test/w2-glimmer-harness`,
+`packages/@ember/-internals/glimmer/tests/integration/mount-test.js` › "components rendered
+inside an engine are created with the engine as their owner" pins the non-curried case; no test
+pins the curried case yet (`.work/W2-glimmer-harness.md` 9.2). The Glimmer suite's
+`owner-test.ts` ("owner is preserved in curried closure components", and a non-curried variant
+that carries a TODO) expects the defining owner on an internal `MountManager`; it contradicts this
+rule and is not a conformance test. A third owner is involved too: the definition record for the
+curried inner definition is created with the curried owner (`component.ts:337`), so its template
+factory is bound to the curried owner on the definition's first use and to whichever owner used
+it first otherwise (§1.7, Q15, still open).
 
 A public manager factory receives this owner as its only argument. A manager commonly gives
 it to instances with `setOwner(instance, owner)`, which is what `@glimmer/component` does
@@ -1471,28 +1498,6 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   never be called, not even when arguments change. No RFC describes this capability, and no
   test covers `true`. Is "never update" the intent, or should argument consumption still be
   tracked?
-- **Q3: Owner for curried components.** `create` (and so the public manager factory)
-  receives the *invoking* scope's owner, while the layout renders with the *curried* owner.
-  For a component curried inside an engine and invoked in the host, the manager delegate and
-  `@glimmer/component`'s `owner` constructor argument would be the host owner. Helpers and
-  modifiers use the curried owner. A third owner is involved too: the definition record for
-  the curried inner definition is created with the curried owner
-  (`constants.component(definition, owner)`, `component.ts:337`), so its template factory is
-  bound to the curried owner if that is the definition's first use, and to whichever owner
-  used it first otherwise (§1.7, Q15). This looks inconsistent and is untested. §05-7.8 and
-  §08-8.6 describe the same behavior.
-  The other direction was observed in W2 (2026-10-08): a component curried in the application
-  (`(component "app-check")` passed as `{{mount}}`'s `model`) and invoked inside the engine is
-  created with the engine instance as its owner (`getOwner(this)` in its constructor), as the
-  invoking-owner rule predicts. The Glimmer suite's `owner-test.ts` ("owner is preserved in
-  curried closure components", and a non-curried variant that carries a TODO) expects the
-  defining owner instead, on an internal `MountManager`; no Ember test pins either. A new test
-  on branch `test/w2-glimmer-harness`,
-  `packages/@ember/-internals/glimmer/tests/integration/mount-test.js` › "components rendered
-  inside an engine are created with the engine as their owner", pins the non-curried case.
-
-  > For compatibility we need to preserve the Ember behavior here, not the Glimmer test suite. Nobody wrote apps against the Glimmer test suite. Document that it's a quirk but it's part of the spec for compat reasons.
-
 - **Q4: `undefined` owner.** Public component and modifier managers cache delegates in a
   `WeakMap` keyed by owner, so an `undefined` owner throws a raw `TypeError`. Helper managers
   special-case `undefined`. Should component and modifier managers do the same?
@@ -1520,7 +1525,7 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   they throw in dev and produce `undefined` in prod. `invokeHelper` throws for them in every
   build. The `@ember/helper` docs also mention a nonexistent `hasDestructor` option and a
   `'3.21.0'` version string (`packages/@ember/helper/index.ts:44-47,140`).
-- **Q14: Content-position precedence.** Recorded as §05-14 item 6, which owns it.
+- **Q14: Content-position precedence.** Recorded as §05-14 item 5, which owns it.
 - **Q15: The component-definition cache ignores the owner.** Because definition records are
   cached per definition object, not per (definition, owner) (§1.7 item 2), a component's
   template factory effectively runs only with the first owner that renders it in a given

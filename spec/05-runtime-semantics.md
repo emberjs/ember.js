@@ -467,7 +467,7 @@ The forms below are distinguished statically (chapters 03, 04); their runtime be
      `{{{log …}}}`, `{{{-get-dynamic-var …}}}`. Keyword translation drops the trusting flag
      (§03-4.4). `{{{h}}}` and `{{{this.h}}}` with a helper value do insert HTML.
 
-   See §05-14 item 14.
+   See §05-14 item 13.
 
 ---
 
@@ -838,7 +838,7 @@ with the contents of `...attributes` recorded at the position of `...attributes`
   `class="a b"`. Duplicate `type` attributes on an element without `...attributes` are a
   special case: the compile-time `type` reordering (§4.1) keeps only the *last* `type`
   occurrence and drops the others (`classified.ts:108-121`; verified: `<input type="a" type="b">`
-  compiles to a single `type="b"`). See §05-14 item 15.
+  compiles to a single `type="b"`). See §05-14 item 14.
 
 ---
 
@@ -1196,6 +1196,9 @@ on destroy: RR's DOM is removed, unless RR's first node is no longer a child of 
 
 ### 5.8 `{{#-with-dynamic-vars}}` and `(-get-dynamic-var)`
 
+The first paragraph describes the general mechanism, which is informative except for the key
+`outletState`; the normative rule follows it.
+
 `{{#-with-dynamic-vars name=value …}}block{{/-with-dynamic-vars}}` renders `block` with a
 child dynamic scope in which each `name` is bound to the reactive `value`; the binding is
 visible to everything rendered (dynamically) within, including components invoked there and
@@ -1210,10 +1213,32 @@ are private keywords. Ember's outlets once used them, but `{{outlet}}` is now th
 reactive: `{{-get-dynamic-var this.keyword}}` switches variables when `keyword` changes, and
 inner `-with-dynamic-vars` shadow outer bindings only within their block
 (`packages/@glimmer-workspace/integration-tests/lib/suites/with-dynamic-vars.ts:4-84`).
-Ember allows only the key `outletState`; whether the general form is normative is open
-(§05-14 item 17).
 
-Every component invocation pushes a child dynamic scope (copy-on-write) for its layout; a
+**Normative rule** (author ruling, 2026-10-08, commit `eb4f794d62`). The only dynamic-scope key
+is `outletState`. **[Dev]** Binding or reading any other key is a runtime assertion, raised
+when the `-with-dynamic-vars` block or the `-get-dynamic-var` expression is evaluated during
+rendering (not at compile time; the template compiles). The messages, verbatim, with `${key}`
+the offending name, are
+``Using `-with-dynamic-scope` is only supported for `outletState` (you used `${key}`).`` for a
+binding and
+``Using `-get-dynamic-scope` is only supported for `outletState` (you used `${key}`).`` for a
+read (`packages/@ember/-internals/glimmer/lib/renderer.ts:76-91`, Ember's `DynamicScope`; §08-9.6;
+tests `packages/@ember/-internals/glimmer/tests/integration/syntax/with-dynamic-var-test.js:6-33`).
+The messages name `-…-dynamic-scope`, not the keywords' own names. In production builds the
+assertion is compiled out and Ember's dynamic scope ignores the key (`get` returns and `set`
+replaces `outletState`); a program that uses another key is not conforming, so that behavior is
+not specified.
+
+Implementations SHOULD implement the dynamic scope generally, as a string-keyed scope like the
+one described above, but MUST guard it with the same assertion, until a context RFC allows
+general-purpose dynamic scope. Ember is expected to accept other keys then.
+
+*Informative.* The description of arbitrary names, reactive name expressions, shadowing and
+unbound reads in the first paragraph is how the Glimmer VM implements the dynamic scope
+when the host does not restrict it. The Glimmer suite tests it with arbitrary keys such as
+`myKeyword` (`with-dynamic-vars.ts:4-84`) on the VM's default dynamic scope, not on Ember's; those
+tests are implementation tests (§09-9.1; `.work/W2-glimmer-harness.md` finding 5). Every
+component invocation pushes a child dynamic scope (copy-on-write) for its layout; a
 component manager with `dynamicScope` capability receives that scope in `create`/`update`
 (`packages/@glimmer/runtime/lib/compiled/opcodes/component.ts:401-446`).
 
@@ -1292,7 +1317,7 @@ yield(slot, args):
 - A yield inside `{{#if}}`/`{{#each}}` in the layout renders inline into that region and is
   removed with it (`yield.ts:196-215`; `helpers/yield-test.js:116-162`).
 - A parameter with no corresponding yielded value is `undefined` (`42 - `), tested for curly
-  and dynamic invocation only (`yield.ts:86-99`, `skip: 'glimmer'`; §14 item 13).
+  and dynamic invocation only (`yield.ts:86-99`, `skip: 'glimmer'`; §14 item 12).
 - `yield` is not itself a replaceable region: the yielded content is rendered inline into the
   current region. Yielding the same block several times renders it several times, each with its
   own instances.
@@ -1407,7 +1432,7 @@ the two readers disagree. A component layout's `@a` is bound to the **first** oc
 `packages/@glimmer/opcode-compiler/lib/opcode-builder/helpers/components.ts:337-350` binds in
 reverse so the first wins). The captured arguments that managers, helpers, and modifiers see
 (`args.named.a`, §06-3) hold the **last** occurrence (`arguments.ts:331-344` overwrites the
-map), and list the name once. See §05-14 item 15.
+map), and list the name once. See §05-14 item 14.
 
 If the definition is curried (§05-8), its curried arguments are merged **before** the manager
 sees the arguments (`component.ts:304-360`,
@@ -1614,8 +1639,11 @@ created inside it — is (`component.ts:826-854`):
 Blocks passed to the component keep the owner of the scope in which they were written.
 
 **[Loose mode]** For a curried component whose inner definition is a string, the string is resolved
-with the **curried** owner (`component.ts:329-335`). See Open questions for the asymmetry
-between the owner given to `create` and the owner of the layout.
+with the **curried** owner (`component.ts:329-335`).
+
+The difference between the owner given to `create` and the owner of the layout is a
+compatibility quirk that implementations MUST preserve (author ruling, commit `eb4f794d62`);
+§06-2.2 states it and gives the reason.
 
 ---
 
@@ -1823,7 +1851,7 @@ Tests: several modifiers on one element install in source order, `<div {{foo}} {
 element's modifiers install before its parent's (`350-370`), and siblings install in document
 order before the parent (`396-423`). When the environment is not interactive no modifier hook
 runs (`custom-modifier-manager-test.js:589-643`). That `create` sees an element with no
-attributes and outside the document is untested (§14 item 12).
+attributes and outside the document is untested (§14 item 11).
 
 ### 10.2 Dynamic modifiers
 
@@ -2063,10 +2091,28 @@ DOM is produced:
 | serialize | SSR (FastBoot); output is later serialized to HTML | `packages/@glimmer/node/lib/serialize-builder.ts` |
 | rehydrate | first client render over server-produced DOM | `packages/@glimmer/runtime/lib/vm/rehydrate-builder.ts` |
 
-SSR environments are **non-interactive**: modifiers are not created or installed (§05-4.1) and
-update passes are not supported (`environment.ts:134-139` — "…You may be attempting to rerender
-in an environment which does not support rerendering, such as SSR."). In SSR, trusted HTML is
-inserted as a raw HTML section rather than parsed (`packages/@glimmer/node/lib/node-dom-helper.ts:21-30`),
+A server render (serialize mode) MUST be **non-interactive** (author ruling, 2026-10-08, commit
+`eb4f794d62`): modifiers are not created or installed (§05-4.1), so no modifier runs on the
+server, and update passes are not supported (`environment.ts:134-139` — "…You may be attempting
+to rerender in an environment which does not support rerendering, such as SSR."). This is what
+Ember does under FastBoot, and existing applications are built against it. In Ember,
+interactivity is not derived from the tree builder: the renderer's environment takes
+`isInteractive` from `-environment:main` (`packages/@ember/-internals/glimmer/lib/renderer.ts:187-205`),
+whose boot options default it to `hasDOM` and force it to `false` when `isBrowser` is `false`
+or `shouldRender` is `false` (`packages/@ember/application/instance.ts:446-469`; an explicit
+`isInteractive` boot option overrides both, `:488-490`), while
+`_renderMode: 'serialize'` independently selects the serialize builder
+(`packages/@ember/-internals/glimmer/lib/setup-registry.ts:16-32`). FastBoot always boots with
+`isBrowser: false`, and passes `_renderMode: 'serialize'` when serialization is enabled
+(`EXPERIMENTAL_RENDER_MODE_SERIALIZE`; `ember-cli-fastboot/packages/fastboot/src/ember-app.js:362-374`; Ember's own test boots the
+same way, `packages/@ember/application/tests/visit_test.js:65-106`). A non-interactive
+environment skips modifier creation and scheduling
+(`packages/@glimmer/runtime/lib/compiled/opcodes/dom.ts:165-170,209-214`,
+`packages/@glimmer/runtime/lib/environment.ts:164-174`). A conforming implementation does not
+need Ember's separate switches; it MUST NOT run modifiers during a serialize render. A
+rehydrating render in the browser is interactive.
+
+In SSR, trusted HTML is inserted as a raw HTML section rather than parsed (`packages/@glimmer/node/lib/node-dom-helper.ts:21-30`),
 elements are created without namespaces, and every attribute is set with `setAttribute`
 without namespace (`node-dom-helper.ts:32-40`).
 
@@ -2082,6 +2128,8 @@ results instead:
    values are corrected in place; the remaining results listed at the end of §13.2 hold.
 3. Content of the container outside the rendered root is left alone, including for partial
    rehydration through `renderComponent`.
+4. The server render is non-interactive (above): no modifier is created, installed or
+   updated during it (author ruling, commit `eb4f794d62`).
 
 ### 13.1 Serialization markers *(informative)*
 
@@ -2218,43 +2266,40 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
    `class` values are merged (splattributes/modifiers), `false` becomes the class `"false"`
    (`packages/@glimmer/runtime/lib/references/class-list.ts:9-12` uses `normalizeStringValue`).
    All-static merges are joined without filtering empty strings.
-3. **Owner asymmetry for curried components.** `manager.create` receives the *invoking*
-   scope's owner, while the component's layout scope uses the *curried* owner
-   (`component.ts:429-437` vs `825-853`). Recorded as §06-12 Q3, which owns it.
-4. **`NaN` keys** never match (`===`), so an item keyed by `NaN` is re-created every sync.
-5. **Dynamic head with a primitive value and arguments** (`{{this.str 1}}`) silently renders
+3. **`NaN` keys** never match (`===`), so an item keyed by `NaN` is re-created every sync.
+4. **Dynamic head with a primitive value and arguments** (`{{this.str 1}}`) silently renders
    nothing even in development, while an object without managers throws
    (`content.ts:52-69`). No test covers the error message.
-6. **`{{this.fn}}` calls plain functions.** Any function in content position is treated as a
+5. **`{{this.fn}}` calls plain functions.** Any function in content position is treated as a
    helper (default helper manager, §06-1.6) and invoked with no arguments; a class without a
    component manager will throw a "Class constructor … cannot be invoked without 'new'"
    TypeError. The component check runs before the helper check, so a value with both
    managers renders as a component. Only the function case is tested, and only through
    helper-position tests; content-position precedence needs a test.
-7. **`<svg>` inside `<foreignObject>`** is created in the HTML namespace, because the
+6. **`<svg>` inside `<foreignObject>`** is created in the HTML namespace, because the
    integration-point test runs before the `tag == "svg"` test (`operations.ts:53-79`). The same
    applies to `<math>`. *Fix proposed* on branch `fix/svg-inside-foreign-object`: an `<svg>` or
    `<math>` tag always starts its own namespace, as in the HTML parser.
-8. **Serialize builder `in-element`** defaults `insertBefore` to `null`, so SSR never clears
+7. **Serialize builder `in-element`** defaults `insertBefore` to `null`, so SSR never clears
    the destination, unlike the client and rehydration builders
    (`serialize-builder.ts:132-142`).
-9. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls
+8. **Attribute updates re-set identical strings.** `SimpleDynamicAttribute.update` calls
    `setAttribute` whenever the computation is invalid, even if the string is unchanged; only
    property mode compares with the last value.
-10. **`{{debugger}}` / `{{log}}`** timing differs: `debugger` runs only during (re-)rendering of
+9. **`{{debugger}}` / `{{log}}`** timing differs: `debugger` runs only during (re-)rendering of
     its region; `log` runs whenever its reactive value is recomputed.
-11. **Unbound `-get-dynamic-var`** reads throw an internal error rather than returning
+10. **Unbound `-get-dynamic-var`** reads throw an internal error rather than returning
     `undefined`.
-12. **Modifier element state at `create`.** For elements with modifiers, attributes are deferred,
+11. **Modifier element state at `create`.** For elements with modifiers, attributes are deferred,
     so `createModifier` sees an element with *no* attributes and not yet in the document; any
     code relying on attributes must wait for `install`.
-13. **`yield to="inverse"`/`to="else"` and extra block params are not tested under angle-bracket
+12. **`yield to="inverse"`/`to="else"` and extra block params are not tested under angle-bracket
     invocation.** `skip: 'glimmer'` (`lib/suites/yield.ts:25-62`, `86-99`) skips the test only
     for the Glimmer (angle-bracket) invocation kind; the module builder still runs it for curly
     and dynamic invocation (`lib/test-helpers/module.ts:143-160`). The implementation maps
     `inverse` to `else` regardless of invocation kind, and `helpers/yield-test.js:60-84` covers the
     Ember angle-bracket case, so the gap is small, but the reason for the skip is unrecorded.
-14. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
+13. **Triple curlies are ignored for literals and keyword appends** (§05-3.5 item 6).
     `{{{"<b>x</b>"}}}` compiles to a trusting append of a literal (`[2,"<b>x</b>"]`), but the
     literal fast path emits a text node, unlike `{{{this.x}}}` holding the same string.
     `{{{if c x}}}`, `{{{helper h}}}`, `{{{has-block}}}` and `{{{log}}}` lose the flag during
@@ -2262,7 +2307,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     Both look like bugs. No test pins either behavior. *Fix proposed* on branch
     `fix/triple-curly-literals-and-keywords`: string literals and append keywords honour triple
     curlies.
-15. **Duplicate attributes and duplicate named arguments** (§05-4.9, §05-7.3). The parser
+14. **Duplicate attributes and duplicate named arguments** (§05-4.9, §05-7.3). The parser
     accepts both (§02-11 item 17). For attributes, the result depends on whether the element
     has `...attributes`/modifiers (last-wins without `class` merging vs. deferred last-wins
     with `class` merging). For named arguments, a component's layout sees the first
@@ -2273,7 +2318,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     last occurrence. *Proposal* on branch `proposal/duplicate-attributes-and-arguments-are-errors`
     (its commit message is the full explainer, for team discussion): every duplicate attribute,
     component argument or named argument is a compile-time syntax error.
-16. **Claims with no test (T4).** These are derived from source only. The lifecycle and
+15. **Claims with no test (T4).** These are derived from source only. The lifecycle and
     destruction orderings that used to be listed here (public-manager tree hook order,
     component hooks before modifier installs, `updateModifier` after `didUpdate`, modifier update
     pre-order, deferred destructors in `actions` after DOM removal, `destroyComponent` order,
@@ -2281,7 +2326,7 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     by experiment in T9b and are marked "(verified by experiment, T9b)" where they occur; one
     was corrected (modifier destruction order, §11.3). No upstream tests pin them.
     - `each`: `key="@key"` on plain `each`; the dev `invalid keypath` assertion; `key` read
-      once (§5.4.2); occurrence numbering of duplicate keys; `NaN` keys (item 4); `Map` entries
+      once (§5.4.2); occurrence numbering of duplicate keys; `NaN` keys (item 3); `Map` entries
       and other non-array objects in plain `each`; lazy consumption of native iterators;
       extra block params; DOM non-reuse across the empty/non-empty transition; insert-before-
       revalidate and delete ordering during sync. The retain/move step sequences are
@@ -2293,16 +2338,4 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       `has-block`/`has-block-params` constancy and the non-literal-argument compile error;
       `has-block-params` for a `<:else as |x|>` block.
     - Modifiers: timing of replacing a dynamic modifier definition; the attribute-less,
-      undocumented element at `create` (item 12).
-17. **Is the general dynamic scope part of the language?** §05-5.8 describes a string-keyed
-    dynamic scope with arbitrary names, as the VM implements it, and the Glimmer suite tests
-    it with arbitrary keys such as `myKeyword`
-    (`packages/@glimmer-workspace/integration-tests/lib/suites/with-dynamic-vars.ts:4-84`). In
-    Ember, `-with-dynamic-vars` and `-get-dynamic-var` assert for any key other than
-    `outletState` (§08-9.6; `packages/@ember/-internals/glimmer/tests/integration/syntax/with-dynamic-var-test.js:6-33`),
-    and no Ember template emits them. Those Glimmer tests run on the VM's default dynamic scope,
-    not on Ember's (W2 kept it so; `.work/W2-glimmer-harness.md` finding 5). If the general
-    dynamic scope is a VM capability that Ember does not expose, §05-5.8 is informative and the
-    suite is an implementation test.
-
-    > Ember is likely to support other keys in the future but as of now the spec behavior is to assert on anything other than outletState. Implementations are encouraged to implement dynamic scope in a general way, like glimmer does, but guard with the same assertion until such a time that a context RFC moves ahead and allowed general purpose dynamic scope.
+      undocumented element at `create` (item 11).

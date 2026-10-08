@@ -676,7 +676,7 @@ The author answered four open questions inline (notes in §05-14 item 17, §06-1
 Q8). Spec text first (Opus), then code on `test/w2-glimmer-harness` (Sonnet), with the same rules
 as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on surprises).
 
-- [ ] 9.1 Spec (Opus): turn each inline note into normative text and remove the note, as T11/T12
+- [x] 9.1 Spec (Opus): turn each inline note into normative text and remove the note, as T11/T12
       did. §05-5.8 + §05-14 item 17: dynamic scope keys other than `outletState` assert
       (normative); implementations are encouraged to implement general dynamic scope but guard
       it with the same assertion until a context RFC allows more; drop item 17 (renumber with
@@ -687,6 +687,19 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
       manager (public API) where tests need a `this`; remove Q7. Q8: the SSR profile serializes
       non-interactive, as Ember does; §05-13 says so; remove Q8. STATUS "Decisions": record the
       four rulings with the commit. `xref.py` and `check-citations.py` clean.
+      DONE (2026-10-08): §05-5.8 normative rule + verbatim messages (`renderer.ts:76-91`, runtime,
+      [Dev]), general mechanism informative; §08-9.6 points at it (it had named the keywords
+      wrong). §05-14 item 17 and item 3 (the owner asymmetry pointer to Q3) removed, items 4–16
+      renumbered 3–15 with the tool; the tool missed §09 (its file filter was `0[0-8]`, now
+      `0[0-9]`) and bare "(item N)" inside §05-14, fixed by hand, plus `.work/T16-coverage.md`.
+      §06-2.2 owner quirk + tests, §06-12 Q3 removed, §05-7.8, §08-8.6, §00-0.7 item 22 updated.
+      §09: intro rulings, seam B, adapter without `renderTemplate`, `mode` comment and two
+      bullets, W0 row, §9.8 intro, Q7/Q8 removed. §05-13: serialize MUST be non-interactive
+      (sources `instance.ts:446-469,488-490`, `setup-registry.ts:16-32`, FastBoot
+      `ember-app.js:362-374`; `ember-cli-fastboot` added to `check-citations.py` SIBLINGS) and
+      normative result 4. For 9.4 note: Ember ties interactivity to `isBrowser`/`isInteractive`,
+      not to `_renderMode`. §05-14 item 10 (unbound `-get-dynamic-var`) now concerns only the
+      informative general mechanism; left for the author.
 - [ ] 9.2 Code, owner (Q3): the IT `owner-test.ts` tests "owner is preserved in curried closure
       components" and "… non-curried component definitions that are passed around" contradict
       the ruling. Add an EG conformance test pinning the engine-owner behavior for the curried
@@ -702,7 +715,7 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
 - [ ] 9.4 Code, non-interactive serialize (Q8): server renders in the rehydration/node delegates
       use a non-interactive renderer. Triage every changed test (modifiers no longer running on
       the server, rehydration results) as in 5.5b before changing expectations.
-- [ ] 9.5 Dynamic scope (§05-14 item 17 ruling): the IT `-with-dynamic-vars` suite with arbitrary
+- [ ] 9.5 Dynamic scope (§05-5.8 ruling; was §05-14 item 17): the IT `-with-dynamic-vars` suite with arbitrary
       keys becomes an implementation test (W5 list); confirm an EG test pins the assertion for
       non-`outletState` keys (`EG/syntax/with-dynamic-var-test.js`), or add one.
 - [ ] 9.6 Update the exit-check notes, §09 W2 row and STATUS (new commits, PR split).
@@ -715,7 +728,8 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
    `model`) and rendered inside the engine is created with the **engine** as owner in real
    Ember. The Glimmer harness's `owner-test.ts` ("owner is preserved in curried closure
    components", and the non-curried variant, which has a TODO) expects the defining owner. No
-   Ember test pins either. Owner: §06-12 / §08 (owner threading).
+   Ember test pins either. Owner: §06-12 / §08 (owner threading). **Ruled in `eb4f794d62`, see
+   9.2:** Ember's (engine) owner is normative, a compatibility quirk (§06-2.2).
 2. (2.4) `attributeBindings = ['class']` is an assertion in real Ember
    (`EG/components/attribute-bindings-test.js:872`) but worked on the fake classic component
    ("Setting class attributeBinding does not clobber ember-view"); fake-only behavior, no
@@ -732,15 +746,18 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
 5. (4.1) `-with-dynamic-vars`/`-get-dynamic-var`: the IT tests (collapsed onto Glimmer) use arbitrary
    keys such as `myKeyword`; real Ember allows only `outletState` (`EG/syntax/with-dynamic-var-test.js`).
    So the VM supports a general dynamic scope that Ember's template language does not expose; no
-   change, noted for the dynamic-scope open question.
+   change, noted for the dynamic-scope open question. **Ruled in `eb4f794d62`, see 9.5:** other
+   keys assert; the general mechanism is informative (§05-5.8).
 
 6. (5.1) **Legacy-profile `this` at the top level.** §09 `renderTemplate` has no public Ember
    equivalent. The Glimmer harness renders a loose template with an arbitrary `self` through an
    internal root; the Ember harness renders a `-top-level` classic component, so `this` differs.
-   Which does the Legacy profile mean? (§09-9.4.2 proposed edit 2.)
+   Which does the Legacy profile mean? (§09-9.4.2 proposed edit 2.) **Ruled in `eb4f794d62`, see
+   9.3:** no `renderTemplate`; `renderComponent` with a custom component manager (§09-9.4.2).
 7. (5.1) **Serialize mode interactivity.** FastBoot serializes non-interactive; the Glimmer SSR
    suites always serialized with `isInteractive: true` (kept so in W2). Which is normative for
-   the SSR profile? (§09-9.4.2 proposed edit 3; §05-13.)
+   the SSR profile? (§09-9.4.2 proposed edit 3; §05-13.) **Ruled in `eb4f794d62`, see 9.4:**
+   non-interactive, as Ember (§05-13).
 8. (6.2) **Classic components have no args at construction time.** A test that read the positional param in the constructor of the former
    `PositionalComponent` (contextual-components-test 'renders with dot path and rest parameter does not leak') sees `undefined` on a real classic
    `Component`: positional and named args are assigned as properties after the constructor and before `init()`. A glimmer `Component` has `this.args`

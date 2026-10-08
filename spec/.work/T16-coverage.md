@@ -13,9 +13,9 @@ with `tools/probe-precompile.mjs`; those probes are evidence, not tests.
 
 | Where | What |
 |---|---|
-| §05-14 item 16 | Claims in §05 with no upstream test, gathered by T4: `each` edge cases (iterables of other objects, `key` `@`-paths, occurrence numbering, sync step order outside `LOCAL_DEBUG`), `in-element` (`insertBefore` `undefined`, changing destination), `yield`/blocks (multiple yields, `has-block-params` of curried blocks), argument edge cases (§05-7.3). |
-| §05-14 item 13 | `yield to="inverse"`/`to="else"` and extra block params under angle-bracket invocation. |
-| §05-14 item 12 | `createModifier` sees an element with no attributes, outside the document. |
+| §05-14 item 15 | Claims in §05 with no upstream test, gathered by T4: `each` edge cases (iterables of other objects, `key` `@`-paths, occurrence numbering, sync step order outside `LOCAL_DEBUG`), `in-element` (`insertBefore` `undefined`, changing destination), `yield`/blocks (multiple yields, `has-block-params` of curried blocks), argument edge cases (§05-7.3). |
+| §05-14 item 12 | `yield to="inverse"`/`to="else"` and extra block params under angle-bracket invocation. |
+| §05-14 item 11 | `createModifier` sees an element with no attributes, outside the document. |
 | "(verified by experiment, T9b)" in §05-7.4, §05-11, §05-12, §06-10, §06-11 | Orderings confirmed only by throwaway tests: public-manager hook order across a tree, `didCreate` vs `installModifier`, modifier update pre-order, deferred destructor timing, modifier destruction order. `.work/T9b-orderings.md` "Upstream candidates" lists the tests worth writing. |
 | §05-5.4 (`each`) | Sync step sequences are asserted only in `LOCAL_DEBUG` builds; a conformance suite must assert them on the DOM instead (§09). |
 | §02-3.x item at line 438, §02-11 | Inverse sections `{{#foo}}b{{else}}a{{/foo}}` ordering; loose-mode `foo` vs `this.foo` (untested). |

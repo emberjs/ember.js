@@ -8,7 +8,7 @@ import os, re, sys, json, subprocess, functools
 HACK = '/Users/edward/hacking'
 REPO = f'{HACK}/ember.js'
 SPEC = f'{REPO}/spec'
-SIBLINGS = ['babel-plugin-ember-template-compilation', 'content-tag', 'rfcs', 'simple-html-tokenizer']
+SIBLINGS = ['babel-plugin-ember-template-compilation', 'content-tag', 'ember-cli-fastboot', 'rfcs', 'simple-html-tokenizer']
 
 EXT = r'(?:ts|js|mjs|cjs|md|rs|l|yy|json|hbs|gjs|gts|d\.ts)'
 RANGE = r'\d+(?:-\d*)?\+?'

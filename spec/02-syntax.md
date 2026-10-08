@@ -1428,4 +1428,4 @@ In `entityEncoding: 'transformed'` (default print), text is escaped (`& < > U+00
     from Handlebars and only partially tested in Glimmer. They are specified here as current
     behavior and should be marked **[Legacy]**.
 17. **Duplicate attribute names and duplicate hash keys** are accepted at parse time. Their
-    runtime meaning is specified in §05-4.9 and §05-7.3 and recorded as §05-14 item 15.
+    runtime meaning is specified in §05-4.9 and §05-7.3 and recorded as §05-14 item 14.

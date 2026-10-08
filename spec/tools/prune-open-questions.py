@@ -163,7 +163,7 @@ def main():
         print(f'{qid} {fname}: removing Q{", Q".join(removed) if removed else " none"}')
     # new texts: start from processed list files, then rewrite references everywhere
     texts = {}
-    for f in [f for f in sorted(os.listdir('.')) if re.match(r'0[0-8]-.*\.md$', f)] + ['STATUS.md']:
+    for f in [f for f in sorted(os.listdir('.')) if re.match(r'0[0-9]-.*\.md$', f)] + ['STATUS.md']:
         texts[f] = open(f).read()
     for lid, (fname, out, _) in results.items():
         texts[fname] = '\n'.join(out)

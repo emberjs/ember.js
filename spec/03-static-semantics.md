@@ -1288,7 +1288,7 @@ removed. Tests: `packages/@glimmer/syntax/test/template-locals-test.ts`.
    params forbid it.
 5. **Keyword appends drop `{{{ }}}` trusting**: `{{{if c x}}}`, `{{{helper h}}}`,
    `{{{has-block}}}`, `{{{log}}}` append as text (`call-to-append.ts`, `append.ts:127-145`).
-   Recorded as §05-14 item 14, which owns it together with the literal case (fix proposed).
+   Recorded as §05-14 item 13, which owns it together with the literal case (fix proposed).
 6. **Bare-path keyword promotion** happens in attribute, `@arg`, hash, and interpolation
    positions, but not in positional-argument positions. So `(x has-block)` and `(x (has-block))`
    differ.

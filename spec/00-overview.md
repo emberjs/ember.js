@@ -172,7 +172,7 @@ throughout. How much each chapter was verified by running code varies:
 - **§05** is written from source. Its attribute and SSR/rehydration behavior, `each`,
   `in-element`, `yield` and blocks, modifier ordering, classic lifecycle hooks and
   destruction order cite the tests that pin them. Claims with no test are marked
-  "(untested)" and gathered in §05-14 item 16. The lifecycle and destruction orderings that
+  "(untested)" and gathered in §05-14 item 15. The lifecycle and destruction orderings that
   no test pins were checked by experiment in T9b and are marked "(verified by experiment, T9b)".
 - **§06** and **§07** are written from source, and their citations were checked to point at
   the construct named.
@@ -216,9 +216,9 @@ choice breaks someone.
 2. Duplicate attributes and duplicate named arguments are accepted. A component's layout
    sees the first `@a` while its manager sees the last, and `class` is merged only when the
    element has modifiers or `...attributes`. Should duplicates become a compile-time error?
-   A proposal branch makes them errors, for team discussion. (§05-14 item 15)
+   A proposal branch makes them errors, for team discussion. (§05-14 item 14)
 3. Triple curlies are ignored for literals and keyword appends: `{{{"<b>"}}}`,
-   `{{{if c x}}}` and `{{{helper h}}}` render text. Fix proposed. (§05-14 item 14)
+   `{{{if c x}}}` and `{{{helper h}}}` render text. Fix proposed. (§05-14 item 13)
 4. `&#128512;` decodes through `String.fromCharCode` to U+F600. Templates may depend on
    this. (§02-11 item 7)
 
@@ -274,24 +274,25 @@ to addon tooling.
 
 16. Namespaces: a namespaced attribute that is removed and then set again loses its
     namespace, and an `<svg>` or `<math>` inside `<foreignObject>` is created in the HTML
-    namespace. Fixes proposed for both. (§05-14 items 1, 7)
+    namespace. Fixes proposed for both. (§05-14 items 1, 6)
 17. `false` in a merged `class` becomes the class `"false"`. (§05-14 item 2)
 18. SSR `in-element` never clears its destination, unlike client rendering and rehydration.
-    (§05-14 item 8)
+    (§05-14 item 7)
 19. `NaN` keys never match (`===`), so an item keyed by `NaN` is re-created on every sync.
-    (§05-14 item 4)
+    (§05-14 item 3)
 20. `{{this.str 1}}` on a primitive silently renders nothing. Any function in content
     position is called as a helper, and a value with both managers renders as a component.
-    (§05-14 items 5, 6)
+    (§05-14 items 4, 5)
 21. `element` with `null` or `undefined`: the docs, the dev build and the production build
     all disagree. (§08-14 Q4)
 
 ### 0.7.7 Managers and owners
 
 22. Owners are inconsistent. The component-definition cache ignores the owner, so a template
-    factory runs with whichever owner renders it first. For a curried component, `create`
-    gets the invoking owner while the layout gets the curried one. An `undefined` owner
-    throws a raw `TypeError` in component and modifier managers. (§06-12 Q15, Q3, Q4)
+    factory runs with whichever owner renders it first. An `undefined` owner throws a raw
+    `TypeError` in component and modifier managers. (§06-12 Q15, Q4. That a curried
+    component's `create` gets the invoking owner while its layout gets the curried one is
+    ruled a compatibility quirk to preserve, §06-2.2.)
 23. Capability handling: the dev-only `willDestroy` check never fires (`'string' in d`), and
     with `disableAutoTracking: true` `updateModifier` never runs, even when arguments
     change. (§06-12 Q8, Q2)
@@ -316,9 +317,9 @@ to addon tooling.
 ### 0.7.9 Ordering that is inferred or untested
 
 29. Several orderings are confirmed only by T9b's throwaway experiments, with no upstream tests,
-    and `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. (§05-14 item 16)
+    and `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. (§05-14 item 15)
 30. `createModifier` sees an element that has no attributes yet and is not in the document.
-    (§05-14 item 12)
+    (§05-14 item 11)
 31. Ember render timing: `renderComponent` called during a render defers the new root. Its
     `destroy()` works (resolved: it destroys the root before or after its first render), but
     the replace-previous-render logic sees no previous render, so both renders stay live. Each

@@ -1556,8 +1556,11 @@ A value curried inside an engine, such as `(component X)` passed out to the host
 the engine instance as its owner (§05-8.2). When the host invokes it, the component's layout,
 and helpers and modifiers created in it, use the engine owner, but the component manager's
 `create` (and so a public manager's factory and `@glimmer/component`'s `owner`) receives
-the host's owner (§05-7.8; open question §06-12 Q3). Curried helpers and modifiers use the
-engine owner throughout.
+the host's owner (§05-7.8). Curried helpers and modifiers use the engine owner throughout.
+In the other direction, a component curried in the application and passed into a mounted
+engine (for example through `{{mount}}`'s `model`) is created with the engine instance as its
+owner. Both are a compatibility quirk that implementations MUST preserve (author ruling,
+commit `eb4f794d62`; §06-2.2 owns the rule, its reason and its tests).
 
 ---
 
@@ -1686,9 +1689,12 @@ run loop occurs (`base-renderer.ts:590-615`, tests `render-settled-test.js:11-74
 ### 9.6 Dynamic scope
 
 Ember's dynamic scope object (`renderer.ts:66-92`) carries `view` (the nearest classic
-component, §6.8) and `outletState`. **[Dev]** `-get-dynamic-scope` / `-with-dynamic-scope`
-(private keywords) with any key other than `outletState` assert
-``Using `-get-dynamic-scope` is only supported for `outletState` (you used `${key}`).``.
+component, §6.8) and `outletState`. **[Dev]** The private keywords `-with-dynamic-vars` and
+`-get-dynamic-var` with any key other than `outletState` assert at runtime; the messages
+(``Using `-with-dynamic-scope` is only supported for `outletState` (you used `${key}`).`` and
+the `-get-dynamic-scope` variant) and the rule that implementations keep this assertion until a
+context RFC allows general dynamic scope are owned by §05-5.8 (author ruling, commit
+`eb4f794d62`).
 
 ---
 
