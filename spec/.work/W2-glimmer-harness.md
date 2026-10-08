@@ -549,8 +549,8 @@ keyword" went in 5.3b).
   - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a-7.1g done (worktree \`a135f9b3b0\`, \`9a486d218e\`, \`c7f204af33\`, \`d669d705fe\`, \`68fcd3260a\`, \`8f427a1ed0\`; 7.1g changed no code). Next: 7.1h (strict mode and lexical scope). Last full run \`full71f\`
-  (9021 / 9003 / 0 / 18) in the session scratchpad is still the baseline for the next per-test diff (\`run.sh NEW PREV\` builds, runs and diffs; \`post.sh\` is the diff and greps). Ledger rows go in the \`7.1 rows\` section.
+  Progress note (7.1): 7.1a-7.1g done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`, `8f427a1ed0`; 7.1g changed no code). Next: 7.1h (strict mode and lexical scope). Last full run `full71f`
+  (9021 / 9003 / 0 / 18) in the session scratchpad is still the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
 
 ## 8. Exit check (Opus)
 
@@ -970,7 +970,7 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   hold any more: the capability tests (`hasValue`/`hasScheduledEffect`/version/capabilities function) are all in the EG file too. `custom-helper-test.js` and
   `invoke-helper-test.js` have no IT counterpart. Ledger: 16 rows (14 deleted, 2 grouped kept). Full suite 9035 -> 9021 total / 9003 pass / 0 fail / 18 skip (-14); per-test
   diff against `full71e`: exactly the 14 ledgered tests missing, 0 new; greps 0; type-check and prettier clean.
-- 7.1g (2026-10-08): no code change, no worktree commit, no full run (the tree is the one of `full71f`). `@glimmer/manager/test/managers-test.ts` (30 tests; §3 counted 20) vs
+- 7.1g (2026-10-08): no code change, no worktree commit, no full run (the tree is the one of `full71f`). `@glimmer/manager/test/managers-test.ts` (20 tests) vs
   `EG/custom-component-manager-test.js` (23 render tests): the file is entirely registry level, so it stays as the item says (one grouped `kept` ledger row) and is on the W5 list, with
   `capabilities-test.ts` next to it. EG's render tests of the component manager (create/update/destroy hooks, args, positional params, async lifecycle, capabilities helper)
   have no IT twin, as IT has no render-level component-manager test.
