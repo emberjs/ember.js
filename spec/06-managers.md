@@ -1023,6 +1023,12 @@ Semantics:
      If nothing differs, the procedure does nothing. Test: "unrelated updates to `this`
      context does not result in removing + re-adding"
      (`packages/@glimmer-workspace/integration-tests/test/modifiers/on-test.ts:301-320`).
+- Listener order is the DOM's: listeners run in the order they were added, on the target
+  element before its ancestors. When a component forwards modifiers with `...attributes`, the
+  caller's `{{on}}` listeners run before the listeners that the component puts on that element,
+  wherever the splat is (§05-7.5). Because a changed argument removes and re-adds the
+  listener (step 5), a listener whose arguments change moves after the other listeners on the
+  element (`on.ts:316-357`, documentation of the modifier; tests `packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:300-374`).
 - The callback is invoked by the DOM with the event, with the DOM's arguments. In
   production, `this` is the element, as the DOM passes it, because the callback is not
   rebound. [Dev] The callback is bound to a sentinel `this`. Property access on it throws

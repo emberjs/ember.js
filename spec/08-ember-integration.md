@@ -384,6 +384,10 @@ is reused otherwise (chapter 07 caching semantics).
   - a key containing `.` is a *path*: split on `.` and each segment read in turn; a `null`,
     `undefined` or `isDestroyed` intermediate yields `undefined`
     (`property_get.ts:140-157`);
+    so a property whose own name contains a period cannot be read: `(get obj "some.key")`
+    reads `obj.some.key`, not `obj["some.key"]`, and is `undefined` when `obj.some` does not
+    exist (the public documentation says so, and suggests a plain function for such keys:
+    `packages/@ember/helper/index.ts:480-508`);
   - each segment read is Ember's `_getProp` (§10.3): consumes the storage for `(obj, key)`;
     calls `unknownProperty(key)` when the value is `undefined`, the key is not `in` the object
     and the object implements `unknownProperty`; if the value is an array/Ember array also

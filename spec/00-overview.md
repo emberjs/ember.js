@@ -319,9 +319,10 @@ to addon tooling.
     and `each` sync step sequences are asserted only in `LOCAL_DEBUG` builds. (§05-14 item 16)
 30. `createModifier` sees an element that has no attributes yet and is not in the document.
     (§05-14 item 12)
-31. Ember render timing: `renderComponent` called during a render defers the new root, so
-    its `destroy()` does nothing and both renders stay live. Each outlet level renders one
-    microtask late, and nothing tests whether the empty intermediate state can be observed.
+31. Ember render timing: `renderComponent` called during a render defers the new root. Its
+    `destroy()` works (resolved: it destroys the root before or after its first render), but
+    the replace-previous-render logic sees no previous render, so both renders stay live. Each
+    outlet level renders one microtask late, and nothing tests whether the empty intermediate state can be observed.
     `{{outlet}}` inside a component stopped rendering with the route manager merge
     (`4b5d79a6d7d1b`), a confirmed regression tracked in emberjs/ember.js#21640.
     (§08-14 Q2, Q9, Q14)

@@ -73,8 +73,8 @@ continue the work. Last updated: 2026-10-07.
 ## Upstream fix branches
 
 Fixes requested by the author during review. The spec branch has `origin/main` merged in at
-`98fa794473` (base `675744ab35`), so the landed fixes below are in this checkout and the spec
-cites their code directly. Branches still open for review are based on that `origin/main`.
+`def1faa2cf` (upstream base `9bec1cb2a8`; earlier merges at `98fa794473`, base `675744ab35`), so
+the landed fixes below are in this checkout and the spec cites their code directly. Branches still open for review are based on that `origin/main`.
 
 | Spec item | Repo | Branch | State | Summary |
 |---|---|---|---|---|
@@ -239,7 +239,10 @@ Suggestions for the plan's author, based on what is still open:
    W2 (Glimmer harness) and W3 (Ember harness) need no decisions and can start now, as
    separate tasks with checklists, upstreamable to ember.js on their own.
 7. **Keep citations current.** Line numbers are accurate for this checkout (`origin/main`
-   merged at `98fa794473`, upstream base `675744ab35`). After the next merge, run
-   `python3 spec/tools/remap-citations.py 675744ab35 --apply` once, fix its FLAG lines by hand,
-   then run `check-citations.py` and check the prose against what the merge changed
-   (`git diff 675744ab35 <new base> -- packages`), as T8 and T13 did.
+   merged at `def1faa2cf`, upstream base `9bec1cb2a8`). After the next merge, run
+   `python3 spec/tools/remap-citations.py 9bec1cb2a8 <new base> --apply` once, fix its FLAG lines
+   by hand, then run `check-citations.py` and check the prose against what the merge changed
+   (`git diff 9bec1cb2a8 <new base> -- packages`), as T8, T13 and T17 did. The tool follows
+   hunks only: it mis-shifts citations to files that were moved or split (T17 re-derived the
+   test citations by matching unique source lines of the old file against the new files), so
+   re-check every citation to a test file that `git diff -M --stat` shows as moved.

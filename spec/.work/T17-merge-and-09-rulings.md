@@ -19,11 +19,11 @@ Author rulings in `5740b4aeb7` (inline notes under §09-9.8):
 - [x] A2. Resolve every FLAG line by hand (44; list in the run's output), and every citation to a
       file that moved (e.g. `components/{ => classic}/…`, tests split out of `life-cycle-test.js`).
 - [x] A3. `check-citations.py` clean.
-- [ ] A4. Prose vs behavior: read `git diff 675744ab35 9bec1cb2a8 -- packages` for changes to
+- [x] A4. Prose vs behavior: read `git diff 675744ab35 9bec1cb2a8 -- packages` for changes to
       cited behavior (TrackedValue functions/setters, renderComponent root release on destroy,
       base-renderer cleanup, tracker pool, `get` helper dotted keys, `{{on}}` ordering docs,
       modifier-manager docs) and update the owning items; record each in the notes below.
-- [ ] A5. STATUS "Upstream fix branches" base line and "Keep citations current" (new base
+- [x] A5. STATUS "Upstream fix branches" base line and "Keep citations current" (new base
       `9bec1cb2a8`).
 
 ## B. Q6 survey (agent) → `.work/T17-fake-stubs.md`
@@ -77,3 +77,26 @@ C1 (Opus), counts over `@ember/-internals/glimmer/tests`, `@glimmer-workspace`,
   against the new code; about 120 test spans re-pointed to `classic/` or new line numbers.
 - A3: `check-citations.py` reports every citation ok; `xref.py` prints nothing. (Heuristic
   `check-citation-semantics.py` NEAR/MISS counts compared with the old tree: no new real misses.)
+- A4 (behavior changes written into the spec; the upstream diff is docs plus the following):
+  - `TrackedValue` (`tracked-value.ts`): `get`/`set`/`update`/`freeze` are prototype accessors
+    that return a bound function created on first read and cached, not own arrow properties; one
+    private write path. §07-3.2 bullet rewritten (tests `tracked-value-test.ts:104,113,123`),
+    §07-2.2.2 `get` comment, §07-1.6 and §07-3.2 citations.
+  - Tracker pool (`tracking.ts`): one `Tracker` per frame depth, `slot` index on tags instead of a
+    `Set`, `clear()` on combine and in `resetTracking`. Not observable; recorded as an
+    implementation note in §07-1.2 with tests `tracking-test.ts:257-338`.
+  - `renderComponent`/renderer (`base-renderer.ts`): the result's `destroy()` now destroys the
+    root, so it works for a root that is still waiting for a render transaction; destroyed roots
+    leave the renderer (at once, or when the transaction ends) and the renderer leaves the global
+    list with its last root; `isValid` has no `destroyed` case. Updated §08-9.1, §08-9.3
+    (algorithm and tests `render-component-test.ts:487-557`), §07-1.10 items 4 and 5.1, §08-14 Q9
+    (the "destroy() is a no-op" half is resolved; the replace-previous-render quirk remains) and
+    §00-0.7.9 item 31.
+  - `{{get}}` docs: a key containing `.` is always a path, so such a property cannot be read
+    (§08-2.5). `{{on}}` docs: listener order, caller's listeners first wherever `...attributes`
+    is, ancestors after, `stopPropagation` (§06-7.4, §05-7.5; tests `on-test.js:300-374`).
+  - Not behavior: modifier-manager API docs in `@ember/modifier` agree with §06; the new
+    `deprecate-ember-utils` deprecation and the `@ember/array`/`utils` changes are outside the
+    template language.
+  - `async`/`await settled()` conversion of `render-component-test.ts`, `element-test.gjs` and
+    the move of classic-component tests to `components/classic/` are for §09 (C1-C3).

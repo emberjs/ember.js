@@ -1543,6 +1543,13 @@ forwarded classes before the splat merge as `"qux bar foo top"`, after as `"top 
   order (`modifiers-test.ts:110-131`, `265-301`);
 - modifiers are created in the order `m1` (from the splat), then `m2` (the element's own
   modifiers come after all attributes, including the splat); they are installed in that order.
+  Consequence for `{{on}}`: the DOM runs listeners in the order they were added, so the
+  caller's listeners run before the element's own, wherever `...attributes` stands in the
+  attribute list (`<button {{on 'click' this.inner}} ...attributes>` and
+  `<button ...attributes {{on 'click' this.inner}}>` both run the caller's `{{on}}` first),
+  and listeners on an ancestor element inside the component run after both unless one of
+  them calls `event.stopPropagation()`, which does not stop the other listeners on the same
+  element (tests `packages/@ember/-internals/glimmer/tests/integration/modifiers/on-test.js:300-374`).
 
 Forwarding: `<Inner ...attributes class="x" />` inside a component passes an `attrs` block to
 `Inner` whose content is the outer `attrs` block (at the splat position) plus its own attributes,
