@@ -975,7 +975,7 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `capabilities-test.ts` next to it. EG's render tests of the component manager (create/update/destroy hooks, args, positional params, async lifecycle, capabilities helper)
   have no IT twin, as IT has no render-level component-manager test.
 - 7.1h (2026-10-08): code `51887e1701`. IT `strict-mode-test.ts` (93) and `lexical-scope-test.ts` (1) vs EG `components/strict-mode-test.js` (22), `runtime-template-compiler-explicit-test.ts` (22),
-  `-implicit-test.ts` (23). DEVIATION from §3 (which names IT as the stronger copy): IT is far larger (85 of its tests have no EG counterpart and stay), but the EG files are three
+  `-implicit-test.ts` (23). DEVIATION from §3 (which names IT as the stronger copy): IT is far larger (85 of its tests, 83 of them with no EG counterpart at all, stay), but the EG files are three
   *different compile entry points* of the same small smoke suite (build-time `precompileTemplate`, public runtime `template()` with `scope`, runtime with `eval`), so none of them can go;
   the only overlap is 8 IT tests whose template, scope values and assertions are identical to the `explicit` runtime tests (the same path as IT's `defineComponent`): those 8 were deleted
   from IT (the 5 built-ins hash/array/concat/get/on+fn, component and modifier in scope, constant values). Two same-name pairs differ (helper manager vs plain function; `if` vs `each`
