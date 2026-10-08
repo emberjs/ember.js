@@ -49,7 +49,7 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 ## 0. Baseline
 
 - [x] 0.1 Worktree and branch created; `pnpm install` done.
-- [ ] 0.2 Build and run the whole suite on the untouched branch. Record the totals, and per
+- [x] 0.2 Build and run the whole suite on the untouched branch. Record the totals, and per
       module the counts for every module from `IT` and `packages/@glimmer/*/test` (save the
       per-module list as `.work/W2-baseline.tsv`: module, pass, fail, skip). Note any failures
       already present on `origin/main`.
@@ -142,3 +142,16 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 - 0.1 (2026-10-08): `git worktree add -b test/w2-glimmer-harness ../ember.js-w2 origin/main`
   (the local `main` is stale at `e1d334284e`; `origin/main` is `9bec1cb2a8`). `pnpm install
   --frozen-lockfile` succeeded.
+- 0.2 (2026-10-08): baseline on untouched `origin/main` (9bec1cb2a8): 9541 tests, 9523 pass,
+  0 fail, 18 skip (no failures pre-exist; run twice, identical). 54 modules come from
+  `packages/@glimmer*/*/test` (3018 tests: 3015 pass, 3 skip, all in `[integration] jit :`);
+  `IT` alone is 2163 tests: `[integration] jit :` 1638, `rehydration :` 432, `node jit :` 39, etc.
+  Files: `.work/W2-baseline.tsv` (module, pass, fail, skip; only tests whose source chunk is under
+  `packages/@glimmer*`) and `.work/W2-baseline-tests.tsv` (all 9541 tests: module, test, status,
+  source_chunk; the chunk is the first stack frame, so Ember `moduleFor` tests show
+  `internal-test-helpers/lib/module-for`). Module names alone are ambiguous: `Owner` is 2 Glimmer + 1
+  Ember test; `Helpers test`, `Application test`, `Basic Custom Modifier Manager`, `Cache`, `Registry`
+  etc. are Ember-only. Method: throwaway `testem` tap config plus a QUnit `testStart` hook in a copy
+  of `dist/index.html` (see `spec/tools/w2-baseline-parse.py`). The 3 `jit` skips: `{{#each}}
+  each with undefined item` and two `trackedArray() (rendering): {{each-in}}`. For comparison
+  after later steps, filter `W2-baseline-tests.tsv` by `source_chunk`, not by module name.

@@ -15,6 +15,7 @@ standard library, and Node probes need the repo built (`pnpm build`).
 | `test-coverage.py [--markdown out.md]` | Per section of the normative chapters, counts test-file citations vs source citations and collects "untested"/"by experiment" markers (§09). |
 | `probe-parser.mjs`, `probe-parser-locs.mjs` | Run the built `@glimmer/syntax` (`packages/@glimmer/syntax/dist/es`) on probe inputs (§02). |
 | `probe-precompile.mjs '<template>' ...` | Runs the built `ember-template-compiler` (`dist/dev`) `precompile` on each argument (§03, §04, §08). |
+| `w2-baseline-parse.py` | Parses a testem tap log (with source-chunk suffixes, recipe in its docstring) into `.work/W2-baseline*.tsv` (W2). |
 
 `check-citations.py` and `check-citation-semantics.py` hard-code the sibling-repo root
 `/Users/edward/hacking`. Edit `HACK` at the top if your checkout lives elsewhere.
