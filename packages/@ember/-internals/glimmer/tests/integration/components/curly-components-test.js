@@ -1004,6 +1004,24 @@ moduleFor(
       this.assertStableRerender();
     }
 
+    ['@test (has-block "inverse") in content position']() {
+      this.owner.register(
+        'component:check-inverse',
+        template('[{{has-block "inverse"}}]', {
+          component: templateOnly(),
+          strictMode: false,
+        })
+      );
+
+      this.render(strip`
+      {{#check-inverse}}{{/check-inverse}}
+      {{#check-inverse}}{{else}}{{/check-inverse}}`);
+
+      this.assertHTML('[false][true]');
+
+      this.assertStableRerender();
+    }
+
     ['@test expression (has-block) default']() {
       this.owner.register(
         'component:check-block',
