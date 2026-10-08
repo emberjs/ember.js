@@ -17,6 +17,7 @@ import { castToSimple } from '@glimmer/debug-util';
 import { serializeBuilder } from '@glimmer/node';
 import { createConstRef } from '@glimmer/reference';
 import type { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
+import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 import createHTMLDocument from '@simple-dom/document';
 
 import type { ComponentKind } from '../../components';
@@ -28,10 +29,13 @@ import type { DebugRehydrateTree } from './builder';
 
 import { preprocess } from '../../compile';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
-import { registerComponent, registerHelper, registerModifier } from '../jit/register';
-import { TestJitRegistry } from '../jit/registry';
-import { TestJitRuntimeResolver } from '../jit/resolver';
-import { createOwner, teardownOwners } from '../owner';
+import {
+  registerComponent,
+  registerHelper,
+  registerHelperDefinition,
+  registerModifier,
+} from '../jit/register';
+import { createOwner, teardownOwners, type TestOwner } from '../owner';
 import { createRenderer } from '../renderer';
 import { TemplateRootState } from '../template-root';
 import { debugRehydrateTree } from './builder';
@@ -47,19 +51,23 @@ export class RehydrationDelegate implements RenderDelegate {
   private plugins: ASTPluginBuilder[] = [];
 
   /** The renderers are Ember's `BaseRenderer`, one per side, each with its own owner and document. */
-  protected clientOwner: object = createOwner();
-  protected serverOwner: object = createOwner();
+  protected clientOwner: TestOwner = createOwner();
+  protected serverOwner: TestOwner = createOwner();
   protected clientRenderer: BaseRenderer;
   protected serverRenderer: BaseRenderer;
 
-  private clientResolver: TestJitRuntimeResolver;
-  private serverResolver: TestJitRuntimeResolver;
-
-  protected clientRegistry: TestJitRegistry;
-  protected serverRegistry: TestJitRegistry;
-
   public clientDoc: SimpleDocument;
   public serverDoc: SimpleDocument;
+
+  /**
+   * Registration follows the phase: both owners until the server has rendered, then the client
+   * owner only. Server and client are separate apps with separate registries, and Ember's registry
+   * refuses to re-register a name that has been resolved. The server owner has resolved the
+   * components by then, while the client owner has resolved nothing before `renderClientSide`, so a
+   * registration made in the client phase (possibly a different layout under the same name)
+   * replaces the earlier one on the client owner.
+   */
+  protected serverRendered = false;
 
   declare public rehydrationStats: RehydrationStats;
 
@@ -72,12 +80,10 @@ export class RehydrationDelegate implements RenderDelegate {
     let debugRenderTree = options?.debugRenderTree ?? false;
 
     this.clientDoc = castToSimple(document);
-    this.clientRegistry = new TestJitRegistry();
-    this.clientResolver = new TestJitRuntimeResolver(this.clientRegistry);
     this.clientRenderer = createRenderer(
       this.clientOwner,
       this.clientDoc,
-      this.clientResolver,
+      new ResolverImpl(),
       (env, cursor) => {
         let tree = debugRehydrateTree(env, cursor) as DebugRehydrateTree;
         this.lastClientTree = tree;
@@ -87,12 +93,10 @@ export class RehydrationDelegate implements RenderDelegate {
     );
 
     this.serverDoc = createHTMLDocument();
-    this.serverRegistry = new TestJitRegistry();
-    this.serverResolver = new TestJitRuntimeResolver(this.serverRegistry);
     this.serverRenderer = createRenderer(
       this.serverOwner,
       this.serverDoc,
-      this.serverResolver,
+      new ResolverImpl(),
       serializeBuilder,
       debugRenderTree
     );
@@ -145,12 +149,13 @@ export class RehydrationDelegate implements RenderDelegate {
     state.renderRoot(
       new TemplateRootState(
         state,
-        preprocess(template, this.precompileOptions),
+        preprocess(template, this.precompileOptions, this.serverOwner),
         this.getSelf(state.env, context),
         cursor
       )
     );
 
+    this.serverRendered = true;
     takeSnapshot();
     return this.serialize(element);
   }
@@ -175,7 +180,7 @@ export class RehydrationDelegate implements RenderDelegate {
     let cursor = { element, nextSibling: null };
     let root = new TemplateRootState(
       state,
-      preprocess(template, this.precompileOptions),
+      preprocess(template, this.precompileOptions, this.clientOwner),
       this.getSelf(state.env, context),
       cursor
     );
@@ -210,23 +215,23 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   registerComponent(type: ComponentKind, _testType: string, name: string, layout: string): void {
-    registerComponent(this.clientRegistry, type, name, layout);
-    registerComponent(this.serverRegistry, type, name, layout);
+    registerComponent(this.clientOwner, type, name, layout);
+    if (!this.serverRendered) registerComponent(this.serverOwner, type, name, layout);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    registerHelper(this.clientRegistry, name, helper);
-    registerHelper(this.serverRegistry, name, helper);
+    registerHelper(this.clientOwner, name, helper);
+    if (!this.serverRendered) registerHelper(this.serverOwner, name, helper);
   }
 
   registerHelperDefinition(name: string, definition: object) {
-    this.clientRegistry.register('helper', name, definition);
-    this.serverRegistry.register('helper', name, definition);
+    registerHelperDefinition(this.clientOwner, name, definition);
+    if (!this.serverRendered) registerHelperDefinition(this.serverOwner, name, definition);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
-    registerModifier(this.clientRegistry, name, ModifierClass);
-    registerModifier(this.serverRegistry, name, ModifierClass);
+    registerModifier(this.clientOwner, name, ModifierClass);
+    if (!this.serverRendered) registerModifier(this.serverOwner, name, ModifierClass);
   }
 
   private get precompileOptions(): PrecompileOptions {

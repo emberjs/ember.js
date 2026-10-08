@@ -863,7 +863,7 @@ class UpdatingTest extends RenderTest {
     this.registerHelper('hello', () => 'hello');
 
     assert.throws(() => {
-      this.delegate.compileTemplate('{{helo world}}');
+      this.render('{{helo world}}');
     }, /Error: Attempted to resolve `helo`, which was expected to be a component or helper, but nothing was found./u);
   }
 

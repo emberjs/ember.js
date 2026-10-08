@@ -7,7 +7,6 @@ export * from './lib/markers';
 export * from './lib/modes/env';
 export * from './lib/modes/jit/delegate';
 export * from './lib/modes/jit/register';
-export * from './lib/modes/jit/resolver';
 export * from './lib/modes/node/env';
 export * from './lib/modes/rehydration/delegate';
 export * from './lib/modes/rehydration/partial-rehydration-delegate';

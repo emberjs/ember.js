@@ -1,7 +1,9 @@
 import type { Dict, SimpleElement } from '@glimmer/interfaces';
+import { expect } from '@glimmer/debug-util';
 import { renderComponent } from '@ember/renderer';
 
 import type { RenderHandle } from '../../render-delegate';
+import type { TestOwner } from '../owner';
 
 import { RehydrationDelegate } from './delegate';
 
@@ -11,14 +13,14 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
   }
 
   renderComponentClientSide(name: string, args: Dict, element: SimpleElement): RenderHandle {
-    let component = this.clientRegistry.lookupComponent(name)!;
+    let component = this.componentFor(this.clientOwner, name);
 
     // Through the renderer's `render` rather than the public `renderComponent`: the latter
     // replaces the previous render into the same element, by rendering before its first node
     // (`nextSibling` set), which rehydration does not support; the chaos tests render into one
     // element once per iteration. It also clears an element target on its first render, which
     // would wipe the server HTML that is to be rehydrated.
-    let root = this.clientRenderer.render(component.state, {
+    let root = this.clientRenderer.render(component, {
       into: { element, nextSibling: null },
       args,
     });
@@ -33,15 +35,21 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
     };
   }
 
+  private componentFor(owner: TestOwner, name: string): object {
+    return expect(owner.factoryFor(`component:${name}`), `component ${name} is registered`).class;
+  }
+
   renderComponentServerSide(name: string, args: Dict): string {
     const element = this.serverDoc.createElement('div');
-    let component = this.serverRegistry.lookupComponent(name)!;
+    let component = this.componentFor(this.serverOwner, name);
 
-    renderComponent(component.state, {
+    renderComponent(component, {
       into: { element, nextSibling: null } as unknown as Element,
       owner: this.serverOwner,
       args,
     });
+
+    this.serverRendered = true;
 
     return this.serialize(element);
   }

@@ -214,7 +214,6 @@ class ClosureComponentsTest extends RenderTest {
 
   @test
   'component helper can handle aliased block components with args'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'FooBar', 'Hello {{@arg1}} {{yield}}');
 
     this.render(
@@ -230,7 +229,6 @@ class ClosureComponentsTest extends RenderTest {
 
   @test
   'component helper can handle aliased block components without args'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'FooBar', 'Hello {{yield}}');
 
     this.render(
@@ -246,7 +244,6 @@ class ClosureComponentsTest extends RenderTest {
 
   @test
   'component helper can handle higher order block components with args'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'FooBar', '{{yield (hash comp=(component "BazBar"))}}');
     this.registerComponent('Glimmer', 'BazBar', 'Hello {{@arg1}} {{yield}}');
 
@@ -263,7 +260,6 @@ class ClosureComponentsTest extends RenderTest {
 
   @test
   'component helper can handle higher order block components without args'() {
-    this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'FooBar', '{{yield (hash comp=(component "BazBar"))}}');
     this.registerComponent('Glimmer', 'BazBar', 'Hello {{@arg1}} {{yield}}');
 

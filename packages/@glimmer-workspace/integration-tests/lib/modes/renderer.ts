@@ -2,11 +2,9 @@ import type { SimpleDocument } from '@glimmer/interfaces';
 import { ENV } from '@ember/-internals/environment';
 import { setRenderer } from '@ember/-internals/glimmer';
 import { BaseRenderer, type IBuilder } from '@ember/-internals/glimmer/lib/base-renderer';
+import type ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 
 import { ownRenderer } from './owner';
-import type { TestJitRuntimeResolver } from './jit/resolver';
-
-import JitCompileTimeLookup from './jit/compilation-context';
 
 /**
  * An Ember renderer for one owner and document, registered as the renderer that the
@@ -18,7 +16,7 @@ import JitCompileTimeLookup from './jit/compilation-context';
 export function createRenderer(
   owner: object,
   doc: SimpleDocument,
-  resolver: TestJitRuntimeResolver,
+  resolver: ResolverImpl,
   builder: IBuilder,
   debugRenderTree: boolean
 ): BaseRenderer {
@@ -32,7 +30,7 @@ export function createRenderer(
       owner,
       { isInteractive: true, hasDOM: true },
       doc,
-      new JitCompileTimeLookup(resolver),
+      resolver,
       builder
     );
   } finally {

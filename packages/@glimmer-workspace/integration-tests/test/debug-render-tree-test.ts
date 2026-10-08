@@ -12,7 +12,12 @@ import type {
 import type { TemplateOnlyComponent } from '@glimmer/runtime';
 import { expect } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
-import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
+import {
+  modifierCapabilities,
+  setComponentTemplate,
+  setInternalComponentManager,
+  setModifierManager,
+} from '@glimmer/manager';
 import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
 import {
   createTemplate,
@@ -57,14 +62,9 @@ class DebugRenderTreeDelegate extends JitRenderDelegate {
 
     setComponentTemplate(createTemplate(template), ComponentClass);
 
-    let definition = {
-      name,
-      state: ComponentClass,
-      manager: new Manager(),
-      template: null,
-    };
+    setInternalComponentManager(new Manager(), ComponentClass);
 
-    this.registry.register('component', name, definition);
+    this.owner.register(`component:${name}`, ComponentClass, { instantiate: false });
   }
 }
 

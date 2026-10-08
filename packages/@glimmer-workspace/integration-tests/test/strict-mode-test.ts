@@ -96,28 +96,6 @@ class GeneralStrictModeTest extends RenderTest {
   }
 
   @test
-  'Non-native keyword'() {
-    this.registerHelper('bar', () => {
-      throw new Error('should not resolve this helper');
-    });
-
-    this.registerHelper('$keyword.bar', () => 'bar keyword');
-
-    const Foo = defineComponent({}, '{{bar}}', {
-      keywords: ['bar'],
-      definition: class extends GlimmerComponent {
-        get bar() {
-          throw new Error('should not fallback to this.bar');
-        }
-      },
-    });
-
-    this.renderComponent(Foo);
-    this.assertHTML('bar keyword');
-    this.assertStableRerender();
-  }
-
-  @test
   '{{component}} throws an error if a string is used in strict (append position)'() {
     this.assert.throws(() => {
       defineComponent({}, '{{component "bar"}}');

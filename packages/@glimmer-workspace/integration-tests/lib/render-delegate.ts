@@ -15,8 +15,6 @@ import type { ASTPluginBuilder } from '@glimmer/syntax';
 
 import type { ComponentKind, ComponentTypes } from './components';
 import type { UserHelper } from './helpers';
-import type { TestJitRegistry } from './modes/jit/registry';
-import type { TestJitRuntimeResolver } from './modes/jit/resolver';
 
 /**
  * What a delegate returns from `renderTemplate`/`renderComponent`: the part of
@@ -34,7 +32,6 @@ export interface RenderDelegateOptions {
   doc?: SimpleDocument | Document | undefined;
   /** Create the renderer with Ember's debug render tree enabled. */
   debugRenderTree?: boolean | undefined;
-  resolver?: (registry: TestJitRegistry) => TestJitRuntimeResolver;
 }
 
 export default interface RenderDelegate {

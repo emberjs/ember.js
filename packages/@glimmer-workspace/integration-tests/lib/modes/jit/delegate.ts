@@ -5,7 +5,6 @@ import type {
   ElementNamespace,
   Environment,
   EvaluationContext,
-  HandleResult,
   Nullable,
   SimpleDocument,
   SimpleDocumentFragment,
@@ -16,10 +15,12 @@ import type {
 import type { Reference } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
-import { castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/debug-util';
+import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
+import { CURRIED_COMPONENT } from '@glimmer/constants';
 import { createConstRef } from '@glimmer/reference';
-import { array, clientBuilder, concat, fn, get, hash, on } from '@glimmer/runtime';
+import { clientBuilder, curry } from '@glimmer/runtime';
 import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
+import ResolverImpl from '@ember/-internals/glimmer/lib/resolver';
 import { renderComponent } from '@ember/renderer';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
@@ -30,10 +31,13 @@ import type { RenderDelegateOptions, RenderHandle } from '../../render-delegate'
 import type { TemplateRootState as TemplateRoot } from '../template-root';
 
 import { preprocess } from '../../compile';
-import { componentHelper, registerComponent, registerHelper, registerModifier } from './register';
-import { TestJitRegistry } from './registry';
-import { TestJitRuntimeResolver } from './resolver';
-import { createOwner, teardownOwners } from '../owner';
+import {
+  registerComponent,
+  registerHelper,
+  registerHelperDefinition,
+  registerModifier,
+} from './register';
+import { createOwner, teardownOwners, type TestOwner } from '../owner';
 import { createRenderer } from '../renderer';
 import { TemplateRootState } from '../template-root';
 
@@ -41,32 +45,19 @@ export class JitRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
   static style = 'jit';
 
-  protected registry: TestJitRegistry;
-  protected resolver: TestJitRuntimeResolver;
+  protected resolver = new ResolverImpl();
 
   private plugins: ASTPluginBuilder[] = [];
   private _renderer: Nullable<BaseRenderer> = null;
   /** A real owner, destroyed in `teardown()`. */
-  protected owner: object = createOwner();
+  protected owner: TestOwner = createOwner();
   private self: Nullable<Reference> = null;
   private doc: SimpleDocument;
   private debugRenderTree: boolean;
 
-  constructor({
-    doc,
-    debugRenderTree = false,
-    resolver = (registry) => new TestJitRuntimeResolver(registry),
-  }: RenderDelegateOptions = {}) {
-    this.registry = new TestJitRegistry();
-    this.resolver = resolver(this.registry);
+  constructor({ doc, debugRenderTree = false }: RenderDelegateOptions = {}) {
     this.doc = castToSimple(doc ?? document);
     this.debugRenderTree = debugRenderTree;
-    this.registry.register('modifier', 'on', on);
-    this.registry.register('helper', 'fn', fn);
-    this.registry.register('helper', 'hash', hash);
-    this.registry.register('helper', 'array', array);
-    this.registry.register('helper', 'get', get);
-    this.registry.register('helper', 'concat', concat);
   }
 
   /** One Ember renderer per delegate, created on first use. */
@@ -129,7 +120,17 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   createCurriedComponent(name: string): CurriedValue | null {
-    return componentHelper(this.registry, name, this.context.program.constants);
+    let definition = this.resolver.lookupComponent(name, this.owner);
+
+    if (definition === null) return null;
+
+    return curry(
+      CURRIED_COMPONENT,
+      this.context.program.constants.resolvedComponent(definition, name),
+      {},
+      null,
+      true
+    );
   }
 
   registerPlugin(plugin: ASTPluginBuilder): void {
@@ -143,19 +144,19 @@ export class JitRenderDelegate implements RenderDelegate {
     layout: Nullable<string>,
     Class?: ComponentTypes[K]
   ) {
-    registerComponent(this.registry, type, name, layout, Class);
+    registerComponent(this.owner, type, name, layout, Class);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
-    registerModifier(this.registry, name, ModifierClass);
+    registerModifier(this.owner, name, ModifierClass);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    registerHelper(this.registry, name, helper);
+    registerHelper(this.owner, name, helper);
   }
 
   registerHelperDefinition(name: string, definition: object) {
-    this.registry.register('helper', name, definition);
+    registerHelperDefinition(this.owner, name, definition);
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
@@ -170,19 +171,13 @@ export class JitRenderDelegate implements RenderDelegate {
     return this.self;
   }
 
-  compileTemplate(template: string): HandleResult {
-    let compiled = preprocess(template, this.precompileOptions);
-
-    return unwrapTemplate(compiled).asLayout().compile(this.context);
-  }
-
   renderTemplate(template: string, context: Dict, element: SimpleElement): RenderHandle {
     let cursor = { element, nextSibling: null };
     let { state } = this.renderer;
 
     let root = new TemplateRootState(
       state,
-      preprocess(template, this.precompileOptions),
+      preprocess(template, this.precompileOptions, this.owner),
       this.getSelf(state.env, context),
       cursor
     );

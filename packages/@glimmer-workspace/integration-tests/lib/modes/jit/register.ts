@@ -1,26 +1,24 @@
 import GlimmerComponent from '@glimmer/component';
-import type { Nullable, ResolutionTimeConstants, TemplateFactory } from '@glimmer/interfaces';
-import type { CurriedValue } from '@glimmer/runtime';
-import { CURRIED_COMPONENT } from '@glimmer/constants';
-import { getInternalComponentManager, setComponentTemplate } from '@glimmer/manager';
-import { curry, templateOnlyComponent } from '@glimmer/runtime';
+import type { Nullable, TemplateFactory } from '@glimmer/interfaces';
+import { setComponentTemplate } from '@glimmer/manager';
+import { templateOnlyComponent } from '@glimmer/runtime';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
-import type { TestJitRegistry } from './registry';
+import type { TestOwner } from '../owner';
 
 import { createTemplate } from '../../compile';
 import { defineUserHelper } from '../../helpers';
 import { defineTestModifier } from '../../modifiers';
 
 export function registerTemplateOnlyComponent(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   layoutSource: string
 ): void {
   registerSomeComponent(
-    registry,
+    owner,
     name,
     createTemplate(layoutSource),
     templateOnlyComponent(undefined, name)
@@ -28,7 +26,7 @@ export function registerTemplateOnlyComponent(
 }
 
 export function registerGlimmerishComponent(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   Component: Nullable<ComponentTypes['Glimmer']>,
   layoutSource: Nullable<string>
@@ -38,23 +36,27 @@ export function registerGlimmerishComponent(
   }
   let ComponentClass = Component || class extends GlimmerComponent {};
 
-  registerSomeComponent(registry, name, createTemplate(layoutSource), ComponentClass);
+  registerSomeComponent(owner, name, createTemplate(layoutSource), ComponentClass);
 }
 
-export function registerHelper(registry: TestJitRegistry, name: string, helper: UserHelper) {
-  registry.register('helper', name, defineUserHelper(helper));
+export function registerHelper(owner: TestOwner, name: string, helper: UserHelper) {
+  registerHelperDefinition(owner, name, defineUserHelper(helper));
+}
+
+export function registerHelperDefinition(owner: TestOwner, name: string, definition: object) {
+  owner.register(`helper:${name}`, definition, { instantiate: false });
 }
 
 export function registerModifier(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   ModifierClass?: TestModifierConstructor
 ) {
-  registry.register('modifier', name, defineTestModifier(ModifierClass));
+  owner.register(`modifier:${name}`, defineTestModifier(ModifierClass), { instantiate: false });
 }
 
 export function registerComponent<K extends ComponentKind>(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   type: K,
   name: string,
   layout: Nullable<string>,
@@ -62,16 +64,16 @@ export function registerComponent<K extends ComponentKind>(
 ): void {
   switch (type) {
     case 'Glimmer':
-      registerGlimmerishComponent(registry, name, Class as ComponentTypes['Glimmer'], layout);
+      registerGlimmerishComponent(owner, name, Class as ComponentTypes['Glimmer'], layout);
       break;
     case 'TemplateOnly':
-      registerTemplateOnlyComponent(registry, name, layout ?? '');
+      registerTemplateOnlyComponent(owner, name, layout ?? '');
       break;
   }
 }
 
 function registerSomeComponent(
-  registry: TestJitRegistry,
+  owner: TestOwner,
   name: string,
   templateFactory: TemplateFactory | null,
   ComponentClass: object
@@ -80,27 +82,5 @@ function registerSomeComponent(
     setComponentTemplate(templateFactory, ComponentClass);
   }
 
-  let manager = getInternalComponentManager(ComponentClass);
-
-  let definition = {
-    name,
-    state: ComponentClass,
-    manager,
-    template: null,
-  };
-
-  registry.register('component', name, definition);
-  return definition;
-}
-
-export function componentHelper(
-  registry: TestJitRegistry,
-  name: string,
-  constants: ResolutionTimeConstants
-): CurriedValue | null {
-  let definition = registry.lookupComponent(name);
-
-  if (definition === null) return null;
-
-  return curry(CURRIED_COMPONENT, constants.resolvedComponent(definition, name), {}, null, true);
+  owner.register(`component:${name}`, ComponentClass, { instantiate: false });
 }
