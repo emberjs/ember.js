@@ -9,7 +9,6 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import type { TemplateOnlyComponent } from '@glimmer/runtime';
 import { expect } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -18,7 +17,9 @@ import {
   setInternalComponentManager,
   setModifierManager,
 } from '@glimmer/manager';
-import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
+import { EMPTY_ARGS, TemplateOnlyComponentManager } from '@glimmer/runtime';
+import type { TemplateOnlyComponent } from '@ember/component/template-only';
+import templateOnlyComponent from '@ember/component/template-only';
 import {
   createTemplate,
   defComponent,

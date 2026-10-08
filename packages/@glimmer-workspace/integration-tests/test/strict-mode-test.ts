@@ -1,6 +1,7 @@
 import GlimmerComponent from '@glimmer/component';
 import { castToBrowser } from '@glimmer/debug-util';
-import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
+import { array, concat, fn, get, hash } from '@ember/helper';
+import { on } from '@ember/modifier';
 import {
   defineComponent,
   defineSimpleHelper,

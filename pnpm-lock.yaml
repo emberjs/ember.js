@@ -1413,6 +1413,9 @@ importers:
       '@ember/-internals':
         specifier: workspace:*
         version: link:../../@ember/-internals
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../../@ember/component
       '@ember/destroyable':
         specifier: workspace:*
         version: link:../../@ember/destroyable

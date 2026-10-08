@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@ember/-internals": "workspace:*",
+    "@ember/component": "workspace:*",
     "@ember/destroyable": "workspace:*",
     "@ember/renderer": "workspace:*",
     "@ember/runloop": "workspace:*",

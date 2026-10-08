@@ -15,7 +15,7 @@ import {
   setModifierManager,
 } from '@glimmer/manager';
 import { setOwner } from '@glimmer/owner';
-import { templateOnlyComponent } from '@glimmer/runtime';
+import templateOnlyComponent from '@ember/component/template-only';
 
 import { createTemplate } from '../compile';
 
