@@ -28,7 +28,7 @@ Author rulings in `5740b4aeb7` (inline notes under §09-9.8):
 
 ## B. Q6 survey (agent) → `.work/T17-fake-stubs.md`
 
-- [ ] B1. Every place where Glimmer's tests emulate Ember (Emberish components, curly/dynamic
+- [x] B1. Every place where Glimmer's tests emulate Ember (Emberish components, curly/dynamic
       kinds, Ember-like helpers/modifiers/global context) or Ember's tests emulate Glimmer, with
       what real thing replaces each.
 
