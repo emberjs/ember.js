@@ -94,7 +94,7 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
       "port". Opus reviews this ledger before any deletion.
 - [x] 4.2 (done, see notes) Port the "port" cases: classic-specific ones to `EG/components/classic/`, the rest to
       `@glimmer/component`/template-only, plus a curly-invocation variant through a real owner.
-- [ ] 4.3 Port the `ember-component-test.ts` residue (step 2.4) and `input-range-test.ts`; delete
+- [x] 4.3 (done, see notes) Port the `ember-component-test.ts` residue (step 2.4) and `input-range-test.ts`; delete
       `ember-component-test.ts`.
 - [ ] 4.4 Collapse `componentModule` to Glimmer + TemplateOnly; delete the Curly/Dynamic kinds,
       `buildCurlyComponent`/`buildDynamicComponent`, `EmberishCurlyComponent` and its manager,
@@ -279,3 +279,11 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `deferred to 5.6`. Their curly/dynamic registrations are simply removed in 4.4 (Glimmer registrations remain). Until 5.6 the
   wrapper-rehydration and `{{component}}` rehydration behaviors are untested. Ledger: 32 ported, 4 deferred. Tests still carrying
   `kind: 'curly'` (twin-deleted or ported to EG) are removed in 4.4. `Components ::` filter: 595 pass, 0 fail.
+- 4.3 (2026-10-08): EG commit `73aa8f83c3` (10 tests: 7 in classic/curly-components-test.js, 2 in classic/contextual-components-test.js, 6
+  in attribute-bindings-test.js incl. the 5 range-input ones, i.e. 15 new EG tests with the range ones), IT commit `dd4714ac3c`
+  (`ember-component-test.ts` renamed to `components-test.ts`, 26 tests as @glimmer/component; the 'ember-component-test.ts' file is
+  therefore gone; `input-range-test.ts` lost only its fake-curly `EmberComponentRangeTests`, its 5 tests ported to EG). The 40 rows:
+  26 ported to IT, 10 ported to EG, 4 `drop (fake-only)` (`targetObject` threading, `fromDynamicScope`, `attributeBindings=['class']`,
+  `recompute()`; real Ember: no `targetObject`; no dynamic-scope access for components; asserts on class binding; `rerender()` fires
+  willUpdate/willRender/didUpdate/didRender but not didReceiveAttrs). Plus 5 input-range rows. Destruction order in the Glimmer
+  teardown tests came out identical to the fake's (root before inner, outer before nested), no assertion had to change.
