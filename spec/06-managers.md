@@ -1481,6 +1481,15 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   bound to the curried owner if that is the definition's first use, and to whichever owner
   used it first otherwise (§1.7, Q15). This looks inconsistent and is untested. §05-7.8 and
   §08-8.6 describe the same behavior.
+  The other direction was observed in W2 (2026-10-08): a component curried in the application
+  (`(component "app-check")` passed as `{{mount}}`'s `model`) and invoked inside the engine is
+  created with the engine instance as its owner (`getOwner(this)` in its constructor), as the
+  invoking-owner rule predicts. The Glimmer suite's `owner-test.ts` ("owner is preserved in
+  curried closure components", and a non-curried variant that carries a TODO) expects the
+  defining owner instead, on an internal `MountManager`; no Ember test pins either. A new test
+  on branch `test/w2-glimmer-harness`,
+  `packages/@ember/-internals/glimmer/tests/integration/mount-test.js` › "components rendered
+  inside an engine are created with the engine as their owner", pins the non-curried case.
 - **Q4: `undefined` owner.** Public component and modifier managers cache delegates in a
   `WeakMap` keyed by owner, so an `undefined` owner throws a raw `TypeError`. Helper managers
   special-case `undefined`. Should component and modifier managers do the same?

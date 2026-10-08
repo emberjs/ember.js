@@ -1210,6 +1210,8 @@ are private keywords. Ember's outlets once used them, but `{{outlet}}` is now th
 reactive: `{{-get-dynamic-var this.keyword}}` switches variables when `keyword` changes, and
 inner `-with-dynamic-vars` shadow outer bindings only within their block
 (`packages/@glimmer-workspace/integration-tests/lib/suites/with-dynamic-vars.ts:4-84`).
+Ember allows only the key `outletState`; whether the general form is normative is open
+(§05-14 item 17).
 
 Every component invocation pushes a child dynamic scope (copy-on-write) for its layout; a
 component manager with `dynamicScope` capability receives that scope in `create`/`update`
@@ -1583,7 +1585,13 @@ rendered inside a wrapper element (`packages/@glimmer/opcode-compiler/lib/opcode
 
 Attributes recorded by `didCreateElement` (e.g. `id`, `class` from `classNames`,
 `attributeBindings`) are recorded *before* the invocation's attributes, so the invocation's
-attributes override them, except `class`, which is merged (manager classes first).
+attributes override them, except `class`, which is merged (manager classes first). If the
+layout also has an element with `...attributes`, the attrs block is evaluated there as well
+(§05-7.5), so the invocation's attributes appear on both the wrapper and that element. Tests (on
+branch `test/w2-glimmer-harness`, not yet upstream; they replace tests that ran on a fake
+classic component): `packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js` › "invocation attributes win over
+attributeBindings", "invocation attributes are merged with the classes of the component",
+"explicit ...attributes in the layout receive the invocation attributes".
 
 ### 7.7 Arguments on update
 
@@ -2286,3 +2294,13 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
       `has-block-params` for a `<:else as |x|>` block.
     - Modifiers: timing of replacing a dynamic modifier definition; the attribute-less,
       undocumented element at `create` (item 12).
+17. **Is the general dynamic scope part of the language?** §05-5.8 describes a string-keyed
+    dynamic scope with arbitrary names, as the VM implements it, and the Glimmer suite tests
+    it with arbitrary keys such as `myKeyword`
+    (`packages/@glimmer-workspace/integration-tests/lib/suites/with-dynamic-vars.ts:4-84`). In
+    Ember, `-with-dynamic-vars` and `-get-dynamic-var` assert for any key other than
+    `outletState` (§08-9.6; `packages/@ember/-internals/glimmer/tests/integration/syntax/with-dynamic-var-test.js:6-33`),
+    and no Ember template emits them. Those Glimmer tests run on the VM's default dynamic scope,
+    not on Ember's (W2 kept it so; `.work/W2-glimmer-harness.md` finding 5). If the general
+    dynamic scope is a VM capability that Ember does not expose, §05-5.8 is informative and the
+    suite is an implementation test.

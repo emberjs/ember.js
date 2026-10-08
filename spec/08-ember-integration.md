@@ -948,6 +948,14 @@ setOwner(props, owner)
 component = factory.create(props)        // untracked; init() runs, then `didReceiveAttrs`
 ```
 
+The properties are assigned by `create`, after the constructor and before `init()`: a classic
+component's constructor sees neither named nor positional arguments (both are `undefined` there),
+unlike a `@glimmer/component`, which has `this.args` in its constructor. Test: on branch
+`test/w2-glimmer-harness`,
+`packages/@ember/-internals/glimmer/tests/integration/components/contextual-components-test.js`
+› "renders with dot path and rest parameter does not leak" reads its positional param in
+`init()` for this reason (W2 finding 8).
+
 So every named argument is reflected as an own property of the instance and available as
 `this.k`, `{{this.k}}`, `{{@k}}`, and `this.attrs.k` (value or mutable cell; *[Legacy]*
 `{{this.attrs.k}}` in templates is rewritten to `@k`, §1.4(4)). Tests
@@ -1042,6 +1050,7 @@ superclass entries for the same attribute — `curly.ts:93-120`,
 attr === "id"     → evaluated ONCE: get(component, prop); if null/undefined use elementId; set as a static id
 ```
 
+The `class` assertion is tested in `attribute-bindings-test.js:872-885`.
 Bound attributes use the normal dynamic-attribute semantics of §05 (property-vs-attribute
 normalization, `null`/`undefined`/`false` remove, URL sanitization of `href` etc.:
 `attribute-bindings-test.js:887-906` gives `unsafe:javascript:…`). Attribute names are
@@ -1094,6 +1103,13 @@ updatable (§2) (paths, `mut`, `get`, `hash` children …), not only `mut`:
   *caller's* `this` and scope ("it preserves the outer context when yielding",
   `:120-142`); `{{yield a b}}` passes block params; `{{yield to="inverse"}}` renders the
   `{{else}}` block; `(has-block)`/`(has-block-params)` work as in §05 (`:736-1184`).
+- Named blocks (§05-6.4) work the same way on a classic component invoked with angle brackets:
+  `<:baz>`, `<:default>`, and `<:else as |v|>`/`<:inverse as |v|>` with block params. Tests on
+  branch `test/w2-glimmer-harness`:
+  `packages/@ember/-internals/glimmer/tests/integration/components/classic/angle-bracket-invocation-test.js` › "it can yield to a named block", "it can yield to an explicit default
+  named block", "it can yield a value to the else and inverse named blocks". (The comment at
+  `helpers/yield-test.js:35` about named blocks failing with the default backing class concerns
+  an unregistered default class, not classic subclasses.)
 - `@component` or other `@`-names that are not passed are `undefined`.
 
 ### 6.7 Lifecycle hooks
