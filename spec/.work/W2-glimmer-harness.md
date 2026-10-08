@@ -541,7 +541,7 @@ keyword" went in 5.3b).
   - [x] 7.1b (done, code `9a486d218e`; 3 deleted, 7 kept) `{{in-element}}`: `IT/lib/suites/in-element.ts` vs `EG/syntax/public-in-element-test.js`.
   - [x] 7.1c (done, code `c7f204af33`; 53 IT tests: 45 deleted (twin), 8 moved) `fn`/`hash`/`array`/`get`/`concat`: `IT/test/helpers/*.ts` vs `EG/helpers/*.js`.
   - [x] 7.1d (done, code `d669d705fe`; 19 IT tests: 9 deleted (twin), 10 moved; `on-runtime-test.ts` kept) `on`: `IT/test/modifiers/on-test.ts`, `keywords/on-runtime-test.ts` vs `EG/modifiers/on-test.js`.
-  - [ ] 7.1e custom modifier manager: `IT/test/managers/modifier-manager-test.ts`, `modifiers-test.ts`, `updating-modifiers-test.ts` vs `EG/custom-modifier-manager-test.js`.
+  - [x] 7.1e (done, code `68fcd3260a`; 15 deleted (twin), 2 moved, 14 kept) custom modifier manager: `IT/test/managers/modifier-manager-test.ts`, `modifiers-test.ts`, `updating-modifiers-test.ts` vs `EG/custom-modifier-manager-test.js`.
   - [ ] 7.1f custom helper manager: `IT/test/managers/helper-manager-test.ts` vs `EG/helpers/helper-manager-test.js`, `custom-helper-test.js`, `invoke-helper-test.js`.
   - [ ] 7.1g custom component manager: `@glimmer/manager/test/managers-test.ts` vs `EG/custom-component-manager-test.js` (registry-only parts stay, W5 list).
   - [ ] 7.1h strict mode and lexical scope: `IT/test/strict-mode-test.ts`, `lexical-scope-test.ts` vs `EG/components/strict-mode-test.js`, `runtime-template-compiler-*.ts`.
@@ -549,7 +549,7 @@ keyword" went in 5.3b).
   - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a-7.1d done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`). Next: 7.1e (custom modifier manager). Last full run `full71d` (9048 / 9030 / 0 / 18) in the session
+  Progress note (7.1): 7.1a-7.1e done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`). Next: 7.1f (custom helper manager). Last full run `full71e` (9035 / 9017 / 0 / 18) in the session
   scratchpad is the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
 
 ## 8. Exit check (Opus)
@@ -954,3 +954,10 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   asserted listener counts through the same internal `getInternalModifierManager(on).counters` as EG, so no new use of private API. Ledger: 20 rows (9 deleted, 10 moved, 1 kept).
   Full suite 9057 -> 9048 total / 9030 pass / 0 fail / 18 skip (-19 +10); per-test diff against `full71c`: exactly the 19 ledgered tests missing, the 10 new ones the EG tests above;
   greps 0; type-check, prettier and eslint (EG file) clean.
+- 7.1e (2026-10-08): code `68fcd3260a`. IT `managers/modifier-manager-test.ts` (9), `modifiers-test.ts` (17), `updating-modifiers-test.ts` (3) vs EG `custom-modifier-manager-test.js` (and
+  `components/angle-bracket-invocation-test.js`, which holds the EG twins of the splattributes tests; it defines its own public-manager `BaseModifier`). EG is the stronger copy for the manager tests:
+  7 of the 9 manager tests have same-name twins and went; the other 2 (mutating a consumed tracked field in the constructor; not reading arguments during destruction) moved
+  to EG. `modifiers-test.ts`: the 6 modifiers-on-components tests duplicate the EG "Element modifiers on AngleBracket components" tests and went; the other 11, and the 3 tests of
+  `updating-modifiers-test.ts`, stay in IT (the order of installing/destroying several modifiers and hook-by-hook update checks have no EG twin; 5 of them kept as unsure because
+  of partial overlap). Ledger: 19 rows incl. 4 grouped kept rows. Full suite 9048 -> 9035 total / 9017 pass / 0 fail / 18 skip (-15 +2); per-test diff against `full71d`: exactly the
+  15 ledgered tests missing, the 2 new ones the moved EG tests; greps 0; type-check, prettier and eslint (EG file) clean.
