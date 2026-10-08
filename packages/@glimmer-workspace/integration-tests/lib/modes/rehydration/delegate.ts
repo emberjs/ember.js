@@ -12,6 +12,7 @@ import type {
   Template,
   TreeBuilder,
 } from '@glimmer/interfaces';
+import type Component from '@ember/component';
 import type { Reference } from '@glimmer/reference';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToSimple } from '@glimmer/debug-util';
@@ -31,6 +32,7 @@ import type { DebugRehydrateTree } from './builder';
 import { preprocess } from '../../compile';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
 import {
+  registerClassicComponent,
   registerComponent,
   registerHelper,
   registerHelperDefinition,
@@ -224,6 +226,12 @@ export class RehydrationDelegate implements RenderDelegate {
   registerComponent(type: ComponentKind, _testType: string, name: string, layout: string): void {
     registerComponent(this.clientOwner, type, name, layout);
     if (!this.serverRendered) registerComponent(this.serverOwner, type, name, layout);
+  }
+
+  /** A real classic `Component` for curly invocation (see `registerClassicComponent`). */
+  registerClassicComponent(name: string, layout: string, Class?: typeof Component): void {
+    registerClassicComponent(this.clientOwner, name, layout, Class);
+    if (!this.serverRendered) registerClassicComponent(this.serverOwner, name, layout, Class);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
