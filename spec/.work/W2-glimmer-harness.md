@@ -796,3 +796,9 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   onto the adapter shape. 5.5b removes it.) `internal-test-helpers/package.json` exports `./lib/compile`. `IT/lib/compile.ts` imports neither
   `@glimmer/compiler` nor `@glimmer/opcode-compiler`. The build no longer mutates the caller's `options.locals`. Full suite 9110 / 9092 / 0 / 18;
   per-test diff against the 5.4b run: 0 missing, 0 new; greps 0; type-check, prettier and eslint (on `compile.ts`) clean.
+- 5.4–5.5a review (Opus, 2026-10-08): accepted. `trackedObject(…, { equals: () => false })` keeps
+  the harness convention that `rerender({ k })`/`set` means "k changed" even for the same
+  object; 18 tests (16 `#each`, `Updating: weird paths`, `block arguments`) depend on it
+  because they mutate untracked nested plain objects. That is a test-level coupling for W4
+  (rewrite them over tracked data, then drop `equals`), not a W2 blocker. `glimmerOnly: {options}`
+  in 5.5a is fine as an interim; 5.5b removes it.
