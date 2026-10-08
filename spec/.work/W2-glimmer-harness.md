@@ -540,7 +540,7 @@ keyword" went in 5.3b).
   - [x] 7.1a (done, code `a135f9b3b0`; 2 deleted, 25 kept, see notes) `{{#each}}`: `IT/lib/suites/each.ts` vs `EG/syntax/each-test.js`, `classic/each-test.js` (complementary: keep both, delete exact duplicates).
   - [x] 7.1b (done, code `9a486d218e`; 3 deleted, 7 kept) `{{in-element}}`: `IT/lib/suites/in-element.ts` vs `EG/syntax/public-in-element-test.js`.
   - [x] 7.1c (done, code `c7f204af33`; 53 IT tests: 45 deleted (twin), 8 moved) `fn`/`hash`/`array`/`get`/`concat`: `IT/test/helpers/*.ts` vs `EG/helpers/*.js`.
-  - [ ] 7.1d `on`: `IT/test/modifiers/on-test.ts`, `keywords/on-runtime-test.ts` vs `EG/modifiers/on-test.js`.
+  - [x] 7.1d (done, code `d669d705fe`; 19 IT tests: 9 deleted (twin), 10 moved; `on-runtime-test.ts` kept) `on`: `IT/test/modifiers/on-test.ts`, `keywords/on-runtime-test.ts` vs `EG/modifiers/on-test.js`.
   - [ ] 7.1e custom modifier manager: `IT/test/managers/modifier-manager-test.ts`, `modifiers-test.ts`, `updating-modifiers-test.ts` vs `EG/custom-modifier-manager-test.js`.
   - [ ] 7.1f custom helper manager: `IT/test/managers/helper-manager-test.ts` vs `EG/helpers/helper-manager-test.js`, `custom-helper-test.js`, `invoke-helper-test.js`.
   - [ ] 7.1g custom component manager: `@glimmer/manager/test/managers-test.ts` vs `EG/custom-component-manager-test.js` (registry-only parts stay, W5 list).
@@ -549,7 +549,7 @@ keyword" went in 5.3b).
   - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a-7.1c done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`). Next: 7.1d (`on`). Last full run `full71c` (9057 / 9039 / 0 / 18) in the session
+  Progress note (7.1): 7.1a-7.1d done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`). Next: 7.1e (custom modifier manager). Last full run `full71d` (9048 / 9030 / 0 / 18) in the session
   scratchpad is the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
 
 ## 8. Exit check (Opus)
@@ -948,3 +948,9 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   "individual hash values are accessed lazily". All five IT files deleted (`dynamic-helpers-test.ts` is not in this item). Ledger: 53 rows (45 deleted (twin), 8 moved).
   Full suite 9103 -> 9057 total / 9039 pass / 0 fail / 18 skip (-53 +7); per-test diff against `full71b`: exactly the 53 ledgered tests missing, the 7 new ones all EG
   tests added above; greps 0; type-check, prettier and eslint (3 EG files) clean.
+- 7.1d (2026-10-08): code `d669d705fe`. IT `test/modifiers/on-test.ts` (19) vs EG `modifiers/on-test.js`; `keywords/on-runtime-test.ts` (3) examined too. Nine tests have same-name twins in EG and were
+  deleted; ten had none and moved to EG (passive, unrelated updates, eight assertion tests; the two bound callback ones were renamed `... is a bound undefined/null value` because the EG
+  file already has same-purpose tests with literal `undefined`/`null`). `on-runtime-test.ts` stays: it uses `on` as an implicit keyword, which no EG test does (they put it in scope). IT
+  asserted listener counts through the same internal `getInternalModifierManager(on).counters` as EG, so no new use of private API. Ledger: 20 rows (9 deleted, 10 moved, 1 kept).
+  Full suite 9057 -> 9048 total / 9030 pass / 0 fail / 18 skip (-19 +10); per-test diff against `full71c`: exactly the 19 ledgered tests missing, the 10 new ones the EG tests above;
+  greps 0; type-check, prettier and eslint (EG file) clean.
