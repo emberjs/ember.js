@@ -571,7 +571,34 @@ keyword" went in 5.3b).
       type-only `TemplateWithIdAndReferrer`, `@glimmer/compiler` value `precompile`, C3). Every non-type-only hit
       is therefore in an implementation-test file; no import is left in harness code outside `lib/modes/`
       (`lib/compile.ts`, `render-test.ts`, `render-delegate.ts`, `test-helpers/*`, `index.ts`: 0 hits).
-- [ ] 8.2 C18 table empty: every row of T17-fake-stubs §4 is done or explicitly kept (with why).
+- [x] 8.2 C18 table empty: every row of T17-fake-stubs §4 is done or explicitly kept (with why).
+      Done (2026-10-08). Rows of T17 §4, in its order: (1) `EmberishCurlyComponent` + manager: done, 4.4
+      (`bf935f7c7a`; cases ported in 4.2/4.3, rehydration ports 5.6). (2) Curly/Dynamic kinds and the fan-out: done,
+      4.4; curly invocation through a real owner 5.6 (`bf7d0d21ec`). (3) `BaseEnv` + hand-driven transactions: done,
+      5.2a/5.2b (`5f76825492`, `c562908ff0`); the queues were dead code. (4) `TestJitRuntimeResolver`/`TestJitRegistry`/
+      `CIRCULAR_OBJECT`: done, 5.3b (`e41d3c7792`); `owner-test.ts`: `OwnerJitRuntimeResolver` gone (2.3), file kept
+      with 4 tests on a fake internal `MountManager` (W5 list, C7). (5) `TestModifierManager`/`registerModifier`/
+      `registerHelper`/`createHelperRef`: done, 3.1-3.4 (`e8163f76b0`, `29e2f90191`, `cce8d18557`); the names
+      `registerHelper`/`registerModifier` are kept as harness conveniences that register public-manager definitions on
+      the real owner. (6) fake `mut`: done, 2.1 (`c1e68fe3ff`). (7) `registerInternalHelper` refs: done, 3.3, none kept.
+      (8) `GlimmerishComponent` (IT): done, 1.1 (`37682d8d97`). (9) `GlimmerishComponent` (Ember): done, 1.2
+      (`548bc5cdb3`). (10) `PositionalComponent`: done, 6.2 (`545a412a29`). (11) `makeSafeString`/`{toHTML}`: done,
+      2.2 (`1cbe9f6b78`); kept: the plain `{toHTML}` object in `updating-test.ts` 'updating a curly with a safe and
+      unsafe string' (tests duck typing, not a fake). (12) Host-hook fakes: `style-warnings` done 6.1 (`4b82b0fea8`),
+      `iterable-test` + `utils/template.ts` done 6.3 (`62ccb8ba1f`); kept: `references-test.ts` and
+      `validators-test.ts` with their `testOverrideGlobalContext` overrides, implementation tests of the reactive core
+      (W5 list). (13) the two `compile` helpers: done, 5.5a/5.5b (`a6ae9273b9`, `0f5d5afdbe`). (14) `@glimmer/runtime`
+      keyword imports in Ember tests: done, 1.3 (`c163fc1ba4`; 0 left in `EG`). (15) `ember-view` branches: done, 4.4
+      (the 2 `ember-view` asserts left in `initial-render-test.ts` are the 5.6 tests of a real classic `Component`).
+      (16) keyword pre-registration: done, 5.3b. Leftover grep (`GlimmerishComponent`, `EmberishCurly`,
+      `PositionalComponent`, `TestJitRegistry`, `TestJitRuntimeResolver`, `CIRCULAR_OBJECT`, `BaseEnv`,
+      `TestModifierManager`, `createHelperRef`, `registerInternalHelper`, `registerInternalModifier`, `makeSafeString`
+      over `packages/`): only names, renamed in code `13ed9f038c` (`registerGlimmerishComponent` ->
+      `registerGlimmerComponent`; suite `GlimmerishComponents`/'Glimmerish' -> `GlimmerComponents`/'Glimmer';
+      `EmberishComponentTests`/'Emberish' in `lib/suites/emberish-components.ts` -> `ComponentInvocationTests`/'Invocation'
+      in `lib/suites/component-invocation.ts`). Module names change from `Components :: Glimmerish >`/`Components ::
+      Emberish >` to `Components :: Glimmer >`/`Components :: Invocation >` (renames, see 8.3). Full suite after the
+      rename 9013 / 8995 / 0 / 18; `type-check:internals` clean.
 - [ ] 8.3 Coverage diff: the ledger accounts for every removed test; whole suite green;
       counts compared with the baseline.
 - [ ] 8.4 Update §09 (C1, C2, C6, C18 rows; §9.7 W2 state) and STATUS.
