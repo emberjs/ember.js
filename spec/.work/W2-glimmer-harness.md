@@ -743,7 +743,7 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
 - [x] 9.4 Code, non-interactive serialize (Q8): server renders in the rehydration/node delegates
       use a non-interactive renderer. Triage every changed test (modifiers no longer running on
       the server, rehydration results) as in 5.5b before changing expectations.
-      DONE (code `HASH`, see "9.4 triage" below): `createRenderer` gets `isInteractive` (default
+      DONE (code `b9cdcda432`, see "9.4 triage" below): `createRenderer` gets `isInteractive` (default
       true); the rehydration `serverRenderer` and `NodeJitRenderDelegate` (and so
       `JitSerializationDelegate`) pass false through a protected `isInteractive` getter on
       `JitRenderDelegate`. Client and rehydrating renders stay interactive. (`_renderMode` is not
