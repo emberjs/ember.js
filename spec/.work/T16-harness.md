@@ -175,3 +175,73 @@ Harness `IT/lib` (counted via grep): `@glimmer/interfaces` (types, ~all files), 
 ### 1.9 Tests that reach deepest into internals (cannot port without VM)
 
 Grep over `IT/test` and `IT/lib` for opcodes/references: `IT/test/precompile-test.ts` (`templateFactory` `__id`, `__meta`, `referrer`: factory/Template identity - spec-observable only partly), `IT/test/debug-render-tree-test.ts` (`JitRenderDelegate.getCapturedRenderTree()`, `CapturedRenderNode` + `enableDebugTooling` env; ember inspector API - see 3), `IT/test/env-test.ts` (`EnvironmentImpl` internals), `IT/test/render-test.ts` (`RenderResult`/`render` API tests), `IT/test/compiler/compile-options-test.ts`, `IT/test/owner-test.ts`, `style-warnings-test.ts` (global-context override), `modifiers/*`/`managers/*` (public manager APIs - portable), `suites/debugger.ts` (`setDebuggerCallback` - hook for `{{debugger}}`; observable + `get('foo')` scope accessor), `suites/entry-point.ts` (`DynamicScopeImpl`, `renderComponent` with dynamic scope).
+
+---
+
+## 2. Ember harness (`packages/internal-test-helpers/lib`)
+
+`IH` = `packages/internal-test-helpers`. Barrel: `IH/index.ts:1-54`.
+
+### 2.1 Shape
+
+* Tests are **`moduleFor(description, class extends TestCase)`** (`IH/lib/module-for.ts:56-76`). Methods whose *name* begins with
+  `'@test '` become `QUnit.test` (also `@only `, `@skip `, `@feature(FLAG) `) (`module-for.ts:152-179`); mixins via `applyMixins`.
+  There is **no delegate abstraction**: tests talk to real Ember (Application/Engine/owner/container/registry/resolver/run loop/Renderer).
+* `moduleFor` also installs per-module QUnit hooks (`:66-75`): `setupContainersCheck` (container leak), `setupNamespacesCheck`,
+  `setupObserversCheck`, `setupRunLoopCheck` (`ember-dev/run-loop.ts:3-32`: fail if run loop / timers left over),
+  `setupAssertionHelpers` (`expectAssertion`/`ignoreAssertion`), `setupDeprecationHelpers` (`expectDeprecation`...), `setupWarningHelpers`.
+  `afterEachFinally` calls `unsetContext` and, with `?assertDestroyables`, `assertDestroyablesDestroyed` (`module-for.ts:78-84`).
+* Global QUnit setup (`index.html:34-38` -> `IH/lib/ember-dev/setup-qunit.ts`): `assert.rejects`, `assert.throwsAssertion`
+  (no-op `ok(true)` when `!DEBUG`), `rejectsAssertion`; `QUnit.testStart -> resetTracking()` (`@glimmer/validator`, `setup-qunit.ts:57-59`).
+  `index.html:15-30` sets `EmberENV` (`_DEFAULT_ASYNC_OBSERVERS`, `RAISE_ON_DEPRECATION`, `_ALL_DEPRECATIONS_ENABLED`, `_OVERRIDE_DEPRECATION_VERSION`, `ENABLE_OPTIONAL_FEATURES`) from query params (set by `testem.cjs:3-29` env vars).
+
+### 2.2 `RenderingTestCase` (`IH/lib/test-cases/rendering.ts:20-228`) - the workhorse
+
+(~70 of the 83 `moduleFor` files under `packages/@ember/-internals/glimmer/tests` extend it; ~1.2k `@test` cases there.)
+
+* **Construct** (`:26-52`): `buildOwner({ownerOptions, resolver: new ModuleBasedResolver(), bootOptions})` (`IH/lib/build-owner.ts:20-63`:
+  `Application.create({autoboot:false, Resolver: wrapper})` -> `namespace.buildInstance()` -> `ApplicationInstance.setupRegistry`; engine variant),
+  registers `-view-registry:main` + `event_dispatcher:main`, looks up `renderer:-dom` (`Renderer`, `@ember/-internals/glimmer/lib/renderer.ts:182`),
+  `this.element = #qunit-fixture`, sets up `EventDispatcher` on the fixture.
+* **Registering things (resolver/registry style, loose mode)**: `owner.register('component:foo', Class)`, `'template:components/foo'`, `'helper:x'`,
+  `'modifier:x'`, `'component-manager:x'`, `'service:x'` (`rendering.ts:133-213`: `registerHelper` (function -> `helper(fn)`, object -> `Helper.extend`),
+  `registerCustomHelper`, `registerModifier`, `registerComponentManager`, `registerTemplate`, `registerService`, `add(specifier, factory)` -> `TestResolver.add` (`IH/lib/test-resolver.ts:14-47`: `type:name` keys, `serializeKey` with `%source%namespace`)).
+  Loose-mode name->definition resolution happens in Ember's `RuntimeResolver` (`@ember/-internals/glimmer/lib/resolver.ts`), which is *not* part of the harness; it sits behind `owner.lookup`/`factoryFor`.
+* **Strict-mode style** (no resolver): `setComponentTemplate(precompileTemplate('...', {strictMode:true, scope:()=>({Foo})}), templateOnly())`
+  (e.g. `glimmer/tests/integration/components/strict-mode-test.js:1-50`); or runtime `template('...', {scope})` from `@ember/template-compiler/runtime`
+  (`runtime-template-compiler-explicit-test.ts`), or `.gjs` files (`glimmer-component-test.gjs`, `custom-helper-test.gjs`, `if-laziness-test.gjs`; `templateTag()` vite plugin `vite.config.mjs:37`). `defineSimpleHelper/Modifier` (`IH/lib/define-template-values.ts:82-90`) = public `setHelperManager/setModifierManager`.
+* **Compile**: `this.compile(src, opts)` -> `compile` (`IH/lib/compile.ts:20-40`): `compileOptions(opts)` from `ember-template-compiler` (adds Ember's AST plugins + keyword/ALLOWED_GLOBALS config) -> `precompileJSON` -> `SerializedTemplateWithLazyBlock` -> `templateFactory` (opcode-compiler). Same recipe as Glimmer's `createTemplate`, plus Ember's plugins. Used by `registerTemplate`, `render`, `addTemplate`.
+* **Render** (`render(templateStr, context)` `rendering.ts:99-119`): registers compiled template as `template:-top-level`, creates a
+  `component:-top-level` = `Component.extend({...context, tagName:'', layoutName:'-top-level'})`, looks it up, **`runAppend(component)`** (`IH/lib/run.ts:6-8`: `run(view,'appendTo',#qunit-fixture)`).
+  The test's "context" (`this`) is therefore a **classic Ember `Component` instance** (so `this.component.set('x', v)` is `@ember/object` `set`; `get`/computed/observers all live).
+  `renderComponent(Class, {expect})` (`:121-126`) registers `component:root`, renders `<Root />`, `assertHTML`, `assertStableRerender`.
+  Component-module style: `renderComponentModule(() => template(...))` -> `define` awaits a microtask, registers `component:test-component`, renders `<TestComponent />` with the component as context (`:165-175`).
+* **Update**: `runTask(fn)` = `run(fn)` (`run.ts:16-18`); `this.rerender()` -> `this.component.rerender()` (`rendering.ts:128-131`, Ember `Component#rerender`, i.e. schedule re-render on the renderer); `runTaskNext()` (`next` + RSVP Promise), `runLoopSettled()` (poll 5ms until no run loop/timers, `run.ts:27-43`); `renderSettled()` (`@ember/-internals/glimmer/lib/base-renderer.ts:174-198`, tied to `_backburner.on('begin'|'end')` `:217-218`). Event simulation: `this.click(sel)` (`abstract.ts:159-170`), `clickElement` (`IH/lib/event-helpers.ts`), `system/synthetic-events.ts` (`triggerEvent`, `fireEvent`).
+* **Assert DOM**: `assertHTML(html)` -> `equalTokens(getElement(), html)` (`IH/lib/equal-tokens.ts:33-57`: `simple-html-tokenizer` tokens, attributes sorted; QUnit pushResult; falls back to deepEqual when tokens equal but raw strings differ), `assertInnerHTML` -> exact `innerHTML` (`equal-inner-html.ts`), `assertText`, `assertElement`/`assertComponentElement` -> `equalsElement` (`IH/lib/matchers.ts:~1-172`: `regex(...)`, `classes(...)`, `styles(...)` matchers; classic wrapper `id=/^ember\d*$/ class=ember-view`), `nthChild/firstChild/nodesCount` that **skip empty text/comment "marker" nodes** (`abstract.ts:17-27,105-141`) - **spec-observable**: empty markers are allowed but invisible to tests; `assertInvariants`/`assertStableRerender` (`abstract.ts:260-274`, `rendering.ts:223-227`) = node-identity snapshot (`takeSnapshot` omits markers) before/after `runTask(rerender)`.
+  `NodeQuery` (`IH/lib/node-query.ts`) = tiny jQuery replacement. Real browser DOM (`window.Text/HTMLElement/Comment` captured at import).
+* **Assertions / deprecations / warnings**: `expectAssertion(fn, msg|regex)` (global injected on `window` per test by `ember-dev/assertion.ts:26-80`): swaps the `assert` debug function via `getDebugFunction/setDebugFunction` from `@ember/debug` (`callWithStub`, `ember-dev/utils.ts:12-23`), throws a sentinel `BREAK` on the first failing assert to unwind, then compares message; `!DEBUG` => `ok(true,'Assertions disabled in production builds.')`. Template-engine assertions come through Glimmer's global-context `assert` hook -> Ember `assert` (`environment.ts:56-64`, with `VM_ASSERTION_OVERRIDES` remapping ids -> Ember messages). `expectDeprecation(fn?, msg|regex)`, `expectNoDeprecation`, `...Async`, `ignoreDeprecation` (`ember-dev/deprecation.ts`, `method-call-tracker.ts:1-185` records calls to stubbed `deprecate`, asserts at `afterEach`; unmatched deprecations fail the test; `RAISE_ON_DEPRECATION` true by default `index.html:21-23`). `expectWarning` (`ember-dev/warning.ts`). Also `assert.throwsAssertion` for async. Messages are matched **verbatim** (string equality unless regex), so error text is spec-observable in DEBUG.
+* **Teardown** (`rendering.ts:82-93`): `runDestroy(this.component)`, `runDestroy(this.owner)` (`run(destroy, x)`, `run.ts:10-14`) in `finally { _resetRenderers() }`; then `ember-dev/*` leak checks (containers: `Container._leakTracking`; NAMESPACES; observers; run loop; optionally destroyables).
+
+### 2.3 Other cases
+
+* `AbstractTestCase` (`abstract.ts:76-280`): fixture, DOM helpers above, uses `getElement()` from test context (`IH/lib/test-context.ts` set by `setupTestClass` `module-for.ts:99`).
+* `AbstractStrictTestCase` (`abstract.ts:31-74`): no owner built by default; `rerender()` via `rerenderComponent()` (`component-helper.ts:27-35`, calls `context.component.rerender()`). Used by `render-component-test.ts` (`RenderComponentTestCase`, builds its own owner via `buildOwner({})` and calls the **new low-level `renderComponent(component, {owner, args, env:{document,isInteractive,hasDOM}, into: element})`** from `@ember/-internals/glimmer/lib/renderer` (`base-renderer.ts:459`), returns `RenderResult` with `.destroy()`; `captureRenderTree` from `@ember/debug`). **This is the closest thing to an implementation-neutral "render a component into an element" entry point already in Ember.**
+* `AbstractApplicationTestCase` / `ApplicationTestCase` (`abstract-application.ts`, `application.ts`; ~16 glimmer test files): full `Application` with `autoboot:false`, `TestResolver`, `Router.extend({location:'none'})`; `visit(url)` -> `application.boot()` -> `buildInstance().boot()` -> `instance.visit(url)` then `runLoopSettled()` (`abstract-application.ts:17-41`); `this.addTemplate/addComponent` (resolver.add of compiled templates); `transitionTo`, `currentURL`, `controllerFor`. Exercises route/outlet templates (`{{outlet}}`, `-outlet`), `link-to`, engines (`mount`).
+* `RouterNonApplicationTestCase` (`router-non-application.ts:18-120+`): engine owner (`ownerType:'engine'`), fake `-application-instance:main` whose `renderRootComponent` calls `setRenderer(owner, renderer)` + `renderComponent(component, {into:{element, nextSibling:null}, owner})` (`:44-52`) -> `_setOutlets` path. `addTemplate/addComponent` helpers.
+* `RouterTestCase`, `QueryParamTestCase`, `AutobootApplicationTestCase`, `TestResolverApplicationTestCase`: routing / boot; marginal for the template language (outlets only).
+
+### 2.4 Non-public (non-`@ember`-public) imports in IH/lib
+
+`@glimmer/compiler` `precompileJSON`; `@glimmer/opcode-compiler` `templateFactory` (`compile.ts:4-6`); `@glimmer/interfaces` types; `@glimmer/destroyable` (`assertDestroyablesDestroyed`, `enableDestroyableTracking`, `destroy`); `@glimmer/validator` `resetTracking`; `@glimmer/manager` `setHelperManager/...` (public); `@glimmer/env`; `ember-template-compiler` `compileOptions`, `EmberPrecompileOptions` (`compile.ts:7-8`); `@ember/-internals/glimmer` (`_resetRenderers`, `helper`, `Helper`, `renderComponent`, `setRenderer`, `Renderer` type); `@ember/-internals/{views (EventDispatcher),owner,metal (NAMESPACES, ASYNC/SYNC_OBSERVERS),container (Container._leakTracking),error-handling}`; `@ember/runloop` private exports `_getCurrentRunLoop`, `_hasScheduledTimers`, `_cancelTimers`; `@ember/debug` `getDebugFunction/setDebugFunction`. In the glimmer tests themselves (counted by grep over `glimmer/tests`): `@glimmer/manager` 53 (mostly `setComponentTemplate` + capabilities - public), `@glimmer/component` 36, `@glimmer/tracking` 7, `@glimmer/runtime` 7 (`on`, `array`, `hash`, `concat`, `fn`, `get`, `templateOnlyComponent`, `invokeHelper`), `@glimmer/validator` 2 (`getValue`), `@glimmer/interfaces` 2 (`CapturedRenderNode` type), `@ember/-internals/glimmer` 14 (`Helper/helper/Component/setComponentManager/htmlSafe/renderSettled/templateCacheCounters/template`), `../../../lib/renderer` 1.
+
+Classification:
+
+| Piece | Class | Spec-level replacement |
+|---|---|---|
+| `precompileTemplate(src,{strictMode,scope})`, `template(src,{scope})`, `setComponentTemplate`, `templateOnly()`, `@glimmer/component`, `setComponentManager`, `setHelperManager`, `setModifierManager`, `*Capabilities`, `on/fn/hash/array/concat/get` | public API; **spec-observable** | adapter keeps these names; implementation provides them |
+| `owner.register('component:x')` + resolver lookup (loose mode) | Ember public API / container; **spec-observable** as the loose-mode resolution protocol | adapter must plug into the *Ember resolver chain* (`owner.factoryFor`) - see 4 |
+| `compile()` using `precompileJSON`+`templateFactory`+`compileOptions` | impl detail | `compile(src, opts) -> TemplateFactory` from adapter (opts include Ember plugins) |
+| `renderComponent`/`setRenderer`/`_resetRenderers`/`renderSettled`/`Renderer`/`appendTo`/`rerender` | Ember-internal-but-stable-ish glue between owner, run loop and VM | replace `base-renderer.ts` while keeping signatures |
+| `templateCacheCounters` (`template-factory-test.js`, `runtime-resolver-cache-test.js`) | impl detail (cache hit counts) | skip |
+| `ENV._DEBUG_RENDER_TREE` + `captureRenderTree` | observable debug API (Ember Inspector); `env.ts:62-87` | optional capability |
+| `expectAssertion` / `expectDeprecation` stubs | harness over `@ember/debug`; **messages spec-observable [Dev]** | keep: impl must route all asserts/deprecations through `@ember/debug` (or global-context hooks `assert`/`deprecate`) |
