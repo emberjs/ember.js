@@ -67,12 +67,12 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 
 ## 2. Delete fakes that have twins (step 2)
 
-- [ ] 2.1 `IT/test/helpers/fn-test.ts` fake-`mut` tests (twins `EG/helpers/fn-test.js:195,208`).
-- [ ] 2.2 `makeSafeString` and the `{toHTML}` literal → `htmlSafe` from `@ember/template`.
-- [ ] 2.3 `IT/test/owner-test.ts`: ledger each of its 6 tests against
+- [x] 2.1 `IT/test/helpers/fn-test.ts` fake-`mut` tests (twins `EG/helpers/fn-test.js:195,208`). Done, see notes.
+- [x] 2.2 `makeSafeString` and the `{toHTML}` literal → `htmlSafe` from `@ember/template`.
+- [x] 2.3 `IT/test/owner-test.ts`: ledger each of its 6 tests against
       `EG/application/engine-test.js`, `mount-test.js`, `@glimmer/owner/test`; port any without
       a twin; delete the file and `OwnerJitRuntimeResolver`.
-- [ ] 2.4 `IT/test/ember-component-test.ts` (74 tests): ledger every test (twin or "port");
+- [x] 2.4 `IT/test/ember-component-test.ts` (74 tests): ledger every test (twin or "port");
       delete those with twins. The residue (about 10, mostly destruction order) stays until
       step 4.
 
@@ -175,3 +175,29 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
   pass, 0 fail, 18 skip, identical to the baseline; no test deleted, ledger untouched.
   `pnpm type-check:internals`, eslint and prettier clean on changed files. (`testem.filter.cjs`
   added to the worktree's `info/exclude`, not committed.)
+- 2.1-2.4 (2026-10-08, branch `test/w2-glimmer-harness`): 2.1 `c1e68fe3ff` deleted the two `mut` tests
+  (EG twins verified assertion by assertion); the fake `mut` registration lived only in them, and
+  the `createInvokableRef`/`CapturedArguments` imports went too. 2.2 `1cbe9f6b78`: `htmlSafe` from
+  `@ember/template` replaces `makeSafeString` in `updating-test.ts` and `updating-content-matrix-test.ts`
+  and the `{toHTML}` literals in `lib/suites/initial-render.ts` and `test/initial-render-test.ts`
+  (the second one is a hand-written literal in `handles empty trusted content`). `@ember/template` did
+  NOT resolve from IT like `@glimmer/component` did: added `"@ember/template": "workspace:*"` to IT's
+  `package.json` and the matching 3-line `pnpm-lock.yaml` entry (an offline `pnpm install` also
+  rewrote an unrelated rolldown line; I reverted that and kept only the link). The plain-object
+  `{toHTML}` in `updating-test.ts` 'updating a curly with a safe and unsafe string' is kept: it checks
+  duck-typing, not a fake of Ember. 2.3 `fc8536394f` (EG port) + `93d54aa9f9`: of the 6 owner tests
+  2 deleted (twin: engine-test sharing template/layout), 4 kept (see ledger); a new EG test
+  `{{mount}} owner tests` was added; `OwnerJitRuntimeResolver` is gone but `owner-test.ts` stays with
+  4 tests, so it is not deleted. FINDING for the author: in real Ember a component curried in the
+  application and rendered inside a `{{mount}}`ed engine is created with the engine as owner, while
+  the IT test 'owner is preserved in curried closure components' expects the curried owner; no EG test
+  pins either. 2.4 ledger rows `157348c3fe`..`cd5a05610a` (4 batches), code `8d8030598c`: 74 tests
+  ledgered, 34 deleted (twin) and 40 kept as "port" for step 4.3 (many are not curly tests at
+  all: scope tests on template-only components, plain `class={{...}}` tests, rest-style positional
+  params whose only EG twins use the `PositionalComponent` stub until 6.2, destruction-order tests,
+  and the 5 curried-definition-in-`{{this.foo}}` tests). Sub-note: all 74 done, no partial state.
+  Counts: baseline 9541 / 9523 pass / 18 skip. Deleted 2+2+34 = 38 tests, added 1 (the mount port):
+  9541 - 38 + 1 = 9504 total, 9523 - 38 + 1 = 9486 pass, 0 fail, 18 skip. Observed: 9504 / 9486 / 0 /
+  18; a per-test diff (module+name+chunk, dates normalised) shows exactly the 38 ledgered tests
+  missing and the 1 port new. `type-check:internals` and prettier clean; eslint ignores IT files
+  (the EG file is clean). Tooling in the scratchpad: `runfull.sh` (map.html + testem tap) and `cmp.py`.
