@@ -462,7 +462,7 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
 - [x] 5.5a (done, see notes) One compile (design 4) in `ITH/compile.ts`, both harnesses through it; IT passes
       an internal `glimmerOnly: true` flag that skips `compileOptions()` so its output is
       unchanged. Zero change (Ember harness: about 1,600 `this.render` sites, no test change).
-- [ ] 5.5b (phase 1 done, code `89429e7685`; phase 2 triage written, awaiting Opus decisions, see "5.5b triage") IT compiles with Ember's `compileOptions` (drop `glimmerOnly`); `registerComponent`
+- [x] 5.5b (done, code `0f5d5afdbe`; see "5.5b triage" and notes) IT compiles with Ember's `compileOptions` (drop `glimmerOnly`); `registerComponent`
       registers `component:${dasherize(name)}` (Ember's `customizeComponentName` dasherizes
       `<FooBar>`). From P5, after 5.3b, expect about 20 real differences to triage one by one:
       `{{in-element}}` with a non-null `insertBefore` (Ember asserts "Can only pass null to
@@ -484,7 +484,7 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
 
 ### 5.5b triage
 
-Run `full55b` (after code `89429e7685`): 9110 total / 9073 pass / 19 fail / 18 skip. Against
+Run `full55b` (after code `89429e7685`, since amended into `0f5d5afdbe`; decisions applied, see the 5.5b note): 9110 total / 9073 pass / 19 fail / 18 skip. Against
 `full55a` (9110 / 9092 / 0 / 18): 0 missing, 0 new, exactly 19 pass -> fail, nothing else
 changed. The 19 tests are left failing in the worktree; the code commit says "WIP: 19 known
 failures". None is class (a): the harness plumbing is finished. Governing rules are in
@@ -843,3 +843,17 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   after the switch: 156 failures (strict-mode `locals` unmapped 95, un-dasherized string names ~40, 20 real); after plumbing: 19 failures,
   all triaged above, none changed. Full suite 9110 / 9073 / 19 / 18; per-test diff against `full55a`: 0 missing, 0 new, 19 pass -> fail.
   `type-check:internals` and prettier clean. Phase 2 (changing the 19 tests) waits for Opus decisions per row.
+- 5.5b decisions applied (2026-10-08, Opus review): code `0f5d5afdbe` (the WIP commit amended; message no longer WIP). Debug-render-tree names
+  dasherized (7; twin `EG/application/debug-render-tree-test.ts:797-829`); `@Foo`/`@Bar` args renamed lowercase (5; the reserved assertion is pinned by
+  `ember-template-compiler/tests/plugins/assert-reserved-named-arguments-test.js`, no new test); bare `{{modifier}}` expects Ember's message (1);
+  the 5 in-element tests that need a null destination or non-null `insertBefore` moved to `IT/test/vm/in-element-vm-test.ts` (3 jit + 2
+  rehydration), compiled with plain Glimmer options through new `PlainGlimmerJitDelegate`/`PlainGlimmerRehydrationDelegate`
+  (`lib/modes/plain/{compile,delegates}.ts`; delegates got a protected `compileTemplate`, `precompileOptions` is protected). The Ember-side null
+  and `insertBefore` assertions already have twins in `EG/syntax/public-in-element-test.js` (null, undefined, `insertBefore=non-null-value`), so
+  no Ember-side duplicate and no `DEBUG`-gated copy was added (the twins run in the dev suite). The updating `{{#in-element}}` helper test switches
+  between two elements; it still asserts didCreate 1 / didDestroy 0 after the switch and after switching back (the same assertions that guard the
+  `{{#if}}`/`{{component}}` siblings), plus new content assertions in both elements. I did not run an engine-level mutation proving that a teardown
+  would fail it; the count assertions are the unchanged ones of its siblings. Ledger: 19 rows (`5.5b rows`). Counts: 9110 total / 9092 pass / 0
+  fail / 18 skip, identical to 5.4b/5.5a (5 tests moved to a new module, none added or removed; the plain-compile VM module names are `jit (plain
+  Glimmer compile)` and `rehydration (plain Glimmer compile)`). Per-test diff against `full55a`, ignoring date-stamped Helpers names: 5 renamed
+  modules, 0 missing, 0 new. type-check and prettier clean.
