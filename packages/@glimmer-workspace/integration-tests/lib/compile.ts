@@ -1,12 +1,6 @@
-import type {
-  Nullable,
-  SerializedTemplateWithLazyBlock,
-  Template,
-  TemplateFactory,
-} from '@glimmer/interfaces';
+import type { Nullable, Template, TemplateFactory } from '@glimmer/interfaces';
 import type { PrecompileOptions, PrecompileOptionsWithLexicalScope } from '@glimmer/syntax';
-import { precompileJSON } from '@glimmer/compiler';
-import { templateFactory } from '@glimmer/opcode-compiler';
+import { compile } from 'internal-test-helpers/lib/compile';
 
 // TODO: This fundamentally has little to do with testing and
 // most tests should just use a more generic preprocess, extracted
@@ -19,27 +13,17 @@ export function preprocess(
   return createTemplate(templateSource, options)(owner);
 }
 
-let templateId = 0;
-
+/**
+ * Compiles through the shared `compile`, with the Glimmer compiler's options as given
+ * (`glimmerOnly`: not yet Ember's `compileOptions`).
+ */
 export function createTemplate(
   templateSource: Nullable<string>,
   options: PrecompileOptions | PrecompileOptionsWithLexicalScope = {},
   scopeValues: Record<string, unknown> = {}
 ): TemplateFactory {
-  options.locals = options.locals ?? Object.keys(scopeValues ?? {});
-  let [block, usedLocals] = precompileJSON(templateSource, options);
-  let reifiedScope: Record<string, unknown> = {};
-  for (let key of usedLocals) {
-    reifiedScope[key] = scopeValues[key];
-  }
-
-  let templateBlock: SerializedTemplateWithLazyBlock = {
-    id: String(templateId++),
-    block: JSON.stringify(block),
-    moduleName: options.meta?.moduleName ?? '(unknown template module)',
-    scope: usedLocals.length > 0 ? () => reifiedScope : null,
-    isStrictMode: options.strictMode ?? false,
-  };
-
-  return templateFactory(templateBlock);
+  return compile(templateSource as string, {
+    scope: () => scopeValues,
+    glimmerOnly: { options },
+  });
 }
