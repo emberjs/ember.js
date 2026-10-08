@@ -109,6 +109,7 @@ repo).
 | 06 managers | ~1470 | Drafted | From source. Citations verified by T3. |
 | 07 reactivity | ~1490 | Drafted | From source. Citations verified by T3. |
 | 08 Ember integration | ~1890 | Drafted | Compile-output claims were checked against `dist/dev`. |
+| 09 conformance testing | ~400 | Drafted (T16), informative | From two surveys of the test suite (`.work/T16-harness.md`, `.work/T16-coupling.md`; grep and sampling) and `tools/test-coverage.py`. |
 
 All `§NN-x.y` cross-references resolve (`python3 spec/tools/xref.py`). All file:line citations
 exist and are in range (`python3 spec/tools/check-citations.py`), and T3 checked that the NEAR/MISS ones point at the construct named.
@@ -140,6 +141,7 @@ Run these in order, one at a time.
 | T13 | Merge `origin/main` (`98fa794473`: #21636, #21639, #21641) and follow up | Opus | — | done; 68 citations shifted with `tools/remap-citations.py`, the "after this checkout's base" notes rewritten against the new code |
 | T14 | Author feedback `391b17239c` on the reactive API: `cached()` as the derived primitive, a core `effect`, async exploration | Opus | `.work/T14-reactive-api.md` | done; §07-2 rewritten, prototype + 31 tests, review points §07-5 items 14–19 |
 | T15 | Author feedback `59f71505b9`: relate the core to RFC 957 (scheduler) | Opus | `.work/T15-scheduler-rfc.md` | done; new §07-2.8, §07-5 items 14 and 17 updated, 3 strategy tests |
+| T16 | Author request: a testing chapter (refactors for an alternate implementation, coverage gaps) | Opus + 2 Sonnet surveys | `.work/T16-conformance-testing.md` | done; §09, `tools/test-coverage.py`; work plan W0–W9 and open questions Q1–Q6 in §9.7–9.8 |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -233,9 +235,9 @@ Suggestions for the plan's author, based on what is still open:
 5. **Remaining verification gaps.** §05-14 item 16 still lists the `each`, `in-element` and
    `yield`/block claims with no test. Most of §01 and §03 beyond the T9a items is checked only
    against source and `dist/dev`.
-6. **Turn the spec into a conformance suite.** Many rules already cite the tests that pin
-   them. Collecting those into one implementation-independent suite, keyed by section number,
-   would give a new implementation something to run against.
+6. **Conformance suite (§09).** Answer §09-9.8 Q1–Q6 (W0), then run the workstreams of §09-9.7.
+   W2 (Glimmer harness) and W3 (Ember harness) need no decisions and can start now, as
+   separate tasks with checklists, upstreamable to ember.js on their own.
 7. **Keep citations current.** Line numbers are accurate for this checkout (`origin/main`
    merged at `98fa794473`, upstream base `675744ab35`). After the next merge, run
    `python3 spec/tools/remap-citations.py 675744ab35 --apply` once, fix its FLAG lines by hand,

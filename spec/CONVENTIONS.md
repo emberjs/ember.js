@@ -66,3 +66,4 @@ it *is* behavior and must be specified.
 | `06-managers.md` | Component, helper, modifier manager APIs (public + internal capabilities), default managers, arguments, owner |
 | `07-reactivity.md` | Abstract reactivity model, `tracked`, caches, update semantics, proposed reactive core (`cached`, `effect`) |
 | `08-ember-integration.md` | Ember-specific keywords, built-in helpers/components/modifiers, loose-mode resolution, classic component behaviors, outlets/mount/routing, render entry points |
+| `09-conformance-testing.md` | **Informative.** Conformance profiles, the implementation adapter, coupling of the existing test suite to implementation details, coverage gaps, work plan |

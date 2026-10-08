@@ -113,6 +113,7 @@ primary scope (§0.1 "Non-goals").
 | [06 Managers](./06-managers.md) | Associating values with managers, owners, args proxies, component/helper/modifier manager APIs and capabilities, template-only components, internal capabilities, `@glimmer/component`, destroyables, commit phase | `@glimmer/manager`, `@glimmer/component`, `@glimmer/destroyable`, Ember component managers |
 | [07 Reactivity](./07-reactivity.md) | Abstract reactivity model, proposed reactive core (`cached`, `effect`), `tracked` in all forms, `@cached`, cache primitives, tracked collections, Ember object-model interop, mapping of template evaluation onto the model, render timing | `@glimmer/validator`, `@glimmer/tracking`, `@ember/-internals/metal`, `@ember/reactive` |
 | [08 Ember integration](./08-ember-integration.md) | Built-in helpers/modifiers/components, loose-mode resolution, classic components, `Input`/`Textarea`/`LinkTo`, outlets/routing/engines, renderer & run loop, global-context hooks, trusted HTML, event dispatcher, debug render tree | `@ember/-internals/glimmer`, `@ember/helper`, `@ember/modifier`, `@ember/component`, `@ember/routing` |
+| [09 Conformance testing](./09-conformance-testing.md) | **Informative.** Profiles, the implementation adapter, coupling of the current test suite to implementation details, coverage gaps, and a work plan for the suite | ember.js test harnesses |
 
 ### Reading guide
 
@@ -123,6 +124,8 @@ primary scope (§0.1 "Non-goals").
   reactivity model. Then §05, which is organized by template construct. Consult §06 whenever
   §05 invokes a manager.
 - **For Ember-specific behavior:** read §08, which layers on top of §05–§07.
+- **To check an implementation:** read §09, which defines conformance profiles and plans how
+  to run ember.js's tests against another implementation.
 
 ## 0.4 Core vocabulary
 
@@ -176,6 +179,9 @@ throughout. How much each chapter was verified by running code varies:
 - **§01** is written from source. T9a ran the babel plugin and the runtime `template()` path
   against §01-1.11 items 1–3, the `hbs` conversions of §01-1.5.6 and the scope-capture rules of §01-1.4;
   each confirmed claim is marked "(verified: …)".
+
+§09 counts what is still only source-derived or verified by experiment, section by section
+(§09-9.6), and plans the tests that would close the gaps.
 
 Every file:line citation in every chapter was checked to exist and to be in range. In every
 chapter, each citation whose cited lines did not obviously contain the identifiers named in

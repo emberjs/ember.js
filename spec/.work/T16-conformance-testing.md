@@ -28,7 +28,7 @@ Output: `spec/09-conformance-testing.md`, plus survey data in `spec/.work/T16-*.
       sections with no test citation, plus every existing "untested"/"by experiment" marker.
 - [x] D. Write `spec/09-conformance-testing.md`: scope, test tiers, adapter interface, coupling
       catalogue with refactor actions, coverage gaps by reference, ordered work plan.
-- [ ] E. Wire it in: §00 chapter table/reading guide, CONVENTIONS chapter table, STATUS (task
+- [x] E. Wire it in: §00 chapter table/reading guide, CONVENTIONS chapter table, STATUS (task
       row, next steps), `xref.py` and `check-citations.py` clean.
 
 Notes from reading the surveys (for D):
