@@ -538,7 +538,7 @@ keyword" went in 5.3b).
       warning (6.1), SSR (no twin). Pure-registry parts of `@glimmer/manager/test/managers-test.ts`
       stay and go on the W5 list.
   - [x] 7.1a (done, code `a135f9b3b0`; 2 deleted, 25 kept, see notes) `{{#each}}`: `IT/lib/suites/each.ts` vs `EG/syntax/each-test.js`, `classic/each-test.js` (complementary: keep both, delete exact duplicates).
-  - [ ] 7.1b `{{in-element}}`: `IT/lib/suites/in-element.ts` vs `EG/syntax/public-in-element-test.js`.
+  - [x] 7.1b (done, code `9a486d218e`; 3 deleted, 7 kept) `{{in-element}}`: `IT/lib/suites/in-element.ts` vs `EG/syntax/public-in-element-test.js`.
   - [ ] 7.1c `fn`/`hash`/`array`/`get`/`concat`: `IT/test/helpers/*.ts` vs `EG/helpers/*.js`.
   - [ ] 7.1d `on`: `IT/test/modifiers/on-test.ts`, `keywords/on-runtime-test.ts` vs `EG/modifiers/on-test.js`.
   - [ ] 7.1e custom modifier manager: `IT/test/managers/modifier-manager-test.ts`, `modifiers-test.ts`, `updating-modifiers-test.ts` vs `EG/custom-modifier-manager-test.js`.
@@ -549,8 +549,8 @@ keyword" went in 5.3b).
   - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a done (worktree `a135f9b3b0`). Next: 7.1b (`{{in-element}}`). Last full run `full71a` (9106 / 9088 / 0 / 18) in the session
-  scratchpad is the baseline for the next per-test diff (`cmp3.py full71a.txt fullNEW.txt`; `post.sh` wraps the diff and the greps). Ledger rows go in the `7.1 rows` section.
+  Progress note (7.1): 7.1a-7.1b done (worktree `a135f9b3b0`, `9a486d218e`). Next: 7.1c (fn/hash/array/get/concat). Last full run `full71b` (9103 / 9085 / 0 / 18) in the session
+  scratchpad is the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
 
 ## 8. Exit check (Opus)
 
@@ -937,3 +937,7 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   vacuous (`assertHTML` re-takes the snapshot), so only `assertStableRerender` checks node stability; and swap #1-#12 return early unless `LOCAL_DEBUG`
   (VM_LOCAL_DEV), so in the shared build they assert nothing (VM list-update steps: implementation tests, W5). Full suite 9108 -> 9106 total / 9088 pass / 0 fail / 18
   skip (-2); per-test diff against `full63`: exactly the 2 ledgered tests missing, 0 new; greps 0; type-check, prettier and eslint (EG file) clean.
+- 7.1b (2026-10-08): code `9a486d218e`. IT `in-element.ts` (13, jit only) vs EG `public-in-element-test.js` (8). The IT copy is the stronger one (update/switch/loop/nesting/AST
+  transform cases) and stays in IT; 3 of its tests duplicate EG tests (ledger) and were deleted; nothing needed moving (the twins are supersets). The EG assertion tests
+  stay in EG. Full suite 9106 -> 9103 total / 9085 pass / 0 fail / 18 skip (-3); per-test diff against `full71a`: exactly the 3 ledgered tests missing, 0 new; greps 0;
+  type-check and prettier clean. The vite build prints one sourcemap warning for `runtime-template-compiler-implicit-test.ts`, already in `build63` (pre-existing).
