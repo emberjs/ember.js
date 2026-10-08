@@ -670,6 +670,69 @@ Reviewer note: this is a new test (class b, a ruling pin), not a changed expecta
 profile (`§09`) may want the same pin for the node delegates; `NodeJitRenderDelegate` is
 non-interactive now but nothing asserts it.
 
+Addendum (code `0121b60d62`): the node pin. `ServerSideSuite` (`node jit`) has `modifiers do not run in a
+server render` (`IT/lib/suites/ssr.ts`) and `SerializedDOMHelperTests` (`jit serialization`) has
+`modifiers do not run in a serialize render` (`IT/lib/suites/custom-dom-helper.ts`): each registers a
+modifier with `didInsertElement` and asserts it never ran. With `NodeJitRenderDelegate.isInteractive`
+temporarily `true` both fail (the modifier installs: `CustomModifierManager.install` in the stack); reverted,
+both pass. Two new tests in total (the totals below count them).
+
+### 9.3 triage
+
+Code `ee8adaecd4` (phase 1). `this.render(template, ctx)` in the jit, node, rehydration (server and client)
+delegates, and so also in the plain delegates (they extend these and only override `compileTemplate`), now
+goes through `renderLooseTemplate` (`IT/lib/modes/loose-template.ts`): a fresh definition object per call with
+`setComponentManager` (`capabilities('3.13')`, `createComponent` and `getContext` return the test context),
+`setComponentTemplate(() => template, definition)`, and public `renderComponent`. `template-root.ts` and the
+delegates' `getSelf` are deleted; no internal root remains anywhere. Only reach-in left: `bounds()` (for
+`RenderDelegate.debugBounds`) reads `.result` of the new root from `renderer.state.roots`, because the public
+`renderComponent` result has only `destroy()`.
+
+Run `full93`: 9017 total / 8941 pass / 58 fail / 18 skip. Against `full94` (9015 / 8997 / 0 / 18, plus the 2 node
+pins = 9017 / 8999): 0 missing and 2 new by name (the 2 pins; 36 date-named `{{if}}` tests rename on every run and
+are not changes), exactly 58 pass -> fail, nothing else changed (8999 - 58 = 8941). No hits for
+`Expected assert.verifySteps`, `Expected N assertions`, `afterEach failed`, `NAMESPACES`, `already been resolved`.
+Class counts: (a) 0, (b) 58, (c) 0 on their own (a few of the 58 are also on the W5 list, noted), (d) 0.
+
+Two causes, both inherent to a component root and not harness plumbing. Everything not listed below passes: top-level
+`{{yield}}`, `has-block`, `...attributes` and `{{@arg}}` tests are unchanged (no test uses them at the top level).
+
+Cause 1, one more block in serialized output. A component invocation opens a block pair in the serialize builder, so
+the wrapper component adds a pair around the whole template: `<!--%+b:0%-->...<!--%-b:0%-->` becomes
+`<!--%+b:0%--><!--%+b:1%-->...<!--%-b:1%--><!--%-b:0%-->`, and every inner id, and every offset into the server DOM
+(`childNodes[2]`), moves by one. Real Ember: the same. A top-level template is itself a component's layout (the
+`-top-level`/outlet component), and the 5.1 design predicted the extra root. Proposal for all rows of this cause:
+(b), shift each hard-coded id by one (`b(1)` -> `b(2)`, and so on) and the offset 2 -> 3, or better, wrap the
+expectation in a helper `withRoot(...)` so the next change of the root does not touch 40 tests. The rehydrated
+(client) result is not checked by these tests before they stop at the server assertion; Opus should expect the client
+half to need no change (the extra block is consumed by the same rehydration), and phase 2 of the rewrite will say.
+
+| # | Tests | Failure | Class and proposal |
+|---|---|---|---|
+| 1-5 | `jit serialization :: Server-side rendering in Node.js (serialize)`: `The compiler can handle unescaped HTML`, `Unescaped helpers render correctly`, `Null literals do not have representation in DOM`, `Elements inside a yielded block`, `A simple block helper can return text` | `assertHTML` mismatch: expected `+b:0 ... -b:0`, got an extra `+b:1 ... -b:1` around the content and inner ids shifted | (b), cause 1. Shift ids by one. |
+| 6-37 | `rehydration :: rehydration:` (30 tests): `#each rehydration`, `Node curlies`, `clearing bounds`, `top-level clearing bounds`, `does not mutate attributes that already match`, `extra nodes at the end`, `in-element can rehydrate`, `in-element with insertBefore=null can rehydrate`, `nested in-element can rehydrate`, `mismatched elements`, `mismatched text nodes`, `mismatched text nodes (server-render empty)`, `missing attributes`, `missing closing block within multiple text nodes`, `rehydrates into element with pre-existing content`, `remove extra attributes`, `resumes correct block after reenabling rehydration`, `script tag`, `style tag`, `svg elements`, `table with omitted tbody`, `table with tfoot`, `table with thead`, `text nodes surrounding "stand alone" handlebars comment`, `text nodes surrounding multi line handlebars comments`, `text nodes surrounding single line handlebars comments`, `title tag`, `updates attribute to current value`, `{{component}} invocation: component invocations`, `{{component}} invocation: interacting with builtins`, plus `chaos-rehydration: adjacent text nodes`, `chaos-rehydration: <p> invoking a block which emits a <div>` (2) | `assertExactServerOutput`/`assertServerOutput`: the same one-block shift (ids in the in-element tests `3` -> expected `2`) | (b), cause 1. Same shift. The in-element ones are also affected only by the shift (the `in-element` block id is the next id after the root's). |
+| 38 | `rehydration (plain Glimmer compile) :: #in-element rehydration (VM): in-element with insertBefore=element can rehydrate` | `<!--%+b:3%--><inner>...` vs expected `b:2` | (b) for the id (shift by one), and the test stays (c) on the W5 list (VM in-element with a node `insertBefore`, plain compile). The plain delegates did not need their own root: they inherit `renderLooseTemplate`. |
+| 39-51 | `rehydration :: Components :: initial render > Glimmer:` `Component invocations`, `... with block params`, `... with empty args`, `... with template`, `Mismatched Component invocations` (+ `with block params`, `with template`), `Multiple invocations`, `Mismatched Multiple invocations`, `interacting with builtins`, `mismatched interacting with builtins`, `mismatched blocks interacting with builtins`, `<p> invoking a block which emits a <div>` | `Died on test #3: Expected element, got Comment` in `RehydratingComponents.assertServerComponent`, which reads `this.element.childNodes[2]` and passes `id = 2` | (b), cause 1. Offset 2 -> 3 and `id` 2 -> 3 in the helper (`initial-render-test.ts:1050`, and the `let id = 2` at each call site). A one-line helper change plus the id variables. |
+
+Cause 2, one more node in the debug render tree. The wrapper component is a root `component` node. Its name is
+`{ROOT}` (the debug name of a definition object that has no name; Ember names a class component after its class or
+`fullName`), so the tree has one node at the root where the old root rendered the template's nodes directly. Real
+Ember: a real top-level component appears as one root node with the invoked components as its children (the EG twin
+`application/debug-render-tree-test.ts` renders through an app and has the route/outlet nodes above its content).
+Proposal: (b) rewrite the 7 tests so the expected tree is `{ name: '{ROOT}', type: 'component', instance, template: ..., children: [<old tree>] }`, or give the definition a name and have the harness expose a
+`debugRoot` constant so the 7 tests wrap their expected nodes in it. Opus to pick; the second keeps the tests' intent
+and is what a real app does (everything is under the app's top-level node).
+
+| # | Tests (all `[integration] jit :: Application test: debug render tree:`) | Failure | Class and proposal |
+|---|---|---|---|
+| 52-58 | `template-only components`, `glimmerish components`, `glimmerish components with an argument that throws`, `in-element in tree`, `getDebugCustomRenderTree works`, `empty getDebugCustomRenderTree works` (6), `modifiers` (1: `Expecting 4 render nodes at root, got 1`) | `Matching component:{ROOT} (name)`: actual `{ROOT}`, expected `hello-world`/`hello-world2`; `modifiers`: 1 root node instead of 4 | (b), cause 2. Wrap the expected trees in the root node, or filter the harness root out of the captured tree in the test helper. The two `getDebugCustomRenderTree` tests are also on the W5 list (internal manager API), so (c) as well. |
+
+Counting: 5 + 32 (30 + 2 chaos) + 1 + 13 + 7 = 58. The per-test list is `diff93.txt` in the session scratchpad;
+the tables above are grouped.
+
+Where an internal root remains: nowhere. `lib/modes/plain/` uses the same `renderLooseTemplate` through
+inheritance. Not changed by 9.3 and still internal reach-ins: `renderer.state.roots` in `loose-template.ts` (bounds only).
+
 ### W5 classification list
 
 Files W2 leaves as implementation tests (not conformance): W5 moves them out of the conformance suite
@@ -733,7 +796,7 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
       engine). Both IT tests deleted, ledger rows 9.2 (they replace the 2.3 `kept` rows).
       §06-2.2 citation updated. Full run: 9014 / 8996 / 0 / 18, diff against `full8b`: exactly
       the 2 IT tests missing and the 2 EG tests new; no verifySteps/afterEach/NAMESPACES hits.
-- [ ] 9.3 Code, top-level `this` (Q7): replace the internal `TemplateRootState`
+- [x] 9.3 (phase 1 done, code `ee8adaecd4`; 58 known failures, see "9.3 triage"; reviewer decides) Code, top-level `this` (Q7): replace the internal `TemplateRootState`
       (`lib/modes/template-root.ts`) with `renderComponent` + a custom component manager
       (`setComponentManager`, `componentCapabilities('3.13')`, `createComponent` returns the
       test context, `getContext` returns it) so `this.render(template, ctx)` keeps working
