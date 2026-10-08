@@ -5,6 +5,7 @@ import NoneLocation from '@ember/routing/none-location';
 
 import ApplicationTestCase from './application';
 import { runLoopSettled } from '../run';
+import { INTERNAL_EXTEND } from '@ember/-internals/utils/lib/internal-classic-class';
 
 export default abstract class QueryParamTestCase extends ApplicationTestCase {
   expectedPushURL: unknown;
@@ -99,7 +100,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
   setSingleQPController(routeName: string, param = 'foo', defaultValue = 'bar', options = {}) {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
+      Controller[INTERNAL_EXTEND](
         {
           queryParams: [param],
           [param]: defaultValue,
@@ -124,7 +125,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
   ) {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
+      Controller[INTERNAL_EXTEND](
         {
           queryParams: {
             [prop]: urlKey,

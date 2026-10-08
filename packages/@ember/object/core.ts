@@ -20,6 +20,12 @@ import { INTERNAL_MIXIN_CREATE } from '@ember/-internals/utils/lib/internal-mixi
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
+import { deprecateUntil, DEPRECATIONS } from '@ember/-internals/deprecations';
+import {
+  INTERNAL_EXTEND,
+  INTERNAL_REOPEN,
+  INTERNAL_REOPEN_CLASS,
+} from '@ember/-internals/utils/lib/internal-classic-class';
 import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
@@ -312,6 +318,10 @@ class CoreObject {
   }
 
   reopen(...args: Array<Mixin | Record<string, unknown>>): this {
+    deprecateUntil(
+      '`reopen` is part of the classic class system, which is deprecated. Define the properties and methods on a native class instead.',
+      DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES
+    );
     applyMixin(this, args);
     return this;
   }
@@ -714,6 +724,19 @@ class CoreObject {
     ...mixins: M
   ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
   static extend(...mixins: any[]) {
+    deprecateUntil(
+      '`.extend()` creates a classic class, which is deprecated. Use native class syntax (`class Foo extends Bar {}`) instead.',
+      DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES
+    );
+    return this[INTERNAL_EXTEND](...mixins);
+  }
+
+  /** @internal */
+  static [INTERNAL_EXTEND]<Statics, Instance, M extends Array<unknown>>(
+    this: Statics & EmberClassConstructor<Instance>,
+    ...mixins: M
+  ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
+  static [INTERNAL_EXTEND](...mixins: any[]) {
     let Class = class extends this {};
     reopen.apply(Class.PrototypeMixin, mixins);
     return Class;
@@ -839,6 +862,15 @@ class CoreObject {
     @public
   */
   static reopen<C extends typeof CoreObject>(this: C, ...args: any[]): C {
+    deprecateUntil(
+      '`reopen` is part of the classic class system, which is deprecated. Define the properties and methods on a native class instead.',
+      DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES
+    );
+    return this[INTERNAL_REOPEN](...args);
+  }
+
+  /** @internal */
+  static [INTERNAL_REOPEN]<C extends typeof CoreObject>(this: C, ...args: any[]): C {
     this.willReopen();
     reopen.apply(this.PrototypeMixin, args);
     return this;
@@ -920,6 +952,18 @@ class CoreObject {
     @public
   */
   static reopenClass<C extends typeof CoreObject>(
+    this: C,
+    ...mixins: Array<Mixin | Record<string, unknown>>
+  ): C {
+    deprecateUntil(
+      '`reopenClass` is part of the classic class system, which is deprecated. Define static properties and methods on a native class instead.',
+      DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES
+    );
+    return this[INTERNAL_REOPEN_CLASS](...mixins);
+  }
+
+  /** @internal */
+  static [INTERNAL_REOPEN_CLASS]<C extends typeof CoreObject>(
     this: C,
     ...mixins: Array<Mixin | Record<string, unknown>>
   ): C {

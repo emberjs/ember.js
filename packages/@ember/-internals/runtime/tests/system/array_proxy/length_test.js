@@ -9,6 +9,7 @@ import {
   runLoopSettled,
   expectDeprecation,
   testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 import { set, get } from '@ember/object';
 import { createCache, getValue } from '@glimmer/validator';
@@ -183,9 +184,11 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
-    async [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved)} @test array proxy + aliasedProperty complex test`](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test array proxy + aliasedProperty complex test`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let aCalled, bCalled, cCalled, dCalled, eCalled;
 
       aCalled = bCalled = cCalled = dCalled = eCalled = 0;

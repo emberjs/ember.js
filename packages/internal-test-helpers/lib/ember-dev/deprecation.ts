@@ -8,6 +8,7 @@ type ExtendedWindow = Window &
     expectNoDeprecation: DeprecationAssert['expectNoDeprecation'] | undefined;
     expectNoDeprecationAsync: DeprecationAssert['expectNoDeprecationAsync'] | undefined;
     expectDeprecation: DeprecationAssert['expectDeprecation'] | undefined;
+    expectDeprecationQuietly: DeprecationAssert['expectDeprecationQuietly'] | undefined;
     expectDeprecationAsync: DeprecationAssert['expectDeprecationAsync'] | undefined;
     ignoreDeprecation: DeprecationAssert['ignoreDeprecation'] | undefined;
   };
@@ -29,6 +30,12 @@ export function setupDeprecationHelpers(hooks: NestedHooks, env: DebugEnv): void
 export let expectDeprecation: DeprecationAssert['expectDeprecation'] = () => {
   throw new Error(
     'DeprecationAssert: To use `expectDeprecation` in a test you must call `setupDeprecationHelpers` first'
+  );
+};
+
+export let expectDeprecationQuietly: DeprecationAssert['expectDeprecationQuietly'] = () => {
+  throw new Error(
+    'DeprecationAssert: To use `expectDeprecationQuietly` in a test you must call `setupDeprecationHelpers` first'
   );
 };
 
@@ -67,6 +74,8 @@ class DeprecationAssert extends DebugAssert {
     w.expectNoDeprecationAsync = expectNoDeprecationAsync =
       this.expectNoDeprecationAsync.bind(this);
     w.expectDeprecation = expectDeprecation = this.expectDeprecation.bind(this);
+    w.expectDeprecationQuietly = expectDeprecationQuietly =
+      this.expectDeprecationQuietly.bind(this);
     w.expectDeprecationAsync = expectDeprecationAsync = this.expectDeprecationAsync.bind(this);
     w.ignoreDeprecation = ignoreDeprecation = this.ignoreDeprecation.bind(this);
     super.inject();
@@ -78,6 +87,7 @@ class DeprecationAssert extends DebugAssert {
     w.expectNoDeprecation = undefined;
     w.expectNoDeprecationAsync = undefined;
     w.expectDeprecation = undefined;
+    w.expectDeprecationQuietly = undefined;
     w.expectDeprecationAsync = undefined;
     w.ignoreDeprecation = undefined;
   }
@@ -179,6 +189,23 @@ class DeprecationAssert extends DebugAssert {
     } else {
       this.expectNoDeprecation(func);
     }
+  }
+
+  // Expects a deprecation from the time of calling until the end of the test.
+  //
+  // Unlike `expectDeprecation`, a match adds no assertion. Use it for a
+  // deprecation that is not enabled in each test run, so that `assert.expect`
+  // counts stay the same in each run.
+  private expectDeprecationQuietly(message: Message): void {
+    this.runExpectation(undefined, (tracker) => {
+      if (tracker.isExpectingNoCalls()) {
+        throw new Error(
+          'expectDeprecationQuietly was called after expectNoDeprecation was called!'
+        );
+      }
+
+      tracker.expectCall(message, ['id', 'until'], true);
+    });
   }
 
   private async expectDeprecationAsync(func: () => Promise<void>, message?: Message): Promise<void>;

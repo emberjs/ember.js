@@ -54,17 +54,21 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_MIXINS.isRemoved
-    )} @test extending EmberObject does not deprecate`](assert) {
+      DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved
+    )} @test extending EmberObject does not give the mixin deprecation`](assert) {
       // EmberObject builds a PrototypeMixin internally for every subclass, so
       // extending must not warn apps that never author a mixin themselves.
       let Subclass;
 
-      expectNoDeprecation(() => {
-        Subclass = EmberObject.extend({
-          foo: 'FOO',
-        });
-      });
+      expectDeprecation(
+        () => {
+          Subclass = EmberObject.extend({
+            foo: 'FOO',
+          });
+        },
+        /classic class/,
+        DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isEnabled
+      );
 
       let obj = Subclass.create();
       assert.equal(obj.foo, 'FOO', 'the subclass works');
@@ -72,15 +76,19 @@ moduleFor(
     }
 
     [`${testUnless(
-      DEPRECATIONS.DEPRECATE_MIXINS.isRemoved
-    )} @test reopening an EmberObject subclass does not deprecate`](assert) {
-      let Subclass = EmberObject.extend();
+      DEPRECATIONS.DEPRECATE_MIXINS.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved
+    )} @test reopening an EmberObject subclass does not give the mixin deprecation`](assert) {
+      let Subclass = class extends EmberObject {};
 
-      expectNoDeprecation(() => {
-        Subclass.reopen({
-          foo: 'FOO',
-        });
-      });
+      expectDeprecation(
+        () => {
+          Subclass.reopen({
+            foo: 'FOO',
+          });
+        },
+        /classic class/,
+        DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isEnabled
+      );
 
       let obj = Subclass.create();
       assert.equal(obj.foo, 'FOO', 'the reopened property is present');

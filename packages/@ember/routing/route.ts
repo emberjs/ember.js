@@ -48,6 +48,10 @@ import {
   queryParamType,
   stashParamNames,
 } from './lib/utils';
+import {
+  INTERNAL_EXTEND,
+  INTERNAL_REOPEN,
+} from '@ember/-internals/utils/lib/internal-classic-class';
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<ModelFor<R>> {
   _names?: unknown[];
@@ -281,7 +285,7 @@ interface Route<Model = unknown> extends ActionHandler {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
+class Route<Model = unknown> extends EmberObject[INTERNAL_EXTEND](ActionHandler) {
   static {
     // The deprecated Evented mixin is no longer applied, but instances still
     // provide its methods, so `Evented.detect` must keep returning true.
@@ -1982,7 +1986,7 @@ export function hasDefaultSerialize(route: Route): boolean {
 }
 
 // Set these here so they can be overridden with extend
-Route.reopen({
+Route[INTERNAL_REOPEN]({
   mergedProperties: ['queryParams'],
   queryParams: {},
   templateName: null,

@@ -115,9 +115,9 @@ moduleFor(
     ) {
       assert.expect(1);
 
-      let parentController = Controller.extend({
-        queryParams: { page: 'page' },
-      });
+      let parentController = class extends Controller {
+        queryParams = [{ page: 'page' }];
+      };
       this.add('controller:parent', parentController);
       this.add(
         'route:parent.child',
@@ -149,19 +149,21 @@ moduleFor(
     async ['@test Support shared but overridable query param defaults'](assert) {
       assert.expect(7);
 
-      let hasPage = {
-        queryParams: 'page',
-        page: 1,
-      };
-
       this.add(
         'controller:parent',
-        Controller.extend(hasPage, {
-          queryParams: { page: 'yespage' },
-        })
+        class extends Controller {
+          queryParams = ['page', { page: 'yespage' }];
+          page = 1;
+        }
       );
 
-      this.add('controller:parent.child', Controller.extend(hasPage));
+      this.add(
+        'controller:parent.child',
+        class extends Controller {
+          queryParams = ['page'];
+          page = 1;
+        }
+      );
 
       await this.setupBase();
       this.assertCurrentPath('/parent/child');

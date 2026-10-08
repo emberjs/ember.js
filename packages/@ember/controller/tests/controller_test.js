@@ -11,6 +11,7 @@ import {
   AbstractTestCase,
   runTask,
   testUnless,
+  expectClassicClassDeprecation,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { action } from '@ember/object';
@@ -87,9 +88,11 @@ moduleFor(
 moduleFor(
   'Controller event handling',
   class extends AbstractTestCase {
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test Action can be handled by a function on actions object`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Action can be handled by a function on actions object`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(2);
 
       expectDeprecation(
@@ -108,9 +111,11 @@ moduleFor(
       controller.send('poke');
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test A handled action can be bubbled to the target for continued processing`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test A handled action can be bubbled to the target for continued processing`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(3);
 
       expectDeprecation(
@@ -148,9 +153,11 @@ moduleFor(
       runDestroy(owner);
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved
-    )} @test Action can be handled by a superclass' actions object`](assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TARGET_ACTION_SUPPORT.isRemoved || DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test Action can be handled by a superclass' actions object`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       assert.expect(5);
 
       expectDeprecation(

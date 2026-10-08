@@ -1,9 +1,16 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
 import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
 import { peekMeta } from '@ember/-internals/meta';
 import EmberObject, { get, set, observer } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 
 moduleFor(
   '@ember/-internals/runtime/system/object/destroy_test',
@@ -27,9 +34,11 @@ moduleFor(
     // MANDATORY_SETTER moves value to meta.values
     // a destroyed object removes meta but leaves the accessor
     // that looks it up
-    ['@test should raise an exception when modifying watched properties on a destroyed object'](
+    [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test should raise an exception when modifying watched properties on a destroyed object`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       if (DEBUG) {
         let obj = EmberObject.extend({
           fooDidChange: observer('foo', function () {}),
@@ -45,7 +54,11 @@ moduleFor(
       }
     }
 
-    async ['@test observers should not fire after an object has been destroyed'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test observers should not fire after an object has been destroyed`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let count = 0;
       let obj = EmberObject.extend({
         fooDidChange: observer('foo', function () {
@@ -67,9 +80,11 @@ moduleFor(
       assert.equal(count, 1, 'observer was not called after object was destroyed');
     }
 
-    async ['@test destroyed objects should not see each others changes during teardown but a long lived object should'](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test destroyed objects should not see each others changes during teardown but a long lived object should`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let shouldChange = 0;
       let shouldNotChange = 0;
 

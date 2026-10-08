@@ -7,6 +7,7 @@ import Resolver from '../test-resolver';
 import { assert as emberAssert } from '@ember/debug';
 import type Controller from '@ember/controller';
 import type ApplicationInstance from '@ember/application/instance';
+import { INTERNAL_EXTEND } from '@ember/-internals/utils/lib/internal-classic-class';
 
 export default abstract class ApplicationTestCase extends TestResolverApplicationTestCase {
   application: Application;
@@ -24,7 +25,7 @@ export default abstract class ApplicationTestCase extends TestResolverApplicatio
     emberAssert('expected a resolver', resolver instanceof Resolver);
     this.resolver = resolver;
 
-    resolver.add('router:main', Router.extend(this.routerOptions));
+    resolver.add('router:main', Router[INTERNAL_EXTEND](this.routerOptions));
   }
 
   createApplication(myOptions = {}, MyApplication = Application) {

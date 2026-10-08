@@ -1,70 +1,75 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { getOwner } from '@ember/-internals/owner';
 import { Container, Registry } from '@ember/-internals/container';
 import ContainerProxy from '../../lib/mixins/container_proxy';
 import EmberObject from '@ember/object';
 import { run, schedule } from '@ember/runloop';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectClassicClassDeprecation } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
-moduleFor(
-  '@ember/-internals/runtime/mixins/container_proxy',
-  class extends AbstractTestCase {
-    beforeEach() {
-      this.Owner = EmberObject.extend(ContainerProxy);
-      this.instance = this.Owner.create();
+if (!DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved) {
+  moduleFor(
+    '@ember/-internals/runtime/mixins/container_proxy',
+    class extends AbstractTestCase {
+      beforeEach() {
+        expectClassicClassDeprecation();
 
-      this.registry = new Registry();
+        this.Owner = EmberObject.extend(ContainerProxy);
+        this.instance = this.Owner.create();
 
-      this.instance.__container__ = new Container(this.registry, {
-        owner: this.instance,
-      });
-    }
+        this.registry = new Registry();
 
-    ['@test provides ownerInjection helper method'](assert) {
-      let result = this.instance.ownerInjection();
+        this.instance.__container__ = new Container(this.registry, {
+          owner: this.instance,
+        });
+      }
 
-      assert.equal(getOwner(result), this.instance, 'returns an object with an associated owner');
-    }
+      ['@test provides ownerInjection helper method'](assert) {
+        let result = this.instance.ownerInjection();
 
-    ['@test actions queue completes before destruction'](assert) {
-      assert.expect(1);
+        assert.equal(getOwner(result), this.instance, 'returns an object with an associated owner');
+      }
 
-      this.registry.register(
-        'service:auth',
-        class extends EmberObject {
-          willDestroy() {
-            assert.ok(getOwner(this).lookup('service:auth'), 'can still lookup');
+      ['@test actions queue completes before destruction'](assert) {
+        assert.expect(1);
+
+        this.registry.register(
+          'service:auth',
+          class extends EmberObject {
+            willDestroy() {
+              assert.ok(getOwner(this).lookup('service:auth'), 'can still lookup');
+            }
           }
-        }
-      );
+        );
 
-      let service = this.instance.lookup('service:auth');
+        let service = this.instance.lookup('service:auth');
 
-      run(() => {
-        schedule('actions', service, 'destroy');
-        this.instance.destroy();
-      });
-    }
+        run(() => {
+          schedule('actions', service, 'destroy');
+          this.instance.destroy();
+        });
+      }
 
-    '@test being destroyed by @ember/destroyable properly destroys the container and created instances'(
-      assert
-    ) {
-      assert.expect(1);
+      '@test being destroyed by @ember/destroyable properly destroys the container and created instances'(
+        assert
+      ) {
+        assert.expect(1);
 
-      this.registry.register(
-        'service:foo',
-        class FooService extends EmberObject {
-          willDestroy() {
-            assert.ok(true, 'is properly destroyed');
+        this.registry.register(
+          'service:foo',
+          class FooService extends EmberObject {
+            willDestroy() {
+              assert.ok(true, 'is properly destroyed');
+            }
           }
-        }
-      );
+        );
 
-      this.instance.lookup('service:foo');
+        this.instance.lookup('service:foo');
 
-      run(() => {
-        destroy(this.instance);
-      });
+        run(() => {
+          destroy(this.instance);
+        });
+      }
     }
-  }
-);
+  );
+}

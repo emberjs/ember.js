@@ -1,12 +1,23 @@
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { run } from '@ember/runloop';
 import { alias } from '@ember/-internals/metal';
 import EmberObject, { get, set, observer } from '@ember/object';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  runLoopSettled,
+  testUnless,
+  expectClassicClassDeprecation,
+} from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject observer',
   class extends AbstractTestCase {
-    async ['@test observer on class'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test observer on class`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         count: 0,
 
@@ -26,7 +37,11 @@ moduleFor(
       obj.destroy();
     }
 
-    async ['@test setting `undefined` value on observed property behaves correctly'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test setting \`undefined\` value on observed property behaves correctly`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         mood: 'good',
         foo: observer('mood', function () {}),
@@ -53,7 +68,11 @@ moduleFor(
       obj.destroy();
     }
 
-    async ['@test observer on subclass'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test observer on subclass`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         count: 0,
 
@@ -84,7 +103,11 @@ moduleFor(
       obj.destroy();
     }
 
-    async ['@test observer on instance'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test observer on instance`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let obj = EmberObject.extend({
         foo: observer('bar', function () {
           set(this, 'count', get(this, 'count') + 1);
@@ -104,7 +127,11 @@ moduleFor(
       await runLoopSettled();
     }
 
-    async ['@test observer on instance overriding class'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test observer on instance overriding class`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         count: 0,
 
@@ -135,7 +162,11 @@ moduleFor(
       obj.destroy();
     }
 
-    async ['@test observer should not fire after being destroyed'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test observer should not fire after being destroyed`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let obj = EmberObject.extend({
         count: 0,
         foo: observer('bar', function () {
@@ -160,7 +191,11 @@ moduleFor(
     // COMPLEX PROPERTIES
     //
 
-    async ['@test chain observer on class'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test chain observer on class`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         count: 0,
 
@@ -196,7 +231,11 @@ moduleFor(
       obj2.destroy();
     }
 
-    async ['@test clobbering a chain observer on subclass'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test clobbering a chain observer on subclass`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let MyClass = EmberObject.extend({
         count: 0,
 
@@ -243,9 +282,11 @@ moduleFor(
       obj2.destroy();
     }
 
-    async ['@test chain observer on class that has a reference to an uninitialized object will finish chains that reference it'](
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test chain observer on class that has a reference to an uninitialized object will finish chains that reference it`](
       assert
     ) {
+      expectClassicClassDeprecation();
+
       let changed = false;
 
       let ChildClass = EmberObject.extend({
@@ -284,7 +325,11 @@ moduleFor(
       parent.destroy();
     }
 
-    async ['@test cannot re-enter observer while it is flushing'](assert) {
+    async [`${testUnless(DEPRECATIONS.DEPRECATE_CLASSIC_CLASSES.isRemoved)} @test cannot re-enter observer while it is flushing`](
+      assert
+    ) {
+      expectClassicClassDeprecation();
+
       let changed = false;
 
       let Class = EmberObject.extend({
