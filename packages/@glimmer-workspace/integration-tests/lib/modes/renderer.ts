@@ -27,6 +27,9 @@ export function boundsOf(handle: RenderHandle): DebugBounds {
  * An Ember renderer for one owner and document, registered as the renderer that the
  * public `renderComponent` uses for that owner.
  *
+ * `isInteractive` is false for a server render (Ember's FastBoot renders non-interactive, so
+ * modifiers do not run and event listeners are not installed; spec 05-runtime-semantics 13).
+ *
  * Ember's environment delegate reads `ENV._DEBUG_RENDER_TREE` when it is constructed,
  * so the option is set around the constructor.
  */
@@ -35,7 +38,8 @@ export function createRenderer(
   doc: SimpleDocument,
   resolver: ResolverImpl,
   builder: IBuilder,
-  debugRenderTree: boolean
+  debugRenderTree: boolean,
+  isInteractive = true
 ): BaseRenderer {
   let previous = ENV._DEBUG_RENDER_TREE;
   ENV._DEBUG_RENDER_TREE = debugRenderTree;
@@ -43,13 +47,7 @@ export function createRenderer(
   let renderer: BaseRenderer;
 
   try {
-    renderer = new BaseRenderer(
-      owner,
-      { isInteractive: true, hasDOM: true },
-      doc,
-      resolver,
-      builder
-    );
+    renderer = new BaseRenderer(owner, { isInteractive, hasDOM: true }, doc, resolver, builder);
   } finally {
     ENV._DEBUG_RENDER_TREE = previous;
   }

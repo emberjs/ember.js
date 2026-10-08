@@ -63,6 +63,11 @@ export class JitRenderDelegate implements RenderDelegate {
     this.debugRenderTree = debugRenderTree;
   }
 
+  /** Whether the renderer is interactive (modifiers run). Server delegates turn it off. */
+  protected get isInteractive(): boolean {
+    return true;
+  }
+
   /** One Ember renderer per delegate, created on first use. */
   protected get renderer(): BaseRenderer {
     if (this._renderer === null) {
@@ -71,7 +76,8 @@ export class JitRenderDelegate implements RenderDelegate {
         this.doc,
         this.resolver,
         (env, cursor) => this.getElementBuilder(env, cursor),
-        this.debugRenderTree
+        this.debugRenderTree,
+        this.isInteractive
       );
     }
 

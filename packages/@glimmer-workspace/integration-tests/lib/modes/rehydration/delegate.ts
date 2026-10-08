@@ -101,7 +101,8 @@ export class RehydrationDelegate implements RenderDelegate {
       this.serverDoc,
       new ResolverImpl(),
       serializeBuilder,
-      debugRenderTree
+      debugRenderTree,
+      false
     );
   }
 

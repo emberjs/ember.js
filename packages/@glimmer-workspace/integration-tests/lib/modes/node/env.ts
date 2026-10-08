@@ -29,6 +29,11 @@ export class NodeJitRenderDelegate extends JitRenderDelegate {
     options.doc = options.doc || createHTMLDocument();
     super(options);
   }
+
+  /** A server render: non-interactive, as Ember's FastBoot (spec 05-runtime-semantics 13). */
+  protected override get isInteractive(): boolean {
+    return false;
+  }
 }
 
 export class JitSerializationDelegate extends NodeJitRenderDelegate {

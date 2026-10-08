@@ -78,6 +78,31 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 class Rehydration extends AbstractRehydrationTests {
   static override suiteName = 'rehydration';
 
+  // The server render is non-interactive, as Ember's FastBoot (spec 05-runtime-semantics 13):
+  // modifiers do not run on the server; the client render is interactive and installs them.
+  @test
+  'modifiers do not run in the server render but run in the client render'() {
+    let installs: string[] = [];
+
+    this.delegate.registerModifier(
+      'probe',
+      class {
+        element?: SimpleElement;
+        didInsertElement() {
+          installs.push('install');
+        }
+      }
+    );
+
+    let template = '<div {{probe}}>Hi!</div>';
+    this.renderServerSide(template, {});
+    this.assert.deepEqual(installs, [], 'no modifier ran in the server render');
+
+    this.renderClientSide(template, {});
+    this.assert.deepEqual(installs, ['install'], 'the modifier ran in the client render');
+    this.assertHTML('<div>Hi!</div>');
+  }
+
   @test
   'rehydrates into element with pre-existing content'() {
     let rootElement = this.delegate.serverDoc.createElement('div');
