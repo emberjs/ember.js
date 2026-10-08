@@ -120,6 +120,9 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 - [ ] 6.1 `style-warnings-test.ts` → Ember harness with `expectWarning`.
 - [ ] 6.2 `PositionalComponent` users → real classic components with `positionalParams`; delete
       `tests/utils/positional-component.js`.
+      Then re-check every ledger row whose twin runs on `PositionalComponent` (grep the ledger
+      for the twin files; e.g. `curly-components-test.js:861`): the twin must now be a real
+      classic Component.
 - [ ] 6.3 `@glimmer/reference/test/iterable-test.ts` → Ember's `toIterator`; mark
       `references-test`/`validators-test` as implementation tests (W1/W5), not conformance.
 
@@ -136,6 +139,20 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 - [ ] 8.3 Coverage diff: the ledger accounts for every removed test; whole suite green;
       counts compared with the baseline.
 - [ ] 8.4 Update §09 (C1, C2, C6, C18 rows; §9.7 W2 state) and STATUS.
+
+## Findings for the author
+
+Behavior questions W2 turns up. Carry each into the owning chapter's open questions at 8.4.
+
+1. (2.3) A component curried in the application (`(component "x")` passed via `{{mount}}`'s
+   `model`) and rendered inside the engine is created with the **engine** as owner in real
+   Ember. The Glimmer harness's `owner-test.ts` ("owner is preserved in curried closure
+   components", and the non-curried variant, which has a TODO) expects the defining owner. No
+   Ember test pins either. Owner: §06-12 / §08 (owner threading).
+2. (2.4) `attributeBindings = ['class']` is an assertion in real Ember
+   (`EG/components/attribute-bindings-test.js:872`) but worked on the fake classic component
+   ("Setting class attributeBinding does not clobber ember-view"); fake-only behavior, no
+   spec change, noted so step 4 does not port it.
 
 ## Notes
 
