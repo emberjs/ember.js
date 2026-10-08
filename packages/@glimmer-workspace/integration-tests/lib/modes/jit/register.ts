@@ -1,19 +1,8 @@
 import GlimmerComponent from '@glimmer/component';
-import type {
-  Helper as GlimmerHelper,
-  InternalModifierManager,
-  Nullable,
-  ResolutionTimeConstants,
-  TemplateFactory,
-} from '@glimmer/interfaces';
+import type { Nullable, ResolutionTimeConstants, TemplateFactory } from '@glimmer/interfaces';
 import type { CurriedValue } from '@glimmer/runtime';
 import { CURRIED_COMPONENT } from '@glimmer/constants';
-import {
-  getInternalComponentManager,
-  setComponentTemplate,
-  setInternalHelperManager,
-  setInternalModifierManager,
-} from '@glimmer/manager';
+import { getInternalComponentManager, setComponentTemplate } from '@glimmer/manager';
 import { curry, templateOnlyComponent } from '@glimmer/runtime';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
@@ -71,26 +60,6 @@ export function registerGlimmerishComponent(
 
 export function registerHelper(registry: TestJitRegistry, name: string, helper: UserHelper) {
   registry.register('helper', name, defineUserHelper(helper));
-}
-
-export function registerInternalHelper(
-  registry: TestJitRegistry,
-  name: string,
-  helper: GlimmerHelper
-) {
-  let state = {};
-  setInternalHelperManager(helper, state);
-  registry.register('helper', name, state);
-}
-
-export function registerInternalModifier(
-  registry: TestJitRegistry,
-  name: string,
-  manager: InternalModifierManager,
-  state: object
-) {
-  setInternalModifierManager(manager, state);
-  registry.register('modifier', name, state);
 }
 
 export function registerModifier(

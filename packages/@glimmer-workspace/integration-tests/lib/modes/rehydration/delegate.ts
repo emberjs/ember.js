@@ -4,7 +4,6 @@ import type {
   ElementNamespace,
   Environment,
   EvaluationContext,
-  Helper,
   Nullable,
   RenderResult,
   SimpleDocument,
@@ -32,12 +31,7 @@ import type { DebugRehydrateTree } from './builder';
 import { BaseEnv } from '../../base-env';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
 import { JitDelegateContext } from '../jit/delegate';
-import {
-  registerComponent,
-  registerHelper,
-  registerInternalHelper,
-  registerModifier,
-} from '../jit/register';
+import { registerComponent, registerHelper, registerModifier } from '../jit/register';
 import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
 import { TestJitRuntimeResolver } from '../jit/resolver';
@@ -195,9 +189,9 @@ export class RehydrationDelegate implements RenderDelegate {
     registerHelper(this.serverRegistry, name, helper);
   }
 
-  registerInternalHelper(name: string, helper: Helper) {
-    registerInternalHelper(this.clientRegistry, name, helper);
-    registerInternalHelper(this.serverRegistry, name, helper);
+  registerHelperDefinition(name: string, definition: object) {
+    this.clientRegistry.register('helper', name, definition);
+    this.serverRegistry.register('helper', name, definition);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {

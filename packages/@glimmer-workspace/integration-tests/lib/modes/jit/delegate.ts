@@ -7,7 +7,6 @@ import type {
   Environment,
   EvaluationContext,
   HandleResult,
-  Helper,
   Nullable,
   RenderResult,
   SimpleDocument,
@@ -46,13 +45,7 @@ import type { RenderDelegateOptions } from '../../render-delegate';
 import { BaseEnv } from '../../base-env';
 import { preprocess } from '../../compile';
 import JitCompileTimeLookup from './compilation-context';
-import {
-  componentHelper,
-  registerComponent,
-  registerHelper,
-  registerInternalHelper,
-  registerModifier,
-} from './register';
+import { componentHelper, registerComponent, registerHelper, registerModifier } from './register';
 import { TestJitRegistry } from './registry';
 import { renderTemplate } from './render';
 import { TestJitRuntimeResolver } from './resolver';
@@ -182,8 +175,8 @@ export class JitRenderDelegate implements RenderDelegate {
     registerHelper(this.registry, name, helper);
   }
 
-  registerInternalHelper(name: string, helper: Helper) {
-    registerInternalHelper(this.registry, name, helper);
+  registerHelperDefinition(name: string, definition: object) {
+    this.registry.register('helper', name, definition);
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
