@@ -447,19 +447,19 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
       types.ts`, `test/debug-render-tree-test.ts`; `array, concat, fn, get, hash` from
       `@ember/helper` and `on` from `@ember/modifier` in `test/strict-mode-test.ts`,
       `test/modifiers/on-test.ts`. Zero change.
-- [ ] 5.4a Tracked context (design 3): `trackedObject` context, `set` without `dirtyTagFor`,
+- [x] 5.4a (done, see notes) Tracked context (design 3): `trackedObject` context, `set` without `dirtyTagFor`,
       the plain-context overrides in `initial-render-test.ts`/`chaos-rehydration-test.ts`
       wrapped, `trackedObj` → `trackedObject`, collections tests from
       `@ember/reactive/collections`, the hand-made tags in `lib/suites/each.ts` and
       `test/updating-test.ts:473-518` → `@tracked` counters. Zero change; watch `#each`,
       `Updating`, `log` (`{{log this}}` now logs the proxy, which is still `this.context`).
-- [ ] 5.4b Handle cleanup (design 3): `renderResult` → `handle`; the reach-ins listed there;
+- [x] 5.4b (done, see notes) Handle cleanup (design 3): `renderResult` → `handle`; the reach-ins listed there;
       `debugBounds?`/`isArgumentCaptureError?` as optional delegate hooks; `captureRenderTree`
       in `getCapturedRenderTree`; `getSelf`/`getElementBuilder` out of the `RenderDelegate`
       interface; delete `lib/suites/entry-point.ts` and its `lib/suites.ts` export (never
       registered; ledger note, 0 tests). Then grep: no `RenderResult`, `Reference`,
       `EnvironmentDelegate` outside `lib/modes/`. Zero change.
-- [ ] 5.5a One compile (design 4) in `ITH/compile.ts`, both harnesses through it; IT passes
+- [x] 5.5a (done, see notes) One compile (design 4) in `ITH/compile.ts`, both harnesses through it; IT passes
       an internal `glimmerOnly: true` flag that skips `compileOptions()` so its output is
       unchanged. Zero change (Ember harness: about 1,600 `this.render` sites, no test change).
 - [ ] 5.5b IT compiles with Ember's `compileOptions` (drop `glimmerOnly`); `registerComponent`
@@ -757,3 +757,42 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `EMPTY_ARGS`/`TemplateOnlyComponentManager` from `@glimmer/runtime`: implementation tests, W5); `array, concat, fn, get, hash` from `@ember/helper` and
   `on` from `@ember/modifier` in `test/strict-mode-test.ts`, `test/modifiers/on-test.ts`. `@ember/component` added to IT devDependencies (+3 lock
   lines). Full suite 9110 / 9092 / 0 / 18; per-test diff against the 5.3b run: 0 missing, 0 new; greps 0; type-check and prettier clean.
+- 5.4a (2026-10-08): code `fedd0647fb`. `RenderTest.context` is `trackedObject({}, { equals: () => false })` from `@ember/reactive/collections`
+  (`@ember/reactive` added to IT devDependencies + lock lines), `set` has no `dirtyTagFor`. `trackedObj` is now a `trackedObject`; new
+  `trackedContext(plain)` in `lib/test-helpers/tracked-object.ts` (a WeakMap, so one plain context object always maps to the same tracked
+  object) is used by the `renderServerSide`/`renderClientSide` overrides of `initial-render-test.ts` and `chaos-rehydration-test.ts`
+  (instead of wrapping at each of the ~100 call sites, as design 3 said; same effect: server and client share one tracked object). The
+  `this.context = { node: clientNode }` line in `initial-render-test.ts` went (`renderClientSide` sets it). The 6 collections tests import from
+  `@ember/reactive/collections`; `lib/suites/each.ts` and `updating-test.ts` use a `trackedObject({count|version: 0})` counter instead of
+  `createTag/consumeTag/dirtyTag`. DEVIATIONS from the design (first full run: 20 failures): (1) default `trackedObject` skips a write of an
+  equal value, but 16 `#each`, `Updating: weird paths` and `block arguments (ensure balanced push/pop)` mutate a nested plain object and then
+  `rerender({ list })` / `rerender({ person })` with the same object, relying on the old unconditional `dirtyTagFor`; the context (and
+  `trackedContext`) therefore pass `{ equals: () => false }` so every `set` dirties, as before; no expectation changed. (2)
+  `style-warnings-test.ts` overrides the global context with a minimal one that has no `scheduleRevalidate`, and the tracked write now calls
+  it: added `scheduleRevalidate() {}` to that override (the file moves to the Ember harness in 6.1 anyway). Final: 9110 / 9092 / 0 / 18;
+  per-test diff against `full53c`: 0 missing, 0 new; greps for `Expected assert.verifySteps`, `Expected N assertions`, `afterEach failed`,
+  `NAMESPACES`, `already been resolved`: 0. type-check and prettier clean (no eslint-checked file changed). REHYDRATION CHECK (the 5.2 review
+  ask): server roots now revalidate on writes, and no rehydration result changed (zero per-test diff, all `rehydration ::` modules, chaos and
+  `clearedNodes` assertions included). No rehydration test writes to the context between the server and the client render: in
+  `initial-render-test.ts`, `chaos-rehydration-test.ts` and `partial-rehydration-test.ts` the only calls after `renderClientSide` are
+  `assertStableRerender()`/`rerender()` with no properties, and no `set`/`setProperties`/`rerender({...})` appears in those files, so the
+  revalidating server root is never exercised by a write; the check is therefore only that tracked contexts change nothing at render time.
+- 5.4b (2026-10-08): code `f482d68ebb`. `renderResult` -> `handle`; `RenderHandle` is `{ rerender, destroy }`; `debugBounds?(handle)`,
+  `isArgumentCaptureError?(value)` and `getCapturedRenderTree?()` are optional methods of `RenderDelegate` (new `DebugBounds` type; the handle's
+  bounds live in a WeakMap in `lib/modes/renderer.ts`: `handleWithBounds`/`boundsOf`); `getCapturedRenderTree` is `captureRenderTree(owner)` from
+  `@ember/debug` (added to IT devDependencies + lock); `debug-render-tree-test` calls `this.delegate.isArgumentCaptureError(...)`;
+  `updating-test` `assertInvariants` calls `this.delegate.debugBounds`. `getElementBuilder`/`getSelf` left the interface. `lib/suites/entry-point.ts`
+  and its export deleted (ledger rows 5.2a/5.4b). `in-element.ts:344` already used `this.destroy()` (5.2a), the `Updating: missing helper`
+  and `createCurriedComponent` items were done in 5.3b. Grep: no `RenderResult`/`EnvironmentDelegate` outside `lib/modes/`. Remaining
+  `@glimmer/{runtime,validator,reference,opcode-compiler,compiler}` imports in IT outside `lib/modes/` (all implementation tests, W5):
+  `lib/suites/debugger.ts`, `lib/suites/custom-dom-helper.ts`, `test/tracked-value-test.ts`, `test/attributes-test.ts`, `test/owner-test.ts`,
+  `test/env-test.ts`, `test/debug-render-tree-test.ts`, `test/precompile-test.ts`, `test/compiler/compile-options-test.ts`. Full suite 9110 / 9092 /
+  0 / 18; per-test diff against the 5.4a run: 0 missing, 0 new; greps 0.
+- 5.5a (2026-10-08): code `a6ae9273b9`. `internal-test-helpers/lib/compile.ts` has the named `compile(source, { strictMode, scope, moduleName,
+  plugins, glimmerOnly })` (adapter shape) and keeps its default export `(source, options, scopeValues)`; both over one `build()`. The IT
+  `createTemplate`/`preprocess` call `compile(..., { scope, glimmerOnly: { options } })`: `glimmerOnly` takes the Glimmer options exactly as
+  given (all of IT's options: `meta`, `plugins.ast`, `keywords`, `locals`), skips `compileOptions()` and keeps the per-template `id`, so the IT
+  output is unchanged. (Design said an internal `glimmerOnly: true` flag; it is an object carrying the options so no IT option has to be mapped
+  onto the adapter shape. 5.5b removes it.) `internal-test-helpers/package.json` exports `./lib/compile`. `IT/lib/compile.ts` imports neither
+  `@glimmer/compiler` nor `@glimmer/opcode-compiler`. The build no longer mutates the caller's `options.locals`. Full suite 9110 / 9092 / 0 / 18;
+  per-test diff against the 5.4b run: 0 missing, 0 new; greps 0; type-check, prettier and eslint (on `compile.ts`) clean.
