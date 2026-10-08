@@ -991,8 +991,8 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
 - 7.1k (2026-10-08): no code change, no run. `IT/test/render-test.ts` has one test (rendering a `Symbol`), not a settle test; `EG/render-settled-test.js` has no IT counterpart. Two ledger rows
   (one `kept (unsure)`).
 - 7.1 summary (2026-10-08): arithmetic of step 7 against `full63` (9108 / 9090 / 0 / 18): deleted from IT 2 (7.1a) + 3 (7.1b) + 53 (7.1c) + 19 (7.1d) + 15 (7.1e) + 14 (7.1f) + 8 (7.1h) = 114; added in
-  EG 7 (7.1c) + 10 (7.1d) + 2 (7.1e) = 19 (these 19 are the "moved" ledger rows; two of the 7.1c rows, `there is no this context` and the strengthened 7.1a twins, change an existing test in place);
+  EG 7 (7.1c) + 10 (7.1d) + 2 (7.1e) = 19 (these 19 are the new EG tests behind the "moved" ledger rows; the 7.1c `there is no this context` test and the two 7.1a twins were changed in place and add no test);
   9108 - 114 + 19 = 9013 total; pass 9090 - 114 + 19 = 8995; fail 0; skip 18 (unchanged). The last run, `full71h`, observed 9013 / 8995 / 0 / 18, and each run's per-test diff matched its ledger
-  rows exactly (the later items 7.1g/i/j/k changed no code). The ledger's `7.1 rows` section has 2+4+53+20+19+16+12 deleted/moved/kept rows plus the grouped kept rows of 7.1i-7.1k.
+  rows exactly (the later items 7.1g/i/j/k changed no code). The ledger's `7.1 rows` section holds one row per deleted or moved test (114, of which 19 moved) plus grouped `kept` rows for the tests compared and left alone.
   Pattern worth knowing for W5/§03: the duplication in T17 §3 was much smaller than its "Overlap" column suggests. Only helper (`fn`/`hash`/`array`/`get`/`concat`) and
   `on`/custom-modifier-manager/helper-manager tests were true name-for-name duplicates; `each`, `in-element`, strict mode, `if`/`unless`, tracked and `render-test` are complementary or unrelated.
