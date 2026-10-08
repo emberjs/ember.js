@@ -56,13 +56,13 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 
 ## 1. Mechanical swaps (C18 sequence step 1)
 
-- [ ] 1.1 `IT`: replace `GlimmerishComponent` (`IT/lib/components/emberish-glimmer.ts`) with
+- [x] 1.1 `IT`: replace `GlimmerishComponent` (`IT/lib/components/emberish-glimmer.ts`) with
       `@glimmer/component` in every user (about 42 files); delete the file and its exports.
       Check the differences listed in T17-fake-stubs §1.2 (`isDestroying`/`isDestroyed`, owner
       argument) against tests that rely on them.
-- [ ] 1.2 Ember tests: replace `tests/utils/glimmerish-component.js` with `@glimmer/component`
+- [x] 1.2 Ember tests: replace `tests/utils/glimmerish-component.js` with `@glimmer/component`
       (7 files, about 48 uses); delete the file.
-- [ ] 1.3 Ember tests: import public keywords from `@ember/helper`, `@ember/modifier`,
+- [x] 1.3 Ember tests: import public keywords from `@ember/helper`, `@ember/modifier`,
       `@ember/component/template-only` instead of `@glimmer/runtime` (8 files, T17 §2.4).
 
 ## 2. Delete fakes that have twins (step 2)
@@ -155,3 +155,23 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
   of `dist/index.html` (see `spec/tools/w2-baseline-parse.py`). The 3 `jit` skips: `{{#each}}
   each with undefined item` and two `trackedArray() (rendering): {{each-in}}`. For comparison
   after later steps, filter `W2-baseline-tests.tsv` by `source_chunk`, not by module name.
+- 1.1-1.3 (2026-10-08, branch `test/w2-glimmer-harness`): 1.1 `37682d8d97` (37 files: 36 users
+  switched to `import GlimmerComponent from '@glimmer/component'`, `emberish-glimmer.ts` deleted and
+  its re-export removed; `Glimmer` kind in `types.ts` is now `typeof` the real class;
+  `registerGlimmerishComponent` kept as a name, its default class is the real one). No
+  `package.json` change: `@glimmer/component` resolves via the root workspace dep plus the vite
+  alias and tsconfig `paths`; IT's own `package.json` does not list it. Real class is stricter:
+  typed `owner` (use `ConstructorParameters<typeof Component>[0]` in hand-written constructors
+  instead of `Owner`/`object`) and typed `args` (`Component<Dict>` where tests index `args`;
+  `debugger.ts` uses a signature generic instead of `declare args`). Behavior differences did not
+  matter: the real manager schedules `willDestroy` through the Ember runloop, no test pinned the
+  fake's synchronous destroy. Nothing left behind. 1.2 `548bc5cdb3` (7 test files, 48 uses;
+  `tests/utils/glimmerish-component.js` deleted; 3 files already imported `@glimmer/component`
+  so the duplicate import was merged; real manager also has `updateHook:false`, no user depended
+  on it). 1.3 (3rd commit, 9 files): `hash/array/concat/get/fn/invokeHelper` from `@ember/helper`,
+  `on` from `@ember/modifier`, `templateOnlyComponent` -> default import of
+  `@ember/component/template-only` (kept the local name). All names had public re-exports; no
+  `@glimmer/runtime` import left in `EG`. Results after each item: full suite 9541 tests, 9523
+  pass, 0 fail, 18 skip, identical to the baseline; no test deleted, ledger untouched.
+  `pnpm type-check:internals`, eslint and prettier clean on changed files. (`testem.filter.cjs`
+  added to the worktree's `info/exclude`, not committed.)
