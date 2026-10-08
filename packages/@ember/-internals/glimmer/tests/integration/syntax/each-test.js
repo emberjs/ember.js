@@ -660,6 +660,8 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('HelloHelloHello');
 
+    this.assertStableRerender();
+
     runTask(() => {
       this.forEach((hash) => set(hash, 'text', 'Goodbye'));
     });
@@ -776,9 +778,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('No Thing bar');
 
-    runTask(() => this.rerender());
-
-    this.assertText('No Thing bar');
+    this.assertStableRerender();
 
     runTask(() => set(this.context, 'otherThing', 'biz'));
 

@@ -270,38 +270,6 @@ export class EachSuite extends RenderTest {
   }
 
   @test
-  'it renders all items with duplicate key values'() {
-    class Item {
-      @tracked text: string;
-
-      constructor(text: string) {
-        this.text = text;
-      }
-    }
-
-    let list = [new Item('Hello'), new Item('Hello'), new Item('Hello')];
-
-    this.render(`{{#each this.list key="text" as |item|}}{{item.text}}{{/each}}`, {
-      list,
-    });
-
-    this.assertHTML('HelloHelloHello');
-    this.assertStableRerender();
-
-    list.forEach((item) => (item.text = 'Goodbye'));
-
-    this.rerender({ list });
-    this.assertHTML('GoodbyeGoodbyeGoodbye');
-    this.assertStableNodes();
-
-    list = [new Item('Hello'), new Item('Hello'), new Item('Hello')];
-
-    this.rerender({ list });
-    this.assertHTML('HelloHelloHello');
-    this.assertStableNodes();
-  }
-
-  @test
   'it updates items if their key has not changed, and the items are tracked'() {
     class Item {
       @tracked public text: string;
@@ -379,35 +347,6 @@ export class EachSuite extends RenderTest {
 
     this.rerender({ list, name: 'Stef' });
     this.assertHTML('Stef-Wycats-Stef');
-    this.assertStableNodes();
-  }
-
-  @test
-  'else template is displayed with context'() {
-    let list: string[] = [];
-
-    this.render(
-      `{{#each this.list key="@index" as |name|}}Has thing{{else}}No thing {{this.otherThing}}{{/each}}`,
-      {
-        list,
-        otherThing: 'Chad',
-      }
-    );
-
-    this.assertHTML('No thing Chad');
-    this.assertStableRerender();
-
-    this.rerender({ otherThing: 'Bill' });
-    this.assertHTML('No thing Bill');
-    this.assertStableNodes();
-
-    list.push('thing');
-    this.rerender({ list });
-    this.assertHTML('Has thing');
-    this.assertStableNodes();
-
-    this.rerender({ otherThing: 'Chad', list: [] });
-    this.assertHTML('No thing Chad');
     this.assertStableNodes();
   }
 
