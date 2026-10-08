@@ -539,7 +539,7 @@ keyword" went in 5.3b).
       stay and go on the W5 list.
   - [x] 7.1a (done, code `a135f9b3b0`; 2 deleted, 25 kept, see notes) `{{#each}}`: `IT/lib/suites/each.ts` vs `EG/syntax/each-test.js`, `classic/each-test.js` (complementary: keep both, delete exact duplicates).
   - [x] 7.1b (done, code `9a486d218e`; 3 deleted, 7 kept) `{{in-element}}`: `IT/lib/suites/in-element.ts` vs `EG/syntax/public-in-element-test.js`.
-  - [ ] 7.1c `fn`/`hash`/`array`/`get`/`concat`: `IT/test/helpers/*.ts` vs `EG/helpers/*.js`.
+  - [x] 7.1c (done, code `c7f204af33`; 53 IT tests: 45 deleted (twin), 8 moved) `fn`/`hash`/`array`/`get`/`concat`: `IT/test/helpers/*.ts` vs `EG/helpers/*.js`.
   - [ ] 7.1d `on`: `IT/test/modifiers/on-test.ts`, `keywords/on-runtime-test.ts` vs `EG/modifiers/on-test.js`.
   - [ ] 7.1e custom modifier manager: `IT/test/managers/modifier-manager-test.ts`, `modifiers-test.ts`, `updating-modifiers-test.ts` vs `EG/custom-modifier-manager-test.js`.
   - [ ] 7.1f custom helper manager: `IT/test/managers/helper-manager-test.ts` vs `EG/helpers/helper-manager-test.js`, `custom-helper-test.js`, `invoke-helper-test.js`.
@@ -549,7 +549,7 @@ keyword" went in 5.3b).
   - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a-7.1b done (worktree `a135f9b3b0`, `9a486d218e`). Next: 7.1c (fn/hash/array/get/concat). Last full run `full71b` (9103 / 9085 / 0 / 18) in the session
+  Progress note (7.1): 7.1a-7.1c done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`). Next: 7.1d (`on`). Last full run `full71c` (9057 / 9039 / 0 / 18) in the session
   scratchpad is the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
 
 ## 8. Exit check (Opus)
@@ -941,3 +941,10 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   transform cases) and stays in IT; 3 of its tests duplicate EG tests (ledger) and were deleted; nothing needed moving (the twins are supersets). The EG assertion tests
   stay in EG. Full suite 9106 -> 9103 total / 9085 pass / 0 fail / 18 skip (-3); per-test diff against `full71a`: exactly the 3 ledgered tests missing, 0 new; greps 0;
   type-check and prettier clean. The vite build prints one sourcemap warning for `runtime-template-compiler-implicit-test.ts`, already in `build63` (pre-existing).
+- 7.1c (2026-10-08): code `c7f204af33`. IT `test/helpers/{array,concat,fn,get,hash}-test.ts` (11+4+11+19+8 = 53 tests) vs EG `helpers/*-test.js`. EG is the stronger copy (as §3 says) and is the
+  superset: every IT test has a same-name twin with the same template (checked by comparing the render templates; the twins differ only in curly vs angle-bracket
+  invocation, `set` vs `@tracked`/`rerender`, text vs HTML assertions) except 7 cases moved into the EG files: fn 4 DEBUG assertion tests (no argument, undefined, null, unbound
+  `this`) as new tests plus the DEBUG half of "there is no `this` context" merged into its twin (EG ran that test only in production builds); get 2 string-length tests; hash
+  "individual hash values are accessed lazily". All five IT files deleted (`dynamic-helpers-test.ts` is not in this item). Ledger: 53 rows (45 deleted (twin), 8 moved).
+  Full suite 9103 -> 9057 total / 9039 pass / 0 fail / 18 skip (-53 +7); per-test diff against `full71b`: exactly the 53 ledgered tests missing, the 7 new ones all EG
+  tests added above; greps 0; type-check, prettier and eslint (3 EG files) clean.
