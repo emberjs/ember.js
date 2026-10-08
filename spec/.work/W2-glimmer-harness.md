@@ -554,8 +554,23 @@ keyword" went in 5.3b).
 
 ## 8. Exit check (Opus)
 
-- [ ] 8.1 No `@glimmer/runtime`, `@glimmer/validator`, `@glimmer/reference`,
+- [x] 8.1 No `@glimmer/runtime`, `@glimmer/validator`, `@glimmer/reference`,
       `@glimmer/opcode-compiler` or `@glimmer/compiler` import in `IT` outside `lib/modes/`.
+      Done (2026-10-08, worktree at `51887e1701`): 9 files hit, all on the W5 list (exempt, 5.1 review),
+      none fixed or remaining. Grep of `IT/{lib,test,index.ts}` minus `lib/modes/`, `from '@glimmer/…'` and
+      dynamic `import(…)`: `lib/suites/debugger.ts` (`@glimmer/runtime` value: debugger callback, VM hook);
+      `lib/suites/custom-dom-helper.ts` (`@glimmer/compiler` value `precompile`, Node-only `CompilationTests`, C3);
+      `test/attributes-test.ts` (`@glimmer/runtime` value `normalizeProperty`, C7); `test/owner-test.ts`
+      (`@glimmer/reference` type-only `Reference` and value `NULL_REFERENCE`, fake internal `MountManager`, C7);
+      `test/env-test.ts` (`@glimmer/runtime` value `EnvironmentImpl`, C7); `test/tracked-value-test.ts`
+      (`@glimmer/validator` value `trackedValue`, no public export, W1 decides); `test/precompile-test.ts`
+      (`@glimmer/opcode-compiler` type-only `TemplateFactoryWithIdAndMeta`/`TemplateWithIdAndReferrer` and value
+      `templateFactory`, `@glimmer/compiler` value `precompile`, C3); `test/debug-render-tree-test.ts`
+      (`@glimmer/runtime` value `EMPTY_ARGS`, `TemplateOnlyComponentManager`, used only by the 2
+      `getDebugCustomRenderTree` tests, C7); `test/compiler/compile-options-test.ts` (`@glimmer/opcode-compiler`
+      type-only `TemplateWithIdAndReferrer`, `@glimmer/compiler` value `precompile`, C3). Every non-type-only hit
+      is therefore in an implementation-test file; no import is left in harness code outside `lib/modes/`
+      (`lib/compile.ts`, `render-test.ts`, `render-delegate.ts`, `test-helpers/*`, `index.ts`: 0 hits).
 - [ ] 8.2 C18 table empty: every row of T17-fake-stubs §4 is done or explicitly kept (with why).
 - [ ] 8.3 Coverage diff: the ledger accounts for every removed test; whole suite green;
       counts compared with the baseline.
