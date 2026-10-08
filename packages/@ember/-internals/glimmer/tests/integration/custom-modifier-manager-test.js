@@ -353,6 +353,100 @@ class ModifierManagerTest extends RenderingTestCase {
 
     assert.verifySteps([]);
   }
+
+  '@test provides a helpful assertion when mutating a tracked value that was consumed already within the constructor'(
+    assert
+  ) {
+    if (!DEBUG) {
+      assert.expect(0);
+      return;
+    }
+
+    let ModifierClass = setModifierManager(
+      (owner) => {
+        return new this.CustomModifierManager(owner);
+      },
+      class extends EmberObject {
+        static create() {
+          return new this();
+        }
+
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
+    );
+
+    class Foo extends ModifierClass {
+      @tracked foo = 123;
+
+      constructor() {
+        super(...arguments);
+
+        // first read the tracked property
+        this.foo;
+
+        // then attempt to update the tracked property
+        this.foo = 456;
+      }
+    }
+
+    this.registerModifier('foo-bar', Foo);
+
+    assert.throws(() => {
+      this.render('<h1 {{foo-bar}}>hello world</h1>');
+    }, /You attempted to update `foo` on `.*`, but it had already been used previously in the same computation/u);
+  }
+
+  '@test does not eagerly access arguments during destruction'(assert) {
+    let ModifierClass = setModifierManager(
+      (owner) => {
+        return new this.CustomModifierManager(owner);
+      },
+      class extends EmberObject {
+        didInsertElement() {}
+        didUpdate() {}
+        willDestroyElement() {}
+      }
+    );
+
+    this.registerModifier('foo-bar', class extends ModifierClass {});
+
+    let barCount = 0;
+    let bazCount = 0;
+
+    class State {
+      @tracked show = true;
+
+      get bar() {
+        if (!this.show) {
+          barCount++;
+        }
+
+        return undefined;
+      }
+
+      get baz() {
+        if (!this.show) {
+          bazCount++;
+        }
+
+        return undefined;
+      }
+    }
+
+    let state = new State();
+
+    this.render(
+      '{{#if this.state.show}}<h1 {{foo-bar this.state.bar baz=this.state.baz}}>hello world</h1>{{/if}}',
+      { state }
+    );
+
+    runTask(() => (state.show = false));
+
+    assert.strictEqual(barCount, 0, 'bar was not accessed during destruction');
+    assert.strictEqual(bazCount, 0, 'baz was not accessed during destruction');
+  }
 }
 
 moduleFor(
