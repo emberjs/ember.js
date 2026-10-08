@@ -1,7 +1,10 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
+import { action } from '@ember/object';
+
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 import PositionalComponent from '../../utils/positional-component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -1150,6 +1153,45 @@ moduleFor(
       runTask(() => this.context.set('value', 'foo'));
 
       this.assert.strictEqual('foo', this.firstChild.value);
+    }
+
+    ['@test GH#13494 component without content with an argument binding'](assert) {
+      this.owner.register(
+        'component:outer-component',
+        setComponentTemplate(
+          precompileTemplate(
+            'message: {{this.message}}{{inner-component message=this.message}}<button onclick={{this.change}} />'
+          ),
+          class extends Component {
+            @tracked message = 'hello';
+            @action
+            change() {
+              this.message = 'goodbye';
+            }
+          }
+        )
+      );
+
+      this.owner.register(
+        'component:inner-component',
+        setComponentTemplate(precompileTemplate(''), class extends Component {})
+      );
+
+      this.render(`{{outer-component}}`);
+
+      assert.equal(this.$().text(), 'message: hello');
+
+      runTask(() => this.rerender());
+
+      assert.equal(this.$().text(), 'message: hello');
+
+      runTask(() => this.$('button').click());
+
+      assert.equal(this.$().text(), 'message: goodbye');
+
+      runTask(() => this.rerender());
+
+      assert.equal(this.$().text(), 'message: goodbye');
     }
 
     ['@test GH#17121 local variable should win over helper (without arguments)']() {

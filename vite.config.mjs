@@ -67,7 +67,7 @@ export default defineConfig(({ mode }) => {
         },
       ],
     },
-    optimizeDeps: { noDiscovery: true, include: ['expect-type'] },
+    optimizeDeps: { noDiscovery: true, include: ['expect-type', 'qunit'] },
     publicDir: 'tests/public',
     build,
 

@@ -5,6 +5,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 
 moduleFor(
   'Helpers test: {{mut}}',
@@ -130,6 +131,52 @@ moduleFor(
       runTask(() => set(this.context, 'model', { name: 'Matthew Beale' }));
 
       this.assertText('Matthew Beale');
+    }
+
+    ['@test a mutable binding with a backing getter is updated when the upstream property invalidates #11023']() {
+      let middle;
+
+      this.owner.register(
+        'component:bottom-mut',
+        setComponentTemplate(precompileTemplate('{{@thingy}}'), class extends Component {})
+      );
+
+      this.owner.register(
+        'component:middle-mut',
+        setComponentTemplate(
+          precompileTemplate('{{bottom-mut thingy=(mut this.val)}}'),
+          class extends Component {
+            @tracked baseValue = 12;
+
+            get val() {
+              return this.baseValue;
+            }
+
+            set val(value) {
+              this.baseValue = value;
+            }
+
+            constructor(owner, args) {
+              super(owner, args);
+              middle = this;
+            }
+          }
+        )
+      );
+
+      this.render('{{middle-mut}}');
+
+      this.assertText('12');
+
+      this.assertStableRerender();
+
+      runTask(() => (middle.baseValue = 13));
+
+      this.assertText('13');
+
+      runTask(() => (middle.baseValue = 12));
+
+      this.assertText('12');
     }
   }
 );

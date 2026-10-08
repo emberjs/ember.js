@@ -16,6 +16,10 @@ const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.cjs')
 const canaryFeatures = require('./broccoli/canary-features.cjs');
 
 const testDependencies = [
+  '@ember/test-helpers',
+  '@ember/test-waiters',
+  'dom-element-descriptors',
+  'ember-qunit',
   'qunit',
   'vite',
   'js-reporters',
