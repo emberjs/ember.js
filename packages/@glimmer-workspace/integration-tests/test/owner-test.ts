@@ -110,45 +110,6 @@ class OwnerTest extends RenderTest {
   }
 
   @test
-  'owner is preserved in curried closure components'(assert: Assert) {
-    let owner1 = { name: 'owner1' };
-    let owner2 = { name: 'owner2' };
-
-    const CheckOwner2 = defineCheckOwnerComponent(owner1, assert);
-    const CheckOwner1 = defineCheckOwnerComponent(owner1, assert);
-
-    const Mount2 = defineMountComponent(owner2, { CheckOwner2 }, `<CheckOwner2/><@CheckOwner1/>`);
-    const Mount1 = defineMountComponent(
-      owner1,
-      { CheckOwner1, Mount2 },
-      `<CheckOwner1/><Mount2 @CheckOwner1={{component CheckOwner1}}/>`
-    );
-
-    this.renderComponent(Mount1);
-  }
-
-  // TODO: This behavior could be confusing the users, but currently we don't know of a way
-  // to ensure we are using the component with the correct owner if it was not curried.
-  // We should continue exploring options here.
-  @test
-  'owner is preserved in non-curried component definitions that are passed around'(assert: Assert) {
-    let owner1 = { name: 'owner1' };
-    let owner2 = { name: 'owner2' };
-
-    const CheckOwner2 = defineCheckOwnerComponent(owner1, assert);
-    const CheckOwner1 = defineCheckOwnerComponent(owner1, assert);
-
-    const Mount2 = defineMountComponent(owner2, { CheckOwner2 }, `<CheckOwner2/><@CheckOwner2/>`);
-    const Mount1 = defineMountComponent(
-      owner1,
-      { CheckOwner1, CheckOwner2, Mount2 },
-      `<CheckOwner1/><Mount2 @CheckOwner2={{CheckOwner2}}/>`
-    );
-
-    this.renderComponent(Mount1);
-  }
-
-  @test
   'resolution mode components defined within strict mode components receive correct owner during compilation'() {
     this.registerComponent('TemplateOnly', 'Foo', 'Hello, world!');
 

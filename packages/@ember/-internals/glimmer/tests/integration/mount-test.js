@@ -8,6 +8,7 @@ import {
 
 import { DEBUG } from '@glimmer/env';
 import { set } from '@ember/object';
+import { helper } from '@ember/component/helper';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';
@@ -443,6 +444,7 @@ moduleFor(
 
       this.owners = {};
       let owners = this.owners;
+      let stash = (this.stash = {});
       let capture = (name) =>
         class extends Component {
           constructor(owner, args) {
@@ -457,7 +459,7 @@ moduleFor(
 
       this.add(
         'component:app-check',
-        setComponentTemplate(precompileTemplate('app-check'), class extends Component {})
+        setComponentTemplate(precompileTemplate('app-check'), capture('appCheck'))
       );
 
       this.add(
@@ -470,11 +472,27 @@ moduleFor(
             super.init(...arguments);
             this.register(
               'template:application',
-              precompileTemplate('<EngineOuter />{{@model.foo}}')
+              precompileTemplate(
+                '<EngineOuter />{{@model.foo}}{{stash-curried (component "engine-check")}}'
+              )
             );
             this.register(
               'component:engine-outer',
               setComponentTemplate(precompileTemplate('<EngineInner />'), capture('outer'))
+            );
+            this.register(
+              'component:engine-check',
+              setComponentTemplate(precompileTemplate('<EngineProbe />'), capture('engineCheck'))
+            );
+            this.register(
+              'component:engine-probe',
+              setComponentTemplate(precompileTemplate('probe'), capture('engineProbe'))
+            );
+            this.register(
+              'helper:stash-curried',
+              helper(([curried]) => {
+                stash.curried = curried;
+              })
             );
             this.register(
               'component:engine-inner',
@@ -498,6 +516,47 @@ moduleFor(
         this.assert.ok(getEngineParent(outer) === this.applicationInstance, 'engine parent');
         this.assert.ok(inner === outer, 'nested components share the engine owner');
         this.assertText('engine-innerapp-check');
+      });
+    }
+
+    // Compatibility quirk, spec 06-managers.md section 2.2: a curried component is created with
+    // the owner of the scope that invokes it, not the owner captured by currying.
+    ['@test a component curried in the application is created with the engine as owner when invoked in an engine']() {
+      this.add(
+        'template:owner-check',
+        precompileTemplate('{{mount "owner-engine" model=(hash foo=(component "app-check"))}}')
+      );
+
+      return this.visit('/owner-check').then(() => {
+        let { appCheck, outer } = this.owners;
+
+        this.assert.ok(appCheck, 'the curried component was created');
+        this.assert.ok(appCheck === outer, 'created with the engine instance as owner');
+        this.assert.ok(appCheck !== this.applicationInstance, 'not with the application');
+      });
+    }
+
+    ['@test a component curried in an engine is created with the host owner when invoked in the host'](
+      assert
+    ) {
+      this.add('controller:owner-check', class extends Controller {});
+      this.add(
+        'template:owner-check',
+        precompileTemplate('{{mount "owner-engine"}}{{#if this.show}}{{this.stash.curried}}{{/if}}')
+      );
+
+      return this.visit('/owner-check').then(() => {
+        let controller = this.applicationInstance.lookup('controller:owner-check');
+        controller.stash = this.stash;
+        runTask(() => set(controller, 'show', true));
+
+        let { engineCheck, engineProbe, outer } = this.owners;
+        assert.ok(engineCheck, 'the curried component was created');
+        assert.ok(
+          engineCheck === this.applicationInstance,
+          'created with the host (application) owner'
+        );
+        assert.ok(engineProbe === outer, 'its layout runs with the engine instance');
       });
     }
   }
