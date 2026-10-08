@@ -98,7 +98,7 @@ registration removed; the Glimmer/template-only registration remains), `kept` (w
 | 4.1 | IT/lib/suites/emberish-components.ts:54 › Emberish › non-block without properties, Curly+Dynamic (×2) | collapsed | Glimmer registration of the same test (remains) | The same test's Glimmer registration remains. Layout/yield/args behavior is VM-level; the Curly/Dynamic registrations additionally pin the fake wrapper (`div.ember-view`) and `foo=` args-as-properties of the fake classic component, which real classic components cover in EG/components/classic/. |
 | 4.1 | IT/lib/suites/emberish-components.ts:17 › Emberish › Element modifier with hooks, Curly+Dynamic (×2) | collapsed | Glimmer registration of the same test (remains); also IT/test/modifiers-test.ts (3.2) and EG/modifiers/ | No component is involved: the test registers a modifier and renders a string template, so Curly and Dynamic registrations are identical to the Glimmer one. |
 | 4.1 | IT/lib/suites/emberish-components.ts:316 › Emberish › invoking wrapped layout via angle brackets also applies explicit ...attributes, Curly+Dynamic (×2) | port | none | Classic component whose layout has `<h1 ...attributes>`: the test expects BOTH the wrapper `div` and the `h1` to get `data-foo`. No EG test has `...attributes` inside a classic layout (angle-bracket-invocation-test.js:474 etc. use glimmer Components). Destination: EG/components/classic/angle-bracket-invocation-test.js. unsure: real behavior (wrapper and inner element both? only inner?); see Findings 3. Dynamic registration is a pure duplicate. |
-| 4.1 | IT/lib/suites/emberish-components.ts:297 › Emberish › invoking wrapped layout via angle brackets - invocation attributes merges classes, Curly+Dynamic (×2) | drop (fake-only) | none | Pins `attributeBindings = ['class']` with `this.class = 'inner'`, which real Ember asserts against (EG/components/attribute-bindings-test.js:872; Finding 2). The observable half (`class="outer"` at the invocation merges with the component's classes: `ember-view inner outer`) has no EG twin (classic/angle-bracket-invocation-test.js:195 covers `@class`/`@classNames`, not the `class=` attribute); if the author wants it kept, write it with `classNames = ['inner']` in EG/components/classic/angle-bracket-invocation-test.js. Dynamic registration is a pure duplicate. |
+| 4.1 | IT/lib/suites/emberish-components.ts:297 › Emberish › invoking wrapped layout via angle brackets - invocation attributes merges classes, Curly+Dynamic (×2) | port | EG/components/classic/angle-bracket-invocation-test.js (new) | Pins `attributeBindings = ['class']` with `this.class = 'inner'`, which real Ember asserts against (EG/components/attribute-bindings-test.js:872; Finding 2). The observable half (`class="outer"` at the invocation merges with the component's classes: `ember-view inner outer`) has no EG twin (classic/angle-bracket-invocation-test.js:195 covers `@class`/`@classNames`, not the `class=` attribute); if the author wants it kept, write it with `classNames = ['inner']` in EG/components/classic/angle-bracket-invocation-test.js. Dynamic registration is a pure duplicate. Review (Opus): port, not drop — no EG test merges an invocation `class` with a real classic Component's classes; port it with `classNames = ['inner']` instead of the fake-only `attributeBindings = ['class']`. |
 | 4.1 | IT/lib/suites/emberish-components.ts:280 › Emberish › inverse named block, Curly+Dynamic (×2) | port | none | `<:inverse as \|value\|>` with `{{yield "my" to="inverse"}}` (block param through the inverse block). See the previous row. Destination: IT with a `@glimmer/component`. |
 | 4.1 | IT/lib/suites/emberish-components.ts:263 › Emberish › else named block, Curly+Dynamic (×2) | port | none | `<:else as \|value\|>` fed by `{{yield "my" to="inverse"}}` (else maps to inverse, with a block param). EG helpers/yield-test.js:60 pins the `<:else>`/`<:inverse>` equivalence without block params and without yielding a value. Destination: IT with a `@glimmer/component`. |
 | 4.1 | IT/lib/suites/emberish-components.ts:245 › Emberish › explicit default named block, Curly+Dynamic (×2) | port | none | `<:default>` block with `{{yield to="default"}}`: no EG or other IT test uses `<:default>`. Not classic-specific. Destination: IT, with a `@glimmer/component` (re-register as Glimmer in the test, drop `kind: 'curly'`). |
@@ -289,7 +289,7 @@ Registrations (Curly + Dynamic, each test counted once per kind) that step 4.4 r
 
 | Suite | collapsed | deleted (twin) | port | drop (fake-only) | total |
 |---|---|---|---|---|---|
-| emberish-components.ts | 12 | 6 | 10 | 2 | 30 |
+| emberish-components.ts | 12 | 6 | 12 | 0 | 30 |
 | has-block.ts | 20 | 14 | 8 | 0 | 42 |
 | has-block-params.ts | 0 | 12 | 40 | 0 | 52 |
 | yield.ts | 24 | 2 | 4 | 0 | 30 |
@@ -299,10 +299,20 @@ Registrations (Curly + Dynamic, each test counted once per kind) that step 4.4 r
 | ssr.ts ServerSideComponentSuite | 8 | 0 | 0 | 0 | 8 |
 | RehydratingComponents own tests (13) | 20 | 0 | 6 | 0 | 26 |
 | RehydratingComponents inherited from InitialRenderSuite (88) | 176 | 0 | 0 | 0 | 176 |
-| **total** | 274 | 34 | 68 | 2 | 378 |
+| **total** | 274 | 34 | 70 | 0 | 378 |
 
 Counting rows rather than registrations, the 68 `port` registrations are 35 ledger rows (5 emberish, 4 has-block, 20 has-block-params, 2 yield, 4 rehydrating). Notes for the reviewer:
 
 - `Dynamic` is the fan-out kind that invokes through `{{component this.componentName}}`. For a `kind: 'curly'` test that builds its own template (`<FooBar ...>`, no blueprint) the Dynamic registration is an exact duplicate of the Curly one; where it is not (blueprint tests), its only difference is the invocation form, which EG/components/dynamic-components-test.js and IT `components.ts` ("invoking dynamic component ...") cover for real components. The one place where the dynamic invocation form is pinned only by the Dynamic registration is rehydration (rows marked port).
 - Most `port` rows (has-block-params, has-block attr/concat) are not classic-specific and lose nothing if `kind: 'curly'` is simply removed so the test runs as Glimmer; they are `port` because step 4.4 would otherwise drop them (no Glimmer registration today). Several IT tests are mislabelled (see the has-block-params rows marked "Mislabelled"); 4.2 may delete the duplicates.
 - Twins from EG run on template-only layouts or glimmer `Component`s (none on `PositionalComponent`), so no 6.2 re-check is needed for the 4.1 rows.
+
+### 4.1 review (Opus, 2026-10-08)
+
+Approved for 4.2–4.4, with one change: the `drop (fake-only)` row (class merge) becomes `port`
+with `classNames` (totals updated: 70 port, 0 drop). Checked: `collapsed` is sound for
+`has-block`/`yield`/scope/dynamic-vars/debugger/SSR (keywords compile the same way for every
+invocation form; curly `{{#x}}…{{else}}` and `{{component}}` invocation of real components are
+covered throughout `EG`); the 176 inherited rehydration registrations render no components.
+For the mislabelled has-block-params tests, 4.2 fixes the label or the template so each test
+checks what its name says, and ledgers any that turn out to be exact duplicates.

@@ -88,7 +88,7 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
 
 ## 4. Collapse the component fan-out (step 4; the big deletion)
 
-- [ ] 4.1 Ledger every Curly/Dynamic registration of the suites (`emberish-components.ts`,
+- [x] 4.1 Ledger every Curly/Dynamic registration of the suites (`emberish-components.ts`,
       `has-block.ts`, `has-block-params.ts`, `yield.ts`, `scope.ts`, `with-dynamic-vars.ts`,
       `debugger.ts`, SSR `ServerSideComponentSuite`, `RehydratingComponents`): Ember twin, or
       "port". Opus reviews this ledger before any deletion.
