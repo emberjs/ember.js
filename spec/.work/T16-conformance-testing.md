@@ -17,7 +17,7 @@ Output: `spec/09-conformance-testing.md`, plus survey data in `spec/.work/T16-*.
 
 ## Checklist
 
-- [ ] A. Harness survey (Sonnet agent) → `.work/T16-harness.md`: the glimmer
+- [x] A. Harness survey (Sonnet agent) → `.work/T16-harness.md`: the glimmer
       `RenderDelegate`/`RenderTest`/suites harness and ember's `internal-test-helpers`
       (`moduleFor`, `RenderingTestCase`, `ApplicationTestCase`, `buildOwner`, `runTask`, ...):
       what each depends on, where an implementation adapter seam would go.
