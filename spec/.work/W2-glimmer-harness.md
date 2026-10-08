@@ -92,7 +92,7 @@ The full suite is `pnpm test` (after the build). Also `pnpm type-check:internals
       `has-block.ts`, `has-block-params.ts`, `yield.ts`, `scope.ts`, `with-dynamic-vars.ts`,
       `debugger.ts`, SSR `ServerSideComponentSuite`, `RehydratingComponents`): Ember twin, or
       "port". Opus reviews this ledger before any deletion.
-- [ ] 4.2 Port the "port" cases: classic-specific ones to `EG/components/classic/`, the rest to
+- [x] 4.2 (done, see notes) Port the "port" cases: classic-specific ones to `EG/components/classic/`, the rest to
       `@glimmer/component`/template-only, plus a curly-invocation variant through a real owner.
 - [ ] 4.3 Port the `ember-component-test.ts` residue (step 2.4) and `input-range-test.ts`; delete
       `ember-component-test.ts`.
@@ -166,7 +166,7 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
 4. (4.1) Named blocks on a classic `Component`: IT tests `<:baz>`, `<:default>`, `<:else as |v|>`
    on the fake classic component; EG only tests named blocks on glimmer `Component`s
    (`helpers/yield-test.js:35,60`), and the comment at `yield-test.js:37` claims it fails with the
-   default backing class. Unknown whether that is stale. Check in 4.2 with a real classic test.
+   default backing class. Unknown whether that is stale. Check in 4.2 with a real classic test. OBSERVED (4.2): named blocks (`<:baz>`, `<:default>`, `<:else as |v|>`, `<:inverse>`) work on a registered classic `Component`; the comment at yield-test.js:37 concerns an unregistered default backing class, not classic subclasses. Pinned in the same EG classic file.
 5. (4.1) `-with-dynamic-vars`/`-get-dynamic-var`: the IT tests (collapsed onto Glimmer) use arbitrary
    keys such as `myKeyword`; real Ember allows only `outletState` (`EG/syntax/with-dynamic-var-test.js`).
    So the VM supports a general dynamic scope that Ember's template language does not expose; no
@@ -272,3 +272,10 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   registrations, ledgered in 10 per-suite commits (`165f841a4a`..`52a1dfc191` on `template-language-spec`):
   274 collapsed, 34 deleted (twin), 68 port, 2 drop (fake-only: `attributeBindings=['class']`, Finding 2).
   Summary table and reviewer notes at the end of `W2-coverage-ledger.md`. No code touched; no test deleted.
+- 4.2 (2026-10-08): EG commit `f76a25d5ce` (7 new tests: 6 in classic/angle-bracket-invocation-test.js, `yield to else` next to CC:899),
+  IT commit `79517d806a`. 20 has-block-params + 4 has-block + 1 yield + 3 named-block tests re-kinded to run as Glimmer
+  (`else` in a blueprint now becomes `<:default>`/`<:else>` named blocks in `buildAngleBracketComponent`; +1 generation test).
+  3 has-block-params tests fixed (stray template/else removed); no duplicate found, none deleted. 4 rehydration rows set to
+  `deferred to 5.6`. Their curly/dynamic registrations are simply removed in 4.4 (Glimmer registrations remain). Until 5.6 the
+  wrapper-rehydration and `{{component}}` rehydration behaviors are untested. Ledger: 32 ported, 4 deferred. Tests still carrying
+  `kind: 'curly'` (twin-deleted or ported to EG) are removed in 4.4. `Components ::` filter: 595 pass, 0 fail.
