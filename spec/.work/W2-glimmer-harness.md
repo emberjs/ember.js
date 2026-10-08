@@ -844,7 +844,7 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
       \`outletState\` (you used \`foo\`).`, lines 6-14) and `-get-dynamic-var 'foo'` (`-get-dynamic-scope`,
       lines 26-32), plus the `outletState` round trip (16-24). The IT suite is on the W5 list below
       (3 tests, no code change). No code commit; no full run needed (no code change).
-- [ ] 9.6 Update the exit-check notes, §09 W2 row and STATUS (new commits, PR split).
+- [x] 9.6 Update the exit-check notes, §09 W2 row and STATUS (new commits, PR split).
 
 ## Findings for the author
 
@@ -1270,3 +1270,5 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   list. (W4) IT `assertStableNodes()` right after `assertHTML()` is vacuous (the snapshot is
   re-taken); only `assertStableRerender` checks node stability. §09-9.5 C18/T17 §3 overstated
   the duplication: only helpers, `on`, and the modifier/helper-manager suites were true twins.
+- 9.6 (2026-10-08): §09-9.4.1 seam B and §9.4.2 "No `renderTemplate`" describe the result of 9.3;
+  STATUS W2-9 row done, PR 10 added to the suggested split. Final suite 9017 / 8999 / 0 / 18.

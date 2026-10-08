@@ -196,10 +196,10 @@ implementation.
   All of them render through Ember's `BaseRenderer`
   (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:423`) with a real owner and
   Ember's `ResolverImpl`, and they differ only in the document and the DOM tree builder they
-  pass to it. Components go through public `renderComponent`; on the W2 branch a loose
-  template with a `self` still goes through an internal root type in
-  `lib/modes/template-root.ts`, which the ruling on top-level `this` (§9.4.2) replaces with
-  `renderComponent` and a custom component manager (`.work/W2-glimmer-harness.md` 9.3). `lib/modes/`
+  pass to it. Components go through public `renderComponent`, and so does a loose template
+  with a `self`: it is the layout of a component with a custom component manager whose
+  context is the `self` (`lib/modes/loose-template.ts`; the ruling on top-level `this`,
+  §9.4.2; `.work/W2-glimmer-harness.md` 9.3). `lib/modes/`
   deep-imports `BaseRenderer` and `ResolverImpl`, which `@ember/-internals/glimmer` does not
   export, so seam A must replace those modules too. Public `renderComponent` replaces an
   earlier render into the same element by rendering before that render's first node and
@@ -268,8 +268,11 @@ the author's rulings on it (commit `eb4f794d62`):
   `createComponent` that returns the test's context object, `getContext` returning it) and the
   loose template attached with `setComponentTemplate`. `this` is then the context object.
   Unlike a root template, that template is a component's layout, so top-level `{{yield}}`,
-  `has-block`, `...attributes` and the debug render tree may behave differently; the code
-  item that makes this switch triages each changed test (`.work/W2-glimmer-harness.md` 9.3).
+  `has-block`, `...attributes` and the debug render tree may behave differently. On the W2
+  branch none of the top-level `{{yield}}`/`has-block`/`...attributes` tests changed; what did
+  change is that the wrapper component adds one block pair to serialized output and one root
+  node to the debug render tree, which the harness's assertion helpers now account for in one
+  place (`.work/W2-glimmer-harness.md` 9.3).
 - **`mode`.** Ember has no per-render option: `_renderMode` on `-environment:main` picks the
   tree builder for the whole renderer
   (`packages/@ember/-internals/glimmer/lib/setup-registry.ts:16-32`), and interactivity is a

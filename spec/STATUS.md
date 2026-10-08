@@ -165,7 +165,7 @@ Run these in order, one at a time.
 | T16 | Author request: a testing chapter (refactors for an alternate implementation, coverage gaps) | Opus + 2 Sonnet surveys | `.work/T16-conformance-testing.md` | done; §09, `tools/test-coverage.py`; work plan W0–W9 and open questions Q1–Q6 in §9.7–9.8 |
 | T17 | Merge of `origin/main` (`def1faa2cf`, base `9bec1cb2a8`) and the §09 rulings (`5740b4aeb7`) | Opus + 2 Sonnet | `.work/T17-merge-and-09-rulings.md` | done; 122 citations remapped, 44 FLAGs and about 184 moved-test citations fixed by hand; TrackedValue, renderer root release, `get`, `{{on}}` prose; §09 rulings, post-merge counts, app-style target form, C18 fake stubs (`.work/T17-fake-stubs.md`); §05-13 markers informative |
 | W2 | §09-9.7 W2: eliminate the fake Ember/Glimmer stubs in the Glimmer harness, then the delegate refactor (C1, C2, C6, C18). Code in worktree `../ember.js-w2`, branch `test/w2-glimmer-harness` (from `origin/main` `9bec1cb2a8`); status and coverage ledger here | Sonnet per step; Opus for the step-5 API, the step-4 ledger review and the exit check | `.work/W2-glimmer-harness.md`, `.work/W2-coverage-ledger.md` | done (2026-10-08) on branch `test/w2-glimmer-harness` (worktree `../ember.js-w2`, 39 commits on `origin/main` `9bec1cb2a8`, last `246792a82d`), not yet upstreamed. No fake stubs left (C18 table empty, 8.2); the import boundary holds except for the W5-listed implementation tests (8.1); every removed test is in the coverage ledger (8.3: 0 unmatched, `tools/w2-coverage-diff.py`). Suite 9014 / 8996 pass / 0 fail / 18 skip (baseline 9541 / 9523 / 0 / 18). §09 updated (adapter, seam B, C1/C2/C6/C18, Q7/Q8); findings carried into §05-7.6, §05-5.8 (dynamic scope), §06-2.2 (owner; then §06-12 Q3), §08-6.1, §08-6.6; the four open ones were ruled in `eb4f794d62` (W2-9). Ready to split into upstream PRs by step (Next steps item 6) |
-| W2-9 | Follow-up to the author rulings of `eb4f794d62` (dynamic scope, engine owner, top-level `this`, non-interactive serialize): spec text, then code on `test/w2-glimmer-harness` | Opus (9.1), Sonnet (9.2–9.5) | `.work/W2-glimmer-harness.md` step 9 | in progress |
+| W2-9 | Follow-up to the author rulings of `eb4f794d62` (dynamic scope, engine owner, top-level `this`, non-interactive serialize): spec text, then code on `test/w2-glimmer-harness` | Opus (9.1), Sonnet (9.2–9.5) | `.work/W2-glimmer-harness.md` step 9 | done; suite 9017 / 0 fail; no internal template root left |
 
 ## Cross-chapter findings (from chapter authors' reports)
 
@@ -288,6 +288,9 @@ Suggestions for the plan's author, based on what is still open:
       `d669d705fe`, `68fcd3260a`, `8f427a1ed0`, `51887e1701`.
    9. *Exit-check follow-ups* (step 8; small, can be folded into PRs 4 and 8): `13ed9f038c`
       (rename the `Glimmerish`/`Emberish` suites), `246792a82d` (has-block port).
+   10. *Author rulings of `eb4f794d62`* (step 9): `79d130ff3b` (engine owner of a curried
+       component), `b9cdcda432` + `0121b60d62` (non-interactive server render and its pins),
+       `8939c50aff` (loose templates through `renderComponent` + a custom manager).
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
