@@ -8,6 +8,7 @@ import {
   runTask,
   expectDeprecation,
   testUnless,
+  defineSimpleModifier,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
@@ -1827,3 +1828,58 @@ if (DEBUG) {
     }
   );
 }
+
+moduleFor(
+  'Inline style tests - warnings (static styles, namespaced elements and element modifiers)',
+  class extends RenderingTestCase {
+    ['@test a static style and an element modifier do not warn']() {
+      this.registerModifier(
+        'foo',
+        defineSimpleModifier(() => {})
+      );
+
+      expectNoWarning(() => {
+        this.render('<button style="display: flex" {{foo}}>click me</button>');
+      });
+
+      this.assertHTML('<button style="display: flex">click me</button>');
+    }
+
+    ['@test a dynamic style and an element modifier warn once'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
+      this.registerModifier(
+        'foo',
+        defineSimpleModifier(() => {})
+      );
+
+      expectWarning(() => {
+        this.render('<button style={{this.dynAttr}} {{foo}}>click me</button>', {
+          dynAttr: 'display:flex',
+        });
+      }, constructStyleDeprecationMessage('display:flex'));
+
+      this.assertHTML('<button style="display:flex">click me</button>');
+    }
+
+    ['@test a static style on an element does not warn']() {
+      expectNoWarning(() => {
+        this.render('<div style="background: red">Thing</div>');
+      });
+
+      this.assertHTML('<div style="background: red">Thing</div>');
+      this.assertStableRerender();
+    }
+
+    ['@test a static style on a namespaced element does not warn']() {
+      expectNoWarning(() => {
+        this.render('<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red" />');
+      });
+
+      this.assertHTML('<svg xmlns:svg="http://www.w3.org/2000/svg" style="background: red"></svg>');
+    }
+  }
+);
