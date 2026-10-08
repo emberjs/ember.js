@@ -7,8 +7,13 @@
   </head>
   <body>
     <script type="module">
-      import 'qunit/qunit/qunit.js';
+      // By package name, as in the tests. The dev server then gives this page
+      // and the tests the same copy of QUnit.
+      import 'qunit';
       import 'qunit/qunit/qunit.css';
+
+      // The last script of this page starts QUnit, after all tests are loaded.
+      QUnit.config.autostart = false;
 
       window.EmberENV = {};
 
@@ -46,13 +51,11 @@
 
     <script type="module">
       import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
+      import setupTestHelpers from './packages/internal-test-helpers/lib/ember-dev/setup-test-helpers.js';
       import { setTesting } from './packages/@ember/debug/index.ts';
       setupQUnit();
+      setupTestHelpers();
       setTesting(true);
-
-      let s = document.createElement('script');
-      s.src = '/testem.js';
-      document.body.append(s);
     </script>
 
     <script type="module">
@@ -79,6 +82,13 @@
           eager: true,
         }
       );
+
+      // ember-qunit calls the testem hook when a test imports it, and that call
+      // throws if testem is already hooked. So testem loads after the tests.
+      let testem = document.createElement('script');
+      testem.src = '/testem.js';
+      testem.onload = testem.onerror = () => QUnit.start();
+      document.body.append(testem);
     </script>
 
     <div id="qunit"></div>

@@ -1,12 +1,17 @@
 import { typeOf } from '@ember/utils';
 import EmberObject from '@ember/object';
 import { window } from '@ember/-internals/browser-environment';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+const UTILS = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
 
 moduleFor(
   'Ember Type Checking',
   class extends AbstractTestCase {
-    ['@test Ember.typeOf'](assert) {
+    [`${testUnless(UTILS.isRemoved)} @test Ember.typeOf`](assert) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       let MockedDate = function () {};
       MockedDate.prototype = new Date();
 
@@ -44,7 +49,9 @@ moduleFor(
       assert.equal(typeOf(new Error()), 'error', 'item of type error');
     }
 
-    ['@test Ember.typeOf(fileList)'](assert) {
+    [`${testUnless(UTILS.isRemoved)} @test Ember.typeOf(fileList)`](assert) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       if (window && typeof window.FileList === 'function') {
         let fileListElement = document.createElement('input');
         fileListElement.type = 'file';

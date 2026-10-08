@@ -22,7 +22,6 @@ import Evented from '@ember/object/evented';
 import { copyDefaultValue } from '@ember/-internals/routing/route-managers/classic/query-params';
 import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import ActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
-import typeOf from '@ember/utils/lib/type-of';
 import { isProxy } from '@ember/-internals/utils/lib/is_proxy';
 import lookupDescriptor from '@ember/-internals/utils/lib/lookup-descriptor';
 import type { AnyFn } from '@ember/-internals/utility-types';
@@ -46,6 +45,7 @@ import {
   calculateCacheKey,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
+  queryParamType,
   stashParamNames,
 } from './lib/utils';
 
@@ -1701,7 +1701,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) {
 
       defaultValue = copyDefaultValue(defaultValue);
 
-      let type = desc.type || typeOf(defaultValue);
+      let type = desc.type || queryParamType(defaultValue);
 
       let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
       let scopedPropertyName = `${controllerName}:${propName}`;

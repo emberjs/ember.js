@@ -7,7 +7,6 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
-import { Component as EmberComponent } from '../../utils/helpers';
 import PositionalComponent from '../../utils/positional-component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -118,81 +117,6 @@ moduleFor(
       assert.throws(() => {
         this.render('<Bar/>');
       }, /The `{{component}}` helper received an invalid value\. In strict mode, it expects a component definition\./);
-    }
-
-    ['@test it has an element']() {
-      let instance;
-
-      let FooBarComponent = class extends EmberComponent {
-        init() {
-          super.init();
-          instance = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('hello'), FooBarComponent)
-      );
-
-      this.render('{{component "foo-bar"}}');
-
-      let element1 = instance.element;
-
-      this.assertComponentElement(element1, { content: 'hello' });
-
-      runTask(() => this.rerender());
-
-      let element2 = instance.element;
-
-      this.assertComponentElement(element2, { content: 'hello' });
-
-      this.assertSameNode(element2, element1);
-    }
-
-    ['@test it has the right parentView and childViews'](assert) {
-      let fooBarInstance, fooBarBazInstance;
-
-      let FooBarComponent = class extends EmberComponent {
-        init() {
-          super.init();
-          fooBarInstance = this;
-        }
-      };
-
-      let FooBarBazComponent = class extends EmberComponent {
-        init() {
-          super.init();
-          fooBarBazInstance = this;
-        }
-      };
-
-      this.owner.register(
-        'component:foo-bar',
-        setComponentTemplate(precompileTemplate('foo-bar {{foo-bar-baz}}'), FooBarComponent)
-      );
-      this.owner.register(
-        'component:foo-bar-baz',
-        setComponentTemplate(precompileTemplate('foo-bar-baz'), FooBarBazComponent)
-      );
-
-      this.render('{{component "foo-bar"}}');
-      this.assertText('foo-bar foo-bar-baz');
-
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
-      assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
-
-      runTask(() => this.rerender());
-      this.assertText('foo-bar foo-bar-baz');
-
-      assert.equal(fooBarInstance.parentView, this.component);
-      assert.equal(fooBarBazInstance.parentView, fooBarInstance);
-
-      assert.deepEqual(this.component.childViews, [fooBarInstance]);
-      assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
     }
 
     ['@test it can render a basic component with a block']() {

@@ -161,6 +161,13 @@ export const DEPRECATIONS = {
     until: '8.0.0',
     url: 'https://deprecations.emberjs.com/id/deprecate-promise-proxy-mixin',
   }),
+  DEPRECATE_EMBER_UTILS: deprecation({
+    id: 'deprecate-ember-utils',
+    for: 'ember-source',
+    since: { available: '7.5.0' },
+    until: '8.0.0',
+    url: 'https://deprecations.emberjs.com/id/deprecate-ember-utils',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

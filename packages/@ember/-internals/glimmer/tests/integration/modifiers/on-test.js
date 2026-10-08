@@ -296,6 +296,84 @@ moduleFor(
       this.assertStableRerender();
       this.assertCounts({ adds: 2, removes: 0 });
     }
+
+    "@test listeners from the invocation run before the element's own listeners, wherever ...attributes is (GH#17877)"(
+      assert
+    ) {
+      let calls = [];
+
+      this.owner.register(
+        'component:before-splat',
+        setComponentTemplate(
+          precompileTemplate(`<button {{on 'click' this.inner}} ...attributes>Click</button>`),
+          class extends Component {
+            inner = () => calls.push('inner');
+          }
+        )
+      );
+
+      this.owner.register(
+        'component:after-splat',
+        setComponentTemplate(
+          precompileTemplate(`<button ...attributes {{on 'click' this.inner}}>Click</button>`),
+          class extends Component {
+            inner = () => calls.push('inner');
+          }
+        )
+      );
+
+      this.render(
+        `<BeforeSplat id="before" {{on 'click' this.outer}} /><AfterSplat id="after" {{on 'click' this.outer}} />`,
+        { outer: () => calls.push('outer') }
+      );
+
+      runTask(() => this.$('#before').click());
+      assert.deepEqual(calls, ['outer', 'inner'], 'own modifier before ...attributes');
+
+      calls = [];
+      runTask(() => this.$('#after').click());
+      assert.deepEqual(calls, ['outer', 'inner'], 'own modifier after ...attributes');
+    }
+
+    "@test listeners on ancestors in a component run after the caller's listeners, unless propagation is stopped (GH#17877)"(
+      assert
+    ) {
+      let calls = [];
+
+      this.owner.register(
+        'component:wrapped-button',
+        setComponentTemplate(
+          precompileTemplate(
+            `<div {{on 'click' this.wrapper}}><button {{on 'click' this.inner}} ...attributes>Click</button></div>`
+          ),
+          class extends Component {
+            inner = () => calls.push('inner');
+            wrapper = () => calls.push('wrapper');
+          }
+        )
+      );
+
+      let stop = false;
+
+      this.render(`<WrappedButton {{on 'click' this.outer}} />`, {
+        outer: (event) => {
+          calls.push('outer');
+          if (stop) event.stopPropagation();
+        },
+      });
+
+      runTask(() => this.$('button').click());
+      assert.deepEqual(calls, ['outer', 'inner', 'wrapper'], 'the ancestor listener runs last');
+
+      calls = [];
+      stop = true;
+      runTask(() => this.$('button').click());
+      assert.deepEqual(
+        calls,
+        ['outer', 'inner'],
+        "stopping propagation in the caller's listener prevents the ancestor listener"
+      );
+    }
   }
 );
 

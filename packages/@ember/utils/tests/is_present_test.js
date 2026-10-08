@@ -1,10 +1,15 @@
 import { isPresent } from '..';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+
+const UTILS = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
 
 moduleFor(
   'isPresent',
   class extends AbstractTestCase {
-    ['@test isPresent'](assert) {
+    [`${testUnless(UTILS.isRemoved)} @test isPresent`](assert) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       let string = 'string';
       let fn = function () {};
       let object = { length: 0 };

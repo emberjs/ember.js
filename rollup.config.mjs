@@ -16,6 +16,10 @@ const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.cjs')
 const canaryFeatures = require('./broccoli/canary-features.cjs');
 
 const testDependencies = [
+  '@ember/test-helpers',
+  '@ember/test-waiters',
+  'dom-element-descriptors',
+  'ember-qunit',
   'qunit',
   'vite',
   'js-reporters',
@@ -239,6 +243,9 @@ function packages() {
 
       // @handlebars/parser is a hidden dependency, not an explicit entrypoint
       '@handlebars/**',
+
+      // private helpers that must not become importable module paths
+      '@ember/array/lib/sort-compare.ts',
     ],
     cwd: 'packages',
   });

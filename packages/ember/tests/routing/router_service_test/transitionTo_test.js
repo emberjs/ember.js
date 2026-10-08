@@ -3,11 +3,11 @@ import Component from '@glimmer/component';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
-import { run } from '@ember/runloop';
 import { action, get } from '@ember/object';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import { settled } from '@ember/test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 
 moduleFor(
@@ -96,7 +96,7 @@ moduleFor(
         });
     }
 
-    ['@test RouterService#transitionTo with basic route'](assert) {
+    async ['@test RouterService#transitionTo with basic route'](assert) {
       assert.expect(1);
 
       let componentInstance;
@@ -122,16 +122,15 @@ moduleFor(
         )
       );
 
-      return this.visit('/').then(() => {
-        run(function () {
-          componentInstance.transitionToSister();
-        });
+      await this.visit('/');
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
-      });
+      componentInstance.transitionToSister();
+      await settled();
+
+      assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
     }
 
-    ['@test RouterService#transitionTo with basic route using URL'](assert) {
+    async ['@test RouterService#transitionTo with basic route using URL'](assert) {
       assert.expect(1);
 
       let componentInstance;
@@ -157,13 +156,12 @@ moduleFor(
         )
       );
 
-      return this.visit('/').then(() => {
-        run(function () {
-          componentInstance.transitionToSister();
-        });
+      await this.visit('/');
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
-      });
+      componentInstance.transitionToSister();
+      await settled();
+
+      assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
     }
 
     async ['@test RouterService#transitionTo with dynamic segment'](assert) {
@@ -196,9 +194,8 @@ moduleFor(
 
       await this.visit('/');
 
-      run(function () {
-        componentInstance.transitionToDynamic();
-      });
+      componentInstance.transitionToDynamic();
+      await settled();
 
       assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
       assert.equal(this.routerService.get('currentURL'), '/dynamic/1');
@@ -244,9 +241,8 @@ moduleFor(
 
       await this.visit('/');
 
-      run(function () {
-        componentInstance.transitionToDynamic();
-      });
+      componentInstance.transitionToDynamic();
+      await settled();
 
       assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
       assert.equal(this.routerService.get('currentURL'), '/dynamic/1');

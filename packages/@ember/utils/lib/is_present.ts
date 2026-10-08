@@ -1,4 +1,5 @@
 import isBlank from './is_blank';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 /**
  @module @ember/utils
 */
@@ -30,7 +31,13 @@ import isBlank from './is_blank';
   @return {Boolean}
   @since 1.8.0
   @public
+  @deprecated Use native JavaScript instead.
 */
 export default function isPresent<T>(obj: T | null | undefined): obj is T {
+  deprecateUntil(
+    '`isPresent` from `@ember/utils` is deprecated. Use native JavaScript instead.',
+    DEPRECATIONS.DEPRECATE_EMBER_UTILS
+  );
+
   return !isBlank(obj);
 }

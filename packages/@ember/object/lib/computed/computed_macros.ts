@@ -9,6 +9,7 @@ import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
 import { assert, deprecate } from '@ember/debug';
 import isEmpty from '@ember/utils/lib/is_empty';
 import isNone from '@ember/utils/lib/is_none';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 /**
 @module @ember/object
@@ -100,11 +101,17 @@ function generateComputedWithPredicate(name: string, predicate: (value: unknown)
   function and false if the underlying value is not empty.
 
   @public
+  @deprecated Use a getter instead.
 */
 export function empty(dependentKey: string) {
   assert(
     'You attempted to use @empty as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
+  );
+
+  deprecateUntil(
+    '`empty` from `@ember/object/computed` is deprecated. Use a getter instead.',
+    DEPRECATIONS.DEPRECATE_EMBER_UTILS
   );
 
   return computed(`${dependentKey}.length`, function () {
@@ -146,11 +153,17 @@ export function empty(dependentKey: string) {
   @return {ComputedProperty} computed property which returns true if original
   value for property is not empty.
   @public
+  @deprecated Use a getter instead.
 */
 export function notEmpty(dependentKey: string) {
   assert(
     'You attempted to use @notEmpty as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
+  );
+
+  deprecateUntil(
+    '`notEmpty` from `@ember/object/computed` is deprecated. Use a getter instead.',
+    DEPRECATIONS.DEPRECATE_EMBER_UTILS
   );
 
   return computed(`${dependentKey}.length`, function () {
@@ -189,11 +202,17 @@ export function notEmpty(dependentKey: string) {
   @return {ComputedProperty} computed property which returns true if original
   value for property is null or undefined.
   @public
+  @deprecated Use a getter instead.
 */
 export function none(dependentKey: string) {
   assert(
     'You attempted to use @none as a decorator directly, but it requires a `dependentKey` parameter',
     !isDecoratorCall(Array.prototype.slice.call(arguments))
+  );
+
+  deprecateUntil(
+    '`none` from `@ember/object/computed` is deprecated. Use a getter instead.',
+    DEPRECATIONS.DEPRECATE_EMBER_UTILS
   );
 
   return computed(dependentKey, function () {

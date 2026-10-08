@@ -1,6 +1,7 @@
 import { compare, typeOf } from '@ember/utils';
 import EmberObject from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 let data = [];
 let Comp = EmberObject.extend();
@@ -10,6 +11,8 @@ Comp.reopenClass({
     return obj.get('val');
   },
 });
+
+const UTILS = DEPRECATIONS.DEPRECATE_EMBER_UTILS;
 
 moduleFor(
   'Ember.compare()',
@@ -35,7 +38,9 @@ moduleFor(
       data[15] = new Date('2012/06/06');
     }
 
-    ['@test ordering should work'](assert) {
+    [`${testUnless(UTILS.isRemoved)} @test ordering should work`](assert) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       let suspect, comparable, failureMessage, suspectIndex, comparableIndex;
 
       for (suspectIndex = 0; suspectIndex < data.length; suspectIndex++) {
@@ -62,7 +67,11 @@ moduleFor(
       }
     }
 
-    ['@test comparables should return values in the range of -1, 0, 1'](assert) {
+    [`${testUnless(UTILS.isRemoved)} @test comparables should return values in the range of -1, 0, 1`](
+      assert
+    ) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       let negOne = Comp.create({
         val: -1,
       });
@@ -84,7 +93,11 @@ moduleFor(
       assert.equal(compare('c', one), -1, 'Second item comparable - returns  1 (negated)');
     }
 
-    ['@test non-function compare does not make an object comparable'](assert) {
+    [`${testUnless(UTILS.isRemoved)} @test non-function compare does not make an object comparable`](
+      assert
+    ) {
+      expectDeprecation(/from `@ember\/utils` is deprecated/, UTILS.isEnabled);
+
       let obj = EmberObject.create({ compare: null });
       let other = EmberObject.create({ compare: 'not a function' });
 
