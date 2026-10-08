@@ -525,7 +525,7 @@ keyword" went in 5.3b).
       Then re-check every ledger row whose twin runs on `PositionalComponent` (grep the ledger
       for the twin files; e.g. `curly-components-test.js:861`): the twin must now be a real
       classic Component.
-- [ ] 6.3 `@glimmer/reference/test/iterable-test.ts` → Ember's `toIterator`; mark
+- [x] 6.3 (done, see notes) `@glimmer/reference/test/iterable-test.ts` → Ember's `toIterator`; mark
       `references-test`/`validators-test` as implementation tests (W1/W5), not conformance.
 
 ## 7. Merge duplicated suites (step 7)
@@ -541,6 +541,25 @@ keyword" went in 5.3b).
 - [ ] 8.3 Coverage diff: the ledger accounts for every removed test; whole suite green;
       counts compared with the baseline.
 - [ ] 8.4 Update §09 (C1, C2, C6, C18 rows; §9.7 W2 state) and STATUS.
+
+### W5 classification list
+
+Files W2 leaves as implementation tests (not conformance): W5 moves them out of the conformance suite
+and 8.1 exempts them from the import boundary (5.1 review decision 3). Keep adding to this list.
+
+- `packages/@glimmer/reference/test/references-test.ts`: references and tags are the reactive core's internals, not normative; it also installs a fake global context (`getProp`/`setProp`) for its own cases.
+- `packages/@glimmer/validator/test/validators-test.ts`: tag and validator internals, not normative; one case overrides `scheduleRevalidate` through `testOverrideGlobalContext`.
+- `IT/lib/suites/debugger.ts`: the VM's `setDebuggerCallback`/`resetDebuggerCallback` debug hook, no Ember API (5.1 table).
+- `IT/lib/suites/custom-dom-helper.ts` (`CompilationTests`): `precompile` plus `serializeBuilder`, Node-only (C3) (5.1 table).
+- `IT/test/tracked-value-test.ts`: `trackedValue` has no public export; W1 decides whether it is core or implementation (5.1 table).
+- `IT/test/attributes-test.ts`: `normalizeProperty`, a VM-internal DOM helper (C7) (5.1 table, 5.4b).
+- `IT/test/owner-test.ts`: a fake internal `MountManager` (`Reference`, `NULL_REFERENCE`), internal manager API (C7) (5.1 table, 2.3).
+- `IT/test/env-test.ts`: `EnvironmentImpl` (C7) (5.1 table).
+- `IT/test/debug-render-tree-test.ts`, the 2 `getDebugCustomRenderTree` tests only: `EMPTY_ARGS` and `TemplateOnlyComponentManager`, internal manager API (C7); the rest of the file is conformance (5.1 table, 5.3c).
+- `IT/test/precompile-test.ts`, `IT/test/compiler/compile-options-test.ts`: `precompile`, `templateFactory`, opcode-compiler types (C3) (5.1 table).
+- `IT/test/vm/in-element-vm-test.ts` (5 tests, `jit` and `rehydration (plain Glimmer compile)`): the VM's `{{#in-element}}` with a null destination or a non-null `insertBefore`, compiled with plain Glimmer options; Ember's template language rejects both (5.5b).
+- `IT/lib/modes/plain/{compile,delegates}.ts` (helpers for the previous entry, no tests of their own).
+- Not kept, so not on the list: `iterable-test.ts` (6.3: every case was observable through `{{#each}}`, ported or ledgered; deleted), `style-warnings-test.ts` (6.1), `entry-point.ts` (5.4b, never registered), the strict-mode "Non-native keyword" test (5.3b, deleted).
 
 ## Findings for the author
 
@@ -884,3 +903,12 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   ledger) cited a twin that ran on the stub; each now cites a twin that runs on a real classic `Component` (note `6.2 re-check` in the row); the citation
   `contextual-components-test.js:367` in the 'curry arguments' row never used the stub. Counts: 9113 / 9095 / 0 / 18, per-test diff against `full61`: 0
   missing, 0 new; greps 0; type-check, prettier, eslint clean.
+- 6.3 (2026-10-08): code `62ccb8ba1f`. `iterable-test.ts` (12 tests, not 13) compared with `EG/syntax/each-test.js`, `classic/each-test.js` and `IT/lib/suites/each.ts`.
+  Premise corrected: the test installs no global context, so in the shared page it already ran on Ember's real `toIterator`; the fake iterator
+  (`ObjectIterator`/`TestContext`) lived in `reference/test/utils/template.ts`, which nothing imported (deleted, ledger row). 5 cases have twins (iterate,
+  synchronize, null, `@index`, paths) and 7 had none or only a text-level twin: null items, several nulls, duplicate objects, non-null primitives, `@key`, object
+  identity (control) and null-prototype items. All are observable as DOM node identity, so they are ported as 7 tests in a new module `Syntax test: {{#each}}
+  keys and DOM identity` in `EG/syntax/each-test.js`; none is kept as an implementation test, so `iterable-test.ts` is deleted. The unit-level key values
+  (`'0'`/`'1'` strings for `@index`, `[0, 1]` for `@key`, key equal to value for primitives) are not observable and are not ported (ledger notes). 12 ledger
+  rows (`6.3 rows`). Counts: 9113 -> 9108 total / 9090 pass / 0 fail / 18 skip (-12 +7); per-test diff against `full62`: exactly the 12 missing, 7 new; greps 0;
+  type-check, prettier, eslint (each-test.js) clean. W5 classification list added above. After 6.3 the 18 skips are unchanged.
