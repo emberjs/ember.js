@@ -530,7 +530,7 @@ keyword" went in 5.3b).
 
 ## 7. Merge duplicated suites (step 7)
 
-- [ ] 7.1 For each row of T17-fake-stubs §3, diff the two copies test by test (assertions, not
+- [x] 7.1 (done, see the 7.1k and 7.1 summary notes) For each row of T17-fake-stubs §3, diff the two copies test by test (assertions, not
       names), move unique cases into the stronger copy, delete the weaker duplicates; ledger every
       deletion/move (`7.1x` rows). Split into the sub-items below (one commit each, full suite and
       per-test diff after each). Rows of §3 already handled: classic/curly components (step 2.4/4.x),
@@ -547,10 +547,10 @@ keyword" went in 5.3b).
   - [x] 7.1h (done, code `51887e1701`; 8 IT tests deleted (twin), 86 kept) strict mode and lexical scope: `IT/test/strict-mode-test.ts`, `lexical-scope-test.ts` vs `EG/components/strict-mode-test.js`, `runtime-template-compiler-*.ts`.
   - [x] 7.1i (done, no code change; nothing overlaps, see notes) `if`/`unless`: `IT/test/syntax/if-unless-test.ts` vs `EG/syntax/if-unless-test.js`, `helpers/if-unless-test.js`, `shared-conditional-tests.js`.
   - [x] 7.1j (done, no code change; nothing overlaps, see notes) tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
-  - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
+  - [x] 7.1k (done, no code change; nothing overlaps, see notes) run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a-7.1j done (worktree commits `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`, `8f427a1ed0`, `51887e1701`; 7.1g, 7.1i and 7.1j changed no code). Next: 7.1k (run-loop settle). Last full run `full71h`
-  (9013 / 8995 / 0 / 18) in the session scratchpad is still the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
+  Progress note (7.1): 7.1a-7.1k all done (worktree commits `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`, `8f427a1ed0`, `51887e1701`; 7.1g, 7.1i, 7.1j and 7.1k changed no code). Last full run `full71h`
+  (9013 / 8995 / 0 / 18). Step 7 totals: 9108 -> 9013 total (see the 7.1 summary note); next is step 8 (exit check).
 
 ## 8. Exit check (Opus)
 
@@ -988,3 +988,11 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `components/tracked-test.js`, `metal/tests/tracked/*`) test the `@tracked` decorator and getters, IT `tracked-value-test.ts` tests `trackedValue` (not public) and the 6 collection files test
   `@ember/reactive/collections` through rendering. No test overlaps, so nothing is merged (two grouped `kept` ledger rows). `@glimmer/validator/test/collections/*` (78 unit tests of the same collections, no
   rendering) and `@glimmer/validator/test/tracked-value-test.ts` are complementary and outside this item; if the author wants them merged with the IT rendering tests it is a W5 question.
+- 7.1k (2026-10-08): no code change, no run. `IT/test/render-test.ts` has one test (rendering a `Symbol`), not a settle test; `EG/render-settled-test.js` has no IT counterpart. Two ledger rows
+  (one `kept (unsure)`).
+- 7.1 summary (2026-10-08): arithmetic of step 7 against `full63` (9108 / 9090 / 0 / 18): deleted from IT 2 (7.1a) + 3 (7.1b) + 53 (7.1c) + 19 (7.1d) + 15 (7.1e) + 14 (7.1f) + 8 (7.1h) = 114; added in
+  EG 7 (7.1c) + 10 (7.1d) + 2 (7.1e) = 19 (these 19 are the "moved" ledger rows; two of the 7.1c rows, `there is no this context` and the strengthened 7.1a twins, change an existing test in place);
+  9108 - 114 + 19 = 9013 total; pass 9090 - 114 + 19 = 8995; fail 0; skip 18 (unchanged). The last run, `full71h`, observed 9013 / 8995 / 0 / 18, and each run's per-test diff matched its ledger
+  rows exactly (the later items 7.1g/i/j/k changed no code). The ledger's `7.1 rows` section has 2+4+53+20+19+16+12 deleted/moved/kept rows plus the grouped kept rows of 7.1i-7.1k.
+  Pattern worth knowing for W5/§03: the duplication in T17 §3 was much smaller than its "Overlap" column suggests. Only helper (`fn`/`hash`/`array`/`get`/`concat`) and
+  `on`/custom-modifier-manager/helper-manager tests were true name-for-name duplicates; `each`, `in-element`, strict mode, `if`/`unless`, tracked and `render-test` are complementary or unrelated.
