@@ -462,7 +462,7 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
 - [x] 5.5a (done, see notes) One compile (design 4) in `ITH/compile.ts`, both harnesses through it; IT passes
       an internal `glimmerOnly: true` flag that skips `compileOptions()` so its output is
       unchanged. Zero change (Ember harness: about 1,600 `this.render` sites, no test change).
-- [ ] 5.5b IT compiles with Ember's `compileOptions` (drop `glimmerOnly`); `registerComponent`
+- [ ] 5.5b (phase 1 done, code `89429e7685`; phase 2 triage written, awaiting Opus decisions, see "5.5b triage") IT compiles with Ember's `compileOptions` (drop `glimmerOnly`); `registerComponent`
       registers `component:${dasherize(name)}` (Ember's `customizeComponentName` dasherizes
       `<FooBar>`). From P5, after 5.3b, expect about 20 real differences to triage one by one:
       `{{in-element}}` with a non-null `insertBefore` (Ember asserts "Can only pass null to
@@ -481,6 +481,41 @@ Dependencies: add each newly imported package to IT's `package.json` (and the ma
       name, Class)` (on both owners until the server render, then on the client owner only); the 4 deferred tests invoke `{{foo-bar}}`/`{{#foo-bar}}`/
       `{{component "foo-bar"}}`. If the injected `renderer:-dom` breaks them, use the fallback
       in design 2. Count +4 (or as the ledger rows say).
+
+### 5.5b triage
+
+Run `full55b` (after code `89429e7685`): 9110 total / 9073 pass / 19 fail / 18 skip. Against
+`full55a` (9110 / 9092 / 0 / 18): 0 missing, 0 new, exactly 19 pass -> fail, nothing else
+changed. The 19 tests are left failing in the worktree; the code commit says "WIP: 19 known
+failures". None is class (a): the harness plumbing is finished. Governing rules are in
+`03-static-semantics.md` §03-7.4, §03-7.9, §03-5.6 and `08-ember-integration.md` §2.17, §13.
+
+| # | Test (all `[integration] jit` unless noted) | Failure | Cause | Class and proposal |
+|---|---|---|---|---|
+| 1-7 | `Application test: debug render tree`: `template-only components`, `glimmerish components`, `glimmerish components with an argument that throws`, `in-element in tree`, `modifiers`, `getDebugCustomRenderTree works`, `empty getDebugCustomRenderTree works` | `actual: hello-world expected: HelloWorld` (`hello-world2`/`HelloWorld2`, `hi-world`/`HiWorld` in the same trees) | The components are registered with `registerComponent(..., 'HelloWorld', ...)` and invoked as `<HelloWorld />` through the resolver. Ember's compile dasherizes the tag (`customizeComponentName`, §03-5.6) and the node name is the resolved name `hello-world`. The plain-Glimmer harness used the tag text. Components bound in strict-mode scope (`defComponent`, first 3 tests of the file) keep the local name and pass. | (b). Rewrite the expected `name` to the dasherized form (`hello-world`, `hello-world2`, `hi-world`). Real Ember: the EG twin `application/debug-render-tree-test.ts:797-829` pins `component:hello-world` / `name: 'hello-world'`; §08-13 says the name is the factory `fullName`/debug name. Only the name strings change. |
+| 8 | `#in-element: With insertBefore` | `Assertion Failed: Can only pass null to insertBefore in in-element, received: {"type":"PathExpression",...}` at compile | `transform-in-element` (§03-7.9) rejects any `insertBefore` that is not the literal `null`/`undefined`. The VM supports inserting before a node. | (c). The test is about the VM's `InElement` insertBefore, which Ember's template language does not expose. Move to a W5-classified file compiled with plain Glimmer options. Add one (b) test: `assert.throws(() => this.render('{{#in-element this.el insertBefore=this.x}}x{{/in-element}}', ...), /Can only pass null to insertBefore in in-element, received: \{"type":"PathExpression"/)`, plus a passing `insertBefore=null` variant (already covered by `With pre-existing content`). |
+| 9-10 | `rehydration :: rehydration: in-element with insertBefore=element can rehydrate` and `... can rehydrate into pre-existing content` | Same compile-time assertion | Same as 8: the two tests render `insertBefore=this.prefix` (a node) on the server and rehydrate it. | (c). VM serialization/rehydration of an in-element with an insertBefore node; Ember cannot express it. Keep with plain Glimmer options in a W5 file. Real Ember rehydrates `in-element` only without `insertBefore` (the null case is already covered by the other `in-element` rehydration tests). |
+| 11 | `#in-element: Changing to falsey` | `Assertion Failed: You cannot pass a null or undefined destination element to in-element` at render | Ember wraps the destination in `(-in-el-null x)` in non-production compiles (§03-7.9, §08-2.17). The VM treats a null destination as "render nothing" and tears the content down; the test renders `second: null` and later rerenders `first: null`. | (b) for the dev behavior, (c) for the VM behavior. Real Ember (dev): the render throws the assertion above for `second: null`; for a later `rerender({ first: null })` the revalidation throws the same. Proposal: replace this test by `assert.throws` on initial render with a null destination and on rerender to null; keep the original (null = render nothing) as a VM test with plain options in a W5 file (Ember production builds compile with `isProduction`, which skips the check; §01 `isProduction`, so the original behavior is real in production). Opus to decide whether the Legacy profile wants the production variant too. |
+| 12 | `#in-element: With pre-existing content` | Same assertion | Uses `insertBefore=null` (fine) but `rerender({ externalElement: null })` makes the destination null. | (b)/(c) as 11. Smallest rewrite: drop the `externalElement: null` step and the re-add step, move them into the (c) copy. |
+| 13 | `Updating: helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks` | Same assertion | `testStatefulHelper` switches `{{#in-element (stateful-foo)}}` between an element and `null`. | (b) rewrite, (d) on exact shape: switch between two elements instead of `null`, which keeps the "helper in the destination position is not recreated" check; Opus to confirm the helper does not get torn down when the destination swaps between elements (the `{{#if}}`/`{{component}}` siblings of this test switch blocks, not destinations). |
+| 14-16 | `strict mode: general properties: {{component}} throws an error if a string is used indirectly in strict after first render` (append, block and expression position) | `Assertion Failed: '@Bar' is reserved.` at compile | `assert-reserved-named-arguments` (§03-7.4): `@Bar` matches `/^@[^a-z]/`, so capitalized named arguments are reserved in Ember. The test passes `{ Bar }` as component arguments (`defineComponent({}, '{{component @Bar}}')`). | (b). Rename the argument to lowercase (`@bar`, `args.bar`); nothing else in the test depends on the capital. Real Ember: `'@Bar' is reserved.` (also pinned by `ember-template-compiler/tests/plugins/assert-reserved-named-arguments-test.js`, so no new test needed). |
+| 17-18 | `strict mode: dynamic template values: Can use a dynamic component with a changing definition` (append position; append position, with args) | `Assertion Failed: '@Foo' is reserved.` | Same as 14-16 (`{{@Foo}}`, `{{@Foo value="world"}}`, args `{ Foo }`). | (b). Rename to `@foo`. The sibling tests with block/expression positions of the same name already pass because they do not use `@Foo`. |
+| 19 | `` `modifier` keyword syntax errors: non-append keywords cannot be used as appends `` | `Assertion Failed: The modifier keyword requires at least one positional arguments ('test-module' @ L1:C0)` instead of the Glimmer message ``The `modifier` keyword was used incorrectly. It was used as an append statement...`` | Ember's `transform-resolutions` (§03-7.x, "No first positional") runs before Glimmer's keyword validation and asserts for `{{modifier}}` with no argument. Only `modifier` hits it (`helper` and the others fall through to the VM message). | (b). Real Ember gives the transform-resolutions assertion for a bare `{{modifier}}`. Proposal: in this test, for `keyword === 'modifier'` expect the Ember message (`/The modifier keyword requires at least one positional arguments/`); the other keywords keep the Glimmer message, which Ember passes through unchanged. |
+
+Summary by class: (a) 0; (b) 14-19 (6 tests: reserved `@Foo`/`@Bar` x5, `modifier` keyword) plus
+1-7 (7 debug-render-tree names), plus the (b)/(c) split in 11-12 and the (d)-ish rewrite in 13;
+(c) 8-10 and the VM halves of 11-12; (d) 13 (what exactly to rewrite).
+
+Plumbing done in phase 1 that a reviewer may want to see, because it touched test inputs without
+changing what they check: (1) string component names in templates were dasherized
+(`{{component "Foo"}}` -> `{{component "foo"}}`, ~35 sites in `lib/suites/{components,has-block,
+has-block-params,in-element}.ts`, `test/components-test.ts`, `test/strict-mode-test.ts`, plus the
+data values `name: 'Foo'`, `something: 'FooBar'`, `truthyValue: 'XYasss'` -> `'xyasss'`; Ember's
+resolver does not dasherize a string given to `{{component}}`, so the harness registers
+`component:foo` and the template names it that way); (2) `createCurriedComponent(name)`
+dasherizes before the lookup; (3) `createTemplate` maps `meta.moduleName`/`plugins.ast`/`locals`
+(locals become scope names), and drops `keywords` (no test uses it any more since "Non-native
+keyword" went in 5.3b).
 
 ## 6. Remaining stubs (step 6)
 
@@ -802,3 +837,9 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   because they mutate untracked nested plain objects. That is a test-level coupling for W4
   (rewrite them over tracked data, then drop `equals`), not a W2 blocker. `glimmerOnly: {options}`
   in 5.5a is fine as an interim; 5.5b removes it.
+- 5.5b (2026-10-08): phase 1 code `89429e7685` (worktree). `glimmerOnly` removed from `internal-test-helpers/lib/compile.ts`; IT
+  `createTemplate` maps `meta.moduleName`, `plugins.ast`, `locals`; `registerSomeComponent` registers `component:${dasherize(name)}`;
+  partial-rehydration `componentFor` and `createCurriedComponent` dasherize; string names in templates dasherized (see triage). First run
+  after the switch: 156 failures (strict-mode `locals` unmapped 95, un-dasherized string names ~40, 20 real); after plumbing: 19 failures,
+  all triaged above, none changed. Full suite 9110 / 9073 / 19 / 18; per-test diff against `full55a`: 0 missing, 0 new, 19 pass -> fail.
+  `type-check:internals` and prettier clean. Phase 2 (changing the 19 tests) waits for Opus decisions per row.
