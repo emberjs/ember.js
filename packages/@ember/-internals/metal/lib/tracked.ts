@@ -2,7 +2,11 @@ import { meta as metaFor } from '@ember/-internals/meta/lib/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import type { UpdatableTag } from '@glimmer/interfaces';
+import { debug } from '@glimmer/validator/lib/debug';
 import { consumeTag, untrack } from '@glimmer/validator/lib/tracking';
+import { unwrap } from '@glimmer/validator/lib/utils';
+import { DIRTY_TAG } from '@glimmer/validator/lib/validators';
 import { dirtyTagFor, tagFor } from '@glimmer/validator/lib/meta';
 import { trackedData } from '@glimmer/validator/lib/tracked-data';
 import { trackedValue, type TrackedValue } from '@glimmer/validator/lib/tracked-value';
@@ -396,6 +400,35 @@ export class TrackedDescriptor {
   }
 }
 
+/**
+ * The value of one tracked accessor of one instance,
+ * with the tag that reports a change of it.
+ *
+ * The accessor keeps the cell in its own storage,
+ * so a read or a write needs no map lookup.
+ *
+ * Observers, computed chains and `notifyPropertyChange`
+ * find the tag of a key in the tag registry.
+ * So the cell uses that tag and makes none of its own.
+ */
+class AccessorCell {
+  value: unknown;
+  tag: UpdatableTag;
+
+  constructor(value: unknown, tag: UpdatableTag) {
+    /**
+     * All cells have one hidden class, and V8 records which kind of value
+     * the `value` field held so far. The first value of another kind makes
+     * V8 throw away the optimized code that reads the field.
+     *
+     * A number and then the value make the field general from the first cell.
+     */
+    this.value = 0;
+    this.value = value;
+    this.tag = tag;
+  }
+}
+
 function tracked2023(
   args: Parameters<Decorator>,
   options?: { equals?: (a: any, b: any) => boolean; description?: string }
@@ -417,28 +450,63 @@ function tracked2023(
       return;
     case 'accessor': {
       let equals = options?.equals;
+      let key = dec.context.name;
+      let storage = dec.value;
+
       return {
         get(this: object) {
-          consumeTag(tagFor(this, dec.context.name));
-          let value = dec.value.get.call(this);
+          let stored = storage.get.call(this);
+          let cell: AccessorCell;
+
+          if (stored instanceof AccessorCell) {
+            cell = stored;
+          } else {
+            /**
+             * The storage holds the plain value until the first read.
+             * An instance whose accessor is never read
+             * has no cell and no tag.
+             */
+            cell = new AccessorCell(stored, tagFor(this, key) as UpdatableTag);
+            storage.set.call(this, cell);
+          }
+
+          consumeTag(cell.tag);
+
+          let value = cell.value;
+
           if (Array.isArray(value) || isEmberArray(value)) {
             consumeTag(tagFor(value, '[]'));
           }
           return value;
         },
         set(this: object, value: unknown) {
-          if (
-            equals !== undefined &&
-            equals(
-              untrack(() => dec.value.get.call(this)),
-              value
-            )
-          ) {
-            return;
+          let stored = storage.get.call(this);
+
+          if (stored instanceof AccessorCell) {
+            if (equals !== undefined && equals(stored.value, value)) {
+              return;
+            }
+
+            if (DEBUG) {
+              unwrap(debug.assertTagNotConsumed)(stored.tag, this, key);
+            }
+
+            DIRTY_TAG(stored.tag, true);
+            dirtyTagFor(this, SELF_TAG);
+            stored.value = value;
+          } else {
+            if (equals !== undefined && equals(stored, value)) {
+              return;
+            }
+
+            /**
+             * No read made a cell yet. The registry can still have a tag,
+             * from other code that asked for it by key.
+             */
+            dirtyTagFor(this, key);
+            dirtyTagFor(this, SELF_TAG);
+            storage.set.call(this, value);
           }
-          dirtyTagFor(this, dec.context.name);
-          dirtyTagFor(this, SELF_TAG);
-          return dec.value.set.call(this, value);
         },
       };
     }
