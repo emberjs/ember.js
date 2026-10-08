@@ -433,6 +433,9 @@ out of W2 (findings 6 and 7 of `.work/W2-glimmer-harness.md`) and are open.
    `ClassicRootState` does, so `this` is the test's context object. The Ember harness instead
    renders a `-top-level` classic component, so `this` there is that component. Which one does
    the Legacy profile mean? (W2 finding 6.)
+
+  > there don't appear to be very many tests using this API. They can probably just get refactored to use `renderComponent`. If it's infeasible to maintain test coverage that way, we could also solve the problem with existing ember public API via `renderComponent` plus a custom ComponentManager.
+
 8. **Q8. Serialize mode and interactivity.** *Open.* In Ember, `serialize` and `rehydrate` are
    not options of `renderComponent`: they are the renderer's DOM tree builder, chosen by
    `-environment:main`'s `_renderMode` (`service:-dom-builder`,
@@ -440,3 +443,5 @@ out of W2 (findings 6 and 7 of `.work/W2-glimmer-harness.md`) and are open.
    with a non-interactive renderer, but the Glimmer SSR suites have always serialized with
    `isInteractive: true`, so modifiers run on the server (W2 kept that). Which is normative for
    the SSR profile (§05-13)? (W2 finding 7.)
+
+   > Follow what Ember does (non-interactive). That is what people have built existing apps against. 

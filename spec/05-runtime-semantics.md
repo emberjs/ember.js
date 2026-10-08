@@ -2304,3 +2304,5 @@ test `packages/@ember/application/tests/visit_test.js:65-110`) (chapter 08); the
     not on Ember's (W2 kept it so; `.work/W2-glimmer-harness.md` finding 5). If the general
     dynamic scope is a VM capability that Ember does not expose, §05-5.8 is informative and the
     suite is an implementation test.
+
+    > Ember is likely to support other keys in the future but as of now the spec behavior is to assert on anything other than outletState. Implementations are encouraged to implement dynamic scope in a general way, like glimmer does, but guard with the same assertion until such a time that a context RFC moves ahead and allowed general purpose dynamic scope.

@@ -1490,6 +1490,9 @@ assertion: `A glimmer transaction was begun, but one already exists...`
   on branch `test/w2-glimmer-harness`,
   `packages/@ember/-internals/glimmer/tests/integration/mount-test.js` › "components rendered
   inside an engine are created with the engine as their owner", pins the non-curried case.
+
+  > For compatibility we need to preserve the Ember behavior here, not the Glimmer test suite. Nobody wrote apps against the Glimmer test suite. Document that it's a quirk but it's part of the spec for compat reasons.
+
 - **Q4: `undefined` owner.** Public component and modifier managers cache delegates in a
   `WeakMap` keyed by owner, so an `undefined` owner throws a raw `TypeError`. Helper managers
   special-case `undefined`. Should component and modifier managers do the same?
