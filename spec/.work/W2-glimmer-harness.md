@@ -724,3 +724,25 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   handle in `run()` before resetting the HTML (expectations untouched). Full suite 9111 / 9093 / 0 / 18; per-test diff against
   `full52b`: 0 missing, 0 new; greps for `Expected assert.verifySteps`, `Expected N assertions`, `afterEach failed`, `NAMESPACES`: 0.
   `type-check:internals` and prettier clean.
+- 5.3b (2026-10-08, NOT DONE, stopped by rule; WIP code commit `e72c374b7e`): implemented as designed: `ResolverImpl` replaces the fake resolver
+  (`createRenderer` takes it; jit delegate keeps one for `createCurriedComponent`, rehydration delegate one per side); `lib/modes/jit/register.ts`
+  registers `component:/helper:/modifier:` on the owner(s) (`registerHelperDefinition` moved there; non-class values with
+  `{ instantiate: false }`); `preprocess(src, options, owner)` instantiates templates with the delegate's owner (server/client owner in the
+  rehydration delegate); partial rehydration finds components with `owner.factoryFor('component:' + name).class`. Deleted `registry.ts`,
+  `resolver.ts`, `compilation-context.ts` (with `CIRCULAR_OBJECT`), the keyword pre-registration, `RenderDelegateOptions.resolver`,
+  `JitRenderDelegate.compileTemplate` and the index export of `jit/resolver`. The anticipated P4 failures are fixed: 8 `hash` overrides removed
+  (ledger rows), debug-render-tree `registerCustomComponent` via `setInternalComponentManager` + `owner.register`, `Updating: missing helper`
+  via `this.render('{{helo world}}')` (passes), `createCurriedComponent` from `ResolverImpl.lookupComponent(name, owner)` + `curry`
+  (5 `components-test` tests pass), 'Non-native keyword' deleted (ledger row). Full suite: 9110 total / 9079 pass / 13 fail / 18 skip; per-test diff
+  against `full53a`: 1 missing (Non-native keyword), 13 pass -> fail, nothing else changed; greps for `Expected assert.verifySteps`,
+  `Expected N assertions`, `afterEach failed`, `NAMESPACES`: 0. `type-check:internals`, prettier clean.
+  UNANTICIPATED FAILURE (13 tests, all `rehydration :: Components :: initial render > [integration] Glimmer: …` from `RehydratingComponents`:
+  'Component invocations', 'Mismatched Component invocations', '… with template', '… with block params', 'with empty args', 'Multiple invocations',
+  'Mismatched Multiple invocations', 'interacting with builtins', 'mismatched (blocks) interacting with builtins', '<p> invoking a block which emits
+  a <div>'): `Assertion Failed: Cannot re-register: 'component:TestComponent', as it has already been resolved.` Cause: `RehydratingComponents`
+  calls `buildComponent` (hence `registerComponent`) in both `renderServerSide` and `renderClientSide`; `RehydrationDelegate.registerComponent`
+  registers on both owners, and the server owner already resolved the name when it rendered. The fake registry silently overwrote; Ember's registry
+  refuses to re-register a resolved name. The 'Mismatched …' tests register a different layout for the client under the same name, so skipping the
+  second registration is not an option: the registration must go to the side that is rendering (server registrations on the server owner at
+  `renderServerSide`, client ones on the client owner at `renderClientSide`), or the delegate must replace a resolved registration. No test
+  expectation was changed. Needs a decision/fix before 5.3b can be ticked; 5.3c is not started.
