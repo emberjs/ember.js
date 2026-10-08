@@ -4,6 +4,25 @@ import { test } from '../test-decorator';
 export class ServerSideSuite extends AbstractNodeTest {
   static suiteName = 'Server Side Rendering';
 
+  // A server render is non-interactive, as Ember's FastBoot (spec 05-runtime-semantics 13).
+  @test
+  'modifiers do not run in a server render'() {
+    let installs: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        didInsertElement() {
+          installs.push('install');
+        }
+      }
+    );
+
+    this.render('<div {{probe}}>content</div>');
+    this.assertHTML('<div>content</div>');
+    this.assert.deepEqual(installs, [], 'the modifier did not run');
+  }
+
   @test
   'HTML text content'() {
     this.render('content');

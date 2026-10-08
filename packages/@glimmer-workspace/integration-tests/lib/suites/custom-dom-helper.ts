@@ -38,6 +38,24 @@ export class CompilationTests extends RenderTest {
 export class SerializedDOMHelperTests extends DOMHelperTests {
   static override suiteName = 'Server-side rendering in Node.js (serialize)';
 
+  // A server render is non-interactive, as Ember's FastBoot (spec 05-runtime-semantics 13).
+  @test
+  'modifiers do not run in a serialize render'() {
+    let installs: string[] = [];
+
+    this.registerModifier(
+      'probe',
+      class {
+        didInsertElement() {
+          installs.push('install');
+        }
+      }
+    );
+
+    this.render('<div {{probe}}>content</div>');
+    this.assert.deepEqual(installs, [], 'the modifier did not run');
+  }
+
   @test
   'The compiler can handle unescaped HTML'() {
     this.render('<div>{{{this.title}}}</div>', { title: '<strong>hello</strong>' });
