@@ -543,14 +543,14 @@ keyword" went in 5.3b).
   - [x] 7.1d (done, code `d669d705fe`; 19 IT tests: 9 deleted (twin), 10 moved; `on-runtime-test.ts` kept) `on`: `IT/test/modifiers/on-test.ts`, `keywords/on-runtime-test.ts` vs `EG/modifiers/on-test.js`.
   - [x] 7.1e (done, code `68fcd3260a`; 15 deleted (twin), 2 moved, 14 kept) custom modifier manager: `IT/test/managers/modifier-manager-test.ts`, `modifiers-test.ts`, `updating-modifiers-test.ts` vs `EG/custom-modifier-manager-test.js`.
   - [x] 7.1f (done, code `8f427a1ed0`; 14 deleted (twin), 9 kept) custom helper manager: `IT/test/managers/helper-manager-test.ts` vs `EG/helpers/helper-manager-test.js`, `custom-helper-test.js`, `invoke-helper-test.js`.
-  - [ ] 7.1g custom component manager: `@glimmer/manager/test/managers-test.ts` vs `EG/custom-component-manager-test.js` (registry-only parts stay, W5 list).
+  - [x] 7.1g (done, no code change; nothing deleted or moved; file added to the W5 list) custom component manager: `@glimmer/manager/test/managers-test.ts` vs `EG/custom-component-manager-test.js` (registry-only parts stay, W5 list).
   - [ ] 7.1h strict mode and lexical scope: `IT/test/strict-mode-test.ts`, `lexical-scope-test.ts` vs `EG/components/strict-mode-test.js`, `runtime-template-compiler-*.ts`.
   - [ ] 7.1i `if`/`unless`: `IT/test/syntax/if-unless-test.ts` vs `EG/syntax/if-unless-test.js`, `helpers/if-unless-test.js`, `shared-conditional-tests.js`.
   - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a-7.1f done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`, `8f427a1ed0`). Next: 7.1g (custom component manager). Last full run `full71f` (9021 / 9003 / 0 / 18) in the session
-  scratchpad is the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
+  Progress note (7.1): 7.1a-7.1g done (worktree \`a135f9b3b0\`, \`9a486d218e\`, \`c7f204af33\`, \`d669d705fe\`, \`68fcd3260a\`, \`8f427a1ed0\`; 7.1g changed no code). Next: 7.1h (strict mode and lexical scope). Last full run \`full71f\`
+  (9021 / 9003 / 0 / 18) in the session scratchpad is still the baseline for the next per-test diff (\`run.sh NEW PREV\` builds, runs and diffs; \`post.sh\` is the diff and greps). Ledger rows go in the \`7.1 rows\` section.
 
 ## 8. Exit check (Opus)
 
@@ -578,6 +578,8 @@ and 8.1 exempts them from the import boundary (5.1 review decision 3). Keep addi
 - `IT/test/precompile-test.ts`, `IT/test/compiler/compile-options-test.ts`: `precompile`, `templateFactory`, opcode-compiler types (C3) (5.1 table).
 - `IT/test/vm/in-element-vm-test.ts` (5 tests, `jit` and `rehydration (plain Glimmer compile)`): the VM's `{{#in-element}}` with a null destination or a non-null `insertBefore`, compiled with plain Glimmer options; Ember's template language rejects both (5.5b).
 - `IT/lib/modes/plain/{compile,delegates}.ts` (helpers for the previous entry, no tests of their own).
+- `packages/@glimmer/manager/test/managers-test.ts`: every test is at the registry level (`set*Manager`/`getInternal*Manager`, `CustomComponentManager['factory']`, hand-built internal managers, `create()` called directly); no render-level Ember twin (7.1g).
+- `packages/@glimmer/manager/test/capabilities-test.ts`: `capabilityFlagsFrom`/`managerHasCapability` bitmaps, internal VM flags (seen while doing 7.1g; not part of the §3 table).
 - Not kept, so not on the list: `iterable-test.ts` (6.3: every case was observable through `{{#each}}`, ported or ledgered; deleted), `style-warnings-test.ts` (6.1), `entry-point.ts` (5.4b, never registered), the strict-mode "Non-native keyword" test (5.3b, deleted).
 
 ## Findings for the author
@@ -968,3 +970,7 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   hold any more: the capability tests (`hasValue`/`hasScheduledEffect`/version/capabilities function) are all in the EG file too. `custom-helper-test.js` and
   `invoke-helper-test.js` have no IT counterpart. Ledger: 16 rows (14 deleted, 2 grouped kept). Full suite 9035 -> 9021 total / 9003 pass / 0 fail / 18 skip (-14); per-test
   diff against `full71e`: exactly the 14 ledgered tests missing, 0 new; greps 0; type-check and prettier clean.
+- 7.1g (2026-10-08): no code change, no worktree commit, no full run (the tree is the one of `full71f`). `@glimmer/manager/test/managers-test.ts` (30 tests; §3 counted 20) vs
+  `EG/custom-component-manager-test.js` (23 render tests): the file is entirely registry level, so it stays as the item says (one grouped `kept` ledger row) and is on the W5 list, with
+  `capabilities-test.ts` next to it. EG's render tests of the component manager (create/update/destroy hooks, args, positional params, async lifecycle, capabilities helper)
+  have no IT twin, as IT has no render-level component-manager test.
