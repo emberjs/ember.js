@@ -142,6 +142,12 @@ or of the identifier, not executed QUnit tests; "registrations" multiplies by th
   real delegate can be passed as `env`.
 - Action: replace with Ember's delegate (or with `@ember/destroyable` `destroy` + `await settled()`),
   then delete.
+- *Correction (W2 5.1, 2026-10-08):* the two module-level queues had no callers.
+  Destruction already ran through Ember's global-context `scheduleDestroy`/`scheduleDestroyed`
+  (run-loop `actions` and `destroy` queues), because `@ember/-internals/glimmer` is loaded in
+  the page. `BaseEnv` contributed only `isInteractive: true`, `enableDebugTooling: false` and an
+  `onTransactionCommit` that drained empty arrays; the real change in W2 was who drives
+  transactions (Ember's renderer).
 
 ### 1.5 `TestJitRuntimeResolver`, `TestJitRegistry`, `CIRCULAR_OBJECT`
 - `IT/lib/modes/jit/resolver.ts:11-25`, `registry.ts:19-103`, `register.ts:139-160`.
@@ -277,7 +283,9 @@ or of the identifier, not executed QUnit tests; "registrations" multiplies by th
 - `@glimmer/reference/test/references-test.ts:46-60` (12 tests): overrides `getProp`/`setProp`/
   `scheduleRevalidate` with `Reflect`-like fakes; `utils/template.ts:62-80` `TestContext` imitates
   Ember's `toIterator` (`@ember/-internals/glimmer/lib/utils/iterator.ts`) with `ObjectIterator`;
-  `iterable-test.ts` (12 tests) tests this fake iteration protocol. Real: Ember's
+  `iterable-test.ts` (12 tests) tests this fake iteration protocol. *Correction (W2 6.3,
+  2026-10-08):* it did not. `iterable-test.ts` installs no global context, so in the shared page
+  it already ran on Ember's real `toIterator`; nothing imported `utils/template.ts`. Real: Ember's
   `toIterator`, which handles arrays, `ArrayProxy`, native iterables, `Symbol.iterator`, and
   is tested by `EG/syntax/each-test.js` (28) and `components/classic/each-test.js`.
 - `@glimmer/validator/test/validators-test.ts:46-58` (1 of 22): fake `scheduleRevalidate`
@@ -346,13 +354,20 @@ Counts are `@test` markers. "Stronger" is the copy I would keep.
 | Custom helper manager | `IT/test/managers/helper-manager-test.ts` (23) | `EG/helpers/helper-manager-test.js` (15), `custom-helper-test.js` (44), `invoke-helper-test.js` | capabilities, tracking, destroy | Glimmer on capability combinations, Ember on `helper()`/class helper/owner |
 | Custom component manager | `@glimmer/manager/test/managers-test.ts` (20) | `EG/custom-component-manager-test.js` (23) | create/update/destroy hook order | Ember (through render); keep the manager-level pure tests |
 | Strict mode and lexical scope | `IT/test/strict-mode-test.ts` (94), `lexical-scope-test.ts` | `EG/components/strict-mode-test.js` (22), `runtime-template-compiler-*.ts` | strict-mode component/helper/modifier resolution | Glimmer by count; neither uses a stub except `registerHelper/registerModifier` (4 sites in the Glimmer copy) |
-| `if`/`unless` | `IT/test/syntax/if-unless-test.ts` (11) | `EG/syntax/if-unless-test.js` (2) + `helpers/if-unless-test.js` + `shared-conditional-tests.js` | truthiness cases | Ember (real `toBool`: `isArray`, proxies, `isTruthy`) |
+| `if`/`unless` | `IT/test/syntax/if-unless-test.ts` (11) | `EG/syntax/if-unless-test.js` (2) + `helpers/if-unless-test.js` + `shared-conditional-tests.js` | truthiness cases. *Correction (W2 7.1i):* none; the IT file is a compile-time syntax-error suite (argument-count errors), not a truthiness suite | Ember (real `toBool`: `isArray`, proxies, `isTruthy`); the IT file has no twin and stays |
 | Tracked / collections | `IT/test/tracked-value-test.ts` (3), `collections/*` (6 files) | `EG/helpers/tracked-test.js` (10), `components/tracked-test.js` (27), `@ember/-internals/metal/tests/tracked/*`, `@ember/reactive` | tracked rendering updates | Ember; collections are Glimmer-only (no Ember twin) |
 | Debug render tree | `IT/test/debug-render-tree-test.ts` (13 on `DebugRenderTreeDelegate` using `EmberishCurlyComponent`) | `EG/application/debug-render-tree-test.ts` (16) | same API, `captureRenderTree` | Ember (real owner, real classic component and `{{outlet}}`/engine nodes); keep Glimmer only for strict-mode/template-only shapes |
 | `owner` handling | `IT/test/owner-test.ts` (6) on fake resolver + fake classic | `EG/application/engine-test.js`, `mount-test.js`, `@glimmer/owner/test` | owner threaded to helper/modifier/component managers | Ember |
 | `style` warning | `IT/test/style-warnings-test.ts` (5) | style cases in `EG/components/attribute-bindings-test.js`, `content-test.js` | warn on untrusted style | Ember (real warn); move |
 | SSR / rehydration | `IT/lib/suites/ssr.ts` (30), `initial-render.ts` Rehydration (88 via 2 suites), `partial-rehydration-test.ts`, `chaos-rehydration-test.ts` | none (Ember has no SSR suite in this repo; FastBoot lives elsewhere) | n/a | Glimmer only. It uses the fake registry and fake classic component (`RehydratingComponents`, `ServerSideComponentSuite` x 3 kinds). Not a duplicate, but affected by 1.3 |
 | Run-loop settle | `IT/test/render-test.ts` | `EG/render-settled-test.js` | n/a | Ember |
+
+*Correction (W2 step 7, 2026-10-08):* the "Overlap" column overstates the duplication. Test-for-test
+duplicates exist only for the `fn`/`hash`/`array`/`get`/`concat` helpers, `{{on}}`, and the custom
+modifier and helper manager suites. `{{#each}}`, `{{in-element}}`, strict mode, `if`/`unless`,
+tracked/collections and `render-test` are complementary or unrelated, and the "capability
+combinations" advantage of the Glimmer helper-manager copy no longer holds (the Ember file has
+those tests too). Details per row in `W2-glimmer-harness.md` 7.1a–7.1k.
 
 Also duplicated infrastructure rather than tests: two `GlimmerishComponent`s (2.1, 1.2), two
 `compile` helpers (2.4), two QUnit/fixture setups (`IT/lib/setup-harness.ts` vs
@@ -367,7 +382,7 @@ Ordered by impact (dependent tests, then how fake the thing is).
 |---|---|---|---|---|
 | `EmberishCurlyComponent` + manager (`IT/lib/components/emberish-curly.ts`) | classic `Component` + `CurlyComponentManager` | `@ember/component` classic `Component` via the Ember harness | about 160 fan-out tests (Curly+Dynamic) + `ember-component-test.ts` 74 + `owner-test.ts` 6 + `input-range-test.ts` 5 + `debug-render-tree-test.ts` 5 uses + Rehydration/SSR component suites (about 100 more via 3 kinds) | Delete. Port the roughly 10 tests with no Ember twin to `@glimmer/component`; drop the rest as duplicates |
 | `Curly`/`Dynamic` kinds and `componentModule` fan-out (`module.ts:113-197`, `render-test.ts:221-310`) | running each test under classic invocation | one invocation form per test; curly invocation through a real owner | same as above | Stop the fan-out (collapse to Glimmer + TemplateOnly); delete `buildCurlyComponent`/`buildDynamicComponent` |
-| `BaseEnv` queues + hand-driven `env.begin()/commit()` (`base-env.ts`, `render-test.ts:431-446`) | `EmberEnvironmentDelegate` + Ember renderer transaction | Ember's delegate and renderer; `renderSettled` | every test in `IT/test` (about 79 files) | Replace by the real delegate (this is 09 C1/W2) |
+| `BaseEnv` queues (no callers, see the §1.4 correction) + hand-driven `env.begin()/commit()` (`base-env.ts`, `render-test.ts:431-446`) | `EmberEnvironmentDelegate` + Ember renderer transaction | Ember's delegate and renderer; `renderSettled` | every test in `IT/test` (about 79 files) | Replace by the real delegate (this is 09 C1/W2) |
 | `TestJitRuntimeResolver` / `TestJitRegistry` / `CIRCULAR_OBJECT` | `ResolverImpl` + owner `factoryFor` | `buildOwner` + `owner.register` | every test using `registerComponent/Helper/Modifier` (about 150 sites in 22 files), `owner-test.ts` 6 | Replace with real resolver; `owner-test.ts` delete (Ember has twins) |
 | `TestModifierManager`, `registerModifier`, `registerHelper`, `createHelperRef` | `ember-modifier`/`@ember/helper` | `defineSimpleHelper`/`defineSimpleModifier` (`IT/lib/test-helpers/define.ts:138-189`, public managers) | about 76 call sites in 13 test files | Port to the public-manager helpers (mechanical); delete the managers |
 | `registerInternalHelper` with `createInvokableRef` for `mut` (`fn-test.ts:243,263`) | Ember's `mut` helper | real `mut` | 2 tests | Delete (twins at `EG/helpers/fn-test.js:195,208`) |

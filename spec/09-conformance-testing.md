@@ -183,6 +183,18 @@ implementation.
   (`lib/test-helpers/module.ts:19-43`), plus node, serialization and rehydration variants for
   the SSR profile. About 85 of the 86 Glimmer test files import only from the harness barrel,
   so one swap covers them, after the refactors of §9.5 C1.
+  After W2 (branch `test/w2-glimmer-harness`, not yet upstream), the seam is
+  `JitRenderDelegate` and its node, serialization and rehydration variants in `lib/modes/`.
+  All of them render through Ember's `BaseRenderer`
+  (`packages/@ember/-internals/glimmer/lib/base-renderer.ts:423`) with a real owner and
+  Ember's `ResolverImpl`, and they differ only in the document and the DOM tree builder they
+  pass to it. Components go through public `renderComponent`; a loose template with a `self`
+  goes through an internal root type in `lib/modes/template-root.ts` (Q7). `lib/modes/`
+  deep-imports `BaseRenderer` and `ResolverImpl`, which `@ember/-internals/glimmer` does not
+  export, so seam A must replace those modules too. Public `renderComponent` replaces an
+  earlier render into the same element by rendering before that render's first node and
+  destroying it (`replaceLastRender`, `base-renderer.ts:737-750`); the rehydration variant
+  therefore renders its partial rehydrations with `BaseRenderer.render` directly.
 - **Seam C: one compile function.** The two harness compile helpers (§9.3 item 3) become calls
   to the adapter's `compile`. Every other test-time compile already goes through them or
   through `precompileTemplate`/`template()`.
@@ -203,18 +215,25 @@ interface ConformanceAdapter {
     strictMode?: boolean;
     scope?: () => Record<string, unknown>;      // lexical scope (§01-1.8)
     moduleName?: string;
-    keywords?: string[];                        // extra strict-mode keywords
   }): object;                                   // a template factory accepted by setComponentTemplate
+
+  // An owner with register()/lookup() for the loose and legacy profiles. Destroying it
+  // tears down every render made with it (C17).
+  createOwner?(): object;
 
   // Render, as renderComponent (§08) or the loose top-level template does.
   renderComponent(definition: object, options: {
     into: Element; args?: Record<string, unknown>; owner?: object;
-    mode?: 'client' | 'serialize' | 'rehydrate';   // SSR profile only
+    mode?: 'client' | 'serialize' | 'rehydrate';   // SSR profile only (Q8)
+    debugRenderTree?: boolean;                     // render-tree profile
   }): RenderHandle;
-  renderTemplate(template: object, self: object, options: {          // loose / legacy profiles
+  renderTemplate(template: object, self: object, options: {          // loose / legacy profiles (Q7)
     into: Element; owner?: object; mode?: 'client' | 'serialize' | 'rehydrate';
+    debugRenderTree?: boolean;
   }): RenderHandle;
 
+  // Synchronously bring every root up to date after writes (what run()/runTask gives).
+  rerender(): void;
   // Bring the DOM up to date after writes (§07-1.10); what `await settled()` waits for (C11).
   settle(): Promise<void>;
 
@@ -224,8 +243,33 @@ interface ConformanceAdapter {
   captureRenderTree?(owner: object): unknown[];   // render-tree profile (§08-13)
 }
 
-interface RenderHandle { rerender(): void; destroy(): void }
+interface RenderHandle { destroy(): void }
 ```
+
+What W2 learned from running the reference adapter's Glimmer half over Ember's renderer:
+
+- **`RenderHandle`.** Ember's `renderComponent` result has only `destroy()`. Re-rendering is
+  renderer-wide, not per root: `renderer.rerender()` or any run loop revalidates every
+  registered renderer whose state changed. So `rerender()` belongs to the adapter, next to
+  `settle()`. `destroy()` only schedules the destructors (run-loop `actions` and `destroy`
+  queues, §06-10.2); they have run after the next `rerender()` or `settle()`.
+- **`compile` has no `keywords` option.** Ember fixes the strict-mode keyword set
+  (`STRICT_MODE_KEYWORDS`, `packages/ember-template-compiler/lib/plugins/index.ts:52`).
+  Extra keywords are a VM host hook (`lookupBuiltInHelper`,
+  `packages/@ember/-internals/glimmer/lib/resolver.ts:188`) with no Ember API, so the
+  Glimmer test that used it ("Non-native keyword") was an implementation test.
+- **`createOwner`.** Loose-mode and legacy tests register components, helpers and modifiers by
+  name, so they need an owner. The reference adapter uses `buildOwner` from
+  `internal-test-helpers` and registers `-view-registry:main`, which classic components need.
+  In loose mode `<FooBar>` resolves `component:foo-bar`, because Ember's compile dasherizes the
+  tag (`customizeComponentName`,
+  `packages/ember-template-compiler/lib/system/compile-options.ts:23`).
+- **`captureRenderTree`.** Ember reads `ENV._DEBUG_RENDER_TREE` once, when a renderer's
+  environment is created (`packages/@ember/-internals/glimmer/lib/environment.ts:129`), and
+  `captureRenderTree(owner)` ignores the owner and captures every registered renderer
+  (`packages/@ember/debug/lib/capture-render-tree.ts:24-34`). Capture must therefore be enabled
+  before a test's first render (the `debugRenderTree` option, or implied by the render-tree
+  profile), and earlier renderers must have been torn down.
 
 Everything else the suite uses is public: `setComponentTemplate`, `templateOnly`, the three
 `set*Manager` functions and capabilities, `@glimmer/component`, `@glimmer/tracking`,
@@ -276,12 +320,12 @@ Counts are files in the four template-relevant groups unless noted.
 
 | ID | Pattern | Where (count) | Why not spec | Refactor |
 |---|---|---|---|---|
-| C1 | **Glimmer harness bypasses its delegate.** `RenderTest.set` writes the context and calls `dirtyTagFor`; `rerender` calls `result.env.begin()`/`commit()`; `destroy` uses `inTransaction`; all wrap `run()` from `@ember/runloop` | `integration-tests/lib/render-test.ts:19,419-446,629-632`; used by every Glimmer test | Tags, environment transactions and `RenderResult` are VM types (§07-2.6) | Add `delegate.set`, `delegate.rerender`, `delegate.destroy` with the current code as the default; make the test context a tracked object instead of tag-dirtied; reduce `RenderResult` to `RenderHandle` |
-| C2 | **Compiling to wire format in the harness.** `precompileJSON` + `templateFactory`; registered layouts built with `templateFactory(CIRCULAR_OBJECT)`; build-time `compilerPath` | two harness `compile` helpers; `modes/jit/registry.ts`; `babel.config.mjs:41` | Wire format is informative (§00-0.2, §04) | Seam C; seam A swaps `compilerPath` |
+| C1 | **Glimmer harness bypasses its delegate.** `RenderTest.set` writes the context and calls `dirtyTagFor`; `rerender` calls `result.env.begin()`/`commit()`; `destroy` uses `inTransaction`; all wrap `run()` from `@ember/runloop` | `integration-tests/lib/render-test.ts:19,419-446,629-632`; used by every Glimmer test | Tags, environment transactions and `RenderResult` are VM types (§07-2.6) | Add `delegate.set`, `delegate.rerender`, `delegate.destroy` with the current code as the default; make the test context a tracked object instead of tag-dirtied; reduce `RenderResult` to `RenderHandle`. **W2 (done on branch `test/w2-glimmer-harness`):** the context is a `trackedObject` from `@ember/reactive/collections`, so `set` needs no delegate hook; `RenderHandle { rerender, destroy }` replaces `RenderResult`; render, rerender and destroy go through Ember's renderer inside `run()`. Remains: 18 tests mutate untracked nested objects and rely on the context dirtying on every write (`equals: () => false`); W4 rewrites them over tracked data |
+| C2 | **Compiling to wire format in the harness.** `precompileJSON` + `templateFactory`; registered layouts built with `templateFactory(CIRCULAR_OBJECT)`; build-time `compilerPath` | two harness `compile` helpers; `modes/jit/registry.ts`; `babel.config.mjs:41` | Wire format is informative (§00-0.2, §04) | Seam C; seam A swaps `compilerPath`. **W2:** one `compile` in `internal-test-helpers/lib/compile.ts` serves both harnesses, and the Glimmer harness compiles with Ember's compile options; `CIRCULAR_OBJECT` and the fake registry are gone (the owner instantiates layouts). Remains: that function still calls `precompileJSON` (seam C replaces it), and `compilerPath` (seam A) |
 | C3 | **Assertions on wire format or template-factory internals** (`__id`, `__meta`, `referrer`, sexp opcodes) | `@glimmer/compiler/test/compiler-test.ts` (88 tests), `integration-tests/test/precompile-test.ts`, `compiler/compile-options-test.ts` (partly), `glimmer/tests/unit/template-factory-test.js`, `runtime-resolver-cache-test.js` (5) | §04 is informative | Exclude. Move the compile-time *error* cases of `compiler-test.ts` to compile-error tests through the adapter |
 | C4 | **Opcodes, program, heap, capability bitmaps** | `@glimmer/program/test`, `@glimmer/vm`-level tests, `manager/test/capabilities-test.ts` (bitmaps) (7) | Not normative (CONVENTIONS) | Exclude. No opcode-snapshot tests exist |
 | C5 | **Observing tags to test reactivity.** `track(() => obj.x)` + `valueForTag`/`validateTag`; `tagForProperty`; tracked collections imported from `@glimmer/validator`; `getValue` on `invokeHelper` results | `@glimmer/validator/test` (tag tests), `@ember/-internals/metal/tests/tracked/*`, `alias_test.js`, `integration-tests/test/collections/*` (25 + about 6 in metal) | Tags and revisions are not normative (§07-2.6) | Re-express with public reactivity: `createCache`/`getValue` today, `cached`/`isValid` if §07-2 is accepted; import collections from `@ember/reactive/collections`. Raw tag tests (`validators-test`, `meta-test`) are implementation tests |
-| C6 | **References built by hand.** Helpers registered as `createComputeRef` over reified args; `registerInternalHelper`; the `EmberishCurlyComponent` test manager uses references and `DirtyableTag` | `integration-tests/lib/helpers.ts`, `modes/jit/register.ts`, `components/emberish-curly.ts`; `updating-test.ts` (6 uses), `helpers/fn-test.ts` (2) (6) | References are not normative | Register helpers through `setHelperManager` (public); drop `registerInternalHelper` uses or rewrite them as plain helpers; reimplement `EmberishCurlyComponent` on the public component manager API (`componentCapabilities` with `updateHook`, `createInstance`), or render real classic components through the Ember harness |
+| C6 | **References built by hand.** Helpers registered as `createComputeRef` over reified args; `registerInternalHelper`; the `EmberishCurlyComponent` test manager uses references and `DirtyableTag` | `integration-tests/lib/helpers.ts`, `modes/jit/register.ts`, `components/emberish-curly.ts`; `updating-test.ts` (6 uses), `helpers/fn-test.ts` (2) (6) | References are not normative | Register helpers through `setHelperManager` (public); drop `registerInternalHelper` uses or rewrite them as plain helpers; reimplement `EmberishCurlyComponent` on the public component manager API (`componentCapabilities` with `updateHook`, `createInstance`), or render real classic components through the Ember harness. **W2:** helpers and modifiers are registered through `setHelperManager`/`setModifierManager`; `registerInternalHelper`, `createHelperRef` and `TestModifierManager` are deleted; `EmberishCurlyComponent` is deleted and its classic cases run on real classic components. Remains: only `createConstRef` for the root `self`, inside `lib/modes/` |
 | C7 | **Internal managers.** `setInternal*Manager`, `getInternal*Manager`, `instanceof CustomComponentManager`, `normalizeProperty`, `EnvironmentImpl` | `manager/test/managers-test.ts`, `env-test.ts`, `modifiers/on-test.ts`, `template_test.ts` (part of 29 RUNTIME-PRIV files) | §06 makes only the public manager API normative | Use the public API; assert behavior (rendering, hook calls) instead of manager identity; `env-test.ts` is an implementation test |
 | C8 | **Keywords and built-ins imported from `@glimmer/runtime`/`@glimmer/manager`** (`array`, `concat`, `fn`, `get`, `hash`, `on`, `setComponentTemplate`, capabilities) | about 10 files | Public equivalents exist | Import from `@ember/helper`, `@ember/modifier`, `@ember/component`. Mechanical |
 | C9 | **AST shape, plugins, traversal, printing, locations** | `@glimmer/syntax/test` (13 files, about 270 tests), `ember-template-compiler/tests/utils/transform-test-case.ts` users, `basic-usage-test.js`, `compile_options_test.js` (31) | Non-goals (§00-0.1) | Implementation tests. Keep what is normative: syntax-error messages (`syntaxErrorFor`, `parser-error-test.ts`, `invalid-html-test.ts`, `syntax/general-errors-test.ts`) through `adapter.compile`, and convert whitespace/entity tests to rendered-output assertions |
@@ -293,7 +337,7 @@ Counts are files in the four template-relevant groups unless noted.
 | C15 | **Global context as the host contract.** Glimmer tests run under Ember's `@glimmer/global-context` hooks; `style-warnings-test.ts` overrides them | whole Glimmer harness | The hook set is an implementation detail, but the behaviors behind it (style warning, `toBool`, iteration, assertions) are specified | `adapter.withHost` for the few tests that override hooks; nothing else depends on the hook names |
 | C16 | **Assertion plumbing.** `expectAssertion`/`expectDeprecation` stub `@ember/debug`'s functions and match messages verbatim; template-engine assertions reach them through the global context `assert` hook | about 145 sites in the Ember harness, about 70 files overall | Messages are normative [Dev], verbatim (ruling Q3); the stubbing mechanism is not | Requirement on implementations: report every [Dev] assertion and deprecation through `@ember/debug` (`assert`, `deprecate`, `warn`), with Ember's exact text. No test change. App-style tests assert the same messages with `assert.rejects`/`assert.throws` |
 | C17 | **Leak and teardown checks.** Container, namespace, observer, run-loop and (optional) destroyable leak checks in `moduleFor` | every Ember-harness module | Harness hygiene | Keep. They are implementation-neutral as long as the adapter destroys what it created |
-| C18 | **Fake stubs of each other** (ruling Q6). Glimmer's harness fakes Ember: `EmberishCurlyComponent` and the Curly/Dynamic component kinds (about 160 fan-out tests, `ember-component-test.ts` 74, plus the SSR component suites), `BaseEnv`'s destroy queues and hand-driven transactions, `TestJitRuntimeResolver`/`TestJitRegistry`, `TestModifierManager`/`registerHelper`/`createHelperRef` (about 76 sites), a fake `mut`, a fake `SafeString`, host-hook fakes in `@glimmer/*/test`. Ember's tests fake Glimmer: a `GlimmerishComponent` in each harness (about 50 files) and `PositionalComponent` (4 files). About 15 behaviors are tested in both places | `.work/T17-fake-stubs.md` (table in its §4; duplicated suites in its §3) | A stub tests itself, not either implementation; both real things run in the same page | Eliminate, in the order of that file's "Recommended sequence": swap both `GlimmerishComponent`s for `@glimmer/component`; delete the fake-`mut`/`SafeString` and `owner-test.ts` cases and the `ember-component-test.ts` tests with Ember twins; port helper/modifier registration to the public managers; collapse the component fan-out to Glimmer + template-only, **after** porting to Ember's real classic components (`components/classic/`) every curly-kind case that has no Ember twin, so the Legacy profile loses no coverage; replace `BaseEnv`/resolver/transactions with Ember's (C1); merge duplicated suites, keeping the stronger copy |
+| C18 | **Fake stubs of each other** (ruling Q6). Glimmer's harness fakes Ember: `EmberishCurlyComponent` and the Curly/Dynamic component kinds (about 160 fan-out tests, `ember-component-test.ts` 74, plus the SSR component suites), `BaseEnv` and hand-driven transactions (its destroy queues had no callers: destruction already ran through Ember's run loop), `TestJitRuntimeResolver`/`TestJitRegistry`, `TestModifierManager`/`registerHelper`/`createHelperRef` (about 76 sites), a fake `mut`, a fake `SafeString`, host-hook fakes in `@glimmer/*/test`. Ember's tests fake Glimmer: a `GlimmerishComponent` in each harness (about 50 files) and `PositionalComponent` (4 files). The survey listed about 15 behaviors as tested in both places; W2 found true test-for-test duplicates only for the `fn`/`hash`/`array`/`get`/`concat` helpers, `{{on}}`, and the custom modifier and helper manager suites; the other suites are complementary (`.work/W2-glimmer-harness.md`, 7.1 summary) | `.work/T17-fake-stubs.md` (table in its §4; duplicated suites in its §3) | A stub tests itself, not either implementation; both real things run in the same page | Eliminate, in the order of that file's "Recommended sequence": swap both `GlimmerishComponent`s for `@glimmer/component`; delete the fake-`mut`/`SafeString` and `owner-test.ts` cases and the `ember-component-test.ts` tests with Ember twins; port helper/modifier registration to the public managers; collapse the component fan-out to Glimmer + template-only, **after** porting to Ember's real classic components (`components/classic/`) every curly-kind case that has no Ember twin, so the Legacy profile loses no coverage; replace `BaseEnv`/resolver/transactions with Ember's (C1); merge duplicated suites, keeping the stronger copy. **Done on branch `test/w2-glimmer-harness` (W2):** every row of that table is done or kept with a reason; kept as implementation tests (W5): `@glimmer/reference`'s `references-test.ts` and `@glimmer/validator`'s `validators-test.ts` with their global-context overrides, and `owner-test.ts`'s internal `MountManager`. Each removed test is accounted for in `.work/W2-coverage-ledger.md` |
 
 ## 9.6 Coverage gaps
 
@@ -344,9 +388,9 @@ own, because they remove test dependencies on VM internals that Ember is itself 
 
 | # | Workstream | Depends on | Exit criterion | Model |
 |---|---|---|---|---|
-| W0 | **Author decisions**: Q1, Q3–Q6 are ruled (2026-10-07); Q2 (required profiles) is open | — | Recorded in STATUS "Decisions" | Author |
+| W0 | **Author decisions**: Q1, Q3–Q6 are ruled (2026-10-07); Q2 (required profiles), Q7 and Q8 (from W2) are open | — | Recorded in STATUS "Decisions" | Author |
 | W1 | **Manifest.** Tag every test file (later every test) with its profile and class (P/R/M/I) and the spec sections it checks, seeded from `.work/T16-coupling.md`. A QUnit module-name prefix or a checked-in manifest, plus a filter so `testem` can run one profile | W0 | Every template-relevant test file is classified; `profile=core` runs only conformance tests | Sonnet |
-| W2 | **Glimmer harness: eliminate the fake stubs and refactor** (C1, C2, C6, C18): the C18 sequence first (it removes most of C6), then `delegate.set/rerender/destroy`, `RenderHandle`, one `compile`, a tracked test context | — | No fake Ember or Glimmer stand-ins remain (C18 table empty); no `@glimmer/runtime`, `@glimmer/validator`, `@glimmer/reference`, `@glimmer/opcode-compiler` or `@glimmer/compiler` import outside `lib/modes/`; the Legacy profile's coverage is unchanged (every removed curly-kind case has an Ember twin); all Glimmer tests pass | Sonnet per step of the C18 sequence; Opus for the API and the coverage diff |
+| W2 | **Glimmer harness: eliminate the fake stubs and refactor** (C1, C2, C6, C18): the C18 sequence first (it removes most of C6), then `delegate.set/rerender/destroy`, `RenderHandle`, one `compile`, a tracked test context. **Done** on branch `test/w2-glimmer-harness`, not yet upstreamed (`.work/W2-glimmer-harness.md`) | — | No fake Ember or Glimmer stand-ins remain (C18 table empty); no `@glimmer/runtime`, `@glimmer/validator`, `@glimmer/reference`, `@glimmer/opcode-compiler` or `@glimmer/compiler` import outside `lib/modes/`, except in files classified I by W1/W5 (W2's list: "W5 classification list" in its checklist); the Legacy profile's coverage is unchanged (every removed curly-kind case has an Ember twin); all Glimmer tests pass | Sonnet per step of the C18 sequence; Opus for the API and the coverage diff |
 | W3 | **Convert the Ember harness's tests to the app-style form** (§9.4.3; C2, C11, rulings Q4/Q5): `render` + `await settled()` instead of `this.render`/`runTask`; `<template>` and `.gjs` instead of string templates; `assert.rejects` for [Dev] messages. Upstream has started (§9.3 item 6). Files that must stay on `RenderingTestCase` (loose-mode registry tests, classic `this`) keep it, with its renderer entry points behind one module that seam A replaces | — | No `runTask` in the conformance-profile files of `@ember/-internals/glimmer/tests`; every converted test passes | Sonnet, one directory per task; Opus reviews |
 | W4 | **Test-level refactors** (C5, C7, C8, C10, C12, C14): public imports, reactivity tests without tags, `LOCAL_DEBUG` sync steps as node-identity assertions, `DEBUG` gating via the adapter | W1 | The 47 R files and the R part of the 12 M files are P | Sonnet, one package group at a time |
 | W5 | **Separate implementation tests** (C3, C4, C9, C13): mark them I in the manifest; split M files so each file is one class | W1 | No M files remain | Sonnet |
@@ -355,13 +399,14 @@ own, because they remove test dependencies on VM internals that Ember is itself 
 | W8 | **Section index**: a tool that reads the manifest and reports, per section, the conformance tests that check it; it replaces the heuristic of `test-coverage.py` | W1, W7 | Every normative section has at least one test, or an entry in the chapter's open questions explaining why not | Sonnet |
 | W9 | **Second adapter**: when a new implementation exists, its adapter runs the same profiles. Failures are triaged as implementation bug, test that is really an implementation test (back to W5), or specification gap (an open question in the owning chapter) | W6 | — | — |
 
-W2 and W3 can start now and in either order; they need no decisions. W1 needs Q2 for the final
+W2 is done on its branch. W3 needs no decisions and can start now. W1 needs Q2 for the final
 profile list, but can start with the proposal of §9.2.
 
 ## 9.8 Open questions
 
 Q1 and Q3–Q6 were ruled by the plan's author on 2026-10-07 (commit `5740b4aeb7`). They are kept
-here, with the ruling, so that the references above still resolve.
+here, with the ruling, so that the references above still resolve. Q2 is open; Q7 and Q8 came
+out of W2 (findings 6 and 7 of `.work/W2-glimmer-harness.md`) and are open.
 
 1. **Q1. Is the SSR marker format normative?** *Ruled: no.* Markers are left to the
    implementation; there is no interoperable marker format. A server render and its
@@ -382,3 +427,16 @@ here, with the ruling, so that the references above still resolve.
    a separate repository, so Ember and Glimmer each tested fake stubs of the other. Every
    remaining case is flagged for elimination in the test cleanup (C18; the survey is
    `.work/T17-fake-stubs.md`).
+7. **Q7. `this` of a loose top-level template in the Legacy profile.** *Open.* No public Ember
+   API renders a loose template with an arbitrary `self` (`renderTemplate` in §9.4.2). The
+   reference adapter's Glimmer half does it with an internal root type in Ember's renderer, as
+   `ClassicRootState` does, so `this` is the test's context object. The Ember harness instead
+   renders a `-top-level` classic component, so `this` there is that component. Which one does
+   the Legacy profile mean? (W2 finding 6.)
+8. **Q8. Serialize mode and interactivity.** *Open.* In Ember, `serialize` and `rehydrate` are
+   not options of `renderComponent`: they are the renderer's DOM tree builder, chosen by
+   `-environment:main`'s `_renderMode` (`service:-dom-builder`,
+   `packages/@ember/-internals/glimmer/lib/setup-registry.ts:16-32`). FastBoot serializes
+   with a non-interactive renderer, but the Glimmer SSR suites have always serialized with
+   `isInteractive: true`, so modifiers run on the server (W2 kept that). Which is normative for
+   the SSR profile (§05-13)? (W2 finding 7.)
