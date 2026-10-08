@@ -1,107 +1,107 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { tracked } from '@glimmer/tracking';
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render, settled } from '@ember/test-helpers';
+import { concat } from '@ember/helper';
 
-import { set } from '@ember/object';
+class Model {
+  @tracked first;
+  @tracked second;
+  @tracked third;
+  @tracked fourth;
 
-moduleFor(
-  'Helpers test: {{concat}}',
-  class extends RenderingTestCase {
-    ['@test it concats static arguments']() {
-      this.render(`{{concat "foo" " " "bar" " " "baz"}}`);
-      this.assertText('foo bar baz');
-    }
-
-    ['@test it updates for bound arguments']() {
-      this.render(`{{concat this.model.first this.model.second}}`, {
-        model: { first: 'one', second: 'two' },
-      });
-
-      this.assertText('onetwo');
-
-      runTask(() => this.rerender());
-
-      this.assertText('onetwo');
-
-      runTask(() => set(this.context, 'model.first', 'three'));
-
-      this.assertText('threetwo');
-
-      runTask(() => set(this.context, 'model.second', 'four'));
-
-      this.assertText('threefour');
-
-      runTask(() => set(this.context, 'model', { first: 'one', second: 'two' }));
-
-      this.assertText('onetwo');
-    }
-
-    ['@test it can be used as a sub-expression']() {
-      this.render(
-        `{{concat (concat this.model.first this.model.second) (concat this.model.third this.model.fourth)}}`,
-        {
-          model: {
-            first: 'one',
-            second: 'two',
-            third: 'three',
-            fourth: 'four',
-          },
-        }
-      );
-
-      this.assertText('onetwothreefour');
-
-      runTask(() => this.rerender());
-
-      this.assertText('onetwothreefour');
-
-      runTask(() => set(this.context, 'model.first', 'five'));
-
-      this.assertText('fivetwothreefour');
-
-      runTask(() => {
-        set(this.context, 'model.second', 'six');
-        set(this.context, 'model.third', 'seven');
-      });
-
-      this.assertText('fivesixsevenfour');
-
-      runTask(() => {
-        set(this.context, 'model', {
-          first: 'one',
-          second: 'two',
-          third: 'three',
-          fourth: 'four',
-        });
-      });
-
-      this.assertText('onetwothreefour');
-    }
-
-    ['@test it can be used as input for other helpers']() {
-      this.registerHelper('x-eq', ([actual, expected]) => actual === expected);
-
-      this.render(
-        `{{#if (x-eq (concat this.model.first this.model.second) "onetwo")}}Truthy!{{else}}False{{/if}}`,
-        {
-          model: {
-            first: 'one',
-            second: 'two',
-          },
-        }
-      );
-
-      this.assertText('Truthy!');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Truthy!');
-
-      runTask(() => set(this.context, 'model.first', 'three'));
-
-      this.assertText('False');
-
-      runTask(() => set(this.context, 'model', { first: 'one', second: 'two' }));
-
-      this.assertText('Truthy!');
-    }
+  constructor({ first, second, third, fourth }) {
+    this.first = first;
+    this.second = second;
+    this.third = third;
+    this.fourth = fourth;
   }
-);
+}
+
+class State {
+  @tracked model;
+
+  constructor(model) {
+    this.model = new Model(model);
+  }
+}
+
+module('Helpers test: {{concat}}', function (hooks) {
+  setupRenderingTest(hooks);
+
+  test('it concats static arguments', async function (assert) {
+    await render(<template>{{concat "foo" " " "bar" " " "baz"}}</template>);
+
+    await assert.stableRender('foo bar baz');
+  });
+
+  test('it updates for bound arguments', async function (assert) {
+    let state = new State({ first: 'one', second: 'two' });
+
+    await render(<template>{{concat state.model.first state.model.second}}</template>);
+
+    await assert.stableRender('onetwo');
+
+    state.model.first = 'three';
+    await settled();
+
+    assert.dom().hasText('threetwo');
+
+    state.model.second = 'four';
+    await settled();
+
+    assert.dom().hasText('threefour');
+
+    state.model = new Model({ first: 'one', second: 'two' });
+    await settled();
+
+    assert.dom().hasText('onetwo');
+  });
+
+  test('it can be used as a sub-expression', async function (assert) {
+    let state = new State({ first: 'one', second: 'two', third: 'three', fourth: 'four' });
+
+    await render(
+      <template>{{concat (concat state.model.first state.model.second) (concat state.model.third state.model.fourth)}}</template>
+    );
+
+    await assert.stableRender('onetwothreefour');
+
+    state.model.first = 'five';
+    await settled();
+
+    assert.dom().hasText('fivetwothreefour');
+
+    state.model.second = 'six';
+    state.model.third = 'seven';
+    await settled();
+
+    assert.dom().hasText('fivesixsevenfour');
+
+    state.model = new Model({ first: 'one', second: 'two', third: 'three', fourth: 'four' });
+    await settled();
+
+    assert.dom().hasText('onetwothreefour');
+  });
+
+  test('it can be used as input for other helpers', async function (assert) {
+    let state = new State({ first: 'one', second: 'two' });
+    let eq = (actual, expected) => actual === expected;
+
+    await render(
+      <template>{{#if (eq (concat state.model.first state.model.second) "onetwo")}}Truthy!{{else}}False{{/if}}</template>
+    );
+
+    await assert.stableRender('Truthy!');
+
+    state.model.first = 'three';
+    await settled();
+
+    assert.dom().hasText('False');
+
+    state.model = new Model({ first: 'one', second: 'two' });
+    await settled();
+
+    assert.dom().hasText('Truthy!');
+  });
+});

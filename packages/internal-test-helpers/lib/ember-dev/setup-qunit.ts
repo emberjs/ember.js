@@ -12,6 +12,11 @@ declare global {
       expected?: string | RegExp,
       message?: string
     ): Promise<any>;
+
+    /**
+     * Defined in `setup-test-helpers.js`.
+     */
+    stableRender(expected?: string): Promise<void>;
   }
 }
 

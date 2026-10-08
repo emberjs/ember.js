@@ -229,6 +229,9 @@ importers:
       qunit:
         specifier: ^2.19.4
         version: 2.26.0
+      qunit-dom:
+        specifier: ^3.6.0
+        version: 3.6.0
       recast:
         specifier: ^0.22.0
         version: 0.22.0

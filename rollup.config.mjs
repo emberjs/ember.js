@@ -21,6 +21,7 @@ const testDependencies = [
   'dom-element-descriptors',
   'ember-qunit',
   'qunit',
+  'qunit-dom',
   'vite',
   'js-reporters',
   '@simple-dom/serializer',
