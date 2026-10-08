@@ -178,6 +178,7 @@ export class RenderTest implements IRenderTest {
       args = {},
       attributes = {},
       template,
+      else: elseBlock,
       name = GLIMMER_TEST_COMPONENT,
       blockParams = [],
     } = blueprint;
@@ -203,11 +204,17 @@ export class RenderTest implements IRenderTest {
     if (template) {
       let block: string | string[] = [];
       let params = this.buildBlockParams(blockParams);
-      if (params !== '') {
-        block.push(params);
+      if (elseBlock) {
+        // Angle brackets have no `{{else}}`: the blocks become named blocks.
+        block.push(`><:default${params}>${template}</:default>`);
+        block.push(`<:else>${elseBlock}</:else>`);
+      } else {
+        if (params !== '') {
+          block.push(params);
+        }
+        block.push(`>`);
+        block.push(template);
       }
-      block.push(`>`);
-      block.push(template);
       block.push(`</${name}>`);
       invocation.push(block.join(''));
     } else {

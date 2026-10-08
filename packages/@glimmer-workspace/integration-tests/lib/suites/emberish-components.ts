@@ -241,55 +241,34 @@ export class EmberishComponentTests extends RenderTest {
   }
 
   // LOCKS
-  @test({ kind: 'curly' })
+  @test({ kind: 'glimmer' })
   'explicit default named block'() {
-    class FooBar extends EmberishCurlyComponent {
-      [index: string]: unknown;
-
-      constructor() {
-        super();
-      }
-    }
-    this.registerComponent('Curly', 'FooBar', 'Hello{{yield to="default"}}world!', FooBar);
+    this.registerComponent('Glimmer', 'FooBar', 'Hello{{yield to="default"}}world!');
 
     this.render(`<FooBar><:default> my </:default></FooBar>`);
 
-    this.assertComponent('Hello my world!');
+    this.assertHTML('Hello my world!');
     this.assertStableRerender();
   }
 
   // LOCKS
-  @test({ kind: 'curly' })
+  @test({ kind: 'glimmer' })
   'else named block'() {
-    class FooBar extends EmberishCurlyComponent {
-      [index: string]: unknown;
-
-      constructor() {
-        super();
-      }
-    }
-    this.registerComponent('Curly', 'FooBar', 'Hello{{yield "my" to="inverse"}}world!', FooBar);
+    this.registerComponent('Glimmer', 'FooBar', 'Hello{{yield "my" to="inverse"}}world!');
 
     this.render(`<FooBar><:else as |value|> {{value}} </:else></FooBar>`);
 
-    this.assertComponent('Hello my world!');
+    this.assertHTML('Hello my world!');
     this.assertStableRerender();
   }
 
-  @test({ kind: 'curly' })
+  @test({ kind: 'glimmer' })
   'inverse named block'() {
-    class FooBar extends EmberishCurlyComponent {
-      [index: string]: unknown;
-
-      constructor() {
-        super();
-      }
-    }
-    this.registerComponent('Curly', 'FooBar', 'Hello{{yield "my" to="inverse"}}world!', FooBar);
+    this.registerComponent('Glimmer', 'FooBar', 'Hello{{yield "my" to="inverse"}}world!');
 
     this.render(`<FooBar><:inverse as |value|> {{value}} </:inverse></FooBar>`);
 
-    this.assertComponent('Hello my world!');
+    this.assertHTML('Hello my world!');
     this.assertStableRerender();
   }
 
