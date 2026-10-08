@@ -542,14 +542,14 @@ keyword" went in 5.3b).
   - [x] 7.1c (done, code `c7f204af33`; 53 IT tests: 45 deleted (twin), 8 moved) `fn`/`hash`/`array`/`get`/`concat`: `IT/test/helpers/*.ts` vs `EG/helpers/*.js`.
   - [x] 7.1d (done, code `d669d705fe`; 19 IT tests: 9 deleted (twin), 10 moved; `on-runtime-test.ts` kept) `on`: `IT/test/modifiers/on-test.ts`, `keywords/on-runtime-test.ts` vs `EG/modifiers/on-test.js`.
   - [x] 7.1e (done, code `68fcd3260a`; 15 deleted (twin), 2 moved, 14 kept) custom modifier manager: `IT/test/managers/modifier-manager-test.ts`, `modifiers-test.ts`, `updating-modifiers-test.ts` vs `EG/custom-modifier-manager-test.js`.
-  - [ ] 7.1f custom helper manager: `IT/test/managers/helper-manager-test.ts` vs `EG/helpers/helper-manager-test.js`, `custom-helper-test.js`, `invoke-helper-test.js`.
+  - [x] 7.1f (done, code `8f427a1ed0`; 14 deleted (twin), 9 kept) custom helper manager: `IT/test/managers/helper-manager-test.ts` vs `EG/helpers/helper-manager-test.js`, `custom-helper-test.js`, `invoke-helper-test.js`.
   - [ ] 7.1g custom component manager: `@glimmer/manager/test/managers-test.ts` vs `EG/custom-component-manager-test.js` (registry-only parts stay, W5 list).
   - [ ] 7.1h strict mode and lexical scope: `IT/test/strict-mode-test.ts`, `lexical-scope-test.ts` vs `EG/components/strict-mode-test.js`, `runtime-template-compiler-*.ts`.
   - [ ] 7.1i `if`/`unless`: `IT/test/syntax/if-unless-test.ts` vs `EG/syntax/if-unless-test.js`, `helpers/if-unless-test.js`, `shared-conditional-tests.js`.
   - [ ] 7.1j tracked/collections: `IT/test/tracked-value-test.ts`, `collections/*` vs `EG/helpers/tracked-test.js`, `components/tracked-test.js`, `@ember/-internals/metal/tests/tracked/*`.
   - [ ] 7.1k run-loop settle: `IT/test/render-test.ts` vs `EG/render-settled-test.js`.
 
-  Progress note (7.1): 7.1a-7.1e done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`). Next: 7.1f (custom helper manager). Last full run `full71e` (9035 / 9017 / 0 / 18) in the session
+  Progress note (7.1): 7.1a-7.1f done (worktree `a135f9b3b0`, `9a486d218e`, `c7f204af33`, `d669d705fe`, `68fcd3260a`, `8f427a1ed0`). Next: 7.1g (custom component manager). Last full run `full71f` (9021 / 9003 / 0 / 18) in the session
   scratchpad is the baseline for the next per-test diff (`run.sh NEW PREV` builds, runs and diffs; `post.sh` is the diff and greps). Ledger rows go in the `7.1 rows` section.
 
 ## 8. Exit check (Opus)
@@ -961,3 +961,10 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `updating-modifiers-test.ts`, stay in IT (the order of installing/destroying several modifiers and hook-by-hook update checks have no EG twin; 5 of them kept as unsure because
   of partial overlap). Ledger: 19 rows incl. 4 grouped kept rows. Full suite 9048 -> 9035 total / 9017 pass / 0 fail / 18 skip (-15 +2); per-test diff against `full71d`: exactly the
   15 ledgered tests missing, the 2 new ones the moved EG tests; greps 0; type-check, prettier and eslint (EG file) clean.
+- 7.1f (2026-10-08): code `8f427a1ed0`. IT `managers/helper-manager-test.ts` (23) vs EG `helpers/helper-manager-test.js` (15), `custom-helper-test.js`, `invoke-helper-test.js`, plus
+  `default-helper-manager-test.js`. The 14 manager tests have same-name twins in `helper-manager-test.js` (stronger: the EG ones match the full backtracking message
+  with the debug name where IT matched only the prefix); deleted, nothing to move. The 9 "(Default Helper Manager)" tests stay: their closest EG tests (default-helper-manager-test.js)
+  check text only; IT adds render counts and unused-argument tracking (3 near-twins kept as unsure, 6 without twin). The §3 "capability combinations" claim for Glimmer does not
+  hold any more: the capability tests (`hasValue`/`hasScheduledEffect`/version/capabilities function) are all in the EG file too. `custom-helper-test.js` and
+  `invoke-helper-test.js` have no IT counterpart. Ledger: 16 rows (14 deleted, 2 grouped kept). Full suite 9035 -> 9021 total / 9003 pass / 0 fail / 18 skip (-14); per-test
+  diff against `full71e`: exactly the 14 ledgered tests missing, 0 new; greps 0; type-check and prettier clean.
