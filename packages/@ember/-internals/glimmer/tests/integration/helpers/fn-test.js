@@ -131,7 +131,15 @@ moduleFor(
 
     '@test there is no `this` context within the callback'(assert) {
       if (DEBUG) {
-        assert.expect(0);
+        this.render(`{{stash stashedFn=(fn this.myFunc this.arg1)}}`, {
+          myFunc() {
+            assert.step('calling stashed function');
+            assert.throws(() => String(this), /not bound to a valid `this` context/u);
+          },
+        });
+
+        this.stashedFn();
+        assert.verifySteps(['calling stashed function']);
         return;
       }
 
@@ -142,6 +150,69 @@ moduleFor(
       });
 
       this.stashedFn();
+    }
+
+    '@test asserts if no argument given'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`{{fn}}`, { myFunc: null, arg1: 'foo', arg2: 'bar' });
+      }, /You must pass a function as the `fn` helper's first argument./u);
+    }
+
+    '@test asserts if the first argument is undefined'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`{{fn this.myFunc this.arg1 this.arg2}}`, {
+          myFunc: undefined,
+          arg1: 'foo',
+          arg2: 'bar',
+        });
+      }, /You must pass a function as the `fn` helper's first argument, you passed undefined. While rendering:\n{2}this.myFunc/u);
+    }
+
+    '@test asserts if the first argument is null'(assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      assert.throws(() => {
+        this.render(`{{fn this.myFunc this.arg1 this.arg2}}`, {
+          myFunc: null,
+          arg1: 'foo',
+          arg2: 'bar',
+        });
+      }, /You must pass a function as the `fn` helper's first argument, you passed null. While rendering:\n{2}this.myFunc/u);
+    }
+
+    '@test asserts if the provided function accesses `this` without being bound prior to passing to fn'(
+      assert
+    ) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
+      this.render(`{{stash stashedFn=(fn this.myFunc this.arg1)}}`, {
+        myFunc(arg1) {
+          return `arg1: ${arg1}, arg2: ${this.arg2}`;
+        },
+
+        arg1: 'foo',
+        arg2: 'bar',
+      });
+
+      assert.throws(() => {
+        this.stashedFn();
+      }, /You accessed `this.arg2` from a function passed to the `fn` helper, but the function itself was not bound to a valid `this` context. Consider updating to use a bound function./u);
     }
 
     '@test can use `this` if bound prior to passing to fn'(assert) {

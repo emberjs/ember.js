@@ -211,6 +211,30 @@ moduleFor(
       this.assertText('Chad Hietala');
     }
 
+    ['@test individual hash values are accessed lazily'](assert) {
+      let FooBarComponent = class extends Component {
+        get lastName() {
+          assert.ok(false, 'lastName was accessed');
+
+          return undefined;
+        }
+      };
+
+      this.owner.register(
+        'component:foo-bar',
+        setComponentTemplate(
+          precompileTemplate(`{{yield (hash firstName=@firstName lastName=this.lastName)}}`),
+          FooBarComponent
+        )
+      );
+
+      this.render(`{{#foo-bar firstName="Godfrey" as |values|}}{{values.firstName}}{{/foo-bar}}`);
+
+      this.assertText('Godfrey');
+
+      this.assertStableRerender();
+    }
+
     ['@test works with computeds']() {
       let FooBarComponent = class extends Component {
         @computed('args.hash.firstName', 'args.hash.lastName')
