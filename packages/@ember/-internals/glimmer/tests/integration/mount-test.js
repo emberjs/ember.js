@@ -434,3 +434,71 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  '{{mount}} owner tests',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      this.owners = {};
+      let owners = this.owners;
+      let capture = (name) =>
+        class extends Component {
+          constructor(owner, args) {
+            super(owner, args);
+            owners[name] = getOwner(this);
+          }
+        };
+
+      this.router.map(function () {
+        this.route('owner-check');
+      });
+
+      this.add(
+        'component:app-check',
+        setComponentTemplate(precompileTemplate('app-check'), class extends Component {})
+      );
+
+      this.add(
+        'engine:owner-engine',
+        class extends Engine {
+          router = null;
+          Resolver = ModuleBasedTestResolver;
+
+          init() {
+            super.init(...arguments);
+            this.register(
+              'template:application',
+              precompileTemplate('<EngineOuter />{{@model.foo}}')
+            );
+            this.register(
+              'component:engine-outer',
+              setComponentTemplate(precompileTemplate('<EngineInner />'), capture('outer'))
+            );
+            this.register(
+              'component:engine-inner',
+              setComponentTemplate(precompileTemplate('engine-inner'), capture('inner'))
+            );
+          }
+        }
+      );
+    }
+
+    ['@test components rendered inside an engine are created with the engine as their owner']() {
+      this.add(
+        'template:owner-check',
+        precompileTemplate('{{mount "owner-engine" model=(hash foo=(component "app-check"))}}')
+      );
+
+      return this.visit('/owner-check').then(() => {
+        let { outer, inner } = this.owners;
+
+        this.assert.ok(outer !== this.applicationInstance, 'engine owner is not the app');
+        this.assert.ok(getEngineParent(outer) === this.applicationInstance, 'engine parent');
+        this.assert.ok(inner === outer, 'nested components share the engine owner');
+        this.assertText('engine-innerapp-check');
+      });
+    }
+  }
+);
