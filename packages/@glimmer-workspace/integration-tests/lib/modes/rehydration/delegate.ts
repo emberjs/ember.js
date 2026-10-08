@@ -25,7 +25,7 @@ import type { ComponentKind } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
-import type { RenderDelegateOptions } from '../../render-delegate';
+import type { RenderDelegateOptions, RenderHandle } from '../../render-delegate';
 import type { DebugRehydrateTree } from './builder';
 
 import { BaseEnv } from '../../base-env';
@@ -36,6 +36,7 @@ import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
 import { TestJitRuntimeResolver } from '../jit/resolver';
 import { debugRehydrateTree } from './builder';
+import { legacyHandle } from './legacy-handle';
 
 export interface RehydrationStats {
   clearedNodes: SimpleNode[];
@@ -140,7 +141,7 @@ export class RehydrationDelegate implements RenderDelegate {
     return toInnerHTML(element);
   }
 
-  renderClientSide(template: string, context: Dict, element: SimpleElement): RenderResult {
+  renderClientSide(template: string, context: Dict, element: SimpleElement): RenderHandle {
     let { env } = this.clientContext;
     this.self = null;
 
@@ -159,7 +160,7 @@ export class RehydrationDelegate implements RenderDelegate {
       clearedNodes: builder['clearedNodes'],
     };
 
-    return result;
+    return legacyHandle(result);
   }
 
   renderTemplate(
@@ -167,7 +168,7 @@ export class RehydrationDelegate implements RenderDelegate {
     context: Dict,
     element: SimpleElement,
     snapshot: () => void
-  ): RenderResult {
+  ): RenderHandle {
     let serialized = this.renderServerSide(template, context, snapshot);
     replaceHTML(element, serialized);
     qunitFixture().appendChild(element);

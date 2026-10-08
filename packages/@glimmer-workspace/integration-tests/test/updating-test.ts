@@ -1439,14 +1439,15 @@ class UpdatingTest extends RenderTest {
 
   assertInvariants(msg?: string) {
     let result = expect(this.renderResult, 'must render before asserting invariants');
+    let bounds = expect(result.debugBounds, 'the delegate must provide debugBounds')();
 
     assert.strictEqual(
-      result.firstNode(),
+      bounds.firstNode(),
       this.element.firstChild,
       `The firstNode of the result is the same as the root's firstChild${msg ? ': ' + msg : ''}`
     );
     assert.strictEqual(
-      result.lastNode(),
+      bounds.lastNode(),
       this.element.lastChild,
       `The lastNode of the result is the same as the roots's lastChild${msg ? ': ' + msg : ''}`
     );

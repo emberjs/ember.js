@@ -1,7 +1,6 @@
 import type {
   Cursor,
   Dict,
-  DynamicScope,
   ElementNamespace,
   Environment,
   RenderResult,
@@ -19,6 +18,18 @@ import type { ComponentKind, ComponentTypes } from './components';
 import type { UserHelper } from './helpers';
 import type { TestJitRegistry } from './modes/jit/registry';
 import type { TestJitRuntimeResolver } from './modes/jit/resolver';
+
+/**
+ * What a delegate returns from `renderTemplate`/`renderComponent`: the part of
+ * a render the tests drive. `rerender` is renderer-wide (it flushes every
+ * root), `destroy` destroys this render.
+ */
+export interface RenderHandle {
+  rerender(): void;
+  destroy(): void;
+  /** Implementation-only: the first and last node of the render, for `assertInvariants`. */
+  debugBounds?(): Pick<RenderResult, 'firstNode' | 'lastNode'>;
+}
 
 export interface RenderDelegateOptions {
   doc?: SimpleDocument | Document | undefined;
@@ -48,13 +59,14 @@ export default interface RenderDelegate {
     context: Dict,
     element: SimpleElement,
     snapshot: () => void
-  ): RenderResult;
+  ): RenderHandle;
   renderComponent?(
     component: object,
     args: Record<string, unknown>,
-    element: SimpleElement,
-    dynamicScope?: DynamicScope
-  ): RenderResult;
+    element: SimpleElement
+  ): RenderHandle;
+  /** Called after each test: release whatever the delegate registered globally. */
+  teardown?(): void;
   getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder;
   getSelf(env: Environment, context: unknown): Reference;
 }

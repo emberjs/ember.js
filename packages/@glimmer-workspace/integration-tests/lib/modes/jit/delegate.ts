@@ -2,13 +2,11 @@ import type {
   CapturedRenderNode,
   Cursor,
   Dict,
-  DynamicScope,
   ElementNamespace,
   Environment,
   EvaluationContext,
   HandleResult,
   Nullable,
-  RenderResult,
   SimpleDocument,
   SimpleDocumentFragment,
   SimpleElement,
@@ -22,33 +20,27 @@ import { castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/de
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 import { createConstRef } from '@glimmer/reference';
-import {
-  array,
-  clientBuilder,
-  concat,
-  fn,
-  get,
-  hash,
-  on,
-  renderComponent,
-  renderSync,
-  runtimeOptions,
-} from '@glimmer/runtime';
+import { array, clientBuilder, concat, fn, get, hash, on, runtimeOptions } from '@glimmer/runtime';
 import { assign } from '@glimmer/util';
+import { ENV } from '@ember/-internals/environment';
+import { _resetRenderers, setRenderer } from '@ember/-internals/glimmer';
+import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
+import { renderComponent } from '@ember/renderer';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
-import type { RenderDelegateOptions } from '../../render-delegate';
+import type { RenderDelegateOptions, RenderHandle } from '../../render-delegate';
+import type { TemplateRootState as TemplateRoot } from '../template-root';
 
 import { BaseEnv } from '../../base-env';
 import { preprocess } from '../../compile';
 import JitCompileTimeLookup from './compilation-context';
 import { componentHelper, registerComponent, registerHelper, registerModifier } from './register';
 import { TestJitRegistry } from './registry';
-import { renderTemplate } from './render';
 import { TestJitRuntimeResolver } from './resolver';
+import { TemplateRootState } from '../template-root';
 
 export function JitDelegateContext(
   doc: SimpleDocument,
@@ -74,7 +66,9 @@ export class JitRenderDelegate implements RenderDelegate {
   protected resolver: TestJitRuntimeResolver;
 
   private plugins: ASTPluginBuilder[] = [];
-  private _context: Nullable<EvaluationContext> = null;
+  private _renderer: Nullable<BaseRenderer> = null;
+  /** The owner for the renderer. A real owner arrives in 5.3a. */
+  protected owner: object = {};
   private self: Nullable<Reference> = null;
   private doc: SimpleDocument;
   private env: EnvironmentDelegate;
@@ -96,12 +90,44 @@ export class JitRenderDelegate implements RenderDelegate {
     this.registry.register('helper', 'concat', concat);
   }
 
-  get context(): EvaluationContext {
-    if (this._context === null) {
-      this._context = JitDelegateContext(this.doc, this.resolver, this.env);
+  /**
+   * One Ember renderer per delegate, created on first use. Ember's environment
+   * delegate reads `ENV._DEBUG_RENDER_TREE` when it is constructed, so the option
+   * is set around the constructor.
+   */
+  protected get renderer(): BaseRenderer {
+    if (this._renderer === null) {
+      let previous = ENV._DEBUG_RENDER_TREE;
+      ENV._DEBUG_RENDER_TREE = !!this.env.enableDebugTooling;
+
+      try {
+        this._renderer = new BaseRenderer(
+          this.owner,
+          { isInteractive: true, hasDOM: true },
+          this.doc,
+          new JitCompileTimeLookup(this.resolver),
+          (env, cursor) => this.getElementBuilder(env, cursor)
+        );
+      } finally {
+        ENV._DEBUG_RENDER_TREE = previous;
+      }
+
+      setRenderer(this.owner, this._renderer);
     }
 
-    return this._context;
+    return this._renderer;
+  }
+
+  get context(): EvaluationContext {
+    return this.renderer.state.context;
+  }
+
+  /**
+   * Called after each test. Renderers stay in Ember's global list while they
+   * have roots, and every later run loop would revalidate them.
+   */
+  teardown(): void {
+    _resetRenderers();
   }
 
   getCapturedRenderTree(): CapturedRenderNode[] {
@@ -183,32 +209,47 @@ export class JitRenderDelegate implements RenderDelegate {
     return unwrapTemplate(compiled).asLayout().compile(this.context);
   }
 
-  renderTemplate(template: string, context: Dict, element: SimpleElement): RenderResult {
+  renderTemplate(template: string, context: Dict, element: SimpleElement): RenderHandle {
     let cursor = { element, nextSibling: null };
+    let { state } = this.renderer;
 
-    let { env } = this.context;
-
-    return renderTemplate(
-      template,
-      this.context,
-      this.getSelf(env, context),
-      this.getElementBuilder(env, cursor),
-      this.precompileOptions
+    let root = new TemplateRootState(
+      state,
+      preprocess(template, this.precompileOptions),
+      this.getSelf(state.env, context),
+      cursor
     );
+    state.renderRoot(root);
+
+    return this.handleFor(root);
   }
 
   renderComponent(
     component: object,
     args: Record<string, unknown>,
-    element: SimpleElement,
-    dynamicScope?: DynamicScope
-  ): RenderResult {
-    let cursor = { element, nextSibling: null };
-    let { env } = this.context;
-    let builder = this.getElementBuilder(env, cursor);
-    let iterator = renderComponent(this.context, builder, {}, component, args, dynamicScope);
+    element: SimpleElement
+  ): RenderHandle {
+    // Make sure the public `renderComponent` finds this delegate's renderer.
+    void this.renderer;
 
-    return renderSync(env, iterator);
+    let result = renderComponent(component, {
+      into: { element, nextSibling: null } as unknown as Element,
+      owner: this.owner,
+      args,
+    });
+
+    return {
+      rerender: () => this.renderer.rerender(),
+      destroy: () => result.destroy(),
+    };
+  }
+
+  private handleFor(root: TemplateRoot): RenderHandle {
+    return {
+      rerender: () => this.renderer.rerender(),
+      destroy: () => root.destroy(),
+      debugBounds: () => expect(root.result, 'the template has rendered'),
+    };
   }
 
   private get precompileOptions(): PrecompileOptions {

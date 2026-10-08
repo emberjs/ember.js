@@ -49,6 +49,10 @@ export function jitSerializeSuite<T extends IRenderTest>(
   return suite(klass, JitSerializationDelegate, options);
 }
 
+function teardown(test: IRenderTest): void {
+  test.teardownDelegate?.();
+}
+
 export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
   readonly isEager: boolean;
   readonly style: string;
@@ -87,6 +91,7 @@ export function suite<D extends RenderDelegate>(
 
       afterEach() {
         if (instance!.afterEach) instance!.afterEach();
+        teardown(instance!);
         instance = null;
       },
     });
@@ -120,6 +125,8 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
     templateOnly: [],
   };
 
+  let current: IRenderTest | null = null;
+
   function createTest(prop: string, test: any, skip?: boolean) {
     let shouldSkip: boolean;
     if (skip === true || test.skip === true) {
@@ -130,6 +137,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
       if (!shouldSkip) {
         QUnit.test(prop, (assert) => {
           let instance = new klass(new Delegate());
+          current = instance;
           instance.testType = type;
           return test.call(instance, assert, instance.count);
         });
@@ -146,7 +154,11 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
       tests.templateOnly.push(createTest(prop, test));
     }
   }
-  QUnit.module(`[integration] ${name}`, () => {
+  QUnit.module(`[integration] ${name}`, (hooks) => {
+    hooks.afterEach(() => {
+      if (current !== null) teardown(current);
+      current = null;
+    });
     nestedComponentModules(klass, tests);
   });
 }

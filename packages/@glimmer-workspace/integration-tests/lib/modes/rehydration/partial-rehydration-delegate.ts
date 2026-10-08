@@ -1,16 +1,18 @@
-import type { Dict, RenderResult, SimpleElement } from '@glimmer/interfaces';
+import type { Dict, SimpleElement } from '@glimmer/interfaces';
 import { renderComponent, renderSync } from '@glimmer/runtime';
 
+import type { RenderHandle } from '../../render-delegate';
 import type { DebugRehydrateTree } from './builder';
 
 import { RehydrationDelegate } from './delegate';
+import { legacyHandle } from './legacy-handle';
 
 export class PartialRehydrationDelegate extends RehydrationDelegate {
   registerTemplateOnlyComponent(name: string, layout: string) {
     this.registerComponent('TemplateOnly', 'TemplateOnly', name, layout);
   }
 
-  renderComponentClientSide(name: string, args: Dict, element: SimpleElement): RenderResult {
+  renderComponentClientSide(name: string, args: Dict, element: SimpleElement): RenderHandle {
     let cursor = { element, nextSibling: null };
     let context = this.clientContext;
     let tree = this.getElementBuilder(context.env, cursor) as DebugRehydrateTree;
@@ -24,7 +26,7 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
       clearedNodes: tree.clearedNodes,
     };
 
-    return result;
+    return legacyHandle(result);
   }
 
   renderComponentServerSide(name: string, args: Dict): string {

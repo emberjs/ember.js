@@ -40,6 +40,8 @@
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/renderer": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/template": "workspace:*",
     "@glimmer/constants": "workspace:*",

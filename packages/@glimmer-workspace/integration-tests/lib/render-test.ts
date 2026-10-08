@@ -1,18 +1,14 @@
 import type {
   ComponentDefinitionState,
   Dict,
-  DynamicScope,
   Maybe,
   Nullable,
-  RenderResult,
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
 import type { ASTPluginBuilder } from '@glimmer/syntax';
 import type { NTuple } from '@glimmer-workspace/test-utils';
 import { expect, isPresent, assert, unwrap } from '@glimmer/debug-util';
-import { destroy } from '@glimmer/destroyable';
-import { inTransaction } from '@glimmer/runtime';
 import { clearElement, dict } from '@glimmer/util';
 import { dirtyTagFor } from '@glimmer/validator';
 import { run } from '@ember/runloop';
@@ -21,6 +17,7 @@ import type { ComponentBlueprint, ComponentKind, ComponentTypes } from './compon
 import type { UserHelper } from './helpers';
 import type { TestModifierConstructor } from './modifiers';
 import type RenderDelegate from './render-delegate';
+import type { RenderHandle } from './render-delegate';
 import type { NodesSnapshot } from './snapshot';
 
 import { GLIMMER_TEST_COMPONENT } from './components';
@@ -33,6 +30,7 @@ type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 type Present<T> = Exclude<T, null | undefined>;
 
 export interface IRenderTest {
+  teardownDelegate?(): void;
   readonly count: Count;
   testType: ComponentKind;
   beforeEach?(): void;
@@ -60,7 +58,7 @@ export class RenderTest implements IRenderTest {
   protected element: SimpleElement;
   assert = QUnit.assert;
   protected context: Dict = dict();
-  protected renderResult: Nullable<RenderResult> = null;
+  protected renderResult: Nullable<RenderHandle> = null;
   protected helpers = dict<UserHelper>();
   protected snapshot: NodesSnapshot = [];
   readonly count = new Count();
@@ -263,11 +261,7 @@ export class RenderTest implements IRenderTest {
     });
   }
 
-  renderComponent(
-    component: ComponentDefinitionState,
-    args: Dict = {},
-    dynamicScope?: DynamicScope
-  ): void {
+  renderComponent(component: ComponentDefinitionState, args: Dict = {}): void {
     try {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       QUnit.assert.ok(true, `Rendering ${String(component)} with ${JSON.stringify(args)}`);
@@ -281,13 +275,13 @@ export class RenderTest implements IRenderTest {
     );
 
     run(() => {
-      this.renderResult = this.delegate.renderComponent!(
-        component,
-        args,
-        this.element,
-        dynamicScope
-      );
+      this.renderResult = this.delegate.renderComponent!(component, args, this.element);
     });
+  }
+
+  /** Called after each test, after `afterEach`. */
+  teardownDelegate(): void {
+    this.delegate.teardown?.();
   }
 
   rerender(properties: Dict = {}): void {
@@ -302,12 +296,7 @@ export class RenderTest implements IRenderTest {
 
       let result = expect(this.renderResult, 'the test should call render() before rerender()');
 
-      try {
-        result.env.begin();
-        result.rerender();
-      } finally {
-        result.env.commit();
-      }
+      result.rerender();
     });
   }
 
@@ -315,7 +304,7 @@ export class RenderTest implements IRenderTest {
     let result = expect(this.renderResult, 'the test should call render() before destroy()');
 
     run(() => {
-      inTransaction(result.env, () => destroy(result));
+      result.destroy();
     });
   }
 
