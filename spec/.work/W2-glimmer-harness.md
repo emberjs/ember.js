@@ -996,3 +996,9 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   rows exactly (the later items 7.1g/i/j/k changed no code). The ledger's `7.1 rows` section holds one row per deleted or moved test (114, of which 19 moved) plus grouped `kept` rows for the tests compared and left alone.
   Pattern worth knowing for W5/§03: the duplication in T17 §3 was much smaller than its "Overlap" column suggests. Only helper (`fn`/`hash`/`array`/`get`/`concat`) and
   `on`/custom-modifier-manager/helper-manager tests were true name-for-name duplicates; `each`, `in-element`, strict mode, `if`/`unless`, tracked and `render-test` are complementary or unrelated.
+- 7.1 review (Opus, 2026-10-08): accepted (sampled 7.1c rows; twins are same-template,
+  same-sequence). Observations carried forward, not W2 work: (W5) `lib/suites/each.ts` swap
+  #1–#12 assert nothing unless `LOCAL_DEBUG`, so they are VM list-update tests; add to the W5
+  list. (W4) IT `assertStableNodes()` right after `assertHTML()` is vacuous (the snapshot is
+  re-taken); only `assertStableRerender` checks node stability. §09-9.5 C18/T17 §3 overstated
+  the duplication: only helpers, `on`, and the modifier/helper-manager suites were true twins.
