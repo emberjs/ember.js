@@ -21,7 +21,7 @@ Output: `spec/09-conformance-testing.md`, plus survey data in `spec/.work/T16-*.
       `RenderDelegate`/`RenderTest`/suites harness and ember's `internal-test-helpers`
       (`moduleFor`, `RenderingTestCase`, `ApplicationTestCase`, `buildOwner`, `runTask`, ...):
       what each depends on, where an implementation adapter seam would go.
-- [ ] B. Coupling survey (Sonnet agent) → `.work/T16-coupling.md`: per test file in the
+- [x] B. Coupling survey (Sonnet agent) → `.work/T16-coupling.md`: per test file in the
       template-relevant packages, the non-spec details it relies on, by category, with a
       portability class.
 - [x] C. Spec coverage scan (script `tools/test-coverage.py`) → `.work/T16-coverage.md`:
@@ -30,3 +30,11 @@ Output: `spec/09-conformance-testing.md`, plus survey data in `spec/.work/T16-*.
       catalogue with refactor actions, coverage gaps by reference, ordered work plan.
 - [ ] E. Wire it in: §00 chapter table/reading guide, CONVENTIONS chapter table, STATUS (task
       row, next steps), `xref.py` and `check-citations.py` clean.
+
+Notes from reading the surveys (for D):
+- Coupling survey misclassifies two things against the spec: `backtrackingMessageFor`
+  (`glimmer/tests/utils/debug-stack.js`) checks the normative §07-1.9 message, so its tests are
+  P in the Dev profile; `render-settled-test.js` pins §07-1.10 item 8, so it is P in the Ember
+  profile, not I.
+- "Delete" in the coupling survey's action column means "exclude from the conformance suite":
+  implementation tests stay in ember.js.
