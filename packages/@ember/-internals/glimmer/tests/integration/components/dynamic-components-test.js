@@ -9,7 +9,6 @@ import { setComponentTemplate } from '@glimmer/manager';
 import Component from '@glimmer/component';
 import PositionalComponent from '../../utils/positional-component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
-import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
   'Components test: dynamic components',
@@ -107,7 +106,7 @@ moduleFor(
         precompileTemplate('{{component this.componentName}}', {
           strictMode: true,
         }),
-        class extends GlimmerishComponent {
+        class extends Component {
           componentName = { name: 'not-a-component' };
         }
       );

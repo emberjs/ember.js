@@ -1,7 +1,7 @@
 import { template } from '@ember/template-compiler/runtime';
 import { ALLOWED_GLOBALS } from '@ember/template-compiler';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
-import GlimmerishComponent from '../../utils/glimmerish-component';
+import GlimmerComponent from '@glimmer/component';
 import { on } from '@ember/modifier/on';
 import { fn } from '@ember/helper';
 
@@ -145,7 +145,7 @@ moduleFor(
           },
         });
 
-        return class extends GlimmerishComponent {
+        return class extends GlimmerComponent {
           static {
             template('<this.Foo />', {
               component: this,
@@ -171,7 +171,7 @@ moduleFor(
           },
         });
 
-        return class extends GlimmerishComponent {
+        return class extends GlimmerComponent {
           static {
             template('{{this.Foo}}', {
               component: this,
@@ -193,7 +193,7 @@ moduleFor(
       await this.renderComponentModule(() => {
         let foo = () => 'Hello, world!';
 
-        return class extends GlimmerishComponent {
+        return class extends GlimmerComponent {
           static {
             template('{{this.foo}}', {
               component: this,
