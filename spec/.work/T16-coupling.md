@@ -10,7 +10,7 @@ Portability classes: P = portable with a harness adapter; R = portable after ref
 
 - [x] 1. integration-tests/test/**
 - [x] 2. @ember/-internals/glimmer/tests/**
-- [ ] 3. @glimmer/*/test/**
+- [x] 3. @glimmer/*/test/**
 - [ ] 4. template-compiler tests
 - [ ] 5. metal / object / other ember packages
 
@@ -235,4 +235,69 @@ Harness: every test is a `moduleFor(..., class extends RenderingTestCase | Appli
 | `DEPRECATIONS.*` flags from `@ember/-internals/deprecations` | 7 | `curly-components-test.js:13` |
 | `assertInnerHTML`/`equalInnerHTML`/`.innerHTML` (via `equal-inner-html.ts`, normalizing helper) | ~100 sites | `hot-reload-test.js:115` |
 
-Totals (89 files; 6 are util files and 1 empty): P 61 (incl. 3 `.gjs` and 3 util), R 13, M 4 (`curly-components-test.js`, `render-component-test.ts`, `custom-modifier-manager-test.js`, `modifiers/on-test.js`), I 6 (`instrumentation-compile-test.js`, `instrumentation-test.js`, `to-string-test.js`, `render-settled-test.js`, `runtime-resolver-cache-test.js`, `template-factory-test.js`).
+Totals (89 files; 6 are util files and 1 empty): P 60 (incl. 3 `.gjs` and 3 util), R 13, M 4 (`curly-components-test.js`, `render-component-test.ts`, `custom-modifier-manager-test.js`, `modifiers/on-test.js`), I 6 (`instrumentation-compile-test.js`, `instrumentation-test.js`, `to-string-test.js`, `render-settled-test.js`, `runtime-resolver-cache-test.js`, `template-factory-test.js`).
+
+## Group 3 — `packages/@glimmer/*/test/**` (paths relative to `packages/@glimmer/`; 12 packages, 46 non-package.json files incl. 5 support files)
+
+These are unit tests of the private `@glimmer/*` packages. By the spec's own rules nearly all are implementation-internal; the portable value is in the behavioral assertions that can be re-expressed through public API (destroyables, tracked collections, caches, parse errors).
+
+| file | class | categories | note |
+|---|---|---|---|
+| compiler/test/compiler-test.ts | I | WIRE, AST | 88 tests: `precompile` -> `JSON.parse` -> deep-equal against `buildStatements`/`ProgramSymbols`/`WireFormatDebugger` wire statements (:1-40). Pure wire-format test. Exclude. |
+| constants/test/debug-to-string-test.ts | I | BUILD | 9 lines, `debugToString`. |
+| constants/test/immediate-test.ts | I | OPCODE | SMI immediate encoding (`encodeImmediate`/`MAX_SMI`). |
+| debug-util/test/debug-to-string-test.ts | I | BUILD, EMBER-PRIV | `debugToString` naming helper; DEBUG-gated. |
+| debug/test/metadata-test.ts | I | OPCODE | empty (`export {}`). |
+| destroyable/test/destroyables-test.ts | R | RUNLOOP, BUILD | ~25 tests of `registerDestructor`/`associateDestroyableChild`/`destroy`/`destroyChildren`/`isDestroying` (same semantics as public `@ember/destroyable`; normative §05/§06 destruction order); imports `run` from `@ember/runloop` (:4) for async destruction flush; DEBUG-gated throw messages. Swap import path; keep. |
+| manager/test/capabilities-test.ts | I | OPCODE, RUNTIME-PRIV | `capabilityFlagsFrom` bitmap vs `InternalComponentCapabilities` from `@glimmer/vm`. Exclude. |
+| manager/test/managers-test.ts | M | RUNTIME-PRIV, REF, TAG | 3 manager kinds x ~6 tests. "it works" (set/get manager, default helper manager, throws on multiple managers or primitives, error messages for missing/invalid capabilities) are R via public `setComponentManager`/`setHelperManager`/`setModifierManager`; "works with internal managers" (3) and tests that call `getInternalXManager` and use `createConstRef`/`valueForRef` are I. About 12 R, 9 I. |
+| owner/test/owner-test.ts | R | EMBER-PRIV | `getOwner`/`setOwner` (public as `@ember/owner`); 27 lines. |
+| program/test/artifacts-test.ts | I | OPCODE | constants pool does not serialize metas. |
+| program/test/heap-test.ts | I | OPCODE | `ProgramHeapImpl` growth. |
+| reference/test/iterable-test.ts | R | REF, TAG | 14 tests of `IterableReference` delegates and key functions `@identity`, `@key`, `@index`, paths, dictionaries, null handling; keys semantics are normative (§05 `each`), but tested through the private ref/iterator; refactor to `{{#each ... key=...}}` render + reorder assertions (several exist in `integration-tests/test/...each` already). |
+| reference/test/references-test.ts | I | REF, TAG, BUILD | const/compute/unbound/invokable/readonly refs, `childRefFor`, `createComputeRef` caching; `@glimmer/global-context` override. Exclude. |
+| reference/test/support.ts, utils/qunit.ts, utils/template.ts | - | REF | test support only. |
+| syntax/test/builders-test.ts | I | AST | |
+| syntax/test/generation/print-test.ts | I | AST | `print` round trip (hbs re-printing is a non-goal). |
+| syntax/test/legacy-interop-test.ts | I | AST | `path.parts` shape. |
+| syntax/test/loc-node-test.ts | I | AST | 30 tests on `loc` of AST nodes. (Locs in thrown syntax errors are normative; AST `loc` is not.) |
+| syntax/test/location-test.ts | I | AST | `Source`/`hbsPosFor`/`charPosFor` position math. |
+| syntax/test/parser-error-test.ts | P | AST (error text) | Parse-error regression fixtures: `assert.throws` with messages + loc via `syntaxErrorFor` (normative parse errors; harness-independent because only needs `preprocess`/`precompile` that throws). |
+| syntax/test/parser-escape-test.ts | R | AST | `\{{` escapes; asserts TextNode splitting/merging (`astEqual` on ASTv1) (:1-5). Refactor: assert rendered text. |
+| syntax/test/parser-node-test.ts | M | AST | 75 tests (1,276 lines) assert ASTv1 shapes via `b.*` builders; maybe 5 (disallowed quote/equals, parse rejection) are P, the rest I. |
+| syntax/test/parser-whitespace-test.ts | R | AST | `~` and standalone stripping, asserted as AST; semantics normative (§02), refactor to rendered text. |
+| syntax/test/plugin-node-test.ts | I | AST | AST plugins/transform API. Non-goal. |
+| syntax/test/public-api-test.ts | I | AST | pins the export list of `@glimmer/syntax`. |
+| syntax/test/source-boundary-test.ts | I | AST | `hbsPosFor`/`charPosFor`. |
+| syntax/test/template-locals-test.ts | R | AST | `getTemplateLocals` behavior (which free identifiers are locals, keyword handling); semi-public (used by tooling); if spec has an "analysis" API, port, else I. |
+| syntax/test/traversal/manipulating-node-test.ts | I | AST | |
+| syntax/test/traversal/visiting-keys-node-test.ts | I | AST | |
+| syntax/test/traversal/visiting-node-test.ts | I | AST | |
+| syntax/test/traversal/walker-node-test.ts | I | AST | |
+| syntax/test/support.ts | - | AST | `astEqual` support. |
+| util/test/object-utils-test.ts | I | - | 9 lines, `@glimmer/util`. |
+| validator/test/collections/array-test.ts | R | TAG | `trackedArray` (public as `@ember/reactive/collections`); also uses `expect-type` (type-level test); behavior asserted through `createCache`/`getValue` (public). Near-duplicate of integration-tests/test/collections (render-level). |
+| validator/test/collections/map-test.ts | R | TAG | `trackedMap`. |
+| validator/test/collections/object-test.ts | R | TAG | `trackedObject`. |
+| validator/test/collections/set-test.ts | R | TAG | `trackedSet`. |
+| validator/test/collections/weak-map-test.ts | R | TAG | `trackedWeakMap`. |
+| validator/test/collections/weak-set-test.ts | R | TAG | `trackedWeakSet`. |
+| validator/test/meta-test.ts | I | TAG | `tagFor`/`dirtyTagFor`/`validateTag`/`valueForTag`. |
+| validator/test/tracked-value-test.ts | R | TAG | `trackedValue` storage: set/update/reactivity through `createCache`; refactor to public cell/`tracked`. |
+| validator/test/tracking-test.ts | M | TAG, BUILD | ~35 tests (:1-581). `track`/`beginTrackFrame`/`endTrackFrame`/`consumeTag`/`createTag`/`validateTag` tests (~18) = I. `createCache`/`getValue`/`isConst`/`untrack`-in-cache memoization, nested memoization, `trackedData` storage cells and the "update a value already consumed in same transaction" assertion (~15) = R via public `@glimmer/tracking/primitives/cache` + `tracked`; DEBUG-gated messages. |
+| validator/test/validators-test.ts | I | TAG, BUILD | `createTag`, `createUpdatableTag`, `combine`, `CONSTANT_TAG`, `scheduleRevalidate`, `ALLOW_CYCLES`; `@glimmer/global-context` hooks. Exclude. |
+| validator/test/-utils.ts | - | TAG | support. |
+
+### Group 3 recurring patterns
+
+| pattern | files | examples |
+|---|---|---|
+| Wire-format/Builder assertions | 1 (88 tests) | `compiler/test/compiler-test.ts:25-40` |
+| ASTv1 shape/location/plugin/traversal/print | 13 syntax files (~270 tests) | `syntax/test/parser-node-test.ts`, `syntax/test/plugin-node-test.ts` |
+| Tag/revision/track-frame primitives | 3 files (`meta-test`, `validators-test`, half of `tracking-test`) | `validator/test/meta-test.ts:5-20` |
+| References | 2 files | `reference/test/references-test.ts` |
+| Opcode/heap/bitmap/immediates | 5 files | `program/test/heap-test.ts`, `manager/test/capabilities-test.ts:3` |
+| Public-API-equivalent semantics through private import path (destroyable, tracked collections, caches, owner, managers) | 12 files | `destroyable/test/destroyables-test.ts`, `validator/test/collections/array-test.ts:1` |
+| Syntax-error text assertions (normative) | 1 file | `syntax/test/parser-error-test.ts:9-20` |
+
+Totals (41 classified test files, plus 5 support files): P 1, R 13, M 3, I 24.
