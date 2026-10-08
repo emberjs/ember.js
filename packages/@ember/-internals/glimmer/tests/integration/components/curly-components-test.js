@@ -15,7 +15,7 @@ import EmberObject, { set, computed } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
 import { htmlSafe } from '../../utils/helpers';
-import PositionalComponent from '../../utils/positional-component';
+import ClassicComponent from '@ember/component';
 import GlimmerComponent from '@glimmer/component';
 import { template } from '@ember/template-compiler/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -667,7 +667,7 @@ moduleFor(
             {{/each}}
           `,
           {
-            component: class extends PositionalComponent {
+            component: class extends ClassicComponent {
               static positionalParams = 'names';
             },
             strictMode: false,
@@ -698,7 +698,7 @@ moduleFor(
             {{/each}}
           `,
           {
-            component: class extends PositionalComponent {
+            component: class extends ClassicComponent {
               static positionalParams = 'n';
             },
             strictMode: false,
@@ -843,7 +843,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{this.name}}{{this.age}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -863,7 +863,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{this.name}}{{this.age}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -1560,7 +1560,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate(`{{this.things.length}}`),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'things';
           }
         )

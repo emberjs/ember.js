@@ -5,7 +5,7 @@ import { action } from '@ember/object';
 
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import PositionalComponent from '../../utils/positional-component';
+import ClassicComponent from '@ember/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
@@ -34,7 +34,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{@greeting}} {{this.name}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name'];
           }
         )
@@ -55,7 +55,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'params';
           }
         )
@@ -93,7 +93,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'params';
           }
         )
@@ -133,7 +133,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'params';
           }
         )
@@ -173,7 +173,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{#each this.params as |p|}}{{p}}{{/each}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'params';
           }
         )
@@ -213,7 +213,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{@greeting}} {{this.name}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name'];
           }
         )
@@ -327,7 +327,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -349,7 +349,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.greeting}} {{this.name}} {{this.age}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['greeting', 'name', 'age'];
           }
         )
@@ -407,7 +407,7 @@ moduleFor(
         'component:-inner-component',
         setComponentTemplate(
           precompileTemplate('{{component this.comp "Inner"}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['comp'];
           }
         )
@@ -417,7 +417,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.name}} {{this.age}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -725,7 +725,7 @@ moduleFor(
         'component:-looked-up',
         setComponentTemplate(
           precompileTemplate('{{this.params}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'params';
           }
         )
@@ -770,11 +770,13 @@ moduleFor(
         'component:my-component',
         setComponentTemplate(
           precompileTemplate(''),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['value'];
 
-            constructor(owner, args) {
-              super(owner, args);
+            // a classic component gets its positional params as properties before `init`,
+            // not in the constructor
+            init() {
+              super.init(...arguments);
               value = this.value;
             }
           }
@@ -1222,7 +1224,7 @@ moduleFor(
           precompileTemplate(
             'foo-bar component:{{#each this.params as |param|}} {{param}}{{/each}}'
           ),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'params';
           }
         )
@@ -1266,7 +1268,7 @@ moduleFor(
         'component:x-inner',
         setComponentTemplate(
           precompileTemplate('inner:{{#each this.params as |param|}} {{param}}{{/each}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'params';
           }
         )

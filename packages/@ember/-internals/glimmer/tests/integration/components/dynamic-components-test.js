@@ -7,7 +7,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
-import PositionalComponent from '../../utils/positional-component';
+import ClassicComponent from '@ember/component';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 moduleFor(
@@ -558,7 +558,7 @@ moduleFor(
         'component:foo-bar',
         setComponentTemplate(
           precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -568,7 +568,7 @@ moduleFor(
         'component:foo-bar-baz',
         setComponentTemplate(
           precompileTemplate('hello {{this.name}} ({{this.age}}) from foo-bar-baz'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['name', 'age'];
           }
         )
@@ -612,7 +612,7 @@ moduleFor(
         'component:normal-message',
         setComponentTemplate(
           precompileTemplate('Normal: {{this.something}}!'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['something'];
           }
         )
@@ -622,7 +622,7 @@ moduleFor(
         'component:alternative-message',
         setComponentTemplate(
           precompileTemplate('Alternative: {{this.something}} {{this.somethingElse}}!'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = ['somethingElse'];
             something = 'Another';
           }
@@ -661,7 +661,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{#each this.names as |name|}}{{name}}{{/each}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'names';
           }
         )
@@ -681,7 +681,7 @@ moduleFor(
         'component:sample-component',
         setComponentTemplate(
           precompileTemplate('{{#each this.n as |name|}}{{name}}{{/each}}'),
-          class extends PositionalComponent {
+          class extends ClassicComponent {
             static positionalParams = 'n';
           }
         )
