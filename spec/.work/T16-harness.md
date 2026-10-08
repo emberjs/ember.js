@@ -3,7 +3,7 @@
 - [x] 1. Glimmer integration-test harness
 - [x] 2. Ember harness (internal-test-helpers)
 - [x] 3. Other harness-like patterns
-- [ ] 4. Seam proposal + how tests are run
+- [x] 4. Seam proposal + how tests are run
 
 All paths repo-relative. `IT` = `packages/@glimmer-workspace/integration-tests`.
 
@@ -264,3 +264,128 @@ All of these run in the same QUnit page (`index.html:56-80` globs), unless noted
 * **`@glimmer/{constants,debug,debug-util,destroyable,owner,program,reference,util}/test`** also exist (`find` shows 1-2 files each): `program`/`reference` are VM internals (skip); `destroyable` + `owner` + `util` are public-ish.
 * **Node-side tests** (`pnpm test:node` -> `qunit tests/node/**/*-test.cjs`, `package.json:71`; `tests/node/build-info-test.cjs`): build artifact checks, not template behavior. `tests/node-vitest`, `tests/node-blueprints`: packaging smoke tests.
 * **SSR/FastBoot-like in node**: `IT/test/node-suites-node-test.ts:1-22` runs `ServerSideSuite`/`ServerSideComponentSuite` with `NodeJitRenderDelegate` (no DOM, `@simple-dom`), but under the same browser page (guarded by `typeof process` only for `CompilationTests`, `:20-22`).
+
+---
+
+## 4. Seam proposal and how tests are run
+
+### 4.1 How tests run today
+
+* **One page, one QUnit run.** `index.html` is the only test entry: `index.html:5-30` sets `window.EmberENV` from URL params;
+  `:32-48` imports `internal-test-helpers/lib/ember-dev/setup-qunit.ts`, `setTesting(true)`, loads `/testem.js`; `:50-82` `import.meta.glob(..., {eager:true})`
+  every `packages/@ember/-internals/*/tests/**`, `packages/*/*/tests/**`, `packages/*/tests/**`, plus `packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.*`.
+  Hence **Glimmer-vm and Ember tests share a runtime, a QUnit instance, and Ember's global context**.
+  `#qunit` / `#qunit-fixture` divs are in the page (`index.html:~84-85`); `setup-harness.ts:24-86` (`setupQunit`) is an alternative bootstrap that creates them (not used by the root `index.html`).
+* **Build**: `vite build --mode development|production` (`vite.config.mjs:20-79`; `package.json:73` `test:wip`; CI `.github/workflows/ci-jobs.yml:94,134`) emits `dist/` (preserveModules, no treeshake, `:23-33`).
+  Babel (`babel.test.config.mjs`): TS strip, decorators (`decorator-transforms` legacy by default; `VITE_STABLE_DECORATORS=true|typescript` for 2023-11 / TS emit), `babel-plugin-ember-template-compilation`
+  with `compilerPath: broccoli/glimmer-template-compiler.mjs` (-> `packages/ember-template-compiler/minimal.ts` `precompile`, `babel.config.mjs:~35-45`) so **`precompileTemplate(...)`, `.gjs/.gts` (`templateTag()` plugin, `vite.config.mjs:37`) are compiled at build time to wire-format JSON** (`@ember/template-compilation` `precompileTemplate` is a build-time macro; at runtime it is `undefined`/throws),
+  and `babel-plugin-debug-macros` (`broccoli/build-debug-macro-plugin.cjs:1-30`) which statically sets `DEBUG` for `@glimmer/env` and strips `assert`/`deprecate` calls when `isDebug` is false (`babel.test.config.mjs`: `isProduction = EMBER_ENV==='production'`).
+* **Module resolution**: `resolvePackages()` (`rollup.config.mjs:~408-470`, used from `vite.config.mjs:44-55`) maps *every bare specifier* (`@glimmer/*`, `@ember/*`, `ember-template-compiler`, `internal-test-helpers`) to `packages/<name>/index.ts` **source** (not `dist/dev`) and throws for anything not in `testDependencies` (`rollup.config.mjs:25-32`: qunit, vite, js-reporters, `@simple-dom/*`, expect-type). A `deps[source]` override map exists (`rollup.config.mjs:443`) - used for `@glimmer/component` (`vite.config.mjs:49-53`). `@glimmer/local-debug-flags` is redirected to a `disabled.ts` unless `enableLocalDebug` (the vite config passes true, `:54`).
+  `dist/dev` / `dist/prod` (`rollup.config.mjs:75-` `sharedESMConfig`, `debugMacrosMode`) are the **published** builds, not what tests use.
+* **Run**: `pnpm test` = `testem ci -f testem.cjs --host 127.0.0.1 --port 13141` (`package.json:68`); `testem.cjs:31-56`: `cwd:'dist'`, `test_page: index.html/?<variant query>`, headless Chrome, `parallel:1`, `FailureOnlyReporter`. Variants via env -> URL: `ALL_DEPRECATIONS_ENABLED`, `OVERRIDE_DEPRECATION_VERSION`, `ENABLE_OPTIONAL_FEATURES`, `RAISE_ON_DEPRECATION` (`testem.cjs:3-29`). CI matrix (`ci-jobs.yml:100-149`): dev, all-deprecations, optional-features, deprecations-as-errors, **production build** (`BUILD: production` -> `vite build --mode=production`; DEBUG=false so every `expectAssertion`/`throwsAssertion` degrades to `ok(true)` and tests under `if (DEBUG)` are not defined), stable decorators x2. Browserstack Safari/Edge (`ci-jobs.yml:~160-178`). `pnpm start` = `vite dev` (same index.html live). Single test filtering: QUnit URL params `?filter=` / `?module=` (testem `-- ` not needed).
+* **Node-only**: `pnpm test:node` (`qunit tests/node/**/*-test.cjs`), vitest/blueprint smoke tests. No template tests run in node except via `@simple-dom` delegates inside the browser page.
+* **Dev vs prod semantics seen by tests**: `import { DEBUG } from '@glimmer/env'` appears in glimmer tests (19 hits in IT, `moduleFor(...)` guards) and `moduleForDevelopment` checks `import.meta.env.MODE === 'development'` (`module-for.ts:40-48`). `ENV._DEBUG_RENDER_TREE` defaults to `DEBUG`.
+
+### 4.2 Where an implementation seam can go
+
+Three independent seams, from cheapest to most intrusive. They can be combined (A for Ember tests, B for Glimmer tests, C for compile-only tests).
+
+**Seam A - module aliasing (Ember-level tests, zero harness change).** Because Ember tests only use (i) public APIs (`precompileTemplate`, `template`, `setComponentTemplate`, `@glimmer/component`, managers, `owner.register`) and (ii) `renderComponent/setRenderer/_resetRenderers/renderSettled/Renderer/appendTo/rerender` from `@ember/-internals/glimmer`, the replacement point is *inside* `@ember/-internals/glimmer` + the three `@glimmer` packages it calls. Concretely:
+1. **Compile-time**: change `compilerPath` in `babel.config.mjs:~37-43` (and the runtime `@ember/template-compiler/lib/template.ts:1-7`, `IH/lib/compile.ts`) to a compiler that emits **JS template functions** instead of wire-format JSON; `precompileTemplate` output is then fed to the new runtime. Constraint: `@ember/template-compiler/lib/template.ts` and `@ember/-internals/glimmer/lib/template.ts` (`StaticTemplate = SerializedTemplateWithLazyBlock`) assume the wire-format object - they are the two files to abstract. (Wire format is a non-goal per CONVENTIONS; here it is only a *carrier*.)
+2. **Runtime**: replace `renderMain`/`curry`/`clientBuilder`/`inTransaction`/`EvaluationContext` consumed by `@ember/-internals/glimmer/lib/renderer.ts:20-30,102-160` & `base-renderer.ts`, and the manager glue (`component-managers/{curly,root,outlet,mount,internal}.ts`, `resolver.ts`, `router-resolver.ts`, `syntax/*`). Use the `deps` override (`rollup.config.mjs:443`, `vite.config.mjs:44-55`) to alias e.g. `@glimmer/runtime`, `@glimmer/opcode-compiler`, `@glimmer/compiler` to the new package while keeping `@glimmer/manager`, `@glimmer/validator`, `@glimmer/reference`(?), `@glimmer/destroyable`, `@glimmer/owner`, `@glimmer/global-context` (shared host contract) intact.
+3. **Gate by env var** (like `VITE_STABLE_DECORATORS`, `vite.config.mjs:38`) -> a new CI matrix row.
+Constraint: `renderer.ts` imports deep paths (`@glimmer/runtime/lib/curried-value`, `.../vm/element-builder`, `.../environment`, `.../render`, `@glimmer/reference/lib/reference`, `@glimmer/validator/lib/debug`; `renderer.ts:20-30`, `environment.ts:11-13`) - so the alias must cover those deep paths or `renderer.ts` must be forked.
+
+**Seam B - `RenderDelegate` adapter (Glimmer integration tests).** Implement `class JsFnRenderDelegate implements RenderDelegate` next to `JitRenderDelegate` and let `jitSuite`/`jitComponentSuite` pick it (`IT/lib/test-helpers/module.ts:19-43`, e.g. via `globalThis`/URL flag), plus `NodeJit`/`Serialization`/`Rehydration` variants. ~85 of the 86 test files import only from `@glimmer-workspace/integration-tests`, so a single delegate swap covers them. Gaps in `RenderTest` itself to refactor first (they bypass the delegate):
+* `RenderTest.set` -> `dirtyTagFor(context,key)` (`render-test.ts:629-632`), `rerender` -> `result.env.begin(); result.rerender(); result.env.commit()` (`:419-438`), `destroy` -> `inTransaction(result.env, () => destroy(result))` (`:440-446`), `import { run } from '@ember/runloop'` (`:19`). Proposal: add `delegate.rerender(result)`, `delegate.destroy(result)`, `delegate.set(context,key,value)` with defaults equal to the current code.
+* `RenderResult` is a VM type (`@glimmer/interfaces`); the spec-level handle is `{rerender(): void; destroy(): void}` (+ optional `bounds()`, `env` only for the Glimmer delegate).
+* Component kinds Curly/Dynamic use an **internal manager** (`emberish-curly.ts`: `setInternalComponentManager`, `WithCreateInstance`/`WithDynamicLayout`/`WithDynamicTagName`/`PreparedArguments`, `VMArguments`, `childRefFor/createComputeRef` refs, `DirtyableTag`). Either (a) alt impl exposes the internal-manager protocol for definitions (then the class ports unchanged), or (b) re-implement `EmberishCurlyComponent` on top of the *public* manager API with `componentCapabilities('3.13', {updateHook, createInstance, ...})` + `{{component}}`-style invocation; (b) is more portable and is a harness-only rewrite (`emberish-curly.ts`, 325 lines).
+
+**Seam C - compile-only API adapter** (`compile`, `precompile`, errors). `IT/lib/compile.ts:20-41` and `IH/lib/compile.ts:20-40` are the **only two places** where tests call `precompileJSON` + `templateFactory`; every other compile goes through them or through `precompileTemplate`/`template()`. Redirect both to the adapter `compile()`.
+
+### 4.3 Minimal interface a new implementation must provide
+
+```ts
+// spec-level adapter; every method has a current-harness counterpart (right column)
+interface TemplateImplementation {
+  // --- compile -----------------------------------------------------------
+  compile(src: string, opts?: {
+    strictMode?: boolean;          // PrecompileOptions.strictMode
+    scope?: Record<string, unknown>| (() => Record<string, unknown>); // locals / lexical scope (createTemplate scopeValues)
+    keywords?: string[];           // define.ts DefineComponentOptions.keywords
+    moduleName?: string;           // meta.moduleName; also Ember's compileOptions(...)
+    plugins?: { ast: ASTPluginBuilder[] }; // registerPlugin; optional capability 'ast-plugins'
+    emberOptions?: EmberPrecompileOptions;  // customizeComponentName, ... (ember-template-compiler)
+  }): TemplateFactory;             // (owner?) => Template; accepted by setComponentTemplate()
+  //                                  <- createTemplate/preprocess (IT/lib/compile.ts:14-41), compile (IH/lib/compile.ts:20-40), precompileTemplate, template()
+
+  // --- definitions (all PUBLIC already) ----------------------------------
+  setComponentTemplate, setComponentManager, setHelperManager, setModifierManager,
+  componentCapabilities, helperCapabilities, modifierCapabilities,
+  templateOnlyComponent,           // @glimmer/manager, @glimmer/runtime
+  // built-ins: array concat fn get hash on (+ keywords: if unless each let in-element yield has-block ... log debugger unique-id input textarea link-to mount outlet)
+
+  // --- loose-mode resolution ---------------------------------------------
+  // Either a ClassicResolver-like object (lookupComponent/Helper/Modifier(name, owner)) given to the renderer,
+  // or (Ember) owner.factoryFor('component:x'|'helper:x'|'modifier:x'|'template:components/x'); see resolver.ts
+
+  // --- host hooks (global context) ---------------------------------------
+  setGlobalContext({ scheduleRevalidate, toBool, toIterator, getProp, setProp, getPath, setPath,
+                     scheduleDestroy, scheduleDestroyed, warnIfStyleNotTrusted, assert, deprecate }) // @glimmer/global-context (environment.ts:22-)
+
+  // --- render ------------------------------------------------------------
+  renderTemplate(src|TemplateFactory, self: object, into: Element|SimpleElement,
+                 opts?: { owner?, mode?: 'client'|'serialize'|'rehydrate', document?, isInteractive? }): RenderHandle
+  renderComponent(definition: object, args: Record<string, unknown>, into: Element|SimpleElement,
+                  opts?: { owner?, dynamicScope? /*optional*/, env? }): RenderHandle
+  //   <- delegate.renderTemplate/renderComponent (render-delegate.ts:39-55); base-renderer.ts:459 renderComponent({owner,args,env,into})
+  interface RenderHandle { rerender(): void; destroy(): void; /* optional */ bounds?(): Bounds; capture?(): CapturedRenderNode[] }
+
+  // --- reactivity (spec ch.07 abstract model) ----------------------------
+  // tracked, cached/createCache+getValue, trackedArray/Map/Set/WeakMap/WeakSet/Object, dirty-on-set for plain-object context
+  // <- RenderTest.set -> dirtyTagFor (render-test.ts:629); tracked-object.ts uses tagFor/consumeTag/dirtyTagFor; replace with a 'cell'/tracked-object helper
+
+  // --- lifecycle ---------------------------------------------------------
+  destroy(handle), registerDestructor, isDestroying, isDestroyed, associateDestroyableChild  // @glimmer/destroyable (public via @ember/destroyable)
+  owner: setOwner/getOwner
+
+  // --- settle ------------------------------------------------------------
+  settle(): void | Promise<void>   // sync flush (Glimmer: result.env.begin/rerender/commit; Ember: run(fn) / Component#rerender); async renderSettled()
+}
+```
+
+Mapping of existing harness methods:
+
+| Existing | Adapter |
+|---|---|
+| `RenderDelegate.renderTemplate` / `renderComponent` | `renderTemplate` / `renderComponent` |
+| `RenderDelegate.registerComponent/Helper/Modifier/Plugin`, `registerInternalHelper` | resolver-registry object (loose) + `compile(...plugins)`; `registerInternalHelper` dropped/unsupported |
+| `getElementBuilder`, `getSelf`, `getInitialElement`, `create*` | internal to adapter / DOM only (`mode` option) |
+| `RenderTest.rerender/destroy/set/runTask/assertStableRerender` | `RenderHandle.rerender/destroy`; `set` via tracked context; `runTask` stays identity (Glimmer) or `run` (Ember) |
+| `createTemplate`, `defineComponent`, `defComponent` (`define.ts:105-136`) | `compile(...strictMode)` + `setComponentTemplate` |
+| `IH` `RenderingTestCase.render/renderComponent/rerender/registerHelper/...` | stay; run on top of Seam A |
+| `runAppend/runDestroy/runTask/runLoopSettled/renderSettled` | `settle()` + Ember run loop (shared; scheduler is Ember's backburner, `environment.ts:22-41`) |
+| `expectAssertion/expectDeprecation` | unchanged; require adapter to call `assert`/`deprecate` from global context |
+
+### 4.4 What can be supported without implementation internals
+
+Fully portable through the adapter (spec-observable): the shared `IT/lib/suites/*` (components, each, in-element, has-block, yield, scope, shadowing, initial-render, ssr, with-dynamic-vars, debugger [needs debugger hook]), strict-mode/keyword/helper/modifier/collections/syntax-error tests in `IT/test`, all of `glimmer/tests/integration/**` (Ember-level), `ember-template-compiler/tests/plugins/*` behavior flavor, `@glimmer/validator` collections tests, `@glimmer/manager` capabilities tests (validation messages).
+
+**Cannot be supported without implementation internals** (explicitly mark `out-of-scope` / `needs-vm` in the spec conformance chapter):
+* wire-format assertions: `@glimmer/compiler/test/compiler-test.ts` (whole file), `IT/test/compiler/compile-options-test.ts` (`SexpOpcodes` at `:5,64`), `IT/test/precompile-test.ts` (`__id`, `__meta`, `Template.id`, `referrer`).
+* opcode/heap/program internals: only reached via `JitDelegateContext` (`jit/delegate.ts:60-74`: `artifacts`, `RuntimeOpImpl`, `EvaluationContextImpl`); there are **no opcode-snapshot tests** in `IT/test` or `IT/lib/suites` (verified by grep) - only construction plumbing.
+* Reference/Tag-level tests: `@glimmer/validator/test/{tracking,validators}-test.ts` (tag API), `@glimmer/reference/test`, `@glimmer/program/test`, `@ember/-internals/metal/tests/tracked/*` (tag assertions via `track/valueForTag/validateTag`), `registerInternalHelper` consumers (`IT/test/updating-test.ts` 6 uses, `IT/test/helpers/fn-test.ts` 2), `IT/test/env-test.ts` (`EnvironmentImpl.begin/commit` nesting assert, message text), `IT/test/modifiers/on-test.ts:41` (`getInternalModifierManager(on)` internals), `@glimmer/manager/test/managers-test.ts:42-47` (`CustomComponentManager` class identity).
+* AST-level: `@glimmer/syntax/test/*` (unless the new impl reuses `@glimmer/syntax`), `ember-template-compiler/tests/utils/transform-test-case.ts` users (AST deep-equal), `_print` (non-goal).
+* Debug render tree: `IT/test/debug-render-tree-test.ts` (needs `getCapturedRenderTree()` on delegate + `enableDebugTooling` env), Ember `debug-render-tree-test.ts` (`captureRenderTree`); optional capability, with the shape in 3.
+* Template/resolver cache counters: `glimmer/tests/unit/runtime-resolver-cache-test.js`, `template-factory-test.js` (`templateCacheCounters` from `@ember/-internals/glimmer`), `hot-reload-test.js`.
+* `style-warnings-test.ts` + `testOverrideGlobalContext`: supportable if the adapter honors the same `@glimmer/global-context` hooks (it is a host contract - recommend specifying the hook set in ch. 07/host integration).
+* `DynamicScopeImpl` in `suites/entry-point.ts:79` / `renderComponent(..., dynamicScope)`: internal; `-with-dynamic-vars` is a legacy keyword - tag `[Legacy]`.
+
+### 4.5 Practical caveats
+
+1. Because Glimmer tests run **inside Ember's page**, `@glimmer/global-context` is set once for the whole run by importing `@ember/-internals/glimmer/lib/environment.ts`; an alternate impl must be wired to the same hooks (or the Glimmer harness must set its own via `testOverrideGlobalContext`, as `style-warnings-test.ts:18-30` does).
+2. The harness assumes **synchronous rendering** (`renderSync`, `iterator.sync()`) - `RenderHandle.rerender()` must be synchronous (`render-test.ts:419-438`; Ember `renderer.ts:123-131`); async settle is only used by `renderSettled`/`runLoopSettled`.
+3. DOM node identity across rerender is checked everywhere (`assertStableRerender`), so a JS-function compiler must patch in place rather than re-create DOM.
+4. Marker handling: Ember harness ignores empty text/comment nodes (`abstract.ts:17-27`), Glimmer harness `takeSnapshot` skips server markers (`snapshot.ts` `isServerMarker`) - spec must state which markers are permitted. SSR/rehydration suites compare **exact serialized HTML incl. `<!--%glmr%-->`, `<!--%+b:N%-->`** markers (`custom-dom-helper.ts`, `initial-render-test.ts` `Rehydration` suite at `:1596`) and `rehydrationStats.clearedNodes` -> either specify the serialization format or exclude those suites.
+5. Production build: assertions become no-ops; an alt impl must keep `DEBUG` stripping semantics (`@glimmer/env` flag via `babel-plugin-debug-macros`) so that the `!DEBUG` branches of `expectAssertion` remain valid.
+6. Ember's `{{input}}`, `<Input>`, `<LinkTo>`, `{{outlet}}`, `{{mount}}`, `{{yield}}`-in-curly, `Component` classic lifecycle (`didInsertElement` ...) live in `@ember/-internals/glimmer` and `@ember/routing` (managers), not in `@glimmer/*`; Seam A must reimplement or reuse these on top of the new core.
