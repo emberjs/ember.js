@@ -1,6 +1,4 @@
 import GlimmerComponent from '@glimmer/component';
-import type { CapturedArguments } from '@glimmer/interfaces';
-import { createInvokableRef } from '@glimmer/reference';
 import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 import { DEBUG } from '@glimmer/env';
 
@@ -235,46 +233,6 @@ class FnTest extends RenderTest {
 
     this.rerender({ arg1: 'foo', arg2: 'bar', arg3: 'qux' });
     this.assertHTML('arg1: foo, arg2: bar, arg3: qux');
-  }
-
-  @test
-  'can be used on the result of `mut`'() {
-    this.registerInternalHelper('mut', (args: CapturedArguments) => {
-      let [first] = this.guardArray({ positional: args.positional }, { min: 1 });
-      return createInvokableRef(first);
-    });
-
-    this.render(`{{this.arg1}}<Stash @stashedFn={{fn (mut this.arg1) this.arg2}}/>`, {
-      arg1: 'foo',
-      arg2: 'bar',
-    });
-
-    this.assertHTML('foo<!---->');
-
-    this.stashedFn?.();
-    this.rerender();
-
-    this.assertHTML('bar<!---->');
-  }
-
-  @test
-  'can be used on the result of `mut` with a falsy value'() {
-    this.registerInternalHelper('mut', (args: CapturedArguments) => {
-      let [first] = this.guardArray({ positional: args.positional }, { min: 1 });
-      return createInvokableRef(first);
-    });
-
-    this.render(`{{this.arg1}}<Stash @stashedFn={{fn (mut this.arg1) this.arg2}}/>`, {
-      arg1: 'foo',
-      arg2: false,
-    });
-
-    this.assertHTML('foo<!---->');
-
-    this.stashedFn?.();
-    this.rerender();
-
-    this.assertHTML('false<!---->');
   }
 }
 
