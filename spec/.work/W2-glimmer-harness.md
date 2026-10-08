@@ -649,6 +649,27 @@ keyword" went in 5.3b).
 
 **W2 done** (2026-10-08): 8.1–8.4 ticked, nothing unresolved in 8.3.
 
+### 9.4 triage
+
+Result: nothing to triage. Per-test diff of `full94` against `full92` (module + name + chunk,
+status): 0 missing, 0 pass -> fail, 0 other changes, 1 new test. No grep hits for
+`Expected assert.verifySteps`, `Expected N assertions`, `afterEach failed`, `NAMESPACES` or
+`already been resolved`. Class counts: (a) 0, (b) 0, (c) 0, (d) 0.
+
+Why nothing changed: no existing test in the rehydration, node or serialization suites
+(`initial-render-test.ts` Rehydration, the 37 `node jit`/`jit serialization` tests, partial
+rehydration) renders an element modifier or a classic component on the server side, so the
+non-interactive environment (`runtime/lib/environment.ts:165-171`, `opcodes/dom.ts:168,212`:
+modifiers are not scheduled, `createdComponent`-style hooks skip) has nothing to skip. To be sure
+the flag takes effect, phase 1 added one test, `rehydration: modifiers do not run in the server
+render but run in the client render` (`IT/test/initial-render-test.ts`, Rehydration suite): it
+passes with the change and fails (server install count 1) when the server renderer is made
+interactive again.
+
+Reviewer note: this is a new test (class b, a ruling pin), not a changed expectation. The SSR
+profile (`§09`) may want the same pin for the node delegates; `NodeJitRenderDelegate` is
+non-interactive now but nothing asserts it.
+
 ### W5 classification list
 
 Files W2 leaves as implementation tests (not conformance): W5 moves them out of the conformance suite
@@ -719,9 +740,16 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
       through public API only. The 5.1 design warned that top-level `{{yield}}`, `has-block`,
       `...attributes` and the render tree may differ: triage every changed test as in 5.5b
       (do not change expectations without review).
-- [ ] 9.4 Code, non-interactive serialize (Q8): server renders in the rehydration/node delegates
+- [x] 9.4 Code, non-interactive serialize (Q8): server renders in the rehydration/node delegates
       use a non-interactive renderer. Triage every changed test (modifiers no longer running on
       the server, rehydration results) as in 5.5b before changing expectations.
+      DONE (code `HASH`, see "9.4 triage" below): `createRenderer` gets `isInteractive` (default
+      true); the rehydration `serverRenderer` and `NodeJitRenderDelegate` (and so
+      `JitSerializationDelegate`) pass false through a protected `isInteractive` getter on
+      `JitRenderDelegate`. Client and rehydrating renders stay interactive. (`_renderMode` is not
+      used anywhere in the harness; the serialize tree builder only builds the DOM.) Full run
+      `full94`: 9015 / 8997 / 0 / 18. Against `full92` (9014 / 8996 / 0 / 18): 0 missing, 0 changed,
+      exactly 1 new (the probe below). No test changed result: the triage table is empty.
 - [x] 9.5 Dynamic scope (§05-5.8 ruling; was §05-14 item 17): the IT `-with-dynamic-vars` suite with arbitrary
       keys becomes an implementation test (W5 list); confirm an EG test pins the assertion for
       non-`outletState` keys (`EG/syntax/with-dynamic-var-test.js`), or add one.
