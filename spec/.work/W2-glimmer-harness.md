@@ -679,7 +679,7 @@ both pass. Two new tests in total (the totals below count them).
 
 ### 9.3 triage
 
-Code `ee8adaecd4` (phase 1). `this.render(template, ctx)` in the jit, node, rehydration (server and client)
+Code `ee8adaecd4` (phase 1; squashed into `8939c50aff` with the decisions below). `this.render(template, ctx)` in the jit, node, rehydration (server and client)
 delegates, and so also in the plain delegates (they extend these and only override `compileTemplate`), now
 goes through `renderLooseTemplate` (`IT/lib/modes/loose-template.ts`): a fresh definition object per call with
 `setComponentManager` (`capabilities('3.13')`, `createComponent` and `getContext` return the test context),
@@ -693,6 +693,29 @@ pins = 9017 / 8999): 0 missing and 2 new by name (the 2 pins; 36 date-named `{{i
 are not changes), exactly 58 pass -> fail, nothing else changed (8999 - 58 = 8941). No hits for
 `Expected assert.verifySteps`, `Expected N assertions`, `afterEach failed`, `NAMESPACES`, `already been resolved`.
 Class counts: (a) 0, (b) 58, (c) 0 on their own (a few of the 58 are also on the W5 list, noted), (d) 0.
+
+
+**Decided (Opus review) and applied in `8939c50aff`:**
+
+- Cause 1 (50 tests: serialization 5, `rehydration:` 30, chaos 2, plain in-element 1, Components 13 minus nothing): decided (b), no per-test edits. SSR markers are implementation-defined (ruling Q1), so the
+  wrapper's block pair lives in one place: `withRoot`/`shiftBlockIds` in `IT/lib/markers.ts`. `withRoot` wraps
+  `+b:0 ... -b:0` as `+b:0 +b:1 ... -b:1 -b:0` and shifts the inner ids. It is applied in `assertExactServerOutput`
+  (rehydration and chaos), in `SerializedDOMHelperTests.assertHTML`, in the rehydration suite's `assertHTML` when the
+  expected markup still carries `+b:0` (the server-output assertions that go through `assertHTML`: 7 tests
+  that the first full run showed only after the others were fixed: `#each rehydration`, `clearing bounds`,
+  `top-level clearing bounds`, `script tag`, `style tag`, `svg elements`, `title tag`), and `shiftBlockIds` alone in
+  `assertSerializedInElement` and `assertServerComponent` (which also reads `childNodes[3]` instead of `[2]`).
+  The expectation text of every test is unchanged. These tests used to stop at the server assertion; their client and
+  rehydration halves now run and all pass (no new triage rows).
+- Cause 2 (7 debug-render-tree tests): decided (b) in the helper. `DebugRenderTreeTest.render` marks a loose render and
+  `assertRenderTree` then asserts the captured tree has exactly one root node, of type `component` and name `{ROOT}`
+  (a one-line comment says why), and compares its `children` with the unchanged expected tree. `renderComponent`
+  tests have no wrapper and are untouched. `modifiers` sees its 4 nodes again; the 2 `getDebugCustomRenderTree`
+  W5 tests use the same helper.
+- The `bounds()` reach-in to `renderer.state.roots` in `lib/modes/loose-template.ts` stays: it is inside `lib/modes/`.
+
+Final run `full93c`: 9017 / 8999 / 0 / 18. Against `full94`: 0 missing, 0 changed, 2 new (the node pins); the 36 date-named
+`{{if}}` tests are rename noise. No greps hit. 0 tests removed, so no ledger rows. No internal root remains.
 
 Two causes, both inherent to a component root and not harness plumbing. Everything not listed below passes: top-level
 `{{yield}}`, `has-block`, `...attributes` and `{{@arg}}` tests are unchanged (no test uses them at the top level).
@@ -796,7 +819,7 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
       engine). Both IT tests deleted, ledger rows 9.2 (they replace the 2.3 `kept` rows).
       §06-2.2 citation updated. Full run: 9014 / 8996 / 0 / 18, diff against `full8b`: exactly
       the 2 IT tests missing and the 2 EG tests new; no verifySteps/afterEach/NAMESPACES hits.
-- [x] 9.3 (phase 1 done, code `ee8adaecd4`; 58 known failures, see "9.3 triage"; reviewer decides) Code, top-level `this` (Q7): replace the internal `TemplateRootState`
+- [x] 9.3 (done, code `8939c50aff`; the 58 triage rows were decided by the reviewer and applied, full run 9017 / 8999 / 0 / 18; see "9.3 triage") Code, top-level `this` (Q7): replace the internal `TemplateRootState`
       (`lib/modes/template-root.ts`) with `renderComponent` + a custom component manager
       (`setComponentManager`, `componentCapabilities('3.13')`, `createComponent` returns the
       test context, `getContext` returns it) so `this.render(template, ctx)` keeps working
