@@ -11,7 +11,7 @@ Portability classes: P = portable with a harness adapter; R = portable after ref
 - [x] 1. integration-tests/test/**
 - [x] 2. @ember/-internals/glimmer/tests/**
 - [x] 3. @glimmer/*/test/**
-- [ ] 4. template-compiler tests
+- [x] 4. template-compiler tests
 - [ ] 5. metal / object / other ember packages
 
 ## Group 1 — `packages/@glimmer-workspace/integration-tests/test/**` (81 files: 79 tests + package.json + support.ts)
@@ -301,3 +301,35 @@ These are unit tests of the private `@glimmer/*` packages. By the spec's own rul
 | Syntax-error text assertions (normative) | 1 file | `syntax/test/parser-error-test.ts:9-20` |
 
 Totals (41 classified test files, plus 5 support files): P 1, R 13, M 3, I 24.
+
+## Group 4 — `packages/ember-template-compiler/tests/**`, `packages/@ember/template-compiler/tests/**` (14 files)
+
+Harness: `moduleFor` + `AbstractTestCase`/`RenderingTestCase`; most tests call `compile(...)` from `packages/ember-template-compiler/index` and assert on thrown dev assertions (`expectAssertion`) or render output. Dev-only compile-time assertions are normative with **[Dev]** (messages include ` ('module' @ L1:C2) ` location suffix).
+
+| file | class | categories | note |
+|---|---|---|---|
+| ember-template-compiler/tests/basic-usage-test.js | I | AST, EMBER-PRIV | "Embroider-like compilation": `_buildCompileOptions`, `_preprocess`, `_print` with a custom AST plugin (`ElementNode` visitor), then `print` back to hbs (:1-43). AST plugins and re-printing are non-goals. |
+| ember-template-compiler/tests/plugins/assert-against-attrs-test.js | M | AST, BUILD | `{{attrs.x}}`/`this.attrs` assertion messages (P, [Dev], uses `expectAssertion` via `precompileTemplate`); uses `utils/transform-test-case.ts` `assertTransformed` (deep-equals de-located ASTv1) for some cases = I. |
+| ember-template-compiler/tests/plugins/assert-against-named-outlets-test.js | P | BUILD | `{{outlet "named"}}` assertion message. |
+| ember-template-compiler/tests/plugins/assert-array-test.js | P | - | Render tests: block param/lexical `array` shadows the keyword (`precompileTemplate` strict + `scope`, `assertHTML`, `assertStableRerender`). Behavior only. |
+| ember-template-compiler/tests/plugins/assert-input-helper-without-block-test.js | P | BUILD | `{{#input}}` assertion text. |
+| ember-template-compiler/tests/plugins/assert-reserved-named-arguments-test.js | P | BUILD | 426 lines: `@arguments`, `@args`, `@block`, `@else` reserved: `expectAssertion(..., "'@arguments' is reserved. ('baz/foo-bar' @ L1:C2) ")` (:12-30); messages with `L:C` locations are normative [Dev]. |
+| ember-template-compiler/tests/plugins/assert-splattribute-expression-test.js | P | BUILD | `{{...attributes}}` assertion. |
+| ember-template-compiler/tests/plugins/transform-component-invocation-test.js | P | - | `assert.expect(0)`: "compiles without error" for 11 invocation forms (`{{this.modal open}}`, `{{@modal}}`...). Pure parse/compile acceptance. |
+| ember-template-compiler/tests/plugins/transform-each-in-into-each-test.js | P | BUILD | `{{#each-in}}` without argument throws "requires an object ... first positional parameter" (:9-14); the name of the plugin is irrelevant. |
+| ember-template-compiler/tests/plugins/transform-input-type-syntax-test.js | P | - | Compile-accepts `{{input type=...}}` forms. |
+| ember-template-compiler/tests/system/compile_options_test.js | I | AST, EMBER-PRIV | `compileOptions()` copy identity, `RESOLUTION_MODE_TRANSFORMS`/`STRICT_MODE_TRANSFORMS` list membership (:20-40), `customizeComponentName` assertion (P-able message, :12-18), custom AST plugin passed to `compile`. 1 of 5 tests portable. |
+| ember-template-compiler/tests/system/dasherize-component-name-test.js | R | EMBER-PRIV | Name-dasherization cache (`COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get`, :1-20); the mapping `Foo::BarBaz` -> `foo/bar-baz` is observable (component resolution, §03/§08) — refactor to resolution tests; the cache object is private. |
+| ember-template-compiler/tests/utils/transform-test-case.ts | - | AST, WIRE | helper: runs `precompile` with an extra AST plugin to capture the transformed Template and compares ASTv1 after stripping `loc`. |
+| @ember/template-compiler/tests/template_test.ts | R | RUNTIME-PRIV | `template()` with `<template>` implicit form (smoke); reads `getComponentTemplate` (public) and `getInternalComponentManager` (private). Refactor: render the result. |
+
+### Group 4 recurring patterns
+
+| pattern | files | examples |
+|---|---|---|
+| `compile`/`precompileTemplate` + `expectAssertion` of exact dev messages (normative [Dev]) | 6 | `plugins/assert-reserved-named-arguments-test.js:12`, `plugins/assert-against-named-outlets-test.js` |
+| Compile-acceptance only (`assert.expect(0)`) | 2 | `plugins/transform-component-invocation-test.js:8` |
+| AST plugin/ASTv1 deep-equal/`_preprocess`/`_print` | 4 | `basic-usage-test.js:1-43`, `utils/transform-test-case.ts:10` |
+| Internal lists (`*_TRANSFORMS`) | 1 | `system/compile_options_test.js:20-40` |
+
+Totals (13 test files; excluding the helper): P 7, R 2, M 1, I 2 (+ `compile_options_test.js` is 1 test P of 5 but counted I... see note). Note: of the 13 test files, `assert-against-attrs-test.js` is M and `compile_options_test.js` is I.
