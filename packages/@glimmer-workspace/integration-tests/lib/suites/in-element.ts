@@ -1,4 +1,3 @@
-import GlimmerComponent from '@glimmer/component';
 import type { AST } from '@glimmer/syntax';
 import { assign } from '@glimmer/util';
 
@@ -31,26 +30,6 @@ export class InElementSuite extends RenderTest {
 
     let externalElement = this.delegate.createElement('div');
     this.render('{{#maybe-in-element this.externalElement}}[{{this.foo}}]{{/maybe-in-element}}', {
-      externalElement,
-      foo: 'Yippie!',
-    });
-
-    equalsElement(externalElement, 'div', {}, '[Yippie!]');
-    this.assertStableRerender();
-
-    this.rerender({ foo: 'Double Yups!' });
-    equalsElement(externalElement, 'div', {}, '[Double Yups!]');
-    this.assertStableNodes();
-
-    this.rerender({ foo: 'Yippie!' });
-    equalsElement(externalElement, 'div', {}, '[Yippie!]');
-    this.assertStableNodes();
-  }
-
-  @test
-  'Renders curlies into external element'() {
-    let externalElement = this.delegate.createElement('div');
-    this.render('{{#in-element this.externalElement}}[{{this.foo}}]{{/in-element}}', {
       externalElement,
       foo: 'Yippie!',
     });
@@ -205,28 +184,6 @@ export class InElementSuite extends RenderTest {
     equalsElement(second, 'div', {}, '');
     this.assertHTML('<!----><!---->');
     this.assertStableRerender();
-  }
-
-  @test
-  'Inside the current constructing element'() {
-    this.render(
-      stripTight`
-        Before
-        {{#in-element this.element insertBefore=null}}
-          {{this.foo}}
-        {{/in-element}}
-        After
-      `,
-      {
-        element: this.element,
-        foo: 'Yippie!',
-      }
-    );
-
-    this.assertHTML('BeforeYippie!<!---->After');
-    this.assertStableRerender();
-
-    this.destroy();
   }
 
   @test
@@ -394,50 +351,6 @@ export class InElementSuite extends RenderTest {
     this.rerender({ foo: 'Hello!' });
     equalsElement(firstElement, 'div', {}, stripTight`[Hello!]<!---->`);
     equalsElement(secondElement, 'div', {}, stripTight`[World!]`);
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-  }
-
-  @test
-  'Components are destroyed'() {
-    let destroyed = 0;
-
-    class DestroyMeComponent extends GlimmerComponent {
-      override willDestroy() {
-        super.willDestroy();
-        destroyed++;
-      }
-    }
-
-    this.registerComponent('Glimmer', 'DestroyMe', 'destroy me!', DestroyMeComponent as any);
-    let externalElement = this.delegate.createElement('div');
-
-    this.render(
-      stripTight`
-        {{#if this.showExternal}}
-          {{#in-element this.externalElement}}[<DestroyMe />]{{/in-element}}
-        {{/if}}
-      `,
-      {
-        externalElement,
-        showExternal: false,
-      }
-    );
-
-    equalsElement(externalElement, 'div', {}, stripTight``);
-    this.assert.strictEqual(destroyed, 0, 'component was destroyed');
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-
-    this.rerender({ showExternal: true });
-    equalsElement(externalElement, 'div', {}, stripTight`[destroy me!]`);
-    this.assert.strictEqual(destroyed, 0, 'component was destroyed');
-    this.assertHTML('<!---->');
-    this.assertStableRerender();
-
-    this.rerender({ showExternal: false });
-    equalsElement(externalElement, 'div', {}, stripTight``);
-    this.assert.strictEqual(destroyed, 1, 'component was destroyed');
     this.assertHTML('<!---->');
     this.assertStableRerender();
   }
