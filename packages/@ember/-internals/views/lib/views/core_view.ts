@@ -13,6 +13,7 @@ import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
 import states from './states';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
   `CoreView` is an abstract class that exists to give view-like behavior
@@ -134,5 +135,7 @@ class CoreView extends FrameworkObject.extend(ActionHandler) {
 
 // Declare on the prototype to have a single shared value.
 CoreView.prototype._states = states;
+
+setFrameworkClass(CoreView);
 
 export default CoreView;

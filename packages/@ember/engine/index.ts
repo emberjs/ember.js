@@ -16,6 +16,7 @@ import { RoutingService } from '@ember/routing/-internals';
 import { setupEngineRegistry } from '@ember/-internals/glimmer/lib/setup-registry';
 import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 import { StrictResolver } from './lib/strict-resolver';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 function props(obj: object) {
   let properties = [];
@@ -531,5 +532,7 @@ function commonSetupRegistry(registry: Registry) {
 
   registry.register('container-debug-adapter:main', ContainerDebugAdapter);
 }
+
+setFrameworkClass(Engine);
 
 export default Engine;

@@ -12,6 +12,7 @@ import { consumeTag, createCache, getValue, untrack } from '@glimmer/validator/l
 import { tagFor } from '@glimmer/validator/lib/meta';
 import type ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import { assert } from '.';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
 @module @ember/debug/data-adapter
@@ -685,3 +686,5 @@ export default class DataAdapter<T> extends EmberObject {
     return null;
   }
 }
+
+setFrameworkClass(DataAdapter);

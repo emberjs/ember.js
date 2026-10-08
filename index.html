@@ -33,6 +33,10 @@
         EmberENV['_ALL_DEPRECATIONS_ENABLED'] = true;
       }
 
+      if (QUnit.urlParams.NO_EMBER_OBJECT) {
+        EmberENV['_NO_EMBER_OBJECT'] = true;
+      }
+
       if (QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION) {
         EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
       }

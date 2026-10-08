@@ -20,6 +20,7 @@ import Router from '@ember/routing/router';
 import EventDispatcher from '@ember/-internals/views/lib/system/event_dispatcher';
 import type Registry from '@ember/-internals/container/lib/registry';
 import type { SimpleElement } from '@simple-dom/interface';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -502,5 +503,7 @@ class _BootOptions {
     };
   }
 }
+
+setFrameworkClass(ApplicationInstance);
 
 export default ApplicationInstance;

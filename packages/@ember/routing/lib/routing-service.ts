@@ -4,7 +4,7 @@
 
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { readOnly } from '@ember/object/computed';
+import { readOnly } from '@ember/object/lib/computed/computed_macros';
 import Service from '@ember/service';
 import type Route from '@ember/routing/route';
 import type { ModelFor } from '@ember/routing/route';

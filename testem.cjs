@@ -17,6 +17,10 @@ const variants = [
 
   // Throw on unexpected deprecations. Defaults to true if not set explicitly.
   'RAISE_ON_DEPRECATION',
+
+  // Turns on the `no-ember-object` optional feature, which is a preview of the
+  // removal of `EmberObject`: the deprecated APIs throw.
+  'NO_EMBER_OBJECT',
 ];
 
 let queryString = '';

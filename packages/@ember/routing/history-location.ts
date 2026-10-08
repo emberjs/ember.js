@@ -2,6 +2,7 @@ import EmberObject from '@ember/object';
 import { assert } from '@ember/debug';
 import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { escapeRegExp, getHash } from './lib/location-utils';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 /**
 @module @ember/routing/history-location
@@ -265,3 +266,5 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     }
   }
 }
+
+setFrameworkClass(HistoryLocation);

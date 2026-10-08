@@ -16,6 +16,7 @@ import { type FullName, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
 import type Application from '@ember/application';
 import type { SimpleElement } from '@simple-dom/interface';
+import { setFrameworkClass } from '@ember/-internals/utils/lib/internal-framework-class';
 
 export interface BootOptions {
   isBrowser?: boolean;
@@ -264,5 +265,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     });
   }
 }
+
+setFrameworkClass(EngineInstance);
 
 export default EngineInstance;

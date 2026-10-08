@@ -110,7 +110,7 @@ const ProxyMixin = /*@__PURE__*/ Mixin[INTERNAL_MIXIN_CREATE]({
   },
 
   willDestroy() {
-    this.set('content', null);
+    set(this, 'content', null);
     this._super(...arguments);
   },
 
