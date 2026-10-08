@@ -34,7 +34,7 @@ Author rulings in `5740b4aeb7` (inline notes under §09-9.8):
 
 ## C. §09 rulings and re-evaluation (Opus)
 
-- [ ] C1. Re-count after the merge: `runTask`/`run(` vs `await settled()`/`renderSettled`
+- [x] C1. Re-count after the merge: `runTask`/`run(` vs `await settled()`/`renderSettled`
       call sites, classic vs Glimmer component tests, ember-qunit/`@ember/test-helpers` usage,
       files moved to `components/classic`.
 - [ ] C2. §09 rewritten for Q1, Q3, Q4, Q5, Q6 (rulings recorded, notes removed); §05-13.1
@@ -46,3 +46,21 @@ Author rulings in `5740b4aeb7` (inline notes under §09-9.8):
 
 - A1: remap-citations moved 122 citations (44 FLAGs left for A2). The tool also moved one citation in
   `09-conformance-testing.md` (C14, `abstract.ts:17-27` -> `18-28`), committed with A1.
+
+C1 (Opus), counts over `@ember/-internals/glimmer/tests`, `@glimmer-workspace`,
+`ember-template-compiler`, `@ember/template-compiler`, old base `675744ab35` → new `9bec1cb2a8`:
+- `runTask(`: 1,607 sites / 69 files → 1,644 / 81 (up: Glimmer versions of classic tests were
+  added, #21642/#21646/#21648, in the old harness style).
+- `await settled()`: 0 → 4 sites / 1 file (`integration/helpers/element-test.gjs`);
+  `renderSettled(`: 6 / 1 → 29 / 2 (`render-component-test.ts` waits with `renderSettled`
+  instead of `run()`, 379a7ca59f); `@ember/test-helpers`/`ember-qunit`: 0 → 1 file each.
+- `moduleFor(`: 198 / 96 files → 217 / 113; `RenderingTestCase`: 180 / 75 → 208 / 88.
+- New: `components/classic/` holds 21 files (classic-component tests moved there,
+  bdc582852d, a3cc15a942); "Keep classic and Glimmer coverage for tests that can use both"
+  (46ce689cd8).
+- New test style (a77fdba9b1, cab58a29a1): ember-qunit in the test build;
+  `internal-test-helpers/lib/ember-dev/setup-test-helpers.js` gives each test its own
+  `Application` via `setApplication`; `element-test.gjs` uses `module`/`test` from `qunit`,
+  `setupRenderingTest`, `render`/`settled` from `@ember/test-helpers`, `<template>`. Public API
+  only and async: the target form for the conformance suite.
+- So Q4's migration has started but is about 1% done by call sites.
