@@ -8,7 +8,7 @@ page (one `index.html`, Ember's global context), so the real thing is available 
 - [x] 1. Glimmer harness emulating Ember
 - [x] 2. Ember tests emulating Glimmer / bypassing it
 - [x] 3. Duplicated suites
-- [ ] 4. Summary table and sequence
+- [x] 4. Summary table and sequence
 
 Abbreviations: `IT` = `packages/@glimmer-workspace/integration-tests`, `EG` =
 `packages/@ember/-internals/glimmer/tests/integration`. Counts are `grep` counts of `@test`
