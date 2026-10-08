@@ -1,10 +1,5 @@
-import {
-  GlimmerishComponent,
-  jitSuite,
-  RenderTest,
-  test,
-  tracked,
-} from '@glimmer-workspace/integration-tests';
+import GlimmerComponent from '@glimmer/component';
+import { jitSuite, RenderTest, test, tracked } from '@glimmer-workspace/integration-tests';
 
 class GetTest extends RenderTest {
   static suiteName = 'Helpers test: {{get}}';
@@ -312,10 +307,13 @@ class GetTest extends RenderTest {
 
     const setInstance = (instance: FooBar) => (fooBarInstance = instance);
 
-    class FooBar extends GlimmerishComponent {
+    class FooBar extends GlimmerComponent {
       @tracked mcintosh = 'red';
 
-      constructor(owner: object, args: Record<string, unknown>) {
+      constructor(
+        owner: ConstructorParameters<typeof GlimmerComponent>[0],
+        args: Record<string, unknown>
+      ) {
         super(owner, args);
         setInstance(this);
       }
@@ -392,7 +390,7 @@ class GetTest extends RenderTest {
 
   @test
   'should be able to get an object value with a path from this.args in a glimmer component'() {
-    class PersonComponent extends GlimmerishComponent {
+    class PersonComponent extends GlimmerComponent {
       options = ['first', 'last', 'age'];
     }
 

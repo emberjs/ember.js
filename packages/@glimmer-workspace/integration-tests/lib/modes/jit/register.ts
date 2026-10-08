@@ -1,3 +1,4 @@
+import GlimmerComponent from '@glimmer/component';
 import type {
   Helper as GlimmerHelper,
   InternalModifierManager,
@@ -22,7 +23,6 @@ import type { TestJitRegistry } from './registry';
 
 import { createTemplate } from '../../compile';
 import { EmberishCurlyComponent } from '../../components/emberish-curly';
-import { GlimmerishComponent } from '../../components/emberish-glimmer';
 import { createHelperRef } from '../../helpers';
 import { TestModifierDefinitionState, TestModifierManager } from '../../modifiers';
 
@@ -64,7 +64,7 @@ export function registerGlimmerishComponent(
   if (name.indexOf('-') !== -1) {
     throw new Error('DEPRECATED: dasherized components');
   }
-  let ComponentClass = Component || class extends GlimmerishComponent {};
+  let ComponentClass = Component || class extends GlimmerComponent {};
 
   registerSomeComponent(registry, name, createTemplate(layoutSource), ComponentClass);
 }

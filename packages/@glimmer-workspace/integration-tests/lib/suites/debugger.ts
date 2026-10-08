@@ -1,6 +1,6 @@
+import GlimmerComponent from '@glimmer/component';
 import { resetDebuggerCallback, setDebuggerCallback } from '@glimmer/runtime';
 
-import { GlimmerishComponent } from '../components';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 
@@ -40,9 +40,7 @@ export class DebuggerSuite extends RenderTest {
       'Glimmer',
       'MyComponent',
       '{{#if this.a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}{{@used}}',
-      class extends GlimmerishComponent {
-        declare args: { a: { b: boolean }; foo: string; used: string };
-
+      class extends GlimmerComponent<{ a: { b: boolean }; foo: string; used: string }> {
         get a() {
           return this.args.a;
         }
@@ -128,7 +126,7 @@ export class DebuggerSuite extends RenderTest {
         'Glimmer',
         'DebugTest',
         '{{debugger}}',
-        class extends GlimmerishComponent {}
+        class extends GlimmerComponent {}
       );
 
       this.render('<DebugTest @foo="bar" />', {});

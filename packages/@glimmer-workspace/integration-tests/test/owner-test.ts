@@ -1,3 +1,4 @@
+import GlimmerComponent from '@glimmer/component';
 import type {
   InternalComponentCapabilities,
   Owner,
@@ -13,7 +14,6 @@ import {
   createTemplate,
   defineComponent,
   EmberishCurlyComponent,
-  GlimmerishComponent,
   JitRenderDelegate,
   RenderTest,
   suite,
@@ -103,8 +103,11 @@ function defineMountComponent(owner: object, scope: Record<string, unknown>, tem
 
 function defineCheckOwnerComponent(ownerToCheck: object | undefined, assert: Assert) {
   return defineComponent({}, '{{yield}}', {
-    definition: class extends GlimmerishComponent {
-      constructor(owner: object, args: Record<string, unknown>) {
+    definition: class extends GlimmerComponent {
+      constructor(
+        owner: ConstructorParameters<typeof GlimmerComponent>[0],
+        args: Record<string, unknown>
+      ) {
         super(owner, args);
 
         assert.strictEqual(owner, ownerToCheck, 'owner is correct');

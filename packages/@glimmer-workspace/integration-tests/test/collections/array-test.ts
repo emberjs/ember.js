@@ -1,11 +1,7 @@
+import Component from '@glimmer/component';
 import type { Dict, Owner } from '@glimmer/interfaces';
 import { trackedArray } from '@glimmer/validator';
-import {
-  GlimmerishComponent as Component,
-  jitSuite,
-  RenderTest,
-  test,
-} from '@glimmer-workspace/integration-tests';
+import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 const ARRAY_GETTER_METHODS = [
   'concat',
@@ -68,7 +64,7 @@ class TrackedArrayTest extends RenderTest {
       class extends Component {
         arr = trackedArray();
 
-        constructor(owner: Owner, args: Dict) {
+        constructor(owner: ConstructorParameters<typeof Component>[0], args: Dict) {
           super(owner, args);
           this.arr.push('hello');
         }
@@ -90,7 +86,7 @@ class TrackedArrayTest extends RenderTest {
       class extends Component {
         arr = trackedArray();
 
-        constructor(owner: Owner, args: Dict) {
+        constructor(owner: ConstructorParameters<typeof Component>[0], args: Dict) {
           super(owner, args);
           this.arr.unshift('hello');
         }

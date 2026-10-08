@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
+import GlimmerComponent from '@glimmer/component';
 import type { Arguments, Owner } from '@glimmer/interfaces';
 import { helperCapabilities, setHelperManager, setModifierManager } from '@glimmer/manager';
 import {
   defineComponent,
-  GlimmerishComponent,
   jitSuite,
   RenderTest,
   test,
@@ -91,7 +91,7 @@ class HelperManagerTest extends RenderTest {
     let count = 0;
 
     const Main = defineComponent({}, '{{(this.hello)}}', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         hello = () => {
           count++;
           return 'plain function';

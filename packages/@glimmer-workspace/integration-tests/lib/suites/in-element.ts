@@ -1,9 +1,9 @@
+import GlimmerComponent from '@glimmer/component';
 import type { AST } from '@glimmer/syntax';
 import { unwrap } from '@glimmer/debug-util';
 import { destroy } from '@glimmer/destroyable';
 import { assign } from '@glimmer/util';
 
-import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { equalsElement } from '../dom/assertions';
 import { replaceHTML } from '../dom/simple-utils';
 import { RenderTest } from '../render-test';
@@ -518,7 +518,7 @@ export class InElementSuite extends RenderTest {
   'Components are destroyed'() {
     let destroyed = 0;
 
-    class DestroyMeComponent extends GlimmerishComponent {
+    class DestroyMeComponent extends GlimmerComponent {
       override willDestroy() {
         super.willDestroy();
         destroyed++;

@@ -1,8 +1,8 @@
+import type GlimmerComponent from '@glimmer/component';
 import type { Dict } from '@glimmer/interfaces';
 import type { TemplateOnlyComponent } from '@glimmer/runtime';
 
 import type { EmberishCurlyComponent } from './emberish-curly';
-import type { GlimmerishComponent } from './emberish-glimmer';
 
 export type ComponentKind = 'Glimmer' | 'Curly' | 'Dynamic' | 'TemplateOnly' | 'Custom' | 'unknown';
 
@@ -11,7 +11,7 @@ export interface TestComponentConstructor<T> {
 }
 
 export interface ComponentTypes {
-  Glimmer: typeof GlimmerishComponent;
+  Glimmer: typeof GlimmerComponent;
   Curly: TestComponentConstructor<EmberishCurlyComponent>;
   Dynamic: TestComponentConstructor<EmberishCurlyComponent>;
   TemplateOnly: TemplateOnlyComponent;

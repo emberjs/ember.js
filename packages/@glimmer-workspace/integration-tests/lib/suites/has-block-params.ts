@@ -1,4 +1,4 @@
-import { GlimmerishComponent } from '../components';
+import GlimmerComponent from '@glimmer/component';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 
@@ -19,7 +19,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
 
   @test({ kind: 'curly' })
   'has-block-params from within a yielded + invoked curried component'() {
-    class TestHarness extends GlimmerishComponent {
+    class TestHarness extends GlimmerComponent {
       public Foo: any;
     }
     this.registerComponent('Glimmer', 'TestHarness', '{{yield (component "Foo")}}', TestHarness);

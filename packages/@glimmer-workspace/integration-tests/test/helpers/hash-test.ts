@@ -1,11 +1,6 @@
+import GlimmerComponent from '@glimmer/component';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
-import {
-  GlimmerishComponent,
-  jitSuite,
-  RenderTest,
-  test,
-  tracked,
-} from '@glimmer-workspace/integration-tests';
+import { jitSuite, RenderTest, test, tracked } from '@glimmer-workspace/integration-tests';
 
 class HashTest extends RenderTest {
   static suiteName = 'Helpers test: {{hash}}';
@@ -95,10 +90,13 @@ class HashTest extends RenderTest {
 
     const assignInstance = (instance: FooBar) => (fooBarInstance = instance);
 
-    class FooBar extends GlimmerishComponent {
+    class FooBar extends GlimmerComponent {
       @tracked firstName = 'Chad';
 
-      constructor(owner: object, args: Record<string, unknown>) {
+      constructor(
+        owner: ConstructorParameters<typeof GlimmerComponent>[0],
+        args: Record<string, unknown>
+      ) {
         super(owner, args);
         assignInstance(this);
       }
@@ -131,10 +129,13 @@ class HashTest extends RenderTest {
 
     const assignInstance = (instance: FooBar) => (fooBarInstance = instance);
 
-    class FooBar extends GlimmerishComponent {
+    class FooBar extends GlimmerComponent {
       @tracked firstName = 'Chad';
 
-      constructor(owner: object, args: Record<string, unknown>) {
+      constructor(
+        owner: ConstructorParameters<typeof GlimmerComponent>[0],
+        args: Record<string, unknown>
+      ) {
         super(owner, args);
         assignInstance(this);
       }
@@ -170,7 +171,7 @@ class HashTest extends RenderTest {
 
   @test({ skip: LOCAL_TRACE_LOGGING })
   'individual hash values are accessed lazily'(assert: Assert) {
-    class FooBar extends GlimmerishComponent {
+    class FooBar extends GlimmerComponent {
       firstName = 'Godfrey';
 
       get lastName() {

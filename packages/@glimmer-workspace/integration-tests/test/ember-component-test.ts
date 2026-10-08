@@ -1,3 +1,4 @@
+import GlimmerComponent from '@glimmer/component';
 import type { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import type {
   Attrs,
@@ -14,7 +15,6 @@ import {
   EmberishCurlyComponent,
   equalsElement,
   firstElementChild,
-  GlimmerishComponent,
   isSimpleElement,
   jitSuite,
   regex,
@@ -686,7 +686,7 @@ class CurlyScopeTest extends CurlyTest {
 
   @test
   'correct scope - self'() {
-    class FooBar extends GlimmerishComponent {
+    class FooBar extends GlimmerComponent {
       public foo = 'foo';
       public bar = 'bar';
     }
@@ -1708,7 +1708,7 @@ class CurlyTeardownTest extends CurlyTest {
   'glimmer components are destroyed'() {
     let destroyed = 0;
 
-    class DestroyMeComponent extends GlimmerishComponent {
+    class DestroyMeComponent extends GlimmerComponent {
       override willDestroy() {
         super.willDestroy();
         destroyed++;
@@ -1954,8 +1954,8 @@ class CurlyTeardownTest extends CurlyTest {
     let glimmerDestroyed = false;
     let curlyDestroyed = false;
 
-    class DestroyMe1Component extends GlimmerishComponent {
-      override willDestroy(this: GlimmerishComponent) {
+    class DestroyMe1Component extends GlimmerComponent {
+      override willDestroy(this: GlimmerComponent) {
         super.willDestroy();
         glimmerDestroyed = true;
       }

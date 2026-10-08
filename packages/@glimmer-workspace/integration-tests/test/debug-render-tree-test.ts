@@ -1,3 +1,4 @@
+import GlimmerComponent from '@glimmer/component';
 import type {
   CapturedArguments,
   CapturedRenderNode,
@@ -20,7 +21,6 @@ import {
   createTemplate,
   defComponent,
   defineSimpleModifier,
-  GlimmerishComponent,
   JitRenderDelegate,
   RenderTest,
   suite,
@@ -140,7 +140,7 @@ class DebugRenderTreeTest extends RenderTest {
   @test({ skip: !DEBUG }) 'dynamic component via <this.dynamicComponent>'() {
     const HelloWorld = defComponent('{{@arg}}');
 
-    class Root extends GlimmerishComponent {
+    class Root extends GlimmerComponent {
       HelloWorld = HelloWorld;
     }
 
@@ -381,7 +381,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
       },
@@ -394,7 +394,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -402,7 +402,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'second' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'second',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'second',
         bounds: this.nodeBounds(this.element.lastChild),
         children: [],
       },
@@ -415,7 +415,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
@@ -428,7 +428,7 @@ class DebugRenderTreeTest extends RenderTest {
       'Glimmer',
       'HelloWorld',
       '{{#in-element this.destinationElement}}<HiWorld />{{/in-element}}',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         get destinationElement() {
           return document.getElementById('target');
         }
@@ -442,21 +442,21 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
+        instance: (instance: GlimmerComponent<Dict>) => instance.args['arg'] === 'first',
         bounds: this.nodeBounds(this.element.firstChild!.nextSibling),
         children: [
           {
             type: 'keyword',
             name: 'in-element',
             args: { positional: [this.element.firstChild], named: {} },
-            instance: (instance: GlimmerishComponent | null) => instance === null,
+            instance: (instance: GlimmerComponent<Dict> | null) => instance === null,
             bounds: this.elementBounds(this.element.firstChild! as unknown as SimpleElement),
             children: [
               {
                 type: 'component',
                 name: 'HiWorld',
                 args: { positional: [], named: {} },
-                instance: (instance: GlimmerishComponent) => instance,
+                instance: (instance: GlimmerComponent<Dict>) => instance,
                 bounds: this.nodeBounds(this.element.firstChild!.firstChild),
                 children: [],
               },
@@ -800,8 +800,8 @@ class DebugRenderTreeTest extends RenderTest {
       'Glimmer',
       'HelloWorld',
       'Hello World',
-      class extends GlimmerishComponent {
-        constructor(owner: Owner, args: Dict) {
+      class extends GlimmerComponent {
+        constructor(owner: ConstructorParameters<typeof GlimmerComponent>[0], args: Dict) {
           super(owner, args);
           throw new Error('oops!');
         }
