@@ -1,11 +1,9 @@
 import type { Dict, SimpleElement } from '@glimmer/interfaces';
-import { renderComponent, renderSync } from '@glimmer/runtime';
+import { renderComponent } from '@ember/renderer';
 
 import type { RenderHandle } from '../../render-delegate';
-import type { DebugRehydrateTree } from './builder';
 
 import { RehydrationDelegate } from './delegate';
-import { legacyHandle } from './legacy-handle';
 
 export class PartialRehydrationDelegate extends RehydrationDelegate {
   registerTemplateOnlyComponent(name: string, layout: string) {
@@ -13,33 +11,37 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
   }
 
   renderComponentClientSide(name: string, args: Dict, element: SimpleElement): RenderHandle {
-    let cursor = { element, nextSibling: null };
-    let context = this.clientContext;
-    let tree = this.getElementBuilder(context.env, cursor) as DebugRehydrateTree;
     let component = this.clientRegistry.lookupComponent(name)!;
 
-    let iterator = renderComponent(context, tree, {}, component.state, args);
-
-    const result = renderSync(context.env, iterator);
+    // Through the renderer's `render` rather than the public `renderComponent`: the latter
+    // replaces the previous render into the same element, by rendering before its first node
+    // (`nextSibling` set), which rehydration does not support; the chaos tests render into one
+    // element once per iteration. It also clears an element target on its first render, which
+    // would wipe the server HTML that is to be rehydrated.
+    let root = this.clientRenderer.render(component.state, {
+      into: { element, nextSibling: null },
+      args,
+    });
 
     this.rehydrationStats = {
-      clearedNodes: tree.clearedNodes,
+      clearedNodes: this.lastClientTree!.clearedNodes,
     };
 
-    return legacyHandle(result);
+    return {
+      rerender: () => this.clientRenderer.rerender(),
+      destroy: () => root.destroy(),
+    };
   }
 
   renderComponentServerSide(name: string, args: Dict): string {
     const element = this.serverDoc.createElement('div');
-    let cursor = { element, nextSibling: null };
-    let context = this.serverContext;
-    let builder = this.getElementBuilder(context.env, cursor);
-
     let component = this.serverRegistry.lookupComponent(name)!;
 
-    let iterator = renderComponent(context, builder, {}, component.state, args);
-
-    renderSync(context.env, iterator);
+    renderComponent(component.state, {
+      into: { element, nextSibling: null } as unknown as Element,
+      owner: this.serverOwner,
+      args,
+    });
 
     return this.serialize(element);
   }

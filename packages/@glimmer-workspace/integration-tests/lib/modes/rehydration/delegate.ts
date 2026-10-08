@@ -3,9 +3,7 @@ import type {
   Dict,
   ElementNamespace,
   Environment,
-  EvaluationContext,
   Nullable,
-  RenderResult,
   SimpleDocument,
   SimpleDocumentFragment,
   SimpleElement,
@@ -18,7 +16,8 @@ import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToSimple } from '@glimmer/debug-util';
 import { serializeBuilder } from '@glimmer/node';
 import { createConstRef } from '@glimmer/reference';
-import { assign } from '@glimmer/util';
+import { _resetRenderers } from '@ember/-internals/glimmer';
+import type { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import createHTMLDocument from '@simple-dom/document';
 
 import type { ComponentKind } from '../../components';
@@ -28,15 +27,14 @@ import type RenderDelegate from '../../render-delegate';
 import type { RenderDelegateOptions, RenderHandle } from '../../render-delegate';
 import type { DebugRehydrateTree } from './builder';
 
-import { BaseEnv } from '../../base-env';
+import { preprocess } from '../../compile';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
-import { JitDelegateContext } from '../jit/delegate';
 import { registerComponent, registerHelper, registerModifier } from '../jit/register';
 import { TestJitRegistry } from '../jit/registry';
-import { renderTemplate } from '../jit/render';
 import { TestJitRuntimeResolver } from '../jit/resolver';
+import { createRenderer } from '../renderer';
+import { TemplateRootState } from '../template-root';
 import { debugRehydrateTree } from './builder';
-import { legacyHandle } from './legacy-handle';
 
 export interface RehydrationStats {
   clearedNodes: SimpleNode[];
@@ -48,8 +46,11 @@ export class RehydrationDelegate implements RenderDelegate {
 
   private plugins: ASTPluginBuilder[] = [];
 
-  public clientContext: EvaluationContext;
-  public serverContext: EvaluationContext;
+  /** The renderers are Ember's `BaseRenderer`, one per side, each with its own owner and document. */
+  protected clientOwner: object = {};
+  protected serverOwner: object = {};
+  protected clientRenderer: BaseRenderer;
+  protected serverRenderer: BaseRenderer;
 
   private clientResolver: TestJitRuntimeResolver;
   private serverResolver: TestJitRuntimeResolver;
@@ -62,20 +63,44 @@ export class RehydrationDelegate implements RenderDelegate {
 
   declare public rehydrationStats: RehydrationStats;
 
+  /** The tree builder of the most recent client render, for `rehydrationStats`. */
+  protected lastClientTree: Nullable<DebugRehydrateTree> = null;
+
   private self: Nullable<Reference> = null;
 
   constructor(options?: RenderDelegateOptions) {
-    let delegate = assign(options?.env ?? {}, BaseEnv);
+    let debugRenderTree = options?.debugRenderTree ?? false;
 
     this.clientDoc = castToSimple(document);
     this.clientRegistry = new TestJitRegistry();
     this.clientResolver = new TestJitRuntimeResolver(this.clientRegistry);
-    this.clientContext = JitDelegateContext(this.clientDoc, this.clientResolver, delegate);
+    this.clientRenderer = createRenderer(
+      this.clientOwner,
+      this.clientDoc,
+      this.clientResolver,
+      (env, cursor) => {
+        let tree = debugRehydrateTree(env, cursor) as DebugRehydrateTree;
+        this.lastClientTree = tree;
+        return tree;
+      },
+      debugRenderTree
+    );
 
     this.serverDoc = createHTMLDocument();
     this.serverRegistry = new TestJitRegistry();
     this.serverResolver = new TestJitRuntimeResolver(this.serverRegistry);
-    this.serverContext = JitDelegateContext(this.serverDoc, this.serverResolver, delegate);
+    this.serverRenderer = createRenderer(
+      this.serverOwner,
+      this.serverDoc,
+      this.serverResolver,
+      serializeBuilder,
+      debugRenderTree
+    );
+  }
+
+  /** Called after each test: see `JitRenderDelegate.teardown`. */
+  teardown(): void {
+    _resetRenderers();
   }
 
   getInitialElement(): SimpleElement {
@@ -114,15 +139,16 @@ export class RehydrationDelegate implements RenderDelegate {
   ): string {
     element = element || this.serverDoc.createElement('div');
     let cursor = { element, nextSibling: null };
-    let { env } = this.serverContext;
+    let { state } = this.serverRenderer;
 
     // Emulate server-side render
-    renderTemplate(
-      template,
-      this.serverContext,
-      this.getSelf(env, context),
-      this.getElementBuilder(env, cursor),
-      this.precompileOptions
+    state.renderRoot(
+      new TemplateRootState(
+        state,
+        preprocess(template, this.precompileOptions),
+        this.getSelf(state.env, context),
+        cursor
+      )
     );
 
     takeSnapshot();
@@ -142,25 +168,28 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   renderClientSide(template: string, context: Dict, element: SimpleElement): RenderHandle {
-    let { env } = this.clientContext;
+    let { state } = this.clientRenderer;
     this.self = null;
 
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
-    let builder = this.getElementBuilder(env, cursor) as DebugRehydrateTree;
-    let result = renderTemplate(
-      template,
-      this.clientContext,
-      this.getSelf(env, context),
-      builder,
-      this.precompileOptions
+    let root = new TemplateRootState(
+      state,
+      preprocess(template, this.precompileOptions),
+      this.getSelf(state.env, context),
+      cursor
     );
+    state.renderRoot(root);
 
     this.rehydrationStats = {
-      clearedNodes: builder['clearedNodes'],
+      clearedNodes: this.lastClientTree!.clearedNodes,
     };
 
-    return legacyHandle(result);
+    return {
+      rerender: () => this.clientRenderer.rerender(),
+      destroy: () => root.destroy(),
+      debugBounds: () => root.result!,
+    };
   }
 
   renderTemplate(

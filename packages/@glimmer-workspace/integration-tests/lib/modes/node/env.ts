@@ -1,8 +1,12 @@
 import type {
+  Cursor,
+  Environment,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
   SimpleDocument,
+  TreeBuilder,
 } from '@glimmer/interfaces';
+import { serializeBuilder } from '@glimmer/node';
 import createHTMLDocument from '@simple-dom/document';
 
 import type RenderDelegate from '../../render-delegate';
@@ -24,6 +28,14 @@ export class NodeJitRenderDelegate extends JitRenderDelegate {
   constructor(options: RenderDelegateOptions = {}) {
     options.doc = options.doc || createHTMLDocument();
     super(options);
+  }
+}
+
+export class JitSerializationDelegate extends NodeJitRenderDelegate {
+  static override style = 'jit serialization';
+
+  override getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
+    return serializeBuilder(env, cursor);
   }
 }
 

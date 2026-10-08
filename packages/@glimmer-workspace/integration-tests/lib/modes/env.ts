@@ -1,4 +1,13 @@
 import type { IteratorDelegate } from '@glimmer/reference';
+import { debug } from '@glimmer/validator';
+
+/**
+ * Clears the VM's tracking-transaction state between tests (a test that throws in the middle of a
+ * tracking frame must not leak it into the next one).
+ */
+export function resetTrackingTransaction(): void {
+  debug.resetTrackingTransaction?.();
+}
 
 export class NativeIteratorDelegate<T = unknown> implements IteratorDelegate {
   static from<T>(iterable: Iterable<T>) {

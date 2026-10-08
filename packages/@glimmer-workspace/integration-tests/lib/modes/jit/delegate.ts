@@ -14,16 +14,12 @@ import type {
   TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
-import type { CurriedValue, EnvironmentDelegate } from '@glimmer/runtime';
+import type { CurriedValue } from '@glimmer/runtime';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/debug-util';
-import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
-import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 import { createConstRef } from '@glimmer/reference';
-import { array, clientBuilder, concat, fn, get, hash, on, runtimeOptions } from '@glimmer/runtime';
-import { assign } from '@glimmer/util';
-import { ENV } from '@ember/-internals/environment';
-import { _resetRenderers, setRenderer } from '@ember/-internals/glimmer';
+import { array, clientBuilder, concat, fn, get, hash, on } from '@glimmer/runtime';
+import { _resetRenderers } from '@ember/-internals/glimmer';
 import { BaseRenderer } from '@ember/-internals/glimmer/lib/base-renderer';
 import { renderComponent } from '@ember/renderer';
 
@@ -34,29 +30,12 @@ import type RenderDelegate from '../../render-delegate';
 import type { RenderDelegateOptions, RenderHandle } from '../../render-delegate';
 import type { TemplateRootState as TemplateRoot } from '../template-root';
 
-import { BaseEnv } from '../../base-env';
 import { preprocess } from '../../compile';
-import JitCompileTimeLookup from './compilation-context';
 import { componentHelper, registerComponent, registerHelper, registerModifier } from './register';
 import { TestJitRegistry } from './registry';
 import { TestJitRuntimeResolver } from './resolver';
+import { createRenderer } from '../renderer';
 import { TemplateRootState } from '../template-root';
-
-export function JitDelegateContext(
-  doc: SimpleDocument,
-  resolver: TestJitRuntimeResolver,
-  env: EnvironmentDelegate
-): EvaluationContext {
-  let sharedArtifacts = artifacts();
-  let runtime = runtimeOptions(
-    { document: doc },
-    env,
-    sharedArtifacts,
-    new JitCompileTimeLookup(resolver)
-  );
-
-  return new EvaluationContextImpl(sharedArtifacts, (heap) => new RuntimeOpImpl(heap), runtime);
-}
 
 export class JitRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
@@ -71,17 +50,17 @@ export class JitRenderDelegate implements RenderDelegate {
   protected owner: object = {};
   private self: Nullable<Reference> = null;
   private doc: SimpleDocument;
-  private env: EnvironmentDelegate;
+  private debugRenderTree: boolean;
 
   constructor({
     doc,
-    env,
+    debugRenderTree = false,
     resolver = (registry) => new TestJitRuntimeResolver(registry),
   }: RenderDelegateOptions = {}) {
     this.registry = new TestJitRegistry();
     this.resolver = resolver(this.registry);
     this.doc = castToSimple(doc ?? document);
-    this.env = assign({}, env ?? BaseEnv);
+    this.debugRenderTree = debugRenderTree;
     this.registry.register('modifier', 'on', on);
     this.registry.register('helper', 'fn', fn);
     this.registry.register('helper', 'hash', hash);
@@ -90,29 +69,16 @@ export class JitRenderDelegate implements RenderDelegate {
     this.registry.register('helper', 'concat', concat);
   }
 
-  /**
-   * One Ember renderer per delegate, created on first use. Ember's environment
-   * delegate reads `ENV._DEBUG_RENDER_TREE` when it is constructed, so the option
-   * is set around the constructor.
-   */
+  /** One Ember renderer per delegate, created on first use. */
   protected get renderer(): BaseRenderer {
     if (this._renderer === null) {
-      let previous = ENV._DEBUG_RENDER_TREE;
-      ENV._DEBUG_RENDER_TREE = !!this.env.enableDebugTooling;
-
-      try {
-        this._renderer = new BaseRenderer(
-          this.owner,
-          { isInteractive: true, hasDOM: true },
-          this.doc,
-          new JitCompileTimeLookup(this.resolver),
-          (env, cursor) => this.getElementBuilder(env, cursor)
-        );
-      } finally {
-        ENV._DEBUG_RENDER_TREE = previous;
-      }
-
-      setRenderer(this.owner, this._renderer);
+      this._renderer = createRenderer(
+        this.owner,
+        this.doc,
+        this.resolver,
+        (env, cursor) => this.getElementBuilder(env, cursor),
+        this.debugRenderTree
+      );
     }
 
     return this._renderer;

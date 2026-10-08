@@ -11,7 +11,6 @@ import type {
   TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
-import type { EnvironmentDelegate } from '@glimmer/runtime';
 import type { ASTPluginBuilder } from '@glimmer/syntax';
 
 import type { ComponentKind, ComponentTypes } from './components';
@@ -33,7 +32,8 @@ export interface RenderHandle {
 
 export interface RenderDelegateOptions {
   doc?: SimpleDocument | Document | undefined;
-  env?: EnvironmentDelegate | undefined;
+  /** Create the renderer with Ember's debug render tree enabled. */
+  debugRenderTree?: boolean | undefined;
   resolver?: (registry: TestJitRegistry) => TestJitRuntimeResolver;
 }
 

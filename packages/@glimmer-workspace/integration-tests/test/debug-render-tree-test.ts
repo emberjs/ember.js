@@ -14,9 +14,7 @@ import { expect } from '@glimmer/debug-util';
 import { DEBUG } from '@glimmer/env';
 import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
 import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
-import { assign } from '@glimmer/util';
 import {
-  BaseEnv,
   createTemplate,
   defComponent,
   defineSimpleModifier,
@@ -904,8 +902,4 @@ class DebugRenderTreeTest extends RenderTest {
   }
 }
 
-suite(DebugRenderTreeTest, DebugRenderTreeDelegate, {
-  env: assign({}, BaseEnv, {
-    enableDebugTooling: true,
-  }),
-});
+suite(DebugRenderTreeTest, DebugRenderTreeDelegate, { debugRenderTree: true });

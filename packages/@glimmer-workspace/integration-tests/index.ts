@@ -1,4 +1,3 @@
-export * from './lib/base-env';
 export * from './lib/compile';
 export * from './lib/components';
 export * from './lib/dom/assertions';
