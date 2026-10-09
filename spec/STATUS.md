@@ -298,7 +298,12 @@ Suggestions for the plan's author, based on what is still open:
    `ConstructorParameters<typeof Component>[0]`, and 2–10 were rebased onto it; every branch
    type-checks, and `-10` passes the full suite (9017 / 8999 / 0 / 18). So `-10` now differs
    from `test/w2-glimmer-harness` by that change only; the cleanup branches are the reference.
-   Not pushed.
+   Also on 2026-10-09 (review of PR 4): "components inside the root are destroyed when the
+   render result is destroyed" had vacuous DOM assertions after its port to `@glimmer/component`
+   (invocation `id`s went nowhere without `...attributes`); PR 4 now adds `...attributes` and
+   asserts the elements exist before `destroy()` (fails without the fix), and 5–10 were rebased.
+   No other PR 4 port has the problem. The stack is based on `9bec1cb2a8`; `origin/main` has
+   since moved on. Not pushed.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
