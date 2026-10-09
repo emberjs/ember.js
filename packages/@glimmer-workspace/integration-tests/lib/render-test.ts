@@ -2,7 +2,6 @@ import type {
   ComponentDefinitionState,
   Dict,
   DynamicScope,
-  Helper,
   Maybe,
   Nullable,
   RenderResult,
@@ -88,8 +87,9 @@ export class RenderTest implements IRenderTest {
     this.delegate.registerHelper(name, helper);
   }
 
-  registerInternalHelper(name: string, helper: Helper): void {
-    this.delegate.registerInternalHelper(name, helper);
+  /** Register a helper that is already a definition with a public helper manager. */
+  registerHelperDefinition(name: string, definition: object): void {
+    this.delegate.registerHelperDefinition(name, definition);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
