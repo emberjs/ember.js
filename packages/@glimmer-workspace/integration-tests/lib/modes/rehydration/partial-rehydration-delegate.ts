@@ -1,4 +1,5 @@
 import type { Dict, SimpleElement } from '@glimmer/interfaces';
+import { dasherize } from '@ember/-internals/string';
 import { expect } from '@glimmer/debug-util';
 import { renderComponent } from '@ember/renderer';
 
@@ -36,7 +37,10 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
   }
 
   private componentFor(owner: TestOwner, name: string): object {
-    return expect(owner.factoryFor(`component:${name}`), `component ${name} is registered`).class;
+    return expect(
+      owner.factoryFor(`component:${dasherize(name)}`),
+      `component ${name} is registered`
+    ).class;
   }
 
   renderComponentServerSide(name: string, args: Dict): string {

@@ -11,6 +11,7 @@ import type { NTuple } from '@glimmer-workspace/test-utils';
 import { expect, isPresent, assert, unwrap } from '@glimmer/debug-util';
 import { clearElement, dict } from '@glimmer/util';
 import { trackedObject } from '@ember/reactive/collections';
+import { dasherize } from '@ember/-internals/string';
 import { run } from '@ember/runloop';
 
 import type { ComponentBlueprint, ComponentKind, ComponentTypes } from './components';
@@ -388,7 +389,8 @@ export class RenderTest implements IRenderTest {
       template = this.buildComponent(blueprint);
 
       if (this.testType === 'Dynamic' && properties['componentName'] === undefined) {
-        properties['componentName'] = blueprint.name || GLIMMER_TEST_COMPONENT;
+        // Ember's resolver looks a `{{component}}` string up as given; registrations are dasherized.
+        properties['componentName'] = dasherize(blueprint.name || GLIMMER_TEST_COMPONENT);
       }
     }
 

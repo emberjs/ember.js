@@ -1,3 +1,4 @@
+import { dasherize } from '@ember/-internals/string';
 import type {
   CapturedRenderNode,
   Cursor,
@@ -126,7 +127,7 @@ export class JitRenderDelegate implements RenderDelegate {
   }
 
   createCurriedComponent(name: string): CurriedValue | null {
-    let definition = this.resolver.lookupComponent(name, this.owner);
+    let definition = this.resolver.lookupComponent(dasherize(name), this.owner);
 
     if (definition === null) return null;
 
