@@ -875,7 +875,7 @@ Save the current tips to the scratchpad first so the old stack can be restored.
 - [x] 10.2 (done, code `24f7fe5f0a` = `ef4/test-cleanup-4`; see notes) New PR 4: implement on top of `ef4/test-cleanup-3`; full suite green; per-test diff
       against the old PR 4 run; ledger rows updated (4.1 `collapsed` rows for Curly/Dynamic
       become `kept (real component)`); tests that pinned fake-only classic behavior stay dropped.
-- [ ] 10.3 Rebase PRs 5–10 onto it, one at a time. Each must keep the kinds working through
+- [x] 10.3 (done, see notes; new tips in STATUS item 6) Rebase PRs 5–10 onto it, one at a time. Each must keep the kinds working through
       its harness changes (renderer, owner, resolver, compile options, loose-template root);
       full suite green and per-test diff on every branch; triage any kind-specific failure
       (stop and report anything that is not plumbing).
@@ -1382,6 +1382,8 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   list. (W4) IT `assertStableNodes()` right after `assertHTML()` is vacuous (the snapshot is
   re-taken); only `assertStableRerender` checks node stability. §09-9.5 C18/T17 §3 overstated
   the duplication: only helpers, `on`, and the modifier/helper-manager suites were true twins.
+- 9.6 (2026-10-08): §09-9.4.1 seam B and §9.4.2 "No `renderTemplate`" describe the result of 9.3;
+  STATUS W2-9 row done, PR 10 added to the suggested split. Final suite 9017 / 8999 / 0 / 18.
 - 10.2 (2026-10-09): new PR 4 `24f7fe5f0a` (amends old PR 4 `c37c19cd95` on `ef4/test-cleanup-3`; ref moved). As designed
   (10.1), no deviation. Harness: `lib/modes/owner.ts` (`createOwner` = `buildOwner()`, `teardownOwners`); jit delegate owner lazy,
   rehydration delegate two owners + `serverRendered` phase rule; `RenderDelegate.teardown?()`, `RenderTest.teardownDelegate()`,
@@ -1407,5 +1409,26 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   `kept (real component)` (150 registrations), 3 `collapsed` rows annotated (`kind: 'glimmer'`). `w2-coverage-diff.py` on the run:
   missing 313 (old PR 4: 477; -150 -14), new 62 (old: 47; +15), unmatched only the pre-existing `curly components:  yield to else`
   (also unmatched on the old run). Message rewritten (10.4 done for PR 4).
-- 9.6 (2026-10-08): §09-9.4.1 seam B and §9.4.2 "No `renderTemplate`" describe the result of 9.3;
-  STATUS W2-9 row done, PR 10 added to the suggested split. Final suite 9017 / 8999 / 0 / 18.
+- 10.3 (2026-10-09): PRs 5-10 rebased one at a time by `git cherry-pick` of the old commit onto the new parent, each
+  run green before its ref moved (none checked out in any worktree). Old-run baselines (same test names as the old branches,
+  which differ from these W2 commits only by the type-only owner fix and the PR 4 teardown-test fix): `full54b` (PR 5),
+  `full56` (PR 6), `full63` (PR 7), `full71h` (PR 8), `full8b` (PR 9), `full93c` (PR 10). Every branch: 0 failures, 18 skips,
+  greps 0, only the known sourcemap warning, `type-check:internals` clean, `pnpm install --offline --frozen-lockfile` clean,
+  per-test diff against the old run = 0 missing and exactly PR 4's 179 new tests (identical sets; from PR 9 on with the
+  module `Emberish` renamed `Invocation`, as that PR does). Conflicts, all plumbing:
+  - PR 5 (`dbe02bf853`): conflicts in the harness files PR 4 now also touches (`modes/jit/{delegate,register,registry,
+    render,resolver}.ts`, `modes/owner.ts`, the rehydration delegates, `render-delegate.ts`, `module.ts`, `package.json`,
+    lock, debug-render-tree test). Resolved by taking old PR 5's version of each (it already had the owner, `ResolverImpl`,
+    teardown and the phase rule; `registry.ts`/`render.ts`/`resolver.ts` deleted as in old PR 5) and re-applying the kinds
+    delta: `module.ts` fan-out + `kinds` option, `registerCurlyInvokedComponent` + `Curly`/`Dynamic` case in `register.ts`.
+    `render-test.ts` and `initial-render-test.ts` merged cleanly. 9289 (old 9110 + 179).
+  - PR 6 (`02c65b1128`): one conflict, `register.ts` (`registerClassicComponent` next to `registerCurlyInvokedComponent`;
+    both kept). One plumbing fix PR 6 needed for the kinds: Ember's resolver looks up a `{{component}}` string as given and
+    PR 6 dasherizes registrations, so the Dynamic kind's `componentName` is `dasherize(name)` (`test-component`), the same
+    rule PR 6 applies to the ~35 string names in tests. 9293 (9114 + 179).
+  - PR 7 (`1935d23361`), PR 8 (`7b18d6fddb`), PR 9 (`89ac9d6070`), PR 10 (`df23a8c76d`, loose-template root through
+    `renderComponent` + custom manager): no conflict, no change. 9287, 9192, 9193, 9196 (old 9108, 9013, 9014, 9017; +179 each).
+  Nothing changed what a test checks, and no behavior difference turned up. Tip delta new `-10` vs old `-10`
+  (`8243c6486a`): 12 files, all the kinds delta (`types.ts`, `register.ts`, `render-test.ts`, `module.ts`,
+  `test-decorator.ts`, the has-block/has-block-params/yield/debugger/invocation suites, `initial-render-test.ts`,
+  `invocation-generation-test.ts`); prettier clean.
