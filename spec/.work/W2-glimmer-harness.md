@@ -872,7 +872,7 @@ Save the current tips to the scratchpad first so the old stack can be restored.
       suites get the kinds back (at least has-block, has-block-params, yield, the blocks suite
       `component-invocation`/`emberish-components`, scope; decide for with-dynamic-vars,
       debugger, SSR/rehydration and say why); which 4.1 ledger rows change.
-- [ ] 10.2 New PR 4: implement on top of `ef4/test-cleanup-3`; full suite green; per-test diff
+- [x] 10.2 (done, code `24f7fe5f0a` = `ef4/test-cleanup-4`; see notes) New PR 4: implement on top of `ef4/test-cleanup-3`; full suite green; per-test diff
       against the old PR 4 run; ledger rows updated (4.1 `collapsed` rows for Curly/Dynamic
       become `kept (real component)`); tests that pinned fake-only classic behavior stay dropped.
 - [ ] 10.3 Rebase PRs 5–10 onto it, one at a time. Each must keep the kinds working through
@@ -1382,5 +1382,30 @@ Behavior questions W2 turns up. Carry each into the owning chapter's open questi
   list. (W4) IT `assertStableNodes()` right after `assertHTML()` is vacuous (the snapshot is
   re-taken); only `assertStableRerender` checks node stability. §09-9.5 C18/T17 §3 overstated
   the duplication: only helpers, `on`, and the modifier/helper-manager suites were true twins.
+- 10.2 (2026-10-09): new PR 4 `24f7fe5f0a` (amends old PR 4 `c37c19cd95` on `ef4/test-cleanup-3`; ref moved). As designed
+  (10.1), no deviation. Harness: `lib/modes/owner.ts` (`createOwner` = `buildOwner()`, `teardownOwners`); jit delegate owner lazy,
+  rehydration delegate two owners + `serverRendered` phase rule; `RenderDelegate.teardown?()`, `RenderTest.teardownDelegate()`,
+  `afterEach` hooks in `suite()`/`componentModule()` and in the generation-test module; `TestJitRuntimeResolver.lookupComponent` =
+  `ResolverImpl.lookupComponent(name, owner)` (registry component table and `CIRCULAR_OBJECT` gone; helpers/modifiers unchanged);
+  `preprocess(src, opts, owner)`, `renderMain`/`renderComponent` with the owner; `registerCurlyInvokedComponent` (Glimmer component
+  without the no-dash guard) for `Curly`/`Dynamic`; debug-render-tree `registerCustomComponent` via `setInternalComponentManager` +
+  `owner.register`; partial rehydration via `owner.factoryFor`. IT devDependencies `@ember/-internals`, `internal-test-helpers` (+6
+  lock lines). Blueprints: PR 3's `buildCurlyComponent`/`buildDynamicComponent` with the Glimmer layout (`buildGlimmerLayout`) and
+  `registerComponent('Curly'|'Dynamic')`; `componentModule` fans unannotated tests out to Glimmer/Curly/Dynamic; `kinds` suite option
+  (RehydratingComponents: glimmer + templateOnly). Suites: has-block, has-block-params, yield = PR 3's files with `kind: 'curly'`/
+  `skip: 'glimmer'` removed (has-block-params' curried test `kind: 'glimmer'`, the 3 label fixes and yield's `@someValue` kept from
+  old PR 4); emberish = old PR 4 + 'Element modifier with hooks' `kind: 'glimmer'`; debugger's 2 string-template tests `kind:
+  'glimmer'`; generation tests = PR 3's + old PR 4's 'glimmer invocation with else'. Every test passed on the first run; mutation
+  check: with `buildElse` returning '' the 10 Curly/Dynamic `has-block … when else supplied` tests fail. Full suite 9290 / 9272 / 0
+  / 18; greps (`Expected assert.verifySteps`, `Expected N assertions`, `afterEach failed`, `NAMESPACES`, `already been resolved`) 0;
+  build prints only the known sourcemap warning; `type-check:internals` and prettier clean (eslint ignores IT). Per-test diff against
+  the old PR 4 run (`full5.txt`, 9111, same test names): 0 missing, 179 new = 150 restored Curly/Dynamic registrations (has-block 42,
+  has-block-params 50, yield 30, emberish 10, scope 4, with-dynamic-vars 6, SSR 8) + 14 curly/dynamic generation tests + 15 new
+  Glimmer registrations of formerly curly-only tests (has-block 7, has-block-params 6, yield 2). Of PR 3's 378 Curly/Dynamic
+  registrations 228 stay removed: rehydration 202, emberish classic-only 18 + element modifier 2, debugger 4, has-block-params curried
+  2. Arithmetic: 9504 - 378 - 14 - 33 - 5 - 40 - 1 + 22 + 1 + 26 + 1 + 28 (old PR 4) + 150 + 14 + 15 = 9290. Ledger: 75 4.1 rows ->
+  `kept (real component)` (150 registrations), 3 `collapsed` rows annotated (`kind: 'glimmer'`). `w2-coverage-diff.py` on the run:
+  missing 313 (old PR 4: 477; -150 -14), new 62 (old: 47; +15), unmatched only the pre-existing `curly components:  yield to else`
+  (also unmatched on the old run). Message rewritten (10.4 done for PR 4).
 - 9.6 (2026-10-08): §09-9.4.1 seam B and §9.4.2 "No `renderTemplate`" describe the result of 9.3;
   STATUS W2-9 row done, PR 10 added to the suggested split. Final suite 9017 / 8999 / 0 / 18.
