@@ -1,8 +1,8 @@
+import GlimmerComponent from '@glimmer/component';
 import {
   defineComponent,
   defineSimpleHelper,
   defineSimpleModifier,
-  GlimmerishComponent,
   jitSuite,
   RenderTest,
   syntaxErrorFor,
@@ -21,7 +21,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
       'Glimmer',
       'Bar',
       '<div {{this.foo}}></div>',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         foo = foo;
       }
     );
@@ -173,7 +173,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
       (element: Element, value: string) => (element.innerHTML = value)
     );
     const Bar = defineComponent({ foo }, '<div {{this.bar (foo)}}></div>', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         bar = bar;
       },
     });
@@ -190,7 +190,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
       (element: Element, value: string) => (element.innerHTML = value)
     );
     const Bar = defineComponent({}, '<div {{this.bar (this.foo)}}></div>', {
-      definition: class extends GlimmerishComponent {
+      definition: class extends GlimmerComponent {
         foo = foo;
         bar = bar;
       },

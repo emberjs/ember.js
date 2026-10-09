@@ -10,7 +10,7 @@ import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { getValue } from '@glimmer/validator';
 import { destroy, isDestroyed, registerDestructor } from '@glimmer/destroyable';
-import { invokeHelper } from '@glimmer/runtime';
+import { invokeHelper } from '@ember/helper';
 
 moduleFor(
   'Helpers test: invokeHelper',

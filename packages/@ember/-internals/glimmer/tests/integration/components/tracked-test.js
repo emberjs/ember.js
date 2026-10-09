@@ -16,7 +16,6 @@ import {
   testUnless,
 } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
-import GlimmerishComponent from '../../utils/glimmerish-component';
 import Component from '@glimmer/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -37,7 +36,7 @@ moduleFor(
         }
       }
 
-      class PersonComponent extends GlimmerishComponent {
+      class PersonComponent extends Component {
         get person() {
           return new Person(this.args.first, this.args.last);
         }
@@ -73,7 +72,7 @@ moduleFor(
 
       let PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
 
-      class LoaderComponent extends GlimmerishComponent {
+      class LoaderComponent extends Component {
         get data() {
           if (!this._data) {
             this._data = PromiseArray.create({
@@ -103,7 +102,7 @@ moduleFor(
     )} @test creating an array proxy inside a tracking context and immediately updating its content before usage does not trigger backtracking assertion`]() {
       expectDeprecation(/`ArrayProxy` is deprecated/, DEPRECATIONS.DEPRECATE_ARRAY_PROXY.isEnabled);
 
-      class LoaderComponent extends GlimmerishComponent {
+      class LoaderComponent extends Component {
         get data() {
           if (!this._data) {
             this._data = ArrayProxy.create({
@@ -278,7 +277,7 @@ moduleFor(
             '{{#let (tracked 0) as |count|}}<button {{on "click" (fn increment count)}}>{{count.value}}</button>{{/let}}',
             { strictMode: true, scope: () => ({ tracked, on, fn, increment }) }
           ),
-          class extends GlimmerishComponent {}
+          class extends Component {}
         )
       );
 
@@ -625,7 +624,7 @@ moduleFor(
         }
       }
 
-      class PersonComponent extends GlimmerishComponent {
+      class PersonComponent extends Component {
         person = new Person(this.args.first, this.args.last);
       }
 
@@ -651,10 +650,7 @@ moduleFor(
     '@test works when EmberObject created during render'() {
       this.owner.register(
         'component:test',
-        setComponentTemplate(
-          precompileTemplate('{{@data.length}}'),
-          class extends GlimmerishComponent {}
-        )
+        setComponentTemplate(precompileTemplate('{{@data.length}}'), class extends Component {})
       );
 
       let RecordMeta = new WeakMap();
@@ -706,14 +702,14 @@ moduleFor(
       let outerRenderCount = 0;
       let innerRenderCount = 0;
 
-      class OuterComponent extends GlimmerishComponent {
+      class OuterComponent extends Component {
         get count() {
           outerRenderCount++;
           return this.args.count;
         }
       }
 
-      class InnerComponent extends GlimmerishComponent {
+      class InnerComponent extends Component {
         @tracked count = 0;
 
         get combinedCounts() {
@@ -774,7 +770,7 @@ moduleFor(
     }
 
     '@test computed properties can depend on args'() {
-      class TestComponent extends GlimmerishComponent {
+      class TestComponent extends Component {
         @computed('args.text')
         get text() {
           return this.args.text;
@@ -804,7 +800,7 @@ moduleFor(
         text: 'hello!',
       });
 
-      class TestComponent extends GlimmerishComponent {
+      class TestComponent extends Component {
         @computed('args.foo.text')
         get text() {
           return this.args.foo.text;
@@ -830,7 +826,7 @@ moduleFor(
     }
 
     '@test args can be accessed with get()'() {
-      class TestComponent extends GlimmerishComponent {
+      class TestComponent extends Component {
         get text() {
           return get(this, 'args.text');
         }
@@ -855,7 +851,7 @@ moduleFor(
     }
 
     '@test args can be accessed with get() if no value is passed'() {
-      class TestComponent extends GlimmerishComponent {
+      class TestComponent extends Component {
         get text() {
           return get(this, 'args.text') || 'hello!';
         }
@@ -874,7 +870,7 @@ moduleFor(
     }
 
     '@test named args are enumerable'() {
-      class TestComponent extends GlimmerishComponent {
+      class TestComponent extends Component {
         get objectKeys() {
           return Object.keys(this.args).join('');
         }
@@ -904,7 +900,7 @@ moduleFor(
         'component:test',
         setComponentTemplate(
           precompileTemplate('{{#each-in this.args as |key value|}}{{key}}:{{value}}{{/each-in}}'),
-          class extends GlimmerishComponent {}
+          class extends Component {}
         )
       );
 

@@ -1,11 +1,8 @@
+import type Owner from '@ember/owner';
+import GlimmerComponent from '@glimmer/component';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createInvokableRef } from '@glimmer/reference';
-import {
-  GlimmerishComponent,
-  jitSuite,
-  RenderTest,
-  test,
-} from '@glimmer-workspace/integration-tests';
+import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 import { DEBUG } from '@glimmer/env';
 
 class FnTest extends RenderTest {
@@ -24,8 +21,8 @@ class FnTest extends RenderTest {
       'Glimmer',
       'Stash',
       '',
-      class extends GlimmerishComponent {
-        constructor(owner: object, args: Record<string, unknown>) {
+      class extends GlimmerComponent {
+        constructor(owner: Owner, args: Record<string, unknown>) {
           super(owner, args);
           setStashedFn(args['stashedFn']);
         }

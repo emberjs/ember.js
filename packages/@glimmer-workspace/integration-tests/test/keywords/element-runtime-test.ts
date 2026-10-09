@@ -1,10 +1,6 @@
+import GlimmerComponent from '@glimmer/component';
 import { castToBrowser } from '@glimmer/debug-util';
-import {
-  GlimmerishComponent,
-  jitSuite,
-  RenderTest,
-  test,
-} from '@glimmer-workspace/integration-tests';
+import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 import { template } from '@ember/template-compiler/runtime';
 
@@ -54,7 +50,7 @@ class KeywordElementRuntime extends RenderTest {
 
   @test
   'no eval and no scope'(assert: Assert) {
-    class Foo extends GlimmerishComponent {
+    class Foo extends GlimmerComponent {
       static {
         template('{{#let (element "h1") as |Tag|}}<Tag>Hello</Tag>{{/let}}', {
           strictMode: true,
