@@ -293,8 +293,12 @@ Suggestions for the plan's author, based on what is still open:
        `8939c50aff` (loose templates through `renderComponent` + a custom manager).
    These ten PRs exist as stacked branches `ef4/test-cleanup-1` … `ef4/test-cleanup-10` (one
    commit each, its message the PR description; branch N's tree equals the W2 branch at the
-   last commit of PR N, so each was green on the full suite; `-10` equals
-   `test/w2-glimmer-harness`). Not pushed.
+   last commit of PR N, so each was green on the full suite). On 2026-10-09 PR 1 was amended to
+   type test-component owners as `Owner` from `@ember/owner` (new devDependency) instead of
+   `ConstructorParameters<typeof Component>[0]`, and 2–10 were rebased onto it; every branch
+   type-checks, and `-10` passes the full suite (9017 / 8999 / 0 / 18). So `-10` now differs
+   from `test/w2-glimmer-harness` by that change only; the cleanup branches are the reference.
+   Not pushed.
    The ledger (`.work/W2-coverage-ledger.md`) gives reviewers the twin of every removed test.
    Once W2 lands, the chapter citations into `integration-tests/lib/suites/*` and
    `test/ember-component-test.ts` (e.g. §05-6.3, §05-14 item 12) need the T17-style refresh
