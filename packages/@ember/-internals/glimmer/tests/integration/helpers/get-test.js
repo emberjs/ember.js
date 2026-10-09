@@ -6,7 +6,6 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { setComponentTemplate } from '@glimmer/manager';
 
 import Component from '@glimmer/component';
-import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
   'Helpers test: {{get}}',
@@ -624,7 +623,7 @@ moduleFor(
     }
 
     '@test should be able to get an object value with a path from this.args in a glimmer component'() {
-      class PersonComponent extends GlimmerishComponent {
+      class PersonComponent extends Component {
         options = ['first', 'last', 'age'];
       }
 

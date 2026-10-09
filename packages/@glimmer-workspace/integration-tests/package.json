@@ -40,6 +40,7 @@
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
+    "@ember/owner": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@glimmer/constants": "workspace:*",
     "@glimmer/debug-util": "workspace:*",

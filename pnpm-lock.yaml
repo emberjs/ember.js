@@ -1410,6 +1410,9 @@ importers:
         specifier: ^0.5.11
         version: 0.5.11
     devDependencies:
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../../@ember/owner
       '@ember/runloop':
         specifier: workspace:*
         version: link:../../@ember/runloop

@@ -1,3 +1,4 @@
+import GlimmerComponent from '@glimmer/component';
 import type { Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import type { SafeString } from '@glimmer/runtime';
 import type { JitRenderDelegate } from '@glimmer-workspace/integration-tests';
@@ -9,7 +10,6 @@ import {
   assertNodeTagName,
   getElementByClassName,
   getElementsByTagName,
-  GlimmerishComponent,
   jitSuite,
   RenderTest,
   stripTight,
@@ -1990,7 +1990,7 @@ class UpdatingTest extends RenderTest {
       'Glimmer',
       'DestroyableComponent',
       '{{@item}}',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         override willDestroy() {
           destroyCount++;
         }
@@ -2028,7 +2028,7 @@ class UpdatingTest extends RenderTest {
       'Glimmer',
       'DestroyableComponent',
       '{{@item}}',
-      class extends GlimmerishComponent {
+      class extends GlimmerComponent {
         override willDestroy() {
           destroyCount++;
         }

@@ -1,7 +1,7 @@
+import Component from '@glimmer/component';
 import { trackedSet } from '@glimmer/validator';
 import {
   defineComponent,
-  GlimmerishComponent as Component,
   jitSuite,
   RenderTest,
   strip,
