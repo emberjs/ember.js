@@ -846,6 +846,44 @@ as steps 1–7 (full run + per-test diff after each item; ledger rows; stop on s
       (3 tests, no code change). No code commit; no full run needed (no code change).
 - [x] 9.6 Update the exit-check notes, §09 W2 row and STATUS (new commits, PR split).
 
+## 10. Restore the Curly and Dynamic invocation kinds on real components (2026-10-09)
+
+Review of `ef4/test-cleanup-4` asked why the `Dynamic` kind could be dropped. The 4.1 rationale
+(ledger "4.1 summary", and the "4.1 review" note) covered the layout side only: the caller side
+of `{{#component x}}…{{else}}…{{/component}}` (dynamic resolution, then default/inverse blocks and
+their block params passed through dynamic invocation) is tested nowhere else for the
+has-block / has-block-params / yield / blocks matrix (EG has no `{{else}}`, `to="inverse"` or
+`has-block-params` after `{{component`). The same holds for `Curly` (`{{#foo-bar}}…{{else}}`).
+They were dropped because they ran on the fake classic component, not because they were
+redundant. **Author decision (option 1):** rebuild PR 4 so it keeps `Curly` and `Dynamic` as
+invocation forms of a real `@glimmer/component` resolved through Ember's real resolver on a real
+owner, pulling the minimal part of step 5 into PR 4; then rebase PRs 5–10.
+
+Work on the PR branches `ef4/test-cleanup-4` … `-10` (stacked, one commit each, message = PR
+description; see STATUS "Next steps" item 6). Build the new commits detached in the worktree
+`/Users/edward/hacking/ember.js-w2`; move each branch ref only after its branch is green.
+Save the current tips to the scratchpad first so the old stack can be restored.
+
+- [ ] 10.1 Design (short, written here): the minimal step-5 subset PR 4 needs (real owner per
+      delegate + `ResolverImpl` registrations, from 5.3a/5.3b; whether the old `renderMain`
+      runtime can take `ResolverImpl` without 5.2's `BaseRenderer`, or which part of 5.2 must
+      come too); how the `Curly` and `Dynamic` blueprints invoke a Glimmer component (args as
+      `@args`, `{{else}}` → `{{yield to="inverse"}}`, block params; no wrapper element); which
+      suites get the kinds back (at least has-block, has-block-params, yield, the blocks suite
+      `component-invocation`/`emberish-components`, scope; decide for with-dynamic-vars,
+      debugger, SSR/rehydration and say why); which 4.1 ledger rows change.
+- [ ] 10.2 New PR 4: implement on top of `ef4/test-cleanup-3`; full suite green; per-test diff
+      against the old PR 4 run; ledger rows updated (4.1 `collapsed` rows for Curly/Dynamic
+      become `kept (real component)`); tests that pinned fake-only classic behavior stay dropped.
+- [ ] 10.3 Rebase PRs 5–10 onto it, one at a time. Each must keep the kinds working through
+      its harness changes (renderer, owner, resolver, compile options, loose-template root);
+      full suite green and per-test diff on every branch; triage any kind-specific failure
+      (stop and report anything that is not plumbing).
+- [ ] 10.4 Rewrite the PR 4 and PR 5 descriptions (and any other whose counts or claims
+      change); per-branch suite counts in each message.
+- [ ] 10.5 Correct the ledger "4.1 summary" and "4.1 review" notes; update STATUS and §09 C18
+      wording if it says the fan-out was collapsed; move refs; record new hashes.
+
 ## Findings for the author
 
 Behavior questions W2 turns up. Carry each into the owning chapter's open questions at 8.4.
